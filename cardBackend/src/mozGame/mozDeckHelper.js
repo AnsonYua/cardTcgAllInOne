@@ -6,9 +6,23 @@ class mozDeckLogic{
     }
     async prepareDeckForPlayer(playerId) {
         var playerDeck = await deckManager.getPlayerDecks(playerId);
+        console.log(`[mozDeckHelper] Player ${playerId} deck data:`, JSON.stringify(playerDeck, null, 2));
+        
+        if (!playerDeck) {
+            throw new Error(`No deck found for player ${playerId}`);
+        }
+        
         playerDeck = JSON.parse(JSON.stringify(playerDeck));
-        const sumCardList = this.possessLeaderCard(playerDeck.decks["deck001"]);
-        const mainDeckCard = this.possesesMainDeckCard(playerDeck.decks["deck001"]);
+        
+        const activeDeckId = playerDeck.activeDeck || "deck001";
+        const activeDeck = playerDeck.decks[activeDeckId];
+        
+        if (!activeDeck) {
+            throw new Error(`Active deck ${activeDeckId} not found for player ${playerId}`);
+        }
+        
+        const sumCardList = this.possessLeaderCard(activeDeck);
+        const mainDeckCard = this.possesesMainDeckCard(activeDeck);
         
         const { drawnCards, mainDeck } = this.drawCards(mainDeckCard, 7);
         const hand = drawnCards;

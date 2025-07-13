@@ -70,29 +70,141 @@ export default class PreloaderScene extends Phaser.Scene {
   }
 
   loadCardImages() {
-    // Load character cards (c-1 to c-28) - both original and preview versions
-    for (let i = 1; i <= 28; i++) {
-      this.load.image(`c-${i}`, `src/assets/character/c-${i}.png`);
-      this.load.image(`c-${i}-preview`, `src/assets/character/c-${i}-preview.png`);
+    // Load all card files from each folder
+    this.scanAndLoadFolder('character', 'c-');
+    this.scanAndLoadFolder('leader', 's-');
+    this.scanAndLoadFolder('utilityCard', 'h-');
+    this.scanAndLoadFolder('utilityCard', 'sp-');
+  }
+
+  scanAndLoadFolder(folderName, prefix) {
+    console.log(`[PreloaderScene] Loading ${folderName} files with prefix ${prefix}`);
+    
+    // Use a predefined list of known card ranges to avoid 404 scanning
+    let cardRange;
+    if (prefix === 'c-') cardRange = 28;      // Character cards c-1 to c-28
+    else if (prefix === 's-') cardRange = 6;  // Leader cards s-1 to s-6  
+    else if (prefix === 'h-') cardRange = 15; // Help cards h-1 to h-15
+    else if (prefix === 'sp-') cardRange = 10; // SP cards sp-1 to sp-10
+    else cardRange = 10;
+    
+    const foundFiles = [];
+    
+    // Load images and let Phaser handle missing files gracefully
+    for (let i = 1; i <= cardRange; i++) {
+      const cardId = `${prefix}${i}`;
+      const imagePath = `src/assets/${folderName}/${cardId}.png`;
+      const previewPath = `src/assets/${folderName}/${cardId}-preview.png`;
+      
+      foundFiles.push(cardId);
+      
+      // Load main image
+      this.load.image(cardId, imagePath);
+      
+      // Load preview image  
+      this.load.image(`${cardId}-preview`, previewPath);
+      
+      // Handle successful loads
+      this.load.once(`filecomplete-image-${cardId}`, () => {
+        console.log(`[PreloaderScene] Successfully loaded: ${cardId}`);
+      });
+      
+      this.load.once(`filecomplete-image-${cardId}-preview`, () => {
+        console.log(`[PreloaderScene] Successfully loaded: ${cardId}-preview`);
+      });
     }
     
-    // Load leader cards (s-1 to s-6) - both original and preview versions
-    for (let i = 1; i <= 6; i++) {
-      this.load.image(`s-${i}`, `src/assets/leader/s-${i}.png`);
-      this.load.image(`s-${i}-preview`, `src/assets/leader/s-${i}-preview.png`);
+    // Handle load errors silently
+    this.load.on('loaderror', (fileObj) => {
+      if (fileObj.key.startsWith(prefix)) {
+        // Don't log errors, just handle them silently
+      }
+    });
+    
+    console.log(`[PreloaderScene] Queued ${foundFiles.length} ${folderName} files for loading`);
+    return foundFiles;
+  }
+
+  createPreviewFallback(cardId) {
+    // Create a preview version from the main image after it loads
+    this.load.once('filecomplete-image-' + cardId, () => {
+      if (!this.textures.exists(`${cardId}-preview`)) {
+        // Use the main image as preview with slight modification
+        this.textures.addImage(`${cardId}-preview`, this.textures.get(cardId).source[0]);
+        console.log(`[PreloaderScene] Created preview fallback for ${cardId}`);
+      }
+    });
+  }
+
+  getCardInfo(cardId) {
+    if (cardId.startsWith('c-')) return { folder: 'character' };
+    if (cardId.startsWith('h-') || cardId.startsWith('sp-')) return { folder: 'utilityCard' };
+    if (cardId.startsWith('s-')) return { folder: 'leader' };
+    return null;
+  }
+
+  createFallbackTexture(cardId) {
+    // Create a simple colored rectangle as fallback
+    this.load.once('complete', () => {
+      if (!this.textures.exists(cardId)) {
+        console.log(`Creating fallback texture for ${cardId}`);
+        const graphics = this.add.graphics();
+        graphics.fillStyle(0x4444ff);
+        graphics.fillRoundedRect(0, 0, 130, 190, 10);
+        graphics.generateTexture(cardId, 130, 190);
+        graphics.destroy();
+      }
+      
+      if (!this.textures.exists(`${cardId}-preview`)) {
+        console.log(`Creating fallback preview texture for ${cardId}-preview`);
+        const graphics = this.add.graphics();
+        graphics.fillStyle(0x6666ff);
+        graphics.fillRoundedRect(0, 0, 130, 190, 10);
+        graphics.generateTexture(`${cardId}-preview`, 130, 190);
+        graphics.destroy();
+      }
+    });
+  }
+
+  loadImagesFromFolder(folderName, prefix) {
+    // Since we can't dynamically scan folders in the browser, we'll load a reasonable range
+    // and handle missing files gracefully
+    let maxCards;
+    
+    // Set reasonable limits based on card type to reduce 404 errors
+    if (prefix === 'c-') maxCards = 28; // Character cards
+    else if (prefix === 's-') maxCards = 6; // Leader cards  
+    else if (prefix === 'h-') maxCards = 15; // Help cards
+    else if (prefix === 'sp-') maxCards = 10; // SP cards
+    else maxCards = 10; // Default
+    
+    console.log(`[PreloaderScene] Loading ${folderName} images with prefix ${prefix} (max: ${maxCards})`);
+    
+    for (let i = 1; i <= maxCards; i++) {
+      const cardId = `${prefix}${i}`;
+      
+      // Load original image
+      this.load.image(cardId, `src/assets/${folderName}/${cardId}.png`);
+      console.log(`[PreloaderScene] Queuing load: ${cardId} from src/assets/${folderName}/${cardId}.png`);
+      
+      // Load preview image
+      this.load.image(`${cardId}-preview`, `src/assets/${folderName}/${cardId}-preview.png`);
+      console.log(`[PreloaderScene] Queuing load: ${cardId}-preview from src/assets/${folderName}/${cardId}-preview.png`);
     }
     
-    // Load help cards (h-1 to h-15) - both original and preview versions
-    for (let i = 1; i <= 15; i++) {
-      this.load.image(`h-${i}`, `src/assets/utilityCard/h-${i}.png`);
-      this.load.image(`h-${i}-preview`, `src/assets/utilityCard/h-${i}-preview.png`);
-    }
+    // Handle load success
+    this.load.on('filecomplete', (key, type, data) => {
+      if (key.startsWith(prefix)) {
+        console.log(`[PreloaderScene] Successfully loaded: ${key}`);
+      }
+    });
     
-    // Load SP cards (sp-1 to sp-10) - both original and preview versions
-    for (let i = 1; i <= 10; i++) {
-      this.load.image(`sp-${i}`, `src/assets/utilityCard/sp-${i}.png`);
-      this.load.image(`sp-${i}-preview`, `src/assets/utilityCard/sp-${i}-preview.png`);
-    }
+    // Handle load errors gracefully (files that don't exist)
+    this.load.on('loaderror', (fileObj) => {
+      if (fileObj.key.startsWith(prefix)) {
+        console.log(`[PreloaderScene] Card image not found: ${fileObj.src} (this is normal for unused card slots)`);
+      }
+    });
   }
 
   createCardTextures() {

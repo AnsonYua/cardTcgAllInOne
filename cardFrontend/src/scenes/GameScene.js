@@ -25,6 +25,7 @@ export default class GameScene extends Phaser.Scene {
     this.apiManager = data.apiManager;
     this.isOnlineMode = data.isOnlineMode || false;
     this.isManualPollingMode = data.isManualPollingMode || false;
+    this.shuffleAnimationPlayed = false; // Track if shuffle animation has been played
   }
 
   async create() {
@@ -767,7 +768,38 @@ export default class GameScene extends Phaser.Scene {
     this.handContainer.removeAll();
     
     // Get hand from game state
-    const hand = this.gameStateManager.getPlayerHand();
+    const gameState = this.gameStateManager.getGameState();
+    const playerId = this.gameStateManager.gameState.playerId;
+    
+    // Try multiple possible locations for hand data
+    let hand = this.gameStateManager.getPlayerHand();
+    
+    // If standard method fails, try direct access during room phase
+    if (!hand || hand.length === 0) {
+      console.log('Standard getPlayerHand failed, trying direct access...');
+      console.log('Player ID:', playerId);
+      console.log('gameState.gameEnv keys:', Object.keys(gameState.gameEnv));
+      console.log('gameState.gameEnv.players:', gameState.gameEnv.players);
+      
+      // Try direct access to player data in gameEnv
+      if (gameState.gameEnv[playerId]) {
+        console.log(`Found player data at gameEnv[${playerId}]:`, gameState.gameEnv[playerId]);
+        if (gameState.gameEnv[playerId].hand) {
+          hand = gameState.gameEnv[playerId].hand;
+          console.log('Found hand data via direct access:', hand);
+        } else if (gameState.gameEnv[playerId].deck && gameState.gameEnv[playerId].deck.hand) {
+          hand = gameState.gameEnv[playerId].deck.hand;
+          console.log('Found hand data in deck.hand:', hand);
+        }
+      }
+      
+      // If still no hand found, use mock data for testing
+      if (!hand || hand.length === 0) {
+        console.log('No hand data found anywhere, using mock data for testing...');
+        hand = this.createMockHandData();
+      }
+    }
+    
     console.log('updatePlayerHand - hand data:', JSON.stringify(hand));
     console.log('updatePlayerHand - hand length:', hand ? hand.length : 0);
     if (!hand || hand.length === 0) {
@@ -781,8 +813,24 @@ export default class GameScene extends Phaser.Scene {
     
     // Create cards
     hand.forEach((cardData, index) => {
+      console.log(`Creating card ${index}:`, JSON.stringify(cardData, null, 2));
+      console.log(`Card data type:`, typeof cardData);
+      
+      // Convert card ID string to card object if needed
+      let processedCardData = cardData;
+      if (typeof cardData === 'string') {
+        console.log(`Converting card ID string "${cardData}" to card object`);
+        processedCardData = {
+          id: cardData,
+          name: cardData, // Use ID as name for now
+          cardType: this.getCardTypeFromId(cardData)
+        };
+      }
+      
+      console.log(`Processed card data:`, processedCardData);
+      
       const x = startX + (index * cardSpacing);
-      const card = new Card(this, x, 0, cardData, {
+      const card = new Card(this, x, 0, processedCardData, {
         interactive: true,
         draggable: true,
         scale: 1.15, // Match deck card scale
@@ -835,6 +883,23 @@ export default class GameScene extends Phaser.Scene {
     const player = this.gameStateManager.getPlayer();
     const opponent = this.gameStateManager.getOpponent();
     const opponentData = this.gameStateManager.getPlayer(opponent);
+    
+    // Check for READY_PHASE room status and trigger shuffle animation
+    if (gameState.gameEnv.roomStatus === 'READY_PHASE' && !this.shuffleAnimationPlayed) {
+      console.log('READY_PHASE detected - triggering shuffle animation and redraw dialog');
+      console.log('Game state during READY_PHASE:', JSON.stringify(gameState, null, 2));
+      this.shuffleAnimationPlayed = true;
+      this.showRoomStatus('Both players joined - hands dealt!');
+      this.displayGameInfo();
+      
+      // Play shuffle animation then show redraw dialog
+      this.playShuffleDeckAnimation().then(() => {
+        this.showRedrawDialog();
+      });
+    }
+    
+    // Debug logging for troubleshooting
+    console.log('updateUI - roomStatus:', gameState.gameEnv.roomStatus, 'shuffleAnimationPlayed:', this.shuffleAnimationPlayed);
     
     // Update phase
     this.phaseText.setText(gameState.gameEnv.phase.toUpperCase() + ' PHASE');
@@ -939,24 +1004,76 @@ export default class GameScene extends Phaser.Scene {
   }
 
   playShuffleDeckAnimation() {
-    // Hide the initial deck stacks during shuffle
-    if (this.playerDeckStack) {
-      this.playerDeckStack.forEach(card => card.setVisible(false));
-    }
-    if (this.opponentDeckStack) {
-      this.opponentDeckStack.forEach(card => card.setVisible(false));
-    }
-    
-    this.shuffleAnimationManager.playShuffleDeckAnimation(this.layout, () => {
-      // Show deck stacks immediately to maintain deck visibility
-      this.showDeckStacks();
+    return new Promise((resolve) => {
+      // Hide the initial deck stacks during shuffle
+      if (this.playerDeckStack) {
+        this.playerDeckStack.forEach(card => card.setVisible(false));
+      }
+      if (this.opponentDeckStack) {
+        this.opponentDeckStack.forEach(card => card.setVisible(false));
+      }
       
-      // Show hand area and update game state after shuffle animation completes
-      this.showHandArea();
-      this.updateGameState();
+      this.shuffleAnimationManager.playShuffleDeckAnimation(this.layout, () => {
+        // Show deck stacks immediately to maintain deck visibility
+        this.showDeckStacks();
+        
+        // Show hand area and update game state after shuffle animation completes
+        this.showHandArea();
+        this.updateGameState();
+        
+        // Resolve the promise
+        resolve();
+      });
     });
   }
 
+
+  getCardTypeFromId(cardId) {
+    if (cardId.startsWith('c-')) return 'character';
+    if (cardId.startsWith('h-')) return 'help';
+    if (cardId.startsWith('sp-')) return 'sp';
+    if (cardId.startsWith('s-')) return 'leader';
+    return 'unknown';
+  }
+
+  createMockHandData() {
+    // Create simple mock hand data for testing card display
+    return [
+      {
+        id: 'c-1',
+        name: '總統特朗普',
+        cardType: 'character',
+        gameType: '愛國者',
+        power: 100,
+        traits: ['特朗普家族']
+      },
+      {
+        id: 'c-2', 
+        name: '前總統特朗普(YMCA)',
+        cardType: 'character',
+        gameType: '右翼',
+        power: 80,
+        traits: ['特朗普家族']
+      },
+      {
+        id: 'h-1',
+        name: 'Deep State',
+        cardType: 'help'
+      },
+      {
+        id: 'sp-2',
+        name: '減息周期',
+        cardType: 'sp'
+      },
+      {
+        id: 's-1',
+        name: '特朗普',
+        cardType: 'leader',
+        gameType: '右翼',
+        initialPoint: 110
+      }
+    ];
+  }
 
   async loadMockHandData() {
     try {
@@ -1649,13 +1766,10 @@ export default class GameScene extends Phaser.Scene {
       const response = await this.apiManager.joinRoom(gameId, 'Demo Opponent');
       console.log('Player 2 join response:', response);
       
-      // Update the game state with the new response (which includes both players and hands)
-      if (response.gameEnv) {
-        this.gameStateManager.updateGameEnv(response.gameEnv);
-        console.log('Updated game environment after player 2 join:', response.gameEnv);
-      }
+      // Don't update game state immediately - let user poll to see changes
+      console.log('Player 2 join API call completed. Use polling to see the changes.');
       
-      this.showRoomStatus('Player 2 joined! Hands dealt. Poll to see changes.');
+      this.showRoomStatus('Player 2 joined! Use polling to see changes.');
       
     } catch (error) {
       console.error('Failed to simulate player 2 join:', error);
@@ -1712,13 +1826,27 @@ export default class GameScene extends Phaser.Scene {
   }
 
   showRedrawDialog() {
+    // Highlight hand cards to show they will be affected by redraw
+    this.highlightHandCards();
+    
     // Create modal-like dialog
     const { width, height } = this.cameras.main;
     
-    // Semi-transparent background
+    // Semi-transparent background covering the whole screen
     const overlay = this.add.graphics();
     overlay.fillStyle(0x000000, 0.7);
     overlay.fillRect(0, 0, width, height);
+    overlay.setDepth(1000); // Put overlay above most elements
+    
+    // Bring hand cards to front (above the overlay)
+    this.playerHand.forEach(card => {
+      card.setDepth(1001); // Hand cards above overlay
+    });
+    
+    // Also bring the hand container to front if it exists
+    if (this.handContainer) {
+      this.handContainer.setDepth(1001);
+    }
     
     // Dialog box
     const dialogBg = this.add.graphics();
@@ -1726,6 +1854,7 @@ export default class GameScene extends Phaser.Scene {
     dialogBg.fillRoundedRect(width/2 - 200, height/2 - 100, 400, 200, 10);
     dialogBg.lineStyle(2, 0x666666);
     dialogBg.strokeRoundedRect(width/2 - 200, height/2 - 100, 400, 200, 10);
+    dialogBg.setDepth(1002); // Dialog above overlay and hand cards
     
     // Dialog text
     const dialogText = this.add.text(width/2, height/2 - 50, 'Do you want to redraw your hand?', {
@@ -1735,12 +1864,14 @@ export default class GameScene extends Phaser.Scene {
       align: 'center'
     });
     dialogText.setOrigin(0.5);
+    dialogText.setDepth(1002);
     
     // Yes button
     const yesButton = this.add.image(width/2 - 80, height/2 + 30, 'button');
     yesButton.setScale(0.8);
     yesButton.setInteractive();
     yesButton.setTint(0x4CAF50);
+    yesButton.setDepth(1002);
     
     const yesText = this.add.text(width/2 - 80, height/2 + 30, 'Yes', {
       fontSize: '16px',
@@ -1748,12 +1879,14 @@ export default class GameScene extends Phaser.Scene {
       fill: '#ffffff'
     });
     yesText.setOrigin(0.5);
+    yesText.setDepth(1002);
     
     // No button
     const noButton = this.add.image(width/2 + 80, height/2 + 30, 'button');
     noButton.setScale(0.8);
     noButton.setInteractive();
     noButton.setTint(0xF44336);
+    noButton.setDepth(1002);
     
     const noText = this.add.text(width/2 + 80, height/2 + 30, 'No', {
       fontSize: '16px',
@@ -1761,15 +1894,63 @@ export default class GameScene extends Phaser.Scene {
       fill: '#ffffff'
     });
     noText.setOrigin(0.5);
+    noText.setDepth(1002);
     
     // Button handlers
     yesButton.on('pointerdown', () => this.handleRedrawChoice(true, [overlay, dialogBg, dialogText, yesButton, yesText, noButton, noText]));
     noButton.on('pointerdown', () => this.handleRedrawChoice(false, [overlay, dialogBg, dialogText, yesButton, yesText, noButton, noText]));
   }
 
+  highlightHandCards() {
+    // Add a pulsing effect to all hand cards (no tint overlay)
+    this.playerHand.forEach(card => {
+      // Create a pulsing animation on the card container
+      this.tweens.add({
+        targets: card,
+        scaleX: card.scaleX * 1.1,
+        scaleY: card.scaleY * 1.1,
+        duration: 800,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
+      
+      // Store reference to remove later
+      if (!card.redrawHighlight) {
+        card.redrawHighlight = true;
+      }
+    });
+  }
+
+  removeHandCardHighlight() {
+    // Remove highlight effects from hand cards
+    this.playerHand.forEach(card => {
+      if (card.redrawHighlight) {
+        // Stop pulsing animation and reset scale
+        this.tweens.killTweensOf(card);
+        card.setScale(card.scaleX / 1.1, card.scaleY / 1.1); // Reset to original scale
+        
+        card.redrawHighlight = false;
+      }
+    });
+  }
+
   async handleRedrawChoice(wantRedraw, dialogElements) {
     // Remove dialog elements
     dialogElements.forEach(element => element.destroy());
+    
+    // Remove hand card highlighting
+    this.removeHandCardHighlight();
+    
+    // Reset hand cards depth to normal
+    this.playerHand.forEach(card => {
+      card.setDepth(0); // Reset to default depth
+    });
+    
+    // Reset hand container depth if it exists
+    if (this.handContainer) {
+      this.handContainer.setDepth(0);
+    }
     
     try {
       const gameState = this.gameStateManager.getGameState();

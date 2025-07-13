@@ -74,11 +74,54 @@ export default class Card extends Phaser.GameObjects.Container {
       this.cardImage = this.scene.add.image(0, 0, 'card-back');
       this.add(this.cardImage);
     } else {
+      // Check if we have a valid card ID
+      if (!this.cardData || !this.cardData.id) {
+        console.error(`[Card] Invalid card data - missing ID:`, this.cardData);
+        // Create placeholder with error message
+        this.cardImage = this.scene.add.image(0, 0, 'card-back');
+        this.cardImage.setTint(0xff0000); // Red tint
+        
+        const errorText = this.scene.add.text(0, 0, 'NO ID', {
+          fontSize: '16px',
+          fontFamily: 'Arial',
+          fill: '#ffffff',
+          align: 'center'
+        });
+        errorText.setOrigin(0.5);
+        this.add(errorText);
+        this.add(this.cardImage);
+        return;
+      }
+      
       // Show actual card image when face up
       const cardKey = this.options.usePreview ? 
         `${this.cardData.id}-preview` :  // Use preview version (e.g., "c-1-preview")
         this.cardData.id;                // Use original version (e.g., "c-1")
-      this.cardImage = this.scene.add.image(0, 0, cardKey);
+      
+      console.log(`[Card] Trying to load image with key: ${cardKey}`);
+      console.log(`[Card] Card data:`, this.cardData);
+      console.log(`[Card] Available textures:`, Object.keys(this.scene.textures.list).filter(key => key.startsWith(this.cardData.id?.substring(0, 2) || '')));
+      
+      // Check if texture exists
+      if (this.scene.textures.exists(cardKey)) {
+        this.cardImage = this.scene.add.image(0, 0, cardKey);
+        console.log(`[Card] Successfully loaded image: ${cardKey}`);
+      } else {
+        console.warn(`[Card] Texture not found: ${cardKey}, using fallback`);
+        // Create a fallback placeholder with card ID text
+        this.cardImage = this.scene.add.image(0, 0, 'card-back');
+        this.cardImage.setTint(0xff0000); // Red tint to indicate missing texture
+        
+        // Add text showing the card ID for debugging
+        const idText = this.scene.add.text(0, 0, this.cardData.id || 'NO ID', {
+          fontSize: '16px',
+          fontFamily: 'Arial',
+          fill: '#ffffff',
+          align: 'center'
+        });
+        idText.setOrigin(0.5);
+        this.add(idText);
+      }
       this.add(this.cardImage);
       
       // Card images already contain all the necessary information
