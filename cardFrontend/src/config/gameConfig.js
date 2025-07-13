@@ -7,7 +7,7 @@ export const GAME_CONFIG = {
   minHeight: 768,
   
   // API Configuration
-  apiBaseUrl: 'http://localhost:8080/api',
+  apiBaseUrl: 'http://localhost:8080/api/game',
   pollInterval: 1000,
   
   // Game Constants
