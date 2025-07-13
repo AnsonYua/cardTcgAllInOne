@@ -1,0 +1,176 @@
+{
+    "gameId": "0f32fdc3-4dc0-4a5c-825b-093c30914342",
+    "gameEnv": {
+      "playerId_1": {
+        "deck": {
+          "currentSummonerIdx": 0,
+          "summoner": [
+            "S051", //sky [fire, wind, mountain], left [all], right [all]
+            "S045",
+            "S056B",
+            "S073E",
+            "S058"
+          ],
+          "hand": [
+            "s52",  //wind ,70
+            "s47",  //wind ,50
+            "s191", //wind ,80
+            "s688", //all  ,100
+            "s46",  //wind ,40
+            "s229", //shell,40
+            "s186", //wind ,10
+            "s49"   //wind ,50
+          ],
+          "mainDeck": [
+            "s125", //shell,100
+            "s56",  //wind ,100
+            "s187", //wind ,50
+            "s230", //shell,60
+            "s122", //shell,90
+            "s279", //wind ,80
+            "s189", //wind ,50
+            "s54",  //wind ,80
+            "s231",
+            "s53",
+            "s45",
+            "s43",
+            "s110",
+            "s44",
+            "s228",
+            "s190",
+            "s111",
+            "s50",
+            "s227",
+            "s109"
+          ]
+        },
+        "redraw": 1,
+        "turnAction": [],
+        "Field": {
+          "summonner": {
+            "id": "S051",
+            "sky": [
+              "fire",
+              "wind",
+              "mountain"
+            ],
+            "left": [
+              "all"
+            ],
+            "right": [
+              "all"
+            ],
+            "age": -1,
+            "gender": "female",
+            "nativeAddition": [
+              {
+                "type": "wind",
+                "value": 60
+              }
+            ],
+            "level": 6,
+            "type": [
+              "wind"
+            ],
+            "initialPoint": 87
+          },
+          "right": [],
+          "left": [],
+          "sky": [],
+          "help": [],
+          "sp": []
+        }
+      },
+      "playerId_2": {
+        "deck": {
+          "currentSummonerIdx": 0,
+          "summoner": [
+            "S045", //sky [all, mountain, tree], left [wind, water], right [wind, tree]
+            "S109", //sky [all], left [all], right [all]
+            "S058",
+            "S051",
+            "S056B"
+          ],
+          "hand": [
+            "s231", //shell,70
+            "s50",  //wind,60
+            "s56",  //wind,100
+            "s688", //all,100
+            "s46",  //wind,40
+            "s45",  //wind,30
+            "s190"  //wind,40
+          ],
+          "mainDeck": [
+            "s228", //shell,20
+            "s191", //wind,80
+            "s227", //shell,10
+            "s109", //shell,60
+            "s111", //shell,80
+            "s54",  //wind,80
+            "s279",
+            "s189",
+            "s52",
+            "s187",
+            "s122",
+            "s125",
+            "s229",
+            "s43",
+            "s47",
+            "s53",
+            "s110",
+            "s49",
+            "s230",
+            "s186",
+            "s44"
+          ]
+        },
+        "redraw": 1,
+        "turnAction": [],
+        "Field": {
+          "summonner": {
+            "id": "S045",
+            "sky": [
+              "all",
+              "mountain",
+              "tree"
+            ],
+            "left": [
+              "wind",
+              "water"
+            ],
+            "right": [
+              "wind",
+              "tree"
+            ],
+            "age": 20,
+            "gender": "male",
+            "nativeAddition": [
+              {
+                "type": "wind",
+                "value": 30
+              },
+              {
+                "type": "bird",
+                "value": 100
+              }
+            ],
+            "level": 3,
+            "type": [
+              "wind"
+            ],
+            "initialPoint": 25
+          },
+          "right": [],
+          "left": [],
+          "sky": [],
+          "help": [],
+          "sp": []
+        }
+      },
+      "firstPlayer": 0,
+      "phase": "MAIN_PHASE",
+      "currentPlayer": "playerId_1",
+      "currentTurn": 0
+    },
+    "lastUpdate": "2025-02-01T17:46:06.759Z"
+  }

@@ -1,0 +1,11 @@
+{
+  "success": true,
+  "data": {
+    "playerId": "player-1",
+    "handCardsToAdd": [
+      { "id": "c-2" },
+      { "id": "h-3" },
+      { "id": "sp-2" }
+    ]
+  }
+}

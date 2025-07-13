@@ -1,0 +1,56 @@
+{
+  "defaultDecks": {
+    "starter": {
+      "id": "deck001",
+      "name": "Starter Deck",
+      "cards": [
+        "card001",
+        "card001",
+        "card001",
+        "card002",
+        "card002",
+        "card003"
+      ],
+      "maxCards": 30,
+      "minCards": 20
+    }
+  },
+  "playerDecks": {
+    "playerId_1": {
+      "activeDeck": "deck001",
+      "decks": {
+        "deck001": {
+          "id": "deck001",
+          "name": "Starter Deck",
+          "leader": [
+            "l-1","l-2","l-3","l-4"
+          ],
+          "cards": [
+            "c-1", "c-2", "c-3", "c-4", "c-5", "48", "c-6", "c-7", 
+            "51", "c-8", "c-9", "c-10", "55", "c-11", "57", "58", 
+            "59", "60", "61", "62", "63", "64", "65", "66",
+            "h-1", "h-2", "sp-2", "sp-4"
+          ]
+        }
+      }
+    },    
+    "playerId_2": {
+      "activeDeck": "deck001",
+      "decks": {
+        "deck001": {
+          "id": "deck001",
+          "name": "Starter Deck",
+          "leader": [
+            "l-1","l-2","l-3","l-4"
+          ],
+          "cards": [
+            "c-1", "c-2", "c-3", "c-4", "c-5", "48", "c-6", "c-7", 
+            "51", "c-8", "c-9", "c-10", "55", "c-11", "57", "58", 
+            "59", "60", "61", "62", "63", "64", "65", "66",
+            "h-1", "h-2", "sp-2", "sp-4"
+          ]
+        }
+      }
+    }
+  }
+}

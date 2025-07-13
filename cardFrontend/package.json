@@ -1,0 +1,24 @@
+{
+  "name": "revolution-rebellion-tcg",
+  "version": "1.0.0",
+  "description": "Trading Card Game frontend for Revolution and Rebellion",
+  "main": "src/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext .js",
+    "format": "prettier --write src/**/*.js"
+  },
+  "dependencies": {
+    "phaser": "^3.70.0"
+  },
+  "devDependencies": {
+    "vite": "^4.5.0",
+    "eslint": "^8.53.0",
+    "prettier": "^3.1.0"
+  },
+  "keywords": ["phaser", "game", "tcg", "trading-card-game"],
+  "author": "",
+  "license": "MIT"
+}

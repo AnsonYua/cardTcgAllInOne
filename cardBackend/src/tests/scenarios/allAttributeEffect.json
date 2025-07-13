@@ -1,0 +1,86 @@
+{
+    "gameId": "test-all-attribute-effect",
+    "gameEnv": {
+        "playerId_1": {
+            "deck": {
+                "currentLeaderIdx": 0,
+                "summoner": ["S109"],
+                "hand": ["s109", "s110", "s111"],
+                "mainDeck": ["s112", "s113", "s114", "s115", "s116"]
+            },
+            "redraw": 0,
+            "turnAction": [],
+            "Field": {
+                "summonner": {
+                    "id": "S109",
+                    "sky": ["all"],
+                    "left": ["all"],
+                    "right": ["all"],
+                    "age": -1,
+                    "gender": "male",
+                    "nativeAddition": [
+                        {
+                            "type": "all",
+                            "value": 70
+                        }
+                    ],
+                    "level": 7,
+                    "type": [],
+                    "initialPoint": 101
+                },
+                "right": [],
+                "left": [],
+                "sky": [],
+                "help": [],
+                "sp": []
+            },
+            "playerPoint": 0,
+            "overallGamePoint": 0
+        },
+        "playerId_2": {
+            "deck": {
+                "currentLeaderIdx": 0,
+                "summoner": ["S045"],
+                "hand": [],
+                "mainDeck": []
+            },
+            "redraw": 0,
+            "turnAction": [],
+            "Field": {
+                "summonner": {
+                    "id": "S045",
+                    "sky": ["all", "mountain", "tree"],
+                    "left": ["wind", "water"],
+                    "right": ["wind", "tree"],
+                    "age": 20,
+                    "gender": "male",
+                    "nativeAddition": [
+                        {
+                            "type": "wind",
+                            "value": 30
+                        },
+                        {
+                            "type": "bird",
+                            "value": 100
+                        }
+                    ],
+                    "level": 3,
+                    "type": ["wind"],
+                    "initialPoint": 25
+                },
+                "right": [],
+                "left": [],
+                "sky": [],
+                "help": [],
+                "sp": []
+            },
+            "playerPoint": 0,
+            "overallGamePoint": 0
+        },
+        "firstPlayer": 1,
+        "phase": "MAIN_PHASE",
+        "currentPlayer": "playerId_1",
+        "currentTurn": 1
+    },
+    "lastUpdate": "2025-06-07T18:19:35.727Z"
+} 

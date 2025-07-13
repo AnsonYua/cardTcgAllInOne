@@ -1,0 +1,12 @@
+{
+  "success": true,
+  "data": {
+    "leaderCards": [
+      { "id": "s-2" },
+      { "id": "s-3" },
+      { "id": "s-3" },
+      { "id": "s-4" },
+      { "id": "s-6" }
+    ]
+  }
+}

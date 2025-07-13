@@ -1,0 +1,131 @@
+{
+  "gameId": "test-trump-vs-powell",
+  "gameEnv": {
+    "playerId_1": {
+      "deck": {
+        "currentLeaderIdx": 0,
+        "leader": ["S001", "S002", "S003", "S004"],
+        "hand": ["43", "44", "45"],
+        "mainDeck": ["46", "47", "48", "49", "50"]
+      },
+      "redraw": 1,
+      "turnAction": [],
+      "Field": {
+        "leader": {
+          "id": "S001",
+          "name": "特朗普",
+          "cardType": "leader",
+          "gameType": "右翼",
+          "initialPoint": 110,
+          "level": 7,
+          "zoneCompatibility": {
+            "top": ["右翼", "自由", "經濟"],
+            "left": ["右翼", "自由", "愛國者"],
+            "right": ["右翼", "愛國者", "經濟"]
+          },
+          "effects": {
+            "description": [
+              "我方場上全部右翼類型或愛國者類型的角色卡，原能力值 +45",
+              "如對方領袖卡為「鮑威爾」，我方場上全部經濟類型的角色卡，原能力值變成 0"
+            ],
+            "rules": [
+              {
+                "id": "trump_power_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "hasGameType",
+                      "value": ["右翼", "愛國者"],
+                      "operator": "or"
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "modifyPower",
+                  "operation": "add",
+                  "value": 45
+                }
+              },
+              {
+                "id": "trump_vs_powell",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": [
+                    {
+                      "type": "opponentHasLeader",
+                      "value": "鮑威爾"
+                    }
+                  ]
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "hasGameType",
+                      "value": "經濟"
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "modifyPower",
+                  "operation": "set",
+                  "value": 0
+                }
+              }
+            ]
+          }
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      },
+      "playerPoint": 0
+    },
+    "playerId_2": {
+      "deck": {
+        "currentLeaderIdx": 0,
+        "leader": ["S006", "S001", "S002", "S003"],
+        "hand": ["51", "52", "53"],
+        "mainDeck": ["54", "55", "56", "57", "58"]
+      },
+      "redraw": 1,
+      "turnAction": [],
+      "Field": {
+        "leader": {
+          "id": "S006",
+          "name": "鮑威爾",
+          "cardType": "leader",
+          "gameType": "經濟",
+          "initialPoint": 95,
+          "level": 6,
+          "zoneCompatibility": {
+            "top": ["經濟", "自由"],
+            "left": ["經濟", "左翼", "右翼"],
+            "right": ["經濟", "左翼", "右翼"]
+          }
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      },
+      "playerPoint": 0
+    },
+    "firstPlayer": 0,
+    "phase": "MAIN_PHASE",
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0
+  }
+}

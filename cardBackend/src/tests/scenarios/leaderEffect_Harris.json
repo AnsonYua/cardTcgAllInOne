@@ -1,0 +1,143 @@
+{
+  "gameId": "test-leader-harris",
+  "gameEnv": {
+    "playerId_1": {
+      "deck": {
+        "currentLeaderIdx": 0,
+        "leader": ["S004", "S001", "S002", "S003"],
+        "hand": ["43", "44", "45"],
+        "mainDeck": ["46", "47", "48", "49", "50"]
+      },
+      "redraw": 1,
+      "turnAction": [],
+      "Field": {
+        "leader": {
+          "id": "S004",
+          "name": "賀錦麗",
+          "cardType": "leader",
+          "gameType": "左翼",
+          "initialPoint": 69,
+          "level": 4,
+          "zoneCompatibility": {
+            "top": ["左翼", "經濟", "自由"],
+            "left": ["左翼", "經濟"],
+            "right": ["左翼", "自由", "經濟"]
+          },
+          "effects": {
+            "description": [
+              "我方場上全部左翼類型的角色卡，原能力值 +40",
+              "我方場上全部經濟類型的角色卡，原能力值 +20",
+              "如對方領袖卡為「特朗普」，我方右區域召喚的角色卡，原能力值變成 0"
+            ],
+            "rules": [
+              {
+                "id": "harris_leftwing_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "hasGameType",
+                      "value": "左翼"
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "modifyPower",
+                  "operation": "add",
+                  "value": 40
+                }
+              },
+              {
+                "id": "harris_economy_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "hasGameType",
+                      "value": "經濟"
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "modifyPower",
+                  "operation": "add",
+                  "value": 20
+                }
+              },
+              {
+                "id": "harris_vs_trump",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": [
+                    {
+                      "type": "opponentHasLeader",
+                      "value": "特朗普"
+                    }
+                  ]
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["right"],
+                  "filters": []
+                },
+                "effect": {
+                  "type": "modifyPower",
+                  "operation": "set",
+                  "value": 0
+                }
+              }
+            ]
+          }
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      },
+      "playerPoint": 0
+    },
+    "playerId_2": {
+      "deck": {
+        "currentLeaderIdx": 0,
+        "leader": ["S001", "S002", "S003", "S005"],
+        "hand": ["51", "52", "53"],
+        "mainDeck": ["54", "55", "56", "57", "58"]
+      },
+      "redraw": 1,
+      "turnAction": [],
+      "Field": {
+        "leader": {
+          "id": "S001",
+          "name": "特朗普",
+          "cardType": "leader",
+          "gameType": "右翼",
+          "initialPoint": 110
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      },
+      "playerPoint": 0
+    },
+    "firstPlayer": 0,
+    "phase": "MAIN_PHASE",
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0
+  }
+}

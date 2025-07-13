@@ -1,0 +1,119 @@
+{
+  "gameId": "test-leader-musk",
+  "gameEnv": {
+    "playerId_1": {
+      "deck": {
+        "currentLeaderIdx": 0,
+        "leader": ["S003", "S001", "S002", "S004"],
+        "hand": ["43", "44", "45"],
+        "mainDeck": ["46", "47", "48", "49", "50"]
+      },
+      "redraw": 1,
+      "turnAction": [],
+      "Field": {
+        "leader": {
+          "id": "S003",
+          "name": "馬斯克",
+          "cardType": "leader",
+          "gameType": "自由",
+          "initialPoint": 91,
+          "level": 6,
+          "zoneCompatibility": {
+            "top": ["自由", "經濟"],
+            "left": ["左翼", "自由"],
+            "right": ["右翼", "自由"]
+          },
+          "effects": {
+            "description": [
+              "我方場上全部自由類型的角色卡，原能力值 +50",
+              "我方場上全部擁有Doge特徵的角色卡，能力值再 +20"
+            ],
+            "rules": [
+              {
+                "id": "musk_freedom_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "hasGameType",
+                      "value": "自由"
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "modifyPower",
+                  "operation": "add",
+                  "value": 50
+                }
+              },
+              {
+                "id": "musk_doge_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "hasTrait",
+                      "value": "Doge"
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "modifyPower",
+                  "operation": "add",
+                  "value": 20
+                }
+              }
+            ]
+          }
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      },
+      "playerPoint": 0
+    },
+    "playerId_2": {
+      "deck": {
+        "currentLeaderIdx": 0,
+        "leader": ["S001", "S002", "S004", "S005"],
+        "hand": ["51", "52", "53"],
+        "mainDeck": ["54", "55", "56", "57", "58"]
+      },
+      "redraw": 1,
+      "turnAction": [],
+      "Field": {
+        "leader": {
+          "id": "S001",
+          "name": "特朗普",
+          "cardType": "leader",
+          "gameType": "右翼",
+          "initialPoint": 110
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      },
+      "playerPoint": 0
+    },
+    "firstPlayer": 0,
+    "phase": "MAIN_PHASE",
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0
+  }
+}

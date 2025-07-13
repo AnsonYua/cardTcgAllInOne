@@ -1,0 +1,143 @@
+{
+  "gameId": "test-leader-vance",
+  "gameEnv": {
+    "playerId_1": {
+      "deck": {
+        "currentLeaderIdx": 0,
+        "leader": ["S005", "S001", "S002", "S003"],
+        "hand": ["43", "44", "45"],
+        "mainDeck": ["46", "47", "48", "49", "50"]
+      },
+      "redraw": 1,
+      "turnAction": [],
+      "Field": {
+        "leader": {
+          "id": "S005",
+          "name": "范斯",
+          "cardType": "leader",
+          "gameType": "右翼",
+          "initialPoint": 75,
+          "level": 5,
+          "zoneCompatibility": {
+            "top": ["右翼", "經濟", "自由"],
+            "left": ["右翼", "經濟"],
+            "right": ["右翼", "自由", "愛國者"]
+          },
+          "effects": {
+            "description": [
+              "我方場上全部右翼類型的角色卡，原能力值 +40",
+              "我方場上全部自由類型的角色卡，原能力值 +20",
+              "我方場上全部經濟類型的角色卡，原能力值 +10"
+            ],
+            "rules": [
+              {
+                "id": "vance_rightwing_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "hasGameType",
+                      "value": "右翼"
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "modifyPower",
+                  "operation": "add",
+                  "value": 40
+                }
+              },
+              {
+                "id": "vance_freedom_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "hasGameType",
+                      "value": "自由"
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "modifyPower",
+                  "operation": "add",
+                  "value": 20
+                }
+              },
+              {
+                "id": "vance_economy_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "hasGameType",
+                      "value": "經濟"
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "modifyPower",
+                  "operation": "add",
+                  "value": 10
+                }
+              }
+            ]
+          }
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      },
+      "playerPoint": 0
+    },
+    "playerId_2": {
+      "deck": {
+        "currentLeaderIdx": 0,
+        "leader": ["S002", "S001", "S003", "S004"],
+        "hand": ["51", "52", "53"],
+        "mainDeck": ["54", "55", "56", "57", "58"]
+      },
+      "redraw": 1,
+      "turnAction": [],
+      "Field": {
+        "leader": {
+          "id": "S002",
+          "name": "拜登",
+          "cardType": "leader",
+          "gameType": "左翼",
+          "initialPoint": 100
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      },
+      "playerPoint": 0
+    },
+    "firstPlayer": 0,
+    "phase": "MAIN_PHASE",
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "gameId": "test-search-card-basic",
+  "gameEnv": {
+    "playerId_1": {
+      "deck": {
+        "currentLeaderIdx": 0,
+        "leader": ["l-2", "l-3", "l-4", "l-5"],
+        "hand": ["c-9","c-1"],
+        "mainDeck": ["c-1", "c-2", "c-3", "sp-1", "h-1", "c-4", "c-5"]
+      },
+      "redraw": 1,
+      "turnAction": [],
+      "Field": {
+        "leader": {
+          "id": "l-2",
+          "name": "拜登",
+          "cardType": "leader",
+          "gameType": "左翼",
+          "initialPoint": 100,
+          "level": 7,
+          "zoneCompatibility": {
+            "top": ["all"],
+            "left": ["all"],
+            "right": ["all"]
+          }
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      },
+      "playerPoint": 0
+    },
+    "playerId_2": {
+      "deck": {
+        "currentLeaderIdx": 0,
+        "leader": ["l-2", "l-3", "l-4", "l-5"],
+        "hand": ["c-9","c-1"],
+        "mainDeck": ["c-1", "c-2", "c-3", "sp-1", "h-1", "c-4", "c-5"]
+      },
+      "redraw": 1,
+      "turnAction": [],
+      "Field": {
+        "leader": {
+          "id": "l-2",
+          "name": "拜登",
+          "cardType": "leader",
+          "gameType": "左翼",
+          "initialPoint": 100,
+          "level": 7,
+          "zoneCompatibility": {
+            "top": ["all"],
+            "left": ["all"],
+            "right": ["all"]
+          }
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      },
+      "playerPoint": 0
+    },
+    "firstPlayer": 0,
+    "phase": "MAIN_PHASE",
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0
+  }
+}
