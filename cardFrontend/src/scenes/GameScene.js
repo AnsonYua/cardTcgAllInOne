@@ -543,7 +543,7 @@ export default class GameScene extends Phaser.Scene {
         testOpponentLeaderButtonText.setScale(1);
       });
       
-      this.time.delayedCall(50, () => this.selectOpponentLeaderCard());
+      this.time.delayedCall(50, () => this.selectLeaderCard('opponent'));
     });
 
     // Test Add Card button
@@ -1141,6 +1141,10 @@ export default class GameScene extends Phaser.Scene {
     if (this.handContainer) {
       this.handContainer.setVisible(true);
     }
+    
+    // Automatically move first leader card to leader zone for both players
+    this.selectLeaderCard('player');
+    this.selectLeaderCard('opponent');
   }
 
   showCardPreview(cardData) {
@@ -1171,20 +1175,84 @@ export default class GameScene extends Phaser.Scene {
   async loadLeaderCardsData() {
     try {
       console.log('Loading leader cards data...');
+      
+      // Try to get leader cards from API/game state first
+      if (this.isOnlineMode && this.gameStateManager) {
+        const gameState = this.gameStateManager.getGameState();
+        const player = this.gameStateManager.getPlayer();
+        
+        // Check if player has leader cards in deck
+        if (player && player.deck && player.deck.leader) {
+          console.log('Loading leader cards from API game state:', player.deck.leader);
+          
+          // Convert leader card IDs to card objects (need to load from backend card database)
+          const baseLeaderCards = await this.convertCardIdsToObjects(player.deck.leader, 'leader');
+          
+          // Create separate shuffled decks for player and opponent
+          this.playerLeaderCards = [...baseLeaderCards];  // Copy for player
+          this.opponentLeaderCards = [...baseLeaderCards]; // Copy for opponent
+          
+          // Shuffle both decks separately
+          this.shuffleArray(this.playerLeaderCards);
+          this.shuffleArray(this.opponentLeaderCards);
+          
+          console.log('Player leader cards shuffled:', this.playerLeaderCards);
+          console.log('Opponent leader cards shuffled:', this.opponentLeaderCards);
+          
+          // Keep this.leaderCards for backwards compatibility (use player's deck)
+          this.leaderCards = this.playerLeaderCards;
+          return;
+        }
+      }
+      
+      // Fallback to static file for demo mode
+      console.log('Loading leader cards from static file (demo mode)...');
       const response = await fetch('/leaderCards.json');
       const mockData = await response.json();
       
       if (mockData.success) {
-        console.log('Leader cards data loaded:', mockData.data);
-        this.leaderCards = mockData.data.leaderCards;
+        console.log('Leader cards data loaded from file:', mockData.data);
+        const baseLeaderCards = mockData.data.leaderCards;
         
-        // Leader cards will be displayed during shuffle animation, not immediately
+        // Create separate shuffled decks for player and opponent
+        this.playerLeaderCards = [...baseLeaderCards];  // Copy for player
+        this.opponentLeaderCards = [...baseLeaderCards]; // Copy for opponent
+        
+        // Shuffle both decks separately
+        this.shuffleArray(this.playerLeaderCards);
+        this.shuffleArray(this.opponentLeaderCards);
+        
+        console.log('Player leader cards shuffled (demo):', this.playerLeaderCards);
+        console.log('Opponent leader cards shuffled (demo):', this.opponentLeaderCards);
+        
+        // Keep this.leaderCards for backwards compatibility (use player's deck)
+        this.leaderCards = this.playerLeaderCards;
       } else {
         console.error('Failed to load leader cards data');
       }
     } catch (error) {
       console.error('Error loading leader cards data:', error);
     }
+  }
+
+  async convertCardIdsToObjects(cardIds, cardType) {
+    // For now, create basic card objects from IDs
+    // In the future, this could fetch from backend card database
+    return cardIds.map(cardId => ({
+      id: cardId,
+      name: cardId, // Use ID as name for now
+      type: cardType || this.getCardTypeFromId(cardId),
+      power: cardType === 'character' ? Math.floor(Math.random() * 5) + 1 : undefined // Mock power for characters
+    }));
+  }
+
+  shuffleArray(array) {
+    // Fisher-Yates shuffle algorithm
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
   }
 
   updateLeaderDecks() {
@@ -1226,52 +1294,59 @@ export default class GameScene extends Phaser.Scene {
     console.log(`Created leader deck display for ${owner} with card:`, topCard.id);
   }
 
-  selectLeaderCard() {
-    // Get the player leader deck zone
-    const playerLeaderDeckZone = this.playerZones.leaderDeck;
-    const playerLeaderZone = this.playerZones.leader;
+  selectLeaderCard(playerType = 'player') {
+    // Get the appropriate zones based on player type
+    const zones = playerType === 'player' ? this.playerZones : this.opponentZones;
+    const leaderDeckZone = zones.leaderDeck;
+    const leaderZone = zones.leader;
     
-    if (!playerLeaderDeckZone || !playerLeaderZone) {
-      console.log('Leader zones not found');
+    if (!leaderDeckZone || !leaderZone) {
+      console.log(`${playerType} leader zones not found`);
       return;
     }
 
+    // Get the appropriate leader cards array from animation manager
+    const leaderCardsArray = playerType === 'player' ? 
+      this.shuffleAnimationManager?.playerLeaderCards : 
+      this.shuffleAnimationManager?.opponentLeaderCards;
+
     // Check if there are leader cards in the animation manager
-    if (!this.shuffleAnimationManager || !this.shuffleAnimationManager.playerLeaderCards || this.shuffleAnimationManager.playerLeaderCards.length === 0) {
-      console.log('No leader cards available in deck');
+    if (!this.shuffleAnimationManager || !leaderCardsArray || leaderCardsArray.length === 0) {
+      console.log(`No ${playerType} leader cards available in deck`);
       return;
     }
 
     // Get the top card from the leader deck (first card in array - highest depth/position)
     const topCardIndex = 0;
-    const topCard = this.shuffleAnimationManager.playerLeaderCards[topCardIndex];
+    const topCard = leaderCardsArray[topCardIndex];
     
     if (!topCard) {
-      console.log('No top card found');
+      console.log(`No ${playerType} top card found`);
       return;
     }
 
-    // Get the corresponding card data (the cards are in the same order as leaderCards array)
-    const cardData = this.leaderCards[this.leaderCards.length - this.shuffleAnimationManager.playerLeaderCards.length];
+    // Get the corresponding card data from the correct player's leader deck
+    const leaderDeckSource = playerType === 'player' ? this.playerLeaderCards : this.opponentLeaderCards;
+    const cardData = leaderDeckSource[leaderDeckSource.length - leaderCardsArray.length];
     
     if (!cardData) {
-      console.log('No card data found for top card');
+      console.log(`No card data found for ${playerType} top card`);
       return;
     }
 
-    console.log('Moving leader card to leader position:', cardData.name);
+    console.log(`Moving ${playerType} leader card to leader position:`, cardData.name);
 
     // Animate the card moving to leader position and flipping
     this.tweens.add({
       targets: topCard,
-      x: playerLeaderZone.x,
-      y: playerLeaderZone.y,
+      x: leaderZone.x,
+      y: leaderZone.y,
       rotation: 0, // Remove the 90-degree rotation
       duration: 300,
       ease: 'Power2.easeInOut',
       onComplete: () => {
         // NOW remove the card from the leader deck array
-        this.shuffleAnimationManager.playerLeaderCards.splice(topCardIndex, 1);
+        leaderCardsArray.splice(topCardIndex, 1);
 
         // Destroy the old card back image
         topCard.destroy();
@@ -1280,14 +1355,14 @@ export default class GameScene extends Phaser.Scene {
         }
 
         // Create new card with actual leader card image (face up)
-        const leaderCard = new Card(this, playerLeaderZone.x, playerLeaderZone.y, cardData, {
+        const leaderCard = new Card(this, leaderZone.x, leaderZone.y, cardData, {
           interactive: true,
           draggable: false,
           scale: 0.9,
           usePreview: true // Use preview image for leader position
         });
 
-        // Add hover events for preview
+        // Add hover events for preview (for both player and opponent cards)
         leaderCard.on('pointerover', () => {
           this.showCardPreview(cardData);
         });
@@ -1297,38 +1372,45 @@ export default class GameScene extends Phaser.Scene {
         });
 
         // Update the zone
-        playerLeaderZone.card = leaderCard;
-        if (playerLeaderZone.placeholder) {
-          playerLeaderZone.placeholder.setVisible(false);
+        leaderZone.card = leaderCard;
+        if (leaderZone.placeholder) {
+          leaderZone.placeholder.setVisible(false);
         }
 
-        console.log(`Leader card ${cardData.name} placed in leader position`);
+        console.log(`${playerType} leader card ${cardData.name} placed in leader position`);
 
         // Move remaining cards forward to maintain top card position
-        this.repositionLeaderDeckCards();
+        this.repositionLeaderDeckCards(playerType);
       }
     });
   }
 
-  repositionLeaderDeckCards() {
-    if (!this.shuffleAnimationManager || !this.shuffleAnimationManager.playerLeaderCards) {
-      return;
-    }
+  repositionLeaderDeckCards(playerType = 'player') {
+    // Get the appropriate arrays and zones based on player type
+    const leaderCardsArray = playerType === 'player' ? 
+      this.shuffleAnimationManager?.playerLeaderCards : 
+      this.shuffleAnimationManager?.opponentLeaderCards;
+    
+    const zones = playerType === 'player' ? this.playerZones : this.opponentZones;
+    const leaderDeckZone = zones.leaderDeck;
 
-    const playerLeaderDeckZone = this.playerZones.leaderDeck;
-    if (!playerLeaderDeckZone) {
+    if (!this.shuffleAnimationManager || !leaderCardsArray || !leaderDeckZone) {
       return;
     }
 
     // Get the target position for the top card (same as original leaderDeck position)
-    const targetX = playerLeaderDeckZone.x;
-    const targetY = playerLeaderDeckZone.y;
+    const targetX = leaderDeckZone.x;
+    const targetY = leaderDeckZone.y;
 
     // Animate remaining cards to their new positions
-    this.shuffleAnimationManager.playerLeaderCards.forEach((card, index) => {
+    leaderCardsArray.forEach((card, index) => {
       // Calculate the new position based on the stacking offset
       const newX = targetX;
-      const newY = targetY + (index * 30); // 30 pixel offset BELOW the leaderDeck position
+      
+      // For opponent, stack cards ABOVE the leader deck position (negative offset)
+      // For player, stack cards BELOW the leader deck position (positive offset)
+      const offsetDirection = playerType === 'opponent' ? -1 : 1;
+      const newY = targetY + (offsetDirection * index * 30);
 
       // Animate card to new position
       this.tweens.add({
@@ -1351,138 +1433,10 @@ export default class GameScene extends Phaser.Scene {
       }
 
       // Update depth to maintain proper stacking order
-      card.setDepth(1000 + this.shuffleAnimationManager.playerLeaderCards.length - index);
+      card.setDepth(1000 + leaderCardsArray.length - index);
     });
   }
 
-  selectOpponentLeaderCard() {
-    // Get the opponent leader deck zone
-    const opponentLeaderDeckZone = this.opponentZones.leaderDeck;
-    const opponentLeaderZone = this.opponentZones.leader;
-    
-    if (!opponentLeaderDeckZone || !opponentLeaderZone) {
-      console.log('Opponent leader zones not found');
-      return;
-    }
-
-    // Check if there are leader cards in the animation manager
-    if (!this.shuffleAnimationManager || !this.shuffleAnimationManager.opponentLeaderCards || this.shuffleAnimationManager.opponentLeaderCards.length === 0) {
-      console.log('No opponent leader cards available in deck');
-      return;
-    }
-
-    // Get the top card from the opponent leader deck (first card in array - highest depth/position)
-    const topCardIndex = 0;
-    const topCard = this.shuffleAnimationManager.opponentLeaderCards[topCardIndex];
-    
-    if (!topCard) {
-      console.log('No opponent top card found');
-      return;
-    }
-
-    // Get the corresponding card data (the cards are in the same order as leaderCards array)
-    const cardData = this.leaderCards[this.leaderCards.length - this.shuffleAnimationManager.opponentLeaderCards.length];
-    
-    if (!cardData) {
-      console.log('No card data found for opponent top card');
-      return;
-    }
-
-    console.log('Moving opponent leader card to leader position:', cardData.name);
-
-    // Animate the card moving to opponent leader position and flipping
-    this.tweens.add({
-      targets: topCard,
-      x: opponentLeaderZone.x,
-      y: opponentLeaderZone.y,
-      rotation: 0, // Remove the 90-degree rotation
-      duration: 300,
-      ease: 'Power2.easeInOut',
-      onComplete: () => {
-        // NOW remove the card from the opponent leader deck array
-        this.shuffleAnimationManager.opponentLeaderCards.splice(topCardIndex, 1);
-
-        // Destroy the old card back image
-        topCard.destroy();
-        if (topCard.borderGraphics) {
-          topCard.borderGraphics.destroy();
-        }
-
-        // Create new card with actual leader card image (face up)
-        const leaderCard = new Card(this, opponentLeaderZone.x, opponentLeaderZone.y, cardData, {
-          interactive: true,
-          draggable: false,
-          scale: 0.9,
-          usePreview: true // Use preview image for leader position
-        });
-
-        // Add hover events for preview
-        leaderCard.on('pointerover', () => {
-          this.showCardPreview(cardData);
-        });
-        
-        leaderCard.on('pointerout', () => {
-          this.hideCardPreview();
-        });
-
-        // Update the zone
-        opponentLeaderZone.card = leaderCard;
-        if (opponentLeaderZone.placeholder) {
-          opponentLeaderZone.placeholder.setVisible(false);
-        }
-
-        console.log(`Opponent leader card ${cardData.name} placed in leader position`);
-
-        // Move remaining cards forward to maintain top card position
-        this.repositionOpponentLeaderDeckCards();
-      }
-    });
-  }
-
-  repositionOpponentLeaderDeckCards() {
-    if (!this.shuffleAnimationManager || !this.shuffleAnimationManager.opponentLeaderCards) {
-      return;
-    }
-
-    const opponentLeaderDeckZone = this.opponentZones.leaderDeck;
-    if (!opponentLeaderDeckZone) {
-      return;
-    }
-
-    // Get the target position for the top card (same as original opponent leaderDeck position)
-    const targetX = opponentLeaderDeckZone.x;
-    const targetY = opponentLeaderDeckZone.y;
-
-    // Animate remaining cards to their new positions
-    this.shuffleAnimationManager.opponentLeaderCards.forEach((card, index) => {
-      // Calculate the new position based on the stacking offset (match original opponent positioning)
-      const newX = targetX;
-      const newY = targetY - (index * 30); // 30 pixel offset ABOVE the leaderDeck position (like original)
-
-      // Animate card to new position
-      this.tweens.add({
-        targets: card,
-        x: newX,
-        y: newY,
-        duration: 150,
-        ease: 'Power2.easeOut'
-      });
-
-      // Also animate the border graphics if they exist
-      if (card.borderGraphics) {
-        this.tweens.add({
-          targets: card.borderGraphics,
-          x: newX,
-          y: newY,
-          duration: 150,
-          ease: 'Power2.easeOut'
-        });
-      }
-
-      // Update depth to maintain proper stacking order
-      card.setDepth(1000 + this.shuffleAnimationManager.opponentLeaderCards.length - index);
-    });
-  }
 
   async testAddCard() {
     try {
@@ -1848,6 +1802,37 @@ export default class GameScene extends Phaser.Scene {
       this.handContainer.setDepth(1001);
     }
     
+    // Bring leader cards to front (above the overlay) - same as hand cards
+    console.log('DEBUG: Setting leader card depths...');
+    if (this.playerZones.leader && this.playerZones.leader.card) {
+      console.log('DEBUG: Player leader card found, setting depth to 1001');
+      this.playerZones.leader.card.setDepth(1001);
+      console.log('DEBUG: Player leader card depth is now:', this.playerZones.leader.card.depth);
+    } else {
+      console.log('DEBUG: Player leader card NOT found');
+    }
+    if (this.playerZones.leaderDeck && this.playerZones.leaderDeck.card) {
+      console.log('DEBUG: Player leader deck card found, setting depth to 1001');
+      this.playerZones.leaderDeck.card.setDepth(1001);
+      console.log('DEBUG: Player leader deck card depth is now:', this.playerZones.leaderDeck.card.depth);
+    } else {
+      console.log('DEBUG: Player leader deck card NOT found');
+    }
+    if (this.opponentZones.leader && this.opponentZones.leader.card) {
+      console.log('DEBUG: Opponent leader card found, setting depth to 1001');
+      this.opponentZones.leader.card.setDepth(1001);
+      console.log('DEBUG: Opponent leader card depth is now:', this.opponentZones.leader.card.depth);
+    } else {
+      console.log('DEBUG: Opponent leader card NOT found');
+    }
+    if (this.opponentZones.leaderDeck && this.opponentZones.leaderDeck.card) {
+      console.log('DEBUG: Opponent leader deck card found, setting depth to 1001');
+      this.opponentZones.leaderDeck.card.setDepth(1001);
+      console.log('DEBUG: Opponent leader deck card depth is now:', this.opponentZones.leaderDeck.card.depth);
+    } else {
+      console.log('DEBUG: Opponent leader deck card NOT found');
+    }
+    
     // Dialog box
     const dialogBg = this.add.graphics();
     dialogBg.fillStyle(0x333333);
@@ -1920,6 +1905,41 @@ export default class GameScene extends Phaser.Scene {
         card.redrawHighlight = true;
       }
     });
+    
+    // Also highlight leader cards in leader positions
+    this.highlightLeaderCards();
+  }
+  
+  highlightLeaderCards() {
+    // Highlight player leader card
+    if (this.playerZones.leader && this.playerZones.leader.card) {
+      const leaderCard = this.playerZones.leader.card;
+      this.tweens.add({
+        targets: leaderCard,
+        scaleX: leaderCard.scaleX * 1.1,
+        scaleY: leaderCard.scaleY * 1.1,
+        duration: 800,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
+      leaderCard.redrawHighlight = true;
+    }
+    
+    // Highlight opponent leader card
+    if (this.opponentZones.leader && this.opponentZones.leader.card) {
+      const leaderCard = this.opponentZones.leader.card;
+      this.tweens.add({
+        targets: leaderCard,
+        scaleX: leaderCard.scaleX * 1.1,
+        scaleY: leaderCard.scaleY * 1.1,
+        duration: 800,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
+      leaderCard.redrawHighlight = true;
+    }
   }
 
   removeHandCardHighlight() {
@@ -1933,6 +1953,31 @@ export default class GameScene extends Phaser.Scene {
         card.redrawHighlight = false;
       }
     });
+    
+    // Also remove leader card highlights
+    this.removeLeaderCardHighlight();
+  }
+  
+  removeLeaderCardHighlight() {
+    // Remove player leader card highlight
+    if (this.playerZones.leader && this.playerZones.leader.card) {
+      const leaderCard = this.playerZones.leader.card;
+      if (leaderCard.redrawHighlight) {
+        this.tweens.killTweensOf(leaderCard);
+        leaderCard.setScale(leaderCard.scaleX / 1.1, leaderCard.scaleY / 1.1);
+        leaderCard.redrawHighlight = false;
+      }
+    }
+    
+    // Remove opponent leader card highlight
+    if (this.opponentZones.leader && this.opponentZones.leader.card) {
+      const leaderCard = this.opponentZones.leader.card;
+      if (leaderCard.redrawHighlight) {
+        this.tweens.killTweensOf(leaderCard);
+        leaderCard.setScale(leaderCard.scaleX / 1.1, leaderCard.scaleY / 1.1);
+        leaderCard.redrawHighlight = false;
+      }
+    }
   }
 
   async handleRedrawChoice(wantRedraw, dialogElements) {
@@ -1950,6 +1995,20 @@ export default class GameScene extends Phaser.Scene {
     // Reset hand container depth if it exists
     if (this.handContainer) {
       this.handContainer.setDepth(0);
+    }
+    
+    // Reset leader cards depth to normal - same as hand cards
+    if (this.playerZones.leader && this.playerZones.leader.card) {
+      this.playerZones.leader.card.setDepth(0);
+    }
+    if (this.playerZones.leaderDeck && this.playerZones.leaderDeck.card) {
+      this.playerZones.leaderDeck.card.setDepth(0);
+    }
+    if (this.opponentZones.leader && this.opponentZones.leader.card) {
+      this.opponentZones.leader.card.setDepth(0);
+    }
+    if (this.opponentZones.leaderDeck && this.opponentZones.leaderDeck.card) {
+      this.opponentZones.leaderDeck.card.setDepth(0);
     }
     
     try {
