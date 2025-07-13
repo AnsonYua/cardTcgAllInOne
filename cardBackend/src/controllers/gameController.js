@@ -10,6 +10,15 @@ class GameController {
             res.status(500).json({ error: error.message });
         }
     }
+
+    async joinRoom(req, res) {
+        try {
+            const gameState = await gameLogic.joinRoom(req);
+            res.json(gameState);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
     async getPlayerDecks(req, res) {
         try {
             const { playerId } = req.params;

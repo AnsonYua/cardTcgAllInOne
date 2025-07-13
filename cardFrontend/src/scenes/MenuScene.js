@@ -196,7 +196,7 @@ export default class MenuScene extends Phaser.Scene {
     
     try {
       if (this.isOnlineMode) {
-        // Create game via API
+        // Create game room via API
         const response = await this.apiManager.createGame(this.playerName);
         
         if (response.gameId && response.gameEnv) {
@@ -207,6 +207,7 @@ export default class MenuScene extends Phaser.Scene {
           this.gameStateManager.updateGameEnv(response.gameEnv);
           
           this.hideLoadingMessage();
+          this.showConnectionStatus(`🎮 Room created! Game ID: ${response.gameId} (Waiting for player 2...)`);
           this.scene.start('GameScene', { 
             gameStateManager: this.gameStateManager, 
             apiManager: this.apiManager,
@@ -239,15 +240,16 @@ export default class MenuScene extends Phaser.Scene {
       
       try {
         if (this.isOnlineMode) {
-          // For game joiner, always use playerId_2
+          // Join room using new API
           const playerId = 'playerId_2';
-          const response = await this.apiManager.joinGame(playerId, gameId.trim());
+          const response = await this.apiManager.joinRoom(gameId.trim(), this.playerName);
           
           if (response.gameEnv) {
             this.gameStateManager.initializeGame(gameId.trim(), playerId, this.playerName);
             this.gameStateManager.updateGameEnv(response.gameEnv);
             
             this.hideLoadingMessage();
+            this.showConnectionStatus(`🎮 Joined room ${gameId.trim()}! Both players ready.`);
             this.scene.start('GameScene', { 
               gameStateManager: this.gameStateManager, 
               apiManager: this.apiManager,
@@ -275,46 +277,35 @@ export default class MenuScene extends Phaser.Scene {
     
     // Try to create real game via API first
     if (this.isOnlineMode) {
-      this.showLoadingMessage('Creating demo game...');
+      this.showLoadingMessage('Creating demo room...');
       try {
-        const response = await this.apiManager.createGame(this.playerName);
+        // Step 1: Only create room (no auto-join)
+        const createResponse = await this.apiManager.createGame(this.playerName);
         
-        if (response.gameId && response.gameEnv) {
-          // For demo game creator, use playerId_1
-          const playerId = 'playerId_1';
+        if (createResponse.gameId && createResponse.gameEnv) {
+          const gameId = createResponse.gameId;
           
-          this.gameStateManager.initializeGame(response.gameId, playerId, this.playerName);
-          this.gameStateManager.updateGameEnv(response.gameEnv);
+          // Initialize game state for player 1 (the human player in demo)
+          this.gameStateManager.initializeGame(gameId, 'playerId_1', this.playerName);
+          this.gameStateManager.updateGameEnv(createResponse.gameEnv);
           
-          // In demo mode, automatically make both players ready
-          this.showLoadingMessage('Setting up demo players...');
-          try {
-            // Mark player 1 ready
-            await this.apiManager.startReady('playerId_1', response.gameId);
-            // Mark player 2 ready (simulated opponent)
-            await this.apiManager.startReady('playerId_2', response.gameId);
-            
-            this.hideLoadingMessage();
-            this.scene.start('GameScene', { 
-              gameStateManager: this.gameStateManager, 
-              apiManager: this.apiManager,
-              isOnlineMode: true,
-              isManualPollingMode: true  // Demo mode uses manual polling
-            });
-            return;
-          } catch (readyError) {
-            console.error('Failed to set players ready:', readyError);
-            this.hideLoadingMessage();
-            this.showErrorMessage('Failed to setup demo. Starting offline demo...');
-            setTimeout(() => this.createOfflineDemoGame(), 2000);
-            return;
-          }
+          console.log('Demo game created with gameId:', gameId);
+          console.log('Initial game environment:', createResponse.gameEnv);
+          
+          this.hideLoadingMessage();
+          this.showConnectionStatus(`🎮 Demo room created! Game ID: ${gameId} (Use test buttons to control)`);
+          this.scene.start('GameScene', { 
+            gameStateManager: this.gameStateManager, 
+            apiManager: this.apiManager,
+            isOnlineMode: true,
+            isManualPollingMode: true  // Demo mode uses manual polling
+          });
+          return;
         }
       } catch (error) {
         console.error('Failed to create demo game via API:', error);
         this.hideLoadingMessage();
         this.showErrorMessage('API unavailable. Starting offline demo...');
-        // Fall back to offline demo after delay
         setTimeout(() => this.createOfflineDemoGame(), 2000);
         return;
       }

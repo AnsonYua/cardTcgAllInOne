@@ -29,6 +29,7 @@ export default class GameScene extends Phaser.Scene {
 
   async create() {
     console.log('GameScene create method called');
+    console.log('Initial game state:', this.gameStateManager?.getGameState());
     this.createBackground();
     this.createGameBoard();
     this.createUI();
@@ -42,8 +43,10 @@ export default class GameScene extends Phaser.Scene {
       console.log('Manual polling mode enabled - use test button to poll');
     }
     
-    // Load mock hand data but don't display cards yet
-    await this.loadMockHandData();
+    // Load mock hand data only in offline mode
+    if (!this.isOnlineMode) {
+      await this.loadMockHandData();
+    }
     
     // Load leader cards data
     await this.loadLeaderCardsData();
@@ -569,8 +572,9 @@ export default class GameScene extends Phaser.Scene {
       this.time.delayedCall(50, () => this.testAddCard());
     });
 
-    // Test Polling button (only show in manual polling mode)
+    // Test buttons (only show in manual polling mode)
     if (this.isManualPollingMode) {
+      // Test Polling button
       this.testPollingButton = this.add.image(0+130, height - 300, 'button');
       this.testPollingButton.setScale(0.8);
       this.testPollingButton.setInteractive();
@@ -595,6 +599,33 @@ export default class GameScene extends Phaser.Scene {
         });
         
         this.time.delayedCall(50, () => this.testPolling());
+      });
+
+      // Simulate Player 2 Join button
+      this.testJoinPlayer2Button = this.add.image(0+130, height - 360, 'button');
+      this.testJoinPlayer2Button.setScale(0.8);
+      this.testJoinPlayer2Button.setInteractive();
+      
+      const testJoinPlayer2ButtonText = this.add.text(0+130, height - 360, 'Player 2 Join', {
+        fontSize: '12px',
+        fontFamily: 'Arial',
+        fill: '#ffffff'
+      });
+      testJoinPlayer2ButtonText.setOrigin(0.5);
+      
+      this.testJoinPlayer2Button.on('pointerdown', () => {
+        // Click visual effect
+        this.testJoinPlayer2Button.setTint(0x888888);
+        this.testJoinPlayer2Button.setScale(0.76);
+        testJoinPlayer2ButtonText.setScale(0.95);
+        
+        this.time.delayedCall(100, () => {
+          this.testJoinPlayer2Button.clearTint();
+          this.testJoinPlayer2Button.setScale(0.8);
+          testJoinPlayer2ButtonText.setScale(1);
+        });
+        
+        this.time.delayedCall(50, () => this.simulatePlayer2Join());
       });
     }
 
@@ -658,12 +689,26 @@ export default class GameScene extends Phaser.Scene {
     // Game state event handlers (for online mode)
     if (this.isOnlineMode && this.gameStateManager) {
       // Register event handlers with GameStateManager
-      this.gameStateManager.addEventListener('GAME_STARTED', (event) => {
-        console.log('Game started event received:', event);
+      this.gameStateManager.addEventListener('ROOM_CREATED', (event) => {
+        console.log('Room created event received:', event);
+        this.showRoomStatus('Room created - waiting for player 2...');
+      });
+      
+      this.gameStateManager.addEventListener('PLAYER_JOINED', (event) => {
+        console.log('Player joined event received:', event);
+        this.showRoomStatus('Both players joined - hands dealt!');
+        this.displayGameInfo();
+        this.showRedrawDialog();
+      });
+      
+      this.gameStateManager.addEventListener('PLAYER_READY', (event) => {
+        console.log('Player ready event received:', event);
+        this.showRoomStatus(`Player ${event.data.playerId} is ready!`);
       });
       
       this.gameStateManager.addEventListener('GAME_PHASE_START', (event) => {
         console.log('Game phase start event received - both players ready!', event);
+        this.showRoomStatus('Game started!');
         if (this.waitingForPlayers) {
           this.waitingForPlayers = false;
           this.playShuffleDeckAnimation();
@@ -1587,6 +1632,183 @@ export default class GameScene extends Phaser.Scene {
         console.log('2. Use the backend test endpoints to inject a game state');
       }
     }
+  }
+
+  async simulatePlayer2Join() {
+    try {
+      const gameState = this.gameStateManager.getGameState();
+      const gameId = gameState.gameId;
+      
+      console.log('Simulating player 2 joining room with gameId:', gameId);
+      
+      if (!gameId) {
+        throw new Error('No gameId found. Make sure game was created first.');
+      }
+      
+      // Call joinRoom API to simulate player 2 joining using the correct gameId
+      const response = await this.apiManager.joinRoom(gameId, 'Demo Opponent');
+      console.log('Player 2 join response:', response);
+      
+      // Update the game state with the new response (which includes both players and hands)
+      if (response.gameEnv) {
+        this.gameStateManager.updateGameEnv(response.gameEnv);
+        console.log('Updated game environment after player 2 join:', response.gameEnv);
+      }
+      
+      this.showRoomStatus('Player 2 joined! Hands dealt. Poll to see changes.');
+      
+    } catch (error) {
+      console.error('Failed to simulate player 2 join:', error);
+      this.showRoomStatus('Failed to simulate player 2 join: ' + error.message);
+    }
+  }
+
+  displayGameInfo() {
+    const gameState = this.gameStateManager.getGameState();
+    const gameEnv = gameState.gameEnv;
+    
+    if (gameEnv && gameEnv.firstPlayer !== undefined) {
+      // Determine which player goes first
+      const player1Id = gameEnv.playerId_1;
+      const player2Id = gameEnv.playerId_2;
+      const firstPlayerId = gameEnv.firstPlayer === 0 ? player1Id : player2Id;
+      const isCurrentPlayerFirst = firstPlayerId === gameState.playerId;
+      
+      // Display first player info
+      const firstPlayerText = isCurrentPlayerFirst ? 'You go first!' : 'Opponent goes first!';
+      this.showRoomStatus(`${firstPlayerText} (First player: ${firstPlayerId})`);
+      
+      // Display hand count info near opponent area
+      this.updateOpponentInfo(gameEnv);
+      
+      console.log('Game Info:', {
+        firstPlayer: firstPlayerId,
+        currentPlayerIsFirst: isCurrentPlayerFirst,
+        player1Hand: gameEnv[player1Id]?.deck?.hand?.length || 0,
+        player2Hand: gameEnv[player2Id]?.deck?.hand?.length || 0
+      });
+    }
+  }
+
+  updateOpponentInfo(gameEnv) {
+    const gameState = this.gameStateManager.getGameState();
+    const opponentId = gameState.playerId === gameEnv.playerId_1 ? gameEnv.playerId_2 : gameEnv.playerId_1;
+    const opponentHandCount = gameEnv[opponentId]?.deck?.hand?.length || 0;
+    
+    // Remove existing opponent info
+    if (this.opponentInfoText) {
+      this.opponentInfoText.destroy();
+    }
+    
+    // Create opponent hand count display
+    const { width } = this.cameras.main;
+    this.opponentInfoText = this.add.text(width - 200, 120, `Opponent Hand: ${opponentHandCount}`, {
+      fontSize: '14px',
+      fontFamily: 'Arial',
+      fill: '#ffffff',
+      backgroundColor: '#000000',
+      padding: { x: 8, y: 4 }
+    });
+  }
+
+  showRedrawDialog() {
+    // Create modal-like dialog
+    const { width, height } = this.cameras.main;
+    
+    // Semi-transparent background
+    const overlay = this.add.graphics();
+    overlay.fillStyle(0x000000, 0.7);
+    overlay.fillRect(0, 0, width, height);
+    
+    // Dialog box
+    const dialogBg = this.add.graphics();
+    dialogBg.fillStyle(0x333333);
+    dialogBg.fillRoundedRect(width/2 - 200, height/2 - 100, 400, 200, 10);
+    dialogBg.lineStyle(2, 0x666666);
+    dialogBg.strokeRoundedRect(width/2 - 200, height/2 - 100, 400, 200, 10);
+    
+    // Dialog text
+    const dialogText = this.add.text(width/2, height/2 - 50, 'Do you want to redraw your hand?', {
+      fontSize: '18px',
+      fontFamily: 'Arial',
+      fill: '#ffffff',
+      align: 'center'
+    });
+    dialogText.setOrigin(0.5);
+    
+    // Yes button
+    const yesButton = this.add.image(width/2 - 80, height/2 + 30, 'button');
+    yesButton.setScale(0.8);
+    yesButton.setInteractive();
+    yesButton.setTint(0x4CAF50);
+    
+    const yesText = this.add.text(width/2 - 80, height/2 + 30, 'Yes', {
+      fontSize: '16px',
+      fontFamily: 'Arial',
+      fill: '#ffffff'
+    });
+    yesText.setOrigin(0.5);
+    
+    // No button
+    const noButton = this.add.image(width/2 + 80, height/2 + 30, 'button');
+    noButton.setScale(0.8);
+    noButton.setInteractive();
+    noButton.setTint(0xF44336);
+    
+    const noText = this.add.text(width/2 + 80, height/2 + 30, 'No', {
+      fontSize: '16px',
+      fontFamily: 'Arial',
+      fill: '#ffffff'
+    });
+    noText.setOrigin(0.5);
+    
+    // Button handlers
+    yesButton.on('pointerdown', () => this.handleRedrawChoice(true, [overlay, dialogBg, dialogText, yesButton, yesText, noButton, noText]));
+    noButton.on('pointerdown', () => this.handleRedrawChoice(false, [overlay, dialogBg, dialogText, yesButton, yesText, noButton, noText]));
+  }
+
+  async handleRedrawChoice(wantRedraw, dialogElements) {
+    // Remove dialog elements
+    dialogElements.forEach(element => element.destroy());
+    
+    try {
+      const gameState = this.gameStateManager.getGameState();
+      console.log(`Player chose redraw: ${wantRedraw}`);
+      
+      // Call startReady with redraw choice
+      await this.apiManager.startReady(gameState.playerId, gameState.gameId, wantRedraw);
+      
+      this.showRoomStatus(`Ready sent (redraw: ${wantRedraw}). Poll to see if both players ready.`);
+      
+    } catch (error) {
+      console.error('Failed to send ready status:', error);
+      this.showRoomStatus('Failed to send ready status: ' + error.message);
+    }
+  }
+
+  showRoomStatus(message) {
+    // Remove existing room status text
+    if (this.roomStatusText) {
+      this.roomStatusText.destroy();
+    }
+    
+    // Create new room status text
+    const { width } = this.cameras.main;
+    this.roomStatusText = this.add.text(width / 2, 30, message, {
+      fontSize: '16px',
+      fontFamily: 'Arial',
+      fill: '#FFD700',
+      align: 'center'
+    });
+    this.roomStatusText.setOrigin(0.5);
+    
+    // Auto-hide after 5 seconds
+    this.time.delayedCall(5000, () => {
+      if (this.roomStatusText) {
+        this.roomStatusText.destroy();
+        this.roomStatusText = null;
+      }
+    });
   }
 
   destroy() {

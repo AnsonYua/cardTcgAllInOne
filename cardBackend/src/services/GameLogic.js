@@ -14,45 +14,138 @@ class GameLogic {
 
 
     async createNewGame(req) {
-        var { playerId ,gameId, players} = req.body;
-        if (!gameId) {
-            gameId = uuidv4();
-        }     
-
-        const startTask = []
-        const playerArr = []
-        for (let i = 0; i < players.length; i++) {
-            const playerId = players[i];
-            playerArr.push(playerId);
-            startTask.push(mozDeckHelper.prepareDeckForPlayer(playerId));
-        }
-
-        const results = await Promise.all(startTask);
+        var { playerId } = req.body;
+        const gameId = uuidv4();
         
-        var gameEnv = {}
-        for (let i = 0; i < playerArr.length; i++) {
-            gameEnv[playerArr[i]] = {
-                "deck":results[i],
-            };
-        }
-        gameEnv = this.mozGamePlay.updateInitialGameEnvironment(gameEnv);
+        // Only create room with first player (playerId_1), no deck dealing yet
+        var gameEnv = {
+            roomStatus: 'WAITING_FOR_PLAYERS',
+            playerId_1: playerId, // Store the actual playerId of player 1
+            playerId_2: null,
+            gameStarted: false
+        };
+        
+        // Initialize event system
+        this.mozGamePlay.initializeEventSystem(gameEnv);
+        
+        // Add room created event
+        this.mozGamePlay.addGameEvent(gameEnv, 'ROOM_CREATED', {
+            gameId: gameId,
+            createdBy: playerId,
+            status: 'WAITING_FOR_PLAYERS'
+        });
 
         const newGame = {
-            "gameId":gameId,
-            "gameEnv":gameEnv,
+            "gameId": gameId,
+            "gameEnv": gameEnv,
             lastUpdate: new Date()
         };
         await this.saveOrCreateGame(newGame, gameId);
         return newGame;
     }
 
+    async joinRoom(req) {
+        var { playerId, gameId } = req.body;
+        
+        // Load existing game
+        let gameState = await this.getGameState(gameId);
+        if (!gameState) {
+            throw new Error('Game room not found');
+        }
+        
+        let gameEnv = gameState.gameEnv;
+        
+        // Check if room is available
+        if (gameEnv.roomStatus !== 'WAITING_FOR_PLAYERS') {
+            throw new Error('Room is not available for joining');
+        }
+        
+        // Add second player
+        gameEnv.playerId_2 = playerId;
+        gameEnv.roomStatus = 'BOTH_JOINED';
+        
+        // Now prepare decks for both players
+        const player1Id = gameEnv.playerId_1;
+        const player2Id = gameEnv.playerId_2;
+        
+        const startTask = [
+            mozDeckHelper.prepareDeckForPlayer(player1Id),
+            mozDeckHelper.prepareDeckForPlayer(player2Id)
+        ];
+        
+        const results = await Promise.all(startTask);
+        
+        // Set up game environment with decks
+        gameEnv[player1Id] = { "deck": results[0] };
+        gameEnv[player2Id] = { "deck": results[1] };
+        
+        // Initialize game environment (deals hands, sets up leaders, etc.)
+        gameEnv = this.mozGamePlay.updateInitialGameEnvironment(gameEnv);
+        
+        // Update room status to ready phase
+        gameEnv.roomStatus = 'READY_PHASE';
+        
+        // Add player joined event
+        this.mozGamePlay.addGameEvent(gameEnv, 'PLAYER_JOINED', {
+            playerId: playerId,
+            roomStatus: 'BOTH_JOINED',
+            readyForStart: true
+        });
+
+        const updatedGame = {
+            "gameId": gameId,
+            "gameEnv": gameEnv,
+            lastUpdate: new Date()
+        };
+        await this.saveOrCreateGame(updatedGame, gameId);
+        return updatedGame;
+    }
+
     async startReady(req) {
-        var {playerId ,gameId,isRedraw} = req.body;
+        var {playerId, gameId, isRedraw} = req.body;
         var gameData = await this.readJSONFileAsync(gameId);
-        const gameEnv = await this.mozGamePlay.redrawInBegining(gameData.gameEnv,playerId,isRedraw);
+        let gameEnv = gameData.gameEnv;
+        
+        // Check if room is in correct state
+        if (gameEnv.roomStatus !== 'READY_PHASE') {
+            throw new Error('Room is not ready for player ready status. Current status: ' + gameEnv.roomStatus);
+        }
+        
+        // Handle redraw logic
+        gameEnv = await this.mozGamePlay.redrawInBegining(gameEnv, playerId, isRedraw);
+        
+        // Track which players are ready
+        if (!gameEnv.playersReady) {
+            gameEnv.playersReady = {};
+        }
+        gameEnv.playersReady[playerId] = true;
+        
+        // Add player ready event
+        this.mozGamePlay.addGameEvent(gameEnv, 'PLAYER_READY', {
+            playerId: playerId,
+            isRedraw: isRedraw
+        });
+        
+        // Check if both players are ready
+        const player1Id = gameEnv.playerId_1;
+        const player2Id = gameEnv.playerId_2;
+        const bothReady = gameEnv.playersReady[player1Id] && gameEnv.playersReady[player2Id];
+        
+        if (bothReady) {
+            // Transition to main phase - game officially starts
+            gameEnv.roomStatus = 'MAIN_PHASE';
+            gameEnv.gameStarted = true;
+            
+            // Add game start event
+            this.mozGamePlay.addGameEvent(gameEnv, 'GAME_PHASE_START', {
+                phase: 'MAIN_PHASE',
+                message: 'Both players ready - game officially started!'
+            });
+        }
+        
         gameData.gameEnv = gameEnv;
         await this.saveOrCreateGame(gameData, gameId);
-        return gameData
+        return gameData;
     }
     
     async processPlayerAction(req) {

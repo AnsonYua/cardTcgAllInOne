@@ -15,6 +15,7 @@ router.put('/player/:playerId/score', gameController.updateScore);
 router.post('/player/:playerId/deck', gameController.getPlayerDecks);
 
 router.post('/player/startGame', gameController.startGame);
+router.post('/player/joinRoom', gameController.joinRoom);
 router.post('/player/startReady', gameController.startReady);
 router.post('/player/playerAction', gameController.playerAction);
 router.post('/player/playerAiAction', gameController.playerAIAction);

@@ -31,12 +31,10 @@ export default class APIManager {
 
   // Game Management
   async createGame(playerName, gameConfig = {}) {
-    const playerId = 'playerId_1';
     return this.request('/player/startGame', {
       method: 'POST',
       body: JSON.stringify({ 
-        playerId: playerId,
-        players: [playerId, 'playerId_2'], // Both players in the game
+        playerId: 'playerId_1',  // First player is always playerId_1
         gameConfig: {
           playerName,
           ...gameConfig
@@ -45,23 +43,26 @@ export default class APIManager {
     });
   }
 
-  async joinGame(playerId, gameId) {
-    // For joining, we need to get the existing game and check if it can accommodate another player
-    // Since the backend uses the same endpoint, we'll call startGame with the existing gameId
-    return this.request('/player/startGame', {
+  async joinRoom(gameId, playerName) {
+    return this.request('/player/joinRoom', {
       method: 'POST',
       body: JSON.stringify({ 
-        playerId, 
-        gameId,
-        players: ['playerId_1', 'playerId_2']
+        playerId: 'playerId_2',  // Second player is always playerId_2
+        gameId: gameId,
+        playerName: playerName
       })
     });
   }
 
-  async startReady(playerId, gameId) {
+  // Legacy method for compatibility - now redirects to joinRoom
+  async joinGame(playerId, gameId) {
+    return this.joinRoom(gameId, 'Player 2');
+  }
+
+  async startReady(playerId, gameId, isRedraw = false) {
     return this.request('/player/startReady', {
       method: 'POST',
-      body: JSON.stringify({ playerId, gameId })
+      body: JSON.stringify({ playerId, gameId, isRedraw })
     });
   }
 
