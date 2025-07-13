@@ -226,7 +226,18 @@ export default class GameOverScene extends Phaser.Scene {
     playAgainText.setAlpha(0);
     
     this.playAgainButton.on('pointerdown', () => {
-      this.scene.start('MenuScene');
+      // Click visual effect
+      this.playAgainButton.setTint(0x888888);
+      this.playAgainButton.setScale(0.95);
+      playAgainText.setScale(0.95);
+      
+      this.time.delayedCall(100, () => {
+        this.playAgainButton.clearTint();
+        this.playAgainButton.setScale(1);
+        playAgainText.setScale(1);
+      });
+      
+      this.time.delayedCall(50, () => this.scene.start('MenuScene'));
     });
     
     // Main Menu button
@@ -243,7 +254,18 @@ export default class GameOverScene extends Phaser.Scene {
     mainMenuText.setAlpha(0);
     
     this.mainMenuButton.on('pointerdown', () => {
-      this.scene.start('MenuScene');
+      // Click visual effect
+      this.mainMenuButton.setTint(0x888888);
+      this.mainMenuButton.setScale(0.95);
+      mainMenuText.setScale(0.95);
+      
+      this.time.delayedCall(100, () => {
+        this.mainMenuButton.clearTint();
+        this.mainMenuButton.setScale(1);
+        mainMenuText.setScale(1);
+      });
+      
+      this.time.delayedCall(50, () => this.scene.start('MenuScene'));
     });
     
     // Fade in buttons

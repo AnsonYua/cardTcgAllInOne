@@ -24,6 +24,7 @@ export default class GameScene extends Phaser.Scene {
     this.gameStateManager = data.gameStateManager;
     this.apiManager = data.apiManager;
     this.isOnlineMode = data.isOnlineMode || false;
+    this.isManualPollingMode = data.isManualPollingMode || false;
   }
 
   async create() {
@@ -33,10 +34,12 @@ export default class GameScene extends Phaser.Scene {
     this.createUI();
     this.setupEventListeners();
     
-    // Start polling if in online mode
-    if (this.isOnlineMode && this.apiManager) {
+    // Start polling if in online mode and not manual polling mode
+    if (this.isOnlineMode && this.apiManager && !this.isManualPollingMode) {
       console.log('Starting API polling...');
       this.gameStateManager.startPolling(this.apiManager);
+    } else if (this.isManualPollingMode) {
+      console.log('Manual polling mode enabled - use test button to poll');
     }
     
     // Load mock hand data but don't display cards yet
@@ -434,7 +437,20 @@ export default class GameScene extends Phaser.Scene {
     });
     endTurnText.setOrigin(0.5);
     
-    this.endTurnButton.on('pointerdown', () => this.endTurn());
+    this.endTurnButton.on('pointerdown', () => {
+      // Click visual effect
+      this.endTurnButton.setTint(0x888888);
+      this.endTurnButton.setScale(0.76);
+      endTurnText.setScale(0.95);
+      
+      this.time.delayedCall(100, () => {
+        this.endTurnButton.clearTint();
+        this.endTurnButton.setScale(0.8);
+        endTurnText.setScale(1);
+      });
+      
+      this.time.delayedCall(50, () => this.endTurn());
+    });
     
     // Menu button
     this.menuButton = this.add.image( 0+130, height - 60, 'button');
@@ -448,7 +464,20 @@ export default class GameScene extends Phaser.Scene {
     });
     menuText.setOrigin(0.5);
     
-    this.menuButton.on('pointerdown', () => this.openMenu());
+    this.menuButton.on('pointerdown', () => {
+      // Click visual effect
+      this.menuButton.setTint(0x888888);
+      this.menuButton.setScale(0.95);
+      menuText.setScale(0.95);
+      
+      this.time.delayedCall(100, () => {
+        this.menuButton.clearTint();
+        this.menuButton.setScale(1);
+        menuText.setScale(1);
+      });
+      
+      this.time.delayedCall(50, () => this.openMenu());
+    });
 
 
     // button for testing
@@ -463,7 +492,20 @@ export default class GameScene extends Phaser.Scene {
       });
       testLeaderButtonText.setOrigin(0.5);
       
-      this.testLeaderButton.on('pointerdown', () => this.selectLeaderCard());
+      this.testLeaderButton.on('pointerdown', () => {
+        // Click visual effect
+        this.testLeaderButton.setTint(0x888888);
+        this.testLeaderButton.setScale(0.76);
+        testLeaderButtonText.setScale(0.95);
+        
+        this.time.delayedCall(100, () => {
+          this.testLeaderButton.clearTint();
+          this.testLeaderButton.setScale(0.8);
+          testLeaderButtonText.setScale(1);
+        });
+        
+        this.time.delayedCall(50, () => this.selectLeaderCard());
+      });
 
     // Test Opponent Leader button
     this.testOpponentLeaderButton = this.add.image(0+130, height - 180, 'button');
@@ -477,7 +519,20 @@ export default class GameScene extends Phaser.Scene {
     });
     testOpponentLeaderButtonText.setOrigin(0.5);
     
-    this.testOpponentLeaderButton.on('pointerdown', () => this.selectOpponentLeaderCard());
+    this.testOpponentLeaderButton.on('pointerdown', () => {
+      // Click visual effect
+      this.testOpponentLeaderButton.setTint(0x888888);
+      this.testOpponentLeaderButton.setScale(0.76);
+      testOpponentLeaderButtonText.setScale(0.95);
+      
+      this.time.delayedCall(100, () => {
+        this.testOpponentLeaderButton.clearTint();
+        this.testOpponentLeaderButton.setScale(0.8);
+        testOpponentLeaderButtonText.setScale(1);
+      });
+      
+      this.time.delayedCall(50, () => this.selectOpponentLeaderCard());
+    });
 
     // Test Add Card button
     this.testAddCardButton = this.add.image(0+130, height - 240, 'button');
@@ -491,7 +546,49 @@ export default class GameScene extends Phaser.Scene {
     });
     testAddCardButtonText.setOrigin(0.5);
     
-    this.testAddCardButton.on('pointerdown', () => this.testAddCard());
+    this.testAddCardButton.on('pointerdown', () => {
+      // Click visual effect
+      this.testAddCardButton.setTint(0x888888);
+      this.testAddCardButton.setScale(0.76);
+      testAddCardButtonText.setScale(0.95);
+      
+      this.time.delayedCall(100, () => {
+        this.testAddCardButton.clearTint();
+        this.testAddCardButton.setScale(0.8);
+        testAddCardButtonText.setScale(1);
+      });
+      
+      this.time.delayedCall(50, () => this.testAddCard());
+    });
+
+    // Test Polling button (only show in manual polling mode)
+    if (this.isManualPollingMode) {
+      this.testPollingButton = this.add.image(0+130, height - 300, 'button');
+      this.testPollingButton.setScale(0.8);
+      this.testPollingButton.setInteractive();
+      
+      const testPollingButtonText = this.add.text(0+130, height - 300, 'Test Polling', {
+        fontSize: '12px',
+        fontFamily: 'Arial',
+        fill: '#ffffff'
+      });
+      testPollingButtonText.setOrigin(0.5);
+      
+      this.testPollingButton.on('pointerdown', () => {
+        // Click visual effect
+        this.testPollingButton.setTint(0x888888);
+        this.testPollingButton.setScale(0.76);
+        testPollingButtonText.setScale(0.95);
+        
+        this.time.delayedCall(100, () => {
+          this.testPollingButton.clearTint();
+          this.testPollingButton.setScale(0.8);
+          testPollingButtonText.setScale(1);
+        });
+        
+        this.time.delayedCall(50, () => this.testPolling());
+      });
+    }
 
   }
 
@@ -1422,6 +1519,46 @@ export default class GameScene extends Phaser.Scene {
       fill: statusColor
     });
     this.connectionStatusText.setOrigin(1, 0);
+  }
+
+  async testPolling() {
+    if (!this.isOnlineMode || !this.apiManager) {
+      console.log('Not in online mode or no API manager available');
+      return;
+    }
+
+    const gameState = this.gameStateManager.getGameState();
+    console.log('Manual polling test triggered...');
+    console.log('Polling for playerId:', gameState.playerId, 'gameId:', gameState.gameId);
+    
+    try {
+      // Perform a single poll manually
+      const response = await this.apiManager.getPlayer(gameState.playerId, gameState.gameId);
+      
+      if (response && response.gameEnv) {
+        console.log('Polling response received:', response);
+        this.gameStateManager.updateGameEnv(response.gameEnv);
+        
+        // Process any events
+        await this.gameStateManager.acknowledgeEvents(this.apiManager);
+        
+        // Update UI with any changes
+        this.updateGameState();
+        
+        console.log('Manual polling completed successfully');
+      } else {
+        console.log('No game environment received from polling');
+      }
+    } catch (error) {
+      console.error('Manual polling failed:', error);
+      
+      if (error.message.includes('404')) {
+        console.log('Game not found on backend. In demo mode, you need to create the game on backend first.');
+        console.log('You can either:');
+        console.log('1. Create a real game through the API, or');
+        console.log('2. Use the backend test endpoints to inject a game state');
+      }
+    }
   }
 
   destroy() {

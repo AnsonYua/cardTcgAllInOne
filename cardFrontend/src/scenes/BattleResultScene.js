@@ -123,7 +123,18 @@ export default class BattleResultScene extends Phaser.Scene {
     this.continueButtonText.setVisible(false);
     
     this.continueButton.on('pointerdown', () => {
-      this.continueBattle();
+      // Click visual effect
+      this.continueButton.setTint(0x888888);
+      this.continueButton.setScale(0.95);
+      this.continueButtonText.setScale(0.95);
+      
+      this.time.delayedCall(100, () => {
+        this.continueButton.clearTint();
+        this.continueButton.setScale(1);
+        this.continueButtonText.setScale(1);
+      });
+      
+      this.time.delayedCall(50, () => this.continueBattle());
     });
   }
 

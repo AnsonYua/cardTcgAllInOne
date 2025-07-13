@@ -157,7 +157,22 @@ export default class MenuScene extends Phaser.Scene {
       this.game.canvas.style.cursor = 'default';
     });
     
-    button.on('pointerdown', callback);
+    button.on('pointerdown', () => {
+      // Click visual effect - quick scale and tint
+      button.setTint(0x888888);
+      button.setScale(0.95);
+      buttonText.setScale(0.95);
+      
+      // Reset after short delay
+      this.time.delayedCall(100, () => {
+        button.clearTint();
+        button.setScale(1);
+        buttonText.setScale(1);
+      });
+      
+      // Execute callback after visual effect starts
+      this.time.delayedCall(50, callback);
+    });
     
     return { button, text: buttonText };
   }
@@ -403,7 +418,8 @@ export default class MenuScene extends Phaser.Scene {
     this.scene.start('GameScene', { 
       gameStateManager: this.gameStateManager,
       apiManager: this.apiManager,
-      isOnlineMode: false
+      isOnlineMode: true,  // Demo mode now online but without auto-polling
+      isManualPollingMode: true  // Flag for manual polling mode
     });
   }
 
@@ -415,7 +431,8 @@ export default class MenuScene extends Phaser.Scene {
     this.scene.start('GameScene', { 
       gameStateManager: this.gameStateManager,
       apiManager: this.apiManager,
-      isOnlineMode: false
+      isOnlineMode: true,  // Demo mode now online but without auto-polling
+      isManualPollingMode: true  // Flag for manual polling mode
     });
   }
 }

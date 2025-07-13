@@ -103,7 +103,14 @@ export default class CardSelectionScene extends Phaser.Scene {
       
       // Selection interaction
       card.on('pointerdown', () => {
-        this.toggleCardSelection(card);
+        // Click visual effect for cards
+        card.setScale(0.67);
+        
+        this.time.delayedCall(100, () => {
+          card.setScale(0.7);
+        });
+        
+        this.time.delayedCall(50, () => this.toggleCardSelection(card));
       });
       
       this.cardObjects.push(card);
@@ -126,9 +133,22 @@ export default class CardSelectionScene extends Phaser.Scene {
     confirmText.setOrigin(0.5);
     
     this.confirmButton.on('pointerdown', () => {
-      if (this.canConfirm()) {
-        this.confirmSelection();
-      }
+      // Click visual effect
+      this.confirmButton.setTint(0x888888);
+      this.confirmButton.setScale(0.95);
+      confirmText.setScale(0.95);
+      
+      this.time.delayedCall(100, () => {
+        this.confirmButton.clearTint();
+        this.confirmButton.setScale(1);
+        confirmText.setScale(1);
+      });
+      
+      this.time.delayedCall(50, () => {
+        if (this.canConfirm()) {
+          this.confirmSelection();
+        }
+      });
     });
     
     // Cancel button
@@ -144,7 +164,19 @@ export default class CardSelectionScene extends Phaser.Scene {
     cancelText.setOrigin(0.5);
     
     this.cancelButton.on('pointerdown', () => {
-      this.cancelSelection();
+      // Click visual effect
+      const originalTint = this.cancelButton.tintTopLeft;
+      this.cancelButton.setTint(0xaa4444);
+      this.cancelButton.setScale(0.95);
+      cancelText.setScale(0.95);
+      
+      this.time.delayedCall(100, () => {
+        this.cancelButton.setTint(0xff6b6b);
+        this.cancelButton.setScale(1);
+        cancelText.setScale(1);
+      });
+      
+      this.time.delayedCall(50, () => this.cancelSelection());
     });
   }
 
