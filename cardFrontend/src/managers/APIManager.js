@@ -31,10 +31,12 @@ export default class APIManager {
 
   // Game Management
   async createGame(playerName, gameConfig = {}) {
+    const playerId = 'playerId_1';
     return this.request('/player/startGame', {
       method: 'POST',
       body: JSON.stringify({ 
-        playerId: 'player_' + Date.now(),
+        playerId: playerId,
+        players: [playerId, 'playerId_2'], // Both players in the game
         gameConfig: {
           playerName,
           ...gameConfig
@@ -44,9 +46,15 @@ export default class APIManager {
   }
 
   async joinGame(playerId, gameId) {
+    // For joining, we need to get the existing game and check if it can accommodate another player
+    // Since the backend uses the same endpoint, we'll call startGame with the existing gameId
     return this.request('/player/startGame', {
       method: 'POST',
-      body: JSON.stringify({ playerId, gameId })
+      body: JSON.stringify({ 
+        playerId, 
+        gameId,
+        players: ['playerId_1', 'playerId_2']
+      })
     });
   }
 

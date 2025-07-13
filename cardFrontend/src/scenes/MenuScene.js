@@ -200,9 +200,8 @@ export default class MenuScene extends Phaser.Scene {
         const response = await this.apiManager.createGame(this.playerName);
         
         if (response.gameId && response.gameEnv) {
-          // Extract playerId from gameEnv players
-          const playerIds = Object.keys(response.gameEnv);
-          const playerId = playerIds.find(id => response.gameEnv[id].name === this.playerName) || playerIds[0];
+          // For game creator, always use playerId_1
+          const playerId = 'playerId_1';
           
           this.gameStateManager.initializeGame(response.gameId, playerId, this.playerName);
           this.gameStateManager.updateGameEnv(response.gameEnv);
@@ -218,13 +217,13 @@ export default class MenuScene extends Phaser.Scene {
       }
       
       // Fallback to demo mode
-      this.createDemoGame();
+      this.createOfflineDemoGame();
       
     } catch (error) {
       console.error('Failed to create game:', error);
       this.hideLoadingMessage();
       this.showErrorMessage('Failed to connect to server. Starting demo mode...');
-      setTimeout(() => this.createDemoGame(), 2000);
+      setTimeout(() => this.createOfflineDemoGame(), 2000);
     }
   }
 
@@ -240,7 +239,8 @@ export default class MenuScene extends Phaser.Scene {
       
       try {
         if (this.isOnlineMode) {
-          const playerId = 'player_' + Date.now();
+          // For game joiner, always use playerId_2
+          const playerId = 'playerId_2';
           const response = await this.apiManager.joinGame(playerId, gameId.trim());
           
           if (response.gameEnv) {
@@ -258,21 +258,70 @@ export default class MenuScene extends Phaser.Scene {
         }
         
         // Fallback to demo mode
-        this.joinDemoGame(gameId.trim());
+        this.joinOfflineDemoGame(gameId.trim());
         
       } catch (error) {
         console.error('Failed to join game:', error);
         this.hideLoadingMessage();
         this.showErrorMessage('Failed to join game. Starting demo mode...');
-        setTimeout(() => this.joinDemoGame(gameId.trim()), 2000);
+        setTimeout(() => this.joinOfflineDemoGame(gameId.trim()), 2000);
       }
     }
   }
 
-  startDemo() {
+  async startDemo() {
     // Start demo with preset name
     this.playerName = 'Demo Player';
-    this.createDemoGame();
+    
+    // Try to create real game via API first
+    if (this.isOnlineMode) {
+      this.showLoadingMessage('Creating demo game...');
+      try {
+        const response = await this.apiManager.createGame(this.playerName);
+        
+        if (response.gameId && response.gameEnv) {
+          // For demo game creator, use playerId_1
+          const playerId = 'playerId_1';
+          
+          this.gameStateManager.initializeGame(response.gameId, playerId, this.playerName);
+          this.gameStateManager.updateGameEnv(response.gameEnv);
+          
+          // In demo mode, automatically make both players ready
+          this.showLoadingMessage('Setting up demo players...');
+          try {
+            // Mark player 1 ready
+            await this.apiManager.startReady('playerId_1', response.gameId);
+            // Mark player 2 ready (simulated opponent)
+            await this.apiManager.startReady('playerId_2', response.gameId);
+            
+            this.hideLoadingMessage();
+            this.scene.start('GameScene', { 
+              gameStateManager: this.gameStateManager, 
+              apiManager: this.apiManager,
+              isOnlineMode: true,
+              isManualPollingMode: true  // Demo mode uses manual polling
+            });
+            return;
+          } catch (readyError) {
+            console.error('Failed to set players ready:', readyError);
+            this.hideLoadingMessage();
+            this.showErrorMessage('Failed to setup demo. Starting offline demo...');
+            setTimeout(() => this.createOfflineDemoGame(), 2000);
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Failed to create demo game via API:', error);
+        this.hideLoadingMessage();
+        this.showErrorMessage('API unavailable. Starting offline demo...');
+        // Fall back to offline demo after delay
+        setTimeout(() => this.createOfflineDemoGame(), 2000);
+        return;
+      }
+    }
+    
+    // Fallback to offline demo
+    this.createOfflineDemoGame();
   }
 
   setupDemoGameState() {
@@ -408,7 +457,7 @@ export default class MenuScene extends Phaser.Scene {
     });
   }
 
-  createDemoGame() {
+  createOfflineDemoGame() {
     const gameId = 'demo_' + Date.now();
     const playerId = 'player_' + Date.now();
     
@@ -418,12 +467,12 @@ export default class MenuScene extends Phaser.Scene {
     this.scene.start('GameScene', { 
       gameStateManager: this.gameStateManager,
       apiManager: this.apiManager,
-      isOnlineMode: true,  // Demo mode now online but without auto-polling
-      isManualPollingMode: true  // Flag for manual polling mode
+      isOnlineMode: false,  // Offline demo mode
+      isManualPollingMode: false
     });
   }
 
-  joinDemoGame(gameId) {
+  joinOfflineDemoGame(gameId) {
     const playerId = 'player_' + Date.now();
     this.gameStateManager.initializeGame(gameId, playerId, this.playerName);
     this.setupDemoGameState();
@@ -431,8 +480,8 @@ export default class MenuScene extends Phaser.Scene {
     this.scene.start('GameScene', { 
       gameStateManager: this.gameStateManager,
       apiManager: this.apiManager,
-      isOnlineMode: true,  // Demo mode now online but without auto-polling
-      isManualPollingMode: true  // Flag for manual polling mode
+      isOnlineMode: false,  // Offline demo mode
+      isManualPollingMode: false
     });
   }
 }

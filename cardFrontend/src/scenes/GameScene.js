@@ -53,7 +53,15 @@ export default class GameScene extends Phaser.Scene {
     
     // Initialize shuffle animation manager
     this.shuffleAnimationManager = new ShuffleAnimationManager(this);
-    this.playShuffleDeckAnimation();
+    
+    // Only play animation immediately in demo mode
+    // In online mode, wait for both players to be ready
+    if (!this.isOnlineMode) {
+      this.playShuffleDeckAnimation();
+    } else {
+      console.log('Online mode - waiting for both players to be ready before starting animation...');
+      this.waitingForPlayers = true;
+    }
   }
 
   createBackground() {
@@ -647,6 +655,26 @@ export default class GameScene extends Phaser.Scene {
   }
 
   setupEventListeners() {
+    // Game state event handlers (for online mode)
+    if (this.isOnlineMode && this.gameStateManager) {
+      // Register event handlers with GameStateManager
+      this.gameStateManager.addEventListener('GAME_STARTED', (event) => {
+        console.log('Game started event received:', event);
+      });
+      
+      this.gameStateManager.addEventListener('GAME_PHASE_START', (event) => {
+        console.log('Game phase start event received - both players ready!', event);
+        if (this.waitingForPlayers) {
+          this.waitingForPlayers = false;
+          this.playShuffleDeckAnimation();
+        }
+      });
+      
+      this.gameStateManager.addEventListener('INITIAL_HAND_DEALT', (event) => {
+        console.log('Initial hand dealt event received:', event);
+      });
+    }
+    
     // Card interaction events
     this.events.on('card-select', (card) => {
       if (this.selectedCard && this.selectedCard !== card) {
