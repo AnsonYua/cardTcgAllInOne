@@ -64,6 +64,45 @@ The game will be accessible at `http://localhost:3000`.
 - **State Synchronization**: The `GameStateManager` polls the backend API every second for the latest `gameEnv`.
 - **API Communication**: The `APIManager` handles all HTTP requests to the backend.
 
+## Game Flow
+
+### Game Start Sequence
+The game follows a specific sequence when starting:
+
+1. **Game Creation**: Player 1 calls `POST /player/startGame` to create a new game room
+2. **Player Join**: Player 2 calls `POST /player/joinRoom` to join the game room
+3. **Player Ready**: Both players call `POST /player/startReady` with optional redraw parameter
+   - Players receive 7 cards initially
+   - Can choose to redraw their hand once
+4. **Draw Phase**: First turn player automatically draws 1 card (total: 8 cards)
+5. **Main Phase**: Game enters main phase for card placement
+
+### Turn Flow
+Each player's turn follows this sequence:
+
+1. **Draw Phase**: Current player draws 1 card from deck
+2. **Draw Acknowledgment**: Player must acknowledge the draw to proceed
+3. **Main Phase**: Player places cards from hand to zones
+4. **End Turn**: Turn switches to next player
+5. **Repeat**: Next player enters Draw Phase
+
+### Phase Types
+- **DRAW_PHASE**: Player draws a card and must acknowledge
+- **MAIN_PHASE**: Player places cards in zones (TOP/LEFT/RIGHT/HELP/SP)
+- **SP_PHASE**: Special Power cards are revealed and executed
+- **BATTLE_PHASE**: Power calculation and winner determination
+- **END_PHASE**: Cleanup and next round preparation
+
+### Event System
+The game uses a comprehensive event system for real-time updates:
+
+- **DRAW_PHASE_COMPLETE**: Triggered when a player draws a card
+- **PHASE_CHANGE**: Triggered when game phase changes
+- **TURN_SWITCH**: Triggered when turn changes to next player
+- **CARD_PLAYED**: Triggered when a card is placed in a zone
+
+Events require acknowledgment via `POST /player/acknowledgeEvents` to maintain synchronization.
+
 ## API Data Model
 
 The backend provides a clean, non-redundant data structure to the frontend. The primary endpoint for fetching game state is `GET /api/game/player/:playerId?gameId=<gameId>`.

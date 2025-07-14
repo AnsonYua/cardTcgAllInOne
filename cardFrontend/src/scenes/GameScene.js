@@ -44,10 +44,7 @@ export default class GameScene extends Phaser.Scene {
       console.log('Manual polling mode enabled - use test button to poll');
     }
     
-    // Load mock hand data only in offline mode
-    if (!this.isOnlineMode) {
-      await this.loadMockHandData();
-    }
+    // Demo mode uses real backend calls with test buttons, not mock data
     
     // Load leader cards data
     await this.loadLeaderCardsData();
@@ -58,21 +55,9 @@ export default class GameScene extends Phaser.Scene {
     // Initialize shuffle animation manager
     this.shuffleAnimationManager = new ShuffleAnimationManager(this);
     
-    // Only play animation immediately in demo mode
-    // In online mode, wait for both players to be ready
-    if (!this.isOnlineMode) {
-      console.log('Demo mode - starting shuffle animation...');
-      this.playShuffleDeckAnimation().then(() => {
-        console.log('Shuffle animation completed, selecting leader cards...');
-        // Automatically select leader cards for demo mode
-        // The redraw dialog will be shown automatically when both leader cards are placed
-        this.selectLeaderCard('player');
-        this.selectLeaderCard('opponent');
-      });
-    } else {
-      console.log('Online mode - waiting for both players to be ready before starting animation...');
-      this.waitingForPlayers = true;
-    }
+    // Demo mode and online mode both wait for backend events to trigger animations
+    console.log('Waiting for backend events to trigger game flow...');
+    this.waitingForPlayers = true;
   }
 
   createBackground() {
@@ -789,6 +774,17 @@ export default class GameScene extends Phaser.Scene {
       this.gameStateManager.addEventListener('INITIAL_HAND_DEALT', (event) => {
         console.log('Initial hand dealt event received:', event);
       });
+      
+      // Draw phase events
+      this.gameStateManager.addEventListener('DRAW_PHASE_COMPLETE', (event) => {
+        console.log('Draw phase complete event received:', event);
+        this.handleDrawPhaseComplete(event);
+      });
+      
+      this.gameStateManager.addEventListener('PHASE_CHANGE', (event) => {
+        console.log('Phase change event received:', event);
+        this.handlePhaseChange(event);
+      });
     }
     
     // Card interaction events
@@ -1112,85 +1108,8 @@ export default class GameScene extends Phaser.Scene {
     return 'unknown';
   }
 
-  createMockHandData() {
-    // Create simple mock hand data for testing card display
-    return [
-      {
-        id: 'c-1',
-        name: '總統特朗普',
-        cardType: 'character',
-        gameType: '愛國者',
-        power: 100,
-        traits: ['特朗普家族']
-      },
-      {
-        id: 'c-2', 
-        name: '前總統特朗普(YMCA)',
-        cardType: 'character',
-        gameType: '右翼',
-        power: 80,
-        traits: ['特朗普家族']
-      },
-      {
-        id: 'h-1',
-        name: 'Deep State',
-        cardType: 'help'
-      },
-      {
-        id: 'sp-2',
-        name: '減息周期',
-        cardType: 'sp'
-      },
-      {
-        id: 's-1',
-        name: '特朗普',
-        cardType: 'leader',
-        gameType: '右翼',
-        initialPoint: 110
-      }
-    ];
-  }
 
-  async loadMockHandData() {
-    try {
-      console.log('Loading mock hand data...');
-      const response = await fetch('/handCards.json');
-      const mockData = await response.json();
-      
-      if (mockData.success) {
-        console.log('Mock hand data loaded:', mockData.data);
-        
-        // Setup mock game state with hand cards
-        this.gameStateManager.initializeGame('mock-game', mockData.data.playerId, 'Test Player');
-        
-        // Update game state with mock hand data
-        this.gameStateManager.updateGameEnv({
-          phase: GAME_CONFIG.phases.MAIN,
-          currentPlayer: mockData.data.playerId,
-          players: {
-            [mockData.data.playerId]: {
-              id: mockData.data.playerId,
-              name: 'Test Player',
-              hand: mockData.data.handCards
-            }
-          }
-        });
-        
-        console.log('Mock game state setup complete');
-        
-        // Debug: Check if the game state was set correctly
-        const gameState = this.gameStateManager.getGameState();
-        console.log('Current game state:', gameState);
-        console.log('Current player hand:', this.gameStateManager.getPlayerHand());
-        
-        // Don't update hand display yet - wait for shuffle animation to complete
-      } else {
-        console.error('Failed to load mock hand data');
-      }
-    } catch (error) {
-      console.error('Error loading mock hand data:', error);
-    }
-  }
+  // Mock data methods removed - demo mode uses real backend calls
 
   showDeckStacks() {
     // Show the permanent deck stacks directly without animation
@@ -2166,12 +2085,25 @@ export default class GameScene extends Phaser.Scene {
     try {
       const gameState = this.gameStateManager.getGameState();
       const gameId = gameState.gameId;
+      
+      console.log('Debug: Current game state:', gameState);
+      console.log('Debug: gameId:', gameId);
+      console.log('Debug: gameEnv.players:', gameState.gameEnv.players);
+      
       // Find player 2's ID
       const playerIds = Object.keys(gameState.gameEnv.players || {});
       const player2Id = playerIds.find(id => id !== gameState.playerId);
+      
+      console.log('Debug: playerIds:', playerIds);
+      console.log('Debug: current playerId:', gameState.playerId);
+      console.log('Debug: player2Id:', player2Id);
 
-      if (!gameId || !player2Id) {
-        throw new Error('No gameId or player2Id found. Make sure both players are in the game.');
+      if (!gameId) {
+        throw new Error('No gameId found. Make sure demo was started from menu (creates game automatically).');
+      }
+      
+      if (!player2Id) {
+        throw new Error('No player2Id found. Make sure Player 2 has joined the game first.');
       }
 
       // Simulate player 2 calling redraw (startReady with wantRedraw = true)
@@ -2181,6 +2113,158 @@ export default class GameScene extends Phaser.Scene {
     } catch (error) {
       console.error('Failed to simulate player 2 redraw:', error);
       this.showRoomStatus('Failed to simulate player 2 redraw: ' + error.message);
+    }
+  }
+
+  handleDrawPhaseComplete(event) {
+    console.log('Processing draw phase complete event:', event);
+    
+    // Update phase indicator
+    this.updatePhaseIndicator('DRAW_PHASE');
+    
+    // Check if this is the current player's draw event
+    const currentPlayerId = this.gameStateManager.getCurrentPlayerId();
+    if (event.data.playerId === currentPlayerId) {
+      // Show acknowledgment UI for the current player
+      this.showDrawPhaseAcknowledgment(event.data);
+    } else {
+      // Show notification that opponent drew a card
+      this.showRoomStatus(`Opponent drew a card (${event.data.newHandSize} cards in hand)`);
+    }
+  }
+
+  handlePhaseChange(event) {
+    console.log('Processing phase change event:', event);
+    
+    // Update phase indicator
+    this.updatePhaseIndicator(event.data.phase);
+    
+    // Show phase change notification
+    this.showRoomStatus(event.data.message || `Phase changed to ${event.data.phase}`);
+  }
+
+  showDrawPhaseAcknowledgment(drawData) {
+    // Create acknowledgment UI overlay
+    const width = this.scale.width;
+    const height = this.scale.height;
+    
+    // Create semi-transparent overlay
+    const overlay = this.add.rectangle(width/2, height/2, width, height, 0x000000, 0.5);
+    overlay.setDepth(1000);
+    
+    // Create acknowledgment panel
+    const panel = this.add.rectangle(width/2, height/2, 400, 200, 0x1a1a1a, 0.9);
+    panel.setDepth(1001);
+    panel.setStrokeStyle(2, 0x4a90e2);
+    
+    // Add text
+    const titleText = this.add.text(width/2, height/2 - 40, 'DRAW PHASE', {
+      fontSize: '24px',
+      fill: '#4a90e2',
+      fontFamily: 'Arial'
+    });
+    titleText.setOrigin(0.5);
+    titleText.setDepth(1002);
+    
+    const messageText = this.add.text(width/2, height/2 - 10, `You drew 1 card`, {
+      fontSize: '16px',
+      fill: '#ffffff',
+      fontFamily: 'Arial'
+    });
+    messageText.setOrigin(0.5);
+    messageText.setDepth(1002);
+    
+    const handSizeText = this.add.text(width/2, height/2 + 15, `Hand size: ${drawData.newHandSize}`, {
+      fontSize: '14px',
+      fill: '#cccccc',
+      fontFamily: 'Arial'
+    });
+    handSizeText.setOrigin(0.5);
+    handSizeText.setDepth(1002);
+    
+    // Add acknowledge button
+    const button = this.add.rectangle(width/2, height/2 + 50, 120, 40, 0x4a90e2, 0.8);
+    button.setDepth(1002);
+    button.setStrokeStyle(1, 0x6ba3f5);
+    button.setInteractive();
+    
+    const buttonText = this.add.text(width/2, height/2 + 50, 'Continue', {
+      fontSize: '16px',
+      fill: '#ffffff',
+      fontFamily: 'Arial'
+    });
+    buttonText.setOrigin(0.5);
+    buttonText.setDepth(1003);
+    
+    // Handle button click
+    button.on('pointerdown', () => {
+      // Acknowledge the draw phase event
+      this.acknowledgeDrawPhaseEvent();
+      
+      // Clean up UI
+      overlay.destroy();
+      panel.destroy();
+      titleText.destroy();
+      messageText.destroy();
+      handSizeText.destroy();
+      button.destroy();
+      buttonText.destroy();
+    });
+    
+    // Button hover effects
+    button.on('pointerover', () => {
+      button.setFillStyle(0x6ba3f5, 0.9);
+    });
+    
+    button.on('pointerout', () => {
+      button.setFillStyle(0x4a90e2, 0.8);
+    });
+  }
+
+  async acknowledgeDrawPhaseEvent() {
+    if (!this.isOnlineMode || !this.apiManager) {
+      console.log('Not in online mode or no API manager - skipping acknowledgment');
+      return;
+    }
+    
+    try {
+      // Get all unprocessed DRAW_PHASE_COMPLETE events
+      const events = this.gameStateManager.getGameState().gameEnv.gameEvents || [];
+      const drawPhaseEvents = events.filter(event => 
+        event.type === 'DRAW_PHASE_COMPLETE' && !event.frontendProcessed
+      );
+      
+      if (drawPhaseEvents.length > 0) {
+        const eventIds = drawPhaseEvents.map(e => e.id);
+        await this.apiManager.acknowledgeEvents(this.gameStateManager.getGameState().gameId, eventIds);
+        console.log(`Acknowledged ${eventIds.length} draw phase events`);
+      }
+    } catch (error) {
+      console.error('Failed to acknowledge draw phase events:', error);
+      this.showRoomStatus('Failed to acknowledge draw phase: ' + error.message);
+    }
+  }
+
+  updatePhaseIndicator(phase) {
+    if (this.phaseText) {
+      let displayText = '';
+      switch(phase) {
+        case 'DRAW_PHASE':
+          displayText = 'DRAW PHASE';
+          break;
+        case 'MAIN_PHASE':
+          displayText = 'MAIN PHASE';
+          break;
+        case 'SP_PHASE':
+          displayText = 'SP PHASE';
+          break;
+        case 'BATTLE_PHASE':
+          displayText = 'BATTLE PHASE';
+          break;
+        default:
+          displayText = phase.toUpperCase();
+      }
+      this.phaseText.setText(displayText);
     }
   }
 

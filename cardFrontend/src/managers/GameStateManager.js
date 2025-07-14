@@ -178,4 +178,8 @@ export default class GameStateManager {
       }
     };
   }
+  
+  getCurrentPlayerId() {
+    return this.gameState.playerId;
+  }
 }

@@ -175,31 +175,7 @@ class mozGamePlay {
         }
 
         if (allReady && gameEnv["phase"] == TurnPhase.START_REDRAW){
-           var hand = gameEnv[playerList[gameEnv["firstPlayer"]]].deck.hand
-           var mainDeck = gameEnv[playerList[gameEnv["firstPlayer"]]].deck.mainDeck
-           const result = mozDeckHelper.drawToHand(hand,mainDeck);
-           gameEnv[playerList[gameEnv["firstPlayer"]]].deck.hand = result["hand"];
-           gameEnv[playerList[gameEnv["firstPlayer"]]].deck.mainDeck = result["mainDeck"];
-           
-           // Add card drawn event
-           this.addGameEvent(gameEnv, 'CARD_DRAWN', {
-               playerId: playerList[gameEnv["firstPlayer"]],
-               cardCount: 1,
-               newHandSize: result["hand"].length
-           });
-           
-           mozPhaseManager.setCurrentPhase(TurnPhase.MAIN_PHASE)
-           gameEnv["phase"] = mozPhaseManager.currentPhase;
-           gameEnv["currentPlayer"] = playerList[gameEnv["firstPlayer"]];
-           gameEnv["currentTurn"] = 0;
-           
-           // Add phase transition event
-           this.addGameEvent(gameEnv, 'GAME_PHASE_START', {
-               newPhase: TurnPhase.MAIN_PHASE,
-               currentPlayer: playerList[gameEnv["firstPlayer"]],
-               allPlayersReady: true
-           });
-          
+           // Initialize game fields for all players
            for (let playerId in playerList){
                let leader = this.cardInfoUtils.getCurrentLeader(gameEnv, playerList[playerId]);
                gameEnv[playerList[playerId]]["turnAction"] = []
@@ -211,8 +187,9 @@ class mozGamePlay {
                gameEnv[playerList[playerId]]["Field"]["help"] = [];
                gameEnv[playerList[playerId]]["Field"]["sp"] = [];
             }
-
-         
+            
+            // Note: Drawing and phase transitions are now handled in GameLogic.startReady()
+            // This method only handles the redraw logic during the initial ready phase
         }
         return gameEnv;
     }
@@ -790,12 +767,33 @@ class mozGamePlay {
                 gameEnv["currentPlayer"] = playerArr[0];
             }
         }
-        //draw card
+        
+        // Transition to DRAW_PHASE for the new turn player
+        gameEnv["phase"] = TurnPhase.DRAW_PHASE;
+        gameEnv["roomStatus"] = 'DRAW_PHASE';
+        
+        // Current player draws 1 card
         var hand = gameEnv[gameEnv["currentPlayer"]].deck.hand
         var mainDeck = gameEnv[gameEnv["currentPlayer"]].deck.mainDeck   
         const result = mozDeckHelper.drawToHand(hand,mainDeck);
         gameEnv[gameEnv["currentPlayer"]].deck.hand = result["hand"];
         gameEnv[gameEnv["currentPlayer"]].deck.mainDeck = result["mainDeck"];
+        
+        // Add draw phase event that requires acknowledgment
+        this.addGameEvent(gameEnv, 'DRAW_PHASE_COMPLETE', {
+            playerId: gameEnv["currentPlayer"],
+            cardCount: 1,
+            newHandSize: result["hand"].length,
+            requiresAcknowledgment: true
+        });
+        
+        // Add turn switch event
+        this.addGameEvent(gameEnv, 'TURN_SWITCH', {
+            newPlayer: gameEnv["currentPlayer"],
+            turn: gameEnv["currentTurn"],
+            phase: 'DRAW_PHASE'
+        });
+        
         return gameEnv;
     }
     /**

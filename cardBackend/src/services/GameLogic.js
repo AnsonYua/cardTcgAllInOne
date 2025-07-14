@@ -132,14 +132,37 @@ class GameLogic {
         const bothReady = gameEnv.playersReady[player1Id] && gameEnv.playersReady[player2Id];
         
         if (bothReady) {
-            // Transition to main phase - game officially starts
-            gameEnv.roomStatus = 'MAIN_PHASE';
+            // Transition to draw phase first - game officially starts
+            gameEnv.roomStatus = 'DRAW_PHASE';
             gameEnv.gameStarted = true;
+            
+            // Set current player to first player
+            const playerList = this.mozGamePlay.getPlayerFromGameEnv(gameEnv);
+            gameEnv.currentPlayer = playerList[gameEnv.firstPlayer];
+            gameEnv.currentTurn = 0;
+            
+            // First player draws 1 card
+            const currentPlayerId = gameEnv.currentPlayer;
+            const hand = gameEnv[currentPlayerId].deck.hand;
+            const mainDeck = gameEnv[currentPlayerId].deck.mainDeck;
+            const mozDeckHelper = require('../mozGame/mozDeckHelper');
+            const result = mozDeckHelper.drawToHand(hand, mainDeck);
+            gameEnv[currentPlayerId].deck.hand = result.hand;
+            gameEnv[currentPlayerId].deck.mainDeck = result.mainDeck;
+            
+            // Add draw phase event that requires acknowledgment
+            this.mozGamePlay.addGameEvent(gameEnv, 'DRAW_PHASE_COMPLETE', {
+                playerId: currentPlayerId,
+                cardCount: 1,
+                newHandSize: result.hand.length,
+                requiresAcknowledgment: true
+            });
             
             // Add game start event
             this.mozGamePlay.addGameEvent(gameEnv, 'GAME_PHASE_START', {
-                phase: 'MAIN_PHASE',
-                message: 'Both players ready - game officially started!'
+                phase: 'DRAW_PHASE',
+                currentPlayer: currentPlayerId,
+                message: 'Both players ready - draw phase started!'
             });
         }
         
@@ -395,15 +418,34 @@ class GameLogic {
         // Read current game state
         const gameData = await this.readJSONFileAsync(gameId);
 
-        // Mark specified events as processed
+        // Mark specified events as processed and check for DRAW_PHASE_COMPLETE
         let eventsAcknowledged = 0;
+        let drawPhaseCompleted = false;
+        
         if (gameData.gameEnv.gameEvents) {
             for (const eventId of eventIds) {
+                const event = gameData.gameEnv.gameEvents.find(e => e.id === eventId);
+                if (event && event.type === 'DRAW_PHASE_COMPLETE') {
+                    drawPhaseCompleted = true;
+                }
+                
                 const success = this.mozGamePlay.markEventProcessed(gameData.gameEnv, eventId);
                 if (success) {
                     eventsAcknowledged++;
                 }
             }
+        }
+
+        // If DRAW_PHASE_COMPLETE was acknowledged, transition to MAIN_PHASE
+        if (drawPhaseCompleted && gameData.gameEnv.roomStatus === 'DRAW_PHASE') {
+            gameData.gameEnv.roomStatus = 'MAIN_PHASE';
+            
+            // Add main phase start event
+            this.mozGamePlay.addGameEvent(gameData.gameEnv, 'PHASE_CHANGE', {
+                phase: 'MAIN_PHASE',
+                currentPlayer: gameData.gameEnv.currentPlayer,
+                message: 'Draw phase acknowledged - main phase started!'
+            });
         }
 
         // Clean expired events and save
