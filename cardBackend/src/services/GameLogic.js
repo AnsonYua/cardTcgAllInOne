@@ -270,23 +270,59 @@ class GameLogic {
         const transformedGame = { ...game };
         const gameEnv = { ...game.gameEnv };
 
-        // Extract player data and create players object
+        // Extract player data and create structured objects
         const players = {};
+        const zones = {};
+        const victoryPoints = {};
+        
         const { getPlayerFromGameEnv } = require('../utils/gameUtils');
         const playerIds = getPlayerFromGameEnv(gameEnv);
 
         playerIds.forEach(playerId => {
             if (gameEnv[playerId]) {
+                const playerData = gameEnv[playerId];
+                
+                // Create structured player object
                 players[playerId] = {
                     id: playerId,
-                    name: playerId, // Using playerId as name for now
-                    ...gameEnv[playerId]
+                    name: playerData.name || playerId,
+                    hand: playerData.deck?.hand || [],
+                    deck: {
+                        mainDeck: playerData.deck?.mainDeck || [],
+                        leader: playerData.deck?.leader || [],
+                        currentLeaderIdx: playerData.deck?.currentLeaderIdx || 0
+                    },
+                    isReady: gameEnv.playersReady?.[playerId] || false,
+                    redraw: playerData.redraw || 0,
+                    turnAction: playerData.turnAction || []
                 };
+                
+                // Extract zone data with proper structure
+                zones[playerId] = {
+                    leader: playerData.Field?.leader || null,
+                    TOP: playerData.Field?.top || [],
+                    LEFT: playerData.Field?.left || [],
+                    RIGHT: playerData.Field?.right || [],
+                    HELP: playerData.Field?.help || [],
+                    SP: playerData.Field?.sp || []
+                };
+                
+                // Extract victory points
+                victoryPoints[playerId] = playerData.playerPoint || 0;
             }
         });
 
-        // Add players object to gameEnv
+        // Add structured data to gameEnv
         gameEnv.players = players;
+        gameEnv.zones = zones;
+        gameEnv.victoryPoints = victoryPoints;
+
+        // Ensure other required fields exist
+        gameEnv.pendingPlayerAction = gameEnv.pendingPlayerAction || null;
+        gameEnv.pendingCardSelections = gameEnv.pendingCardSelections || {};
+        gameEnv.gameEvents = gameEnv.gameEvents || [];
+        gameEnv.round = gameEnv.round || 1;
+        gameEnv.phase = gameEnv.phase || 'SETUP';
 
         transformedGame.gameEnv = gameEnv;
         return transformedGame;

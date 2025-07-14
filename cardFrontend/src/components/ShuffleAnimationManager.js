@@ -311,6 +311,7 @@ export default class ShuffleAnimationManager {
       }
       
       // Call onComplete first to show deck stacks before fading out shuffle cards
+      console.log('ShuffleAnimationManager: About to call onComplete callback');
       onComplete();
       
       // Then fade out the temporary shuffle cards after a brief delay
@@ -342,6 +343,7 @@ export default class ShuffleAnimationManager {
     
     // Get leader cards data from scene
     const leaderCards = this.scene.leaderCards || [];
+    console.log('moveLeaderCardsToLeaderDecks - leaderCards:', leaderCards);
     
     // Create leader cards for each player as separate decks
     this.playerLeaderCards = [];
@@ -351,10 +353,17 @@ export default class ShuffleAnimationManager {
     const playerLeaderDeckPos = layout.player.leaderDeck;
     const opponentLeaderDeckPos = layout.opponent.leaderDeck;
     
+    // Get player and opponent leader cards from scene
+    const playerLeaderCardsData = this.scene.playerLeaderCards || leaderCards;
+    const opponentLeaderCardsData = this.scene.opponentLeaderCards || leaderCards;
+    
+    console.log('Creating leader cards - player data:', playerLeaderCardsData);
+    console.log('Creating leader cards - opponent data:', opponentLeaderCardsData);
+    
     // Create player leader cards starting from bottom of screen (separate deck)
     const playerStartY = height + 100; // Start below screen
-    for (let i = 0; i < leaderCards.length; i++) {
-      const leaderCardData = leaderCards[i];
+    for (let i = 0; i < playerLeaderCardsData.length; i++) {
+      const leaderCardData = playerLeaderCardsData[i];
       const cardContainer = this.createLeaderCardWithRoundedCorners(playerLeaderDeckPos.x, playerStartY, leaderCardData);
       cardContainer.setDepth(1000 + i);
       this.playerLeaderCards.push(cardContainer);
@@ -362,8 +371,8 @@ export default class ShuffleAnimationManager {
     
     // Create opponent leader cards starting from top of screen (separate deck)
     const opponentStartY = -100; // Start above screen
-    for (let i = 0; i < leaderCards.length; i++) {
-      const leaderCardData = leaderCards[i];
+    for (let i = 0; i < opponentLeaderCardsData.length; i++) {
+      const leaderCardData = opponentLeaderCardsData[i];
       const cardContainer = this.createLeaderCardWithRoundedCorners(opponentLeaderDeckPos.x, opponentStartY, leaderCardData);
       cardContainer.setDepth(1000 + i);
       this.opponentLeaderCards.push(cardContainer);
@@ -372,10 +381,13 @@ export default class ShuffleAnimationManager {
     // Animation completion tracking
     let completedAnimations = 0;
     const totalAnimations = this.playerLeaderCards.length + this.opponentLeaderCards.length;
+    console.log(`Total leader card animations to run: ${totalAnimations} (player: ${this.playerLeaderCards.length}, opponent: ${this.opponentLeaderCards.length})`);
     
     const checkComplete = () => {
       completedAnimations++;
+      console.log(`Leader card animation completed: ${completedAnimations}/${totalAnimations}`);
       if (completedAnimations >= totalAnimations) {
+        console.log('All leader card animations completed, calling onComplete');
         onComplete();
       }
     };

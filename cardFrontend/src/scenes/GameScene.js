@@ -61,7 +61,14 @@ export default class GameScene extends Phaser.Scene {
     // Only play animation immediately in demo mode
     // In online mode, wait for both players to be ready
     if (!this.isOnlineMode) {
-      this.playShuffleDeckAnimation();
+      console.log('Demo mode - starting shuffle animation...');
+      this.playShuffleDeckAnimation().then(() => {
+        console.log('Shuffle animation completed, selecting leader cards...');
+        // Automatically select leader cards for demo mode
+        // The redraw dialog will be shown automatically when both leader cards are placed
+        this.selectLeaderCard('player');
+        this.selectLeaderCard('opponent');
+      });
     } else {
       console.log('Online mode - waiting for both players to be ready before starting animation...');
       this.waitingForPlayers = true;
@@ -757,8 +764,46 @@ export default class GameScene extends Phaser.Scene {
 
   updateGameState() {
     this.updatePlayerHand();
+    this.updateLeaderCardsFromBackend();
     this.updateZones();
     this.updateUI();
+  }
+
+  updateLeaderCardsFromBackend() {
+    // In online mode, extract leader cards from backend response
+    if (this.isOnlineMode) {
+      const gameState = this.gameStateManager.getGameState();
+      const player = this.gameStateManager.getPlayer();
+      const opponent = this.gameStateManager.getOpponent();
+      const opponentData = this.gameStateManager.getPlayer(opponent);
+      
+      if (player && player.deck && player.deck.leader) {
+        console.log('Updating player leader cards from backend:', player.deck.leader);
+        
+        // Convert leader card IDs to card objects
+        this.leaderCards = player.deck.leader.map(cardId => ({
+          id: cardId,
+          name: cardId,
+          cardType: 'leader',
+          type: 'leader'
+        }));
+        
+        // Set up both player and opponent leader cards for the shuffle animation
+        this.playerLeaderCards = [...this.leaderCards];
+        
+        if (opponentData && opponentData.deck && opponentData.deck.leader) {
+          console.log('Updating opponent leader cards from backend:', opponentData.deck.leader);
+          this.opponentLeaderCards = opponentData.deck.leader.map(cardId => ({
+            id: cardId,
+            name: cardId,
+            cardType: 'leader',
+            type: 'leader'
+          }));
+        }
+        
+        console.log('Leader cards updated - player:', this.playerLeaderCards.length, 'opponent:', this.opponentLeaderCards?.length || 0);
+      }
+    }
   }
 
   updatePlayerHand() {
@@ -885,6 +930,9 @@ export default class GameScene extends Phaser.Scene {
     console.log('card data : opponent', opponent);
     const opponentData = this.gameStateManager.getPlayer(opponent);
     
+    // Debug: Log current room status and animation state
+    console.log('Online mode - roomStatus:', gameState.gameEnv.roomStatus, 'shuffleAnimationPlayed:', this.shuffleAnimationPlayed);
+    
     // Check for READY_PHASE room status and trigger shuffle animation
     if (gameState.gameEnv.roomStatus === 'READY_PHASE' && !this.shuffleAnimationPlayed) {
       console.log('READY_PHASE detected - triggering shuffle animation and redraw dialog');
@@ -895,7 +943,9 @@ export default class GameScene extends Phaser.Scene {
       
       // Play shuffle animation then show redraw dialog
       this.playShuffleDeckAnimation().then(() => {
-        this.showRedrawDialog();
+        console.log('Online mode - shuffle animation completed, selecting leader cards...');
+        this.selectLeaderCard('player');
+        this.selectLeaderCard('opponent');
       });
     }
     
@@ -1015,6 +1065,7 @@ export default class GameScene extends Phaser.Scene {
       }
       
       this.shuffleAnimationManager.playShuffleDeckAnimation(this.layout, () => {
+        console.log('Shuffle animation manager callback triggered');
         // Show deck stacks immediately to maintain deck visibility
         this.showDeckStacks();
         
@@ -1022,6 +1073,7 @@ export default class GameScene extends Phaser.Scene {
         this.showHandArea();
         this.updateGameState();
         
+        console.log('About to resolve shuffle animation promise');
         // Resolve the promise
         resolve();
       });
@@ -1097,11 +1149,6 @@ export default class GameScene extends Phaser.Scene {
               id: mockData.data.playerId,
               name: 'Test Player',
               hand: mockData.data.handCards
-            },
-            'opponent-1': {
-              id: 'opponent-1',
-              name: 'Opponent',
-              hand: []
             }
           }
         });
@@ -1301,6 +1348,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   selectLeaderCard(playerType = 'player') {
+    console.log(`selectLeaderCard called for ${playerType}`);
     // Get the appropriate zones based on player type
     const zones = playerType === 'player' ? this.playerZones : this.opponentZones;
     const leaderDeckZone = zones.leaderDeck;
@@ -1360,6 +1408,13 @@ export default class GameScene extends Phaser.Scene {
           topCard.borderGraphics.destroy();
         }
 
+        // Also destroy any existing card in the leader zone to prevent duplicates
+        if (leaderZone.card) {
+          console.log(`Destroying existing card in ${playerType} leader zone`);
+          leaderZone.card.destroy();
+          leaderZone.card = null;
+        }
+
         // Create new card with actual leader card image (face up)
         const leaderCard = new Card(this, leaderZone.x, leaderZone.y, cardData, {
           interactive: true,
@@ -1410,9 +1465,15 @@ export default class GameScene extends Phaser.Scene {
             this.handContainer.setDepth(1001);
           }
           
-          // Start synchronized highlight animations
-          this.highlightHandCards();
-          this.highlightLeaderCards();
+          // Give leader cards a moment to be fully set up, then start highlighting
+          this.time.delayedCall(50, () => {
+            // Start synchronized highlight animations
+            this.highlightHandCards();
+            this.highlightLeaderCards();
+            
+            // Show redraw dialog after highlighting is complete
+            this.showRedrawDialog();
+          });
         }
       }
     });
@@ -1931,8 +1992,11 @@ export default class GameScene extends Phaser.Scene {
   }
   
   highlightLeaderCards() {
+    console.log('highlightLeaderCards called');
+    
     // Highlight player leader card
     if (this.playerZones.leader && this.playerZones.leader.card) {
+      console.log('Player leader card found, starting highlight');
       const leaderCard = this.playerZones.leader.card;
       this.tweens.add({
         targets: leaderCard,
@@ -1944,10 +2008,13 @@ export default class GameScene extends Phaser.Scene {
         ease: 'Sine.easeInOut'
       });
       leaderCard.redrawHighlight = true;
+    } else {
+      console.log('Player leader card not found for highlighting');
     }
     
     // Highlight opponent leader card
     if (this.opponentZones.leader && this.opponentZones.leader.card) {
+      console.log('Opponent leader card found, starting highlight');
       const leaderCard = this.opponentZones.leader.card;
       this.tweens.add({
         targets: leaderCard,
@@ -1959,6 +2026,8 @@ export default class GameScene extends Phaser.Scene {
         ease: 'Sine.easeInOut'
       });
       leaderCard.redrawHighlight = true;
+    } else {
+      console.log('Opponent leader card not found for highlighting');
     }
   }
 
@@ -1979,24 +2048,30 @@ export default class GameScene extends Phaser.Scene {
   }
   
   removeLeaderCardHighlight() {
+    console.log('removeLeaderCardHighlight called');
+    
     // Remove player leader card highlight
     if (this.playerZones.leader && this.playerZones.leader.card) {
       const leaderCard = this.playerZones.leader.card;
-      if (leaderCard.redrawHighlight) {
-        this.tweens.killTweensOf(leaderCard);
-        leaderCard.setScale(leaderCard.scaleX / 1.1, leaderCard.scaleY / 1.1);
-        leaderCard.redrawHighlight = false;
-      }
+      console.log('Player leader card found, redrawHighlight:', leaderCard.redrawHighlight);
+      
+      // Kill any tweens targeting this card regardless of highlight flag
+      this.tweens.killTweensOf(leaderCard);
+      // Reset scale to normal
+      leaderCard.setScale(0.9, 0.9); // Leader cards use 0.9 scale
+      leaderCard.redrawHighlight = false;
     }
     
     // Remove opponent leader card highlight
     if (this.opponentZones.leader && this.opponentZones.leader.card) {
       const leaderCard = this.opponentZones.leader.card;
-      if (leaderCard.redrawHighlight) {
-        this.tweens.killTweensOf(leaderCard);
-        leaderCard.setScale(leaderCard.scaleX / 1.1, leaderCard.scaleY / 1.1);
-        leaderCard.redrawHighlight = false;
-      }
+      console.log('Opponent leader card found, redrawHighlight:', leaderCard.redrawHighlight);
+      
+      // Kill any tweens targeting this card regardless of highlight flag
+      this.tweens.killTweensOf(leaderCard);
+      // Reset scale to normal
+      leaderCard.setScale(0.9, 0.9); // Leader cards use 0.9 scale
+      leaderCard.redrawHighlight = false;
     }
   }
 
@@ -2006,6 +2081,9 @@ export default class GameScene extends Phaser.Scene {
     
     // Remove hand card highlighting
     this.removeHandCardHighlight();
+    
+    // Remove leader card highlighting
+    this.removeLeaderCardHighlight();
     
     // Reset hand cards depth to normal
     this.playerHand.forEach(card => {

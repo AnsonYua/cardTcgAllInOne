@@ -431,11 +431,6 @@ export default class GameLogicManager {
               id: mockData.data.playerId,
               name: 'Test Player',
               hand: mockData.data.handCards
-            },
-            'opponent-1': {
-              id: 'opponent-1',
-              name: 'Opponent',
-              hand: []
             }
           }
         });
