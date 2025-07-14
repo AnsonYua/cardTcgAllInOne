@@ -130,9 +130,11 @@ class GameLogic {
         const { getPlayerFromGameEnv } = require('../utils/gameUtils');
         const playerList = getPlayerFromGameEnv(gameEnv);
         const bothReady = gameEnv.playersReady[playerList[0]] && gameEnv.playersReady[playerList[1]];
-        console.log("bothReady111" , bothReady);
+        console.log("🔍 Player List:", playerList);
+        console.log("🔍 Players Ready Status:", gameEnv.playersReady);
+        console.log("🔍 Both Ready:", bothReady);
         if (bothReady) {
-            console.log("bothReady");
+            console.log("🎯 Both players ready - generating DRAW_PHASE_COMPLETE event");
             // Transition to draw phase first - game officially starts
             gameEnv.roomStatus = 'DRAW_PHASE';
             gameEnv.gameStarted = true;

@@ -26,6 +26,7 @@ export default class GameScene extends Phaser.Scene {
     this.isOnlineMode = data.isOnlineMode || false;
     this.isManualPollingMode = data.isManualPollingMode || false;
     this.shuffleAnimationPlayed = false; // Track if shuffle animation has been played
+    this.drawPhaseAnimationPlayed = false; // Track if draw phase animation has been played
   }
 
   async create() {
@@ -777,7 +778,7 @@ export default class GameScene extends Phaser.Scene {
       
       // Draw phase events
       this.gameStateManager.addEventListener('DRAW_PHASE_COMPLETE', (event) => {
-        console.log('Draw phase complete event received:', event);
+        console.log('🎯 DRAW_PHASE_COMPLETE event received:', event);
         this.handleDrawPhaseComplete(event);
       });
       
@@ -866,13 +867,16 @@ export default class GameScene extends Phaser.Scene {
   }
 
   updatePlayerHand() {
+    // Get hand from game state manager
+    const hand = this.gameStateManager.getPlayerHand();
+    this.updatePlayerHandWithCards(hand);
+  }
+  
+  updatePlayerHandWithCards(hand) {
     // Clear existing hand
     this.playerHand.forEach(card => card.destroy());
     this.playerHand = [];
     this.handContainer.removeAll();
-    
-    // Get hand from game state manager
-    const hand = this.gameStateManager.getPlayerHand();
     
     console.log('updatePlayerHand - hand data:', JSON.stringify(hand));
     if (!hand || hand.length === 0) {
@@ -966,6 +970,35 @@ export default class GameScene extends Phaser.Scene {
         this.selectLeaderCard('player');
         this.selectLeaderCard('opponent');
       });
+    }
+    
+    // Check for DRAW_PHASE room status and trigger draw animation
+    if (gameState.gameEnv.roomStatus === 'DRAW_PHASE' && !this.drawPhaseAnimationPlayed) {
+      const currentPlayer = gameState.gameEnv.currentPlayer;
+      const currentPlayerId = this.gameStateManager.getCurrentPlayerId();
+      
+      console.log('🎯 DRAW_PHASE detected - Current player:', currentPlayer, 'Current player ID:', currentPlayerId);
+      
+      if (currentPlayer === currentPlayerId) {
+        console.log('🎯 Playing draw card animation for current player in DRAW_PHASE');
+        this.drawPhaseAnimationPlayed = true;
+        
+        // Hide the new card temporarily (don't update hand UI yet)
+        const currentHand = this.gameStateManager.getPlayerHand();
+        const handWithoutNewCard = currentHand.slice(0, -1); // Remove the last card for animation
+        
+        // Temporarily update the displayed hand to not show the new card
+        this.updatePlayerHandWithCards(handWithoutNewCard);
+        
+        this.playDrawCardAnimation(() => {
+          // Show acknowledgment UI after animation completes
+          this.showDrawPhaseAcknowledgment({
+            playerId: currentPlayerId,
+            cardCount: 1,
+            newHandSize: currentHand.length
+          });
+        });
+      }
     }
     
     // Debug logging for troubleshooting
@@ -2115,13 +2148,19 @@ export default class GameScene extends Phaser.Scene {
     
     // Check if this is the current player's draw event
     const currentPlayerId = this.gameStateManager.getCurrentPlayerId();
+    console.log('Current Player ID:', currentPlayerId);
+    console.log('Event Player ID:', event.data.playerId);
+    console.log('Player ID Match:', event.data.playerId === currentPlayerId);
+    
     if (event.data.playerId === currentPlayerId) {
+      console.log('Playing draw card animation for current player');
       // Play draw card animation for current player
       this.playDrawCardAnimation(() => {
         // Show acknowledgment UI after animation completes
         this.showDrawPhaseAcknowledgment(event.data);
       });
     } else {
+      console.log('Showing opponent drew card notification');
       // Show notification that opponent drew a card
       this.showRoomStatus(`Opponent drew a card (${event.data.newHandSize} cards in hand)`);
     }
@@ -2263,11 +2302,33 @@ export default class GameScene extends Phaser.Scene {
   }
 
   playDrawCardAnimation(onComplete) {
+    // Get the current hand from game state (the new card should be the last one)
+    const currentHand = this.gameStateManager.getPlayerHand();
+    const newCardData = currentHand[currentHand.length - 1];
+    
+    // Process card data the same way the hand does
+    let processedCardData = newCardData;
+    if (typeof newCardData === 'string') {
+      processedCardData = {
+        id: newCardData,
+        name: newCardData,
+        cardType: this.getCardTypeFromId(newCardData)
+      };
+    }
+    
+    console.log('🎯 Playing draw animation for card:', processedCardData);
+    console.log('🎯 Current hand length:', currentHand.length);
+    
     // Get deck position for animation start
     const playerDeckPosition = this.layout.player.deck;
     
     // Create temporary card at deck position (card back)
     const tempCard = this.add.image(playerDeckPosition.x, playerDeckPosition.y, 'card-back');
+    
+    console.log('🎯 Created temp card at:', playerDeckPosition.x, playerDeckPosition.y);
+    console.log('🎯 Temp card visible:', tempCard.visible);
+    console.log('🎯 Temp card texture:', tempCard.texture.key);
+    console.log('🎯 Temp card width/height:', tempCard.width, tempCard.height);
     
     // Set the card to hand card size immediately
     const scaleX = GAME_CONFIG.card.width / tempCard.width;
@@ -2276,26 +2337,105 @@ export default class GameScene extends Phaser.Scene {
     tempCard.setScale(handScale);
     tempCard.setDepth(2000); // Above everything else
     
-    // Calculate target position (next to hand container)
-    const handCenterX = this.handContainer.x;
-    const handCenterY = this.handContainer.y;
+    console.log('🎯 Temp card scale applied:', handScale);
+    console.log('🎯 Temp card final size:', tempCard.displayWidth, tempCard.displayHeight);
     
-    // Animate card from deck to hand area
+    // Calculate spacing for current hand size
+    const currentHandLength = this.playerHand.length; // Current cards displayed in hand
+    const totalCards = currentHandLength + 1; // Including this new card
+    const cardSpacing = Math.min(160, (this.cameras.main.width - 200) / totalCards);
+    const startX = -(totalCards - 1) * cardSpacing / 2;
+    const newCardX = startX + (currentHandLength * cardSpacing); // Position for new card (rightmost)
+    
+    // Convert to world coordinates
+    const worldTargetX = this.handContainer.x + newCardX;
+    const worldTargetY = this.handContainer.y;
+    
+    console.log('🎯 Animation target position:', worldTargetX, worldTargetY);
+    
+    // Animate existing hand cards to slide left to make space for new card
+    this.slideHandCardsLeft(totalCards, cardSpacing);
+    
+    // Animate new card from deck to hand position
     this.tweens.add({
       targets: tempCard,
-      x: handCenterX,
-      y: handCenterY,
-      duration: 600,
+      x: worldTargetX,
+      y: worldTargetY,
+      duration: 500,
       ease: 'Power2.easeOut',
+      onStart: () => {
+        console.log('🎯 Animation started - moving card from', playerDeckPosition.x, playerDeckPosition.y, 'to', worldTargetX, worldTargetY);
+      },
+      onUpdate: (tween) => {
+        // Log position every 100ms during animation
+        if (Math.floor(tween.progress * 10) % 2 === 0) {
+          console.log('🎯 Animation progress:', Math.floor(tween.progress * 100) + '%', 'Card position:', tempCard.x, tempCard.y);
+        }
+      },
       onComplete: () => {
-        // Add a brief pause before showing acknowledgment
-        this.time.delayedCall(200, () => {
-          // Remove temporary card
-          tempCard.destroy();
-          
-          // Call the completion callback
-          if (onComplete) {
-            onComplete();
+        console.log('🎯 Animation completed - card arrived at:', tempCard.x, tempCard.y);
+        // Flip animation: card back to card face
+        this.tweens.add({
+          targets: tempCard,
+          scaleX: 0, // Flip to invisible
+          duration: 150,
+          ease: 'Power2.easeIn',
+          onComplete: () => {
+            // Change to actual card image using the same logic as Card class
+            const cardKey = `${processedCardData.id}-preview`;
+            console.log('🎯 Trying to flip to card texture:', cardKey);
+            console.log('🎯 Processed card data:', processedCardData);
+            
+            // Check if texture exists before setting it
+            if (this.textures.exists(cardKey)) {
+              console.log('🎯 Card texture exists, setting texture');
+              tempCard.setTexture(cardKey);
+            } else {
+              console.log('🎯 Card texture does not exist! Available textures:', Object.keys(this.textures.list).filter(key => key.startsWith(processedCardData.id?.substring(0, 2) || '')));
+              // Fallback: try without -preview suffix
+              const fallbackKey = processedCardData.id;
+              if (this.textures.exists(fallbackKey)) {
+                console.log('🎯 Using fallback texture:', fallbackKey);
+                tempCard.setTexture(fallbackKey);
+              } else {
+                console.log('🎯 No fallback texture found, keeping card-back');
+                // Keep the card-back texture as fallback
+              }
+            }
+            
+            // Recalculate scale for the new texture to maintain consistent card size
+            const newScaleX = GAME_CONFIG.card.width / tempCard.width;
+            const newScaleY = GAME_CONFIG.card.height / tempCard.height;
+            const newHandScale = Math.min(newScaleX, newScaleY) * 0.95 * 1.15;
+            
+            // Update Y scale to match the new texture
+            tempCard.setScale(0, newHandScale);
+            
+            console.log('🎯 Final texture key:', tempCard.texture.key);
+            console.log('🎯 Final texture size:', tempCard.width, tempCard.height);
+            
+            // Flip back to visible with correct scale
+            this.tweens.add({
+              targets: tempCard,
+              scaleX: newHandScale, // Flip back to visible with correct scale
+              duration: 150,
+              ease: 'Power2.easeOut',
+              onComplete: () => {
+                // Add a brief pause before showing acknowledgment
+                this.time.delayedCall(200, () => {
+                  // Remove temporary card
+                  tempCard.destroy();
+                  
+                  // Update the UI to show the new card in hand
+                  this.updatePlayerHand();
+                  
+                  // Call the completion callback
+                  if (onComplete) {
+                    onComplete();
+                  }
+                });
+              }
+            });
           }
         });
       }
