@@ -1155,9 +1155,7 @@ export default class GameScene extends Phaser.Scene {
       this.handContainer.setVisible(true);
     }
     
-    // Automatically move first leader card to leader zone for both players
-    this.selectLeaderCard('player');
-    this.selectLeaderCard('opponent');
+   
   }
 
   showCardPreview(cardData) {
@@ -1309,7 +1307,7 @@ export default class GameScene extends Phaser.Scene {
 
   selectLeaderCard(playerType = 'player') {
     console.log(`selectLeaderCard called for ${playerType}`);
-    // Get the appropriate zones based on player type
+    
     const zones = playerType === 'player' ? this.playerZones : this.opponentZones;
     const leaderDeckZone = zones.leaderDeck;
     const leaderZone = zones.leader;
@@ -1319,83 +1317,58 @@ export default class GameScene extends Phaser.Scene {
       return;
     }
 
-    // Get the appropriate leader cards array from animation manager
     const leaderCardsArray = playerType === 'player' ? 
       this.shuffleAnimationManager?.playerLeaderCards : 
       this.shuffleAnimationManager?.opponentLeaderCards;
 
-    // Check if there are leader cards in the animation manager
+    const leaderDeckSource = playerType === 'player' ? this.playerLeaderCards : this.opponentLeaderCards;
+
     if (!this.shuffleAnimationManager || !leaderCardsArray || leaderCardsArray.length === 0) {
       console.log(`No ${playerType} leader cards available in deck`);
       return;
     }
 
-    // Get the top card from the leader deck (first card in array - highest depth/position)
-    const topCardIndex = 0;
-    const topCard = leaderCardsArray[topCardIndex];
-    
-    if (!topCard) {
-      console.log(`No ${playerType} top card found`);
-      return;
-    }
+    // Atomically get and remove the top card from both the visual and data arrays
+    console.log('leaderCardsArray:', JSON.stringify(leaderCardsArray));
+    const topCard = leaderCardsArray.shift();
+    console.log('leaderCardsArray:2', JSON.stringify(leaderCardsArray));
+    const cardData = leaderDeckSource.shift();
 
-    // Get the corresponding card data from the correct player's leader deck
-    const leaderDeckSource = playerType === 'player' ? this.playerLeaderCards : this.opponentLeaderCards;
-    const cardData = leaderDeckSource[leaderDeckSource.length - leaderCardsArray.length];
-    
-    if (!cardData) {
-      console.log(`No card data found for ${playerType} top card`);
+    if (!topCard || !cardData) {
+      console.error(`Mismatch between visual and data arrays for ${playerType} leader deck.`);
       return;
     }
 
     console.log(`Moving ${playerType} leader card to leader position:`, cardData.name);
 
-    // Animate the card moving to leader position and flipping
     this.tweens.add({
       targets: topCard,
       x: leaderZone.x,
       y: leaderZone.y,
-      rotation: 0, // Remove the 90-degree rotation
+      rotation: 0,
       duration: 300,
       ease: 'Power2.easeInOut',
       onComplete: () => {
-        // NOW remove the card from the leader deck array
-        leaderCardsArray.splice(topCardIndex, 1);
-
-        // Destroy the old card back image
         topCard.destroy();
         if (topCard.borderGraphics) {
           topCard.borderGraphics.destroy();
         }
 
-        // Also destroy any existing card in the leader zone to prevent duplicates
         if (leaderZone.card) {
-          console.log(`Destroying existing card in ${playerType} leader zone`);
           leaderZone.card.destroy();
-          leaderZone.card = null;
         }
 
-        // Create new card with actual leader card image (face up)
         const leaderCard = new Card(this, leaderZone.x, leaderZone.y, cardData, {
           interactive: true,
           draggable: false,
           scale: 0.9,
-          usePreview: true // Use preview image for leader position
+          usePreview: true
         });
     
-        // Add hover events for preview (for both player and opponent cards)
-        leaderCard.on('pointerover', () => {
-          this.showCardPreview(cardData);
-        });
-        
-        leaderCard.on('pointerout', () => {
-          this.hideCardPreview();
-        });
+        leaderCard.on('pointerover', () => this.showCardPreview(cardData));
+        leaderCard.on('pointerout', () => this.hideCardPreview());
 
-        // Update the zone
         leaderZone.card = leaderCard;
-        
-        // Set depth for dialog overlay
         leaderCard.setDepth(1001);
         
         if (leaderZone.placeholder) {
@@ -1404,34 +1377,24 @@ export default class GameScene extends Phaser.Scene {
 
         console.log(`${playerType} leader card ${cardData.name} placed in leader position`);
 
-        // Move remaining cards forward to maintain top card position
         this.repositionLeaderDeckCards(playerType);
         
-        // Track leader card placement completion
         if (!this.leaderCardsPlaced) {
           this.leaderCardsPlaced = 0;
         }
         this.leaderCardsPlaced++;
         
-        // Start highlighting after both leader cards are placed (player + opponent)
         if (this.leaderCardsPlaced === 2) {
           console.log('Both leader cards placed, starting highlight animations');
           
-          // Set hand cards depth for dialog overlay
-          this.playerHand.forEach(card => {
-            card.setDepth(1001);
-          });
+          this.playerHand.forEach(card => card.setDepth(1001));
           if (this.handContainer) {
             this.handContainer.setDepth(1001);
           }
           
-          // Give leader cards a moment to be fully set up, then start highlighting
           this.time.delayedCall(50, () => {
-            // Start synchronized highlight animations
             this.highlightHandCards();
             this.highlightLeaderCards();
-            
-            // Show redraw dialog after highlighting is complete
             this.showRedrawDialog();
           });
         }

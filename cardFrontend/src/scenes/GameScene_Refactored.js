@@ -797,10 +797,7 @@ export default class GameScene extends Phaser.Scene {
       duration: 300
     }).then(() => {
       leaderCardsArray.splice(0, 1);
-      topCard.destroy();
-      if (topCard.borderGraphics) {
-        topCard.borderGraphics.destroy();
-      }
+      topCard.setVisible(false); // Make the card invisible instead of destroying it
 
       const leaderCard = this.cardManagerHelper.createCard(leaderZone.x, leaderZone.y, cardData, {
         interactive: true,
@@ -825,6 +822,14 @@ export default class GameScene extends Phaser.Scene {
 
       console.log(`${playerType} leader card ${cardData.name} placed in leader position`);
       this.repositionLeaderDeckCards(playerType);
+
+      // Destroy the original card after a short delay
+      this.time.delayedCall(100, () => {
+        topCard.destroy();
+        if (topCard.borderGraphics) {
+          topCard.borderGraphics.destroy();
+        }
+      });
     });
   }
 
