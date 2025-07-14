@@ -2095,11 +2095,11 @@ export default class GameScene extends Phaser.Scene {
     
     // Create new room status text
     const { width } = this.cameras.main;
-    this.roomStatusText = this.add.text(width / 2, 30, message, {
+    this.roomStatusText = this.add.text(250, 80, message, {
       fontSize: '16px',
       fontFamily: 'Arial',
       fill: '#FFD700',
-      align: 'center'
+      align: 'left'
     });
     this.roomStatusText.setOrigin(0.5);
     
