@@ -47,13 +47,13 @@ class GameLogic {
     async joinRoom(req) {
         var { playerId, gameId } = req.body;
         
-        // Load existing game
-        let gameState = await this.getGameState(gameId);
-        if (!gameState) {
+        // Load existing game data from file
+        let gameData = await this.readJSONFileAsync(gameId);
+        if (!gameData) {
             throw new Error('Game room not found');
         }
         
-        let gameEnv = gameState.gameEnv;
+        let gameEnv = gameData.gameEnv;
         
         // Check if room is available
         if (gameEnv.roomStatus !== 'WAITING_FOR_PLAYERS') {
@@ -266,21 +266,17 @@ class GameLogic {
             return game;
         }
 
-        // Create a copy of the game state
-        const transformedGame = { ...game };
-        const gameEnv = { ...game.gameEnv };
+        const sourceGameEnv = game.gameEnv;
+        const { getPlayerFromGameEnv } = require('../utils/gameUtils');
+        const playerIds = getPlayerFromGameEnv(sourceGameEnv);
 
-        // Extract player data and create structured objects
         const players = {};
         const zones = {};
         const victoryPoints = {};
-        
-        const { getPlayerFromGameEnv } = require('../utils/gameUtils');
-        const playerIds = getPlayerFromGameEnv(gameEnv);
 
         playerIds.forEach(playerId => {
-            if (gameEnv[playerId]) {
-                const playerData = gameEnv[playerId];
+            if (sourceGameEnv[playerId]) {
+                const playerData = sourceGameEnv[playerId];
                 
                 // Create structured player object
                 players[playerId] = {
@@ -292,7 +288,7 @@ class GameLogic {
                         leader: playerData.deck?.leader || [],
                         currentLeaderIdx: playerData.deck?.currentLeaderIdx || 0
                     },
-                    isReady: gameEnv.playersReady?.[playerId] || false,
+                    isReady: sourceGameEnv.playersReady?.[playerId] || false,
                     redraw: playerData.redraw || 0,
                     turnAction: playerData.turnAction || []
                 };
@@ -312,20 +308,34 @@ class GameLogic {
             }
         });
 
-        // Add structured data to gameEnv
-        gameEnv.players = players;
-        gameEnv.zones = zones;
-        gameEnv.victoryPoints = victoryPoints;
+        // Build the new, clean gameEnv object for the frontend
+        const frontendGameEnv = {
+            // Game Status
+            roomStatus: sourceGameEnv.roomStatus,
+            phase: sourceGameEnv.phase || 'SETUP',
+            currentPlayer: sourceGameEnv.currentPlayer,
+            currentTurn: sourceGameEnv.currentTurn,
+            round: sourceGameEnv.round || 1,
+            gameStarted: sourceGameEnv.gameStarted,
+            firstPlayer: sourceGameEnv.firstPlayer,
 
-        // Ensure other required fields exist
-        gameEnv.pendingPlayerAction = gameEnv.pendingPlayerAction || null;
-        gameEnv.pendingCardSelections = gameEnv.pendingCardSelections || {};
-        gameEnv.gameEvents = gameEnv.gameEvents || [];
-        gameEnv.round = gameEnv.round || 1;
-        gameEnv.phase = gameEnv.phase || 'SETUP';
+            // Centralized Data (No duplication)
+            players,
+            zones,
+            victoryPoints,
 
-        transformedGame.gameEnv = gameEnv;
-        return transformedGame;
+            // Events and Actions
+            gameEvents: sourceGameEnv.gameEvents || [],
+            lastEventId: sourceGameEnv.lastEventId,
+            pendingPlayerAction: sourceGameEnv.pendingPlayerAction || null,
+            pendingCardSelections: sourceGameEnv.pendingCardSelections || {},
+        };
+
+        // Return the game object with the cleaned gameEnv
+        return {
+            ...game,
+            gameEnv: frontendGameEnv
+        };
     }
 
     async updateGameState(gameId, updates) {

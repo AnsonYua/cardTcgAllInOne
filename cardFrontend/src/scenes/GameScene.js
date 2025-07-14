@@ -812,79 +812,39 @@ export default class GameScene extends Phaser.Scene {
     this.playerHand = [];
     this.handContainer.removeAll();
     
-    // Get hand from game state
-    const gameState = this.gameStateManager.getGameState();
-    const playerId = this.gameStateManager.gameState.playerId;
-    
-    // Try multiple possible locations for hand data
-    let hand = this.gameStateManager.getPlayerHand();
-    
-    // If standard method fails, try direct access during room phase
-    if (!hand || hand.length === 0) {
-      console.log('Standard getPlayerHand failed, trying direct access...');
-      console.log('Player ID:', playerId);
-      console.log('gameState.gameEnv keys:', Object.keys(gameState.gameEnv));
-      console.log('gameState.gameEnv.players:', gameState.gameEnv.players);
-      
-      // Try direct access to player data in gameEnv
-      if (gameState.gameEnv[playerId]) {
-        console.log(`Found player data at gameEnv[${playerId}]:`, gameState.gameEnv[playerId]);
-        if (gameState.gameEnv[playerId].hand) {
-          hand = gameState.gameEnv[playerId].hand;
-          console.log('Found hand data via direct access:', hand);
-        } else if (gameState.gameEnv[playerId].deck && gameState.gameEnv[playerId].deck.hand) {
-          hand = gameState.gameEnv[playerId].deck.hand;
-          console.log('Found hand data in deck.hand:', hand);
-        }
-      }
-      
-      // If still no hand found, use mock data for testing
-      if (!hand || hand.length === 0) {
-        console.log('No hand data found anywhere, using mock data for testing...');
-        hand = this.createMockHandData();
-      }
-    }
+    // Get hand from game state manager
+    const hand = this.gameStateManager.getPlayerHand();
     
     console.log('updatePlayerHand - hand data:', JSON.stringify(hand));
-    console.log('updatePlayerHand - hand length:', hand ? hand.length : 0);
     if (!hand || hand.length === 0) {
       console.log('No hand data found, returning early');
       return;
     }
     
-    // Calculate card positions with larger spacing for bigger cards
+    // Calculate card positions
     const cardSpacing = Math.min(160, (this.cameras.main.width - 200) / hand.length);
     const startX = -(hand.length - 1) * cardSpacing / 2;
     
     // Create cards
     hand.forEach((cardData, index) => {
-      console.log(`Creating card ${index}:`, JSON.stringify(cardData, null, 2));
-      console.log(`Card data type:`, typeof cardData);
-      
-      // Convert card ID string to card object if needed
       let processedCardData = cardData;
       if (typeof cardData === 'string') {
-        console.log(`Converting card ID string "${cardData}" to card object`);
         processedCardData = {
           id: cardData,
-          name: cardData, // Use ID as name for now
+          name: cardData,
           cardType: this.getCardTypeFromId(cardData)
         };
       }
-      
-      console.log(`Processed card data:`, processedCardData);
       
       const x = startX + (index * cardSpacing);
       const card = new Card(this, x, 0, processedCardData, {
         interactive: true,
         draggable: true,
-        scale: 1.1, // Match deck card scale
-        usePreview: true // Use preview images for hand cards
+        scale: 1.1,
+        usePreview: true
       });
       
-      // Set up drag and drop
       this.input.setDraggable(card);
-      
       this.playerHand.push(card);
       this.handContainer.add(card);
     });
@@ -1829,11 +1789,12 @@ export default class GameScene extends Phaser.Scene {
     const gameState = this.gameStateManager.getGameState();
     const gameEnv = gameState.gameEnv;
     
-    if (gameEnv && gameEnv.firstPlayer !== undefined) {
+    if (gameEnv && gameEnv.firstPlayer !== undefined && gameEnv.players) {
+      const playerIds = Object.keys(gameEnv.players);
+      if (playerIds.length < 2) return;
+
       // Determine which player goes first
-      const player1Id = gameEnv.playerId_1;
-      const player2Id = gameEnv.playerId_2;
-      const firstPlayerId = gameEnv.firstPlayer === 0 ? player1Id : player2Id;
+      const firstPlayerId = gameEnv.firstPlayer === 0 ? playerIds[0] : playerIds[1];
       const isCurrentPlayerFirst = firstPlayerId === gameState.playerId;
       
       // Display first player info
@@ -1846,16 +1807,18 @@ export default class GameScene extends Phaser.Scene {
       console.log('Game Info:', {
         firstPlayer: firstPlayerId,
         currentPlayerIsFirst: isCurrentPlayerFirst,
-        player1Hand: gameEnv[player1Id]?.deck?.hand?.length || 0,
-        player2Hand: gameEnv[player2Id]?.deck?.hand?.length || 0
+        player1Hand: gameEnv.players[playerIds[0]]?.deck?.hand?.length || 0,
+        player2Hand: gameEnv.players[playerIds[1]]?.deck?.hand?.length || 0
       });
     }
   }
 
   updateOpponentInfo(gameEnv) {
-    const gameState = this.gameStateManager.getGameState();
-    const opponentId = gameState.playerId === gameEnv.playerId_1 ? gameEnv.playerId_2 : gameEnv.playerId_1;
-    const opponentHandCount = gameEnv[opponentId]?.deck?.hand?.length || 0;
+    const opponentId = this.gameStateManager.getOpponent();
+    if (!opponentId) return;
+
+    const opponentData = this.gameStateManager.getPlayer(opponentId);
+    const opponentHandCount = opponentData?.hand?.length || 0;
     
     // Update existing opponent hand count display (created in createOpponentHandDisplay)
     if (this.opponentHandCountText) {
