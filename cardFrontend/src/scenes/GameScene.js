@@ -370,6 +370,9 @@ export default class GameScene extends Phaser.Scene {
     // Opponent hand count display
     this.createOpponentHandDisplay();
     
+    // First player display
+    this.createFirstPlayerDisplay();
+    
     // Action buttons
     this.createActionButtons();
     
@@ -635,6 +638,33 @@ export default class GameScene extends Phaser.Scene {
         
         this.time.delayedCall(50, () => this.simulatePlayer2Join());
       });
+
+      // Simulate Player 2 Redraw button
+      this.testPlayer2RedrawButton = this.add.image(0+130, height - 420, 'button');
+      this.testPlayer2RedrawButton.setScale(0.8);
+      this.testPlayer2RedrawButton.setInteractive();
+      
+      const testPlayer2RedrawButtonText = this.add.text(0+130, height - 420, 'P2 Redraw', {
+        fontSize: '12px',
+        fontFamily: 'Arial',
+        fill: '#ffffff'
+      });
+      testPlayer2RedrawButtonText.setOrigin(0.5);
+      
+      this.testPlayer2RedrawButton.on('pointerdown', () => {
+        // Click visual effect
+        this.testPlayer2RedrawButton.setTint(0x888888);
+        this.testPlayer2RedrawButton.setScale(0.76);
+        testPlayer2RedrawButtonText.setScale(0.95);
+        
+        this.time.delayedCall(100, () => {
+          this.testPlayer2RedrawButton.clearTint();
+          this.testPlayer2RedrawButton.setScale(0.8);
+          testPlayer2RedrawButtonText.setScale(1);
+        });
+        
+        this.time.delayedCall(50, () => this.simulatePlayer2Redraw());
+      });
     }
 
   }
@@ -670,6 +700,39 @@ export default class GameScene extends Phaser.Scene {
       align: 'center'
     });
     this.opponentHandCountText.setOrigin(0.5);
+  }
+
+  createFirstPlayerDisplay() {
+    const { width, height } = this.cameras.main;
+    
+    // Position the display in the top-left area
+    const displayX = 200;
+    const displayY = 180;
+    
+    // Background for the display
+    const displayBg = this.add.graphics();
+    displayBg.fillStyle(0x000000, 0.7);
+    displayBg.fillRoundedRect(displayX - 70, displayY - 20, 220, 45, 5);
+    displayBg.lineStyle(2, 0x888888);
+    displayBg.strokeRoundedRect(displayX - 70, displayY - 20, 220, 45, 5);
+    
+    // Label text
+    this.firstPlayerLabel = this.add.text(displayX+30, displayY, 'First Player:', {
+      fontSize: '24px',
+      fontFamily: 'Arial',
+      fill: '#ffffff',
+      align: 'center'
+    });
+    this.firstPlayerLabel.setOrigin(0.5);
+    
+    // First player text
+    this.firstPlayerText = this.add.text(displayX+130, displayY +1 , 'Unknown', {
+      fontSize: '25px',
+      fontFamily: 'Arial Bold',
+      fill: '#4CAF50',
+      align: 'center'
+    });
+    this.firstPlayerText.setOrigin(0.5);
   }
 
   createHandArea() {
@@ -1764,6 +1827,9 @@ export default class GameScene extends Phaser.Scene {
       const firstPlayerText = isCurrentPlayerFirst ? 'You go first!' : 'Opponent goes first!';
       this.showRoomStatus(`${firstPlayerText} (First player: ${firstPlayerId})`);
       
+      // Update first player display
+      this.updateFirstPlayerDisplay(isCurrentPlayerFirst);
+      
       // Display hand count info near opponent area
       this.updateOpponentInfo(gameEnv);
       
@@ -1773,6 +1839,17 @@ export default class GameScene extends Phaser.Scene {
         player1Hand: gameEnv.players[playerIds[0]]?.deck?.hand?.length || 0,
         player2Hand: gameEnv.players[playerIds[1]]?.deck?.hand?.length || 0
       });
+    }
+  }
+
+  updateFirstPlayerDisplay(isCurrentPlayerFirst) {
+    if (this.firstPlayerText) {
+      const firstPlayerName = isCurrentPlayerFirst ? 'You' : 'Opponent';
+      this.firstPlayerText.setText(firstPlayerName);
+      
+      // Change color based on who goes first
+      const color = isCurrentPlayerFirst ? '#4CAF50' : '#FF5722'; // Green for you, Red for opponent
+      this.firstPlayerText.setFill(color);
     }
   }
 
@@ -2083,6 +2160,28 @@ export default class GameScene extends Phaser.Scene {
     
     // Call parent destroy
     super.destroy();
+  }
+
+  async simulatePlayer2Redraw() {
+    try {
+      const gameState = this.gameStateManager.getGameState();
+      const gameId = gameState.gameId;
+      // Find player 2's ID
+      const playerIds = Object.keys(gameState.gameEnv.players || {});
+      const player2Id = playerIds.find(id => id !== gameState.playerId);
+
+      if (!gameId || !player2Id) {
+        throw new Error('No gameId or player2Id found. Make sure both players are in the game.');
+      }
+
+      // Simulate player 2 calling redraw (startReady with wantRedraw = true)
+      await this.apiManager.startReady(player2Id, gameId, true);
+
+      this.showRoomStatus('Simulated Player 2 redraw (ready with redraw=true).');
+    } catch (error) {
+      console.error('Failed to simulate player 2 redraw:', error);
+      this.showRoomStatus('Failed to simulate player 2 redraw: ' + error.message);
+    }
   }
 
 }

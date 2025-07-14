@@ -37,7 +37,19 @@ class mozDeckLogic{
 
     async reshuffleForPlayer(playerId) {
         const playerDeck = await deckManager.getPlayerDecks(playerId);
-        const mainDeckCard = this.possesesMainDeckCard(playerDeck.decks["deck001"]);
+        
+        if (!playerDeck) {
+            throw new Error(`No deck found for player ${playerId}`);
+        }
+        
+        const activeDeckId = playerDeck.activeDeck || "deck001";
+        const activeDeck = playerDeck.decks[activeDeckId];
+        
+        if (!activeDeck) {
+            throw new Error(`Active deck ${activeDeckId} not found for player ${playerId}`);
+        }
+        
+        const mainDeckCard = this.possesesMainDeckCard(activeDeck);
         const { drawnCards, mainDeck } = this.drawCards(mainDeckCard, 7);
         const hand = drawnCards;
         return {
