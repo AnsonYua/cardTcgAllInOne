@@ -833,7 +833,7 @@ export default class GameScene extends Phaser.Scene {
       const card = new Card(this, x, 0, processedCardData, {
         interactive: true,
         draggable: true,
-        scale: 1.15, // Match deck card scale
+        scale: 1.1, // Match deck card scale
         usePreview: true // Use preview images for hand cards
       });
       
@@ -882,6 +882,7 @@ export default class GameScene extends Phaser.Scene {
     const gameState = this.gameStateManager.getGameState();
     const player = this.gameStateManager.getPlayer();
     const opponent = this.gameStateManager.getOpponent();
+    console.log('card data : opponent', opponent);
     const opponentData = this.gameStateManager.getPlayer(opponent);
     
     // Check for READY_PHASE room status and trigger shuffle animation
@@ -1096,6 +1097,11 @@ export default class GameScene extends Phaser.Scene {
               id: mockData.data.playerId,
               name: 'Test Player',
               hand: mockData.data.handCards
+            },
+            'opponent-1': {
+              id: 'opponent-1',
+              name: 'Opponent',
+              hand: []
             }
           }
         });
@@ -1361,7 +1367,7 @@ export default class GameScene extends Phaser.Scene {
           scale: 0.9,
           usePreview: true // Use preview image for leader position
         });
-
+    
         // Add hover events for preview (for both player and opponent cards)
         leaderCard.on('pointerover', () => {
           this.showCardPreview(cardData);
@@ -1373,6 +1379,10 @@ export default class GameScene extends Phaser.Scene {
 
         // Update the zone
         leaderZone.card = leaderCard;
+        
+        // Set depth for dialog overlay
+        leaderCard.setDepth(1001);
+        
         if (leaderZone.placeholder) {
           leaderZone.placeholder.setVisible(false);
         }
@@ -1381,6 +1391,29 @@ export default class GameScene extends Phaser.Scene {
 
         // Move remaining cards forward to maintain top card position
         this.repositionLeaderDeckCards(playerType);
+        
+        // Track leader card placement completion
+        if (!this.leaderCardsPlaced) {
+          this.leaderCardsPlaced = 0;
+        }
+        this.leaderCardsPlaced++;
+        
+        // Start highlighting after both leader cards are placed (player + opponent)
+        if (this.leaderCardsPlaced === 2) {
+          console.log('Both leader cards placed, starting highlight animations');
+          
+          // Set hand cards depth for dialog overlay
+          this.playerHand.forEach(card => {
+            card.setDepth(1001);
+          });
+          if (this.handContainer) {
+            this.handContainer.setDepth(1001);
+          }
+          
+          // Start synchronized highlight animations
+          this.highlightHandCards();
+          this.highlightLeaderCards();
+        }
       }
     });
   }
@@ -1763,25 +1796,14 @@ export default class GameScene extends Phaser.Scene {
     const opponentId = gameState.playerId === gameEnv.playerId_1 ? gameEnv.playerId_2 : gameEnv.playerId_1;
     const opponentHandCount = gameEnv[opponentId]?.deck?.hand?.length || 0;
     
-    // Remove existing opponent info
-    if (this.opponentInfoText) {
-      this.opponentInfoText.destroy();
+    // Update existing opponent hand count display (created in createOpponentHandDisplay)
+    if (this.opponentHandCountText) {
+      this.opponentHandCountText.setText(opponentHandCount.toString());
     }
-    
-    // Create opponent hand count display
-    const { width } = this.cameras.main;
-    this.opponentInfoText = this.add.text(width - 200, 120, `Opponent Hand: ${opponentHandCount}`, {
-      fontSize: '14px',
-      fontFamily: 'Arial',
-      fill: '#ffffff',
-      backgroundColor: '#000000',
-      padding: { x: 8, y: 4 }
-    });
   }
 
   showRedrawDialog() {
-    // Highlight hand cards to show they will be affected by redraw
-    this.highlightHandCards();
+    // Note: Hand cards and leader cards are already highlighted after selectLeaderCard completes
     
     // Create modal-like dialog
     const { width, height } = this.cameras.main;
@@ -1906,8 +1928,6 @@ export default class GameScene extends Phaser.Scene {
       }
     });
     
-    // Also highlight leader cards in leader positions
-    this.highlightLeaderCards();
   }
   
   highlightLeaderCards() {
@@ -1948,7 +1968,7 @@ export default class GameScene extends Phaser.Scene {
       if (card.redrawHighlight) {
         // Stop pulsing animation and reset scale
         this.tweens.killTweensOf(card);
-        card.setScale(card.scaleX / 1.1, card.scaleY / 1.1); // Reset to original scale
+        card.setScale(1.1, 1.1); // Reset to original scale
         
         card.redrawHighlight = false;
       }

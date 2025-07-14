@@ -106,11 +106,176 @@ src/
 - **Event System**: Handles game events and state synchronization
 - **Demo Data**: Sample cards and game scenarios for testing
 
+## Core Architecture
+
+### GameScene.js - Main Gameplay Controller
+
+The `GameScene` is the heart of the game, managing all gameplay interactions, UI, and visual elements.
+
+#### Key Features
+- **Card Management**: Handles player hand, leader decks, and card placement
+- **Zone System**: Manages TOP/LEFT/RIGHT character zones, HELP zone, SP zone, and LEADER zone
+- **Drag & Drop**: Full drag-and-drop system with zone validation
+- **Animation System**: Shuffle animations, card movements, and visual effects
+- **Real-time Updates**: Integrates with polling system for live game state updates
+
+#### Important Methods
+```javascript
+// Card and deck management
+loadLeaderCardsData()           // Loads and shuffles leader decks for both players
+showHandCards()                 // Displays player hand cards
+moveLeaderCardToPosition()      // Moves leader cards between deck and leader zone
+
+// UI and interaction
+showRedrawDialog()              // Shows card redraw interface with overlay
+highlightHandCards()            // Highlights cards during redraw phase
+updateUI()                      // Main UI update method triggered by polling
+
+// Game flow
+playShuffleDeckAnimation()      // Initial deck shuffle animation
+waitForBothPlayersReady()       // Synchronizes game start between players
+```
+
+#### Phase Detection
+GameScene monitors game phases through polling and triggers appropriate UI updates:
+- **READY_PHASE**: Shows redraw dialog for initial hand management
+- **MAIN_PHASE**: Enables card placement from hand to zones
+- **SP_PHASE**: Handles special power card placement
+- **BATTLE_PHASE**: Shows battle results and calculations
+
+### APIManager.js - Backend Communication
+
+Handles all REST API communication with the Node.js backend server.
+
+#### Core Functionality
+```javascript
+// Game management
+async createGame(playerName)              // Creates new game session
+async joinGame(gameId, playerName)        // Joins existing game
+async startGame(gameId, playerId)         // Starts the game
+
+// Real-time data
+async getPlayer(playerId, gameId)         // Polls player data and events
+async acknowledgeEvents(gameId, eventIds) // Marks events as processed
+
+// Gameplay actions
+async playerAction(gameId, playerId, action) // Sends player actions
+async selectCard(gameId, playerId, selectionId, cardIds) // Card selection
+```
+
+#### Connection Management
+- **Base URL**: `http://localhost:8080`
+- **Error Handling**: Graceful degradation to demo mode
+- **Retry Logic**: Automatic retry for failed requests
+- **Demo Mode**: Complete offline functionality for testing
+
+### GameStateManager.js - State Coordination
+
+Centralized state management system that coordinates between API polling and UI updates.
+
+#### State Structure
+```javascript
+gameState = {
+  gameId: string,
+  playerId: string,
+  playerName: string,
+  gameEnv: {
+    phase: string,           // Current game phase
+    currentPlayer: string,   // Active player ID
+    players: {},            // Player data including hands
+    zones: {},              // Card placement zones
+    gameEvents: [],         // Unprocessed events from backend
+    pendingCardSelections: {}, // Card selection workflows
+    victoryPoints: {},      // Victory point totals
+    round: number           // Current round (1-4)
+  },
+  uiState: {
+    selectedCard: null,
+    hoveredZone: null,
+    showingCardDetails: false,
+    pendingAction: null
+  }
+}
+```
+
+#### Key Methods
+```javascript
+// State access
+getPlayer(playerId)             // Get player data
+getOpponent()                   // Get opponent player ID  
+getPlayerHand(playerId)         // Get player's current hand
+getPlayerZones(playerId)        // Get player's zone data
+
+// Event system
+addEventListener(eventType, handler) // Register event handlers
+processGameEvents()             // Process incoming events
+acknowledgeEvents(apiManager)   // Mark events as processed
+
+// Polling
+startPolling(apiManager)        // Begin 1-second polling cycle
+stopPolling()                   // Stop polling
+```
+
+## Game Flow Integration
+
+### 1. Game Initialization
+```javascript
+// MenuScene creates game and transitions to GameScene
+gameStateManager.initializeGame(gameId, playerId, playerName);
+scene.start('GameScene', { gameStateManager, apiManager, isOnlineMode: true });
+```
+
+### 2. Real-time Synchronization
+```javascript
+// GameStateManager polls every 1 second
+startPolling(apiManager) → getPlayer() → updateGameEnv() → processGameEvents()
+                                                         ↓
+// GameScene responds to state changes
+updateUI() → detectPhaseChanges() → showRedrawDialog() / updateCards()
+```
+
+### 3. Event Processing
+```javascript
+// Backend sends events → GameStateManager processes → GameScene updates UI
+GAME_STARTED → playShuffleDeckAnimation()
+PHASE_CHANGED → updateUI() 
+CARD_PLAYED → updateZones()
+BATTLE_CALCULATED → showBattleResults()
+```
+
+## Key Patterns
+
+### Polling-Based Updates
+- **Frequency**: 1-second intervals via `GAME_CONFIG.pollInterval`
+- **Data Flow**: API → GameStateManager → GameScene → UI Updates
+- **Event Acknowledgment**: Prevents event duplication via `acknowledgeEvents()`
+
+### Depth Management
+GameScene uses Phaser depth layers for proper UI rendering:
+```javascript
+// Overlay depth hierarchy
+overlay.setDepth(1000);           // Background overlay
+handCards.setDepth(1001);         // Hand cards above overlay  
+leaderCards.setDepth(1001);       // Leader cards above overlay
+dialog.setDepth(1002);            // Dialog above everything
+```
+
+### Card Component Integration
+- **Container-Based**: Cards extend `Phaser.GameObjects.Container`
+- **Interactive**: Full drag-and-drop with hover effects
+- **State Management**: Face-up/face-down, selection states
+- **Zone Validation**: Automatic compatibility checking
+
+### Error Handling
+- **Graceful Degradation**: Falls back to demo mode when API unavailable
+- **Network Resilience**: Handles connection failures transparently
+- **State Recovery**: Maintains game state across reconnections
+
 ## Backend Integration
 
-The frontend is designed to integrate with a REST API backend:
+The frontend connects to a Node.js/Express backend:
 
-### API Endpoints (Planned)
+### API Endpoints
 - `POST /game/create` - Create new game
 - `GET /game/:gameId` - Get game state
 - `POST /player/playerAction` - Send player actions
@@ -163,20 +328,45 @@ The frontend is designed to integrate with a REST API backend:
 - Minimum resolution: 1024x768
 - Optimized for desktop and tablet gameplay
 
+## Development Workflow
+
+### Testing in Demo Mode
+```bash
+npm run dev  # Starts development server
+# Navigate to game, select "Demo Mode" for offline testing
+```
+
+### Online Mode Testing
+```bash
+# Terminal 1 - Backend
+cd cardBackend && npm run dev
+
+# Terminal 2 - Frontend  
+cd cardFrontend && npm run dev
+# Select "Online Mode" and create/join games
+```
+
+### Key Files to Monitor
+- `GameScene.js` - All gameplay logic and UI updates
+- `GameStateManager.js` - State coordination and event processing
+- `APIManager.js` - Backend communication and error handling
+- `Card.js` - Individual card component behavior
+- `gameConfig.js` - Configuration constants and API settings
+
 ## Known Limitations
 
-- Currently uses demo/mock data instead of live backend
-- API integration is prepared but not fully implemented
-- No persistent storage of game state
-- Limited to local/demo gameplay
+- Leader card overlay visibility needs manual fix (depth management issue)
+- Backend leader deck shuffling may need verification
+- API integration requires backend server running
+- Limited error recovery for network failures
 
 ## Next Steps
 
-1. **Backend Integration**: Connect to live game server
-2. **Multiplayer**: Real-time opponent interaction
-3. **Card Effects**: Implement specific card abilities
-4. **Deck Building**: Custom deck creation interface
-5. **Tournaments**: Multi-game competitive play
+1. **Fix Leader Card Overlay**: Resolve depth management for leader cards during redraw dialog
+2. **Backend Verification**: Ensure leader deck shuffling works correctly on backend
+3. **Enhanced Error Handling**: Improve network failure recovery
+4. **Card Effects**: Implement specific card abilities
+5. **Tournament Mode**: Multi-game competitive play
 
 ## Contributing
 
