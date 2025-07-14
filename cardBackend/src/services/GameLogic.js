@@ -41,7 +41,7 @@ class GameLogic {
             lastUpdate: new Date()
         };
         await this.saveOrCreateGame(newGame, gameId);
-        return newGame;
+        return this.transformGameStateForFrontend(newGame);
     }
 
     async joinRoom(req) {
@@ -98,7 +98,7 @@ class GameLogic {
             lastUpdate: new Date()
         };
         await this.saveOrCreateGame(updatedGame, gameId);
-        return updatedGame;
+        return this.transformGameStateForFrontend(updatedGame);
     }
 
     async startReady(req) {
@@ -145,7 +145,7 @@ class GameLogic {
         
         gameData.gameEnv = gameEnv;
         await this.saveOrCreateGame(gameData, gameId);
-        return gameData;
+        return this.transformGameStateForFrontend(gameData);
     }
     
     async processPlayerAction(req) {
@@ -167,7 +167,7 @@ class GameLogic {
             await this.saveOrCreateGame(updatedGameData, gameId);
             
             // Return the updated game data - client can determine card selection from pendingPlayerAction
-            return updatedGameData;
+            return this.transformGameStateForFrontend(updatedGameData);
         }
     }
 
@@ -209,7 +209,7 @@ class GameLogic {
         };
 
         await this.saveOrCreateGame(newGame, gameId);
-        return newGame;
+        return this.transformGameStateForFrontend(newGame);
     }
 
     async saveOrCreateGame(data, gameId) {
@@ -255,10 +255,41 @@ class GameLogic {
     async getGameState(gameId) {
         try {
             const game = await this.readJSONFileAsync(gameId);
-            return game;
+            return this.transformGameStateForFrontend(game);
         } catch (error) {
             return null;
         }
+    }
+
+    transformGameStateForFrontend(game) {
+        if (!game || !game.gameEnv) {
+            return game;
+        }
+
+        // Create a copy of the game state
+        const transformedGame = { ...game };
+        const gameEnv = { ...game.gameEnv };
+
+        // Extract player data and create players object
+        const players = {};
+        const { getPlayerFromGameEnv } = require('../utils/gameUtils');
+        const playerIds = getPlayerFromGameEnv(gameEnv);
+
+        playerIds.forEach(playerId => {
+            if (gameEnv[playerId]) {
+                players[playerId] = {
+                    id: playerId,
+                    name: playerId, // Using playerId as name for now
+                    ...gameEnv[playerId]
+                };
+            }
+        });
+
+        // Add players object to gameEnv
+        gameEnv.players = players;
+
+        transformedGame.gameEnv = gameEnv;
+        return transformedGame;
     }
 
     async updateGameState(gameId, updates) {
@@ -273,7 +304,7 @@ class GameLogic {
             };
             
             await this.saveOrCreateGame(updatedGame, gameId);
-            return updatedGame;
+            return this.transformGameStateForFrontend(updatedGame);
         } catch (error) {
             throw new Error('Game not found');
         }
@@ -307,9 +338,10 @@ class GameLogic {
         const updatedGameData = this.addUpdateUUID(gameData);
         await this.saveOrCreateGame(updatedGameData, gameId);
 
+        const transformedGame = this.transformGameStateForFrontend(updatedGameData);
         return {
             success: true,
-            gameEnv: updatedGameEnv
+            gameEnv: transformedGame.gameEnv
         };
     }
 
@@ -356,9 +388,10 @@ class GameLogic {
         const updatedGameData = this.addUpdateUUID(gameData);
         await this.saveOrCreateGame(updatedGameData, gameId);
 
+        const transformedGame = this.transformGameStateForFrontend(updatedGameData);
         return {
             success: true,
-            gameEnv: updatedGameEnv
+            gameEnv: transformedGame.gameEnv
         };
     }
 }

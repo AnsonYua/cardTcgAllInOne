@@ -52,8 +52,13 @@ export default class GameStateManager {
   }
 
   getOpponent() {
+    console.log('getOpponent players:', this.gameState.gameEnv.players);
+    console.log('current playerId:', this.gameState.playerId);
     const players = Object.keys(this.gameState.gameEnv.players);
-    return players.find(id => id !== this.gameState.playerId);
+    console.log('player keys:', players);
+    const opponent = players.find(id => id !== this.gameState.playerId);
+    console.log('found opponent:', opponent);
+    return opponent;
   }
 
   isCurrentPlayer() {

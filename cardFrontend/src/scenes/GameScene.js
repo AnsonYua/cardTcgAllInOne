@@ -396,7 +396,7 @@ export default class GameScene extends Phaser.Scene {
       fill: '#4CAF50'
     });
     
-    this.playerHandText = this.add.text(-100, 50, `Hand: ${player ? player.hand.length : 0}`, {
+    this.playerHandText = this.add.text(-100, 50, `Hand: ${player && player.hand ? player.hand.length : 0}`, {
       fontSize: '14px',
       fontFamily: 'Arial',
       fill: '#ffffff'
@@ -417,7 +417,7 @@ export default class GameScene extends Phaser.Scene {
     });
     this.opponentVPText.setOrigin(1, 0);
     
-    this.opponentHandText = this.add.text(width+1000, 50, `Hand: ${opponentData ? opponentData.hand.length : 0}`, {
+    this.opponentHandText = this.add.text(width+1000, 50, `Hand: ${opponentData && opponentData.hand ? opponentData.hand.length : 0}`, {
       fontSize: '14px',
       fontFamily: 'Arial',
       fill: '#ffffff'
@@ -910,15 +910,15 @@ export default class GameScene extends Phaser.Scene {
     
     // Update player info
     this.playerVPText.setText(`VP: ${this.gameStateManager.getVictoryPoints()}`);
-    this.playerHandText.setText(`Hand: ${player ? player.hand.length : 0}`);
+    this.playerHandText.setText(`Hand: ${player && player.hand ? player.hand.length : 0}`);
     
     // Update opponent info
     this.opponentVPText.setText(`VP: ${this.gameStateManager.getVictoryPoints(opponent)}`);
-    this.opponentHandText.setText(`Hand: ${opponentData ? opponentData.hand.length : 0}`);
+    this.opponentHandText.setText(`Hand: ${opponentData && opponentData.hand ? opponentData.hand.length : 0}`);
     
     // Update opponent hand count display
     if (this.opponentHandCountText) {
-      const opponentHandCount = opponentData ? opponentData.hand.length : 0;
+      const opponentHandCount = opponentData && opponentData.hand ? opponentData.hand.length : 0;
       this.opponentHandCountText.setText(opponentHandCount.toString());
     }
     

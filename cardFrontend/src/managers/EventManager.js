@@ -353,10 +353,10 @@ export default class EventManager {
     const gameData = {
       playerName: gameState.playerName,
       playerVP: this.gameLogicManager.gameStateManager.getVictoryPoints(),
-      playerHandCount: player ? player.hand.length : 0,
+      playerHandCount: player && player.hand ? player.hand.length : 0,
       opponentName: opponentData ? opponentData.name : 'Unknown',
       opponentVP: this.gameLogicManager.gameStateManager.getVictoryPoints(opponent),
-      opponentHandCount: opponentData ? opponentData.hand.length : 0,
+      opponentHandCount: opponentData && opponentData.hand ? opponentData.hand.length : 0,
       round: gameState.gameEnv.round
     };
     
