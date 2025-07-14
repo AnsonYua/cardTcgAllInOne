@@ -102,6 +102,7 @@ class GameLogic {
     }
 
     async startReady(req) {
+     
         var {playerId, gameId, isRedraw} = req.body;
         var gameData = await this.readJSONFileAsync(gameId);
         let gameEnv = gameData.gameEnv;
@@ -113,7 +114,6 @@ class GameLogic {
         
         // Handle redraw logic
         gameEnv = await this.mozGamePlay.redrawInBegining(gameEnv, playerId, isRedraw);
-        
         // Track which players are ready
         if (!gameEnv.playersReady) {
             gameEnv.playersReady = {};
@@ -127,17 +127,18 @@ class GameLogic {
         });
         
         // Check if both players are ready
-        const player1Id = gameEnv.playerId_1;
-        const player2Id = gameEnv.playerId_2;
-        const bothReady = gameEnv.playersReady[player1Id] && gameEnv.playersReady[player2Id];
-        
+        const { getPlayerFromGameEnv } = require('../utils/gameUtils');
+        const playerList = getPlayerFromGameEnv(gameEnv);
+        const bothReady = gameEnv.playersReady[playerList[0]] && gameEnv.playersReady[playerList[1]];
+        console.log("bothReady111" , bothReady);
         if (bothReady) {
+            console.log("bothReady");
             // Transition to draw phase first - game officially starts
             gameEnv.roomStatus = 'DRAW_PHASE';
             gameEnv.gameStarted = true;
             
             // Set current player to first player
-            const playerList = this.mozGamePlay.getPlayerFromGameEnv(gameEnv);
+            const playerList = getPlayerFromGameEnv(gameEnv);
             gameEnv.currentPlayer = playerList[gameEnv.firstPlayer];
             gameEnv.currentTurn = 0;
             

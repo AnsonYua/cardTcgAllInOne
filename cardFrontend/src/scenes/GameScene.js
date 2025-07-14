@@ -2086,25 +2086,16 @@ export default class GameScene extends Phaser.Scene {
       const gameState = this.gameStateManager.getGameState();
       const gameId = gameState.gameId;
       
-      console.log('Debug: Current game state:', gameState);
       console.log('Debug: gameId:', gameId);
-      console.log('Debug: gameEnv.players:', gameState.gameEnv.players);
-      
-      // Find player 2's ID
-      const playerIds = Object.keys(gameState.gameEnv.players || {});
-      const player2Id = playerIds.find(id => id !== gameState.playerId);
-      
-      console.log('Debug: playerIds:', playerIds);
-      console.log('Debug: current playerId:', gameState.playerId);
-      console.log('Debug: player2Id:', player2Id);
 
       if (!gameId) {
         throw new Error('No gameId found. Make sure demo was started from menu (creates game automatically).');
       }
+
+      // Backend already knows player2Id from joinRoom call, so we can directly use 'playerId_2'
+      const player2Id = 'playerId_2';
       
-      if (!player2Id) {
-        throw new Error('No player2Id found. Make sure Player 2 has joined the game first.');
-      }
+      console.log('Debug: Using player2Id:', player2Id);
 
       // Simulate player 2 calling redraw (startReady with wantRedraw = true)
       await this.apiManager.startReady(player2Id, gameId, true);
@@ -2125,8 +2116,11 @@ export default class GameScene extends Phaser.Scene {
     // Check if this is the current player's draw event
     const currentPlayerId = this.gameStateManager.getCurrentPlayerId();
     if (event.data.playerId === currentPlayerId) {
-      // Show acknowledgment UI for the current player
-      this.showDrawPhaseAcknowledgment(event.data);
+      // Play draw card animation for current player
+      this.playDrawCardAnimation(() => {
+        // Show acknowledgment UI after animation completes
+        this.showDrawPhaseAcknowledgment(event.data);
+      });
     } else {
       // Show notification that opponent drew a card
       this.showRoomStatus(`Opponent drew a card (${event.data.newHandSize} cards in hand)`);
@@ -2266,6 +2260,55 @@ export default class GameScene extends Phaser.Scene {
       }
       this.phaseText.setText(displayText);
     }
+  }
+
+  playDrawCardAnimation(onComplete) {
+    // Get deck position for animation start
+    const playerDeckPosition = this.layout.player.deck;
+    
+    // Create temporary card at deck position (card back)
+    const tempCard = this.add.image(playerDeckPosition.x, playerDeckPosition.y, 'card-back');
+    
+    // Set the card to hand card size immediately
+    const scaleX = GAME_CONFIG.card.width / tempCard.width;
+    const scaleY = GAME_CONFIG.card.height / tempCard.height;
+    const handScale = Math.min(scaleX, scaleY) * 0.95 * 1.15; // Match hand card scale
+    tempCard.setScale(handScale);
+    tempCard.setDepth(2000); // Above everything else
+    
+    // Calculate target position (next to hand container)
+    const handCenterX = this.handContainer.x;
+    const handCenterY = this.handContainer.y;
+    
+    // Animate card from deck to hand area
+    this.tweens.add({
+      targets: tempCard,
+      x: handCenterX,
+      y: handCenterY,
+      duration: 600,
+      ease: 'Power2.easeOut',
+      onComplete: () => {
+        // Add a brief pause before showing acknowledgment
+        this.time.delayedCall(200, () => {
+          // Remove temporary card
+          tempCard.destroy();
+          
+          // Call the completion callback
+          if (onComplete) {
+            onComplete();
+          }
+        });
+      }
+    });
+    
+    // Add some visual flair - slight rotation during animation
+    this.tweens.add({
+      targets: tempCard,
+      rotation: 0.1,
+      duration: 300,
+      ease: 'Power2.easeOut',
+      yoyo: true
+    });
   }
 
 }
