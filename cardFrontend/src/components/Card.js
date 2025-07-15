@@ -266,6 +266,12 @@ export default class Card extends Phaser.GameObjects.Container {
           return;
         }
         
+        // Skip selection logic if highlight is disabled (e.g., for leader cards)
+        if (this.options.disableHighlight) {
+          console.log(`Card ${this.cardData?.id} clicked but highlight disabled - no selection`);
+          return;
+        }
+        
         // SAFER SELECTION LOGIC
         try {
           if (this.isSelected) {
@@ -431,16 +437,44 @@ export default class Card extends Phaser.GameObjects.Container {
     });
   }
 
-  moveToPosition(x, y, duration = 300) {
+  moveToPosition(x, y, duration = 300, removeFromContainer = true) {
     this.originalPosition = { x, y };
     
-    this.scene.tweens.add({
-      targets: this,
-      x: x,
-      y: y,
-      duration: duration,
-      ease: 'Power2'
-    });
+    if (removeFromContainer) {
+      // Get the current world position of the card
+      const worldPos = this.getWorldTransformMatrix();
+      const currentWorldX = worldPos.tx;
+      const currentWorldY = worldPos.ty;
+      
+      // Remove the card from its current parent container (if any)
+      if (this.parentContainer) {
+        this.parentContainer.remove(this);
+      }
+      
+      // Set the card's position to its current world position
+      this.setPosition(currentWorldX, currentWorldY);
+      
+      // Add the card directly to the scene
+      this.scene.add.existing(this);
+      
+      // Now animate to the target position
+      this.scene.tweens.add({
+        targets: this,
+        x: x,
+        y: y,
+        duration: duration,
+        ease: 'Power2'
+      });
+    } else {
+      // Card stays in its container, just animate to new relative position
+      this.scene.tweens.add({
+        targets: this,
+        x: x,
+        y: y,
+        duration: duration,
+        ease: 'Power2'
+      });
+    }
   }
 
   canPlayInZone(zoneType) {

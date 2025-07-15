@@ -240,6 +240,7 @@ export default class GameScene extends Phaser.Scene {
       // Add zone click handling for card placement when card is selected
       dropZone.setInteractive();
       dropZone.on('pointerdown', (pointer) => {
+        console.log('dropZone clicked');
         this.handleZoneClick(type, x, y);
       });
     }
@@ -1245,7 +1246,7 @@ export default class GameScene extends Phaser.Scene {
     
     this.playerHand.forEach((card, index) => {
       const newX = startX + (index * cardSpacing);
-      card.moveToPosition(newX, 0);
+      card.moveToPosition(newX, 0, 300, false); // false = don't remove from container
       card.originalPosition.x = newX;
     });
   }
@@ -1466,7 +1467,8 @@ export default class GameScene extends Phaser.Scene {
       interactive: true,
       draggable: false,
       scale: 0.9,
-      usePreview: true // Use preview images for leader deck display
+      usePreview: true, // Use preview images for leader deck display
+      disableHighlight: true  // Disable selection highlight for leader deck cards
     });
     
     // Rotate the card 90 degrees to match the original leaderDeck orientation
@@ -1536,7 +1538,8 @@ export default class GameScene extends Phaser.Scene {
           interactive: true,
           draggable: false,
           scale: 0.9,
-          usePreview: true
+          usePreview: true,
+          disableHighlight: true  // Disable selection highlight for leader cards
         });
     
         leaderCard.on('pointerover', () => this.showCardPreview(cardData));
