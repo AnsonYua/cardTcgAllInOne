@@ -55,6 +55,7 @@ The game will be accessible at `http://localhost:3000`.
 ### Backend
 - **Framework**: Node.js with Express.js.
 - **Game Logic**: The core game mechanics are managed by modules in `src/mozGame/`, which handle phases, player actions, and card effects.
+- **Field Effects System**: `FieldEffectProcessor` service manages leader card effects including zone restrictions and power modifications.
 - **State Management**: Game state is persisted as JSON files in `src/gameData/`. This file-based approach ensures that games are not lost if the server restarts.
 - **API**: A RESTful API provides endpoints for the frontend to create games, perform actions, and poll for state updates.
 
@@ -62,6 +63,7 @@ The game will be accessible at `http://localhost:3000`.
 - **Framework**: Phaser 3.
 - **Scene Management**: The game is divided into multiple Phaser scenes (`MenuScene`, `GameScene`, `BattleResultScene`, etc.) to manage different parts of the game flow.
 - **State Synchronization**: The `GameStateManager` polls the backend API every second for the latest `gameEnv`.
+- **Field Effects Integration**: Client-side methods for accessing zone restrictions and modified card power.
 - **API Communication**: The `APIManager` handles all HTTP requests to the backend.
 
 ## Game Flow
@@ -102,6 +104,51 @@ The game uses a comprehensive event system for real-time updates:
 - **CARD_PLAYED**: Triggered when a card is placed in a zone
 
 Events require acknowledgment via `POST /player/acknowledgeEvents` to maintain synchronization.
+
+## Field Effects System
+
+### Overview
+The field effects system allows leader cards to impose continuous effects on the game state, providing strategic depth through zone restrictions and power modifications.
+
+### Key Features
+
+**Zone Restrictions:**
+- Leaders can restrict which card types can be played in specific zones
+- Example: S-1 (特朗普) restricts TOP zone to ["右翼", "自由", "經濟"] card types
+- Enforced during card placement validation
+
+**Power Modifications:**
+- Leaders can grant power bonuses to cards with specific attributes
+- Example: S-1 grants +45 power to cards with "右翼" or "愛國者" gameTypes
+- Applied during battle calculation
+
+**Cross-Player Effects:**
+- Some leader effects target opponent's cards
+- Example: Powell nullifies opponent's cards with "經濟" trait (sets power to 0)
+- Creates strategic counter-play between different leader combinations
+
+### Implementation
+
+**Backend:**
+- `FieldEffectProcessor` service class manages all field effect logic
+- Field effects stored in `gameEnv[playerId].fieldEffects`
+- Integration points in game setup, card placement validation, and power calculation
+
+**Frontend:**
+- `GameStateManager` methods for accessing field effects and zone restrictions
+- Real-time field effect data via API polling
+- Client-side validation for card placement restrictions
+
+### Example Leader Effects
+
+**S-1 (特朗普):**
+- Zone restrictions: TOP=["右翼", "自由", "經濟"], LEFT=["右翼", "自由", "愛國者"], RIGHT=["右翼", "愛國者", "經濟"]
+- Power bonus: +45 to cards with "右翼" or "愛國者" gameTypes
+
+**Powell (鮑威爾):**
+- Zone restrictions: TOP=["經濟", "自由"], LEFT/RIGHT=["經濟", "左翼", "右翼"]
+- Power bonus: +30 to cards with "自由" or "經濟" gameTypes
+- Cross-player effect: Nullifies opponent's cards with "經濟" trait
 
 ## API Data Model
 

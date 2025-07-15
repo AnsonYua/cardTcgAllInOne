@@ -322,7 +322,17 @@ class GameLogic {
                     },
                     isReady: sourceGameEnv.playersReady?.[playerId] || false,
                     redraw: playerData.redraw || 0,
-                    turnAction: playerData.turnAction || []
+                    turnAction: playerData.turnAction || [],
+                    fieldEffects: playerData.fieldEffects || {
+                        zoneRestrictions: {
+                            "TOP": "ALL",
+                            "LEFT": "ALL",
+                            "RIGHT": "ALL",
+                            "HELP": "ALL",
+                            "SP": "ALL"
+                        },
+                        activeEffects: []
+                    }
                 };
                 
                 // Extract zone data with proper structure

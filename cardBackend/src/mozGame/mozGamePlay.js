@@ -1,6 +1,7 @@
 const mozDeckHelper = require('./mozDeckHelper');
 const mozPhaseManager = require('./mozPhaseManager');
 const CardEffectManager = require('../services/CardEffectManager');
+const FieldEffectProcessor = require('../services/FieldEffectProcessor');
 const { getPlayerFromGameEnv } = require('../utils/gameUtils');
 const CardInfoUtils = require('../services/CardInfoUtils');
 const { json } = require('express');
@@ -22,6 +23,7 @@ class mozGamePlay {
     constructor() {
         this.cardEffectManager = CardEffectManager;
         this.cardInfoUtils = CardInfoUtils;
+        this.fieldEffectProcessor = FieldEffectProcessor;
     }
 
     // Event Management System
@@ -186,6 +188,12 @@ class mozGamePlay {
                gameEnv[playerList[playerId]]["Field"]["top"] = [];
                gameEnv[playerList[playerId]]["Field"]["help"] = [];
                gameEnv[playerList[playerId]]["Field"]["sp"] = [];
+               
+               // Initialize field effects for this player
+               this.fieldEffectProcessor.initializePlayerFieldEffects(gameEnv, playerList[playerId]);
+               
+               // Process leader field effects
+               await this.fieldEffectProcessor.processLeaderFieldEffects(gameEnv, playerList[playerId], leader);
             }
             
             // Note: Drawing and phase transitions are now handled in GameLogic.startReady()
@@ -258,9 +266,10 @@ class mozGamePlay {
                 return this.throwError("Card not found");
             }
 
-            // Check advanced placement restrictions (zone compatibility, special effects)
+            // Check advanced placement restrictions (zone compatibility, special effects, field effects)
             // Face-down cards bypass all restrictions since opponent cannot see what's being played
             if (!isPlayInFaceDown) {
+                // Check existing card effect restrictions
                 const placementCheck = await this.cardEffectManager.checkSummonRestriction(
                     gameEnv,
                     playerId,
@@ -271,6 +280,19 @@ class mozGamePlay {
                 if (!placementCheck.canPlace) {
                     this.addErrorEvent(gameEnv, 'ZONE_COMPATIBILITY_ERROR', placementCheck.reason, playerId);
                     return this.throwError(placementCheck.reason);
+                }
+
+                // Check field effect restrictions (leader-imposed zone restrictions)
+                const fieldEffectCheck = await this.fieldEffectProcessor.validateCardPlacementWithFieldEffects(
+                    gameEnv,
+                    playerId,
+                    cardDetails,
+                    playPos
+                );
+
+                if (!fieldEffectCheck.canPlace) {
+                    this.addErrorEvent(gameEnv, 'FIELD_EFFECT_RESTRICTION', fieldEffectCheck.reason, playerId);
+                    return this.throwError(fieldEffectCheck.reason);
                 }
 
                 // Log any override effects that allowed placement
@@ -565,9 +587,17 @@ class mozGamePlay {
             let opponentLeader = this.cardInfoUtils.getCurrentLeader(gameEnv, opponent);
             gameEnv[opponent].Field["leader"] = opponentLeader
             
+            // Clear old field effects and apply new leader effects for opponent
+            await this.fieldEffectProcessor.clearPlayerLeaderEffects(gameEnv, opponent);
+            await this.fieldEffectProcessor.processLeaderFieldEffects(gameEnv, opponent, opponentLeader);
+            
             gameEnv[crtPlayer].deck.currentLeaderIdx = gameEnv[crtPlayer].deck.currentLeaderIdx + 1; 
             let crtLeader = this.cardInfoUtils.getCurrentLeader(gameEnv, crtPlayer);
             gameEnv[crtPlayer].Field["leader"] = crtLeader
+            
+            // Clear old field effects and apply new leader effects for current player
+            await this.fieldEffectProcessor.clearPlayerLeaderEffects(gameEnv, crtPlayer);
+            await this.fieldEffectProcessor.processLeaderFieldEffects(gameEnv, crtPlayer, crtLeader);
         }
         gameEnv = await this.startNewTurn(gameEnv);
         return gameEnv;
@@ -813,7 +843,7 @@ class mozGamePlay {
         const utilityCards = require('../data/utilityCards.json');
         const leaderCards = require('../data/leaderCards.json');
         
-        // Step 1: Calculate base power for each face-up character card
+        // Step 1: Calculate base power for each face-up character card with field effects
         let characterPowers = {};
         for (const zone of fields) {
             if (playerField[zone] && playerField[zone].length > 0) {
@@ -822,7 +852,20 @@ class mozGamePlay {
                     if (cardObj.cardDetails[0].cardType === 'character' && !cardObj.isBack[0]) {
                         const cardId = cardObj.cardDetails[0].id;
                         const basePower = cardObj.cardDetails[0].power || 0;
-                        characterPowers[cardId] = { basePower, zone, modifiers: 0 };
+                        
+                        // Apply field effects to get modified power
+                        const modifiedPower = await this.fieldEffectProcessor.calculateModifiedPower(
+                            gameEnv, 
+                            playerId, 
+                            cardObj.cardDetails[0], 
+                            basePower
+                        );
+                        
+                        characterPowers[cardId] = { 
+                            basePower: modifiedPower,  // Use field effect modified power as base
+                            zone, 
+                            modifiers: 0 
+                        };
                     }
                 }
             }

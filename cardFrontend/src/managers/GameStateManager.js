@@ -83,6 +83,86 @@ export default class GameStateManager {
     return this.gameState.gameEnv.round;
   }
 
+  // Field Effects Methods
+  getPlayerFieldEffects(playerId = null) {
+    const player = this.getPlayer(playerId);
+    return player ? player.fieldEffects : null;
+  }
+
+  getZoneRestrictions(playerId = null, zone = null) {
+    const fieldEffects = this.getPlayerFieldEffects(playerId);
+    if (!fieldEffects) return "ALL";
+    
+    if (zone) {
+      return fieldEffects.zoneRestrictions[zone.toUpperCase()] || "ALL";
+    }
+    return fieldEffects.zoneRestrictions;
+  }
+
+  getActiveEffects(playerId = null) {
+    const fieldEffects = this.getPlayerFieldEffects(playerId);
+    return fieldEffects ? fieldEffects.activeEffects : [];
+  }
+
+  canPlayCardInZone(card, zone, playerId = null) {
+    const restrictions = this.getZoneRestrictions(playerId, zone);
+    if (restrictions === "ALL") return true;
+    
+    return Array.isArray(restrictions) ? restrictions.includes(card.gameType) : false;
+  }
+
+  getModifiedCardPower(card, playerId = null) {
+    const fieldEffects = this.getPlayerFieldEffects(playerId);
+    if (!fieldEffects) return card.power;
+    
+    let modifiedPower = card.power;
+    
+    for (const effect of fieldEffects.activeEffects) {
+      if (effect.type === "POWER_MODIFICATION") {
+        // Check if effect affects this card
+        if (this.doesEffectAffectCard(effect, card)) {
+          modifiedPower += effect.value;
+        }
+      } else if (effect.type === "POWER_NULLIFICATION") {
+        // Check if effect affects this card
+        if (this.doesEffectAffectCard(effect, card)) {
+          modifiedPower = 0;
+        }
+      }
+    }
+    
+    return modifiedPower;
+  }
+
+  doesEffectAffectCard(effect, card) {
+    const target = effect.target;
+    
+    // Check card type filter
+    if (target.cardTypes && target.cardTypes !== "ALL") {
+      if (!target.cardTypes.includes(card.cardType)) {
+        return false;
+      }
+    }
+    
+    // Check game type filter
+    if (target.gameTypes && target.gameTypes !== "ALL") {
+      if (!target.gameTypes.includes(card.gameType)) {
+        return false;
+      }
+    }
+    
+    // Check traits filter
+    if (target.traits && target.traits !== "ALL") {
+      const cardTraits = card.traits || [];
+      const hasMatchingTrait = target.traits.some(trait => cardTraits.includes(trait));
+      if (!hasMatchingTrait) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
   addEventListener(eventType, handler) {
     if (!this.eventHandlers.has(eventType)) {
       this.eventHandlers.set(eventType, []);

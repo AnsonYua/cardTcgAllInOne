@@ -303,6 +303,151 @@ Comprehensive real-time game state tracking for frontend integration:
 - **Reliability:** Event persistence prevents missed updates during network issues
 - **Performance:** Automatic cleanup prevents memory growth
 
+## Field Effects System (January 2025)
+
+### Overview
+The field effects system provides a comprehensive framework for leader cards to impose continuous effects on the game state, including zone restrictions and power modifications.
+
+### Core Components
+
+**Backend Implementation:**
+- `FieldEffectProcessor` service class handles all field effect logic
+- `fieldEffects` object added to each player in `gameEnv[playerId]`
+- Integration points in game setup, card placement, and power calculation
+
+**Frontend Integration:**
+- `GameStateManager` methods for accessing field effects
+- Real-time field effect data via API polling
+- Client-side validation for card placement restrictions
+
+### Field Effect Types
+
+**Zone Restrictions:**
+- Leaders can restrict which card types can be played in specific zones
+- Example: S-1 (特朗普) restricts TOP zone to ["右翼", "自由", "經濟"]
+- Enforced during card placement validation
+
+**Power Modifications:**
+- Leaders can grant power bonuses to cards with specific attributes
+- Example: S-1 grants +45 power to cards with "右翼" or "愛國者" gameTypes
+- Applied during battle calculation
+
+**Power Nullification:**
+- Leaders can nullify opponent's cards with specific traits
+- Example: Powell nullifies opponent's cards with "經濟" trait (sets power to 0)
+- Cross-player effect that affects opponent's cards
+
+### Data Structure
+
+**Player Field Effects:**
+```javascript
+gameEnv[playerId].fieldEffects = {
+  zoneRestrictions: {
+    "TOP": ["右翼", "自由", "經濟"],
+    "LEFT": ["右翼", "自由", "愛國者"],
+    "RIGHT": ["右翼", "愛國者", "經濟"],
+    "HELP": "ALL",
+    "SP": "ALL"
+  },
+  activeEffects: [
+    {
+      effectId: "s-1_power_bonus",
+      source: "s-1",
+      sourcePlayerId: "playerId_1",
+      type: "POWER_MODIFICATION",
+      target: {
+        scope: "SELF",
+        zones: "ALL",
+        gameTypes: ["右翼", "愛國者"]
+      },
+      value: 45
+    }
+  ]
+}
+```
+
+### Integration Points
+
+**Game Setup:**
+- `initializePlayerFieldEffects()` - Initialize field effects structure
+- `processLeaderFieldEffects()` - Apply leader effects when leaders are set
+- Called during initial game setup and leader changes
+
+**Card Placement:**
+- `validateCardPlacementWithFieldEffects()` - Check zone restrictions
+- Integrated into `processAction()` card placement validation
+- Prevents invalid card placements based on leader restrictions
+
+**Power Calculation:**
+- `calculateModifiedPower()` - Apply power modifications and nullifications
+- Integrated into `calculatePlayerPoint()` battle calculation
+- Processes effects in order: power modifications, then nullifications
+
+**Leader Changes:**
+- `clearPlayerLeaderEffects()` - Remove old leader effects
+- `processLeaderFieldEffects()` - Apply new leader effects
+- Called when advancing to next round with new leaders
+
+### Leader Card Examples
+
+**S-1 (特朗普):**
+```javascript
+"fieldEffects": [
+  {
+    "type": "ZONE_RESTRICTION",
+    "target": { "scope": "SELF", "zones": ["TOP", "LEFT", "RIGHT"] },
+    "restriction": {
+      "TOP": ["右翼", "自由", "經濟"],
+      "LEFT": ["右翼", "自由", "愛國者"],
+      "RIGHT": ["右翼", "愛國者", "經濟"]
+    }
+  },
+  {
+    "type": "POWER_MODIFICATION",
+    "target": { "scope": "SELF", "zones": "ALL", "gameTypes": ["右翼", "愛國者"] },
+    "value": 45
+  }
+]
+```
+
+**Powell (鮑威爾):**
+```javascript
+"fieldEffects": [
+  {
+    "type": "POWER_NULLIFICATION",
+    "target": { "scope": "OPPONENT", "zones": "ALL", "traits": ["經濟"] },
+    "value": 0
+  }
+]
+```
+
+### Frontend Integration
+
+**GameStateManager Methods:**
+- `getPlayerFieldEffects(playerId)` - Access player's field effects
+- `getZoneRestrictions(playerId, zone)` - Get zone restrictions
+- `canPlayCardInZone(card, zone, playerId)` - Validate card placement
+- `getModifiedCardPower(card, playerId)` - Calculate modified power
+
+**API Response:**
+- Field effects included in `gameEnv.players[playerId].fieldEffects`
+- Real-time updates via polling system
+- Automatic field effect updates when leaders change
+
+### Error Handling
+
+**New Error Types:**
+- `FIELD_EFFECT_RESTRICTION` - Card placement blocked by leader restriction
+- Error events generated when players attempt invalid placements
+- Clear error messages indicating which restriction was violated
+
+### Performance Considerations
+
+- Field effects calculated on-demand during validation and battle
+- Efficient targeting system filters effects by scope and card properties
+- Automatic cleanup when leaders change to prevent memory leaks
+- Minimal impact on existing game flow and performance
+
 ## Phase Field Consolidation (January 2025)
 
 ### Issue Resolved
