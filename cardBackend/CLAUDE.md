@@ -327,7 +327,7 @@ The field effects system provides a comprehensive framework for leader cards to 
 - Example: S-1 (特朗普) restricts TOP zone to ["右翼", "自由", "經濟"]
 - Enforced during card placement validation
 
-**Power Modifications:**
+**Power Boosts:**
 - Leaders can grant power bonuses to cards with specific attributes
 - Example: S-1 grants +45 power to cards with "右翼" or "愛國者" gameTypes
 - Applied during battle calculation
@@ -354,7 +354,7 @@ gameEnv[playerId].fieldEffects = {
       effectId: "s-1_power_bonus",
       source: "s-1",
       sourcePlayerId: "playerId_1",
-      type: "POWER_MODIFICATION",
+      type: "powerBoost",
       target: {
         scope: "SELF",
         zones: "ALL",
@@ -379,9 +379,9 @@ gameEnv[playerId].fieldEffects = {
 - Prevents invalid card placements based on leader restrictions
 
 **Power Calculation:**
-- `calculateModifiedPower()` - Apply power modifications and nullifications
+- `calculateModifiedPower()` - Apply power boosts and nullifications
 - Integrated into `calculatePlayerPoint()` battle calculation
-- Processes effects in order: power modifications, then nullifications
+- Processes effects in order: power boosts, then nullifications
 
 **Leader Changes:**
 - `clearPlayerLeaderEffects()` - Remove old leader effects
@@ -403,7 +403,7 @@ gameEnv[playerId].fieldEffects = {
     }
   },
   {
-    "type": "POWER_MODIFICATION",
+    "type": "powerBoost",
     "target": { "scope": "SELF", "zones": "ALL", "gameTypes": ["右翼", "愛國者"] },
     "value": 45
   }

@@ -141,12 +141,31 @@ class GameLogic {
         console.log("🔍 Both Ready:", bothReady);
         if (bothReady) {
             console.log("🎯 Both players ready - generating DRAW_PHASE_COMPLETE event");
+            
+            // Initialize game fields for all players (moved from redrawInBegining)
+            for (let playerId of playerList) {
+                let leader = this.mozGamePlay.cardInfoUtils.getCurrentLeader(gameEnv, playerId);
+                gameEnv[playerId]["turnAction"] = []
+                gameEnv[playerId]["Field"] = {};
+                gameEnv[playerId]["Field"]["leader"] = leader;
+                gameEnv[playerId]["Field"]["right"] = [];
+                gameEnv[playerId]["Field"]["left"] = [];
+                gameEnv[playerId]["Field"]["top"] = [];
+                gameEnv[playerId]["Field"]["help"] = [];
+                gameEnv[playerId]["Field"]["sp"] = [];
+                
+                // Initialize field effects for this player
+                this.mozGamePlay.fieldEffectProcessor.initializePlayerFieldEffects(gameEnv, playerId);
+                
+                // Process leader field effects
+                await this.mozGamePlay.fieldEffectProcessor.processLeaderFieldEffects(gameEnv, playerId, leader);
+            }
+            
             // Transition to draw phase first - game officially starts
             updatePhase(gameEnv, 'DRAW_PHASE');
             gameEnv.gameStarted = true;
             
             // Set current player to first player
-            const playerList = getPlayerFromGameEnv(gameEnv);
             gameEnv.currentPlayer = playerList[gameEnv.firstPlayer];
             gameEnv.currentTurn = 0;
             

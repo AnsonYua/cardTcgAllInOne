@@ -117,7 +117,7 @@ The field effects system allows leader cards to impose continuous effects on the
 - Example: S-1 (特朗普) restricts TOP zone to ["右翼", "自由", "經濟"] card types
 - Enforced during card placement validation
 
-**Power Modifications:**
+**Power Boosts:**
 - Leaders can grant power bonuses to cards with specific attributes
 - Example: S-1 grants +45 power to cards with "右翼" or "愛國者" gameTypes
 - Applied during battle calculation

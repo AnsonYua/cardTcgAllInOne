@@ -162,43 +162,8 @@ class mozGamePlay {
                 });
             }
         }
-        const playerList = mozGamePlay.getPlayerFromGameEnv(gameEnv);
-
-        /*
-        when all player have redraw 1 and turnPhase is startRedraw,
-        meaning all player is ready to start the game
-        so we can change the phase to main phase
-        */
-        var allReady = true;
-        for (let playerId in playerList){
-            if(gameEnv[playerList[playerId]].redraw == 0){
-                allReady = false;
-            } 
-        }
-
-        if (allReady && gameEnv["phase"] == TurnPhase.START_REDRAW){
-           // Initialize game fields for all players
-           for (let playerId in playerList){
-               let leader = this.cardInfoUtils.getCurrentLeader(gameEnv, playerList[playerId]);
-               gameEnv[playerList[playerId]]["turnAction"] = []
-               gameEnv[playerList[playerId]]["Field"] = {};
-               gameEnv[playerList[playerId]]["Field"]["leader"] = leader;
-               gameEnv[playerList[playerId]]["Field"]["right"] = [];
-               gameEnv[playerList[playerId]]["Field"]["left"] = [];
-               gameEnv[playerList[playerId]]["Field"]["top"] = [];
-               gameEnv[playerList[playerId]]["Field"]["help"] = [];
-               gameEnv[playerList[playerId]]["Field"]["sp"] = [];
-               
-               // Initialize field effects for this player
-               this.fieldEffectProcessor.initializePlayerFieldEffects(gameEnv, playerList[playerId]);
-               
-               // Process leader field effects
-               await this.fieldEffectProcessor.processLeaderFieldEffects(gameEnv, playerList[playerId], leader);
-            }
-            
-            // Note: Drawing and phase transitions are now handled in GameLogic.startReady()
-            // This method only handles the redraw logic during the initial ready phase
-        }
+        // Note: Field initialization is now handled in GameLogic.startReady() when both players are ready
+        // This method only handles the redraw logic during the initial ready phase
         return gameEnv;
     }
 

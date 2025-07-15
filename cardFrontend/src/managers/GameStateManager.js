@@ -118,7 +118,7 @@ export default class GameStateManager {
     let modifiedPower = card.power;
     
     for (const effect of fieldEffects.activeEffects) {
-      if (effect.type === "POWER_MODIFICATION") {
+      if (effect.type === "powerBoost") {
         // Check if effect affects this card
         if (this.doesEffectAffectCard(effect, card)) {
           modifiedPower += effect.value;

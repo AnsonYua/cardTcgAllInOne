@@ -166,7 +166,7 @@ class FieldEffectProcessor {
         // Convert power boost effects
         if (rule.effect.type === 'powerBoost') {
             const fieldEffect = {
-                type: "POWER_MODIFICATION",
+                type: "powerBoost",
                 target: {
                     scope: "SELF",
                     zones: "ALL"
@@ -395,10 +395,10 @@ class FieldEffectProcessor {
         
         // Apply power modification effects
         for (const effect of effects) {
-            if (effect.type === "POWER_MODIFICATION") {
+            if (effect.type === "powerBoost") {
                 if (await this.doesEffectAffectCard(effect, cardDetails)) {
                     modifiedPower += effect.value;
-                    console.log(`⚡ Power modification applied to ${cardDetails.name}: ${effect.value} (${basePower} → ${modifiedPower})`);
+                    console.log(`⚡ Power boost applied to ${cardDetails.name}: ${effect.value} (${basePower} → ${modifiedPower})`);
                 }
             } else if (effect.type === "POWER_NULLIFICATION") {
                 if (await this.doesEffectAffectCard(effect, cardDetails)) {
