@@ -781,10 +781,10 @@ export default class GameScene extends Phaser.Scene {
     this.events.on('card-select', (card) => {
       console.log(`GameScene: card-select event received for card ${card.cardData?.id}`);
       
-      // First, deselect ALL hand cards silently (including the clicked one)
+      // First, deselect ALL OTHER hand cards silently (not the clicked one)
       this.playerHand.forEach(handCard => {
-        if (handCard.isSelected) {
-          console.log(`Deselecting card ${handCard.cardData?.id}`);
+        if (handCard !== card && handCard.isSelected) {
+          console.log(`Deselecting other card ${handCard.cardData?.id}`);
           handCard.deselectSilently();
         }
       });
@@ -923,7 +923,7 @@ export default class GameScene extends Phaser.Scene {
       const x = startX + (index * cardSpacing);
       const card = new Card(this, x, 0, processedCardData, {
         interactive: true,
-        draggable: true,
+        draggable: false,
         scale: 1.1,
         usePreview: true
       });

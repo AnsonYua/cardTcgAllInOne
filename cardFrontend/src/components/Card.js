@@ -232,53 +232,53 @@ export default class Card extends Phaser.GameObjects.Container {
 
     // Hover effects
     this.on('pointerover', () => {
-      if (!this.isDragging && !this.isSelected) {
-        this.scene.tweens.add({
-          targets: this,
-          scaleX: this.options.scale * 1.1,
-          scaleY: this.options.scale * 1.1,
-          duration: 200,
-          ease: 'Power2'
-        });
-        
+      if (!this.isDragging) {
         this.scene.game.canvas.style.cursor = 'pointer';
         this.scene.events.emit('card-hover', this);
+        
+        // NO ANIMATION - just cursor change and event emission
       }
     });
 
     this.on('pointerout', () => {
-      if (!this.isDragging && !this.isSelected) {
-        this.scene.tweens.add({
-          targets: this,
-          scaleX: this.options.scale,
-          scaleY: this.options.scale,
-          duration: 200,
-          ease: 'Power2'
-        });
+      if (!this.isDragging) {
+        this.scene.game.canvas.style.cursor = 'default';
+        this.scene.events.emit('card-unhover', this);
+        
+        // NO ANIMATION - just cursor change and event emission
       }
-      
-      this.scene.game.canvas.style.cursor = 'default';
-      this.scene.events.emit('card-unhover', this);
     });
 
     // Click/tap interaction
     this.on('pointerdown', (pointer, localX, localY, event) => {
       if (pointer.rightButtonDown()) {
-        // Right click for face-down toggle
-        this.toggleFaceDown();
+        // Right click for face-down toggle - TEMPORARILY DISABLED
+        console.log(`Right click on card ${this.cardData?.id} - face-down toggle disabled`);
         event.stopPropagation();
       } else {
         // Left click for selection/deselection
-        console.log(`Card ${this.cardData?.id} clicked - isSelected: ${this.isSelected}`);
-        if (this.isSelected) {
-          // If already selected, deselect it
-          console.log(`Deselecting card ${this.cardData?.id}`);
-          this.deselect();
-          this.emit('card-deselect', this);
-        } else {
-          // If not selected, emit selection event (GameScene will handle the actual selection)
-          console.log(`Emitting card-select for card ${this.cardData?.id}`);
-          this.emit('card-select', this);
+        console.log(`Card ${this.cardData?.id} clicked - isSelected: ${this.isSelected}, visible: ${this.visible}, active: ${this.active}`);
+        
+        // Check if card is still valid before processing click
+        if (!this.visible || !this.active) {
+          console.error(`Card ${this.cardData?.id} - cannot process click, card is not visible or active`);
+          return;
+        }
+        
+        // SAFER SELECTION LOGIC
+        try {
+          if (this.isSelected) {
+            // If already selected, deselect it
+            console.log(`Deselecting card ${this.cardData?.id}`);
+            this.deselect();
+            this.emit('card-deselect', this);
+          } else {
+            // If not selected, emit selection event (GameScene will handle the actual selection)
+            console.log(`Emitting card-select for card ${this.cardData?.id}`);
+            this.emit('card-select', this);
+          }
+        } catch (error) {
+          console.error(`Error in selection logic for card ${this.cardData?.id}:`, error);
         }
         
         if (this.options.draggable && !this.isSelected) {
@@ -309,12 +309,7 @@ export default class Card extends Phaser.GameObjects.Container {
     this.isDragging = true;
     this.setDepth(1000);
     
-    this.scene.tweens.add({
-      targets: this,
-      scaleX: this.options.scale * 1.2,
-      scaleY: this.options.scale * 1.2,
-      duration: 100
-    });
+    // No scaling animation - just set depth and emit event
     
     this.emit('card-drag-start', this, pointer);
   }
@@ -323,12 +318,7 @@ export default class Card extends Phaser.GameObjects.Container {
     this.isDragging = false;
     this.setDepth(0);
     
-    this.scene.tweens.add({
-      targets: this,
-      scaleX: this.options.scale,
-      scaleY: this.options.scale,
-      duration: 200
-    });
+    // No scaling animation - just reset depth and emit event
     
     this.emit('card-drag-end', this, pointer);
   }
@@ -340,14 +330,24 @@ export default class Card extends Phaser.GameObjects.Container {
   }
 
   deselect() {
-    this.isSelected = false;
-    this.updateVisualState();
+    console.log(`Card ${this.cardData?.id} deselect() called`);
+    try {
+      this.isSelected = false;
+      this.updateVisualState();
+    } catch (error) {
+      console.error(`Error in deselect() for card ${this.cardData?.id}:`, error);
+    }
   }
 
   deselectSilently() {
     // Deselect without triggering animations or events
-    this.isSelected = false;
-    this.updateVisualState();
+    console.log(`Card ${this.cardData?.id} deselectSilently() called`);
+    try {
+      this.isSelected = false;
+      this.updateVisualState();
+    } catch (error) {
+      console.error(`Error in deselectSilently() for card ${this.cardData?.id}:`, error);
+    }
   }
 
   toggleFaceDown() {
@@ -357,30 +357,51 @@ export default class Card extends Phaser.GameObjects.Container {
   }
 
   updateVisualState() {
-    console.log(`Card ${this.cardData?.id} updateVisualState - isSelected: ${this.isSelected}`);
+    console.log(`Card ${this.cardData?.id} updateVisualState - isSelected: ${this.isSelected}, visible: ${this.visible}, active: ${this.active}`);
+    
+    // Safety check - if card is not visible or active, don't update visual state
+    if (!this.visible || !this.active) {
+      console.log(`Card ${this.cardData?.id} - skipping visual state update due to visibility/active state`);
+      return;
+    }
+    
+    // Safety check - if scene is not available, don't update visual state
+    if (!this.scene) {
+      console.error(`Card ${this.cardData?.id} - no scene available, skipping visual state update`);
+      return;
+    }
     
     if (this.isSelected) {
-      // Add selection highlight with green frame
+      // Add selection highlight with green frame - only if not already present
       if (!this.selectionHighlight) {
-        this.selectionHighlight = this.scene.add.graphics();
-        this.selectionHighlight.lineStyle(4, 0x00ff00); // Green highlight for selection
-        this.selectionHighlight.strokeRoundedRect(-62, -92, 124, 184, 8);
-        this.addAt(this.selectionHighlight, 0);
-        console.log(`Green frame added to card ${this.cardData?.id}`);
+        try {
+          this.selectionHighlight = this.scene.add.graphics();
+          this.selectionHighlight.lineStyle(4, 0x00ff00); // Green highlight for selection
+          this.selectionHighlight.strokeRoundedRect(-62, -92, 124, 184, 8);
+          this.add(this.selectionHighlight);
+          console.log(`Green frame added to card ${this.cardData?.id}`);
+        } catch (error) {
+          console.error(`Error adding selection highlight to card ${this.cardData?.id}:`, error);
+          // If failed to create highlight, don't mark as selected to avoid inconsistent state
+          this.selectionHighlight = null;
+        }
       }
-      
-      // Make sure selected card has higher scale and stays scaled
-      this.setScale(this.options.scale * 1.1);
     } else {
-      // Remove selection highlight
+      // Remove selection highlight - only if present
       if (this.selectionHighlight) {
-        this.selectionHighlight.destroy();
-        this.selectionHighlight = null;
-        console.log(`Green frame removed from card ${this.cardData?.id}`);
+        try {
+          // Check if the graphics object is still valid before destroying
+          if (this.selectionHighlight.scene) {
+            this.selectionHighlight.destroy();
+          }
+          this.selectionHighlight = null;
+          console.log(`Green frame removed from card ${this.cardData?.id}`);
+        } catch (error) {
+          console.error(`Error removing selection highlight from card ${this.cardData?.id}:`, error);
+          // Force clear the reference even if destroy failed
+          this.selectionHighlight = null;
+        }
       }
-      
-      // Reset scale to normal when deselected
-      this.setScale(this.options.scale);
     }
   }
 
@@ -388,8 +409,15 @@ export default class Card extends Phaser.GameObjects.Container {
     // Clear existing content
     this.removeAll(true);
     
+    // Clear references to destroyed objects
+    this.selectionHighlight = null;
+    this.cardImage = null;
+    
     // Recreate card
     this.create();
+    
+    // Restore visual state (selection highlight if needed)
+    this.updateVisualState();
   }
 
   returnToOriginalPosition(duration = 300) {
@@ -439,4 +467,6 @@ export default class Card extends Phaser.GameObjects.Container {
   isFaceDown() {
     return this.options.faceDown;
   }
+
+  // Hover animation methods removed - no animations on hover
 }
