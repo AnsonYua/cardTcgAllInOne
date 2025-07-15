@@ -55,6 +55,7 @@ export default class Card extends Phaser.GameObjects.Container {
       faceDown: false,
       scale: 1,
       usePreview: false,  // Use preview images (-preview.png) instead of original
+      disableHighlight: false,  // Disable selection highlight for leader cards
       ...options
     };
     
@@ -271,11 +272,11 @@ export default class Card extends Phaser.GameObjects.Container {
             // If already selected, deselect it
             console.log(`Deselecting card ${this.cardData?.id}`);
             this.deselect();
-            this.emit('card-deselect', this);
+            this.scene.events.emit('card-deselect', this);
           } else {
             // If not selected, emit selection event (GameScene will handle the actual selection)
             console.log(`Emitting card-select for card ${this.cardData?.id}`);
-            this.emit('card-select', this);
+            this.scene.events.emit('card-select', this);
           }
         } catch (error) {
           console.error(`Error in selection logic for card ${this.cardData?.id}:`, error);
@@ -293,7 +294,7 @@ export default class Card extends Phaser.GameObjects.Container {
         if (this.isDragging) {
           this.x = pointer.x;
           this.y = pointer.y;
-          this.emit('card-drag', this, pointer);
+          this.scene.events.emit('card-drag', this, pointer);
         }
       });
 
@@ -311,7 +312,7 @@ export default class Card extends Phaser.GameObjects.Container {
     
     // No scaling animation - just set depth and emit event
     
-    this.emit('card-drag-start', this, pointer);
+    this.scene.events.emit('card-drag-start', this, pointer);
   }
 
   stopDrag(pointer) {
@@ -320,7 +321,7 @@ export default class Card extends Phaser.GameObjects.Container {
     
     // No scaling animation - just reset depth and emit event
     
-    this.emit('card-drag-end', this, pointer);
+    this.scene.events.emit('card-drag-end', this, pointer);
   }
 
   select() {
@@ -353,7 +354,7 @@ export default class Card extends Phaser.GameObjects.Container {
   toggleFaceDown() {
     this.options.faceDown = !this.options.faceDown;
     this.recreate();
-    this.emit('card-face-toggle', this);
+    this.scene.events.emit('card-face-toggle', this);
   }
 
   updateVisualState() {
