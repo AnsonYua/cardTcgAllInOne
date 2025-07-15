@@ -269,12 +269,15 @@ export default class Card extends Phaser.GameObjects.Container {
         event.stopPropagation();
       } else {
         // Left click for selection/deselection
+        console.log(`Card ${this.cardData?.id} clicked - isSelected: ${this.isSelected}`);
         if (this.isSelected) {
           // If already selected, deselect it
+          console.log(`Deselecting card ${this.cardData?.id}`);
           this.deselect();
           this.emit('card-deselect', this);
         } else {
           // If not selected, emit selection event (GameScene will handle the actual selection)
+          console.log(`Emitting card-select for card ${this.cardData?.id}`);
           this.emit('card-select', this);
         }
         
@@ -331,6 +334,7 @@ export default class Card extends Phaser.GameObjects.Container {
   }
 
   select() {
+    console.log(`Card ${this.cardData?.id} select() called`);
     this.isSelected = true;
     this.updateVisualState();
   }
