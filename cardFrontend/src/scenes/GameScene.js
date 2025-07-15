@@ -659,30 +659,39 @@ export default class GameScene extends Phaser.Scene {
     const displayX = 200;
     const displayY = 150;
     
-    // Create single background for both labels
+    // Create single background for all labels (expanded height for 3 lines)
     const displayBg = this.add.graphics();
     displayBg.fillStyle(0x000000, 0.7);
-    displayBg.fillRoundedRect(displayX - 70, displayY - 35, 220, 80, 5);
+    displayBg.fillRoundedRect(displayX - 70, displayY - 45, 220, 105, 5);
     displayBg.lineStyle(2, 0x888888);
-    displayBg.strokeRoundedRect(displayX - 70, displayY - 35, 220, 80, 5);
+    displayBg.strokeRoundedRect(displayX - 70, displayY - 45, 220, 105, 5);
     
     // First player label (top line)
-    this.firstPlayerText = this.add.text(displayX-60, displayY-18, 'First Player: Unknown', {
-      fontSize: '18px',
+    this.firstPlayerText = this.add.text(displayX-60, displayY-28, 'First Player: Unknown', {
+      fontSize: '16px',
       fontFamily: 'Arial',
       fill: '#ffffff',
       align: 'left'
     });
     this.firstPlayerText.setOrigin(0, 0.5);
     
-    // Opponent hand label (bottom line)
-    this.opponentHandCountText = this.add.text(displayX-60, displayY+18, 'Opponent Hand: 0', {
-      fontSize: '18px',
+    // Opponent hand label (middle line)
+    this.opponentHandCountText = this.add.text(displayX-60, displayY-4, 'Opponent Hand: 0', {
+      fontSize: '16px',
       fontFamily: 'Arial',
       fill: '#ffffff',
       align: 'left'
     });
     this.opponentHandCountText.setOrigin(0, 0.5);
+    
+    // Current turn label (bottom line)
+    this.currentTurnText = this.add.text(displayX-60, displayY+20, 'Current Turn: Unknown', {
+      fontSize: '16px',
+      fontFamily: 'Arial',
+      fill: '#FFD700', // Gold color to highlight turn info
+      align: 'left'
+    });
+    this.currentTurnText.setOrigin(0, 0.5);
   }
 
   createOpponentHandDisplay() {
@@ -974,11 +983,15 @@ export default class GameScene extends Phaser.Scene {
     // Debug logging for troubleshooting
     console.log('updateUI - phase:', gameState.gameEnv.phase, 'shuffleAnimationPlayed:', this.shuffleAnimationPlayed);
     
-    // Update phase indicator
+    // Update phase indicator with current player info
     const currentPhase = gameState.gameEnv.phase;
+    const currentPlayer = gameState.gameEnv.currentPlayer;
     if (currentPhase) {
-      this.updatePhaseIndicator(currentPhase);
+      this.updatePhaseIndicator(currentPhase, currentPlayer);
     }
+    
+    // Update current turn display
+    this.updateCurrentTurnDisplay(currentPlayer);
     
     // Update round
     this.roundText.setText(`Round ${gameState.gameEnv.round} / 4`);
@@ -1662,10 +1675,11 @@ export default class GameScene extends Phaser.Scene {
     const statusText = this.isOnlineMode ? '🟢 Online' : '🔴 Demo';
     const statusColor = this.isOnlineMode ? '#51CF66' : '#FF6B6B';
     
-    this.connectionStatusText = this.add.text(width - 20, 20, statusText, {
+    this.connectionStatusText = this.add.text(width-50, 30, statusText, {
       fontSize: '14px',
       fontFamily: 'Arial',
-      fill: statusColor
+      fill: statusColor,
+      align: 'right'
     });
     this.connectionStatusText.setOrigin(1, 0);
   }
@@ -1771,6 +1785,18 @@ export default class GameScene extends Phaser.Scene {
     if (this.firstPlayerText) {
       const firstPlayerName = isCurrentPlayerFirst ? 'You' : 'Opponent';
       this.firstPlayerText.setText(`First Player: ${firstPlayerName}`);
+    }
+  }
+
+  updateCurrentTurnDisplay(currentPlayer) {
+    if (this.currentTurnText) {
+      if (currentPlayer) {
+        const currentPlayerId = this.gameStateManager.getCurrentPlayerId();
+        const turnPlayerName = currentPlayer === currentPlayerId ? 'You' : 'Opponent';
+        this.currentTurnText.setText(`Current Turn: ${turnPlayerName}`);
+      } else {
+        this.currentTurnText.setText('Current Turn: Unknown');
+      }
     }
   }
 
@@ -2112,7 +2138,7 @@ export default class GameScene extends Phaser.Scene {
   handleDrawPhaseComplete(event) {
     console.log('Processing draw phase complete event:', event);
     
-    // Update phase indicator
+    // Update phase indicator  
     this.updatePhaseIndicator('DRAW_PHASE');
     
     // Check if this is the current player's draw event
@@ -2242,7 +2268,13 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  updatePhaseIndicator(phase) {
+  shouldShowTurnInfo(phase) {
+    // Only show turn info for phases where turns matter
+    const turnBasedPhases = ['DRAW_PHASE', 'MAIN_PHASE', 'SP_PHASE'];
+    return turnBasedPhases.includes(phase);
+  }
+
+  updatePhaseIndicator(phase, currentPlayer = null) {
     if (this.phaseText) {
       let displayText = '';
       switch(phase) {
@@ -2274,6 +2306,14 @@ export default class GameScene extends Phaser.Scene {
           // Clean up any underscore-separated phases
           displayText = phase.replace(/_/g, ' ').toUpperCase();
       }
+      
+      // Add current player info for turn-based phases
+      if (currentPlayer && this.shouldShowTurnInfo(phase)) {
+        const currentPlayerId = this.gameStateManager.getCurrentPlayerId();
+        const turnPlayer = currentPlayer === currentPlayerId ? 'Your Turn' : 'Opponent Turn';
+        displayText += ` (${turnPlayer})`;
+      }
+      
       this.phaseText.setText(displayText);
     }
   }
