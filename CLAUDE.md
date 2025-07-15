@@ -170,6 +170,7 @@ const allowedTypes = leader[zone];
 
 ### API Response Pattern
 - All game data returned in `gameEnv` object
+- Single `phase` field for game state (eliminated duplicate `roomStatus`)
 - No separate response fields (eliminated `requiresCardSelection`)
 - Card selection detected via `pendingPlayerAction` existence
 - Detailed selection data in `pendingCardSelections[selectionId]`

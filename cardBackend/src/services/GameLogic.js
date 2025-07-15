@@ -6,6 +6,12 @@ const mozGamePlay = require('../mozGame/mozGamePlay');
 const path = require('path');
 const mozAIClass = require('../mozGame/mozAIClass');
 
+// Utility function to update game phase
+function updatePhase(gameEnv, newPhase) {
+    gameEnv.phase = newPhase;
+    console.log(`🎯 Phase updated to: ${newPhase}`);
+}
+
 
 class GameLogic {
     constructor() {
@@ -19,7 +25,7 @@ class GameLogic {
         
         // Only create room with first player (playerId_1), no deck dealing yet
         var gameEnv = {
-            roomStatus: 'WAITING_FOR_PLAYERS',
+            phase: 'WAITING_FOR_PLAYERS',
             playerId_1: playerId, // Store the actual playerId of player 1
             playerId_2: null,
             gameStarted: false
@@ -56,13 +62,13 @@ class GameLogic {
         let gameEnv = gameData.gameEnv;
         
         // Check if room is available
-        if (gameEnv.roomStatus !== 'WAITING_FOR_PLAYERS') {
+        if (gameEnv.phase !== 'WAITING_FOR_PLAYERS') {
             throw new Error('Room is not available for joining');
         }
         
         // Add second player
         gameEnv.playerId_2 = playerId;
-        gameEnv.roomStatus = 'BOTH_JOINED';
+        updatePhase(gameEnv, 'BOTH_JOINED');
         
         // Now prepare decks for both players
         const player1Id = gameEnv.playerId_1;
@@ -82,8 +88,8 @@ class GameLogic {
         // Initialize game environment (deals hands, sets up leaders, etc.)
         gameEnv = this.mozGamePlay.updateInitialGameEnvironment(gameEnv);
         
-        // Update room status to ready phase
-        gameEnv.roomStatus = 'READY_PHASE';
+        // Update to ready phase
+        updatePhase(gameEnv, 'READY_PHASE');
         
         // Add player joined event
         this.mozGamePlay.addGameEvent(gameEnv, 'PLAYER_JOINED', {
@@ -108,8 +114,8 @@ class GameLogic {
         let gameEnv = gameData.gameEnv;
         
         // Check if room is in correct state
-        if (gameEnv.roomStatus !== 'READY_PHASE') {
-            throw new Error('Room is not ready for player ready status. Current status: ' + gameEnv.roomStatus);
+        if (gameEnv.phase !== 'READY_PHASE') {
+            throw new Error('Room is not ready for player ready status. Current phase: ' + gameEnv.phase);
         }
         
         // Handle redraw logic
@@ -136,7 +142,7 @@ class GameLogic {
         if (bothReady) {
             console.log("🎯 Both players ready - generating DRAW_PHASE_COMPLETE event");
             // Transition to draw phase first - game officially starts
-            gameEnv.roomStatus = 'DRAW_PHASE';
+            updatePhase(gameEnv, 'DRAW_PHASE');
             gameEnv.gameStarted = true;
             
             // Set current player to first player
@@ -337,7 +343,6 @@ class GameLogic {
         // Build the new, clean gameEnv object for the frontend
         const frontendGameEnv = {
             // Game Status
-            roomStatus: sourceGameEnv.roomStatus,
             phase: sourceGameEnv.phase || 'SETUP',
             currentPlayer: sourceGameEnv.currentPlayer,
             currentTurn: sourceGameEnv.currentTurn,
@@ -440,8 +445,8 @@ class GameLogic {
         }
 
         // If DRAW_PHASE_COMPLETE was acknowledged, transition to MAIN_PHASE
-        if (drawPhaseCompleted && gameData.gameEnv.roomStatus === 'DRAW_PHASE') {
-            gameData.gameEnv.roomStatus = 'MAIN_PHASE';
+        if (drawPhaseCompleted && gameData.gameEnv.phase === 'DRAW_PHASE') {
+            updatePhase(gameData.gameEnv, 'MAIN_PHASE');
             
             // Add main phase start event
             this.mozGamePlay.addGameEvent(gameData.gameEnv, 'PHASE_CHANGE', {

@@ -116,7 +116,6 @@ The `gameEnv` object is the single source of truth for the game's state, with a 
 {
   "gameId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
   "gameEnv": {
-    "roomStatus": "MAIN_PHASE",
     "phase": "MAIN_PHASE",
     "currentPlayer": "playerId_1",
     "currentTurn": 1,

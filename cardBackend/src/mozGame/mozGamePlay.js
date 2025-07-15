@@ -770,7 +770,6 @@ class mozGamePlay {
         
         // Transition to DRAW_PHASE for the new turn player
         gameEnv["phase"] = TurnPhase.DRAW_PHASE;
-        gameEnv["roomStatus"] = 'DRAW_PHASE';
         
         // Current player draws 1 card
         var hand = gameEnv[gameEnv["currentPlayer"]].deck.hand

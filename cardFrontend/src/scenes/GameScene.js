@@ -752,7 +752,6 @@ export default class GameScene extends Phaser.Scene {
       
       // Draw phase events
       this.gameStateManager.addEventListener('DRAW_PHASE_COMPLETE', (event) => {
-        console.log('🎯 DRAW_PHASE_COMPLETE event received:', event);
         this.handleDrawPhaseComplete(event);
       });
       
@@ -927,11 +926,11 @@ export default class GameScene extends Phaser.Scene {
     console.log('card data : opponent', opponent);
     const opponentData = this.gameStateManager.getPlayer(opponent);
     
-    // Debug: Log current room status and animation state
-    console.log('Online mode - roomStatus:', gameState.gameEnv.roomStatus, 'shuffleAnimationPlayed:', this.shuffleAnimationPlayed);
+    // Debug: Log current phase and animation state
+    console.log('Online mode - phase:', gameState.gameEnv.phase, 'shuffleAnimationPlayed:', this.shuffleAnimationPlayed);
     
-    // Check for READY_PHASE room status and trigger shuffle animation
-    if (gameState.gameEnv.roomStatus === 'READY_PHASE' && !this.shuffleAnimationPlayed) {
+    // Check for READY_PHASE and trigger shuffle animation
+    if (gameState.gameEnv.phase === 'READY_PHASE' && !this.shuffleAnimationPlayed) {
       console.log('READY_PHASE detected - triggering shuffle animation and redraw dialog');
       console.log('Game state during READY_PHASE:', JSON.stringify(gameState, null, 2));
       this.shuffleAnimationPlayed = true;
@@ -946,15 +945,12 @@ export default class GameScene extends Phaser.Scene {
       });
     }
     
-    // Check for DRAW_PHASE room status and trigger draw animation
-    if (gameState.gameEnv.roomStatus === 'DRAW_PHASE' && !this.drawPhaseAnimationPlayed) {
+    // Check for DRAW_PHASE and trigger draw animation
+    if (gameState.gameEnv.phase === 'DRAW_PHASE' && !this.drawPhaseAnimationPlayed) {
       const currentPlayer = gameState.gameEnv.currentPlayer;
       const currentPlayerId = this.gameStateManager.getCurrentPlayerId();
       
-      console.log('🎯 DRAW_PHASE detected - Current player:', currentPlayer, 'Current player ID:', currentPlayerId);
-      
       if (currentPlayer === currentPlayerId) {
-        console.log('🎯 Playing draw card animation for current player in DRAW_PHASE');
         this.drawPhaseAnimationPlayed = true;
         
         // Hide the new card temporarily (don't update hand UI yet)
@@ -976,12 +972,10 @@ export default class GameScene extends Phaser.Scene {
     }
     
     // Debug logging for troubleshooting
-    console.log('updateUI - roomStatus:', gameState.gameEnv.roomStatus, 'shuffleAnimationPlayed:', this.shuffleAnimationPlayed);
+    console.log('updateUI - phase:', gameState.gameEnv.phase, 'shuffleAnimationPlayed:', this.shuffleAnimationPlayed);
     
-    // Update phase - use roomStatus if phase is not set properly
-    const currentPhase = gameState.gameEnv.phase || gameState.gameEnv.roomStatus;
-    console.log('🎯 Phase update - phase:', gameState.gameEnv.phase, 'roomStatus:', gameState.gameEnv.roomStatus);
-    
+    // Update phase indicator
+    const currentPhase = gameState.gameEnv.phase;
     if (currentPhase) {
       this.updatePhaseIndicator(currentPhase);
     }
@@ -2123,19 +2117,14 @@ export default class GameScene extends Phaser.Scene {
     
     // Check if this is the current player's draw event
     const currentPlayerId = this.gameStateManager.getCurrentPlayerId();
-    console.log('Current Player ID:', currentPlayerId);
-    console.log('Event Player ID:', event.data.playerId);
-    console.log('Player ID Match:', event.data.playerId === currentPlayerId);
     
     if (event.data.playerId === currentPlayerId) {
-      console.log('Playing draw card animation for current player');
       // Play draw card animation for current player
       this.playDrawCardAnimation(() => {
         // Show acknowledgment UI after animation completes
         this.showDrawPhaseAcknowledgment(event.data);
       });
     } else {
-      console.log('Showing opponent drew card notification');
       // Show notification that opponent drew a card
       this.showRoomStatus(`Opponent drew a card (${event.data.newHandSize} cards in hand)`);
     }
@@ -2304,8 +2293,6 @@ export default class GameScene extends Phaser.Scene {
       };
     }
     
-    console.log('🎯 Playing draw animation for card:', processedCardData);
-    console.log('🎯 Current hand length:', currentHand.length);
     
     // Get deck position for animation start
     const playerDeckPosition = this.layout.player.deck;
@@ -2313,20 +2300,12 @@ export default class GameScene extends Phaser.Scene {
     // Create temporary card at deck position (card back)
     const tempCard = this.add.image(playerDeckPosition.x, playerDeckPosition.y, 'card-back');
     
-    console.log('🎯 Created temp card at:', playerDeckPosition.x, playerDeckPosition.y);
-    console.log('🎯 Temp card visible:', tempCard.visible);
-    console.log('🎯 Temp card texture:', tempCard.texture.key);
-    console.log('🎯 Temp card width/height:', tempCard.width, tempCard.height);
-    
     // Set the card to hand card size immediately
     const scaleX = GAME_CONFIG.card.width / tempCard.width;
     const scaleY = GAME_CONFIG.card.height / tempCard.height;
     const handScale = Math.min(scaleX, scaleY) * 0.95 * 1.15; // Match hand card scale
     tempCard.setScale(handScale);
     tempCard.setDepth(2000); // Above everything else
-    
-    console.log('🎯 Temp card scale applied:', handScale);
-    console.log('🎯 Temp card final size:', tempCard.displayWidth, tempCard.displayHeight);
     
     // Calculate spacing for current hand size
     const currentHandLength = this.playerHand.length; // Current cards displayed in hand
@@ -2339,8 +2318,6 @@ export default class GameScene extends Phaser.Scene {
     const worldTargetX = this.handContainer.x + newCardX;
     const worldTargetY = this.handContainer.y;
     
-    console.log('🎯 Animation target position:', worldTargetX, worldTargetY);
-    
     // Animate existing hand cards to slide left to make space for new card
     this.slideHandCardsLeft(totalCards, cardSpacing);
     
@@ -2351,17 +2328,7 @@ export default class GameScene extends Phaser.Scene {
       y: worldTargetY,
       duration: 500,
       ease: 'Power2.easeOut',
-      onStart: () => {
-        console.log('🎯 Animation started - moving card from', playerDeckPosition.x, playerDeckPosition.y, 'to', worldTargetX, worldTargetY);
-      },
-      onUpdate: (tween) => {
-        // Log position every 100ms during animation
-        if (Math.floor(tween.progress * 10) % 2 === 0) {
-          console.log('🎯 Animation progress:', Math.floor(tween.progress * 100) + '%', 'Card position:', tempCard.x, tempCard.y);
-        }
-      },
       onComplete: () => {
-        console.log('🎯 Animation completed - card arrived at:', tempCard.x, tempCard.y);
         // Flip animation: card back to card face
         this.tweens.add({
           targets: tempCard,
@@ -2371,24 +2338,16 @@ export default class GameScene extends Phaser.Scene {
           onComplete: () => {
             // Change to actual card image using the same logic as Card class
             const cardKey = `${processedCardData.id}-preview`;
-            console.log('🎯 Trying to flip to card texture:', cardKey);
-            console.log('🎯 Processed card data:', processedCardData);
-            
             // Check if texture exists before setting it
             if (this.textures.exists(cardKey)) {
-              console.log('🎯 Card texture exists, setting texture');
               tempCard.setTexture(cardKey);
             } else {
-              console.log('🎯 Card texture does not exist! Available textures:', Object.keys(this.textures.list).filter(key => key.startsWith(processedCardData.id?.substring(0, 2) || '')));
               // Fallback: try without -preview suffix
               const fallbackKey = processedCardData.id;
               if (this.textures.exists(fallbackKey)) {
-                console.log('🎯 Using fallback texture:', fallbackKey);
                 tempCard.setTexture(fallbackKey);
-              } else {
-                console.log('🎯 No fallback texture found, keeping card-back');
-                // Keep the card-back texture as fallback
               }
+              // If no texture found, keep card-back as fallback
             }
             
             // Recalculate scale for the new texture to maintain consistent card size
@@ -2398,9 +2357,6 @@ export default class GameScene extends Phaser.Scene {
             
             // Update Y scale to match the new texture
             tempCard.setScale(0, newHandScale);
-            
-            console.log('🎯 Final texture key:', tempCard.texture.key);
-            console.log('🎯 Final texture size:', tempCard.width, tempCard.height);
             
             // Flip back to visible with correct scale
             this.tweens.add({

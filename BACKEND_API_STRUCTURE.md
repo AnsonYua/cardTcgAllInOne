@@ -24,8 +24,7 @@ This document defines the standardized API response structure for the Revolution
   "playerId": "playerId_1",
   "gameEnv": {
     // Game Status
-    "roomStatus": "MAIN_PHASE",
-    "phase": "MAIN_PHASE",
+    "phase": "MAIN_PHASE",  // Current game phase
     "currentPlayer": "playerId_1", 
     "currentTurn": 1,
     "round": 1,
@@ -367,19 +366,42 @@ transformGameStateForFrontend(game) {
 4. ⏳ **Documentation**: Update API documentation based on testing results
 5. ⏳ **Testing**: Comprehensive integration testing with online multiplayer
 
+## Phase Field Consolidation (January 2025)
+
+### Issue Resolution
+Previously, both `roomStatus` and `phase` fields existed to track the same information, causing confusion and potential sync issues where the phase indicator could show stale values.
+
+### Solution Implemented
+1. **Single Field**: Consolidated to use only `phase` field for game state tracking
+2. **Backend Cleanup**: Removed all `roomStatus` references throughout the backend
+3. **Frontend Update**: Updated frontend to use only `phase` field
+4. **Utility Function**: Added `updatePhase()` helper for consistent phase updates
+
+### Simplified Structure
+- **`phase`**: Single source of truth for current game state
+- **Values**: `WAITING_FOR_PLAYERS`, `BOTH_JOINED`, `READY_PHASE`, `DRAW_PHASE`, `MAIN_PHASE`, `SP_PHASE`, `BATTLE_PHASE`, etc.
+- **No Duplication**: Eliminated redundant field and potential sync issues
+
 ## Summary of Changes Made
 
 ### Backend Changes (`cardBackend/src/services/GameLogic.js`)
+- **Field Consolidation**: Removed all `roomStatus` references, use only `phase`
+- **Utility Function**: Added `updatePhase()` helper for consistent phase updates
+- **Game Creation**: Updated initial game state to use `phase` field
+- **State Transitions**: All phase changes now use single `phase` field
+- **Frontend Transform**: Removed `roomStatus` from API responses
 - Enhanced `transformGameStateForFrontend()` function
 - Added structured `players`, `zones`, and `victoryPoints` objects
 - Improved null handling and default values
-- Maintained backward compatibility with existing game state structure
 
-### Frontend Changes
+### Frontend Changes  
+- **Single Field Usage**: Updated all code to use only `phase` field
+- **Phase Detection**: Simplified phase indicator logic
+- **State Checks**: Updated all phase-based conditions to use `gameEnv.phase`
+- Enhanced phase indicator to handle all game states properly
 - Updated null checking in GameStateManager for robust data access
 - Enhanced opponent detection reliability 
 - Improved error handling for missing player/hand data
-- Removed temporary mock data fixes (no longer needed)
 
 ### API Structure Improvements
 - **Centralized Player Data**: All player info accessible via `gameEnv.players[playerId]`

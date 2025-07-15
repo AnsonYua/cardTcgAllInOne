@@ -303,6 +303,33 @@ Comprehensive real-time game state tracking for frontend integration:
 - **Reliability:** Event persistence prevents missed updates during network issues
 - **Performance:** Automatic cleanup prevents memory growth
 
+## Phase Field Consolidation (January 2025)
+
+### Issue Resolved
+The `gameEnv` object previously contained two redundant phase-related fields:
+- `roomStatus` - Used by GameLogic.js for API flow control
+- `phase` - Used by mozGamePlay.js for game mechanics
+
+Having duplicate fields caused confusion and potential sync issues.
+
+### Solution Implemented
+**Field Consolidation:**
+- **Eliminated `roomStatus`** - Removed all references throughout the backend
+- **Single Source**: Use only `gameEnv.phase` for all game state tracking
+- **Utility Function**: Added `updatePhase(gameEnv, newPhase)` helper in GameLogic.js
+- **Consistent Updates**: All phase transitions use the utility function
+- **Logging**: Added phase update logging for debugging
+
+**Simplified Structure:**
+- **`phase`** - Single field for current game state
+- **Values**: `WAITING_FOR_PLAYERS`, `BOTH_JOINED`, `READY_PHASE`, `DRAW_PHASE`, `MAIN_PHASE`, `SP_PHASE`, `BATTLE_PHASE`
+- **No Duplication** - Eliminated redundant field and sync complexity
+
+**Usage Guidelines:**
+- Always use `updatePhase(gameEnv, newPhase)` for phase changes
+- Check `gameEnv.phase` for current game state
+- Frontend uses single `phase` field for all phase-related logic
+
 ## Development Notes & Recent Updates
 
 ### Key Implementation Guidelines
