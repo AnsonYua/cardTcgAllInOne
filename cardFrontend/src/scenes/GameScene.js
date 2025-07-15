@@ -353,11 +353,8 @@ export default class GameScene extends Phaser.Scene {
     });
     this.phaseText.setOrigin(0.5);
     
-    // Opponent hand count display
-    this.createOpponentHandDisplay();
-    
-    // First player display
-    this.createFirstPlayerDisplay();
+    // Game info display (first player and opponent hand)
+    this.createGameInfoDisplay();
     
     // Action buttons
     this.createActionButtons();
@@ -655,70 +652,47 @@ export default class GameScene extends Phaser.Scene {
 
   }
 
-  createOpponentHandDisplay() {
+  createGameInfoDisplay() {
     const { width, height } = this.cameras.main;
     
-    // Position the display in the top-right area near opponent zones
-    const displayX =  200;
-    const displayY = 120;
+    // Position the combined display in the top-left area
+    const displayX = 200;
+    const displayY = 150;
     
-    // Background for the display
+    // Create single background for both labels
     const displayBg = this.add.graphics();
     displayBg.fillStyle(0x000000, 0.7);
-    displayBg.fillRoundedRect(displayX - 70, displayY - 20, 220, 45, 5);
+    displayBg.fillRoundedRect(displayX - 70, displayY - 35, 220, 80, 5);
     displayBg.lineStyle(2, 0x888888);
-    displayBg.strokeRoundedRect(displayX - 70, displayY - 20, 220, 45, 5);
+    displayBg.strokeRoundedRect(displayX - 70, displayY - 35, 220, 80, 5);
     
-    // Label text
-    this.opponentHandLabel = this.add.text(displayX+30, displayY, 'Opponent Hand:', {
-      fontSize: '24px',
+    // First player label (top line)
+    this.firstPlayerText = this.add.text(displayX-60, displayY-18, 'First Player: Unknown', {
+      fontSize: '18px',
       fontFamily: 'Arial',
       fill: '#ffffff',
-      align: 'center'
+      align: 'left'
     });
-    this.opponentHandLabel.setOrigin(0.5);
+    this.firstPlayerText.setOrigin(0, 0.5);
     
-    // Count text
-    this.opponentHandCountText = this.add.text(displayX+130, displayY +1 , '0', {
-      fontSize: '25px',
-      fontFamily: 'Arial Bold',
-      fill: '#FFD700',
-      align: 'center'
+    // Opponent hand label (bottom line)
+    this.opponentHandCountText = this.add.text(displayX-60, displayY+18, 'Opponent Hand: 0', {
+      fontSize: '18px',
+      fontFamily: 'Arial',
+      fill: '#ffffff',
+      align: 'left'
     });
-    this.opponentHandCountText.setOrigin(0.5);
+    this.opponentHandCountText.setOrigin(0, 0.5);
+  }
+
+  createOpponentHandDisplay() {
+    // This method is now part of createGameInfoDisplay
+    // Keeping empty method to avoid errors if called elsewhere
   }
 
   createFirstPlayerDisplay() {
-    const { width, height } = this.cameras.main;
-    
-    // Position the display in the top-left area
-    const displayX = 200;
-    const displayY = 180;
-    
-    // Background for the display
-    const displayBg = this.add.graphics();
-    displayBg.fillStyle(0x000000, 0.7);
-    displayBg.fillRoundedRect(displayX - 70, displayY - 20, 220, 45, 5);
-    displayBg.lineStyle(2, 0x888888);
-    displayBg.strokeRoundedRect(displayX - 70, displayY - 20, 220, 45, 5);
-    
-    // Label text
-    this.firstPlayerLabel = this.add.text(displayX+30, displayY, 'First Player:', {
-      fontSize: '24px',
-      fontFamily: 'Arial',
-      fill: '#ffffff',
-      align: 'center'
-    });
-    this.firstPlayerLabel.setOrigin(0.5);
-    
-    // First player text
-    this.firstPlayerText = this.add.text(displayX+130, displayY +1 , 'Unknown', {
-      fontSize: '25px',
-      fontFamily: 'Arial Bold',
-      fill: '#4CAF50',
-      align: 'center'
-    });
-    this.firstPlayerText.setOrigin(0.5);
+    // This method is now part of createGameInfoDisplay
+    // Keeping empty method to avoid errors if called elsewhere
   }
 
   createHandArea() {
@@ -1004,8 +978,13 @@ export default class GameScene extends Phaser.Scene {
     // Debug logging for troubleshooting
     console.log('updateUI - roomStatus:', gameState.gameEnv.roomStatus, 'shuffleAnimationPlayed:', this.shuffleAnimationPlayed);
     
-    // Update phase
-    this.phaseText.setText(gameState.gameEnv.phase.toUpperCase() + ' PHASE');
+    // Update phase - use roomStatus if phase is not set properly
+    const currentPhase = gameState.gameEnv.phase || gameState.gameEnv.roomStatus;
+    console.log('🎯 Phase update - phase:', gameState.gameEnv.phase, 'roomStatus:', gameState.gameEnv.roomStatus);
+    
+    if (currentPhase) {
+      this.updatePhaseIndicator(currentPhase);
+    }
     
     // Update round
     this.roundText.setText(`Round ${gameState.gameEnv.round} / 4`);
@@ -1021,7 +1000,7 @@ export default class GameScene extends Phaser.Scene {
     // Update opponent hand count display
     if (this.opponentHandCountText) {
       const opponentHandCount = opponentData && opponentData.hand ? opponentData.hand.length : 0;
-      this.opponentHandCountText.setText(opponentHandCount.toString());
+      this.opponentHandCountText.setText(`Opponent Hand: ${opponentHandCount}`);
     }
     
     // Update turn indicator
@@ -1797,11 +1776,7 @@ export default class GameScene extends Phaser.Scene {
   updateFirstPlayerDisplay(isCurrentPlayerFirst) {
     if (this.firstPlayerText) {
       const firstPlayerName = isCurrentPlayerFirst ? 'You' : 'Opponent';
-      this.firstPlayerText.setText(firstPlayerName);
-      
-      // Change color based on who goes first
-      const color = isCurrentPlayerFirst ? '#4CAF50' : '#FF5722'; // Green for you, Red for opponent
-      this.firstPlayerText.setFill(color);
+      this.firstPlayerText.setText(`First Player: ${firstPlayerName}`);
     }
   }
 
@@ -1814,7 +1789,7 @@ export default class GameScene extends Phaser.Scene {
     
     // Update existing opponent hand count display (created in createOpponentHandDisplay)
     if (this.opponentHandCountText) {
-      this.opponentHandCountText.setText(opponentHandCount.toString());
+      this.opponentHandCountText.setText(`Opponent Hand: ${opponentHandCount}`);
     }
   }
 
@@ -2294,8 +2269,21 @@ export default class GameScene extends Phaser.Scene {
         case 'BATTLE_PHASE':
           displayText = 'BATTLE PHASE';
           break;
+        case 'READY_PHASE':
+          displayText = 'READY PHASE';
+          break;
+        case 'WAITING_FOR_PLAYERS':
+          displayText = 'WAITING FOR PLAYERS';
+          break;
+        case 'BOTH_JOINED':
+          displayText = 'BOTH JOINED';
+          break;
+        case 'START_REDRAW':
+          displayText = 'REDRAW PHASE';
+          break;
         default:
-          displayText = phase.toUpperCase();
+          // Clean up any underscore-separated phases
+          displayText = phase.replace(/_/g, ' ').toUpperCase();
       }
       this.phaseText.setText(displayText);
     }
