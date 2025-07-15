@@ -232,7 +232,7 @@ export default class Card extends Phaser.GameObjects.Container {
 
     // Hover effects
     this.on('pointerover', () => {
-      if (!this.isDragging) {
+      if (!this.isDragging && !this.isSelected) {
         this.scene.tweens.add({
           targets: this,
           scaleX: this.options.scale * 1.1,
@@ -268,11 +268,17 @@ export default class Card extends Phaser.GameObjects.Container {
         this.toggleFaceDown();
         event.stopPropagation();
       } else {
-        // Left click for selection
-        this.select();
-        this.emit('card-select', this);
+        // Left click for selection/deselection
+        if (this.isSelected) {
+          // If already selected, deselect it
+          this.deselect();
+          this.emit('card-deselect', this);
+        } else {
+          // If not selected, emit selection event (GameScene will handle the actual selection)
+          this.emit('card-select', this);
+        }
         
-        if (this.options.draggable) {
+        if (this.options.draggable && !this.isSelected) {
           this.startDrag(pointer);
         }
       }
@@ -334,6 +340,12 @@ export default class Card extends Phaser.GameObjects.Container {
     this.updateVisualState();
   }
 
+  deselectSilently() {
+    // Deselect without triggering animations or events
+    this.isSelected = false;
+    this.updateVisualState();
+  }
+
   toggleFaceDown() {
     this.options.faceDown = !this.options.faceDown;
     this.recreate();
@@ -341,20 +353,30 @@ export default class Card extends Phaser.GameObjects.Container {
   }
 
   updateVisualState() {
+    console.log(`Card ${this.cardData?.id} updateVisualState - isSelected: ${this.isSelected}`);
+    
     if (this.isSelected) {
-      // Add selection highlight
+      // Add selection highlight with green frame
       if (!this.selectionHighlight) {
         this.selectionHighlight = this.scene.add.graphics();
-        this.selectionHighlight.lineStyle(3, GAME_CONFIG.colors.highlight);
+        this.selectionHighlight.lineStyle(4, 0x00ff00); // Green highlight for selection
         this.selectionHighlight.strokeRoundedRect(-62, -92, 124, 184, 8);
         this.addAt(this.selectionHighlight, 0);
+        console.log(`Green frame added to card ${this.cardData?.id}`);
       }
+      
+      // Make sure selected card has higher scale and stays scaled
+      this.setScale(this.options.scale * 1.1);
     } else {
       // Remove selection highlight
       if (this.selectionHighlight) {
         this.selectionHighlight.destroy();
         this.selectionHighlight = null;
+        console.log(`Green frame removed from card ${this.cardData?.id}`);
       }
+      
+      // Reset scale to normal when deselected
+      this.setScale(this.options.scale);
     }
   }
 

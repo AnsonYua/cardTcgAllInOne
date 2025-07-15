@@ -17,6 +17,7 @@ export default class GameScene extends Phaser.Scene {
     this.cardPreviewZone = null;
     this.previewCard = null;
     this.leaderCards = [];
+    this.zoneHighlights = [];
   }
 
   init(data) {
@@ -234,6 +235,12 @@ export default class GameScene extends Phaser.Scene {
           highlight.destroy();
           dropZone.setData('highlight', null);
         }
+      });
+
+      // Add zone click handling for card placement when card is selected
+      dropZone.setInteractive();
+      dropZone.on('pointerdown', (pointer) => {
+        this.handleZoneClick(type, x, y);
       });
     }
     
@@ -772,10 +779,30 @@ export default class GameScene extends Phaser.Scene {
     
     // Card interaction events
     this.events.on('card-select', (card) => {
-      if (this.selectedCard && this.selectedCard !== card) {
-        this.selectedCard.deselect();
-      }
+      // First, deselect ALL hand cards silently (including the clicked one)
+      this.playerHand.forEach(handCard => {
+        if (handCard.isSelected) {
+          handCard.deselectSilently();
+        }
+      });
+      
+      // Clear any existing zone highlights
+      this.clearZoneHighlights();
+      
+      // Now select the clicked card
+      card.select();
       this.selectedCard = card;
+      
+      // Show zone highlights for valid placement options
+      this.showZoneHighlights(card);
+    });
+
+    this.events.on('card-deselect', (card) => {
+      // Handle card deselection - clear selected card and zone highlights
+      if (this.selectedCard === card) {
+        this.selectedCard = null;
+        this.clearZoneHighlights();
+      }
     });
     
     this.events.on('card-drag-start', (card) => {
@@ -800,6 +827,14 @@ export default class GameScene extends Phaser.Scene {
       // Hide preview when not hovering
       if (!this.draggedCard) {
         this.hideCardPreview();
+      }
+    });
+
+    // Add background click handler for deselecting cards
+    this.input.on('pointerdown', (pointer, currentlyOver) => {
+      // Only deselect if clicking on background (not on a card or zone)
+      if (currentlyOver.length === 0 && this.selectedCard) {
+        this.deselectAllHandCards();
       }
     });
   }
@@ -1062,6 +1097,140 @@ export default class GameScene extends Phaser.Scene {
     zones[gameState.playerId][zoneType] = cardData;
     
     this.gameStateManager.updateGameEnv({ zones });
+  }
+
+  handleZoneClick(zoneType, x, y) {
+    // Check if we have a selected card and it's currently our turn
+    if (!this.selectedCard) {
+      console.log('No card selected');
+      return;
+    }
+
+    // Check if it's the current player's turn and in main phase
+    const gameState = this.gameStateManager.getGameState();
+    const currentPhase = this.gameStateManager.getCurrentPhase();
+    const isCurrentPlayer = this.gameStateManager.isCurrentPlayer();
+    
+    if (!isCurrentPlayer) {
+      console.log('Not your turn');
+      return;
+    }
+
+    if (currentPhase !== 'MAIN_PHASE') {
+      console.log('Not in main phase');
+      return;
+    }
+
+    // Check if the selected card can be placed in this zone
+    if (!this.canDropCardInZone(this.selectedCard, zoneType)) {
+      console.log(`Cannot place ${this.selectedCard.cardData.id} in ${zoneType} zone`);
+      return;
+    }
+
+    // Place the card in the zone
+    this.placeSelectedCardInZone(zoneType, x, y);
+  }
+
+  placeSelectedCardInZone(zoneType, x, y) {
+    if (!this.selectedCard) return;
+
+    const card = this.selectedCard;
+    const cardData = card.getCardData();
+
+    // Move card to zone position
+    card.moveToPosition(x, y);
+    card.options.draggable = false;
+    card.deselect(); // Remove selection highlight
+
+    // Update game state
+    this.playCardToZone(cardData, zoneType);
+
+    // Remove from hand
+    const handIndex = this.playerHand.indexOf(card);
+    if (handIndex > -1) {
+      this.playerHand.splice(handIndex, 1);
+    }
+
+    // Remove from hand container
+    this.handContainer.remove(card);
+
+    // Add to zone
+    const zone = this.playerZones[zoneType];
+    if (zone) {
+      zone.card = card;
+      zone.placeholder.setVisible(false);
+    }
+
+    // Clear selection and zone highlights
+    this.selectedCard = null;
+    this.clearZoneHighlights();
+
+    // Reorganize remaining hand cards
+    this.reorganizeHand();
+
+    console.log(`Placed card ${cardData.id} in ${zoneType} zone via click`);
+  }
+
+  showZoneHighlights(card) {
+    // Clear any existing highlights
+    this.clearZoneHighlights();
+    
+    // Check if it's the current player's turn and in main phase
+    const currentPhase = this.gameStateManager.getCurrentPhase();
+    const isCurrentPlayer = this.gameStateManager.isCurrentPlayer();
+    
+    if (!isCurrentPlayer || currentPhase !== 'MAIN_PHASE') {
+      return;
+    }
+
+    // Initialize zone highlights array if not exists
+    if (!this.zoneHighlights) {
+      this.zoneHighlights = [];
+    }
+
+    // Check each zone and highlight if valid
+    const zones = ['top', 'left', 'right', 'help', 'sp'];
+    zones.forEach(zoneType => {
+      const zone = this.playerZones[zoneType];
+      if (zone && this.canDropCardInZone(card, zoneType)) {
+        // Create a subtle highlight around the zone
+        const highlight = this.add.graphics();
+        highlight.lineStyle(3, 0x00ff00, 0.6); // Green with 60% opacity
+        highlight.strokeRoundedRect(zone.x - 65, zone.y - 95, 130, 190, 8);
+        
+        // Add a pulsing effect
+        this.tweens.add({
+          targets: highlight,
+          alpha: 0.3,
+          duration: 1000,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut'
+        });
+        
+        this.zoneHighlights.push(highlight);
+      }
+    });
+  }
+
+  clearZoneHighlights() {
+    if (this.zoneHighlights) {
+      this.zoneHighlights.forEach(highlight => {
+        highlight.destroy();
+      });
+      this.zoneHighlights = [];
+    }
+  }
+
+  deselectAllHandCards() {
+    // Deselect all hand cards silently without animations
+    this.playerHand.forEach(handCard => {
+      if (handCard.isSelected) {
+        handCard.deselectSilently();
+      }
+    });
+    this.selectedCard = null;
+    this.clearZoneHighlights();
   }
 
   reorganizeHand() {

@@ -114,6 +114,7 @@ class mozGamePlay {
         }else if (leaderList[1].initialPoint===leaderList[0].initialPoint){
             firstPlayer = Math.floor(Math.random() * 2);
         }
+        firstPlayer = 0;
         gameEnv["firstPlayer"] = firstPlayer;
         mozPhaseManager.setCurrentPhase(TurnPhase.START_REDRAW)
         gameEnv["phase"] = mozPhaseManager.currentPhase;
