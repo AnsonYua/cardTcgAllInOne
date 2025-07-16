@@ -1,0 +1,255 @@
+{
+  "gameId": "leader_s-3_musk_doge_boost",
+  "gameEnv": {
+    "phase": "MAIN_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "playerId_1",
+        "hand": ["c-12", "c-14", "c-15", "h-1", "sp-1"],
+        "deck": {
+          "mainDeck": ["c-16", "c-17", "c-18", "c-19", "c-20", "c-21", "c-22", "c-23", "c-24", "c-25", "c-26", "c-27", "c-28", "h-2", "h-3", "h-4", "sp-2", "sp-3"],
+          "leader": ["s-3", "s-1", "s-2", "s-4"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "fieldEffects": {
+          "zoneRestrictions": {
+            "TOP": ["自由", "經濟"],
+            "LEFT": ["左翼", "自由"],
+            "RIGHT": ["右翼", "自由"],
+            "HELP": "ALL",
+            "SP": "ALL"
+          },
+          "activeEffects": []
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "playerId_2",
+        "hand": ["c-3", "c-4", "c-5", "h-5", "sp-1"],
+        "deck": {
+          "mainDeck": ["c-6", "c-7", "c-9", "c-10", "c-11", "c-13", "c-1", "c-2", "c-25", "c-26", "c-27", "c-28", "c-22", "h-1", "h-2", "h-3", "sp-2", "sp-3"],
+          "leader": ["s-2", "s-1", "s-4", "s-5"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "fieldEffects": {
+          "zoneRestrictions": {
+            "TOP": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "LEFT": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "RIGHT": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "HELP": "ALL",
+            "SP": "ALL"
+          },
+          "activeEffects": []
+        }
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {
+          "id": "s-3",
+          "name": "馬斯克",
+          "cardType": "leader",
+          "gameType": "自由",
+          "initialPoint": 91,
+          "level": 6,
+          "rarity": "epic",
+          "zoneCompatibility": {
+            "top": ["自由", "經濟"],
+            "left": ["左翼", "自由"],
+            "right": ["右翼", "自由"]
+          },
+          "effects": {
+            "description": "全部召喚出來的角色擁有自由屬性能力值 +50。全部召喚出來的角色如擁有Doge在角色名字，能力值 再+20",
+            "rules": [
+              {
+                "id": "musk_freedom_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "gameType",
+                      "value": "自由"
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "powerBoost",
+                  "value": 50
+                }
+              },
+              {
+                "id": "musk_doge_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "nameContains",
+                      "value": "Doge"
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "powerBoost",
+                  "value": 20
+                }
+              }
+            ]
+          }
+        },
+        "TOP": [
+          {
+            "id": "c-8",
+            "name": "馬斯克 (Father Of Doge)",
+            "cardType": "character",
+            "gameType": "自由",
+            "power": 80,
+            "traits": ["富商", "Doge"],
+            "rarity": "epic",
+            "effects": {
+              "description": "",
+              "rules": []
+            }
+          }
+        ],
+        "LEFT": [
+          {
+            "id": "c-9",
+            "name": "艾利茲(Marko Elez doge) (Doge 六子）",
+            "cardType": "character",
+            "gameType": "自由",
+            "power": 30,
+            "traits": [],
+            "rarity": "rare",
+            "effects": {
+              "description": "當這個卡登場時，可以從自己的卡組上面查看4張卡片，自由選出一張卡加進手牌，其餘放到卡組之下。",
+              "rules": [
+                {
+                  "id": "elijah_search",
+                  "type": "triggered",
+                  "trigger": {
+                    "event": "onSummon",
+                    "conditions": []
+                  },
+                  "target": {
+                    "owner": "self",
+                    "zones": [],
+                    "filters": []
+                  },
+                  "effect": {
+                    "type": "searchCard",
+                    "searchCount": 4,
+                    "selectCount": 1,
+                    "destination": "hand",
+                    "filters": []
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "RIGHT": [],
+        "HELP": [],
+        "SP": []
+      },
+      "playerId_2": {
+        "leader": {
+          "id": "s-2",
+          "name": "拜登",
+          "cardType": "leader",
+          "gameType": "左翼",
+          "initialPoint": 100,
+          "level": 7,
+          "rarity": "legendary",
+          "zoneCompatibility": {
+            "top": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "left": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "right": ["左翼", "自由", "經濟", "右翼", "愛國者"]
+          },
+          "effects": {
+            "description": "全部召喚出來的角色能力值 +40",
+            "rules": [
+              {
+                "id": "biden_all_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": []
+                },
+                "effect": {
+                  "type": "powerBoost",
+                  "value": 40
+                }
+              }
+            ]
+          }
+        },
+        "TOP": [],
+        "LEFT": [],
+        "RIGHT": [],
+        "HELP": [],
+        "SP": []
+      }
+    },
+    "victoryPoints": {
+      "playerId_1": 0,
+      "playerId_2": 0
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {
+      "globalSequence": 0,
+      "plays": []
+    },
+    "computedState": {
+      "playerPowers": {},
+      "activeRestrictions": {},
+      "disabledCards": [],
+      "victoryPointModifiers": {}
+    }
+  },
+  "lastUpdate": "2025-07-16T16:46:55.023Z",
+  "validationPoints": {
+    "playerId_1_card_c-8_power": {
+      "description": "Validate power of c-8 (Freedom, Doge) with both Musk boosts: +50 (Freedom) + +20 (Doge)",
+      "expected": {
+        "cardId": "c-8",
+        "finalPower": 150
+      }
+    },
+    "playerId_1_card_c-9_power": {
+      "description": "Validate power of c-9 (Freedom, Doge) with both Musk boosts: +50 (Freedom) + +20 (Doge)",
+      "expected": {
+        "cardId": "c-9",
+        "finalPower": 100
+      }
+    }
+  }
+}

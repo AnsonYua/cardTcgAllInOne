@@ -1,0 +1,280 @@
+{
+  "gameId": "leader_s-6_powell_vs_trump_restriction",
+  "gameEnv": {
+    "phase": "MAIN_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "playerId_1",
+        "hand": ["c-2", "c-23", "c-28", "h-1", "sp-1"],
+        "deck": {
+          "mainDeck": ["c-1", "c-3", "c-4", "c-5", "c-6", "c-7", "c-8", "c-9", "c-10", "c-11", "c-12", "c-13", "c-14", "c-15", "c-16", "c-17", "c-18", "h-2", "h-3", "h-4", "sp-2", "sp-3"],
+          "leader": ["s-6", "s-1", "s-2", "s-3"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "fieldEffects": {
+          "zoneRestrictions": {
+            "TOP": ["經濟", "自由"],
+            "LEFT": ["經濟", "左翼", "右翼"],
+            "RIGHT": ["經濟", "左翼", "右翼"],
+            "HELP": "ALL",
+            "SP": "ALL"
+          },
+          "activeEffects": []
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "playerId_2",
+        "hand": ["c-19", "c-20", "c-21", "h-5", "sp-1"],
+        "deck": {
+          "mainDeck": ["c-22", "c-24", "c-25", "c-26", "c-27", "c-1", "c-7", "c-10", "c-11", "c-12", "c-13", "c-14", "c-15", "c-16", "c-17", "c-18", "h-1", "h-2", "h-3", "sp-2", "sp-3"],
+          "leader": ["s-1", "s-2", "s-3", "s-4"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "fieldEffects": {
+          "zoneRestrictions": {
+            "TOP": ["右翼", "自由", "經濟"],
+            "LEFT": ["右翼", "自由", "愛國者"],
+            "RIGHT": ["右翼", "愛國者", "經濟"],
+            "HELP": "ALL",
+            "SP": "ALL"
+          },
+          "activeEffects": []
+        }
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {
+          "id": "s-6",
+          "name": "鮑威爾",
+          "cardType": "leader",
+          "gameType": "經濟",
+          "initialPoint": 95,
+          "level": 6,
+          "rarity": "epic",
+          "zoneCompatibility": {
+            "top": ["經濟", "自由"],
+            "left": ["經濟", "左翼", "右翼"],
+            "right": ["經濟", "左翼", "右翼"]
+          },
+          "effects": {
+            "description": "全部召喚出來的角色擁有自由或經濟屬性能力值 +30。如對方領袖卡為「特朗普」，我方召喚出來擁有經濟屬性能力值再加 +20。如對方領袖卡為「特朗普」，我方不能召喚擁有右翼的角色",
+            "rules": [
+              {
+                "id": "powell_freedom_economy_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "gameTypeOr",
+                      "values": ["自由", "經濟"]
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "powerBoost",
+                  "value": 30
+                }
+              },
+              {
+                "id": "powell_vs_trump_economy_extra_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": [
+                    {
+                      "type": "opponentLeader",
+                      "value": "特朗普"
+                    }
+                  ]
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "gameType",
+                      "value": "經濟"
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "powerBoost",
+                  "value": 20
+                }
+              },
+              {
+                "id": "powell_vs_trump_rightwing_restriction",
+                "type": "restriction",
+                "trigger": {
+                  "event": "always",
+                  "conditions": [
+                    {
+                      "type": "opponentLeader",
+                      "value": "特朗普"
+                    }
+                  ]
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "gameType",
+                      "value": "右翼"
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "preventSummon",
+                  "value": true
+                }
+              }
+            ]
+          }
+        },
+        "TOP": [],
+        "LEFT": [],
+        "RIGHT": [],
+        "HELP": [],
+        "SP": []
+      },
+      "playerId_2": {
+        "leader": {
+          "id": "s-1",
+          "name": "特朗普",
+          "cardType": "leader",
+          "gameType": "右翼",
+          "initialPoint": 110,
+          "level": 7,
+          "rarity": "legendary",
+          "zoneCompatibility": {
+            "top": ["右翼", "自由", "經濟"],
+            "left": ["右翼", "自由", "愛國者"],
+            "right": ["右翼", "愛國者", "經濟"]
+          },
+          "effects": {
+            "description": "全部召喚出來的角色擁有右翼或愛國者屬性能力值 +45。如對方領袖卡為「鮑威爾」，我方召喚出來擁有經濟屬性的原能力值變成 0",
+            "rules": [
+              {
+                "id": "trump_rightWing_patriot_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "gameTypeOr",
+                      "values": ["右翼", "愛國者"]
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "powerBoost",
+                  "value": 45
+                }
+              },
+              {
+                "id": "trump_vs_powell_economy_nerf",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": [
+                    {
+                      "type": "opponentLeader",
+                      "value": "鮑威爾"
+                    }
+                  ]
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "gameType",
+                      "value": "經濟"
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "setPower",
+                  "value": 0
+                }
+              }
+            ]
+          }
+        },
+        "TOP": [],
+        "LEFT": [],
+        "RIGHT": [],
+        "HELP": [],
+        "SP": []
+      }
+    },
+    "victoryPoints": {
+      "playerId_1": 0,
+      "playerId_2": 0
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {
+      "globalSequence": 0,
+      "plays": []
+    },
+    "computedState": {
+      "playerPowers": {},
+      "activeRestrictions": {},
+      "disabledCards": [],
+      "victoryPointModifiers": {}
+    }
+  },
+  "lastUpdate": "2025-07-16T16:46:55.023Z",
+  "validationPoints": {
+    "playerId_1_summon_restriction_c-2": {
+      "description": "Validate that playerId_1 cannot summon c-2 (Right-Wing) due to Powell's restriction against Trump",
+      "expected": {
+        "action": "summon",
+        "cardId": "c-2",
+        "isAllowed": false
+      }
+    },
+    "playerId_1_summon_restriction_c-23": {
+      "description": "Validate that playerId_1 cannot summon c-23 (Right-Wing) due to Powell's restriction against Trump",
+      "expected": {
+        "action": "summon",
+        "cardId": "c-23",
+        "isAllowed": false
+      }
+    },
+    "playerId_1_summon_restriction_c-28": {
+      "description": "Validate that playerId_1 cannot summon c-28 (Right-Wing) due to Powell's restriction against Trump",
+      "expected": {
+        "action": "summon",
+        "cardId": "c-28",
+        "isAllowed": false
+      }
+    }
+  }
+}
