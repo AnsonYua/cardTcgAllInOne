@@ -1,0 +1,61 @@
+{
+  "activeScenario": "trump_boost_complete",
+  "demoMode": true,
+  "autoValidation": false,
+  "scenarios": {
+    "trump_boost_complete": {
+      "name": "Trump Power Boost (Complete)",
+      "category": "effect_test",
+      "description": "Full game state testing Trump's right-wing boost effects (+45 to right-wing and patriot cards)",
+      "source": "shared/testScenarios/effectTests/trump_boost_complete.json"
+    },
+    "harris_vs_trump_complete": {
+      "name": "Harris vs Trump Conditional Effects", 
+      "category": "conditional_effect",
+      "description": "Complete scenario testing Harris vs Trump interactions and zone restrictions",
+      "source": "shared/testScenarios/effectTests/harris_vs_trump_complete.json"
+    },
+    "musk_doge_combo": {
+      "name": "Musk Doge Combo Effects",
+      "category": "effect_test", 
+      "description": "Testing Musk's freedom boost (+50) and additional Doge boost (+20)",
+      "source": "shared/testScenarios/effectTests/musk_doge_combo.json"
+    },
+    "powell_restrictions": {
+      "name": "Powell Zone Restrictions",
+      "category": "restriction_test",
+      "description": "Testing Powell's zone restrictions vs Trump",
+      "source": "shared/testScenarios/effectTests/powell_restrictions.json"
+    },
+    "round2_battle_ready": {
+      "name": "Round 2 Battle Phase",
+      "category": "game_state",
+      "description": "Mid-game state with all zones filled, ready for battle phase",
+      "source": "shared/testScenarios/gameStates/round2_battle_ready.json"
+    },
+    "sp_phase_face_down": {
+      "name": "SP Phase with Face-Down Cards",
+      "category": "edge_case",
+      "description": "Special Power phase with face-down card mechanics testing",
+      "source": "shared/testScenarios/edgeCases/sp_phase_face_down.json"
+    },
+    "disabled_cards_scenario": {
+      "name": "Disabled Cards Testing",
+      "category": "edge_case",
+      "description": "Testing card disable effects and power nullification",
+      "source": "shared/testScenarios/edgeCases/disabled_cards_scenario.json"
+    }
+  },
+  "validation": {
+    "showDetailedResults": true,
+    "highlightFailures": true,
+    "autoExportResults": false,
+    "toleranceThreshold": 0
+  },
+  "ui": {
+    "showScenarioDescription": true,
+    "enableQuickSwitch": true,
+    "showValidationSummary": true,
+    "enableExportFeatures": true
+  }
+}

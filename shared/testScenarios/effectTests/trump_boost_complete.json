@@ -1,0 +1,321 @@
+{
+  "id": "trump_boost_complete",
+  "name": "Trump Right-Wing Boost - Complete Game State",
+  "description": "Full game environment with Trump as leader, testing power boost effects (+45 to right-wing and patriot cards)",
+  "gameEnv": {
+    "phase": "BATTLE_PHASE",
+    "currentPlayer": "player1",
+    "currentTurn": 1,
+    "round": 1,
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "playerId_1": "player1",
+    "playerId_2": "player2",
+    "playersReady": {
+      "player1": true,
+      "player2": true
+    },
+    "player1": {
+      "deck": {
+        "currentLeaderIdx": 0,
+        "leader": ["s-1", "s-3", "s-5", "s-6"],
+        "hand": ["c-101", "c-102", "u-001"],
+        "mainDeck": ["c-103", "c-104", "c-105"]
+      },
+      "Field": {
+        "leader": {
+          "id": "s-1",
+          "name": "特朗普",
+          "cardType": "leader",
+          "gameType": "右翼",
+          "initialPoint": 110,
+          "level": 7,
+          "rarity": "legendary",
+          "zoneCompatibility": {
+            "top": ["右翼", "自由", "經濟"],
+            "left": ["右翼", "自由", "愛國者"],
+            "right": ["右翼", "愛國者", "經濟"]
+          }
+        },
+        "top": [{
+          "cardDetails": [{
+            "id": "c-001",
+            "name": "右翼戰士",
+            "cardType": "character",
+            "gameType": "右翼",
+            "power": 100,
+            "traits": ["政治", "戰鬥"]
+          }],
+          "isBack": [false],
+          "valueOnField": 100
+        }],
+        "left": [{
+          "cardDetails": [{
+            "id": "c-002",
+            "name": "愛國者守衛",
+            "cardType": "character",
+            "gameType": "愛國者",
+            "power": 80,
+            "traits": ["防禦", "愛國"]
+          }],
+          "isBack": [false],
+          "valueOnField": 80
+        }],
+        "right": [{
+          "cardDetails": [{
+            "id": "c-003",
+            "name": "經濟專家",
+            "cardType": "character",
+            "gameType": "經濟",
+            "power": 90,
+            "traits": ["經濟", "分析"]
+          }],
+          "isBack": [false],
+          "valueOnField": 90
+        }],
+        "help": [{
+          "cardDetails": [{
+            "id": "u-001",
+            "name": "戰略規劃",
+            "cardType": "help",
+            "gameType": "通用",
+            "power": 30,
+            "traits": ["輔助"]
+          }],
+          "isBack": [false],
+          "valueOnField": 30
+        }],
+        "sp": []
+      },
+      "turnAction": [],
+      "playerPoint": 0,
+      "redraw": 0,
+      "fieldEffects": {
+        "zoneRestrictions": {
+          "TOP": ["右翼", "自由", "經濟"],
+          "LEFT": ["右翼", "自由", "愛國者"],
+          "RIGHT": ["右翼", "愛國者", "經濟"],
+          "HELP": ["ALL"],
+          "SP": ["ALL"]
+        },
+        "activeEffects": []
+      }
+    },
+    "player2": {
+      "deck": {
+        "currentLeaderIdx": 0,
+        "leader": ["s-2", "s-4", "s-5", "s-6"],
+        "hand": ["c-201", "c-202", "u-002"],
+        "mainDeck": ["c-203", "c-204", "c-205"]
+      },
+      "Field": {
+        "leader": {
+          "id": "s-2",
+          "name": "拜登",
+          "cardType": "leader",
+          "gameType": "左翼",
+          "initialPoint": 100,
+          "level": 7,
+          "rarity": "legendary",
+          "zoneCompatibility": {
+            "top": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "left": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "right": ["左翼", "自由", "經濟", "右翼", "愛國者"]
+          }
+        },
+        "top": [{
+          "cardDetails": [{
+            "id": "c-201",
+            "name": "左翼活動家",
+            "cardType": "character",
+            "gameType": "左翼",
+            "power": 85,
+            "traits": ["政治", "活動"]
+          }],
+          "isBack": [false],
+          "valueOnField": 85
+        }],
+        "left": [{
+          "cardDetails": [{
+            "id": "c-202",
+            "name": "自由倡導者",
+            "cardType": "character",
+            "gameType": "自由",
+            "power": 75,
+            "traits": ["自由", "倡導"]
+          }],
+          "isBack": [false],
+          "valueOnField": 75
+        }],
+        "right": [{
+          "cardDetails": [{
+            "id": "c-203",
+            "name": "經濟顧問",
+            "cardType": "character",
+            "gameType": "經濟",
+            "power": 95,
+            "traits": ["經濟", "顧問"]
+          }],
+          "isBack": [false],
+          "valueOnField": 95
+        }],
+        "help": [{
+          "cardDetails": [{
+            "id": "u-002",
+            "name": "政策支持",
+            "cardType": "help",
+            "gameType": "通用",
+            "power": 25,
+            "traits": ["輔助"]
+          }],
+          "isBack": [false],
+          "valueOnField": 25
+        }],
+        "sp": []
+      },
+      "turnAction": [],
+      "playerPoint": 0,
+      "redraw": 0,
+      "fieldEffects": {
+        "zoneRestrictions": {
+          "TOP": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+          "LEFT": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+          "RIGHT": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+          "HELP": ["ALL"],
+          "SP": ["ALL"]
+        },
+        "activeEffects": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 0,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {
+      "globalSequence": 6,
+      "plays": [
+        {
+          "sequenceId": 1,
+          "playerId": "player1",
+          "cardId": "s-1",
+          "action": "PLAY_LEADER",
+          "zone": "leader",
+          "timestamp": 1640000000000,
+          "data": { "leaderIndex": 0, "isInitialPlacement": true }
+        },
+        {
+          "sequenceId": 2,
+          "playerId": "player2",
+          "cardId": "s-2",
+          "action": "PLAY_LEADER",
+          "zone": "leader",
+          "timestamp": 1640000001000,
+          "data": { "leaderIndex": 0, "isInitialPlacement": true }
+        },
+        {
+          "sequenceId": 3,
+          "playerId": "player1",
+          "cardId": "c-001",
+          "action": "PLAY_CARD",
+          "zone": "top",
+          "timestamp": 1640000002000,
+          "data": { "isFaceDown": false }
+        },
+        {
+          "sequenceId": 4,
+          "playerId": "player1",
+          "cardId": "c-002",
+          "action": "PLAY_CARD",
+          "zone": "left",
+          "timestamp": 1640000003000,
+          "data": { "isFaceDown": false }
+        },
+        {
+          "sequenceId": 5,
+          "playerId": "player1",
+          "cardId": "c-003",
+          "action": "PLAY_CARD",
+          "zone": "right",
+          "timestamp": 1640000004000,
+          "data": { "isFaceDown": false }
+        },
+        {
+          "sequenceId": 6,
+          "playerId": "player2",
+          "cardId": "c-201",
+          "action": "PLAY_CARD",
+          "zone": "top",
+          "timestamp": 1640000005000,
+          "data": { "isFaceDown": false }
+        }
+      ]
+    },
+    "computedState": {
+      "playerPowers": {
+        "player1": {
+          "c-001": { "originalPower": 100, "finalPower": 145, "zone": "top", "isDisabled": false },
+          "c-002": { "originalPower": 80, "finalPower": 125, "zone": "left", "isDisabled": false },
+          "c-003": { "originalPower": 90, "finalPower": 90, "zone": "right", "isDisabled": false },
+          "u-001": { "originalPower": 30, "finalPower": 30, "zone": "help", "isDisabled": false }
+        },
+        "player2": {
+          "c-201": { "originalPower": 85, "finalPower": 125, "zone": "top", "isDisabled": false },
+          "c-202": { "originalPower": 75, "finalPower": 115, "zone": "left", "isDisabled": false },
+          "c-203": { "originalPower": 95, "finalPower": 135, "zone": "right", "isDisabled": false },
+          "u-002": { "originalPower": 25, "finalPower": 25, "zone": "help", "isDisabled": false }
+        }
+      },
+      "activeRestrictions": {
+        "player1": {
+          "TOP": ["右翼", "自由", "經濟"],
+          "LEFT": ["右翼", "自由", "愛國者"],
+          "RIGHT": ["右翼", "愛國者", "經濟"],
+          "HELP": ["ALL"],
+          "SP": ["ALL"]
+        },
+        "player2": {
+          "TOP": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+          "LEFT": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+          "RIGHT": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+          "HELP": ["ALL"],
+          "SP": ["ALL"]
+        }
+      },
+      "disabledCards": [],
+      "victoryPointModifiers": {
+        "player1": 0,
+        "player2": 0
+      }
+    }
+  },
+  "validationPoints": {
+    "player1_trump_boost": {
+      "description": "Trump should boost right-wing (c-001) and patriot (c-002) cards by +45",
+      "expected": {
+        "c-001": { "originalPower": 100, "finalPower": 145, "boost": 45 },
+        "c-002": { "originalPower": 80, "finalPower": 125, "boost": 45 }
+      }
+    },
+    "player1_no_boost": {
+      "description": "Trump should not boost economic cards (c-003)",
+      "expected": {
+        "c-003": { "originalPower": 90, "finalPower": 90, "boost": 0 }
+      }
+    },
+    "player2_biden_boost": {
+      "description": "Biden should boost all cards by +40",
+      "expected": {
+        "c-201": { "originalPower": 85, "finalPower": 125, "boost": 40 },
+        "c-202": { "originalPower": 75, "finalPower": 115, "boost": 40 },
+        "c-203": { "originalPower": 95, "finalPower": 135, "boost": 40 }
+      }
+    },
+    "help_cards_unchanged": {
+      "description": "Help cards should not be affected by leader effects",
+      "expected": {
+        "u-001": { "originalPower": 30, "finalPower": 30, "boost": 0 },
+        "u-002": { "originalPower": 25, "finalPower": 25, "boost": 0 }
+      }
+    }
+  }
+}

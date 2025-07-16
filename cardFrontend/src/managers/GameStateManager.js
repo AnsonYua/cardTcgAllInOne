@@ -413,4 +413,240 @@ export default class GameStateManager {
     
     return 0;
   }
+
+  // NEW: Scenario Testing Methods
+  
+  /**
+   * Load a complete test scenario into the game state
+   * @param {string} scenarioId - Scenario identifier
+   * @param {Object} FrontendScenarioLoader - Scenario loader class
+   * @returns {Promise<void>}
+   */
+  async setCompleteGameEnvironment(scenarioId, FrontendScenarioLoader) {
+    try {
+      const scenario = await FrontendScenarioLoader.loadCompleteScenario(scenarioId);
+      
+      // Replace entire game state with scenario data
+      this.gameState.gameEnv = scenario.gameEnv;
+      this.currentScenario = scenario;
+      
+      // Set default player IDs if not set
+      if (!this.gameState.playerId) {
+        this.gameState.playerId = scenario.gameEnv.playerId_1;
+      }
+      
+      // Stop polling when using test scenarios
+      this.stopPolling();
+      
+      // Emit event for scene updates
+      this.emitStateChange('scenario-loaded', {
+        scenarioId: scenarioId,
+        scenario: scenario
+      });
+      
+      console.log(`🎯 Loaded complete scenario: ${scenarioId}`);
+      console.log(`📊 Validation points: ${Object.keys(scenario.validationPoints || {}).length}`);
+      
+    } catch (error) {
+      console.error(`Failed to load scenario ${scenarioId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Validate current scenario against expected results
+   * @returns {Object|null} Validation results or null if no scenario loaded
+   */
+  validateCompleteScenario() {
+    if (!this.currentScenario || !this.currentScenario.validationPoints) {
+      console.warn('No validation points defined for current scenario');
+      return null;
+    }
+    
+    const validation = { 
+      passed: true, 
+      scenarioId: this.currentScenario.id,
+      results: {} 
+    };
+    
+    for (const [testId, testData] of Object.entries(this.currentScenario.validationPoints)) {
+      validation.results[testId] = {
+        description: testData.description,
+        passed: true,
+        cards: {}
+      };
+      
+      for (const [cardId, expected] of Object.entries(testData.expected)) {
+        const actualPower = this.getCardFinalPower(cardId);
+        const passed = actualPower === expected.finalPower;
+        
+        validation.results[testId].cards[cardId] = {
+          expected: expected.finalPower,
+          actual: actualPower,
+          boost: expected.boost || 0,
+          passed: passed
+        };
+        
+        if (!passed) {
+          validation.passed = false;
+          validation.results[testId].passed = false;
+        }
+      }
+    }
+    
+    return validation;
+  }
+  
+  /**
+   * Get final power for a card (checks computed state first, then original)
+   * @param {string} cardId - Card ID to check
+   * @returns {number} Final power value
+   */
+  getCardFinalPower(cardId) {
+    const computedState = this.gameState.gameEnv.computedState;
+    
+    // Check computed state first
+    if (computedState && computedState.playerPowers) {
+      for (const [playerId, powers] of Object.entries(computedState.playerPowers)) {
+        if (powers[cardId]) {
+          return powers[cardId].finalPower;
+        }
+      }
+    }
+    
+    // Fallback to finding original power in field
+    return this.getCardOriginalPower(cardId);
+  }
+  
+  /**
+   * Get original power for a card from the field
+   * @param {string} cardId - Card ID to check
+   * @returns {number} Original power value
+   */
+  getCardOriginalPower(cardId) {
+    const zones = this.gameState.gameEnv.zones;
+    
+    if (!zones) return 0;
+    
+    // Search all players and zones for the card
+    for (const [playerId, playerZones] of Object.entries(zones)) {
+      for (const [zoneName, cards] of Object.entries(playerZones)) {
+        if (Array.isArray(cards)) {
+          for (const card of cards) {
+            if (card.id === cardId) {
+              return card.power || 0;
+            }
+          }
+        } else if (cards && cards.id === cardId) {
+          return cards.power || 0;
+        }
+      }
+    }
+    
+    return 0;
+  }
+  
+  /**
+   * Export current game state as a scenario
+   * @param {string} name - Scenario name
+   * @param {string} description - Scenario description
+   * @returns {Object} Exportable scenario object
+   */
+  exportCurrentState(name, description) {
+    const scenarioId = `exported_${Date.now()}`;
+    
+    const scenario = {
+      id: scenarioId,
+      name: name || `Exported Scenario ${new Date().toISOString()}`,
+      description: description || "Exported from frontend demo",
+      gameEnv: JSON.parse(JSON.stringify(this.gameState.gameEnv)), // Deep copy
+      validationPoints: {
+        custom_validation: {
+          description: "Custom validation point - define your expected results",
+          expected: {}
+        }
+      }
+    };
+    
+    return scenario;
+  }
+  
+  /**
+   * Get scenario validation statistics
+   * @returns {Object} Validation statistics
+   */
+  getScenarioValidationStats() {
+    if (!this.currentScenario) {
+      return { hasScenario: false };
+    }
+    
+    const validation = this.validateCompleteScenario();
+    
+    if (!validation) {
+      return { hasScenario: true, hasValidation: false };
+    }
+    
+    let totalTests = 0;
+    let totalCards = 0;
+    let passedTests = 0;
+    let passedCards = 0;
+    
+    for (const [testId, testResult] of Object.entries(validation.results)) {
+      totalTests++;
+      if (testResult.passed) passedTests++;
+      
+      for (const [cardId, cardResult] of Object.entries(testResult.cards)) {
+        totalCards++;
+        if (cardResult.passed) passedCards++;
+      }
+    }
+    
+    return {
+      hasScenario: true,
+      hasValidation: true,
+      scenarioId: this.currentScenario.id,
+      scenarioName: this.currentScenario.name,
+      totalTests: totalTests,
+      passedTests: passedTests,
+      totalCards: totalCards,
+      passedCards: passedCards,
+      overallPassed: validation.passed,
+      successRate: totalCards > 0 ? (passedCards / totalCards) * 100 : 0
+    };
+  }
+  
+  /**
+   * Emit state change event to registered listeners
+   * @param {string} eventType - Event type
+   * @param {Object} data - Event data
+   */
+  emitStateChange(eventType, data) {
+    if (this.eventHandlers.has(eventType)) {
+      const handlers = this.eventHandlers.get(eventType);
+      handlers.forEach(handler => {
+        try {
+          handler(data);
+        } catch (error) {
+          console.error(`Error in ${eventType} handler:`, error);
+        }
+      });
+    }
+  }
+  
+  /**
+   * Clear current scenario and return to normal game state
+   */
+  clearScenario() {
+    this.currentScenario = null;
+    this.emitStateChange('scenario-cleared', {});
+    console.log('📋 Cleared current scenario');
+  }
+  
+  /**
+   * Get current scenario information
+   * @returns {Object|null} Current scenario or null
+   */
+  getCurrentScenario() {
+    return this.currentScenario;
+  }
 }

@@ -141,16 +141,35 @@ npm run format
 
 ## Testing Strategy
 
+### Complete GameEnv Testing Architecture
+
+**NEW: End-to-End Scenario Testing System**
+- **Shared Test Scenarios** - Complete game environments in `shared/testScenarios/`
+- **Frontend Scenario Testing** - Interactive UI testing with complete game states
+- **Backend Scenario Validation** - Automated validation of card effects and game logic
+- **Unified Test Data** - Same scenarios used across frontend and backend for consistency
+
 ### Backend Testing
 - **Jest Test Suite** - Located in `cardBackend/src/tests/`
 - **Integration Tests** - Automatic server start/stop with `setup.js`/`teardown.js`
 - **Test Scenarios** - JSON-defined game situations in `src/tests/scenarios/`
 - **Custom Scripts** - `test.cjs` and `test_case1.cjs` for full game flow validation
+- **NEW: Complete Scenario Runner** - `CompleteScenarioRunner.js` for full gameEnv testing
+- **NEW: Scenario Test Suite** - `completeScenarios.test.js` for comprehensive effect validation
 
 ### Frontend Testing
 - **Demo Mode** - Complete offline testing with mock data
 - **API Connection Testing** - Graceful fallback when backend unavailable
 - **Interactive Testing** - Full drag-and-drop and UI testing capabilities
+- **NEW: Scenario Testing UI** - Interactive scenario loading and validation in demo mode
+- **NEW: Visual Effect Validation** - Real-time testing of card effects and power calculations
+
+### Testing Workflow
+1. **Create Complete Scenarios** - Define full game states with expected results
+2. **Frontend Visual Testing** - Load scenarios in demo mode, validate UI behavior
+3. **Backend Automated Testing** - Run scenarios through effect simulation system
+4. **Cross-Platform Validation** - Ensure frontend and backend produce consistent results
+5. **Effect Coverage Testing** - Validate all card effects across different game states
 
 ## Critical Development Notes
 
