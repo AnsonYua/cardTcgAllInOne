@@ -96,10 +96,10 @@ export default class GameScene extends Phaser.Scene {
       // Opponent zones (top area)
       opponent: {
         top: { x: width * 0.5, y:  startY + 100+ cardHeight + 10+ 15},
-        left: { x:width * 0.5- 130- 50, y:  startY + 100+ cardHeight + 10+ 15},
-        right: { x: width * 0.5 + 130 +  50, y:  startY + 100+ cardHeight + 10+ 15},
-        help: { x: width * 0.5- 130- 50, y: startY + 100+ 0},
-        sp: { x:  width * 0.5 + 130 +  50, y: startY + 100+ 0},
+        left: { x: width * 0.5- 130- 50, y: startY + 100+ 0},
+        right: { x:  width * 0.5 + 130 +  50, y: startY + 100+ 0},
+        help: { x:width * 0.5- 130- 50, y:  startY + 100+ cardHeight + 10+ 15},
+        sp: { x: width * 0.5 + 130 +  50, y:  startY + 100+ cardHeight + 10+ 15},
         leader: { x: width * 0.5, y: startY + 100+ 0},
         deck: { x: width * 0.5 - 130 -  50 - 130 - 50 , y: startY + 100+ cardHeight+10+15},
         leaderDeck: { x: width * 0.5 + 130 +  50 + 130 + 50 , y: startY + 100+ cardHeight+10+15},
@@ -108,10 +108,10 @@ export default class GameScene extends Phaser.Scene {
       // Player zones (bottom area)
       player: {
         top: { x: width * 0.5, y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70},
-        left: { x: width * 0.5- 130- 50, y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70},
-        right: { x: width * 0.5 + 130 +  50, y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 },
-        help: { x: width * 0.5- 130- 50, y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 + cardHeight +30 },
-        sp: { x: width * 0.5 + 130 +  50,y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 + cardHeight +30 },
+        left: { x: width * 0.5- 130- 50, y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 + cardHeight +30 },
+        right: { x: width * 0.5 + 130 +  50,y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 + cardHeight +30 },
+        help: { x: width * 0.5- 130- 50, y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70},
+        sp: { x: width * 0.5 + 130 +  50, y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 },
         leader: { x: width * 0.5, y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 + cardHeight +30},
         deck: { x: width * 0.5 + 130 + 50+130+50 , y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70},
         leaderDeck: { x: width * 0.5 - 130 - 50 - 130 - 70 , y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 + 50}
@@ -1057,7 +1057,19 @@ export default class GameScene extends Phaser.Scene {
 
   canDropCardInZone(card, zoneType) {
     const cardData = card.getCardData();
-    return card.canPlayInZone(zoneType);
+    
+    // First check basic card type compatibility (local validation)
+    if (!card.canPlayInZone(zoneType)) {
+      return false;
+    }
+    
+    // Then check backend field effect restrictions via GameStateManager
+    if (this.gameStateManager) {
+      return this.gameStateManager.canPlayCardInZone(cardData, zoneType);
+    }
+    
+    // Fallback to basic validation if GameStateManager not available
+    return true;
   }
 
   handleCardDrop(card, zoneType, x, y) {
@@ -1128,7 +1140,23 @@ export default class GameScene extends Phaser.Scene {
 
     // Check if the selected card can be placed in this zone
     if (!this.canDropCardInZone(this.selectedCard, zoneType)) {
-      console.log(`Cannot place ${this.selectedCard.cardData.id} in ${zoneType} zone`);
+      const cardData = this.selectedCard.getCardData();
+      
+      // Check if it's a basic type compatibility issue
+      if (!this.selectedCard.canPlayInZone(zoneType)) {
+        console.log(`Card type ${cardData.type} cannot be placed in ${zoneType} zone`);
+        this.showZoneRestrictionMessage(`${cardData.type.toUpperCase()} cards cannot be placed in ${zoneType.toUpperCase()} zone`);
+      } else {
+        // It's a field effect restriction from the leader/backend
+        const restrictions = this.gameStateManager.getZoneRestrictions(null, zoneType);
+        if (restrictions !== "ALL" && Array.isArray(restrictions)) {
+          console.log(`Field effect restriction: Card type ${cardData.gameType} not allowed in ${zoneType} zone. Allowed types: ${restrictions.join(', ')}`);
+          this.showZoneRestrictionMessage(`This zone only allows: ${restrictions.join(', ')}`);
+        } else {
+          console.log(`Cannot place ${cardData.id} in ${zoneType} zone due to field effects`);
+          this.showZoneRestrictionMessage(`Cannot place this card in ${zoneType.toUpperCase()} zone due to field effects`);
+        }
+      }
       return;
     }
 
@@ -1225,6 +1253,32 @@ export default class GameScene extends Phaser.Scene {
       });
       this.zoneHighlights = [];
     }
+  }
+
+  showZoneRestrictionMessage(message) {
+    // Clear any existing restriction message
+    if (this.restrictionMessage) {
+      this.restrictionMessage.destroy();
+    }
+
+    // Create a temporary message display
+    const { width, height } = this.cameras.main;
+    this.restrictionMessage = this.add.text(width / 2, height / 2 - 50, message, {
+      fontSize: '18px',
+      fontFamily: 'Arial Bold',
+      fill: '#ff4444',
+      backgroundColor: '#000000',
+      padding: { x: 20, y: 10 },
+      align: 'center'
+    }).setOrigin(0.5).setDepth(2000);
+
+    // Auto-remove after 3 seconds
+    this.time.delayedCall(3000, () => {
+      if (this.restrictionMessage) {
+        this.restrictionMessage.destroy();
+        this.restrictionMessage = null;
+      }
+    });
   }
 
   deselectAllHandCards() {

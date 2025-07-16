@@ -312,6 +312,88 @@ class GameLogic {
         }
     }
 
+    /**
+     * Transform hand card IDs to full card objects for frontend
+     * @param {string[]} handCardIds - Array of card IDs
+     * @returns {Object[]} Array of full card objects
+     */
+    transformHandCards(handCardIds) {
+        if (!handCardIds || !Array.isArray(handCardIds)) {
+            return [];
+        }
+
+        return handCardIds.map(cardId => {
+            try {
+                const cardDetails = this.mozGamePlay.cardInfoUtils.getCardDetails(cardId);
+                if (!cardDetails) {
+                    console.warn(`[GameLogic] Card details not found for hand card: ${cardId}`);
+                    return {
+                        id: cardId,
+                        name: 'Unknown Card',
+                        cardType: 'unknown',
+                        gameType: 'unknown',
+                        power: 0,
+                        traits: []
+                    };
+                }
+                
+                return {
+                    id: cardDetails.id,
+                    name: cardDetails.name,
+                    cardType: cardDetails.cardType,
+                    gameType: cardDetails.gameType,
+                    power: cardDetails.power || 0,
+                    traits: cardDetails.traits || []
+                };
+            } catch (error) {
+                console.error(`[GameLogic] Error transforming hand card ${cardId}:`, error);
+                return {
+                    id: cardId,
+                    name: 'Error Card',
+                    cardType: 'error',
+                    gameType: 'error',
+                    power: 0,
+                    traits: []
+                };
+            }
+        });
+    }
+
+    /**
+     * Transform zone cardObj objects to simplified card format for frontend
+     * @param {Object[]} cardObjects - Array of cardObj from backend zones
+     * @returns {Object[]} Array of simplified card objects
+     */
+    transformZoneCards(cardObjects) {
+        if (!cardObjects || !Array.isArray(cardObjects)) {
+            return [];
+        }
+
+        return cardObjects.map(cardObj => {
+            try {
+                if (!cardObj.cardDetails || !cardObj.cardDetails[0]) {
+                    console.warn(`[GameLogic] Invalid cardObj structure:`, cardObj);
+                    return null;
+                }
+
+                const cardDetails = cardObj.cardDetails[0];
+                return {
+                    id: cardDetails.id,
+                    name: cardDetails.name,
+                    cardType: cardDetails.cardType,
+                    gameType: cardDetails.gameType,
+                    power: cardDetails.power || 0,
+                    traits: cardDetails.traits || [],
+                    isFaceDown: cardObj.isBack ? cardObj.isBack[0] : false,
+                    valueOnField: cardObj.valueOnField || 0
+                };
+            } catch (error) {
+                console.error(`[GameLogic] Error transforming zone card:`, error, cardObj);
+                return null;
+            }
+        }).filter(card => card !== null); // Remove any null entries from errors
+    }
+
     transformGameStateForFrontend(game) {
         if (!game || !game.gameEnv) {
             return game;
@@ -333,7 +415,7 @@ class GameLogic {
                 players[playerId] = {
                     id: playerId,
                     name: playerData.name || playerId,
-                    hand: playerData.deck?.hand || [],
+                    hand: this.transformHandCards(playerData.deck?.hand || []),
                     deck: {
                         mainDeck: playerData.deck?.mainDeck || [],
                         leader: playerData.deck?.leader || [],
@@ -357,11 +439,11 @@ class GameLogic {
                 // Extract zone data with proper structure
                 zones[playerId] = {
                     leader: playerData.Field?.leader || null,
-                    TOP: playerData.Field?.top || [],
-                    LEFT: playerData.Field?.left || [],
-                    RIGHT: playerData.Field?.right || [],
-                    HELP: playerData.Field?.help || [],
-                    SP: playerData.Field?.sp || []
+                    TOP: this.transformZoneCards(playerData.Field?.top || []),
+                    LEFT: this.transformZoneCards(playerData.Field?.left || []),
+                    RIGHT: this.transformZoneCards(playerData.Field?.right || []),
+                    HELP: this.transformZoneCards(playerData.Field?.help || []),
+                    SP: this.transformZoneCards(playerData.Field?.sp || [])
                 };
                 
                 // Extract victory points

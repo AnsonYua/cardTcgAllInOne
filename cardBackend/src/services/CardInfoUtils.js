@@ -9,6 +9,10 @@ class CardInfoUtils {
         const crtLeaderCard = deck.leader[deck.currentLeaderIdx]
         return this.deckManager.getLeaderCards(crtLeaderCard);
     }
+
+    getCardDetails(cardId) {
+        return this.deckManager.getCardDetails(cardId);
+    }
 }
 
 module.exports = new CardInfoUtils();
