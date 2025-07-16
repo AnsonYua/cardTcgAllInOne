@@ -1072,48 +1072,159 @@ export default class GameScene extends Phaser.Scene {
     return true;
   }
 
-  handleCardDrop(card, zoneType, x, y) {
+  async handleCardDrop(card, zoneType, x, y) {
     if (this.canDropCardInZone(card, zoneType)) {
-      // Move card to zone
-      card.moveToPosition(x, y);
-      card.options.draggable = false;
+      // Show loading state
+      this.setUILoadingState(true);
       
-      // Update game state (this would normally be sent to server)
-      this.playCardToZone(card.getCardData(), zoneType);
+      // Attempt to play card to server/update game state (include face-down state)
+      const cardDataWithState = {
+        ...card.getCardData(),
+        faceDown: card.isFaceDown()
+      };
+      const success = await this.playCardToZone(cardDataWithState, zoneType);
       
-      // Remove from hand
-      const handIndex = this.playerHand.indexOf(card);
-      if (handIndex > -1) {
-        this.playerHand.splice(handIndex, 1);
-        this.handContainer.remove(card);
-        this.reorganizeHand();
+      if (success) {
+        // Move card to zone
+        card.moveToPosition(x, y);
+        card.options.draggable = false;
+        
+        // Remove from hand
+        const handIndex = this.playerHand.indexOf(card);
+        if (handIndex > -1) {
+          this.playerHand.splice(handIndex, 1);
+          this.handContainer.remove(card);
+          this.reorganizeHand();
+        }
+        
+        // Update zone
+        const zone = this.playerZones[zoneType];
+        if (zone) {
+          zone.card = card;
+          zone.placeholder.setVisible(false);
+        }
+        
+        // Deselect the card
+        if (this.selectedCard === card) {
+          this.selectedCard = null;
+          this.clearZoneHighlights();
+        }
+        
+        console.log(`Successfully played card ${card.getCardData().id} to ${zoneType}`);
+      } else {
+        // Return card to hand on failure
+        card.returnToOriginalPosition();
       }
       
-      // Update zone
-      const zone = this.playerZones[zoneType];
-      if (zone) {
-        zone.card = card;
-        zone.placeholder.setVisible(false);
-      }
+      // Clear loading state
+      this.setUILoadingState(false);
     } else {
-      // Return card to hand
+      // Return card to hand if not valid placement
       card.returnToOriginalPosition();
     }
   }
 
-  playCardToZone(cardData, zoneType) {
-    // This would normally make an API call to the backend
+  async playCardToZone(cardData, zoneType) {
     console.log(`Playing card ${cardData.id} to ${zoneType} zone`);
     
-    // For demo purposes, just update local state
     const gameState = this.gameStateManager.getGameState();
-    const zones = { ...gameState.gameEnv.zones };
-    if (!zones[gameState.playerId]) {
-      zones[gameState.playerId] = {};
-    }
-    zones[gameState.playerId][zoneType] = cardData;
     
-    this.gameStateManager.updateGameEnv({ zones });
+    // If in online mode, send API call to backend
+    if (this.isOnlineMode && this.apiManager) {
+      try {
+        // Convert frontend card placement to backend action format
+        const action = this.createBackendAction(cardData, zoneType);
+        
+        if (!action) {
+          this.showErrorMessage('Failed to create valid action for backend.');
+          return false;
+        }
+        
+        console.log('Sending card play action to backend:', action);
+        
+        const response = await this.apiManager.playerAction(
+          gameState.playerId, 
+          gameState.gameId, 
+          action
+        );
+        
+        console.log('Card play action response:', response);
+        
+        // The backend will update the game state, which will be received via polling
+        // No need to update local state here as it will come from the server
+        
+      } catch (error) {
+        console.error('Failed to send card play action to backend:', error);
+        
+        // Show error to user
+        this.showErrorMessage('Failed to play card. Please try again.');
+        
+        // Don't update local state on error - keep the card in hand
+        return false;
+      }
+    } else {
+      // Demo mode - update local state only
+      console.log('Demo mode - updating local state only');
+      const zones = { ...gameState.gameEnv.zones };
+      if (!zones[gameState.playerId]) {
+        zones[gameState.playerId] = {};
+      }
+      zones[gameState.playerId][zoneType] = cardData;
+      
+      this.gameStateManager.updateGameEnv({ zones });
+    }
+    
+    return true;
+  }
+
+  createBackendAction(cardData, zoneType) {
+    // Get the current hand from game state to find card index
+    const hand = this.gameStateManager.getPlayerHand();
+    
+    // Find the index of this card in the player's hand
+    // The frontend hand contains full card objects, but backend expects index from its card ID array
+    const cardIndex = hand.findIndex(handCard => handCard.id === cardData.id);
+    
+    if (cardIndex === -1) {
+      console.error(`Card ${cardData.id} not found in player hand`);
+      console.log('Available hand cards:', hand.map(card => card.id));
+      return null;
+    }
+    
+    // Convert zone name to field index
+    const fieldIndex = this.getFieldIndexFromZone(zoneType);
+    
+    if (fieldIndex === -1) {
+      console.error(`Invalid zone type: ${zoneType}`);
+      return null;
+    }
+    
+    // Create action in backend expected format
+    const action = {
+      type: cardData.faceDown ? 'PlayCardBack' : 'PlayCard',
+      card_idx: cardIndex,
+      field_idx: fieldIndex
+    };
+    
+    console.log(`Created backend action for card ${cardData.id}:`);
+    console.log(`  - Frontend hand index: ${cardIndex}`);
+    console.log(`  - Zone: ${zoneType} -> field_idx: ${fieldIndex}`);
+    console.log(`  - Face down: ${cardData.faceDown} -> type: ${action.type}`);
+    
+    return action;
+  }
+
+  getFieldIndexFromZone(zoneType) {
+    // Backend field indices: 0=top, 1=left, 2=right, 3=help, 4=sp
+    const zoneToFieldMap = {
+      'top': 0,
+      'left': 1, 
+      'right': 2,
+      'help': 3,
+      'sp': 4
+    };
+    
+    return zoneToFieldMap[zoneType] !== undefined ? zoneToFieldMap[zoneType] : -1;
   }
 
   handleZoneClick(zoneType, x, y) {
@@ -1164,44 +1275,59 @@ export default class GameScene extends Phaser.Scene {
     this.placeSelectedCardInZone(zoneType, x, y);
   }
 
-  placeSelectedCardInZone(zoneType, x, y) {
+  async placeSelectedCardInZone(zoneType, x, y) {
     if (!this.selectedCard) return;
 
     const card = this.selectedCard;
     const cardData = card.getCardData();
 
-    // Move card to zone position
-    card.moveToPosition(x, y);
-    card.options.draggable = false;
-    card.deselect(); // Remove selection highlight
+    // Show loading state
+    this.setUILoadingState(true);
 
-    // Update game state
-    this.playCardToZone(cardData, zoneType);
+    // Attempt to play card to server/update game state (include face-down state)
+    const cardDataWithState = {
+      ...cardData,
+      faceDown: card.isFaceDown()
+    };
+    const success = await this.playCardToZone(cardDataWithState, zoneType);
 
-    // Remove from hand
-    const handIndex = this.playerHand.indexOf(card);
-    if (handIndex > -1) {
-      this.playerHand.splice(handIndex, 1);
+    if (success) {
+      // Move card to zone position
+      card.moveToPosition(x, y);
+      card.options.draggable = false;
+      card.deselect(); // Remove selection highlight
+
+      // Remove from hand
+      const handIndex = this.playerHand.indexOf(card);
+      if (handIndex > -1) {
+        this.playerHand.splice(handIndex, 1);
+      }
+
+      // Remove from hand container
+      this.handContainer.remove(card);
+
+      // Add to zone
+      const zone = this.playerZones[zoneType];
+      if (zone) {
+        zone.card = card;
+        zone.placeholder.setVisible(false);
+      }
+
+      // Clear selection and zone highlights
+      this.selectedCard = null;
+      this.clearZoneHighlights();
+
+      // Reorganize remaining hand cards
+      this.reorganizeHand();
+
+      console.log(`Placed card ${cardData.id} in ${zoneType} zone via click`);
+    } else {
+      // On failure, keep card in hand and maintain selection
+      console.log(`Failed to place card ${cardData.id} in ${zoneType} zone`);
     }
 
-    // Remove from hand container
-    this.handContainer.remove(card);
-
-    // Add to zone
-    const zone = this.playerZones[zoneType];
-    if (zone) {
-      zone.card = card;
-      zone.placeholder.setVisible(false);
-    }
-
-    // Clear selection and zone highlights
-    this.selectedCard = null;
-    this.clearZoneHighlights();
-
-    // Reorganize remaining hand cards
-    this.reorganizeHand();
-
-    console.log(`Placed card ${cardData.id} in ${zoneType} zone via click`);
+    // Clear loading state
+    this.setUILoadingState(false);
   }
 
   showZoneHighlights(card) {
@@ -2327,6 +2453,64 @@ export default class GameScene extends Phaser.Scene {
         this.roomStatusText = null;
       }
     });
+  }
+
+  showErrorMessage(message) {
+    // Remove existing error message
+    if (this.errorMessageText) {
+      this.errorMessageText.destroy();
+    }
+    
+    // Create new error message text
+    const { width } = this.cameras.main;
+    this.errorMessageText = this.add.text(width / 2, 120, message, {
+      fontSize: '18px',
+      fontFamily: 'Arial',
+      fill: '#FF6B6B',
+      align: 'center',
+      stroke: '#000000',
+      strokeThickness: 2
+    });
+    this.errorMessageText.setOrigin(0.5);
+    
+    // Auto-hide after 4 seconds
+    this.time.delayedCall(4000, () => {
+      if (this.errorMessageText) {
+        this.errorMessageText.destroy();
+        this.errorMessageText = null;
+      }
+    });
+  }
+
+  setUILoadingState(isLoading) {
+    if (isLoading) {
+      // Create loading indicator if it doesn't exist
+      if (!this.loadingIndicator) {
+        const { width, height } = this.cameras.main;
+        this.loadingIndicator = this.add.text(width / 2, height / 2, 'Processing...', {
+          fontSize: '24px',
+          fontFamily: 'Arial',
+          fill: '#FFD700',
+          align: 'center',
+          stroke: '#000000',
+          strokeThickness: 3
+        });
+        this.loadingIndicator.setOrigin(0.5);
+        this.loadingIndicator.setDepth(1000); // Ensure it's on top
+      }
+      this.loadingIndicator.setVisible(true);
+      
+      // Disable input during loading
+      this.input.enabled = false;
+    } else {
+      // Hide loading indicator
+      if (this.loadingIndicator) {
+        this.loadingIndicator.setVisible(false);
+      }
+      
+      // Re-enable input
+      this.input.enabled = true;
+    }
   }
 
   destroy() {

@@ -5,7 +5,8 @@
       "Bash(grep:*)",
       "Bash(npm run dev:*)",
       "Bash(npm test)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(timeout 5s npm run dev)"
     ],
     "deny": []
   }
