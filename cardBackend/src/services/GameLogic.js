@@ -456,6 +456,13 @@ class GameLogic {
         }
 
         const sourceGameEnv = game.gameEnv;
+        
+        // Check if the data is already in frontend format (test scenarios)
+        if (sourceGameEnv.players && sourceGameEnv.zones && sourceGameEnv.victoryPoints) {
+            // Already in frontend format, return as-is
+            return game;
+        }
+
         const { getPlayerFromGameEnv } = require('../utils/gameUtils');
         const playerIds = getPlayerFromGameEnv(sourceGameEnv);
 

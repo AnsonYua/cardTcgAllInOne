@@ -10,7 +10,8 @@
       "Bash(npm test:*)",
       "Bash(node:*)",
       "Bash(timeout 10 npm start)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(npm run test:quick:*)"
     ],
     "deny": []
   }
