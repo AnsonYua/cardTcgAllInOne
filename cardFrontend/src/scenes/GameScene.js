@@ -1057,6 +1057,7 @@ export default class GameScene extends Phaser.Scene {
         interactive: true,
         draggable: false,
         scale: 1.1,
+        gameStateManager: this.gameStateManager,
         usePreview: true
       });
       
@@ -1077,7 +1078,8 @@ export default class GameScene extends Phaser.Scene {
       if (zone && cardData && !zone.card) {
         const card = new Card(this, zone.x, zone.y, cardData, {
           interactive: false,
-          scale: 0.9
+          scale: 0.9,
+          gameStateManager: this.gameStateManager
         });
         zone.card = card;
         zone.placeholder.setVisible(false);
@@ -1091,7 +1093,8 @@ export default class GameScene extends Phaser.Scene {
         const card = new Card(this, zone.x, zone.y, cardData, {
           interactive: false,
           faceDown: cardData.faceDown || false,
-          scale: 0.9
+          scale: 0.9,
+          gameStateManager: this.gameStateManager
         });
         zone.card = card;
         zone.placeholder.setVisible(false);
@@ -1657,6 +1660,7 @@ export default class GameScene extends Phaser.Scene {
         interactive: false,
         draggable: false,
         scale: 3.5, // Large scale for preview
+        gameStateManager: this.gameStateManager,
         usePreview: false // Use original full-detail images for preview
       });
       
@@ -1781,6 +1785,7 @@ export default class GameScene extends Phaser.Scene {
       interactive: true,
       draggable: false,
       scale: 0.9,
+      gameStateManager: this.gameStateManager,
       usePreview: true, // Use preview images for leader deck display
       disableHighlight: true  // Disable selection highlight for leader deck cards
     });
@@ -1852,6 +1857,7 @@ export default class GameScene extends Phaser.Scene {
           interactive: true,
           draggable: false,
           scale: 0.9,
+          gameStateManager: this.gameStateManager,
           usePreview: true,
           disableHighlight: true  // Disable selection highlight for leader cards
         });
@@ -2107,6 +2113,7 @@ export default class GameScene extends Phaser.Scene {
                       interactive: true,
                       draggable: true,
                       scale: 1.15,
+                      gameStateManager: this.gameStateManager,
                       usePreview: true
                     });
                     

@@ -553,17 +553,45 @@ class mozGamePlay {
             let opponentLeader = this.cardInfoUtils.getCurrentLeader(gameEnv, opponent);
             gameEnv[opponent].Field["leader"] = opponentLeader
             
-            // Clear old field effects and apply new leader effects for opponent
+            // Record leader play for opponent
+            this.playSequenceManager.recordCardPlay(
+                gameEnv,
+                opponent,
+                opponentLeader.id,
+                "PLAY_LEADER",
+                "leader",
+                {
+                    leaderIndex: gameEnv[opponent].deck.currentLeaderIdx,
+                    isRoundTransition: true
+                }
+            );
+            
+            // Clear old field effects for opponent
             await this.fieldEffectProcessor.clearPlayerLeaderEffects(gameEnv, opponent);
-            await this.fieldEffectProcessor.processLeaderFieldEffects(gameEnv, opponent, opponentLeader);
             
             gameEnv[crtPlayer].deck.currentLeaderIdx = gameEnv[crtPlayer].deck.currentLeaderIdx + 1; 
             let crtLeader = this.cardInfoUtils.getCurrentLeader(gameEnv, crtPlayer);
             gameEnv[crtPlayer].Field["leader"] = crtLeader
             
-            // Clear old field effects and apply new leader effects for current player
+            // Record leader play for current player
+            this.playSequenceManager.recordCardPlay(
+                gameEnv,
+                crtPlayer,
+                crtLeader.id,
+                "PLAY_LEADER",
+                "leader",
+                {
+                    leaderIndex: gameEnv[crtPlayer].deck.currentLeaderIdx,
+                    isRoundTransition: true
+                }
+            );
+            
+            // Clear old field effects for current player
             await this.fieldEffectProcessor.clearPlayerLeaderEffects(gameEnv, crtPlayer);
-            await this.fieldEffectProcessor.processLeaderFieldEffects(gameEnv, crtPlayer, crtLeader);
+            
+            // NEW: Re-simulate after leader changes
+            const computedState = this.effectSimulator.simulateCardPlaySequence(gameEnv);
+            gameEnv.computedState = computedState;
         }
         gameEnv = await this.startNewTurn(gameEnv);
         return gameEnv;

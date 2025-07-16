@@ -14,7 +14,15 @@ export default class GameStateManager {
         gameEvents: [],
         pendingCardSelections: {},
         victoryPoints: {},
-        round: 1
+        round: 1,
+        // NEW: Card Effect System data
+        playSequence: { globalSequence: 0, plays: [] },
+        computedState: {
+          playerPowers: {},
+          activeRestrictions: {},
+          disabledCards: [],
+          victoryPointModifiers: {}
+        }
       },
       uiState: {
         selectedCard: null,
@@ -248,7 +256,15 @@ export default class GameStateManager {
         gameEvents: [],
         pendingCardSelections: {},
         victoryPoints: {},
-        round: 1
+        round: 1,
+        // NEW: Card Effect System data
+        playSequence: { globalSequence: 0, plays: [] },
+        computedState: {
+          playerPowers: {},
+          activeRestrictions: {},
+          disabledCards: [],
+          victoryPointModifiers: {}
+        }
       },
       uiState: {
         selectedCard: null,
@@ -261,5 +277,140 @@ export default class GameStateManager {
   
   getCurrentPlayerId() {
     return this.gameState.playerId;
+  }
+  
+  // NEW: Card Effect System Methods
+  
+  /**
+   * Get computed power for a card (includes effect modifications)
+   * @param {Object} card - Card object
+   * @param {string} playerId - Player ID (defaults to current player)
+   * @returns {number} Computed power value
+   */
+  getComputedCardPower(card, playerId = null) {
+    const id = playerId || this.gameState.playerId;
+    const computedState = this.gameState.gameEnv.computedState;
+    
+    if (computedState && computedState.playerPowers && computedState.playerPowers[id]) {
+      const cardPower = computedState.playerPowers[id][card.id];
+      if (cardPower) {
+        return cardPower.finalPower;
+      }
+    }
+    
+    return card.power || 0;
+  }
+  
+  /**
+   * Check if a card is disabled by effects
+   * @param {Object} card - Card object
+   * @returns {boolean} Whether card is disabled
+   */
+  isCardDisabled(card) {
+    const computedState = this.gameState.gameEnv.computedState;
+    
+    if (computedState && computedState.disabledCards) {
+      return computedState.disabledCards.some(d => d.cardId === card.id);
+    }
+    
+    return false;
+  }
+  
+  /**
+   * Get active zone restrictions (from computed state)
+   * @param {string} playerId - Player ID (defaults to current player)
+   * @param {string} zone - Specific zone to check
+   * @returns {string|Array} Zone restrictions
+   */
+  getComputedZoneRestrictions(playerId = null, zone = null) {
+    const id = playerId || this.gameState.playerId;
+    const computedState = this.gameState.gameEnv.computedState;
+    
+    if (computedState && computedState.activeRestrictions && computedState.activeRestrictions[id]) {
+      const restrictions = computedState.activeRestrictions[id];
+      
+      if (zone) {
+        return restrictions[zone.toUpperCase()] || "ALL";
+      }
+      return restrictions;
+    }
+    
+    // Fallback to original field effects
+    return this.getZoneRestrictions(playerId, zone);
+  }
+  
+  /**
+   * Check if card can be played in zone (using computed restrictions)
+   * @param {Object} card - Card object
+   * @param {string} zone - Zone name
+   * @param {string} playerId - Player ID (defaults to current player)
+   * @returns {boolean} Whether card can be played
+   */
+  canPlayCardInZoneComputed(card, zone, playerId = null) {
+    const restrictions = this.getComputedZoneRestrictions(playerId, zone);
+    if (restrictions === "ALL") return true;
+    
+    return Array.isArray(restrictions) ? restrictions.includes(card.gameType) : false;
+  }
+  
+  /**
+   * Get play sequence statistics
+   * @returns {Object} Play sequence statistics
+   */
+  getPlaySequenceStats() {
+    const playSequence = this.gameState.gameEnv.playSequence;
+    
+    if (!playSequence || !playSequence.plays) {
+      return {
+        totalPlays: 0,
+        leaderPlays: 0,
+        cardPlays: 0,
+        myPlays: 0,
+        opponentPlays: 0
+      };
+    }
+    
+    const plays = playSequence.plays;
+    const myId = this.gameState.playerId;
+    
+    return {
+      totalPlays: plays.length,
+      leaderPlays: plays.filter(p => p.action === 'PLAY_LEADER').length,
+      cardPlays: plays.filter(p => p.action === 'PLAY_CARD').length,
+      myPlays: plays.filter(p => p.playerId === myId).length,
+      opponentPlays: plays.filter(p => p.playerId !== myId).length
+    };
+  }
+  
+  /**
+   * Get disabled cards for a player
+   * @param {string} playerId - Player ID (defaults to current player)
+   * @returns {Array} Array of disabled card objects
+   */
+  getDisabledCards(playerId = null) {
+    const id = playerId || this.gameState.playerId;
+    const computedState = this.gameState.gameEnv.computedState;
+    
+    if (computedState && computedState.disabledCards) {
+      return computedState.disabledCards.filter(d => d.playerId === id);
+    }
+    
+    return [];
+  }
+  
+  /**
+   * Get victory point modifiers for a player
+   * @param {string} playerId - Player ID (defaults to current player)
+   * @returns {number} Victory point modifier
+   */
+  getVictoryPointModifier(playerId = null) {
+    const id = playerId || this.gameState.playerId;
+    const computedState = this.gameState.gameEnv.computedState;
+    
+    if (computedState && computedState.victoryPointModifiers) {
+      return computedState.victoryPointModifiers[id] || 0;
+    }
+    
+    return 0;
   }
 }

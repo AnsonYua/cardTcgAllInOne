@@ -6,6 +6,11 @@ const mozGamePlay = require('../mozGame/mozGamePlay');
 const path = require('path');
 const mozAIClass = require('../mozGame/mozAIClass');
 
+// NEW: Card Effect System imports
+const playSequenceManager = require('./PlaySequenceManager');
+const effectSimulator = require('./EffectSimulator');
+const cardEffectRegistry = require('./CardEffectRegistry');
+
 // Utility function to update game phase
 function updatePhase(gameEnv, newPhase) {
     gameEnv.phase = newPhase;
@@ -16,6 +21,18 @@ function updatePhase(gameEnv, newPhase) {
 class GameLogic {
     constructor() {
         this.mozGamePlay = mozGamePlay;
+        
+        // NEW: Initialize effect system with dependencies
+        effectSimulator.setCardInfoUtils(this.mozGamePlay.cardInfoUtils);
+        
+        // NEW: Add effect system references
+        this.playSequenceManager = playSequenceManager;
+        this.effectSimulator = effectSimulator;
+        this.cardEffectRegistry = cardEffectRegistry;
+        
+        // NEW: Inject dependencies into mozGamePlay
+        this.mozGamePlay.playSequenceManager = playSequenceManager;
+        this.mozGamePlay.effectSimulator = effectSimulator;
     }
 
 
@@ -33,6 +50,9 @@ class GameLogic {
         
         // Initialize event system
         this.mozGamePlay.initializeEventSystem(gameEnv);
+        
+        // NEW: Initialize play sequence system
+        this.playSequenceManager.initializePlaySequence(gameEnv);
         
         // Add room created event
         this.mozGamePlay.addGameEvent(gameEnv, 'ROOM_CREATED', {
@@ -145,6 +165,20 @@ class GameLogic {
             // Initialize game fields for all players (moved from redrawInBegining)
             for (let playerId of playerList) {
                 let leader = this.mozGamePlay.cardInfoUtils.getCurrentLeader(gameEnv, playerId);
+                
+                // NEW: Record leader card play BEFORE setting up field
+                this.playSequenceManager.recordCardPlay(
+                    gameEnv,
+                    playerId,
+                    leader.id,
+                    "PLAY_LEADER",
+                    "leader",
+                    {
+                        leaderIndex: gameEnv[playerId].deck.currentLeaderIdx,
+                        isInitialPlacement: true
+                    }
+                );
+                
                 gameEnv[playerId]["turnAction"] = []
                 gameEnv[playerId]["Field"] = {};
                 gameEnv[playerId]["Field"]["leader"] = leader;
@@ -156,10 +190,11 @@ class GameLogic {
                 
                 // Initialize field effects for this player
                 this.mozGamePlay.fieldEffectProcessor.initializePlayerFieldEffects(gameEnv, playerId);
-                
-                // Process leader field effects
-                await this.mozGamePlay.fieldEffectProcessor.processLeaderFieldEffects(gameEnv, playerId, leader);
             }
+            
+            // NEW: Initial simulation after all leaders are recorded
+            const computedState = this.effectSimulator.simulateCardPlaySequence(gameEnv);
+            gameEnv.computedState = computedState;
             
             // Transition to draw phase first - game officially starts
             updatePhase(gameEnv, 'DRAW_PHASE');
@@ -214,6 +249,27 @@ class GameLogic {
             
             // Always update gameEnv and save
             gameData.gameEnv = actionResult.requiresCardSelection ? actionResult.gameEnv : actionResult;
+            
+            // NEW: Record card play and simulate if card was played
+            if (!actionResult.hasOwnProperty('error') && action.actionType === 'PlayCard') {
+                // Record the card play
+                this.playSequenceManager.recordCardPlay(
+                    gameData.gameEnv,
+                    playerId,
+                    action.cardId,
+                    "PLAY_CARD",
+                    action.zone,
+                    {
+                        isFaceDown: action.actionType === 'PlayCardBack',
+                        turnAction: action
+                    }
+                );
+                
+                // Simulate entire sequence with new card
+                const computedState = this.effectSimulator.simulateCardPlaySequence(gameData.gameEnv);
+                gameData.gameEnv.computedState = computedState;
+            }
+            
             const updatedGameData = this.addUpdateUUID(gameData);
             await this.saveOrCreateGame(updatedGameData, gameId);
             
@@ -471,6 +527,15 @@ class GameLogic {
             lastEventId: sourceGameEnv.lastEventId,
             pendingPlayerAction: sourceGameEnv.pendingPlayerAction || null,
             pendingCardSelections: sourceGameEnv.pendingCardSelections || {},
+            
+            // NEW: Card Effect System Data
+            playSequence: sourceGameEnv.playSequence || { globalSequence: 0, plays: [] },
+            computedState: sourceGameEnv.computedState || {
+                playerPowers: {},
+                activeRestrictions: {},
+                disabledCards: [],
+                victoryPointModifiers: {}
+            },
         };
 
         // Return the game object with the cleaned gameEnv

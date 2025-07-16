@@ -34,6 +34,9 @@ export default class Card extends Phaser.GameObjects.Container {
   constructor(scene, x, y, cardData, options = {}) {
     super(scene, x, y);
     
+    // Store reference to GameStateManager for computed values
+    this.gameStateManager = options.gameStateManager || null;
+    
     // Auto-populate card data from ID if only ID is provided
     if (cardData && cardData.id && !cardData.type) {
       const cardInfo = getCardInfoFromId(cardData.id);
@@ -159,9 +162,10 @@ export default class Card extends Phaser.GameObjects.Container {
     this.cardName.setOrigin(0.5);
     this.add(this.cardName);
 
-    // Power value for character cards
+    // Power value for character cards (using computed power from effect system)
     if (this.cardData.type === 'character' && this.cardData.power !== undefined) {
-      this.powerText = this.scene.add.text(45, -45, this.cardData.power.toString(), {
+      const displayPower = this.getDisplayPower();
+      this.powerText = this.scene.add.text(45, -45, displayPower.toString(), {
         fontSize: '20px',
         fontFamily: 'Arial Bold',
         fill: '#ffffff',
@@ -378,6 +382,55 @@ export default class Card extends Phaser.GameObjects.Container {
       return;
     }
     
+    // Update power text if it exists (for character cards)
+    if (this.powerText && this.cardData.type === 'character') {
+      const displayPower = this.getDisplayPower();
+      this.powerText.setText(displayPower.toString());
+    }
+    
+    // Check if card is disabled by effects
+    const isDisabled = this.isCardDisabled();
+    
+    // Apply disabled visual state
+    if (isDisabled) {
+      if (!this.disabledOverlay) {
+        try {
+          this.disabledOverlay = this.scene.add.graphics();
+          this.disabledOverlay.fillStyle(0x000000, 0.5); // Semi-transparent black overlay
+          this.disabledOverlay.fillRoundedRect(-62, -92, 124, 184, 8);
+          this.add(this.disabledOverlay);
+          console.log(`Disabled overlay added to card ${this.cardData?.id}`);
+        } catch (error) {
+          console.error(`Error adding disabled overlay to card ${this.cardData?.id}:`, error);
+          this.disabledOverlay = null;
+        }
+      }
+      
+      // Gray out the card image
+      if (this.cardImage) {
+        this.cardImage.setTint(0x808080);
+      }
+    } else {
+      // Remove disabled overlay
+      if (this.disabledOverlay) {
+        try {
+          if (this.disabledOverlay.scene) {
+            this.disabledOverlay.destroy();
+          }
+          this.disabledOverlay = null;
+          console.log(`Disabled overlay removed from card ${this.cardData?.id}`);
+        } catch (error) {
+          console.error(`Error removing disabled overlay from card ${this.cardData?.id}:`, error);
+          this.disabledOverlay = null;
+        }
+      }
+      
+      // Remove gray tint
+      if (this.cardImage) {
+        this.cardImage.clearTint();
+      }
+    }
+    
     if (this.isSelected) {
       // Add selection highlight with green frame - only if not already present
       if (!this.selectionHighlight) {
@@ -418,7 +471,9 @@ export default class Card extends Phaser.GameObjects.Container {
     
     // Clear references to destroyed objects
     this.selectionHighlight = null;
+    this.disabledOverlay = null;
     this.cardImage = null;
+    this.powerText = null;
     
     // Recreate card
     this.create();
@@ -501,6 +556,47 @@ export default class Card extends Phaser.GameObjects.Container {
 
   isFaceDown() {
     return this.options.faceDown;
+  }
+
+  // NEW: Effect System Integration Methods
+  
+  /**
+   * Get the display power for this card (computed from effect system)
+   * @returns {number} Power value to display
+   */
+  getDisplayPower() {
+    if (this.gameStateManager && this.cardData.type === 'character') {
+      return this.gameStateManager.getComputedCardPower(this.cardData);
+    }
+    return this.cardData.power || 0;
+  }
+  
+  /**
+   * Check if this card is disabled by effects
+   * @returns {boolean} Whether card is disabled
+   */
+  isCardDisabled() {
+    if (this.gameStateManager) {
+      return this.gameStateManager.isCardDisabled(this.cardData);
+    }
+    return false;
+  }
+  
+  /**
+   * Update the GameStateManager reference
+   * @param {GameStateManager} gameStateManager - GameStateManager instance
+   */
+  setGameStateManager(gameStateManager) {
+    this.gameStateManager = gameStateManager;
+    // Update visual state to reflect any changes
+    this.updateVisualState();
+  }
+  
+  /**
+   * Refresh the card's visual state (called when effects change)
+   */
+  refreshFromEffects() {
+    this.updateVisualState();
   }
 
   // Hover animation methods removed - no animations on hover

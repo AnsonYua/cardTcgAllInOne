@@ -108,6 +108,12 @@ npm run format
 - **SP Zone** - For special power cards (face-down during SP_PHASE)
 - **Leader Zone** - Current leader card (determines zone compatibility)
 
+### Card Effect System
+- **Replay-Based Simulation** - Complete sequence replay for consistent effects
+- **Effect Types** - Disable cards, modify power, change restrictions
+- **Play Sequence Tracking** - All card plays recorded with timestamps
+- **Computed State** - Final game state after all effects applied
+
 ### Victory Conditions
 - 4 rounds (4 different leaders per player)
 - First team to 50 victory points wins
@@ -204,3 +210,4 @@ Both frontend and backend support comprehensive demo/testing modes:
 - `cardFrontend/CLAUDE.md` - Frontend-specific development patterns
 - `cardBackend/API_README.md` - Complete API endpoint documentation
 - `cardFrontend/README.md` - Frontend setup and game controls
+- `EFFECT_SYSTEM.md` - Card Effect Execution System with replay-based simulation
