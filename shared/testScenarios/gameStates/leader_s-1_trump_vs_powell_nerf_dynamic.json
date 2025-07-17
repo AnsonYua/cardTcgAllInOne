@@ -2,18 +2,18 @@
   "gameId": "leader_s-1_trump_vs_powell_nerf_dynamic",
   "description": "Tests Trump's leader skill nerf against an Economy card when facing Powell.",
   "initialGameEnv": {
-    "phase": "DRAW_PHASE",
+    "phase": "MAIN_PHASE",
     "round": 1,
     "gameStarted": true,
     "currentPlayer": "playerId_1",
-    "currentTurn": 0,
+    "currentTurn": 1,
     "firstPlayer": 0,
     "players": {
       "playerId_1": {
         "id": "playerId_1",
         "name": "Trump_Player",
         "deck": {
-          "hand": [ "c-eco-1", "c-5", "h-1", "sp-1", "c-6" ],
+          "hand": [ "c-19", "c-5", "h-1", "sp-1", "c-6" ],
           "mainDeck": [ "c-7", "c-8", "c-9", "c-10" ],
           "leader": [ "s-1", "s-2", "s-3", "s-4" ],
           "currentLeaderIdx": 0
@@ -53,35 +53,33 @@
     "fieldEffects": { "playerId_1": { "activeEffects": [] }, "playerId_2": { "activeEffects": [] } },
     "gameEvents": [
       {
-        "id": "event_draw_phase_start",
-        "type": "DRAW_PHASE_COMPLETE",
+        "id": "event_main_phase_start",
+        "type": "PHASE_CHANGE",
         "data": {
-          "playerId": "playerId_1",
-          "cardCount": 1,
-          "newHandSize": 6,
-          "requiresAcknowledgment": true
+          "phase": "MAIN_PHASE",
+          "currentPlayer": "playerId_1",
+          "message": "Draw phase acknowledged - main phase started!"
         },
-        "timestamp": 1752759390556,
-        "expiresAt": 1752759393556,
-        "frontendProcessed": false
+        "timestamp": 1752759390571,
+        "expiresAt": 1752759393571,
+        "frontendProcessed": true
       }
     ],
-    "lastEventId": 1,
+    "lastEventId": 2,
     "playSequence": { "globalSequence": 0, "plays": [] }
   },
   "playerActions": [
     {
       "step": 1,
       "playerId": "playerId_1",
-      "action": { "actionType": "PlayCard", "cardId": "c-eco-1", "zone": "top" },
-      "description": "Player 1 plays '華爾街交易員' (c-eco-1), an Economy card."
+      "action": { "actionType": "PlayCard", "cardId": "c-19", "zone": "top" },
+      "description": "Player 1 plays '比爾蓋茨 Bill gates' (c-19), an Economy card."
     }
   ],
   "cardDefinitions": {
-      "c-eco-1": { "id": "c-eco-1", "name": "華爾街交易員", "cardType": "character", "gameType": "經濟", "power": 200 }
-  },
+      "c-19": { "id": "c-19", "name": "比爾蓋茨 Bill gates", "cardType": "character", "gameType": "經濟", "power": 70, "traits": ["富商"], "rarity": "epic", "effects": { "description": "我方場上全部擁有富商特徵的角色卡 原能力值加 +10", "rules": [ { "id": "gates_rich_boost", "type": "continuous", "trigger": { "event": "always", "conditions": [] }, "target": { "owner": "self", "zones": ["top", "left", "right"], "filters": [ { "type": "trait", "value": "富商" } ] }, "effect": { "type": "powerBoost", "value": 10 } } ] } } },
   "validationPoints": [
-    { "cardId": "c-eco-1", "zone": "top", "expectedPower": 0, "description": "Validate that the Economy card's power is nerfed to 0 by Trump's ability." }
+    { "cardId": "c-19", "zone": "top", "expectedPower": 0, "description": "Validate that the Economy card's power is nerfed to 0 by Trump's ability." }
   ],
   "expectedStateChanges": {
     "zones.playerId_1.top.length": 1,
