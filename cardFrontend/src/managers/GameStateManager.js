@@ -11,6 +11,7 @@ export default class GameStateManager {
         currentPlayer: null,
         players: {},
         zones: {},
+        fieldEffects: {},
         gameEvents: [],
         pendingCardSelections: {},
         victoryPoints: {},
@@ -93,8 +94,9 @@ export default class GameStateManager {
 
   // Field Effects Methods
   getPlayerFieldEffects(playerId = null) {
-    const player = this.getPlayer(playerId);
-    return player ? player.fieldEffects : null;
+    const id = playerId || this.gameState.playerId;
+    // NEW: Access fieldEffects from unified structure
+    return this.gameState.gameEnv.fieldEffects ? this.gameState.gameEnv.fieldEffects[id] : null;
   }
 
   getZoneRestrictions(playerId = null, zone = null) {
@@ -253,6 +255,7 @@ export default class GameStateManager {
         currentPlayer: null,
         players: {},
         zones: {},
+        fieldEffects: {},
         gameEvents: [],
         pendingCardSelections: {},
         victoryPoints: {},

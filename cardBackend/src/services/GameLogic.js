@@ -40,12 +40,15 @@ class GameLogic {
         var { playerId } = req.body;
         const gameId = uuidv4();
         
-        // Only create room with first player (playerId_1), no deck dealing yet
+        // NEW: Create unified structure from the start
         var gameEnv = {
             phase: 'WAITING_FOR_PLAYERS',
             playerId_1: playerId, // Store the actual playerId of player 1
             playerId_2: null,
-            gameStarted: false
+            gameStarted: false,
+            players: {},
+            zones: {},
+            fieldEffects: {}
         };
         
         // Initialize event system
@@ -101,9 +104,13 @@ class GameLogic {
         
         const results = await Promise.all(startTask);
         
-        // Set up game environment with decks
-        gameEnv[player1Id] = { "deck": results[0] };
-        gameEnv[player2Id] = { "deck": results[1] };
+        // NEW: Set up unified structure with decks
+        gameEnv.players[player1Id] = { "id": player1Id, "name": player1Id, "deck": results[0] };
+        gameEnv.players[player2Id] = { "id": player2Id, "name": player2Id, "deck": results[1] };
+        gameEnv.zones[player1Id] = {};
+        gameEnv.zones[player2Id] = {};
+        gameEnv.fieldEffects[player1Id] = {};
+        gameEnv.fieldEffects[player2Id] = {};
         
         // Initialize game environment (deals hands, sets up leaders, etc.)
         gameEnv = this.mozGamePlay.updateInitialGameEnvironment(gameEnv);
@@ -174,19 +181,25 @@ class GameLogic {
                     "PLAY_LEADER",
                     "leader",
                     {
-                        leaderIndex: gameEnv[playerId].deck.currentLeaderIdx,
+                        leaderIndex: gameEnv.players[playerId].deck.currentLeaderIdx,
                         isInitialPlacement: true
                     }
                 );
                 
-                gameEnv[playerId]["turnAction"] = []
-                gameEnv[playerId]["Field"] = {};
-                gameEnv[playerId]["Field"]["leader"] = leader;
-                gameEnv[playerId]["Field"]["right"] = [];
-                gameEnv[playerId]["Field"]["left"] = [];
-                gameEnv[playerId]["Field"]["top"] = [];
-                gameEnv[playerId]["Field"]["help"] = [];
-                gameEnv[playerId]["Field"]["sp"] = [];
+                // NEW: Initialize unified structure
+                gameEnv.players[playerId].turnAction = [];
+                gameEnv.players[playerId].isReady = true;
+                gameEnv.players[playerId].redraw = 1;
+                gameEnv.players[playerId].playerPoint = 0;
+                
+                gameEnv.zones[playerId] = {
+                    leader: leader,
+                    top: [],
+                    left: [],
+                    right: [],
+                    help: [],
+                    sp: []
+                };
                 
                 // Initialize field effects for this player
                 this.mozGamePlay.fieldEffectProcessor.initializePlayerFieldEffects(gameEnv, playerId);
@@ -206,12 +219,12 @@ class GameLogic {
             
             // First player draws 1 card
             const currentPlayerId = gameEnv.currentPlayer;
-            const hand = gameEnv[currentPlayerId].deck.hand;
-            const mainDeck = gameEnv[currentPlayerId].deck.mainDeck;
+            const hand = gameEnv.players[currentPlayerId].deck.hand;
+            const mainDeck = gameEnv.players[currentPlayerId].deck.mainDeck;
             const mozDeckHelper = require('../mozGame/mozDeckHelper');
             const result = mozDeckHelper.drawToHand(hand, mainDeck);
-            gameEnv[currentPlayerId].deck.hand = result.hand;
-            gameEnv[currentPlayerId].deck.mainDeck = result.mainDeck;
+            gameEnv.players[currentPlayerId].deck.hand = result.hand;
+            gameEnv.players[currentPlayerId].deck.mainDeck = result.mainDeck;
             
             // Add draw phase event that requires acknowledgment
             this.mozGamePlay.addGameEvent(gameEnv, 'DRAW_PHASE_COMPLETE', {
@@ -251,16 +264,29 @@ class GameLogic {
             gameData.gameEnv = actionResult.requiresCardSelection ? actionResult.gameEnv : actionResult;
             
             // NEW: Record card play and simulate if card was played
-            if (!actionResult.hasOwnProperty('error') && action.actionType === 'PlayCard') {
+            if (!actionResult.hasOwnProperty('error') && (action.type === 'PlayCard' || action.type === 'PlayCardBack')) {
+                // Get the card ID from the hand using unified structure
+                const playerHand = gameData.gameEnv.players ? 
+                    gameData.gameEnv.players[playerId].deck.hand : 
+                    gameData.gameEnv[playerId].deck.hand;
+                
+                const cardId = Array.isArray(playerHand) ? 
+                    playerHand[action.card_idx]?.id || playerHand[action.card_idx] :
+                    playerHand[action.card_idx];
+                
+                // Get zone name from field index
+                const zoneMapping = ['top', 'left', 'right', 'help', 'sp'];
+                const zoneName = zoneMapping[action.field_idx];
+                
                 // Record the card play
                 this.playSequenceManager.recordCardPlay(
                     gameData.gameEnv,
                     playerId,
-                    action.cardId,
+                    cardId,
                     "PLAY_CARD",
-                    action.zone,
+                    zoneName,
                     {
-                        isFaceDown: action.actionType === 'PlayCardBack',
+                        isFaceDown: action.type === 'PlayCardBack',
                         turnAction: action
                     }
                 );
@@ -457,24 +483,24 @@ class GameLogic {
 
         const sourceGameEnv = game.gameEnv;
         
-        // Check if the data is already in frontend format (test scenarios)
-        if (sourceGameEnv.players && sourceGameEnv.zones && sourceGameEnv.victoryPoints) {
-            // Already in frontend format, return as-is
+        // NEW: If already in unified format, return as-is
+        if (sourceGameEnv.players && sourceGameEnv.zones) {
             return game;
         }
 
+        // LEGACY: Transform old format to unified format for backward compatibility
         const { getPlayerFromGameEnv } = require('../utils/gameUtils');
         const playerIds = getPlayerFromGameEnv(sourceGameEnv);
 
         const players = {};
         const zones = {};
-        const victoryPoints = {};
+        const fieldEffects = {};
 
         playerIds.forEach(playerId => {
             if (sourceGameEnv[playerId]) {
                 const playerData = sourceGameEnv[playerId];
                 
-                // Create structured player object
+                // Create unified player object
                 players[playerId] = {
                     id: playerId,
                     name: playerData.name || playerId,
@@ -487,35 +513,35 @@ class GameLogic {
                     isReady: sourceGameEnv.playersReady?.[playerId] || false,
                     redraw: playerData.redraw || 0,
                     turnAction: playerData.turnAction || [],
-                    fieldEffects: playerData.fieldEffects || {
-                        zoneRestrictions: {
-                            "TOP": "ALL",
-                            "LEFT": "ALL",
-                            "RIGHT": "ALL",
-                            "HELP": "ALL",
-                            "SP": "ALL"
-                        },
-                        activeEffects: []
-                    }
+                    playerPoint: playerData.playerPoint || 0
                 };
                 
                 // Extract zone data with proper structure
                 zones[playerId] = {
                     leader: playerData.Field?.leader || null,
-                    TOP: this.transformZoneCards(playerData.Field?.top || []),
-                    LEFT: this.transformZoneCards(playerData.Field?.left || []),
-                    RIGHT: this.transformZoneCards(playerData.Field?.right || []),
-                    HELP: this.transformZoneCards(playerData.Field?.help || []),
-                    SP: this.transformZoneCards(playerData.Field?.sp || [])
+                    top: this.transformZoneCards(playerData.Field?.top || []),
+                    left: this.transformZoneCards(playerData.Field?.left || []),
+                    right: this.transformZoneCards(playerData.Field?.right || []),
+                    help: this.transformZoneCards(playerData.Field?.help || []),
+                    sp: this.transformZoneCards(playerData.Field?.sp || [])
                 };
                 
-                // Extract victory points
-                victoryPoints[playerId] = playerData.playerPoint || 0;
+                // Extract field effects
+                fieldEffects[playerId] = playerData.fieldEffects || {
+                    zoneRestrictions: {
+                        "TOP": "ALL",
+                        "LEFT": "ALL",
+                        "RIGHT": "ALL",
+                        "HELP": "ALL",
+                        "SP": "ALL"
+                    },
+                    activeEffects: []
+                };
             }
         });
 
-        // Build the new, clean gameEnv object for the frontend
-        const frontendGameEnv = {
+        // Build the unified gameEnv object
+        const unifiedGameEnv = {
             // Game Status
             phase: sourceGameEnv.phase || 'SETUP',
             currentPlayer: sourceGameEnv.currentPlayer,
@@ -524,10 +550,10 @@ class GameLogic {
             gameStarted: sourceGameEnv.gameStarted,
             firstPlayer: sourceGameEnv.firstPlayer,
 
-            // Centralized Data (No duplication)
+            // Unified Data Structure
             players,
             zones,
-            victoryPoints,
+            fieldEffects,
 
             // Events and Actions
             gameEvents: sourceGameEnv.gameEvents || [],
@@ -535,7 +561,7 @@ class GameLogic {
             pendingPlayerAction: sourceGameEnv.pendingPlayerAction || null,
             pendingCardSelections: sourceGameEnv.pendingCardSelections || {},
             
-            // NEW: Card Effect System Data
+            // Card Effect System Data
             playSequence: sourceGameEnv.playSequence || { globalSequence: 0, plays: [] },
             computedState: sourceGameEnv.computedState || {
                 playerPowers: {},
@@ -545,10 +571,10 @@ class GameLogic {
             },
         };
 
-        // Return the game object with the cleaned gameEnv
+        // Return the game object with the unified gameEnv
         return {
             ...game,
-            gameEnv: frontendGameEnv
+            gameEnv: unifiedGameEnv
         };
     }
 

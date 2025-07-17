@@ -3,7 +3,10 @@ const CardInfoUtils = require('./CardInfoUtils');
 const { 
     getPlayerFromGameEnv,
     getOpponentPlayer,
-    isConditionMatch
+    isConditionMatch,
+    getPlayerData,
+    getPlayerField,
+    getPlayerFieldEffects
  } = require('../utils/gameUtils');
 
 class CardEffectManager {
@@ -28,7 +31,8 @@ class CardEffectManager {
         }
 
         // 2. Check leader restrictions
-        const leader = gameEnv[currentPlayerId].Field.leader;
+        const playerField = getPlayerField(gameEnv, currentPlayerId);
+        const leader = playerField.leader;
         if (leader && leader.zoneCompatibility) {
             const allowedFields = leader.zoneCompatibility[playPos] || [];
             if (!allowedFields.includes('all') && !allowedFields.includes(cardDetails.gameType)) {
@@ -44,7 +48,7 @@ class CardEffectManager {
         // haven't executed their effects yet (they only execute during SP_PHASE)
 
         // 4. Check help card restrictions
-        const helpCards = gameEnv[currentPlayerId].Field.help || [];
+        const helpCards = playerField.help || [];
         for (const helpCard of helpCards) {
             const effectRules = helpCard.cardDetails[0].effectRules || [];
             for (const rule of effectRules) {
@@ -61,7 +65,7 @@ class CardEffectManager {
         }
 
         // 5. Check monster card restrictions
-        const monsters = gameEnv[currentPlayerId].Field[playPos] || [];
+        const monsters = playerField[playPos] || [];
         for (const monster of monsters) {
             const effectRules = monster.cardDetails[0].effectRules || [];
             for (const rule of effectRules) {
@@ -169,7 +173,9 @@ class CardEffectManager {
      */
     async checkOverrideRestrictions(gameEnv, playerId, cardDetails, playPos) {
         // Check SP cards for overrides
-        const spCards = gameEnv[playerId].Field.sp || [];
+        const { getPlayerField } = require('../utils/gameUtils');
+        const playerField = getPlayerField(gameEnv, playerId);
+        const spCards = playerField.sp || [];
         for (const spCard of spCards) {
             const effectRules = spCard.cardDetails[0].effectRules || [];
             for (const rule of effectRules) {
@@ -188,7 +194,7 @@ class CardEffectManager {
         }
 
         // Check help cards for overrides
-        const helpCards = gameEnv[playerId].Field.help || [];
+        const helpCards = playerField.help || [];
         for (const helpCard of helpCards) {
             const effectRules = helpCard.cardDetails[0].effectRules || [];
             for (const rule of effectRules) {

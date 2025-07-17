@@ -26,6 +26,58 @@ class mozGamePlay {
         this.fieldEffectProcessor = FieldEffectProcessor;
     }
 
+    // Helper methods for unified format compatibility
+    getPlayerHand(gameEnv, playerId) {
+        return gameEnv.players ? 
+            gameEnv.players[playerId].deck.hand : 
+            gameEnv[playerId].deck.hand;
+    }
+
+    getPlayerMainDeck(gameEnv, playerId) {
+        return gameEnv.players ? 
+            gameEnv.players[playerId].deck.mainDeck : 
+            gameEnv[playerId].deck.mainDeck;
+    }
+
+    getPlayerDeck(gameEnv, playerId) {
+        return gameEnv.players ? 
+            gameEnv.players[playerId].deck : 
+            gameEnv[playerId].deck;
+    }
+
+    setPlayerHand(gameEnv, playerId, hand) {
+        if (gameEnv.players) {
+            gameEnv.players[playerId].deck.hand = hand;
+        } else {
+            gameEnv[playerId].deck.hand = hand;
+        }
+    }
+
+    setPlayerMainDeck(gameEnv, playerId, mainDeck) {
+        if (gameEnv.players) {
+            gameEnv.players[playerId].deck.mainDeck = mainDeck;
+        } else {
+            gameEnv[playerId].deck.mainDeck = mainDeck;
+        }
+    }
+
+    getPlayerField(gameEnv, playerId) {
+        return gameEnv.zones ? 
+            gameEnv.zones[playerId] : 
+            gameEnv[playerId].Field;
+    }
+
+    getPlayerZone(gameEnv, playerId, zone) {
+        const field = this.getPlayerField(gameEnv, playerId);
+        return field ? field[zone] : null;
+    }
+
+    getPlayerData(gameEnv, playerId) {
+        return gameEnv.players ? 
+            gameEnv.players[playerId] : 
+            gameEnv[playerId];
+    }
+
     // Event Management System
     initializeEventSystem(gameEnv) {
         if (!gameEnv.gameEvents) {
@@ -119,7 +171,9 @@ class mozGamePlay {
         mozPhaseManager.setCurrentPhase(TurnPhase.START_REDRAW)
         gameEnv["phase"] = mozPhaseManager.currentPhase;
         for (let playerId in playerList){
-            gameEnv[playerList[playerId]].redraw = 0;
+            const { getPlayerData } = require('../utils/gameUtils');
+            const playerData = getPlayerData(gameEnv, playerList[playerId]);
+            playerData.redraw = 0;
         }
         
         // Add game started event
@@ -141,9 +195,12 @@ class mozGamePlay {
     }
     
     async redrawInBegining(gameEnvInput,playerId,isRedraw){
+        const { getPlayerData } = require('../utils/gameUtils');
         var gameEnv = gameEnvInput;
-        if(gameEnv[playerId].redraw == 0){
-            gameEnv[playerId].redraw = 1;
+        const playerData = getPlayerData(gameEnv, playerId);
+        
+        if(playerData.redraw == 0){
+            playerData.redraw = 1;
             
             // Add player ready event
             this.addGameEvent(gameEnv, 'PLAYER_READY', {
@@ -153,8 +210,8 @@ class mozGamePlay {
             
             if (isRedraw){
                 const {hand,mainDeck} =  await mozDeckHelper.reshuffleForPlayer(playerId);
-                gameEnv[playerId].deck.hand = hand;
-                gameEnv[playerId].deck.mainDeck = mainDeck;
+                playerData.deck.hand = hand;
+                playerData.deck.mainDeck = mainDeck;
                 
                 // Add hand redrawn event
                 this.addGameEvent(gameEnv, 'HAND_REDRAWN', {
@@ -215,7 +272,7 @@ class mozGamePlay {
             }
             
             const playPos = positionDict[action["field_idx"]];
-            var hand = [...gameEnv[playerId].deck.hand];
+            var hand = [...this.getPlayerHand(gameEnv, playerId)];
             
             // Validate card index in hand
             if (action["card_idx"] >= hand.length) {
@@ -293,7 +350,9 @@ class mozGamePlay {
                     }
                     // Ensure only one character per zone (no stacking)
                     if (playPos == "top" || playPos == "left" || playPos == "right") {
-                        if (await this.monsterInField(gameEnv[playerId].Field[playPos])) {
+                        const { getPlayerField } = require('../utils/gameUtils');
+                        const playerField = getPlayerField(gameEnv, playerId);
+                        if (await this.monsterInField(playerField[playPos])) {
                             this.addErrorEvent(gameEnv, 'ZONE_OCCUPIED_ERROR', "Character already in this position", playerId);
                             return this.throwError("Character already in this position");
                         }
@@ -304,7 +363,9 @@ class mozGamePlay {
                         this.addErrorEvent(gameEnv, 'CARD_TYPE_ZONE_ERROR', "Help cards can only be played in help zone", playerId);
                         return this.throwError("Help cards can only be played in help zone");
                     }
-                    if (gameEnv[playerId].Field[playPos].length > 0) {
+                    const { getPlayerField } = require('../utils/gameUtils');
+                    const playerField = getPlayerField(gameEnv, playerId);
+                    if (playerField[playPos].length > 0) {
                         this.addErrorEvent(gameEnv, 'ZONE_OCCUPIED_ERROR', "Help zone already occupied", playerId);
                         return this.throwError("Help zone already occupied");
                     }
@@ -319,7 +380,9 @@ class mozGamePlay {
                         this.addErrorEvent(gameEnv, 'CARD_TYPE_ZONE_ERROR', "SP cards can only be played in SP zone", playerId);
                         return this.throwError("SP cards can only be played in SP zone");
                     }
-                    if (gameEnv[playerId].Field[playPos].length > 0) {
+                    const { getPlayerField } = require('../utils/gameUtils');
+                    const playerField = getPlayerField(gameEnv, playerId);
+                    if (playerField[playPos].length > 0) {
                         this.addErrorEvent(gameEnv, 'ZONE_OCCUPIED_ERROR', "SP zone already occupied", playerId);
                         return this.throwError("SP zone already occupied");
                     }
@@ -335,11 +398,15 @@ class mozGamePlay {
             };
 
             // Update game state with card placement
-            gameEnv[playerId].deck.hand = hand;                   // Update hand
-            gameEnv[playerId].Field[playPos].push(cardObj);       // Place card on field
+            const { getPlayerData, getPlayerField } = require('../utils/gameUtils');
+            const playerData = getPlayerData(gameEnv, playerId);
+            const playerField = getPlayerField(gameEnv, playerId);
+            
+            this.setPlayerHand(gameEnv, playerId, hand);   // Update hand
+            playerField[playPos].push(cardObj);       // Place card on field
             action["selectedCard"] = cardObj;                     // Track action details
             action["turn"] = gameEnv["currentTurn"];
-            gameEnv[playerId]["turnAction"].push(action);         // Record action history
+            this.getPlayerData(gameEnv, playerId).turnAction.push(action);         // Record action history
             
             // Add successful card placement event
             this.addGameEvent(gameEnv, 'CARD_PLAYED', {
@@ -407,9 +474,10 @@ class mozGamePlay {
             // Check if both players have filled SP zones - trigger reveal phase
             if (gameEnv["phase"] == TurnPhase.SP_PHASE && playPos == "sp") {
                 const allPlayers = Object.keys(gameEnv).filter(key => key.startsWith('playerId_'));
-                const allSpZonesFilled = allPlayers.every(pid => 
-                    gameEnv[pid].Field.sp && gameEnv[pid].Field.sp.length > 0
-                );
+                const allSpZonesFilled = allPlayers.every(pid => {
+                    const spZone = this.getPlayerZone(gameEnv, pid, 'sp');
+                    return spZone && spZone.length > 0;
+                });
                 
                 if (allSpZonesFilled) {
                     // Add event for SP zones filled
@@ -424,7 +492,8 @@ class mozGamePlay {
             }
             
             // Recalculate player points with all active effects
-            gameEnv[playerId]["playerPoint"] = await this.calculatePlayerPoint(gameEnv, playerId);
+            const currentPlayerData = this.getPlayerData(gameEnv, playerId);
+            currentPlayerData.playerPoint = await this.calculatePlayerPoint(gameEnv, playerId);
             
             // Check if main phase is complete (all character zones + help zones filled or skipped)
             const isMainPhaseComplete = await this.checkIsMainPhaseComplete(gameEnv);
@@ -480,8 +549,10 @@ class mozGamePlay {
         console.log("player " + crtPlayer + " "+ opponent)
 
         // Calculate final points for this round
-        gameEnv[crtPlayer]["playerPoint"] = await this.calculatePlayerPoint(gameEnv,crtPlayer);
-        gameEnv[opponent]["playerPoint"] = await this.calculatePlayerPoint(gameEnv,opponent);
+        const crtPlayerData = this.getPlayerData(gameEnv, crtPlayer);
+        const opponentData = this.getPlayerData(gameEnv, opponent);
+        crtPlayerData.playerPoint = await this.calculatePlayerPoint(gameEnv, crtPlayer);
+        opponentData.playerPoint = await this.calculatePlayerPoint(gameEnv, opponent);
         
         // Initialize victory points if not present
         if(!gameEnv[crtPlayer].hasOwnProperty("victoryPoints")){
@@ -493,7 +564,7 @@ class mozGamePlay {
         
         // Determine round winner and award victory points
         var leaderBattleWinner = "";
-        const pointDifference = gameEnv[crtPlayer]["playerPoint"] - gameEnv[opponent]["playerPoint"];
+        const pointDifference = crtPlayerData.playerPoint - opponentData.playerPoint;
         
         if(pointDifference > 0){
             // Current player wins
@@ -517,18 +588,20 @@ class mozGamePlay {
             gameEnv["winner"] = opponent;
             return gameEnv;
         }
-        gameEnv[opponent]['turnAction'].push(
+        this.getPlayerData(gameEnv, opponent).turnAction.push(
             this.endBattleObject(leaderBattleWinner,gameEnv["currentTurn"]));
-        gameEnv[crtPlayer]['turnAction'].push(
+        this.getPlayerData(gameEnv, crtPlayer).turnAction.push(
             this.endBattleObject(leaderBattleWinner,gameEnv["currentTurn"]));
-        gameEnv[opponent].Field["top"] = [];
-        gameEnv[opponent].Field["right"] = [];
-        gameEnv[opponent].Field["left"] = [];
-        gameEnv[crtPlayer].Field["top"] = [];
-        gameEnv[crtPlayer].Field["right"] = [];
-        gameEnv[crtPlayer].Field["left"] = [];
-        gameEnv[crtPlayer]["playerPoint"] = 0;
-        gameEnv[opponent]["playerPoint"] = 0;
+        const opponentField = this.getPlayerField(gameEnv, opponent);
+        const crtPlayerField = this.getPlayerField(gameEnv, crtPlayer);
+        opponentField["top"] = [];
+        opponentField["right"] = [];
+        opponentField["left"] = [];
+        crtPlayerField["top"] = [];
+        crtPlayerField["right"] = [];
+        crtPlayerField["left"] = [];
+        crtPlayerData.playerPoint = 0;
+        opponentData.playerPoint = 0;
 
         // Check if this was the last leader battle  
         if(gameEnv[opponent].deck.currentLeaderIdx == gameEnv[opponent].deck.leader.length-1){
@@ -551,7 +624,8 @@ class mozGamePlay {
             // Move to next leader
             gameEnv[opponent].deck.currentLeaderIdx = gameEnv[opponent].deck.currentLeaderIdx + 1;
             let opponentLeader = this.cardInfoUtils.getCurrentLeader(gameEnv, opponent);
-            gameEnv[opponent].Field["leader"] = opponentLeader
+            const opponentField = this.getPlayerField(gameEnv, opponent);
+            opponentField["leader"] = opponentLeader;
             
             // Record leader play for opponent
             this.playSequenceManager.recordCardPlay(
@@ -571,7 +645,8 @@ class mozGamePlay {
             
             gameEnv[crtPlayer].deck.currentLeaderIdx = gameEnv[crtPlayer].deck.currentLeaderIdx + 1; 
             let crtLeader = this.cardInfoUtils.getCurrentLeader(gameEnv, crtPlayer);
-            gameEnv[crtPlayer].Field["leader"] = crtLeader
+            const crtPlayerField = this.getPlayerField(gameEnv, crtPlayer);
+            crtPlayerField["leader"] = crtLeader;
             
             // Record leader play for current player
             this.playSequenceManager.recordCardPlay(
@@ -640,7 +715,7 @@ class mozGamePlay {
         for (let playerListIdx in playerList){
             for (let areaIdx in area){
                 const player = playerList[playerListIdx]
-                const monsterArr = gameEnv[player].Field[area[areaIdx]];
+                const monsterArr = this.getPlayerZone(gameEnv, player, area[areaIdx]);
                 var areaContainMonster = false;
                 for(let monsterArrIdx in monsterArr){
                    if(monsterArr[monsterArrIdx]["isBack"][0]){
@@ -668,7 +743,7 @@ class mozGamePlay {
         const playerList = mozGamePlay.getPlayerFromGameEnv(gameEnv);
         
         for (const playerId of playerList) {
-            const helpZone = gameEnv[playerId].Field.help;
+            const helpZone = this.getPlayerZone(gameEnv, playerId, 'help');
             
             // Check if Help zone has a card (either placed normally or via search effects)
             if (!helpZone || helpZone.length === 0) {
@@ -698,7 +773,7 @@ class mozGamePlay {
         const playerList = mozGamePlay.getPlayerFromGameEnv(gameEnv);
         
         for (const playerId of playerList) {
-            const helpZone = gameEnv[playerId].Field.help;
+            const helpZone = this.getPlayerZone(gameEnv, playerId, 'help');
             
             // Help zone must have at least one card (face-up or face-down)
             if (!helpZone || helpZone.length === 0) {
@@ -719,7 +794,7 @@ class mozGamePlay {
         
         //end currentPlayer Turn
         if(gameEnv["phase"] == TurnPhase.MAIN_PHASE){
-            const playerAction = gameEnv[playerId]["turnAction"];
+            const playerAction = this.getPlayerData(gameEnv, playerId).turnAction;
             const currentTurn = gameEnv["currentTurn"];
             
             // Check if player played a card this turn
@@ -755,7 +830,7 @@ class mozGamePlay {
      * @returns {boolean} True if player should skip their turn
      */
     async shouldPlayerSkipTurn(gameEnv, playerId) {
-        const hand = gameEnv[playerId].deck.hand || [];
+        const hand = this.getPlayerHand(gameEnv, playerId) || [];
         if (hand.length === 0) {
             return true; // No cards to play
         }
@@ -763,7 +838,7 @@ class mozGamePlay {
         // Check if any character zone is available
         const characterZones = ['top', 'left', 'right'];
         for (const zone of characterZones) {
-            const zoneCards = gameEnv[playerId].Field[zone] || [];
+            const zoneCards = this.getPlayerZone(gameEnv, playerId, zone) || [];
             const hasCharacter = await this.monsterInField(zoneCards);
             if (!hasCharacter) {
                 return false; // Found available character zone
@@ -771,7 +846,7 @@ class mozGamePlay {
         }
         
         // Check if Help zone is available (any card can be played face-down here)
-        const helpZone = gameEnv[playerId].Field.help || [];
+        const helpZone = this.getPlayerZone(gameEnv, playerId, 'help') || [];
         if (helpZone.length === 0) {
             return false; // Help zone is available - any card can be played face-down
         }
@@ -796,11 +871,12 @@ class mozGamePlay {
         gameEnv["phase"] = TurnPhase.DRAW_PHASE;
         
         // Current player draws 1 card
-        var hand = gameEnv[gameEnv["currentPlayer"]].deck.hand
-        var mainDeck = gameEnv[gameEnv["currentPlayer"]].deck.mainDeck   
-        const result = mozDeckHelper.drawToHand(hand,mainDeck);
-        gameEnv[gameEnv["currentPlayer"]].deck.hand = result["hand"];
-        gameEnv[gameEnv["currentPlayer"]].deck.mainDeck = result["mainDeck"];
+        const currentPlayer = gameEnv["currentPlayer"];
+        var hand = this.getPlayerHand(gameEnv, currentPlayer);
+        var mainDeck = this.getPlayerMainDeck(gameEnv, currentPlayer);
+        const result = mozDeckHelper.drawToHand(hand, mainDeck);
+        this.setPlayerHand(gameEnv, currentPlayer, result["hand"]);
+        this.setPlayerMainDeck(gameEnv, currentPlayer, result["mainDeck"]);
         
         // Add draw phase event that requires acknowledgment
         this.addGameEvent(gameEnv, 'DRAW_PHASE_COMPLETE', {
@@ -829,7 +905,7 @@ class mozGamePlay {
     async calculatePlayerPoint(gameEnv, playerId) {
         let totalPoints = 0;
         const fields = ['top', 'left', 'right'];
-        const playerField = gameEnv[playerId].Field;
+        const playerField = this.getPlayerField(gameEnv, playerId);
         const currentLeader = playerField.leader;
         
         // Load all card data for effect processing
@@ -927,7 +1003,8 @@ class mozGamePlay {
         var returnValue = false;
         
         // Get card details to check card type
-        const hand = gameEnv[playerId].deck.hand;
+        // Handle both unified and legacy formats
+        const hand = this.getPlayerHand(gameEnv, playerId);
         console.log("hand", JSON.stringify(hand));
         if (!hand || action["card_idx"] >= hand.length) {
             return false;
@@ -1045,11 +1122,12 @@ class mozGamePlay {
                 if (playerField[zone] && playerField[zone].length > 0) return false;
             } else if (condition.type === 'opponentHasCharacterWithName') {
                 const opponentId = this.getOpponentId(gameEnv, playerId);
-                const hasCharacter = this.hasCharacterWithName(gameEnv[opponentId].Field, condition.value);
+                const hasCharacter = this.hasCharacterWithName(this.getPlayerField(gameEnv, opponentId), condition.value);
                 if (!hasCharacter) return false;
             } else if (condition.type === 'opponentHasLeader') {
                 const opponentId = this.getOpponentId(gameEnv, playerId);
-                const hasLeader = gameEnv[opponentId].Field.leader && gameEnv[opponentId].Field.leader.name && gameEnv[opponentId].Field.leader.name.includes(condition.value);
+                const opponentField = this.getPlayerField(gameEnv, opponentId);
+                const hasLeader = opponentField.leader && opponentField.leader.name && opponentField.leader.name.includes(condition.value);
                 if (!hasLeader) return false;
             } else if (condition.type === 'or') {
                 // Handle OR conditions
@@ -1092,7 +1170,7 @@ class mozGamePlay {
         } else if (target.owner === 'opponent') {
             const playerList = mozGamePlay.getPlayerFromGameEnv(gameEnv);
             const opponentId = playerList.find(p => p !== playerId);
-            targetField = gameEnv[opponentId].Field;
+            targetField = this.getPlayerField(gameEnv, opponentId);
         }
         
         if (!targetField) return targets;
@@ -1268,7 +1346,7 @@ class mozGamePlay {
      */
     async executeEffectRule(rule, gameEnv, playerId) {
         // Check if effect conditions are met before executing
-        if (!this.checkRuleConditions(rule.trigger.conditions, gameEnv[playerId].Field, gameEnv, playerId)) {
+        if (!this.checkRuleConditions(rule.trigger.conditions, this.getPlayerField(gameEnv, playerId), gameEnv, playerId)) {
             return {
                 success: false,
                 reason: 'Effect conditions not met'
@@ -1393,8 +1471,8 @@ class mozGamePlay {
      * @param {Object} effect - Search effect parameters (searchCount, selectCount, cardTypeFilter)
      */
     async searchCardEffect(gameEnv, playerId, effect) {
-        const deck = gameEnv[playerId].deck.mainDeck;
-        const hand = gameEnv[playerId].deck.hand;
+        const deck = this.getPlayerMainDeck(gameEnv, playerId);
+        const hand = this.getPlayerHand(gameEnv, playerId);
         
         if (deck.length === 0) return null;
         
@@ -1490,8 +1568,8 @@ class mozGamePlay {
         }
         
         // Apply the selection
-        const deck = gameEnv[playerId].deck.mainDeck;
-        const hand = gameEnv[playerId].deck.hand;
+        const deck = this.getPlayerMainDeck(gameEnv, playerId);
+        const hand = this.getPlayerHand(gameEnv, playerId);
         
         // Add selected cards to appropriate destination
         for (const cardId of selectedCardIds) {
@@ -1510,7 +1588,8 @@ class mozGamePlay {
                     "isBack": [false],
                     "valueOnField": cardDetails["power"] || 0
                 };
-                gameEnv[playerId].Field.sp.push(cardObj);
+                const playerField = this.getPlayerField(gameEnv, playerId);
+                playerField.sp.push(cardObj);
             } else if (effect.destination === 'helpZone') {
                 // Always place in Help zone (original fixed destination)
                 const cardDetails = require('./mozDeckHelper').getDeckCardDetails(cardId);
@@ -1525,7 +1604,8 @@ class mozGamePlay {
                     "isBack": [false],
                     "valueOnField": cardDetails["power"] || 0
                 };
-                gameEnv[playerId].Field.help.push(cardObj);
+                const playerField = this.getPlayerField(gameEnv, playerId);
+                playerField.help.push(cardObj);
                 
                 // Process Help card onPlay effects (since it's being "played" to the zone)
                 const effectResult = await this.processUtilityCardEffects(gameEnv, playerId, cardDetails);
@@ -1539,7 +1619,8 @@ class mozGamePlay {
                     return this.throwError("Selected card is not a Help card");
                 }
                 
-                if (gameEnv[playerId].Field.help.length === 0) {
+                const playerField = this.getPlayerField(gameEnv, playerId);
+                if (playerField.help.length === 0) {
                     // Help zone is empty - place card in Help zone
                     const cardObj = {
                         "card": [cardId],
@@ -1547,7 +1628,8 @@ class mozGamePlay {
                         "isBack": [false],
                         "valueOnField": cardDetails["power"] || 0
                     };
-                    gameEnv[playerId].Field.help.push(cardObj);
+                    const playerField = this.getPlayerField(gameEnv, playerId);
+                playerField.help.push(cardObj);
                     
                     // Process Help card onPlay effects (since it's being "played" to the zone)
                     const effectResult = await this.processUtilityCardEffects(gameEnv, playerId, cardDetails);
@@ -1590,11 +1672,11 @@ class mozGamePlay {
      */
     async drawCardsForPlayer(gameEnv, playerId, count) {
         for (let i = 0; i < count; i++) {
-            const hand = gameEnv[playerId].deck.hand;
-            const mainDeck = gameEnv[playerId].deck.mainDeck;
+            const hand = this.getPlayerHand(gameEnv, playerId);
+            const mainDeck = this.getPlayerMainDeck(gameEnv, playerId);
             const result = mozDeckHelper.drawToHand(hand, mainDeck);
-            gameEnv[playerId].deck.hand = result["hand"];
-            gameEnv[playerId].deck.mainDeck = result["mainDeck"];
+            this.setPlayerHand(gameEnv, playerId, result["hand"]);
+            this.setPlayerMainDeck(gameEnv, playerId, result["mainDeck"]);
         }
     }
     
@@ -1606,7 +1688,7 @@ class mozGamePlay {
      * @param {number} count - Number of cards to discard
      */
     async discardRandomCards(gameEnv, targetPlayerId, count) {
-        const hand = gameEnv[targetPlayerId].deck.hand;
+        const hand = this.getPlayerHand(gameEnv, targetPlayerId);
         for (let i = 0; i < count && hand.length > 0; i++) {
             const randomIndex = Math.floor(Math.random() * hand.length);
             hand.splice(randomIndex, 1);
@@ -1624,7 +1706,8 @@ class mozGamePlay {
         
         // Check if any player has SP cards on the field
         for (const playerId of playerList) {
-            if (gameEnv[playerId].Field.sp && gameEnv[playerId].Field.sp.length > 0) {
+            const spZone = this.getPlayerZone(gameEnv, playerId, 'sp');
+            if (spZone && spZone.length > 0) {
                 return true;
             }
         }
@@ -1639,7 +1722,8 @@ class mozGamePlay {
      * @returns {boolean} True if Help phase should be skipped
      */
     shouldSkipHelpPhase(gameEnv, playerId) {
-        return gameEnv[playerId].Field.help && gameEnv[playerId].Field.help.length > 0;
+        const helpZone = this.getPlayerZone(gameEnv, playerId, 'help');
+        return helpZone && helpZone.length > 0;
     }
 
     /**
@@ -1649,7 +1733,8 @@ class mozGamePlay {
      * @returns {boolean} True if SP phase should be skipped
      */
     shouldSkipSpPhase(gameEnv, playerId) {
-        return gameEnv[playerId].Field.sp && gameEnv[playerId].Field.sp.length > 0;
+        const spZone = this.getPlayerZone(gameEnv, playerId, 'sp');
+        return spZone && spZone.length > 0;
     }
 
     /**
@@ -1685,7 +1770,7 @@ class mozGamePlay {
         
         for (const checkPlayerId of playerList) {
             const shouldSkip = this.shouldSkipSpPhase(gameEnv, checkPlayerId);
-            const hand = gameEnv[checkPlayerId].deck.hand || [];
+            const hand = this.getPlayerHand(gameEnv, checkPlayerId) || [];
             
             // If any player has cards in hand and their SP zone isn't pre-occupied, they can play any card face-down
             if (hand.length > 0 && !shouldSkip) {
@@ -1737,7 +1822,7 @@ class mozGamePlay {
         // Collect all face-up SP cards with their player's leader priority
         for (const playerId of playerList) {
             const leader = this.cardInfoUtils.getCurrentLeader(gameEnv, playerId);
-            const spCards = gameEnv[playerId].Field.sp || [];
+            const spCards = this.getPlayerZone(gameEnv, playerId, 'sp') || [];
             
             for (const spCardObj of spCards) {
                 // Only process face-up SP cards
@@ -1790,7 +1875,7 @@ class mozGamePlay {
         const spCards = [];
         
         for (const playerId of allPlayers) {
-            const spZone = gameEnv[playerId].Field.sp;
+            const spZone = this.getPlayerZone(gameEnv, playerId, 'sp');
             if (spZone && spZone.length > 0) {
                 const spCard = spZone[0];
                 // Reveal the card
@@ -1801,7 +1886,7 @@ class mozGamePlay {
                     spCards.push({
                         playerId,
                         card: spCard.cardDetails[0],
-                        priority: gameEnv[playerId].Field.leader.initialPoint
+                        priority: this.getPlayerZone(gameEnv, playerId, 'leader').initialPoint
                     });
                 }
             }

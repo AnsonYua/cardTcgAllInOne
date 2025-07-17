@@ -11,7 +11,8 @@
       "Bash(node:*)",
       "Bash(timeout 10 npm start)",
       "Bash(mkdir:*)",
-      "Bash(npm run test:quick:*)"
+      "Bash(npm run test:quick:*)",
+      "Bash(npm run test:simple:*)"
     ],
     "deny": []
   }

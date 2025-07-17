@@ -130,6 +130,7 @@ npm run format
 ### Game State Management
 - **File-based Backend**: All game states persisted to `cardBackend/src/gameData/{gameId}.json`
 - **No In-Memory Storage**: Games survive server restarts
+- **Unified Structure**: Single gameEnv format eliminates backend/frontend transformation
 - **Event System**: 30+ event types for precise frontend updates
 - **Card Selection Workflow**: `pendingPlayerAction` and `pendingCardSelections` handle player input requirements
 

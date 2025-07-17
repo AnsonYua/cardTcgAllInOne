@@ -1,0 +1,91 @@
+{
+  "gameId": "leader_s-1_trump_vs_powell_nerf_dynamic",
+  "description": "Tests Trump's leader skill nerf against an Economy card when facing Powell.",
+  "initialGameEnv": {
+    "phase": "DRAW_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Trump_Player",
+        "deck": {
+          "hand": [ "c-eco-1", "c-5", "h-1", "sp-1", "c-6" ],
+          "mainDeck": [ "c-7", "c-8", "c-9", "c-10" ],
+          "leader": [ "s-1", "s-2", "s-3", "s-4" ],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true, "redraw": 0, "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Powell_Player",
+        "deck": {
+          "hand": [ "c-22", "c-23", "h-5", "sp-1", "c-24" ],
+          "mainDeck": [ "c-25", "c-26", "c-27", "c-28" ],
+          "leader": [ "s-6", "s-2", "s-3", "s-4" ],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true, "redraw": 0, "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {
+          "id": "s-1", "name": "特朗普", "cardType": "leader", "gameType": "右翼",
+          "effects": {
+            "rules": [
+              { "id": "trump_rightWing_patriot_boost", "type": "continuous", "trigger": { "event": "always" }, "target": { "owner": "self", "zones": [ "top", "left", "right" ], "filters": [ { "type": "gameTypeOr", "values": [ "右翼", "愛國者" ] } ] }, "effect": { "type": "powerBoost", "value": 45 } },
+              { "id": "trump_vs_powell_nerf", "type": "continuous", "trigger": { "event": "always", "conditions": [ { "type": "opponentHasLeader", "value": "鮑威爾" } ] }, "target": { "owner": "self", "zones": [ "top", "left", "right" ], "filters": [ { "type": "gameType", "value": "經濟" } ] }, "effect": { "type": "setPower", "value": 0 } }
+            ]
+          }
+        },
+        "top": [], "left": [], "right": [], "help": [], "sp": []
+      },
+      "playerId_2": {
+        "leader": { "id": "s-6", "name": "鮑威爾", "cardType": "leader", "gameType": "經濟" },
+        "top": [], "left": [], "right": [], "help": [], "sp": []
+      }
+    },
+    "fieldEffects": { "playerId_1": { "activeEffects": [] }, "playerId_2": { "activeEffects": [] } },
+    "gameEvents": [
+      {
+        "id": "event_draw_phase_start",
+        "type": "DRAW_PHASE_COMPLETE",
+        "data": {
+          "playerId": "playerId_1",
+          "cardCount": 1,
+          "newHandSize": 6,
+          "requiresAcknowledgment": true
+        },
+        "timestamp": 1752759390556,
+        "expiresAt": 1752759393556,
+        "frontendProcessed": false
+      }
+    ],
+    "lastEventId": 1,
+    "playSequence": { "globalSequence": 0, "plays": [] }
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "playerId": "playerId_1",
+      "action": { "actionType": "PlayCard", "cardId": "c-eco-1", "zone": "top" },
+      "description": "Player 1 plays '華爾街交易員' (c-eco-1), an Economy card."
+    }
+  ],
+  "cardDefinitions": {
+      "c-eco-1": { "id": "c-eco-1", "name": "華爾街交易員", "cardType": "character", "gameType": "經濟", "power": 200 }
+  },
+  "validationPoints": [
+    { "cardId": "c-eco-1", "zone": "top", "expectedPower": 0, "description": "Validate that the Economy card's power is nerfed to 0 by Trump's ability." }
+  ],
+  "expectedStateChanges": {
+    "zones.playerId_1.top.length": 1,
+    "players.playerId_1.deck.hand.length": 4,
+    "phase": "MAIN_PHASE"
+  }
+}

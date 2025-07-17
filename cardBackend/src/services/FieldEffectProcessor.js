@@ -1,4 +1,4 @@
-const { getPlayerFromGameEnv } = require('../utils/gameUtils');
+const { getPlayerFromGameEnv, getPlayerData, getPlayerField, getPlayerFieldEffects, setPlayerFieldEffects } = require('../utils/gameUtils');
 const CardInfoUtils = require('./CardInfoUtils');
 const DeckManager = require('./DeckManager');
 
@@ -22,11 +22,7 @@ class FieldEffectProcessor {
      * @param {string} playerId - Player ID
      */
     initializePlayerFieldEffects(gameEnv, playerId) {
-        if (!gameEnv[playerId]) {
-            gameEnv[playerId] = {};
-        }
-        
-        gameEnv[playerId].fieldEffects = {
+        const fieldEffects = {
             zoneRestrictions: {
                 "TOP": "ALL",
                 "LEFT": "ALL", 
@@ -37,6 +33,7 @@ class FieldEffectProcessor {
             activeEffects: []
         };
         
+        setPlayerFieldEffects(gameEnv, playerId, fieldEffects);
         console.log(`🔧 Initialized field effects for ${playerId}`);
     }
 
@@ -238,7 +235,8 @@ class FieldEffectProcessor {
         
         for (const targetPlayerId of targetPlayers) {
             // Ensure target player has field effects initialized
-            if (!gameEnv[targetPlayerId].fieldEffects) {
+            let targetPlayerFieldEffects = getPlayerFieldEffects(gameEnv, targetPlayerId);
+            if (!targetPlayerFieldEffects) {
                 this.initializePlayerFieldEffects(gameEnv, targetPlayerId);
             }
             
@@ -253,7 +251,8 @@ class FieldEffectProcessor {
                 restriction: effect.restriction
             };
             
-            gameEnv[targetPlayerId].fieldEffects.activeEffects.push(activeEffect);
+            targetPlayerFieldEffects = getPlayerFieldEffects(gameEnv, targetPlayerId);
+            targetPlayerFieldEffects.activeEffects.push(activeEffect);
             
             // Apply specific effect type
             if (effect.type === "ZONE_RESTRICTION") {
@@ -274,17 +273,19 @@ class FieldEffectProcessor {
     async applyZoneRestriction(gameEnv, playerId, effect) {
         if (effect.restriction && typeof effect.restriction === 'object') {
             // Handle zone-specific restrictions
+            const playerFieldEffects = getPlayerFieldEffects(gameEnv, playerId);
             for (const [zone, allowedTypes] of Object.entries(effect.restriction)) {
                 if (Array.isArray(allowedTypes)) {
-                    gameEnv[playerId].fieldEffects.zoneRestrictions[zone] = allowedTypes;
+                    playerFieldEffects.zoneRestrictions[zone] = allowedTypes;
                     console.log(`🚫 Zone restriction applied to ${playerId} ${zone}: ${allowedTypes.join(', ')}`);
                 }
             }
         } else if (effect.restriction && Array.isArray(effect.restriction)) {
             // Handle uniform restrictions across specified zones
             const zones = effect.target.zones === "ALL" ? ["TOP", "LEFT", "RIGHT", "HELP", "SP"] : effect.target.zones;
+            const playerFieldEffects = getPlayerFieldEffects(gameEnv, playerId);
             for (const zone of zones) {
-                gameEnv[playerId].fieldEffects.zoneRestrictions[zone] = effect.restriction;
+                playerFieldEffects.zoneRestrictions[zone] = effect.restriction;
                 console.log(`🚫 Zone restriction applied to ${playerId} ${zone}: ${effect.restriction.join(', ')}`);
             }
         }
@@ -322,18 +323,20 @@ class FieldEffectProcessor {
         
         // Remove effects from all players that were created by this player's leader
         for (const targetPlayerId of playerList) {
-            if (gameEnv[targetPlayerId].fieldEffects) {
+            const targetPlayerFieldEffects = getPlayerFieldEffects(gameEnv, targetPlayerId);
+            if (targetPlayerFieldEffects) {
                 const currentLeader = this.cardInfoUtils.getCurrentLeader(gameEnv, playerId);
-                gameEnv[targetPlayerId].fieldEffects.activeEffects = 
-                    gameEnv[targetPlayerId].fieldEffects.activeEffects.filter(
+                targetPlayerFieldEffects.activeEffects = 
+                    targetPlayerFieldEffects.activeEffects.filter(
                         effect => !(effect.source === currentLeader.id && effect.sourcePlayerId === playerId)
                     );
             }
         }
         
         // Reset this player's zone restrictions to default
-        if (gameEnv[playerId].fieldEffects) {
-            gameEnv[playerId].fieldEffects.zoneRestrictions = {
+        const playerFieldEffects = getPlayerFieldEffects(gameEnv, playerId);
+        if (playerFieldEffects) {
+            playerFieldEffects.zoneRestrictions = {
                 "TOP": "ALL",
                 "LEFT": "ALL", 
                 "RIGHT": "ALL",
@@ -355,11 +358,14 @@ class FieldEffectProcessor {
      */
     async validateCardPlacementWithFieldEffects(gameEnv, playerId, cardDetails, zone) {
         // Initialize field effects if not present
-        if (!gameEnv[playerId].fieldEffects) {
+        const { getPlayerFieldEffects } = require('../utils/gameUtils');
+        let playerFieldEffects = getPlayerFieldEffects(gameEnv, playerId);
+        if (!playerFieldEffects) {
             this.initializePlayerFieldEffects(gameEnv, playerId);
+            playerFieldEffects = getPlayerFieldEffects(gameEnv, playerId);
         }
         
-        const zoneRestrictions = gameEnv[playerId].fieldEffects.zoneRestrictions[zone.toUpperCase()];
+        const zoneRestrictions = playerFieldEffects.zoneRestrictions[zone.toUpperCase()];
         
         // If no restrictions, allow placement
         if (zoneRestrictions === "ALL") {
@@ -386,12 +392,13 @@ class FieldEffectProcessor {
      * @returns {number} Modified power value
      */
     async calculateModifiedPower(gameEnv, playerId, cardDetails, basePower) {
-        if (!gameEnv[playerId].fieldEffects) {
+        const playerFieldEffects = getPlayerFieldEffects(gameEnv, playerId);
+        if (!playerFieldEffects) {
             return basePower;
         }
         
         let modifiedPower = basePower;
-        const effects = gameEnv[playerId].fieldEffects.activeEffects;
+        const effects = playerFieldEffects.activeEffects;
         
         // Apply power modification effects
         for (const effect of effects) {
@@ -454,11 +461,12 @@ class FieldEffectProcessor {
      * @returns {Array|string} Allowed card types or "ALL"
      */
     getZoneRestrictions(gameEnv, playerId, zone) {
-        if (!gameEnv[playerId].fieldEffects) {
+        const playerFieldEffects = getPlayerFieldEffects(gameEnv, playerId);
+        if (!playerFieldEffects) {
             return "ALL";
         }
         
-        return gameEnv[playerId].fieldEffects.zoneRestrictions[zone.toUpperCase()] || "ALL";
+        return playerFieldEffects.zoneRestrictions[zone.toUpperCase()] || "ALL";
     }
 
     /**

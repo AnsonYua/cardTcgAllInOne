@@ -97,7 +97,6 @@ async function teardownTestServer() {
     }
 }
 
-module.exports = {
-    setupTestServer,
-    teardownTestServer
-};
+module.exports = setupTestServer;
+module.exports.setupTestServer = setupTestServer;
+module.exports.teardownTestServer = teardownTestServer;

@@ -13,6 +13,7 @@
     "test:interactive": "node src/tests/interactiveTestRunner.js",
     "test:quick": "node src/tests/quickTest.js",
     "test:simple": "node src/tests/simpleTest.js",
+    "test:dynamic": "node src/tests/dynamicTest.js",
     "start": "node server.js",
     "dev": "nodemon server.js",
     "run-test": "node test.cjs",
