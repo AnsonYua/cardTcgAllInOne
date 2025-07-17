@@ -12,7 +12,10 @@
       "Bash(timeout 10 npm start)",
       "Bash(mkdir:*)",
       "Bash(npm run test:quick:*)",
-      "Bash(npm run test:simple:*)"
+      "Bash(npm run test:simple:*)",
+      "Bash(npm run test:dynamic:*)",
+      "Bash(mv:*)",
+      "Bash(VERBOSE_TESTS=1 npm run test:dynamic run leader_s-3_musk_doge_boost_dynamic.json)"
     ],
     "deny": []
   }

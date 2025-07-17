@@ -357,7 +357,7 @@ class TestHelper {
             case 'trait':
                 return cardData.traits && cardData.traits.includes(filter.value);
             case 'nameContains':
-                return card.name.includes(filter.value);
+                return cardData.name && cardData.name.includes(filter.value);
             default:
                 return true;
         }

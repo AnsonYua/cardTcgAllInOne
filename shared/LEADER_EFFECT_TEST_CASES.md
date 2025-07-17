@@ -35,14 +35,35 @@ All scenarios are located in `shared/testScenarios/gameStates/`.
 
 ### 2. Biden (s-2)
 
-#### 2.1. `leader_s-2_biden_boost.json`
-- **Description**: Tests Biden's universal effect that boosts all cards by +40 power.
+#### 2.1. `leader_s-2_biden_boost_dynamic.json`
+- **Test Type**: Dynamic (action-based)
+- **Description**: Tests Biden's universal effect that boosts all cards by +40 power
 - **Setup**:
-  - **Player 1**: Biden (s-2)
-  - **Player 2**: Trump (s-1)
-  - **Player 1 Field**: `c-5` (50 power)
-- **Expected Outcome**:
-  - `c-5` final power should be 90 (50 + 40 boost).
+  - **Player 1**: Biden (s-2) - 左翼 leader
+  - **Player 2**: Trump (s-1) - 右翼 leader
+  - **Initial Turn**: Player 1 (currentTurn: 0)
+- **Actions**:
+  1. **Step 1**: Player 1 (Biden) plays `c-5` (特朗普忠粉, 左翼, 50 power) in top zone
+     - Expected: Success with Biden's +40 boost applied
+  2. **Step 2**: Player 2 (Trump) plays `c-1` (總統特朗普, 愛國者, 100 power) in left zone
+     - Expected: Success with Trump's +45 boost and family effect applied
+  3. **Step 3**: Player 1 (Biden) plays `c-3` (拜登(Sleepy Joe), 左翼, 110 power) in left zone
+     - Expected: Success with Biden's +40 boost applied
+- **Power Validation**:
+  - `c-5` final power: 90 (50 base + 40 Biden boost)
+  - `c-3` final power: 150 (110 base + 40 Biden boost)
+  - `c-1` final power: 155 (100 base + 45 Trump boost + 10 Trump family boost)
+- **Test Status**: ✅ PASSING
+- **Zone Compatibility Tests**:
+  - Biden leader allows ALL card types in all zones
+  - Trump leader restricts zones by card type
+- **Error Cases**:
+  - Invalid zone placement
+  - Occupied zone placement attempts
+- **Card Effects Tested**:
+  - Biden's universal +40 power boost to all cards
+  - Trump's +45 boost to 右翼/愛國者 cards
+  - Card-specific effects (c-5 draws card on summon, c-1 Trump family boost)
 
 ---
 
@@ -57,14 +78,31 @@ All scenarios are located in `shared/testScenarios/gameStates/`.
 - **Expected Outcome**:
   - `c-9` final power should be 80 (30 + 50 boost).
 
-#### 3.2. `leader_s-3_musk_doge_boost.json`
-- **Description**: Tests Musk's effect that boosts cards with 'Doge' in the name by +20 power, and its stacking with the 'Freedom' boost.
+#### 3.2. `leader_s-3_musk_doge_boost_dynamic.json`
+- **Test Type**: Dynamic (action-based)
+- **Description**: Tests Musk's dual leader effects: +50 power to Freedom (自由) cards and +20 power to cards with 'Doge' in name, with stacking validation
 - **Setup**:
-  - **Player 1**: Musk (s-3)
-  - **Player 2**: Biden (s-2)
-  - **Player 1 Field**: `c-8` ('Freedom', 'Doge' trait, 80 power)
-- **Expected Outcome**:
-  - `c-8` final power should be 150 (80 + 50 'Freedom' boost + 20 'Doge' boost).
+  - **Player 1**: Musk (s-3) - 自由 leader
+  - **Player 2**: Biden (s-2) - 左翼 leader
+  - **Initial Turn**: Player 1 (currentTurn: 0)
+- **Actions**:
+  1. **Step 1**: Player 1 (Musk) plays `c-8` (馬斯克 Father Of Doge, 自由, 80 power) in top zone
+     - Expected: Success with both Freedom boost (+50) and Doge boost (+20) applied
+  2. **Step 2**: Player 2 (Biden) plays `c-3` (拜登 Sleepy Joe, 左翼, 110 power) in top zone
+     - Expected: Success with Biden's universal +40 boost applied
+  3. **Step 3**: Player 1 (Musk) plays `c-15` (Tik Tok難民, 自由, 50 power) in left zone
+     - Expected: Success with Freedom boost (+50) only (no Doge in name)
+- **Power Validation**:
+  - `c-8` final power: 150 (80 base + 50 Freedom boost + 20 Doge boost)
+  - `c-15` final power: 100 (50 base + 50 Freedom boost)
+  - `c-3` final power: 150 (110 base + 40 Biden boost)
+- **Test Status**: ✅ PASSING
+- **Key Features Tested**:
+  - Musk's dual effect system with filter-based targeting
+  - Effect stacking for cards meeting multiple criteria
+  - nameContains filter for Doge bonus
+  - gameType filter for Freedom bonus
+  - Cross-player effect validation with Biden's universal boost
 
 ---
 
