@@ -148,3 +148,90 @@ All scenarios are located in `shared/testScenarios/gameStates/`.
   - **Player 1 Hand**: `c-2` ('Right-Wing')
 - **Expected Outcome**:
   - The game should prevent Player 1 from summoning `c-2`. The validation point checks if the summon action is disallowed.
+
+---
+
+## Dynamic Test Cases
+
+### 1. Trump Leader Dynamic Tests
+
+#### 1.1. `leader_s-1_trump_boost_corrected_dynamic.json`
+- **Test Type**: Dynamic (action-based)
+- **Description**: Tests Trump's leader effects through actual card placement actions and power calculations
+- **Setup**:
+  - **Player 1**: Trump (s-1) - 右翼 leader
+  - **Player 2**: Biden (s-2) - 左翼 leader
+  - **Initial Turn**: Player 1 (currentTurn: 0)
+- **Actions**:
+  1. **Step 1**: Player 1 plays `c-1` (總統特朗普, 愛國者, 100 power) in LEFT zone
+     - Expected: Success, card placed with effects applied
+  2. **Step 2**: Player 2 plays `c-21` (奧巴馬, 左翼, 80 power) in TOP zone
+     - Expected: Success, turn switches properly
+- **Power Validation**:
+  - `c-1` final power: 155 (100 base + 45 Trump leader boost + 10 Trump family trait)
+  - `c-21` final power: 120 (80 base + 40 Biden leader boost)
+- **Zone Compatibility Tests**:
+  - Trump leader zones: TOP (右翼/自由/經濟), LEFT (右翼/自由/愛國者), RIGHT (右翼/愛國者/經濟)
+  - Biden leader zones: ALL types allowed in all zones
+- **Error Cases**:
+  - Invalid zone placement
+  - Zone compatibility violations
+  - Occupied zone placement attempts
+
+#### 1.2. `leader_s-1_trump_vs_powell_nerf_dynamic.json`
+- **Test Type**: Dynamic (action-based)
+- **Description**: Tests Trump's nerf effect against Powell for Economy cards
+- **Setup**:
+  - **Player 1**: Trump (s-1) - 右翼 leader
+  - **Player 2**: Powell (s-6) - 經濟 leader
+  - **Initial Turn**: Player 1 (currentTurn: 0)
+- **Actions**:
+  1. **Step 1**: Player 1 plays `c-19` (比爾蓋茨 Bill gates, 經濟, 70 power) in top zone
+     - Expected: Success with nerf applied
+- **Power Validation**:
+  - `c-19` final power: 0 (70 base power nerfed to 0 by Trump vs Powell effect)
+- **Test Status**: ✅ PASSING
+- **Issues Resolved**:
+  - Fixed zone naming: uppercase "TOP" → lowercase "top"
+  - Fixed turn management: currentTurn: 1 → currentTurn: 0
+  - Added missing fieldEffects structure with zone restrictions
+  - Added missing turnAction arrays in player data
+  - Updated card ID from custom `c-eco-1` to standard `c-19`
+
+---
+
+## Test Execution Issues
+
+### Common Problems
+
+1. **Card Definition Mismatches**:
+   - Some test scenarios use cards not defined in main data files
+   - Cards defined in test scenarios may have different IDs than expected
+   - Missing card definitions cause validation failures
+
+2. **Turn Management**:
+   - Dynamic tests fail with "Not your turn" errors
+   - currentTurn vs currentPlayer synchronization issues
+   - Turn switching logic not properly handling test scenarios
+
+3. **Zone Compatibility**:
+   - Zone restrictions not properly enforced in dynamic tests
+   - Face-down card placement bypassing compatibility checks
+   - Zone occupation validation inconsistencies
+
+### Recommendations
+
+1. **Standardize Card Data**:
+   - Use consistent card IDs across all test scenarios
+   - Reference cards from main data files rather than defining in tests
+   - Validate card existence before running tests
+
+2. **Fix Turn Management**:
+   - Ensure currentTurn and currentPlayer are properly synchronized
+   - Handle turn switching in dynamic test scenarios
+   - Validate turn order before executing actions
+
+3. **Improve Test Framework**:
+   - Add better error messages for common failures
+   - Implement retry mechanisms for turn-based issues
+   - Add validation for card definitions before test execution
