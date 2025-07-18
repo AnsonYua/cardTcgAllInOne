@@ -1,0 +1,413 @@
+{
+  "gameId": "targetCount_effects_test",
+  "description": "Test automatic target selection for cards with targetCount: 1",
+  "testType": "dynamic",
+  "initialGameEnv": {
+    "phase": "BATTLE_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 10,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-1", "s-2", "s-3", "s-4"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-6", "s-2", "s-3", "s-4"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {
+          "id": "s-1",
+          "name": "特朗普",
+          "cardType": "leader",
+          "gameType": "愛國者"
+        },
+        "top": [
+          {
+            "card": ["c-21"],
+            "cardDetails": [{
+              "id": "c-21",
+              "name": "奧巴馬",
+              "cardType": "character",
+              "gameType": "左翼",
+              "power": 80,
+              "traits": ["Deep State"]
+            }],
+            "isBack": [false],
+            "valueOnField": 80
+          }
+        ],
+        "left": [
+          {
+            "card": ["c-1"],
+            "cardDetails": [{
+              "id": "c-1",
+              "name": "總統特朗普",
+              "cardType": "character",
+              "gameType": "愛國者",
+              "power": 100,
+              "traits": ["特朗普家族"]
+            }],
+            "isBack": [false],
+            "valueOnField": 100
+          }
+        ],
+        "right": [
+          {
+            "card": ["c-2"],
+            "cardDetails": [{
+              "id": "c-2",
+              "name": "小特朗普",
+              "cardType": "character",
+              "gameType": "愛國者",
+              "power": 90,
+              "traits": ["特朗普家族"]
+            }],
+            "isBack": [false],
+            "valueOnField": 90
+          }
+        ],
+        "help": [
+          {
+            "card": ["h-2"],
+            "cardDetails": [{
+              "id": "h-2",
+              "name": "Make America Great Again",
+              "cardType": "help",
+              "effects": {
+                "description": "對方一張角色卡，原能力值 變成 0",
+                "rules": [
+                  {
+                    "id": "maga_nerf",
+                    "type": "continuous",
+                    "trigger": {
+                      "event": "always",
+                      "conditions": []
+                    },
+                    "target": {
+                      "owner": "opponent",
+                      "zones": ["top", "left", "right"],
+                      "targetCount": 1,
+                      "filters": []
+                    },
+                    "effect": {
+                      "type": "setPower",
+                      "value": 0
+                    }
+                  }
+                ]
+              }
+            }],
+            "isBack": [false],
+            "valueOnField": 0
+          }
+        ],
+        "sp": []
+      },
+      "playerId_2": {
+        "leader": {
+          "id": "s-6",
+          "name": "馬斯克",
+          "cardType": "leader",
+          "gameType": "經濟"
+        },
+        "top": [
+          {
+            "card": ["c-20"],
+            "cardDetails": [{
+              "id": "c-20",
+              "name": "巴飛特",
+              "cardType": "character",
+              "gameType": "經濟",
+              "power": 70,
+              "traits": ["富商"]
+            }],
+            "isBack": [false],
+            "valueOnField": 70
+          }
+        ],
+        "left": [
+          {
+            "card": ["c-22"],
+            "cardDetails": [{
+              "id": "c-22",
+              "name": "傑夫·貝佐斯",
+              "cardType": "character",
+              "gameType": "經濟",
+              "power": 110,
+              "traits": ["深層政府"]
+            }],
+            "isBack": [false],
+            "valueOnField": 110
+          }
+        ],
+        "right": [
+          {
+            "card": ["c-23"],
+            "cardDetails": [{
+              "id": "c-23",
+              "name": "比爾·蓋茲",
+              "cardType": "character",
+              "gameType": "經濟",
+              "power": 105,
+              "traits": ["深層政府"]
+            }],
+            "isBack": [false],
+            "valueOnField": 105
+          }
+        ],
+        "help": [
+          {
+            "card": ["h-14"],
+            "cardDetails": [{
+              "id": "h-14",
+              "name": "聯邦法官",
+              "cardType": "help",
+              "effects": {
+                "description": "對方場上擁有特朗普家族特徵的全部角色卡,原能力值 -60",
+                "rules": [
+                  {
+                    "id": "federal_judge_trump_nerf",
+                    "type": "continuous",
+                    "trigger": {
+                      "event": "always",
+                      "conditions": []
+                    },
+                    "target": {
+                      "owner": "opponent",
+                      "zones": ["top", "left", "right"],
+                      "targetCount": 1,
+                      "filters": [
+                        {
+                          "type": "trait",
+                          "value": "特朗普家族"
+                        }
+                      ]
+                    },
+                    "effect": {
+                      "type": "powerBoost",
+                      "value": -60
+                    }
+                  }
+                ]
+              }
+            }],
+            "isBack": [false],
+            "valueOnField": 0
+          }
+        ],
+        "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {}
+  },
+  "playerActions": [],
+  "validationPoints": {
+    "obama_single_boost": {
+      "description": "Test that c-21 (奧巴馬) boosts exactly one ally card by +50",
+      "expected": {
+        "target": "first_valid_card",
+        "powerBoost": 50,
+        "targetCount": 1,
+        "affectedCard": "c-1",
+        "finalPower": 150,
+        "note": "Should boost c-1 (總統特朗普) as it's the first valid target"
+      }
+    },
+    "buffett_single_boost": {
+      "description": "Test that c-20 (巴飛特) boosts exactly one ally 富商 card by +50",
+      "expected": {
+        "target": "first_rich_merchant_card",
+        "powerBoost": 50,
+        "targetCount": 1,
+        "affectedCard": "c-20",
+        "finalPower": 120,
+        "note": "Should boost itself as it's the first 富商 card"
+      }
+    },
+    "maga_nerf": {
+      "description": "Test that h-2 (Make America Great Again) sets exactly one opponent card power to 0",
+      "expected": {
+        "target": "first_opponent_card",
+        "powerSet": 0,
+        "targetCount": 1,
+        "affectedCard": "c-20",
+        "finalPower": 0,
+        "note": "Should set c-20 (巴飛特) power to 0 as it's the first opponent card"
+      }
+    },
+    "federal_judge_nerf": {
+      "description": "Test that h-14 (聯邦法官) nerfs exactly one opponent 特朗普家族 card by -60",
+      "expected": {
+        "target": "first_trump_family_card",
+        "powerNerf": -60,
+        "targetCount": 1,
+        "affectedCard": "c-1",
+        "finalPower": 40,
+        "note": "Should nerf c-1 (總統特朗普) by 60 as it's the first 特朗普家族 card"
+      }
+    },
+    "automatic_target_selection": {
+      "description": "Verify that all targetCount: 1 effects work without requiring player selection",
+      "expected": {
+        "noPlayerSelection": true,
+        "automaticTargeting": true,
+        "firstTargetSelection": true
+      }
+    }
+  },
+  "cardDefinitions": {
+    "c-21": {
+      "name": "奧巴馬",
+      "cardType": "character",
+      "gameType": "左翼",
+      "power": 80,
+      "traits": ["Deep State"],
+      "effects": {
+        "description": "我方一張角色卡原能力值+50",
+        "rules": [
+          {
+            "id": "obama_single_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "targetCount": 1,
+              "filters": []
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 50
+            }
+          }
+        ]
+      }
+    },
+    "c-20": {
+      "name": "巴飛特",
+      "cardType": "character",
+      "gameType": "經濟",
+      "power": 70,
+      "traits": ["富商"],
+      "effects": {
+        "description": "我方場上一張擁有富商的角色卡 原能力值加 +50",
+        "rules": [
+          {
+            "id": "buffett_single_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "targetCount": 1,
+              "filters": [
+                {
+                  "type": "trait",
+                  "value": "富商"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 50
+            }
+          }
+        ]
+      }
+    },
+    "h-2": {
+      "name": "Make America Great Again",
+      "cardType": "help",
+      "effects": {
+        "description": "對方一張角色卡，原能力值 變成 0",
+        "rules": [
+          {
+            "id": "maga_nerf",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": ["top", "left", "right"],
+              "targetCount": 1,
+              "filters": []
+            },
+            "effect": {
+              "type": "setPower",
+              "value": 0
+            }
+          }
+        ]
+      }
+    },
+    "h-14": {
+      "name": "聯邦法官",
+      "cardType": "help",
+      "effects": {
+        "description": "對方場上擁有特朗普家族特徵的全部角色卡,原能力值 -60",
+        "rules": [
+          {
+            "id": "federal_judge_trump_nerf",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": ["top", "left", "right"],
+              "targetCount": 1,
+              "filters": [
+                {
+                  "type": "trait",
+                  "value": "特朗普家族"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": -60
+            }
+          }
+        ]
+      }
+    }
+  }
+}

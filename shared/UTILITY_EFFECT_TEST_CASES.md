@@ -46,12 +46,13 @@ This document provides comprehensive documentation for all utility card effect t
 - **Actions Tested** (with proper turn alternation):
   1. **Step 1**: Player 1 attempts to place c-1 (愛國者) in TOP zone - should fail due to zone restriction
   2. **Step 2**: Player 1 places h-5 (失智老人) - grants zone freedom + power boost, **turn ends**
-  3. **Step 3**: Player 2 places h-1 (Deep State) - neutralizes opponent effects, **turn ends**
-  4. **Step 4**: Player 1 places c-1 in TOP zone - should succeed due to zone freedom immunity, **turn ends**
-  5. **Step 5**: Player 2 places c-21 (奧巴馬) - provides single target boost, **turn ends**
-  6. **Steps 6-9**: Players alternate filling remaining character zones (LEFT/RIGHT)
-  7. **Step 10**: Player 1 places sp-1 (天選之人) face-down - conditional neutralization, **turn ends**
-  8. **Step 11**: Player 2 places sp-8 (反特斯拉示威) face-down - combo disruption, **triggers battle**
+  3. **Step 3**: Player 2 places h-1 (Deep State) - triggers card selection to neutralize specific opponent card, **turn continues**
+  4. **Step 3.5**: Player 2 selects h-5 as target - neutralizes selected card only, **turn ends**
+  5. **Step 4**: Player 1 places c-1 in TOP zone - should succeed due to zone freedom immunity, **turn ends**
+  6. **Step 5**: Player 2 places c-21 (奧巴馬) - provides single target boost, **turn ends**
+  7. **Steps 6-9**: Players alternate filling remaining character zones (LEFT/RIGHT)
+  8. **Step 10**: Player 1 places sp-1 (天選之人) face-down - conditional neutralization, **turn ends**
+  9. **Step 11**: Player 2 places sp-8 (反特斯拉示威) face-down - combo disruption, **triggers battle**
 - **Turn Mechanics**:
   - **Every card placement ends the current player's turn**
   - **Turns alternate between players after each action**
@@ -77,7 +78,7 @@ This document provides comprehensive documentation for all utility card effect t
 - **Actions Tested**:
   1. **Step 1**: Player 1 places h-5 (失智老人) - grants zone freedom + immunity
   2. **Step 2**: Player 1 attempts c-1 in TOP zone - should fail (zone freedom not yet applied)
-  3. **Step 3**: Player 2 places h-1 (Deep State) - attempts neutralization
+  3. **Step 3**: Player 2 places h-1 (Deep State) - triggers selection to neutralize one opponent effect
   4. **Step 4**: Player 1 places c-1 in TOP zone - should succeed (immune zone freedom)
   5. **Step 5**: Player 2 places c-21 (奧巴馬) - provides single target boost
 - **Power Validation**:
@@ -99,7 +100,7 @@ This document provides comprehensive documentation for all utility card effect t
   - **Player 2**: Biden (s-2) - 左翼 leader
 - **Actions Tested**:
   1. **Steps 1-6**: Fill all character zones with cards for combo calculation
-  2. **Step 7**: Player 1 places h-1 (Deep State) - neutralizes opponent effects
+  2. **Step 7**: Player 1 places h-1 (Deep State) - triggers selection to neutralize one opponent effect
   3. **Step 8**: Player 2 places h-5 (失智老人) - power boost neutralized, zone freedom immune
   4. **Step 9**: Player 1 places sp-6 (DeepSeek風暴) face-down - final calculation nerf
   5. **Step 10**: Player 2 places sp-1 (天選之人) face-down - triggers battle
@@ -122,7 +123,7 @@ This document provides comprehensive documentation for all utility card effect t
 **Cards**: h-1, h-10, h-12, sp-1
 
 #### Key Cards:
-- **h-1 (Deep State)**: Neutralizes ALL opponent Help and SP effects
+- **h-1 (Deep State)**: Requires target selection - neutralizes ONE chosen opponent Help or SP card
 - **h-10 (加洲大火)**: Neutralizes opponent Help effects only
 - **h-12 (美債危機)**: Neutralizes opponent SP effects + forces SP play
 - **sp-1 (天選之人)**: Conditional neutralization when 特朗普 is present

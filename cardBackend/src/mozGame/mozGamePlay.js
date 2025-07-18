@@ -951,6 +951,26 @@ class mozGamePlay {
             }
         }
         
+        // Step 2.5: Apply character card continuous effects (from character cards in field)
+        for (const zone of fields) {
+            if (playerField[zone] && playerField[zone].length > 0) {
+                for (const cardObj of playerField[zone]) {
+                    // Only apply effects from face-up character cards
+                    if (cardObj.cardDetails[0].cardType === 'character' && !cardObj.isBack[0]) {
+                        const cardId = cardObj.cardDetails[0].id;
+                        const characterCard = characterCards.cards[cardId];
+                        if (characterCard && characterCard.effects && characterCard.effects.rules) {
+                            for (const rule of characterCard.effects.rules) {
+                                if (rule.type === 'continuous') {
+                                    characterPowers = this.applyEffectRule(rule, characterPowers, playerField, gameEnv, playerId, 'character', characterCard);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
         // Step 3: Apply utility card continuous effects (help and SP cards)
         const utilityZones = ['help', 'sp'];
         for (const zone of utilityZones) {
@@ -1373,13 +1393,25 @@ class mozGamePlay {
             if (targetField[zone] && targetField[zone].length > 0) {
                 for (const cardObj of targetField[zone]) {
                     if (this.matchesFilters(cardObj, target.filters)) {
-                        targets.push({ cardId: cardObj.cardDetails[0].id, zone, cardObj });
+                        targets.push({ 
+                            cardId: cardObj.cardDetails[0].id, 
+                            zone, 
+                            cardObj,
+                            name: cardObj.cardDetails[0].name,
+                            cardType: cardObj.cardDetails[0].cardType
+                        });
                         if (target.limit && targets.length >= target.limit) {
                             return targets;
                         }
                     }
                 }
             }
+        }
+        
+        // Handle targetCount selection logic
+        if (target.targetCount && targets.length > target.targetCount) {
+            // Automatically select the first N targets (no player selection needed)
+            return targets.slice(0, target.targetCount);
         }
         
         return targets;

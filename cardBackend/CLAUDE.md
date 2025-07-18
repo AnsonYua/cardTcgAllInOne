@@ -199,6 +199,19 @@ Interactive card selection for search effects:
   - If Help zone occupied → place in hand (no zone effects)
 - **Implementation**: `completeCardSelection()` in `mozGamePlay.js` handles destination routing and conditional logic
 
+### Automatic Target Selection (targetCount Effects)
+Automatic target selection for single-target effects:
+- **Target Count Logic**: When `targetCount: 1` is specified, automatically selects first valid target
+- **No Player Interaction**: These effects do not require player selection UI
+- **Character Card Examples**:
+  - **c-21 (奧巴馬)**: Automatically boosts first ally character by +50
+  - **c-20 (巴飛特)**: Automatically boosts first ally 富商 card by +50
+- **Utility Card Examples**:
+  - **h-2 (Make America Great Again)**: Automatically sets first opponent character power to 0
+  - **h-14 (聯邦法官)**: Automatically nerfs first opponent 特朗普家族 card by -60
+- **Implementation**: `getEffectTargets()` method in `mozGamePlay.js` handles automatic target selection
+- **Processing**: Character effects processed in Step 2.5, utility effects in Step 3 of `calculatePlayerPoint`
+
 ### Test Suite Status
 ⚠️ **Note:** Test scenarios require updating to use new card IDs and structure
 - Old test scenarios use deprecated card IDs (s47, S051, etc.)

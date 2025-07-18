@@ -518,6 +518,65 @@ The card selection system provides a robust workflow for interactive card effect
 
 This system supports all search card effects (c-9, c-10, c-12) and targeting effects (h-1 Deep State) and can be extended for future interactive effects.
 
+## Automatic Target Selection (targetCount Effects)
+
+### Overview
+Some card effects use `targetCount: 1` to automatically select the first valid target without requiring player interaction. This is different from player-selectable effects like h-1 Deep State.
+
+### Implementation Details
+
+**Automatic Selection Logic:**
+- When `targetCount: 1` is specified, the system automatically selects the first valid target
+- No player selection UI is shown
+- Effects are applied immediately during power calculation
+
+**Character Cards with targetCount:**
+- **c-21 (奧巴馬)**: Automatically boosts first ally character by +50
+- **c-15 (巴菲特)**: Automatically boosts first ally Deep State card by +40  
+- **c-20 (巴飛特)**: Automatically boosts first ally 富商 card by +50
+
+**Utility Cards with targetCount:**
+- **h-2 (Make America Great Again)**: Automatically sets first opponent character power to 0
+- **h-14 (聯邦法官)**: Automatically nerfs first opponent 特朗普家族 card by -60
+
+### Backend Implementation
+
+**Target Selection Process:**
+```javascript
+// In getEffectTargets method
+if (target.targetCount && targets.length > target.targetCount) {
+    // Automatically select the first N targets (no player selection needed)
+    return targets.slice(0, target.targetCount);
+}
+```
+
+**Effect Processing:**
+- Character card effects processed in `calculatePlayerPoint` Step 2.5
+- Utility card effects processed in `calculatePlayerPoint` Step 3  
+- Effects applied during continuous effect evaluation
+
+### Key Differences from Player Selection
+
+| Feature | Player Selection (h-1) | Automatic Selection (targetCount) |
+|---------|-------------------------|-----------------------------------|
+| UI Required | ✅ Card selection modal | ❌ No UI interaction |
+| Selection Process | Player chooses from eligible cards | System selects first valid target |
+| Implementation | `requiresSelection: true` | `targetCount: 1` |
+| When Applied | During triggered effects | During continuous effects |
+
+### Testing and Validation
+
+**Test Scenarios:**
+- Automatic target selection works without player input
+- First valid target is selected correctly
+- Effects are applied to the correct cards
+- No pending selection state is created
+
+**Integration Points:**
+- Character effects: Step 2.5 in `calculatePlayerPoint`
+- Utility effects: Step 3 in `calculatePlayerPoint`
+- Target selection: `getEffectTargets` method handles targetCount logic
+
 ## Example: Targeting Effect (h-1 Deep State)
 
 ### Step 1: Play h-1 Deep State

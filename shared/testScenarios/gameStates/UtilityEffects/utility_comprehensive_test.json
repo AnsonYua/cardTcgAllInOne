@@ -201,7 +201,7 @@
     },
     {
       "step": 3,
-      "description": "Player 2 places h-1 (Deep State) in HELP zone - neutralizes opponent effects and ends turn",
+      "description": "Player 2 places h-1 (Deep State) in HELP zone - requires target selection to neutralize specific opponent card",
       "playerId": "playerId_2",
       "action": {
         "actionType": "PlayCard",
@@ -211,18 +211,47 @@
       "expectedResult": {
         "success": true,
         "noError": true,
-        "cardPlaced": true
+        "cardPlaced": true,
+        "requiresSelection": true
       },
       "expectedEffects": [
-        "h-1 neutralizes all opponent Help and SP effects",
-        "h-5 effects should be neutralized EXCEPT zone freedom (immune)",
-        "h-5 power boost should be disabled but zone freedom remains"
+        "h-1 triggers card selection for opponent Help/SP cards",
+        "Player 2 must select one opponent card to neutralize",
+        "Available targets: h-5 (失智老人) in Player 1's help zone"
+      ],
+      "expectedStateChanges": {
+        "currentPlayer": "playerId_2",
+        "currentTurn": 2,
+        "turnNotSwitched": true,
+        "zones.playerId_2.help.length": 1,
+        "pendingPlayerAction": "CARD_SELECTION",
+        "pendingCardSelectionsCount": 1
+      }
+    },
+    {
+      "step": 3.5,
+      "description": "Player 2 completes card selection - selects h-5 to neutralize",
+      "playerId": "playerId_2",
+      "action": {
+        "actionType": "SelectCard",
+        "cardIds": ["h-5"]
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "selectionCompleted": true
+      },
+      "expectedEffects": [
+        "h-5 (失智老人) neutralized by h-1 selection",
+        "h-5 power boost disabled but zone freedom remains (immune)",
+        "Only selected card h-5 is neutralized, not all opponent effects"
       ],
       "expectedStateChanges": {
         "currentPlayer": "playerId_1",
-        "currentTurn": 2,
+        "currentTurn": 3,
         "turnSwitched": true,
-        "zones.playerId_2.help.length": 1
+        "pendingPlayerAction": null,
+        "pendingCardSelections": {}
       }
     },
     {
@@ -247,7 +276,7 @@
       ],
       "expectedStateChanges": {
         "currentPlayer": "playerId_2",
-        "currentTurn": 3,
+        "currentTurn": 4,
         "turnSwitched": true,
         "zones.playerId_1.top.length": 1
       }
@@ -272,7 +301,7 @@
       ],
       "expectedStateChanges": {
         "currentPlayer": "playerId_1",
-        "currentTurn": 4,
+        "currentTurn": 5,
         "turnSwitched": true,
         "zones.playerId_2.top.length": 1
       }
@@ -293,7 +322,7 @@
       },
       "expectedStateChanges": {
         "currentPlayer": "playerId_2",
-        "currentTurn": 5,
+        "currentTurn": 6,
         "turnSwitched": true,
         "zones.playerId_1.left.length": 1
       }
@@ -314,7 +343,7 @@
       },
       "expectedStateChanges": {
         "currentPlayer": "playerId_1",
-        "currentTurn": 6,
+        "currentTurn": 7,
         "turnSwitched": true,
         "zones.playerId_2.left.length": 1
       }
@@ -335,7 +364,7 @@
       },
       "expectedStateChanges": {
         "currentPlayer": "playerId_2",
-        "currentTurn": 7,
+        "currentTurn": 8,
         "turnSwitched": true,
         "zones.playerId_1.right.length": 1
       }
@@ -356,7 +385,7 @@
       },
       "expectedStateChanges": {
         "currentPlayer": "playerId_1",
-        "currentTurn": 8,
+        "currentTurn": 9,
         "turnSwitched": true,
         "zones.playerId_2.right.length": 1,
         "mainPhaseComplete": true,
@@ -383,7 +412,7 @@
       ],
       "expectedStateChanges": {
         "currentPlayer": "playerId_2",
-        "currentTurn": 9,
+        "currentTurn": 10,
         "turnSwitched": true,
         "zones.playerId_1.sp.length": 1
       }
@@ -430,7 +459,7 @@
     "players.playerId_2.deck.hand.length": 0,
     "playSequence.plays.length": 11,
     "phase": "BATTLE_PHASE",
-    "currentTurn": 10
+    "currentTurn": 11
   },
   "validationPoints": {
     "zone_freedom_validation": {
