@@ -984,21 +984,6 @@ class mozGamePlay {
         return totalPoints;
     }
 
-    async getMonsterPoint(card,leader){
-        var returnValue = card["power"];
-        const cardAttr = card["traits"];
-        const leaderNativeAddition = leader["nativeAddition"];
-        var addVal = {}
-        for(let key in leaderNativeAddition){
-            addVal[leaderNativeAddition[key]["type"]] = leaderNativeAddition[key]["value"];
-        }
-        for(let key in cardAttr){
-            if (addVal.hasOwnProperty(cardAttr[key])){
-                returnValue += addVal[cardAttr[key]];
-            }
-        }
-        return returnValue;
-    }
     async checkIsPlayOkForAction(gameEnv,playerId,action){
         var returnValue = false;
         
@@ -1357,12 +1342,12 @@ class mozGamePlay {
         const targetPlayerId = rule.target.owner === 'opponent' ? this.getOpponentId(gameEnv, playerId) : playerId;
         
         // Execute different types of triggered effects
-        if (rule.effect.type === 'drawCard') {
-            // Force target to draw cards from deck
+        if (rule.effect.type === 'drawCards' || rule.effect.type === 'drawCard') {
+            // Force target to draw cards from deck (support both naming conventions)
             await this.drawCardsForPlayer(gameEnv, targetPlayerId, rule.effect.value);
             return {
                 success: true,
-                effectType: 'drawCard',
+                effectType: 'drawCards',
                 executed: true
             };
         } else if (rule.effect.type === 'discardRandomCard') {
@@ -1480,9 +1465,30 @@ class mozGamePlay {
         const searchCount = Math.min(effect.searchCount, deck.length);
         const topCards = deck.slice(0, searchCount);
         
-        // Filter cards by type if specified (e.g., only character cards)
+        // Filter cards by filters if specified (e.g., only character cards, SP cards, etc.)
         let eligibleCards = topCards;
-        if (effect.cardTypeFilter) {
+        if (effect.filters && effect.filters.length > 0) {
+            const characterCards = require('../data/characterCards.json');
+            const utilityCards = require('../data/utilityCards.json');
+            
+            eligibleCards = topCards.filter(cardId => {
+                const charCard = characterCards.cards[cardId];
+                const utilCard = utilityCards.cards[cardId];
+                const card = charCard || utilCard;
+                
+                if (!card) return false;
+                
+                // Check all filters
+                return effect.filters.every(filter => {
+                    if (filter.type === 'cardType') {
+                        return card.cardType === filter.value;
+                    }
+                    // Add more filter types as needed
+                    return true;
+                });
+            });
+        } else if (effect.cardTypeFilter) {
+            // Support legacy cardTypeFilter for backward compatibility
             const characterCards = require('../data/characterCards.json');
             const utilityCards = require('../data/utilityCards.json');
             
@@ -1580,12 +1586,12 @@ class mozGamePlay {
             }
             // Add to destination based on effect
             if (effect.destination === 'spZone') {
-                // Create card object for SP zone placement
+                // Create card object for SP zone placement (face-down by default)
                 const cardDetails = require('./mozDeckHelper').getDeckCardDetails(cardId);
                 const cardObj = {
                     "card": [cardId],
                     "cardDetails": [cardDetails],
-                    "isBack": [false],
+                    "isBack": [true], // SP cards placed face-down via search effects
                     "valueOnField": cardDetails["power"] || 0
                 };
                 const playerField = this.getPlayerField(gameEnv, playerId);

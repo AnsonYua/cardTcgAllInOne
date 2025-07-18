@@ -439,7 +439,7 @@
       "traits": ["富商"],
       "rarity": "epic",
       "effects": {
-        "description": "我方場一張擁有富商的角色卡 原能力值加 +50",
+        "description": "我方場上一張擁有富商的角色卡 原能力值加 +50",
         "rules": [
           {
             "id": "buffett_single_boost",
