@@ -2,17 +2,22 @@
 
 ## Overview
 
-When character cards like c-9 (艾利茲), c-10 (爱德华), or c-12 (盧克) are summoned, they trigger search effects that require player interaction to select which cards to use. This guide explains the complete API workflow.
+When certain cards are played, they trigger effects that require player interaction to select which cards to target. This includes:
+
+**Search Effects**: Character cards like c-9 (艾利茲), c-10 (爱德华), c-12 (盧克) search deck for cards
+**Targeting Effects**: Utility cards like h-1 (Deep State) target specific opponent cards for neutralization
+
+This guide explains the complete API workflow for both types of card selection.
 
 ## Step-by-Step API Workflow
 
-### Step 1: Card Summon Triggers Search Effect
+### Step 1: Card Play Triggers Selection Effect
 
 **API Call**: `POST /api/game/player/playCard`
 
 ```json
 {
-  "gameId": "game123",
+  "gameId": "game123", 
   "playerId": "playerId_1",
   "action": "PlayCard",
   "card_idx": 2,
@@ -22,10 +27,11 @@ When character cards like c-9 (艾利茲), c-10 (爱德华), or c-12 (盧克) ar
 
 **What Happens**:
 1. Card is placed on the field
-2. `processCharacterSummonEffects()` is called
-3. Search effect is triggered
-4. `searchCardEffect()` creates pending selection
-5. Game state is updated with pending selection
+2. Card effects are processed based on card type:
+   - **Character Cards**: `processCharacterSummonEffects()` → `searchCardEffect()`
+   - **Utility Cards**: `processUtilityCardEffects()` → `neutralizeEffectSelection()`
+3. Selection requirement is created
+4. Game state is updated with pending selection
 
 ### Step 2: Backend Response with Selection Required
 
@@ -510,7 +516,101 @@ The card selection system provides a robust workflow for interactive card effect
 5. **Complete**: Backend processes selection and updates game state
 6. **Continue**: Game flow continues normally
 
-This system supports all search card effects (c-9, c-10, c-12) and can be extended for future interactive effects.
+This system supports all search card effects (c-9, c-10, c-12) and targeting effects (h-1 Deep State) and can be extended for future interactive effects.
+
+## Example: Targeting Effect (h-1 Deep State)
+
+### Step 1: Play h-1 Deep State
+
+**API Call**: `POST /api/game/player/playCard`
+
+```json
+{
+  "gameId": "game123",
+  "playerId": "playerId_1", 
+  "action": "PlayCard",
+  "card_idx": 0,
+  "play_pos": "help"
+}
+```
+
+### Step 2: Backend Response - Target Selection Required
+
+```json
+{
+  "success": true,
+  "gameEnv": {
+    "phase": "MAIN_PHASE",
+    "currentPlayer": "playerId_2",
+    "pendingPlayerAction": {
+      "type": "cardSelection",
+      "selectionId": "playerId_1_neutralize_1640995200001",
+      "description": "Select 1 opponent card(s) to neutralize"
+    },
+    "pendingCardSelections": {
+      "playerId_1_neutralize_1640995200001": {
+        "playerId": "playerId_1",
+        "eligibleCards": [
+          {
+            "cardId": "h-5",
+            "zone": "help",
+            "name": "失智老人",
+            "cardType": "help"
+          },
+          {
+            "cardId": "sp-2",
+            "zone": "sp", 
+            "name": "華爾街之狼",
+            "cardType": "sp"
+          }
+        ],
+        "selectCount": 1,
+        "effectType": "neutralizeEffect",
+        "targetPlayerId": "playerId_2"
+      }
+    }
+  }
+}
+```
+
+### Step 3: Player Makes Selection
+
+**API Call**: `POST /api/game/player/selectCard`
+
+```json
+{
+  "gameId": "game123",
+  "playerId": "playerId_1",
+  "selectionId": "playerId_1_neutralize_1640995200001",
+  "selectedCards": ["h-5"]
+}
+```
+
+### Step 4: Backend Response - Selection Completed
+
+```json
+{
+  "success": true,
+  "gameEnv": {
+    "phase": "MAIN_PHASE",
+    "currentPlayer": "playerId_2",
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "neutralizedEffects": {
+      "playerId_2": {
+        "specificCards": [
+          {
+            "cardId": "h-5",
+            "zone": "help",
+            "name": "失智老人",
+            "cardType": "help"
+          }
+        ]
+      }
+    }
+  }
+}
+```
 
 ---
 

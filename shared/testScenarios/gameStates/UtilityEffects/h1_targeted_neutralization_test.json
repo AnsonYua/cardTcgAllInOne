@@ -1,0 +1,289 @@
+{
+  "gameId": "h1_targeted_neutralization_test",
+  "description": "Test h-1 Deep State targeted neutralization with card selection",
+  "testType": "dynamic",
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": ["h-1", "c-1", "c-2", "c-3", "c-4"],
+          "mainDeck": ["c-5", "c-6", "c-7", "c-8", "c-9", "c-10"],
+          "leader": ["s-1", "s-2", "s-3", "s-4"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": ["h-5", "sp-2", "c-21", "c-22", "c-23"],
+          "mainDeck": ["c-24", "c-25", "c-26", "c-27", "c-28"],
+          "leader": ["s-6", "s-2", "s-3", "s-4"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {
+          "id": "s-1",
+          "name": "特朗普",
+          "cardType": "leader",
+          "gameType": "愛國者"
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      },
+      "playerId_2": {
+        "leader": {
+          "id": "s-6",
+          "name": "馬斯克",
+          "cardType": "leader",
+          "gameType": "經濟"
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [
+          {
+            "card": ["h-5"],
+            "cardDetails": [{
+              "id": "h-5",
+              "name": "失智老人",
+              "cardType": "help",
+              "effects": {
+                "description": "可在上，左，右區域打出任可屬於的角色卡。而且全部召喚出來的角色能力值再 +20. 這張卡的效果不能被無效文化 。",
+                "rules": [
+                  {
+                    "id": "dementia_placement_freedom",
+                    "type": "continuous",
+                    "effect": {
+                      "type": "zonePlacementFreedom",
+                      "value": true
+                    }
+                  },
+                  {
+                    "id": "dementia_power_boost",
+                    "type": "continuous",
+                    "effect": {
+                      "type": "powerBoost",
+                      "value": 20
+                    }
+                  }
+                ]
+              }
+            }],
+            "isBack": [false],
+            "valueOnField": 0
+          }
+        ],
+        "sp": [
+          {
+            "card": ["sp-2"],
+            "cardDetails": [{
+              "id": "sp-2",
+              "name": "華爾街之狼",
+              "cardType": "sp",
+              "effects": {
+                "description": "我方場上全部角色卡 原能力值加 +30",
+                "rules": [
+                  {
+                    "id": "wall_street_wolf_boost",
+                    "type": "continuous",
+                    "effect": {
+                      "type": "powerBoost",
+                      "value": 30
+                    }
+                  }
+                ]
+              }
+            }],
+            "isBack": [false],
+            "valueOnField": 0
+          }
+        ]
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {}
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "description": "Player 1 plays h-1 (Deep State) - should trigger card selection for neutralization",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "h-1",
+        "zone": "help"
+      },
+      "expectedResult": {
+        "success": true,
+        "requiresCardSelection": true,
+        "cardSelectionType": "neutralizeEffect"
+      },
+      "expectedStateChanges": {
+        "pendingPlayerAction.type": "cardSelection",
+        "pendingPlayerAction.description": "Select 1 opponent card(s) to neutralize",
+        "pendingCardSelections": {
+          "exists": true,
+          "playerId": "playerId_1",
+          "effectType": "neutralizeEffect",
+          "eligibleCards": [
+            {
+              "cardId": "h-5",
+              "zone": "help",
+              "name": "失智老人",
+              "cardType": "help"
+            },
+            {
+              "cardId": "sp-2",
+              "zone": "sp",
+              "name": "華爾街之狼",
+              "cardType": "sp"
+            }
+          ],
+          "selectCount": 1
+        }
+      }
+    },
+    {
+      "step": 2,
+      "description": "Player 1 selects h-5 (失智老人) to neutralize",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "SelectCard",
+        "selectionId": "{{selectionId}}",
+        "selectedCards": ["h-5"]
+      },
+      "expectedResult": {
+        "success": true,
+        "neutralizationApplied": true
+      },
+      "expectedStateChanges": {
+        "pendingPlayerAction": null,
+        "pendingCardSelections": {},
+        "neutralizedEffects.playerId_2.specificCards": [
+          {
+            "cardId": "h-5",
+            "zone": "help",
+            "name": "失智老人",
+            "cardType": "help"
+          }
+        ]
+      }
+    }
+  ],
+  "validationPoints": {
+    "card_selection_flow": {
+      "description": "Validate that h-1 triggers card selection for neutralization",
+      "expected": {
+        "selectionRequired": true,
+        "eligibleCardsCount": 2,
+        "selectCount": 1,
+        "effectType": "neutralizeEffect"
+      }
+    },
+    "targeted_neutralization": {
+      "description": "Validate that only selected card is neutralized",
+      "expected": {
+        "h5Neutralized": true,
+        "sp2NotNeutralized": true,
+        "specificNeutralization": true
+      }
+    }
+  },
+  "cardDefinitions": {
+    "h-1": {
+      "name": "Deep State",
+      "cardType": "help",
+      "effects": {
+        "description": "選擇對方場上的一張SP卡或HELP卡，該卡效果變為無效。",
+        "rules": [
+          {
+            "id": "deep_state_neutralize",
+            "type": "triggered",
+            "trigger": {
+              "event": "onPlay",
+              "conditions": []
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": ["help", "sp"],
+              "filters": [],
+              "requiresSelection": true,
+              "selectCount": 1
+            },
+            "effect": {
+              "type": "neutralizeEffect",
+              "value": true
+            }
+          }
+        ]
+      }
+    },
+    "h-5": {
+      "name": "失智老人",
+      "cardType": "help",
+      "effects": {
+        "description": "可在上，左，右區域打出任可屬於的角色卡。而且全部召喚出來的角色能力值再 +20. 這張卡的效果不能被無效文化 。",
+        "rules": [
+          {
+            "id": "dementia_placement_freedom",
+            "type": "continuous",
+            "effect": {
+              "type": "zonePlacementFreedom",
+              "value": true
+            }
+          },
+          {
+            "id": "dementia_power_boost",
+            "type": "continuous",
+            "effect": {
+              "type": "powerBoost",
+              "value": 20
+            }
+          }
+        ]
+      }
+    },
+    "sp-2": {
+      "name": "華爾街之狼",
+      "cardType": "sp",
+      "effects": {
+        "description": "我方場上全部角色卡 原能力值加 +30",
+        "rules": [
+          {
+            "id": "wall_street_wolf_boost",
+            "type": "continuous",
+            "effect": {
+              "type": "powerBoost",
+              "value": 30
+            }
+          }
+        ]
+      }
+    }
+  }
+}

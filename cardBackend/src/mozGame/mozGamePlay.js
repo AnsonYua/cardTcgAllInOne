@@ -946,7 +946,7 @@ class mozGamePlay {
         if (currentLeader && currentLeader.effects && currentLeader.effects.rules) {
             for (const rule of currentLeader.effects.rules) {
                 if (rule.type === 'continuous') {
-                    characterPowers = this.applyEffectRule(rule, characterPowers, playerField, gameEnv, playerId, 'leader');
+                    characterPowers = this.applyEffectRule(rule, characterPowers, playerField, gameEnv, playerId, 'leader', currentLeader);
                 }
             }
         }
@@ -963,7 +963,7 @@ class mozGamePlay {
                         if (utilityCard && utilityCard.effects && utilityCard.effects.rules) {
                             for (const rule of utilityCard.effects.rules) {
                                 if (rule.type === 'continuous') {
-                                    characterPowers = this.applyEffectRule(rule, characterPowers, playerField, gameEnv, playerId, 'utility');
+                                    characterPowers = this.applyEffectRule(rule, characterPowers, playerField, gameEnv, playerId, 'utility', utilityCard);
                                 }
                             }
                         }
@@ -1142,14 +1142,14 @@ class mozGamePlay {
         return returnObj
     }
 
-    applyEffectRule(rule, characterPowers, playerField, gameEnv, playerId, sourceType) {
+    applyEffectRule(rule, characterPowers, playerField, gameEnv, playerId, sourceType, sourceCard) {
         // Check if rule conditions are met
         if (!this.checkRuleConditions(rule.trigger.conditions, playerField, gameEnv, playerId)) {
             return characterPowers;
         }
         
         // Check if this effect should be neutralized by other cards
-        if (this.isEffectNeutralized(rule, gameEnv, playerId)) {
+        if (this.isEffectNeutralized(rule, gameEnv, playerId, sourceCard)) {
             return characterPowers;
         }
         
@@ -1210,7 +1210,7 @@ class mozGamePlay {
      * @param {string} playerId - Player ID whose effect is being checked
      * @returns {boolean} True if effect should be neutralized
      */
-    isEffectNeutralized(rule, gameEnv, playerId) {
+    isEffectNeutralized(rule, gameEnv, playerId, sourceCard) {
         // Check if this card has immunity to neutralization
         if (rule.immuneToNeutralization) {
             return false;
@@ -1220,12 +1220,22 @@ class mozGamePlay {
         if (gameEnv.neutralizedEffects && gameEnv.neutralizedEffects[playerId]) {
             const neutralizations = gameEnv.neutralizedEffects[playerId];
             
-            // Check for all effect neutralization
+            // Check for specific card neutralization (new targeted system)
+            if (neutralizations.specificCards && sourceCard) {
+                const isSpecificallyNeutralized = neutralizations.specificCards.some(neutralizedCard => 
+                    neutralizedCard.cardId === sourceCard.id
+                );
+                if (isSpecificallyNeutralized) {
+                    return true;
+                }
+            }
+            
+            // Check for all effect neutralization (legacy system)
             if (neutralizations.allEffects) {
                 return true;
             }
             
-            // Check for specific zone neutralization
+            // Check for specific zone neutralization (legacy system)
             if (neutralizations.zones && neutralizations.zones.includes(rule.target.zones)) {
                 return true;
             }
@@ -1610,6 +1620,9 @@ class mozGamePlay {
                 effectType: 'preventPlay',
                 executed: true
             };
+        } else if (rule.effect.type === 'neutralizeEffect' && rule.target.requiresSelection) {
+            // Neutralize specific card effects based on player selection
+            return await this.neutralizeEffectSelection(gameEnv, rule, playerId);
         }
         
         // Unknown effect type
@@ -1798,6 +1811,135 @@ class mozGamePlay {
     }
     
     /**
+     * Handle neutralization effect that requires player selection
+     * Used by cards like h-1 (Deep State) to select specific opponent cards to neutralize
+     * @param {Object} gameEnv - Current game environment
+     * @param {Object} rule - Effect rule from card data
+     * @param {string} playerId - Player who triggered the effect
+     */
+    async neutralizeEffectSelection(gameEnv, rule, playerId) {
+        const targetPlayerId = rule.target.owner === 'opponent' ? this.getOpponentId(gameEnv, playerId) : playerId;
+        
+        // Find all cards in opponent's specified zones
+        const eligibleCards = [];
+        for (const zone of rule.target.zones) {
+            const zoneCards = this.getPlayerZone(gameEnv, targetPlayerId, zone);
+            if (zoneCards && zoneCards.length > 0) {
+                for (const card of zoneCards) {
+                    // Only include cards that have effects to neutralize
+                    if (card.effects && card.effects.rules && card.effects.rules.length > 0) {
+                        eligibleCards.push({
+                            cardId: card.id,
+                            zone: zone,
+                            name: card.name,
+                            cardType: card.cardType
+                        });
+                    }
+                }
+            }
+        }
+        
+        if (eligibleCards.length === 0) {
+            return {
+                success: false,
+                reason: 'No eligible cards to neutralize'
+            };
+        }
+        
+        // Create card selection state
+        if (!gameEnv.pendingCardSelections) {
+            gameEnv.pendingCardSelections = {};
+        }
+        
+        const selectionId = `${playerId}_neutralize_${Date.now()}`;
+        gameEnv.pendingCardSelections[selectionId] = {
+            playerId,
+            eligibleCards,
+            selectCount: rule.target.selectCount || 1,
+            effect: rule.effect,
+            effectType: 'neutralizeEffect',
+            targetPlayerId,
+            timestamp: Date.now()
+        };
+        
+        // Set pending action indicator
+        gameEnv.pendingPlayerAction = {
+            type: 'cardSelection',
+            selectionId: selectionId,
+            description: `Select ${rule.target.selectCount || 1} opponent card(s) to neutralize`
+        };
+        
+        // Add game event for card selection requirement
+        this.addGameEvent(gameEnv, 'CARD_SELECTION_REQUIRED', {
+            playerId: playerId,
+            selectionId: selectionId,
+            eligibleCardCount: eligibleCards.length,
+            selectCount: rule.target.selectCount || 1,
+            effectType: 'neutralizeEffect'
+        });
+        
+        // Return selection prompt data
+        return {
+            requiresCardSelection: true,
+            gameEnv,
+            selectionId,
+            eligibleCards,
+            selectCount: rule.target.selectCount || 1,
+            effectType: 'neutralizeEffect',
+            prompt: `Select ${rule.target.selectCount || 1} opponent card(s) to neutralize`
+        };
+    }
+    
+    /**
+     * Apply neutralization to selected cards
+     * @param {Object} gameEnv - Current game environment
+     * @param {string} selectionId - ID of the pending selection
+     * @param {Array} selectedCardIds - Array of selected card IDs to neutralize
+     */
+    async applyNeutralizationSelection(gameEnv, selectionId, selectedCardIds) {
+        const selection = gameEnv.pendingCardSelections[selectionId];
+        const { playerId, targetPlayerId } = selection;
+        
+        // Initialize neutralization state
+        if (!gameEnv.neutralizedEffects) gameEnv.neutralizedEffects = {};
+        if (!gameEnv.neutralizedEffects[targetPlayerId]) gameEnv.neutralizedEffects[targetPlayerId] = {};
+        if (!gameEnv.neutralizedEffects[targetPlayerId].specificCards) {
+            gameEnv.neutralizedEffects[targetPlayerId].specificCards = [];
+        }
+        
+        // Add selected cards to neutralization list
+        for (const cardId of selectedCardIds) {
+            // Find the card in eligible cards to get full details
+            const cardInfo = selection.eligibleCards.find(card => 
+                (typeof card === 'string' && card === cardId) || 
+                (typeof card === 'object' && card.cardId === cardId)
+            );
+            
+            if (cardInfo) {
+                const cardToNeutralize = typeof cardInfo === 'string' ? 
+                    { cardId: cardInfo } : cardInfo;
+                
+                gameEnv.neutralizedEffects[targetPlayerId].specificCards.push(cardToNeutralize);
+            }
+        }
+        
+        // Add game event for neutralization completed
+        this.addGameEvent(gameEnv, 'CARD_SELECTION_COMPLETED', {
+            playerId: playerId,
+            selectionId: selectionId,
+            selectedCards: selectedCardIds,
+            effectType: 'neutralizeEffect',
+            targetPlayerId: targetPlayerId
+        });
+        
+        // Clean up the pending selection
+        delete gameEnv.pendingCardSelections[selectionId];
+        delete gameEnv.pendingPlayerAction;
+        
+        return gameEnv;
+    }
+    
+    /**
      * Complete a pending card selection by the player
      * @param {Object} gameEnv - Current game environment
      * @param {string} selectionId - ID of the pending selection
@@ -1810,7 +1952,7 @@ class mozGamePlay {
         }
         
         const selection = gameEnv.pendingCardSelections[selectionId];
-        const { playerId, eligibleCards, searchedCards, selectCount, effect } = selection;
+        const { playerId, eligibleCards, searchedCards, selectCount, effect, effectType, targetPlayerId } = selection;
         
         // Validate selection
         if (selectedCardIds.length !== selectCount) {
@@ -1818,12 +1960,29 @@ class mozGamePlay {
         }
         
         for (const cardId of selectedCardIds) {
-            if (!eligibleCards.includes(cardId)) {
-                return this.throwError(`Invalid card selection: ${cardId}`);
+            // For neutralization effects, validate against card structure
+            if (effectType === 'neutralizeEffect') {
+                const isValidCard = eligibleCards.some(card => 
+                    (typeof card === 'string' && card === cardId) || 
+                    (typeof card === 'object' && card.cardId === cardId)
+                );
+                if (!isValidCard) {
+                    return this.throwError(`Invalid card selection: ${cardId}`);
+                }
+            } else {
+                if (!eligibleCards.includes(cardId)) {
+                    return this.throwError(`Invalid card selection: ${cardId}`);
+                }
             }
         }
         
-        // Apply the selection
+        // Handle different effect types
+        if (effectType === 'neutralizeEffect') {
+            // Apply neutralization to selected cards
+            return await this.applyNeutralizationSelection(gameEnv, selectionId, selectedCardIds);
+        }
+        
+        // Apply the selection (for deck search effects)
         const deck = this.getPlayerMainDeck(gameEnv, playerId);
         const hand = this.getPlayerHand(gameEnv, playerId);
         

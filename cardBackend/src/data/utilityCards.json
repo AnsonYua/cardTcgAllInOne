@@ -42,19 +42,21 @@
       "name": "Deep State",
       "cardType": "help",
       "effects": {
-        "description": "對方場上的SP卡或HELP效果變為無效。",
+        "description": "選擇對方場上的一張SP卡或HELP卡，該卡效果變為無效。",
         "rules": [
           {
             "id": "deep_state_neutralize",
-            "type": "continuous",
+            "type": "triggered",
             "trigger": {
-              "event": "always",
+              "event": "onPlay",
               "conditions": []
             },
             "target": {
               "owner": "opponent",
               "zones": ["help", "sp"],
-              "filters": []
+              "filters": [],
+              "requiresSelection": true,
+              "selectCount": 1
             },
             "effect": {
               "type": "neutralizeEffect",
