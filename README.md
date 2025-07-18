@@ -239,3 +239,113 @@ The `gameEnv` object is the single source of truth for the game's state, with a 
 }
 ```
 This structure ensures that all player-specific data is nested under the `players`, `zones`, and `victoryPoints` objects, keyed by player ID, providing a clear and maintainable data model for the frontend.
+
+---
+
+## 📚 Documentation Index
+
+This project contains extensive documentation covering all aspects of the game implementation. Below is a comprehensive index of all documentation files:
+
+### 🎯 Core Project Documentation
+
+| Document | Location | Purpose |
+|----------|----------|---------|
+| **[Main README](README.md)** | `/` | Project overview, setup instructions, and core architecture |
+| **[Project CLAUDE Guide](CLAUDE.md)** | `/` | Complete developer guide for Claude Code AI assistant |
+| **[Effect System Guide](EFFECT_SYSTEM.md)** | `/` | Comprehensive card effect execution system documentation |
+| **[Backend API Structure](BACKEND_API_STRUCTURE.md)** | `/` | Complete API architecture and endpoint documentation |
+
+### 🔧 Backend Documentation
+
+| Document | Location | Purpose |
+|----------|----------|---------|
+| **[Backend CLAUDE Guide](cardBackend/CLAUDE.md)** | `/cardBackend/` | Backend-specific development guide and architecture |
+| **[API Documentation](cardBackend/API_README.md)** | `/cardBackend/` | Complete API endpoint reference and usage |
+| **[Game Flow Guide](cardBackend/GAME_FLOW_README.md)** | `/cardBackend/` | Detailed game flow and phase management |
+| **[Card Selection API](cardBackend/CARD_SELECTION_API_GUIDE.md)** | `/cardBackend/` | Interactive card selection system guide |
+| **[Implementation Summary](cardBackend/IMPLEMENTATION_SUMMARY.md)** | `/cardBackend/` | Recent implementation changes and updates |
+| **[Backend Testing Guide](cardBackend/TESTING.md)** | `/cardBackend/` | Testing strategies and test execution |
+
+### 🎮 Frontend Documentation
+
+| Document | Location | Purpose |
+|----------|----------|---------|
+| **[Frontend README](cardFrontend/README.md)** | `/cardFrontend/` | Frontend setup, controls, and game mechanics |
+| **[Frontend CLAUDE Guide](cardFrontend/CLAUDE.md)** | `/cardFrontend/` | Frontend-specific development patterns |
+| **[Frontend Architecture](cardFrontend/frontend.md)** | `/cardFrontend/` | Detailed frontend architecture and components |
+| **[API Integration Test](cardFrontend/API_INTEGRATION_TEST.md)** | `/cardFrontend/` | Frontend-backend integration testing |
+| **[GameScene Refactoring](cardFrontend/GameScene_Refactoring_Summary.md)** | `/cardFrontend/` | Recent UI and scene improvements |
+| **[Victory Point Labels](cardFrontend/VICTORY_POINT_LABELS.md)** | `/cardFrontend/` | Victory point display implementation |
+
+### 🃏 Card Effect Documentation
+
+| Document | Location | Purpose |
+|----------|----------|---------|
+| **[Character Effects README](cardBackend/CHARACTER_CARD_EFFECTS_README.md)** | `/cardBackend/` | Complete character card effect implementation |
+| **[Utility Effects README](cardBackend/UTILITY_CARD_EFFECTS_README.md)** | `/cardBackend/` | Complete utility card effect implementation |
+| **[Character Test Cases](shared/CHARACTER_EFFECT_TEST_CASES.md)** | `/shared/` | Character effect test scenarios and validation |
+| **[Leader Test Cases](shared/LEADER_EFFECT_TEST_CASES.md)** | `/shared/` | Leader effect test scenarios and validation |
+| **[Utility Test Cases](shared/UTILITY_EFFECT_TEST_CASES.md)** | `/shared/` | Utility effect test scenarios and validation |
+
+### 🧪 Testing Documentation
+
+| Document | Location | Purpose |
+|----------|----------|---------|
+| **[Testing Architecture](TESTING_ARCHITECTURE.md)** | `/` | Complete testing system architecture |
+| **[Test Case Troubleshooting](TEST_CASE_TROUBLESHOOTING_GUIDE.md)** | `/` | Common testing issues and solutions |
+| **[Dynamic Testing Guide](cardBackend/src/tests/DYNAMIC_TESTING.md)** | `/cardBackend/src/tests/` | Dynamic test scenario system |
+| **[Test Data README](cardBackend/src/testData/README.md)** | `/cardBackend/src/testData/` | Test data structure and usage |
+| **[Frontend Scenario Integration](FRONTEND_SCENARIO_INTEGRATION.md)** | `/` | Frontend testing with scenarios |
+
+### 🏗️ Development Documentation
+
+| Document | Location | Purpose |
+|----------|----------|---------|
+| **[Folder Restructure Summary](FOLDER_RESTRUCTURE_SUMMARY.md)** | `/` | Project structure changes and migrations |
+| **[Backend GamePlay Docs](cardBackend/docs/gamePlay.md)** | `/cardBackend/docs/` | Core gameplay mechanics documentation |
+| **[Backend Frontend Docs](cardBackend/docs/frontend.md)** | `/cardBackend/docs/` | Backend-frontend integration patterns |
+| **[Backend Tests README](cardBackend/src/tests/README.md)** | `/cardBackend/src/tests/` | Test suite organization and execution |
+
+### 📊 Documentation Categories
+
+#### 🚀 **Quick Start** (Essential for new developers)
+- [Main README](README.md) - Start here
+- [Backend CLAUDE Guide](cardBackend/CLAUDE.md) - Backend development
+- [Frontend README](cardFrontend/README.md) - Frontend development
+- [API Documentation](cardBackend/API_README.md) - API integration
+
+#### 🎯 **Game Development** (For implementing game features)
+- [Effect System Guide](EFFECT_SYSTEM.md) - Card effects
+- [Game Flow Guide](cardBackend/GAME_FLOW_README.md) - Game phases
+- [Character Effects README](cardBackend/CHARACTER_CARD_EFFECTS_README.md) - Character cards
+- [Utility Effects README](cardBackend/UTILITY_CARD_EFFECTS_README.md) - Utility cards
+
+#### 🧪 **Testing** (For quality assurance)
+- [Testing Architecture](TESTING_ARCHITECTURE.md) - Testing overview
+- [Character Test Cases](shared/CHARACTER_EFFECT_TEST_CASES.md) - Character testing
+- [Leader Test Cases](shared/LEADER_EFFECT_TEST_CASES.md) - Leader testing
+- [Utility Test Cases](shared/UTILITY_EFFECT_TEST_CASES.md) - Utility testing
+
+#### 🔧 **Technical Reference** (For advanced development)
+- [Backend API Structure](BACKEND_API_STRUCTURE.md) - API architecture
+- [Implementation Summary](cardBackend/IMPLEMENTATION_SUMMARY.md) - Recent changes
+- [Frontend Architecture](cardFrontend/frontend.md) - Frontend structure
+
+#### 📚 **Specialized Guides** (For specific tasks)
+- [Card Selection API](cardBackend/CARD_SELECTION_API_GUIDE.md) - Interactive selections
+- [Dynamic Testing Guide](cardBackend/src/tests/DYNAMIC_TESTING.md) - Test scenarios
+- [Test Case Troubleshooting](TEST_CASE_TROUBLESHOOTING_GUIDE.md) - Testing issues
+
+### 🎯 Development Workflow
+
+1. **New Developer Setup**: Start with [Main README](README.md) → [Backend CLAUDE Guide](cardBackend/CLAUDE.md) → [Frontend README](cardFrontend/README.md)
+2. **Implementing Card Effects**: [Effect System Guide](EFFECT_SYSTEM.md) → [Character Effects README](cardBackend/CHARACTER_CARD_EFFECTS_README.md) → [Utility Effects README](cardBackend/UTILITY_CARD_EFFECTS_README.md)
+3. **API Integration**: [API Documentation](cardBackend/API_README.md) → [Backend API Structure](BACKEND_API_STRUCTURE.md)
+4. **Testing**: [Testing Architecture](TESTING_ARCHITECTURE.md) → [Test Cases](shared/) → [Dynamic Testing Guide](cardBackend/src/tests/DYNAMIC_TESTING.md)
+5. **Troubleshooting**: [Test Case Troubleshooting](TEST_CASE_TROUBLESHOOTING_GUIDE.md) → [Implementation Summary](cardBackend/IMPLEMENTATION_SUMMARY.md)
+
+---
+
+*Documentation Index Last Updated: July 18, 2025*  
+*Total Documentation Files: 28*  
+*Coverage: Complete project documentation with testing, implementation, and development guides*

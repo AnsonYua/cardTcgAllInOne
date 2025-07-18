@@ -1,0 +1,386 @@
+{
+  "gameId": "character_c-9_search_to_hand_dynamic",
+  "description": "Dynamic test for c-9 (艾利茲) search effect: Look at 4 cards, select 1 to add to hand",
+  "testType": "dynamic",
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "playerId_1",
+        "deck": {
+          "hand": ["c-9", "c-1", "c-5", "h-1", "sp-1"],
+          "mainDeck": ["c-6", "c-7", "c-8", "c-2", "c-10", "c-11", "c-12", "c-13", "c-14", "c-15", "c-16", "c-17", "c-18", "c-19", "c-20", "h-2", "h-3", "h-4", "sp-2", "sp-3"],
+          "leader": ["s-2", "s-3", "s-4", "s-5"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "playerId_2",
+        "deck": {
+          "hand": ["c-21", "c-22", "c-23", "h-5", "sp-1"],
+          "mainDeck": ["c-24", "c-25", "c-26", "c-27", "c-28", "c-10", "c-3", "c-4", "c-11", "c-12", "c-13", "c-14", "c-15", "h-1", "h-2", "h-3", "sp-2", "sp-3"],
+          "leader": ["s-2", "s-3", "s-4", "s-5"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {
+          "id": "s-2",
+          "name": "拜登",
+          "cardType": "leader",
+          "gameType": "左翼",
+          "initialPoint": 100,
+          "level": 7,
+          "rarity": "legendary",
+          "zoneCompatibility": {
+            "top": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "left": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "right": ["左翼", "自由", "經濟", "右翼", "愛國者"]
+          },
+          "effects": {
+            "description": "全部召喚出來的角色能力值 +40",
+            "rules": [
+              {
+                "id": "biden_all_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": []
+                },
+                "effect": {
+                  "type": "powerBoost",
+                  "value": 40
+                }
+              }
+            ]
+          }
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      },
+      "playerId_2": {
+        "leader": {
+          "id": "s-2",
+          "name": "拜登",
+          "cardType": "leader",
+          "gameType": "左翼",
+          "initialPoint": 100,
+          "level": 7,
+          "rarity": "legendary",
+          "zoneCompatibility": {
+            "top": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "left": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "right": ["左翼", "自由", "經濟", "右翼", "愛國者"]
+          },
+          "effects": {
+            "description": "全部召喚出來的角色能力值 +40",
+            "rules": [
+              {
+                "id": "biden_all_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": []
+                },
+                "effect": {
+                  "type": "powerBoost",
+                  "value": 40
+                }
+              }
+            ]
+          }
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {
+      "globalSequence": 0,
+      "plays": []
+    },
+    "computedState": {
+      "playerPowers": {},
+      "activeRestrictions": {},
+      "disabledCards": [],
+      "victoryPointModifiers": {}
+    }
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "description": "Player 1 summons c-9 (艾利茲) to trigger search effect",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-9",
+        "zone": "top"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true,
+        "requiresCardSelection": true
+      },
+      "expectedEffects": [
+        "c-9 placed in TOP zone",
+        "Search effect triggers: look at 4 cards from deck",
+        "pendingPlayerAction created for card selection",
+        "Biden leader effect applies +40 power boost to c-9"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Player 1 completes card selection (selects c-2 from searched cards)",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "SelectCard",
+        "selectionId": "auto-generated",
+        "selectedCardIds": ["c-2"]
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "selectionCompleted": true
+      },
+      "expectedEffects": [
+        "c-2 added to player hand",
+        "Remaining 3 searched cards placed at bottom of deck",
+        "Deck size reduced by 1 (net effect: 4 viewed, 1 to hand, 3 to bottom)",
+        "pendingPlayerAction cleared"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Player 2 places a card (turn switches)",
+      "playerId": "playerId_2",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-21",
+        "zone": "top"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedEffects": [
+        "c-21 placed in TOP zone",
+        "Biden leader effect applies +40 power boost"
+      ]
+    }
+  ],
+  "expectedStateChanges": {
+    "zones.playerId_1.top.length": 1,
+    "zones.playerId_2.top.length": 1,
+    "players.playerId_1.deck.hand.length": 5,
+    "players.playerId_2.deck.hand.length": 4,
+    "players.playerId_1.deck.mainDeck.length": 19,
+    "playSequence.plays.length": 2,
+    "currentTurn": 2,
+    "currentPlayer": "playerId_1",
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {}
+  },
+  "validationPoints": {
+    "playerId_1_card_c-9_power": {
+      "description": "Validate c-9 power with Biden leader boost",
+      "expected": {
+        "cardId": "c-9",
+        "finalPower": 100
+      },
+      "powerBreakdown": {
+        "basePower": 60,
+        "bidenLeaderBoost": 40,
+        "total": 100
+      }
+    },
+    "playerId_1_hand_contains_c-2": {
+      "description": "Validate that c-2 was successfully added to hand via search",
+      "expected": {
+        "handContains": "c-2",
+        "handSize": 5
+      }
+    },
+    "search_effect_completion": {
+      "description": "Validate search effect completed properly",
+      "expected": {
+        "pendingSelections": 0,
+        "deckReduction": 1,
+        "selectionCleared": true
+      }
+    }
+  },
+  "errorCases": [
+    {
+      "description": "Test invalid card selection during search",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "SelectCard",
+        "selectionId": "invalid-selection-id",
+        "selectedCardIds": ["c-99"]
+      },
+      "expectedError": "INVALID_CARD_SELECTION"
+    },
+    {
+      "description": "Test wrong selection count (selecting 2 cards when only 1 allowed)",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "SelectCard",
+        "selectionId": "auto-generated",
+        "selectedCardIds": ["c-2", "c-6"]
+      },
+      "expectedError": "INVALID_SELECTION_COUNT"
+    }
+  ],
+  "cardSelectionTests": [
+    {
+      "description": "Verify card selection workflow",
+      "triggerAction": {
+        "actionType": "PlayCard",
+        "cardId": "c-9",
+        "zone": "top"
+      },
+      "expectedSelectionData": {
+        "searchCount": 4,
+        "selectCount": 1,
+        "destination": "hand",
+        "filters": []
+      }
+    }
+  ],
+  "cardDefinitions": {
+    "c-9": {
+      "name": "艾利茲",
+      "cardType": "character",
+      "gameType": "愛國者",
+      "power": 60,
+      "traits": [],
+      "effects": {
+        "description": "當這個卡登場時，可以從自己的卡組上面查看4張卡片，自由選出一張卡加進手牌，其餘放到卡組之下。",
+        "rules": [
+          {
+            "id": "elijah_search_effect",
+            "type": "triggered",
+            "trigger": {
+              "event": "onSummon",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": [],
+              "filters": []
+            },
+            "effect": {
+              "type": "searchCard",
+              "searchCount": 4,
+              "selectCount": 1,
+              "destination": "hand",
+              "filters": []
+            }
+          }
+        ]
+      }
+    },
+    "c-2": {
+      "name": "前總統特朗普(YMCA)",
+      "cardType": "character",
+      "gameType": "右翼",
+      "power": 80,
+      "traits": ["特朗普家族"],
+      "effects": {
+        "description": "我方場上全部右翼類型的角色卡 原能力值加 +10",
+        "rules": [
+          {
+            "id": "trump_ymca_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "gameType",
+                  "value": "右翼"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 10
+            }
+          }
+        ]
+      }
+    },
+    "c-21": {
+      "name": "奧巴馬",
+      "cardType": "character",
+      "gameType": "左翼",
+      "power": 80,
+      "traits": ["Deep State"],
+      "effects": {
+        "description": "所有角色卡原能力值加 +50 (只適用在某一張角色卡上，我方優先)",
+        "rules": [
+          {
+            "id": "obama_single_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "both",
+              "zones": ["top", "left", "right"],
+              "filters": [],
+              "targetCount": 1
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 50
+            }
+          }
+        ]
+      }
+    }
+  }
+}

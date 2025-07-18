@@ -1,0 +1,542 @@
+{
+  "gameId": "character_multi_boost_stacking_dynamic",
+  "description": "Dynamic test for multiple character boost effects stacking: c-1 + c-2 + c-19 + c-20 interactions",
+  "testType": "dynamic",
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "playerId_1",
+        "deck": {
+          "hand": ["c-1", "c-2", "c-19", "c-20", "h-1"],
+          "mainDeck": ["c-6", "c-7", "c-8", "c-9", "c-10", "c-11", "c-12", "c-13", "c-14", "c-15", "c-16", "c-17", "c-18", "c-5", "c-21", "h-2", "h-3", "h-4", "sp-2", "sp-3"],
+          "leader": ["s-2", "s-3", "s-4", "s-5"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "playerId_2",
+        "deck": {
+          "hand": ["c-21", "c-22", "c-23", "h-5", "sp-1"],
+          "mainDeck": ["c-24", "c-25", "c-26", "c-27", "c-28", "c-10", "c-3", "c-4", "c-11", "c-12", "c-13", "c-14", "c-15", "h-1", "h-2", "h-3", "sp-2", "sp-3"],
+          "leader": ["s-2", "s-3", "s-4", "s-5"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {
+          "id": "s-2",
+          "name": "拜登",
+          "cardType": "leader",
+          "gameType": "左翼",
+          "initialPoint": 100,
+          "level": 7,
+          "rarity": "legendary",
+          "zoneCompatibility": {
+            "top": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "left": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "right": ["左翼", "自由", "經濟", "右翼", "愛國者"]
+          },
+          "effects": {
+            "description": "全部召喚出來的角色能力值 +40",
+            "rules": [
+              {
+                "id": "biden_all_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": []
+                },
+                "effect": {
+                  "type": "powerBoost",
+                  "value": 40
+                }
+              }
+            ]
+          }
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      },
+      "playerId_2": {
+        "leader": {
+          "id": "s-2",
+          "name": "拜登",
+          "cardType": "leader",
+          "gameType": "左翼",
+          "initialPoint": 100,
+          "level": 7,
+          "rarity": "legendary",
+          "zoneCompatibility": {
+            "top": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "left": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "right": ["左翼", "自由", "經濟", "右翼", "愛國者"]
+          },
+          "effects": {
+            "description": "全部召喚出來的角色能力值 +40",
+            "rules": [
+              {
+                "id": "biden_all_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": []
+                },
+                "effect": {
+                  "type": "powerBoost",
+                  "value": 40
+                }
+              }
+            ]
+          }
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {
+      "globalSequence": 0,
+      "plays": []
+    },
+    "computedState": {
+      "playerPowers": {},
+      "activeRestrictions": {},
+      "disabledCards": [],
+      "victoryPointModifiers": {}
+    }
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "description": "Player 1 places c-1 (總統特朗普, 特朗普家族, 愛國者) in TOP zone",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-1",
+        "zone": "top"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedEffects": [
+        "c-1 provides trait boost to 特朗普家族 cards (including self)",
+        "Biden leader effect applies +40 universal boost"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Player 2 places c-21 (奧巴馬) in TOP zone",
+      "playerId": "playerId_2",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-21",
+        "zone": "top"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedEffects": [
+        "c-21 provides +50 single target boost (will target c-1 as first valid target)",
+        "Biden leader effect applies +40 universal boost"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Player 1 places c-2 (前總統特朗普, 特朗普家族, 右翼) in LEFT zone",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-2",
+        "zone": "left"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedEffects": [
+        "c-2 receives trait boost from c-1 (+10 for 特朗普家族)",
+        "c-2 provides type boost to 右翼 cards (including self)",
+        "Biden leader effect applies +40 universal boost"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Player 2 places c-22 in LEFT zone",
+      "playerId": "playerId_2",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-22",
+        "zone": "left"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedEffects": [
+        "Biden leader effect applies +40 universal boost"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Player 1 places c-19 (比爾蓋茨, 富商, 經濟) in RIGHT zone",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-19",
+        "zone": "right"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedEffects": [
+        "c-19 provides trait boost to 富商 cards (will apply to c-20 when placed)",
+        "Biden leader effect applies +40 universal boost"
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Player 2 places c-23 in RIGHT zone",
+      "playerId": "playerId_2",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-23",
+        "zone": "right"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedEffects": [
+        "Biden leader effect applies +40 universal boost"
+      ]
+    }
+  ],
+  "expectedStateChanges": {
+    "zones.playerId_1.top.length": 1,
+    "zones.playerId_1.left.length": 1,
+    "zones.playerId_1.right.length": 1,
+    "zones.playerId_2.top.length": 1,
+    "zones.playerId_2.left.length": 1,
+    "zones.playerId_2.right.length": 1,
+    "players.playerId_1.deck.hand.length": 2,
+    "players.playerId_2.deck.hand.length": 2,
+    "playSequence.plays.length": 6,
+    "currentTurn": 5,
+    "currentPlayer": "playerId_1"
+  },
+  "validationPoints": {
+    "playerId_1_card_c-1_power": {
+      "description": "Validate c-1 power with multiple stacking effects",
+      "expected": {
+        "cardId": "c-1",
+        "finalPower": 200
+      },
+      "powerBreakdown": {
+        "basePower": 100,
+        "characterSelfBoost": 10,
+        "obamaBoost": 50,
+        "bidenLeaderBoost": 40,
+        "total": 200
+      },
+      "note": "c-1 gets self-boost + Obama's single target + Biden universal"
+    },
+    "playerId_1_card_c-2_power": {
+      "description": "Validate c-2 power with trait boost from c-1 + self-boost + leader boost",
+      "expected": {
+        "cardId": "c-2",
+        "finalPower": 140
+      },
+      "powerBreakdown": {
+        "basePower": 80,
+        "traitBoostFromC1": 10,
+        "characterSelfBoost": 10,
+        "bidenLeaderBoost": 40,
+        "total": 140
+      },
+      "note": "c-2 gets trait boost from c-1 + self-boost + Biden universal (Obama targets c-1)"
+    },
+    "playerId_1_card_c-19_power": {
+      "description": "Validate c-19 power with leader boost only",
+      "expected": {
+        "cardId": "c-19",
+        "finalPower": 110
+      },
+      "powerBreakdown": {
+        "basePower": 70,
+        "bidenLeaderBoost": 40,
+        "total": 110
+      },
+      "note": "c-19 only gets Biden universal (no trait matches, Obama targets c-1)"
+    },
+    "effect_stacking_validation": {
+      "description": "Validate that effects stack correctly without conflicts",
+      "expected": {
+        "traitBoostsApply": true,
+        "typeBoostsApply": true,
+        "singleTargetBoostApplies": true,
+        "leaderBoostApplies": true,
+        "noConflicts": true
+      }
+    }
+  },
+  "errorCases": [
+    {
+      "description": "Test power calculation overflow protection",
+      "expectedBehavior": "Powers should not exceed reasonable limits"
+    }
+  ],
+  "stackingTests": [
+    {
+      "description": "Test trait-based stacking",
+      "cards": ["c-1", "c-2"],
+      "expectedInteraction": "c-1 boosts c-2 via 特朗普家族 trait"
+    },
+    {
+      "description": "Test type-based stacking", 
+      "cards": ["c-2"],
+      "expectedInteraction": "c-2 boosts self via 右翼 type"
+    },
+    {
+      "description": "Test single target priority",
+      "cards": ["c-21"],
+      "expectedInteraction": "Obama targets first valid card (c-1 in TOP zone)"
+    }
+  ],
+  "cardDefinitions": {
+    "c-1": {
+      "name": "總統特朗普",
+      "cardType": "character",
+      "gameType": "愛國者",
+      "power": 100,
+      "traits": ["特朗普家族"],
+      "effects": {
+        "description": "我方場上全部擁有特朗普家族特徵的角色卡 原能力值加 +10",
+        "rules": [
+          {
+            "id": "trump_president_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "trait",
+                  "value": "特朗普家族"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 10
+            }
+          }
+        ]
+      }
+    },
+    "c-2": {
+      "name": "前總統特朗普(YMCA)",
+      "cardType": "character",
+      "gameType": "右翼",
+      "power": 80,
+      "traits": ["特朗普家族"],
+      "effects": {
+        "description": "我方場上全部右翼類型的角色卡 原能力值加 +10",
+        "rules": [
+          {
+            "id": "trump_ymca_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "gameType",
+                  "value": "右翼"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 10
+            }
+          }
+        ]
+      }
+    },
+    "c-19": {
+      "name": "比爾蓋茨",
+      "cardType": "character",
+      "gameType": "經濟",
+      "power": 70,
+      "traits": ["富商"],
+      "effects": {
+        "description": "我方場上全部擁有富商特徵的角色卡 原能力值加 +10",
+        "rules": [
+          {
+            "id": "bill_gates_rich_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "trait",
+                  "value": "富商"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 10
+            }
+          }
+        ]
+      }
+    },
+    "c-20": {
+      "name": "巴飛特",
+      "cardType": "character", 
+      "gameType": "經濟",
+      "power": 50,
+      "traits": ["富商"],
+      "effects": {
+        "description": "富商特徵的角色卡 原能力值加 +50 (只適用在某一張角色卡上，我方優先)",
+        "rules": [
+          {
+            "id": "buffett_single_rich_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "trait",
+                  "value": "富商"
+                }
+              ],
+              "targetCount": 1
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 50
+            }
+          }
+        ]
+      }
+    },
+    "c-21": {
+      "name": "奧巴馬",
+      "cardType": "character",
+      "gameType": "左翼",
+      "power": 80,
+      "traits": ["Deep State"],
+      "effects": {
+        "description": "所有角色卡原能力值加 +50 (只適用在某一張角色卡上，我方優先)",
+        "rules": [
+          {
+            "id": "obama_single_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "both",
+              "zones": ["top", "left", "right"],
+              "filters": [],
+              "targetCount": 1
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 50
+            }
+          }
+        ]
+      }
+    },
+    "c-22": {
+      "name": "Test Card 22",
+      "cardType": "character",
+      "gameType": "左翼",
+      "power": 60,
+      "traits": [],
+      "effects": {
+        "description": "No special effects",
+        "rules": []
+      }
+    },
+    "c-23": {
+      "name": "Test Card 23",
+      "cardType": "character",
+      "gameType": "經濟",
+      "power": 65,
+      "traits": [],
+      "effects": {
+        "description": "No special effects",
+        "rules": []
+      }
+    }
+  }
+}

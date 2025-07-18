@@ -1,0 +1,400 @@
+{
+  "gameId": "utility_neutralization_immunity_test",
+  "description": "Test h-5 immunity to neutralization effects - zone freedom should remain active despite h-1 neutralization",
+  "testType": "dynamic",
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": ["h-5", "c-1", "c-2", "h-2", "sp-1"],
+          "mainDeck": ["c-3", "c-4", "c-5", "c-6", "c-7", "c-8", "c-9", "c-10", "c-11", "c-12", "c-13", "c-14", "c-15", "h-3", "h-4", "sp-2", "sp-3"],
+          "leader": ["s-1", "s-2", "s-3", "s-4"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": ["h-1", "c-21", "c-22", "h-6", "sp-8"],
+          "mainDeck": ["c-23", "c-24", "c-25", "c-26", "c-27", "c-28", "c-3", "c-4", "c-5", "c-6", "c-7", "c-8", "c-9", "h-7", "h-8", "sp-9", "sp-10"],
+          "leader": ["s-2", "s-3", "s-4", "s-5"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {
+          "id": "s-1",
+          "name": "特朗普",
+          "cardType": "leader",
+          "gameType": "愛國者",
+          "initialPoint": 100,
+          "level": 6,
+          "rarity": "legendary",
+          "zoneCompatibility": {
+            "top": ["右翼", "自由", "經濟"],
+            "left": ["右翼", "自由", "愛國者"],
+            "right": ["右翼", "愛國者", "經濟"]
+          }
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      },
+      "playerId_2": {
+        "leader": {
+          "id": "s-2",
+          "name": "拜登",
+          "cardType": "leader",
+          "gameType": "左翼",
+          "initialPoint": 100,
+          "level": 7,
+          "rarity": "legendary",
+          "zoneCompatibility": {
+            "top": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "left": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "right": ["左翼", "自由", "經濟", "右翼", "愛國者"]
+          }
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {
+      "globalSequence": 0,
+      "plays": []
+    },
+    "computedState": {
+      "playerPowers": {},
+      "activeRestrictions": {},
+      "disabledCards": [],
+      "victoryPointModifiers": {}
+    }
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "description": "Player 1 places h-5 (失智老人) - grants zone freedom + immunity",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "h-5",
+        "zone": "help"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedEffects": [
+        "h-5 grants zonePlacementFreedom to player 1",
+        "h-5 grants +20 power boost to all player 1 cards",
+        "h-5 is immune to neutralization effects"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Player 1 places c-1 (特朗普) in TOP zone - should fail due to zone restriction",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-1",
+        "zone": "top"
+      },
+      "expectedResult": {
+        "success": false,
+        "error": "ZONE_COMPATIBILITY_ERROR"
+      },
+      "note": "c-1 (愛國者) cannot be placed in TOP zone which only allows [右翼, 自由, 經濟] - zone freedom not yet applied"
+    },
+    {
+      "step": 3,
+      "description": "Player 2 places h-1 (Deep State) - attempts to neutralize all opponent effects",
+      "playerId": "playerId_2",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "h-1",
+        "zone": "help"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedEffects": [
+        "h-1 attempts to neutralize all opponent Help and SP effects",
+        "h-5 power boost gets neutralized",
+        "h-5 zone freedom remains active due to immunity"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Player 1 places c-1 (特朗普) in TOP zone - should now succeed due to zone freedom immunity",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-1",
+        "zone": "top"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedEffects": [
+        "c-1 placed despite zone restriction due to h-5 immune zone freedom",
+        "c-1 does NOT receive +20 power from h-5 (neutralized)",
+        "c-1 receives +45 power from Trump leader (愛國者 type)",
+        "c-1 provides +10 trait boost to other 特朗普家族 cards"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Player 2 places c-21 (奧巴馬) in TOP zone",
+      "playerId": "playerId_2",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-21",
+        "zone": "top"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedEffects": [
+        "c-21 provides +50 single target boost (targets c-1)",
+        "c-21 receives +40 power from Biden leader (universal boost)"
+      ]
+    }
+  ],
+  "expectedStateChanges": {
+    "zones.playerId_1.help.length": 1,
+    "zones.playerId_1.top.length": 1,
+    "zones.playerId_2.help.length": 1,
+    "zones.playerId_2.top.length": 1,
+    "specialStates.playerId_1.zonePlacementFreedom": true,
+    "neutralizedEffects.playerId_1.allEffects": true,
+    "players.playerId_1.deck.hand.length": 3,
+    "players.playerId_2.deck.hand.length": 3
+  },
+  "validationPoints": {
+    "immunity_validation": {
+      "description": "Test that h-5 immunity prevents neutralization of zone freedom",
+      "expected": {
+        "zoneFreedomActive": true,
+        "powerBoostNeutralized": true,
+        "immunityWorking": true
+      }
+    },
+    "zone_restriction_override": {
+      "description": "Test that immune zone freedom overrides leader restrictions",
+      "expected": {
+        "c1PlacementSuccessful": true,
+        "leaderRestrictionBypassed": true
+      }
+    },
+    "power_calculation_with_immunity": {
+      "description": "Test power calculation with partial neutralization",
+      "expected": {
+        "c1FinalPower": 205,
+        "c21FinalPower": 120
+      },
+      "powerBreakdown": {
+        "c1": {
+          "basePower": 100,
+          "trumpLeaderBoost": 45,
+          "h5PowerBoost": 0,
+          "obamaBoost": 50,
+          "characterSelfBoost": 10,
+          "total": 205,
+          "note": "h-5 power boost neutralized but zone freedom immunity allows placement"
+        },
+        "c21": {
+          "basePower": 80,
+          "bidenLeaderBoost": 40,
+          "total": 120,
+          "note": "Obama doesn't boost self, only targets other cards"
+        }
+      }
+    }
+  },
+  "errorCases": [
+    {
+      "description": "Zone compatibility error before immunity takes effect",
+      "step": 2,
+      "expectedError": "ZONE_COMPATIBILITY_ERROR"
+    }
+  ],
+  "immunityTests": [
+    {
+      "description": "Zone freedom immunity vs neutralization",
+      "immuneCard": "h-5",
+      "neutralizeCard": "h-1",
+      "expectedResult": "Zone freedom remains active, power boost neutralized"
+    }
+  ],
+  "cardDefinitions": {
+    "h-5": {
+      "name": "失智老人",
+      "cardType": "help",
+      "effects": {
+        "description": "可在上，左，右區域打出任可屬於的角色卡。而且全部召喚出來的角色能力值再 +20. 這張卡的效果不能被無效文化 。",
+        "rules": [
+          {
+            "id": "dementia_placement_freedom",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": []
+            },
+            "effect": {
+              "type": "zonePlacementFreedom",
+              "value": true
+            }
+          },
+          {
+            "id": "dementia_power_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": []
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 20
+            }
+          }
+        ],
+        "immuneToNeutralization": true
+      }
+    },
+    "h-1": {
+      "name": "Deep State",
+      "cardType": "help",
+      "effects": {
+        "description": "對方場上的SP卡或HELP效果變為無效。",
+        "rules": [
+          {
+            "id": "deep_state_neutralize",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": ["help", "sp"],
+              "filters": []
+            },
+            "effect": {
+              "type": "neutralizeEffect",
+              "value": true
+            }
+          }
+        ]
+      }
+    },
+    "c-1": {
+      "name": "總統特朗普",
+      "cardType": "character",
+      "gameType": "愛國者",
+      "power": 100,
+      "traits": ["特朗普家族"],
+      "effects": {
+        "description": "我方場上全部擁有特朗普家族特徵的角色卡 原能力值加 +10",
+        "rules": [
+          {
+            "id": "trump_president_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "trait",
+                  "value": "特朗普家族"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 10
+            }
+          }
+        ]
+      }
+    },
+    "c-21": {
+      "name": "奧巴馬",
+      "cardType": "character",
+      "gameType": "左翼",
+      "power": 80,
+      "traits": ["Deep State"],
+      "effects": {
+        "description": "所有角色卡原能力值加 +50 (只適用在某一張角色卡上，我方優先)",
+        "rules": [
+          {
+            "id": "obama_single_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "both",
+              "zones": ["top", "left", "right"],
+              "filters": [],
+              "targetCount": 1
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 50
+            }
+          }
+        ]
+      }
+    }
+  }
+}

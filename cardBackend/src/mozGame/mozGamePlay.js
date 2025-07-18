@@ -977,9 +977,68 @@ class mozGamePlay {
             totalPoints += finalPower;
         }
         
-        // Step 5: Add combo bonuses for special card combinations
-        const comboBonus = this.calculateComboBonus(characterPowers, characterCards, gameEnv, playerId);
+        // Step 5: Add combo bonuses for special card combinations (if not disabled)
+        let comboBonus = 0;
+        if (!gameEnv.disabledEffects || !gameEnv.disabledEffects[playerId] || !gameEnv.disabledEffects[playerId].comboBonus) {
+            comboBonus = this.calculateComboBonus(characterPowers, characterCards, gameEnv, playerId);
+        }
         totalPoints += comboBonus;
+        
+        // Step 6: Apply final calculation effects (like totalPowerNerf)
+        totalPoints = this.applyFinalCalculationEffects(gameEnv, playerId, totalPoints);
+        
+        return totalPoints;
+    }
+    
+    /**
+     * Apply final calculation effects that modify total power after combo calculation
+     * @param {Object} gameEnv - Current game environment
+     * @param {string} playerId - Player whose power is being calculated
+     * @param {number} totalPoints - Current total power before final effects
+     * @returns {number} Final power after all effects
+     */
+    applyFinalCalculationEffects(gameEnv, playerId, totalPoints) {
+        // Load utility cards for checking final calculation effects
+        const utilityCards = require('../data/utilityCards.json');
+        
+        // Check all players' utility cards for final calculation effects
+        const allPlayers = [playerId, this.getOpponentId(gameEnv, playerId)];
+        
+        for (const checkPlayerId of allPlayers) {
+            const playerField = this.getPlayerField(gameEnv, checkPlayerId);
+            const utilityZones = ['help', 'sp'];
+            
+            for (const zone of utilityZones) {
+                if (playerField[zone] && playerField[zone].length > 0) {
+                    for (const cardObj of playerField[zone]) {
+                        // Only apply effects from face-up utility cards
+                        if (!cardObj.isBack[0]) {
+                            const cardId = cardObj.cardDetails[0].id;
+                            const utilityCard = utilityCards.cards[cardId];
+                            
+                            if (utilityCard && utilityCard.effects && utilityCard.effects.rules) {
+                                for (const rule of utilityCard.effects.rules) {
+                                    if (rule.type === 'triggered' && rule.trigger.event === 'finalCalculation') {
+                                        // Check if conditions are met
+                                        if (this.checkRuleConditions(rule.trigger.conditions, playerField, gameEnv, checkPlayerId)) {
+                                            // Apply totalPowerNerf to target player
+                                            if (rule.effect.type === 'totalPowerNerf') {
+                                                const targetPlayerId = rule.target.owner === 'opponent' ? 
+                                                    this.getOpponentId(gameEnv, checkPlayerId) : checkPlayerId;
+                                                
+                                                if (targetPlayerId === playerId) {
+                                                    totalPoints = Math.max(0, totalPoints - rule.effect.value);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
         
         return totalPoints;
     }
@@ -999,6 +1058,19 @@ class mozGamePlay {
         const cardDetails = mozDeckHelper.getDeckCardDetails(cardToPlay);
         if (!cardDetails) {
             return false;
+        }
+        
+        // Check for play restrictions from utility card effects
+        if (gameEnv.playRestrictions && gameEnv.playRestrictions[playerId]) {
+            const restrictions = gameEnv.playRestrictions[playerId];
+            
+            // Check if card type is restricted
+            if (cardDetails["cardType"] === "help" && restrictions.help) {
+                return false;
+            }
+            if (cardDetails["cardType"] === "sp" && restrictions.sp) {
+                return false;
+            }
         }
         
         // Check phase-based card placement rules
@@ -1025,7 +1097,13 @@ class mozGamePlay {
     }
 
     
-    isCardMatchingLeader(card, leader, area ){
+    isCardMatchingLeader(card, leader, area, gameEnv = null, playerId = null){
+        // Check if player has zone placement freedom
+        if (gameEnv && playerId && gameEnv.specialStates && 
+            gameEnv.specialStates[playerId] && gameEnv.specialStates[playerId].zonePlacementFreedom) {
+            return true;
+        }
+        
         var returnValue = false;
         for (let idx in card["traits"]){
             if(card["traits"][idx] == "all"){
@@ -1069,6 +1147,11 @@ class mozGamePlay {
             return characterPowers;
         }
         
+        // Check if this effect should be neutralized by other cards
+        if (this.isEffectNeutralized(rule, gameEnv, playerId)) {
+            return characterPowers;
+        }
+        
         // Apply effect based on target
         const targets = this.getEffectTargets(rule.target, playerField, gameEnv, playerId);
         
@@ -1082,10 +1165,96 @@ class mozGamePlay {
                         characterPowers[cardId].modifiers = rule.effect.value - characterPowers[cardId].basePower;
                     }
                 }
+            } else if (rule.effect.type === 'powerBoost') {
+                const cardId = target.cardId;
+                if (characterPowers[cardId]) {
+                    characterPowers[cardId].modifiers += rule.effect.value;
+                }
+            } else if (rule.effect.type === 'setPower') {
+                const cardId = target.cardId;
+                if (characterPowers[cardId]) {
+                    characterPowers[cardId].modifiers = rule.effect.value - characterPowers[cardId].basePower;
+                }
+            } else if (rule.effect.type === 'neutralizeEffect') {
+                // Handle effect neutralization - store in game state for later checking
+                this.applyEffectNeutralization(rule, gameEnv, playerId);
+            } else if (rule.effect.type === 'disableComboBonus') {
+                // Store combo disable state in game environment
+                const targetPlayerId = rule.target.owner === 'opponent' ? this.getOpponentId(gameEnv, playerId) : playerId;
+                if (!gameEnv.disabledEffects) gameEnv.disabledEffects = {};
+                if (!gameEnv.disabledEffects[targetPlayerId]) gameEnv.disabledEffects[targetPlayerId] = {};
+                gameEnv.disabledEffects[targetPlayerId].comboBonus = true;
+            } else if (rule.effect.type === 'silenceOnSummon') {
+                // Store silence state in game environment
+                const targetPlayerId = rule.target.owner === 'opponent' ? this.getOpponentId(gameEnv, playerId) : playerId;
+                if (!gameEnv.disabledEffects) gameEnv.disabledEffects = {};
+                if (!gameEnv.disabledEffects[targetPlayerId]) gameEnv.disabledEffects[targetPlayerId] = {};
+                gameEnv.disabledEffects[targetPlayerId].summonEffects = true;
+            } else if (rule.effect.type === 'zonePlacementFreedom') {
+                // Store zone freedom state in game environment
+                const targetPlayerId = rule.target.owner === 'opponent' ? this.getOpponentId(gameEnv, playerId) : playerId;
+                if (!gameEnv.specialStates) gameEnv.specialStates = {};
+                if (!gameEnv.specialStates[targetPlayerId]) gameEnv.specialStates[targetPlayerId] = {};
+                gameEnv.specialStates[targetPlayerId].zonePlacementFreedom = true;
             }
         }
         
         return characterPowers;
+    }
+    
+    /**
+     * Check if an effect should be neutralized by other cards
+     * @param {Object} rule - The effect rule to check
+     * @param {Object} gameEnv - Current game environment
+     * @param {string} playerId - Player ID whose effect is being checked
+     * @returns {boolean} True if effect should be neutralized
+     */
+    isEffectNeutralized(rule, gameEnv, playerId) {
+        // Check if this card has immunity to neutralization
+        if (rule.immuneToNeutralization) {
+            return false;
+        }
+        
+        // Check if there are any neutralization effects targeting this player
+        if (gameEnv.neutralizedEffects && gameEnv.neutralizedEffects[playerId]) {
+            const neutralizations = gameEnv.neutralizedEffects[playerId];
+            
+            // Check for all effect neutralization
+            if (neutralizations.allEffects) {
+                return true;
+            }
+            
+            // Check for specific zone neutralization
+            if (neutralizations.zones && neutralizations.zones.includes(rule.target.zones)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Apply effect neutralization to target player
+     * @param {Object} rule - The neutralization rule
+     * @param {Object} gameEnv - Current game environment
+     * @param {string} playerId - Player ID applying the neutralization
+     */
+    applyEffectNeutralization(rule, gameEnv, playerId) {
+        const targetPlayerId = rule.target.owner === 'opponent' ? this.getOpponentId(gameEnv, playerId) : playerId;
+        
+        if (!gameEnv.neutralizedEffects) gameEnv.neutralizedEffects = {};
+        if (!gameEnv.neutralizedEffects[targetPlayerId]) gameEnv.neutralizedEffects[targetPlayerId] = {};
+        
+        // Neutralize all effects in target zones
+        if (rule.target.zones.includes('help') || rule.target.zones.includes('sp')) {
+            gameEnv.neutralizedEffects[targetPlayerId].allEffects = true;
+        }
+        
+        // Store specific zone neutralization
+        if (!gameEnv.neutralizedEffects[targetPlayerId].zones) {
+            gameEnv.neutralizedEffects[targetPlayerId].zones = [];
+        }
+        gameEnv.neutralizedEffects[targetPlayerId].zones.push(...rule.target.zones);
     }
     
     checkRuleConditions(conditions, playerField, gameEnv, playerId) {
@@ -1124,6 +1293,35 @@ class mozGamePlay {
                     }
                 }
                 if (!orConditionMet) return false;
+            } else if (condition.type === 'allyFieldContainsName') {
+                // Check if ally field contains card with specific name
+                const hasCharacter = this.hasCharacterWithName(playerField, condition.value);
+                const hasLeader = playerField.leader && playerField.leader.name && playerField.leader.name.includes(condition.value);
+                if (!hasCharacter && !hasLeader) return false;
+            } else if (condition.type === 'opponentFieldContainsName') {
+                // Check if opponent field contains card with specific name
+                const opponentId = this.getOpponentId(gameEnv, playerId);
+                const opponentField = this.getPlayerField(gameEnv, opponentId);
+                const hasCharacter = this.hasCharacterWithName(opponentField, condition.value);
+                const hasLeader = opponentField.leader && opponentField.leader.name && opponentField.leader.name.includes(condition.value);
+                if (!hasCharacter && !hasLeader) return false;
+            } else if (condition.type === 'opponentHandCount') {
+                // Check opponent hand count with operator
+                const opponentId = this.getOpponentId(gameEnv, playerId);
+                const opponentHandCount = gameEnv[opponentId].deck.hand.length;
+                if (condition.operator === '>=') {
+                    if (opponentHandCount < condition.value) return false;
+                } else if (condition.operator === '<=') {
+                    if (opponentHandCount > condition.value) return false;
+                } else if (condition.operator === '=') {
+                    if (opponentHandCount !== condition.value) return false;
+                }
+            } else if (condition.type === 'opponentLeader') {
+                // Check if opponent has specific leader
+                const opponentId = this.getOpponentId(gameEnv, playerId);
+                const opponentField = this.getPlayerField(gameEnv, opponentId);
+                const hasLeader = opponentField.leader && opponentField.leader.name && opponentField.leader.name.includes(condition.value);
+                if (!hasLeader) return false;
             }
         }
         
@@ -1279,6 +1477,12 @@ class mozGamePlay {
     async processCharacterSummonEffects(gameEnv, playerId, cardDetails) {
         if (!cardDetails.effects || !cardDetails.effects.rules) return;
         
+        // Check if summon effects are silenced
+        if (gameEnv.disabledEffects && gameEnv.disabledEffects[playerId] && 
+            gameEnv.disabledEffects[playerId].summonEffects) {
+            return;
+        }
+        
         const characterCards = require('../data/characterCards.json');
         const cardData = characterCards.cards[cardDetails.id];
         
@@ -1375,12 +1579,34 @@ class mozGamePlay {
                     executed: true
                 };
             }
-        } else if (rule.effect.type === 'forcePlaySP') {
+        } else if (rule.effect.type === 'forcePlaySP' || rule.effect.type === 'forceSPPlay') {
             // Force opponent to play SP card in next SP phase
             gameEnv[targetPlayerId]['forcedSpPlay'] = true;
             return {
                 success: true,
-                effectType: 'forcePlaySP',
+                effectType: 'forceSPPlay',
+                executed: true
+            };
+        } else if (rule.effect.type === 'randomDiscard') {
+            // Force target to randomly discard cards from hand
+            await this.discardRandomCards(gameEnv, targetPlayerId, rule.effect.value);
+            return {
+                success: true,
+                effectType: 'randomDiscard',
+                executed: true
+            };
+        } else if (rule.effect.type === 'preventPlay') {
+            // Prevent opponent from playing cards in specific zones
+            if (!gameEnv.playRestrictions) gameEnv.playRestrictions = {};
+            if (!gameEnv.playRestrictions[targetPlayerId]) gameEnv.playRestrictions[targetPlayerId] = {};
+            
+            for (const zone of rule.target.zones) {
+                gameEnv.playRestrictions[targetPlayerId][zone] = true;
+            }
+            
+            return {
+                success: true,
+                effectType: 'preventPlay',
                 executed: true
             };
         }
@@ -1391,6 +1617,29 @@ class mozGamePlay {
             reason: `Unknown effect type: ${rule.effect.type}`
         };
         // Note: Continuous effects (modifyPower, invalidateEffect, etc.) are handled in calculatePlayerPoint
+    }
+    
+    /**
+     * Force a player to randomly discard cards from their hand
+     * @param {Object} gameEnv - Current game environment
+     * @param {string} playerId - Player to discard cards
+     * @param {number} count - Number of cards to discard
+     */
+    async discardRandomCards(gameEnv, playerId, count) {
+        const hand = gameEnv[playerId].deck.hand;
+        const actualCount = Math.min(count, hand.length);
+        
+        for (let i = 0; i < actualCount; i++) {
+            const randomIndex = Math.floor(Math.random() * hand.length);
+            const discardedCard = hand.splice(randomIndex, 1)[0];
+            
+            // Add event for card discarded
+            this.addEvent(gameEnv, 'CARD_DISCARDED', {
+                playerId: playerId,
+                cardId: discardedCard,
+                reason: 'randomDiscard'
+            });
+        }
     }
     
     /**
