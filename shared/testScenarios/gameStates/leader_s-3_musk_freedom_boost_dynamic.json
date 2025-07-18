@@ -1,0 +1,377 @@
+{
+  "gameId": "leader_s-3_musk_freedom_boost_dynamic",
+  "description": "Dynamic test for Musk's Freedom boost effect: +50 power to Freedom (自由) cards",
+  "testType": "dynamic",
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Musk_Player",
+        "deck": {
+          "hand": ["c-16", "c-15", "c-14", "h-1", "sp-1"],
+          "mainDeck": ["c-16", "c-17", "c-18", "c-19", "c-20", "c-21", "c-22", "c-23", "c-24", "c-25", "c-26", "c-27", "c-28", "h-2", "h-3", "h-4", "sp-2", "sp-3"],
+          "leader": ["s-3", "s-1", "s-2", "s-4"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 0,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Biden_Player",
+        "deck": {
+          "hand": ["c-3", "c-4", "c-5", "h-5", "sp-1"],
+          "mainDeck": ["c-6", "c-7", "c-10", "c-11", "c-1", "c-2", "c-25", "c-26", "c-27", "c-28", "c-22", "h-1", "h-2", "h-3", "sp-2", "sp-3"],
+          "leader": ["s-2", "s-1", "s-4", "s-5"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 0,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {
+          "id": "s-3",
+          "name": "馬斯克",
+          "cardType": "leader",
+          "gameType": "自由",
+          "initialPoint": 91,
+          "level": 6,
+          "rarity": "epic",
+          "zoneCompatibility": {
+            "top": ["自由", "經濟"],
+            "left": ["左翼", "自由"],
+            "right": ["右翼", "自由"]
+          },
+          "effects": {
+            "description": "全部召喚出來的角色擁有自由屬性能力值 +50。全部召喚出來的角色如擁有Doge在角色名字，能力值 再+20",
+            "rules": [
+              {
+                "id": "musk_freedom_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "gameType",
+                      "value": "自由"
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "powerBoost",
+                  "value": 50
+                }
+              },
+              {
+                "id": "musk_doge_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "nameContains",
+                      "value": "Doge"
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "powerBoost",
+                  "value": 20
+                }
+              }
+            ]
+          }
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      },
+      "playerId_2": {
+        "leader": {
+          "id": "s-2",
+          "name": "拜登",
+          "cardType": "leader",
+          "gameType": "左翼",
+          "initialPoint": 100,
+          "level": 7,
+          "rarity": "legendary",
+          "zoneCompatibility": {
+            "top": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "left": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "right": ["左翼", "自由", "經濟", "右翼", "愛國者"]
+          },
+          "effects": {
+            "description": "全部召喚出來的角色能力值 +40",
+            "rules": [
+              {
+                "id": "biden_all_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": []
+                },
+                "effect": {
+                  "type": "powerBoost",
+                  "value": 40
+                }
+              }
+            ]
+          }
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      }
+    },
+    "fieldEffects": {
+      "playerId_1": {
+        "zoneRestrictions": {
+          "TOP": ["自由", "經濟"],
+          "LEFT": ["左翼", "自由"],
+          "RIGHT": ["右翼", "自由"],
+          "HELP": ["ALL"],
+          "SP": ["ALL"]
+        },
+        "activeEffects": []
+      },
+      "playerId_2": {
+        "zoneRestrictions": {
+          "TOP": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+          "LEFT": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+          "RIGHT": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+          "HELP": ["ALL"],
+          "SP": ["ALL"]
+        },
+        "activeEffects": []
+      }
+    },
+    "gameEvents": [
+      {
+        "id": "event_main_phase_start",
+        "type": "PHASE_CHANGE",
+        "data": {
+          "phase": "MAIN_PHASE",
+          "currentPlayer": "playerId_1",
+          "message": "Draw phase acknowledged - main phase started!"
+        },
+        "timestamp": 1752759390571,
+        "expiresAt": 1752759393571,
+        "frontendProcessed": true
+      }
+    ],
+    "lastEventId": 2,
+    "playSequence": {
+      "globalSequence": 0,
+      "plays": []
+    }
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "description": "Player 1 (Musk) places 朱克伯格 (c-16) card in TOP zone (自由 type without Doge)",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-16",
+        "zone": "top"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedEffects": [
+        "Musk's Freedom boost applies +50 power to 自由 type (no Doge bonus)"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Player 2 (Biden) places 拜登(Sleepy Joe) (c-3) card in TOP zone (左翼 type)",
+      "playerId": "playerId_2",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-3",
+        "zone": "top"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedEffects": [
+        "Biden's universal +40 power boost applies"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Player 1 (Musk) places 中共特工 (c-15) card in LEFT zone (自由 type)",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-15",
+        "zone": "left"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedEffects": [
+        "Musk's Freedom boost applies +50 power to 自由 type (no Doge bonus)"
+      ]
+    }
+  ],
+  "expectedStateChanges": {
+    "zones.playerId_1.top.length": 1,
+    "zones.playerId_1.left.length": 1,
+    "zones.playerId_2.top.length": 1,
+    "players.playerId_1.deck.hand.length": 4,
+    "players.playerId_2.deck.hand.length": 6,
+    "playSequence.plays.length": 3,
+    "currentTurn": 1.5,
+    "currentPlayer": "playerId_2"
+  },
+  "validationPoints": {
+    "playerId_1_card_c-16_power": {
+      "description": "Validate power of c-16 (朱克伯格 - 自由 type without Doge) with Freedom boost only",
+      "expected": {
+        "cardId": "c-16",
+        "finalPower": 120
+      },
+      "powerBreakdown": {
+        "basePower": 70,
+        "muskFreedomBoost": 50,
+        "total": 120
+      }
+    },
+    "playerId_1_card_c-15_power": {
+      "description": "Validate power of c-15 (中共特工 - 自由 type without Doge) with Freedom boost only",
+      "expected": {
+        "cardId": "c-15",
+        "finalPower": 100
+      },
+      "powerBreakdown": {
+        "basePower": 50,
+        "muskFreedomBoost": 50,
+        "total": 100
+      }
+    },
+    "playerId_2_card_c-3_power": {
+      "description": "Validate power of c-3 (拜登 Sleepy Joe - 左翼 type) with Biden's universal boost",
+      "expected": {
+        "cardId": "c-3",
+        "finalPower": 150
+      },
+      "powerBreakdown": {
+        "basePower": 110,
+        "bidenUniversalBoost": 40,
+        "total": 150
+      }
+    }
+  },
+  "errorCases": [
+    {
+      "description": "Test invalid zone placement - try to place card in invalid zone",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-12",
+        "zone": "invalid_zone"
+      },
+      "expectedError": "INVALID_ZONE"
+    },
+    {
+      "description": "Test zone compatibility - try to place non-compatible card in restricted zone",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-3",
+        "zone": "top"
+      },
+      "expectedError": "ZONE_COMPATIBILITY_ERROR"
+    },
+    {
+      "description": "Test occupied zone - try to place card in already occupied zone",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-12",
+        "zone": "top"
+      },
+      "expectedError": "ZONE_OCCUPIED_ERROR"
+    }
+  ],
+  "phaseTransitionTests": [
+    {
+      "description": "Test main phase completion after all required zones filled",
+      "expectedPhase": "SP_PHASE",
+      "condition": "All character zones and help zones filled for both players"
+    }
+  ],
+  "cardDefinitions": {
+    "c-16": {
+      "name": "朱克伯格",
+      "cardType": "character",
+      "gameType": "自由",
+      "power": 70,
+      "traits": ["富商"],
+      "effects": {
+        "description": "No special effects",
+        "rules": []
+      }
+    },
+    "c-15": {
+      "name": "中共特工",
+      "cardType": "character",
+      "gameType": "自由",
+      "power": 50,
+      "traits": ["平民"],
+      "effects": {
+        "description": "No special effects",
+        "rules": []
+      }
+    },
+    "c-3": {
+      "name": "拜登(Sleepy Joe)",
+      "cardType": "character",
+      "gameType": "左翼",
+      "power": 110,
+      "traits": ["Deep State"],
+      "effects": {
+        "description": "No special effects",
+        "rules": []
+      }
+    }
+  }
+}

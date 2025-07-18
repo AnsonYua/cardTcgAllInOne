@@ -1,0 +1,509 @@
+{
+  "gameId": "leader_s-5_vance_boosts_dynamic",
+  "description": "Dynamic test for Vance's triple boost effects: +40 power to Right-Wing (右翼), +20 power to Freedom (自由), +10 power to Economy (經濟) - 5 actions",
+  "testType": "dynamic",
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Vance_Player",
+        "deck": {
+          "hand": ["c-2", "c-16", "c-17", "h-1", "sp-1"],
+          "mainDeck": ["c-1", "c-3", "c-4", "c-5", "c-6", "c-7", "c-8", "c-9", "c-10", "c-11", "c-12", "c-13", "c-14", "c-15", "c-18", "h-2", "h-3", "h-4", "sp-2", "sp-3"],
+          "leader": ["s-5", "s-1", "s-2", "s-3"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 0,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Biden_Player",
+        "deck": {
+          "hand": ["c-3", "c-4", "c-5", "h-5", "sp-1"],
+          "mainDeck": ["c-6", "c-7", "c-10", "c-11", "c-1", "c-19", "c-20", "c-22", "c-23", "c-24", "c-25", "c-26", "c-27", "c-28", "c-18", "h-1", "h-2", "h-3", "sp-2", "sp-3"],
+          "leader": ["s-2", "s-1", "s-3", "s-4"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 0,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {
+          "id": "s-5",
+          "name": "范斯",
+          "cardType": "leader",
+          "gameType": "右翼",
+          "initialPoint": 75,
+          "level": 5,
+          "rarity": "epic",
+          "zoneCompatibility": {
+            "top": ["右翼", "經濟", "自由"],
+            "left": ["右翼", "經濟"],
+            "right": ["右翼", "自由", "愛國者"]
+          },
+          "effects": {
+            "description": "全部召喚出來的角色擁有右翼屬性能力值 +40。全部召喚出來的角色擁有自由屬性能力值 +20。全部召喚出來的角色擁有經濟屬性能力值 +10",
+            "rules": [
+              {
+                "id": "vance_rightwing_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "gameType",
+                      "value": "右翼"
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "powerBoost",
+                  "value": 40
+                }
+              },
+              {
+                "id": "vance_freedom_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "gameType",
+                      "value": "自由"
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "powerBoost",
+                  "value": 20
+                }
+              },
+              {
+                "id": "vance_economy_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": [
+                    {
+                      "type": "gameType",
+                      "value": "經濟"
+                    }
+                  ]
+                },
+                "effect": {
+                  "type": "powerBoost",
+                  "value": 10
+                }
+              }
+            ]
+          }
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      },
+      "playerId_2": {
+        "leader": {
+          "id": "s-2",
+          "name": "拜登",
+          "cardType": "leader",
+          "gameType": "左翼",
+          "initialPoint": 100,
+          "level": 7,
+          "rarity": "legendary",
+          "zoneCompatibility": {
+            "top": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "left": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+            "right": ["左翼", "自由", "經濟", "右翼", "愛國者"]
+          },
+          "effects": {
+            "description": "全部召喚出來的角色能力值 +40",
+            "rules": [
+              {
+                "id": "biden_all_boost",
+                "type": "continuous",
+                "trigger": {
+                  "event": "always",
+                  "conditions": []
+                },
+                "target": {
+                  "owner": "self",
+                  "zones": ["top", "left", "right"],
+                  "filters": []
+                },
+                "effect": {
+                  "type": "powerBoost",
+                  "value": 40
+                }
+              }
+            ]
+          }
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      }
+    },
+    "fieldEffects": {
+      "playerId_1": {
+        "zoneRestrictions": {
+          "TOP": ["右翼", "經濟", "自由"],
+          "LEFT": ["右翼", "經濟"],
+          "RIGHT": ["右翼", "自由", "愛國者"],
+          "HELP": ["ALL"],
+          "SP": ["ALL"]
+        },
+        "activeEffects": []
+      },
+      "playerId_2": {
+        "zoneRestrictions": {
+          "TOP": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+          "LEFT": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+          "RIGHT": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+          "HELP": ["ALL"],
+          "SP": ["ALL"]
+        },
+        "activeEffects": []
+      }
+    },
+    "gameEvents": [
+      {
+        "id": "event_main_phase_start",
+        "type": "PHASE_CHANGE",
+        "data": {
+          "phase": "MAIN_PHASE",
+          "currentPlayer": "playerId_1",
+          "message": "Draw phase acknowledged - main phase started!"
+        },
+        "timestamp": 1752759390571,
+        "expiresAt": 1752759393571,
+        "frontendProcessed": true
+      }
+    ],
+    "lastEventId": 2,
+    "playSequence": {
+      "globalSequence": 0,
+      "plays": []
+    }
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "description": "Player 1 (Vance) places 前總統特朗普(YMCA) (c-2) card in TOP zone (右翼 type)",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-2",
+        "zone": "top"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedEffects": [
+        "Vance's Right-Wing boost applies +40 power to 右翼 type",
+        "Card's own Right-Wing boost (+10) also applies"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Player 2 (Biden) places 拜登(Sleepy Joe) (c-3) card in TOP zone (左翼 type)",
+      "playerId": "playerId_2",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-3",
+        "zone": "top"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedEffects": [
+        "Biden's universal +40 power boost applies"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Player 1 (Vance) places 貝索斯 (c-17) card in LEFT zone (經濟 type) - allowed in LEFT",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-17",
+        "zone": "left"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedEffects": [
+        "Vance's Economy boost applies +10 power to 經濟 type"
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Player 2 (Biden) places 拜登 2020 (c-4) card in LEFT zone (左翼 type)",
+      "playerId": "playerId_2",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-4",
+        "zone": "left"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedEffects": [
+        "Biden's universal +40 power boost applies"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Player 1 (Vance) places 朱克伯格 (c-16) card in RIGHT zone (自由 type) - allowed in RIGHT",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-16",
+        "zone": "right"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedEffects": [
+        "Vance's Freedom boost applies +20 power to 自由 type"
+      ]
+    }
+  ],
+  "expectedStateChanges": {
+    "zones.playerId_1.top.length": 1,
+    "zones.playerId_1.left.length": 1,
+    "zones.playerId_1.right.length": 1,
+    "zones.playerId_2.top.length": 1,
+    "zones.playerId_2.left.length": 1,
+    "players.playerId_1.deck.hand.length": 4,
+    "players.playerId_2.deck.hand.length": 6,
+    "playSequence.plays.length": 5,
+    "currentTurn": 2.5,
+    "currentPlayer": "playerId_2"
+  },
+  "validationPoints": {
+    "playerId_1_card_c-2_power": {
+      "description": "Validate power of c-2 (前總統特朗普(YMCA) - 右翼 type) with Vance's right-wing boost and its own boost",
+      "expected": {
+        "cardId": "c-2",
+        "finalPower": 130
+      },
+      "powerBreakdown": {
+        "basePower": 80,
+        "vanceRightWingBoost": 40,
+        "ownRightWingBoost": 10,
+        "total": 130,
+        "note": "Both Vance's leader boost and card's own boost apply to 右翼 cards"
+      }
+    },
+    "playerId_1_card_c-17_power": {
+      "description": "Validate power of c-17 (貝索斯 - 經濟 type) with Vance's economy boost in LEFT zone",
+      "expected": {
+        "cardId": "c-17",
+        "finalPower": 70
+      },
+      "powerBreakdown": {
+        "basePower": 60,
+        "vanceEconomyBoost": 10,
+        "total": 70
+      }
+    },
+    "playerId_1_card_c-16_power": {
+      "description": "Validate power of c-16 (朱克伯格 - 自由 type) with Vance's freedom boost in RIGHT zone",
+      "expected": {
+        "cardId": "c-16",
+        "finalPower": 90
+      },
+      "powerBreakdown": {
+        "basePower": 70,
+        "vanceFreedomBoost": 20,
+        "total": 90
+      }
+    },
+    "playerId_2_card_c-3_power": {
+      "description": "Validate power of c-3 (拜登 Sleepy Joe - 左翼 type) with Biden's universal boost",
+      "expected": {
+        "cardId": "c-3",
+        "finalPower": 150
+      },
+      "powerBreakdown": {
+        "basePower": 110,
+        "bidenUniversalBoost": 40,
+        "total": 150
+      }
+    },
+    "playerId_2_card_c-4_power": {
+      "description": "Validate power of c-4 (拜登 2020 - 左翼 type) with Biden's universal boost",
+      "expected": {
+        "cardId": "c-4",
+        "finalPower": 160
+      },
+      "powerBreakdown": {
+        "basePower": 120,
+        "bidenUniversalBoost": 40,
+        "total": 160
+      }
+    }
+  },
+  "errorCases": [
+    {
+      "description": "Test invalid zone placement - try to place card in invalid zone",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "h-1",
+        "zone": "invalid_zone"
+      },
+      "expectedError": "INVALID_ZONE"
+    },
+    {
+      "description": "Test zone compatibility - try to place 愛國者 card in LEFT zone (not allowed for Vance)",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-1",
+        "zone": "left"
+      },
+      "expectedError": "ZONE_COMPATIBILITY_ERROR"
+    },
+    {
+      "description": "Test occupied zone - try to place card in already occupied zone",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "h-1",
+        "zone": "top"
+      },
+      "expectedError": "ZONE_OCCUPIED_ERROR"
+    }
+  ],
+  "phaseTransitionTests": [
+    {
+      "description": "Test main phase progression after character zone placements",
+      "expectedPhase": "MAIN_PHASE",
+      "condition": "Still in main phase until all required zones filled for both players"
+    }
+  ],
+  "cardDefinitions": {
+    "c-2": {
+      "name": "前總統特朗普(YMCA)",
+      "cardType": "character",
+      "gameType": "右翼",
+      "power": 80,
+      "traits": ["特朗普家族"],
+      "effects": {
+        "description": "我方場上全部右翼類型的角色卡 原能力值加 +10",
+        "rules": [
+          {
+            "id": "trump_ymca_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "gameType",
+                  "value": "右翼"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 10
+            }
+          }
+        ]
+      }
+    },
+    "c-16": {
+      "name": "朱克伯格",
+      "cardType": "character",
+      "gameType": "自由",
+      "power": 70,
+      "traits": ["富商"],
+      "effects": {
+        "description": "No special effects",
+        "rules": []
+      }
+    },
+    "c-17": {
+      "name": "貝索斯",
+      "cardType": "character",
+      "gameType": "經濟",
+      "power": 60,
+      "traits": ["富商"],
+      "effects": {
+        "description": "No special effects",
+        "rules": []
+      }
+    },
+    "c-3": {
+      "name": "拜登(Sleepy Joe)",
+      "cardType": "character",
+      "gameType": "左翼",
+      "power": 110,
+      "traits": ["Deep State"],
+      "effects": {
+        "description": "No special effects",
+        "rules": []
+      }
+    },
+    "c-4": {
+      "name": "拜登 2020",
+      "cardType": "character",
+      "gameType": "左翼",
+      "power": 120,
+      "traits": ["政治人物"],
+      "effects": {
+        "description": "No special effects",
+        "rules": []
+      }
+    }
+  }
+}

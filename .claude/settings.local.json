@@ -15,7 +15,10 @@
       "Bash(npm run test:simple:*)",
       "Bash(npm run test:dynamic:*)",
       "Bash(mv:*)",
-      "Bash(VERBOSE_TESTS=1 npm run test:dynamic run leader_s-3_musk_doge_boost_dynamic.json)"
+      "Bash(VERBOSE_TESTS=1 npm run test:dynamic run leader_s-3_musk_doge_boost_dynamic.json)",
+      "Bash(npm run:*)",
+      "Bash(curl:*)",
+      "Bash(echo:*)"
     ],
     "deny": []
   }
