@@ -84,9 +84,11 @@ Each player's turn follows this sequence:
 
 1. **Draw Phase**: Current player draws 1 card from deck
 2. **Draw Acknowledgment**: Player must acknowledge the draw to proceed
-3. **Main Phase**: Player places cards from hand to zones
-4. **End Turn**: Turn switches to next player
+3. **Main Phase**: Player places **ONE** card from hand to zones
+4. **Automatic Turn End**: Turn **automatically** switches to next player after card placement
 5. **Repeat**: Next player enters Draw Phase
+
+**Critical Turn Rule**: After placing any card (character, help, or SP), the current player's turn immediately ends and switches to the opponent. Players cannot place multiple cards in a single turn.
 
 ### Phase Types
 - **DRAW_PHASE**: Player draws a card and must acknowledge

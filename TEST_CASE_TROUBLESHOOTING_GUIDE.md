@@ -35,9 +35,9 @@ Error: It's not your turn! Current player: playerId_2
 ```
 
 **Expected State Updates**:
-- `currentTurn` increases by 0.5 for each action
+- `currentTurn` increases by 1 for each turn switch (after card placement)
 - `currentPlayer` alternates between players
-- After 3 actions: `currentTurn: 1.5`, `currentPlayer: "playerId_2"`
+- After 3 actions: `currentTurn: 3`, `currentPlayer: "playerId_2"`
 
 ### 2. Zone Compatibility Errors
 

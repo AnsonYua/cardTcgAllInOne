@@ -14,8 +14,8 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": ["h-1", "h-5", "sp-1", "sp-6", "c-1"],
-          "mainDeck": ["c-2", "c-3", "c-4", "c-5", "c-6", "c-7", "c-8", "c-9", "c-10", "c-11", "c-12", "c-13", "c-14", "c-15", "h-2", "h-3", "h-4", "sp-2", "sp-3"],
+          "hand": ["h-5", "sp-1", "c-1", "c-2", "c-3"],
+          "mainDeck": ["c-4", "c-5", "c-6", "c-7", "c-8", "c-9", "c-10", "c-11", "c-12", "c-13", "c-14", "c-15", "h-1", "h-2", "h-3", "h-4", "sp-2", "sp-3"],
           "leader": ["s-1", "s-2", "s-3", "s-4"],
           "currentLeaderIdx": 0
         },
@@ -28,8 +28,8 @@
         "id": "playerId_2",
         "name": "Player 2",
         "deck": {
-          "hand": ["h-8", "h-12", "sp-8", "sp-9", "c-21"],
-          "mainDeck": ["c-22", "c-23", "c-24", "c-25", "c-26", "c-27", "c-28", "c-1", "c-2", "c-3", "c-4", "c-5", "c-6", "c-7", "h-1", "h-2", "h-3", "sp-1", "sp-2"],
+          "hand": ["h-1", "sp-8", "c-21", "c-22", "c-23"],
+          "mainDeck": ["c-24", "c-25", "c-26", "c-27", "c-28", "c-1", "c-2", "c-3", "c-4", "c-5", "c-6", "c-7", "h-8", "h-12", "sp-9", "sp-1", "sp-2"],
           "leader": ["s-6", "s-2", "s-3", "s-4"],
           "currentLeaderIdx": 0
         },
@@ -155,7 +155,7 @@
   "playerActions": [
     {
       "step": 1,
-      "description": "Player 1 places c-1 (特朗普) in TOP zone - should trigger zone restriction due to Trump leader",
+      "description": "Player 1 attempts to place c-1 (特朗普) in TOP zone - should trigger zone restriction due to Trump leader",
       "playerId": "playerId_1",
       "action": {
         "actionType": "PlayCard",
@@ -166,11 +166,16 @@
         "success": false,
         "error": "ZONE_COMPATIBILITY_ERROR",
         "reason": "c-1 is 愛國者 type, but Trump leader only allows [右翼, 自由, 經濟] in TOP zone"
+      },
+      "expectedStateChanges": {
+        "currentPlayer": "playerId_1",
+        "currentTurn": 0,
+        "turnNotAdvanced": true
       }
     },
     {
       "step": 2,
-      "description": "Player 1 places h-5 (失智老人) in HELP zone - grants zone placement freedom",
+      "description": "Player 1 places h-5 (失智老人) in HELP zone - grants zone placement freedom and ends turn",
       "playerId": "playerId_1",
       "action": {
         "actionType": "PlayCard",
@@ -186,32 +191,17 @@
         "h-5 grants zonePlacementFreedom to player 1",
         "h-5 grants +20 power boost to all player 1 cards",
         "h-5 has immuneToNeutralization protection"
-      ]
+      ],
+      "expectedStateChanges": {
+        "currentPlayer": "playerId_2",
+        "currentTurn": 1,
+        "turnSwitched": true,
+        "zones.playerId_1.help.length": 1
+      }
     },
     {
       "step": 3,
-      "description": "Player 1 places c-1 (特朗普) in TOP zone - should now succeed due to zone freedom",
-      "playerId": "playerId_1",
-      "action": {
-        "actionType": "PlayCard",
-        "cardId": "c-1",
-        "zone": "top"
-      },
-      "expectedResult": {
-        "success": true,
-        "noError": true,
-        "cardPlaced": true
-      },
-      "expectedEffects": [
-        "c-1 placed despite zone restriction due to h-5 zone freedom",
-        "c-1 receives +45 power from Trump leader (愛國者 type)",
-        "c-1 receives +20 power from h-5 universal boost",
-        "c-1 provides +10 trait boost to other 特朗普家族 cards"
-      ]
-    },
-    {
-      "step": 4,
-      "description": "Player 2 places h-1 (Deep State) in HELP zone - neutralizes opponent effects",
+      "description": "Player 2 places h-1 (Deep State) in HELP zone - neutralizes opponent effects and ends turn",
       "playerId": "playerId_2",
       "action": {
         "actionType": "PlayCard",
@@ -227,11 +217,44 @@
         "h-1 neutralizes all opponent Help and SP effects",
         "h-5 effects should be neutralized EXCEPT zone freedom (immune)",
         "h-5 power boost should be disabled but zone freedom remains"
-      ]
+      ],
+      "expectedStateChanges": {
+        "currentPlayer": "playerId_1",
+        "currentTurn": 2,
+        "turnSwitched": true,
+        "zones.playerId_2.help.length": 1
+      }
+    },
+    {
+      "step": 4,
+      "description": "Player 1 places c-1 (特朗普) in TOP zone - should now succeed due to zone freedom immunity",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-1",
+        "zone": "top"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedEffects": [
+        "c-1 placed despite zone restriction due to h-5 zone freedom immunity",
+        "c-1 receives +45 power from Trump leader (愛國者 type)",
+        "c-1 does NOT receive +20 power from h-5 (neutralized)",
+        "c-1 provides +10 trait boost to other 特朗普家族 cards"
+      ],
+      "expectedStateChanges": {
+        "currentPlayer": "playerId_2",
+        "currentTurn": 3,
+        "turnSwitched": true,
+        "zones.playerId_1.top.length": 1
+      }
     },
     {
       "step": 5,
-      "description": "Player 2 places c-21 (奧巴馬) in TOP zone",
+      "description": "Player 2 places c-21 (奧巴馬) in TOP zone and ends turn",
       "playerId": "playerId_2",
       "action": {
         "actionType": "PlayCard",
@@ -246,11 +269,103 @@
       "expectedEffects": [
         "c-21 provides +50 single target boost (will target c-1 as first valid target)",
         "c-21 receives +35 power from Musk leader (左翼 type matches 經濟 restriction)"
-      ]
+      ],
+      "expectedStateChanges": {
+        "currentPlayer": "playerId_1",
+        "currentTurn": 4,
+        "turnSwitched": true,
+        "zones.playerId_2.top.length": 1
+      }
     },
     {
       "step": 6,
-      "description": "Player 1 places sp-1 (天選之人) in SP zone - conditional neutralization",
+      "description": "Player 1 places additional character cards to fill remaining zones",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-2",
+        "zone": "left"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedStateChanges": {
+        "currentPlayer": "playerId_2",
+        "currentTurn": 5,
+        "turnSwitched": true,
+        "zones.playerId_1.left.length": 1
+      }
+    },
+    {
+      "step": 7,
+      "description": "Player 2 places additional character cards to fill remaining zones",
+      "playerId": "playerId_2",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-22",
+        "zone": "left"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedStateChanges": {
+        "currentPlayer": "playerId_1",
+        "currentTurn": 6,
+        "turnSwitched": true,
+        "zones.playerId_2.left.length": 1
+      }
+    },
+    {
+      "step": 8,
+      "description": "Player 1 fills final character zone",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-3",
+        "zone": "right"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedStateChanges": {
+        "currentPlayer": "playerId_2",
+        "currentTurn": 7,
+        "turnSwitched": true,
+        "zones.playerId_1.right.length": 1
+      }
+    },
+    {
+      "step": 9,
+      "description": "Player 2 fills final character zone",
+      "playerId": "playerId_2",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-23",
+        "zone": "right"
+      },
+      "expectedResult": {
+        "success": true,
+        "noError": true,
+        "cardPlaced": true
+      },
+      "expectedStateChanges": {
+        "currentPlayer": "playerId_1",
+        "currentTurn": 8,
+        "turnSwitched": true,
+        "zones.playerId_2.right.length": 1,
+        "mainPhaseComplete": true,
+        "advanceToSPPhase": true
+      }
+    },
+    {
+      "step": 10,
+      "description": "SP Phase: Player 1 places sp-1 (天選之人) face-down in SP zone",
       "playerId": "playerId_1",
       "action": {
         "actionType": "PlayCardBack",
@@ -265,11 +380,17 @@
       "expectedEffects": [
         "sp-1 placed face-down in SP zone",
         "sp-1 effect will trigger when revealed if 特朗普 is in play"
-      ]
+      ],
+      "expectedStateChanges": {
+        "currentPlayer": "playerId_2",
+        "currentTurn": 9,
+        "turnSwitched": true,
+        "zones.playerId_1.sp.length": 1
+      }
     },
     {
-      "step": 7,
-      "description": "Player 2 places sp-8 (反特斯拉示威) in SP zone - combo disruption",
+      "step": 11,
+      "description": "SP Phase: Player 2 places sp-8 (反特斯拉示威) face-down in SP zone - triggers battle",
       "playerId": "playerId_2",
       "action": {
         "actionType": "PlayCardBack",
@@ -283,21 +404,33 @@
       },
       "expectedEffects": [
         "sp-8 placed face-down in SP zone",
+        "All SP zones filled - triggers automatic SP reveal and battle",
         "sp-8 will disable combos for Player 2 (Musk leader)",
         "sp-8 will nerf Doge trait cards"
-      ]
+      ],
+      "expectedStateChanges": {
+        "phase": "BATTLE_PHASE",
+        "zones.playerId_2.sp.length": 1,
+        "battleTriggered": true
+      }
     }
   ],
   "expectedStateChanges": {
     "zones.playerId_1.help.length": 1,
     "zones.playerId_1.top.length": 1,
+    "zones.playerId_1.left.length": 1,
+    "zones.playerId_1.right.length": 1,
     "zones.playerId_1.sp.length": 1,
     "zones.playerId_2.help.length": 1,
     "zones.playerId_2.top.length": 1,
+    "zones.playerId_2.left.length": 1,
+    "zones.playerId_2.right.length": 1,
     "zones.playerId_2.sp.length": 1,
-    "players.playerId_1.deck.hand.length": 2,
-    "players.playerId_2.deck.hand.length": 2,
-    "playSequence.plays.length": 6
+    "players.playerId_1.deck.hand.length": 0,
+    "players.playerId_2.deck.hand.length": 0,
+    "playSequence.plays.length": 11,
+    "phase": "BATTLE_PHASE",
+    "currentTurn": 10
   },
   "validationPoints": {
     "zone_freedom_validation": {
@@ -333,10 +466,10 @@
       }
     },
     "power_calculation_with_effects": {
-      "description": "Validate power calculation with multiple utility effects",
+      "description": "Validate power calculation with multiple utility effects after proper turn alternation",
       "expected": {
-        "c1FinalPower": 155,
-        "c21FinalPower": 165
+        "c1FinalPower": 205,
+        "c21FinalPower": 115
       },
       "powerBreakdown": {
         "c1": {
@@ -345,13 +478,14 @@
           "h5PowerBoost": 0,
           "obamaBoost": 50,
           "characterSelfBoost": 10,
-          "note": "h-5 boost neutralized by h-1, but Obama boost still applies"
+          "total": 205,
+          "note": "h-5 boost neutralized by h-1, but Obama boost still applies and character self-boost applies"
         },
         "c21": {
           "basePower": 80,
           "muskLeaderBoost": 35,
           "total": 115,
-          "note": "Obama doesn't boost self, only other cards"
+          "note": "Obama doesn't boost self, only targets other cards"
         }
       }
     }

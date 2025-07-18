@@ -856,15 +856,16 @@ class mozGamePlay {
 
     async startNewTurn(gameEnvInput){
         var gameEnv = gameEnvInput;
-        gameEnv["currentTurn"] = gameEnv["currentTurn"] + 0.5;
+        gameEnv["currentTurn"] = gameEnv["currentTurn"] + 1;
         const playerArr = mozGamePlay.getPlayerFromGameEnv(gameEnv)
-        gameEnv["currentPlayer"] = playerArr[gameEnv["firstPlayer"]];
-        if(gameEnv["currentTurn"] * 10 % 10 == 5){
-            if(gameEnv["firstPlayer"] == 0){
-                gameEnv["currentPlayer"] = playerArr[1];
-            }else{
-                gameEnv["currentPlayer"] = playerArr[0];
-            }
+        
+        // Alternate between players based on turn number
+        // Turn 1,3,5,7... = firstPlayer, Turn 2,4,6,8... = other player
+        if(gameEnv["currentTurn"] % 2 === 1){
+            gameEnv["currentPlayer"] = playerArr[gameEnv["firstPlayer"]];
+        }else{
+            const otherPlayerIdx = gameEnv["firstPlayer"] === 0 ? 1 : 0;
+            gameEnv["currentPlayer"] = playerArr[otherPlayerIdx];
         }
         
         // Transition to DRAW_PHASE for the new turn player

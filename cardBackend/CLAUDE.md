@@ -475,6 +475,30 @@ Having duplicate fields caused confusion and potential sync issues.
 - Check `gameEnv.phase` for current game state
 - Frontend uses single `phase` field for all phase-related logic
 
+## Turn Mechanics System (January 2025)
+
+### Core Turn Rules
+The game implements strict turn-based mechanics where each card placement automatically ends the current player's turn:
+
+**Turn Switching Logic:**
+- Every card placement (PlayCard/PlayCardBack) triggers `shouldUpdateTurn()`
+- Turn ends immediately after successful card placement
+- System automatically switches to next player via `startNewTurn()`
+- New player enters DRAW_PHASE and draws 1 card automatically
+
+**Turn Counter System:**
+- Uses integer-based turn counter (`currentTurn + 1`)
+- Odd turns (1,3,5...) = first player, Even turns (2,4,6...) = second player
+- Eliminates complex fractional math for better reliability and debugging
+
+**Implementation Flow:**
+1. `processAction()` → Card placement validation and execution
+2. `shouldUpdateTurn()` → Check if player played a card this turn
+3. `startNewTurn()` → Switch players, increment turn, draw card, set DRAW_PHASE
+4. Player must acknowledge draw before proceeding to MAIN_PHASE
+
+**Critical Rule**: Players cannot place multiple cards in a single turn. Each card placement immediately ends the turn and switches to the opponent.
+
 ## Development Notes & Recent Updates
 
 ### Key Implementation Guidelines

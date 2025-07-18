@@ -39,24 +39,30 @@ This document provides comprehensive documentation for all utility card effect t
 
 #### `utility_comprehensive_test.json`
 - **Test Type**: Dynamic (action-based)
-- **Description**: Tests multiple utility effects including neutralization, zone freedom, combo disruption, and power modifications
+- **Description**: Tests multiple utility effects including neutralization, zone freedom, combo disruption, and power modifications with proper turn alternation
 - **Setup**:
   - **Player 1**: Trump (s-1) - 愛國者 leader with zone restrictions
   - **Player 2**: Musk (s-6) - 經濟 leader
-- **Actions Tested**:
+- **Actions Tested** (with proper turn alternation):
   1. **Step 1**: Player 1 attempts to place c-1 (愛國者) in TOP zone - should fail due to zone restriction
-  2. **Step 2**: Player 1 places h-5 (失智老人) - grants zone freedom + power boost
-  3. **Step 3**: Player 1 places c-1 in TOP zone - should succeed due to zone freedom
-  4. **Step 4**: Player 2 places h-1 (Deep State) - neutralizes opponent effects
-  5. **Step 5**: Player 2 places c-21 (奧巴馬) - provides single target boost
-  6. **Step 6**: Player 1 places sp-1 (天選之人) face-down - conditional neutralization
-  7. **Step 7**: Player 2 places sp-8 (反特斯拉示威) face-down - combo disruption
+  2. **Step 2**: Player 1 places h-5 (失智老人) - grants zone freedom + power boost, **turn ends**
+  3. **Step 3**: Player 2 places h-1 (Deep State) - neutralizes opponent effects, **turn ends**
+  4. **Step 4**: Player 1 places c-1 in TOP zone - should succeed due to zone freedom immunity, **turn ends**
+  5. **Step 5**: Player 2 places c-21 (奧巴馬) - provides single target boost, **turn ends**
+  6. **Steps 6-9**: Players alternate filling remaining character zones (LEFT/RIGHT)
+  7. **Step 10**: Player 1 places sp-1 (天選之人) face-down - conditional neutralization, **turn ends**
+  8. **Step 11**: Player 2 places sp-8 (反特斯拉示威) face-down - combo disruption, **triggers battle**
+- **Turn Mechanics**:
+  - **Every card placement ends the current player's turn**
+  - **Turns alternate between players after each action**
+  - **Turn counter increments with each turn switch**
+  - **Battle triggers when all zones are filled**
 - **Power Validation**:
-  - `c-1` final power: **155** (100 base + 45 Trump boost + 10 self-boost + 0 h-5 neutralized)
-  - `c-21` final power: **165** (80 base + 35 Musk boost + 50 self-boost)
+  - `c-1` final power: **205** (100 base + 45 Trump boost + 10 self-boost + 50 Obama boost + 0 h-5 neutralized)
+  - `c-21` final power: **115** (80 base + 35 Musk boost, Obama doesn't boost self)
 - **Effect Interactions**:
-  - Zone freedom overrides leader restrictions
-  - Neutralization disables power boosts but not immunity
+  - Zone freedom overrides leader restrictions due to immunity
+  - Neutralization disables power boosts but not immunity effects
   - Combo disruption affects Musk leader specifically
 - **Test Status**: ✅ **READY**
 
@@ -231,6 +237,36 @@ All utility effect tests follow this structure:
 6. **Final Calculation**: Validate effects that apply after combo calculation
 7. **Resource Changes**: Test hand/deck modifications from utility effects
 8. **State Management**: Verify game state updates for all effect types
+9. **Turn Mechanics**: Validate proper turn alternation after card placement
+
+### Turn Mechanics in Testing
+
+**Critical Game Rule**: After any card placement (Help, Character, or SP), the current player's turn **automatically ends** and switches to the next player.
+
+**Test Case Requirements**:
+- **Turn Alternation**: Each step must alternate between players
+- **Turn Counter**: `currentTurn` increments with each turn switch
+- **State Validation**: `expectedStateChanges` must include turn progression
+- **Realistic Flow**: Test scenarios must reflect actual game turn mechanics
+
+**Example Turn Flow**:
+```
+Step 1: Player 1 plays h-5 → Turn ends → Player 2's turn
+Step 2: Player 2 plays h-1 → Turn ends → Player 1's turn  
+Step 3: Player 1 plays c-1 → Turn ends → Player 2's turn
+...and so on
+```
+
+**Invalid Test Pattern** (corrected):
+```json
+// WRONG: Same player playing multiple cards consecutively
+{ "step": 1, "playerId": "playerId_1", "cardId": "h-5" },
+{ "step": 2, "playerId": "playerId_1", "cardId": "c-1" }  // ❌ Turn should have ended
+
+// CORRECT: Proper turn alternation
+{ "step": 1, "playerId": "playerId_1", "cardId": "h-5" },
+{ "step": 2, "playerId": "playerId_2", "cardId": "h-1" }  // ✅ Turn switched
+```
 
 ---
 
