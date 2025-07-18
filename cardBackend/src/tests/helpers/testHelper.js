@@ -57,6 +57,10 @@ class TestHelper {
         let filePath;
         if (filename.startsWith('leader_')) {
             filePath = path.join(this.testScenariosPath, 'LeaderCase', filename);
+        } else if (filename.startsWith('utility_') || filename.startsWith('h1_') || filename.startsWith('targetCount_')) {
+            filePath = path.join(this.testScenariosPath, 'UtilityEffects', filename);
+        } else if (filename.startsWith('character_')) {
+            filePath = path.join(this.testScenariosPath, 'CharacterCase', filename);
         } else {
             filePath = path.join(this.testScenariosPath, filename);
         }
