@@ -17,7 +17,7 @@ class InteractiveTestRunner {
         });
         
         this.scenarios = [
-            { file: 'leader_s-1_trump_boost_corrected.json', name: 'Trump Standard Boost (Right-Wing & Patriot +45)', leaders: 'Trump vs Biden' },
+            { file: 'leader_s-1_trump_boost.json', name: 'Trump Standard Boost (Right-Wing & Patriot +45)', leaders: 'Trump vs Biden' },
             { file: 'leader_s-1_trump_vs_powell_nerf.json', name: 'Trump vs Powell (Economy → 0)', leaders: 'Trump vs Powell' },
             { file: 'leader_s-2_biden_boost.json', name: 'Biden Universal Boost (All cards +40)', leaders: 'Biden vs Trump' },
             { file: 'leader_s-3_musk_freedom_boost.json', name: 'Musk Freedom Boost (Freedom +50)', leaders: 'Musk vs Biden' },

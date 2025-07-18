@@ -11,7 +11,7 @@ npm run test:simple list
 
 ### 2. Validate Test Scenarios (Recommended - Works without backend)
 ```bash
-npm run test:simple validate leader_s-1_trump_boost_corrected.json --verbose
+npm run test:simple validate leader_s-1_trump_boost.json --verbose
 ```
 
 ### 3. Run Interactive Test Runner (Requires backend)
@@ -26,13 +26,13 @@ npm run test:all
 
 ### 5. Run Single Test Case (Requires backend)
 ```bash
-npm run test:run leader_s-1_trump_boost_corrected.json
+npm run test:run leader_s-1_trump_boost.json
 ```
 
 ## Available Test Cases
 
 ### Trump (s-1) Tests
-1. **`leader_s-1_trump_boost_corrected.json`**
+1. **`leader_s-1_trump_boost.json`**
    - **Effect**: Right-Wing and Patriot cards get +45 power
    - **Expected**: c-1 (Patriot) = 155 power, c-2 (Right-Wing) = 145 power
 
@@ -94,8 +94,8 @@ npm run test:simple validate <filename>                       # Validate scenari
 npm run test:simple validate <filename> --verbose             # Validate with details
 
 # Examples:
-npm run test:simple validate leader_s-1_trump_boost_corrected.json
-npm run test:simple validate leader_s-1_trump_boost_corrected.json --verbose
+npm run test:simple validate leader_s-1_trump_boost.json
+npm run test:simple validate leader_s-1_trump_boost.json --verbose
 ```
 
 ### Interactive Mode (Requires backend)
@@ -124,15 +124,15 @@ npm run test:run <filename>
 npm run test:run <filename> --verbose
 
 # Examples:
-npm run test:run leader_s-1_trump_boost_corrected.json
-npm run test:run leader_s-1_trump_boost_corrected.json --verbose
+npm run test:run leader_s-1_trump_boost.json
+npm run test:run leader_s-1_trump_boost.json --verbose
 ```
 
 ### Direct Node Commands
 ```bash
 # Using node directly
 node src/tests/runSingleTest.js list
-node src/tests/runSingleTest.js run leader_s-1_trump_boost_corrected.json
+node src/tests/runSingleTest.js run leader_s-1_trump_boost.json
 node src/tests/runSingleTest.js all --verbose
 ```
 
@@ -140,7 +140,7 @@ node src/tests/runSingleTest.js all --verbose
 
 ### Successful Test Output
 ```
-🧪 Running: leader_s-1_trump_boost_corrected.json
+🧪 Running: leader_s-1_trump_boost.json
 ==================================================
 
 📊 Validation Results:
@@ -154,7 +154,7 @@ node src/tests/runSingleTest.js all --verbose
 
 ### Failed Test Output
 ```
-🧪 Running: leader_s-1_trump_boost_corrected.json
+🧪 Running: leader_s-1_trump_boost.json
 ==================================================
 
 📊 Validation Results:
@@ -209,7 +209,7 @@ npm run test:list
 
 2. **Run specific failing tests** to debug issues:
    ```bash
-   npm run test:run leader_s-1_trump_boost_corrected.json --verbose
+   npm run test:run leader_s-1_trump_boost.json --verbose
    ```
 
 3. **Run all tests** to validate overall functionality:

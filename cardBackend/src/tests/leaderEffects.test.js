@@ -118,7 +118,7 @@ function validatePowerCalculations(gameEnv, validationPoints) {
 describe('Leader Effects Integration Tests', () => {
     describe('Trump (s-1) Leader Effects', () => {
         test('Trump boost effect - Right-Wing and Patriot cards get +45 power', async () => {
-            const scenario = await loadTestScenario('leader_s-1_trump_boost_corrected.json');
+            const scenario = await loadTestScenario('leader_s-1_trump_boost.json');
             const { gameEnv, validationPoints } = await runTestScenario(scenario);
             
             const validationResults = validatePowerCalculations(gameEnv, validationPoints);

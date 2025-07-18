@@ -96,7 +96,7 @@ class SingleTestRunner {
         console.log('🚀 Running all test scenarios...\n');
         
         const scenarioFiles = [
-            'leader_s-1_trump_boost_corrected.json',
+            'leader_s-1_trump_boost.json',
             'leader_s-1_trump_vs_powell_nerf.json',
             'leader_s-2_biden_boost.json',
             'leader_s-3_musk_freedom_boost.json',
@@ -204,7 +204,7 @@ async function main() {
                 if (!scenarioFile) {
                     console.error('❌ Please specify a scenario file');
                     console.log('Usage: node runSingleTest.js run <scenario-file> [--verbose]');
-                    console.log('Example: node runSingleTest.js run leader_s-1_trump_boost_corrected.json --verbose');
+                    console.log('Example: node runSingleTest.js run leader_s-1_trump_boost.json --verbose');
                     process.exit(1);
                 }
                 await runner.runSingleScenario(scenarioFile, verbose);
@@ -220,8 +220,8 @@ async function main() {
                 console.log('');
                 console.log('Examples:');
                 console.log('  node runSingleTest.js list');
-                console.log('  node runSingleTest.js run leader_s-1_trump_boost_corrected.json');
-                console.log('  node runSingleTest.js run leader_s-1_trump_boost_corrected.json --verbose');
+                console.log('  node runSingleTest.js run leader_s-1_trump_boost.json');
+                console.log('  node runSingleTest.js run leader_s-1_trump_boost.json --verbose');
                 console.log('  node runSingleTest.js all --verbose');
                 break;
         }

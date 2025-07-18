@@ -15,7 +15,7 @@ describe('Leader Effects Integration Tests', () => {
 
     describe('Trump (s-1) Leader Effects', () => {
         test('Trump standard boost - Right-Wing and Patriot cards get +45 power', async () => {
-            const result = await testHelper.runTestScenario('leader_s-1_trump_boost_corrected.json');
+            const result = await testHelper.runTestScenario('leader_s-1_trump_boost.json');
             const { gameEnv, validationPoints } = result;
             
             // Verify game state was injected correctly
@@ -263,7 +263,7 @@ describe('Leader Effects Integration Tests', () => {
         test('should complete scenario loading within reasonable time', async () => {
             const startTime = Date.now();
             
-            await testHelper.runTestScenario('leader_s-1_trump_boost_corrected.json');
+            await testHelper.runTestScenario('leader_s-1_trump_boost.json');
             
             const endTime = Date.now();
             const duration = endTime - startTime;

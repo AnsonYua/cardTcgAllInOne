@@ -18,7 +18,7 @@ class QuickTestRunner {
         console.log('📋 Available Test Scenarios:\n');
         
         const scenarios = [
-            { file: 'leader_s-1_trump_boost_corrected.json', name: 'Trump Standard Boost', desc: 'Right-Wing & Patriot +45 power' },
+            { file: 'leader_s-1_trump_boost.json', name: 'Trump Standard Boost', desc: 'Right-Wing & Patriot +45 power' },
             { file: 'leader_s-1_trump_vs_powell_nerf.json', name: 'Trump vs Powell', desc: 'Economy cards → 0 power' },
             { file: 'leader_s-2_biden_boost.json', name: 'Biden Universal', desc: 'All cards +40 power' },
             { file: 'leader_s-3_musk_freedom_boost.json', name: 'Musk Freedom', desc: 'Freedom cards +50 power' },
@@ -42,7 +42,7 @@ class QuickTestRunner {
         
         console.log('💡 Usage:');
         console.log('   node src/tests/quickTest.js run <filename>');
-        console.log('   node src/tests/quickTest.js run leader_s-1_trump_boost_corrected.json');
+        console.log('   node src/tests/quickTest.js run leader_s-1_trump_boost.json');
     }
 
     async runScenario(scenarioFile, verbose = false) {
@@ -168,7 +168,7 @@ async function main() {
             if (!scenarioFile) {
                 console.error('❌ Please specify a scenario file');
                 console.log('Usage: node src/tests/quickTest.js run <scenario-file> [--verbose]');
-                console.log('Example: node src/tests/quickTest.js run leader_s-1_trump_boost_corrected.json --verbose');
+                console.log('Example: node src/tests/quickTest.js run leader_s-1_trump_boost.json --verbose');
                 return;
             }
             
@@ -187,8 +187,8 @@ async function main() {
             console.log('');
             console.log('Examples:');
             console.log('  node src/tests/quickTest.js list');
-            console.log('  node src/tests/quickTest.js run leader_s-1_trump_boost_corrected.json');
-            console.log('  node src/tests/quickTest.js run leader_s-1_trump_boost_corrected.json --verbose');
+            console.log('  node src/tests/quickTest.js run leader_s-1_trump_boost.json');
+            console.log('  node src/tests/quickTest.js run leader_s-1_trump_boost.json --verbose');
             break;
     }
 }
