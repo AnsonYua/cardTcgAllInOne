@@ -150,7 +150,7 @@ class SingleTestRunner {
         console.log('📋 Available Test Scenarios:\n');
         
         try {
-            const scenariosPath = path.join(__dirname, '../../../shared/testScenarios/gameStates');
+            const scenariosPath = path.join(__dirname, '../../../shared/testScenarios/gameStates/LeaderCase');
             const files = await fs.readdir(scenariosPath);
             const jsonFiles = files.filter(file => file.endsWith('.json'));
             

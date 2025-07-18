@@ -11,7 +11,7 @@ const path = require('path');
 async function validateTestScenarios() {
     console.log('🧪 Validating test scenarios...');
     
-    const scenariosPath = path.join(__dirname, '../../../shared/testScenarios/gameStates');
+    const scenariosPath = path.join(__dirname, '../../../shared/testScenarios/gameStates/LeaderCase');
     
     try {
         const files = await fs.readdir(scenariosPath);

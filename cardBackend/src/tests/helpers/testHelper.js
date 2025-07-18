@@ -53,7 +53,13 @@ class TestHelper {
      * Load test scenario from JSON file
      */
     async loadTestScenario(filename) {
-        const filePath = path.join(this.testScenariosPath, filename);
+        // Check if it's a leader effect test file (starts with "leader_")
+        let filePath;
+        if (filename.startsWith('leader_')) {
+            filePath = path.join(this.testScenariosPath, 'LeaderCase', filename);
+        } else {
+            filePath = path.join(this.testScenariosPath, filename);
+        }
         
         try {
             const content = await fs.readFile(filePath, 'utf8');

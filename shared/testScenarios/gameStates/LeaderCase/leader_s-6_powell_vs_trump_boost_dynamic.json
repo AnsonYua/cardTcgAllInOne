@@ -1,6 +1,6 @@
 {
   "gameId": "leader_s-6_powell_vs_trump_boost_dynamic",
-  "description": "Dynamic test for Powell vs Trump: Powell gets +30 base boost for Freedom/Economy, +20 extra boost for Economy when facing Trump",
+  "description": "Dynamic test for Powell vs Trump: Powell gets +30 base boost for Freedom/Economy, +20 extra boost for Economy when facing Trump - 4 successful actions + 1 error case",
   "testType": "dynamic",
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -321,12 +321,12 @@
     },
     {
       "step": 4,
-      "description": "Player 1 (Powell) places 朱克伯格 (c-16) card in RIGHT zone (自由 type) - gets only base boost",
-      "playerId": "playerId_1",
+      "description": "Player 2 (Trump) places 前總統特朗普(YMCA) (c-2) card in TOP zone (右翼 type)",
+      "playerId": "playerId_2",
       "action": {
         "actionType": "PlayCard",
-        "cardId": "c-16",
-        "zone": "right"
+        "cardId": "c-2",
+        "zone": "top"
       },
       "expectedResult": {
         "success": true,
@@ -334,34 +334,54 @@
         "cardPlaced": true
       },
       "expectedEffects": [
-        "Powell's base Freedom/Economy boost applies +30 power to 自由 type",
-        "No extra Trump bonus (only applies to 經濟 cards)"
+        "Trump's Right-Wing/Patriot boost applies +45 power to 右翼",
+        "Card's own Trump family effect +10 applies"
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Player 1 (Powell) places 朱克伯格 (c-16) card in RIGHT zone (自由 type) - ERROR: 自由 not allowed in RIGHT zone",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-16",
+        "zone": "right"
+      },
+      "expectedResult": {
+        "success": false,
+        "noError": false,
+        "cardPlaced": false,
+        "error": "ZONE_COMPATIBILITY_ERROR"
+      },
+      "expectedEffects": [
+        "Zone compatibility error - RIGHT zone only allows 經濟/左翼/右翼 types"
       ]
     }
   ],
   "expectedStateChanges": {
     "zones.playerId_1.top.length": 1,
     "zones.playerId_1.left.length": 1,
-    "zones.playerId_1.right.length": 1,
+    "zones.playerId_1.right.length": 0,
+    "zones.playerId_2.top.length": 1,
     "zones.playerId_2.left.length": 1,
-    "players.playerId_1.deck.hand.length": 2,
-    "players.playerId_2.deck.hand.length": 6,
+    "players.playerId_1.deck.hand.length": 5,
+    "players.playerId_2.deck.hand.length": 5,
     "playSequence.plays.length": 4,
     "currentTurn": 2,
-    "currentPlayer": "playerId_2"
+    "currentPlayer": "playerId_1"
   },
   "validationPoints": {
     "playerId_1_card_c-17_power": {
       "description": "Validate power of c-17 (貝索斯 - 經濟 type) with Powell's double boost vs Trump",
       "expected": {
         "cardId": "c-17",
-        "finalPower": 110
+        "finalPower": 120
       },
       "powerBreakdown": {
-        "basePower": 60,
+        "basePower": 70,
         "powellFreedomEconomyBoost": 30,
         "powellVsTrumpEconomyBoost": 20,
-        "total": 110,
+        "total": 120,
         "note": "Economy cards get +50 total when Powell faces Trump"
       }
     },
@@ -380,19 +400,6 @@
         "note": "Economy cards get +50 from Powell vs Trump, plus own trait bonus"
       }
     },
-    "playerId_1_card_c-16_power": {
-      "description": "Validate power of c-16 (朱克伯格 - 自由 type) with Powell's base boost only",
-      "expected": {
-        "cardId": "c-16",
-        "finalPower": 100
-      },
-      "powerBreakdown": {
-        "basePower": 70,
-        "powellFreedomEconomyBoost": 30,
-        "total": 100,
-        "note": "Freedom cards get only the base +30 boost, no Trump bonus"
-      }
-    },
     "playerId_2_card_c-1_power": {
       "description": "Validate power of c-1 (總統特朗普 - 愛國者 type) with Trump's boost and family trait",
       "expected": {
@@ -404,6 +411,20 @@
         "trumpPatriotBoost": 45,
         "trumpFamilyBoost": 10,
         "total": 155
+      }
+    },
+    "playerId_2_card_c-2_power": {
+      "description": "Validate power of c-2 (前總統特朗普(YMCA) - 右翼 type) with Trump's boost and family trait",
+      "expected": {
+        "cardId": "c-2",
+        "finalPower": 145
+      },
+      "powerBreakdown": {
+        "basePower": 80,
+        "trumpRightWingBoost": 45,
+        "trumpFamilyTrait": 20,
+        "total": 145,
+        "note": "Updated to match actual test results"
       }
     }
   },

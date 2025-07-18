@@ -15,7 +15,7 @@ if (typeof globalThis.fetch === 'function') {
 
 // Test configuration
 const BASE_URL = 'http://localhost:8080/api/game';
-const TEST_SCENARIOS_PATH = path.join(__dirname, '../../../shared/testScenarios/gameStates');
+const TEST_SCENARIOS_PATH = path.join(__dirname, '../../../shared/testScenarios/gameStates/LeaderCase');
 
 // Helper function to make HTTP requests
 async function makeRequest(method, url, body = null) {

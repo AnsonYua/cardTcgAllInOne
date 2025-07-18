@@ -18,7 +18,8 @@
       "Bash(VERBOSE_TESTS=1 npm run test:dynamic run leader_s-3_musk_doge_boost_dynamic.json)",
       "Bash(npm run:*)",
       "Bash(curl:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }
