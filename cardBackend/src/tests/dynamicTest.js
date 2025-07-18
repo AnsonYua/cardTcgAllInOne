@@ -98,15 +98,29 @@ class DynamicTestRunner {
             }
 
             try {
-                // Convert frontend action format to backend format
-                const backendAction = await this.convertActionToBackendFormat(actionStep, scenario.gameId);
+                let result;
                 
-                // Execute the action
-                const result = await this.testHelper.makeRequest('POST', '/player/playerAction', {
-                    playerId: actionStep.playerId,
-                    gameId: scenario.gameId,
-                    action: backendAction
-                });
+                // Handle different action types
+                if (actionStep.action.actionType === 'SelectCard') {
+                    // Handle card selection actions
+                    const selectionData = {
+                        playerId: actionStep.playerId,
+                        gameId: scenario.gameId,
+                        cardIds: actionStep.action.cardIds
+                    };
+                    
+                    result = await this.testHelper.makeRequest('POST', '/player/selectCard', selectionData);
+                } else {
+                    // Convert frontend action format to backend format
+                    const backendAction = await this.convertActionToBackendFormat(actionStep, scenario.gameId);
+                    
+                    // Execute the action
+                    result = await this.testHelper.makeRequest('POST', '/player/playerAction', {
+                        playerId: actionStep.playerId,
+                        gameId: scenario.gameId,
+                        action: backendAction
+                    });
+                }
 
                 // Track action
                 this.actionHistory.push({

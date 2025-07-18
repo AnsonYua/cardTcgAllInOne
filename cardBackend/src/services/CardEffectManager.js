@@ -30,18 +30,21 @@ class CardEffectManager {
             }
         }
 
-        // 2. Check leader restrictions
-        const playerField = getPlayerField(gameEnv, currentPlayerId);
-        const leader = playerField.leader;
-        if (leader && leader.zoneCompatibility) {
-            const allowedFields = leader.zoneCompatibility[playPos] || [];
-            if (!allowedFields.includes('all') && !allowedFields.includes(cardDetails.gameType)) {
-                return {
-                    canPlace: false,
-                    reason: `Leader does not allow ${cardDetails.gameType} type cards in ${playPos} field. Allowed types: ${JSON.stringify(allowedFields)}`
-                };
+        // 2. Check leader restrictions (only for character zones: top, left, right)
+        if (playPos === 'top' || playPos === 'left' || playPos === 'right') {
+            const playerField = getPlayerField(gameEnv, currentPlayerId);
+            const leader = playerField.leader;
+            if (leader && leader.zoneCompatibility) {
+                const allowedFields = leader.zoneCompatibility[playPos] || [];
+                if (!allowedFields.includes('all') && !allowedFields.includes(cardDetails.gameType)) {
+                    return {
+                        canPlace: false,
+                        reason: `Leader does not allow ${cardDetails.gameType} type cards in ${playPos} field. Allowed types: ${JSON.stringify(allowedFields)}`
+                    };
+                }
             }
         }
+        // Help and SP zones are unrestricted by leader compatibility
         let opponentPlayerId = getOpponentPlayer(gameEnv);
         
         // 3. SP card restrictions are not needed during MAIN_PHASE since SP cards
