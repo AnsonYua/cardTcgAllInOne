@@ -117,14 +117,32 @@ class DynamicTestRunner {
                     timestamp: Date.now()
                 });
 
-                // Validate action result
-                const actionSuccess = !result.error && result.gameEnv;
+                // Validate action result - check if this matches expected result
+                const expectedResult = actionStep.expectedResult;
+                let actionSuccess = false;
                 
+                if (expectedResult && expectedResult.success === false) {
+                    // This step expects to fail - check if it failed as expected
+                    actionSuccess = result.error && result.error.includes('does not allow');
+                    if (actionSuccess) {
+                        console.log(`   ✅ Action failed as expected: ${result.error}`);
+                    } else {
+                        console.log(`   ❌ Action should have failed but didn't`);
+                    }
+                } else {
+                    // This step expects to succeed
+                    actionSuccess = !result.error && result.gameEnv;
+                    if (actionSuccess) {
+                        console.log(`   ✅ Action completed successfully`);
+                    } else {
+                        console.log(`   ❌ Action failed: ${result.error}`);
+                    }
+                }
+                
+                // Handle post-action processing for successful actions (including expected failures)
                 if (actionSuccess) {
-                    console.log(`   ✅ Action completed successfully`);
-                    
                     // Check for DRAW_PHASE_COMPLETE events and acknowledge them automatically
-                    if (result.gameEnv.gameEvents) {
+                    if (result.gameEnv && result.gameEnv.gameEvents) {
                         const drawEvents = result.gameEnv.gameEvents.filter(e => e.type === 'DRAW_PHASE_COMPLETE');
                         if (drawEvents.length > 0) {
                             console.log(`   🎯 Acknowledging ${drawEvents.length} draw events...`);
@@ -137,7 +155,7 @@ class DynamicTestRunner {
                         }
                     }
                     
-                    // Capture state after action
+                    // Capture state after action (for successful actions including expected failures)
                     const currentState = await this.testHelper.getPlayerData(actionStep.playerId, scenario.gameId);
                     this.stateHistory.push({
                         step: actionStep.step,
@@ -151,7 +169,6 @@ class DynamicTestRunner {
                         result: result
                     });
                 } else {
-                    console.log(`   ❌ Action failed: ${result.error}`);
                     results.push({
                         step: actionStep.step,
                         success: false,
