@@ -70,7 +70,7 @@ class GameLogic {
             lastUpdate: new Date()
         };
         await this.saveOrCreateGame(newGame, gameId);
-        return this.transformGameStateForFrontend(newGame);
+        return newGame;
     }
 
     async joinRoom(req) {
@@ -130,7 +130,7 @@ class GameLogic {
             lastUpdate: new Date()
         };
         await this.saveOrCreateGame(updatedGame, gameId);
-        return this.transformGameStateForFrontend(updatedGame);
+        return updatedGame;
     }
 
     async startReady(req) {
@@ -253,7 +253,7 @@ class GameLogic {
         
         gameData.gameEnv = gameEnv;
         await this.saveOrCreateGame(gameData, gameId);
-        return this.transformGameStateForFrontend(gameData);
+        return gameData;
     }
     
     async processPlayerAction(req) {
@@ -311,7 +311,7 @@ class GameLogic {
             await this.saveOrCreateGame(updatedGameData, gameId);
             
             // Return the updated game data - client can determine card selection from pendingPlayerAction
-            return this.transformGameStateForFrontend(updatedGameData);
+            return updatedGameData;
         }
     }
 
@@ -466,7 +466,7 @@ class GameLogic {
         };
 
         await this.saveOrCreateGame(newGame, gameId);
-        return this.transformGameStateForFrontend(newGame);
+        return newGame;
     }
 
     async saveOrCreateGame(data, gameId) {
@@ -512,7 +512,7 @@ class GameLogic {
     async getGameState(gameId) {
         try {
             const game = await this.readJSONFileAsync(gameId);
-            return this.transformGameStateForFrontend(game);
+            return game;
         } catch (error) {
             return null;
         }
@@ -600,21 +600,6 @@ class GameLogic {
         }).filter(card => card !== null); // Remove any null entries from errors
     }
 
-    transformGameStateForFrontend(game) {
-        if (!game || !game.gameEnv) {
-            return game;
-        }
-
-        const sourceGameEnv = game.gameEnv;
-        
-        // Validate unified structure
-        if (!sourceGameEnv.players || !sourceGameEnv.zones) {
-            throw new Error('Game environment must have unified structure with gameEnv.players and gameEnv.zones');
-        }
-
-        // Game already uses unified format, return as-is
-        return game;
-    }
 
     async updateGameState(gameId, updates) {
         try {
@@ -628,7 +613,7 @@ class GameLogic {
             };
             
             await this.saveOrCreateGame(updatedGame, gameId);
-            return this.transformGameStateForFrontend(updatedGame);
+            return updatedGame;
         } catch (error) {
             throw new Error('Game not found');
         }
@@ -662,10 +647,9 @@ class GameLogic {
         const updatedGameData = this.addUpdateUUID(gameData);
         await this.saveOrCreateGame(updatedGameData, gameId);
 
-        const transformedGame = this.transformGameStateForFrontend(updatedGameData);
         return {
             success: true,
-            gameEnv: transformedGame.gameEnv
+            gameEnv: updatedGameData.gameEnv
         };
     }
 
@@ -731,10 +715,9 @@ class GameLogic {
         const updatedGameData = this.addUpdateUUID(gameData);
         await this.saveOrCreateGame(updatedGameData, gameId);
 
-        const transformedGame = this.transformGameStateForFrontend(updatedGameData);
         return {
             success: true,
-            gameEnv: transformedGame.gameEnv
+            gameEnv: updatedGameData.gameEnv
         };
     }
 }
