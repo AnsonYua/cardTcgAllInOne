@@ -2,7 +2,7 @@ const mozDeckHelper = require('./mozDeckHelper');
 const mozPhaseManager = require('./mozPhaseManager');
 const CardEffectManager = require('../services/CardEffectManager');
 const FieldEffectProcessor = require('../services/FieldEffectProcessor');
-const { getPlayerFromGameEnv } = require('../utils/gameUtils');
+const { getPlayerFromGameEnv, getPlayerField } = require('../utils/gameUtils');
 const CardInfoUtils = require('../services/CardInfoUtils');
 const { json } = require('express');
 const TurnPhase = {
@@ -227,7 +227,13 @@ class mozGamePlay {
 
     /**
      * Processes a player action in the game
-     * Handles card placement, validation, and effect processing for all card types
+     * This is the MAIN GAME ENGINE that handles all player actions including:
+     * - Card placement (face-up and face-down)
+     * - Action validation and error handling
+     * - Card effect processing
+     * - Turn management and phase transitions
+     * - Battle resolution
+     * 
      * @param {Object} gameEnvInput - Current game environment state
      * @param {string} playerId - ID of the player making the action
      * @param {Object} action - Action object containing type, card_idx, field_idx
@@ -236,7 +242,9 @@ class mozGamePlay {
     async processAction(gameEnvInput, playerId, action) {
         var gameEnv = gameEnvInput;
         
+        // ===== SECTION 1: PENDING ACTION BLOCKING =====
         // Check if there's a pending player action that blocks normal gameplay
+        // This prevents players from making other actions while card selection is required
         if (gameEnv.pendingPlayerAction) {
             const pendingAction = gameEnv.pendingPlayerAction;
             
@@ -245,27 +253,30 @@ class mozGamePlay {
                 const selection = gameEnv.pendingCardSelections[pendingAction.selectionId];
                 if (selection) {
                     if (selection.playerId === playerId) {
-                        // Add error event for blocked action
+                        // Current player needs to complete their card selection first
                         this.addErrorEvent(gameEnv, 'CARD_SELECTION_PENDING', `You must complete your card selection first. Select ${selection.selectCount} card(s).`, playerId);
                         return this.throwError(`You must complete your card selection first. Select ${selection.selectCount} card(s).`);
                     } else {
-                        // Add error event for waiting
+                        // Other player is waiting for the current player to complete selection
                         this.addErrorEvent(gameEnv, 'WAITING_FOR_PLAYER', `Waiting for ${selection.playerId} to complete card selection. Please wait.`, playerId);
                         return this.throwError(`Waiting for ${selection.playerId} to complete card selection. Please wait.`);
                     }
                 }
             }
             
+            // Generic blocking for any pending action
             this.addErrorEvent(gameEnv, 'GAME_BLOCKED', `Game is waiting for player action.`, playerId);
             return this.throwError(`Game is waiting for player action.`);
         }
         
+        // ===== SECTION 2: CARD PLAY ACTION HANDLING =====
         // Handle card play actions (face up or face down)
         if (action["type"] == "PlayCard" || action["type"] == "PlayCardBack") {
             var isPlayInFaceDown = action["type"] == "PlayCardBack";
             const positionDict = ["top", "left", "right", "help", "sp"];
             
-            // Validate field position
+            // ===== SECTION 2A: BASIC VALIDATION =====
+            // Validate field position (0-4 for top, left, right, help, sp)
             if (action["field_idx"] >= positionDict.length) {
                 this.addErrorEvent(gameEnv, 'INVALID_POSITION', "position out of range", playerId);
                 return this.throwError("position out of range");
@@ -274,7 +285,7 @@ class mozGamePlay {
             const playPos = positionDict[action["field_idx"]];
             var hand = [...this.getPlayerHand(gameEnv, playerId)];
             
-            // Validate card index in hand
+            // Validate card index in hand (prevent playing non-existent cards)
             if (action["card_idx"] >= hand.length) {
                 this.addErrorEvent(gameEnv, 'INVALID_CARD_INDEX', "hand card out of range", playerId);
                 return this.throwError("hand card out of range");
@@ -289,23 +300,20 @@ class mozGamePlay {
                 return this.throwError("Card not found");
             }
 
-            // Check advanced placement restrictions (zone compatibility, special effects, field effects)
+            // ===== SECTION 2B: ADVANCED PLACEMENT RESTRICTIONS =====
+            // Check placement restrictions (basic validation, leader effects, card effects)
             // Face-down cards bypass all restrictions since opponent cannot see what's being played
             if (!isPlayInFaceDown) {
-                // Check existing card effect restrictions
-                const placementCheck = await this.cardEffectManager.checkSummonRestriction(
-                    gameEnv,
-                    playerId,
-                    cardDetails,
-                    playPos
-                );
-
-                if (!placementCheck.canPlace) {
-                    this.addErrorEvent(gameEnv, 'ZONE_COMPATIBILITY_ERROR', placementCheck.reason, playerId);
-                    return this.throwError(placementCheck.reason);
+                // 1. Basic card type validation
+                if (cardDetails.cardType === 'character') {
+                    // Characters can only be placed in top, left, or right
+                    if (playPos === 'help' || playPos === 'sp') {
+                        this.addErrorEvent(gameEnv, 'ZONE_COMPATIBILITY_ERROR', `Character cards cannot be placed in ${playPos} position`, playerId);
+                        return this.throwError(`Character cards cannot be placed in ${playPos} position`);
+                    }
                 }
 
-                // Check field effect restrictions (leader-imposed zone restrictions)
+                // 2. Leader zone restrictions using Field Effects System
                 const fieldEffectCheck = await this.fieldEffectProcessor.validateCardPlacementWithFieldEffects(
                     gameEnv,
                     playerId,
@@ -318,13 +326,44 @@ class mozGamePlay {
                     return this.throwError(fieldEffectCheck.reason);
                 }
 
-                // Log any override effects that allowed placement
-                if (placementCheck.overrideInfo) {
-                    console.log(`Card placement allowed due to override from ${placementCheck.overrideInfo.overrideCardType} card: ${placementCheck.overrideInfo.overrideCardId}`);
-                    console.log(`Reason: ${placementCheck.overrideInfo.overrideReason}`);
+                // 3. Check card effect restrictions (help cards, character cards)
+                const playerField = getPlayerField(gameEnv, playerId);
+                if (playerField) {
+                    // Check help card restrictions
+                    const helpCards = playerField.help || [];
+                    for (const helpCard of helpCards) {
+                        const effectRules = helpCard.cardDetails[0].effectRules || [];
+                        for (const rule of effectRules) {
+                            if (rule.effectType === 'blockSummonCard') {
+                                const canPlace = await this.cardEffectManager.evaluatePlacementCondition(rule, gameEnv, playerId, cardDetails);
+                                if (!canPlace) {
+                                    const reason = rule.reason || 'Help card effect prevents card placement';
+                                    this.addErrorEvent(gameEnv, 'CARD_EFFECT_RESTRICTION', reason, playerId);
+                                    return this.throwError(reason);
+                                }
+                            }
+                        }
+                    }
+
+                    // Check character card restrictions
+                    const characterCards = playerField[playPos] || [];
+                    for (const characterCard of characterCards) {
+                        const effectRules = characterCard.cardDetails[0].effectRules || [];
+                        for (const rule of effectRules) {
+                            if (rule.effectType === 'blockSummonCard') {
+                                const canPlace = await this.cardEffectManager.evaluatePlacementCondition(rule, gameEnv, playerId, cardDetails);
+                                if (!canPlace) {
+                                    const reason = rule.reason || 'Character card effect prevents card placement';
+                                    this.addErrorEvent(gameEnv, 'CARD_EFFECT_RESTRICTION', reason, playerId);
+                                    return this.throwError(reason);
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
+            // ===== SECTION 2C: PHASE AND CARD TYPE VALIDATION =====
             // Validate card type and position compatibility based on game rules
             if (isPlayInFaceDown) {
                 // Face-down placement rules: Any card can be played face-down for strategic purposes
@@ -341,9 +380,10 @@ class mozGamePlay {
                     this.addErrorEvent(gameEnv, 'SP_PHASE_RESTRICTION', "Cards in SP zone must be played face-down during SP phase", playerId);
                     return this.throwError("Cards in SP zone must be played face-down during SP phase");
                 }
+                
                 // Face-up card placement validation by card type
                 if (cardDetails["cardType"] == "character") {
-                    // Character cards can only go in top/left/right zones
+                    // Character cards can only go in top/left/right zones (battle zones)
                     if (playPos == "help" || playPos == "sp") {
                         this.addErrorEvent(gameEnv, 'CARD_TYPE_ZONE_ERROR', "Can't play character card in utility zones", playerId);
                         return this.throwError("Can't play character card in utility zones");
@@ -358,7 +398,7 @@ class mozGamePlay {
                         }
                     }
                 } else if (cardDetails["cardType"] == "help") {
-                    // Help cards provide utility effects, only one allowed
+                    // Help cards provide utility effects, only one allowed per player
                     if (playPos != "help") {
                         this.addErrorEvent(gameEnv, 'CARD_TYPE_ZONE_ERROR', "Help cards can only be played in help zone", playerId);
                         return this.throwError("Help cards can only be played in help zone");
@@ -370,12 +410,12 @@ class mozGamePlay {
                         return this.throwError("Help zone already occupied");
                     }
                 } else if (cardDetails["cardType"] == "sp") {
-                    // SP cards can only be played during SP_PHASE
+                    // SP cards can only be played during SP_PHASE (special phase)
                     if (gameEnv["phase"] != TurnPhase.SP_PHASE) {
                         this.addErrorEvent(gameEnv, 'PHASE_RESTRICTION_ERROR', "SP cards can only be played during SP phase", playerId);
                         return this.throwError("SP cards can only be played during SP phase");
                     }
-                    // SP cards are special powerful effects, only one allowed
+                    // SP cards are special powerful effects, only one allowed per player
                     if (playPos != "sp") {
                         this.addErrorEvent(gameEnv, 'CARD_TYPE_ZONE_ERROR', "SP cards can only be played in SP zone", playerId);
                         return this.throwError("SP cards can only be played in SP zone");
@@ -389,12 +429,13 @@ class mozGamePlay {
                 }
             }
 
-            // Create card object for field placement
+            // ===== SECTION 2D: CARD PLACEMENT AND STATE UPDATE =====
+            // Create card object for field placement with all necessary metadata
             var cardObj = {
                 "card": hand.splice(action["card_idx"], 1),        // Remove card from hand
-                "cardDetails": [cardDetails],                      // Store card data
-                "isBack": [isPlayInFaceDown],                     // Track if face down
-                "valueOnField": isPlayInFaceDown ? 0 : cardDetails["power"]  // Power for calculations
+                "cardDetails": [cardDetails],                      // Store card data for effects
+                "isBack": [isPlayInFaceDown],                     // Track if face down (for battle calculations)
+                "valueOnField": isPlayInFaceDown ? 0 : cardDetails["power"]  // Power for calculations (face-down = 0)
             };
 
             // Update game state with card placement
@@ -402,13 +443,14 @@ class mozGamePlay {
             const playerData = getPlayerData(gameEnv, playerId);
             const playerField = getPlayerField(gameEnv, playerId);
             
-            this.setPlayerHand(gameEnv, playerId, hand);   // Update hand
+            this.setPlayerHand(gameEnv, playerId, hand);   // Update hand (card removed)
             playerField[playPos].push(cardObj);       // Place card on field
-            action["selectedCard"] = cardObj;                     // Track action details
+            action["selectedCard"] = cardObj;                     // Track action details for history
             action["turn"] = gameEnv["currentTurn"];
             this.getPlayerData(gameEnv, playerId).turnAction.push(action);         // Record action history
             
-            // Add successful card placement event
+            // ===== SECTION 2E: EVENT TRACKING =====
+            // Add successful card placement event for frontend updates
             this.addGameEvent(gameEnv, 'CARD_PLAYED', {
                 playerId: playerId,
                 card: {
@@ -424,7 +466,7 @@ class mozGamePlay {
                 turn: gameEnv["currentTurn"]
             });
             
-            // Add zone filled event
+            // Add zone filled event for UI updates
             this.addGameEvent(gameEnv, 'ZONE_FILLED', {
                 playerId: playerId,
                 zone: playPos,
@@ -432,19 +474,20 @@ class mozGamePlay {
                 isFaceDown: isPlayInFaceDown
             });
 
+            // ===== SECTION 2F: IMMEDIATE CARD EFFECT PROCESSING =====
             // Process immediate card effects - only for face-up cards
             // SP zone cards do NOT process effects immediately - they wait for reveal phase
             if (!isPlayInFaceDown && playPos !== "sp") {
                 let effectResult = null;
                 if (cardDetails["cardType"] == "character") {
-                    // Character summon effects (e.g., draw cards, search deck)
+                    // Character summon effects (e.g., draw cards, search deck, boost power)
                     effectResult = await this.processCharacterSummonEffects(gameEnv, playerId, cardDetails);
                 } else if (cardDetails["cardType"] == "help") {
-                    // Help card play effects (e.g., discard opponent cards, boost power)
+                    // Help card play effects (e.g., discard opponent cards, boost power, search)
                     effectResult = await this.processUtilityCardEffects(gameEnv, playerId, cardDetails);
                 }
                 
-                // Add card effect triggered event
+                // Add card effect triggered event for frontend
                 if (effectResult) {
                     this.addGameEvent(gameEnv, 'CARD_EFFECT_TRIGGERED', {
                         playerId: playerId,
@@ -455,7 +498,7 @@ class mozGamePlay {
                     });
                 }
                 
-                // Check if card effect requires user selection
+                // Check if card effect requires user selection (e.g., search effects)
                 if (effectResult && effectResult.requiresCardSelection) {
                     // Add card selection required event
                     this.addGameEvent(gameEnv, 'CARD_SELECTION_REQUIRED', {
@@ -467,10 +510,12 @@ class mozGamePlay {
                     });
                     
                     // Return the effect result directly - it already contains the proper structure
+                    // This blocks further actions until selection is completed
                     return effectResult;
                 }
             }
             
+            // ===== SECTION 2G: SP PHASE COMPLETION CHECK =====
             // Check if both players have filled SP zones - trigger reveal phase
             if (gameEnv["phase"] == TurnPhase.SP_PHASE && playPos == "sp") {
                 const allPlayers = Object.keys(gameEnv).filter(key => key.startsWith('playerId_'));
@@ -491,6 +536,7 @@ class mozGamePlay {
                 }
             }
             
+            // ===== SECTION 2H: TURN AND PHASE MANAGEMENT =====
             // Recalculate player points with all active effects
             const currentPlayerData = this.getPlayerData(gameEnv, playerId);
             currentPlayerData.playerPoint = await this.calculatePlayerPoint(gameEnv, playerId);

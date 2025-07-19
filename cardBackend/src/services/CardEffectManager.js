@@ -19,6 +19,15 @@ class CardEffectManager {
      * Check if a card can be summoned to a specific position
      */
     async checkSummonRestriction(gameEnv, currentPlayerId, cardDetails, playPos) {
+        // Get player field data first - needed for all checks
+        const playerField = getPlayerField(gameEnv, currentPlayerId);
+        if (!playerField) {
+            return {
+                canPlace: false,
+                reason: `Player field not found for ${currentPlayerId}`
+            };
+        }
+
         // 1. Basic position validation
         if (cardDetails.cardType === 'character') {
             // Characters can only be placed in top, left, or right
@@ -32,7 +41,6 @@ class CardEffectManager {
 
         // 2. Check leader restrictions (only for character zones: top, left, right)
         if (playPos === 'top' || playPos === 'left' || playPos === 'right') {
-            const playerField = getPlayerField(gameEnv, currentPlayerId);
             const leader = playerField.leader;
             if (leader && leader.zoneCompatibility) {
                 const allowedFields = leader.zoneCompatibility[playPos] || [];

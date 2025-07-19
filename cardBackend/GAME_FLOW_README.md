@@ -29,7 +29,7 @@ if (action["type"] == "PlayCard" || action["type"] == "PlayCardBack") {
 **Flow**:
 1. **Position validation**: Ensure field position exists (top/left/right/help/sp)
 2. **Hand validation**: Check card index is valid in player's hand
-3. **Zone compatibility**: Use `CardEffectManager.checkSummonRestriction()` for leader/zone rules
+3. **Zone compatibility**: Use `FieldEffectProcessor.validateCardPlacementWithFieldEffects()` for leader/zone rules via Field Effects System
 4. **Phase restrictions**: SP cards only in SP_PHASE, characters/help in MAIN_PHASE
 5. **Zone occupancy**: One card per zone, face-down rules for help zone
 
