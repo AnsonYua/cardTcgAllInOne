@@ -170,10 +170,18 @@ class GameLogic {
             console.log("🎯 Both players ready - generating DRAW_PHASE_COMPLETE event");
             
             // Initialize game fields for all players (moved from redrawInBegining)
-            for (let playerId of playerList) {
+            // IMPORTANT: Record leader plays in first player order for proper sequencing
+            const firstPlayerIndex = gameEnv.firstPlayer || 0;
+            const orderedPlayerList = [
+                playerList[firstPlayerIndex],
+                playerList[1 - firstPlayerIndex]  // Other player
+            ];
+            
+            for (let playerId of orderedPlayerList) {
                 let leader = this.mozGamePlay.cardInfoUtils.getCurrentLeader(gameEnv, playerId);
                 
                 // NEW: Record leader card play BEFORE setting up field
+                // This ensures leaders are processed in proper turn order by EffectSimulator
                 this.playSequenceManager.recordCardPlay(
                     gameEnv,
                     playerId,
@@ -335,26 +343,67 @@ class GameLogic {
             gameId = uuidv4();
         }
 
-        // CRITICAL FIX: Initialize field effects for injected game state
-        console.log('🔧 Initializing field effects for injected game state...');
+        console.log('🔧 Initializing injected game state with proper leader sequence...');
         
-        // 1. Initialize field effects structure for all players
-        const playerIds = Object.keys(gameEnv.players || {});
-        for (const playerId of playerIds) {
-            this.mozGamePlay.fieldEffectProcessor.initializePlayerFieldEffects(gameEnv, playerId);
-            console.log(`   ✅ Field effects initialized for ${playerId}`);
+        // STEP 1: Initialize play sequence if not present
+        if (!gameEnv.playSequence) {
+            this.playSequenceManager.initializePlaySequence(gameEnv);
+            console.log('   🎯 Initialized empty play sequence');
         }
         
-        // 2. Process leader field effects for current leaders
-        await this.mozGamePlay.fieldEffectProcessor.processAllFieldEffects(gameEnv);
-        console.log('   ✅ Leader field effects processed');
-
-        // 3. Run effect simulation to ensure computed state is current
-        if (gameEnv.cardPlayHistory && gameEnv.cardPlayHistory.length > 0) {
-            console.log('   🔄 Running effect simulation for existing card plays...');
+        // STEP 2: Check if leaders need to be recorded in play sequence
+        const { getPlayerFromGameEnv } = require('../utils/gameUtils');
+        const playerList = getPlayerFromGameEnv(gameEnv);
+        
+        // Check if we have leaders in zones but no leader plays in sequence
+        const hasLeadersInZones = playerList.some(playerId => {
+            const playerZones = gameEnv.zones?.[playerId];
+            return playerZones?.leader;
+        });
+        
+        const hasLeaderPlays = gameEnv.playSequence.plays.some(play => play.action === 'PLAY_LEADER');
+        
+        if (hasLeadersInZones && !hasLeaderPlays) {
+            console.log('   🎯 Leaders found in zones but not in play sequence - recording leader plays...');
+            
+            // Record leader plays in first player order (same as normal game startup)
+            const firstPlayerIndex = gameEnv.firstPlayer || 0;
+            const orderedPlayerList = [
+                playerList[firstPlayerIndex],
+                playerList[1 - firstPlayerIndex]  // Other player
+            ];
+            
+            for (let playerId of orderedPlayerList) {
+                const playerZones = gameEnv.zones?.[playerId];
+                if (playerZones?.leader) {
+                    const leader = playerZones.leader;
+                    
+                    // Record leader play in sequence
+                    this.playSequenceManager.recordCardPlay(
+                        gameEnv,
+                        playerId,
+                        leader.id,
+                        "PLAY_LEADER",
+                        "leader",
+                        {
+                            leaderIndex: gameEnv.players[playerId]?.deck?.currentLeaderIdx || 0,
+                            isInjectedState: true
+                        }
+                    );
+                    
+                    console.log(`   ✅ Recorded leader play: ${leader.id} for ${playerId}`);
+                }
+            }
+        }
+        
+        // STEP 3: Run unified effect simulation for all plays (including leaders)
+        if (gameEnv.playSequence.plays.length > 0) {
+            console.log('   🔄 Running unified effect simulation for all plays...');
             const computedState = this.effectSimulator.simulateCardPlaySequence(gameEnv);
             gameEnv.computedState = computedState;
-            console.log('   ✅ Effect simulation completed');
+            console.log('   ✅ Unified effect simulation completed');
+        } else {
+            console.log('   ℹ️ No plays found in sequence - effects simulation skipped');
         }
 
         // Create new game with properly initialized state

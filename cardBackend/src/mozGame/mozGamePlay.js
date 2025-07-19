@@ -4,6 +4,10 @@ const CardEffectManager = require('../services/CardEffectManager');
 const FieldEffectProcessor = require('../services/FieldEffectProcessor');
 const { getPlayerFromGameEnv, getPlayerField } = require('../utils/gameUtils');
 const CardInfoUtils = require('../services/CardInfoUtils');
+
+// UNIFIED EFFECT SYSTEM: Import for leader and card effect processing
+const playSequenceManager = require('../services/PlaySequenceManager');
+const effectSimulator = require('../services/EffectSimulator');
 const { json } = require('express');
 const TurnPhase = {
     START_REDRAW: 'START_REDRAW',
@@ -24,6 +28,11 @@ class mozGamePlay {
         this.cardEffectManager = CardEffectManager;
         this.cardInfoUtils = CardInfoUtils;
         this.fieldEffectProcessor = FieldEffectProcessor;
+        
+        // UNIFIED EFFECT SYSTEM: Dependencies for replay-based effect calculation
+        // NOTE: These are injected by GameLogic.js during initialization to ensure proper dependency setup
+        this.playSequenceManager = null;
+        this.effectSimulator = null;
     }
 
     // Helper methods for unified format compatibility
@@ -316,7 +325,9 @@ class mozGamePlay {
                     }
                 }
 
-                // 2. Leader zone restrictions using Field Effects System
+                // 2. Leader zone restrictions validation (compatibility with unified system)
+                // NOTE: Zone restrictions are set by EffectSimulator during PLAY_LEADER processing
+                // This method validates against the computed restrictions from the unified system
                 const fieldEffectCheck = await this.fieldEffectProcessor.validateCardPlacementWithFieldEffects(
                     gameEnv,
                     playerId,
@@ -689,8 +700,7 @@ class mozGamePlay {
                 }
             );
             
-            // Clear old field effects for opponent
-            await this.fieldEffectProcessor.clearPlayerLeaderEffects(gameEnv, opponent);
+            // NOTE: Leader effects are now handled automatically by EffectSimulator through play sequence replay
             
             this.getPlayerDeck(gameEnv, crtPlayer).currentLeaderIdx = this.getPlayerDeck(gameEnv, crtPlayer).currentLeaderIdx + 1; 
             let crtLeader = this.cardInfoUtils.getCurrentLeader(gameEnv, crtPlayer);
@@ -710,10 +720,12 @@ class mozGamePlay {
                 }
             );
             
-            // Clear old field effects for current player
-            await this.fieldEffectProcessor.clearPlayerLeaderEffects(gameEnv, crtPlayer);
-            
-            // NEW: Re-simulate after leader changes
+            // UNIFIED SYSTEM: Leader effects now handled automatically by EffectSimulator
+            // The PLAY_LEADER action recorded above triggers complete leader effect processing:
+            // - Zone restrictions (applied to fieldEffects.zoneRestrictions)
+            // - Power modifications (leader bonuses/penalties)
+            // - Cross-player effects (e.g., Powell's nullification)
+            // All processed through single replay-based calculation for consistency
             const computedState = this.effectSimulator.simulateCardPlaySequence(gameEnv);
             gameEnv.computedState = computedState;
         }
@@ -973,7 +985,9 @@ class mozGamePlay {
                         const cardId = cardObj.cardDetails[0].id;
                         const basePower = cardObj.cardDetails[0].power || 0;
                         
-                        // Apply field effects to get modified power
+                        // Apply field effects to get modified power (compatibility with unified system)
+                        // NOTE: In unified system, power modifications are computed by EffectSimulator
+                        // This method provides fallback calculation for legacy compatibility
                         const modifiedPower = await this.fieldEffectProcessor.calculateModifiedPower(
                             gameEnv, 
                             playerId, 

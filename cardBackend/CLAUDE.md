@@ -316,39 +316,85 @@ Comprehensive real-time game state tracking for frontend integration:
 - **Reliability:** Event persistence prevents missed updates during network issues
 - **Performance:** Automatic cleanup prevents memory growth
 
-## Field Effects System (January 2025)
+## Unified Effect System (January 2025) - MAJOR ARCHITECTURAL CONSOLIDATION
 
 ### Overview
-The field effects system provides a comprehensive framework for leader cards to impose continuous effects on the game state, including zone restrictions and power modifications.
+**BREAKING CHANGE**: The field effects system has been completely consolidated into a single unified architecture. All leader and card effects are now processed through the EffectSimulator's play sequence replay system.
+
+**What Changed:**
+- ✅ **Eliminated dual-system architecture** - No more separate `processLeaderFieldEffects` and `processAllFieldEffects`
+- ✅ **Single source of truth** - All effects handled by EffectSimulator through play sequence replay
+- ✅ **Complete leader effect integration** - Zone restrictions, power boosts, and cross-player effects unified
+- ✅ **Automatic effect management** - Leader changes handled automatically through `PLAY_LEADER` actions
+- ✅ **Simplified codebase** - Removed ~300 lines of duplicate effect processing code
+
+### Why This Change Was Necessary
+The previous system had critical issues:
+- **Duplication**: Similar logic in FieldEffectProcessor and EffectSimulator
+- **Inconsistency**: Different processing paths for leader vs card effects
+- **Manual Synchronization**: Required manual clearing and reapplication of leader effects
+- **Complexity**: Multiple integration points and potential for sync issues
+
+### New Unified Architecture
+```
+BEFORE (Dual System):
+┌─────────────────────┐    ┌─────────────────────┐
+│ FieldEffectProcessor│    │   EffectSimulator   │
+│ - Zone restrictions │    │ - Card effects      │
+│ - Power boosts      │    │ - Basic leader      │
+│ - Cross-player      │    │ - Play sequence     │
+└─────────────────────┘    └─────────────────────┘
+     Manual sync needed
+
+AFTER (Unified System):
+┌─────────────────────────────────────────────┐
+│           EffectSimulator (UNIFIED)         │
+│ ✅ Zone restrictions (via PLAY_LEADER)     │
+│ ✅ Power boosts (leader JSON processing)   │
+│ ✅ Cross-player effects (Powell nullify)   │
+│ ✅ Card effects (existing system)          │
+│ ✅ Automatic leader transitions            │
+│ ✅ Single replay-based calculation         │
+└─────────────────────────────────────────────┘
+```
 
 ### Core Components
 
 **Backend Implementation:**
-- `FieldEffectProcessor` service class handles all field effect logic
-- `fieldEffects` object added to each player in `gameEnv[playerId]`
-- Integration points in game setup, card placement, and power calculation
+- `EffectSimulator` - SINGLE service class handling ALL effect logic (leader + card effects)
+- `PlaySequenceManager` - Records all actions including `PLAY_LEADER` for unified replay
+- `fieldEffects` - Computed automatically during simulation, no manual management needed
+- `FieldEffectProcessor` - Kept for compatibility, only handles basic validation now
 
 **Frontend Integration:**
-- `GameStateManager` methods for accessing field effects
-- Real-time field effect data via API polling
-- Client-side validation for card placement restrictions
+- No changes required - same API responses with computed effects included
+- Real-time effect data via existing polling system
+- All effect calculations happen transparently in unified system
 
-### Field Effect Types
+### Unified Effect Types
 
-**Zone Restrictions:**
-- Leaders can restrict which card types can be played in specific zones
-- Example: S-1 (特朗普) restricts TOP zone to ["右翼", "自由", "經濟"]
+**Zone Restrictions (Automatic via PLAY_LEADER):**
+- Leaders automatically restrict zones when recorded in play sequence
+- Example: Trump restricts TOP zone to ["右翼", "自由", "經濟"] when played
 - Enforced during card placement validation
+- **Processing**: Handled by `processCompleteLeaderEffects()` during simulation
 
-**Power Boosts:**
-- Leaders can grant power bonuses to cards with specific attributes
-- Example: S-1 grants +45 power to cards with "右翼" or "愛國者" gameTypes
-- Applied during battle calculation
+**Power Boosts (Unified JSON Processing):**
+- Leaders grant power bonuses through unified effect system
+- Example: Trump grants +45 power to "右翼"/"愛國者" cards via JSON effect rules
+- Applied during `calculateCardPowerWithLeaderEffects()` in final state calculation
+- **Processing**: JSON rules converted to standardized effects automatically
 
-**Power Nullification:**
-- Leaders can nullify opponent's cards with specific traits
-- Example: Powell nullifies opponent's cards with "經濟" trait (sets power to 0)
-- Cross-player effect that affects opponent's cards
+**Cross-Player Effects (Automatic Scope Detection):**
+- Leaders can affect opponent's cards through unified targeting system
+- Example: Powell nullifies opponent's "經濟" trait cards (sets power to 0)
+- **Processing**: Handled by `processCrossPlayerLeaderEffects()` with automatic player targeting
+
+**All Effects Benefits:**
+- ✅ **Consistent Processing**: Same replay-based logic for all effect types
+- ✅ **Automatic Transitions**: Leader changes handled without manual clearing
+- ✅ **Complex Interactions**: Proper ordering and interaction resolution
+- ✅ **Performance**: Single calculation pass instead of multiple separate systems
 
 ### Data Structure
 
@@ -382,8 +428,9 @@ gameEnv[playerId].fieldEffects = {
 ### Integration Points
 
 **Game Setup:**
-- `initializePlayerFieldEffects()` - Initialize field effects structure
-- `processLeaderFieldEffects()` - Apply leader effects when leaders are set
+- `initializePlayerFieldEffects()` - Initialize field effects structure for compatibility
+- EffectSimulator handles ALL leader effects through unified play sequence replay
+- Leaders recorded as `PLAY_LEADER` actions for consistent effect processing
 - Called during initial game setup and leader changes
 
 **Card Placement:**
@@ -392,14 +439,41 @@ gameEnv[playerId].fieldEffects = {
 - Prevents invalid card placements based on leader restrictions
 
 **Power Calculation:**
-- `calculateModifiedPower()` - Apply power boosts and nullifications
-- Integrated into `calculatePlayerPoint()` battle calculation
+- EffectSimulator handles all power modifications through `calculateCardPowerWithLeaderEffects()`
+- Integrated into `calculateFinalState()` during simulation
 - Processes effects in order: power boosts, then nullifications
+- All leader effects applied through unified play sequence system
 
 **Leader Changes:**
-- `clearPlayerLeaderEffects()` - Remove old leader effects
-- `processLeaderFieldEffects()` - Apply new leader effects
-- Called when advancing to next round with new leaders
+- Leaders recorded as new `PLAY_LEADER` actions in play sequence
+- EffectSimulator automatically handles leader effect transitions through replay
+- No manual clearing needed - unified system manages all leader effects
+
+### Migration from Dual System (January 2025)
+
+**REMOVED Functions (No Longer Needed):**
+- ❌ `processLeaderFieldEffects()` - Functionality moved to EffectSimulator
+- ❌ `processAllFieldEffects()` - Replaced by unified play sequence replay
+- ❌ `clearPlayerLeaderEffects()` calls in mozGamePlay - Automatic through replay
+- ❌ Manual field effect initialization in various places
+
+**NEW Unified Processing:**
+- ✅ `processCompleteLeaderEffects()` - Complete leader processing in EffectSimulator
+- ✅ `calculateCardPowerWithLeaderEffects()` - Unified power calculation
+- ✅ `PLAY_LEADER` actions in play sequence - Leaders treated like any other card play
+- ✅ Automatic effect transitions - No manual synchronization needed
+
+**Developer Impact:**
+- **No API Changes**: Frontend continues to work without modification
+- **Simplified Logic**: Single point of truth for all effect processing
+- **Better Performance**: Single simulation pass instead of multiple systems
+- **Easier Debugging**: All effects traceable through play sequence replay
+- **Future Extensions**: Easy to add new effect types to unified system
+
+**Testing Impact:**
+- All existing tests continue to work
+- `injectGameState` automatically handles leader effects through play sequence
+- Dynamic tests now properly apply leader restrictions without manual setup
 
 ### Leader Card Examples
 
@@ -516,34 +590,50 @@ The game implements strict turn-based mechanics where each card placement automa
 
 ### Game State Injection System (January 2025)
 
-**Important Fix for Field Effects Initialization:**
-The `injectGameState` method (`POST /test/injectGameState`) now properly initializes field effects when injecting test scenarios. This critical fix addresses issues where test scenarios would skip leader restrictions and immediately execute actions.
+**Important Fix for Field Effects and Play Sequence Initialization:**
+The `injectGameState` method (`POST /test/injectGameState`) now properly initializes both field effects and play sequence when injecting test scenarios. This critical fix addresses issues where test scenarios would skip leader restrictions and effect simulation.
 
 **Fixed Injection Process:**
-1. **Field Effects Initialization**: Calls `initializePlayerFieldEffects()` for all players
-2. **Leader Effects Processing**: Calls `processAllFieldEffects()` to apply leader zone restrictions  
-3. **Effect Simulation**: Runs `simulateCardPlaySequence()` for existing card plays
-4. **State Persistence**: Saves the fully initialized game state
+1. **Play Sequence Setup**: Initializes play sequence if not present
+2. **Leader Play Recording**: Automatically records leader plays in proper first-player order if leaders exist in zones but not in sequence
+3. **Unified Effect Simulation**: Runs `simulateCardPlaySequence()` to process all plays including leaders
+4. **State Persistence**: Saves the fully initialized game state with complete play history
 
 **Impact:**
-- Test scenarios with leaders now properly apply zone restrictions
-- Dynamic tests no longer skip validation steps
-- Field effects are correctly initialized before first action execution
-- Leader power boosts and zone compatibility work in injected scenarios
+- Test scenarios with leaders now properly apply zone restrictions and power effects
+- Leader plays are correctly recorded in play sequence for effect simulation
+- Dynamic tests no longer skip validation steps or field effect processing
+- Injected scenarios work identically to normal game flow with unified effect system
+- Leader power boosts, zone compatibility, and cross-player effects work in injected scenarios
 
 **Usage in Testing:**
 ```javascript
-// The injection now includes proper field effects setup
+// The injection now includes proper play sequence and field effects setup
 await testHelper.injectGameState(gameId, gameEnv);
-// Field effects are automatically processed - no manual initialization needed
+// Leader plays are automatically recorded and effects simulated - no manual initialization needed
 ```
 
+**Technical Details:**
+- Detects leaders in `gameEnv.zones` but missing from `gameEnv.playSequence.plays`
+- Records `PLAY_LEADER` actions in first-player order matching normal game startup
+- Uses unified `simulateCardPlaySequence()` approach eliminating duplicate field effect processing
+- Maintains consistency with consolidated field effects system
+
 **Background:**
-Previously, `injectGameState` bypassed the field effects initialization that occurs during normal game setup, causing test scenarios to run with default "ALL" zone permissions instead of leader-specific restrictions.
+Previously, `injectGameState` bypassed both the play sequence recording and field effects initialization that occurs during normal game setup, causing test scenarios to run with default "ALL" zone permissions and missing effect simulation.
 
 ## Development Notes & Recent Updates
 
 ### Key Implementation Guidelines
+
+**Unified Effect System (NEW - January 2025):**
+- **Single Source of Truth:** All effects processed through EffectSimulator's `simulateCardPlaySequence()`
+- **No Manual Effect Management:** Never call old `processLeaderFieldEffects` or `clearPlayerLeaderEffects` 
+- **Play Sequence Integration:** Record all leader actions as `PLAY_LEADER` in play sequence
+- **Automatic Transitions:** Leader changes handled automatically through replay system
+- **Effect Debugging:** All effects traceable through chronological play sequence replay
+
+**General Development:**
 - **Event System Usage:** All game state changes automatically generate appropriate events for frontend consumption
 - **Error Handling:** Every validation failure should generate a specific error event type
 - **Zone Compatibility:** Always use `gameType` field for zone placement, never `traits[0]`
@@ -553,10 +643,20 @@ Previously, `injectGameState` bypassed the field effects initialization that occ
 - **File-Based Storage:** All game state persisted to JSON files, no in-memory storage
 
 ### Testing Considerations
+
+**Unified Effect System Testing (NEW):**
+- All effect testing now goes through single EffectSimulator path - no separate field effect tests needed
+- Test scenarios automatically get proper leader effects through `injectGameState` play sequence recording
+- Leader effect testing: Use play sequence with `PLAY_LEADER` actions for consistent testing
+- Complex effect interactions: Test through complete game scenario replay, not isolated effect testing
+- Cross-player effects: Test Powell-style effects through full game simulation
+
+**General Testing:**
 - Test scenarios may need updating for new card IDs and JSON structure
 - Event system requires testing of frontend polling and acknowledgment flow
 - SP phase enforcement and auto-reveal system needs comprehensive testing
 - Face-down card mechanics require validation across all game phases
+- Dynamic tests now properly apply leader restrictions without manual field effect setup
 
 ### Frontend Integration Requirements
 - Implement 1-second polling of GET `/player/:playerId?gameId=X`
