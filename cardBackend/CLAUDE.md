@@ -316,114 +316,141 @@ Comprehensive real-time game state tracking for frontend integration:
 - **Reliability:** Event persistence prevents missed updates during network issues
 - **Performance:** Automatic cleanup prevents memory growth
 
-## Unified Effect System (January 2025) - MAJOR ARCHITECTURAL CONSOLIDATION
+## Unified Effect System (January 2025) - SINGLE SOURCE OF TRUTH ARCHITECTURE
 
 ### Overview
-**BREAKING CHANGE**: The field effects system has been completely consolidated into a single unified architecture. All leader and card effects are now processed through the EffectSimulator's play sequence replay system.
+**ARCHITECTURAL BREAKTHROUGH**: The field effects system has achieved complete unification by eliminating dual data structures. All effects now work directly on `gameEnv.players[playerId].fieldEffects` - a true single source of truth.
 
 **What Changed:**
-- ✅ **Eliminated dual-system architecture** - No more separate `processLeaderFieldEffects` and `processAllFieldEffects`
-- ✅ **Single source of truth** - All effects handled by EffectSimulator through play sequence replay
-- ✅ **Complete leader effect integration** - Zone restrictions, power boosts, and cross-player effects unified
-- ✅ **Automatic effect management** - Leader changes handled automatically through `PLAY_LEADER` actions
-- ✅ **Simplified codebase** - Removed ~300 lines of duplicate effect processing code
+- ✅ **Eliminated dual data structures** - No more `computedState` vs `fieldEffects` separation
+- ✅ **Removed merge operations** - No manual copying between data structures
+- ✅ **Single source of truth** - All effects stored in `gameEnv.players[].fieldEffects`
+- ✅ **Immediate availability** - Effects accessible to game logic and API without merge
+- ✅ **Simplified codebase** - Eliminated 300+ lines of merge logic and dual processing
 
 ### Why This Change Was Necessary
-The previous system had critical issues:
-- **Duplication**: Similar logic in FieldEffectProcessor and EffectSimulator
-- **Inconsistency**: Different processing paths for leader vs card effects
-- **Manual Synchronization**: Required manual clearing and reapplication of leader effects
-- **Complexity**: Multiple integration points and potential for sync issues
+The previous system had critical architectural issues:
+- **Data Duplication**: Separate `computedState` and `fieldEffects` structures
+- **Manual Synchronization**: Required merge operations to copy effects between structures
+- **Multiple Sources of Truth**: Effects could exist in one structure but not the other
+- **Complexity**: 200+ lines of merge logic throughout the codebase
+- **Bug-Prone**: Easy to forget merge steps, causing effects to disappear
 
-### New Unified Architecture
+### New Single Source of Truth Architecture
 ```
-BEFORE (Dual System):
+BEFORE (Dual Data Structures):
 ┌─────────────────────┐    ┌─────────────────────┐
-│ FieldEffectProcessor│    │   EffectSimulator   │
-│ - Zone restrictions │    │ - Card effects      │
-│ - Power boosts      │    │ - Basic leader      │
-│ - Cross-player      │    │ - Play sequence     │
-└─────────────────────┘    └─────────────────────┘
-     Manual sync needed
+│    computedState    │    │    fieldEffects     │
+│ - activeRestrictions│    │ - zoneRestrictions  │
+│ - playerPowers      │ ➜  │ - activeEffects     │
+│ - disabledCards     │    │ (needs manual merge)│
+│ - victoryPointMods  │    └─────────────────────┘
+└─────────────────────┘         Manual sync ❌
 
-AFTER (Unified System):
+AFTER (Single Source of Truth):
 ┌─────────────────────────────────────────────┐
-│           EffectSimulator (UNIFIED)         │
-│ ✅ Zone restrictions (via PLAY_LEADER)     │
-│ ✅ Power boosts (leader JSON processing)   │
-│ ✅ Cross-player effects (Powell nullify)   │
-│ ✅ Card effects (existing system)          │
-│ ✅ Automatic leader transitions            │
-│ ✅ Single replay-based calculation         │
+│      gameEnv.players[].fieldEffects         │
+│ ✅ zoneRestrictions (immediate access)      │
+│ ✅ activeEffects (immediate access)         │  
+│ ✅ calculatedPowers (immediate access)      │
+│ ✅ disabledCards (immediate access)         │
+│ ✅ victoryPointModifiers (immediate access) │
+│     No merge needed! Single source! 🎯     │
 └─────────────────────────────────────────────┘
 ```
 
 ### Core Components
 
 **Backend Implementation:**
-- `EffectSimulator` - SINGLE service class handling ALL effect logic (leader + card effects)
+- `EffectSimulator` - SINGLE service class handling ALL effect logic with direct gameEnv updates
+- `gameEnv.players[].fieldEffects` - THE ONLY source of truth for all effect data
 - `PlaySequenceManager` - Records all actions including `PLAY_LEADER` for unified replay
-- `fieldEffects` - Computed automatically during simulation, no manual management needed
-- `FieldEffectProcessor` - Kept for compatibility, only handles basic validation now
+- No separate data structures - everything works on the same unified structure
 
 **Frontend Integration:**
-- No changes required - same API responses with computed effects included
-- Real-time effect data via existing polling system
-- All effect calculations happen transparently in unified system
+- Zero changes required - same API responses now with immediate effect availability
+- Real-time effect data via existing polling system (effects already in response)
+- All effect calculations happen transparently in single source of truth
 
-### Unified Effect Types
+### Enhanced fieldEffects Structure (Single Source of Truth)
 
-**Zone Restrictions (Automatic via PLAY_LEADER):**
-- Leaders automatically restrict zones when recorded in play sequence
-- Example: Trump restricts TOP zone to ["右翼", "自由", "經濟"] when played
-- Enforced during card placement validation
-- **Processing**: Handled by `processCompleteLeaderEffects()` during simulation
-
-**Power Boosts (Unified JSON Processing):**
-- Leaders grant power bonuses through unified effect system
-- Example: Trump grants +45 power to "右翼"/"愛國者" cards via JSON effect rules
-- Applied during `calculateCardPowerWithLeaderEffects()` in final state calculation
-- **Processing**: JSON rules converted to standardized effects automatically
-
-**Cross-Player Effects (Automatic Scope Detection):**
-- Leaders can affect opponent's cards through unified targeting system
-- Example: Powell nullifies opponent's "經濟" trait cards (sets power to 0)
-- **Processing**: Handled by `processCrossPlayerLeaderEffects()` with automatic player targeting
-
-**All Effects Benefits:**
-- ✅ **Consistent Processing**: Same replay-based logic for all effect types
-- ✅ **Automatic Transitions**: Leader changes handled without manual clearing
-- ✅ **Complex Interactions**: Proper ordering and interaction resolution
-- ✅ **Performance**: Single calculation pass instead of multiple separate systems
-
-### Data Structure
-
-**Player Field Effects:**
+**Complete Data Structure:**
 ```javascript
-gameEnv[playerId].fieldEffects = {
+gameEnv.players[playerId].fieldEffects = {
+  // Zone restrictions from leaders (immediate access)
   zoneRestrictions: {
-    "TOP": ["右翼", "自由", "經濟"],
-    "LEFT": ["右翼", "自由", "愛國者"],
-    "RIGHT": ["右翼", "愛國者", "經濟"],
-    "HELP": "ALL",
-    "SP": "ALL"
+    TOP: ["右翼", "自由", "經濟"],    // Trump's restrictions
+    LEFT: ["右翼", "自由", "愛國者"],
+    RIGHT: ["右翼", "愛國者", "經濟"],
+    HELP: "ALL",
+    SP: "ALL"
   },
+  
+  // Active effects from leaders and cards (immediate access)
   activeEffects: [
     {
-      effectId: "s-1_power_bonus",
+      effectId: "s-1_powerBoost",
       source: "s-1",
-      sourcePlayerId: "playerId_1",
-      type: "powerBoost",
-      target: {
-        scope: "SELF",
-        zones: "ALL",
-        gameTypes: ["右翼", "愛國者"]
-      },
+      type: "powerBoost", 
+      target: { scope: "SELF", gameTypes: ["右翼", "愛國者"] },
       value: 45
     }
-  ]
+  ],
+  
+  // NEW: Calculated card powers (no more computedState!)
+  calculatedPowers: {
+    "43": 195,    // Card 43 with +45 bonus = 195 total
+    "44": 150     // Card 44 base power
+  },
+  
+  // NEW: Disabled cards (no more computedState!)
+  disabledCards: [],
+  
+  // NEW: Victory point modifiers (no more computedState!)
+  victoryPointModifiers: 0
 }
 ```
+
+**Immediate Availability:**
+- ✅ **Zone Restrictions**: Available instantly for card placement validation
+- ✅ **Power Calculations**: Stored directly in fieldEffects.calculatedPowers
+- ✅ **Effect Tracking**: All active effects in fieldEffects.activeEffects
+- ✅ **API Responses**: Already included in gameEnv.players structure
+- ✅ **Game Logic**: Direct access without any merge operations
+
+### Integration Guide
+
+**Accessing Effect Data (Single Source of Truth):**
+```javascript
+// Zone restrictions for card placement validation
+const restrictions = gameEnv.players[playerId].fieldEffects.zoneRestrictions;
+
+// Calculated card powers for battle calculations  
+const cardPower = gameEnv.players[playerId].fieldEffects.calculatedPowers[cardId];
+
+// Active effects for game logic
+const effects = gameEnv.players[playerId].fieldEffects.activeEffects;
+
+// Disabled cards check
+const isDisabled = gameEnv.players[playerId].fieldEffects.disabledCards.includes(cardId);
+```
+
+**New Unified Accessor Functions:**
+```javascript
+// Unified accessor functions (replace old computedState methods)
+effectSimulator.getCalculatedPower(gameEnv, playerId, cardId)
+effectSimulator.getZoneRestrictions(gameEnv, playerId)
+effectSimulator.getActiveEffects(gameEnv, playerId)
+effectSimulator.isCardDisabledUnified(gameEnv, cardId)
+effectSimulator.getVictoryPointModifiers(gameEnv, playerId)
+```
+
+**Benefits for Developers:**
+- ✅ **No Merge Logic**: Never worry about copying data between structures
+- ✅ **Immediate Access**: All effect data available instantly after simulation
+- ✅ **Single Source**: One place to check for all effect-related data
+- ✅ **API Ready**: Data already in format expected by frontend
+- ✅ **Simplified Debugging**: Single location for all effect state
 
 ### Integration Points
 

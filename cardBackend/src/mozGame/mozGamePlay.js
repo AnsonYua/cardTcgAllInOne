@@ -722,12 +722,12 @@ class mozGamePlay {
             
             // UNIFIED SYSTEM: Leader effects now handled automatically by EffectSimulator
             // The PLAY_LEADER action recorded above triggers complete leader effect processing:
-            // - Zone restrictions (applied to fieldEffects.zoneRestrictions)
-            // - Power modifications (leader bonuses/penalties)
-            // - Cross-player effects (e.g., Powell's nullification)
-            // All processed through single replay-based calculation for consistency
-            const computedState = this.effectSimulator.simulateCardPlaySequence(gameEnv);
-            gameEnv.computedState = computedState;
+            // UNIFIED EFFECT SIMULATION: All effects applied directly to gameEnv.players[].fieldEffects
+            // - Zone restrictions (applied directly to fieldEffects.zoneRestrictions)
+            // - Power modifications (stored in fieldEffects.calculatedPowers)
+            // - Cross-player effects (tracked in fieldEffects.activeEffects)
+            // All processed through single source of truth - no merge needed!
+            await this.effectSimulator.simulateCardPlaySequence(gameEnv);
         }
         gameEnv = await this.startNewTurn(gameEnv);
         return gameEnv;

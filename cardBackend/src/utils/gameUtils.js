@@ -62,10 +62,10 @@ function getPlayerField(gameEnv, playerId) {
  * @returns {Object} - Player field effects object
  */
 function getPlayerFieldEffects(gameEnv, playerId) {
-    if (!gameEnv.fieldEffects) {
-        throw new Error('Game environment must have unified structure with gameEnv.fieldEffects');
+    if (!gameEnv.players) {
+        throw new Error('Game environment must have unified structure with gameEnv.players');
     }
-    return gameEnv.fieldEffects[playerId] || null;
+    return gameEnv.players[playerId]?.fieldEffects || null;
 }
 
 /**
@@ -101,10 +101,13 @@ function setPlayerField(gameEnv, playerId, fieldData) {
  * @param {Object} fieldEffects - Field effects to set
  */
 function setPlayerFieldEffects(gameEnv, playerId, fieldEffects) {
-    if (!gameEnv.fieldEffects) {
-        gameEnv.fieldEffects = {};
+    if (!gameEnv.players) {
+        throw new Error('Game environment must have unified structure with gameEnv.players');
     }
-    gameEnv.fieldEffects[playerId] = fieldEffects;
+    if (!gameEnv.players[playerId]) {
+        throw new Error(`Player ${playerId} not found in game environment`);
+    }
+    gameEnv.players[playerId].fieldEffects = fieldEffects;
 }
 
 module.exports = {

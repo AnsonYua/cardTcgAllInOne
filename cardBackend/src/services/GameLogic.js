@@ -109,8 +109,7 @@ class GameLogic {
         gameEnv.players[player2Id] = { "id": player2Id, "name": player2Id, "deck": results[1] };
         gameEnv.zones[player1Id] = {};
         gameEnv.zones[player2Id] = {};
-        gameEnv.fieldEffects[player1Id] = {};
-        gameEnv.fieldEffects[player2Id] = {};
+        // NOTE: fieldEffects are now initialized per-player in gameEnv.players[playerId].fieldEffects by EffectSimulator
         
         // Initialize game environment (deals hands, sets up leaders, etc.)
         gameEnv = this.mozGamePlay.updateInitialGameEnvironment(gameEnv);
@@ -213,9 +212,11 @@ class GameLogic {
                 this.mozGamePlay.fieldEffectProcessor.initializePlayerFieldEffects(gameEnv, playerId);
             }
             
-            // NEW: Initial simulation after all leaders are recorded
-            const computedState = this.effectSimulator.simulateCardPlaySequence(gameEnv);
-            gameEnv.computedState = computedState;
+            // UNIFIED EFFECT SIMULATION: Process all leader effects directly on gameEnv
+            // Effects are applied directly to gameEnv.players[].fieldEffects (single source of truth)
+            await this.effectSimulator.simulateCardPlaySequence(gameEnv);
+            
+            // No merge needed - all effects are already in gameEnv.players[].fieldEffects!
             
             // Transition to draw phase first - game officially starts
             updatePhase(gameEnv, 'DRAW_PHASE');
@@ -300,9 +301,10 @@ class GameLogic {
                     }
                 );
                 
-                // Simulate entire sequence with new card
-                const computedState = this.effectSimulator.simulateCardPlaySequence(gameData.gameEnv);
-                gameData.gameEnv.computedState = computedState;
+                // UNIFIED EFFECT SIMULATION: Process all effects directly on gameEnv
+                await this.effectSimulator.simulateCardPlaySequence(gameData.gameEnv);
+                
+                // No merge needed - all effects applied directly to gameEnv.players[].fieldEffects!
             }
             
             const updatedGameData = this.addUpdateUUID(gameData);
@@ -331,6 +333,31 @@ class GameLogic {
         return game;
     }
 
+    /**
+     * INJECT GAME STATE - Test Environment Game State Injection
+     * =======================================================
+     * 
+     * PURPOSE: Inject a complete game state for testing scenarios, ensuring all 
+     * leader effects, zone restrictions, and field effects are properly applied.
+     * 
+     * This method is critical for testing because it:
+     * 1. Takes a raw game state (like from a test scenario JSON)
+     * 2. Ensures proper play sequence recording for leaders
+     * 3. Runs the unified effect simulation to calculate zone restrictions
+     * 4. Merges computed effects back into the main game structure
+     * 5. Saves the fully initialized state for testing
+     * 
+     * WORKFLOW:
+     * Step 1: Initialize play sequence if missing
+     * Step 2: Record leader plays if leaders exist but aren't in sequence  
+     * Step 3: Run unified effect simulation (EffectSimulator)
+     * Step 4: Merge computed zone restrictions back to main gameEnv
+     * Step 5: Save and return the complete game state
+     * 
+     * @param {string} gameId - Game identifier for the test
+     * @param {Object} gameEnv - Raw game environment to inject
+     * @returns {Object} Fully initialized game state with all effects applied
+     */
     async injectGameState(gameId, gameEnv) {
         // Only allow in test environment
         /*
@@ -346,12 +373,24 @@ class GameLogic {
         console.log('🔧 Initializing injected game state with proper leader sequence...');
         
         // STEP 1: Initialize play sequence if not present
+        // ================================================
+        // The play sequence is the chronological record of all game actions (including leaders).
+        // This is CRITICAL for the unified effect system because EffectSimulator replays 
+        // the entire sequence to calculate effects consistently.
         if (!gameEnv.playSequence) {
             this.playSequenceManager.initializePlaySequence(gameEnv);
             console.log('   🎯 Initialized empty play sequence');
         }
         
-        // STEP 2: Check if leaders need to be recorded in play sequence
+        // STEP 2: Check if leaders need to be recorded in play sequence  
+        // ============================================================
+        // PROBLEM: Test scenarios often have leaders already placed in zones but missing 
+        // from the play sequence. This breaks the unified effect system because:
+        // - EffectSimulator only processes PLAY_LEADER actions in the sequence
+        // - No PLAY_LEADER actions = no zone restrictions applied
+        // - Result: Leader effects like Trump's zone restrictions are ignored
+        //
+        // SOLUTION: Detect this situation and auto-record missing leader plays
         const { getPlayerFromGameEnv } = require('../utils/gameUtils');
         const playerList = getPlayerFromGameEnv(gameEnv);
         
@@ -397,11 +436,24 @@ class GameLogic {
         }
         
         // STEP 3: Run unified effect simulation for all plays (including leaders)
+        // ===================================================================
+        // This is where the magic happens! The EffectSimulator replays the entire 
+        // play sequence (including the PLAY_LEADER actions we just recorded) and 
+        // calculates ALL effects including:
+        // - Zone restrictions from leaders (e.g., Trump's TOP zone = [右翼, 自由, 經濟])
+        // - Power bonuses/penalties from leaders 
+        // - Cross-player effects (e.g., Powell nullifying opponent's economic cards)
+        // - Card abilities and interactions
+        //
+        // The result is a 'computedState' object with all effects calculated
         if (gameEnv.playSequence.plays.length > 0) {
             console.log('   🔄 Running unified effect simulation for all plays...');
-            const computedState = this.effectSimulator.simulateCardPlaySequence(gameEnv);
-            gameEnv.computedState = computedState;
-            console.log('   ✅ Unified effect simulation completed');
+            
+            // UNIFIED EFFECT SIMULATION: All effects applied directly to gameEnv.players[].fieldEffects
+            // No separate computedState needed - single source of truth approach
+            await this.effectSimulator.simulateCardPlaySequence(gameEnv);
+            
+            console.log('   ✅ Unified effect simulation completed - all effects in gameEnv.players[].fieldEffects');
         } else {
             console.log('   ℹ️ No plays found in sequence - effects simulation skipped');
         }
