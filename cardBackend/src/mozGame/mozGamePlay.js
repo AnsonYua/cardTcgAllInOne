@@ -28,43 +28,45 @@ class mozGamePlay {
 
     // Helper methods for unified format compatibility
     getPlayerHand(gameEnv, playerId) {
-        return gameEnv.players ? 
-            gameEnv.players[playerId].deck.hand : 
-            gameEnv[playerId].deck.hand;
+        if (!gameEnv.players) {
+            throw new Error('Game environment must have unified structure with gameEnv.players');
+        }
+        return gameEnv.players[playerId].deck.hand;
     }
 
     getPlayerMainDeck(gameEnv, playerId) {
-        return gameEnv.players ? 
-            gameEnv.players[playerId].deck.mainDeck : 
-            gameEnv[playerId].deck.mainDeck;
+        if (!gameEnv.players) {
+            throw new Error('Game environment must have unified structure with gameEnv.players');
+        }
+        return gameEnv.players[playerId].deck.mainDeck;
     }
 
     getPlayerDeck(gameEnv, playerId) {
-        return gameEnv.players ? 
-            gameEnv.players[playerId].deck : 
-            gameEnv[playerId].deck;
+        if (!gameEnv.players) {
+            throw new Error('Game environment must have unified structure with gameEnv.players');
+        }
+        return gameEnv.players[playerId].deck;
     }
 
     setPlayerHand(gameEnv, playerId, hand) {
-        if (gameEnv.players) {
-            gameEnv.players[playerId].deck.hand = hand;
-        } else {
-            gameEnv[playerId].deck.hand = hand;
+        if (!gameEnv.players) {
+            throw new Error('Game environment must have unified structure with gameEnv.players');
         }
+        gameEnv.players[playerId].deck.hand = hand;
     }
 
     setPlayerMainDeck(gameEnv, playerId, mainDeck) {
-        if (gameEnv.players) {
-            gameEnv.players[playerId].deck.mainDeck = mainDeck;
-        } else {
-            gameEnv[playerId].deck.mainDeck = mainDeck;
+        if (!gameEnv.players) {
+            throw new Error('Game environment must have unified structure with gameEnv.players');
         }
+        gameEnv.players[playerId].deck.mainDeck = mainDeck;
     }
 
     getPlayerField(gameEnv, playerId) {
-        return gameEnv.zones ? 
-            gameEnv.zones[playerId] : 
-            gameEnv[playerId].Field;
+        if (!gameEnv.zones) {
+            throw new Error('Game environment must have unified structure with gameEnv.zones');
+        }
+        return gameEnv.zones[playerId];
     }
 
     getPlayerZone(gameEnv, playerId, zone) {
@@ -73,9 +75,10 @@ class mozGamePlay {
     }
 
     getPlayerData(gameEnv, playerId) {
-        return gameEnv.players ? 
-            gameEnv.players[playerId] : 
-            gameEnv[playerId];
+        if (!gameEnv.players) {
+            throw new Error('Game environment must have unified structure with gameEnv.players');
+        }
+        return gameEnv.players[playerId];
     }
 
     // Event Management System
@@ -187,7 +190,7 @@ class mozGamePlay {
         for (let playerId of playerList) {
             this.addGameEvent(gameEnv, 'INITIAL_HAND_DEALT', {
                 playerId: playerId,
-                handSize: gameEnv[playerId].deck.hand.length
+                handSize: this.getPlayerHand(gameEnv, playerId).length
             });
         }
         
@@ -650,7 +653,7 @@ class mozGamePlay {
         opponentData.playerPoint = 0;
 
         // Check if this was the last leader battle  
-        if(gameEnv[opponent].deck.currentLeaderIdx == gameEnv[opponent].deck.leader.length-1){
+        if(this.getPlayerDeck(gameEnv, opponent).currentLeaderIdx == this.getPlayerDeck(gameEnv, opponent).leader.length-1){
             // Final leader battle completed - determine winner by victory points
             if(gameEnv[crtPlayer]["victoryPoints"] > gameEnv[opponent]["victoryPoints"]){
                 gameEnv["phase"] = TurnPhase.GAME_END;
@@ -668,7 +671,7 @@ class mozGamePlay {
             }
         } else {
             // Move to next leader
-            gameEnv[opponent].deck.currentLeaderIdx = gameEnv[opponent].deck.currentLeaderIdx + 1;
+            this.getPlayerDeck(gameEnv, opponent).currentLeaderIdx = this.getPlayerDeck(gameEnv, opponent).currentLeaderIdx + 1;
             let opponentLeader = this.cardInfoUtils.getCurrentLeader(gameEnv, opponent);
             const opponentField = this.getPlayerField(gameEnv, opponent);
             opponentField["leader"] = opponentLeader;
@@ -681,7 +684,7 @@ class mozGamePlay {
                 "PLAY_LEADER",
                 "leader",
                 {
-                    leaderIndex: gameEnv[opponent].deck.currentLeaderIdx,
+                    leaderIndex: this.getPlayerDeck(gameEnv, opponent).currentLeaderIdx,
                     isRoundTransition: true
                 }
             );
@@ -689,7 +692,7 @@ class mozGamePlay {
             // Clear old field effects for opponent
             await this.fieldEffectProcessor.clearPlayerLeaderEffects(gameEnv, opponent);
             
-            gameEnv[crtPlayer].deck.currentLeaderIdx = gameEnv[crtPlayer].deck.currentLeaderIdx + 1; 
+            this.getPlayerDeck(gameEnv, crtPlayer).currentLeaderIdx = this.getPlayerDeck(gameEnv, crtPlayer).currentLeaderIdx + 1; 
             let crtLeader = this.cardInfoUtils.getCurrentLeader(gameEnv, crtPlayer);
             const crtPlayerField = this.getPlayerField(gameEnv, crtPlayer);
             crtPlayerField["leader"] = crtLeader;
@@ -702,7 +705,7 @@ class mozGamePlay {
                 "PLAY_LEADER",
                 "leader",
                 {
-                    leaderIndex: gameEnv[crtPlayer].deck.currentLeaderIdx,
+                    leaderIndex: this.getPlayerDeck(gameEnv, crtPlayer).currentLeaderIdx,
                     isRoundTransition: true
                 }
             );
@@ -1346,7 +1349,7 @@ class mozGamePlay {
                 if (!hasLeader) return false;
             } else if (condition.type === 'opponentHandCardCountMoreThan') {
                 const opponentId = this.getOpponentId(gameEnv, playerId);
-                const opponentHandCount = gameEnv[opponentId].deck.hand.length;
+                const opponentHandCount = this.getPlayerHand(gameEnv, opponentId).length;
                 if (opponentHandCount <= condition.value) return false;
             } else if (condition.type === 'zoneEmpty') {
                 const zone = condition.zone;
@@ -1385,7 +1388,7 @@ class mozGamePlay {
             } else if (condition.type === 'opponentHandCount') {
                 // Check opponent hand count with operator
                 const opponentId = this.getOpponentId(gameEnv, playerId);
-                const opponentHandCount = gameEnv[opponentId].deck.hand.length;
+                const opponentHandCount = this.getPlayerHand(gameEnv, opponentId).length;
                 if (condition.operator === '>=') {
                     if (opponentHandCount < condition.value) return false;
                 } else if (condition.operator === '<=') {
@@ -1718,7 +1721,7 @@ class mozGamePlay {
      * @param {number} count - Number of cards to discard
      */
     async discardRandomCards(gameEnv, playerId, count) {
-        const hand = gameEnv[playerId].deck.hand;
+        const hand = this.getPlayerHand(gameEnv, playerId);
         const actualCount = Math.min(count, hand.length);
         
         for (let i = 0; i < actualCount; i++) {

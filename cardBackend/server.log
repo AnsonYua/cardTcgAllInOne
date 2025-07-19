@@ -1,0 +1,30 @@
+
+> cardbackend@1.0.0 dev
+> nodemon server.js
+
+[33m[nodemon] 3.1.9[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node server.js`[39m
+Loading DeckManager synchronously...
+DeckManager initialized synchronously with 59 total cards
+DeckManager already initialized synchronously
+Server error: Error: listen EADDRINUSE: address already in use :::8080
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/node_modules/express/lib/application.js:635:24)
+    at startServer (/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/server.js:35:22)
+    at Object.<anonymous> (/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/server.js:73:1)
+    at Module._compile (node:internal/modules/cjs/loader:1734:14)
+    at Object..js (node:internal/modules/cjs/loader:1899:10)
+    at Module.load (node:internal/modules/cjs/loader:1469:32)
+    at Function._load (node:internal/modules/cjs/loader:1286:12) {
+  code: 'EADDRINUSE',
+  errno: -48,
+  syscall: 'listen',
+  address: '::',
+  port: 8080
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m

@@ -142,3 +142,14 @@ To convert existing static tests:
 5. **Add Errors**: Include error case testing
 
 This framework provides the proper unit testing flow you were looking for: **inject initial state → execute actions → validate changes**.
+
+## ⚠️ Important: Field Effects Initialization Fix (January 2025)
+
+The `injectGameState` method has been updated to properly initialize field effects. This critical fix ensures:
+
+- **Leader zone restrictions** are properly applied during injection
+- **Field effects** are initialized before first action execution  
+- **Dynamic tests** work correctly with leader-specific validation rules
+- **No more immediate step execution** due to missing restrictions
+
+**What was fixed:** Previously, injected game states bypassed field effects initialization, causing tests to run with default "ALL" zone permissions instead of leader-specific restrictions.

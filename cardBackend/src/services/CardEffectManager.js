@@ -229,19 +229,19 @@ class CardEffectManager {
     // Helper methods for condition evaluation
     checkOpponentHasLeader(gameEnv, playerId, leaderName) {
         const opponentId = this.getOpponentId(playerId);
-        const opponentLeader = gameEnv[opponentId].Field.leader;
+        const opponentLeader = getPlayerField(gameEnv, opponentId).leader;
         return opponentLeader && opponentLeader.name === leaderName;
     }
 
     checkOpponentLeaderType(gameEnv, playerId, type) {
         const opponentId = this.getOpponentId(playerId);
-        const opponentLeader = gameEnv[opponentId].Field.leader;
+        const opponentLeader = getPlayerField(gameEnv, opponentId).leader;
         return opponentLeader && opponentLeader.type.includes(type);
     }
 
     checkSelfHasMonster(gameEnv, playerId, monsterName) {
         return ['top', 'left', 'right'].some(field => {
-            return gameEnv[playerId].Field[field].some(monster => 
+            return getPlayerField(gameEnv, playerId)[field].some(monster => 
                 monster.cardDetails[0].cardName === monsterName
             );
         });
@@ -249,7 +249,7 @@ class CardEffectManager {
 
     checkSelfHasMonsterWithAttribute(gameEnv, playerId, attribute) {
         return ['top', 'left', 'right'].some(field => {
-            return gameEnv[playerId].Field[field].some(monster => 
+            return getPlayerField(gameEnv, playerId)[field].some(monster => 
                 monster.cardDetails[0].traits.includes(attribute)
             );
         });
@@ -273,7 +273,7 @@ class CardEffectManager {
     hasMonsterOnField(gameEnv, playerId, monsterName) {
         const fields = ['top', 'left', 'right'];
         return fields.some(field => {
-            return gameEnv[playerId].Field[field].some(cardObj => {
+            return getPlayerField(gameEnv, playerId)[field].some(cardObj => {
                 return !cardObj.isBack[0] && cardObj.cardDetails[0].cardName === monsterName;
             });
         });
@@ -285,7 +285,7 @@ class CardEffectManager {
     hasMonsterTypeOnField(gameEnv, playerId, monsterType) {
         const fields = ['top', 'left', 'right'];
         return fields.some(field => {
-            return gameEnv[playerId].Field[field].some(cardObj => {
+            return getPlayerField(gameEnv, playerId)[field].some(cardObj => {
                 return !cardObj.isBack[0] && 
                        cardObj.cardDetails[0].monsterType && 
                        cardObj.cardDetails[0].monsterType.includes(monsterType);
@@ -299,7 +299,7 @@ class CardEffectManager {
     setCardValue(gameEnv, playerId, target, value) {
         const fields = ['top', 'left', 'right'];
         fields.forEach(field => {
-            gameEnv[playerId].Field[field].forEach(cardObj => {
+            getPlayerField(gameEnv, playerId)[field].forEach(cardObj => {
                 if (!cardObj.isBack[0] && cardObj.cardDetails[0].id === target.cardId) {
                     cardObj.valueOnField = value;
                 }
@@ -313,7 +313,7 @@ class CardEffectManager {
     setOpponentMonsterValue(gameEnv, opponentId, monsterName, value) {
         const fields = ['top', 'left', 'right'];
         fields.forEach(field => {
-            gameEnv[opponentId].Field[field].forEach(cardObj => {
+            getPlayerField(gameEnv, opponentId)[field].forEach(cardObj => {
                 if (!cardObj.isBack[0] && cardObj.cardDetails[0].cardName === monsterName) {
                     cardObj.cardDetails[0].power = value;
                 }
@@ -325,7 +325,7 @@ class CardEffectManager {
      * Helper method to check if a help card was played
      */
     isHelpCardPlayed(gameEnv, playerId, helpCardName) {
-        return gameEnv[playerId].Field.help.some(cardObj => {
+        return getPlayerField(gameEnv, playerId).help.some(cardObj => {
             return !cardObj.isBack[0] && cardObj.cardDetails[0].cardName === helpCardName;
         });
     }
@@ -335,7 +335,7 @@ class CardEffectManager {
      */
     setAdjacentMonstersValue(gameEnv, opponentId, value) {
         ['left', 'right'].forEach(field => {
-            gameEnv[opponentId].Field[field].forEach(cardObj => {
+            getPlayerField(gameEnv, opponentId)[field].forEach(cardObj => {
                 if (!cardObj.isBack[0]) {
                     cardObj.cardDetails[0].power = value;
                 }
@@ -349,7 +349,7 @@ class CardEffectManager {
     setMonsterTypeValue(gameEnv, playerId, monsterType, value) {
         const fields = ['top', 'left', 'right'];
         fields.forEach(field => {
-            gameEnv[playerId].Field[field].forEach(cardObj => {
+            getPlayerField(gameEnv, playerId)[field].forEach(cardObj => {
                 if (!cardObj.isBack[0] && 
                     cardObj.cardDetails[0].monsterType && 
                     cardObj.cardDetails[0].monsterType.includes(monsterType)) {
@@ -365,7 +365,7 @@ class CardEffectManager {
     setValueBasedMonsterValue(gameEnv, playerId, targetValue, newValue) {
         const fields = ['top', 'left', 'right'];
         fields.forEach(field => {
-            gameEnv[playerId].Field[field].forEach(cardObj => {
+            getPlayerField(gameEnv, playerId)[field].forEach(cardObj => {
                 if (!cardObj.isBack[0] && cardObj.cardDetails[0].power === targetValue) {
                     cardObj.cardDetails[0].power = newValue;
                 }
@@ -379,7 +379,7 @@ class CardEffectManager {
     setAllOpponentMonsterValue(gameEnv, opponentId, value) {
         const fields = ['top', 'left', 'right'];
         fields.forEach(field => {
-            gameEnv[opponentId].Field[field].forEach(cardObj => {
+            getPlayerField(gameEnv, opponentId)[field].forEach(cardObj => {
                 if (!cardObj.isBack[0]) {
                     cardObj.cardDetails[0].power = value;
                 }

@@ -266,9 +266,10 @@ class GameLogic {
             // NEW: Record card play and simulate if card was played
             if (!actionResult.hasOwnProperty('error') && (action.type === 'PlayCard' || action.type === 'PlayCardBack')) {
                 // Get the card ID from the hand using unified structure
-                const playerHand = gameData.gameEnv.players ? 
-                    gameData.gameEnv.players[playerId].deck.hand : 
-                    gameData.gameEnv[playerId].deck.hand;
+                if (!gameData.gameEnv.players) {
+                    throw new Error('Game environment must have unified structure with gameEnv.players');
+                }
+                const playerHand = gameData.gameEnv.players[playerId].deck.hand;
                 
                 const cardId = Array.isArray(playerHand) ? 
                     playerHand[action.card_idx]?.id || playerHand[action.card_idx] :
@@ -334,7 +335,29 @@ class GameLogic {
             gameId = uuidv4();
         }
 
-        // Create new game with injected state
+        // CRITICAL FIX: Initialize field effects for injected game state
+        console.log('🔧 Initializing field effects for injected game state...');
+        
+        // 1. Initialize field effects structure for all players
+        const playerIds = Object.keys(gameEnv.players || {});
+        for (const playerId of playerIds) {
+            this.mozGamePlay.fieldEffectProcessor.initializePlayerFieldEffects(gameEnv, playerId);
+            console.log(`   ✅ Field effects initialized for ${playerId}`);
+        }
+        
+        // 2. Process leader field effects for current leaders
+        await this.mozGamePlay.fieldEffectProcessor.processAllFieldEffects(gameEnv);
+        console.log('   ✅ Leader field effects processed');
+
+        // 3. Run effect simulation to ensure computed state is current
+        if (gameEnv.cardPlayHistory && gameEnv.cardPlayHistory.length > 0) {
+            console.log('   🔄 Running effect simulation for existing card plays...');
+            const computedState = this.effectSimulator.simulateCardPlaySequence(gameEnv);
+            gameEnv.computedState = computedState;
+            console.log('   ✅ Effect simulation completed');
+        }
+
+        // Create new game with properly initialized state
         const newGame = {
             gameId: gameId,
             gameEnv: gameEnv,
@@ -483,99 +506,13 @@ class GameLogic {
 
         const sourceGameEnv = game.gameEnv;
         
-        // NEW: If already in unified format, return as-is
-        if (sourceGameEnv.players && sourceGameEnv.zones) {
-            return game;
+        // Validate unified structure
+        if (!sourceGameEnv.players || !sourceGameEnv.zones) {
+            throw new Error('Game environment must have unified structure with gameEnv.players and gameEnv.zones');
         }
 
-        // LEGACY: Transform old format to unified format for backward compatibility
-        const { getPlayerFromGameEnv } = require('../utils/gameUtils');
-        const playerIds = getPlayerFromGameEnv(sourceGameEnv);
-
-        const players = {};
-        const zones = {};
-        const fieldEffects = {};
-
-        playerIds.forEach(playerId => {
-            if (sourceGameEnv[playerId]) {
-                const playerData = sourceGameEnv[playerId];
-                
-                // Create unified player object
-                players[playerId] = {
-                    id: playerId,
-                    name: playerData.name || playerId,
-                    hand: this.transformHandCards(playerData.deck?.hand || []),
-                    deck: {
-                        mainDeck: playerData.deck?.mainDeck || [],
-                        leader: playerData.deck?.leader || [],
-                        currentLeaderIdx: playerData.deck?.currentLeaderIdx || 0
-                    },
-                    isReady: sourceGameEnv.playersReady?.[playerId] || false,
-                    redraw: playerData.redraw || 0,
-                    turnAction: playerData.turnAction || [],
-                    playerPoint: playerData.playerPoint || 0
-                };
-                
-                // Extract zone data with proper structure
-                zones[playerId] = {
-                    leader: playerData.Field?.leader || null,
-                    top: this.transformZoneCards(playerData.Field?.top || []),
-                    left: this.transformZoneCards(playerData.Field?.left || []),
-                    right: this.transformZoneCards(playerData.Field?.right || []),
-                    help: this.transformZoneCards(playerData.Field?.help || []),
-                    sp: this.transformZoneCards(playerData.Field?.sp || [])
-                };
-                
-                // Extract field effects
-                fieldEffects[playerId] = playerData.fieldEffects || {
-                    zoneRestrictions: {
-                        "TOP": "ALL",
-                        "LEFT": "ALL",
-                        "RIGHT": "ALL",
-                        "HELP": "ALL",
-                        "SP": "ALL"
-                    },
-                    activeEffects: []
-                };
-            }
-        });
-
-        // Build the unified gameEnv object
-        const unifiedGameEnv = {
-            // Game Status
-            phase: sourceGameEnv.phase || 'SETUP',
-            currentPlayer: sourceGameEnv.currentPlayer,
-            currentTurn: sourceGameEnv.currentTurn,
-            round: sourceGameEnv.round || 1,
-            gameStarted: sourceGameEnv.gameStarted,
-            firstPlayer: sourceGameEnv.firstPlayer,
-
-            // Unified Data Structure
-            players,
-            zones,
-            fieldEffects,
-
-            // Events and Actions
-            gameEvents: sourceGameEnv.gameEvents || [],
-            lastEventId: sourceGameEnv.lastEventId,
-            pendingPlayerAction: sourceGameEnv.pendingPlayerAction || null,
-            pendingCardSelections: sourceGameEnv.pendingCardSelections || {},
-            
-            // Card Effect System Data
-            playSequence: sourceGameEnv.playSequence || { globalSequence: 0, plays: [] },
-            computedState: sourceGameEnv.computedState || {
-                playerPowers: {},
-                activeRestrictions: {},
-                disabledCards: [],
-                victoryPointModifiers: {}
-            },
-        };
-
-        // Return the game object with the unified gameEnv
-        return {
-            ...game,
-            gameEnv: unifiedGameEnv
-        };
+        // Game already uses unified format, return as-is
+        return game;
     }
 
     async updateGameState(gameId, updates) {

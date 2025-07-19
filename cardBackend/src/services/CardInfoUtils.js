@@ -5,8 +5,18 @@ class CardInfoUtils {
     }
 
     getCurrentLeader(gameEnv, playerId){
-        const deck = gameEnv[playerId].deck;
-        const crtLeaderCard = deck.leader[deck.currentLeaderIdx]
+        // Validate unified structure
+        if (!gameEnv.players) {
+            throw new Error('Game environment must have unified structure with gameEnv.players');
+        }
+        
+        const playerData = gameEnv.players[playerId];
+        if (!playerData) {
+            throw new Error(`Player ${playerId} not found in gameEnv.players`);
+        }
+        
+        const deck = playerData.deck;
+        const crtLeaderCard = deck.leader[deck.currentLeaderIdx];
         return this.deckManager.getLeaderCards(crtLeaderCard);
     }
 

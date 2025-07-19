@@ -512,6 +512,35 @@ The game implements strict turn-based mechanics where each card placement automa
 
 **Critical Rule**: Players cannot place multiple cards in a single turn. Each card placement immediately ends the turn and switches to the opponent.
 
+## Testing Infrastructure & Game State Injection
+
+### Game State Injection System (January 2025)
+
+**Important Fix for Field Effects Initialization:**
+The `injectGameState` method (`POST /test/injectGameState`) now properly initializes field effects when injecting test scenarios. This critical fix addresses issues where test scenarios would skip leader restrictions and immediately execute actions.
+
+**Fixed Injection Process:**
+1. **Field Effects Initialization**: Calls `initializePlayerFieldEffects()` for all players
+2. **Leader Effects Processing**: Calls `processAllFieldEffects()` to apply leader zone restrictions  
+3. **Effect Simulation**: Runs `simulateCardPlaySequence()` for existing card plays
+4. **State Persistence**: Saves the fully initialized game state
+
+**Impact:**
+- Test scenarios with leaders now properly apply zone restrictions
+- Dynamic tests no longer skip validation steps
+- Field effects are correctly initialized before first action execution
+- Leader power boosts and zone compatibility work in injected scenarios
+
+**Usage in Testing:**
+```javascript
+// The injection now includes proper field effects setup
+await testHelper.injectGameState(gameId, gameEnv);
+// Field effects are automatically processed - no manual initialization needed
+```
+
+**Background:**
+Previously, `injectGameState` bypassed the field effects initialization that occurs during normal game setup, causing test scenarios to run with default "ALL" zone permissions instead of leader-specific restrictions.
+
 ## Development Notes & Recent Updates
 
 ### Key Implementation Guidelines
