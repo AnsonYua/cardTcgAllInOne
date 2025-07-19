@@ -137,11 +137,13 @@ class DynamicTestRunner {
                 
                 if (expectedResult && expectedResult.success === false) {
                     // This step expects to fail - check if it failed as expected
-                    actionSuccess = result.error && result.error.includes('does not allow');
+                    const errorContains = expectedResult.errorContains || 'not allowed';
+                    actionSuccess = result.error && result.error.includes(errorContains);
                     if (actionSuccess) {
                         console.log(`   ✅ Action failed as expected: ${result.error}`);
                     } else {
                         console.log(`   ❌ Action should have failed but didn't`);
+                        console.log(`   🔍 Expected error containing: "${errorContains}", got: ${result.error || 'no error'}`);
                     }
                 } else {
                     // This step expects to succeed
@@ -564,17 +566,30 @@ class DynamicTestRunner {
         const playerHand = gameState.gameEnv.players[playerId].deck.hand;
         
         // Find card index in hand
-        // Handle both string IDs and card objects
-        const cardIdx = playerHand.findIndex(card => {
-            if (typeof card === 'string') {
-                return card === action.cardId;
-            } else if (card && card.id) {
-                return card.id === action.cardId;
+        // Handle both cardId lookup and direct cardIndex
+        let cardIdx;
+        
+        if (action.cardIndex !== undefined) {
+            // Direct index provided
+            cardIdx = action.cardIndex;
+            if (cardIdx < 0 || cardIdx >= playerHand.length) {
+                throw new Error(`Card index ${cardIdx} out of range. Hand has ${playerHand.length} cards.`);
             }
-            return false;
-        });
-        if (cardIdx === -1) {
-            throw new Error(`Card ${action.cardId} not found in player ${playerId}'s hand. Hand contains: ${JSON.stringify(playerHand)}`);
+        } else if (action.cardId) {
+            // Look up card by ID
+            cardIdx = playerHand.findIndex(card => {
+                if (typeof card === 'string') {
+                    return card === action.cardId;
+                } else if (card && card.id) {
+                    return card.id === action.cardId;
+                }
+                return false;
+            });
+            if (cardIdx === -1) {
+                throw new Error(`Card ${action.cardId} not found in player ${playerId}'s hand. Hand contains: ${JSON.stringify(playerHand)}`);
+            }
+        } else {
+            throw new Error('Action must specify either cardId or cardIndex');
         }
         
         // Convert zone name to field index

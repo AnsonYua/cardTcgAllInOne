@@ -142,15 +142,22 @@ class FieldEffectProcessor {
         const zoneRestrictions = playerFieldEffects.zoneRestrictions[zone.toUpperCase()];
         
         // If no restrictions, allow placement
-        if (zoneRestrictions === "ALL") {
+        // Handle both "ALL" string and ["ALL"] array formats
+        if (zoneRestrictions === "ALL" || (Array.isArray(zoneRestrictions) && zoneRestrictions.includes("ALL"))) {
             return { canPlace: true, reason: "No restrictions" };
         }
         
-        // Check if card's gameType is allowed
-        if (Array.isArray(zoneRestrictions) && !zoneRestrictions.includes(cardDetails.gameType)) {
+        // Check if card's type is allowed
+        // For character cards, check gameType (愛國者, 右翼, etc.)
+        // For utility cards (help/SP), check cardType since they don't have gameType
+        const cardTypeToCheck = (zone.toUpperCase() === 'HELP' || zone.toUpperCase() === 'SP') 
+            ? cardDetails.cardType 
+            : cardDetails.gameType;
+            
+        if (Array.isArray(zoneRestrictions) && !zoneRestrictions.includes(cardTypeToCheck)) {
             return { 
                 canPlace: false, 
-                reason: `Card type '${cardDetails.gameType}' not allowed in ${zone}. Allowed types: ${zoneRestrictions.join(', ')}` 
+                reason: `Card type '${cardTypeToCheck}' not allowed in ${zone}. Allowed types: ${zoneRestrictions.join(', ')}` 
             };
         }
         

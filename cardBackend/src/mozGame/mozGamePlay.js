@@ -341,6 +341,7 @@ class mozGamePlay {
                 }
 
                 // 3. Check card effect restrictions (help cards, character cards)
+                const { getPlayerField } = require('../utils/gameUtils');
                 const playerField = getPlayerField(gameEnv, playerId);
                 if (playerField) {
                     // Check help card restrictions
