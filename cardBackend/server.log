@@ -10,6 +10,56 @@
 Loading DeckManager synchronously...
 DeckManager initialized synchronously with 59 total cards
 DeckManager already initialized synchronously
+Server is running on port 8080
+🔧 Initializing injected game state with proper leader sequence...
+   🎯 Leaders found in zones but not in play sequence - recording leader plays...
+🎯 Recorded PLAY_LEADER: s-1 by playerId_1 in leader (sequence: 1)
+   ✅ Recorded leader play: s-1 for playerId_1
+🎯 Recorded PLAY_LEADER: s-6 by playerId_2 in leader (sequence: 2)
+   ✅ Recorded leader play: s-6 for playerId_2
+   🔄 Running unified effect simulation for all plays...
+🎬 Starting unified effect simulation (single source of truth)...
+✅ Initialized fieldEffects structure for all players
+📋 Replaying 2 plays directly on gameEnv.players[].fieldEffects...
+▶️ Executing play 1: PLAY_LEADER s-1 by playerId_1
+🏛️ Processing leader s-1 effects for playerId_1 (unified)...
+🔒 Applied zone restrictions to playerId_1: {
+  TOP: [ '右翼', '自由', '經濟' ],
+  LEFT: [ '右翼', '自由', '愛國者' ],
+  RIGHT: [ '右翼', '愛國者', '經濟' ],
+  HELP: [ 'ALL' ],
+  SP: [ 'ALL' ]
+}
+🔄 Converting old effect format for leader s-1...
+🔄 Converted old effect: powerBoost +45 for types: 右翼, 愛國者
+🔄 Converted old effect: setPower +0 for types: 經濟
+✅ Leader s-1 effects applied to unified structure
+🎭 Processing card effects for s-1 (unified)
+⚡ Checking triggered effects for s-1 (unified)
+▶️ Executing play 2: PLAY_LEADER s-6 by playerId_2
+🏛️ Processing leader s-6 effects for playerId_2 (unified)...
+🔒 Applied zone restrictions to playerId_2: {
+  TOP: [ '經濟', '自由' ],
+  LEFT: [ '經濟', '左翼', '右翼' ],
+  RIGHT: [ '經濟', '左翼', '右翼' ],
+  HELP: [ 'ALL' ],
+  SP: [ 'ALL' ]
+}
+🔄 Converting old effect format for leader s-6...
+🔄 Converted old effect: powerBoost +30 for types: 自由, 經濟
+🔄 Converted old effect: powerBoost +20 for types: 經濟
+✅ Leader s-6 effects applied to unified structure
+🎭 Processing card effects for s-6 (unified)
+⚡ Checking triggered effects for s-6 (unified)
+🔢 Calculating final power values (unified)...
+✅ Final power calculation completed (unified)
+✅ Unified simulation completed - all effects available in gameEnv.players[].fieldEffects
+   ✅ Unified effect simulation completed - all effects in gameEnv.players[].fieldEffects
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+Loading DeckManager synchronously...
+DeckManager initialized synchronously with 59 total cards
+DeckManager already initialized synchronously
 Server error: Error: listen EADDRINUSE: address already in use :::8080
     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
     at listenInCluster (node:net:1996:12)
@@ -28,3 +78,55 @@ Server error: Error: listen EADDRINUSE: address already in use :::8080
   port: 8080
 }
 [31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+Loading DeckManager synchronously...
+DeckManager initialized synchronously with 59 total cards
+DeckManager already initialized synchronously
+Server error: Error: listen EADDRINUSE: address already in use :::8080
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/node_modules/express/lib/application.js:635:24)
+    at startServer (/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/server.js:35:22)
+    at Object.<anonymous> (/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/server.js:73:1)
+    at Module._compile (node:internal/modules/cjs/loader:1734:14)
+    at Object..js (node:internal/modules/cjs/loader:1899:10)
+    at Module.load (node:internal/modules/cjs/loader:1469:32)
+    at Function._load (node:internal/modules/cjs/loader:1286:12) {
+  code: 'EADDRINUSE',
+  errno: -48,
+  syscall: 'listen',
+  address: '::',
+  port: 8080
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+Loading DeckManager synchronously...
+DeckManager initialized synchronously with 59 total cards
+DeckManager already initialized synchronously
+Server error: Error: listen EADDRINUSE: address already in use :::8080
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/node_modules/express/lib/application.js:635:24)
+    at startServer (/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/server.js:35:22)
+    at Object.<anonymous> (/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/server.js:73:1)
+    at Module._compile (node:internal/modules/cjs/loader:1734:14)
+    at Object..js (node:internal/modules/cjs/loader:1899:10)
+    at Module.load (node:internal/modules/cjs/loader:1469:32)
+    at Function._load (node:internal/modules/cjs/loader:1286:12) {
+  code: 'EADDRINUSE',
+  errno: -48,
+  syscall: 'listen',
+  address: '::',
+  port: 8080
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+Loading DeckManager synchronously...
+DeckManager initialized synchronously with 59 total cards
+DeckManager already initialized synchronously
+Server is running on port 8080

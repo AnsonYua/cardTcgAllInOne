@@ -978,6 +978,11 @@ class EffectSimulator {
             const effect = this.convertLeaderRuleToEffectUnified(effectRule, leaderId, playerId);
             gameEnv.players[playerId].fieldEffects.activeEffects.push(effect);
             
+            // STEP 3A: Handle restriction effects that modify zone compatibility
+            if (effectRule.type === "restriction" && effectRule.effect.type === "preventSummon") {
+                await this.applyRestrictionEffectUnified(gameEnv, effectRule, playerId);
+            }
+            
             // Apply cross-player effects immediately
             if (effect.target.scope === "OPPONENT") {
                 this.applyCrossPlayerEffectUnified(gameEnv, effect, playerId);
@@ -1005,6 +1010,59 @@ class EffectSimulator {
         gameEnv.players[playerId].fieldEffects.zoneRestrictions = restrictions;
         
         console.log(`🔒 Applied zone restrictions to ${playerId}:`, restrictions);
+    }
+
+    /**
+     * Apply restriction effects that modify zone compatibility
+     * @param {Object} gameEnv - Game environment
+     * @param {Object} effectRule - Restriction effect rule
+     * @param {string} playerId - Player ID applying the restriction
+     */
+    async applyRestrictionEffectUnified(gameEnv, effectRule, playerId) {
+        console.log(`🚫 Processing restriction effect for ${playerId}:`, effectRule.id);
+        
+        // Check if conditions are met for this restriction
+        if (effectRule.trigger && effectRule.trigger.conditions) {
+            for (const condition of effectRule.trigger.conditions) {
+                if (condition.type === "opponentLeader") {
+                    const { getOpponentPlayer } = require('../utils/gameUtils');
+                    const opponentId = getOpponentPlayer(gameEnv, playerId);
+                    const opponentLeader = gameEnv.zones[opponentId]?.leader;
+                    
+                    if (opponentLeader && opponentLeader.name === condition.value) {
+                        console.log(`✅ Restriction condition met: opponent leader is ${condition.value}`);
+                        
+                        // Apply the restriction by modifying zone compatibility
+                        if (effectRule.target && effectRule.target.filters) {
+                            for (const filter of effectRule.target.filters) {
+                                if (filter.type === "gameType") {
+                                    const restrictedType = filter.value;
+                                    console.log(`🚫 Applying restriction: removing ${restrictedType} from zone compatibility`);
+                                    
+                                    // Remove the restricted type from all specified zones
+                                    const zones = effectRule.target.zones || ["top", "left", "right"];
+                                    for (const zone of zones) {
+                                        const zoneKey = zone.toUpperCase();
+                                        if (gameEnv.players[playerId].fieldEffects.zoneRestrictions[zoneKey]) {
+                                            const currentTypes = gameEnv.players[playerId].fieldEffects.zoneRestrictions[zoneKey];
+                                            if (Array.isArray(currentTypes)) {
+                                                // Remove the restricted type
+                                                gameEnv.players[playerId].fieldEffects.zoneRestrictions[zoneKey] = 
+                                                    currentTypes.filter(type => type !== restrictedType);
+                                                console.log(`🔒 Updated ${zoneKey} restrictions for ${playerId}:`, 
+                                                    gameEnv.players[playerId].fieldEffects.zoneRestrictions[zoneKey]);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        console.log(`❌ Restriction condition not met: opponent leader is ${opponentLeader?.name}, expected ${condition.value}`);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -1274,6 +1332,35 @@ class EffectSimulator {
                 
                 newEffects.push(newEffect);
                 console.log(`🔄 Converted old effect: ${rule.effect.type} +${rule.effect.value} for types: ${gameTypes.join(', ')}`);
+            } else if (rule.type === 'restriction' && rule.effect && rule.target) {
+                // Handle restriction effects (preventSummon, etc.)
+                console.log(`🚫 Converting restriction effect: ${rule.id}`);
+                
+                // Extract gameTypes from filters
+                let gameTypes = [];
+                if (rule.target.filters) {
+                    for (const filter of rule.target.filters) {
+                        if (filter.type === 'gameType' && filter.value) {
+                            gameTypes.push(filter.value);
+                        } else if (filter.type === 'gameTypeOr' && filter.values) {
+                            gameTypes = gameTypes.concat(filter.values);
+                        }
+                    }
+                }
+                
+                // Pass through restriction rule as-is for applyRestrictionEffectUnified
+                const restrictionEffect = {
+                    type: rule.type,  // 'restriction'
+                    effect: rule.effect,  // { type: 'preventSummon', value: true }
+                    target: rule.target,
+                    trigger: rule.trigger,
+                    id: rule.id,
+                    priority: rule.priority || 0,
+                    unremovable: rule.unremovable || false
+                };
+                
+                newEffects.push(restrictionEffect);
+                console.log(`🔄 Converted restriction effect: ${rule.id} for types: ${gameTypes.join(', ')}`);
             }
         }
         
