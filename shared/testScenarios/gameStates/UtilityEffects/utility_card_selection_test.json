@@ -1,0 +1,134 @@
+{
+  "gameId": "utility_card_selection_test",
+  "description": "Test h-1 Deep State card selection workflow - Player 2 plays h-1 and selects opponent card to neutralize",
+  "testType": "dynamic",
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": ["sp-1", "c-1", "c-2", "c-3"],
+          "mainDeck": ["c-4", "c-5", "c-6"],
+          "leader": ["s-1", "s-2", "s-3", "s-4"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": ["h-1", "c-21", "c-22", "c-23"],
+          "mainDeck": ["c-24", "c-25", "c-26"],
+          "leader": ["s-6", "s-2", "s-3", "s-4"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {
+          "id": "s-1",
+          "name": "特朗普",
+          "zoneCompatibility": {
+            "top": ["右翼", "自由", "經濟"],
+            "left": ["右翼", "自由", "愛國者"],
+            "right": ["右翼", "愛國者", "經濟"]
+          }
+        },
+        "top": [], "left": [], "right": [], "help": [], "sp": []
+      },
+      "playerId_2": {
+        "leader": {
+          "id": "s-6",
+          "name": "鮑威爾",
+          "zoneCompatibility": {
+            "top": ["經濟", "自由"],
+            "left": ["經濟", "左翼", "右翼"],
+            "right": ["經濟", "左翼", "右翼"]
+          }
+        },
+        "top": [], "left": [], "right": [], "help": [], "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {
+      "globalSequence": 0,
+      "plays": []
+    }
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "description": "Player 1 places sp-1 in HELP zone - provides target for h-1",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardIndex": 0,
+        "zone": "help"
+      },
+      "expectedResult": {
+        "success": true
+      }
+    },
+    {
+      "step": 2,
+      "description": "Player 2 places h-1 (Deep State) in HELP zone - should trigger card selection",
+      "playerId": "playerId_2",
+      "action": {
+        "actionType": "PlayCard",
+        "cardIndex": 0,
+        "zone": "help"
+      },
+      "expectedResult": {
+        "success": true
+      }
+    },
+    {
+      "step": 3,
+      "description": "Player 2 completes card selection - selects sp-1 to neutralize",
+      "playerId": "playerId_2",
+      "action": {
+        "actionType": "SelectCard",
+        "cardIds": ["sp-1"]
+      },
+      "expectedResult": {
+        "success": true
+      }
+    }
+  ],
+  "expectedStateChanges": {
+    "zones.playerId_1.help.length": 1,
+    "zones.playerId_2.help.length": 1,
+    "players.playerId_1.deck.hand.length": 3,
+    "players.playerId_2.deck.hand.length": 3,
+    "pendingPlayerAction": null
+  },
+  "validationPoints": {
+    "card_selection_completion": {
+      "description": "Validate that h-1 card selection completed successfully",
+      "check": "pendingPlayerAction === null"
+    },
+    "target_card_in_place": {
+      "description": "Validate that sp-1 was placed and can be targeted",
+      "check": "zones.playerId_1.help[0].cardDetails[0].id === 'sp-1'"
+    }
+  }
+}

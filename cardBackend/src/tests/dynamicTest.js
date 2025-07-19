@@ -103,10 +103,19 @@ class DynamicTestRunner {
                 // Handle different action types
                 if (actionStep.action.actionType === 'SelectCard') {
                     // Handle card selection actions
+                    // First get current game state to find the selectionId
+                    const currentState = await this.testHelper.getPlayerData(actionStep.playerId, scenario.gameId);
+                    const pendingAction = currentState.gameEnv.pendingPlayerAction;
+                    
+                    if (!pendingAction || pendingAction.type !== 'cardSelection') {
+                        throw new Error('No pending card selection found in game state');
+                    }
+                    
                     const selectionData = {
                         playerId: actionStep.playerId,
                         gameId: scenario.gameId,
-                        cardIds: actionStep.action.cardIds
+                        selectionId: pendingAction.selectionId,
+                        selectedCardIds: actionStep.action.cardIds
                     };
                     
                     result = await this.testHelper.makeRequest('POST', '/player/selectCard', selectionData);
@@ -588,6 +597,9 @@ class DynamicTestRunner {
             if (cardIdx === -1) {
                 throw new Error(`Card ${action.cardId} not found in player ${playerId}'s hand. Hand contains: ${JSON.stringify(playerHand)}`);
             }
+            
+            // Debug: Log the card index conversion
+            console.log(`DEBUG: Converting ${action.cardId} → index ${cardIdx} in hand: ${JSON.stringify(playerHand)}`);
         } else {
             throw new Error('Action must specify either cardId or cardIndex');
         }

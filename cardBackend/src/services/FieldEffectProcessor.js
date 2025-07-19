@@ -131,6 +131,14 @@ class FieldEffectProcessor {
      * @returns {Object} Validation result with canPlace and reason
      */
     async validateCardPlacementWithFieldEffects(gameEnv, playerId, cardDetails, zone) {
+        // Check for zone placement freedom immunity first
+        if (gameEnv.specialStates && 
+            gameEnv.specialStates[playerId] && 
+            gameEnv.specialStates[playerId].zonePlacementFreedom) {
+            console.log(`🔓 Zone placement freedom active for ${playerId} - bypassing restrictions`);
+            return { canPlace: true, reason: "Zone placement freedom immunity" };
+        }
+        
         // Initialize field effects if not present
         const { getPlayerFieldEffects } = require('../utils/gameUtils');
         let playerFieldEffects = getPlayerFieldEffects(gameEnv, playerId);

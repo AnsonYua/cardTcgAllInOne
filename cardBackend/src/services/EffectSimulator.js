@@ -165,6 +165,7 @@ class EffectSimulator {
         const simState = {
             currentPhase: gameEnv.phase,
             currentTurn: gameEnv.currentTurn,
+            gameEnv: gameEnv, // Reference to original gameEnv for card effects
             players: {},
             powerModifiers: {},
             disabledCards: [],
@@ -233,6 +234,14 @@ class EffectSimulator {
                 
                 if (Array.isArray(simState.players[playerId].Field[zone])) {
                     simState.players[playerId].Field[zone].push(card);
+                    
+                    // Process card effects (unified)
+                    console.log(`🎭 Processing card effects for ${cardId} (unified)`);
+                    await this.processCardEffects(simState, playerId, cardDetails);
+                    
+                    // Check triggered effects for "onPlay" events
+                    console.log(`⚡ Checking triggered effects for ${cardId} (unified)`);
+                    await this.processTriggeredEffects(simState, playerId, cardDetails, 'onPlay');
                 } else {
                     console.warn(`Invalid zone for card play: ${zone}`);
                 }
@@ -699,6 +708,117 @@ class EffectSimulator {
     }
 
     /**
+     * PROCESS CARD EFFECTS - Handle Utility Card Effects
+     * ==================================================
+     * 
+     * 🎯 PURPOSE: Process all continuous effects from utility cards like h-5 (失智老人)
+     * This handles effects like zonePlacementFreedom, powerBoost, etc.
+     * 
+     * @param {Object} simState - Current simulation state 
+     * @param {string} playerId - Player who played the card
+     * @param {Object} cardDetails - Card details with effects
+     */
+    async processCardEffects(simState, playerId, cardDetails) {
+        if (!cardDetails.effects || !cardDetails.effects.rules) {
+            return; // No effects to process
+        }
+        
+        // Process each effect rule
+        for (const rule of cardDetails.effects.rules) {
+            if (rule.type === 'continuous' && rule.trigger.event === 'always') {
+                await this.applyCardEffect(simState, playerId, cardDetails.id, rule);
+            }
+        }
+    }
+    
+    /**
+     * PROCESS TRIGGERED EFFECTS - Handle OnPlay/Triggered Effects 
+     * ===========================================================
+     * 
+     * 🎯 PURPOSE: Process effects that trigger on specific events like "onPlay"
+     * This is used for effects that activate when cards are played.
+     * 
+     * @param {Object} simState - Current simulation state
+     * @param {string} playerId - Player who played the card  
+     * @param {Object} cardDetails - Card details with effects
+     * @param {string} triggerEvent - Event that triggered (e.g., 'onPlay')
+     */
+    async processTriggeredEffects(simState, playerId, cardDetails, triggerEvent) {
+        if (!cardDetails.effects || !cardDetails.effects.rules) {
+            return; // No effects to process
+        }
+        
+        // Process triggered effects
+        for (const rule of cardDetails.effects.rules) {
+            if (rule.type === 'triggered' && rule.trigger.event === triggerEvent) {
+                await this.applyCardEffect(simState, playerId, cardDetails.id, rule);
+            }
+        }
+    }
+    
+    /**
+     * APPLY CARD EFFECT - Apply Individual Card Effect Rule
+     * =====================================================
+     * 
+     * 🎯 PURPOSE: Apply a single card effect rule to the simulation state.
+     * This handles all effect types including zonePlacementFreedom.
+     * 
+     * @param {Object} simState - Current simulation state
+     * @param {string} playerId - Player who owns the card
+     * @param {string} cardId - Card ID
+     * @param {Object} rule - Effect rule to apply
+     */
+    async applyCardEffect(simState, playerId, cardId, rule) {
+        const effectType = rule.effect.type;
+        
+        // Handle zonePlacementFreedom effect (directly modify gameEnv like old system)
+        if (effectType === 'zonePlacementFreedom') {
+            const targetPlayerId = rule.target.owner === 'opponent' ? 
+                this.getOpponentPlayerId(simState, playerId) : playerId;
+            
+            // Apply zonePlacementFreedom to the target player's gameEnv directly
+            // NOTE: This uses the gameEnv reference from simState for compatibility
+            const gameEnv = simState.gameEnv;
+            if (!gameEnv.specialStates) gameEnv.specialStates = {};
+            if (!gameEnv.specialStates[targetPlayerId]) gameEnv.specialStates[targetPlayerId] = {};
+            gameEnv.specialStates[targetPlayerId].zonePlacementFreedom = true;
+            
+            console.log(`🔓 Applied zonePlacementFreedom to ${targetPlayerId} via ${cardId}`);
+            return;
+        }
+        
+        // Handle other effect types (powerBoost, etc.) 
+        if (effectType === 'powerBoost' || effectType === 'setPower') {
+            // Convert rule to unified format and apply
+            const unifiedEffect = {
+                type: effectType,
+                value: rule.effect.value,
+                target: {
+                    scope: rule.target.owner === 'self' ? 'SELF' : 'OPPONENT',
+                    zones: rule.target.zones || ['top', 'left', 'right'],
+                    gameTypes: rule.target.filters ? 
+                        rule.target.filters.map(f => f.value).filter(v => v) : []
+                }
+            };
+            
+            this.applyLeaderEffect(simState, playerId, cardId, unifiedEffect);
+            console.log(`⚡ Applied ${effectType} effect from ${cardId}`);
+            return;
+        }
+        
+        console.log(`⚠️ Unhandled card effect type: ${effectType} from ${cardId}`);
+    }
+    
+    /**
+     * GET OPPONENT PLAYER ID - Helper to find opponent
+     * ================================================
+     */
+    getOpponentPlayerId(simState, playerId) {
+        const allPlayerIds = Object.keys(simState.players);
+        return allPlayerIds.find(id => id !== playerId);
+    }
+
+    /**
      * CALCULATE FINAL STATE - Extract Results for API Response
      * ========================================================
      * 
@@ -1118,9 +1238,75 @@ class EffectSimulator {
      * @param {Object} play - Play action
      */
     activateEffectsUnified(gameEnv, play) {
-        // TODO: Implement card-specific effect activation
-        // This would process card.effects.rules[] and add to activeEffects
         console.log(`🎭 Processing card effects for ${play.cardId} (unified)`);
+        
+        // Skip leader plays - they are handled separately in executePlayUnified
+        if (play.action === 'PLAY_LEADER') {
+            return;
+        }
+        
+        // Get card details from the play action
+        let cardDetails = null;
+        if (typeof play.cardId === 'string') {
+            // Card ID is a string - look up card details
+            cardDetails = this.cardInfoUtils.getCardDetails(play.cardId);
+        } else if (typeof play.cardId === 'object' && play.cardId.id) {
+            // Card details are embedded in the play action
+            cardDetails = play.cardId;
+        }
+        
+        if (!cardDetails || !cardDetails.effects || !cardDetails.effects.rules) {
+            console.log(`   No effects to process for ${play.cardId}`);
+            return;
+        }
+        
+        // Create simState wrapper for compatibility with existing methods
+        const simState = { gameEnv: gameEnv };
+        
+        // Process card effects using existing implementation
+        this.processCardEffectsSync(simState, play.playerId, cardDetails);
+    }
+    
+    /**
+     * Synchronous version of processCardEffects for unified system
+     */
+    processCardEffectsSync(simState, playerId, cardDetails) {
+        if (!cardDetails.effects || !cardDetails.effects.rules) {
+            return;
+        }
+        
+        // Process each effect rule
+        for (const rule of cardDetails.effects.rules) {
+            if (rule.type === 'continuous') {
+                this.applyCardEffectSync(simState, playerId, cardDetails.id, rule);
+            }
+        }
+    }
+    
+    /**
+     * Synchronous version of applyCardEffect for unified system
+     */
+    applyCardEffectSync(simState, playerId, cardId, rule) {
+        const effectType = rule.effect.type;
+        
+        // Handle zonePlacementFreedom effect (directly modify gameEnv like old system)
+        if (effectType === 'zonePlacementFreedom') {
+            const targetPlayerId = rule.target.owner === 'opponent' ? 
+                this.getOpponentPlayerId(simState, playerId) : playerId;
+            
+            // Apply zonePlacementFreedom to the target player's gameEnv directly
+            const gameEnv = simState.gameEnv;
+            if (!gameEnv.specialStates) gameEnv.specialStates = {};
+            if (!gameEnv.specialStates[targetPlayerId]) gameEnv.specialStates[targetPlayerId] = {};
+            gameEnv.specialStates[targetPlayerId].zonePlacementFreedom = true;
+            
+            console.log(`🔓 Applied zonePlacementFreedom to ${targetPlayerId} via ${cardId}`);
+            return;
+        }
+        
+        // For now, only handle zonePlacementFreedom
+        // Other effects would be handled here in the future
+        console.log(`   Effect type ${effectType} not implemented in unified system yet`);
     }
 
     /**

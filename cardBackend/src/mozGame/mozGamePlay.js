@@ -502,6 +502,10 @@ class mozGamePlay {
                     effectResult = await this.processUtilityCardEffects(gameEnv, playerId, cardDetails);
                 }
                 
+                // UNIFIED EFFECT SYSTEM: Record card play for effect simulation
+                // Effect simulation happens in GameLogic.processPlayerAction after card placement
+                this.playSequenceManager.recordCardPlay(gameEnv, playerId, cardDetails, playPos, isPlayInFaceDown);
+                
                 // Add card effect triggered event for frontend
                 if (effectResult) {
                     this.addGameEvent(gameEnv, 'CARD_EFFECT_TRIGGERED', {
@@ -922,8 +926,8 @@ class mozGamePlay {
         const playerArr = mozGamePlay.getPlayerFromGameEnv(gameEnv)
         
         // Alternate between players based on turn number
-        // Turn 1,3,5,7... = firstPlayer, Turn 2,4,6,8... = other player
-        if(gameEnv["currentTurn"] % 2 === 1){
+        // Turn 0,2,4,6... = firstPlayer, Turn 1,3,5,7... = other player
+        if(gameEnv["currentTurn"] % 2 === 0){
             gameEnv["currentPlayer"] = playerArr[gameEnv["firstPlayer"]];
         }else{
             const otherPlayerIdx = gameEnv["firstPlayer"] === 0 ? 1 : 0;
@@ -1296,7 +1300,8 @@ class mozGamePlay {
      */
     isEffectNeutralized(rule, gameEnv, playerId, sourceCard) {
         // Check if this card has immunity to neutralization
-        if (rule.immuneToNeutralization) {
+        // Immunity is defined at the card level in effects.immuneToNeutralization
+        if (sourceCard && sourceCard.effects && sourceCard.effects.immuneToNeutralization) {
             return false;
         }
         
@@ -1921,14 +1926,30 @@ class mozGamePlay {
         for (const zone of rule.target.zones) {
             const zoneCards = this.getPlayerZone(gameEnv, targetPlayerId, zone);
             if (zoneCards && zoneCards.length > 0) {
-                for (const card of zoneCards) {
-                    // Only include cards that have effects to neutralize
-                    if (card.effects && card.effects.rules && card.effects.rules.length > 0) {
+                for (const cardObj of zoneCards) {
+                    // Cards in zones are stored as { card: [id], cardDetails: [data], isBack: [bool] }
+                    // Add some safety checks for the card structure
+                    if (!cardObj.card || !Array.isArray(cardObj.card) || cardObj.card.length === 0) {
+                        console.warn(`Invalid card structure in ${zone} zone:`, cardObj);
+                        continue;
+                    }
+                    
+                    const cardId = cardObj.card[0];
+                    const cardData = cardObj.cardDetails && cardObj.cardDetails[0];
+                    
+                    // Only include cards that have effects to neutralize AND are not immune
+                    if (cardData && cardData.effects && cardData.effects.rules && cardData.effects.rules.length > 0) {
+                        // Check if card is immune to neutralization
+                        if (cardData.effects.immuneToNeutralization) {
+                            console.log(`Card ${cardData.name} (${cardId}) is immune to neutralization - excluding from targets`);
+                            continue;
+                        }
+                        
                         eligibleCards.push({
-                            cardId: card.id,
+                            cardId: cardId,
                             zone: zone,
-                            name: card.name,
-                            cardType: card.cardType
+                            name: cardData.name,
+                            cardType: cardData.cardType
                         });
                     }
                 }
@@ -1941,6 +1962,7 @@ class mozGamePlay {
                 reason: 'No eligible cards to neutralize'
             };
         }
+        
         
         // Create card selection state
         if (!gameEnv.pendingCardSelections) {
@@ -1974,14 +1996,17 @@ class mozGamePlay {
             effectType: 'neutralizeEffect'
         });
         
-        // Return selection prompt data
+        // Return selection prompt data in the format expected by the calling code
         return {
             requiresCardSelection: true,
             gameEnv,
-            selectionId,
-            eligibleCards,
-            selectCount: rule.target.selectCount || 1,
-            effectType: 'neutralizeEffect',
+            cardSelection: {
+                selectionId,
+                eligibleCards,
+                selectCount: rule.target.selectCount || 1,
+                effectType: 'neutralizeEffect',
+                cardTypeFilter: 'help,sp'
+            },
             prompt: `Select ${rule.target.selectCount || 1} opponent card(s) to neutralize`
         };
     }
@@ -2031,6 +2056,25 @@ class mozGamePlay {
         // Clean up the pending selection
         delete gameEnv.pendingCardSelections[selectionId];
         delete gameEnv.pendingPlayerAction;
+        
+        // Check if turn should advance after card selection completion
+        // This completes the card play action that triggered the selection
+        const isMainPhaseComplete = await this.checkIsMainPhaseComplete(gameEnv);
+        
+        if (!isMainPhaseComplete) {
+            // Continue turn-based play - players still need to place character/help cards
+            const oldPlayer = gameEnv.currentPlayer;
+            gameEnv = await this.shouldUpdateTurn(gameEnv, playerId);
+            
+            // Add turn switch event if player changed
+            if (gameEnv.currentPlayer !== oldPlayer) {
+                this.addGameEvent(gameEnv, 'TURN_SWITCH', {
+                    oldPlayer: oldPlayer,
+                    newPlayer: gameEnv.currentPlayer,
+                    turn: gameEnv.currentTurn
+                });
+            }
+        }
         
         return gameEnv;
     }
