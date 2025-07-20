@@ -22,7 +22,14 @@
       "Bash(ls:*)",
       "Bash(cat:*)",
       "Bash(pkill:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(for file in *.json)",
+      "Bash(do)",
+      "Bash(if python3 -m json.tool \"$file\")",
+      "Bash(/dev/null)",
+      "Bash(then)",
+      "Bash(else)",
+      "Bash(fi)"
     ],
     "deny": []
   }
