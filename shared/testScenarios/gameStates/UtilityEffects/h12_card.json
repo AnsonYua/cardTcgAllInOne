@@ -1,0 +1,89 @@
+{
+  "gameId": "h12_card",
+  "description": "Test h-12 card neutralize opponent SP and force SP play",
+  "testType": "per_card",
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": ["h-12"],
+          "mainDeck": [],
+          "leader": ["s-1"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": ["sp-2"],
+          "mainDeck": [],
+          "leader": ["s-2"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {"id": "s-1", "name": "特朗普", "cardType": "leader"},
+        "top": [], "left": [], "right": [], "help": [], "sp": []
+      },
+      "playerId_2": {
+        "leader": {"id": "s-2", "name": "拜登", "cardType": "leader"},
+        "top": [], "left": [], "right": [], "help": [],
+        "sp": [
+          {
+            "id": "sp-3",
+            "name": "加息周期",
+            "cardType": "sp",
+            "effects": {
+              "description": "對方場上全部角色卡，原能力值 -30",
+              "rules": [{"id": "rate_hike_nerf", "type": "continuous"}]
+            }
+          }
+        ]
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {"globalSequence": 0, "plays": []}
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "description": "Player 1 plays h-12 to neutralize opponent SP and force SP play",
+      "playerId": "playerId_1",
+      "action": {"actionType": "PlayCard", "cardId": "h-12", "zone": "help"},
+      "expectedResult": {"success": true}
+    }
+  ],
+  "validationPoints": {
+    "h12_sp_effects": {
+      "description": "h-12 neutralizes opponent SP cards and forces SP play in SP phase",
+      "expected": {
+        "opponentSPNeutralized": true,
+        "sp3EffectInactive": true,
+        "forceSPPlayActive": true,
+        "mustPlaySPInSPPhase": true
+      }
+    }
+  }
+}

@@ -26,11 +26,14 @@ describe('Utility Card Effects - Simple Validation', () => {
         gameEnv.gameEnv.specialStates.playerId_1 = {};
       }
       
-      // Set zone placement freedom
-      gameEnv.gameEnv.specialStates.playerId_1.zonePlacementFreedom = true;
+      // Set zone placement freedom (now in fieldEffects)
+      if (!gameEnv.gameEnv.players.playerId_1.fieldEffects.specialEffects) {
+        gameEnv.gameEnv.players.playerId_1.fieldEffects.specialEffects = {};
+      }
+      gameEnv.gameEnv.players.playerId_1.fieldEffects.specialEffects.zonePlacementFreedom = true;
       
       // Check that the state can be read
-      expect(gameEnv.gameEnv.specialStates.playerId_1.zonePlacementFreedom).toBe(true);
+      expect(gameEnv.gameEnv.players.playerId_1.fieldEffects.specialEffects.zonePlacementFreedom).toBe(true);
     });
 
     test('disableComboBonus should be implemented', () => {

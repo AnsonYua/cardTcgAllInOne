@@ -335,10 +335,40 @@ GET /player/{playerId}?gameId={gameId}
     "phase": "MAIN_PHASE|SP_PHASE|BATTLE_PHASE",
     "currentPlayer": "playerId_1",
     "pendingPlayerAction": null | { type: "cardSelection", selectionId: "..." },
-    "playerId_1": {
-      "Field": { /* placed cards */ },
-      "deck": { "hand": [...] },
-      "playerPoint": 25
+    "players": {
+      "playerId_1": {
+        "Field": { /* placed cards */ },
+        "deck": { "hand": [...] },
+        "playerPoint": 25,
+        "fieldEffects": {
+          "zoneRestrictions": {
+            "TOP": ["右翼", "自由", "經濟"],
+            "LEFT": ["右翼", "自由", "愛國者"], 
+            "RIGHT": ["右翼", "愛國者", "經濟"],
+            "HELP": ["ALL"],
+            "SP": ["ALL"]
+          },
+          "activeEffects": [
+            {
+              "effectId": "s-1_powerBoost",
+              "source": "s-1",
+              "type": "powerBoost",
+              "target": { "scope": "SELF", "gameTypes": ["右翼", "愛國者"] },
+              "value": 45
+            }
+          ],
+          "specialEffects": {
+            "zonePlacementFreedom": false,
+            "immuneToNeutralization": false
+          },
+          "calculatedPowers": {
+            "43": 195,
+            "44": 150
+          },
+          "disabledCards": [],
+          "victoryPointModifiers": 0
+        }
+      }
     }
   }
 }
@@ -361,3 +391,82 @@ The game automatically skips turns when:
 - Player has no valid moves in current phase
 
 This ensures smooth progression through game phases regardless of how cards are placed.
+
+## Field Effects System (Unified Architecture - January 2025)
+
+The game state now includes a unified field effects system that tracks all card effects, zone restrictions, and special gameplay effects in a single source of truth.
+
+### New fieldEffects Structure
+
+Each player now has a `fieldEffects` object that contains:
+
+```javascript
+gameEnv.players[playerId].fieldEffects = {
+  // Zone restrictions from current leader
+  zoneRestrictions: {
+    TOP: ["右翼", "自由", "經濟"],      // Trump's TOP zone restrictions
+    LEFT: ["右翼", "自由", "愛國者"],   // Trump's LEFT zone restrictions  
+    RIGHT: ["右翼", "愛國者", "經濟"],   // Trump's RIGHT zone restrictions
+    HELP: ["ALL"],                   // Help zone allows all cards
+    SP: ["ALL"]                      // SP zone allows all cards
+  },
+  
+  // All active effects from placed cards
+  activeEffects: [
+    {
+      effectId: "s-1_powerBoost",
+      source: "s-1",               // Trump leader card
+      type: "powerBoost", 
+      target: { scope: "SELF", gameTypes: ["右翼", "愛國者"] },
+      value: 45
+    }
+  ],
+  
+  // Special gameplay effects (replaces old specialStates)
+  specialEffects: {
+    zonePlacementFreedom: false,     // h-5 (失智老人) zone freedom override
+    immuneToNeutralization: false    // h-5 immunity to neutralization effects
+  },
+  
+  // Pre-calculated card powers with all effects applied
+  calculatedPowers: {
+    "43": 195,    // Card 43 with +45 leader bonus = 195 total
+    "44": 150     // Card 44 base power
+  },
+  
+  // Cards disabled by effects
+  disabledCards: [],
+  
+  // Victory point modifiers for final calculation
+  victoryPointModifiers: 0
+}
+```
+
+### Architecture Benefits
+
+**Single Source of Truth:**
+- All effect data stored in one unified structure
+- No duplicate data structures or manual synchronization
+- Immediate availability for API responses and game logic
+
+**Frontend Integration:**
+- Zone restrictions available for card placement validation
+- Power calculations pre-computed for battle display
+- Special effects visible for UI state management
+
+**Performance:**
+- No merge operations between separate data structures
+- Effects calculated once and reused across game logic
+- Simplified debugging with single effect storage location
+
+### Migration from Legacy Structure
+
+**Replaced Fields:**
+- `gameEnv.specialStates` → `gameEnv.players[].fieldEffects.specialEffects`
+- Separate computedState → Direct updates to fieldEffects
+- Manual merge operations → Automatic unified processing
+
+**Backward Compatibility:**
+- Legacy fields still exist for some utility effects
+- Gradual migration ensures system stability
+- All new effects use unified fieldEffects structure

@@ -67,9 +67,8 @@ describe('Utility Card Effects Tests', () => {
       mozGamePlay.applyUtilityCardEffects(gameEnv.gameEnv, 'playerId_1');
       
       // Verify zone freedom is active
-      expect(gameEnv.gameEnv.specialStates).toBeDefined();
-      expect(gameEnv.gameEnv.specialStates.playerId_1).toBeDefined();
-      expect(gameEnv.gameEnv.specialStates.playerId_1.zonePlacementFreedom).toBe(true);
+      expect(gameEnv.gameEnv.players.playerId_1.fieldEffects.specialEffects).toBeDefined();
+      expect(gameEnv.gameEnv.players.playerId_1.fieldEffects.specialEffects.zonePlacementFreedom).toBe(true);
       
       // Now place h-1 (Deep State) in player 2's help zone to try neutralization
       const h1Card = {
@@ -93,7 +92,7 @@ describe('Utility Card Effects Tests', () => {
       mozGamePlay.applyUtilityCardEffects(gameEnv.gameEnv, 'playerId_2');
       
       // Zone freedom should still work due to immunity
-      expect(gameEnv.gameEnv.specialStates.playerId_1.zonePlacementFreedom).toBe(true);
+      expect(gameEnv.gameEnv.players.playerId_1.fieldEffects.specialEffects.zonePlacementFreedom).toBe(true);
     });
   });
 
@@ -135,9 +134,8 @@ describe('Utility Card Effects Tests', () => {
       mozGamePlay.applyUtilityCardEffects(gameEnv.gameEnv, 'playerId_1');
       
       // Verify zone freedom is active
-      expect(gameEnv.gameEnv.specialStates).toBeDefined();
-      expect(gameEnv.gameEnv.specialStates.playerId_1).toBeDefined();
-      expect(gameEnv.gameEnv.specialStates.playerId_1.zonePlacementFreedom).toBe(true);
+      expect(gameEnv.gameEnv.players.playerId_1.fieldEffects.specialEffects).toBeDefined();
+      expect(gameEnv.gameEnv.players.playerId_1.fieldEffects.specialEffects.zonePlacementFreedom).toBe(true);
       
       // Test that normally restricted placement now works
       const characterCard = {

@@ -1,0 +1,111 @@
+{
+  "gameId": "sp10_card",
+  "description": "Test sp-10 card boost ally 左翼 gameType characters",
+  "testType": "per_card",
+  "initialGameEnv": {
+    "phase": "BATTLE_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-1"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-2"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {"id": "s-1", "name": "特朗普", "cardType": "leader"},
+        "top": [
+          {
+            "id": "c-leftwing1",
+            "name": "Left-wing Character 1",
+            "cardType": "character",
+            "gameType": "左翼",
+            "basePower": 75
+          }
+        ],
+        "left": [
+          {
+            "id": "c-leftwing2",
+            "name": "Left-wing Character 2",
+            "cardType": "character",
+            "gameType": "左翼",
+            "basePower": 80
+          }
+        ],
+        "right": [], "help": [],
+        "sp": [
+          {
+            "id": "sp-10",
+            "name": "民主黨集結",
+            "cardType": "sp",
+            "effects": {
+              "description": "我方場上擁有左翼特徵的全部角色卡，原能力值 +30",
+              "rules": [
+                {
+                  "id": "democratic_rally_leftwing_boost",
+                  "type": "continuous",
+                  "target": {
+                    "owner": "self",
+                    "zones": ["top", "left", "right"],
+                    "filters": [{"type": "gameType", "value": "左翼"}]
+                  },
+                  "effect": {"type": "powerBoost", "value": 30}
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "playerId_2": {
+        "leader": {"id": "s-2", "name": "拜登", "cardType": "leader"},
+        "top": [], "left": [], "right": [], "help": [], "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {"globalSequence": 0, "plays": []}
+  },
+  "playerActions": [],
+  "validationPoints": {
+    "sp10_leftwing_boost": {
+      "description": "sp-10 boosts ally 左翼 gameType character power by +30",
+      "expected": {
+        "leftwing1PowerBefore": 75,
+        "leftwing1PowerAfter": 105,
+        "leftwing2PowerBefore": 80,
+        "leftwing2PowerAfter": 110,
+        "boostValue": 30
+      }
+    }
+  }
+}

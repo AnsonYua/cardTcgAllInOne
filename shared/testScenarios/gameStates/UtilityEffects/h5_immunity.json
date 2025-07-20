@@ -1,0 +1,96 @@
+{
+  "gameId": "h5_immunity_chat",
+  "description": "Test h-5 card immunity to neutralization",
+  "testType": "per_card",
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_2",
+    "currentTurn": 1,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-1"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": ["h-1"],
+          "mainDeck": [],
+          "leader": ["s-2"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {"id": "s-1", "name": "特朗普", "cardType": "leader"},
+        "top": [], "left": [], "right": [],
+        "help": [
+          {
+            "id": "h-5",
+            "name": "失智老人",
+            "cardType": "help",
+            "effects": {
+              "description": "Cannot be neutralized",
+              "immuneToNeutralization": true,
+              "rules": [
+                {
+                  "id": "dementia_power_boost",
+                  "type": "continuous",
+                  "effect": {"type": "powerBoost", "value": 20}
+                }
+              ]
+            }
+          }
+        ],
+        "sp": []
+      },
+      "playerId_2": {
+        "leader": {"id": "s-2", "name": "拜登", "cardType": "leader"},
+        "top": [], "left": [], "right": [], "help": [], "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {"globalSequence": 0, "plays": []}
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "description": "Player 2 plays h-1 attempting to neutralize h-5 (should find no valid targets)",
+      "playerId": "playerId_2",
+      "action": {"actionType": "PlayCard", "cardId": "h-1", "zone": "help"},
+      "expectedResult": {"success": true, "requiresSelection": false}
+    }
+  ],
+  "validationPoints": {
+    "h5_immunity_only": {
+      "description": "h-5 immunity prevents it from being selected for neutralization",
+      "expected": {
+        "h5StillActive": true,
+        "h1FoundNoTargets": true,
+        "noSelectionRequired": true
+      }
+    }
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "gameId": "sp8_card",
+  "description": "Test sp-8 card nerf Doge trait and disable Musk combos",
+  "testType": "per_card",
+  "initialGameEnv": {
+    "phase": "BATTLE_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-1"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-6"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {"id": "s-1", "name": "特朗普", "cardType": "leader"},
+        "top": [], "left": [], "right": [], "help": [],
+        "sp": [
+          {
+            "id": "sp-8",
+            "name": "反特斯拉示威(Tesla Takedown)",
+            "cardType": "sp",
+            "effects": {
+              "description": "對方場上擁有Doge特徵的全部角色卡,原能力值 -40。對方領袖卡是馬斯克的時候, 特殊組合的加乘變成0",
+              "rules": [
+                {
+                  "id": "tesla_takedown_doge_nerf",
+                  "type": "continuous",
+                  "target": {
+                    "owner": "opponent",
+                    "zones": ["top", "left", "right"],
+                    "filters": [{"type": "trait", "value": "Doge"}]
+                  },
+                  "effect": {"type": "powerBoost", "value": -40}
+                },
+                {
+                  "id": "tesla_takedown_musk_combo_disable",
+                  "type": "continuous",
+                  "trigger": {
+                    "conditions": [{"type": "opponentLeader", "value": "馬斯克"}]
+                  },
+                  "effect": {"type": "disableComboBonus", "value": true}
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "playerId_2": {
+        "leader": {"id": "s-6", "name": "馬斯克", "cardType": "leader"},
+        "top": [
+          {
+            "id": "c-doge1",
+            "name": "Doge Character 1",
+            "cardType": "character",
+            "gameType": "經濟",
+            "basePower": 80,
+            "traits": ["Doge"]
+          }
+        ],
+        "left": [
+          {
+            "id": "c-doge2",
+            "name": "Doge Character 2",
+            "cardType": "character",
+            "gameType": "經濟",
+            "basePower": 75,
+            "traits": ["Doge"]
+          }
+        ],
+        "right": [], "help": [], "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {"globalSequence": 0, "plays": []}
+  },
+  "playerActions": [],
+  "validationPoints": {
+    "sp8_doge_nerf_musk_combo_disable": {
+      "description": "sp-8 nerfs opponent Doge traits and disables Musk combos",
+      "expected": {
+        "doge1PowerBefore": 80,
+        "doge1PowerAfter": 40,
+        "doge2PowerBefore": 75,
+        "doge2PowerAfter": 35,
+        "dogeNerfValue": -40,
+        "muskLeaderPresent": true,
+        "comboBonusDisabled": true
+      }
+    }
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "gameId": "h2_target_count_simple",
+  "description": "Simple test for h-2 (Make America Great Again) automatic target selection",
+  "testType": "simple",
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": ["h-2"],
+          "mainDeck": [],
+          "leader": ["s-1"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-2"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {
+          "id": "s-1",
+          "name": "特朗普",
+          "cardType": "leader"
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      },
+      "playerId_2": {
+        "leader": {
+          "id": "s-2",
+          "name": "拜登",
+          "cardType": "leader"
+        },
+        "top": [
+          {
+            "id": "c-21",
+            "name": "奧巴馬",
+            "cardType": "character",
+            "gameType": "左翼",
+            "power": 80
+          }
+        ],
+        "left": [
+          {
+            "id": "c-22",
+            "name": "沃倫",
+            "cardType": "character",
+            "gameType": "左翼",
+            "power": 75
+          }
+        ],
+        "right": [],
+        "help": [],
+        "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {
+      "globalSequence": 0,
+      "plays": []
+    }
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "description": "Player 1 plays h-2 (Make America Great Again) with targetCount: 1",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "h-2",
+        "zone": "help"
+      },
+      "expectedResult": {
+        "success": true,
+        "requiresSelection": false
+      },
+      "expectedEffects": [
+        "h-2 automatically targets first opponent character (c-21)",
+        "c-21 power set to 0 (setPower effect)",
+        "No manual selection required due to targetCount: 1"
+      ]
+    }
+  ],
+  "validationPoints": {
+    "target_count_test": {
+      "description": "Verify h-2 automatically targets first opponent character",
+      "expected": {
+        "automaticTargetSelection": true,
+        "c21PowerSetToZero": true,
+        "c22NotAffected": true,
+        "noSelectionRequired": true
+      },
+      "powerBreakdown": {
+        "c21": {
+          "basePower": 80,
+          "h2SetPowerEffect": 0,
+          "total": 0,
+          "note": "Automatically targeted by h-2"
+        },
+        "c22": {
+          "basePower": 75,
+          "total": 75,
+          "note": "Not affected by h-2 (only targets 1 card)"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "gameId": "h3_card",
+  "description": "Test h-3 card Doge trait power boost",
+  "testType": "per_card",
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": ["h-3"],
+          "mainDeck": [],
+          "leader": ["s-1"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-2"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {"id": "s-1", "name": "特朗普", "cardType": "leader"},
+        "top": [
+          {
+            "id": "c-doge1",
+            "name": "Doge Character 1",
+            "cardType": "character",
+            "gameType": "右翼",
+            "basePower": 60,
+            "traits": ["Doge"]
+          }
+        ],
+        "left": [
+          {
+            "id": "c-doge2", 
+            "name": "Doge Character 2",
+            "cardType": "character",
+            "gameType": "愛國者",
+            "basePower": 75,
+            "traits": ["Doge"]
+          }
+        ],
+        "right": [], "help": [], "sp": []
+      },
+      "playerId_2": {
+        "leader": {"id": "s-2", "name": "拜登", "cardType": "leader"},
+        "top": [], "left": [], "right": [], "help": [], "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {"globalSequence": 0, "plays": []}
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "description": "Player 1 plays h-3 to boost Doge trait characters by +40",
+      "playerId": "playerId_1",
+      "action": {"actionType": "PlayCard", "cardId": "h-3", "zone": "help"},
+      "expectedResult": {"success": true}
+    }
+  ],
+  "validationPoints": {
+    "h3_doge_boost": {
+      "description": "h-3 provides +40 power boost to all Doge trait characters",
+      "expected": {
+        "doge1PowerBefore": 60,
+        "doge1PowerAfter": 100,
+        "doge2PowerBefore": 75,
+        "doge2PowerAfter": 115,
+        "boostValue": 40
+      }
+    }
+  }
+}

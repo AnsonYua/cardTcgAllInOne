@@ -771,19 +771,19 @@ class EffectSimulator {
     async applyCardEffect(simState, playerId, cardId, rule) {
         const effectType = rule.effect.type;
         
-        // Handle zonePlacementFreedom effect (directly modify gameEnv like old system)
+        // Handle zonePlacementFreedom effect (store in unified fieldEffects)
         if (effectType === 'zonePlacementFreedom') {
             const targetPlayerId = rule.target.owner === 'opponent' ? 
                 this.getOpponentPlayerId(simState, playerId) : playerId;
             
-            // Apply zonePlacementFreedom to the target player's gameEnv directly
-            // NOTE: This uses the gameEnv reference from simState for compatibility
+            // Apply zonePlacementFreedom to the target player's fieldEffects
             const gameEnv = simState.gameEnv;
-            if (!gameEnv.specialStates) gameEnv.specialStates = {};
-            if (!gameEnv.specialStates[targetPlayerId]) gameEnv.specialStates[targetPlayerId] = {};
-            gameEnv.specialStates[targetPlayerId].zonePlacementFreedom = true;
+            if (!gameEnv.players[targetPlayerId].fieldEffects.specialEffects) {
+                gameEnv.players[targetPlayerId].fieldEffects.specialEffects = {};
+            }
+            gameEnv.players[targetPlayerId].fieldEffects.specialEffects.zonePlacementFreedom = true;
             
-            console.log(`🔓 Applied zonePlacementFreedom to ${targetPlayerId} via ${cardId}`);
+            console.log(`🔓 Applied zonePlacementFreedom to ${targetPlayerId} fieldEffects via ${cardId}`);
             return;
         }
         
@@ -1289,18 +1289,19 @@ class EffectSimulator {
     applyCardEffectSync(simState, playerId, cardId, rule) {
         const effectType = rule.effect.type;
         
-        // Handle zonePlacementFreedom effect (directly modify gameEnv like old system)
+        // Handle zonePlacementFreedom effect (store in unified fieldEffects)
         if (effectType === 'zonePlacementFreedom') {
             const targetPlayerId = rule.target.owner === 'opponent' ? 
                 this.getOpponentPlayerId(simState, playerId) : playerId;
             
-            // Apply zonePlacementFreedom to the target player's gameEnv directly
+            // Apply zonePlacementFreedom to the target player's fieldEffects
             const gameEnv = simState.gameEnv;
-            if (!gameEnv.specialStates) gameEnv.specialStates = {};
-            if (!gameEnv.specialStates[targetPlayerId]) gameEnv.specialStates[targetPlayerId] = {};
-            gameEnv.specialStates[targetPlayerId].zonePlacementFreedom = true;
+            if (!gameEnv.players[targetPlayerId].fieldEffects.specialEffects) {
+                gameEnv.players[targetPlayerId].fieldEffects.specialEffects = {};
+            }
+            gameEnv.players[targetPlayerId].fieldEffects.specialEffects.zonePlacementFreedom = true;
             
-            console.log(`🔓 Applied zonePlacementFreedom to ${targetPlayerId} via ${cardId}`);
+            console.log(`🔓 Applied zonePlacementFreedom to ${targetPlayerId} fieldEffects via ${cardId}`);
             return;
         }
         
@@ -1318,6 +1319,23 @@ class EffectSimulator {
         // TODO: Implement triggered effect checking
         // This would check if any existing cards react to the new play
         console.log(`⚡ Checking triggered effects for ${play.cardId} (unified)`);
+    }
+
+    /**
+     * Extract card ID from card object (handles multiple formats)
+     * @param {Object} card - Card object
+     * @returns {string} Card ID
+     */
+    getCardId(card) {
+        if (!card) return null;
+        
+        // Handle complex structure: {card: ["h-5"], cardDetails: [...]}
+        if (card.card && Array.isArray(card.card) && card.card[0]) {
+            return card.card[0];
+        }
+        
+        // Handle simple structure: {id: "c-1", ...} or {cardId: "c-1", ...}
+        return card.id || card.cardId || null;
     }
 
     /**
@@ -1343,11 +1361,23 @@ class EffectSimulator {
                 for (const card of cards) {
                     if (!card) continue;
                     
-                    const basePower = card.power || 0;
-                    const finalPower = this.calculateCardPowerWithEffectsUnified(gameEnv, playerId, card, basePower);
+                    const cardId = this.getCardId(card);
+                    if (!cardId) {
+                        console.warn('⚠️ Could not extract card ID from card:', card);
+                        continue;
+                    }
+                    
+                    // Extract card details for power calculation
+                    let cardDetails = card;
+                    if (card.cardDetails && Array.isArray(card.cardDetails) && card.cardDetails[0]) {
+                        cardDetails = card.cardDetails[0];
+                    }
+                    
+                    const basePower = cardDetails.power || 0;
+                    const finalPower = this.calculateCardPowerWithEffectsUnified(gameEnv, playerId, cardDetails, basePower);
                     
                     // Store calculated power in fieldEffects
-                    gameEnv.players[playerId].fieldEffects.calculatedPowers[card.cardId] = finalPower;
+                    gameEnv.players[playerId].fieldEffects.calculatedPowers[cardId] = finalPower;
                 }
             }
         }
@@ -1366,12 +1396,13 @@ class EffectSimulator {
     calculateCardPowerWithEffectsUnified(gameEnv, playerId, card, basePower) {
         let modifiedPower = basePower;
         const effects = gameEnv.players[playerId].fieldEffects.activeEffects;
+        const cardId = this.getCardId(card);
         
         // Apply power boost effects
         for (const effect of effects) {
             if (effect.type === 'powerBoost' && this.checkEffectTargetsCardUnified(effect, card)) {
                 modifiedPower += effect.value;
-                console.log(`📈 Applied power boost +${effect.value} to ${card.cardId}: ${basePower} → ${modifiedPower}`);
+                console.log(`📈 Applied power boost +${effect.value} to ${cardId}: ${basePower} → ${modifiedPower}`);
             }
         }
         
@@ -1379,7 +1410,7 @@ class EffectSimulator {
         for (const effect of effects) {
             if (effect.type === 'POWER_NULLIFICATION' && this.checkEffectTargetsCardUnified(effect, card)) {
                 modifiedPower = 0;
-                console.log(`🚫 Applied power nullification to ${card.cardId}: ${basePower} → 0`);
+                console.log(`🚫 Applied power nullification to ${cardId}: ${basePower} → 0`);
                 break; // Nullification overrides other effects
             }
         }

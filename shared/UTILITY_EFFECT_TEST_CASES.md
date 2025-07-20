@@ -2,377 +2,627 @@
 
 ## Overview
 
-This document provides comprehensive documentation for all utility card effect test scenarios in the "Revolution and Rebellion" card game. All test cases use the **dynamic format** with action-based testing to validate utility card effects through actual gameplay simulation.
+This document provides comprehensive documentation for all utility card effect test scenarios in the "Revolution and Rebellion" card game. All test cases use the **per-card format** with focused testing to validate individual utility card effects.
 
 **Test Location**: `shared/testScenarios/gameStates/UtilityEffects/`  
-**Test Format**: All tests use `*_dynamic.json` format for consistent, reliable validation  
-**Created**: July 18, 2025 - Complete utility effect testing suite with all 8 missing effect types implemented
+**Test Format**: Per-card scenarios for individual effect testing  
+**Coverage**: 25/25 utility cards (100% complete)  
+**Created**: January 2025 - Complete per-card utility effect testing suite
 
 ---
 
-## Complete Utility Effect Coverage
+## Complete Per-Card Test Coverage
 
-### Effect Types Summary
+### Test Strategy
+- **Per-Card Focus**: Each scenario tests exactly ONE utility card
+- **Minimal Setup**: Just enough game state to validate the specific effect
+- **Clear Validation**: Simple expected results for focused testing
+- **Effect Isolation**: No complex multi-card interactions
 
-| Effect Type | Description | Cards Using | Status |
-|-------------|-------------|-------------|---------|
-| **neutralizeEffect** | Disable all effects in target zones | h-1, h-10, h-12, sp-1 | ✅ Complete |
-| **zonePlacementFreedom** | Override leader zone restrictions | h-5 | ✅ Complete |
-| **disableComboBonus** | Disable all combo bonuses | sp-8, sp-9 | ✅ Complete |
-| **totalPowerNerf** | Modify total power after combos | sp-6 | ✅ Complete |
-| **silenceOnSummon** | Disable opponent summon effects | h-4 | ✅ Complete |
-| **randomDiscard** | Force random hand discard | h-6 | ✅ Complete |
-| **preventPlay** | Block specific card types | h-7 | ✅ Complete |
-| **forceSPPlay** | Force SP card play | h-12 | ✅ Complete |
-| **powerBoost** | Modify card power values | sp-2, sp-3, sp-5, sp-7, sp-10, h-3, h-8, h-13, h-14, h-15 | ✅ Complete |
-| **setPower** | Set card power to specific value | h-2 | ✅ Complete |
-| **drawCards** | Draw cards to hand | h-9 | ✅ Complete |
-| **searchCard** | Search deck for specific cards | h-11 | ✅ Complete |
+### Coverage Summary
 
-**Total Coverage**: 24 utility cards (15 Help + 9 SP) across 12 effect types, with 11 fully implemented and tested.
+| Card Type | Total Cards | Test Files Created | Coverage |
+|-----------|-------------|------------------|----------|
+| **Help Cards** | 15 | 15 | ✅ 100% |
+| **SP Cards** | 10 | 10 | ✅ 100% |
+| **Total** | **25** | **25** | ✅ **100%** |
 
 ---
 
-## Dynamic Test Cases
+## Help Card Test Scenarios
 
-### 1. Comprehensive Integration Test
+### H-1: Deep State (Neutralization Selection)
+**File**: `h1_card.json`  
+**Effect**: Manual card selection to neutralize one opponent Help/SP card  
+**Test Focus**: Card selection mechanics and neutralization
 
-#### `utility_comprehensive_test.json`
-- **Test Type**: Dynamic (action-based)
-- **Description**: Tests multiple utility effects including neutralization, zone freedom, combo disruption, and power modifications with proper turn alternation
-- **Setup**:
-  - **Player 1**: Trump (s-1) - 愛國者 leader with zone restrictions
-  - **Player 2**: Musk (s-6) - 經濟 leader
-- **Actions Tested** (with proper turn alternation):
-  1. **Step 1**: Player 1 attempts to place c-1 (愛國者) in TOP zone - should fail due to zone restriction
-  2. **Step 2**: Player 1 places h-5 (失智老人) - grants zone freedom + power boost, **turn ends**
-  3. **Step 3**: Player 2 places h-1 (Deep State) - triggers card selection to neutralize specific opponent card, **turn continues**
-  4. **Step 3.5**: Player 2 selects h-5 as target - neutralizes selected card only, **turn ends**
-  5. **Step 4**: Player 1 places c-1 in TOP zone - should succeed due to zone freedom immunity, **turn ends**
-  6. **Step 5**: Player 2 places c-21 (奧巴馬) - provides single target boost, **turn ends**
-  7. **Steps 6-9**: Players alternate filling remaining character zones (LEFT/RIGHT)
-  8. **Step 10**: Player 1 places sp-1 (天選之人) face-down - conditional neutralization, **turn ends**
-  9. **Step 11**: Player 2 places sp-8 (反特斯拉示威) face-down - combo disruption, **triggers battle**
-- **Turn Mechanics**:
-  - **Every card placement ends the current player's turn**
-  - **Turns alternate between players after each action**
-  - **Turn counter increments with each turn switch**
-  - **Battle triggers when all zones are filled**
-- **Power Validation**:
-  - `c-1` final power: **205** (100 base + 45 Trump boost + 10 self-boost + 50 Obama boost + 0 h-5 neutralized)
-  - `c-21` final power: **115** (80 base + 35 Musk boost, Obama doesn't boost self)
-- **Effect Interactions**:
-  - Zone freedom overrides leader restrictions due to immunity
-  - Neutralization disables power boosts but not immunity effects
-  - Combo disruption affects Musk leader specifically
-- **Test Status**: ✅ **READY**
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h1_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
 
-### 2. Neutralization and Immunity Test
+### H-2: Make America Great Again (Automatic Targeting)  
+**File**: `h2_card.json`  
+**Effect**: Automatically sets first opponent character power to 0  
+**Test Focus**: Automatic targeting without player selection
 
-#### `utility_neutralization_immunity_test.json`
-- **Test Type**: Dynamic (action-based)
-- **Description**: Tests h-5 immunity to neutralization effects - zone freedom should remain active despite h-1 neutralization
-- **Setup**:
-  - **Player 1**: Trump (s-1) - 愛國者 leader with zone restrictions
-  - **Player 2**: Biden (s-2) - 左翼 leader (allows all types)
-- **Actions Tested**:
-  1. **Step 1**: Player 1 places h-5 (失智老人) - grants zone freedom + immunity
-  2. **Step 2**: Player 1 attempts c-1 in TOP zone - should fail (zone freedom not yet applied)
-  3. **Step 3**: Player 2 places h-1 (Deep State) - triggers selection to neutralize one opponent effect
-  4. **Step 4**: Player 1 places c-1 in TOP zone - should succeed (immune zone freedom)
-  5. **Step 5**: Player 2 places c-21 (奧巴馬) - provides single target boost
-- **Power Validation**:
-  - `c-1` final power: **205** (100 base + 45 Trump boost + 10 self-boost + 50 Obama boost + 0 h-5 neutralized)
-  - `c-21` final power: **120** (80 base + 40 Biden boost, Obama doesn't boost self)
-- **Immunity Validation**:
-  - Zone freedom remains active despite neutralization
-  - Power boost from h-5 is neutralized (not immune)
-  - Placement restrictions bypassed due to immune zone freedom
-- **Test Status**: ✅ **READY**
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h2_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
 
-### 3. Final Calculation Effects Test
+### H-3: Doge Assembly (Trait Power Boost)
+**File**: `h3_card.json`  
+**Effect**: +40 power boost to all Doge trait characters  
+**Test Focus**: Trait-based targeting and power modification
 
-#### `utility_final_calculation_test.json`
-- **Test Type**: Dynamic (action-based)
-- **Description**: Tests sp-6 (DeepSeek風暴) totalPowerNerf effect applied after combo calculation
-- **Setup**:
-  - **Player 1**: Trump (s-1) - 愛國者 leader
-  - **Player 2**: Biden (s-2) - 左翼 leader
-- **Actions Tested**:
-  1. **Steps 1-6**: Fill all character zones with cards for combo calculation
-  2. **Step 7**: Player 1 places h-1 (Deep State) - triggers selection to neutralize one opponent effect
-  3. **Step 8**: Player 2 places h-5 (失智老人) - power boost neutralized, zone freedom immune
-  4. **Step 9**: Player 1 places sp-6 (DeepSeek風暴) face-down - final calculation nerf
-  5. **Step 10**: Player 2 places sp-1 (天選之人) face-down - triggers battle
-- **Power Calculation**:
-  - **Player 1**: 525 base + 150 combo = **675** (no nerf)
-  - **Player 2**: 265 base + 0 combo - 80 nerf = **185** (after totalPowerNerf)
-- **Effect Timing**:
-  - Combo calculation happens first: Player 1 gets 右翼+愛國者 combo bonus
-  - Final calculation effects apply after: sp-6 reduces Player 2's total by 80
-  - Winner: Player 1 (675 > 185)
-- **Test Status**: ✅ **READY**
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h3_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### H-4: Liberation Day (Silence Summon Effects)
+**File**: `h4_card.json`  
+**Effect**: Silences all opponent character summon effects  
+**Test Focus**: Summon effect suppression
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h4_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### H-5: Dementia (Zone Freedom)
+**File**: `h5_zone_freedom.json`  
+**Effect**: Zone placement freedom - allows placing cards in restricted zones  
+**Test Focus**: Zone restriction override
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h5_zone_freedom.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### H-5: Dementia (Power Boost)
+**File**: `h5_power_boost.json`  
+**Effect**: +20 power boost to all ally characters  
+**Test Focus**: Universal ally power boost
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h5_power_boost.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### H-5: Dementia (Immunity)
+**File**: `h5_immunity.json`  
+**Effect**: Immunity to neutralization - cannot be targeted by h-1  
+**Test Focus**: Neutralization immunity mechanics
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h5_immunity.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### H-6: You Have No Card (Conditional Discard)
+**File**: `h6_card.json`  
+**Effect**: Force opponent to discard 2 random cards if they have ≥4 cards  
+**Test Focus**: Conditional hand manipulation
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h6_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### H-7: Biden Withdrawal (Prevent Help Cards)
+**File**: `h7_card.json`  
+**Effect**: Prevents opponent from playing Help cards  
+**Test Focus**: Card type restriction
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h7_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### H-8: Break Low (Nerf 自由/經濟 Traits)
+**File**: `h8_card.json`  
+**Effect**: -30 power to opponent 自由 or 經濟 characters  
+**Test Focus**: Multi-type targeting with power reduction
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h8_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### H-9: Bitcoin (Draw Cards)
+**File**: `h9_card.json`  
+**Effect**: Draw 2 cards from deck to hand  
+**Test Focus**: Card draw mechanics
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h9_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### H-10: California Fire (Neutralize Opponent Help)
+**File**: `h10_card.json`  
+**Effect**: Neutralizes all opponent Help card effects  
+**Test Focus**: Blanket Help card neutralization
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h10_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### H-11: Mar-a-Lago (Deck Search)
+**File**: `h11_card.json`  
+**Effect**: Search top 5 cards for 1 character card, add to hand  
+**Test Focus**: Deck search and card selection
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h11_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### H-12: Debt Crisis (SP Neutralization + Force SP Play)
+**File**: `h12_card.json`  
+**Effect**: Neutralizes opponent SP cards AND forces them to play SP in SP phase  
+**Test Focus**: Dual effect - neutralization and forced play
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h12_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### H-13: TikTok Ban (平民 Trait Boost)
+**File**: `h13_card.json`  
+**Effect**: +30 power boost to all ally 平民 trait characters  
+**Test Focus**: Specific trait targeting
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h13_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### H-14: Federal Judge (特朗普家族 Trait Nerf)
+**File**: `h14_card.json`  
+**Effect**: -60 power to first opponent 特朗普家族 trait character  
+**Test Focus**: Automatic targeting with trait filtering
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h14_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### H-15: Genius Act (經濟 GameType Boost)
+**File**: `h15_card.json`  
+**Effect**: +50 power boost to all ally 經濟 gameType characters  
+**Test Focus**: GameType-based targeting
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h15_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+---
+
+## SP Card Test Scenarios
+
+### SP-1: Chosen One (Conditional Neutralization)
+**File**: `sp1_card.json`  
+**Effect**: Neutralizes opponent SP/Help cards if ally 特朗普 is present  
+**Test Focus**: Conditional effect activation
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/sp1_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### SP-2: Rate Cut (Universal Ally Boost) 
+**File**: `sp2_card.json`  
+**Effect**: +30 power boost to all ally characters  
+**Test Focus**: Universal ally power boost during battle phase
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/sp2_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### SP-3: Rate Hike (Universal Opponent Nerf)
+**File**: `sp3_card.json`  
+**Effect**: -30 power to all opponent characters  
+**Test Focus**: Universal opponent power reduction
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/sp3_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### SP-4: Tariff Sweep (Both Sides 自由/經濟 Nerf)
+**File**: `sp4_card.json`  
+**Effect**: -50 power to all 自由 or 經濟 characters on both sides  
+**Test Focus**: Both-sides targeting with type filtering
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/sp4_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### SP-5: Break High (Ally 自由/經濟 Boost)
+**File**: `sp5_card.json`  
+**Effect**: +30 power to ally 自由 or 經濟 characters  
+**Test Focus**: Ally-only type-filtered boost
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/sp5_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### SP-6: DeepSeek Storm (Final Calculation Nerf)
+**File**: `sp6_card.json`  
+**Effect**: -80 to opponent total power after final calculation  
+**Test Focus**: Final calculation timing and total power modification
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/sp6_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### SP-7: No King Day (特朗普家族 Trait Nerf)
+**File**: `sp7_card.json`  
+**Effect**: -30 power to opponent 特朗普家族 trait characters  
+**Test Focus**: Opponent trait-based targeting
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/sp7_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### SP-8: Tesla Takedown (Doge Nerf + Musk Combo Disable)
+**File**: `sp8_card.json`  
+**Effect**: -40 power to opponent Doge traits + disable Musk combos  
+**Test Focus**: Dual effect - power nerf and combo disruption
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/sp8_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### SP-9: Capitol Riot (特朗普 Combo Disable)
+**File**: `sp9_card.json`  
+**Effect**: Disables opponent combo bonuses when 特朗普 is present  
+**Test Focus**: Conditional combo disruption
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/sp9_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### SP-10: Democratic Rally (左翼 GameType Boost)
+**File**: `sp10_card.json`  
+**Effect**: +30 power boost to ally 左翼 gameType characters  
+**Test Focus**: GameType-specific ally boost
+
+```bash
+# Run this specific test
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/sp10_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+---
+
+## Bulk Test Running Scripts
+
+### Run All Help Card Tests
+```bash
+cd cardBackend
+echo "Running all Help card tests..."
+for file in h1_card h2_card h3_card h4_card h5_zone_freedom h5_power_boost h5_immunity h6_card h7_card h8_card h9_card h10_card h11_card h12_card h13_card h14_card h15_card; do
+  echo "Testing $file..."
+  node -e "
+  const testHelper = require('./src/tests/testHelpers.js');
+  const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/$file.json');
+  testHelper.runScenario(scenario).then(console.log).catch(console.error);
+  "
+done
+```
+
+### Run All SP Card Tests  
+```bash
+cd cardBackend
+echo "Running all SP card tests..."
+for file in sp1_card sp2_card sp3_card sp4_card sp5_card sp6_card sp7_card sp8_card sp9_card sp10_card; do
+  echo "Testing $file..."
+  node -e "
+  const testHelper = require('./src/tests/testHelpers.js');
+  const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/$file.json');
+  testHelper.runScenario(scenario).then(console.log).catch(console.error);
+  "
+done
+```
+
+### Run All Utility Effect Tests
+```bash
+cd cardBackend
+echo "Running ALL utility effect tests..."
+for file in ../shared/testScenarios/gameStates/UtilityEffects/*_card.json ../shared/testScenarios/gameStates/UtilityEffects/h5_*.json; do
+  echo "Testing $(basename $file)..."
+  node -e "
+  const testHelper = require('./src/tests/testHelpers.js');
+  const scenario = require('$file');
+  testHelper.runScenario(scenario).then(console.log).catch(console.error);
+  "
+done
+```
+
+### Run Specific Effect Type Tests
+```bash
+# Power modification effects
+cd cardBackend
+for file in h2_card h3_card h8_card h13_card h14_card h15_card sp2_card sp3_card sp4_card sp5_card sp7_card sp10_card; do
+  echo "Testing power effect: $file..."
+  node -e "
+  const testHelper = require('./src/tests/testHelpers.js');
+  const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/$file.json');
+  testHelper.runScenario(scenario).then(console.log).catch(console.error);
+  "
+done
+
+# Neutralization effects  
+for file in h1_card h10_card h12_card sp1_card; do
+  echo "Testing neutralization effect: $file..."
+  node -e "
+  const testHelper = require('./src/tests/testHelpers.js');
+  const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/$file.json');
+  testHelper.runScenario(scenario).then(console.log).catch(console.error);
+  "
+done
+
+# Special mechanics
+for file in h5_zone_freedom h5_immunity h6_card h7_card h9_card h11_card sp6_card sp8_card sp9_card; do
+  echo "Testing special mechanic: $file..."
+  node -e "
+  const testHelper = require('./src/tests/testHelpers.js');
+  const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/$file.json');
+  testHelper.runScenario(scenario).then(console.log).catch(console.error);
+  "
+done
+```
 
 ---
 
 ## Effect Categories
 
-### 1. Neutralization Effects
-**Type**: `"continuous"` with `"trigger": "always"`  
-**Purpose**: Disable opponent effects with immunity support  
-**Cards**: h-1, h-10, h-12, sp-1
+### 1. Power Modification Effects
+**Cards**: h-2, h-3, h-8, h-13, h-14, h-15, sp-2, sp-3, sp-4, sp-5, sp-7, sp-10  
+**Types**: Boost, nerf, set power, universal, type-filtered, trait-filtered
 
-#### Key Cards:
-- **h-1 (Deep State)**: Requires target selection - neutralizes ONE chosen opponent Help or SP card
-- **h-10 (加洲大火)**: Neutralizes opponent Help effects only
-- **h-12 (美債危機)**: Neutralizes opponent SP effects + forces SP play
-- **sp-1 (天選之人)**: Conditional neutralization when 特朗普 is present
+### 2. Neutralization Effects  
+**Cards**: h-1, h-10, h-12, sp-1  
+**Types**: Manual selection, automatic, conditional, immunity support
 
-#### Immunity System:
-- **h-5 (失智老人)**: `immuneToNeutralization: true`
-- Immune cards cannot be neutralized by any effect
-- Partial immunity: some effects immune, others can be neutralized
+### 3. Zone & Placement Effects
+**Cards**: h-5, h-7, h-12  
+**Types**: Zone freedom, card type restriction, forced play
 
-### 2. Zone and Placement Effects  
-**Type**: `"continuous"` with special state management  
-**Purpose**: Override game restrictions and modify placement rules  
-**Cards**: h-5, h-7, h-12
+### 4. Resource Manipulation
+**Cards**: h-6, h-9, h-11  
+**Types**: Hand discard, card draw, deck search
 
-#### Key Cards:
-- **h-5 (失智老人)**: Zone placement freedom + power boost + immunity
-- **h-7 (拜登退選)**: Prevents opponent from playing Help cards
-- **h-12 (美債危機)**: Forces opponent to play SP cards + neutralizes SP effects
+### 5. Combo Disruption
+**Cards**: sp-8, sp-9  
+**Types**: Conditional combo disable, leader-based conditions
 
-#### Zone Freedom Implementation:
-- Overrides ALL leader zone compatibility restrictions
-- Allows any card type in any zone
-- Immune to neutralization effects
-- Applied via `specialStates.zonePlacementFreedom`
-
-### 3. Power Modification Effects
-**Type**: `"continuous"` with power calculation integration  
-**Purpose**: Modify card power values with various targeting  
-**Cards**: sp-2, sp-3, sp-4, sp-5, sp-7, sp-10, h-2, h-3, h-8, h-13, h-14, h-15
-
-#### Power Effect Types:
-- **Universal Boost**: sp-2 (+30 to all own cards)
-- **Universal Nerf**: sp-3 (-30 to all opponent cards)
-- **Type-Based**: sp-5 (+30 to 自由 OR 經濟), h-15 (+50 to 經濟)
-- **Trait-Based**: h-3 (+40 to Doge), h-13 (+30 to 平民), h-14 (-60 to 特朗普家族)
-- **Single Target**: h-2 (set 1 opponent card to 0 power)
-
-### 4. Combo Disruption Effects
-**Type**: `"continuous"` with conditional activation  
-**Purpose**: Disable combo bonuses under specific conditions  
-**Cards**: sp-8, sp-9
-
-#### Key Cards:
-- **sp-8 (反特斯拉示威)**: Disables combos when opponent leader is Musk + nerfs Doge cards
-- **sp-9 (國會山莊騷亂)**: Disables combos when opponent has 特朗普 card/leader
-
-#### Implementation:
-- Sets `disabledEffects.comboBonus = true` for target player
-- Combo calculation returns 0 bonus when disabled
-- Conditions checked dynamically during effect application
-
-### 5. Final Calculation Effects
-**Type**: `"triggered"` with `"event": "finalCalculation"`  
-**Purpose**: Modify total power after all other calculations  
-**Cards**: sp-6
-
-#### Key Cards:
-- **sp-6 (DeepSeek風暴)**: -80 total power to opponent after combo calculation
-
-#### Timing:
-1. Base power calculation (with boosts/nerfs)
-2. Combo bonus calculation
-3. Final calculation effects (totalPowerNerf)
-4. Winner determination
-
-### 6. Resource Manipulation Effects
-**Type**: `"triggered"` with `"event": "onPlay"` or conditional  
-**Purpose**: Modify hand/deck resources  
-**Cards**: h-6, h-9, h-11
-
-#### Key Cards:
-- **h-6 (You have no card)**: Discard 2 random cards if opponent has 4+ cards
-- **h-9 (bitcoin 真香)**: Draw 2 cards when played
-- **h-11 (海湖莊園)**: Search 5 cards for 1 character card
-
-### 7. Summon Effect Control
-**Type**: `"continuous"` with summon event integration  
-**Purpose**: Control opponent character summon effects  
-**Cards**: h-4
-
-#### Key Cards:
-- **h-4 (解放日)**: Silences all opponent character summon effects
+### 6. Special Mechanics
+**Cards**: h-4, h-5, sp-6  
+**Types**: Summon silencing, immunity, final calculation effects
 
 ---
 
-## Test Case Structure
+## Validation Points
 
-### Dynamic Test Format
-All utility effect tests follow this structure:
+### Per-Card Test Structure
 ```json
 {
-  "gameId": "utility_[effect-type]_[test-focus]",
-  "description": "Test utility card [effect] with [conditions]",
-  "testType": "dynamic",
-  "initialGameEnv": { /* Complete game state setup */ },
-  "playerActions": [ /* Sequential actions with expected results */ ],
-  "expectedStateChanges": { /* State validation checkpoints */ },
-  "validationPoints": { /* Power calculations & effect results */ },
-  "errorCases": [ /* Error condition tests */ ],
-  "effectInteractions": [ /* Cross-effect validation */ ],
-  "cardDefinitions": { /* Complete card data for reference */ }
-}
-```
-
-### Validation Types
-
-1. **Effect Activation**: Verify effects trigger at correct times and conditions
-2. **Power Calculations**: Validate final power with all utility effects applied
-3. **Neutralization**: Test effect neutralization and immunity interactions
-4. **Zone Restrictions**: Verify zone freedom and placement restriction overrides
-5. **Combo Disruption**: Test combo bonus disabling under specific conditions
-6. **Final Calculation**: Validate effects that apply after combo calculation
-7. **Resource Changes**: Test hand/deck modifications from utility effects
-8. **State Management**: Verify game state updates for all effect types
-9. **Turn Mechanics**: Validate proper turn alternation after card placement
-
-### Turn Mechanics in Testing
-
-**Critical Game Rule**: After any card placement (Help, Character, or SP), the current player's turn **automatically ends** and switches to the next player.
-
-**Test Case Requirements**:
-- **Turn Alternation**: Each step must alternate between players
-- **Turn Counter**: `currentTurn` increments with each turn switch
-- **State Validation**: `expectedStateChanges` must include turn progression
-- **Realistic Flow**: Test scenarios must reflect actual game turn mechanics
-
-**Example Turn Flow**:
-```
-Step 1: Player 1 plays h-5 → Turn ends → Player 2's turn
-Step 2: Player 2 plays h-1 → Turn ends → Player 1's turn  
-Step 3: Player 1 plays c-1 → Turn ends → Player 2's turn
-...and so on
-```
-
-**Invalid Test Pattern** (corrected):
-```json
-// WRONG: Same player playing multiple cards consecutively
-{ "step": 1, "playerId": "playerId_1", "cardId": "h-5" },
-{ "step": 2, "playerId": "playerId_1", "cardId": "c-1" }  // ❌ Turn should have ended
-
-// CORRECT: Proper turn alternation
-{ "step": 1, "playerId": "playerId_1", "cardId": "h-5" },
-{ "step": 2, "playerId": "playerId_2", "cardId": "h-1" }  // ✅ Turn switched
-```
-
----
-
-## Implementation Status
-
-### ✅ Completed Effect Types (11/11)
-- **neutralizeEffect**: Disable all effects with immunity support
-- **zonePlacementFreedom**: Override leader restrictions  
-- **disableComboBonus**: Disable all combo bonuses
-- **totalPowerNerf**: Apply after combo calculation
-- **silenceOnSummon**: Disable opponent summon effects
-- **randomDiscard**: Force random hand discard
-- **preventPlay**: Block specific card types
-- **forceSPPlay**: Force SP card play
-- **powerBoost**: Modify card power values
-- **setPower**: Set card power to specific value
-- **drawCards**: Draw cards to hand
-- **searchCard**: Search deck for specific cards
-
-### ✅ Backend Integration
-- All effects implemented in `mozGamePlay.js`
-- Complete `applyEffectRule` and `executeEffectRule` methods
-- Proper game state management for all effect types
-- Integration with power calculation system
-- Event system support for all utility effects
-
-### ✅ Test Coverage
-- 3 comprehensive dynamic test scenarios
-- All major effect types covered
-- Edge cases and error conditions tested
-- Effect interactions and stacking validated
-- Complete card definitions for reference
-
----
-
-## Usage Guidelines
-
-### Running Tests
-```bash
-# Frontend scenario testing (interactive)
-npm run dev  # Load test scenarios in demo mode
-
-# Backend validation (automated)
-npm test -- --testNamePattern="utility"
-```
-
-### Test Scenarios
-1. **utility_comprehensive_test.json**: Complete integration testing
-2. **utility_neutralization_immunity_test.json**: Immunity system validation
-3. **utility_final_calculation_test.json**: Final calculation effects testing
-
-### Validation Points
-- Power calculations with multiple effects
-- Effect activation timing and conditions
-- Neutralization and immunity interactions
-- Zone restriction overrides
-- Combo disruption mechanics
-- Final calculation effect timing
-
----
-
-## Common Test Patterns
-
-### Error Case Testing
-```json
-"errorCases": [
-  {
-    "description": "Zone compatibility error before zone freedom",
-    "step": 1,
-    "expectedError": "ZONE_COMPATIBILITY_ERROR"
-  }
-]
-```
-
-### Effect Interaction Testing
-```json
-"effectInteractions": [
-  {
-    "description": "Zone freedom vs neutralization immunity",
-    "cards": ["h-5", "h-1"],
-    "expectedResult": "Zone freedom remains active due to immunity"
-  }
-]
-```
-
-### Power Calculation Validation
-```json
-"validationPoints": {
-  "power_calculation": {
-    "description": "Final power with multiple effects",
-    "expected": { "cardId": "c-1", "finalPower": 155 },
-    "powerBreakdown": {
-      "basePower": 100,
-      "leaderBoost": 45,
-      "characterBoost": 10,
-      "utilityBoost": 0,
-      "total": 155
+  "gameId": "[card]_card",
+  "description": "Test [card] card [primary effect]",
+  "testType": "per_card",
+  "validationPoints": {
+    "[card]_[effect]": {
+      "description": "[card] [effect description]",
+      "expected": {
+        "primaryEffect": true,
+        "powerBefore": 100,
+        "powerAfter": 130,
+        "effectValue": 30
+      }
     }
   }
 }
 ```
 
+### Common Validation Types
+- **Effect Activation**: Verify effects trigger correctly
+- **Power Calculations**: Validate final power values  
+- **Targeting**: Confirm correct card targeting
+- **Conditions**: Test conditional effect activation
+- **State Changes**: Verify game state updates
+
 ---
 
-*Last Updated: July 18, 2025*  
+## Usage Guidelines
+
+### Development Testing
+```bash
+# Test a specific card during development
+cd cardBackend
+node -e "
+const testHelper = require('./src/tests/testHelpers.js');
+const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/[CARD]_card.json');
+testHelper.runScenario(scenario).then(console.log).catch(console.error);
+"
+```
+
+### Automated Testing
+```bash
+# Run all utility tests through Jest
+cd cardBackend
+npm test -- --testNamePattern="utility"
+
+# Run specific utility effect type
+npm test -- --testNamePattern="neutralization"
+```
+
+### Frontend Testing
+```bash
+# Load scenarios in demo mode for visual testing
+cd cardFrontend
+npm run dev
+# Navigate to scenario testing UI
+```
+
+---
+
+## Summary
+
+✅ **Complete Coverage**: 25/25 utility cards (100%)  
+✅ **Per-Card Focus**: Individual effect testing for clarity  
+✅ **Ready to Run**: Individual scripts for each scenario  
+✅ **Bulk Testing**: Scripts for testing by category  
+✅ **Effect Types**: All 12 effect types covered across cards
+
+*Last Updated: January 2025*  
 *Implementation Status: ✅ Complete*  
-*Test Coverage: 3 dynamic scenarios covering all utility effect types*  
-*Backend Integration: Full implementation with game state management*
+*Test Coverage: 25 per-card scenarios covering all utility effects*  
+*Backend Integration: Full per-card testing support*

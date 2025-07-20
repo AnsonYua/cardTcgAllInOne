@@ -1,0 +1,151 @@
+{
+  "gameId": "h5_zone_freedom_simple",
+  "description": "Simple test for h-5 (失智老人) zone placement freedom and power boost",
+  "testType": "simple",
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": ["h-5", "c-1"],
+          "mainDeck": [],
+          "leader": ["s-1"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-2"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {
+          "id": "s-1",
+          "name": "特朗普",
+          "cardType": "leader",
+          "zoneCompatibility": {
+            "top": ["右翼", "自由", "經濟"],
+            "left": ["右翼", "自由", "愛國者"],
+            "right": ["右翼", "愛國者", "經濟"]
+          }
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      },
+      "playerId_2": {
+        "leader": {
+          "id": "s-2",
+          "name": "拜登",
+          "cardType": "leader"
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {
+      "globalSequence": 0,
+      "plays": []
+    }
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "description": "Player 1 tries to place c-1 (愛國者 type) in TOP zone - should fail due to zone restriction",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-1",
+        "zone": "top"
+      },
+      "expectedResult": {
+        "success": false,
+        "error": "ZONE_COMPATIBILITY_ERROR"
+      }
+    },
+    {
+      "step": 2,
+      "description": "Player 1 plays h-5 (失智老人) to gain zone placement freedom",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "h-5",
+        "zone": "help"
+      },
+      "expectedResult": {
+        "success": true
+      },
+      "expectedEffects": [
+        "h-5 grants zonePlacementFreedom to player 1",
+        "h-5 grants +20 power boost to all character cards",
+        "h-5 has immunity to neutralization"
+      ]
+    },
+    {
+      "step": 3,
+      "description": "Player 1 now places c-1 in TOP zone - should succeed due to zone freedom",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "c-1",
+        "zone": "top"
+      },
+      "expectedResult": {
+        "success": true
+      },
+      "expectedEffects": [
+        "c-1 placed successfully despite zone restriction",
+        "c-1 receives +20 power boost from h-5"
+      ]
+    }
+  ],
+  "validationPoints": {
+    "zone_freedom_test": {
+      "description": "Verify h-5 provides zone placement freedom and power boost",
+      "expected": {
+        "zonePlacementFreedomActive": true,
+        "c1PowerBoostApplied": true,
+        "c1FinalPower": 120,
+        "immuneToNeutralization": true
+      },
+      "powerBreakdown": {
+        "c1": {
+          "basePower": 100,
+          "h5PowerBoost": 20,
+          "total": 120
+        }
+      }
+    }
+  }
+}

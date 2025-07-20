@@ -352,6 +352,7 @@ AFTER (Single Source of Truth):
 │      gameEnv.players[].fieldEffects         │
 │ ✅ zoneRestrictions (immediate access)      │
 │ ✅ activeEffects (immediate access)         │  
+│ ✅ specialEffects (immediate access) 🆕     │
 │ ✅ calculatedPowers (immediate access)      │
 │ ✅ disabledCards (immediate access)         │
 │ ✅ victoryPointModifiers (immediate access) │
@@ -397,6 +398,12 @@ gameEnv.players[playerId].fieldEffects = {
     }
   ],
   
+  // NEW: Special gameplay effects (unified structure - January 2025)
+  specialEffects: {
+    zonePlacementFreedom: true,        // h-5 (失智老人) zone freedom
+    immuneToNeutralization: true       // h-5 immunity to h-1 neutralization
+  },
+  
   // NEW: Calculated card powers (no more computedState!)
   calculatedPowers: {
     "43": 195,    // Card 43 with +45 bonus = 195 total
@@ -430,6 +437,10 @@ const cardPower = gameEnv.players[playerId].fieldEffects.calculatedPowers[cardId
 
 // Active effects for game logic
 const effects = gameEnv.players[playerId].fieldEffects.activeEffects;
+
+// Special gameplay effects (NEW - replaces specialStates)
+const hasZoneFreedom = gameEnv.players[playerId].fieldEffects.specialEffects?.zonePlacementFreedom;
+const isImmune = gameEnv.players[playerId].fieldEffects.specialEffects?.immuneToNeutralization;
 
 // Disabled cards check
 const isDisabled = gameEnv.players[playerId].fieldEffects.disabledCards.includes(cardId);
@@ -484,11 +495,16 @@ effectSimulator.getVictoryPointModifiers(gameEnv, playerId)
 - ❌ `clearPlayerLeaderEffects()` calls in mozGamePlay - Automatic through replay
 - ❌ Manual field effect initialization in various places
 
+**REMOVED Data Structures (January 2025):**
+- ❌ `gameEnv.specialStates` - Special gameplay effects moved to `fieldEffects.specialEffects`
+- ❌ Dual storage for zone placement freedom - Now unified in single location
+
 **NEW Unified Processing:**
 - ✅ `processCompleteLeaderEffects()` - Complete leader processing in EffectSimulator
 - ✅ `calculateCardPowerWithLeaderEffects()` - Unified power calculation
 - ✅ `PLAY_LEADER` actions in play sequence - Leaders treated like any other card play
 - ✅ Automatic effect transitions - No manual synchronization needed
+- ✅ `fieldEffects.specialEffects` - Unified storage for zone freedom and immunity effects
 
 **Developer Impact:**
 - **No API Changes**: Frontend continues to work without modification

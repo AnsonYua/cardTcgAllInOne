@@ -1,0 +1,211 @@
+{
+  "gameId": "sp6_final_calculation_simple",
+  "description": "Simple test for sp-6 (DeepSeek風暴) final calculation power nerf",
+  "testType": "simple",
+  "initialGameEnv": {
+    "phase": "SP_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 8,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": ["sp-6"],
+          "mainDeck": [],
+          "leader": ["s-1"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": ["sp-1"],
+          "mainDeck": [],
+          "leader": ["s-2"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {
+          "id": "s-1",
+          "name": "特朗普",
+          "cardType": "leader"
+        },
+        "top": [
+          {
+            "id": "c-1",
+            "name": "總統特朗普",
+            "cardType": "character",
+            "gameType": "愛國者",
+            "power": 100
+          }
+        ],
+        "left": [
+          {
+            "id": "c-2",
+            "name": "小特朗普",
+            "cardType": "character",
+            "gameType": "右翼",
+            "power": 65
+          }
+        ],
+        "right": [
+          {
+            "id": "c-3",
+            "name": "艾瑞克特朗普",
+            "cardType": "character",
+            "gameType": "經濟",
+            "power": 70
+          }
+        ],
+        "help": [
+          {
+            "id": "h-1",
+            "name": "Deep State",
+            "cardType": "help"
+          }
+        ],
+        "sp": []
+      },
+      "playerId_2": {
+        "leader": {
+          "id": "s-2",
+          "name": "拜登",
+          "cardType": "leader"
+        },
+        "top": [
+          {
+            "id": "c-21",
+            "name": "奧巴馬",
+            "cardType": "character",
+            "gameType": "左翼",
+            "power": 80
+          }
+        ],
+        "left": [
+          {
+            "id": "c-22",
+            "name": "沃倫",
+            "cardType": "character",
+            "gameType": "左翼",
+            "power": 75
+          }
+        ],
+        "right": [
+          {
+            "id": "c-23",
+            "name": "民主黨支持者",
+            "cardType": "character",
+            "gameType": "左翼",
+            "power": 60
+          }
+        ],
+        "help": [
+          {
+            "id": "h-2",
+            "name": "Make America Great Again",
+            "cardType": "help"
+          }
+        ],
+        "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {
+      "globalSequence": 0,
+      "plays": []
+    }
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "description": "Player 1 plays sp-6 (DeepSeek風暴) face-down for final calculation nerf",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCardBack",
+        "cardId": "sp-6",
+        "zone": "sp"
+      },
+      "expectedResult": {
+        "success": true,
+        "faceDownPlacement": true
+      },
+      "expectedEffects": [
+        "sp-6 placed face-down in SP zone",
+        "Will apply -80 total power to opponent after combo calculation"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Player 2 plays SP card face-down to trigger reveal and battle calculation",
+      "playerId": "playerId_2",
+      "action": {
+        "actionType": "PlayCardBack",
+        "cardId": "sp-1",
+        "zone": "sp"
+      },
+      "expectedResult": {
+        "success": true,
+        "autoReveal": true,
+        "battleCalculated": true
+      },
+      "expectedEffects": [
+        "Both SP cards revealed automatically",
+        "Regular power and combo calculations performed first",
+        "sp-6 applies -80 to opponent's total power AFTER combo calculation",
+        "Final battle results determined"
+      ]
+    }
+  ],
+  "validationPoints": {
+    "final_calculation_test": {
+      "description": "Verify sp-6 applies -80 power nerf after combo calculation",
+      "expected": {
+        "sp6EffectActive": true,
+        "nerfAppliedAfterCombos": true,
+        "opponentTotalPowerReduced": true
+      },
+      "calculationOrder": [
+        "1. Base power calculation",
+        "2. Power boost/nerf effects applied",
+        "3. Combo bonuses calculated",
+        "4. sp-6 final calculation effect applied (-80 to opponent)",
+        "5. Final totals determined"
+      ],
+      "powerBreakdown": {
+        "player2_before_sp6": {
+          "c21": 80,
+          "c22": 75,
+          "c23": 60,
+          "comboBonus": 250,
+          "subtotal": 465,
+          "note": "Before sp-6 final calculation"
+        },
+        "player2_after_sp6": {
+          "totalBeforeNerf": 465,
+          "sp6Nerf": -80,
+          "finalTotal": 385,
+          "note": "After sp-6 final calculation"
+        }
+      }
+    }
+  }
+}

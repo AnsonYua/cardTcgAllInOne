@@ -1,0 +1,84 @@
+{
+  "gameId": "h4_card",
+  "description": "Test h-4 card silence opponent summon effects",
+  "testType": "per_card",
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": ["h-4"],
+          "mainDeck": [],
+          "leader": ["s-1"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": ["c-summon-effect"],
+          "mainDeck": [],
+          "leader": ["s-2"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {"id": "s-1", "name": "特朗普", "cardType": "leader"},
+        "top": [], "left": [], "right": [], "help": [], "sp": []
+      },
+      "playerId_2": {
+        "leader": {"id": "s-2", "name": "拜登", "cardType": "leader"},
+        "top": [], "left": [], "right": [], "help": [], "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {"globalSequence": 0, "plays": []}
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "description": "Player 1 plays h-4 to silence opponent summon effects",
+      "playerId": "playerId_1",
+      "action": {"actionType": "PlayCard", "cardId": "h-4", "zone": "help"},
+      "expectedResult": {"success": true}
+    },
+    {
+      "step": 2,
+      "description": "Player 2 summons character with effect (should be silenced)",
+      "playerId": "playerId_2",
+      "action": {"actionType": "PlayCard", "cardId": "c-summon-effect", "zone": "top"},
+      "expectedResult": {"success": true}
+    }
+  ],
+  "validationPoints": {
+    "h4_silence_summon": {
+      "description": "h-4 prevents opponent character summon effects from triggering",
+      "expected": {
+        "summonEffectSilenced": true,
+        "characterPlacedSuccessfully": true,
+        "noSummonEffectTriggered": true
+      }
+    }
+  }
+}

@@ -247,25 +247,58 @@ if (gameEnv.disabledEffects[playerId].comboBonus) {
 
 ### Game State Management
 
-#### **New Game State Fields**
+#### **Unified Game State Fields (Single Source of Truth)**
 ```javascript
 gameEnv = {
-  // Effect neutralization tracking
-  neutralizedEffects: {
-    playerId: { allEffects: true, zones: ["help", "sp"] }
+  players: {
+    playerId: {
+      fieldEffects: {
+        // Zone restrictions from leaders
+        zoneRestrictions: {
+          TOP: ["右翼", "自由", "經濟"],
+          LEFT: ["右翼", "自由", "愛國者"],
+          RIGHT: ["右翼", "愛國者", "經濟"],
+          HELP: ["ALL"],
+          SP: ["ALL"]
+        },
+        
+        // Active effects from cards
+        activeEffects: [
+          {
+            effectId: "h-1_neutralize",
+            source: "h-1",
+            type: "neutralizeEffect",
+            target: { scope: "OPPONENT", zones: ["help", "sp"] },
+            value: true
+          }
+        ],
+        
+        // Special gameplay effects (replaces old specialStates)
+        specialEffects: {
+          zonePlacementFreedom: true,     // h-5 zone freedom
+          immuneToNeutralization: true    // h-5 immunity
+        },
+        
+        // Calculated card powers
+        calculatedPowers: {
+          "43": 195,  // Card with effects applied
+          "44": 150   // Base power
+        },
+        
+        // Disabled cards tracking
+        disabledCards: ["cardId1", "cardId2"],
+        
+        // Victory point modifiers
+        victoryPointModifiers: -80  // sp-6 totalPowerNerf
+      }
+    }
   },
   
-  // Disabled effect tracking
+  // Legacy fields (still used for some effects)
   disabledEffects: {
     playerId: { comboBonus: true, summonEffects: true }
   },
   
-  // Special states
-  specialStates: {
-    playerId: { zonePlacementFreedom: true }
-  },
-  
-  // Play restrictions
   playRestrictions: {
     playerId: { help: true, sp: true }
   }

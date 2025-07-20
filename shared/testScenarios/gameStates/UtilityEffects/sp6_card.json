@@ -1,0 +1,107 @@
+{
+  "gameId": "sp6_card",
+  "description": "Test sp-6 card final calculation total power nerf",
+  "testType": "per_card",
+  "initialGameEnv": {
+    "phase": "BATTLE_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-1"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-2"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {"id": "s-1", "name": "特朗普", "cardType": "leader"},
+        "top": [], "left": [], "right": [], "help": [],
+        "sp": [
+          {
+            "id": "sp-6",
+            "name": "DeepSeek風暴",
+            "cardType": "sp",
+            "effects": {
+              "description": "在全場總能力結算後，對方的總能力值-80",
+              "rules": [
+                {
+                  "id": "deepseek_storm_final_nerf",
+                  "type": "triggered",
+                  "trigger": {"event": "finalCalculation"},
+                  "target": {"owner": "opponent"},
+                  "effect": {"type": "totalPowerNerf", "value": 80}
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "playerId_2": {
+        "leader": {"id": "s-2", "name": "拜登", "cardType": "leader"},
+        "top": [
+          {
+            "id": "c-21",
+            "name": "奧巴馬",
+            "cardType": "character",
+            "gameType": "左翼",
+            "basePower": 80
+          }
+        ],
+        "left": [
+          {
+            "id": "c-22",
+            "name": "希拉莉",
+            "cardType": "character",
+            "gameType": "左翼",
+            "basePower": 85
+          }
+        ],
+        "right": [], "help": [], "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {"globalSequence": 0, "plays": []}
+  },
+  "playerActions": [],
+  "validationPoints": {
+    "sp6_final_calculation_nerf": {
+      "description": "sp-6 reduces opponent total power by -80 after final calculation",
+      "expected": {
+        "opponentTotalPowerBefore": 165,
+        "opponentTotalPowerAfter": 85,
+        "finalCalculationNerf": 80,
+        "triggersAfterCalculation": true
+      }
+    }
+  }
+}

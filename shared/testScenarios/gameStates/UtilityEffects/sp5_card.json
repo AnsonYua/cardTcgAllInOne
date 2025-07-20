@@ -1,0 +1,111 @@
+{
+  "gameId": "sp5_card",
+  "description": "Test sp-5 card boost ally 自由/經濟 traits",
+  "testType": "per_card",
+  "initialGameEnv": {
+    "phase": "BATTLE_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-1"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-2"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {"id": "s-1", "name": "特朗普", "cardType": "leader"},
+        "top": [
+          {
+            "id": "c-freedom1",
+            "name": "Freedom Character 1",
+            "cardType": "character",
+            "gameType": "自由",
+            "basePower": 70
+          }
+        ],
+        "left": [
+          {
+            "id": "c-economy1",
+            "name": "Economy Character 1",
+            "cardType": "character",
+            "gameType": "經濟",
+            "basePower": 85
+          }
+        ],
+        "right": [], "help": [],
+        "sp": [
+          {
+            "id": "sp-5",
+            "name": "破頂",
+            "cardType": "sp",
+            "effects": {
+              "description": "我方場上擁有自由或經濟特徵的全部角色卡，原能力值 +30",
+              "rules": [
+                {
+                  "id": "break_high_boost",
+                  "type": "continuous",
+                  "target": {
+                    "owner": "self",
+                    "zones": ["top", "left", "right"],
+                    "filters": [{"type": "gameTypeOr", "values": ["自由", "經濟"]}]
+                  },
+                  "effect": {"type": "powerBoost", "value": 30}
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "playerId_2": {
+        "leader": {"id": "s-2", "name": "拜登", "cardType": "leader"},
+        "top": [], "left": [], "right": [], "help": [], "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {"globalSequence": 0, "plays": []}
+  },
+  "playerActions": [],
+  "validationPoints": {
+    "sp5_ally_boost": {
+      "description": "sp-5 boosts ally 自由/經濟 character power by +30",
+      "expected": {
+        "freedomPowerBefore": 70,
+        "freedomPowerAfter": 100,
+        "economyPowerBefore": 85,
+        "economyPowerAfter": 115,
+        "boostValue": 30
+      }
+    }
+  }
+}

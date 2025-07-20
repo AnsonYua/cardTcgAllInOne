@@ -1,0 +1,187 @@
+{
+  "gameId": "sp2_power_boost_simple",
+  "description": "Simple test for sp-2 (減息周期) universal power boost",
+  "testType": "simple",
+  "initialGameEnv": {
+    "phase": "SP_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 8,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": ["sp-2"],
+          "mainDeck": [],
+          "leader": ["s-1"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-2"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {
+          "id": "s-1",
+          "name": "特朗普",
+          "cardType": "leader"
+        },
+        "top": [
+          {
+            "id": "c-1",
+            "name": "總統特朗普",
+            "cardType": "character",
+            "gameType": "愛國者",
+            "power": 100
+          }
+        ],
+        "left": [
+          {
+            "id": "c-2",
+            "name": "小特朗普",
+            "cardType": "character",
+            "gameType": "右翼",
+            "power": 65
+          }
+        ],
+        "right": [
+          {
+            "id": "c-3",
+            "name": "艾瑞克特朗普",
+            "cardType": "character",
+            "gameType": "經濟",
+            "power": 70
+          }
+        ],
+        "help": [
+          {
+            "id": "h-1",
+            "name": "Deep State",
+            "cardType": "help"
+          }
+        ],
+        "sp": []
+      },
+      "playerId_2": {
+        "leader": {
+          "id": "s-2",
+          "name": "拜登",
+          "cardType": "leader"
+        },
+        "top": [
+          {
+            "id": "c-21",
+            "name": "奧巴馬",
+            "cardType": "character",
+            "gameType": "左翼",
+            "power": 80
+          }
+        ],
+        "left": [],
+        "right": [],
+        "help": [
+          {
+            "id": "h-2",
+            "name": "Make America Great Again",
+            "cardType": "help"
+          }
+        ],
+        "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {
+      "globalSequence": 0,
+      "plays": []
+    }
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "description": "Player 1 plays sp-2 (減息周期) face-down for universal +30 power boost",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCardBack",
+        "cardId": "sp-2",
+        "zone": "sp"
+      },
+      "expectedResult": {
+        "success": true,
+        "faceDownPlacement": true
+      },
+      "expectedEffects": [
+        "sp-2 placed face-down in SP zone",
+        "Will boost all own cards by +30 when revealed"
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Player 2 plays SP card face-down to trigger reveal",
+      "playerId": "playerId_2",
+      "action": {
+        "actionType": "PlayCardBack",
+        "cardId": "sp-1",
+        "zone": "sp"
+      },
+      "expectedResult": {
+        "success": true,
+        "autoReveal": true,
+        "effectsActivated": true
+      },
+      "expectedEffects": [
+        "Both SP cards revealed automatically",
+        "sp-2 grants +30 power to all Player 1's cards",
+        "Power calculations updated with SP effects"
+      ]
+    }
+  ],
+  "validationPoints": {
+    "universal_power_boost_test": {
+      "description": "Verify sp-2 boosts all own cards by +30",
+      "expected": {
+        "sp2EffectActive": true,
+        "allOwnCardsReceiveBoost": true
+      },
+      "powerBreakdown": {
+        "c1": {
+          "basePower": 100,
+          "sp2Boost": 30,
+          "total": 130
+        },
+        "c2": {
+          "basePower": 65,
+          "sp2Boost": 30,
+          "total": 95
+        },
+        "c3": {
+          "basePower": 70,
+          "sp2Boost": 30,
+          "total": 100
+        }
+      }
+    }
+  }
+}

@@ -58,16 +58,23 @@ simState.players[playerId].fieldEffects.zoneRestrictions = {
 computedState.activeRestrictions[playerId] = simState.players[playerId].fieldEffects.zoneRestrictions;
 ```
 
-### Step 4: Computed State → Main Game Environment Merge
-**Location**: `GameLogic.js` and `mozGamePlay.js` - after `simulateCardPlaySequence()` calls
+### Step 4: Unified Field Effects System - Single Source of Truth
+**Location**: `EffectSimulator.js` - direct updates to `gameEnv.players[].fieldEffects`
+
+**ARCHITECTURE CHANGE (January 2025):**
+The system now uses a single source of truth approach - no more merge steps needed!
 
 ```javascript
-// CRITICAL MERGE STEP - This was the bug that was fixed!
-for (const playerId of playerList) {
-    if (computedState.activeRestrictions && computedState.activeRestrictions[playerId]) {
-        gameEnv.players[playerId].fieldEffects.zoneRestrictions = computedState.activeRestrictions[playerId];
-    }
-}
+// NEW UNIFIED APPROACH - Direct updates, no merge needed
+// EffectSimulator directly updates gameEnv.players[playerId].fieldEffects during simulation
+gameEnv.players[playerId].fieldEffects.zoneRestrictions = {
+    TOP: ["右翼", "自由", "經濟"],
+    LEFT: ["右翼", "自由", "愛國者"],
+    RIGHT: ["右翼", "愛國者", "經濟"],
+    HELP: ["ALL"],
+    SP: ["ALL"]
+};
+// Effects immediately available - no merge step required!
 ```
 
 ### Step 5: API Response → Frontend Receives Zone Restrictions
@@ -119,19 +126,28 @@ for (const playerId of playerList) {
 - **What Happens**: Zone restrictions become visible in API responses
 - **Where**: After every `simulateCardPlaySequence()` call
 
-## 🐛 What Was Fixed
+## 🚀 System Evolution - Single Source of Truth (January 2025)
 
-### The Bug
-Zone restrictions were calculated correctly but never appeared in API responses because:
+### The Architecture Change
+The system has evolved to eliminate dual data structures and merge complexity:
+
+**Before (Dual System):**
 1. ✅ EffectSimulator calculated restrictions → stored in `computedState.activeRestrictions`
-2. ❌ No merge back to main gameEnv → restrictions stayed in separate object
-3. ❌ API response sent `gameEnv.players` → zone restrictions missing
+2. ❌ Required merge step to copy back to main gameEnv
+3. ❌ Risk of desync between computedState and gameEnv
+4. ❌ Complex merge logic throughout codebase
 
-### The Fix
-Added merge step after every `simulateCardPlaySequence()` call:
+**After (Unified System):**
+1. ✅ EffectSimulator directly updates `gameEnv.players[].fieldEffects`
+2. ✅ Single source of truth - no dual data structures
+3. ✅ Immediate availability for all game logic and API responses
+4. ✅ Simplified codebase - eliminated 300+ lines of merge logic
+
+### The Unified Approach
 ```javascript
-// Copy restrictions from computedState back to gameEnv
-gameEnv.players[playerId].fieldEffects.zoneRestrictions = computedState.activeRestrictions[playerId];
+// Direct updates during simulation - no merge needed!
+simulateCardPlaySequence(gameEnv); // Updates gameEnv.players[].fieldEffects directly
+// Zone restrictions immediately available for API responses and game logic
 ```
 
 ## 🧪 Testing the System

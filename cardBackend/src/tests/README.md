@@ -109,7 +109,27 @@ Test scenarios are located in `shared/testScenarios/gameStates/` and follow this
   "gameId": "scenario_name",
   "gameEnv": {
     "phase": "MAIN_PHASE",
-    "players": { /* player data */ },
+    "players": {
+      "playerId_1": {
+        "fieldEffects": {
+          "zoneRestrictions": {
+            "TOP": ["右翼", "自由", "經濟"],
+            "LEFT": ["右翼", "自由", "愛國者"],
+            "RIGHT": ["右翼", "愛國者", "經濟"],
+            "HELP": ["ALL"],
+            "SP": ["ALL"]
+          },
+          "activeEffects": [],
+          "specialEffects": {
+            "zonePlacementFreedom": false,
+            "immuneToNeutralization": false
+          },
+          "calculatedPowers": {},
+          "disabledCards": [],
+          "victoryPointModifiers": 0
+        }
+      }
+    },
     "zones": { /* zone data */ },
     "victoryPoints": { /* victory points */ }
   },
@@ -124,6 +144,21 @@ Test scenarios are located in `shared/testScenarios/gameStates/` and follow this
   }
 }
 ```
+
+### New fieldEffects Structure (January 2025)
+Test scenarios now use the unified fieldEffects structure instead of separate data objects:
+
+**Migration Changes:**
+- `gameEnv.specialStates` → `gameEnv.players[].fieldEffects.specialEffects`
+- Zone restrictions now stored in `fieldEffects.zoneRestrictions`
+- Pre-calculated powers in `fieldEffects.calculatedPowers`
+- Active effects tracked in `fieldEffects.activeEffects`
+
+**Testing Implications:**
+- Zone placement freedom tests now check `fieldEffects.specialEffects.zonePlacementFreedom`
+- Power calculations available in `fieldEffects.calculatedPowers`
+- Effect neutralization status in `fieldEffects.activeEffects`
+- Test injection automatically initializes fieldEffects structure
 
 ### Validation Points
 Each test scenario includes validation points that specify:

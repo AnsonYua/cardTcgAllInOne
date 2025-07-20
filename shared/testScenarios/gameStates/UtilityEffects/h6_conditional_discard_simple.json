@@ -1,0 +1,116 @@
+{
+  "gameId": "h6_conditional_discard_simple",
+  "description": "Simple test for h-6 (You have no card) conditional hand discard",
+  "testType": "simple",
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": ["h-6"],
+          "mainDeck": [],
+          "leader": ["s-1"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": ["c-21", "c-22", "c-23", "c-24", "h-2", "sp-1"],
+          "mainDeck": [],
+          "leader": ["s-2"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {
+          "id": "s-1",
+          "name": "特朗普",
+          "cardType": "leader"
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      },
+      "playerId_2": {
+        "leader": {
+          "id": "s-2",
+          "name": "拜登",
+          "cardType": "leader"
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {
+      "globalSequence": 0,
+      "plays": []
+    }
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "description": "Player 1 plays h-6 (You have no card) to force opponent discard",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "PlayCard",
+        "cardId": "h-6",
+        "zone": "help"
+      },
+      "expectedResult": {
+        "success": true
+      },
+      "expectedEffects": [
+        "h-6 checks opponent hand count (should be 6 cards, ≥4)",
+        "Condition met: opponent has 4+ cards",
+        "Forces opponent to discard 2 random cards",
+        "Opponent hand reduced from 6 to 4 cards"
+      ]
+    }
+  ],
+  "validationPoints": {
+    "conditional_discard_test": {
+      "description": "Verify h-6 forces discard when opponent has 4+ cards",
+      "expected": {
+        "conditionMet": true,
+        "opponentHandCountBefore": 6,
+        "opponentHandCountAfter": 4,
+        "cardsDiscarded": 2,
+        "randomSelection": true
+      },
+      "conditionCheck": {
+        "description": "h-6 only triggers if opponent has 4+ cards",
+        "initialHandCount": 6,
+        "minimumRequired": 4,
+        "conditionResult": ">=4 satisfied, effect triggers"
+      }
+    }
+  }
+}

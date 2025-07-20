@@ -1,0 +1,118 @@
+{
+  "gameId": "sp1_card",
+  "description": "Test sp-1 card conditional neutralization if 特朗普 present",
+  "testType": "per_card",
+  "initialGameEnv": {
+    "phase": "BATTLE_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-1"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-2"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {"id": "s-1", "name": "特朗普", "cardType": "leader"},
+        "top": [
+          {
+            "id": "c-1",
+            "name": "特朗普",
+            "cardType": "character",
+            "gameType": "愛國者",
+            "basePower": 100
+          }
+        ],
+        "left": [], "right": [], "help": [],
+        "sp": [
+          {
+            "id": "sp-1",
+            "name": "「天選之人」",
+            "cardType": "sp",
+            "effects": {
+              "description": "如我方場上有角色卡或領導卡名字為特朗普，對方場上的SP卡和HELP效果變為無效。",
+              "rules": [
+                {
+                  "id": "chosen_one_neutralize",
+                  "type": "continuous",
+                  "trigger": {
+                    "event": "always",
+                    "conditions": [{"type": "allyFieldContainsName", "value": "特朗普"}]
+                  },
+                  "effect": {"type": "neutralizeEffect", "value": true}
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "playerId_2": {
+        "leader": {"id": "s-2", "name": "拜登", "cardType": "leader"},
+        "top": [], "left": [], "right": [],
+        "help": [
+          {
+            "id": "h-2",
+            "name": "Make America Great Again",
+            "cardType": "help",
+            "effects": {"rules": [{"id": "maga_nerf", "type": "continuous"}]}
+          }
+        ],
+        "sp": [
+          {
+            "id": "sp-3",
+            "name": "加息周期",
+            "cardType": "sp",
+            "effects": {"rules": [{"id": "rate_hike_nerf", "type": "continuous"}]}
+          }
+        ]
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {"globalSequence": 0, "plays": []}
+  },
+  "playerActions": [],
+  "validationPoints": {
+    "sp1_conditional_neutralization": {
+      "description": "sp-1 neutralizes opponent SP/HELP cards when 特朗普 is present",
+      "expected": {
+        "trumpPresent": true,
+        "conditionMet": true,
+        "opponentHelpNeutralized": true,
+        "opponentSPNeutralized": true,
+        "h2EffectInactive": true,
+        "sp3EffectInactive": true
+      }
+    }
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "gameId": "sp3_card",
+  "description": "Test sp-3 card nerf all opponent characters",
+  "testType": "per_card",
+  "initialGameEnv": {
+    "phase": "BATTLE_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-1"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-2"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {"id": "s-1", "name": "特朗普", "cardType": "leader"},
+        "top": [], "left": [], "right": [], "help": [],
+        "sp": [
+          {
+            "id": "sp-3",
+            "name": "加息周期",
+            "cardType": "sp",
+            "effects": {
+              "description": "對方場上全部角色卡，原能力值 -30",
+              "rules": [
+                {
+                  "id": "rate_hike_nerf",
+                  "type": "continuous",
+                  "trigger": {"event": "always"},
+                  "target": {"owner": "opponent", "zones": ["top", "left", "right"]},
+                  "effect": {"type": "powerBoost", "value": -30}
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "playerId_2": {
+        "leader": {"id": "s-2", "name": "拜登", "cardType": "leader"},
+        "top": [
+          {
+            "id": "c-21",
+            "name": "奧巴馬",
+            "cardType": "character",
+            "gameType": "左翼",
+            "basePower": 80
+          }
+        ],
+        "left": [
+          {
+            "id": "c-22",
+            "name": "希拉莉",
+            "cardType": "character",
+            "gameType": "左翼",
+            "basePower": 85
+          }
+        ],
+        "right": [], "help": [], "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {"globalSequence": 0, "plays": []}
+  },
+  "playerActions": [],
+  "validationPoints": {
+    "sp3_opponent_nerf": {
+      "description": "sp-3 reduces all opponent character power by -30",
+      "expected": {
+        "obama_powerBefore": 80,
+        "obama_powerAfter": 50,
+        "hillary_powerBefore": 85,
+        "hillary_powerAfter": 55,
+        "nerfValue": -30
+      }
+    }
+  }
+}

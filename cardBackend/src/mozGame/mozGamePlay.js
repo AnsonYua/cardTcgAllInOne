@@ -1284,9 +1284,10 @@ class mozGamePlay {
 
     
     isCardMatchingLeader(card, leader, area, gameEnv = null, playerId = null){
-        // Check if player has zone placement freedom
-        if (gameEnv && playerId && gameEnv.specialStates && 
-            gameEnv.specialStates[playerId] && gameEnv.specialStates[playerId].zonePlacementFreedom) {
+        // Check if player has zone placement freedom (now in fieldEffects)
+        if (gameEnv && playerId && gameEnv.players && gameEnv.players[playerId] &&
+            gameEnv.players[playerId].fieldEffects && gameEnv.players[playerId].fieldEffects.specialEffects &&
+            gameEnv.players[playerId].fieldEffects.specialEffects.zonePlacementFreedom) {
             return true;
         }
         
@@ -1377,11 +1378,12 @@ class mozGamePlay {
                 if (!gameEnv.disabledEffects[targetPlayerId]) gameEnv.disabledEffects[targetPlayerId] = {};
                 gameEnv.disabledEffects[targetPlayerId].summonEffects = true;
             } else if (rule.effect.type === 'zonePlacementFreedom') {
-                // Store zone freedom state in game environment
+                // Store zone freedom state in fieldEffects (unified structure)
                 const targetPlayerId = rule.target.owner === 'opponent' ? this.getOpponentId(gameEnv, playerId) : playerId;
-                if (!gameEnv.specialStates) gameEnv.specialStates = {};
-                if (!gameEnv.specialStates[targetPlayerId]) gameEnv.specialStates[targetPlayerId] = {};
-                gameEnv.specialStates[targetPlayerId].zonePlacementFreedom = true;
+                if (!gameEnv.players[targetPlayerId].fieldEffects.specialEffects) {
+                    gameEnv.players[targetPlayerId].fieldEffects.specialEffects = {};
+                }
+                gameEnv.players[targetPlayerId].fieldEffects.specialEffects.zonePlacementFreedom = true;
             }
         }
         

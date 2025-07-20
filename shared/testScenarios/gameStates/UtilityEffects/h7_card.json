@@ -1,0 +1,84 @@
+{
+  "gameId": "h7_card",
+  "description": "Test h-7 card prevent opponent HELP cards",
+  "testType": "per_card",
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": ["h-7"],
+          "mainDeck": [],
+          "leader": ["s-1"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": ["h-2"],
+          "mainDeck": [],
+          "leader": ["s-2"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {"id": "s-1", "name": "特朗普", "cardType": "leader"},
+        "top": [], "left": [], "right": [], "help": [], "sp": []
+      },
+      "playerId_2": {
+        "leader": {"id": "s-2", "name": "拜登", "cardType": "leader"},
+        "top": [], "left": [], "right": [], "help": [], "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {"globalSequence": 0, "plays": []}
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "description": "Player 1 plays h-7 to prevent opponent from playing HELP cards",
+      "playerId": "playerId_1",
+      "action": {"actionType": "PlayCard", "cardId": "h-7", "zone": "help"},
+      "expectedResult": {"success": true}
+    },
+    {
+      "step": 2,
+      "description": "Player 2 attempts to play HELP card (should be blocked)",
+      "playerId": "playerId_2",
+      "action": {"actionType": "PlayCard", "cardId": "h-2", "zone": "help"},
+      "expectedResult": {"success": false, "error": "HELP_CARD_RESTRICTION"}
+    }
+  ],
+  "validationPoints": {
+    "h7_help_restriction": {
+      "description": "h-7 prevents opponent from playing HELP cards",
+      "expected": {
+        "helpCardBlocked": true,
+        "restrictionActive": true,
+        "opponentCannotPlayHelp": true
+      }
+    }
+  }
+}

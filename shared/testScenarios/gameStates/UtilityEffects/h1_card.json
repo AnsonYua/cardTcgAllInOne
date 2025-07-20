@@ -1,0 +1,96 @@
+{
+  "gameId": "h1_selection_chat",
+  "description": "Test h-1 card neutralization and selection mechanics",
+  "testType": "per_card",
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": ["h-1"],
+          "mainDeck": [],
+          "leader": ["s-1"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-2"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {"id": "s-1", "name": "特朗普", "cardType": "leader"},
+        "top": [], "left": [], "right": [], "help": [], "sp": []
+      },
+      "playerId_2": {
+        "leader": {"id": "s-2", "name": "拜登", "cardType": "leader"},
+        "top": [], "left": [], "right": [],
+        "help": [
+          {
+            "id": "h-2",
+            "name": "Make America Great Again",
+            "cardType": "help",
+            "effects": {
+              "description": "對方一張角色卡，原能力值變成0",
+              "rules": [{"id": "maga_nerf", "type": "continuous"}]
+            }
+          }
+        ],
+        "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {"globalSequence": 0, "plays": []}
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "description": "Player 1 plays h-1 to trigger card selection",
+      "playerId": "playerId_1",
+      "action": {"actionType": "PlayCard", "cardId": "h-1", "zone": "help"},
+      "expectedResult": {"success": true, "requiresSelection": true}
+    },
+    {
+      "step": 2,
+      "description": "Player 1 manually selects h-2 to neutralize",
+      "playerId": "playerId_1",
+      "action": {"actionType": "SelectCard", "cardIds": ["h-2"]},
+      "expectedResult": {"success": true, "selectionCompleted": true}
+    }
+  ],
+  "validationPoints": {
+    "h1_selection_only": {
+      "description": "h-1 requires manual card selection for neutralization",
+      "expected": {
+        "selectionTriggered": true,
+        "h2Neutralized": true,
+        "manualSelectionRequired": true
+      }
+    }
+  }
+}

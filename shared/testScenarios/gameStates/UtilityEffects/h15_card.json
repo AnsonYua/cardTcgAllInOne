@@ -1,0 +1,97 @@
+{
+  "gameId": "h15_card",
+  "description": "Test h-15 card boost 經濟 gameType characters",
+  "testType": "per_card",
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": ["h-15"],
+          "mainDeck": [],
+          "leader": ["s-1"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-2"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {"id": "s-1", "name": "特朗普", "cardType": "leader"},
+        "top": [
+          {
+            "id": "c-economy1",
+            "name": "Economy Character 1",
+            "cardType": "character",
+            "gameType": "經濟",
+            "basePower": 85
+          }
+        ],
+        "left": [
+          {
+            "id": "c-economy2",
+            "name": "Economy Character 2",
+            "cardType": "character",
+            "gameType": "經濟",
+            "basePower": 90
+          }
+        ],
+        "right": [], "help": [], "sp": []
+      },
+      "playerId_2": {
+        "leader": {"id": "s-2", "name": "拜登", "cardType": "leader"},
+        "top": [], "left": [], "right": [], "help": [], "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {"globalSequence": 0, "plays": []}
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "description": "Player 1 plays h-15 to boost 經濟 gameType characters by +50",
+      "playerId": "playerId_1",
+      "action": {"actionType": "PlayCard", "cardId": "h-15", "zone": "help"},
+      "expectedResult": {"success": true}
+    }
+  ],
+  "validationPoints": {
+    "h15_economy_boost": {
+      "description": "h-15 provides +50 power boost to all 經濟 gameType characters",
+      "expected": {
+        "economy1PowerBefore": 85,
+        "economy1PowerAfter": 135,
+        "economy2PowerBefore": 90,
+        "economy2PowerAfter": 140,
+        "boostValue": 50
+      }
+    }
+  }
+}

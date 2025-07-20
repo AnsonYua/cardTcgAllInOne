@@ -1,0 +1,108 @@
+{
+  "gameId": "sp9_card",
+  "description": "Test sp-9 card disable 特朗普 combos when 特朗普 present",
+  "testType": "per_card",
+  "initialGameEnv": {
+    "phase": "BATTLE_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-1"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-2"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {"id": "s-1", "name": "特朗普", "cardType": "leader"},
+        "top": [], "left": [], "right": [], "help": [],
+        "sp": [
+          {
+            "id": "sp-9",
+            "name": "國會山莊騷亂",
+            "cardType": "sp",
+            "effects": {
+              "description": "如對方場上有角色卡或領導卡名字為特朗普, 特殊組合的加乘變成0",
+              "rules": [
+                {
+                  "id": "capitol_riot_trump_combo_disable",
+                  "type": "continuous",
+                  "trigger": {
+                    "conditions": [{"type": "opponentFieldContainsName", "value": "特朗普"}]
+                  },
+                  "effect": {"type": "disableComboBonus", "value": true}
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "playerId_2": {
+        "leader": {"id": "s-2", "name": "拜登", "cardType": "leader"},
+        "top": [
+          {
+            "id": "c-1",
+            "name": "特朗普",
+            "cardType": "character",
+            "gameType": "愛國者",
+            "basePower": 100
+          }
+        ],
+        "left": [
+          {
+            "id": "c-2",
+            "name": "伊萬卡",
+            "cardType": "character",
+            "gameType": "愛國者",
+            "basePower": 90
+          }
+        ],
+        "right": [], "help": [], "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {"globalSequence": 0, "plays": []}
+  },
+  "playerActions": [],
+  "validationPoints": {
+    "sp9_trump_combo_disable": {
+      "description": "sp-9 disables opponent combo bonuses when 特朗普 is present",
+      "expected": {
+        "trumpPresent": true,
+        "conditionMet": true,
+        "comboBonusDisabled": true,
+        "noComboPoints": true
+      }
+    }
+  }
+}

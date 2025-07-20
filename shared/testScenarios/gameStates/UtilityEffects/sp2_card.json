@@ -1,0 +1,97 @@
+{
+  "gameId": "sp2_battle_boost_chat",
+  "description": "Test sp-2 card battle phase power boost",
+  "testType": "per_card",
+  "initialGameEnv": {
+    "phase": "BATTLE_PHASE",
+    "round": 1,
+    "gameStarted": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "firstPlayer": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-1"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "mainDeck": [],
+          "leader": ["s-2"],
+          "currentLeaderIdx": 0
+        },
+        "isReady": true,
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": {"id": "s-1", "name": "特朗普", "cardType": "leader"},
+        "top": [
+          {
+            "id": "c-1",
+            "name": "特朗普",
+            "cardType": "character",
+            "gameType": "愛國者",
+            "basePower": 100
+          }
+        ],
+        "left": [], "right": [], "help": [],
+        "sp": [
+          {
+            "id": "sp-2",
+            "name": "權力",
+            "cardType": "sp",
+            "effects": {
+              "description": "我方場上所有角色卡原能力值再 +30",
+              "rules": [
+                {
+                  "id": "power_boost_all",
+                  "type": "continuous",
+                  "trigger": {"event": "battlePhase"},
+                  "target": {"owner": "self", "zones": ["top", "left", "right"]},
+                  "effect": {"type": "powerBoost", "value": 30}
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "playerId_2": {
+        "leader": {"id": "s-2", "name": "拜登", "cardType": "leader"},
+        "top": [], "left": [], "right": [], "help": [], "sp": []
+      }
+    },
+    "gameEvents": [],
+    "lastEventId": 1,
+    "pendingPlayerAction": null,
+    "pendingCardSelections": {},
+    "playSequence": {"globalSequence": 0, "plays": []}
+  },
+  "playerActions": [],
+  "validationPoints": {
+    "sp2_battle_boost_only": {
+      "description": "sp-2 provides +30 power boost during battle phase only",
+      "expected": {
+        "c1PowerWithoutSP2": 100,
+        "c1PowerWithSP2": 130,
+        "boostOnlyInBattlePhase": true
+      }
+    }
+  }
+}
