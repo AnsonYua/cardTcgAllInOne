@@ -272,6 +272,25 @@ class GameLogic {
                 return this.mozGamePlay.throwError("Not your turn");
             }
             
+            // NEW: Capture card information AND game state BEFORE processAction for card plays
+            let cardToRecord = null;
+            let zoneToRecord = null;
+            let turnWhenPlayed = null;
+            let phaseWhenPlayed = null;
+            if (action.type === 'PlayCard' || action.type === 'PlayCardBack') {
+                // CRITICAL: Capture card ID BEFORE processAction modifies the hand
+                const originalPlayerHand = gameData.gameEnv.players[playerId].deck.hand;
+                cardToRecord = originalPlayerHand[action.card_idx];
+                
+                // Get zone name from field index
+                const zoneMapping = ['top', 'left', 'right', 'help', 'sp'];
+                zoneToRecord = zoneMapping[action.field_idx];
+                
+                // CRITICAL: Capture turn and phase BEFORE processAction changes them
+                turnWhenPlayed = gameData.gameEnv.currentTurn || 0;
+                phaseWhenPlayed = gameData.gameEnv.phase || 'SETUP';
+            }
+            
             console.log(`DEBUG: About to call processAction`);
             const actionResult = await this.mozGamePlay.processAction(gameData.gameEnv,playerId,action);
             console.log(`DEBUG: processAction completed`);
@@ -284,31 +303,22 @@ class GameLogic {
             gameData.gameEnv = actionResult.requiresCardSelection ? actionResult.gameEnv : actionResult;
             
             // NEW: Record card play and simulate if card was played
-            if (!actionResult.hasOwnProperty('error') && (action.type === 'PlayCard' || action.type === 'PlayCardBack')) {
-                // Get the card ID from the hand using unified structure
-                if (!gameData.gameEnv.players) {
-                    throw new Error('Game environment must have unified structure with gameEnv.players');
-                }
-                const playerHand = gameData.gameEnv.players[playerId].deck.hand;
-                
-                const cardId = Array.isArray(playerHand) ? 
-                    playerHand[action.card_idx]?.id || playerHand[action.card_idx] :
-                    playerHand[action.card_idx];
-                
-                // Get zone name from field index
-                const zoneMapping = ['top', 'left', 'right', 'help', 'sp'];
-                const zoneName = zoneMapping[action.field_idx];
-                
-                // Record the card play
+            if (!actionResult.hasOwnProperty('error') && cardToRecord && zoneToRecord) {
+                // Record the card play with correct timing (before state changes)
                 this.playSequenceManager.recordCardPlay(
                     gameData.gameEnv,
                     playerId,
-                    cardId,
+                    cardToRecord,
                     "PLAY_CARD",
-                    zoneName,
+                    zoneToRecord,
                     {
                         isFaceDown: action.type === 'PlayCardBack',
-                        turnAction: action
+                        cardIndex: action.card_idx,
+                        fieldIndex: action.field_idx
+                    },
+                    {
+                        turnNumber: turnWhenPlayed,
+                        phaseWhenPlayed: phaseWhenPlayed
                     }
                 );
                 

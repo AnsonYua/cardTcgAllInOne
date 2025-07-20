@@ -165,11 +165,19 @@
         "cardPlaced": "c-1",
         "zone": "left",
         "turnSwitches": true,
-        "newCurrentPlayer": "playerId_2"
+        "newCurrentPlayer": "playerId_2",
+        "newPhase": "DRAW_PHASE"
       },
       "validation": {
         "checkZoneContents": {
           "playerId_1.zones.left": ["c-1"]
+        },
+        "checkGameState": {
+          "phase": "DRAW_PHASE",
+          "currentPlayer": "playerId_2"
+        },
+        "checkEvents": {
+          "hasDrawPhaseCompleteEvent": true
         },
         "checkPlaySequence": {
           "playsCount": 1,
@@ -179,6 +187,29 @@
             "playerId": "playerId_1",
             "zone": "left"
           }
+        }
+      }
+    },
+    {
+      "step": 1.5,
+      "description": "Acknowledge DRAW_PHASE_COMPLETE event to transition Player 2 to MAIN_PHASE",
+      "playerId": "playerId_2",
+      "action": {
+        "type": "AcknowledgeEvents",
+        "eventTypes": ["DRAW_PHASE_COMPLETE"]
+      },
+      "expectedResult": {
+        "success": true,
+        "eventsAcknowledged": 1,
+        "newPhase": "MAIN_PHASE"
+      },
+      "validation": {
+        "checkGameState": {
+          "phase": "MAIN_PHASE",
+          "currentPlayer": "playerId_2"
+        },
+        "checkEvents": {
+          "noDrawPhaseCompleteEvents": true
         }
       }
     },
@@ -207,12 +238,24 @@
           "effectType": "setPower"
         }
       },
+      "postSelectionExpected": {
+        "turnSwitches": true,
+        "newCurrentPlayer": "playerId_1",
+        "newPhase": "DRAW_PHASE"
+      },
       "validation": {
         "checkZoneContents": {
           "playerId_2.zones.help": ["h-2"]
         },
         "checkFieldEffects": {
           "playerId_1.fieldEffects.calculatedPowers.c-1": 0
+        },
+        "checkGameState": {
+          "phase": "DRAW_PHASE",
+          "currentPlayer": "playerId_1"
+        },
+        "checkEvents": {
+          "hasDrawPhaseCompleteEvent": true
         },
         "checkPlaySequence": {
           "playsCount": 2,
@@ -222,6 +265,29 @@
             "playerId": "playerId_2",
             "zone": "help"
           }
+        }
+      }
+    },
+    {
+      "step": 2.5,
+      "description": "Acknowledge DRAW_PHASE_COMPLETE event to transition Player 1 to MAIN_PHASE",
+      "playerId": "playerId_1",
+      "action": {
+        "type": "AcknowledgeEvents",
+        "eventTypes": ["DRAW_PHASE_COMPLETE"]
+      },
+      "expectedResult": {
+        "success": true,
+        "eventsAcknowledged": 1,
+        "newPhase": "MAIN_PHASE"
+      },
+      "validation": {
+        "checkGameState": {
+          "phase": "MAIN_PHASE",
+          "currentPlayer": "playerId_1"
+        },
+        "checkEvents": {
+          "noDrawPhaseCompleteEvents": true
         }
       }
     },
@@ -283,16 +349,39 @@
       "expected": {
         "cardInZone": true,
         "playSequenceRecorded": true,
-        "turnSwitched": true
+        "turnSwitched": true,
+        "phaseTransition": "DRAW_PHASE",
+        "eventGenerated": "DRAW_PHASE_COMPLETE"
+      }
+    },
+    "step1_5_event_acknowledgment": {
+      "description": "DRAW_PHASE_COMPLETE event acknowledged to transition to MAIN_PHASE",
+      "expected": {
+        "eventsAcknowledged": 1,
+        "phaseTransition": "MAIN_PHASE",
+        "noRemainingDrawEvents": true,
+        "currentPlayerCorrect": true
       }
     },
     "step2_h2_effect_application": {
-      "description": "H-2 requires selection and successfully applies setPower effect",
+      "description": "H-2 requires selection and successfully applies setPower effect with proper phase transitions",
       "expected": {
         "selectionTriggered": true,
         "targetCardPowerSet": true,
         "effectInFieldEffects": true,
-        "manualSelectionRequired": true
+        "manualSelectionRequired": true,
+        "turnSwitchedAfterSelection": true,
+        "phaseTransitionAfterSelection": "DRAW_PHASE",
+        "eventGeneratedAfterSelection": "DRAW_PHASE_COMPLETE"
+      }
+    },
+    "step2_5_event_acknowledgment": {
+      "description": "Second DRAW_PHASE_COMPLETE event acknowledged to transition Player 1 to MAIN_PHASE",
+      "expected": {
+        "eventsAcknowledged": 1,
+        "phaseTransition": "MAIN_PHASE",
+        "noRemainingDrawEvents": true,
+        "currentPlayerCorrect": true
       }
     },
     "step3_h1_neutralization": {
@@ -306,12 +395,24 @@
       }
     },
     "complete_interaction": {
-      "description": "Complete card interaction sequence from empty state to full neutralization",
+      "description": "Complete card interaction sequence with proper event acknowledgment workflow",
       "expected": {
         "emptyPlaySequenceStart": true,
-        "threeStepProgression": true,
+        "fiveStepProgression": true,
+        "properEventAcknowledgmentFlow": true,
+        "properPhaseTransitions": true,
         "properEffectApplicationAndRemoval": true,
         "fieldEffectsIntegrity": true
+      }
+    },
+    "event_acknowledgment_pattern": {
+      "description": "Event acknowledgment pattern works correctly throughout gameplay",
+      "expected": {
+        "drawPhaseEventsGenerated": 2,
+        "drawPhaseEventsAcknowledged": 2,
+        "phaseTransitionsCorrect": true,
+        "noEventLeakage": true,
+        "currentPlayerAlwaysCorrect": true
       }
     }
   }

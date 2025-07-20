@@ -91,6 +91,70 @@ class TestHelper {
     }
 
     /**
+     * Execute a player action
+     */
+    async executePlayerAction(playerId, gameId, action) {
+        return await this.makeRequest('POST', '/player/playerAction', {
+            playerId,
+            gameId,
+            action
+        });
+    }
+
+    /**
+     * Complete card selection
+     */
+    async completeCardSelection(gameId, playerId, selectionId, selectedCardIds) {
+        return await this.makeRequest('POST', '/player/selectCard', {
+            gameId,
+            playerId,
+            selectionId,
+            selectedCardIds
+        });
+    }
+
+    /**
+     * Acknowledge game events
+     */
+    async acknowledgeEvents(gameId, eventIds) {
+        return await this.makeRequest('POST', '/player/acknowledgeEvents', {
+            gameId,
+            eventIds
+        });
+    }
+
+    /**
+     * Acknowledge events of specific types (helper function)
+     */
+    async acknowledgeEventsByType(gameId, playerId, eventTypes) {
+        // Get current game state to find events
+        const gameState = await this.getPlayerData(playerId, gameId);
+        
+        if (!gameState.gameEnv || !gameState.gameEnv.gameEvents) {
+            return { eventsAcknowledged: 0, message: 'No events found' };
+        }
+
+        // Filter events by type
+        const eventsToAck = gameState.gameEnv.gameEvents.filter(event => 
+            eventTypes.includes(event.type)
+        );
+
+        if (eventsToAck.length === 0) {
+            return { eventsAcknowledged: 0, message: `No events of types: ${eventTypes.join(', ')}` };
+        }
+
+        // Acknowledge the events
+        const eventIds = eventsToAck.map(event => event.id);
+        const result = await this.acknowledgeEvents(gameId, eventIds);
+        
+        return {
+            ...result,
+            acknowledgedEventTypes: eventsToAck.map(e => e.type),
+            acknowledgedEventIds: eventIds
+        };
+    }
+
+    /**
      * Run a complete test scenario
      */
     async runTestScenario(scenarioFile) {

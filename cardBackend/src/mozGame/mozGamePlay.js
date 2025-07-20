@@ -533,9 +533,8 @@ class mozGamePlay {
                     effectResult = await this.processUtilityCardEffects(gameEnv, playerId, cardDetails);
                 }
                 
-                // UNIFIED EFFECT SYSTEM: Record card play for effect simulation
-                // Effect simulation happens in GameLogic.processPlayerAction after card placement
-                this.playSequenceManager.recordCardPlay(gameEnv, playerId, cardDetails, playPos, isPlayInFaceDown);
+                // UNIFIED EFFECT SYSTEM: Card play recording moved to GameLogic.processPlayerAction
+                // This avoids duplicate recording and ensures proper parameter handling
                 
                 // Add card effect triggered event for frontend
                 if (effectResult) {

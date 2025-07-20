@@ -30,11 +30,16 @@ class PlaySequenceManager {
      * @param {string} action - Type of action (PLAY_LEADER, PLAY_CARD)
      * @param {string} zone - Zone where card was played
      * @param {Object} data - Additional play data
+     * @param {Object} timing - Optional timing override {turnNumber, phaseWhenPlayed}
      */
-    recordCardPlay(gameEnv, playerId, cardId, action, zone, data = {}) {
+    recordCardPlay(gameEnv, playerId, cardId, action, zone, data = {}, timing = null) {
         this.initializePlaySequence(gameEnv);
         
         gameEnv.playSequence.globalSequence++;
+        
+        // Use timing override if provided, otherwise use current game state
+        const turnNumber = timing?.turnNumber ?? (gameEnv.currentTurn || 0);
+        const phaseWhenPlayed = timing?.phaseWhenPlayed ?? (gameEnv.phase || 'SETUP');
         
         const playRecord = {
             sequenceId: gameEnv.playSequence.globalSequence,
@@ -44,13 +49,13 @@ class PlaySequenceManager {
             zone: zone,
             data: data,
             timestamp: new Date().toISOString(),
-            turnNumber: gameEnv.currentTurn || 0,
-            phaseWhenPlayed: gameEnv.phase || 'SETUP'
+            turnNumber: turnNumber,
+            phaseWhenPlayed: phaseWhenPlayed
         };
 
         gameEnv.playSequence.plays.push(playRecord);
         
-        console.log(`🎯 Recorded ${action}: ${cardId} by ${playerId} in ${zone} (sequence: ${playRecord.sequenceId})`);
+        console.log(`🎯 Recorded ${action}: ${cardId} by ${playerId} in ${zone} (sequence: ${playRecord.sequenceId}) turn:${turnNumber} phase:${phaseWhenPlayed}`);
         
         return playRecord;
     }
