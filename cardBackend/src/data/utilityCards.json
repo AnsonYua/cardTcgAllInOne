@@ -83,7 +83,8 @@
             "target": {
               "owner": "opponent",
               "zones": ["top", "left", "right"],
-              "targetCount": 1,
+              "requiresSelection": true,
+              "selectCount": 1,
               "filters": []
             },
             "effect": {
