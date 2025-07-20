@@ -536,8 +536,10 @@ Some card effects use `targetCount: 1` to automatically select the first valid t
 - **c-20 (巴飛特)**: Automatically boosts first ally 富商 card by +50
 
 **Utility Cards with targetCount:**
-- **h-2 (Make America Great Again)**: Automatically sets first opponent character power to 0
 - **h-14 (聯邦法官)**: Automatically nerfs first opponent 特朗普家族 card by -60
+
+**Utility Cards with Manual Selection:**
+- **h-2 (Make America Great Again)**: Player selects 1 opponent character card to set power to 0
 
 ### Backend Implementation
 

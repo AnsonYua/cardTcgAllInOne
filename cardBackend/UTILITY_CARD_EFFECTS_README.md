@@ -39,7 +39,7 @@ This document provides comprehensive documentation for all utility card effects 
 #### **Universal Power Effects**
 - **sp-2 (減息周期)**: +30 power to all your cards
 - **sp-3 (加息周期)**: -30 power to all opponent cards
-- **h-2 (Make America Great Again)**: Set 1 opponent card power to 0
+- **h-2 (Make America Great Again)**: Player selects 1 opponent character card to set power to 0
 
 #### **Trait-Based Power Effects**
 - **h-3 (doge 全員集合)**: +40 power to cards with Doge trait

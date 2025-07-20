@@ -1840,6 +1840,9 @@ class mozGamePlay {
         } else if (rule.effect.type === 'neutralizeEffect' && rule.target.requiresSelection) {
             // Neutralize specific card effects based on player selection
             return await this.neutralizeEffectSelection(gameEnv, rule, playerId);
+        } else if (rule.effect.type === 'setPower' && rule.target.requiresSelection) {
+            // Set specific card power based on player selection
+            return await this.setPowerSelection(gameEnv, rule, playerId);
         }
         
         // Unknown effect type
@@ -2128,6 +2131,99 @@ class mozGamePlay {
     }
     
     /**
+     * Handle set power effect that requires player selection
+     * Used by cards like h-2 (Make America Great Again) to select specific opponent cards to set power to 0
+     * @param {Object} gameEnv - Current game environment
+     * @param {Object} rule - Effect rule from card data
+     * @param {string} playerId - Player who triggered the effect
+     */
+    async setPowerSelection(gameEnv, rule, playerId) {
+        const targetPlayerId = rule.target.owner === 'opponent' ? this.getOpponentId(gameEnv, playerId) : playerId;
+        
+        // Find all cards in opponent's specified zones
+        const eligibleCards = [];
+        for (const zone of rule.target.zones) {
+            const zoneCards = this.getPlayerZone(gameEnv, targetPlayerId, zone);
+            if (zoneCards && zoneCards.length > 0) {
+                for (const cardObj of zoneCards) {
+                    // Cards in zones are stored as { card: [id], cardDetails: [data], isBack: [bool] }
+                    if (!cardObj.card || !Array.isArray(cardObj.card) || cardObj.card.length === 0) {
+                        console.warn(`Invalid card structure in ${zone} zone:`, cardObj);
+                        continue;
+                    }
+                    
+                    const cardId = cardObj.card[0];
+                    const cardData = cardObj.cardDetails && cardObj.cardDetails[0];
+                    
+                    // Only include face-up character cards (can't modify face-down cards)
+                    if (cardData && cardData.cardType === 'character' && !cardObj.isBack[0]) {
+                        eligibleCards.push({
+                            cardId: cardId,
+                            zone: zone,
+                            name: cardData.name,
+                            cardType: cardData.cardType,
+                            power: cardData.power
+                        });
+                    }
+                }
+            }
+        }
+        
+        if (eligibleCards.length === 0) {
+            return {
+                success: false,
+                reason: 'No eligible character cards to modify'
+            };
+        }
+        
+        // Create card selection state
+        if (!gameEnv.pendingCardSelections) {
+            gameEnv.pendingCardSelections = {};
+        }
+        
+        const selectionId = `${playerId}_setPower_${Date.now()}`;
+        gameEnv.pendingCardSelections[selectionId] = {
+            playerId,
+            eligibleCards,
+            selectCount: rule.target.selectCount || 1,
+            effect: rule.effect,
+            effectType: 'setPower',
+            targetPlayerId,
+            timestamp: Date.now()
+        };
+        
+        // Set pending action indicator
+        gameEnv.pendingPlayerAction = {
+            type: 'cardSelection',
+            selectionId: selectionId,
+            description: `Select ${rule.target.selectCount || 1} opponent character card(s) to set power to ${rule.effect.value}`
+        };
+        
+        // Add game event for card selection requirement
+        this.addGameEvent(gameEnv, 'CARD_SELECTION_REQUIRED', {
+            playerId: playerId,
+            selectionId: selectionId,
+            eligibleCardCount: eligibleCards.length,
+            selectCount: rule.target.selectCount || 1,
+            effectType: 'setPower'
+        });
+        
+        // Return selection prompt data in the format expected by the calling code
+        return {
+            requiresCardSelection: true,
+            gameEnv,
+            cardSelection: {
+                selectionId,
+                eligibleCards,
+                selectCount: rule.target.selectCount || 1,
+                effectType: 'setPower',
+                cardTypeFilter: 'character'
+            },
+            prompt: `Select ${rule.target.selectCount || 1} opponent character card(s) to set power to ${rule.effect.value}`
+        };
+    }
+    
+    /**
      * Apply neutralization to selected cards
      * @param {Object} gameEnv - Current game environment
      * @param {string} selectionId - ID of the pending selection
@@ -2196,6 +2292,76 @@ class mozGamePlay {
     }
     
     /**
+     * Apply set power to selected cards
+     * @param {Object} gameEnv - Current game environment
+     * @param {string} selectionId - ID of the pending selection
+     * @param {Array} selectedCardIds - Array of selected card IDs to modify
+     */
+    async applySetPowerSelection(gameEnv, selectionId, selectedCardIds) {
+        const selection = gameEnv.pendingCardSelections[selectionId];
+        const { playerId, targetPlayerId, effect } = selection;
+        
+        // Initialize power modification state in field effects
+        if (!gameEnv.players[targetPlayerId].fieldEffects.setPowerEffects) {
+            gameEnv.players[targetPlayerId].fieldEffects.setPowerEffects = [];
+        }
+        
+        // Apply set power effect to each selected card
+        for (const cardId of selectedCardIds) {
+            // Find the card in the eligible cards list to get card info
+            const cardInfo = selection.eligibleCards.find(card => card.cardId === cardId);
+            
+            if (cardInfo) {
+                // Store the power override in field effects
+                gameEnv.players[targetPlayerId].fieldEffects.setPowerEffects.push({
+                    cardId: cardId,
+                    power: effect.value,
+                    sourceCard: playerId // Track which player applied this effect
+                });
+                
+                console.log(`Set power effect applied: Card ${cardId} power set to ${effect.value}`);
+            }
+        }
+        
+        // Add game event for set power completed
+        this.addGameEvent(gameEnv, 'CARD_SELECTION_COMPLETED', {
+            playerId: playerId,
+            selectionId: selectionId,
+            selectedCards: selectedCardIds,
+            effectType: 'setPower',
+            targetPlayerId: targetPlayerId,
+            powerValue: effect.value
+        });
+        
+        // Clean up the pending selection
+        delete gameEnv.pendingCardSelections[selectionId];
+        delete gameEnv.pendingPlayerAction;
+        
+        // Check if turn should advance after card selection completion
+        const isMainPhaseComplete = await this.checkIsMainPhaseComplete(gameEnv);
+        
+        if (!isMainPhaseComplete) {
+            // Continue turn-based play
+            const oldPlayer = gameEnv.currentPlayer;
+            gameEnv = await this.shouldUpdateTurn(gameEnv, playerId);
+            
+            // Add turn switch event if player changed
+            if (gameEnv.currentPlayer !== oldPlayer) {
+                this.addGameEvent(gameEnv, 'TURN_SWITCH', {
+                    oldPlayer: oldPlayer,
+                    newPlayer: gameEnv.currentPlayer,
+                    currentTurn: gameEnv.currentTurn
+                });
+            }
+        } else {
+            // Main phase complete - advance to SP phase
+            gameEnv = await this.advanceToSpPhaseOrBattle(gameEnv);
+        }
+        
+        return gameEnv;
+    }
+    
+    /**
      * Complete a pending card selection by the player
      * @param {Object} gameEnv - Current game environment
      * @param {string} selectionId - ID of the pending selection
@@ -2216,8 +2382,8 @@ class mozGamePlay {
         }
         
         for (const cardId of selectedCardIds) {
-            // For neutralization effects, validate against card structure
-            if (effectType === 'neutralizeEffect') {
+            // For neutralization and setPower effects, validate against card structure
+            if (effectType === 'neutralizeEffect' || effectType === 'setPower') {
                 const isValidCard = eligibleCards.some(card => 
                     (typeof card === 'string' && card === cardId) || 
                     (typeof card === 'object' && card.cardId === cardId)
@@ -2236,6 +2402,9 @@ class mozGamePlay {
         if (effectType === 'neutralizeEffect') {
             // Apply neutralization to selected cards
             return await this.applyNeutralizationSelection(gameEnv, selectionId, selectedCardIds);
+        } else if (effectType === 'setPower') {
+            // Apply power modification to selected cards
+            return await this.applySetPowerSelection(gameEnv, selectionId, selectedCardIds);
         }
         
         // Apply the selection (for deck search effects)

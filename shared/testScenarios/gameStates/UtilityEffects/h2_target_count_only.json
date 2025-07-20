@@ -1,6 +1,6 @@
 {
-  "gameId": "h2_target_count_only",
-  "description": "Simple test for h-2 automatic targeting effect only",
+  "gameId": "h2_selection_only",
+  "description": "Simple test for h-2 manual selection effect only",
   "testType": "single_effect",
   "initialGameEnv": {
     "phase": "MAIN_PHASE",

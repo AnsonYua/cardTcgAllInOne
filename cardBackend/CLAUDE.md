@@ -207,7 +207,7 @@ Automatic target selection for single-target effects:
   - **c-21 (奧巴馬)**: Automatically boosts first ally character by +50
   - **c-20 (巴飛特)**: Automatically boosts first ally 富商 card by +50
 - **Utility Card Examples**:
-  - **h-2 (Make America Great Again)**: Automatically sets first opponent character power to 0
+  - **h-2 (Make America Great Again)**: Requires player selection to set chosen opponent character power to 0
   - **h-14 (聯邦法官)**: Automatically nerfs first opponent 特朗普家族 card by -60
 - **Implementation**: `getEffectTargets()` method in `mozGamePlay.js` handles automatic target selection
 - **Processing**: Character effects processed in Step 2.5, utility effects in Step 3 of `calculatePlayerPoint`

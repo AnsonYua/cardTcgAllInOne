@@ -1,6 +1,6 @@
 {
-  "gameId": "h2_target_count_simple",
-  "description": "Simple test for h-2 (Make America Great Again) automatic target selection",
+  "gameId": "h2_selection_simple",
+  "description": "Simple test for h-2 (Make America Great Again) manual selection",
   "testType": "simple",
   "initialGameEnv": {
     "phase": "MAIN_PHASE",

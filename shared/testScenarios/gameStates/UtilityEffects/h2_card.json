@@ -1,6 +1,6 @@
 {
-  "gameId": "h2_targeting_chat",
-  "description": "Test h-2 card automatic targeting mechanics",
+  "gameId": "h2_selection_chat",
+  "description": "Test h-2 card manual selection mechanics",
   "testType": "per_card",
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -145,7 +145,7 @@
   "playerActions": [
     {
       "step": 1,
-      "description": "Player 1 plays h-2 which should automatically target opponent's first character",
+      "description": "Player 1 plays h-2 which should trigger card selection",
       "playerId": "playerId_1",
       "action": {
         "actionType": "PlayCard",
@@ -153,18 +153,34 @@
         "zone": "help"
       },
       "expectedResult": {
-        "success": true
+        "success": true,
+        "requiresSelection": true
+      }
+    },
+    {
+      "step": 2,
+      "description": "Player 1 manually selects c-21 to set power to 0",
+      "playerId": "playerId_1",
+      "action": {
+        "actionType": "SelectCard",
+        "cardIds": [
+          "c-21"
+        ]
+      },
+      "expectedResult": {
+        "success": true,
+        "selectionCompleted": true
       }
     }
   ],
   "validationPoints": {
-    "h2_targeting_only": {
-      "description": "h-2 automatically targets first available opponent character",
+    "h2_selection_only": {
+      "description": "h-2 requires manual card selection to set power to 0",
       "expected": {
+        "selectionTriggered": true,
         "c21PowerBefore": 80,
         "c21PowerAfter": 0,
-        "targetingWorked": true,
-        "noManualSelection": true
+        "manualSelectionRequired": true
       }
     }
   }
