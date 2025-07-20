@@ -9,6 +9,19 @@ This document provides comprehensive documentation for all utility card effect t
 **Coverage**: 25/25 utility cards (100% complete)  
 **Created**: January 2025 - Complete per-card utility effect testing suite
 
+## Quick Start - Test Commands
+
+```bash
+# Run any individual scenario
+cd cardBackend
+npm run test:dynamic [SCENARIO_FILE].json
+
+# Examples:
+npm run test:dynamic h1_card.json                    # Test h-1 neutralization
+npm run test:dynamic sp2_card.json                   # Test sp-2 power boost  
+npm run test:dynamic utility_comprehensive_test.json # Run full integration test
+```
+
 ---
 
 ## Complete Per-Card Test Coverage
@@ -39,11 +52,7 @@ This document provides comprehensive documentation for all utility card effect t
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h1_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic h1_card.json
 ```
 
 ### H-2: Make America Great Again (Automatic Targeting)  
@@ -54,11 +63,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h2_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic h2_card.json
 ```
 
 ### H-3: Doge Assembly (Trait Power Boost)
@@ -69,11 +74,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h3_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic h3_card.json
 ```
 
 ### H-4: Liberation Day (Silence Summon Effects)
@@ -84,11 +85,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h4_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic h4_card.json
 ```
 
 ### H-5: Dementia (Zone Freedom)
@@ -99,11 +96,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h5_zone_freedom.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic h5_zone_freedom.json
 ```
 
 ### H-5: Dementia (Power Boost)
@@ -114,11 +107,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h5_power_boost.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic h5_power_boost.json
 ```
 
 ### H-5: Dementia (Immunity)
@@ -129,11 +118,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h5_immunity.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic h5_immunity.json
 ```
 
 ### H-6: You Have No Card (Conditional Discard)
@@ -144,11 +129,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h6_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic h6_card.json
 ```
 
 ### H-7: Biden Withdrawal (Prevent Help Cards)
@@ -159,11 +140,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h7_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic h7_card.json
 ```
 
 ### H-8: Break Low (Nerf 自由/經濟 Traits)
@@ -174,11 +151,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h8_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic h8_card.json
 ```
 
 ### H-9: Bitcoin (Draw Cards)
@@ -189,11 +162,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h9_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic h9_card.json
 ```
 
 ### H-10: California Fire (Neutralize Opponent Help)
@@ -204,11 +173,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h10_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic h10_card.json
 ```
 
 ### H-11: Mar-a-Lago (Deck Search)
@@ -219,11 +184,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h11_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic h11_card.json
 ```
 
 ### H-12: Debt Crisis (SP Neutralization + Force SP Play)
@@ -234,11 +195,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h12_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic h12_card.json
 ```
 
 ### H-13: TikTok Ban (平民 Trait Boost)
@@ -249,11 +206,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h13_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic h13_card.json
 ```
 
 ### H-14: Federal Judge (特朗普家族 Trait Nerf)
@@ -264,11 +217,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h14_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic h14_card.json
 ```
 
 ### H-15: Genius Act (經濟 GameType Boost)
@@ -279,11 +228,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/h15_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic h15_card.json
 ```
 
 ---
@@ -298,11 +243,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/sp1_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic sp1_card.json
 ```
 
 ### SP-2: Rate Cut (Universal Ally Boost) 
@@ -313,11 +254,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/sp2_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic sp2_card.json
 ```
 
 ### SP-3: Rate Hike (Universal Opponent Nerf)
@@ -328,11 +265,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/sp3_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic sp3_card.json
 ```
 
 ### SP-4: Tariff Sweep (Both Sides 自由/經濟 Nerf)
@@ -343,11 +276,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/sp4_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic sp4_card.json
 ```
 
 ### SP-5: Break High (Ally 自由/經濟 Boost)
@@ -358,11 +287,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/sp5_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic sp5_card.json
 ```
 
 ### SP-6: DeepSeek Storm (Final Calculation Nerf)
@@ -373,11 +298,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/sp6_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic sp6_card.json
 ```
 
 ### SP-7: No King Day (特朗普家族 Trait Nerf)
@@ -388,11 +309,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/sp7_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic sp7_card.json
 ```
 
 ### SP-8: Tesla Takedown (Doge Nerf + Musk Combo Disable)
@@ -403,11 +320,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/sp8_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic sp8_card.json
 ```
 
 ### SP-9: Capitol Riot (特朗普 Combo Disable)
@@ -418,11 +331,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/sp9_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic sp9_card.json
 ```
 
 ### SP-10: Democratic Rally (左翼 GameType Boost)
@@ -433,11 +342,7 @@ testHelper.runScenario(scenario).then(console.log).catch(console.error);
 ```bash
 # Run this specific test
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/sp10_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic sp10_card.json
 ```
 
 ---
@@ -450,11 +355,7 @@ cd cardBackend
 echo "Running all Help card tests..."
 for file in h1_card h2_card h3_card h4_card h5_zone_freedom h5_power_boost h5_immunity h6_card h7_card h8_card h9_card h10_card h11_card h12_card h13_card h14_card h15_card; do
   echo "Testing $file..."
-  node -e "
-  const testHelper = require('./src/tests/testHelpers.js');
-  const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/$file.json');
-  testHelper.runScenario(scenario).then(console.log).catch(console.error);
-  "
+  npm run test:dynamic $file.json
 done
 ```
 
@@ -464,11 +365,7 @@ cd cardBackend
 echo "Running all SP card tests..."
 for file in sp1_card sp2_card sp3_card sp4_card sp5_card sp6_card sp7_card sp8_card sp9_card sp10_card; do
   echo "Testing $file..."
-  node -e "
-  const testHelper = require('./src/tests/testHelpers.js');
-  const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/$file.json');
-  testHelper.runScenario(scenario).then(console.log).catch(console.error);
-  "
+  npm run test:dynamic $file.json
 done
 ```
 
@@ -476,13 +373,9 @@ done
 ```bash
 cd cardBackend
 echo "Running ALL utility effect tests..."
-for file in ../shared/testScenarios/gameStates/UtilityEffects/*_card.json ../shared/testScenarios/gameStates/UtilityEffects/h5_*.json; do
-  echo "Testing $(basename $file)..."
-  node -e "
-  const testHelper = require('./src/tests/testHelpers.js');
-  const scenario = require('$file');
-  testHelper.runScenario(scenario).then(console.log).catch(console.error);
-  "
+for file in h1_card h2_card h3_card h4_card h5_zone_freedom h5_power_boost h5_immunity h6_card h7_card h8_card h9_card h10_card h11_card h12_card h13_card h14_card h15_card sp1_card sp2_card sp3_card sp4_card sp5_card sp6_card sp7_card sp8_card sp9_card sp10_card; do
+  echo "Testing $file..."
+  npm run test:dynamic $file.json
 done
 ```
 
@@ -492,31 +385,19 @@ done
 cd cardBackend
 for file in h2_card h3_card h8_card h13_card h14_card h15_card sp2_card sp3_card sp4_card sp5_card sp7_card sp10_card; do
   echo "Testing power effect: $file..."
-  node -e "
-  const testHelper = require('./src/tests/testHelpers.js');
-  const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/$file.json');
-  testHelper.runScenario(scenario).then(console.log).catch(console.error);
-  "
+  npm run test:dynamic $file.json
 done
 
 # Neutralization effects  
 for file in h1_card h10_card h12_card sp1_card; do
   echo "Testing neutralization effect: $file..."
-  node -e "
-  const testHelper = require('./src/tests/testHelpers.js');
-  const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/$file.json');
-  testHelper.runScenario(scenario).then(console.log).catch(console.error);
-  "
+  npm run test:dynamic $file.json
 done
 
 # Special mechanics
 for file in h5_zone_freedom h5_immunity h6_card h7_card h9_card h11_card sp6_card sp8_card sp9_card; do
   echo "Testing special mechanic: $file..."
-  node -e "
-  const testHelper = require('./src/tests/testHelpers.js');
-  const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/$file.json');
-  testHelper.runScenario(scenario).then(console.log).catch(console.error);
-  "
+  npm run test:dynamic $file.json
 done
 ```
 
@@ -587,11 +468,21 @@ done
 ```bash
 # Test a specific card during development
 cd cardBackend
-node -e "
-const testHelper = require('./src/tests/testHelpers.js');
-const scenario = require('../shared/testScenarios/gameStates/UtilityEffects/[CARD]_card.json');
-testHelper.runScenario(scenario).then(console.log).catch(console.error);
-"
+npm run test:dynamic [CARD]_card.json
+
+# Examples:
+npm run test:dynamic h1_card.json
+npm run test:dynamic sp2_card.json
+npm run test:dynamic h5_zone_freedom.json
+```
+
+### Comprehensive Test Scenarios
+```bash
+# Run the main comprehensive integration tests
+cd cardBackend
+npm run test:dynamic utility_comprehensive_test.json
+npm run test:dynamic utility_neutralization_immunity_test.json
+npm run test:dynamic utility_final_calculation_test.json
 ```
 
 ### Automated Testing
