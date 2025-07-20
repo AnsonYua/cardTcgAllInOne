@@ -1,7 +1,7 @@
 {
-  "gameId": "h1_selection_chat",
-  "description": "Test h-1 card neutralization and selection mechanics",
-  "testType": "per_card",
+  "gameId": "h1_true_gameplay_simulation",
+  "description": "True gameplay simulation: Player 1 plays character, Player 2 plays h-2 targeting opponent, Player 1 plays h-1 to neutralize h-2",
+  "testType": "sequential_gameplay",
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
     "round": 1,
@@ -15,8 +15,8 @@
         "name": "Player 1",
         "deck": {
           "hand": [
-            "h-1",
             "c-1",
+            "h-1",
             "c-2",
             "c-3",
             "c-4"
@@ -34,7 +34,6 @@
             "c-14",
             "c-15",
             "c-16",
-            "h-2",
             "h-3",
             "h-4",
             "sp-1",
@@ -52,20 +51,29 @@
         "isReady": true,
         "redraw": 1,
         "turnAction": [],
-        "playerPoint": 0
+        "playerPoint": 0,
+        "fieldEffects": {
+          "zoneRestrictions": {},
+          "activeEffects": [],
+          "specialEffects": {},
+          "calculatedPowers": {},
+          "disabledCards": [],
+          "victoryPointModifiers": 0
+        }
       },
       "playerId_2": {
         "id": "playerId_2",
         "name": "Player 2",
         "deck": {
           "hand": [
+            "h-2",
             "c-17",
             "c-18",
             "c-19",
-            "c-20",
-            "c-21"
+            "c-20"
           ],
           "mainDeck": [
+            "c-21",
             "c-22",
             "c-23",
             "c-24",
@@ -86,17 +94,25 @@
             "sp-6"
           ],
           "leader": [
-            "s-6",
             "s-2",
             "s-3",
-            "s-4"
+            "s-4",
+            "s-5"
           ],
           "currentLeaderIdx": 0
         },
         "isReady": true,
         "redraw": 1,
         "turnAction": [],
-        "playerPoint": 0
+        "playerPoint": 0,
+        "fieldEffects": {
+          "zoneRestrictions": {},
+          "activeEffects": [],
+          "specialEffects": {},
+          "calculatedPowers": {},
+          "disabledCards": [],
+          "victoryPointModifiers": 0
+        }
       }
     },
     "zones": {
@@ -106,16 +122,7 @@
           "name": "特朗普",
           "cardType": "leader"
         },
-        "top": [
-          {
-            "id": "c-1",
-            "name": "總統特朗普",
-            "cardType": "character",
-            "gameType": "愛國者",
-            "basePower": 100,
-            "traits": ["特朗普家族"]
-          }
-        ],
+        "top": [],
         "left": [],
         "right": [],
         "help": [],
@@ -130,27 +137,12 @@
         "top": [],
         "left": [],
         "right": [],
-        "help": [
-          {
-            "id": "h-2",
-            "name": "Make America Great Again",
-            "cardType": "help",
-            "effects": {
-              "description": "選擇對方一張角色卡，原能力值 變成 0",
-              "rules": [
-                {
-                  "id": "maga_nerf",
-                  "type": "continuous"
-                }
-              ]
-            }
-          }
-        ],
+        "help": [],
         "sp": []
       }
     },
     "gameEvents": [],
-    "lastEventId": 1,
+    "lastEventId": 0,
     "pendingPlayerAction": null,
     "pendingCardSelections": {},
     "playSequence": {
@@ -158,46 +150,168 @@
       "plays": []
     }
   },
-  "playerActions": [
+  "gameplaySteps": [
     {
       "step": 1,
-      "description": "Player 1 plays h-1 to trigger card selection",
+      "description": "Player 1 plays character card c-1 (愛國者) to LEFT zone",
       "playerId": "playerId_1",
       "action": {
-        "actionType": "PlayCard",
-        "cardId": "h-1",
-        "zone": "help"
+        "type": "PlayCard",
+        "card_idx": 0,
+        "field_idx": 1
       },
       "expectedResult": {
         "success": true,
-        "requiresSelection": true
+        "cardPlaced": "c-1",
+        "zone": "left",
+        "turnSwitches": true,
+        "newCurrentPlayer": "playerId_2"
+      },
+      "validation": {
+        "checkZoneContents": {
+          "playerId_1.zones.left": ["c-1"]
+        },
+        "checkPlaySequence": {
+          "playsCount": 1,
+          "lastPlay": {
+            "action": "PLAY_CARD",
+            "cardId": "c-1",
+            "playerId": "playerId_1",
+            "zone": "left"
+          }
+        }
       }
     },
     {
       "step": 2,
-      "description": "Player 1 manually selects h-2 to neutralize",
-      "playerId": "playerId_1",
+      "description": "Player 2 plays h-2 to HELP zone, then selects opponent character c-1 to set power to 0",
+      "playerId": "playerId_2",
       "action": {
-        "actionType": "SelectCard",
-        "cardIds": [
-          "h-2"
-        ]
+        "type": "PlayCard",
+        "card_idx": 0,
+        "field_idx": 3
       },
       "expectedResult": {
         "success": true,
-        "selectionCompleted": true
+        "cardPlaced": "h-2",
+        "zone": "help",
+        "requiresSelection": true,
+        "selectionType": "setPower"
+      },
+      "selectionAction": {
+        "selectedCardIds": ["c-1"],
+        "expectedEffect": {
+          "targetCard": "c-1",
+          "targetPlayer": "playerId_1", 
+          "newPower": 0,
+          "effectType": "setPower"
+        }
+      },
+      "validation": {
+        "checkZoneContents": {
+          "playerId_2.zones.help": ["h-2"]
+        },
+        "checkFieldEffects": {
+          "playerId_1.fieldEffects.calculatedPowers.c-1": 0
+        },
+        "checkPlaySequence": {
+          "playsCount": 2,
+          "lastPlay": {
+            "action": "PLAY_CARD",
+            "cardId": "h-2",
+            "playerId": "playerId_2",
+            "zone": "help"
+          }
+        }
+      }
+    },
+    {
+      "step": 3,
+      "description": "Player 1 plays h-1 to HELP zone, then selects h-2 to neutralize Player 2's h-2 effect",
+      "playerId": "playerId_1",
+      "action": {
+        "type": "PlayCard",
+        "card_idx": 1,
+        "field_idx": 3
+      },
+      "expectedResult": {
+        "success": true,
+        "cardPlaced": "h-1",
+        "zone": "help",
+        "requiresSelection": true,
+        "selectionType": "neutralize"
+      },
+      "selectionAction": {
+        "selectedCardIds": ["h-2"],
+        "expectedEffect": {
+          "targetCard": "h-2",
+          "targetPlayer": "playerId_2",
+          "effectType": "neutralize",
+          "restoredPower": {
+            "cardId": "c-1",
+            "playerId": "playerId_1",
+            "newPower": "basePower"
+          }
+        }
+      },
+      "validation": {
+        "checkZoneContents": {
+          "playerId_1.zones.help": ["h-1"]
+        },
+        "checkFieldEffects": {
+          "playerId_1.fieldEffects.calculatedPowers": {},
+          "playerId_2.fieldEffects.disabledCards": ["h-2"]
+        },
+        "checkPlaySequence": {
+          "playsCount": 3,
+          "lastPlay": {
+            "action": "PLAY_CARD",
+            "cardId": "h-1",
+            "playerId": "playerId_1",
+            "zone": "help"
+          }
+        },
+        "checkCardPowers": {
+          "c-1": "basePower"
+        }
       }
     }
   ],
   "validationPoints": {
-    "h1_selection_only": {
-      "description": "h-1 requires manual card selection for neutralization",
+    "step1_character_placement": {
+      "description": "Character card successfully placed in zone with proper turn switching",
+      "expected": {
+        "cardInZone": true,
+        "playSequenceRecorded": true,
+        "turnSwitched": true
+      }
+    },
+    "step2_h2_effect_application": {
+      "description": "H-2 requires selection and successfully applies setPower effect",
+      "expected": {
+        "selectionTriggered": true,
+        "targetCardPowerSet": true,
+        "effectInFieldEffects": true,
+        "manualSelectionRequired": true
+      }
+    },
+    "step3_h1_neutralization": {
+      "description": "H-1 neutralizes H-2 and restores original power",
       "expected": {
         "selectionTriggered": true,
         "h2Neutralized": true,
+        "powerRestored": true,
         "manualSelectionRequired": true,
-        "c1PowerBeforeNeutralization": 0,
-        "c1PowerAfterNeutralization": 100
+        "h2InDisabledCards": true
+      }
+    },
+    "complete_interaction": {
+      "description": "Complete card interaction sequence from empty state to full neutralization",
+      "expected": {
+        "emptyPlaySequenceStart": true,
+        "threeStepProgression": true,
+        "properEffectApplicationAndRemoval": true,
+        "fieldEffectsIntegrity": true
       }
     }
   }

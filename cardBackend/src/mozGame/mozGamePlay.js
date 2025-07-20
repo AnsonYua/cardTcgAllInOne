@@ -1038,15 +1038,19 @@ class mozGamePlay {
                         const cardId = cardData.id;
                         const basePower = cardData.power || 0;
                         
-                        // Apply field effects to get modified power (compatibility with unified system)
-                        // NOTE: In unified system, power modifications are computed by EffectSimulator
-                        // This method provides fallback calculation for legacy compatibility
-                        const modifiedPower = await this.fieldEffectProcessor.calculateModifiedPower(
-                            gameEnv, 
-                            playerId, 
-                            cardData, 
-                            basePower
-                        );
+                        // Check unified field effects system for power overrides
+                        let modifiedPower = basePower;
+                        
+                        // Check if there's a calculated power override in the unified system
+                        if (gameEnv.players && 
+                            gameEnv.players[playerId] && 
+                            gameEnv.players[playerId].fieldEffects && 
+                            gameEnv.players[playerId].fieldEffects.calculatedPowers &&
+                            gameEnv.players[playerId].fieldEffects.calculatedPowers[cardId] !== undefined) {
+                            
+                            modifiedPower = gameEnv.players[playerId].fieldEffects.calculatedPowers[cardId];
+                            console.log(`Using unified system power override for ${cardId}: ${modifiedPower}`);
+                        }
                         
                         characterPowers[cardId] = { 
                             basePower: modifiedPower,  // Use field effect modified power as base
@@ -2301,25 +2305,33 @@ class mozGamePlay {
         const selection = gameEnv.pendingCardSelections[selectionId];
         const { playerId, targetPlayerId, effect } = selection;
         
-        // Initialize power modification state in field effects
-        if (!gameEnv.players[targetPlayerId].fieldEffects.setPowerEffects) {
-            gameEnv.players[targetPlayerId].fieldEffects.setPowerEffects = [];
+        // Initialize field effects structure if it doesn't exist
+        if (!gameEnv.players[targetPlayerId].fieldEffects) {
+            gameEnv.players[targetPlayerId].fieldEffects = {
+                zoneRestrictions: {},
+                activeEffects: [],
+                specialEffects: {},
+                calculatedPowers: {},
+                disabledCards: [],
+                victoryPointModifiers: 0
+            };
         }
         
-        // Apply set power effect to each selected card
+        // Initialize calculatedPowers if it doesn't exist
+        if (!gameEnv.players[targetPlayerId].fieldEffects.calculatedPowers) {
+            gameEnv.players[targetPlayerId].fieldEffects.calculatedPowers = {};
+        }
+        
+        // Apply set power effect to each selected card in the unified system
         for (const cardId of selectedCardIds) {
             // Find the card in the eligible cards list to get card info
             const cardInfo = selection.eligibleCards.find(card => card.cardId === cardId);
             
             if (cardInfo) {
-                // Store the power override in field effects
-                gameEnv.players[targetPlayerId].fieldEffects.setPowerEffects.push({
-                    cardId: cardId,
-                    power: effect.value,
-                    sourceCard: playerId // Track which player applied this effect
-                });
+                // Store the power override in unified field effects system
+                gameEnv.players[targetPlayerId].fieldEffects.calculatedPowers[cardId] = effect.value;
                 
-                console.log(`Set power effect applied: Card ${cardId} power set to ${effect.value}`);
+                console.log(`Set power effect applied: Card ${cardId} power set to ${effect.value} in unified system`);
             }
         }
         
