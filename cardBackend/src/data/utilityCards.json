@@ -71,7 +71,7 @@
       "name": "Make America Great Again",
       "cardType": "help",
       "effects": {
-        "description": "對方一張角色卡，原能力值 變成 0",
+        "description": "選擇對方一張角色卡，原能力值 變成 0",
         "rules": [
           {
             "id": "maga_nerf",

@@ -913,7 +913,8 @@ class mozGamePlay {
             }
         }
         
-        if(currentTurnActionComplete){
+        // Don't switch turns if there's a pending card selection
+        if(currentTurnActionComplete && !gameEnv.pendingPlayerAction){
             gameEnv = await this.startNewTurn(gameEnv);
         }
         return gameEnv;

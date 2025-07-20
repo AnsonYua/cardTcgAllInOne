@@ -106,7 +106,16 @@
           "name": "特朗普",
           "cardType": "leader"
         },
-        "top": [],
+        "top": [
+          {
+            "id": "c-1",
+            "name": "總統特朗普",
+            "cardType": "character",
+            "gameType": "愛國者",
+            "basePower": 100,
+            "traits": ["特朗普家族"]
+          }
+        ],
         "left": [],
         "right": [],
         "help": [],
@@ -127,7 +136,7 @@
             "name": "Make America Great Again",
             "cardType": "help",
             "effects": {
-              "description": "對方一張角色卡，原能力值 變成 0",
+              "description": "選擇對方一張角色卡，原能力值 變成 0",
               "rules": [
                 {
                   "id": "maga_nerf",
@@ -186,7 +195,9 @@
       "expected": {
         "selectionTriggered": true,
         "h2Neutralized": true,
-        "manualSelectionRequired": true
+        "manualSelectionRequired": true,
+        "c1PowerBeforeNeutralization": 0,
+        "c1PowerAfterNeutralization": 100
       }
     }
   }
