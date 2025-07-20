@@ -1,6 +1,6 @@
 {
   "gameId": "h14_card",
-  "description": "Test h-14 card nerf \u7279\u6717\u666e\u5bb6\u65cf trait characters",
+  "description": "Test h-14 card nerf 特朗普家族 trait characters",
   "testType": "per_card",
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -103,7 +103,7 @@
       "playerId_1": {
         "leader": {
           "id": "s-1",
-          "name": "\u7279\u6717\u666e",
+          "name": "特朗普",
           "cardType": "leader"
         },
         "top": [],
@@ -115,7 +115,7 @@
       "playerId_2": {
         "leader": {
           "id": "s-2",
-          "name": "\u62dc\u767b",
+          "name": "拜登",
           "cardType": "leader"
         },
         "top": [
@@ -123,11 +123,11 @@
             "id": "c-trump-family",
             "name": "Trump Family Character",
             "cardType": "character",
-            "gameType": "\u611b\u570b\u8005",
+            "gameType": "愛國者",
             "basePower": 120,
-            "traits": [
-              "\u7279\u6717\u666e\u5bb6\u65cf"
-            ]
+                          "traits": [
+                "特朗普家族"
+              ]
           }
         ],
         "left": [],
@@ -148,7 +148,7 @@
   "playerActions": [
     {
       "step": 1,
-      "description": "Player 1 plays h-14 to automatically target opponent's \u7279\u6717\u666e\u5bb6\u65cf character",
+      "description": "Player 1 plays h-14 to automatically target opponent's 特朗普家族 character",
       "playerId": "playerId_1",
       "action": {
         "actionType": "PlayCard",
@@ -162,7 +162,7 @@
   ],
   "validationPoints": {
     "h14_trump_family_nerf": {
-      "description": "h-14 automatically targets and nerfs first \u7279\u6717\u666e\u5bb6\u65cf character by -60",
+      "description": "h-14 automatically targets and nerfs first 特朗普家族 character by -60",
       "expected": {
         "trumpFamilyPowerBefore": 120,
         "trumpFamilyPowerAfter": 60,

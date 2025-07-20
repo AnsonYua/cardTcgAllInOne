@@ -103,7 +103,7 @@
       "playerId_1": {
         "leader": {
           "id": "s-1",
-          "name": "\u7279\u6717\u666e",
+          "name": "特朗普",
           "cardType": "leader"
         },
         "top": [],
@@ -115,15 +115,15 @@
       "playerId_2": {
         "leader": {
           "id": "s-2",
-          "name": "\u62dc\u767b",
+          "name": "拜登",
           "cardType": "leader"
         },
         "top": [
           {
             "id": "c-21",
-            "name": "\u5967\u5df4\u99ac",
+            "name": "奧巴馬",
             "cardType": "character",
-            "gameType": "\u5de6\u7ffc",
+            "gameType": "左翼",
             "basePower": 80
           }
         ],

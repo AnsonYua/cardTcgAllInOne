@@ -103,7 +103,7 @@
       "playerId_1": {
         "leader": {
           "id": "s-1",
-          "name": "\u7279\u6717\u666e",
+          "name": "特朗普",
           "cardType": "leader"
         },
         "top": [
@@ -111,7 +111,7 @@
             "id": "c-doge1",
             "name": "Doge Character 1",
             "cardType": "character",
-            "gameType": "\u53f3\u7ffc",
+            "gameType": "右翼",
             "basePower": 60,
             "traits": [
               "Doge"
@@ -123,7 +123,7 @@
             "id": "c-doge2",
             "name": "Doge Character 2",
             "cardType": "character",
-            "gameType": "\u611b\u570b\u8005",
+            "gameType": "愛國者",
             "basePower": 75,
             "traits": [
               "Doge"
@@ -137,7 +137,7 @@
       "playerId_2": {
         "leader": {
           "id": "s-2",
-          "name": "\u62dc\u767b",
+          "name": "拜登",
           "cardType": "leader"
         },
         "top": [],

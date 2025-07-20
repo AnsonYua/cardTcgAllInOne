@@ -103,7 +103,7 @@
       "playerId_1": {
         "leader": {
           "id": "s-1",
-          "name": "\u7279\u6717\u666e",
+          "name": "特朗普",
           "cardType": "leader"
         },
         "top": [],
@@ -115,7 +115,7 @@
       "playerId_2": {
         "leader": {
           "id": "s-2",
-          "name": "\u62dc\u767b",
+          "name": "拜登",
           "cardType": "leader"
         },
         "top": [],

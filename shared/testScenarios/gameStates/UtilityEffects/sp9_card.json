@@ -1,6 +1,6 @@
 {
   "gameId": "sp9_card",
-  "description": "Test sp-9 card disable \u7279\u6717\u666e combos when \u7279\u6717\u666e present",
+  "description": "Test sp-9 card disable 特朗普 combos when 特朗普 present",
   "testType": "per_card",
   "initialGameEnv": {
     "phase": "BATTLE_PHASE",
@@ -103,7 +103,7 @@
       "playerId_1": {
         "leader": {
           "id": "s-1",
-          "name": "\u7279\u6717\u666e",
+          "name": "特朗普",
           "cardType": "leader"
         },
         "top": [],
@@ -113,10 +113,10 @@
         "sp": [
           {
             "id": "sp-9",
-            "name": "\u570b\u6703\u5c71\u838a\u9a37\u4e82",
+            "name": "國會山莊騷亂",
             "cardType": "sp",
             "effects": {
-              "description": "\u5982\u5c0d\u65b9\u5834\u4e0a\u6709\u89d2\u8272\u5361\u6216\u9818\u5c0e\u5361\u540d\u5b57\u70ba\u7279\u6717\u666e, \u7279\u6b8a\u7d44\u5408\u7684\u52a0\u4e58\u8b8a\u62100",
+              "description": "如對方場上有角色卡或領導卡名字為特朗普, 特殊組合的加乘變成0",
               "rules": [
                 {
                   "id": "capitol_riot_trump_combo_disable",
@@ -125,7 +125,7 @@
                     "conditions": [
                       {
                         "type": "opponentFieldContainsName",
-                        "value": "\u7279\u6717\u666e"
+                        "value": "特朗普"
                       }
                     ]
                   },
@@ -142,24 +142,24 @@
       "playerId_2": {
         "leader": {
           "id": "s-2",
-          "name": "\u62dc\u767b",
+          "name": "拜登",
           "cardType": "leader"
         },
         "top": [
           {
             "id": "c-1",
-            "name": "\u7279\u6717\u666e",
+            "name": "特朗普",
             "cardType": "character",
-            "gameType": "\u611b\u570b\u8005",
+            "gameType": "愛國者",
             "basePower": 100
           }
         ],
         "left": [
           {
             "id": "c-2",
-            "name": "\u4f0a\u842c\u5361",
+            "name": "伊萬卡",
             "cardType": "character",
-            "gameType": "\u611b\u570b\u8005",
+            "gameType": "愛國者",
             "basePower": 90
           }
         ],
@@ -180,7 +180,7 @@
   "playerActions": [],
   "validationPoints": {
     "sp9_trump_combo_disable": {
-      "description": "sp-9 disables opponent combo bonuses when \u7279\u6717\u666e is present",
+      "description": "sp-9 disables opponent combo bonuses when 特朗普 is present",
       "expected": {
         "trumpPresent": true,
         "conditionMet": true,

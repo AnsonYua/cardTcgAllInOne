@@ -103,7 +103,7 @@
       "playerId_1": {
         "leader": {
           "id": "s-1",
-          "name": "\u7279\u6717\u666e",
+          "name": "特朗普",
           "cardType": "leader"
         },
         "top": [],
@@ -115,7 +115,7 @@
       "playerId_2": {
         "leader": {
           "id": "s-2",
-          "name": "\u62dc\u767b",
+          "name": "拜登",
           "cardType": "leader"
         },
         "top": [],
@@ -125,10 +125,10 @@
         "sp": [
           {
             "id": "sp-3",
-            "name": "\u52a0\u606f\u5468\u671f",
+            "name": "加息周期",
             "cardType": "sp",
             "effects": {
-              "description": "\u5c0d\u65b9\u5834\u4e0a\u5168\u90e8\u89d2\u8272\u5361\uff0c\u539f\u80fd\u529b\u503c -30",
+              "description": "對方場上全部角色卡，原能力值 -30",
               "rules": [
                 {
                   "id": "rate_hike_nerf",

@@ -103,7 +103,7 @@
       "playerId_1": {
         "leader": {
           "id": "s-1",
-          "name": "\u7279\u6717\u666e",
+          "name": "特朗普",
           "cardType": "leader"
         },
         "top": [],
@@ -115,7 +115,7 @@
       "playerId_2": {
         "leader": {
           "id": "s-2",
-          "name": "\u62dc\u767b",
+          "name": "拜登",
           "cardType": "leader"
         },
         "top": [],
@@ -148,7 +148,7 @@
         "success": true
       },
       "expectedEffects": [
-        "h-6 checks opponent hand count (should be 6 cards, \u22654)",
+        "h-6 checks opponent hand count (should be 6 cards, ≥4)",
         "Condition met: opponent has 4+ cards",
         "Forces opponent to discard 2 random cards",
         "Opponent hand reduced from 6 to 4 cards"

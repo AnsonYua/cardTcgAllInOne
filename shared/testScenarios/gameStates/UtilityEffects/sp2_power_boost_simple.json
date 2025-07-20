@@ -1,6 +1,6 @@
 {
   "gameId": "sp2_power_boost_simple",
-  "description": "Simple test for sp-2 (\u6e1b\u606f\u5468\u671f) universal power boost",
+  "description": "Simple test for sp-2 (減息周期) universal power boost",
   "testType": "simple",
   "initialGameEnv": {
     "phase": "SP_PHASE",
@@ -103,33 +103,33 @@
       "playerId_1": {
         "leader": {
           "id": "s-1",
-          "name": "\u7279\u6717\u666e",
+          "name": "特朗普",
           "cardType": "leader"
         },
         "top": [
           {
             "id": "c-1",
-            "name": "\u7e3d\u7d71\u7279\u6717\u666e",
+            "name": "總統特朗普",
             "cardType": "character",
-            "gameType": "\u611b\u570b\u8005",
+            "gameType": "愛國者",
             "power": 100
           }
         ],
         "left": [
           {
             "id": "c-2",
-            "name": "\u5c0f\u7279\u6717\u666e",
+            "name": "小特朗普",
             "cardType": "character",
-            "gameType": "\u53f3\u7ffc",
+            "gameType": "右翼",
             "power": 65
           }
         ],
         "right": [
           {
             "id": "c-3",
-            "name": "\u827e\u745e\u514b\u7279\u6717\u666e",
+            "name": "艾瑞克特朗普",
             "cardType": "character",
-            "gameType": "\u7d93\u6fdf",
+            "gameType": "經濟",
             "power": 70
           }
         ],
@@ -145,15 +145,15 @@
       "playerId_2": {
         "leader": {
           "id": "s-2",
-          "name": "\u62dc\u767b",
+          "name": "拜登",
           "cardType": "leader"
         },
         "top": [
           {
             "id": "c-21",
-            "name": "\u5967\u5df4\u99ac",
+            "name": "奧巴馬",
             "cardType": "character",
-            "gameType": "\u5de6\u7ffc",
+            "gameType": "左翼",
             "power": 80
           }
         ],
@@ -181,7 +181,7 @@
   "playerActions": [
     {
       "step": 1,
-      "description": "Player 1 plays sp-2 (\u6e1b\u606f\u5468\u671f) face-down for universal +30 power boost",
+      "description": "Player 1 plays sp-2 (減息周期) face-down for universal +30 power boost",
       "playerId": "playerId_1",
       "action": {
         "actionType": "PlayCardBack",

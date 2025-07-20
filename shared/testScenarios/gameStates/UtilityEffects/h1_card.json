@@ -103,7 +103,7 @@
       "playerId_1": {
         "leader": {
           "id": "s-1",
-          "name": "\u7279\u6717\u666e",
+          "name": "特朗普",
           "cardType": "leader"
         },
         "top": [],
@@ -115,7 +115,7 @@
       "playerId_2": {
         "leader": {
           "id": "s-2",
-          "name": "\u62dc\u767b",
+          "name": "拜登",
           "cardType": "leader"
         },
         "top": [],
@@ -127,7 +127,7 @@
             "name": "Make America Great Again",
             "cardType": "help",
             "effects": {
-              "description": "\u5c0d\u65b9\u4e00\u5f35\u89d2\u8272\u5361\uff0c\u539f\u80fd\u529b\u503c\u8b8a\u62100",
+              "description": "對方一張角色卡，原能力值 變成 0",
               "rules": [
                 {
                   "id": "maga_nerf",

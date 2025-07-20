@@ -1,6 +1,6 @@
 {
   "gameId": "sp4_card",
-  "description": "Test sp-4 card nerf \u81ea\u7531/\u7d93\u6fdf traits both sides",
+  "description": "Test sp-4 card nerf 自由/經濟 traits both sides",
   "testType": "per_card",
   "initialGameEnv": {
     "phase": "BATTLE_PHASE",
@@ -103,7 +103,7 @@
       "playerId_1": {
         "leader": {
           "id": "s-1",
-          "name": "\u7279\u6717\u666e",
+          "name": "特朗普",
           "cardType": "leader"
         },
         "top": [
@@ -111,7 +111,7 @@
             "id": "c-freedom1",
             "name": "Freedom Character 1",
             "cardType": "character",
-            "gameType": "\u81ea\u7531",
+            "gameType": "自由",
             "basePower": 75
           }
         ],
@@ -121,10 +121,10 @@
         "sp": [
           {
             "id": "sp-4",
-            "name": "\u95dc\u7a05\u6383\u5c04",
+            "name": "關稅掃射",
             "cardType": "sp",
             "effects": {
-              "description": "\u5834\u4e0a\u5168\u90e8\u64c1\u6709\u81ea\u7531\u6216\u7d93\u6fdf\u7279\u5fb5\u89d2\u8272\u5361\uff0c\u539f\u80fd\u529b\u503c -50",
+              "description": "場上全部擁有自由或經濟特徵角色卡，原能力值 -50",
               "rules": [
                 {
                   "id": "tariff_sweep_nerf",
@@ -140,8 +140,8 @@
                       {
                         "type": "gameTypeOr",
                         "values": [
-                          "\u81ea\u7531",
-                          "\u7d93\u6fdf"
+                          "自由",
+                          "經濟"
                         ]
                       }
                     ]
@@ -159,7 +159,7 @@
       "playerId_2": {
         "leader": {
           "id": "s-2",
-          "name": "\u62dc\u767b",
+          "name": "拜登",
           "cardType": "leader"
         },
         "top": [
@@ -167,7 +167,7 @@
             "id": "c-economy1",
             "name": "Economy Character 1",
             "cardType": "character",
-            "gameType": "\u7d93\u6fdf",
+            "gameType": "經濟",
             "basePower": 90
           }
         ],
@@ -189,7 +189,7 @@
   "playerActions": [],
   "validationPoints": {
     "sp4_both_sides_nerf": {
-      "description": "sp-4 reduces \u81ea\u7531/\u7d93\u6fdf character power by -50 on both sides",
+      "description": "sp-4 reduces 自由/經濟 character power by -50 on both sides",
       "expected": {
         "allyFreedomPowerBefore": 75,
         "allyFreedomPowerAfter": 25,

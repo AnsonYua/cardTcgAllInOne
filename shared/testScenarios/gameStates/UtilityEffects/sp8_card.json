@@ -103,7 +103,7 @@
       "playerId_1": {
         "leader": {
           "id": "s-1",
-          "name": "\u7279\u6717\u666e",
+          "name": "特朗普",
           "cardType": "leader"
         },
         "top": [],
@@ -113,10 +113,10 @@
         "sp": [
           {
             "id": "sp-8",
-            "name": "\u53cd\u7279\u65af\u62c9\u793a\u5a01(Tesla Takedown)",
+            "name": "反特斯拉示威(Tesla Takedown)",
             "cardType": "sp",
             "effects": {
-              "description": "\u5c0d\u65b9\u5834\u4e0a\u64c1\u6709Doge\u7279\u5fb5\u7684\u5168\u90e8\u89d2\u8272\u5361,\u539f\u80fd\u529b\u503c -40\u3002\u5c0d\u65b9\u9818\u8896\u5361\u662f\u99ac\u65af\u514b\u7684\u6642\u5019, \u7279\u6b8a\u7d44\u5408\u7684\u52a0\u4e58\u8b8a\u62100",
+              "description": "對方場上擁有Doge特徵的全部角色卡,原能力值 -40。對方領袖卡是馬斯克的時候, 特殊組合的加乘變成0",
               "rules": [
                 {
                   "id": "tesla_takedown_doge_nerf",
@@ -147,7 +147,7 @@
                     "conditions": [
                       {
                         "type": "opponentLeader",
-                        "value": "\u99ac\u65af\u514b"
+                        "value": "馬斯克"
                       }
                     ]
                   },
@@ -164,7 +164,7 @@
       "playerId_2": {
         "leader": {
           "id": "s-6",
-          "name": "\u99ac\u65af\u514b",
+          "name": "馬斯克",
           "cardType": "leader"
         },
         "top": [
@@ -172,7 +172,7 @@
             "id": "c-doge1",
             "name": "Doge Character 1",
             "cardType": "character",
-            "gameType": "\u7d93\u6fdf",
+            "gameType": "經濟",
             "basePower": 80,
             "traits": [
               "Doge"
@@ -184,7 +184,7 @@
             "id": "c-doge2",
             "name": "Doge Character 2",
             "cardType": "character",
-            "gameType": "\u7d93\u6fdf",
+            "gameType": "經濟",
             "basePower": 75,
             "traits": [
               "Doge"

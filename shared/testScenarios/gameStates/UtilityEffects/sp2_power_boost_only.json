@@ -103,15 +103,15 @@
       "playerId_1": {
         "leader": {
           "id": "s-1",
-          "name": "\u7279\u6717\u666e",
+          "name": "特朗普",
           "cardType": "leader"
         },
         "top": [
           {
             "id": "c-1",
-            "name": "\u7279\u6717\u666e",
+            "name": "特朗普",
             "cardType": "character",
-            "gameType": "\u611b\u570b\u8005",
+            "gameType": "愛國者",
             "basePower": 100
           }
         ],
@@ -121,10 +121,10 @@
         "sp": [
           {
             "id": "sp-2",
-            "name": "\u6b0a\u529b",
+            "name": "權力",
             "cardType": "sp",
             "effects": {
-              "description": "\u6211\u65b9\u5834\u4e0a\u6240\u6709\u89d2\u8272\u5361\u539f\u80fd\u529b\u503c\u518d +30",
+              "description": "我方場上所有角色卡原能力值再 +30",
               "rules": [
                 {
                   "id": "power_boost_all",
@@ -154,7 +154,7 @@
       "playerId_2": {
         "leader": {
           "id": "s-2",
-          "name": "\u62dc\u767b",
+          "name": "拜登",
           "cardType": "leader"
         },
         "top": [],

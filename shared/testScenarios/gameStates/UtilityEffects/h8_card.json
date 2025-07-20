@@ -1,6 +1,6 @@
 {
   "gameId": "h8_card",
-  "description": "Test h-8 card nerf opponent \u81ea\u7531/\u7d93\u6fdf traits",
+  "description": "Test h-8 card nerf opponent 自由/經濟 traits",
   "testType": "per_card",
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -103,7 +103,7 @@
       "playerId_1": {
         "leader": {
           "id": "s-1",
-          "name": "\u7279\u6717\u666e",
+          "name": "特朗普",
           "cardType": "leader"
         },
         "top": [],
@@ -115,7 +115,7 @@
       "playerId_2": {
         "leader": {
           "id": "s-2",
-          "name": "\u62dc\u767b",
+          "name": "拜登",
           "cardType": "leader"
         },
         "top": [
@@ -123,7 +123,7 @@
             "id": "c-freedom",
             "name": "Freedom Character",
             "cardType": "character",
-            "gameType": "\u81ea\u7531",
+            "gameType": "自由",
             "basePower": 80
           }
         ],
@@ -132,7 +132,7 @@
             "id": "c-economy",
             "name": "Economy Character",
             "cardType": "character",
-            "gameType": "\u7d93\u6fdf",
+            "gameType": "經濟",
             "basePower": 90
           }
         ],
@@ -153,7 +153,7 @@
   "playerActions": [
     {
       "step": 1,
-      "description": "Player 1 plays h-8 to nerf opponent's \u81ea\u7531/\u7d93\u6fdf characters by -30",
+      "description": "Player 1 plays h-8 to nerf opponent's 自由/經濟 characters by -30",
       "playerId": "playerId_1",
       "action": {
         "actionType": "PlayCard",
@@ -167,7 +167,7 @@
   ],
   "validationPoints": {
     "h8_freedom_economy_nerf": {
-      "description": "h-8 reduces opponent \u81ea\u7531/\u7d93\u6fdf character power by -30",
+      "description": "h-8 reduces opponent 自由/經濟 character power by -30",
       "expected": {
         "freedomPowerBefore": 80,
         "freedomPowerAfter": 50,
