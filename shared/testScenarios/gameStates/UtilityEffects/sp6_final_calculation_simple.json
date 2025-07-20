@@ -1,6 +1,6 @@
 {
   "gameId": "sp6_final_calculation_simple",
-  "description": "Simple test for sp-6 (DeepSeek風暴) final calculation power nerf",
+  "description": "Simple test for sp-6 (DeepSeek\u98a8\u66b4) final calculation power nerf",
   "testType": "simple",
   "initialGameEnv": {
     "phase": "SP_PHASE",
@@ -14,9 +14,39 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": ["sp-6"],
-          "mainDeck": [],
-          "leader": ["s-1"],
+          "hand": [
+            "sp-6",
+            "c-1",
+            "c-2",
+            "c-3",
+            "c-4"
+          ],
+          "mainDeck": [
+            "c-5",
+            "c-6",
+            "c-7",
+            "c-8",
+            "c-9",
+            "c-10",
+            "c-11",
+            "c-12",
+            "c-13",
+            "c-14",
+            "c-15",
+            "c-16",
+            "h-2",
+            "h-3",
+            "h-4",
+            "sp-1",
+            "sp-2",
+            "sp-3"
+          ],
+          "leader": [
+            "s-1",
+            "s-2",
+            "s-3",
+            "s-4"
+          ],
           "currentLeaderIdx": 0
         },
         "isReady": true,
@@ -28,9 +58,39 @@
         "id": "playerId_2",
         "name": "Player 2",
         "deck": {
-          "hand": ["sp-1"],
-          "mainDeck": [],
-          "leader": ["s-2"],
+          "hand": [
+            "c-17",
+            "c-18",
+            "c-19",
+            "c-20",
+            "c-21"
+          ],
+          "mainDeck": [
+            "c-22",
+            "c-23",
+            "c-24",
+            "c-25",
+            "c-26",
+            "c-27",
+            "c-28",
+            "c-29",
+            "c-30",
+            "c-31",
+            "c-32",
+            "c-33",
+            "h-5",
+            "h-6",
+            "h-7",
+            "sp-4",
+            "sp-5",
+            "sp-6"
+          ],
+          "leader": [
+            "s-6",
+            "s-2",
+            "s-3",
+            "s-4"
+          ],
           "currentLeaderIdx": 0
         },
         "isReady": true,
@@ -43,33 +103,33 @@
       "playerId_1": {
         "leader": {
           "id": "s-1",
-          "name": "特朗普",
+          "name": "\u7279\u6717\u666e",
           "cardType": "leader"
         },
         "top": [
           {
             "id": "c-1",
-            "name": "總統特朗普",
+            "name": "\u7e3d\u7d71\u7279\u6717\u666e",
             "cardType": "character",
-            "gameType": "愛國者",
+            "gameType": "\u611b\u570b\u8005",
             "power": 100
           }
         ],
         "left": [
           {
             "id": "c-2",
-            "name": "小特朗普",
+            "name": "\u5c0f\u7279\u6717\u666e",
             "cardType": "character",
-            "gameType": "右翼",
+            "gameType": "\u53f3\u7ffc",
             "power": 65
           }
         ],
         "right": [
           {
             "id": "c-3",
-            "name": "艾瑞克特朗普",
+            "name": "\u827e\u745e\u514b\u7279\u6717\u666e",
             "cardType": "character",
-            "gameType": "經濟",
+            "gameType": "\u7d93\u6fdf",
             "power": 70
           }
         ],
@@ -85,33 +145,33 @@
       "playerId_2": {
         "leader": {
           "id": "s-2",
-          "name": "拜登",
+          "name": "\u62dc\u767b",
           "cardType": "leader"
         },
         "top": [
           {
             "id": "c-21",
-            "name": "奧巴馬",
+            "name": "\u5967\u5df4\u99ac",
             "cardType": "character",
-            "gameType": "左翼",
+            "gameType": "\u5de6\u7ffc",
             "power": 80
           }
         ],
         "left": [
           {
             "id": "c-22",
-            "name": "沃倫",
+            "name": "\u6c83\u502b",
             "cardType": "character",
-            "gameType": "左翼",
+            "gameType": "\u5de6\u7ffc",
             "power": 75
           }
         ],
         "right": [
           {
             "id": "c-23",
-            "name": "民主黨支持者",
+            "name": "\u6c11\u4e3b\u9ee8\u652f\u6301\u8005",
             "cardType": "character",
-            "gameType": "左翼",
+            "gameType": "\u5de6\u7ffc",
             "power": 60
           }
         ],
@@ -137,7 +197,7 @@
   "playerActions": [
     {
       "step": 1,
-      "description": "Player 1 plays sp-6 (DeepSeek風暴) face-down for final calculation nerf",
+      "description": "Player 1 plays sp-6 (DeepSeek\u98a8\u66b4) face-down for final calculation nerf",
       "playerId": "playerId_1",
       "action": {
         "actionType": "PlayCardBack",

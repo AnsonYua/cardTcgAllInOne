@@ -14,9 +14,39 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": ["h-1"],
-          "mainDeck": [],
-          "leader": ["s-1"],
+          "hand": [
+            "h-1",
+            "c-1",
+            "c-2",
+            "c-3",
+            "c-4"
+          ],
+          "mainDeck": [
+            "c-5",
+            "c-6",
+            "c-7",
+            "c-8",
+            "c-9",
+            "c-10",
+            "c-11",
+            "c-12",
+            "c-13",
+            "c-14",
+            "c-15",
+            "c-16",
+            "h-2",
+            "h-3",
+            "h-4",
+            "sp-1",
+            "sp-2",
+            "sp-3"
+          ],
+          "leader": [
+            "s-1",
+            "s-2",
+            "s-3",
+            "s-4"
+          ],
           "currentLeaderIdx": 0
         },
         "isReady": true,
@@ -28,9 +58,39 @@
         "id": "playerId_2",
         "name": "Player 2",
         "deck": {
-          "hand": [],
-          "mainDeck": [],
-          "leader": ["s-2"],
+          "hand": [
+            "c-17",
+            "c-18",
+            "c-19",
+            "c-20",
+            "c-21"
+          ],
+          "mainDeck": [
+            "c-22",
+            "c-23",
+            "c-24",
+            "c-25",
+            "c-26",
+            "c-27",
+            "c-28",
+            "c-29",
+            "c-30",
+            "c-31",
+            "c-32",
+            "c-33",
+            "h-5",
+            "h-6",
+            "h-7",
+            "sp-4",
+            "sp-5",
+            "sp-6"
+          ],
+          "leader": [
+            "s-6",
+            "s-2",
+            "s-3",
+            "s-4"
+          ],
           "currentLeaderIdx": 0
         },
         "isReady": true,
@@ -43,7 +103,7 @@
       "playerId_1": {
         "leader": {
           "id": "s-1",
-          "name": "特朗普",
+          "name": "\u7279\u6717\u666e",
           "cardType": "leader"
         },
         "top": [],
@@ -55,7 +115,7 @@
       "playerId_2": {
         "leader": {
           "id": "s-2",
-          "name": "拜登",
+          "name": "\u62dc\u767b",
           "cardType": "leader"
         },
         "top": [],
@@ -67,14 +127,28 @@
             "name": "Make America Great Again",
             "cardType": "help",
             "effects": {
-              "description": "對方一張角色卡，原能力值變成0",
+              "description": "\u5c0d\u65b9\u4e00\u5f35\u89d2\u8272\u5361\uff0c\u539f\u80fd\u529b\u503c\u8b8a\u62100",
               "rules": [
                 {
                   "id": "maga_nerf",
                   "type": "continuous",
-                  "trigger": { "event": "always", "conditions": [] },
-                  "target": { "owner": "opponent", "zones": ["top", "left", "right"], "targetCount": 1 },
-                  "effect": { "type": "setPower", "value": 0 }
+                  "trigger": {
+                    "event": "always",
+                    "conditions": []
+                  },
+                  "target": {
+                    "owner": "opponent",
+                    "zones": [
+                      "top",
+                      "left",
+                      "right"
+                    ],
+                    "targetCount": 1
+                  },
+                  "effect": {
+                    "type": "setPower",
+                    "value": 0
+                  }
                 }
               ]
             }
@@ -117,7 +191,9 @@
       "playerId": "playerId_1",
       "action": {
         "actionType": "SelectCard",
-        "cardIds": ["h-2"]
+        "cardIds": [
+          "h-2"
+        ]
       },
       "expectedResult": {
         "success": true,

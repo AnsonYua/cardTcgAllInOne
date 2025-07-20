@@ -1,6 +1,6 @@
 {
   "gameId": "sp9_card",
-  "description": "Test sp-9 card disable 特朗普 combos when 特朗普 present",
+  "description": "Test sp-9 card disable \u7279\u6717\u666e combos when \u7279\u6717\u666e present",
   "testType": "per_card",
   "initialGameEnv": {
     "phase": "BATTLE_PHASE",
@@ -14,9 +14,39 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": [],
-          "mainDeck": [],
-          "leader": ["s-1"],
+          "hand": [
+            "sp-9",
+            "c-1",
+            "c-2",
+            "c-3",
+            "c-4"
+          ],
+          "mainDeck": [
+            "c-5",
+            "c-6",
+            "c-7",
+            "c-8",
+            "c-9",
+            "c-10",
+            "c-11",
+            "c-12",
+            "c-13",
+            "c-14",
+            "c-15",
+            "c-16",
+            "h-2",
+            "h-3",
+            "h-4",
+            "sp-1",
+            "sp-2",
+            "sp-3"
+          ],
+          "leader": [
+            "s-1",
+            "s-2",
+            "s-3",
+            "s-4"
+          ],
           "currentLeaderIdx": 0
         },
         "isReady": true,
@@ -28,9 +58,39 @@
         "id": "playerId_2",
         "name": "Player 2",
         "deck": {
-          "hand": [],
-          "mainDeck": [],
-          "leader": ["s-2"],
+          "hand": [
+            "c-17",
+            "c-18",
+            "c-19",
+            "c-20",
+            "c-21"
+          ],
+          "mainDeck": [
+            "c-22",
+            "c-23",
+            "c-24",
+            "c-25",
+            "c-26",
+            "c-27",
+            "c-28",
+            "c-29",
+            "c-30",
+            "c-31",
+            "c-32",
+            "c-33",
+            "h-5",
+            "h-6",
+            "h-7",
+            "sp-4",
+            "sp-5",
+            "sp-6"
+          ],
+          "leader": [
+            "s-6",
+            "s-2",
+            "s-3",
+            "s-4"
+          ],
           "currentLeaderIdx": 0
         },
         "isReady": true,
@@ -41,23 +101,38 @@
     },
     "zones": {
       "playerId_1": {
-        "leader": {"id": "s-1", "name": "特朗普", "cardType": "leader"},
-        "top": [], "left": [], "right": [], "help": [],
+        "leader": {
+          "id": "s-1",
+          "name": "\u7279\u6717\u666e",
+          "cardType": "leader"
+        },
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
         "sp": [
           {
             "id": "sp-9",
-            "name": "國會山莊騷亂",
+            "name": "\u570b\u6703\u5c71\u838a\u9a37\u4e82",
             "cardType": "sp",
             "effects": {
-              "description": "如對方場上有角色卡或領導卡名字為特朗普, 特殊組合的加乘變成0",
+              "description": "\u5982\u5c0d\u65b9\u5834\u4e0a\u6709\u89d2\u8272\u5361\u6216\u9818\u5c0e\u5361\u540d\u5b57\u70ba\u7279\u6717\u666e, \u7279\u6b8a\u7d44\u5408\u7684\u52a0\u4e58\u8b8a\u62100",
               "rules": [
                 {
                   "id": "capitol_riot_trump_combo_disable",
                   "type": "continuous",
                   "trigger": {
-                    "conditions": [{"type": "opponentFieldContainsName", "value": "特朗普"}]
+                    "conditions": [
+                      {
+                        "type": "opponentFieldContainsName",
+                        "value": "\u7279\u6717\u666e"
+                      }
+                    ]
                   },
-                  "effect": {"type": "disableComboBonus", "value": true}
+                  "effect": {
+                    "type": "disableComboBonus",
+                    "value": true
+                  }
                 }
               ]
             }
@@ -65,38 +140,47 @@
         ]
       },
       "playerId_2": {
-        "leader": {"id": "s-2", "name": "拜登", "cardType": "leader"},
+        "leader": {
+          "id": "s-2",
+          "name": "\u62dc\u767b",
+          "cardType": "leader"
+        },
         "top": [
           {
             "id": "c-1",
-            "name": "特朗普",
+            "name": "\u7279\u6717\u666e",
             "cardType": "character",
-            "gameType": "愛國者",
+            "gameType": "\u611b\u570b\u8005",
             "basePower": 100
           }
         ],
         "left": [
           {
             "id": "c-2",
-            "name": "伊萬卡",
+            "name": "\u4f0a\u842c\u5361",
             "cardType": "character",
-            "gameType": "愛國者",
+            "gameType": "\u611b\u570b\u8005",
             "basePower": 90
           }
         ],
-        "right": [], "help": [], "sp": []
+        "right": [],
+        "help": [],
+        "sp": []
       }
     },
     "gameEvents": [],
     "lastEventId": 1,
     "pendingPlayerAction": null,
     "pendingCardSelections": {},
-    "playSequence": {"globalSequence": 0, "plays": []}
+    "playSequence": {
+      "globalSequence": 0,
+      "plays": []
+    }
   },
   "playerActions": [],
   "validationPoints": {
     "sp9_trump_combo_disable": {
-      "description": "sp-9 disables opponent combo bonuses when 特朗普 is present",
+      "description": "sp-9 disables opponent combo bonuses when \u7279\u6717\u666e is present",
       "expected": {
         "trumpPresent": true,
         "conditionMet": true,

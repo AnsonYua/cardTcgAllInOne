@@ -1,6 +1,6 @@
 {
   "gameId": "sp4_card",
-  "description": "Test sp-4 card nerf 自由/經濟 traits both sides",
+  "description": "Test sp-4 card nerf \u81ea\u7531/\u7d93\u6fdf traits both sides",
   "testType": "per_card",
   "initialGameEnv": {
     "phase": "BATTLE_PHASE",
@@ -14,9 +14,39 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": [],
-          "mainDeck": [],
-          "leader": ["s-1"],
+          "hand": [
+            "sp-4",
+            "c-1",
+            "c-2",
+            "c-3",
+            "c-4"
+          ],
+          "mainDeck": [
+            "c-5",
+            "c-6",
+            "c-7",
+            "c-8",
+            "c-9",
+            "c-10",
+            "c-11",
+            "c-12",
+            "c-13",
+            "c-14",
+            "c-15",
+            "c-16",
+            "h-2",
+            "h-3",
+            "h-4",
+            "sp-1",
+            "sp-2",
+            "sp-3"
+          ],
+          "leader": [
+            "s-1",
+            "s-2",
+            "s-3",
+            "s-4"
+          ],
           "currentLeaderIdx": 0
         },
         "isReady": true,
@@ -28,9 +58,39 @@
         "id": "playerId_2",
         "name": "Player 2",
         "deck": {
-          "hand": [],
-          "mainDeck": [],
-          "leader": ["s-2"],
+          "hand": [
+            "c-17",
+            "c-18",
+            "c-19",
+            "c-20",
+            "c-21"
+          ],
+          "mainDeck": [
+            "c-22",
+            "c-23",
+            "c-24",
+            "c-25",
+            "c-26",
+            "c-27",
+            "c-28",
+            "c-29",
+            "c-30",
+            "c-31",
+            "c-32",
+            "c-33",
+            "h-5",
+            "h-6",
+            "h-7",
+            "sp-4",
+            "sp-5",
+            "sp-6"
+          ],
+          "leader": [
+            "s-6",
+            "s-2",
+            "s-3",
+            "s-4"
+          ],
           "currentLeaderIdx": 0
         },
         "isReady": true,
@@ -41,34 +101,55 @@
     },
     "zones": {
       "playerId_1": {
-        "leader": {"id": "s-1", "name": "特朗普", "cardType": "leader"},
+        "leader": {
+          "id": "s-1",
+          "name": "\u7279\u6717\u666e",
+          "cardType": "leader"
+        },
         "top": [
           {
             "id": "c-freedom1",
             "name": "Freedom Character 1",
             "cardType": "character",
-            "gameType": "自由",
+            "gameType": "\u81ea\u7531",
             "basePower": 75
           }
         ],
-        "left": [], "right": [], "help": [],
+        "left": [],
+        "right": [],
+        "help": [],
         "sp": [
           {
             "id": "sp-4",
-            "name": "關稅掃射",
+            "name": "\u95dc\u7a05\u6383\u5c04",
             "cardType": "sp",
             "effects": {
-              "description": "場上全部擁有自由或經濟特徵角色卡，原能力值 -50",
+              "description": "\u5834\u4e0a\u5168\u90e8\u64c1\u6709\u81ea\u7531\u6216\u7d93\u6fdf\u7279\u5fb5\u89d2\u8272\u5361\uff0c\u539f\u80fd\u529b\u503c -50",
               "rules": [
                 {
                   "id": "tariff_sweep_nerf",
                   "type": "continuous",
                   "target": {
                     "owner": "both",
-                    "zones": ["top", "left", "right"],
-                    "filters": [{"type": "gameTypeOr", "values": ["自由", "經濟"]}]
+                    "zones": [
+                      "top",
+                      "left",
+                      "right"
+                    ],
+                    "filters": [
+                      {
+                        "type": "gameTypeOr",
+                        "values": [
+                          "\u81ea\u7531",
+                          "\u7d93\u6fdf"
+                        ]
+                      }
+                    ]
                   },
-                  "effect": {"type": "powerBoost", "value": -50}
+                  "effect": {
+                    "type": "powerBoost",
+                    "value": -50
+                  }
                 }
               ]
             }
@@ -76,29 +157,39 @@
         ]
       },
       "playerId_2": {
-        "leader": {"id": "s-2", "name": "拜登", "cardType": "leader"},
+        "leader": {
+          "id": "s-2",
+          "name": "\u62dc\u767b",
+          "cardType": "leader"
+        },
         "top": [
           {
             "id": "c-economy1",
             "name": "Economy Character 1",
             "cardType": "character",
-            "gameType": "經濟",
+            "gameType": "\u7d93\u6fdf",
             "basePower": 90
           }
         ],
-        "left": [], "right": [], "help": [], "sp": []
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
       }
     },
     "gameEvents": [],
     "lastEventId": 1,
     "pendingPlayerAction": null,
     "pendingCardSelections": {},
-    "playSequence": {"globalSequence": 0, "plays": []}
+    "playSequence": {
+      "globalSequence": 0,
+      "plays": []
+    }
   },
   "playerActions": [],
   "validationPoints": {
     "sp4_both_sides_nerf": {
-      "description": "sp-4 reduces 自由/經濟 character power by -50 on both sides",
+      "description": "sp-4 reduces \u81ea\u7531/\u7d93\u6fdf character power by -50 on both sides",
       "expected": {
         "allyFreedomPowerBefore": 75,
         "allyFreedomPowerAfter": 25,

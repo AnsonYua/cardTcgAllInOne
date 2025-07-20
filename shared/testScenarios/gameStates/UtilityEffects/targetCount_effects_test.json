@@ -15,7 +15,7 @@
         "name": "Player 1",
         "deck": {
           "hand": [],
-          "mainDeck": [],
+          "mainDeck": ["c-1", "c-2", "c-3", "c-4", "c-5"],
           "leader": ["s-1", "s-2", "s-3", "s-4"],
           "currentLeaderIdx": 0
         },
@@ -29,7 +29,7 @@
         "name": "Player 2",
         "deck": {
           "hand": [],
-          "mainDeck": [],
+          "mainDeck": ["c-1", "c-2", "c-3", "c-4", "c-5"],
           "leader": ["s-6", "s-2", "s-3", "s-4"],
           "currentLeaderIdx": 0
         },
