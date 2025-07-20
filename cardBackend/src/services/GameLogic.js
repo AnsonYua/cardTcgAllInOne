@@ -258,12 +258,23 @@ class GameLogic {
     
     async processPlayerAction(req) {
         var {playerId ,gameId,action} = req.body;
-        var gameData = await this.readJSONFileAsync(gameId);
-        const result = await this.mozGamePlay.checkIsPlayOkForAction(gameData.gameEnv,playerId,action);
-        if(!result){
-            return this.mozGamePlay.throwError("Not your turn");
-        }else{
+        console.log(`DEBUG: Processing action for ${playerId} in game ${gameId}: ${action.type}`);
+        
+        try {
+            var gameData = await this.readJSONFileAsync(gameId);
+            console.log(`DEBUG: Game data loaded successfully`);
+            
+            console.log(`DEBUG: About to call checkIsPlayOkForAction`);
+            const result = await this.mozGamePlay.checkIsPlayOkForAction(gameData.gameEnv,playerId,action);
+            console.log(`DEBUG: checkIsPlayOkForAction result: ${result}`);
+            
+            if(!result){
+                return this.mozGamePlay.throwError("Not your turn");
+            }
+            
+            console.log(`DEBUG: About to call processAction`);
             const actionResult = await this.mozGamePlay.processAction(gameData.gameEnv,playerId,action);
+            console.log(`DEBUG: processAction completed`);
             
             if (actionResult.hasOwnProperty('error')){
                 return actionResult;
@@ -312,6 +323,11 @@ class GameLogic {
             
             // Return the updated game data - client can determine card selection from pendingPlayerAction
             return updatedGameData;
+            
+        } catch (error) {
+            console.error(`ERROR in processPlayerAction:`, error.message);
+            console.error(`Stack trace:`, error.stack);
+            throw error;
         }
     }
 
@@ -449,11 +465,18 @@ class GameLogic {
         if (gameEnv.playSequence.plays.length > 0) {
             console.log('   🔄 Running unified effect simulation for all plays...');
             
-            // UNIFIED EFFECT SIMULATION: All effects applied directly to gameEnv.players[].fieldEffects
-            // No separate computedState needed - single source of truth approach
-            await this.effectSimulator.simulateCardPlaySequence(gameEnv);
-            
-            console.log('   ✅ Unified effect simulation completed - all effects in gameEnv.players[].fieldEffects');
+            try {
+                // UNIFIED EFFECT SIMULATION: All effects applied directly to gameEnv.players[].fieldEffects
+                // No separate computedState needed - single source of truth approach
+                await this.effectSimulator.simulateCardPlaySequence(gameEnv);
+                
+                console.log('   ✅ Unified effect simulation completed - all effects in gameEnv.players[].fieldEffects');
+            } catch (error) {
+                console.error('ERROR in simulateCardPlaySequence:', error.message);
+                console.error('Stack trace:', error.stack);
+                console.error('gameEnv.playSequence.plays:', gameEnv.playSequence.plays);
+                throw error; // Re-throw to maintain error propagation
+            }
         } else {
             console.log('   ℹ️ No plays found in sequence - effects simulation skipped');
         }
