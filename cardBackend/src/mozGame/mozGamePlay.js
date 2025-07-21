@@ -2377,13 +2377,18 @@ class mozGamePlay {
             gameEnv.players[targetPlayerId].fieldEffects.calculatedPowers = {};
         }
         
-        // Apply set power effect by adding it to activeEffects (proper unified system approach)
+        // NOTE: setPower effects will be applied AFTER the effect simulation to prevent clearing
+        
+        // CRITICAL: First run the unified effect simulation to process existing play sequence
+        const effectSimulator = require('../services/EffectSimulator');
+        await effectSimulator.simulateCardPlaySequence(gameEnv);
+        
+        // CRITICAL: Now add the setPower effect AFTER simulation (so it doesn't get cleared)
+        // This ensures the effect persists and is properly tracked in activeEffects
         for (const cardId of selectedCardIds) {
-            // Find the card in the eligible cards list to get card info
             const cardInfo = selection.eligibleCards.find(card => card.cardId === cardId);
-            
             if (cardInfo) {
-                // Create a proper effect entry in activeEffects array
+                // Add the setPower effect to activeEffects (after simulation to avoid clearing)
                 const setPowerEffect = {
                     effectId: `h-2_maga_nerf_${cardId}_${Date.now()}`,
                     source: "h-2",
@@ -2392,41 +2397,35 @@ class mozGamePlay {
                     target: {
                         scope: "OPPONENT",
                         zones: ["top", "left", "right"],
-                        specificCards: [cardId]  // Add specific card targeting
+                        specificCards: [cardId]
                     },
                     value: effect.value,
                     priority: 0,
                     unremovable: false
                 };
                 
-                // Add to target player's active effects (cross-player effect)
+                // Add to target player's activeEffects (where the effect has impact)
                 gameEnv.players[targetPlayerId].fieldEffects.activeEffects.push(setPowerEffect);
+                
+                // Also update calculatedPowers directly for immediate effect
+                gameEnv.players[targetPlayerId].fieldEffects.calculatedPowers[cardId] = effect.value;
                 
                 console.log(`Set power effect recorded in activeEffects: Card ${cardId} power set to ${effect.value} by ${playerId}'s h-2 card`);
             }
         }
         
-        // CRITICAL: Trigger unified effect simulation to recalculate all powers
-        // This ensures the activeEffects are properly processed through the unified system
-        const effectSimulator = require('../services/EffectSimulator');
-        await effectSimulator.simulateCardPlaySequence(gameEnv);
-        
-        // CRITICAL: Update valueOnField in zone cards to match calculated powers
-        // This ensures the display shows the correct power after setPower effects
+        // CRITICAL: Update valueOnField in zone cards to match the new setPower effects
         for (const cardId of selectedCardIds) {
             const cardInfo = selection.eligibleCards.find(card => card.cardId === cardId);
             if (cardInfo) {
-                // Get the final calculated power from the unified system
-                const finalPower = gameEnv.players[targetPlayerId].fieldEffects.calculatedPowers[cardId] || 0;
-                
                 // Find the card in the target player's zones and update valueOnField
                 const targetZones = gameEnv.zones[targetPlayerId];
                 for (const zoneName of ['top', 'left', 'right', 'help', 'sp']) {
                     if (targetZones[zoneName]) {
                         for (const cardObj of targetZones[zoneName]) {
                             if (cardObj.card && cardObj.card[0] === cardId) {
-                                cardObj.valueOnField = finalPower;
-                                console.log(`Updated ${cardId} valueOnField to ${finalPower} in zone ${zoneName} (from unified calculation)`);
+                                cardObj.valueOnField = effect.value;
+                                console.log(`Updated ${cardId} valueOnField to ${effect.value} in zone ${zoneName} (from setPower effect)`);
                                 break;
                             }
                         }
