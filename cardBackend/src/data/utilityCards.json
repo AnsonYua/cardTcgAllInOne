@@ -42,7 +42,7 @@
       "name": "Deep State",
       "cardType": "help",
       "effects": {
-        "description": "選擇對方場上的一張SP卡或HELP卡，該卡效果變為無效。",
+        "description": "選擇對方場上的一張SP卡或HELP卡，立即移除該卡的效果，並使其未來無效。",
         "rules": [
           {
             "id": "deep_state_neutralize",
@@ -60,7 +60,8 @@
             },
             "effect": {
               "type": "neutralizeEffect",
-              "value": true
+              "value": true,
+              "undoEffect": true
             }
           }
         ]

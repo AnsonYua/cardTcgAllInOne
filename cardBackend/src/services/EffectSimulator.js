@@ -1148,8 +1148,8 @@ class EffectSimulator {
      * @param {Object} gameEnv - Game environment
      * @param {Object} data - Selection data with selectedCardIds, targetPlayerId, sourceCard, etc.
      */
-    applyNeutralizationEffectUnified(gameEnv, data) {
-        const { selectedCardIds, targetPlayerId, sourceCard } = data;
+    async applyNeutralizationEffectUnified(gameEnv, data) {
+        const { selectedCardIds, targetPlayerId, sourceCard, undoEffect } = data;
         // Always apply the neutralization effect to the opponent's fieldEffects, not the acting player's
         // targetPlayerId should be the opponent whose cards are being neutralized
         console.log(`🎯 Applying neutralization effect to ${selectedCardIds.length} cards for ${targetPlayerId}`);
@@ -1160,6 +1160,7 @@ class EffectSimulator {
                 calculatedPowers: {}
             };
         }
+        let effectRemoved = false;
         selectedCardIds.forEach(cardId => {
             const effectId = `neutralize_${sourceCard}_${cardId}_${Date.now()}`;
             const neutralizeEffect = {
@@ -1176,7 +1177,28 @@ class EffectSimulator {
             };
             gameEnv.players[targetPlayerId].fieldEffects.activeEffects.push(neutralizeEffect);
             console.log(`✅ Added neutralization effect: ${cardId} → 0 power from ${sourceCard} (to ${targetPlayerId})`);
+
+            // If undoEffect is true, remove any effect previously applied by the target card
+            if (undoEffect) {
+                const before = gameEnv.players[targetPlayerId].fieldEffects.activeEffects.length;
+                gameEnv.players[targetPlayerId].fieldEffects.activeEffects = gameEnv.players[targetPlayerId].fieldEffects.activeEffects.filter(
+                    effect =>
+                        // Keep the neutralization effect itself
+                        effect.effectId === effectId ||
+                        // Remove any effect whose source is the card being neutralized
+                        effect.source !== cardId
+                );
+                const after = gameEnv.players[targetPlayerId].fieldEffects.activeEffects.length;
+                console.log(`🧹 Undo effect: removed ${before - after} effect(s) previously applied by ${cardId} from ${targetPlayerId}`);
+                effectRemoved = true;
+            }
         });
+        // After removing effects, re-run the simulation to recalculate all powers
+        // This ensures that cards like c-1 regain their original power if the setPower effect is removed
+        if (undoEffect && effectRemoved) {
+            console.log('🔄 Re-running unified effect simulation after undoing effects...');
+            await this.simulateCardPlaySequence(gameEnv);
+        }
         console.log(`🎯 Neutralization effect processing completed for ${selectedCardIds.length} cards (to ${targetPlayerId})`);
     }
 
