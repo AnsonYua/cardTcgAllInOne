@@ -1455,12 +1455,21 @@ class EffectSimulator {
             }
         }
         
-        // Apply nullification effects (from opponent)
+        // Apply setPower effects (direct power setting, highest priority)
+        for (const effect of effects) {
+            if (effect.type === 'setPower' && this.checkEffectTargetsCardUnified(effect, card)) {
+                modifiedPower = effect.value;
+                console.log(`🎯 Applied setPower to ${cardId}: ${basePower} → ${effect.value} (from ${effect.source})`);
+                break; // setPower overrides all other effects
+            }
+        }
+        
+        // Apply nullification effects (from opponent) - lower priority than setPower
         for (const effect of effects) {
             if (effect.type === 'POWER_NULLIFICATION' && this.checkEffectTargetsCardUnified(effect, card)) {
                 modifiedPower = 0;
                 console.log(`🚫 Applied power nullification to ${cardId}: ${basePower} → 0`);
-                break; // Nullification overrides other effects
+                break; // Nullification overrides boost effects but not setPower
             }
         }
         
@@ -1474,6 +1483,13 @@ class EffectSimulator {
      * @returns {boolean} Whether effect targets the card
      */
     checkEffectTargetsCardUnified(effect, card) {
+        const cardId = this.getCardId(card);
+        
+        // Check specific card targeting (highest priority)
+        if (effect.target.specificCards && effect.target.specificCards.length > 0) {
+            return effect.target.specificCards.includes(cardId);
+        }
+        
         // Check game type targeting
         if (effect.target.gameTypes && effect.target.gameTypes.length > 0) {
             if (!effect.target.gameTypes.includes(card.gameType)) {

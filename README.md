@@ -289,6 +289,30 @@ This project contains extensive documentation covering all aspects of the game i
 - **[Test Data README](cardBackend/src/testData/README.md)** - Test data structure and usage
 - **[Frontend Scenario Integration](FRONTEND_SCENARIO_INTEGRATION.md)** - Frontend testing with scenarios
 
+#### 🎯 Quick Test Commands
+
+**Run Dynamic Test Scenarios:**
+```bash
+# Navigate to backend directory
+cd cardBackend
+
+# Run specific character test scenario
+npm run test:dynamic run CharacterCase/character_c-1_trump_zone_compatibility.json
+
+# Run with verbose output
+npm run test:dynamic run CharacterCase/character_c-1_trump_zone_compatibility.json --verbose
+
+# Available test categories
+npm run test:dynamic run CharacterCase/[scenario-name].json
+npm run test:dynamic run LeaderCase/[scenario-name].json
+npm run test:dynamic run UtilityEffects/[scenario-name].json
+```
+
+**Example Test Scenarios:**
+- `CharacterCase/character_c-1_trump_zone_compatibility.json` - Zone restriction and power calculation tests
+- `LeaderCase/leader_s-1_trump_boost_dynamic.json` - Leader effect testing
+- `UtilityEffects/h1_neutralization_only.json` - Utility card effects
+
 ### 🏗️ Development Documentation
 
 - **[Folder Restructure Summary](FOLDER_RESTRUCTURE_SUMMARY.md)** - Project structure changes and migrations
