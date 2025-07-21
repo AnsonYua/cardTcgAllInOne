@@ -1074,6 +1074,14 @@ class EffectSimulator {
             
             // Apply setPower effect to selected cards
             this.applySetPowerEffectUnified(gameEnv, effectData);
+        } else if (play.action === 'APPLY_NEUTRALIZATION') {
+            // 🆕 NEW: Handle card neutralization effects (h-1 Deep State, etc)
+            console.log(`🎯 Processing APPLY_NEUTRALIZATION effect: ${play.cardId} selected cards ${play.data.selectedCardIds.join(', ')}`);
+            const effectData = {
+                ...play.data,
+                sourceCard: play.cardId
+            };
+            this.applyNeutralizationEffectUnified(gameEnv, effectData);
         }
     }
 
@@ -1130,6 +1138,46 @@ class EffectSimulator {
         });
         
         console.log(`🎯 setPower effect processing completed for ${selectedCardIds.length} cards`);
+    }
+
+    /**
+     * 🎯 Apply neutralization effect unified - NEW (2024)
+     * =====================================================
+     * This method processes APPLY_NEUTRALIZATION actions from card selections like h-1 Deep State.
+     * It applies neutralization effects directly to gameEnv.players[].fieldEffects.activeEffects.
+     * @param {Object} gameEnv - Game environment
+     * @param {Object} data - Selection data with selectedCardIds, targetPlayerId, sourceCard, etc.
+     */
+    applyNeutralizationEffectUnified(gameEnv, data) {
+        const { selectedCardIds, targetPlayerId, sourceCard } = data;
+        // Always apply the neutralization effect to the opponent's fieldEffects, not the acting player's
+        // targetPlayerId should be the opponent whose cards are being neutralized
+        console.log(`🎯 Applying neutralization effect to ${selectedCardIds.length} cards for ${targetPlayerId}`);
+        if (!gameEnv.players[targetPlayerId].fieldEffects) {
+            gameEnv.players[targetPlayerId].fieldEffects = {
+                zoneRestrictions: {},
+                activeEffects: [],
+                calculatedPowers: {}
+            };
+        }
+        selectedCardIds.forEach(cardId => {
+            const effectId = `neutralize_${sourceCard}_${cardId}_${Date.now()}`;
+            const neutralizeEffect = {
+                effectId: effectId,
+                source: sourceCard,
+                type: "POWER_NULLIFICATION", // Use POWER_NULLIFICATION for unified handling
+                target: {
+                    scope: "SPECIFIC_CARD",
+                    cardId: cardId,
+                    playerId: targetPlayerId
+                },
+                value: 0,
+                timestamp: Date.now()
+            };
+            gameEnv.players[targetPlayerId].fieldEffects.activeEffects.push(neutralizeEffect);
+            console.log(`✅ Added neutralization effect: ${cardId} → 0 power from ${sourceCard} (to ${targetPlayerId})`);
+        });
+        console.log(`🎯 Neutralization effect processing completed for ${selectedCardIds.length} cards (to ${targetPlayerId})`);
     }
 
     /**

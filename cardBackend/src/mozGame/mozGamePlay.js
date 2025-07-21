@@ -2301,31 +2301,60 @@ class mozGamePlay {
     async applyNeutralizationSelection(gameEnv, selectionId, selectedCardIds) {
         const selection = gameEnv.pendingCardSelections[selectionId];
         const { playerId, targetPlayerId } = selection;
-        
-        // Initialize neutralization state
-        if (!gameEnv.neutralizedEffects) gameEnv.neutralizedEffects = {};
-        if (!gameEnv.neutralizedEffects[targetPlayerId]) gameEnv.neutralizedEffects[targetPlayerId] = {};
-        if (!gameEnv.neutralizedEffects[targetPlayerId].specificCards) {
-            gameEnv.neutralizedEffects[targetPlayerId].specificCards = [];
-        }
-        
-        // Add selected cards to neutralization list
-        for (const cardId of selectedCardIds) {
-            // Find the card in eligible cards to get full details
-            const cardInfo = selection.eligibleCards.find(card => 
-                (typeof card === 'string' && card === cardId) || 
-                (typeof card === 'object' && card.cardId === cardId)
-            );
-            
-            if (cardInfo) {
-                const cardToNeutralize = typeof cardInfo === 'string' ? 
-                    { cardId: cardInfo } : cardInfo;
-                
-                gameEnv.neutralizedEffects[targetPlayerId].specificCards.push(cardToNeutralize);
+
+        // 🛠️ BACKWARD COMPATIBILITY FIX: Handle injected data without sourceCard
+        if (!selection.sourceCard) {
+            // Try to infer the source card from the most recent help card play (e.g., h-1)
+            const recentHelpCardPlay = gameEnv.playSequence?.plays
+                ?.slice()
+                ?.reverse()
+                ?.find(play => play.action === 'PLAY_CARD' && play.zone === 'help');
+            if (recentHelpCardPlay) {
+                selection.sourceCard = recentHelpCardPlay.cardId;
+            } else {
+                selection.sourceCard = 'h-1'; // Fallback default
             }
         }
-        
-        // Add game event for neutralization completed
+
+        // =====================================================================================
+        // 🎯 STEP 1: ADD TO PLAY SEQUENCE FIRST - CLEAN ARCHITECTURE
+        // =====================================================================================
+        if (gameEnv.playSequence && gameEnv.playSequence.plays) {
+            const newSequenceId = gameEnv.playSequence.globalSequence + 1;
+            gameEnv.playSequence.globalSequence = newSequenceId;
+
+            const selectionPlay = {
+                sequenceId: newSequenceId,
+                playerId: playerId,                    // Player who made the selection
+                cardId: selection.sourceCard,           // Source card that triggered the selection
+                action: "APPLY_NEUTRALIZATION",        // Action type for effect processing
+                zone: "effect",                        // Indicates this is an effect application
+                data: {
+                    selectionId: selectionId,           // Unique selection ID for tracking
+                    selectedCardIds: selectedCardIds,   // Array of target cards
+                    targetPlayerId: targetPlayerId,     // Player whose cards were affected
+                    effectType: "neutralizeEffect",     // Type of effect applied
+                    sourceCard: selection.sourceCard    // Source card for reference
+                },
+                timestamp: new Date().toISOString(),
+                turnNumber: gameEnv.currentTurn,
+                phaseWhenPlayed: gameEnv.phase
+            };
+            gameEnv.playSequence.plays.push(selectionPlay);
+        }
+
+        // =====================================================================================
+        // 🔄 STEP 2: RUN CENTRALIZED EFFECT SIMULATION - CLEAN ARCHITECTURE
+        // =====================================================================================
+        // effectSimulator is already imported at the top; use it directly for consistency
+        await effectSimulator.simulateCardPlaySequence(gameEnv);
+
+        // =====================================================================================
+        // 🧹 STEP 3: CLEANUP AND EVENT GENERATION
+        // =====================================================================================
+        delete gameEnv.pendingCardSelections[selectionId];
+        delete gameEnv.pendingPlayerAction;
+
         this.addGameEvent(gameEnv, 'CARD_SELECTION_COMPLETED', {
             playerId: playerId,
             selectionId: selectionId,
@@ -2333,21 +2362,14 @@ class mozGamePlay {
             effectType: 'neutralizeEffect',
             targetPlayerId: targetPlayerId
         });
-        
-        // Clean up the pending selection
-        delete gameEnv.pendingCardSelections[selectionId];
-        delete gameEnv.pendingPlayerAction;
-        
-        // Check if turn should advance after card selection completion
-        // This completes the card play action that triggered the selection
+
+        // =====================================================================================
+        // 🔄 STEP 4: PHASE PROGRESSION - CLEAN ARCHITECTURE
+        // =====================================================================================
         const isMainPhaseComplete = await this.checkIsMainPhaseComplete(gameEnv);
-        
         if (!isMainPhaseComplete) {
-            // Continue turn-based play - players still need to place character/help cards
             const oldPlayer = gameEnv.currentPlayer;
             gameEnv = await this.shouldUpdateTurn(gameEnv, playerId);
-            
-            // Add turn switch event if player changed
             if (gameEnv.currentPlayer !== oldPlayer) {
                 this.addGameEvent(gameEnv, 'TURN_SWITCH', {
                     oldPlayer: oldPlayer,
@@ -2355,8 +2377,11 @@ class mozGamePlay {
                     turn: gameEnv.currentTurn
                 });
             }
+        } else {
+            // Main phase complete - advance to SP phase if needed
+            gameEnv = await this.advanceToSpPhaseOrBattle(gameEnv);
         }
-        
+
         return gameEnv;
     }
     /** 
@@ -2446,7 +2471,7 @@ class mozGamePlay {
         // 5. No manual effect manipulation needed here!
         //
         console.log(`🔄 Running centralized effect simulation...`);
-        const effectSimulator = require('../services/EffectSimulator');
+        // effectSimulator is already imported at the top; use it directly for consistency
         await effectSimulator.simulateCardPlaySequence(gameEnv);
         
         // ✅ COMPLETE CENTRALIZATION ACHIEVED!
