@@ -1150,9 +1150,8 @@ class EffectSimulator {
      */
     async applyNeutralizationEffectUnified(gameEnv, data) {
         const { selectedCardIds, targetPlayerId, sourceCard, undoEffect } = data;
-        // Always apply the neutralization effect to the opponent's fieldEffects, not the acting player's
-        // targetPlayerId should be the opponent whose cards are being neutralized
         console.log(`🎯 Applying neutralization effect to ${selectedCardIds.length} cards for ${targetPlayerId}`);
+        
         if (!gameEnv.players[targetPlayerId].fieldEffects) {
             gameEnv.players[targetPlayerId].fieldEffects = {
                 zoneRestrictions: {},
@@ -1160,46 +1159,37 @@ class EffectSimulator {
                 calculatedPowers: {}
             };
         }
-        let effectRemoved = false;
+        
         selectedCardIds.forEach(cardId => {
-            const effectId = `neutralize_${sourceCard}_${cardId}_${Date.now()}`;
-            const neutralizeEffect = {
-                effectId: effectId,
-                source: sourceCard,
-                type: "POWER_NULLIFICATION", // Use POWER_NULLIFICATION for unified handling
-                target: {
-                    scope: "SPECIFIC_CARD",
-                    cardId: cardId,
-                    playerId: targetPlayerId
-                },
-                value: 0,
-                timestamp: Date.now()
-            };
-            gameEnv.players[targetPlayerId].fieldEffects.activeEffects.push(neutralizeEffect);
-            console.log(`✅ Added neutralization effect: ${cardId} → 0 power from ${sourceCard} (to ${targetPlayerId})`);
-
-            // If undoEffect is true, remove any effect previously applied by the target card
-            if (undoEffect) {
-                const before = gameEnv.players[targetPlayerId].fieldEffects.activeEffects.length;
-                gameEnv.players[targetPlayerId].fieldEffects.activeEffects = gameEnv.players[targetPlayerId].fieldEffects.activeEffects.filter(
-                    effect =>
-                        // Keep the neutralization effect itself
-                        effect.effectId === effectId ||
-                        // Remove any effect whose source is the card being neutralized
-                        effect.source !== cardId
+            console.log(`🎯 Neutralizing card ${cardId} - removing effects from all players...`);
+            
+            // Remove effects created by the neutralized card from ALL players
+            // This is critical because cards like h-2 can create effects on opponent's fieldEffects
+            const { getPlayerFromGameEnv } = require('../utils/gameUtils');
+            const playerList = getPlayerFromGameEnv(gameEnv);
+            
+            let totalEffectsRemoved = 0;
+            for (const playerId of playerList) {
+                const before = gameEnv.players[playerId].fieldEffects.activeEffects.length;
+                
+                // Remove any effect whose source is the card being neutralized
+                gameEnv.players[playerId].fieldEffects.activeEffects = gameEnv.players[playerId].fieldEffects.activeEffects.filter(
+                    effect => effect.source !== cardId
                 );
-                const after = gameEnv.players[targetPlayerId].fieldEffects.activeEffects.length;
-                console.log(`🧹 Undo effect: removed ${before - after} effect(s) previously applied by ${cardId} from ${targetPlayerId}`);
-                effectRemoved = true;
+                
+                const after = gameEnv.players[playerId].fieldEffects.activeEffects.length;
+                const removedFromPlayer = before - after;
+                totalEffectsRemoved += removedFromPlayer;
+                
+                if (removedFromPlayer > 0) {
+                    console.log(`🧹 Removed ${removedFromPlayer} effect(s) created by ${cardId} from ${playerId}`);
+                }
             }
+            
+            console.log(`✅ Neutralization complete: removed ${totalEffectsRemoved} total effect(s) from card ${cardId}`);
         });
-        // After removing effects, re-run the simulation to recalculate all powers
-        // This ensures that cards like c-1 regain their original power if the setPower effect is removed
-        if (undoEffect && effectRemoved) {
-            console.log('🔄 Re-running unified effect simulation after undoing effects...');
-            await this.simulateCardPlaySequence(gameEnv);
-        }
-        console.log(`🎯 Neutralization effect processing completed for ${selectedCardIds.length} cards (to ${targetPlayerId})`);
+        
+        console.log(`🎯 Neutralization effect processing completed - effects removed, no infinite loop`);
     }
 
     /**
@@ -1631,29 +1621,30 @@ class EffectSimulator {
         const effects = gameEnv.players[playerId].fieldEffects.activeEffects;
         const cardId = this.getCardId(card);
         
-        // Apply power boost effects
+        // First apply power boost effects from leaders and other cards
         for (const effect of effects) {
             if (effect.type === 'powerBoost' && this.checkEffectTargetsCardUnified(effect, card)) {
                 modifiedPower += effect.value;
-                console.log(`📈 Applied power boost +${effect.value} to ${cardId}: ${basePower} → ${modifiedPower}`);
+                console.log(`📈 Applied power boost +${effect.value} to ${cardId}: ${modifiedPower - effect.value} → ${modifiedPower}`);
             }
         }
         
         // Apply setPower effects (direct power setting, highest priority)
+        // These override everything including boosts, but can be checked for specific cards
         for (const effect of effects) {
             if (effect.type === 'setPower' && this.checkEffectTargetsCardUnified(effect, card)) {
                 modifiedPower = effect.value;
-                console.log(`🎯 Applied setPower to ${cardId}: ${basePower} → ${effect.value} (from ${effect.source})`);
-                break; // setPower overrides all other effects
+                console.log(`🎯 Applied setPower to ${cardId}: power set to ${effect.value} (from ${effect.source})`);
+                // Don't break - allow multiple setPower effects, last one wins
             }
         }
         
-        // Apply nullification effects (from opponent) - lower priority than setPower
+        // Apply nullification effects (from opponent) - these set power to 0
         for (const effect of effects) {
             if (effect.type === 'POWER_NULLIFICATION' && this.checkEffectTargetsCardUnified(effect, card)) {
                 modifiedPower = 0;
-                console.log(`🚫 Applied power nullification to ${cardId}: ${basePower} → 0`);
-                break; // Nullification overrides boost effects but not setPower
+                console.log(`🚫 Applied power nullification to ${cardId}: power set to 0`);
+                // Don't break - process all nullifications
             }
         }
         
@@ -1669,7 +1660,12 @@ class EffectSimulator {
     checkEffectTargetsCardUnified(effect, card) {
         const cardId = this.getCardId(card);
         
-        // Check specific card targeting (highest priority)
+        // Check SPECIFIC_CARD targeting (highest priority) - for setPower and neutralization effects
+        if (effect.target.scope === "SPECIFIC_CARD") {
+            return effect.target.cardId === cardId;
+        }
+        
+        // Check specific card list targeting (legacy format)
         if (effect.target.specificCards && effect.target.specificCards.length > 0) {
             return effect.target.specificCards.includes(cardId);
         }
