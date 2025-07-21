@@ -704,6 +704,13 @@ Previously, `injectGameState` bypassed both the play sequence recording and fiel
 - **Automatic Transitions:** Leader changes handled automatically through replay system
 - **Effect Debugging:** All effects traceable through chronological play sequence replay
 
+**Card Selection Replay System (January 2025):**
+- **Complete Selection Tracking:** Card selections now recorded as `APPLY_SET_POWER` actions in play sequence
+- **Replay Consistency:** Card selection effects maintain target information during game state reconstruction
+- **Enhanced Action Types:** New action types `APPLY_SET_POWER` and `APPLY_EFFECT` for effect execution tracking
+- **Cross-Player Effects:** Target information preserved for effects that affect opponent cards
+- **Debugging Support:** Full trace of card selections available in play sequence for debugging
+
 **General Development:**
 - **Event System Usage:** All game state changes automatically generate appropriate events for frontend consumption
 - **Error Handling:** Every validation failure should generate a specific error event type

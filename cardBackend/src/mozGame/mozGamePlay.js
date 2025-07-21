@@ -2354,10 +2354,65 @@ class mozGamePlay {
     }
     
     /**
-     * Apply set power to selected cards
-     * @param {Object} gameEnv - Current game environment
-     * @param {string} selectionId - ID of the pending selection
-     * @param {Array} selectedCardIds - Array of selected card IDs to modify
+     * 🎯 APPLY SET POWER SELECTION - Card Selection Effect Processing with Replay Tracking
+     * ==================================================================================
+     * 
+     * This function is THE CORE of the card selection system and handles h-2 "Make America Great Again"
+     * style effects that require player selection and modify target card powers.
+     * 
+     * 🔄 REPLAY INTEGRATION: This function now adds APPLY_SET_POWER entries to the play sequence
+     * to ensure card selection information is preserved for replay consistency!
+     * 
+     * 📋 STEP-BY-STEP WORKFLOW:
+     * 
+     * STEP 1: Validate Selection
+     * - Verify the selectionId exists in pendingCardSelections
+     * - Check that all selectedCardIds are valid eligible targets
+     * - Extract effect details (powerValue, targetPlayer, etc.)
+     * 
+     * STEP 2: Run Effect Simulation FIRST
+     * - Calls effectSimulator.simulateCardPlaySequence(gameEnv) 
+     * - This rebuilds ALL field effects from the play sequence
+     * - Critical: Effects are applied AFTER simulation to prevent clearing
+     * 
+     * STEP 3: Apply setPower Effects
+     * - Adds setPower effect to target player's fieldEffects.activeEffects
+     * - Updates fieldEffects.calculatedPowers for immediate effect
+     * - Updates zone card valueOnField to match new power values
+     * 
+     * STEP 4: 🆕 ADD TO PLAY SEQUENCE (New Replay Integration!)
+     * - Creates new APPLY_SET_POWER play sequence entry
+     * - Records complete selection information: selectedCardIds, targetPlayerId, powerValue
+     * - Enables replay consistency by preserving card selection details
+     * 
+     * STEP 5: Recalculate Player Points
+     * - Calls calculatePlayerPoint() to update target player's total power
+     * - This ensures the power change is reflected in playerPoint immediately
+     * 
+     * STEP 6: Cleanup and Events
+     * - Removes the completed selection from pendingCardSelections
+     * - Generates CARD_SELECTION_COMPLETED event for frontend
+     * - Updates turn state if needed
+     * 
+     * 🎮 EXAMPLE USAGE (h-2 Card):
+     * Player 2 plays h-2 "Make America Great Again" → triggers card selection
+     * Player 2 selects c-1 (President Trump) → this function sets c-1's power to 0
+     * Result: c-1's power becomes 0, Player 1's playerPoint recalculated, selection recorded in play sequence
+     * 
+     * 🔗 INTEGRATION POINTS:
+     * - Called by completeCardSelection() when player makes selection
+     * - Integrates with unified effect system (EffectSimulator)
+     * - Affects calculatePlayerPoint() power calculations
+     * - Works with play sequence replay system for consistency
+     * 
+     * 📊 DATA FLOW:
+     * pendingCardSelections → validate selection → run effect simulation → 
+     * apply setPower effects → add to play sequence → recalculate playerPoint → cleanup
+     * 
+     * @param {Object} gameEnv - Current game environment (modified in-place)
+     * @param {string} selectionId - ID of the pending selection (e.g., "playerId_2_setPower_123")
+     * @param {Array} selectedCardIds - Array of selected card IDs to modify (e.g., ["c-1"])
+     * @returns {Object} Updated game environment
      */
     async applySetPowerSelection(gameEnv, selectionId, selectedCardIds) {
         const selection = gameEnv.pendingCardSelections[selectionId];
@@ -2382,12 +2437,29 @@ class mozGamePlay {
         
         // NOTE: setPower effects will be applied AFTER the effect simulation to prevent clearing
         
-        // CRITICAL: First run the unified effect simulation to process existing play sequence
+        // =====================================================================================
+        // 🔄 STEP 2: RUN EFFECT SIMULATION FIRST - CRITICAL FOR REPLAY CONSISTENCY
+        // =====================================================================================
+        // 
+        // WHY THIS IS CRITICAL:
+        // - The effect simulation rebuilds ALL effects from the play sequence from scratch
+        // - If we add setPower effects BEFORE simulation, they get cleared during rebuild
+        // - By adding them AFTER, they persist and work correctly
+        // 
+        // WHAT THIS DOES:
+        // 1. Reads entire gameEnv.playSequence.plays array
+        // 2. Replays every PLAY_LEADER and PLAY_CARD action in chronological order  
+        // 3. Rebuilds all fieldEffects.zoneRestrictions, activeEffects, calculatedPowers
+        // 4. Ensures consistent state regardless of when this function is called
         const effectSimulator = require('../services/EffectSimulator');
         await effectSimulator.simulateCardPlaySequence(gameEnv);
         
-        // CRITICAL: Now add the setPower effect AFTER simulation (so it doesn't get cleared)
-        // This ensures the effect persists and is properly tracked in activeEffects
+        // =====================================================================================
+        // 🎯 STEP 3: APPLY SETPOWER EFFECTS - AFTER SIMULATION TO PREVENT CLEARING
+        // =====================================================================================
+        //
+        // CRITICAL ORDER: Effects applied AFTER simulation so they don't get cleared
+        // This ensures the setPower effect persists and is properly tracked in activeEffects
         for (const cardId of selectedCardIds) {
             const cardInfo = selection.eligibleCards.find(card => card.cardId === cardId);
             if (cardInfo) {
@@ -2437,9 +2509,84 @@ class mozGamePlay {
             }
         }
         
-        // CRITICAL: Recalculate playerPoint for target player after setPower effect
+        // =====================================================================================
+        // 📊 STEP 5: RECALCULATE PLAYER POINTS - CRITICAL FOR IMMEDIATE EFFECT
+        // =====================================================================================
+        //
+        // 🎯 PURPOSE: Update target player's total power after setPower effect is applied
+        // 
+        // WHY THIS IS CRITICAL:
+        // - playerPoint is the sum of all card powers for battle calculations
+        // - If we don't recalculate, the playerPoint will show old values
+        // - calculatePlayerPoint() processes all fieldEffects.calculatedPowers
+        // - This ensures immediate consistency between card power and total power
+        //
+        // 📋 WHAT calculatePlayerPoint() DOES:
+        // 1. Reads all cards in player's zones (top, left, right, help, sp)
+        // 2. Gets calculated power from fieldEffects.calculatedPowers for each card
+        // 3. Applies any remaining modifiers and combo bonuses
+        // 4. Returns total power value for display and battle calculations
         gameEnv.players[targetPlayerId].playerPoint = await this.calculatePlayerPoint(gameEnv, targetPlayerId);
-        console.log(`Updated ${targetPlayerId} playerPoint to ${gameEnv.players[targetPlayerId].playerPoint} after setPower effect`);
+        console.log(`📈 Updated ${targetPlayerId} playerPoint to ${gameEnv.players[targetPlayerId].playerPoint} after setPower effect`);
+        
+        // =====================================================================================
+        // 🆕 STEP 4: ADD TO PLAY SEQUENCE - NEW REPLAY INTEGRATION (January 2025)
+        // =====================================================================================
+        //
+        // 🎯 PURPOSE: Record card selection information for replay consistency
+        // This is the NEW feature that preserves card selection details!
+        //
+        // 📋 WHAT THIS CREATES:
+        // - New APPLY_SET_POWER action in play sequence
+        // - Complete selection details: selectedCardIds, targetPlayer, powerValue
+        // - Enables replay simulations to have access to card selection information
+        //
+        // 🔄 REPLAY BENEFIT:
+        // - When game state is reconstructed from play sequence, card selections are preserved
+        // - Debugging: Can trace exactly which cards were selected for effects
+        // - Consistency: Same selection results when replaying the game sequence
+        //
+        // 📊 PLAY SEQUENCE ENTRY STRUCTURE:
+        // {
+        //   sequenceId: 5,
+        //   playerId: "playerId_2", 
+        //   cardId: "h-2",
+        //   action: "APPLY_SET_POWER",
+        //   zone: "effect", 
+        //   data: {
+        //     selectedCardIds: ["c-1"],
+        //     targetPlayerId: "playerId_1",
+        //     effectType: "setPower",
+        //     powerValue: 0
+        //   }
+        // }
+        if (gameEnv.playSequence && gameEnv.playSequence.plays) {
+            // Add a new play sequence entry for the card selection effect
+            const newSequenceId = gameEnv.playSequence.globalSequence + 1;
+            gameEnv.playSequence.globalSequence = newSequenceId;
+            
+            const selectionPlay = {
+                sequenceId: newSequenceId,
+                playerId: playerId,                    // Player who made the selection (e.g., "playerId_2")
+                cardId: "h-2",                        // Source card that triggered the selection  
+                action: "APPLY_SET_POWER",            // 🆕 New action type for card selection effects
+                zone: "effect",                       // Indicates this is an effect application, not card placement
+                data: {
+                    selectionId: selectionId,         // Unique selection ID for tracking
+                    selectedCardIds: selectedCardIds, // Array of target cards ["c-1"] 
+                    targetPlayerId: targetPlayerId,   // Player whose cards were affected
+                    effectType: "setPower",           // Type of effect applied
+                    powerValue: effect.value,         // Power value set (e.g., 0)
+                    sourceCard: "h-2"                // Source card for reference
+                },
+                timestamp: new Date().toISOString(),
+                turnNumber: gameEnv.currentTurn,
+                phaseWhenPlayed: gameEnv.phase
+            };
+            
+            gameEnv.playSequence.plays.push(selectionPlay);
+            console.log(`🎬 Added card selection to play sequence: h-2 selected ${selectedCardIds.join(', ')} for setPower effect`);
+        }
         
         // Add game event for set power completed
         this.addGameEvent(gameEnv, 'CARD_SELECTION_COMPLETED', {

@@ -1,7 +1,61 @@
 // src/services/PlaySequenceManager.js
 /**
- * Manages the sequence of card plays for replay-based simulation
- * Tracks all card plays including leaders from game start
+ * 🎬 PLAY SEQUENCE MANAGER - Replay System Foundation 
+ * ===================================================
+ * 
+ * This class is THE FOUNDATION of the replay system. It tracks every action that happens
+ * in a game so they can be replayed in the exact same order to reconstruct game state.
+ * 
+ * 🎯 CORE PURPOSE:
+ * - Record ALL game actions in chronological order (leaders, cards, effects)  
+ * - Provide sorted sequence for replay simulation
+ * - Enable consistent game state reconstruction from scratch
+ * - Support debugging by showing complete action history
+ * 
+ * 🔄 REPLAY INTEGRATION:
+ * This data feeds directly into EffectSimulator.simulateCardPlaySequence() which replays
+ * all actions to rebuild fieldEffects, zone restrictions, and calculated powers.
+ * 
+ * 📋 ACTION TYPES TRACKED:
+ * - PLAY_LEADER: Leader placement during game setup
+ * - PLAY_CARD: Regular card placement in zones
+ * - APPLY_SET_POWER: Card selection effects (NEW - January 2025)
+ * - APPLY_EFFECT: Other card effects (future enhancement)
+ * 
+ * 🆕 CARD SELECTION TRACKING (January 2025):
+ * Now records card selection effects like h-2 "Make America Great Again" with complete
+ * target information for replay consistency.
+ * 
+ * 📊 DATA STRUCTURE:
+ * gameEnv.playSequence = {
+ *   globalSequence: 5,
+ *   plays: [
+ *     {
+ *       sequenceId: 1,
+ *       playerId: "playerId_1", 
+ *       cardId: "s-1",
+ *       action: "PLAY_LEADER",
+ *       zone: "leader",
+ *       data: {...},
+ *       timestamp: "2025-01-01T10:00:00Z",
+ *       turnNumber: 0,
+ *       phaseWhenPlayed: "SETUP"
+ *     },
+ *     {
+ *       sequenceId: 5,
+ *       playerId: "playerId_2",
+ *       cardId: "h-2", 
+ *       action: "APPLY_SET_POWER",
+ *       zone: "effect",
+ *       data: {
+ *         selectedCardIds: ["c-1"],
+ *         targetPlayerId: "playerId_1",
+ *         effectType: "setPower",
+ *         powerValue: 0
+ *       }
+ *     }
+ *   ]
+ * }
  */
 
 class PlaySequenceManager {
@@ -23,14 +77,49 @@ class PlaySequenceManager {
     }
 
     /**
-     * Record a card play action
-     * @param {Object} gameEnv - Game environment
-     * @param {string} playerId - Player who played the card
-     * @param {string} cardId - ID of the card played
-     * @param {string} action - Type of action (PLAY_LEADER, PLAY_CARD)
-     * @param {string} zone - Zone where card was played
-     * @param {Object} data - Additional play data
+     * 📝 RECORD CARD PLAY - The Heart of Replay System
+     * ================================================
+     * 
+     * This is THE FUNCTION that records every action in the game for replay.
+     * Every leader placement, card play, and effect execution goes through here!
+     * 
+     * 🎯 WHAT IT RECORDS:
+     * - PLAY_LEADER: s-1, s-2, etc. during game setup
+     * - PLAY_CARD: c-1, h-2, etc. during gameplay  
+     * - APPLY_SET_POWER: Card selection effects (NEW - h-2 targeting)
+     * 
+     * 🔄 REPLAY FLOW:
+     * 1. This function records action → gameEnv.playSequence.plays
+     * 2. EffectSimulator reads plays → replays them in order
+     * 3. Each replay rebuilds fieldEffects step by step
+     * 4. Final state matches what originally happened
+     * 
+     * 📊 EXAMPLE RECORDED PLAY:
+     * {
+     *   sequenceId: 4,
+     *   playerId: "playerId_2",
+     *   cardId: "h-2", 
+     *   action: "PLAY_CARD",
+     *   zone: "help",
+     *   data: { isFaceDown: false },
+     *   timestamp: "2025-01-21T10:05:00Z",
+     *   turnNumber: 4,
+     *   phaseWhenPlayed: "MAIN_PHASE"  
+     * }
+     * 
+     * 🆕 NEW CARD SELECTION RECORDING (January 2025):
+     * When h-2 card selection completes, mozGamePlay.js calls this with:
+     * - action: "APPLY_SET_POWER"
+     * - data: { selectedCardIds: ["c-1"], targetPlayerId: "playerId_1", ... }
+     * 
+     * @param {Object} gameEnv - Game environment (modified to add play record)
+     * @param {string} playerId - Player who performed the action (e.g., "playerId_2")
+     * @param {string} cardId - Card involved in action (e.g., "h-2", "c-1")
+     * @param {string} action - Action type (PLAY_LEADER, PLAY_CARD, APPLY_SET_POWER)
+     * @param {string} zone - Zone involved (leader, top, left, right, help, sp, effect)
+     * @param {Object} data - Action-specific data (card placement info, selection details, etc.)
      * @param {Object} timing - Optional timing override {turnNumber, phaseWhenPlayed}
+     * @returns {Object} The created play record
      */
     recordCardPlay(gameEnv, playerId, cardId, action, zone, data = {}, timing = null) {
         this.initializePlaySequence(gameEnv);
@@ -61,9 +150,34 @@ class PlaySequenceManager {
     }
 
     /**
-     * Get sorted play sequence for simulation
+     * 🔄 GET PLAY SEQUENCE - Feed for Replay Simulation
+     * =================================================
+     * 
+     * This function provides the sorted action sequence to EffectSimulator for replay.
+     * This is what gets replayed in chronological order to rebuild game state!
+     * 
+     * 🎯 PURPOSE: 
+     * - Sort all recorded actions by sequenceId (chronological order)
+     * - Return clean array for EffectSimulator.simulateCardPlaySequence()
+     * - Ensure replay happens in exact same order as original game
+     * 
+     * 📋 TYPICAL SEQUENCE FOR h-2 EXAMPLE:
+     * [
+     *   {sequenceId: 1, action: "PLAY_LEADER", cardId: "s-1"},      // Player 1 leader
+     *   {sequenceId: 2, action: "PLAY_LEADER", cardId: "s-2"},      // Player 2 leader  
+     *   {sequenceId: 3, action: "PLAY_CARD", cardId: "c-1"},        // Player 1 plays c-1
+     *   {sequenceId: 4, action: "PLAY_CARD", cardId: "h-2"},        // Player 2 plays h-2
+     *   {sequenceId: 5, action: "APPLY_SET_POWER", cardId: "h-2"}   // h-2 selection effect
+     * ]
+     * 
+     * 🔄 REPLAY INTEGRATION:
+     * EffectSimulator iterates through this array and calls:
+     * - executePlayUnified() for each action
+     * - activateEffectsUnified() for card effects  
+     * - checkTriggeredEffectsUnified() for reactions
+     * 
      * @param {Object} gameEnv - Game environment
-     * @returns {Array} Sorted array of plays
+     * @returns {Array} Sorted array of play records for replay simulation
      */
     getPlaySequence(gameEnv) {
         this.initializePlaySequence(gameEnv);

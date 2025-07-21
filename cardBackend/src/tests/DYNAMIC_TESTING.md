@@ -143,8 +143,9 @@ To convert existing static tests:
 
 This framework provides the proper unit testing flow you were looking for: **inject initial state → execute actions → validate changes**.
 
-## ⚠️ Important: Field Effects Initialization Fix (January 2025)
+## ⚠️ Important: Enhanced Replay System Integration (January 2025)
 
+### Field Effects Initialization Fix
 The `injectGameState` method has been updated to properly initialize field effects. This critical fix ensures:
 
 - **Leader zone restrictions** are properly applied during injection
@@ -153,3 +154,31 @@ The `injectGameState` method has been updated to properly initialize field effec
 - **No more immediate step execution** due to missing restrictions
 
 **What was fixed:** Previously, injected game states bypassed field effects initialization, causing tests to run with default "ALL" zone permissions instead of leader-specific restrictions.
+
+### Card Selection Replay Integration
+Dynamic tests now support enhanced play sequence tracking with card selection information:
+
+**New Play Sequence Structure:**
+- Card selections like h-2 "Make America Great Again" now create additional `APPLY_SET_POWER` entries
+- Complete target information preserved for replay consistency
+- Cross-player effects maintain their target selection details
+- Test expectations must account for additional play sequence entries
+
+**Updated Test Structure:**
+```json
+{
+  "expectedStateChanges": {
+    "playSequence.plays.length": 5,  // Updated from 4 for card selection entries
+    "players.playerId_1.playerPoint": 0,
+    "zones.playerId_1.left.0.valueOnField": 0
+  }
+}
+```
+
+**Card Selection Action Flow:**
+1. Initial card play (h-2 placement) creates sequence entry
+2. Player selection completes and creates `APPLY_SET_POWER` entry  
+3. Both entries included in play sequence length validation
+4. Complete selection information available for replay debugging
+
+This enhancement ensures that dynamic tests properly validate card selection workflows and maintain replay consistency across all card effects.

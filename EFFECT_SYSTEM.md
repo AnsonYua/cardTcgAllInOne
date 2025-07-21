@@ -41,10 +41,34 @@ gameEnv.playSequence = {
       timestamp: "2025-01-01T10:00:00Z",
       turnNumber: 0,
       phaseWhenPlayed: "READY_PHASE"
+    },
+    {
+      sequenceId: 2,
+      playerId: "player2",
+      cardId: "h-2",
+      action: "APPLY_SET_POWER",
+      zone: "effect",
+      data: {
+        selectionId: "player2_setPower_123",
+        selectedCardIds: ["c-1"],
+        targetPlayerId: "player1",
+        effectType: "setPower",
+        powerValue: 0,
+        sourceCard: "h-2"
+      },
+      timestamp: "2025-01-01T10:05:00Z",
+      turnNumber: 1,
+      phaseWhenPlayed: "MAIN_PHASE"
     }
   ]
 }
 ```
+
+**Action Types**:
+- `PLAY_LEADER`: Leader card placement during game setup
+- `PLAY_CARD`: Regular card placement in zones
+- `APPLY_SET_POWER`: Card selection effect execution for setPower effects
+- `APPLY_EFFECT`: Other card effect executions (future enhancement)
 
 #### 2. CardEffectRegistry (`src/services/CardEffectRegistry.js`)
 Manages card effect definitions and processing logic.
@@ -63,9 +87,12 @@ Executes the replay-based simulation.
 1. Create clean simulation state
 2. Replay each action in sequence order
 3. Execute card placement
-4. Activate immediate effects
-5. Check triggered effects from other cards
-6. Calculate final computed state
+4. Process card selection effects (APPLY_SET_POWER, APPLY_EFFECT)
+5. Activate immediate effects
+6. Check triggered effects from other cards
+7. Calculate final computed state
+
+**Card Selection Replay**: The system now tracks card selection effects in the play sequence, ensuring that effects like setPower maintain their target information during replay simulation. This guarantees consistent results when the game state is reconstructed from the play sequence.
 
 ### Integration Points
 
