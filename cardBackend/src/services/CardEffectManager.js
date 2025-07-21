@@ -14,6 +14,49 @@ class CardEffectManager {
         this.deckManager = DeckManager;
         this.cardInfoUtils = CardInfoUtils;
     }
+    
+    /**
+     * Helper function to safely get card data from either old or new format
+     * @param {Object} cardObj - Card object in either format
+     * @returns {Object|null} - Card data or null if invalid
+     */
+    safeGetCardData(cardObj) {
+        if (!cardObj) return null;
+        
+        // Old format: { cardDetails: [{ id, name, ... }], isBack: [bool] }
+        if (cardObj.cardDetails && Array.isArray(cardObj.cardDetails) && cardObj.cardDetails[0]) {
+            return cardObj.cardDetails[0];
+        }
+        
+        // New format: { id, name, cardType, ... }
+        if (cardObj.id && cardObj.cardType) {
+            return cardObj;
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Helper function to safely check if card is face down
+     * @param {Object} cardObj - Card object in either format  
+     * @returns {boolean} - True if face down
+     */
+    safeIsCardBack(cardObj) {
+        if (!cardObj) return false;
+        
+        // Old format: isBack: [bool]
+        if (cardObj.isBack && Array.isArray(cardObj.isBack)) {
+            return cardObj.isBack[0] === true;
+        }
+        
+        // Old format: isBack: bool
+        if (typeof cardObj.isBack === 'boolean') {
+            return cardObj.isBack;
+        }
+        
+        // New format: face-down cards don't exist in this format typically
+        return false;
+    }
 
     /**
      * Check if a card can be summoned to a specific position
@@ -61,7 +104,10 @@ class CardEffectManager {
         // 4. Check help card restrictions
         const helpCards = playerField.help || [];
         for (const helpCard of helpCards) {
-            const effectRules = helpCard.cardDetails[0].effectRules || [];
+            const cardData = this.safeGetCardData(helpCard);
+            if (!cardData) continue;
+            
+            const effectRules = cardData.effectRules || [];
             for (const rule of effectRules) {
                 if (rule.effectType === 'blockSummonCard') {
                     const canPlace = await this.evaluatePlacementCondition(rule, gameEnv, currentPlayerId, cardDetails);
@@ -78,7 +124,10 @@ class CardEffectManager {
         // 5. Check monster card restrictions
         const monsters = playerField[playPos] || [];
         for (const monster of monsters) {
-            const effectRules = monster.cardDetails[0].effectRules || [];
+            const cardData = this.safeGetCardData(monster);
+            if (!cardData) continue;
+            
+            const effectRules = cardData.effectRules || [];
             for (const rule of effectRules) {
                 if (rule.effectType === 'blockSummonCard') {
                     const canPlace = await this.evaluatePlacementCondition(rule, gameEnv, currentPlayerId, cardDetails);

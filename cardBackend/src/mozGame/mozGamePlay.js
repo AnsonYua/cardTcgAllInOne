@@ -814,12 +814,30 @@ class mozGamePlay {
                 const monsterArr = this.getPlayerZone(gameEnv, player, area[areaIdx]);
                 var areaContainMonster = false;
                 for(let monsterArrIdx in monsterArr){
-                   if(monsterArr[monsterArrIdx]["isBack"][0]){
+                    const cardObj = monsterArr[monsterArrIdx];
+                    
+                    // Check if card is face down (unified format handling)
+                    let isFaceDown = false;
+                    if (cardObj.isBack) {
+                        if (Array.isArray(cardObj.isBack) && cardObj.isBack.length > 0) {
+                            // Handle array format - check if any card in the placement is face down
+                            isFaceDown = cardObj.isBack.some(back => back === true);
+                        } else if (typeof cardObj.isBack === 'boolean') {
+                            // Handle direct boolean format
+                            isFaceDown = cardObj.isBack;
+                        }
+                    }
+                    
+                    if (isFaceDown) {
                         areaContainMonster = true;
-                   }else if(monsterArr[monsterArrIdx]["cardDetails"][0]["cardType"] == "character"){
-                        areaContainMonster = true;
-                        break;
-                   }
+                    } else {
+                        // Check if card is a character (either format)
+                        const cardData = this.getCardData(cardObj);
+                        if (cardData && cardData.cardType === "character") {
+                            areaContainMonster = true;
+                            break;
+                        }
+                    }
                 }
                 if(!areaContainMonster){
                     allFillWithMonster = false;
@@ -1605,15 +1623,36 @@ class mozGamePlay {
         return targets;
     }
     
+    /**
+     * Safely extract card data from both old and new card formats
+     */
+    getCardData(cardObj) {
+        // Handle new format (direct card object)
+        if (cardObj.id && cardObj.cardType) {
+            return cardObj;
+        }
+        
+        // Handle old format (cardDetails array)
+        if (cardObj.cardDetails && Array.isArray(cardObj.cardDetails) && cardObj.cardDetails.length > 0) {
+            return cardObj.cardDetails[0];
+        }
+        
+        console.warn('Unable to extract card data from:', cardObj);
+        return null;
+    }
+
     matchesFilters(cardObj, filters) {
         if (!filters || filters.length === 0) return true;
         
+        const cardData = this.getCardData(cardObj);
+        if (!cardData) return false;
+        
         for (const filter of filters) {
             if (filter.type === 'hasTrait') {
-                const traits = cardObj.cardDetails[0].traits || [];
+                const traits = cardData.traits || [];
                 if (!traits.includes(filter.value)) return false;
             } else if (filter.type === 'hasGameType') {
-                const gameType = cardObj.cardDetails[0].gameType;
+                const gameType = cardData.gameType;
                 if (Array.isArray(filter.value)) {
                     if (!filter.value.includes(gameType)) return false;
                 } else {
@@ -2149,17 +2188,34 @@ class mozGamePlay {
             const zoneCards = this.getPlayerZone(gameEnv, targetPlayerId, zone);
             if (zoneCards && zoneCards.length > 0) {
                 for (const cardObj of zoneCards) {
-                    // Cards in zones are stored as { card: [id], cardDetails: [data], isBack: [bool] }
-                    if (!cardObj.card || !Array.isArray(cardObj.card) || cardObj.card.length === 0) {
-                        console.warn(`Invalid card structure in ${zone} zone:`, cardObj);
+                    // Extract card data using helper function (handles both formats)
+                    const cardData = this.getCardData(cardObj);
+                    if (!cardData) {
+                        console.warn(`Unable to extract card data in ${zone} zone:`, cardObj);
                         continue;
                     }
                     
-                    const cardId = cardObj.card[0];
-                    const cardData = cardObj.cardDetails && cardObj.cardDetails[0];
+                    // Extract card ID (handle both formats)
+                    let cardId;
+                    if (cardObj.card && Array.isArray(cardObj.card) && cardObj.card.length > 0) {
+                        cardId = cardObj.card[0]; // Old format
+                    } else if (cardObj.id) {
+                        cardId = cardObj.id; // New format
+                    } else {
+                        console.warn(`Unable to extract card ID in ${zone} zone:`, cardObj);
+                        continue;
+                    }
+                    
+                    // Check if card is face down (handle both formats)
+                    let isFaceDown = false;
+                    if (cardObj.isBack && Array.isArray(cardObj.isBack) && cardObj.isBack.length > 0) {
+                        isFaceDown = cardObj.isBack[0]; // Old format
+                    } else if (typeof cardObj.isBack === 'boolean') {
+                        isFaceDown = cardObj.isBack; // New format
+                    }
                     
                     // Only include face-up character cards (can't modify face-down cards)
-                    if (cardData && cardData.cardType === 'character' && !cardObj.isBack[0]) {
+                    if (cardData.cardType === 'character' && !isFaceDown) {
                         eligibleCards.push({
                             cardId: cardId,
                             zone: zone,

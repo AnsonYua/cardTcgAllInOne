@@ -243,6 +243,34 @@ Comprehensive real-time game state tracking for frontend integration:
 - **Automatic Cleanup:** Expired and acknowledged events automatically removed
 - **Unique IDs:** Each event has timestamp-based unique identifier
 
+### ⚠️ CRITICAL: Event Acknowledgment Pattern for Phase Transitions
+**Every card play triggers turn switch → DRAW_PHASE → requires acknowledgment → MAIN_PHASE**
+
+**The Problem:** When a player plays a card, the game automatically switches to the next player in DRAW_PHASE. The phase will remain DRAW_PHASE until the `DRAW_PHASE_COMPLETE` event is acknowledged.
+
+**The Solution:** Always include acknowledgment steps in test scenarios and frontend flows:
+
+```javascript
+// 1. Player plays card (turns switch to DRAW_PHASE)
+await testHelper.executePlayerAction('playerId_1', gameId, {
+    type: 'PlayCard', card_idx: 0, field_idx: 1
+});
+
+// 2. MANDATORY: Acknowledge draw event to proceed to MAIN_PHASE
+await testHelper.acknowledgeEventsByType(gameId, 'playerId_2', ['DRAW_PHASE_COMPLETE']);
+
+// 3. Now player 2 can proceed with MAIN_PHASE actions
+```
+
+**Test Scenario Pattern:**
+- Step N: Player plays card → phase becomes DRAW_PHASE
+- Step N.5: Acknowledge DRAW_PHASE_COMPLETE → phase becomes MAIN_PHASE  
+- Step N+1: Next player can proceed with actions
+
+**Backend API:**
+- `POST /player/acknowledgeEvents` - Acknowledge specific event IDs
+- `testHelper.acknowledgeEventsByType(gameId, playerId, eventTypes)` - Helper for tests
+
 ### Event Categories
 **Setup Events:**
 - `GAME_STARTED` - Game creation with leader reveals and first player determination

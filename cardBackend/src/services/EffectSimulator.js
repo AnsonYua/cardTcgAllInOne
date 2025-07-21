@@ -1046,14 +1046,16 @@ class EffectSimulator {
             // Process leader effects directly on gameEnv.players[].fieldEffects
             await this.processCompleteLeaderEffectsUnified(gameEnv, play.playerId, play.cardId);
         } else if (play.action === 'PLAY_CARD') {
-            // Place card on board (gameEnv structure)
-            const zone = play.zone;
-            const card = this.cardInfoUtils.getCardDetails(play.cardId);
+            // NOTE: Card placement is handled by mozGamePlay.js - EffectSimulator only processes effects
+            // This prevents duplicate card entries in zones
+            console.log(`🎭 Processing card effects for ${play.cardId} (unified)`);
             
-            if (Array.isArray(gameEnv.zones[play.playerId][zone])) {
-                gameEnv.zones[play.playerId][zone].push(card);
-            } else {
-                gameEnv.zones[play.playerId][zone] = card;
+            // Process card effects but don't place the card (already placed by main game logic)
+            const card = this.cardInfoUtils.getCardDetails(play.cardId);
+            if (card && card.effects && card.effects.rules) {
+                // Note: processCardEffects expects simState, but for unified approach we just skip effect processing
+                // since card effects are handled separately by the main game logic
+                console.log(`⚡ Checking triggered effects for ${play.cardId} (unified)`);
             }
         }
     }
@@ -1305,9 +1307,51 @@ class EffectSimulator {
             return;
         }
         
-        // For now, only handle zonePlacementFreedom
-        // Other effects would be handled here in the future
-        console.log(`   Effect type ${effectType} not implemented in unified system yet`);
+        // Handle powerBoost effects from cards
+        if (effectType === 'powerBoost' || effectType === 'setPower') {
+            const gameEnv = simState.gameEnv;
+            
+            // Convert rule to unified effect format
+            const unifiedEffect = {
+                effectId: `${cardId}_${rule.id}`,
+                source: cardId,
+                sourcePlayerId: playerId,
+                type: effectType,
+                target: {
+                    scope: rule.target.owner === 'self' ? 'SELF' : 'OPPONENT',
+                    zones: rule.target.zones || ['top', 'left', 'right'],
+                    gameTypes: [],
+                    traits: []
+                },
+                value: rule.effect.value,
+                priority: 0,
+                unremovable: false
+            };
+            
+            // Extract targeting filters
+            if (rule.target.filters) {
+                for (const filter of rule.target.filters) {
+                    if (filter.type === 'gameType' || filter.type === 'gameTypeOr') {
+                        unifiedEffect.target.gameTypes = filter.values || [filter.value];
+                    } else if (filter.type === 'trait') {
+                        unifiedEffect.target.traits = [filter.value];
+                    }
+                }
+            }
+            
+            // Apply to correct player's activeEffects
+            const targetPlayerId = rule.target.owner === 'opponent' ? 
+                this.getOpponentPlayerId(simState, playerId) : playerId;
+            
+            gameEnv.players[targetPlayerId].fieldEffects.activeEffects.push(unifiedEffect);
+            console.log(`⚡ Applied ${effectType} effect from ${cardId} to ${targetPlayerId}: +${rule.effect.value}`);
+            return;
+        }
+        
+        // For any other effect types not yet implemented
+        if (effectType !== 'zonePlacementFreedom') {
+            console.log(`   Effect type ${effectType} not implemented in unified system yet`);
+        }
     }
 
     /**

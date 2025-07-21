@@ -75,9 +75,9 @@
         "rules": [
           {
             "id": "maga_nerf",
-            "type": "continuous",
+            "type": "triggered",
             "trigger": {
-              "event": "always",
+              "event": "onPlay",
               "conditions": []
             },
             "target": {
