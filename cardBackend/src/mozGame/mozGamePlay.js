@@ -2359,63 +2359,7 @@ class mozGamePlay {
         
         return gameEnv;
     }
-    
-    /**
-     * 🎯 APPLY SET POWER SELECTION - Card Selection Effect Processing with Replay Tracking
-     * ==================================================================================
-     * 
-     * This function is THE CORE of the card selection system and handles h-2 "Make America Great Again"
-     * style effects that require player selection and modify target card powers.
-     * 
-     * 🔄 REPLAY INTEGRATION: This function now adds APPLY_SET_POWER entries to the play sequence
-     * to ensure card selection information is preserved for replay consistency!
-     * 
-     * 📋 STEP-BY-STEP WORKFLOW:
-     * 
-     * STEP 1: Validate Selection
-     * - Verify the selectionId exists in pendingCardSelections
-     * - Check that all selectedCardIds are valid eligible targets
-     * - Extract effect details (powerValue, targetPlayer, etc.)
-     * 
-     * STEP 2: Run Effect Simulation FIRST
-     * - Calls effectSimulator.simulateCardPlaySequence(gameEnv) 
-     * - This rebuilds ALL field effects from the play sequence
-     * - Critical: Effects are applied AFTER simulation to prevent clearing
-     * 
-     * STEP 3: Apply setPower Effects
-     * - Adds setPower effect to target player's fieldEffects.activeEffects
-     * - Updates fieldEffects.calculatedPowers for immediate effect
-     * - Updates zone card valueOnField to match new power values
-     * 
-     * STEP 4: 🆕 ADD TO PLAY SEQUENCE (New Replay Integration!)
-     * - Creates new APPLY_SET_POWER play sequence entry
-     * - Records complete selection information: selectedCardIds, targetPlayerId, powerValue
-     * - Enables replay consistency by preserving card selection details
-     * 
-     * STEP 5: Recalculate Player Points
-     * - Calls calculatePlayerPoint() to update target player's total power
-     * - This ensures the power change is reflected in playerPoint immediately
-     * 
-     * STEP 6: Cleanup and Events
-     * - Removes the completed selection from pendingCardSelections
-     * - Generates CARD_SELECTION_COMPLETED event for frontend
-     * - Updates turn state if needed
-     * 
-     * 🎮 EXAMPLE USAGE (h-2 Card):
-     * Player 2 plays h-2 "Make America Great Again" → triggers card selection
-     * Player 2 selects c-1 (President Trump) → this function sets c-1's power to 0
-     * Result: c-1's power becomes 0, Player 1's playerPoint recalculated, selection recorded in play sequence
-     * 
-     * 🔗 INTEGRATION POINTS:
-     * - Called by completeCardSelection() when player makes selection
-     * - Integrates with unified effect system (EffectSimulator)
-     * - Affects calculatePlayerPoint() power calculations
-     * - Works with play sequence replay system for consistency
-     * 
-     * 📊 DATA FLOW:
-     * pendingCardSelections → validate selection → run effect simulation → 
-     * apply setPower effects → add to play sequence → recalculate playerPoint → cleanup
-     * 
+    /** 
      * @param {Object} gameEnv - Current game environment (modified in-place)
      * @param {string} selectionId - ID of the pending selection (e.g., "playerId_2_setPower_123")
      * @param {Array} selectedCardIds - Array of selected card IDs to modify (e.g., ["c-1"])
