@@ -383,12 +383,11 @@
   ],
 
   "expectedStateChanges": {
-    "playerId_1.fieldEffects.activeEffects.length": 4,
+    "players.playerId_1.fieldEffects.activeEffects.length": 4,
     "zones.playerId_1.left.0.valueOnField": 0,
-    "playerId_1.fieldEffects.calculatedPowers.c-1": 0,
-    "pendingPlayerAction": null,
-    "pendingCardSelections": {},
-    "playSequence.plays.length": 5
+    "players.playerId_1.fieldEffects.calculatedPowers.c-1": 0,
+    "playSequence.plays.length": 4,
+    "players.playerId_1.playerPoint": 0
   },
 
   "validationPoints": [

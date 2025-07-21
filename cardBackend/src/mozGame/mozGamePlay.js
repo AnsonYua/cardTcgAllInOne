@@ -1057,6 +1057,7 @@ class mozGamePlay {
                         
                         // Check unified field effects system for power overrides
                         let modifiedPower = basePower;
+                        let hasUnifiedSystemOverride = false;
                         
                         // Check if there's a calculated power override in the unified system
                         if (gameEnv.players && 
@@ -1066,13 +1067,15 @@ class mozGamePlay {
                             gameEnv.players[playerId].fieldEffects.calculatedPowers[cardId] !== undefined) {
                             
                             modifiedPower = gameEnv.players[playerId].fieldEffects.calculatedPowers[cardId];
+                            hasUnifiedSystemOverride = true;
                             console.log(`Using unified system power override for ${cardId}: ${modifiedPower}`);
                         }
                         
                         characterPowers[cardId] = { 
                             basePower: modifiedPower,  // Use field effect modified power as base
                             zone, 
-                            modifiers: 0 
+                            modifiers: 0,
+                            hasUnifiedSystemOverride  // Track if this card has unified system override
                         };
                     }
                 }
@@ -1127,7 +1130,7 @@ class mozGamePlay {
         // Step 3: Apply utility card continuous effects (help and SP cards)
         const utilityZones = ['help', 'sp'];
         for (const zone of utilityZones) {
-            if (playerField[zone] && playerField[zone].length > 0) {
+            if (playerField && playerField[zone] && playerField[zone].length > 0) {
                 for (const cardObj of playerField[zone]) {
                     // Only apply effects from face-up utility cards - FIXED for safety
                     // Handle both legacy and new card structures safely
@@ -1200,7 +1203,7 @@ class mozGamePlay {
             const utilityZones = ['help', 'sp'];
             
             for (const zone of utilityZones) {
-                if (playerField[zone] && playerField[zone].length > 0) {
+                if (playerField && playerField[zone] && playerField[zone].length > 0) {
                     for (const cardObj of playerField[zone]) {
                         // Only apply effects from face-up utility cards - FIXED for safety
                         // Handle both legacy and new card structures safely
@@ -1367,7 +1370,7 @@ class mozGamePlay {
         for (const target of targets) {
             if (rule.effect.type === 'modifyPower') {
                 const cardId = target.cardId;
-                if (characterPowers[cardId]) {
+                if (characterPowers[cardId] && !characterPowers[cardId].hasUnifiedSystemOverride) {
                     if (rule.effect.operation === 'add') {
                         characterPowers[cardId].modifiers += rule.effect.value;
                     } else if (rule.effect.operation === 'set') {
@@ -1376,12 +1379,12 @@ class mozGamePlay {
                 }
             } else if (rule.effect.type === 'powerBoost') {
                 const cardId = target.cardId;
-                if (characterPowers[cardId]) {
+                if (characterPowers[cardId] && !characterPowers[cardId].hasUnifiedSystemOverride) {
                     characterPowers[cardId].modifiers += rule.effect.value;
                 }
             } else if (rule.effect.type === 'setPower') {
                 const cardId = target.cardId;
-                if (characterPowers[cardId]) {
+                if (characterPowers[cardId] && !characterPowers[cardId].hasUnifiedSystemOverride) {
                     characterPowers[cardId].modifiers = rule.effect.value - characterPowers[cardId].basePower;
                 }
             } else if (rule.effect.type === 'neutralizeEffect') {
@@ -2433,6 +2436,10 @@ class mozGamePlay {
                 }
             }
         }
+        
+        // CRITICAL: Recalculate playerPoint for target player after setPower effect
+        gameEnv.players[targetPlayerId].playerPoint = await this.calculatePlayerPoint(gameEnv, targetPlayerId);
+        console.log(`Updated ${targetPlayerId} playerPoint to ${gameEnv.players[targetPlayerId].playerPoint} after setPower effect`);
         
         // Add game event for set power completed
         this.addGameEvent(gameEnv, 'CARD_SELECTION_COMPLETED', {
