@@ -2243,6 +2243,12 @@ class mozGamePlay {
             gameEnv.pendingCardSelections = {};
         }
         
+        // 🛠️ BUG FIX: Get source card from most recent play sequence entry
+        // The source card is the last card that was played which triggered this effect
+        const sourceCard = gameEnv.playSequence && gameEnv.playSequence.plays.length > 0 
+            ? gameEnv.playSequence.plays[gameEnv.playSequence.plays.length - 1].cardId 
+            : 'unknown';
+        
         const selectionId = `${playerId}_setPower_${Date.now()}`;
         gameEnv.pendingCardSelections[selectionId] = {
             playerId,
@@ -2251,6 +2257,7 @@ class mozGamePlay {
             effect: rule.effect,
             effectType: 'setPower',
             targetPlayerId,
+            sourceCard: sourceCard,  // 🛠️ BUG FIX: Add missing sourceCard field
             timestamp: Date.now()
         };
         
@@ -2418,166 +2425,59 @@ class mozGamePlay {
         const selection = gameEnv.pendingCardSelections[selectionId];
         const { playerId, targetPlayerId, effect } = selection;
         
-        // Initialize field effects structure if it doesn't exist
-        if (!gameEnv.players[targetPlayerId].fieldEffects) {
-            gameEnv.players[targetPlayerId].fieldEffects = {
-                zoneRestrictions: {},
-                activeEffects: [],
-                specialEffects: {},
-                calculatedPowers: {},
-                disabledCards: [],
-                victoryPointModifiers: 0
-            };
-        }
-        
-        // Initialize calculatedPowers if it doesn't exist
-        if (!gameEnv.players[targetPlayerId].fieldEffects.calculatedPowers) {
-            gameEnv.players[targetPlayerId].fieldEffects.calculatedPowers = {};
-        }
-        
-        // NOTE: setPower effects will be applied AFTER the effect simulation to prevent clearing
-        
-        // =====================================================================================
-        // 🔄 STEP 2: RUN EFFECT SIMULATION FIRST - CRITICAL FOR REPLAY CONSISTENCY
-        // =====================================================================================
-        // 
-        // WHY THIS IS CRITICAL:
-        // - The effect simulation rebuilds ALL effects from the play sequence from scratch
-        // - If we add setPower effects BEFORE simulation, they get cleared during rebuild
-        // - By adding them AFTER, they persist and work correctly
-        // 
-        // WHAT THIS DOES:
-        // 1. Reads entire gameEnv.playSequence.plays array
-        // 2. Replays every PLAY_LEADER and PLAY_CARD action in chronological order  
-        // 3. Rebuilds all fieldEffects.zoneRestrictions, activeEffects, calculatedPowers
-        // 4. Ensures consistent state regardless of when this function is called
-        const effectSimulator = require('../services/EffectSimulator');
-        await effectSimulator.simulateCardPlaySequence(gameEnv);
-        
-        // =====================================================================================
-        // 🎯 STEP 3: APPLY SETPOWER EFFECTS - AFTER SIMULATION TO PREVENT CLEARING
-        // =====================================================================================
-        //
-        // CRITICAL ORDER: Effects applied AFTER simulation so they don't get cleared
-        // This ensures the setPower effect persists and is properly tracked in activeEffects
-        for (const cardId of selectedCardIds) {
-            const cardInfo = selection.eligibleCards.find(card => card.cardId === cardId);
-            if (cardInfo) {
-                // Add the setPower effect to activeEffects (after simulation to avoid clearing)
-                const setPowerEffect = {
-                    effectId: `h-2_maga_nerf_${cardId}_${Date.now()}`,
-                    source: "h-2",
-                    sourcePlayerId: playerId,
-                    type: "setPower",
-                    target: {
-                        scope: "OPPONENT",
-                        zones: ["top", "left", "right"],
-                        specificCards: [cardId]
-                    },
-                    value: effect.value,
-                    priority: 0,
-                    unremovable: false
-                };
-                
-                // Add to target player's activeEffects (where the effect has impact)
-                gameEnv.players[targetPlayerId].fieldEffects.activeEffects.push(setPowerEffect);
-                
-                // Also update calculatedPowers directly for immediate effect
-                gameEnv.players[targetPlayerId].fieldEffects.calculatedPowers[cardId] = effect.value;
-                
-                console.log(`Set power effect recorded in activeEffects: Card ${cardId} power set to ${effect.value} by ${playerId}'s h-2 card`);
-            }
-        }
-        
-        // CRITICAL: Update valueOnField in zone cards to match the new setPower effects
-        for (const cardId of selectedCardIds) {
-            const cardInfo = selection.eligibleCards.find(card => card.cardId === cardId);
-            if (cardInfo) {
-                // Find the card in the target player's zones and update valueOnField
-                const targetZones = gameEnv.zones[targetPlayerId];
-                for (const zoneName of ['top', 'left', 'right', 'help', 'sp']) {
-                    if (targetZones[zoneName]) {
-                        for (const cardObj of targetZones[zoneName]) {
-                            if (cardObj.card && cardObj.card[0] === cardId) {
-                                cardObj.valueOnField = effect.value;
-                                console.log(`Updated ${cardId} valueOnField to ${effect.value} in zone ${zoneName} (from setPower effect)`);
-                                break;
-                            }
-                        }
-                    }
-                }
+        // 🛠️ BACKWARD COMPATIBILITY FIX: Handle injected data without sourceCard
+        if (!selection.sourceCard) {
+            console.log(`🔧 Missing sourceCard in selection, inferring from play sequence...`);
+            // Find the most recent h-2 card play (help card that triggers setPower)
+            const recentHelpCardPlay = gameEnv.playSequence?.plays
+                ?.slice()
+                ?.reverse()
+                ?.find(play => play.action === 'PLAY_CARD' && play.zone === 'help');
+            
+            if (recentHelpCardPlay) {
+                selection.sourceCard = recentHelpCardPlay.cardId;
+                console.log(`🔧 Inferred sourceCard: ${selection.sourceCard}`);
+            } else {
+                selection.sourceCard = 'h-2'; // Fallback default
+                console.log(`🔧 Using fallback sourceCard: h-2`);
             }
         }
         
         // =====================================================================================
-        // 📊 STEP 5: RECALCULATE PLAYER POINTS - CRITICAL FOR IMMEDIATE EFFECT
+        // 🎯 STEP 1: ADD TO PLAY SEQUENCE FIRST - CLEAN ARCHITECTURE
         // =====================================================================================
         //
-        // 🎯 PURPOSE: Update target player's total power after setPower effect is applied
-        // 
-        // WHY THIS IS CRITICAL:
-        // - playerPoint is the sum of all card powers for battle calculations
-        // - If we don't recalculate, the playerPoint will show old values
-        // - calculatePlayerPoint() processes all fieldEffects.calculatedPowers
-        // - This ensures immediate consistency between card power and total power
+        // 🔄 CLEAN ARCHITECTURE APPROACH:
+        // 1. Record the action in play sequence (what happened)
+        // 2. Let effectSimulator.simulateCardPlaySequence() handle ALL effect processing
+        // 3. This ensures centralized, consistent effect management
         //
-        // 📋 WHAT calculatePlayerPoint() DOES:
-        // 1. Reads all cards in player's zones (top, left, right, help, sp)
-        // 2. Gets calculated power from fieldEffects.calculatedPowers for each card
-        // 3. Applies any remaining modifiers and combo bonuses
-        // 4. Returns total power value for display and battle calculations
-        gameEnv.players[targetPlayerId].playerPoint = await this.calculatePlayerPoint(gameEnv, targetPlayerId);
-        console.log(`📈 Updated ${targetPlayerId} playerPoint to ${gameEnv.players[targetPlayerId].playerPoint} after setPower effect`);
+        // WHY THIS IS BETTER:
+        // - Single source of truth for effect processing
+        // - No manual effect manipulation outside the simulator
+        // - Cleaner separation of concerns: recording vs processing
+        // - Replay consistency guaranteed by design
+        //
+        console.log(`🎬 Recording APPLY_SET_POWER action in play sequence...`);
         
-        // =====================================================================================
-        // 🆕 STEP 4: ADD TO PLAY SEQUENCE - NEW REPLAY INTEGRATION (January 2025)
-        // =====================================================================================
-        //
-        // 🎯 PURPOSE: Record card selection information for replay consistency
-        // This is the NEW feature that preserves card selection details!
-        //
-        // 📋 WHAT THIS CREATES:
-        // - New APPLY_SET_POWER action in play sequence
-        // - Complete selection details: selectedCardIds, targetPlayer, powerValue
-        // - Enables replay simulations to have access to card selection information
-        //
-        // 🔄 REPLAY BENEFIT:
-        // - When game state is reconstructed from play sequence, card selections are preserved
-        // - Debugging: Can trace exactly which cards were selected for effects
-        // - Consistency: Same selection results when replaying the game sequence
-        //
-        // 📊 PLAY SEQUENCE ENTRY STRUCTURE:
-        // {
-        //   sequenceId: 5,
-        //   playerId: "playerId_2", 
-        //   cardId: "h-2",
-        //   action: "APPLY_SET_POWER",
-        //   zone: "effect", 
-        //   data: {
-        //     selectedCardIds: ["c-1"],
-        //     targetPlayerId: "playerId_1",
-        //     effectType: "setPower",
-        //     powerValue: 0
-        //   }
-        // }
+        // Add card selection information to play sequence FIRST
         if (gameEnv.playSequence && gameEnv.playSequence.plays) {
-            // Add a new play sequence entry for the card selection effect
             const newSequenceId = gameEnv.playSequence.globalSequence + 1;
             gameEnv.playSequence.globalSequence = newSequenceId;
             
             const selectionPlay = {
                 sequenceId: newSequenceId,
                 playerId: playerId,                    // Player who made the selection (e.g., "playerId_2")
-                cardId: "h-2",                        // Source card that triggered the selection  
-                action: "APPLY_SET_POWER",            // 🆕 New action type for card selection effects
-                zone: "effect",                       // Indicates this is an effect application, not card placement
+                cardId: selection.sourceCard,          // Source card that triggered the selection  
+                action: "APPLY_SET_POWER",            // Action type for effect processing
+                zone: "effect",                       // Indicates this is an effect application
                 data: {
                     selectionId: selectionId,         // Unique selection ID for tracking
                     selectedCardIds: selectedCardIds, // Array of target cards ["c-1"] 
                     targetPlayerId: targetPlayerId,   // Player whose cards were affected
                     effectType: "setPower",           // Type of effect applied
                     powerValue: effect.value,         // Power value set (e.g., 0)
-                    sourceCard: "h-2"                // Source card for reference
+                    sourceCard: selection.sourceCard  // Source card for reference
                 },
                 timestamp: new Date().toISOString(),
                 turnNumber: gameEnv.currentTurn,
@@ -2585,10 +2485,44 @@ class mozGamePlay {
             };
             
             gameEnv.playSequence.plays.push(selectionPlay);
-            console.log(`🎬 Added card selection to play sequence: h-2 selected ${selectedCardIds.join(', ')} for setPower effect`);
+            console.log(`✅ Added APPLY_SET_POWER to play sequence: ${selection.sourceCard} selected ${selectedCardIds.join(', ')} for setPower effect`);
         }
         
-        // Add game event for set power completed
+        // =====================================================================================
+        // 🔄 STEP 2: RUN CENTRALIZED EFFECT SIMULATION - CLEAN ARCHITECTURE
+        // =====================================================================================
+        //
+        // 🎯 PURPOSE: Let the centralized simulator handle ALL effect processing
+        // 
+        // WHAT HAPPENS:
+        // 1. effectSimulator reads the ENTIRE play sequence (including the new APPLY_SET_POWER entry)
+        // 2. Replays every action in chronological order
+        // 3. Processes all effects in a centralized, consistent manner
+        // 4. Updates fieldEffects.activeEffects, calculatedPowers, and all other state
+        // 5. No manual effect manipulation needed here!
+        //
+        console.log(`🔄 Running centralized effect simulation...`);
+        const effectSimulator = require('../services/EffectSimulator');
+        await effectSimulator.simulateCardPlaySequence(gameEnv);
+        
+        // ✅ COMPLETE CENTRALIZATION ACHIEVED!
+        // The simulator now handles ALL calculations:
+        // - Field effects processing
+        // - Power calculations
+        // - Player point calculations
+        // No manual calculations needed outside the simulator!
+        
+        // =====================================================================================
+        // 🧹 STEP 3: CLEANUP AND EVENT GENERATION
+        // =====================================================================================
+        //
+        // Clean up the completed selection and generate events for frontend
+        //
+        delete gameEnv.pendingCardSelections[selectionId];
+        delete gameEnv.pendingPlayerAction;
+        console.log(`🧹 Cleaned up selection ${selectionId}`);
+        
+        // Generate completion event for frontend
         this.addGameEvent(gameEnv, 'CARD_SELECTION_COMPLETED', {
             playerId: playerId,
             selectionId: selectionId,
@@ -2598,11 +2532,12 @@ class mozGamePlay {
             powerValue: effect.value
         });
         
-        // Clean up the pending selection
-        delete gameEnv.pendingCardSelections[selectionId];
-        delete gameEnv.pendingPlayerAction;
-        
-        // Check if turn should advance after card selection completion
+        // =====================================================================================
+        // 🔄 STEP 4: PHASE PROGRESSION - CLEAN ARCHITECTURE  
+        // =====================================================================================
+        //
+        // Check if main phase is complete and advance to next phase if needed
+        //
         const isMainPhaseComplete = await this.checkIsMainPhaseComplete(gameEnv);
         
         if (!isMainPhaseComplete) {
@@ -2623,68 +2558,221 @@ class mozGamePlay {
             gameEnv = await this.advanceToSpPhaseOrBattle(gameEnv);
         }
         
+        console.log(`✅ applySetPowerSelection completed successfully - COMPLETE CENTRALIZATION ACHIEVED!`);
+        console.log(`   - Effect Applied: setPower to ${effect.value} on cards ${selectedCardIds.join(', ')}`);
+        console.log(`   - Target Player: ${targetPlayerId}`);
+        console.log(`   - Player Point: ${gameEnv.players[targetPlayerId].playerPoint} (calculated by simulator)`);
+        console.log(`   - Play sequence length: ${gameEnv.playSequence ? gameEnv.playSequence.plays.length : 'undefined'}`);
+        console.log(`   - All processing done by effectSimulator.simulateCardPlaySequence() - pure clean architecture!`);
+        
         return gameEnv;
     }
     
     /**
-     * Complete a pending card selection by the player
-     * @param {Object} gameEnv - Current game environment
-     * @param {string} selectionId - ID of the pending selection
-     * @param {Array} selectedCardIds - Array of selected card IDs
-     * @returns {Object} Updated game environment or error
+     * 🎯 COMPLETE CARD SELECTION - Universal Card Selection Handler 
+     * ===========================================================
+     * 
+     * This function is THE UNIVERSAL HANDLER for all card selection workflows in the game.
+     * It processes player selections from deck searches, power targeting, and neutralization effects.
+     * 
+     * 🔄 SELECTION TYPES HANDLED:
+     * 
+     * 1. **DECK SEARCH EFFECTS** (e.g., c-9, c-10, c-12):
+     *    - Player searches deck for specific card types
+     *    - Selects cards to add to hand, SP zone, or Help zone
+     *    - Remaining searched cards go to bottom of deck
+     * 
+     * 2. **POWER TARGETING EFFECTS** (e.g., h-2 "Make America Great Again"):
+     *    - Player selects opponent's cards to modify power
+     *    - Calls applySetPowerSelection() for effect application
+     *    - Integrates with replay system for consistency
+     * 
+     * 3. **NEUTRALIZATION EFFECTS** (e.g., h-1 neutralization):
+     *    - Player selects cards to neutralize/disable
+     *    - Calls applyNeutralizationSelection() for effect application
+     * 
+     * 📋 STEP-BY-STEP WORKFLOW:
+     * 
+     * STEP 1: Validate Selection Exists
+     * - Check if selectionId exists in pendingCardSelections
+     * - Extract selection details (playerId, eligibleCards, effect, etc.)
+     * - Ensure selection hasn't expired or been completed
+     * 
+     * STEP 2: Validate Selection Count and Cards
+     * - Check selectedCardIds.length matches required selectCount
+     * - Validate each selected card is in the eligibleCards list
+     * - Handle different card formats (string IDs vs objects)
+     * 
+     * STEP 3: Route to Appropriate Handler
+     * - 'setPower' → applySetPowerSelection() (h-2 effects)
+     * - 'neutralizeEffect' → applyNeutralizationSelection() (h-1 effects)  
+     * - Default → Deck search processing (c-9, c-10, c-12 cards)
+     * 
+     * STEP 4: Process Deck Search Effects (Default Path)
+     * - Remove selected cards from player's deck
+     * - Route cards to destination based on effect.destination:
+     *   * 'spZone' → Create card objects and place in SP zone (face-down)
+     *   * 'helpZone' → Create card objects and place in Help zone (face-up)
+     *   * 'conditionalHelpZone' → Place in Help zone if empty, otherwise hand
+     *   * Default → Add to player's hand
+     * 
+     * STEP 5: Handle Zone Placement Effects
+     * - For Help zone placement: Process card onPlay effects immediately
+     * - For SP zone placement: Cards placed face-down (no immediate effects)
+     * - For hand placement: Cards available for later play
+     * 
+     * STEP 6: Cleanup Operations
+     * - Put remaining searched cards to bottom of deck
+     * - Remove completed selection from pendingCardSelections
+     * - Clear pendingPlayerAction to unblock game flow
+     * - Allow game to continue to next phase/player
+     * 
+     * 🎮 EXAMPLE WORKFLOWS:
+     * 
+     * **c-9 (Elijah) Card Search:**
+     * 1. Player plays c-9 → searches 4 cards → creates selection
+     * 2. Player selects 1 card → this function routes to deck search
+     * 3. Selected card added to hand, remaining 3 cards to bottom of deck
+     * 
+     * **h-2 (Make America Great Again) Power Targeting:**
+     * 1. Player plays h-2 → finds opponent cards → creates selection  
+     * 2. Player selects c-1 → this function routes to applySetPowerSelection()
+     * 3. c-1's power set to 0, selection recorded in play sequence
+     * 
+     * **c-12 (Luke Farritor) Conditional Placement:**
+     * 1. Player plays c-12 → searches for Help cards → creates selection
+     * 2. Player selects h-5 → this function checks Help zone status
+     * 3. If Help zone empty: h-5 placed in Help zone, effects activate
+     *    If Help zone full: h-5 added to hand for later use
+     * 
+     * 🔗 INTEGRATION POINTS:
+     * - Called by GameLogic.selectCard() when frontend sends selection
+     * - Routes to specialized functions for power/neutralization effects  
+     * - Integrates with processUtilityCardEffects() for Help card effects
+     * - Works with deck management functions for card movement
+     * 
+     * 📊 DATA FLOW:
+     * Frontend selection → GameController.selectCard → GameLogic.selectCard → 
+     * this function → route to effect handler → update game state → cleanup
+     * 
+     * @param {Object} gameEnv - Current game environment (modified in-place)
+     * @param {string} selectionId - Unique selection ID (e.g., "playerId_1_search_123")
+     * @param {Array} selectedCardIds - Array of selected card IDs (e.g., ["c-1", "h-5"])
+     * @returns {Object} Updated game environment or error object
      */
     async completeCardSelection(gameEnv, selectionId, selectedCardIds) {
+        // =====================================================================================
+        // 🔍 STEP 1: VALIDATE SELECTION EXISTS AND EXTRACT DETAILS
+        // =====================================================================================
+        //
+        // This checks that the selection is still valid and hasn't expired or been completed.
+        // pendingCardSelections structure:
+        // {
+        //   "playerId_1_search_123": {
+        //     playerId: "playerId_1",
+        //     eligibleCards: ["c-1", "h-5"],
+        //     selectCount: 1,
+        //     effect: { destination: "hand" },
+        //     effectType: "search" | "setPower" | "neutralizeEffect"
+        //   }
+        // }
         if (!gameEnv.pendingCardSelections || !gameEnv.pendingCardSelections[selectionId]) {
             return this.throwError("Invalid or expired card selection");
         }
         
+        // Extract all selection details for processing
         const selection = gameEnv.pendingCardSelections[selectionId];
         const { playerId, eligibleCards, searchedCards, selectCount, effect, effectType, targetPlayerId } = selection;
         
-        // Validate selection
+        // =====================================================================================
+        // ✅ STEP 2: VALIDATE SELECTION COUNT AND CARD CHOICES
+        // =====================================================================================
+        //
+        // Ensure player selected exactly the required number of cards
+        // selectCount examples: 1 for h-2 targeting, 2 for some search effects, etc.
         if (selectedCardIds.length !== selectCount) {
             return this.throwError(`Must select exactly ${selectCount} cards`);
         }
         
+        // Validate each selected card is in the eligible list
         for (const cardId of selectedCardIds) {
-            // For neutralization and setPower effects, validate against card structure
+            // ==================================================================================
+            // 🎯 CARD VALIDATION: Handle Different Eligible Card Formats
+            // ==================================================================================
+            //
+            // Power/Neutralization effects store eligible cards as objects:
+            // eligibleCards = [{ cardId: "c-1", zone: "top", playerId: "playerId_1" }]
+            //
+            // Search effects store eligible cards as simple strings:
+            // eligibleCards = ["c-1", "h-5", "sp-3"]
+            //
             if (effectType === 'neutralizeEffect' || effectType === 'setPower') {
+                // For power/neutralization: eligibleCards contains card objects
                 const isValidCard = eligibleCards.some(card => 
-                    (typeof card === 'string' && card === cardId) || 
-                    (typeof card === 'object' && card.cardId === cardId)
+                    (typeof card === 'string' && card === cardId) ||           // Fallback for string format
+                    (typeof card === 'object' && card.cardId === cardId)       // Standard object format
                 );
                 if (!isValidCard) {
                     return this.throwError(`Invalid card selection: ${cardId}`);
                 }
             } else {
+                // For search effects: eligibleCards contains simple card ID strings
                 if (!eligibleCards.includes(cardId)) {
                     return this.throwError(`Invalid card selection: ${cardId}`);
                 }
             }
         }
         
-        // Handle different effect types
+        // =====================================================================================
+        // 🚦 STEP 3: ROUTE TO APPROPRIATE HANDLER BASED ON EFFECT TYPE
+        // =====================================================================================
+        //
+        // This is where the function decides how to process the selection:
+        // - Power effects (h-2) → applySetPowerSelection() with replay integration
+        // - Neutralization (h-1) → applyNeutralizationSelection() for disabling cards
+        // - Search effects (c-9, c-10, c-12) → Continue to deck manipulation logic below
+        //
         if (effectType === 'neutralizeEffect') {
-            // Apply neutralization to selected cards
+            // 🚫 Route to neutralization handler (h-1 "深層政府" type effects)
             return await this.applyNeutralizationSelection(gameEnv, selectionId, selectedCardIds);
         } else if (effectType === 'setPower') {
-            // Apply power modification to selected cards
+            // 🎯 Route to power modification handler (h-2 "Make America Great Again" type effects)
             return await this.applySetPowerSelection(gameEnv, selectionId, selectedCardIds);
         }
         
-        // Apply the selection (for deck search effects)
+        // =====================================================================================
+        // 📦 STEP 4: PROCESS DECK SEARCH EFFECTS (DEFAULT PATH)
+        // =====================================================================================
+        //
+        // If we reach here, this is a deck search effect (c-9, c-10, c-12 cards)
+        // Player searched their deck and selected cards to move to specific destinations
+        
+        // Get player's deck and hand for card movement operations
         const deck = this.getPlayerMainDeck(gameEnv, playerId);
         const hand = this.getPlayerHand(gameEnv, playerId);
         
-        // Add selected cards to appropriate destination
+        // =====================================================================================
+        // 🎯 STEP 5: MOVE SELECTED CARDS TO APPROPRIATE DESTINATIONS
+        // =====================================================================================
+        //
+        // DESTINATION TYPES:
+        // - 'spZone': Place directly in SP zone (face-down) - c-10 "Edward Coristine" 
+        // - 'helpZone': Place directly in Help zone (face-up) - Original fixed destination
+        // - 'conditionalHelpZone': Help zone if empty, otherwise hand - c-12 "Luke Farritor"
+        // - Default: Add to hand - c-9 "Elijah"
+        //
         for (const cardId of selectedCardIds) {
-            // Remove from deck first
+            // First remove the card from the deck (it was part of the searched cards)
             const deckIndex = deck.indexOf(cardId);
             if (deckIndex !== -1) {
                 deck.splice(deckIndex, 1);
             }
-            // Add to destination based on effect
+            
+            // Now route the card to its destination based on the effect
             if (effect.destination === 'spZone') {
+                // ===============================================================================
+                // 📍 SP ZONE PLACEMENT - Place card directly in SP zone (c-10 type effects)
+                // ===============================================================================
                 // Create card object for SP zone placement (face-down by default)
                 const cardDetails = require('./mozDeckHelper').getDeckCardDetails(cardId);
                 const cardObj = {
@@ -2696,28 +2784,43 @@ class mozGamePlay {
                 const playerField = this.getPlayerField(gameEnv, playerId);
                 playerField.sp.push(cardObj);
             } else if (effect.destination === 'helpZone') {
-                // Always place in Help zone (original fixed destination)
+                // ===============================================================================
+                // 📍 HELP ZONE PLACEMENT - Place card directly in Help zone (original fixed destination)
+                // ===============================================================================
+                //
+                // This places the selected card directly in the Help zone and activates its effects.
+                // Used by older card effects that always placed cards in Help zone.
                 const cardDetails = require('./mozDeckHelper').getDeckCardDetails(cardId);
                 if (!cardDetails || cardDetails.cardType !== 'help') {
                     return this.throwError("Selected card is not a Help card");
                 }
                 
-                // Create card object for Help zone placement
+                // Create card object for Help zone placement (face-up so effects activate)
                 const cardObj = {
                     "card": [cardId],
                     "cardDetails": [cardDetails],
-                    "isBack": [false],
+                    "isBack": [false],                              // Face-up to activate effects
                     "valueOnField": cardDetails["power"] || 0
                 };
                 const playerField = this.getPlayerField(gameEnv, playerId);
                 playerField.help.push(cardObj);
                 
-                // Process Help card onPlay effects (since it's being "played" to the zone)
+                // ⚡ CRITICAL: Process Help card onPlay effects immediately
+                // Since the card is being "played" to the zone, its effects should activate
                 const effectResult = await this.processUtilityCardEffects(gameEnv, playerId, cardDetails);
                 if (effectResult && effectResult.requiresCardSelection) {
+                    // If the Help card's effect requires another selection, return immediately
                     return effectResult.gameEnv;
                 }
             } else if (effect.destination === 'conditionalHelpZone') {
+                // ===============================================================================
+                // 📍 CONDITIONAL HELP ZONE PLACEMENT - c-12 "Luke Farritor" type effects
+                // ===============================================================================
+                //
+                // This implements the conditional logic:
+                // - If Help zone is empty → Place card in Help zone (activates effects)
+                // - If Help zone is occupied → Add card to hand (for later use)
+                //
                 // Check Help zone status at placement time to determine destination
                 const cardDetails = require('./mozDeckHelper').getDeckCardDetails(cardId);
                 if (!cardDetails || cardDetails.cardType !== 'help') {
@@ -2726,44 +2829,57 @@ class mozGamePlay {
                 
                 const playerField = this.getPlayerField(gameEnv, playerId);
                 if (playerField.help.length === 0) {
-                    // Help zone is empty - place card in Help zone
+                    // 📍 Help zone is EMPTY → Place card in Help zone and activate effects
                     const cardObj = {
                         "card": [cardId],
                         "cardDetails": [cardDetails],
                         "isBack": [false],
                         "valueOnField": cardDetails["power"] || 0
                     };
-                    const playerField = this.getPlayerField(gameEnv, playerId);
-                playerField.help.push(cardObj);
+                    playerField.help.push(cardObj);
                     
-                    // Process Help card onPlay effects (since it's being "played" to the zone)
+                    // ⚡ Process Help card onPlay effects (card is being "played" to the zone)
                     const effectResult = await this.processUtilityCardEffects(gameEnv, playerId, cardDetails);
                     if (effectResult && effectResult.requiresCardSelection) {
                         return effectResult.gameEnv;
                     }
                 } else {
-                    // Help zone is occupied - place card in hand instead
+                    // 📍 Help zone is OCCUPIED → Add card to hand for later manual play
                     hand.push(cardId);
                 }
             } else {
-                // Default to hand for backward compatibility
+                // ===============================================================================
+                // 📍 DEFAULT DESTINATION - Add to hand (c-9 "Elijah" type effects)
+                // ===============================================================================
+                //
+                // Default behavior for backward compatibility with older search effects.
+                // Cards added to hand can be played normally in future turns.
                 hand.push(cardId);
             }
         }
         
-        // Put remaining searched cards to bottom of deck
+        // =====================================================================================
+        // 🧹 STEP 6: CLEANUP OPERATIONS
+        // =====================================================================================
+        //
+        // Handle remaining searched cards and clean up the selection state
+        
+        // Put remaining searched cards to bottom of deck (cards that weren't selected)
+        // This maintains deck integrity and prevents deck manipulation exploits
         const remainingSearched = searchedCards.filter(cardId => !selectedCardIds.includes(cardId));
         for (const cardId of remainingSearched) {
             const deckIndex = deck.indexOf(cardId);
             if (deckIndex !== -1) {
-                deck.splice(deckIndex, 1);
-                deck.push(cardId); // Add to bottom
+                deck.splice(deckIndex, 1);     // Remove from current position
+                deck.push(cardId);             // Add to bottom of deck
             }
         }
         
-        // Clean up the pending selection and player action indicator
-        delete gameEnv.pendingCardSelections[selectionId];
-        delete gameEnv.pendingPlayerAction;
+        // Clean up the completed selection to unblock game flow
+        delete gameEnv.pendingCardSelections[selectionId];    // Remove completed selection
+        delete gameEnv.pendingPlayerAction;                   // Clear blocking indicator
+        
+        // ✅ Selection complete - game can now continue to next phase or player turn
         
         return gameEnv;
     }

@@ -150,6 +150,10 @@ class EffectSimulator {
         // 4. Calculate final power values and store in fieldEffects
         this.calculateFinalPowersUnified(gameEnv);
         
+        // 5. Calculate player points for all players (NEW - January 2025)
+        // This ensures complete centralization - no manual point calculations needed outside simulator
+        await this.calculatePlayerPointsUnified(gameEnv);
+        
         console.log('✅ Unified simulation completed - all effects available in gameEnv.players[].fieldEffects');
     }
 
@@ -1057,7 +1061,75 @@ class EffectSimulator {
                 // since card effects are handled separately by the main game logic
                 console.log(`⚡ Checking triggered effects for ${play.cardId} (unified)`);
             }
+        } else if (play.action === 'APPLY_SET_POWER') {
+            // 🆕 NEW: Handle card selection effects (January 2025)
+            // Process setPower effects from card selections like h-2 "Make America Great Again"
+            console.log(`🎯 Processing APPLY_SET_POWER effect: ${play.cardId} selected cards ${play.data.selectedCardIds.join(', ')}`);
+            
+            // 🛠️ BUG FIX: Pass sourceCard from play.cardId instead of relying on play.data.sourceCard
+            const effectData = {
+                ...play.data,
+                sourceCard: play.cardId  // Override with the correct source card from play sequence
+            };
+            
+            // Apply setPower effect to selected cards
+            this.applySetPowerEffectUnified(gameEnv, effectData);
         }
+    }
+
+    /**
+     * 🎯 Apply setPower effect unified - NEW (January 2025)
+     * =====================================================
+     * 
+     * This method processes APPLY_SET_POWER actions from card selections like h-2 "Make America Great Again".
+     * It applies setPower effects directly to gameEnv.players[].fieldEffects.activeEffects.
+     * 
+     * 🔄 CENTRALIZED EFFECT PROCESSING:
+     * - All setPower effects processed through this single method
+     * - Effects stored in activeEffects for unified access
+     * - Calculated powers updated automatically by calculateFinalPowersUnified()
+     * 
+     * @param {Object} gameEnv - Game environment
+     * @param {Object} data - Selection data with selectedCardIds, targetPlayerId, powerValue, etc.
+     */
+    applySetPowerEffectUnified(gameEnv, data) {
+        const { selectedCardIds, targetPlayerId, powerValue, sourceCard } = data;
+        
+        console.log(`🎯 Applying setPower effect to ${selectedCardIds.length} cards for ${targetPlayerId}`);
+        
+        // Initialize field effects if not present
+        if (!gameEnv.players[targetPlayerId].fieldEffects) {
+            gameEnv.players[targetPlayerId].fieldEffects = {
+                zoneRestrictions: {},
+                activeEffects: [],
+                calculatedPowers: {}
+            };
+        }
+        
+        // Create setPower effect for each selected card
+        selectedCardIds.forEach(cardId => {
+            const effectId = `setPower_${sourceCard}_${cardId}_${Date.now()}`;
+            
+            const setPowerEffect = {
+                effectId: effectId,
+                source: sourceCard,
+                type: "setPower",
+                target: { 
+                    scope: "SPECIFIC_CARD",
+                    cardId: cardId,
+                    playerId: targetPlayerId
+                },
+                value: powerValue,
+                timestamp: Date.now()
+            };
+            
+            // Add effect to activeEffects array
+            gameEnv.players[targetPlayerId].fieldEffects.activeEffects.push(setPowerEffect);
+            
+            console.log(`✅ Added setPower effect: ${cardId} → ${powerValue} power from ${sourceCard}`);
+        });
+        
+        console.log(`🎯 setPower effect processing completed for ${selectedCardIds.length} cards`);
     }
 
     /**
@@ -1432,6 +1504,48 @@ class EffectSimulator {
         }
         
         console.log('✅ Final power calculation completed (unified)');
+    }
+
+    /**
+     * 📊 Calculate Player Points Unified - NEW (January 2025) 
+     * ========================================================
+     * 
+     * This method calculates playerPoint for all players as part of the centralized simulation.
+     * It ensures that playerPoint calculations are handled entirely within the unified simulator,
+     * maintaining complete architectural consistency.
+     * 
+     * 🎯 CENTRALIZED APPROACH:
+     * - All playerPoint calculations happen inside simulateCardPlaySequence()
+     * - No manual point calculations needed outside the simulator
+     * - Consistent with unified field effects architecture
+     * - Uses existing calculatePlayerPoint logic from mozGamePlay
+     * 
+     * @param {Object} gameEnv - Game environment
+     */
+    async calculatePlayerPointsUnified(gameEnv) {
+        const { getPlayerFromGameEnv } = require('../utils/gameUtils');
+        const playerList = getPlayerFromGameEnv(gameEnv);
+        
+        console.log('📊 Calculating player points for all players (unified)...');
+        
+        // We need to access the calculatePlayerPoint method from mozGamePlay
+        // Since this is a centralized calculation, we'll import it dynamically
+        const mozGamePlay = require('../mozGame/mozGamePlay');
+        
+        for (const playerId of playerList) {
+            const oldPlayerPoint = gameEnv.players[playerId].playerPoint || 0;
+            
+            // Calculate new player point using the existing logic
+            gameEnv.players[playerId].playerPoint = await mozGamePlay.calculatePlayerPoint(gameEnv, playerId);
+            
+            const newPlayerPoint = gameEnv.players[playerId].playerPoint;
+            
+            if (oldPlayerPoint !== newPlayerPoint) {
+                console.log(`📈 Updated ${playerId} playerPoint: ${oldPlayerPoint} → ${newPlayerPoint}`);
+            }
+        }
+        
+        console.log('✅ Player points calculation completed (unified)');
     }
 
     /**
