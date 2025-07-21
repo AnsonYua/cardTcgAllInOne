@@ -1422,6 +1422,11 @@ class EffectSimulator {
                     
                     // Store calculated power in fieldEffects
                     gameEnv.players[playerId].fieldEffects.calculatedPowers[cardId] = finalPower;
+                    
+                    // Update valueOnField in zone to match calculated power (fixes display issue)
+                    if (card.hasOwnProperty('valueOnField')) {
+                        card.valueOnField = finalPower;
+                    }
                 }
             }
         }
