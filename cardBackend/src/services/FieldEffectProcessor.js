@@ -188,8 +188,15 @@ class FieldEffectProcessor {
         let modifiedPower = basePower;
         const effects = playerFieldEffects.activeEffects;
         
-        // Apply power modification effects
-        for (const effect of effects) {
+        // Apply power modification effects (only enabled ones - January 2025)
+        const enabledEffects = effects.filter(effect => effect.isEnabled !== false);
+        const disabledEffects = effects.filter(effect => effect.isEnabled === false);
+        
+        if (disabledEffects.length > 0) {
+            console.log(`🚫 FieldEffectProcessor: Skipping ${disabledEffects.length} disabled effect(s) for ${cardDetails.name}`);
+        }
+        
+        for (const effect of enabledEffects) {
             if (effect.type === "powerBoost") {
                 if (await this.doesEffectAffectCard(effect, cardDetails)) {
                     modifiedPower += effect.value;

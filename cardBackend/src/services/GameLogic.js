@@ -48,7 +48,10 @@ class GameLogic {
             gameStarted: false,
             players: {},
             zones: {},
-            fieldEffects: {}
+            fieldEffects: {},
+            
+            // 🆕 ENHANCED NEUTRALIZATION TRACKING (January 2025)
+            neutralizationHistory: []  // Track all neutralization actions for debugging and audit trail
         };
         
         // Initialize event system

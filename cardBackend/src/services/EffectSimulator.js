@@ -1128,7 +1128,11 @@ class EffectSimulator {
                     playerId: targetPlayerId
                 },
                 value: powerValue,
-                timestamp: Date.now()
+                
+                // 🆕 ENHANCED EFFECT STATE TRACKING (January 2025)
+                isEnabled: true,                     // All new effects start enabled
+                createdAt: Date.now(),              // Track when effect was created
+                timestamp: Date.now()               // Legacy field (keeping for compatibility)
             };
             
             // Add effect to activeEffects array
@@ -1141,10 +1145,21 @@ class EffectSimulator {
     }
 
     /**
-     * 🎯 Apply neutralization effect unified - NEW (2024)
-     * =====================================================
-     * This method processes APPLY_NEUTRALIZATION actions from card selections like h-1 Deep State.
-     * It applies neutralization effects directly to gameEnv.players[].fieldEffects.activeEffects.
+     * 🎯 Apply neutralization effect unified - ENHANCED (January 2025)
+     * ================================================================
+     * 
+     * IMPROVED APPROACH: Instead of removing effects completely, this method now:
+     * 1. Marks effects as disabled with isEnabled = false
+     * 2. Records the neutralization reason for traceability
+     * 3. Preserves effect history for debugging and potential reversal
+     * 4. Maintains full audit trail of all neutralization actions
+     * 
+     * BENEFITS:
+     * - Better debugging: Can see what was neutralized and why
+     * - Reversibility: Effects can be re-enabled if neutralization is undone
+     * - Audit trail: Complete history of effect state changes
+     * - No data loss: Original effects preserved for analysis
+     * 
      * @param {Object} gameEnv - Game environment
      * @param {Object} data - Selection data with selectedCardIds, targetPlayerId, sourceCard, etc.
      */
@@ -1161,35 +1176,136 @@ class EffectSimulator {
         }
         
         selectedCardIds.forEach(cardId => {
-            console.log(`🎯 Neutralizing card ${cardId} - removing effects from all players...`);
+            console.log(`🎯 Neutralizing card ${cardId} - disabling effects from all players...`);
             
-            // Remove effects created by the neutralized card from ALL players
+            // Disable effects created by the neutralized card from ALL players
             // This is critical because cards like h-2 can create effects on opponent's fieldEffects
             const { getPlayerFromGameEnv } = require('../utils/gameUtils');
             const playerList = getPlayerFromGameEnv(gameEnv);
             
-            let totalEffectsRemoved = 0;
+            let totalEffectsDisabled = 0;
+            const neutralizationTimestamp = Date.now();
+            const neutralizationReason = `Neutralized by ${sourceCard} at ${new Date(neutralizationTimestamp).toISOString()}`;
+            
             for (const playerId of playerList) {
-                const before = gameEnv.players[playerId].fieldEffects.activeEffects.length;
+                let disabledFromPlayer = 0;
                 
-                // Remove any effect whose source is the card being neutralized
-                gameEnv.players[playerId].fieldEffects.activeEffects = gameEnv.players[playerId].fieldEffects.activeEffects.filter(
-                    effect => effect.source !== cardId
-                );
+                // Instead of removing, mark effects as disabled with reason
+                gameEnv.players[playerId].fieldEffects.activeEffects.forEach(effect => {
+                    if (effect.source === cardId && effect.isEnabled !== false) {
+                        // Mark effect as disabled
+                        effect.isEnabled = false;
+                        effect.disabledBy = sourceCard;
+                        effect.disabledAt = neutralizationTimestamp;
+                        effect.disabledReason = neutralizationReason;
+                        effect.neutralizationId = `${sourceCard}_${cardId}_${neutralizationTimestamp}`;
+                        
+                        disabledFromPlayer++;
+                        totalEffectsDisabled++;
+                        
+                        console.log(`🚫 Disabled effect ${effect.effectId} from ${cardId}: ${effect.type} (reason: ${neutralizationReason})`);
+                    }
+                });
                 
-                const after = gameEnv.players[playerId].fieldEffects.activeEffects.length;
-                const removedFromPlayer = before - after;
-                totalEffectsRemoved += removedFromPlayer;
-                
-                if (removedFromPlayer > 0) {
-                    console.log(`🧹 Removed ${removedFromPlayer} effect(s) created by ${cardId} from ${playerId}`);
+                if (disabledFromPlayer > 0) {
+                    console.log(`🧹 Disabled ${disabledFromPlayer} effect(s) created by ${cardId} from ${playerId}`);
                 }
             }
             
-            console.log(`✅ Neutralization complete: removed ${totalEffectsRemoved} total effect(s) from card ${cardId}`);
+            // Add neutralization tracking to game history
+            if (!gameEnv.neutralizationHistory) {
+                gameEnv.neutralizationHistory = [];
+            }
+            
+            gameEnv.neutralizationHistory.push({
+                neutralizedCard: cardId,
+                neutralizedBy: sourceCard,
+                timestamp: neutralizationTimestamp,
+                effectsDisabled: totalEffectsDisabled,
+                reason: neutralizationReason
+            });
+            
+            console.log(`✅ Neutralization complete: disabled ${totalEffectsDisabled} total effect(s) from card ${cardId}`);
         });
         
-        console.log(`🎯 Neutralization effect processing completed - effects removed, no infinite loop`);
+        console.log(`🎯 Neutralization effect processing completed - effects disabled with full traceability`);
+    }
+
+    /**
+     * 🔄 Re-enable neutralized effects - BONUS FEATURE (January 2025)
+     * ================================================================
+     * 
+     * This method can re-enable effects that were previously neutralized,
+     * providing undo functionality for neutralization effects.
+     * 
+     * USE CASES:
+     * - Counter-spells that undo neutralization
+     * - Temporary neutralization effects that expire
+     * - Game mechanics that allow reversing neutralization
+     * 
+     * @param {Object} gameEnv - Game environment
+     * @param {Object} data - Re-enable data with neutralizationIds or sourceCard
+     */
+    async reEnableNeutralizedEffects(gameEnv, data) {
+        const { neutralizationIds, sourceCard, reason } = data;
+        console.log(`🔄 Re-enabling neutralized effects...`);
+        
+        const { getPlayerFromGameEnv } = require('../utils/gameUtils');
+        const playerList = getPlayerFromGameEnv(gameEnv);
+        
+        let totalEffectsReEnabled = 0;
+        const reEnableTimestamp = Date.now();
+        const reEnableReason = reason || `Re-enabled at ${new Date(reEnableTimestamp).toISOString()}`;
+        
+        for (const playerId of playerList) {
+            let reEnabledFromPlayer = 0;
+            
+            gameEnv.players[playerId].fieldEffects.activeEffects.forEach(effect => {
+                let shouldReEnable = false;
+                
+                // Re-enable by specific neutralization IDs
+                if (neutralizationIds && neutralizationIds.includes(effect.neutralizationId)) {
+                    shouldReEnable = true;
+                }
+                
+                // Re-enable all effects neutralized by a specific source card
+                if (sourceCard && effect.disabledBy === sourceCard) {
+                    shouldReEnable = true;
+                }
+                
+                if (shouldReEnable && effect.isEnabled === false) {
+                    // Re-enable the effect
+                    effect.isEnabled = true;
+                    effect.reEnabledAt = reEnableTimestamp;
+                    effect.reEnabledReason = reEnableReason;
+                    
+                    reEnabledFromPlayer++;
+                    totalEffectsReEnabled++;
+                    
+                    console.log(`✅ Re-enabled effect ${effect.effectId}: ${effect.type} (${reEnableReason})`);
+                }
+            });
+            
+            if (reEnabledFromPlayer > 0) {
+                console.log(`🔄 Re-enabled ${reEnabledFromPlayer} effect(s) from ${playerId}`);
+            }
+        }
+        
+        // Add re-enablement to history
+        if (!gameEnv.neutralizationHistory) {
+            gameEnv.neutralizationHistory = [];
+        }
+        
+        gameEnv.neutralizationHistory.push({
+            action: "RE_ENABLE",
+            sourceCard: sourceCard,
+            neutralizationIds: neutralizationIds,
+            timestamp: reEnableTimestamp,
+            effectsReEnabled: totalEffectsReEnabled,
+            reason: reEnableReason
+        });
+        
+        console.log(`✅ Re-enablement complete: re-enabled ${totalEffectsReEnabled} total effect(s)`);
     }
 
     /**
@@ -1233,20 +1349,24 @@ class EffectSimulator {
             }
             
             if (shouldApplyEffect) {
-                const effect = this.convertLeaderRuleToEffectUnified(effectRule, leaderId, playerId);
-                gameEnv.players[playerId].fieldEffects.activeEffects.push(effect);
+                // 🏗️ UNIFIED EFFECT PROCESSING PIPELINE
+                // =====================================
+                // This 3-step process handles ALL leader effects uniformly:
                 
-                // STEP 3A: Handle restriction effects that modify zone compatibility
-                if (effectRule.type === "restriction" && effectRule.effect.type === "preventSummon") {
-                    await this.applyRestrictionEffectUnified(gameEnv, effectRule, playerId);
-                }
+                // STEP 1: CONVERT - Transform JSON rule to activeEffect object (PURE FUNCTION)
+                console.log(`🔄 STEP 1: Converting effect rule to activeEffect object...`);
+                const effect = this.convertLeaderRuleToEffectUnified(effectRule, leaderId, playerId, gameEnv);
                 
-                // Apply cross-player effects immediately
-                if (effect.target.scope === "OPPONENT") {
-                    this.applyCrossPlayerEffectUnified(gameEnv, effect, playerId);
-                }
+                // STEP 2: STORE - Add activeEffect to target player's activeEffects array
+                console.log(`📦 STEP 2: Storing activeEffect in target player's activeEffects...`);
+                const targetPlayerId = effect.target.playerId;
+                gameEnv.players[targetPlayerId].fieldEffects.activeEffects.push(effect);
                 
-                console.log(`✅ Applied leader effect ${effectRule.id || effectRule.type} from ${leaderId}`);
+                // STEP 3: SPECIAL HANDLING - Handle effects that need immediate gameEnv modification
+                console.log(`🚨 STEP 3: Checking for special effect handling requirements...`);
+                await this.applySpecialEffectHandlingUnified(gameEnv, effect, effectRule);
+
+                console.log(`✅ Applied unified leader effect ${effectRule.id || effectRule.type} from ${leaderId} → ${targetPlayerId}`);
             } else {
                 console.log(`❌ Skipped leader effect ${effectRule.id || effectRule.type} from ${leaderId} - conditions not met`);
             }
@@ -1359,14 +1479,37 @@ class EffectSimulator {
     }
 
     /**
-     * Convert leader effect rule to effect object unified (simplified - direct JSON processing)
+     * 🏗️ UNIFIED LEADER EFFECT PROCESSOR (Option 1 - Pure Transformation)
+     * ===================================================================
+     * 
+     * Single function that converts ALL leader effect types to activeEffect objects,
+     * maintaining consistency and eliminating special-case handling.
+     * 
+     * 📊 EFFECT CLASSIFICATION SYSTEM:
+     * ================================
+     * 
+     * 🔄 REGULAR EFFECTS (Applied during power calculation):
+     * - powerBoost: Adds power to matching cards (e.g., Trump +45 to Right-Wing cards)
+     * - setPower: Sets specific power value (e.g., Trump economic cards → 0 vs Powell)
+     * - powerNullification: Cross-player power nullification (e.g., Powell nullifies Economic)
+     * 
+     * 🚨 SPECIAL EFFECTS (Require immediate gameEnv modification):
+     * - zoneRestriction: Modifies zone compatibility rules (e.g., Powell prevents Right-Wing summons)
+     * - Future: fieldModification, gameRuleChanges, customMechanics, etc.
+     * 
+     * 🎯 WHY THIS CLASSIFICATION MATTERS:
+     * - Regular effects: Stored in activeEffects, applied lazily during power calculation
+     * - Special effects: Stored in activeEffects + immediate gameEnv modification
+     * - This separation keeps the conversion function pure while handling complex behaviors
+     * 
      * @param {Object} effectRule - Original effect rule from leader JSON
      * @param {string} leaderId - Leader ID
      * @param {string} playerId - Player ID
-     * @returns {Object} Effect object
+     * @param {Object} gameEnv - Game environment (for target resolution)
+     * @returns {Object} Unified activeEffect object
      */
-    convertLeaderRuleToEffectUnified(effectRule, leaderId, playerId) {
-        // Extract game types and traits from filters
+    convertLeaderRuleToEffectUnified(effectRule, leaderId, playerId, gameEnv) {
+        // Extract targeting information (existing logic)
         let gameTypes = [];
         let traits = [];
         
@@ -1382,28 +1525,256 @@ class EffectSimulator {
             }
         }
         
-        // Convert effect type - handle setPower as POWER_NULLIFICATION
-        let effectType = effectRule.effect.type;
-        if (effectRule.effect.type === 'setPower' && effectRule.effect.value === 0) {
-            effectType = 'POWER_NULLIFICATION';
-            console.log(`🔄 Converting setPower(0) to POWER_NULLIFICATION for leader effect ${effectRule.id}`);
-        }
+        // 🆕 UNIFIED EFFECT TYPE HANDLING
+        const effectType = this.normalizeEffectTypeUnified(effectRule);
+        const targetScope = this.determineTargetScopeUnified(effectRule, gameEnv, playerId);
+        const targetPlayerId = this.resolveTargetPlayerUnified(targetScope, playerId, gameEnv);
         
+        console.log(`📋 Processing unified leader effect: ${effectType} (${effectRule.effect.value}) for ${effectRule.id} → target: ${targetPlayerId}`);
+        
+        // 🆕 SINGLE ACTIVEEFFECT OBJECT FOR ALL TYPES
         return {
             effectId: `${leaderId}_${effectRule.id || effectType}`,
             source: leaderId,
             sourcePlayerId: playerId,
-            type: effectType,
+            type: effectType,                    // normalized: "powerBoost", "setPower", "zoneRestriction", "powerNullification"
             target: {
-                scope: effectRule.target.owner === 'self' ? 'SELF' : 'OPPONENT',
+                scope: targetScope,              // "SELF", "OPPONENT", "SPECIFIC_PLAYER"
+                playerId: targetPlayerId,        // resolved target player
                 zones: effectRule.target.zones || ["top", "left", "right"],
                 gameTypes: gameTypes.length > 0 ? gameTypes : undefined,
                 traits: traits.length > 0 ? traits : undefined
             },
             value: effectRule.effect.value,
             priority: effectRule.priority || 0,
-            unremovable: effectRule.unremovable || false
+            unremovable: effectRule.unremovable || false,
+            
+            // 🆕 ENHANCED EFFECT STATE TRACKING (January 2025)
+            isEnabled: true,                     // All new effects start enabled
+            createdAt: Date.now(),              // Track when effect was created
+            
+            // 🆕 EFFECT-SPECIFIC DATA (for complex effects like restrictions)
+            effectData: this.extractEffectSpecificDataUnified(effectRule)
         };
+    }
+
+    /**
+     * 🔄 NORMALIZE EFFECT TYPES - Convert JSON effect types to unified types
+     * =====================================================================
+     * 
+     * Maps various JSON effect types to standardized activeEffect types:
+     * - powerBoost → powerBoost (unchanged)
+     * - setPower → setPower (unchanged) 
+     * - preventSummon → zoneRestriction (NEW - unified)
+     * 
+     * @param {Object} effectRule - Effect rule from JSON
+     * @returns {string} Normalized effect type
+     */
+    normalizeEffectTypeUnified(effectRule) {
+        switch(effectRule.effect.type) {
+            case 'powerBoost': 
+                return 'powerBoost';
+            case 'setPower': 
+                return 'setPower';
+            case 'preventSummon': 
+                return 'zoneRestriction';  // 🆕 Unified handling
+            default: 
+                console.log(`⚠️ Unknown effect type: ${effectRule.effect.type}, using as-is`);
+                return effectRule.effect.type;
+        }
+    }
+
+    /**
+     * 🎯 DETERMINE TARGET SCOPE - Resolve who the effect targets
+     * ==========================================================
+     * 
+     * Analyzes effect rule to determine target scope:
+     * - owner: "self" → SELF
+     * - owner: "opponent" → OPPONENT  
+     * - cross-player effects → OPPONENT (automatically detected)
+     * 
+     * @param {Object} effectRule - Effect rule from JSON
+     * @param {Object} gameEnv - Game environment
+     * @param {string} playerId - Source player ID
+     * @returns {string} Target scope
+     */
+    determineTargetScopeUnified(effectRule, gameEnv, playerId) {
+        // Explicit target owner in JSON
+        if (effectRule.target && effectRule.target.owner) {
+            return effectRule.target.owner === 'self' ? 'SELF' : 'OPPONENT';
+        }
+        
+        // Auto-detect cross-player effects (like Powell's nullification)
+        if (effectRule.effect.type === 'setPower' && effectRule.effect.value === 0) {
+            // Check if this is conditional on opponent leader
+            if (effectRule.trigger && effectRule.trigger.conditions) {
+                for (const condition of effectRule.trigger.conditions) {
+                    if (condition.type === 'opponentLeader') {
+                        // This is a cross-player effect - it affects self but only when opponent is specific leader
+                        return 'SELF';  // Trump's economic cards get nullified (self-targeting)
+                    }
+                }
+            }
+        }
+        
+        // Default to SELF
+        return 'SELF';
+    }
+
+    /**
+     * 🎯 RESOLVE TARGET PLAYER - Get actual player ID for target
+     * ==========================================================
+     * 
+     * Resolves target scope to actual player ID:
+     * - SELF → sourcePlayerId
+     * - OPPONENT → opponent player ID (via getOpponentPlayer)
+     * 
+     * @param {string} scope - Target scope
+     * @param {string} sourcePlayerId - Source player ID
+     * @param {Object} gameEnv - Game environment
+     * @returns {string} Target player ID
+     */
+    resolveTargetPlayerUnified(scope, sourcePlayerId, gameEnv) {
+        switch(scope) {
+            case 'SELF': 
+                return sourcePlayerId;
+            case 'OPPONENT': {
+                const { getOpponentPlayer } = require('../utils/gameUtils');
+                return getOpponentPlayer(gameEnv, sourcePlayerId);
+            }
+            default: 
+                return sourcePlayerId;
+        }
+    }
+
+    /**
+     * 📦 EXTRACT EFFECT-SPECIFIC DATA - Get additional data for complex effects
+     * =========================================================================
+     * 
+     * Extracts additional data needed for specific effect types:
+     * - zoneRestriction effects: restricted types to remove
+     * - Complex targeting: additional filter data
+     * 
+     * @param {Object} effectRule - Effect rule from JSON
+     * @returns {Object} Effect-specific data
+     */
+    extractEffectSpecificDataUnified(effectRule) {
+        const effectData = {};
+        
+        // For restriction effects, extract what types to restrict
+        if (effectRule.effect.type === 'preventSummon' && effectRule.target.filters) {
+            effectData.restrictedTypes = [];
+            for (const filter of effectRule.target.filters) {
+                if (filter.type === 'gameType' && filter.value) {
+                    effectData.restrictedTypes.push(filter.value);
+                }
+            }
+        }
+        
+        return effectData;
+    }
+
+    /**
+     * 🎯 UNIFIED SPECIAL EFFECT HANDLING - Handle complex effects after adding to activeEffects
+     * =======================================================================================
+     * 
+     * WHAT ARE "SPECIAL EFFECTS"?
+     * ===========================
+     * Special effects are those that require additional processing beyond just being stored
+     * in the activeEffects array. They need to modify other parts of the game state immediately:
+     * 
+     * 🔄 REGULAR EFFECTS (No special handling needed):
+     * - powerBoost: Applied during power calculation only
+     * - setPower: Applied during power calculation only
+     * - powerNullification: Applied during power calculation only
+     * 
+     * 🚨 SPECIAL EFFECTS (Require immediate gameEnv modification):
+     * - zoneRestriction: Must modify zoneRestrictions immediately for card placement validation
+     * - future: fieldModification, gameRuleChanges, etc.
+     * 
+     * WHY SEPARATE SPECIAL HANDLING?
+     * ==============================
+     * 1. Regular effects can wait until power calculation
+     * 2. Special effects must take effect immediately for game validation
+     * 3. Special effects modify multiple parts of gameEnv structure
+     * 4. Keeps conversion function pure (no side effects)
+     * 
+     * @param {Object} gameEnv - Game environment (will be modified)
+     * @param {Object} effect - The unified activeEffect object
+     * @param {Object} effectRule - Original effect rule (for complex validation)
+     */
+    async applySpecialEffectHandlingUnified(gameEnv, effect, effectRule) {
+        console.log(`🔍 Checking for special effect handling: ${effect.type}`);
+        
+        // 🚨 SPECIAL EFFECT TYPE 1: ZONE RESTRICTIONS
+        // ============================================
+        // Must modify zoneRestrictions immediately because card placement validation
+        // checks these restrictions before cards are played
+        if (effect.type === 'zoneRestriction') {
+            console.log(`🚨 SPECIAL EFFECT DETECTED: zoneRestriction requires immediate handling`);
+            
+            if (!effect.effectData.restrictedTypes || effect.effectData.restrictedTypes.length === 0) {
+                console.log(`⚠️ Zone restriction effect has no restrictedTypes data, skipping`);
+                return;
+            }
+            
+            const targetPlayerId = effect.target.playerId;
+            const zones = effect.target.zones;
+            
+            console.log(`🚫 Applying zone restrictions for ${targetPlayerId}: removing [${effect.effectData.restrictedTypes.join(', ')}] from zones [${zones.join(', ')}]`);
+            
+            for (const zone of zones) {
+                const zoneKey = zone.toUpperCase();
+                const currentTypes = gameEnv.players[targetPlayerId].fieldEffects.zoneRestrictions[zoneKey];
+                
+                if (Array.isArray(currentTypes)) {
+                    // Remove the restricted types
+                    const beforeCount = currentTypes.length;
+                    gameEnv.players[targetPlayerId].fieldEffects.zoneRestrictions[zoneKey] = 
+                        currentTypes.filter(type => !effect.effectData.restrictedTypes.includes(type));
+                    const afterCount = gameEnv.players[targetPlayerId].fieldEffects.zoneRestrictions[zoneKey].length;
+                    
+                    console.log(`🔒 Updated ${zoneKey} restrictions for ${targetPlayerId}: ${beforeCount} → ${afterCount} types`);
+                    console.log(`   New restrictions:`, gameEnv.players[targetPlayerId].fieldEffects.zoneRestrictions[zoneKey]);
+                } else {
+                    console.log(`⚠️ Zone ${zoneKey} restrictions not found or not array for ${targetPlayerId}`);
+                }
+            }
+            
+            console.log(`✅ Zone restriction special handling completed`);
+            return;
+        }
+        
+        // 🔄 REGULAR EFFECTS - No special handling needed
+        // ===============================================
+        // These effects are applied during power calculation phase
+        if (['powerBoost', 'setPower', 'powerNullification'].includes(effect.type)) {
+            console.log(`✅ Regular effect ${effect.type} - no special handling needed (applied during power calculation)`);
+            return;
+        }
+        
+        // 🚨 FUTURE SPECIAL EFFECT TYPES
+        // ===============================
+        // Add new special effect types here as needed:
+        
+        // Example: Field modification effects
+        // if (effect.type === 'fieldModification') {
+        //     console.log(`🚨 SPECIAL EFFECT DETECTED: fieldModification requires immediate handling`);
+        //     // Handle field modification logic here
+        //     return;
+        // }
+        
+        // Example: Game rule changes
+        // if (effect.type === 'gameRuleChange') {
+        //     console.log(`🚨 SPECIAL EFFECT DETECTED: gameRuleChange requires immediate handling`);
+        //     // Handle game rule change logic here
+        //     return;
+        // }
+        
+        // 🤔 UNKNOWN EFFECT TYPE
+        // ======================
+        console.log(`🤔 Unknown effect type '${effect.type}' - assuming no special handling needed`);
+        console.log(`   If this effect type should have special handling, add it to applySpecialEffectHandlingUnified`);
     }
 
     /**
@@ -1524,7 +1895,11 @@ class EffectSimulator {
                 },
                 value: rule.effect.value,
                 priority: 0,
-                unremovable: false
+                unremovable: false,
+                
+                // 🆕 ENHANCED EFFECT STATE TRACKING (January 2025)
+                isEnabled: true,                     // All new effects start enabled
+                createdAt: Date.now()               // Track when effect was created
             };
             
             // Extract targeting filters
@@ -1676,7 +2051,12 @@ class EffectSimulator {
     }
 
     /**
-     * Calculate card power with effects unified
+     * Calculate card power with effects unified - ENHANCED (January 2025)
+     * ====================================================================
+     * 
+     * Now respects the isEnabled field to handle neutralized effects properly.
+     * Only processes effects where isEnabled is not explicitly false.
+     * 
      * @param {Object} gameEnv - Game environment
      * @param {string} playerId - Player ID
      * @param {Object} card - Card object
@@ -1688,17 +2068,27 @@ class EffectSimulator {
         const effects = gameEnv.players[playerId].fieldEffects.activeEffects;
         const cardId = this.getCardId(card);
         
-        // First apply power boost effects from leaders and other cards
-        for (const effect of effects) {
+        // Filter out disabled effects before processing
+        const enabledEffects = effects.filter(effect => effect.isEnabled !== false);
+        const disabledEffects = effects.filter(effect => effect.isEnabled === false);
+        
+        if (disabledEffects.length > 0) {
+            console.log(`🚫 Skipping ${disabledEffects.length} disabled effect(s) for ${cardId}`);
+            disabledEffects.forEach(effect => {
+                console.log(`   - Disabled ${effect.type} from ${effect.source}: ${effect.disabledReason}`);
+            });
+        }
+        
+        // First apply power boost effects from leaders and other cards (only enabled ones)
+        for (const effect of enabledEffects) {
             if (effect.type === 'powerBoost' && this.checkEffectTargetsCardUnified(effect, card)) {
                 modifiedPower += effect.value;
                 console.log(`📈 Applied power boost +${effect.value} to ${cardId}: ${modifiedPower - effect.value} → ${modifiedPower}`);
             }
         }
         
-        // Apply setPower effects (direct power setting, highest priority)
-        // These override everything including boosts, but can be checked for specific cards
-        for (const effect of effects) {
+        // Apply setPower effects (direct power setting, highest priority) - only enabled ones
+        for (const effect of enabledEffects) {
             if (effect.type === 'setPower' && this.checkEffectTargetsCardUnified(effect, card)) {
                 modifiedPower = effect.value;
                 console.log(`🎯 Applied setPower to ${cardId}: power set to ${effect.value} (from ${effect.source})`);
@@ -1706,8 +2096,8 @@ class EffectSimulator {
             }
         }
         
-        // Apply nullification effects (from opponent) - these set power to 0
-        for (const effect of effects) {
+        // Apply nullification effects (from opponent) - only enabled ones
+        for (const effect of enabledEffects) {
             if (effect.type === 'POWER_NULLIFICATION' && this.checkEffectTargetsCardUnified(effect, card)) {
                 modifiedPower = 0;
                 console.log(`🚫 Applied power nullification to ${cardId}: power set to 0`);

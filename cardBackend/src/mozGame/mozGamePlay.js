@@ -35,6 +35,42 @@ class mozGamePlay {
         this.effectSimulator = null;
     }
 
+    /**
+     * MAIN CONTROL FLOW DOCUMENTATION:
+     * 
+     * This class orchestrates the complete game flow through several key entry points:
+     * 
+     * 1. processAction() - Main entry point for ALL player actions
+     *    - Validates permissions, phase restrictions, and game state
+     *    - Routes to specific action handlers based on action.type
+     *    - Handles unified effect processing after successful actions
+     *    - Manages turn switching and phase progression
+     *    - Generates real-time events for frontend synchronization
+     *
+     * 2. calculatePlayerPoint() - Complete battle calculation system
+     *    - Step 1: Base power calculation from placed cards
+     *    - Step 2: Character effects (onSummon triggers)  
+     *    - Step 3: Utility card effects (Help/SP cards)
+     *    - Step 4: Leader power bonuses and cross-player effects
+     *    - Step 5: Combo point calculation (same type, trait combinations)
+     *    - Step 6: Victory point modifiers and final totals
+     *    - Returns comprehensive battle results for scoring
+     *
+     * 3. Effect Integration Points:
+     *    - Uses EffectSimulator for unified replay-based effect processing
+     *    - PlaySequenceManager records ALL actions (PLAY_CARD, PLAY_LEADER, etc.)
+     *    - Field effects processed through single source of truth
+     *    - Automatic turn switching after each card placement
+     *    - Real-time event generation for frontend updates
+     *
+     * Key Design Principles:
+     * - Single responsibility: Each method handles one specific game mechanic
+     * - Event-driven: All state changes generate appropriate events
+     * - Validation-first: Extensive validation before state modification
+     * - Effect unification: All effects processed through replay system
+     * - Turn-based: Strict turn switching after each player action
+     */
+
     // Helper methods for unified format compatibility
     getPlayerHand(gameEnv, playerId) {
         if (!gameEnv.players) {
