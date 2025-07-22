@@ -1215,31 +1215,40 @@ class EffectSimulator {
             this.applyLeaderZoneRestrictionsUnified(gameEnv, playerId, leaderData);
         }
 
-        // STEP 3: Process leader field effects (power boosts, cross-player effects)
-        // Handle both new format (fieldEffects) and old format (effects.rules)
+        // STEP 3: Process leader effects directly from JSON (simplified - no conversion needed)
         let effectRules = [];
         
-        if (leaderData.fieldEffects && leaderData.fieldEffects.length > 0) {
-            // New format: fieldEffects array
-            effectRules = leaderData.fieldEffects;
-        } else if (leaderData.effects && leaderData.effects.rules && leaderData.effects.rules.length > 0) {
-            // Old format: effects.rules array - convert to new format
-            console.log(`🔄 Converting old effect format for leader ${leaderId}...`);
-            effectRules = this.convertOldLeaderEffectsToNew(leaderData.effects.rules);
+        if (leaderData.effects && leaderData.effects.rules && leaderData.effects.rules.length > 0) {
+            // Process effects directly from JSON - no conversion overhead
+            effectRules = leaderData.effects.rules;
+            console.log(`📋 Processing ${effectRules.length} leader effects directly from JSON for ${leaderId}...`);
         }
         
         for (const effectRule of effectRules) {
-            const effect = this.convertLeaderRuleToEffectUnified(effectRule, leaderId, playerId);
-            gameEnv.players[playerId].fieldEffects.activeEffects.push(effect);
+            // Check conditions before applying effects
+            let shouldApplyEffect = true;
             
-            // STEP 3A: Handle restriction effects that modify zone compatibility
-            if (effectRule.type === "restriction" && effectRule.effect.type === "preventSummon") {
-                await this.applyRestrictionEffectUnified(gameEnv, effectRule, playerId);
+            if (effectRule.trigger && effectRule.trigger.conditions) {
+                shouldApplyEffect = this.checkLeaderEffectConditionsUnified(gameEnv, playerId, effectRule);
             }
             
-            // Apply cross-player effects immediately
-            if (effect.target.scope === "OPPONENT") {
-                this.applyCrossPlayerEffectUnified(gameEnv, effect, playerId);
+            if (shouldApplyEffect) {
+                const effect = this.convertLeaderRuleToEffectUnified(effectRule, leaderId, playerId);
+                gameEnv.players[playerId].fieldEffects.activeEffects.push(effect);
+                
+                // STEP 3A: Handle restriction effects that modify zone compatibility
+                if (effectRule.type === "restriction" && effectRule.effect.type === "preventSummon") {
+                    await this.applyRestrictionEffectUnified(gameEnv, effectRule, playerId);
+                }
+                
+                // Apply cross-player effects immediately
+                if (effect.target.scope === "OPPONENT") {
+                    this.applyCrossPlayerEffectUnified(gameEnv, effect, playerId);
+                }
+                
+                console.log(`✅ Applied leader effect ${effectRule.id || effectRule.type} from ${leaderId}`);
+            } else {
+                console.log(`❌ Skipped leader effect ${effectRule.id || effectRule.type} from ${leaderId} - conditions not met`);
             }
         }
 
@@ -1264,6 +1273,36 @@ class EffectSimulator {
         gameEnv.players[playerId].fieldEffects.zoneRestrictions = restrictions;
         
         console.log(`🔒 Applied zone restrictions to ${playerId}:`, restrictions);
+    }
+
+    /**
+     * Check leader effect conditions unified (simplified - no conversion)
+     * @param {Object} gameEnv - Game environment
+     * @param {string} playerId - Player ID
+     * @param {Object} rule - Original effect rule from JSON
+     * @returns {boolean} Whether conditions are met
+     */
+    checkLeaderEffectConditionsUnified(gameEnv, playerId, rule) {
+        if (!rule.trigger || !rule.trigger.conditions) {
+            return true; // No conditions means always apply
+        }
+        
+        for (const condition of rule.trigger.conditions) {
+            if (condition.type === 'opponentLeader') {
+                // Find opponent player
+                const { getOpponentPlayer } = require('../utils/gameUtils');
+                const opponentId = getOpponentPlayer(gameEnv, playerId);
+                const opponentLeader = gameEnv.zones[opponentId]?.leader;
+                
+                if (opponentLeader && opponentLeader.name !== condition.value) {
+                    console.log(`❌ Leader effect condition not met: opponent leader is "${opponentLeader.name}", expected "${condition.value}"`);
+                    return false;
+                }
+                console.log(`✅ Leader effect condition met: opponent leader is "${condition.value}"`);
+            }
+        }
+        
+        return true;
     }
 
     /**
@@ -1320,20 +1359,48 @@ class EffectSimulator {
     }
 
     /**
-     * Convert leader effect rule to effect object unified
-     * @param {Object} effectRule - Effect rule from leader JSON
+     * Convert leader effect rule to effect object unified (simplified - direct JSON processing)
+     * @param {Object} effectRule - Original effect rule from leader JSON
      * @param {string} leaderId - Leader ID
      * @param {string} playerId - Player ID
      * @returns {Object} Effect object
      */
     convertLeaderRuleToEffectUnified(effectRule, leaderId, playerId) {
+        // Extract game types and traits from filters
+        let gameTypes = [];
+        let traits = [];
+        
+        if (effectRule.target && effectRule.target.filters) {
+            for (const filter of effectRule.target.filters) {
+                if (filter.type === 'gameType' && filter.value) {
+                    gameTypes.push(filter.value);
+                } else if (filter.type === 'gameTypeOr' && filter.values) {
+                    gameTypes = gameTypes.concat(filter.values);
+                } else if (filter.type === 'trait' && filter.value) {
+                    traits.push(filter.value);
+                }
+            }
+        }
+        
+        // Convert effect type - handle setPower as POWER_NULLIFICATION
+        let effectType = effectRule.effect.type;
+        if (effectRule.effect.type === 'setPower' && effectRule.effect.value === 0) {
+            effectType = 'POWER_NULLIFICATION';
+            console.log(`🔄 Converting setPower(0) to POWER_NULLIFICATION for leader effect ${effectRule.id}`);
+        }
+        
         return {
-            effectId: `${leaderId}_${effectRule.type}`,
+            effectId: `${leaderId}_${effectRule.id || effectType}`,
             source: leaderId,
             sourcePlayerId: playerId,
-            type: effectRule.type,
-            target: effectRule.target,
-            value: effectRule.value,
+            type: effectType,
+            target: {
+                scope: effectRule.target.owner === 'self' ? 'SELF' : 'OPPONENT',
+                zones: effectRule.target.zones || ["top", "left", "right"],
+                gameTypes: gameTypes.length > 0 ? gameTypes : undefined,
+                traits: traits.length > 0 ? traits : undefined
+            },
+            value: effectRule.effect.value,
             priority: effectRule.priority || 0,
             unremovable: effectRule.unremovable || false
         };
@@ -1757,77 +1824,6 @@ class EffectSimulator {
         return gameEnv.players[playerId]?.fieldEffects?.victoryPointModifiers || 0;
     }
 
-    /**
-     * Convert old leader effect format to new unified format
-     * @param {Array} oldEffectRules - Old effects.rules array
-     * @returns {Array} New fieldEffects array
-     */
-    convertOldLeaderEffectsToNew(oldEffectRules) {
-        const newEffects = [];
-        
-        for (const rule of oldEffectRules) {
-            if (rule.type === 'continuous' && rule.effect && rule.target) {
-                // Convert old filter format to new target format
-                let gameTypes = [];
-                if (rule.target.filters) {
-                    for (const filter of rule.target.filters) {
-                        if (filter.type === 'gameType' && filter.value) {
-                            gameTypes.push(filter.value);
-                        } else if (filter.type === 'gameTypeOr' && filter.values) {
-                            gameTypes = gameTypes.concat(filter.values);
-                        }
-                    }
-                }
-                
-                // Convert to new unified format
-                const newEffect = {
-                    type: rule.effect.type,  // powerBoost, etc.
-                    target: {
-                        scope: rule.target.owner === 'self' ? 'SELF' : 'OPPONENT',
-                        zones: rule.target.zones || ["ALL"],
-                        gameTypes: gameTypes.length > 0 ? gameTypes : undefined
-                    },
-                    value: rule.effect.value,
-                    priority: rule.priority || 0,
-                    unremovable: rule.unremovable || false
-                };
-                
-                newEffects.push(newEffect);
-                console.log(`🔄 Converted old effect: ${rule.effect.type} +${rule.effect.value} for types: ${gameTypes.join(', ')}`);
-            } else if (rule.type === 'restriction' && rule.effect && rule.target) {
-                // Handle restriction effects (preventSummon, etc.)
-                console.log(`🚫 Converting restriction effect: ${rule.id}`);
-                
-                // Extract gameTypes from filters
-                let gameTypes = [];
-                if (rule.target.filters) {
-                    for (const filter of rule.target.filters) {
-                        if (filter.type === 'gameType' && filter.value) {
-                            gameTypes.push(filter.value);
-                        } else if (filter.type === 'gameTypeOr' && filter.values) {
-                            gameTypes = gameTypes.concat(filter.values);
-                        }
-                    }
-                }
-                
-                // Pass through restriction rule as-is for applyRestrictionEffectUnified
-                const restrictionEffect = {
-                    type: rule.type,  // 'restriction'
-                    effect: rule.effect,  // { type: 'preventSummon', value: true }
-                    target: rule.target,
-                    trigger: rule.trigger,
-                    id: rule.id,
-                    priority: rule.priority || 0,
-                    unremovable: rule.unremovable || false
-                };
-                
-                newEffects.push(restrictionEffect);
-                console.log(`🔄 Converted restriction effect: ${rule.id} for types: ${gameTypes.join(', ')}`);
-            }
-        }
-        
-        return newEffects;
-    }
 }
 
 module.exports = new EffectSimulator();
