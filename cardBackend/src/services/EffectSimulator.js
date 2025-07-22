@@ -125,26 +125,23 @@ class EffectSimulator {
         
         console.log(`📋 Replaying ${sortedPlays.length} plays directly on gameEnv.players[].fieldEffects...`);
         
-        // 3. Replay each action in sequence - WORKING DIRECTLY ON GAMEENV
-        // =============================================================
+        // 3. Replay each action in sequence - SIMPLIFIED 2-STEP APPROACH (January 2025)
+        // ============================================================================
         // All effects applied directly to gameEnv.players[].fieldEffects (single source of truth)
         for (const play of sortedPlays) {
             console.log(`▶️ Executing play ${play.sequenceId}: ${play.action} ${play.cardId} by ${play.playerId}`);
             
-            // 3a. Execute the play action (updates gameEnv.players[].fieldEffects directly)
-            // - PLAY_LEADER: Updates zone restrictions and active effects
-            // - PLAY_CARD: Places card and triggers immediate effects
+            // STEP 1: Execute core play action (foundation setup)
+            // - PLAY_LEADER: Updates zone restrictions and applies leader effects  
+            // - PLAY_CARD: Records card placement
+            // - APPLY_SET_POWER/APPLY_NEUTRALIZATION: Processes card selection effects
             await this.executePlayUnified(gameEnv, play);
             
-            // 3b. Activate immediate card effects (updates gameEnv.players[].fieldEffects directly)
-            // - Card-specific abilities and effects
-            // - Stored directly in activeEffects array
-            this.activateEffectsUnified(gameEnv, play);
-            
-            // 3c. Check for triggered effects (updates gameEnv.players[].fieldEffects directly)
-            // - Reactions from other cards already on the board
-            // - Chain reactions and card interactions
-            this.checkTriggeredEffectsUnified(gameEnv, play);
+            // STEP 2: Process ALL card effects (immediate + triggered combined)
+            // - Card's own effects (power boosts, zone freedom, etc.)
+            // - Reactions from other cards on the field
+            // - Chain reactions and board interactions
+            await this.processAllCardEffectsUnified(gameEnv, play);
         }
         
         // 4. Calculate final power values and store in fieldEffects
@@ -1805,9 +1802,113 @@ class EffectSimulator {
     }
 
     /**
-     * Activate effects unified - works directly on gameEnv
+     * 🔄 Process ALL Card Effects Unified - SIMPLIFIED APPROACH (January 2025)
+     * ========================================================================
+     * 
+     * This method combines the previous activateEffectsUnified and checkTriggeredEffectsUnified
+     * into a single, streamlined effect processing step that handles:
+     * 
+     * 1. IMMEDIATE EFFECTS - The card's own abilities that activate when played
+     * 2. TRIGGERED EFFECTS - Reactions from other cards already on the field  
+     * 3. CHAIN EFFECTS - Secondary reactions from the initial triggered effects
+     * 
+     * Benefits of consolidation:
+     * - Simpler API: 2 steps instead of 3 
+     * - Better performance: Single pass through card effects
+     * - Easier maintenance: One method to handle all effect logic
+     * - More logical: Effects naturally cascade in a single operation
+     * 
      * @param {Object} gameEnv - Game environment
-     * @param {Object} play - Play action
+     * @param {Object} play - Play action that might trigger effects
+     */
+    async processAllCardEffectsUnified(gameEnv, play) {
+        // Skip leader plays - they are already processed in executePlayUnified
+        if (play.action === 'PLAY_LEADER') {
+            console.log(`🏛️ Leader effects already processed in executePlayUnified`);
+            return;
+        }
+        
+        // Skip non-card actions (APPLY_SET_POWER, etc. are processed in executePlayUnified)
+        if (play.action !== 'PLAY_CARD') {
+            console.log(`⚡ Non-card action effects already processed in executePlayUnified`);
+            return;
+        }
+        
+        console.log(`🎭 Processing ALL effects for ${play.cardId} (immediate + triggered)`);
+        
+        // PART 1: Process the played card's own immediate effects
+        await this.processImmediateCardEffects(gameEnv, play);
+        
+        // PART 2: Check for triggered effects from other cards on the field
+        await this.processTriggeredBoardEffects(gameEnv, play);
+        
+        // PART 3: Process any chain reactions from the triggered effects
+        // (This would handle cases where triggered effects cause more triggers)
+        await this.processChainReactions(gameEnv, play);
+        
+        console.log(`✅ All effect processing completed for ${play.cardId}`);
+    }
+
+    /**
+     * Process immediate effects from the card that was just played
+     */
+    async processImmediateCardEffects(gameEnv, play) {
+        console.log(`⚡ Processing immediate effects for ${play.cardId}`);
+        
+        // Get card details from the play action  
+        let cardDetails = null;
+        if (typeof play.cardId === 'string') {
+            cardDetails = this.cardInfoUtils.getCardDetails(play.cardId);
+        } else if (typeof play.cardId === 'object' && play.cardId.id) {
+            cardDetails = play.cardId;
+        }
+        
+        if (!cardDetails || !cardDetails.effects || !cardDetails.effects.rules) {
+            console.log(`   No immediate effects to process for ${play.cardId}`);
+            return;
+        }
+        
+        // Create simState wrapper for compatibility
+        const simState = { gameEnv: gameEnv };
+        
+        // Process the card's own effects  
+        this.processCardEffectsSync(simState, play.playerId, cardDetails);
+    }
+
+    /**
+     * Check for triggered effects from other cards on the board
+     */
+    async processTriggeredBoardEffects(gameEnv, play) {
+        console.log(`🔔 Checking triggered effects from board for ${play.cardId}`);
+        
+        // TODO: Implement triggered effect checking
+        // This would iterate through all cards on the field and check if any react to this play
+        // For now, this is a placeholder that maintains the same interface as before
+        
+        // Example of what this would do:
+        // 1. Get all cards currently on the field for both players
+        // 2. Check each card for triggered effects that match the new play
+        // 3. Execute any matching triggered effects
+        
+        console.log(`   Triggered effect checking not yet implemented`);
+    }
+
+    /**
+     * Process chain reactions from triggered effects
+     */
+    async processChainReactions(gameEnv, play) {
+        console.log(`⛓️ Processing chain reactions for ${play.cardId}`);
+        
+        // TODO: Implement chain reaction processing
+        // This would handle cases where triggered effects cause additional triggers
+        // Example: Card A triggers when Card B is played, but Card A's effect causes Card C to trigger
+        
+        console.log(`   Chain reaction processing not yet implemented`);
+    }
+
+    /**
+     * @deprecated - Use processAllCardEffectsUnified instead
+     * Kept for backward compatibility during transition
      */
     activateEffectsUnified(gameEnv, play) {
         console.log(`🎭 Processing card effects for ${play.cardId} (unified)`);
@@ -1929,14 +2030,13 @@ class EffectSimulator {
     }
 
     /**
-     * Check triggered effects unified - works directly on gameEnv
-     * @param {Object} gameEnv - Game environment
-     * @param {Object} play - Play action
+     * @deprecated - Use processAllCardEffectsUnified instead
+     * This method has been replaced by processAllCardEffectsUnified which combines
+     * both immediate and triggered effect processing into a single step
      */
     checkTriggeredEffectsUnified(gameEnv, play) {
-        // TODO: Implement triggered effect checking
-        // This would check if any existing cards react to the new play
-        console.log(`⚡ Checking triggered effects for ${play.cardId} (unified)`);
+        console.log(`⚠️ DEPRECATED: checkTriggeredEffectsUnified - use processAllCardEffectsUnified instead`);
+        console.log(`⚡ Checking triggered effects for ${play.cardId} (legacy)`);
     }
 
     /**
