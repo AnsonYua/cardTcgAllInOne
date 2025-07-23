@@ -2576,111 +2576,13 @@ class mozGamePlay {
     /**
      * 🎯 COMPLETE CARD SELECTION - Universal Card Selection Handler 
      * ===========================================================
-     * 
-     * This function is THE UNIVERSAL HANDLER for all card selection workflows in the game.
-     * It processes player selections from deck searches, power targeting, and neutralization effects.
-     * 
-     * 🔄 SELECTION TYPES HANDLED:
-     * 
-     * 1. **DECK SEARCH EFFECTS** (e.g., c-9, c-10, c-12):
-     *    - Player searches deck for specific card types
-     *    - Selects cards to add to hand, SP zone, or Help zone
-     *    - Remaining searched cards go to bottom of deck
-     * 
-     * 2. **POWER TARGETING EFFECTS** (e.g., h-2 "Make America Great Again"):
-     *    - Player selects opponent's cards to modify power
-     *    - Calls applySetPowerSelection() for effect application
-     *    - Integrates with replay system for consistency
-     * 
-     * 3. **NEUTRALIZATION EFFECTS** (e.g., h-1 neutralization):
-     *    - Player selects cards to neutralize/disable
-     *    - Calls applyNeutralizationSelection() for effect application
-     * 
-     * 📋 STEP-BY-STEP WORKFLOW:
-     * 
-     * STEP 1: Validate Selection Exists
-     * - Check if selectionId exists in pendingCardSelections
-     * - Extract selection details (playerId, eligibleCards, effect, etc.)
-     * - Ensure selection hasn't expired or been completed
-     * 
-     * STEP 2: Validate Selection Count and Cards
-     * - Check selectedCardIds.length matches required selectCount
-     * - Validate each selected card is in the eligibleCards list
-     * - Handle different card formats (string IDs vs objects)
-     * 
-     * STEP 3: Route to Appropriate Handler
-     * - 'setPower' → applySetPowerSelection() (h-2 effects)
-     * - 'neutralizeEffect' → applyNeutralizationSelection() (h-1 effects)  
-     * - Default → Deck search processing (c-9, c-10, c-12 cards)
-     * 
-     * STEP 4: Process Deck Search Effects (Default Path)
-     * - Remove selected cards from player's deck
-     * - Route cards to destination based on effect.destination:
-     *   * 'spZone' → Create card objects and place in SP zone (face-down)
-     *   * 'helpZone' → Create card objects and place in Help zone (face-up)
-     *   * 'conditionalHelpZone' → Place in Help zone if empty, otherwise hand
-     *   * Default → Add to player's hand
-     * 
-     * STEP 5: Handle Zone Placement Effects
-     * - For Help zone placement: Process card onPlay effects immediately
-     * - For SP zone placement: Cards placed face-down (no immediate effects)
-     * - For hand placement: Cards available for later play
-     * 
-     * STEP 6: Cleanup Operations
-     * - Put remaining searched cards to bottom of deck
-     * - Remove completed selection from pendingCardSelections
-     * - Clear pendingPlayerAction to unblock game flow
-     * - Allow game to continue to next phase/player
-     * 
-     * 🎮 EXAMPLE WORKFLOWS:
-     * 
-     * **c-9 (Elijah) Card Search:**
-     * 1. Player plays c-9 → searches 4 cards → creates selection
-     * 2. Player selects 1 card → this function routes to deck search
-     * 3. Selected card added to hand, remaining 3 cards to bottom of deck
-     * 
-     * **h-2 (Make America Great Again) Power Targeting:**
-     * 1. Player plays h-2 → finds opponent cards → creates selection  
-     * 2. Player selects c-1 → this function routes to applySetPowerSelection()
-     * 3. c-1's power set to 0, selection recorded in play sequence
-     * 
-     * **c-12 (Luke Farritor) Conditional Placement:**
-     * 1. Player plays c-12 → searches for Help cards → creates selection
-     * 2. Player selects h-5 → this function checks Help zone status
-     * 3. If Help zone empty: h-5 placed in Help zone, effects activate
-     *    If Help zone full: h-5 added to hand for later use
-     * 
-     * 🔗 INTEGRATION POINTS:
-     * - Called by GameLogic.selectCard() when frontend sends selection
-     * - Routes to specialized functions for power/neutralization effects  
-     * - Integrates with processUtilityCardEffects() for Help card effects
-     * - Works with deck management functions for card movement
-     * 
-     * 📊 DATA FLOW:
-     * Frontend selection → GameController.selectCard → GameLogic.selectCard → 
-     * this function → route to effect handler → update game state → cleanup
-     * 
      * @param {Object} gameEnv - Current game environment (modified in-place)
      * @param {string} selectionId - Unique selection ID (e.g., "playerId_1_search_123")
      * @param {Array} selectedCardIds - Array of selected card IDs (e.g., ["c-1", "h-5"])
      * @returns {Object} Updated game environment or error object
      */
     async completeCardSelection(gameEnv, selectionId, selectedCardIds) {
-        // =====================================================================================
-        // 🔍 STEP 1: VALIDATE SELECTION EXISTS AND EXTRACT DETAILS
-        // =====================================================================================
-        //
-        // This checks that the selection is still valid and hasn't expired or been completed.
-        // pendingCardSelections structure:
-        // {
-        //   "playerId_1_search_123": {
-        //     playerId: "playerId_1",
-        //     eligibleCards: ["c-1", "h-5"],
-        //     selectCount: 1,
-        //     effect: { destination: "hand" },
-        //     effectType: "search" | "setPower" | "neutralizeEffect"
-        //   }
-        // }
+        
         if (!gameEnv.pendingCardSelections || !gameEnv.pendingCardSelections[selectionId]) {
             return this.throwError("Invalid or expired card selection");
         }
