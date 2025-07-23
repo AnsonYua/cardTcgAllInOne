@@ -504,7 +504,7 @@
       "name": "美債危機",
       "cardType": "help",
       "effects": {
-        "description": "對方的SP卡無效，在SP回合對方亦要打出 SP卡",
+        "description": "對方的SP卡無效，在SP回合對方必須打出一張SP卡或任意卡牌背面放置。如是SP卡，則無效果。",
         "rules": [
           {
             "id": "debt_crisis_sp_neutralize",

@@ -69,7 +69,7 @@ The game uses a sophisticated effect system with three main categories of cards:
 #### Neutralization Effects
 - **h-1 (Deep State)**: Select and neutralize opponent's help/SP card
 - **h-10 (加洲大火)**: Neutralize all opponent help cards
-- **h-12 (美債危機)**: Neutralize all opponent SP cards + force SP play
+- **h-12 (美債危機)**: Neutralize all opponent SP cards + force SP phase card play (SP card or face-down)
 
 #### Power Modification Effects
 - **h-2 (Make America Great Again)**: Set selected opponent character power to 0
@@ -158,6 +158,28 @@ effect: {
   value: true
 }
 ```
+
+##### h-12 (美債危機) - Complex SP Phase Enforcement
+```javascript
+// Dual effect: Neutralize + Force Play
+{
+  type: "neutralizeEffect",  // Neutralize all opponent SP cards
+  target: { owner: "opponent", zones: ["sp"] }
+},
+{
+  type: "forceSPPlay",       // Force SP phase card placement
+  trigger: { event: "spPhase" },
+  target: { owner: "opponent" }
+}
+```
+
+**Game Mechanics Explanation:**
+- **Phase Rule**: Players can only play SP cards during SP phase
+- **Force Play**: During SP phase, opponent MUST place a card in SP zone
+- **Options Available**: 
+  - Play SP card face-up (but neutralized → no effect)
+  - Play any card face-down (no effect regardless)
+- **Strategic Impact**: Forces resource waste while denying SP benefits
 
 #### Special Effects
 ```javascript
@@ -254,7 +276,7 @@ case 'silenceOnSummon':     // ❌ MISSING - 1 instance (h-4)
 case 'zonePlacementFreedom': // ❌ MISSING - 1 instance (h-5)
 case 'randomDiscard':       // ❌ MISSING - 1 instance (h-6)  
 case 'preventPlay':         // ❌ MISSING - 1 instance (h-7)
-case 'forceSPPlay':         // ❌ MISSING - 1 instance (h-12)
+case 'forceSPPlay':         // ❌ MISSING - 1 instance (h-12) - Forces SP phase card play
 case 'totalPowerNerf':      // ❌ MISSING - 1 instance (sp-6)
 case 'disableComboBonus':   // ❌ MISSING - 2 instances (sp-8, sp-9)
 ```
@@ -311,7 +333,73 @@ switch (effect.type) {
     case 'searchCard':
         this.applySearchCard(effect, simState, sourcePlayerId, targetPlayerId);
         break;
-    // ... 8 more missing cases
+    case 'forceSPPlay':
+        this.applyForceSPPlay(effect, simState, sourcePlayerId, targetPlayerId);
+        break;
+    // ... 7 more missing cases
+}
+
+// Example forceSPPlay handler implementation:
+applyForceSPPlay(effect, simState, sourcePlayerId, targetPlayerId) {
+    // Store phase restriction in fieldEffects for SP_PHASE validation
+    const targetPlayerFieldEffects = simState.gameEnv.players[targetPlayerId].fieldEffects;
+    
+    // Add SP phase enforcement effect
+    if (!targetPlayerFieldEffects.spPhaseRestrictions) {
+        targetPlayerFieldEffects.spPhaseRestrictions = [];
+    }
+    
+    targetPlayerFieldEffects.spPhaseRestrictions.push({
+        type: 'forceSPPlay',
+        sourceCard: effect.source,
+        mustPlayCard: true // During SP phase, must place card in SP zone
+    });
+    
+    console.log(`🎯 Applied forceSPPlay to ${targetPlayerId} - must play card during SP phase`);
+}
+```
+
+### Integration with Game Flow (mozGamePlay.js)
+
+**SP Phase Validation Logic** for forceSPPlay effect:
+```javascript
+// In mozGamePlay.js SP_PHASE processing
+processSPPhase(gameEnv, playerId) {
+    const playerFieldEffects = gameEnv.players[playerId].fieldEffects;
+    
+    // Check for forceSPPlay restrictions
+    const hasForceSPPlay = playerFieldEffects.spPhaseRestrictions?.some(
+        restriction => restriction.type === 'forceSPPlay'
+    );
+    
+    if (hasForceSPPlay) {
+        // Player MUST place a card in SP zone during SP phase
+        if (gameEnv.zones[playerId].sp.length === 0) {
+            // Force player to make choice: SP card or face-down
+            return {
+                requiresAction: true,
+                actionType: 'FORCED_SP_PLAY',
+                options: [
+                    'PlaySPCard',      // Play SP card (will be neutralized)
+                    'PlayCardFaceDown' // Play any card face-down (no effect)
+                ]
+            };
+        }
+    }
+    
+    // Normal SP phase processing...
+}
+```
+
+**Action Validation** in processAction():
+```javascript
+// Validate SP phase actions with forceSPPlay
+if (gameEnv.phase === 'SP_PHASE' && hasForceSPPlay) {
+    if (action.type === 'Pass') {
+        // Cannot pass if forceSPPlay is active
+        return this.createErrorResponse('FORCE_SP_PLAY_ACTIVE', 
+            'Must play card during SP phase due to 美債危機 effect');
+    }
 }
 ```
 
