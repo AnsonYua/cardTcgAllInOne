@@ -439,7 +439,7 @@
       "traits": ["富商"],
       "rarity": "epic",
       "effects": {
-        "description": "我方場上一張擁有富商的角色卡 原能力值加 +50",
+        "description": "玩家指定我方場上其中一張有富商特徵角色卡，原能力值加 +50",
         "rules": [
           {
             "id": "buffett_single_boost",
@@ -476,7 +476,7 @@
       "traits": ["Deep State"],
       "rarity": "epic",
       "effects": {
-        "description": "我方一張角色卡原能力值+50",
+        "description": "玩家指定我方場上其中一張角色卡，原能力值+50",
         "rules": [
           {
             "id": "obama_single_boost",

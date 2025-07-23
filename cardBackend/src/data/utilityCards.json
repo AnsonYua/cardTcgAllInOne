@@ -607,7 +607,7 @@
       "name": "聯邦大法官",
       "cardType": "help",
       "effects": {
-        "description": "選出對方場上一張擁有特朗普家族特徵的角色卡，原能力值  -60",
+        "description": "玩家指定對方場上其中一張有特朗普家族特徵角色卡，原能力值-60",
         "rules": [
           {
             "id": "federal_judge_trump_nerf",

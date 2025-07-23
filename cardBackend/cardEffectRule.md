@@ -309,32 +309,40 @@ target: {
 - Record target selection for effect application
 - Apply effect to selected target(s)
 
-### 3. Automatic Target Selection (`targetCount` - No Player Choice)
+### 3. Single Target Selection (`targetCount` - Player Chooses One)
 
-**Mechanism**: System automatically selects first valid target(s)
+**Mechanism**: Player selects exactly one target from valid options
 ```javascript
 target: {
-  targetCount: 1,  // Automatic selection of first match
+  targetCount: 1,  // Player must select exactly 1 target
   filters: [...],  // Must match criteria
-  // No requiresSelection field
+  // No requiresSelection field needed - targetCount implies selection
 }
 ```
 
-**Cards Using Automatic Target Selection**:
-- **h-14 (聯邦法官)**: Auto-targets first opponent 特朗普家族 character (-60 power)
-- **c-20 (巴飛特)**: Auto-targets first ally 富商 character (+50 power)  
-- **c-21 (奧巴馬)**: Auto-targets first ally character (+50 power)
+**Cards Using Single Target Selection**:
+- **h-14 (聯邦法官)**: Player selects one opponent 特朗普家族 character (-60 power)
+- **c-20 (巴飛特)**: Player selects one ally 富商 character (+50 power)  
+- **c-21 (奧巴馬)**: Player selects one ally character (+50 power)
 
-**Backend Implementation**: No UI required - effect applies to first matching target automatically.
+**Important Gameplay Rule**:
+- **Target Requirement**: Valid targets matching the filter criteria MUST exist on the field
+- **No Effect Without Targets**: If no valid targets are found, the effect does nothing
+- **Player Selection Required**: Player must choose which specific target to affect
+- **Selection Limit**: Player can only select ONE target (enforced by targetCount: 1)
+
+**Backend Implementation**: 
+1. Scan battlefield for cards matching filter criteria
+2. If valid targets found → generate selection UI with valid options
+3. Player selects exactly one target → apply effect to selected target
+4. If no valid targets found → effect does nothing (no error)
 
 ### Selection Effect Implementation Priority
 
 **High Priority - Core Gameplay**:
 1. **Deck Search Selection** - Required for 4 cards, breaks deck manipulation mechanics
-2. **Field Target Selection** - Required for 2 cards, breaks targeted removal mechanics
-
-**Medium Priority - Automatic Enhancement**:
-3. **Automatic Target Selection** - Required for 3 cards, affects single-target power boosts
+2. **Field Target Selection** - Required for 2 cards, breaks targeted removal mechanics  
+3. **Single Target Selection** - Required for 3 cards, affects single-target power boosts and removal
 
 ### Selection Workflow Integration
 
