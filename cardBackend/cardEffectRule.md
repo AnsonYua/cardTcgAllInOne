@@ -60,7 +60,7 @@ The game uses a sophisticated effect system with three main categories of cards:
 #### Search Card Effects
 - **c-9 (艾利茲)**: Search top 4 cards, select 1 to hand
 - **c-10 (爱德华)**: Search top 7 cards, select 1 SP card to SP zone
-- **c-12 (盧克)**: Search top 7 cards, select 1 Help card to Help zone (conditional)
+- **c-12 (盧克)**: Search top 7 cards, select 1 Help card to Help zone
 
 ## Utility Card Effects
 
@@ -138,7 +138,7 @@ effect: {
   type: "searchCard",
   searchCount: [number],
   selectCount: [number],
-  destination: "hand|spZone|helpZone|conditionalHelpZone",
+  destination: "hand|spZone|helpZone",
   filters: [...] // Card type/trait filters
 }
 ```
@@ -263,7 +263,7 @@ effect: {
   type: "searchCard",
   searchCount: [number],  // Cards revealed from deck
   selectCount: [number],  // Cards player must choose  
-  destination: "hand|spZone|helpZone|conditionalHelpZone",
+  destination: "hand|spZone|helpZone",
   filters: [...]  // Card type/trait restrictions
 }
 ```
@@ -271,8 +271,14 @@ effect: {
 **Cards Requiring Deck Search Selection**:
 - **c-9 (艾利茲)**: Search 4 cards → select 1 to hand
 - **c-10 (爱德华)**: Search 7 cards → select 1 SP card to SP zone
-- **c-12 (盧克)**: Search 7 cards → select 1 Help card to conditional Help zone
+- **c-12 (盧克)**: Search 7 cards → select 1 Help card to Help zone
 - **h-11 (海湖莊園)**: Search 5 cards → select 1 character to hand
+
+**Zone Placement Consistency**:
+Both SP zone and Help zone follow identical placement logic - they can only hold one card each:
+- **c-10 (Edward)**: SP card → SP zone (if empty) or hand (if occupied)
+- **c-12 (Luke)**: Help card → Help zone (if empty) or hand (if occupied)
+- The mechanism is consistent across both zone types, simplifying implementation
 
 **Backend Implementation Required**:
 - Generate `CARD_SELECTION_REQUIRED` event with card options
