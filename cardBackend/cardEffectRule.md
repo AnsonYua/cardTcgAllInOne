@@ -251,6 +251,100 @@ effect: {
 - `spPhase`: During SP phase
 - `finalCalculation`: During final power calculation
 
+## Player Selection Effects System
+
+Many card effects require player interaction to choose targets or select cards. The backend implements three distinct selection mechanisms:
+
+### 1. Deck Search Selection (`searchCard` + `selectCount`)
+
+**Mechanism**: Player searches deck, selects specific cards for placement
+```javascript
+effect: {
+  type: "searchCard",
+  searchCount: [number],  // Cards revealed from deck
+  selectCount: [number],  // Cards player must choose  
+  destination: "hand|spZone|helpZone|conditionalHelpZone",
+  filters: [...]  // Card type/trait restrictions
+}
+```
+
+**Cards Requiring Deck Search Selection**:
+- **c-9 (艾利茲)**: Search 4 cards → select 1 to hand
+- **c-10 (爱德华)**: Search 7 cards → select 1 SP card to SP zone
+- **c-12 (盧克)**: Search 7 cards → select 1 Help card to conditional Help zone
+- **h-11 (海湖莊園)**: Search 5 cards → select 1 character to hand
+
+**Backend Implementation Required**:
+- Generate `CARD_SELECTION_REQUIRED` event with card options
+- Store selection data in `gameEnv.pendingCardSelections`
+- Process selection via `POST /player/selectCards` endpoint
+- Apply destination logic and update game state
+
+### 2. Field Target Selection (`requiresSelection` + `selectCount`)
+
+**Mechanism**: Player chooses target cards from battlefield zones
+```javascript
+target: {
+  owner: "opponent|self",
+  zones: ["top", "left", "right", "help", "sp"],
+  requiresSelection: true,
+  selectCount: [number],  // Number of targets to choose
+  filters: [...]  // Optional: restrict target types
+}
+```
+
+**Cards Requiring Field Target Selection**:
+- **h-1 (Deep State)**: Select 1 opponent help/SP card → neutralize effect
+- **h-2 (Make America Great Again)**: Select 1 opponent character → set power to 0
+
+**Backend Implementation Required**:
+- Scan specified zones for valid targets based on filters
+- Generate selection UI with valid target options
+- Record target selection for effect application
+- Apply effect to selected target(s)
+
+### 3. Automatic Target Selection (`targetCount` - No Player Choice)
+
+**Mechanism**: System automatically selects first valid target(s)
+```javascript
+target: {
+  targetCount: 1,  // Automatic selection of first match
+  filters: [...],  // Must match criteria
+  // No requiresSelection field
+}
+```
+
+**Cards Using Automatic Target Selection**:
+- **h-14 (聯邦法官)**: Auto-targets first opponent 特朗普家族 character (-60 power)
+- **c-20 (巴飛特)**: Auto-targets first ally 富商 character (+50 power)  
+- **c-21 (奧巴馬)**: Auto-targets first ally character (+50 power)
+
+**Backend Implementation**: No UI required - effect applies to first matching target automatically.
+
+### Selection Effect Implementation Priority
+
+**High Priority - Core Gameplay**:
+1. **Deck Search Selection** - Required for 4 cards, breaks deck manipulation mechanics
+2. **Field Target Selection** - Required for 2 cards, breaks targeted removal mechanics
+
+**Medium Priority - Automatic Enhancement**:
+3. **Automatic Target Selection** - Required for 3 cards, affects single-target power boosts
+
+### Selection Workflow Integration
+
+**Game Flow**:
+1. Card played → Effect triggered
+2. **Selection Required**: Generate `CARD_SELECTION_REQUIRED` event
+3. **Game Blocks**: Phase cannot advance until selection completed
+4. **Player Selects**: Via UI interaction with valid options
+5. **Selection Processed**: Backend applies effect to chosen targets
+6. **Game Continues**: Normal phase progression resumes
+
+**API Endpoints Required**:
+- `POST /player/selectCards` - Process card selections
+- `GET /player/selectionOptions` - Get available selection targets
+- Event types: `CARD_SELECTION_REQUIRED`, `CARD_SELECTION_COMPLETED`
+
 ## Backend Implementation Status & Requirements Analysis
 
 ### Current Implementation Status (From Code Analysis)
@@ -279,6 +373,11 @@ case 'preventPlay':         // ❌ MISSING - 1 instance (h-7)
 case 'forceSPPlay':         // ❌ MISSING - 1 instance (h-12) - Forces SP phase card play
 case 'totalPowerNerf':      // ❌ MISSING - 1 instance (sp-6)
 case 'disableComboBonus':   // ❌ MISSING - 2 instances (sp-8, sp-9)
+
+// ❌ MISSING: Player Selection System
+// - Deck search selection (4 cards): c-9, c-10, c-12, h-11  
+// - Field target selection (2 cards): h-1, h-2
+// - Requires: CARD_SELECTION_REQUIRED events, pendingCardSelections, POST /player/selectCards
 ```
 
 ### Quantitative Analysis
@@ -297,23 +396,24 @@ case 'disableComboBonus':   // ❌ MISSING - 2 instances (sp-8, sp-9)
 
 ### Backend Implementation Requirements
 
-The backend **MUST implement 10 missing effect handlers** to achieve functional gameplay:
+The backend **MUST implement 11 missing effect handlers** to achieve functional gameplay:
 
 #### **Priority 1 - Core Gameplay (Breaks Game Without These)**
 1. **`drawCards`** - Required for 4 cards, core resource mechanic
 2. **`searchCard`** - Required for 4 cards, deck manipulation mechanic  
 3. **`neutralizeEffect`** - Required for 4 cards, counter-play mechanic
+4. **Player Selection System** - Required for 6 cards, interactive target/card selection
 
 #### **Priority 2 - Advanced Mechanics (Reduces Strategy Without These)**
-4. **`silenceOnSummon`** - Effect prevention system
-5. **`zonePlacementFreedom`** - Special placement rules
-6. **`preventPlay`** - Card type restrictions
-7. **`totalPowerNerf`** - Final calculation modifiers
+5. **`silenceOnSummon`** - Effect prevention system
+6. **`zonePlacementFreedom`** - Special placement rules
+7. **`preventPlay`** - Card type restrictions
+8. **`totalPowerNerf`** - Final calculation modifiers
 
 #### **Priority 3 - Edge Cases (Nice to Have)**
-8. **`randomDiscard`** - Hand manipulation
-9. **`forceSPPlay`** - Phase enforcement  
-10. **`disableComboBonus`** - Combo prevention
+9. **`randomDiscard`** - Hand manipulation
+10. **`forceSPPlay`** - Phase enforcement  
+11. **`disableComboBonus`** - Combo prevention
 
 ### Implementation Location
 
