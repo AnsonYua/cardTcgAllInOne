@@ -655,37 +655,94 @@ class GameLogic {
         }
     }
 
+    /**
+     * 🎯 PHASE 1: Updated selectCard method using new CardSelectionHandler
+     * 
+     * This method now delegates to the CardSelectionHandler through processAction
+     * for consistent switch-case routing and better maintainability
+     */
     async selectCard(req) {
+        console.log(`🎯 GameLogic: Processing selectCard request with new CardSelectionHandler`);
+        
         const { selectionId, selectedCardIds, playerId, gameId } = req.body;
         
-        if (!selectionId || !selectedCardIds || !playerId) {
-            throw new Error('Missing required parameters: selectionId, selectedCardIds, playerId');
+        // ===== STEP 1: VALIDATE REQUIRED PARAMETERS =====
+        if (!selectionId || !selectedCardIds || !playerId || !gameId) {
+            console.log(`❌ Missing required parameters`);
+            throw new Error('Missing required parameters: selectionId, selectedCardIds, playerId, gameId');
         }
 
+        console.log(`📋 Request details:`, {
+            selectionId,
+            selectedCardCount: selectedCardIds.length,
+            playerId,
+            gameId
+        });
+
+        // ===== STEP 2: LOAD GAME DATA =====
         const gameData = await this.readJSONFileAsync(gameId);
         if (!gameData) {
+            console.log(`❌ Game not found: ${gameId}`);
             throw new Error('Game not found');
         }
 
-        // Complete the card selection in mozGamePlay
-        const updatedGameEnv = await this.mozGamePlay.completeCardSelection(
+        // ===== STEP 3: VALIDATE SELECTION EXISTS =====
+        if (!gameData.gameEnv.pendingCardSelections || 
+            !gameData.gameEnv.pendingCardSelections[selectionId]) {
+            console.log(`❌ Invalid or expired selection: ${selectionId}`);
+            throw new Error('Invalid or expired card selection');
+        }
+
+        const selection = gameData.gameEnv.pendingCardSelections[selectionId];
+        console.log(`📋 Selection details:`, {
+            selectionType: selection.selectionType,
+            selectCount: selection.selectCount,
+            effectType: selection.effectType,
+            playerId: selection.playerId
+        });
+
+        // ===== STEP 4: VALIDATE PLAYER AUTHORIZATION =====
+        if (selection.playerId !== playerId) {
+            console.log(`❌ Player ${playerId} not authorized for selection ${selectionId}`);
+            throw new Error('You are not authorized to complete this selection');
+        }
+
+        // ===== STEP 5: PROCESS THROUGH NEW CARD SELECTION HANDLER =====
+        console.log(`🎯 Delegating to CardSelectionHandler via processAction`);
+        
+        // Create SelectCard action for the new routing system
+        const selectCardAction = {
+            type: 'SelectCard',
+            selectionId: selectionId,
+            selectedCardIds: selectedCardIds
+        };
+
+        // Process through mozGamePlay's new routing system
+        const updatedGameEnv = await this.mozGamePlay.processAction(
             gameData.gameEnv, 
-            selectionId, 
-            selectedCardIds
+            playerId, 
+            selectCardAction
         );
 
+        // ===== STEP 6: HANDLE PROCESSING ERRORS =====
         if (updatedGameEnv.error) {
+            console.log(`❌ Selection processing failed: ${updatedGameEnv.error}`);
             throw new Error(updatedGameEnv.error);
         }
 
-        // Update the stored game state
+        // ===== STEP 7: SAVE UPDATED GAME STATE =====
+        console.log(`💾 Saving updated game state`);
         gameData.gameEnv = updatedGameEnv;
         const updatedGameData = this.addUpdateUUID(gameData);
         await this.saveOrCreateGame(updatedGameData, gameId);
 
+        // ===== STEP 8: RETURN SUCCESS RESPONSE =====
+        console.log(`✅ Card selection completed successfully via CardSelectionHandler`);
         return {
             success: true,
-            gameEnv: updatedGameData.gameEnv
+            gameEnv: updatedGameData.gameEnv,
+            selectionCompleted: true,
+            message: `Successfully processed ${selection.selectionType} selection via CardSelectionHandler`
         };
     }
 

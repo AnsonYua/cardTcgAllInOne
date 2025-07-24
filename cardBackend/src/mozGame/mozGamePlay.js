@@ -8,6 +8,25 @@ const CardInfoUtils = require('../services/CardInfoUtils');
 // UNIFIED EFFECT SYSTEM: Import for leader and card effect processing
 const playSequenceManager = require('../services/PlaySequenceManager');
 const effectSimulator = require('../services/EffectSimulator');
+
+// 🎯 PHASE 1: Card Selection Handler - Clean class implementation
+const CardSelectionHandler = require('../services/CardSelectionHandler');
+
+// 🎯 PHASE 2: Battle Calculator - Clean class implementation for power calculation
+const BattleCalculator = require('../services/BattleCalculator');
+
+// 🎯 PHASE 3: Turn Manager - Clean class implementation for turn and phase logic
+const TurnManager = require('../services/TurnManager');
+
+// 🎯 PHASE 4: Event Manager - Clean class implementation for real-time events
+const EventManager = require('../services/EventManager');
+
+// 🎯 PHASE 5: Card Action Handler - Clean class implementation for card placement logic
+const CardActionHandler = require('../services/CardActionHandler');
+
+// 🎯 PHASE 6: Game Flow Orchestrator - Master coordinator for all manager classes
+const GameFlowOrchestrator = require('../services/GameFlowOrchestrator');
+
 const { json } = require('express');
 const TurnPhase = {
     START_REDRAW: 'START_REDRAW',
@@ -33,6 +52,24 @@ class mozGamePlay {
         // NOTE: These are injected by GameLogic.js during initialization to ensure proper dependency setup
         this.playSequenceManager = null;
         this.effectSimulator = null;
+        
+        // 🎯 PHASE 1: Initialize Card Selection Handler
+        this.cardSelectionHandler = new CardSelectionHandler(this);
+        
+        // 🎯 PHASE 2: Initialize Battle Calculator
+        this.battleCalculator = new BattleCalculator(this);
+        
+        // 🎯 PHASE 3: Initialize Turn Manager
+        this.turnManager = new TurnManager(this);
+        
+        // 🎯 PHASE 4: Initialize Event Manager
+        this.eventManager = new EventManager();
+        
+        // 🎯 PHASE 5: Initialize Card Action Handler
+        this.cardActionHandler = new CardActionHandler(this);
+        
+        // 🎯 PHASE 6: Initialize Game Flow Orchestrator
+        this.gameFlowOrchestrator = new GameFlowOrchestrator(this);
     }
 
     /**
@@ -126,67 +163,80 @@ class mozGamePlay {
         return gameEnv.players[playerId];
     }
 
-    // Event Management System
+    // =======================================================================================
+    // 🎯 PHASE 4: Event Management - Clean delegation to EventManager
+    // =======================================================================================
+
     initializeEventSystem(gameEnv) {
-        if (!gameEnv.gameEvents) {
-            gameEnv.gameEvents = [];
-        }
-        if (!gameEnv.lastEventId) {
-            gameEnv.lastEventId = 0;
-        }
-        return gameEnv;
+        console.log('🎯 mozGamePlay: Delegating event system initialization to EventManager');
+        
+        // Delegate to EventManager for clean event system management
+        return this.eventManager.initializeEventSystem(gameEnv);
     }
 
     addGameEvent(gameEnv, eventType, eventData = {}) {
-        this.initializeEventSystem(gameEnv);
+        console.log(`🎯 mozGamePlay: Delegating event creation to EventManager: ${eventType}`);
         
-        const timestamp = Date.now();
-        const eventId = `event_${timestamp}_${gameEnv.lastEventId + 1}`;
-        
-        const event = {
-            id: eventId,
-            type: eventType,
-            data: eventData,
-            timestamp: timestamp,
-            expiresAt: timestamp + 3000, // 3 seconds
-            frontendProcessed: false
-        };
-        
-        gameEnv.gameEvents.push(event);
-        gameEnv.lastEventId = gameEnv.lastEventId + 1;
-        
-        // Clean expired events
-        this.cleanExpiredEvents(gameEnv);
-        
-        return event;
+        // Delegate to EventManager for comprehensive event management
+        return this.eventManager.addGameEvent(gameEnv, eventType, eventData);
     }
 
     cleanExpiredEvents(gameEnv) {
-        if (!gameEnv.gameEvents) return;
+        console.log('🎯 mozGamePlay: Delegating event cleanup to EventManager');
         
-        const now = Date.now();
-        gameEnv.gameEvents = gameEnv.gameEvents.filter(event => 
-            event.expiresAt > now || !event.frontendProcessed
-        );
+        // Delegate to EventManager for automatic cleanup
+        return this.eventManager.cleanExpiredEvents(gameEnv);
     }
 
     markEventProcessed(gameEnv, eventId) {
-        if (!gameEnv.gameEvents) return false;
+        console.log(`🎯 mozGamePlay: Delegating event processing to EventManager: ${eventId}`);
         
-        const event = gameEnv.gameEvents.find(e => e.id === eventId);
-        if (event) {
-            event.frontendProcessed = true;
-            return true;
-        }
-        return false;
+        // Delegate to EventManager for frontend acknowledgment
+        return this.eventManager.markEventProcessed(gameEnv, eventId);
     }
 
     addErrorEvent(gameEnv, errorType, errorMessage, playerId = null) {
-        return this.addGameEvent(gameEnv, 'ERROR_OCCURRED', {
-            errorType: errorType,
-            message: errorMessage,
-            playerId: playerId
-        });
+        console.log(`🎯 mozGamePlay: Delegating error event to EventManager: ${errorType}`);
+        
+        // Delegate to EventManager for standardized error handling
+        return this.eventManager.addErrorEvent(gameEnv, errorType, errorMessage, playerId);
+    }
+
+    // =======================================================================================
+    // 🎯 PHASE 6: Game Flow Orchestration - Master Coordination Methods
+    // =======================================================================================
+
+    /**
+     * Get comprehensive game analytics through GameFlowOrchestrator
+     * Demonstrates the power of orchestrated manager class coordination
+     */
+    getGameAnalytics(gameEnv) {
+        console.log('🎯 mozGamePlay: Delegating analytics generation to GameFlowOrchestrator');
+        
+        // Delegate to GameFlowOrchestrator for comprehensive analytics
+        return this.gameFlowOrchestrator.generateGameAnalytics(gameEnv);
+    }
+
+    /**
+     * Validate complete game state through orchestrated validation
+     * Uses all manager classes to ensure comprehensive validation
+     */
+    async validateCompleteGameState(gameEnv) {
+        console.log('🎯 mozGamePlay: Delegating comprehensive validation to GameFlowOrchestrator');
+        
+        // Delegate to GameFlowOrchestrator for multi-manager validation
+        return await this.gameFlowOrchestrator.validateGameStateConsistency(gameEnv);
+    }
+
+    /**
+     * Orchestrated action processing (optional enhanced path)
+     * Provides enhanced coordination for complex actions
+     */
+    async processActionWithOrchestration(gameEnv, playerId, action) {
+        console.log(`🎯 mozGamePlay: Using orchestrated action processing for ${action.type}`);
+        
+        // Delegate to GameFlowOrchestrator for enhanced coordination
+        return await this.gameFlowOrchestrator.orchestrateActionProcessing(gameEnv, playerId, action);
     }
 
     updateInitialGameEnvironment(gameEnv){
@@ -290,7 +340,35 @@ class mozGamePlay {
     async processAction(gameEnvInput, playerId, action) {
         var gameEnv = gameEnvInput;
         
-        // ===== SECTION 1: PENDING ACTION BLOCKING =====
+        // ===== SECTION 1: ACTION TYPE ROUTING WITH CLEAR SWITCH CASES =====
+        // 🎯 PHASE 1: Enhanced action routing using new CardSelectionHandler
+        console.log(`🎮 mozGamePlay: Processing action: ${action.type} for player: ${playerId}`);
+        
+        switch (action.type) {
+            case 'SelectCard':
+                console.log(`🎯 Processing SelectCard action through CardSelectionHandler`);
+                // Delegate to CardSelectionHandler for clean switch-case routing
+                return await this.cardSelectionHandler.handleSelectCardAction(gameEnv, playerId, action);
+
+            case 'PlayCard':
+            case 'PlayCardBack':
+                console.log(`🎯 Processing ${action.type} action through CardActionHandler`);
+                // Delegate to CardActionHandler for clean card placement logic
+                return await this.cardActionHandler.handleCardPlayAction(gameEnv, playerId, action);
+
+            case 'Pass':
+                console.log(`⏭️ Processing Pass action`);
+                // TODO: Implement pass action handling in future phases
+                this.addErrorEvent(gameEnv, 'UNSUPPORTED_ACTION', 'Pass action not yet implemented', playerId);
+                return this.throwError('Pass action not yet implemented');
+
+            default:
+                console.log(`❌ Unknown action type: ${action.type}`);
+                this.addErrorEvent(gameEnv, 'INVALID_ACTION_TYPE', `Unknown action type: ${action.type}`, playerId);
+                return this.throwError(`Unknown action type: ${action.type}`);
+        }
+
+        // ===== SECTION 2: PENDING ACTION BLOCKING (FOR CARD PLAY ACTIONS) =====
         // Check if there's a pending player action that blocks normal gameplay
         // This prevents players from making other actions while card selection is required
         if (gameEnv.pendingPlayerAction) {
@@ -317,7 +395,12 @@ class mozGamePlay {
             return this.throwError(`Game is waiting for player action.`);
         }
         
-        // ===== SECTION 2: CARD PLAY ACTION HANDLING =====
+        // ===== SECTION 3: CARD PLAY ACTION HANDLING =====
+        // 🎯 CARD PLAY LOGIC MOVED TO CardActionHandler CLASS
+        // The following code block has been extracted to CardActionHandler.handleCardPlayAction()
+        // for better maintainability and clear separation of concerns.
+        
+        /* LEGACY CODE - NOW HANDLED BY CardActionHandler
         // Handle card play actions (face up or face down)
         if (action["type"] == "PlayCard" || action["type"] == "PlayCardBack") {
             var isPlayInFaceDown = action["type"] == "PlayCardBack";
@@ -664,6 +747,7 @@ class mozGamePlay {
             }
         }
         return gameEnv;
+        END OF LEGACY CODE BLOCK - NOW HANDLED BY CardActionHandler */
     }
 
     
@@ -912,65 +996,30 @@ class mozGamePlay {
      * @param {Object} gameEnv - Current game environment
      * @returns {boolean} True if main phase is complete
      */
+    /**
+     * 🎯 PHASE 3: Updated checkIsMainPhaseComplete method using new TurnManager
+     * 
+     * This method now delegates to the TurnManager class for consistent phase checking
+     */
     async checkIsMainPhaseComplete(gameEnv) {
-        // First check if all character zones are filled
-        const isCharacterZonesFilled = await this.checkIsSummonBattleReady(gameEnv);
-        if (!isCharacterZonesFilled) {
-            return false;
-        }
-
-        // Check if Help zones are filled (any card face-up or face-down)
-        const playerList = mozGamePlay.getPlayerFromGameEnv(gameEnv);
+        console.log(`🎯 mozGamePlay: Delegating main phase completion check to TurnManager`);
         
-        for (const playerId of playerList) {
-            const helpZone = this.getPlayerZone(gameEnv, playerId, 'help');
-            
-            // Help zone must have at least one card (face-up or face-down)
-            if (!helpZone || helpZone.length === 0) {
-                return false;
-            }
-        }
-        
-        return true;
+        // Delegate to TurnManager for clean phase management logic
+        return await this.turnManager.checkIsMainPhaseComplete(gameEnv);
     }
 
 
-    async shouldUpdateTurn(gameEnvInput,playerId){
-        var gameEnv = gameEnvInput;
+    /**
+     * 🎯 PHASE 3: Updated shouldUpdateTurn method using new TurnManager
+     * 
+     * This method now delegates to the TurnManager class for clean turn management
+     * with comprehensive logging and maintainable code structure
+     */
+    async shouldUpdateTurn(gameEnv, playerId) {
+        console.log(`🎯 mozGamePlay: Delegating turn update check to TurnManager for player: ${playerId}`);
         
-
-        var currentTurnActionComplete = false
-        var shouldSkipTurn = false;
-        
-        //end currentPlayer Turn
-        if(gameEnv["phase"] == TurnPhase.MAIN_PHASE){
-            const playerAction = this.getPlayerData(gameEnv, playerId).turnAction;
-            const currentTurn = gameEnv["currentTurn"];
-            
-            // Check if player played a card this turn
-            for (let idx in playerAction){
-                if((playerAction[idx]["type"]=="PlayCard" ||
-                    playerAction[idx]["type"]=="PlayCardBack")&&
-                    playerAction[idx]["turn"] == currentTurn){
-                    currentTurnActionComplete = true;
-                }
-            }
-            
-            // Check if player should skip turn due to zone pre-occupation
-            if (!currentTurnActionComplete) {
-                shouldSkipTurn = await this.shouldPlayerSkipTurn(gameEnv, playerId);
-                if (shouldSkipTurn) {
-                    console.log(`Player ${playerId} automatically skipping turn - no valid placements available`);
-                    currentTurnActionComplete = true;
-                }
-            }
-        }
-        
-        // Don't switch turns if there's a pending card selection
-        if(currentTurnActionComplete && !gameEnv.pendingPlayerAction){
-            gameEnv = await this.startNewTurn(gameEnv);
-        }
-        return gameEnv;
+        // Delegate to TurnManager for clean turn management logic
+        return await this.turnManager.shouldUpdateTurn(gameEnv, playerId);
     }
 
     /**
@@ -980,244 +1029,45 @@ class mozGamePlay {
      * @param {string} playerId - Player ID to check
      * @returns {boolean} True if player should skip their turn
      */
+    /**
+     * 🎯 PHASE 3: Updated shouldPlayerSkipTurn method using new TurnManager
+     * 
+     * This method now delegates to the TurnManager class for consistent turn skipping logic
+     */
     async shouldPlayerSkipTurn(gameEnv, playerId) {
-        const hand = this.getPlayerHand(gameEnv, playerId) || [];
-        if (hand.length === 0) {
-            return true; // No cards to play
-        }
-
-        // Check if any character zone is available
-        const characterZones = ['top', 'left', 'right'];
-        for (const zone of characterZones) {
-            const zoneCards = this.getPlayerZone(gameEnv, playerId, zone) || [];
-            const hasCharacter = await this.monsterInField(zoneCards);
-            if (!hasCharacter) {
-                return false; // Found available character zone
-            }
-        }
+        console.log(`🎯 mozGamePlay: Delegating turn skip check to TurnManager for player: ${playerId}`);
         
-        // Check if Help zone is available (any card can be played face-down here)
-        const helpZone = this.getPlayerZone(gameEnv, playerId, 'help') || [];
-        if (helpZone.length === 0) {
-            return false; // Help zone is available - any card can be played face-down
-        }
-        
-        return true; // All zones are occupied, player should skip turn
+        // Delegate to TurnManager for clean turn skipping logic
+        return await this.turnManager.shouldPlayerSkipTurn(gameEnv, playerId);
     }
 
-    async startNewTurn(gameEnvInput){
-        var gameEnv = gameEnvInput;
-        gameEnv["currentTurn"] = gameEnv["currentTurn"] + 1;
-        const playerArr = mozGamePlay.getPlayerFromGameEnv(gameEnv)
+    /**
+     * 🎯 PHASE 3: Updated startNewTurn method using new TurnManager
+     * 
+     * This method now delegates to the TurnManager class for clean turn switching
+     * with comprehensive logging and maintainable code structure
+     */
+    async startNewTurn(gameEnv) {
+        console.log(`🎯 mozGamePlay: Delegating turn start to TurnManager`);
         
-        // Alternate between players based on turn number
-        // Turn 0,2,4,6... = firstPlayer, Turn 1,3,5,7... = other player
-        if(gameEnv["currentTurn"] % 2 === 0){
-            gameEnv["currentPlayer"] = playerArr[gameEnv["firstPlayer"]];
-        }else{
-            const otherPlayerIdx = gameEnv["firstPlayer"] === 0 ? 1 : 0;
-            gameEnv["currentPlayer"] = playerArr[otherPlayerIdx];
-        }
-        
-        // Transition to DRAW_PHASE for the new turn player
-        gameEnv["phase"] = TurnPhase.DRAW_PHASE;
-        
-        // Current player draws 1 card
-        const currentPlayer = gameEnv["currentPlayer"];
-        var hand = this.getPlayerHand(gameEnv, currentPlayer);
-        var mainDeck = this.getPlayerMainDeck(gameEnv, currentPlayer);
-        const result = mozDeckHelper.drawToHand(hand, mainDeck);
-        this.setPlayerHand(gameEnv, currentPlayer, result["hand"]);
-        this.setPlayerMainDeck(gameEnv, currentPlayer, result["mainDeck"]);
-        
-        // Add draw phase event that requires acknowledgment
-        this.addGameEvent(gameEnv, 'DRAW_PHASE_COMPLETE', {
-            playerId: gameEnv["currentPlayer"],
-            cardCount: 1,
-            newHandSize: result["hand"].length,
-            requiresAcknowledgment: true
-        });
-        
-        // Add turn switch event
-        this.addGameEvent(gameEnv, 'TURN_SWITCH', {
-            newPlayer: gameEnv["currentPlayer"],
-            turn: gameEnv["currentTurn"],
-            phase: 'DRAW_PHASE'
-        });
-        
-        return gameEnv;
+        // Delegate to TurnManager for clean turn switching logic
+        return await this.turnManager.startNewTurn(gameEnv);
     }
     /**
-     * Calculates total player points including all effects and combos
-     * This is the core scoring function that determines battle outcomes
+     * 🎯 PHASE 2: Updated calculatePlayerPoint method using new BattleCalculator
+     * 
+     * This method now delegates to the BattleCalculator class for clean step-by-step
+     * power calculation with comprehensive logging and maintainable code structure
+     * 
      * @param {Object} gameEnv - Current game environment
      * @param {string} playerId - Player whose points to calculate
      * @returns {number} Total points including base power, effects, and combos
      */
     async calculatePlayerPoint(gameEnv, playerId) {
-        let totalPoints = 0;
-        const fields = ['top', 'left', 'right'];
-        const playerField = this.getPlayerField(gameEnv, playerId);
-        const currentLeader = playerField.leader;
+        console.log(`🎯 mozGamePlay: Delegating power calculation to BattleCalculator for player: ${playerId}`);
         
-        // Load all card data for effect processing
-        const characterCards = require('../data/characterCards.json');
-        const utilityCards = require('../data/utilityCards.json');
-        const leaderCards = require('../data/leaderCards.json');
-        
-        // Step 1: Calculate base power for each face-up character card with field effects
-        let characterPowers = {};
-        for (const zone of fields) {
-            if (playerField[zone] && playerField[zone].length > 0) {
-                for (const cardObj of playerField[zone]) {
-                    // Only count face-up character cards for power calculation - FIXED for safety
-                    // Handle both legacy and new card structures safely
-                    let cardData = null;
-                    let isFaceDown = false;
-                    
-                    if (cardObj.cardDetails && Array.isArray(cardObj.cardDetails) && cardObj.cardDetails.length > 0) {
-                        cardData = cardObj.cardDetails[0];
-                    } else if (cardObj.id) {
-                        cardData = cardObj;
-                    }
-                    
-                    if (cardObj.isBack && Array.isArray(cardObj.isBack) && cardObj.isBack.length > 0) {
-                        isFaceDown = cardObj.isBack[0];
-                    } else if (typeof cardObj.isBack === 'boolean') {
-                        isFaceDown = cardObj.isBack;
-                    }
-                    
-                    if (cardData && cardData.cardType === 'character' && !isFaceDown) {
-                        const cardId = cardData.id;
-                        const basePower = cardData.power || 0;
-                        
-                        // Check unified field effects system for power overrides
-                        let modifiedPower = basePower;
-                        let hasUnifiedSystemOverride = false;
-                        
-                        // Check if there's a calculated power override in the unified system
-                        if (gameEnv.players && 
-                            gameEnv.players[playerId] && 
-                            gameEnv.players[playerId].fieldEffects && 
-                            gameEnv.players[playerId].fieldEffects.calculatedPowers &&
-                            gameEnv.players[playerId].fieldEffects.calculatedPowers[cardId] !== undefined) {
-                            
-                            modifiedPower = gameEnv.players[playerId].fieldEffects.calculatedPowers[cardId];
-                            hasUnifiedSystemOverride = true;
-                            console.log(`Using unified system power override for ${cardId}: ${modifiedPower}`);
-                        }
-                        
-                        characterPowers[cardId] = { 
-                            basePower: modifiedPower,  // Use field effect modified power as base
-                            zone, 
-                            modifiers: 0,
-                            hasUnifiedSystemOverride  // Track if this card has unified system override
-                        };
-                    }
-                }
-            }
-        }
-        
-        // Step 2: Apply leader continuous effects (always active)
-        if (currentLeader && currentLeader.effects && currentLeader.effects.rules) {
-            for (const rule of currentLeader.effects.rules) {
-                if (rule.type === 'continuous') {
-                    characterPowers = this.applyEffectRule(rule, characterPowers, playerField, gameEnv, playerId, 'leader', currentLeader);
-                }
-            }
-        }
-        
-        // Step 2.5: Apply character card continuous effects (from character cards in field)
-        for (const zone of fields) {
-            if (playerField[zone] && playerField[zone].length > 0) {
-                for (const cardObj of playerField[zone]) {
-                    // Only apply effects from face-up character cards - FIXED for safety
-                    // Handle both legacy and new card structures safely
-                    let cardData = null;
-                    let isFaceDown = false;
-                    
-                    if (cardObj.cardDetails && Array.isArray(cardObj.cardDetails) && cardObj.cardDetails.length > 0) {
-                        cardData = cardObj.cardDetails[0];
-                    } else if (cardObj.id) {
-                        cardData = cardObj;
-                    }
-                    
-                    if (cardObj.isBack && Array.isArray(cardObj.isBack) && cardObj.isBack.length > 0) {
-                        isFaceDown = cardObj.isBack[0];
-                    } else if (typeof cardObj.isBack === 'boolean') {
-                        isFaceDown = cardObj.isBack;
-                    }
-                    
-                    if (cardData && cardData.cardType === 'character' && !isFaceDown) {
-                        const cardId = cardData.id;
-                        const characterCard = characterCards.cards[cardId];
-                        if (characterCard && characterCard.effects && characterCard.effects.rules) {
-                            for (const rule of characterCard.effects.rules) {
-                                if (rule.type === 'continuous') {
-                                    characterPowers = this.applyEffectRule(rule, characterPowers, playerField, gameEnv, playerId, 'character', characterCard);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Step 3: Apply utility card continuous effects (help and SP cards)
-        const utilityZones = ['help', 'sp'];
-        for (const zone of utilityZones) {
-            if (playerField && playerField[zone] && playerField[zone].length > 0) {
-                for (const cardObj of playerField[zone]) {
-                    // Only apply effects from face-up utility cards - FIXED for safety
-                    // Handle both legacy and new card structures safely
-                    let isFaceDown = false;
-                    let cardId = null;
-                    
-                    if (cardObj.isBack && Array.isArray(cardObj.isBack) && cardObj.isBack.length > 0) {
-                        isFaceDown = cardObj.isBack[0];
-                    } else if (typeof cardObj.isBack === 'boolean') {
-                        isFaceDown = cardObj.isBack;
-                    }
-                    
-                    if (cardObj.cardDetails && Array.isArray(cardObj.cardDetails) && cardObj.cardDetails.length > 0) {
-                        cardId = cardObj.cardDetails[0].id;
-                    } else if (cardObj.id) {
-                        cardId = cardObj.id;
-                    } else if (typeof cardObj === 'string') {
-                        cardId = cardObj;
-                    }
-                    
-                    if (!isFaceDown && cardId) {
-                        const utilityCard = utilityCards.cards[cardId];
-                        if (utilityCard && utilityCard.effects && utilityCard.effects.rules) {
-                            for (const rule of utilityCard.effects.rules) {
-                                if (rule.type === 'continuous') {
-                                    characterPowers = this.applyEffectRule(rule, characterPowers, playerField, gameEnv, playerId, 'utility', utilityCard);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Step 4: Calculate total power from all characters (enforce minimum 0)
-        for (const cardId in characterPowers) {
-            const finalPower = Math.max(0, characterPowers[cardId].basePower + characterPowers[cardId].modifiers);
-            totalPoints += finalPower;
-        }
-        
-        // Step 5: Add combo bonuses for special card combinations (if not disabled)
-        let comboBonus = 0;
-        if (!gameEnv.disabledEffects || !gameEnv.disabledEffects[playerId] || !gameEnv.disabledEffects[playerId].comboBonus) {
-            comboBonus = this.calculateComboBonus(characterPowers, characterCards, gameEnv, playerId);
-        }
-        totalPoints += comboBonus;
-        
-        // Step 6: Apply final calculation effects (like totalPowerNerf)
-        totalPoints = this.applyFinalCalculationEffects(gameEnv, playerId, totalPoints);
-        
-        return totalPoints;
+        // Delegate to BattleCalculator for clean step-by-step calculation
+        return await this.battleCalculator.calculatePlayerPoints(gameEnv, playerId);
     }
     
     /**
@@ -1265,12 +1115,12 @@ class mozGamePlay {
                             
                             if (utilityCard && utilityCard.effects && utilityCard.effects.rules) {
                                 for (const rule of utilityCard.effects.rules) {
-                                    if (rule.type === 'triggered' && rule.trigger.event === 'finalCalculation') {
+                                    if (rule.type === 'triggered' && rule.trigger && rule.trigger.event === 'finalCalculation') {
                                         // Check if conditions are met
-                                        if (this.checkRuleConditions(rule.trigger.conditions, playerField, gameEnv, checkPlayerId)) {
+                                        if (this.checkRuleConditions && this.checkRuleConditions(rule.trigger.conditions, playerField, gameEnv, checkPlayerId)) {
                                             // Apply totalPowerNerf to target player
                                             if (rule.effect.type === 'totalPowerNerf') {
-                                                const targetPlayerId = rule.target.owner === 'opponent' ? 
+                                                const targetPlayerId = rule.target && rule.target.owner === 'opponent' ? 
                                                     this.getOpponentId(gameEnv, checkPlayerId) : checkPlayerId;
                                                 
                                                 if (targetPlayerId === playerId) {
@@ -1949,7 +1799,7 @@ class mozGamePlay {
             const discardedCard = hand.splice(randomIndex, 1)[0];
             
             // Add event for card discarded
-            this.addEvent(gameEnv, 'CARD_DISCARDED', {
+            this.addGameEvent(gameEnv, 'CARD_DISCARDED', {
                 playerId: playerId,
                 cardId: discardedCard,
                 reason: 'randomDiscard'
@@ -2849,9 +2699,14 @@ class mozGamePlay {
      * @param {string} playerId - Player ID to check
      * @returns {boolean} True if Help phase should be skipped
      */
+    /**
+     * 🎯 PHASE 3: Updated shouldSkipHelpPhase method using new TurnManager
+     */
     shouldSkipHelpPhase(gameEnv, playerId) {
-        const helpZone = this.getPlayerZone(gameEnv, playerId, 'help');
-        return helpZone && helpZone.length > 0;
+        console.log(`🎯 mozGamePlay: Delegating help phase skip check to TurnManager for player: ${playerId}`);
+        
+        // Delegate to TurnManager for consistent phase skipping logic
+        return this.turnManager.shouldSkipHelpPhase(gameEnv, playerId);
     }
 
     /**
@@ -2860,9 +2715,14 @@ class mozGamePlay {
      * @param {string} playerId - Player ID to check
      * @returns {boolean} True if SP phase should be skipped
      */
+    /**
+     * 🎯 PHASE 3: Updated shouldSkipSpPhase method using new TurnManager
+     */
     shouldSkipSpPhase(gameEnv, playerId) {
-        const spZone = this.getPlayerZone(gameEnv, playerId, 'sp');
-        return spZone && spZone.length > 0;
+        console.log(`🎯 mozGamePlay: Delegating SP phase skip check to TurnManager for player: ${playerId}`);
+        
+        // Delegate to TurnManager for consistent phase skipping logic
+        return this.turnManager.shouldSkipSpPhase(gameEnv, playerId);
     }
 
     /**
@@ -2890,34 +2750,16 @@ class mozGamePlay {
      * @param {string} playerId - Current player ID
      * @returns {Object} Updated game environment
      */
-    async advanceToSpPhaseOrBattle(gameEnv, playerId) {
-        const playerList = mozGamePlay.getPlayerFromGameEnv(gameEnv);
+    /**
+     * 🎯 PHASE 3: Updated advanceToSpPhaseOrBattle method using new TurnManager
+     * 
+     * This method now delegates to the TurnManager class for consistent phase progression
+     */
+    async advanceToSpPhaseOrBattle(gameEnv) {
+        console.log(`🎯 mozGamePlay: Delegating SP phase advancement to TurnManager`);
         
-        // Check if SP phase should be skipped for all players
-        let allPlayersShouldSkipSp = true;
-        
-        for (const checkPlayerId of playerList) {
-            const shouldSkip = this.shouldSkipSpPhase(gameEnv, checkPlayerId);
-            const hand = this.getPlayerHand(gameEnv, checkPlayerId) || [];
-            
-            // If any player has cards in hand and their SP zone isn't pre-occupied, they can play any card face-down
-            if (hand.length > 0 && !shouldSkip) {
-                allPlayersShouldSkipSp = false;
-            }
-        }
-
-        // Also check if there are any SP cards already on the field that need to execute effects
-        const hasSpCardsOnField = await this.checkNeedsSpPhase(gameEnv);
-
-        if (!allPlayersShouldSkipSp || hasSpCardsOnField) {
-            // Start SP phase - some players can play SP cards or SP effects need to execute
-            console.log('Starting SP phase - players can play SP cards or SP effects need to execute');
-            return await this.startSpPhase(gameEnv);
-        } else {
-            // Skip SP phase entirely - all SP zones pre-occupied and no SP cards on field
-            console.log('Skipping SP phase - all SP zones are pre-occupied or no SP cards present');
-            return await this.concludeLeaderBattleAndNewStart(gameEnv, playerId);
-        }
+        // Delegate to TurnManager for clean phase progression logic
+        return await this.turnManager.advanceToSpPhaseOrBattle(gameEnv);
     }
 
 
