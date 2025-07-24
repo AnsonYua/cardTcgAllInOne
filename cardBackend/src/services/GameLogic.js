@@ -776,7 +776,11 @@ class GameLogic {
         // Support both 'initialGameEnv' and 'gameEnv' properties
         if (json.initialGameEnv) {
             console.log(`🎯 GameLogic: Returning initialGameEnv from test scenario: ${scenarioPath}`);
-            return json.initialGameEnv;
+            return {
+                    "gameId": "simple_test",
+                    "gameEnv": json.initialGameEnv,
+                    "lastUpdate": "2025-07-24T12:14:38.496Z"
+            }
         } else if (json.gameEnv) {
             console.log(`🎯 GameLogic: Returning gameEnv from test scenario: ${scenarioPath}`);
             return json.gameEnv;
