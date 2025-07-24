@@ -746,6 +746,465 @@ class GameLogic {
         };
     }
 
+
+    async getTestScenario(req) {
+        const fs = require('fs');
+        const path = require('path');
+        const { scenarioPath } = req.query;
+        if (!scenarioPath) {
+            throw new Error('scenarioPath query parameter is required');
+        }
+        
+        // ✅ HARDCODED SUPPORT: Handle simple_test gameId
+        if (scenarioPath === 'simple_test') {
+            console.log(`🎯 GameLogic: Returning hardcoded simple_test gameEnv`);
+            return this.getSimpleTestGameEnv();
+        }
+        
+        const baseDir = path.resolve(__dirname, '../../../shared/testScenarios/gameStates');
+        let relPath = scenarioPath.endsWith('.json') ? scenarioPath : scenarioPath + '.json';
+        const fullPath = path.join(baseDir, relPath);
+        try {
+            await fs.promises.access(fullPath, fs.constants.F_OK);
+        } catch (e) {
+            throw new Error('Scenario not found');
+        }
+        const data = await fs.promises.readFile(fullPath, 'utf-8');
+        const json = JSON.parse(data);
+        
+        // ✅ MODIFICATION: Return the gameEnv from the test scenario
+        // Support both 'initialGameEnv' and 'gameEnv' properties
+        if (json.initialGameEnv) {
+            console.log(`🎯 GameLogic: Returning initialGameEnv from test scenario: ${scenarioPath}`);
+            return json.initialGameEnv;
+        } else if (json.gameEnv) {
+            console.log(`🎯 GameLogic: Returning gameEnv from test scenario: ${scenarioPath}`);
+            return json.gameEnv;
+        } else {
+            // Fallback: if no gameEnv property, return the entire JSON (backward compatibility)
+            console.log(`⚠️ GameLogic: No gameEnv found in scenario, returning full JSON: ${scenarioPath}`);
+            return json;
+        }
+    }
+
+    getSimpleTestGameEnv() {
+        // ✅ HARDCODED: Complete gameEnv for simple_test scenario
+        return {
+            "phase": "MAIN_PHASE",
+            "round": 1,
+            "gameStarted": true,
+            "currentPlayer": "playerId_1",
+            "currentTurn": 0,
+            "firstPlayer": 0,
+            "players": {
+                "playerId_1": {
+                    "id": "playerId_1",
+                    "name": "Player 1",
+                    "deck": {
+                        "hand": [
+                            "c-1",
+                            "h-1",
+                            "c-2",
+                            "c-3",
+                            "c-4"
+                        ],
+                        "mainDeck": [
+                            "c-5",
+                            "c-6",
+                            "c-7",
+                            "c-8",
+                            "c-9",
+                            "c-10",
+                            "c-11",
+                            "c-12",
+                            "c-13",
+                            "c-14",
+                            "c-15",
+                            "c-16",
+                            "h-3",
+                            "h-4",
+                            "sp-1",
+                            "sp-2",
+                            "sp-3"
+                        ],
+                        "leader": [
+                            "s-1",
+                            "s-2",
+                            "s-3",
+                            "s-4"
+                        ],
+                        "currentLeaderIdx": 0
+                    },
+                    "isReady": true,
+                    "redraw": 1,
+                    "turnAction": [],
+                    "playerPoint": 0,
+                    "fieldEffects": {
+                        "zoneRestrictions": {
+                            "TOP": [
+                                "右翼",
+                                "自由",
+                                "經濟"
+                            ],
+                            "LEFT": [
+                                "右翼",
+                                "自由",
+                                "愛國者"
+                            ],
+                            "RIGHT": [
+                                "右翼",
+                                "愛國者",
+                                "經濟"
+                            ],
+                            "HELP": [
+                                "ALL"
+                            ],
+                            "SP": [
+                                "ALL"
+                            ]
+                        },
+                        "activeEffects": [
+                            {
+                                "effectId": "s-1_trump_rightWing_patriot_boost",
+                                "source": "s-1",
+                                "sourcePlayerId": "playerId_1",
+                                "type": "powerBoost",
+                                "target": {
+                                    "scope": "SELF",
+                                    "playerId": "playerId_1",
+                                    "zones": [
+                                        "top",
+                                        "left",
+                                        "right"
+                                    ],
+                                    "gameTypes": [
+                                        "右翼",
+                                        "愛國者"
+                                    ]
+                                },
+                                "value": 45,
+                                "priority": 0,
+                                "unremovable": false,
+                                "isEnabled": true,
+                                "createdAt": 1753352319449,
+                                "effectData": {}
+                            }
+                        ],
+                        "specialEffects": {},
+                        "calculatedPowers": {},
+                        "disabledCards": [],
+                        "victoryPointModifiers": 0
+                    }
+                },
+                "playerId_2": {
+                    "id": "playerId_2",
+                    "name": "Player 2",
+                    "deck": {
+                        "hand": [
+                            "h-2",
+                            "c-17",
+                            "c-18",
+                            "c-19",
+                            "c-20"
+                        ],
+                        "mainDeck": [
+                            "c-21",
+                            "c-22",
+                            "c-23",
+                            "c-24",
+                            "c-25",
+                            "c-26",
+                            "c-27",
+                            "c-28",
+                            "c-29",
+                            "c-30",
+                            "c-31",
+                            "c-32",
+                            "c-33",
+                            "h-5",
+                            "h-6",
+                            "h-7",
+                            "sp-4",
+                            "sp-5",
+                            "sp-6"
+                        ],
+                        "leader": [
+                            "s-2",
+                            "s-3",
+                            "s-4",
+                            "s-5"
+                        ],
+                        "currentLeaderIdx": 0
+                    },
+                    "isReady": true,
+                    "redraw": 1,
+                    "turnAction": [],
+                    "playerPoint": 0,
+                    "fieldEffects": {
+                        "zoneRestrictions": {
+                            "TOP": [
+                                "左翼",
+                                "自由",
+                                "經濟",
+                                "右翼",
+                                "愛國者"
+                            ],
+                            "LEFT": [
+                                "左翼",
+                                "自由",
+                                "經濟",
+                                "右翼",
+                                "愛國者"
+                            ],
+                            "RIGHT": [
+                                "左翼",
+                                "自由",
+                                "經濟",
+                                "右翼",
+                                "愛國者"
+                            ],
+                            "HELP": [
+                                "ALL"
+                            ],
+                            "SP": [
+                                "ALL"
+                            ]
+                        },
+                        "activeEffects": [
+                            {
+                                "effectId": "s-2_biden_all_boost",
+                                "source": "s-2",
+                                "sourcePlayerId": "playerId_2",
+                                "type": "powerBoost",
+                                "target": {
+                                    "scope": "SELF",
+                                    "playerId": "playerId_2",
+                                    "zones": [
+                                        "top",
+                                        "left",
+                                        "right"
+                                    ]
+                                },
+                                "value": 40,
+                                "priority": 0,
+                                "unremovable": false,
+                                "isEnabled": true,
+                                "createdAt": 1753352319450,
+                                "effectData": {}
+                            }
+                        ],
+                        "specialEffects": {},
+                        "calculatedPowers": {},
+                        "disabledCards": [],
+                        "victoryPointModifiers": 0
+                    }
+                }
+            },
+            "zones": {
+                "playerId_1": {
+                    "leader": {
+                        "id": "s-1",
+                        "name": "特朗普",
+                        "cardType": "leader",
+                        "gameType": "右翼",
+                        "initialPoint": 110,
+                        "level": 7,
+                        "rarity": "legendary",
+                        "zoneCompatibility": {
+                            "top": [
+                                "右翼",
+                                "自由",
+                                "經濟"
+                            ],
+                            "left": [
+                                "右翼",
+                                "自由",
+                                "愛國者"
+                            ],
+                            "right": [
+                                "右翼",
+                                "愛國者",
+                                "經濟"
+                            ]
+                        },
+                        "effects": {
+                            "description": "全部召喚出來的角色擁有右翼或愛國者屬性能力值 +45。如對方領袖卡為「鮑威爾」，我方召喚出來擁有經濟屬性的原能力值變成 0",
+                            "rules": [
+                                {
+                                    "id": "trump_rightWing_patriot_boost",
+                                    "type": "continuous",
+                                    "trigger": {
+                                        "event": "always",
+                                        "conditions": []
+                                    },
+                                    "target": {
+                                        "owner": "self",
+                                        "zones": [
+                                            "top",
+                                            "left",
+                                            "right"
+                                        ],
+                                        "filters": [
+                                            {
+                                                "type": "gameTypeOr",
+                                                "values": [
+                                                    "右翼",
+                                                    "愛國者"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    "effect": {
+                                        "type": "powerBoost",
+                                        "value": 45
+                                    }
+                                },
+                                {
+                                    "id": "trump_vs_powell_economy_nerf",
+                                    "type": "continuous",
+                                    "trigger": {
+                                        "event": "always",
+                                        "conditions": [
+                                            {
+                                                "type": "opponentLeader",
+                                                "value": "鮑威爾"
+                                            }
+                                        ]
+                                    },
+                                    "target": {
+                                        "owner": "self",
+                                        "zones": [
+                                            "top",
+                                            "left",
+                                            "right"
+                                        ],
+                                        "filters": [
+                                            {
+                                                "type": "gameType",
+                                                "value": "經濟"
+                                            }
+                                        ]
+                                    },
+                                    "effect": {
+                                        "type": "setPower",
+                                        "value": 0
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "top": [],
+                    "left": [],
+                    "right": [],
+                    "help": [],
+                    "sp": []
+                },
+                "playerId_2": {
+                    "leader": {
+                        "id": "s-2",
+                        "name": "拜登",
+                        "cardType": "leader",
+                        "gameType": "左翼",
+                        "initialPoint": 100,
+                        "level": 7,
+                        "rarity": "legendary",
+                        "zoneCompatibility": {
+                            "top": [
+                                "左翼",
+                                "自由",
+                                "經濟",
+                                "右翼",
+                                "愛國者"
+                            ],
+                            "left": [
+                                "左翼",
+                                "自由",
+                                "經濟",
+                                "右翼",
+                                "愛國者"
+                            ],
+                            "right": [
+                                "左翼",
+                                "自由",
+                                "經濟",
+                                "右翼",
+                                "愛國者"
+                            ]
+                        },
+                        "effects": {
+                            "description": "全部召喚出來的角色能力值 +40",
+                            "rules": [
+                                {
+                                    "id": "biden_all_boost",
+                                    "type": "continuous",
+                                    "trigger": {
+                                        "event": "always",
+                                        "conditions": []
+                                    },
+                                    "target": {
+                                        "owner": "self",
+                                        "zones": [
+                                            "top",
+                                            "left",
+                                            "right"
+                                        ],
+                                        "filters": []
+                                    },
+                                    "effect": {
+                                        "type": "powerBoost",
+                                        "value": 40
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "top": [],
+                    "left": [],
+                    "right": [],
+                    "help": [],
+                    "sp": []
+                }
+            },
+            "gameEvents": [],
+            "lastEventId": 0,
+            "pendingPlayerAction": null,
+            "pendingCardSelections": {},
+            "playSequence": {
+                "globalSequence": 2,
+                "plays": [
+                    {
+                        "sequenceId": 1,
+                        "playerId": "playerId_1",
+                        "cardId": "s-1",
+                        "action": "PLAY_LEADER",
+                        "zone": "leader",
+                        "data": {
+                            "leaderIndex": 0,
+                            "isInjectedState": true
+                        },
+                        "timestamp": "2025-07-24T10:18:39.445Z",
+                        "turnNumber": 0,
+                        "phaseWhenPlayed": "MAIN_PHASE"
+                    },
+                    {
+                        "sequenceId": 2,
+                        "playerId": "playerId_2",
+                        "cardId": "s-2",
+                        "action": "PLAY_LEADER",
+                        "zone": "leader",
+                        "data": {
+                            "leaderIndex": 0,
+                            "isInjectedState": true
+                        },
+                        "timestamp": "2025-07-24T10:18:39.447Z",
+                        "turnNumber": 0,
+                        "phaseWhenPlayed": "MAIN_PHASE"
+                    }
+                ]
+            }
+        };
+    }
+
     async acknowledgeGameEvents(gameId, eventIds) {
         // Read current game state
         const gameData = await this.readJSONFileAsync(gameId);

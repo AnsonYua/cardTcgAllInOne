@@ -1,6 +1,8 @@
 // src/controllers/gameController.js
 const gameLogic = require('../services/GameLogic');
 const deckManager = require('../services/DeckManager');
+const fs = require('fs');
+const path = require('path');
 class GameController {
     async startGame(req, res) {
         try {
@@ -92,6 +94,22 @@ class GameController {
             res.json(result);
         } catch (error) {
             console.error('Error in setCase:', error);
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    async getTestScenario(req, res) {
+        try {
+            const result = await gameLogic.getTestScenario(req);
+            res.json(result);
+        } catch (error) {
+            if (error.message === 'scenarioPath query parameter is required') {
+                return res.status(400).json({ error: error.message });
+            }
+            if (error.message === 'Scenario not found') {
+                return res.status(404).json({ error: error.message });
+            }
+            console.error('Error in getTestScenario:', error);
             res.status(500).json({ error: error.message });
         }
     }

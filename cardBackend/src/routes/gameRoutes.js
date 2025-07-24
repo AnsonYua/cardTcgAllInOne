@@ -23,6 +23,7 @@ router.post('/player/selectCard', gameController.selectCard);
 router.post('/player/acknowledgeEvents', gameController.acknowledgeEvents);
 router.post('/player/nextRound', gameController.nextRound);
 router.post('/test/setCase', gameController.setCase);
+router.get('/test/getTestScenario', gameController.getTestScenario);
 
 // Test-only endpoint for injecting game environment
 router.post('/test/injectGameState', (req, res, next) => {

@@ -353,8 +353,16 @@ class mozGamePlay {
             case 'PlayCard':
             case 'PlayCardBack':
                 console.log(`🎯 Processing ${action.type} action through CardActionHandler`);
-                // Delegate to CardActionHandler for clean card placement logic
-                return await this.cardActionHandler.handleCardPlayAction(gameEnv, playerId, action);
+                // 1. Handle card placement through CardActionHandler
+                gameEnv = await this.cardActionHandler.handleCardPlayAction(gameEnv, playerId, action);
+                
+                // 2. ✅ CRITICAL FIX: Check for turn switching after successful card placement
+                if (gameEnv && !gameEnv.error) {
+                    console.log(`🎯 Checking for turn switching after ${action.type} action`);
+                    gameEnv = await this.shouldUpdateTurn(gameEnv, playerId);
+                }
+                
+                return gameEnv;
 
             case 'Pass':
                 console.log(`⏭️ Processing Pass action`);
