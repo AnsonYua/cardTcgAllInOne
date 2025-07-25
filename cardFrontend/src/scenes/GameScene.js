@@ -18,6 +18,7 @@ export default class GameScene extends Phaser.Scene {
     this.previewCard = null;
     this.leaderCards = [];
     this.zoneHighlights = [];
+    this.isTestMode = false;
   }
 
   init(data) {
@@ -1093,6 +1094,7 @@ export default class GameScene extends Phaser.Scene {
       this.input.setDraggable(card);
       this.playerHand.push(card);
       this.handContainer.add(card);
+
     });
   }
 
@@ -1148,6 +1150,17 @@ export default class GameScene extends Phaser.Scene {
     // Debug: Log current phase and animation state
     console.log('Online mode - phase:', gameState.gameEnv.phase, 'shuffleAnimationPlayed:', this.shuffleAnimationPlayed);
     
+    if(this.isTestMode) {
+      if(gameState.gameEnv.phase === 'MAIN_PHASE') {
+        this.showDeckStacks();
+        // Show hand area and update game state after shuffle animation completes
+        this.showHandArea();
+        this.selectLeaderCard('player');
+        //this.selectLeaderCard('opponent');
+      }
+    }
+
+
     // Check for READY_PHASE and trigger shuffle animation
     if (gameState.gameEnv.phase === 'READY_PHASE' && !this.shuffleAnimationPlayed) {
       console.log('READY_PHASE detected - triggering shuffle animation and redraw dialog');
@@ -1683,8 +1696,7 @@ export default class GameScene extends Phaser.Scene {
     if (this.handContainer) {
       this.handContainer.setVisible(true);
     }
-    
-   
+  
   }
 
   showCardPreview(cardData) {
@@ -1854,6 +1866,7 @@ export default class GameScene extends Phaser.Scene {
       this.shuffleAnimationManager?.opponentLeaderCards;
 
     const leaderDeckSource = playerType === 'player' ? this.playerLeaderCards : this.opponentLeaderCards;
+    console.log('leaderDeckSource:', this.shuffleAnimationManager);
 
     if (!this.shuffleAnimationManager || !leaderCardsArray || leaderCardsArray.length === 0) {
       console.log(`No ${playerType} leader cards available in deck`);
@@ -1871,8 +1884,21 @@ export default class GameScene extends Phaser.Scene {
       return;
     }
 
-    console.log(`Moving ${playerType} leader card to leader position:`, cardData.name);
+    const leaderCard = new Card(this, leaderZone.x, leaderZone.y, cardData, {
+      interactive: true,
+      draggable: false,
+      scale: 1,
+      gameStateManager: this.gameStateManager,
+      usePreview: true,
+      disableHighlight: true  // Disable selection highlight for leader cards
+    });
+    leaderCard.on('pointerover', () => this.showCardPreview(cardData));
+    leaderCard.on('pointerout', () => this.hideCardPreview());
 
+    leaderZone.card = leaderCard;
+    leaderCard.setDepth(1001);
+    console.log(`Moving ${playerType} leader card to leader position:`, cardData.name);
+    /*
     this.tweens.add({
       targets: topCard,
       x: leaderZone.x,
@@ -1934,6 +1960,7 @@ export default class GameScene extends Phaser.Scene {
         }
       }
     });
+    */
   }
 
   repositionLeaderDeckCards(playerType = 'player') {
@@ -2703,6 +2730,7 @@ export default class GameScene extends Phaser.Scene {
 
 
   async simulateSetScenario() {
+    this.isTestMode = true;
     const scenarioPath = 'CharacterCase/character_c-1_trump_family_boost_dynamic';
     const gameEnv = await this.apiManager.requestTestScenario(scenarioPath);
     await this.apiManager.requestSetTestScenario(gameEnv);
@@ -2712,6 +2740,10 @@ export default class GameScene extends Phaser.Scene {
       "playerId_1", 
       'Test Player'
     );
+    console.log("", gameEnv.gameEnv.players.playerId_1.deck.leader);
+    this.shuffleAnimationManager.selectLeaderCard(gameEnv.gameEnv.players.playerId_1.deck.leader, 'player');
+    //console.log("shuffleAnimationManager", this.shuffleAnimationManager?.playerLeaderCards);
+    this.shuffleAnimationManager.selectLeaderCard(gameEnv.gameEnv.players.playerId_2.deck.leader, 'opponent');
         
   }
   async simulatePlayer2Redraw() {

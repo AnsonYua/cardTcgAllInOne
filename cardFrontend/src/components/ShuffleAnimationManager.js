@@ -5,6 +5,8 @@ export default class ShuffleAnimationManager {
     this.scene = scene;
     this.playerDeckCards = [];
     this.opponentDeckCards = [];
+    this.playerLeaderCards = [];
+    this.opponentLeaderCards = [];
   }
 
   playShuffleDeckAnimation(layout, onComplete) {
@@ -451,6 +453,17 @@ export default class ShuffleAnimationManager {
         });
       }
     });
+  }
+
+  selectLeaderCard(leaderArray , playerType = 'player') {
+    console.log("selectLeaderCard", leaderArray, playerType);
+    if(playerType === 'player') {
+      this.playerLeaderCards  = [...leaderArray];
+      console.log("playerLeaderCards", this.playerLeaderCards);
+    }else{
+      this.opponentLeaderCards  = [...leaderArray];
+      console.log("opponentLeaderCards", this.opponentLeaderCards);
+    }
   }
 
   createLeaderCardWithRoundedCorners(x, y, cardData = null) {
