@@ -294,7 +294,7 @@ export default class MenuScene extends Phaser.Scene {
           
           this.hideLoadingMessage();
           this.showConnectionStatus(`🎮 Demo room created! Game ID: ${gameId} (Use test buttons to control)`);
-          this.scene.start('GameScene', { 
+          this.scene.start('DemoScene', { 
             gameStateManager: this.gameStateManager, 
             apiManager: this.apiManager,
             isOnlineMode: true,
@@ -455,7 +455,7 @@ export default class MenuScene extends Phaser.Scene {
     this.gameStateManager.initializeGame(gameId, playerId, this.playerName);
     this.setupDemoGameState();
     
-    this.scene.start('GameScene', { 
+    this.scene.start('DemoScene', { 
       gameStateManager: this.gameStateManager,
       apiManager: this.apiManager,
       isOnlineMode: false,  // Offline demo mode
