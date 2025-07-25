@@ -233,7 +233,7 @@ getVictoryPoints(playerId = null) {
 // Hand Data
 getPlayerHand(playerId = null) {
   const player = this.getPlayer(playerId);
-  return player ? player.hand : [];
+  return player ? player.deck.hand : [];
 }
 ```
 

@@ -118,6 +118,20 @@ export default class APIManager {
     });
   }
 
+
+  async requestTestScenario(scenarioPath) {
+    return this.request(`/test/getTestScenario?scenarioPath=${encodeURIComponent(scenarioPath)}`, {
+      method: 'GET'
+    });
+  }
+
+  async requestSetTestScenario(gameEnv) {
+    return this.request('/test/injectGameState', {
+      method: 'POST',
+      body: JSON.stringify(gameEnv)
+    });
+  }
+
   // Demo/Mock API methods for development
   async createMockGame(playerName) {
     // Simulate API delay
@@ -148,6 +162,21 @@ export default class APIManager {
 
   delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // Test scenario management
+  async getTestScenario(scenarioPath) {
+    return this.request(`/api/game/test/getTestScenario?scenarioPath=${encodeURIComponent(scenarioPath)}`, {
+      method: 'GET'
+    });
+  }
+
+  // Game state injection for testing
+  async injectGameState(gameId, gameEnv) {
+    return this.request('/test/injectGameState', {
+      method: 'POST',
+      body: JSON.stringify({ gameId, gameEnv })
+    });
   }
 
   // Utility methods for API interaction

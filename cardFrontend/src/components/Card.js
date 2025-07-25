@@ -36,7 +36,7 @@ export default class Card extends Phaser.GameObjects.Container {
     
     // Store reference to GameStateManager for computed values
     this.gameStateManager = options.gameStateManager || null;
-    
+    console.log('Card constructor - cardData:', JSON.stringify(cardData));
     // Auto-populate card data from ID if only ID is provided
     if (cardData && cardData.id && !cardData.type) {
       const cardInfo = getCardInfoFromId(cardData.id);

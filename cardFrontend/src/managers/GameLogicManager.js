@@ -299,7 +299,7 @@ export default class GameLogicManager {
         this.gameStateManager.updateGameEnv(response.gameEnv);
         
         await this.gameStateManager.acknowledgeEvents(this.apiManager);
-        await this.updateGameState();
+       // await this.updateGameState();
         
         console.log('Manual polling completed successfully');
       }

@@ -338,7 +338,7 @@ class EventManager {
         
         // Initial hand dealt events for each player
         for (let playerId of playerList) {
-            const handSize = gameEnv.players[playerId]?.hand?.length || 0;
+            const handSize = gameEnv.players[playerId]?.deck?.hand?.length || 0;
             this.addGameEvent(gameEnv, this.EVENT_TYPES.INITIAL_HAND_DEALT, {
                 playerId: playerId,
                 handSize: handSize,

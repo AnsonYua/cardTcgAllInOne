@@ -75,8 +75,13 @@ export default class GameStateManager {
   }
 
   getPlayerHand(playerId = null) {
+    const currentPlayerId = this.getCurrentPlayerId();
+    if(playerId == null) {
+      playerId = currentPlayerId;
+    }
+    
     const player = this.getPlayer(playerId);
-    return player ? player.hand : [];
+    return player ? player.deck.hand : [];
   }
 
   getVictoryPoints(playerId = null) {

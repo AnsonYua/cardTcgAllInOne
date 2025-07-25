@@ -659,6 +659,34 @@ export default class GameScene extends Phaser.Scene {
         
         this.time.delayedCall(50, () => this.simulatePlayer2Redraw());
       });
+
+
+      // Simulate Player 2 Redraw button
+      this.testScenarioButton = this.add.image(0+130, height - 480, 'button');
+      this.testScenarioButton.setScale(0.8);
+      this.testScenarioButton.setInteractive();
+      
+      const testScenarioButtonText = this.add.text(0+130, height - 480, 'Set Scenario', {
+        fontSize: '12px',
+        fontFamily: 'Arial',
+        fill: '#ffffff'
+      });
+      testScenarioButtonText.setOrigin(0.5);
+      this.testScenarioButton.on('pointerdown', () => {
+        // Click visual effect
+        this.testScenarioButton.setTint(0x888888);
+        this.testScenarioButton.setScale(0.76);
+        testScenarioButtonText.setScale(0.95);
+        
+        this.time.delayedCall(100, () => {
+          this.testScenarioButton.clearTint();
+          this.testScenarioButton.setScale(0.8);
+          testScenarioButtonText.setScale(1);
+        });
+        this.time.delayedCall(50, () => this.simulateSetScenario());
+      });
+
+
     }
 
   }
@@ -1022,6 +1050,7 @@ export default class GameScene extends Phaser.Scene {
   updatePlayerHand() {
     // Get hand from game state manager
     const hand = this.gameStateManager.getPlayerHand();
+    console.log('updatePlayerHand - hand data:', JSON.stringify(hand));
     this.updatePlayerHandWithCards(hand);
   }
   
@@ -1071,12 +1100,17 @@ export default class GameScene extends Phaser.Scene {
     const playerZones = this.gameStateManager.getPlayerZones();
     const opponentId = this.gameStateManager.getOpponent();
     const opponentZones = this.gameStateManager.getPlayerZones(opponentId);
-    
+    console.log('updateZones - playerZones:', JSON.stringify(playerZones));
     // Update player zones
     Object.entries(playerZones).forEach(([zoneType, cardData]) => {
       const zone = this.playerZones[zoneType];
-      if (zone && cardData && !zone.card) {
-        const card = new Card(this, zone.x, zone.y, cardData, {
+      console.log('updateZones - cardData:', zoneType, "cardData:", JSON.stringify(cardData), "zone card:", !zone.card);
+        
+      if(zoneType == 'leader') {
+      }else if (zone && cardData && !zone.card &&cardData.length > 0 ) {
+        console.log('updateZones - cardData: 2');
+        
+        const card = new Card(this, zone.x, zone.y, cardData[0], {
           interactive: false,
           scale: 0.9,
           gameStateManager: this.gameStateManager
@@ -1089,8 +1123,10 @@ export default class GameScene extends Phaser.Scene {
     // Update opponent zones
     Object.entries(opponentZones).forEach(([zoneType, cardData]) => {
       const zone = this.opponentZones[zoneType];
-      if (zone && cardData && !zone.card) {
-        const card = new Card(this, zone.x, zone.y, cardData, {
+      if(zoneType == 'leader') {
+
+      }else if (zone && cardData && !zone.card && cardData.length > 0) {
+        const card = new Card(this, zone.x, zone.y, cardData[0], {
           interactive: false,
           faceDown: cardData.faceDown || false,
           scale: 0.9,
@@ -1153,6 +1189,7 @@ export default class GameScene extends Phaser.Scene {
         });
       }
     }
+ 
     
     // Debug logging for troubleshooting
     console.log('updateUI - phase:', gameState.gameEnv.phase, 'shuffleAnimationPlayed:', this.shuffleAnimationPlayed);
@@ -1176,14 +1213,14 @@ export default class GameScene extends Phaser.Scene {
     
     // Update opponent info
     this.opponentVPText.setText(`VP: ${this.gameStateManager.getVictoryPoints(opponent)}`);
-    this.opponentHandText.setText(`Hand: ${opponentData && opponentData.hand ? opponentData.hand.length : 0}`);
+    this.opponentHandText.setText(`Hand: ${opponentData && opponentData.deck.hand ? opponentData.deck.hand.length : 0}`);
     
     // Update victory point labels below leader decks
     this.updateVictoryPointLabels();
     
     // Update opponent hand count display
     if (this.opponentHandCountText) {
-      const opponentHandCount = opponentData && opponentData.hand ? opponentData.hand.length : 0;
+      const opponentHandCount = opponentData && opponentData.deck?.hand ? opponentData.deck.hand.length : 0;
       this.opponentHandCountText.setText(`Opponent Hand: ${opponentHandCount}`);
     }
     
@@ -2664,6 +2701,19 @@ export default class GameScene extends Phaser.Scene {
     super.destroy();
   }
 
+
+  async simulateSetScenario() {
+    const scenarioPath = 'CharacterCase/character_c-1_trump_family_boost_dynamic';
+    const gameEnv = await this.apiManager.requestTestScenario(scenarioPath);
+    await this.apiManager.requestSetTestScenario(gameEnv);
+    
+    this.gameStateManager.initializeGame(
+      gameEnv.gameId, 
+      "playerId_1", 
+      'Test Player'
+    );
+        
+  }
   async simulatePlayer2Redraw() {
     try {
       const gameState = this.gameStateManager.getGameState();
