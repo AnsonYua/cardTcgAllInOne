@@ -6,10 +6,8 @@ export default class DemoScene extends GameScene {
     // Call parent constructor with DemoScene key
     super({ key: 'DemoScene' });
     
-    // Demo/Test specific properties
-    this.isTestMode = false;
+    // Demo specific properties
     this.isDemoMode = true;
-    this.scenarioPath = null;
   }
 
   init(data) {
@@ -18,23 +16,11 @@ export default class DemoScene extends GameScene {
     // Use GameScene's init method
     super.init(data);
     
-    // Handle both demo and test modes
-    this.isTestMode = data.isTestMode || false;
-    this.scenarioPath = data.scenarioPath || null;
-    
-    if (this.isTestMode) {
-      // Test mode settings
-      this.isOnlineMode = data.isOnlineMode || false;
-      this.isManualPollingMode = true;  // Test mode uses manual controls
-      this.isDemoMode = false;  // This is test mode, not demo mode
-      console.log('DemoScene initialized in test mode with scenario:', this.scenarioPath);
-    } else {
-      // Demo mode settings
-      this.isOnlineMode = false;  // Demo scene is always offline
-      this.isManualPollingMode = true;  // Enable manual polling for demo
-      this.isDemoMode = true;  // Flag to identify this as demo mode
-      console.log('DemoScene initialized with demo-specific settings');
-    }
+    // Demo mode settings
+    this.isOnlineMode = data.isOnlineMode || false;
+    this.isManualPollingMode = true;  // Demo mode uses manual controls
+    this.isDemoMode = true;  // Flag to identify this as demo mode
+    console.log('DemoScene initialized with demo-specific settings');
   }
 
   async create() {
@@ -43,160 +29,16 @@ export default class DemoScene extends GameScene {
     // Use GameScene's create method
     await super.create();
     
+    // Add demo-specific features
+    this.initializeDemoFeatures();
   }
 
-
-
-  createModeIndicator() {
-    const { width } = this.cameras.main;
+  initializeDemoFeatures() {
+    console.log('Initializing demo-specific features...');
     
-    // Mode indicator in top-right
-    const modeText = this.isTestMode ? 'TEST MODE' : 'DEMO MODE';
-    const modeColor = this.isTestMode ? '#ff6600' : '#00ff00';
-    
-    const modeIndicator = this.add.text(width - 20, 20, modeText, {
-      fontSize: '16px',
-      fontFamily: 'Arial',
-      fill: modeColor,
-      backgroundColor: '#000000',
-      padding: { x: 10, y: 5 }
-    });
-    modeIndicator.setOrigin(1, 0);
-    
-    // Add scenario path for test mode
-    if (this.isTestMode && this.scenarioPath) {
-      const scenarioIndicator = this.add.text(width - 20, 50, this.scenarioPath, {
-        fontSize: '12px',
-        fontFamily: 'Arial',
-        fill: '#cccccc',
-        backgroundColor: '#000000',
-        padding: { x: 5, y: 3 }
-      });
-      scenarioIndicator.setOrigin(1, 0);
-    }
-    
-    // Add pulsing effect
-    this.tweens.add({
-      targets: modeIndicator,
-      alpha: 0.5,
-      duration: 1000,
-      ease: 'Power2.easeInOut',
-      yoyo: true,
-      repeat: -1
-    });
+    // Demo features removed as requested
   }
 
-  createModeInstructions() {
-    const { width, height } = this.cameras.main;
-    
-    // Mode-specific instructions at bottom center
-    const instructionText = this.isTestMode 
-      ? 'TEST MODE: Use test buttons to control game flow and test scenarios'
-      : 'DEMO MODE: Use test buttons on the left to control the game flow';
-    
-    const instructions = this.add.text(width / 2, height - 50, instructionText, {
-      fontSize: '14px',
-      fontFamily: 'Arial',
-      fill: '#ffff00',
-      align: 'center'
-    });
-    instructions.setOrigin(0.5);
-  }
-
-  createModeSpecificButtons() {
-    const { height } = this.cameras.main;
-    const leftX = 130;
-    let buttonY = height - 480; // Position above existing buttons
-    
-    // Reset button (different text for each mode)
-    const resetButtonText = this.isTestMode ? 'Reset Test' : 'Reset Demo';
-    this.resetButton = this.add.image(leftX, buttonY, 'button');
-    this.resetButton.setScale(0.8);
-    this.resetButton.setInteractive();
-    
-    const resetButtonTextObj = this.add.text(leftX, buttonY, resetButtonText, {
-      fontSize: '12px',
-      fontFamily: 'Arial',
-      fill: '#ffffff'
-    });
-    resetButtonTextObj.setOrigin(0.5);
-    
-    this.resetButton.on('pointerdown', () => {
-      this.resetButton.setTint(0x888888);
-      this.resetButton.setScale(0.76);
-      resetButtonTextObj.setScale(0.95);
-      
-      this.time.delayedCall(100, () => {
-        this.resetButton.clearTint();
-        this.resetButton.setScale(0.8);
-        resetButtonTextObj.setScale(1);
-      });
-      
-      this.time.delayedCall(50, () => this.resetMode());
-    });
-
-    // Add test-specific buttons for test mode
-    if (this.isTestMode) {
-      buttonY += 70;
-      
-      // P2 Draw button
-      this.testP2DrawButton = this.add.image(leftX, buttonY, 'button');
-      this.testP2DrawButton.setScale(0.8);
-      this.testP2DrawButton.setInteractive();
-      
-      const p2DrawButtonText = this.add.text(leftX, buttonY, 'P2 Draw', {
-        fontSize: '12px',
-        fontFamily: 'Arial',
-        fill: '#ffffff'
-      });
-      p2DrawButtonText.setOrigin(0.5);
-      
-      this.testP2DrawButton.on('pointerdown', () => {
-        this.testP2DrawButton.setTint(0x888888);
-        this.testP2DrawButton.setScale(0.76);
-        p2DrawButtonText.setScale(0.95);
-        
-        this.time.delayedCall(100, () => {
-          this.testP2DrawButton.clearTint();
-          this.testP2DrawButton.setScale(0.8);
-          p2DrawButtonText.setScale(1);
-        });
-        
-        this.time.delayedCall(50, () => this.simulateP2Draw());
-      });
-    }
-  }
-
-  // Mode-specific methods
-  async resetMode() {
-    try {
-      console.log(`Resetting ${this.isTestMode ? 'test' : 'demo'}...`);
-      
-      // Reset game state to initial state
-      this.setupInitialState();
-      
-      // Refresh the UI
-      this.updateGameUI();
-      
-      const message = this.isTestMode ? 'Test reset to initial state.' : 'Demo reset to initial state.';
-      this.showRoomStatus(message);
-      
-    } catch (error) {
-      console.error('Error resetting mode:', error);
-      this.showRoomStatus('Error: Could not reset mode.');
-    }
-  }
-
-  setupInitialState() {
-    if (this.isTestMode && this.scenarioPath) {
-      // For test mode, we might want to reload the scenario
-      // This could be enhanced to reload from API if needed
-      console.log('Test mode: keeping current scenario state');
-    } else {
-      // Set up initial demo game state
-      this.setupDemoGameState();
-    }
-  }
 
   setupDemoGameState() {
     // Set up initial demo game state (similar to MenuScene's setupDemoGameState)
@@ -340,52 +182,19 @@ export default class DemoScene extends GameScene {
     console.log('Demo game state reset');
   }
 
-  // Test mode specific methods
-  async simulateP2Draw() {
-    if (!this.isTestMode) return;
-    
-    try {
-      console.log('Simulating P2 draw action in test mode');
-      
-      // Simulate drawing a card for player 2
-      const gameEnv = this.gameStateManager.getGameEnv();
-      if (gameEnv && gameEnv.players && gameEnv.players.playerId_2) {
-        const player2 = gameEnv.players.playerId_2;
-        if (player2.deck && player2.deck.mainDeck && player2.deck.mainDeck.length > 0) {
-          // Move a card from deck to hand
-          const drawnCard = player2.deck.mainDeck.shift();
-          player2.deck.hand.push(drawnCard);
-          
-          // Update the game state
-          this.gameStateManager.updateGameEnv(gameEnv);
-          
-          // Refresh UI
-          this.updateGameUI();
-          
-          this.showRoomStatus('P2 drew a card from deck');
-        } else {
-          this.showRoomStatus('P2 deck is empty');
-        }
-      }
-    } catch (error) {
-      console.error('Error simulating P2 draw:', error);
-      this.showRoomStatus('Error: Could not simulate P2 draw');
-    }
-  }
-
-  // Override showRoomStatus to add mode prefix
+  // Override showRoomStatus to add demo prefix
   showRoomStatus(message) {
-    const prefixedMessage = this.isTestMode ? `[TEST] ${message}` : `[DEMO] ${message}`;
-    super.showRoomStatus(prefixedMessage);
+    const demoMessage = `[DEMO] ${message}`;
+    super.showRoomStatus(demoMessage);
   }
 
-  // Override polling behavior for demo/test mode
+  // Override polling behavior for demo mode
   startManualPolling() {
-    console.log(`${this.isTestMode ? 'Test' : 'Demo'} mode: Manual polling enabled - use test buttons to update state`);
-    // Demo/test mode uses test buttons instead of automatic polling
+    console.log('Demo mode: Manual polling enabled - use test buttons to update state');
+    // Demo mode uses test buttons instead of automatic polling
   }
 
-  // Demo/test mode cleanup
+  // Demo mode cleanup
   destroy() {
     console.log('DemoScene cleanup');
     super.destroy();

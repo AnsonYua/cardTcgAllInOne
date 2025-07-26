@@ -274,7 +274,6 @@ export default class MenuScene extends Phaser.Scene {
   async startDemo() {
     // Start demo with preset name
     this.playerName = 'Demo Player';
-    
     // Try to create real game via API first
     if (this.isOnlineMode) {
       this.showLoadingMessage('Creating demo room...');
@@ -309,10 +308,10 @@ export default class MenuScene extends Phaser.Scene {
         setTimeout(() => this.createOfflineDemoGame(), 2000);
         return;
       }
+    }else{
+      alert("API unavailable. Starting offline demo...");
     }
     
-    // Fallback to offline demo
-    this.createOfflineDemoGame();
   }
 
   setupDemoGameState() {
@@ -463,70 +462,6 @@ export default class MenuScene extends Phaser.Scene {
     });
   }
 
-  async handleTestCase() {
-    if (!this.scenarioPath) {
-      alert('Please enter a scenario path first');
-      return;
-    }
-    
-    this.playerName = 'Test Player';
-    this.showLoadingMessage('Loading test scenario...');
-    
-    try {
-      if (this.isOnlineMode) {
-        // Load test scenario via API
-        const gameEnv = await this.apiManager.getTestScenario(this.scenarioPath);
-        
-        if (gameEnv) {
-          // Create game with test scenario
-          const gameId = 'test_' + Date.now();
-          
-          // Initialize game state for test mode
-          this.gameStateManager.initializeGame(gameId, 'playerId_1', this.playerName);
-          this.gameStateManager.updateGameEnv(gameEnv);
-          
-          console.log('Test case loaded:', this.scenarioPath);
-          console.log('Test game environment:', gameEnv);
-          
-          this.hideLoadingMessage();
-          this.showConnectionStatus(`🧪 Test case loaded: ${this.scenarioPath}`);
-          this.scene.start('DemoScene', { 
-            gameStateManager: this.gameStateManager, 
-            apiManager: this.apiManager,
-            isOnlineMode: true,
-            isTestMode: true,  // Flag to identify this as test mode
-            scenarioPath: this.scenarioPath
-          });
-          return;
-        }
-      }
-      
-      // Fallback to offline test mode
-      this.createOfflineTestGame();
-      
-    } catch (error) {
-      console.error('Failed to load test scenario:', error);
-      this.hideLoadingMessage();
-      this.showErrorMessage('Failed to load test scenario. Starting offline test...');
-      setTimeout(() => this.createOfflineTestGame(), 2000);
-    }
-  }
-
-  createOfflineTestGame() {
-    const gameId = 'test_' + Date.now();
-    const playerId = 'player_' + Date.now();
-    
-    this.gameStateManager.initializeGame(gameId, playerId, this.playerName);
-    this.setupDemoGameState();  // Use demo state as fallback
-    
-    this.scene.start('DemoScene', { 
-      gameStateManager: this.gameStateManager,
-      apiManager: this.apiManager,
-      isOnlineMode: false,  // Offline test mode
-      isTestMode: true,
-      scenarioPath: this.scenarioPath
-    });
-  }
 
   joinOfflineDemoGame(gameId) {
     const playerId = 'player_' + Date.now();
