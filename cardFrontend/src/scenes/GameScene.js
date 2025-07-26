@@ -469,33 +469,8 @@ export default class GameScene extends Phaser.Scene {
       this.time.delayedCall(50, () => this.endTurn());
     });
     
-    // Menu button
-    this.menuButton = this.add.image( 0+130, height - 60, 'button');
-    this.menuButton.setScale(0.8);
-    this.menuButton.setInteractive();
-    
-    const menuText = this.add.text( 0+130, height - 60, 'Menu', {
-      fontSize: '14px',
-      fontFamily: 'Arial',
-      fill: '#ffffff'
-    });
-    menuText.setOrigin(0.5);
-    
-    this.menuButton.on('pointerdown', () => {
-      // Click visual effect
-      this.menuButton.setTint(0x888888);
-      this.menuButton.setScale(0.95);
-      menuText.setScale(0.95);
-      
-      this.time.delayedCall(100, () => {
-        this.menuButton.clearTint();
-        this.menuButton.setScale(1);
-        menuText.setScale(1);
-      });
-      
-      this.time.delayedCall(50, () => this.openMenu());
-    });
 
+    /*
 
     // button for testing
       this.testLeaderButton = this.add.image( 0+130, height - 120, 'button');
@@ -688,7 +663,7 @@ export default class GameScene extends Phaser.Scene {
       });
 
 
-    }
+    }*/
 
   }
 

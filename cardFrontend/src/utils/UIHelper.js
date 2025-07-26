@@ -1,4 +1,4 @@
-// UIHelper.js - Utility class for common UI operations and button creation
+// UIHelper.js - Enhanced utility class for common UI operations and button creation
 export default class UIHelper {
   constructor(scene) {
     this.scene = scene;
@@ -10,7 +10,7 @@ export default class UIHelper {
    * @param {number} y - Y position  
    * @param {string} text - Button text
    * @param {Function} onClick - Click handler function
-   * @param {Object} options - Additional options (scale, tint, fontSize, etc.)
+   * @param {Object} options - Additional options
    * @returns {Object} Button object with image and text
    */
   createButton(x, y, text, onClick, options = {}) {
@@ -20,7 +20,11 @@ export default class UIHelper {
       fontSize: '14px',
       textColor: '#ffffff',
       clickScale: 0.76,
-      clickDelay: 50
+      clickDelay: 50,
+      enableHover: false,
+      hoverTint: 0xcccccc,
+      disabled: false,
+      disabledTint: 0x666666
     };
     
     const config = { ...defaults, ...options };
@@ -42,24 +46,60 @@ export default class UIHelper {
     });
     buttonText.setOrigin(0.5);
     
-    // Add standardized click effect
+    // State management
+    let isDisabled = config.disabled;
+    
+    // Apply disabled state if needed
+    if (isDisabled) {
+      button.setTint(config.disabledTint);
+      buttonText.setAlpha(0.5);
+    }
+    
+    // Add hover effects if enabled
+    if (config.enableHover && !isDisabled) {
+      button.on('pointerover', () => {
+        if (!isDisabled) {
+          button.setTint(config.hoverTint);
+          this.scene.input.setDefaultCursor('pointer');
+        }
+      });
+      
+      button.on('pointerout', () => {
+        if (!isDisabled) {
+          if (config.tint !== 0xffffff) {
+            button.setTint(config.tint);
+          } else {
+            button.clearTint();
+          }
+          this.scene.input.setDefaultCursor('default');
+        }
+      });
+    }
+    
+    // Add click effect
     button.on('pointerdown', () => {
+      if (isDisabled) return;
+      
       // Visual click effect
       button.setTint(0x888888);
-      button.setScale(config.clickScale);
+      button.setScale(config.scale * 0.95); // Consistent scale reduction
       buttonText.setScale(0.95);
       
       this.scene.time.delayedCall(100, () => {
-        if (config.tint !== 0xffffff) {
-          button.setTint(config.tint);
-        } else {
-          button.clearTint();
+        if (!isDisabled) {
+          if (config.tint !== 0xffffff) {
+            button.setTint(config.tint);
+          } else {
+            button.clearTint();
+          }
+          button.setScale(config.scale);
+          buttonText.setScale(1);
         }
-        button.setScale(config.scale);
-        buttonText.setScale(1);
       });
       
-      this.scene.time.delayedCall(config.clickDelay, () => onClick());
+      this.scene.time.delayedCall(config.clickDelay, () => {
+        if (!isDisabled) onClick();
+      });
     });
     
     return {
@@ -69,11 +109,128 @@ export default class UIHelper {
         button.setVisible(visible);
         buttonText.setVisible(visible);
       },
+      setEnabled: (enabled) => {
+        isDisabled = !enabled;
+        if (isDisabled) {
+          button.setTint(config.disabledTint);
+          buttonText.setAlpha(0.5);
+        } else {
+          if (config.tint !== 0xffffff) {
+            button.setTint(config.tint);
+          } else {
+            button.clearTint();
+          }
+          buttonText.setAlpha(1);
+        }
+      },
+      setText: (newText) => {
+        buttonText.setText(newText);
+      },
       destroy: () => {
         button.destroy();
         buttonText.destroy();
       }
     };
+  }
+
+  /**
+   * Creates a column of buttons with consistent spacing
+   * @param {number} startX - Starting X position
+   * @param {number} startY - Starting Y position
+   * @param {Array} buttonConfigs - Array of {text, onClick, options} objects
+   * @param {number} spacing - Vertical spacing between buttons
+   * @returns {Array} Array of button objects
+   */
+  createButtonColumn(startX, startY, buttonConfigs, spacing = 60) {
+    return buttonConfigs.map((config, index) => {
+      const y = startY - (index * spacing);
+      return this.createButton(
+        startX, 
+        y, 
+        config.text, 
+        config.onClick, 
+        config.options || {}
+      );
+    });
+  }
+
+  /**
+   * Creates a row of buttons with consistent spacing
+   * @param {number} startX - Starting X position
+   * @param {number} startY - Starting Y position
+   * @param {Array} buttonConfigs - Array of {text, onClick, options} objects
+   * @param {number} spacing - Horizontal spacing between buttons
+   * @returns {Array} Array of button objects
+   */
+  createButtonRow(startX, startY, buttonConfigs, spacing = 160) {
+    const totalWidth = (buttonConfigs.length - 1) * spacing;
+    const firstButtonX = startX - totalWidth / 2;
+    
+    return buttonConfigs.map((config, index) => {
+      const x = firstButtonX + (index * spacing);
+      return this.createButton(
+        x, 
+        startY, 
+        config.text, 
+        config.onClick, 
+        config.options || {}
+      );
+    });
+  }
+
+  /**
+   * Get standard position presets for common button locations
+   * @returns {Object} Object with position presets
+   */
+  getStandardPositions() {
+    const { width, height } = this.scene.cameras.main;
+    
+    return {
+      // Bottom area positions
+      bottomRight: { x: width - 120, y: height - 60 },
+      bottomLeft: { x: 130, y: height - 60 },
+      bottomCenter: { x: width / 2, y: height - 60 },
+      
+      // Center area positions
+      center: { x: width / 2, y: height / 2 },
+      centerLeft: { x: width * 0.25, y: height / 2 },
+      centerRight: { x: width * 0.75, y: height / 2 },
+      
+      // Top area positions
+      topLeft: { x: 130, y: 60 },
+      topRight: { x: width - 120, y: 60 },
+      topCenter: { x: width / 2, y: 60 },
+      
+      // Test button column (DemoScene pattern)
+      testColumn: {
+        base: { x: 130, y: height - 60 },
+        getPosition: (index) => ({ x: 130, y: height - 60 - (index * 60) })
+      }
+    };
+  }
+
+  /**
+   * Creates demo/test buttons in the standard pattern
+   * @param {Array} testButtons - Array of test button configurations
+   * @returns {Array} Array of created button objects
+   */
+  createTestButtons(testButtons) {
+    const positions = this.getStandardPositions();
+    
+    return testButtons.map((btnConfig, index) => {
+      const pos = positions.testColumn.getPosition(index);
+      return this.createButton(
+        pos.x,
+        pos.y,
+        btnConfig.text,
+        btnConfig.onClick,
+        {
+          fontSize: '12px',
+          clickScale: 0.76,
+          ...btnConfig.options
+        }
+      );
+    });
   }
 
   /**
@@ -191,39 +348,28 @@ export default class UIHelper {
     messageText.setDepth(1002);
     elements.push(messageText);
     
-    // Buttons
-    const buttonSpacing = 160;
-    const startX = width/2 - (buttons.length - 1) * buttonSpacing / 2;
-    
-    buttons.forEach((buttonConfig, index) => {
-      const buttonX = startX + index * buttonSpacing;
-      const button = this.scene.add.image(buttonX, height/2 + 30, 'button');
-      button.setScale(0.8);
-      button.setInteractive();
-      button.setDepth(1002);
-      
-      if (buttonConfig.tint) {
-        button.setTint(buttonConfig.tint);
-      }
-      
-      const buttonText = this.scene.add.text(buttonX, height/2 + 30, buttonConfig.text, {
-        fontSize: '16px',
-        fontFamily: 'Arial',
-        fill: '#ffffff'
-      });
-      buttonText.setOrigin(0.5);
-      buttonText.setDepth(1002);
-      
-      button.on('pointerdown', () => {
-        buttonConfig.onClick();
+    // Buttons using createButtonRow
+    const buttonConfigs = buttons.map(btn => ({
+      text: btn.text,
+      onClick: () => {
+        btn.onClick();
         this.destroyDialog(elements);
-      });
-      
-      elements.push(button, buttonText);
+      },
+      options: { tint: btn.tint }
+    }));
+    
+    const dialogButtons = this.createButtonRow(width/2, height/2 + 30, buttonConfigs);
+    
+    // Set button depths and add to elements
+    dialogButtons.forEach(btn => {
+      btn.button.setDepth(1002);
+      btn.text.setDepth(1002);
+      elements.push(btn.button, btn.text);
     });
     
     return {
       elements,
+      buttons: dialogButtons,
       destroy: () => this.destroyDialog(elements)
     };
   }
