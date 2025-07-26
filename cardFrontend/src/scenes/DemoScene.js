@@ -1,24 +1,14 @@
 import Phaser from 'phaser';
 import GameScene from './GameScene.js';
 
-export default class DemoScene extends Phaser.Scene {
+export default class DemoScene extends GameScene {
   constructor() {
+    // Call parent constructor with DemoScene key
     super({ key: 'DemoScene' });
     
-    // Copy all GameScene properties to this instance
-    this.gameStateManager = null;
-    this.apiManager = null;
-    this.cards = [];
-    this.zones = {};
-    this.selectedCard = null;
-    this.draggedCard = null;
-    this.isOnlineMode = false;
-    this.isManualPollingMode = false;
+    // Demo/Test specific properties
     this.isTestMode = false;
     this.isDemoMode = true;
-    this.shuffleAnimationPlayed = false;
-    this.drawPhaseAnimationPlayed = false;
-    this.testButtonsCreated = false;
     this.scenarioPath = null;
   }
 
@@ -26,7 +16,7 @@ export default class DemoScene extends Phaser.Scene {
     console.log('DemoScene init called with data:', data);
     
     // Use GameScene's init method
-    GameScene.prototype.init.call(this, data);
+    super.init(data);
     
     // Handle both demo and test modes
     this.isTestMode = data.isTestMode || false;
@@ -51,24 +41,11 @@ export default class DemoScene extends Phaser.Scene {
     console.log('DemoScene create method called');
     
     // Use GameScene's create method
-    await GameScene.prototype.create.call(this);
+    await super.create();
     
-    // Add demo-specific features
-    this.initializeDemoFeatures();
   }
 
-  initializeDemoFeatures() {
-    console.log('Initializing demo/test-specific features...');
-    
-    // Add mode indicator
-    this.createModeIndicator();
-    
-    // Add mode-specific instructions
-    this.createModeInstructions();
-    
-    // Add mode-specific buttons
-    this.createModeSpecificButtons();
-  }
+
 
   createModeIndicator() {
     const { width } = this.cameras.main;
@@ -131,51 +108,93 @@ export default class DemoScene extends Phaser.Scene {
     const leftX = 130;
     let buttonY = height - 480; // Position above existing buttons
     
-    // Reset Demo button
-    this.resetDemoButton = this.add.image(leftX, buttonY, 'button');
-    this.resetDemoButton.setScale(0.8);
-    this.resetDemoButton.setInteractive();
+    // Reset button (different text for each mode)
+    const resetButtonText = this.isTestMode ? 'Reset Test' : 'Reset Demo';
+    this.resetButton = this.add.image(leftX, buttonY, 'button');
+    this.resetButton.setScale(0.8);
+    this.resetButton.setInteractive();
     
-    const resetDemoButtonText = this.add.text(leftX, buttonY, 'Reset Demo', {
+    const resetButtonTextObj = this.add.text(leftX, buttonY, resetButtonText, {
       fontSize: '12px',
       fontFamily: 'Arial',
       fill: '#ffffff'
     });
-    resetDemoButtonText.setOrigin(0.5);
+    resetButtonTextObj.setOrigin(0.5);
     
-    this.resetDemoButton.on('pointerdown', () => {
-      this.resetDemoButton.setTint(0x888888);
-      this.resetDemoButton.setScale(0.76);
-      resetDemoButtonText.setScale(0.95);
+    this.resetButton.on('pointerdown', () => {
+      this.resetButton.setTint(0x888888);
+      this.resetButton.setScale(0.76);
+      resetButtonTextObj.setScale(0.95);
       
       this.time.delayedCall(100, () => {
-        this.resetDemoButton.clearTint();
-        this.resetDemoButton.setScale(0.8);
-        resetDemoButtonText.setScale(1);
+        this.resetButton.clearTint();
+        this.resetButton.setScale(0.8);
+        resetButtonTextObj.setScale(1);
       });
       
-      this.time.delayedCall(50, () => this.resetDemo());
+      this.time.delayedCall(50, () => this.resetMode());
     });
+
+    // Add test-specific buttons for test mode
+    if (this.isTestMode) {
+      buttonY += 70;
+      
+      // P2 Draw button
+      this.testP2DrawButton = this.add.image(leftX, buttonY, 'button');
+      this.testP2DrawButton.setScale(0.8);
+      this.testP2DrawButton.setInteractive();
+      
+      const p2DrawButtonText = this.add.text(leftX, buttonY, 'P2 Draw', {
+        fontSize: '12px',
+        fontFamily: 'Arial',
+        fill: '#ffffff'
+      });
+      p2DrawButtonText.setOrigin(0.5);
+      
+      this.testP2DrawButton.on('pointerdown', () => {
+        this.testP2DrawButton.setTint(0x888888);
+        this.testP2DrawButton.setScale(0.76);
+        p2DrawButtonText.setScale(0.95);
+        
+        this.time.delayedCall(100, () => {
+          this.testP2DrawButton.clearTint();
+          this.testP2DrawButton.setScale(0.8);
+          p2DrawButtonText.setScale(1);
+        });
+        
+        this.time.delayedCall(50, () => this.simulateP2Draw());
+      });
+    }
   }
 
-  // Demo-specific methods
-  async resetDemo() {
+  // Mode-specific methods
+  async resetMode() {
     try {
-      console.log('Resetting demo...');
+      console.log(`Resetting ${this.isTestMode ? 'test' : 'demo'}...`);
       
-      // Reset game state to initial demo state
-      this.setupDemoGameState();
+      // Reset game state to initial state
+      this.setupInitialState();
       
-      // Refresh the UI using GameScene method
-      if (GameScene.prototype.updateGameUI) {
-        GameScene.prototype.updateGameUI.call(this);
-      }
+      // Refresh the UI
+      this.updateGameUI();
       
-      this.showRoomStatus('Demo reset to initial state.');
+      const message = this.isTestMode ? 'Test reset to initial state.' : 'Demo reset to initial state.';
+      this.showRoomStatus(message);
       
     } catch (error) {
-      console.error('Error resetting demo:', error);
-      this.showRoomStatus('Error: Could not reset demo.');
+      console.error('Error resetting mode:', error);
+      this.showRoomStatus('Error: Could not reset mode.');
+    }
+  }
+
+  setupInitialState() {
+    if (this.isTestMode && this.scenarioPath) {
+      // For test mode, we might want to reload the scenario
+      // This could be enhanced to reload from API if needed
+      console.log('Test mode: keeping current scenario state');
+    } else {
+      // Set up initial demo game state
+      this.setupDemoGameState();
     }
   }
 
@@ -321,33 +340,54 @@ export default class DemoScene extends Phaser.Scene {
     console.log('Demo game state reset');
   }
 
-  // Override showRoomStatus to add demo prefix
-  showRoomStatus(message) {
-    const demoMessage = `[DEMO] ${message}`;
-    // Use GameScene's method
-    if (GameScene.prototype.showRoomStatus) {
-      GameScene.prototype.showRoomStatus.call(this, demoMessage);
-    } else {
-      console.log(demoMessage);
+  // Test mode specific methods
+  async simulateP2Draw() {
+    if (!this.isTestMode) return;
+    
+    try {
+      console.log('Simulating P2 draw action in test mode');
+      
+      // Simulate drawing a card for player 2
+      const gameEnv = this.gameStateManager.getGameEnv();
+      if (gameEnv && gameEnv.players && gameEnv.players.playerId_2) {
+        const player2 = gameEnv.players.playerId_2;
+        if (player2.deck && player2.deck.mainDeck && player2.deck.mainDeck.length > 0) {
+          // Move a card from deck to hand
+          const drawnCard = player2.deck.mainDeck.shift();
+          player2.deck.hand.push(drawnCard);
+          
+          // Update the game state
+          this.gameStateManager.updateGameEnv(gameEnv);
+          
+          // Refresh UI
+          this.updateGameUI();
+          
+          this.showRoomStatus('P2 drew a card from deck');
+        } else {
+          this.showRoomStatus('P2 deck is empty');
+        }
+      }
+    } catch (error) {
+      console.error('Error simulating P2 draw:', error);
+      this.showRoomStatus('Error: Could not simulate P2 draw');
     }
   }
 
-  // Override polling behavior for demo mode
-  startManualPolling() {
-    console.log('Demo mode: Manual polling enabled - use test buttons to update state');
-    // Demo mode uses test buttons instead of automatic polling
+  // Override showRoomStatus to add mode prefix
+  showRoomStatus(message) {
+    const prefixedMessage = this.isTestMode ? `[TEST] ${message}` : `[DEMO] ${message}`;
+    super.showRoomStatus(prefixedMessage);
   }
 
-  // Demo mode cleanup
+  // Override polling behavior for demo/test mode
+  startManualPolling() {
+    console.log(`${this.isTestMode ? 'Test' : 'Demo'} mode: Manual polling enabled - use test buttons to update state`);
+    // Demo/test mode uses test buttons instead of automatic polling
+  }
+
+  // Demo/test mode cleanup
   destroy() {
     console.log('DemoScene cleanup');
     super.destroy();
   }
 }
-
-// Copy all GameScene prototype methods to DemoScene
-Object.getOwnPropertyNames(GameScene.prototype).forEach(name => {
-  if (name !== 'constructor' && name !== 'init' && name !== 'create' && name !== 'showRoomStatus') {
-    DemoScene.prototype[name] = GameScene.prototype[name];
-  }
-});

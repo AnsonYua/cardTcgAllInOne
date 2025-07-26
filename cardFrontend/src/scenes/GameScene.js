@@ -4,8 +4,8 @@ import Card from '../components/Card.js';
 import ShuffleAnimationManager from '../components/ShuffleAnimationManager.js';
 
 export default class GameScene extends Phaser.Scene {
-  constructor() {
-    super({ key: 'GameScene' });
+  constructor(config = { key: 'GameScene' }) {
+    super(config);
     
     this.gameStateManager = null;
     this.playerHand = [];
