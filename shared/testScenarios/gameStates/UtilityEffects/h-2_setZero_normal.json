@@ -4,7 +4,6 @@
   "testType": "utility_effect",
   "category": "setPower",
   "tags": ["h-2", "MAGA", "setPower", "cross-player", "card-selection", "validation"],
-  
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
     "round": 1,
