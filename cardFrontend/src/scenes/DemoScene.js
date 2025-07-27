@@ -1,14 +1,15 @@
 import Phaser from 'phaser';
-import GameScene from './GameScene.js';
+import DemoSceneBasic from './DemoSceneBasic.js';
 import UIHelper from '../utils/UIHelper.js';
 
-export default class DemoScene extends GameScene {
+export default class DemoScene extends DemoSceneBasic {
   constructor() {
     // Call parent constructor with DemoScene key
     super({ key: 'DemoScene' });
     
     // Demo specific properties
     this.isDemoMode = true;
+    console.log("DemoScene constructor called");
   }
 
   init(data) {
@@ -26,14 +27,8 @@ export default class DemoScene extends GameScene {
 
   async create() {
     console.log('DemoScene create method called');
-    
-    // Use GameScene's create method
     await super.create();
-    
-    // Initialize UI helper
     this.uiHelper = new UIHelper(this);
-    
-    // Add demo-specific features
     this.initializeDemoFeatures();
   }
 
@@ -95,21 +90,15 @@ export default class DemoScene extends GameScene {
   }
 
 
-  // Override showRoomStatus to add demo prefix
-  showRoomStatus(message) {
-    const demoMessage = `[DEMO] ${message}`;
-    super.showRoomStatus(demoMessage);
-  }
-
-  // Override polling behavior for demo mode
-  startManualPolling() {
-    console.log('Demo mode: Manual polling enabled - use test buttons to update state');
-    // Demo mode uses test buttons instead of automatic polling
-  }
-
   // Demo mode cleanup
   destroy() {
     console.log('DemoScene cleanup');
     super.destroy();
+  }
+
+  // Override simulateSetScenario for demo-specific functionality
+  async simulateSetScenario() {
+    const scenarioPath = 'CharacterCase/character_c-1_trump_family_boost_dynamic';
+    await super.simulateSetScenario(scenarioPath);
   }
 }

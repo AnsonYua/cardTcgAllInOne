@@ -1127,11 +1127,18 @@ export default class GameScene extends Phaser.Scene {
     
     if(this.isTestMode) {
       if(gameState.gameEnv.phase === 'MAIN_PHASE') {
+        this.displayGameInfo();
         this.showDeckStacks();
         // Show hand area and update game state after shuffle animation completes
         this.showHandArea();
-        this.selectLeaderCard('player');
-        //this.selectLeaderCard('opponent');
+        if(this.shuffleAnimationManager?.playerLeaderCards.length === 0){
+          this.shuffleAnimationManager?.selectLeaderCard('player');
+          this.selectLeaderCard('player');
+        }
+        if(this.shuffleAnimationManager?.opponentLeaderCards.length === 0){
+          this.shuffleAnimationManager?.selectLeaderCard('opponent');
+          this.selectLeaderCard('opponent');
+        }
       }
     }
 
@@ -1840,6 +1847,9 @@ export default class GameScene extends Phaser.Scene {
       this.shuffleAnimationManager?.playerLeaderCards : 
       this.shuffleAnimationManager?.opponentLeaderCards;
 
+    console.log("leaderCardsArraya",this.shuffleAnimationManager?.playerLeaderCards);
+
+
     const leaderDeckSource = playerType === 'player' ? this.playerLeaderCards : this.opponentLeaderCards;
     console.log('leaderDeckSource:', this.shuffleAnimationManager);
 
@@ -1850,8 +1860,9 @@ export default class GameScene extends Phaser.Scene {
 
     // Atomically get and remove the top card from both the visual and data arrays
     console.log('leaderCardsArray:', JSON.stringify(leaderCardsArray));
+    console.log('leaderCardsArray:2', JSON.stringify(leaderDeckSource));
+
     const topCard = leaderCardsArray.shift();
-    console.log('leaderCardsArray:2', JSON.stringify(leaderCardsArray));
     const cardData = leaderDeckSource.shift();
 
     if (!topCard || !cardData) {
@@ -1859,21 +1870,8 @@ export default class GameScene extends Phaser.Scene {
       return;
     }
 
-    const leaderCard = new Card(this, leaderZone.x, leaderZone.y, cardData, {
-      interactive: true,
-      draggable: false,
-      scale: 1,
-      gameStateManager: this.gameStateManager,
-      usePreview: true,
-      disableHighlight: true  // Disable selection highlight for leader cards
-    });
-    leaderCard.on('pointerover', () => this.showCardPreview(cardData));
-    leaderCard.on('pointerout', () => this.hideCardPreview());
-
-    leaderZone.card = leaderCard;
-    leaderCard.setDepth(1001);
-    console.log(`Moving ${playerType} leader card to leader position:`, cardData.name);
-    /*
+    console.log("topCard ", JSON.stringify(this.layout.player.leaderDeck));
+    
     this.tweens.add({
       targets: topCard,
       x: leaderZone.x,
@@ -1881,61 +1879,75 @@ export default class GameScene extends Phaser.Scene {
       rotation: 0,
       duration: 300,
       ease: 'Power2.easeInOut',
-      onComplete: () => {
-        topCard.destroy();
-        if (topCard.borderGraphics) {
-          topCard.borderGraphics.destroy();
-        }
-
-        if (leaderZone.card) {
-          leaderZone.card.destroy();
-        }
-
-        const leaderCard = new Card(this, leaderZone.x, leaderZone.y, cardData, {
-          interactive: true,
-          draggable: false,
-          scale: 0.9,
-          gameStateManager: this.gameStateManager,
-          usePreview: true,
-          disableHighlight: true  // Disable selection highlight for leader cards
-        });
-    
-        leaderCard.on('pointerover', () => this.showCardPreview(cardData));
-        leaderCard.on('pointerout', () => this.hideCardPreview());
-
-        leaderZone.card = leaderCard;
-        leaderCard.setDepth(1001);
-        
-        if (leaderZone.placeholder) {
-          leaderZone.placeholder.setVisible(false);
-        }
-
-        console.log(`${playerType} leader card ${cardData.name} placed in leader position`);
-
-        this.repositionLeaderDeckCards(playerType);
-        
-        if (!this.leaderCardsPlaced) {
-          this.leaderCardsPlaced = 0;
-        }
-        this.leaderCardsPlaced++;
-        
-        if (this.leaderCardsPlaced === 2) {
-          console.log('Both leader cards placed, starting highlight animations');
-          
-          this.playerHand.forEach(card => card.setDepth(1001));
-          if (this.handContainer) {
-            this.handContainer.setDepth(1001);
-          }
-          
-          this.time.delayedCall(50, () => {
-            this.highlightHandCards();
-            this.highlightLeaderCards();
-            this.showRedrawDialog();
-          });
-        }
-      }
+      onComplete: () => this.handleLeaderCardPlacement(topCard, cardData, leaderZone, playerType)
     });
-    */
+  }
+
+  handleLeaderCardPlacement(topCard, cardData, leaderZone, playerType) {
+    // Clean up the animated card
+    topCard.destroy();
+    if (topCard.borderGraphics) {
+      topCard.borderGraphics.destroy();
+    }
+
+    // Remove existing leader card if present
+    if (leaderZone.card) {
+      leaderZone.card.destroy();
+    }
+
+    // Create the final leader card
+    const leaderCard = new Card(this, leaderZone.x, leaderZone.y, cardData, {
+      interactive: true,
+      draggable: false,
+      scale: 0.9,
+      gameStateManager: this.gameStateManager,
+      usePreview: true,
+      disableHighlight: true  // Disable selection highlight for leader cards
+    });
+
+    // Add hover events
+    leaderCard.on('pointerover', () => this.showCardPreview(cardData));
+    leaderCard.on('pointerout', () => this.hideCardPreview());
+
+    // Place the card in the zone
+    leaderZone.card = leaderCard;
+    leaderCard.setDepth(1001);
+    
+    if (leaderZone.placeholder) {
+      leaderZone.placeholder.setVisible(false);
+    }
+
+    console.log(`${playerType} leader card ${cardData.name} placed in leader position`);
+
+    // Reposition remaining cards in the deck
+    this.repositionLeaderDeckCards(playerType);
+    
+    // Handle leader card placement completion
+    this.handleLeaderCardPlacementComplete();
+  }
+
+  handleLeaderCardPlacementComplete() {
+    if (!this.leaderCardsPlaced) {
+      this.leaderCardsPlaced = 0;
+    }
+    this.leaderCardsPlaced++;
+    
+    if (this.leaderCardsPlaced === 2) {
+      console.log('Both leader cards placed, starting highlight animations');
+      
+      this.playerHand.forEach(card => card.setDepth(1001));
+      if (this.handContainer) {
+        this.handContainer.setDepth(1001);
+      }
+      
+      this.time.delayedCall(50, () => {
+        if(this.gameStateManager.getGameState().gameEnv.phase === 'REDRAW_PHASE'){
+          this.highlightHandCards();
+          this.highlightLeaderCards();
+          this.showRedrawDialog();
+        }
+      });
+    }
   }
 
   repositionLeaderDeckCards(playerType = 'player') {
@@ -2220,45 +2232,6 @@ export default class GameScene extends Phaser.Scene {
     this.connectionStatusText.setOrigin(1, 0);
   }
 
-  async testPolling() {
-    if (!this.isOnlineMode || !this.apiManager) {
-      console.log('Not in online mode or no API manager available');
-      return;
-    }
-
-    const gameState = this.gameStateManager.getGameState();
-    console.log('Manual polling test triggered...');
-    console.log('Polling for playerId:', gameState.playerId, 'gameId:', gameState.gameId);
-    
-    try {
-      // Perform a single poll manually
-      const response = await this.apiManager.getPlayer(gameState.playerId, gameState.gameId);
-      
-      if (response && response.gameEnv) {
-        console.log('Polling response received:', response);
-        this.gameStateManager.updateGameEnv(response.gameEnv);
-        
-        // Process any events
-        await this.gameStateManager.acknowledgeEvents(this.apiManager);
-        
-        // Update UI with any changes
-        this.updateGameState();
-        
-        console.log('Manual polling completed successfully');
-      } else {
-        console.log('No game environment received from polling');
-      }
-    } catch (error) {
-      console.error('Manual polling failed:', error);
-      
-      if (error.message.includes('404')) {
-        console.log('Game not found on backend. In demo mode, you need to create the game on backend first.');
-        console.log('You can either:');
-        console.log('1. Create a real game through the API, or');
-        console.log('2. Use the backend test endpoints to inject a game state');
-      }
-    }
-  }
 
   async simulatePlayer2Join() {
     try {
@@ -2290,6 +2263,9 @@ export default class GameScene extends Phaser.Scene {
     const gameState = this.gameStateManager.getGameState();
     const gameEnv = gameState.gameEnv;
     
+    const opponentId = this.gameStateManager.getOpponent();
+    const opponentData = this.gameStateManager.getPlayer(opponentId);
+
     if (gameEnv && gameEnv.firstPlayer !== undefined && gameEnv.players) {
       const playerIds = Object.keys(gameEnv.players);
       if (playerIds.length < 2) return;
@@ -2301,7 +2277,8 @@ export default class GameScene extends Phaser.Scene {
       // Display first player info
       const firstPlayerText = isCurrentPlayerFirst ? 'You go first!' : 'Opponent goes first!';
       this.showRoomStatus(`${firstPlayerText} (First player: ${firstPlayerId})`);
-      
+   
+      this.opponentInfoText.setText(`Opponent: ${opponentData ? opponentData.name : 'Unknown'}`);
       // Update first player display
       this.updateFirstPlayerDisplay(isCurrentPlayerFirst);
       
@@ -2318,6 +2295,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   updateFirstPlayerDisplay(isCurrentPlayerFirst) {
+    console.log("updateFirstPlayerDisplay 11", isCurrentPlayerFirst);
     if (this.firstPlayerText) {
       const firstPlayerName = isCurrentPlayerFirst ? 'You' : 'Opponent';
       this.firstPlayerText.setText(`First Player: ${firstPlayerName}`);
@@ -2703,24 +2681,6 @@ export default class GameScene extends Phaser.Scene {
     super.destroy();
   }
 
-
-  async simulateSetScenario() {
-    this.isTestMode = true;
-    const scenarioPath = 'CharacterCase/character_c-1_trump_family_boost_dynamic';
-    const gameEnv = await this.apiManager.requestTestScenario(scenarioPath);
-    await this.apiManager.requestSetTestScenario(gameEnv);
-    
-    this.gameStateManager.initializeGame(
-      gameEnv.gameId, 
-      "playerId_1", 
-      'Test Player'
-    );
-    console.log("", gameEnv.gameEnv.players.playerId_1.deck.leader);
-    this.shuffleAnimationManager.selectLeaderCard(gameEnv.gameEnv.players.playerId_1.deck.leader, 'player');
-    //console.log("shuffleAnimationManager", this.shuffleAnimationManager?.playerLeaderCards);
-    this.shuffleAnimationManager.selectLeaderCard(gameEnv.gameEnv.players.playerId_2.deck.leader, 'opponent');
-        
-  }
   async simulatePlayer2Redraw() {
     try {
       const gameState = this.gameStateManager.getGameState();

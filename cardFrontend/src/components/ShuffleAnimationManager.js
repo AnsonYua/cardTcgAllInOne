@@ -455,15 +455,74 @@ export default class ShuffleAnimationManager {
     });
   }
 
-  selectLeaderCard(leaderArray , playerType = 'player') {
-    console.log("selectLeaderCard", leaderArray, playerType);
-    if(playerType === 'player') {
-      this.playerLeaderCards  = [...leaderArray];
-      console.log("playerLeaderCards", this.playerLeaderCards);
-    }else{
-      this.opponentLeaderCards  = [...leaderArray];
-      console.log("opponentLeaderCards", this.opponentLeaderCards);
+  selectLeaderCard(playerType = 'player') {
+    console.log(`selectLeaderCard called for ${playerType}`);
+    
+    // Validate input
+    if (!playerType || (playerType !== 'player' && playerType !== 'opponent')) {
+      console.error('Invalid playerType:', playerType);
+      return;
     }
+
+    const { width, height } = this.scene.cameras.main;
+    const layout = this.scene.layout;
+    
+    if (!layout) {
+      console.error('Layout not found in scene');
+      return;
+    }
+
+    // Create configuration for the specified player type
+    const config = this.getLeaderCardConfig(playerType, layout, width, height);
+    
+    // Create leader cards using the configuration
+    this.createLeaderCards(config);
+  }
+
+  getLeaderCardConfig(playerType, layout, width, height) {
+    const isPlayer = playerType === 'player';
+    
+    return {
+      playerType: playerType,
+      deckPosition: isPlayer ? layout.player?.leaderDeck : layout.opponent?.leaderDeck,
+      leaderCardsData: isPlayer ? this.scene.playerLeaderCards : this.scene.opponentLeaderCards,
+      startY: isPlayer ? height + 100 : -100, // Player starts below screen, opponent above
+      targetArray: isPlayer ? this.playerLeaderCards : this.opponentLeaderCards,
+      deckPositionKey: isPlayer ? 'player' : 'opponent'
+    };
+  }
+
+  createLeaderCards(config) {
+    const { playerType, deckPosition, leaderCardsData, startY, targetArray, deckPositionKey } = config;
+    
+    if (!deckPosition) {
+      console.error(`${deckPositionKey} leader deck position not found`);
+      return;
+    }
+    
+    if (!leaderCardsData || !Array.isArray(leaderCardsData)) {
+      console.error(`${deckPositionKey} leader cards data not found or invalid`);
+      return;
+    }
+
+    console.log(`Creating ${leaderCardsData.length} ${playerType} leader cards`);
+    
+    // Clear existing leader cards
+    targetArray.length = 0;
+    
+    // Create leader cards
+    for (let i = 0; i < leaderCardsData.length; i++) {
+      const leaderCardData = leaderCardsData[i];
+      const cardContainer = this.createLeaderCardWithRoundedCorners(
+        deckPosition.x, 
+        startY, 
+        leaderCardData
+      );
+      cardContainer.setDepth(1000 + i);
+      targetArray.push(cardContainer);
+    }
+    
+    console.log(`Created ${targetArray.length} ${playerType} leader cards`);
   }
 
   createLeaderCardWithRoundedCorners(x, y, cardData = null) {
