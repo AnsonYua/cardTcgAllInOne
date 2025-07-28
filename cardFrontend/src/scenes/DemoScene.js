@@ -10,7 +10,7 @@ export default class DemoScene extends DemoSceneBasic {
     // Demo specific properties
     this.isDemoMode = true;
     console.log("DemoScene constructor called");
-    this.crtPlayer = "playerId_2";
+    this.crtPlayer = "playerId_1";
     this.scenarioPath = 'UtilityEffects/h-2_setZero_normal';
   }
 

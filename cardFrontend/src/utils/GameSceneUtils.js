@@ -1,6 +1,8 @@
 /**
  * Utility class for handling GameScene-related operations
  */
+import Card from '../components/Card.js';
+
 export default class GameSceneUtils {
   /**
    * Updates zones with card data from the backend
@@ -25,9 +27,11 @@ export default class GameSceneUtils {
         console.log("debug cardData22", JSON.stringify(cardDataObject));
         
         const cardOptions = {
-          interactive: false,
+          interactive: true, // Enable interaction for hover events
+          draggable: false,  // But disable dragging for zone cards
           scale: 0.9,
-          gameStateManager: scene.gameStateManager
+          gameStateManager: scene.gameStateManager,
+          usePreview: true,
         };
         
         // Add faceDown option for opponent cards
@@ -35,10 +39,27 @@ export default class GameSceneUtils {
           cardOptions.faceDown = cardData.faceDown || false;
         }
         
-        const Card = scene.constructor.Card || require('../components/Card').default;
         const card = new Card(scene, zone.x, zone.y, cardDataObject, cardOptions);
         zone.card = card;
         zone.placeholder.setVisible(false);
+
+        // Add hover events using scene methods
+        // Note: Card's setupInteraction() already handles basic pointer events
+        // We need to remove the default listeners first, then add our custom ones
+        zone.card.removeAllListeners('pointerover');
+        zone.card.removeAllListeners('pointerout');
+        zone.card.on('pointerover', () => {
+          if (!zone.card.isDragging) {
+            scene.game.canvas.style.cursor = 'pointer';
+            scene.showCardPreview(cardDataObject);
+          }
+        });
+        zone.card.on('pointerout', () => {
+          if (!zone.card.isDragging) {
+            scene.game.canvas.style.cursor = 'default';
+            scene.hideCardPreview();
+          }
+        });
       }
     });
   }
