@@ -51,6 +51,7 @@ export default class GameStateManager {
     this.gameState.uiState = { ...this.gameState.uiState, ...uiState };
   }
 
+
   getGameState() {
     return this.gameState;
   }

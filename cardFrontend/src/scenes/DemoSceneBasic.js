@@ -24,7 +24,7 @@ export default class DemoSceneBasic extends GameScene {
     
     this.gameStateManager.initializeGame(
       gameEnv.gameId, 
-      this.crtPlayer,
+      this.inGamePlayerId,
       'Test Player'
     );
     console.log("", gameEnv.gameEnv.players.playerId_1.deck.leader);

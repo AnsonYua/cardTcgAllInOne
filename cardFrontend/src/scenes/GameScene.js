@@ -7,7 +7,7 @@ import GameSceneUtils from '../utils/GameSceneUtils.js';
 export default class GameScene extends Phaser.Scene {
   constructor(config = { key: 'GameScene' }) {
     super(config);
-    
+    this.inGamePlayerId = "";
     this.gameStateManager = null;
     this.playerHand = [];
     this.playerZones = {};
@@ -20,6 +20,7 @@ export default class GameScene extends Phaser.Scene {
     this.leaderCards = [];
     this.zoneHighlights = [];
     this.isTestMode = false;
+    this.currentPendingSelectionId = null; // Track current pending selection to avoid duplicates
   }
 
   init(data) {
@@ -906,6 +907,33 @@ export default class GameScene extends Phaser.Scene {
     this.updateLeaderCardsFromBackend();
     this.updateZones();
     this.updateUI();
+    this.checkForPendingCardSelections();
+  }
+
+  checkForPendingCardSelections() {
+    const gameState = this.gameStateManager.getGameState();
+    const { pendingCardSelections } = gameState.gameEnv;
+    
+    if (!pendingCardSelections) {
+      // Clear tracking when no pending selections
+      this.currentPendingSelectionId = null;
+      return;
+    }
+    
+    // Check if there's a pending selection for the current player
+    const selectionIds = Object.keys(pendingCardSelections);
+    for (const selectionId of selectionIds) {
+      const selection = pendingCardSelections[selectionId];
+      if (selection.playerId === this.inGamePlayerId && selection.eligibleCards && selection.eligibleCards.length > 0) {
+        // Only show dialog if it's a new selection ID (avoid duplicates)
+        if (this.currentPendingSelectionId !== selectionId) {
+          console.log('New pending card selection detected for current player:', selectionId, selection);
+          this.currentPendingSelectionId = selectionId;
+          this.showCardSelectionDialog(selectionId, selection);
+        }
+        break; // Only handle one selection at a time
+      }
+    }
   }
 
   updateLeaderCardsFromBackend() {
@@ -2225,6 +2253,52 @@ export default class GameScene extends Phaser.Scene {
     noButton.on('pointerdown', () => this.handleRedrawChoice(false, [overlay, dialogBg, dialogText, yesButton, yesText, noButton, noText]));
   }
 
+  showCardSelectionDialog(selectionId, selection) {
+    console.log('Showing card selection dialog:', selectionId, selection);
+    
+    // Clean up any existing card selection dialog
+    if (this.currentCardSelectionDialog) {
+      this.currentCardSelectionDialog.forEach(element => element.destroy());
+      this.currentCardSelectionDialog = null;
+    }
+    
+    // Create dialog using GameSceneUtils (UI separation)
+    const dialogElements = GameSceneUtils.createCardSelectionDialog(
+      selectionId, 
+      selection, 
+      this, 
+      (selectedId, selectedCard, elements) => this.handleCardSelectionChoice(selectedId, selectedCard, elements)
+    );
+    
+    // Store dialog elements for potential cleanup
+    this.currentCardSelectionDialog = dialogElements;
+  }
+
+  async handleCardSelectionChoice(selectionId, selectedCard, dialogElements) {
+    console.log('Handling card selection choice:', selectionId, selectedCard);
+    
+    // Remove dialog elements
+    dialogElements.forEach(element => element.destroy());
+    
+    // Clear the stored dialog reference and pending selection tracking
+    this.currentCardSelectionDialog = null;
+    this.currentPendingSelectionId = null;
+    
+    try {
+      const gameState = this.gameStateManager.getGameState();
+      console.log(`Player selected card: ${selectedCard.cardId} for selection: ${selectionId}`);
+      
+      // Call the API to submit the card selection
+      await this.apiManager.selectCard(selectionId, [selectedCard.cardId], gameState.playerId, gameState.gameId);
+      
+      this.showRoomStatus(`Card selection sent (${selectedCard.name}). Polling for game updates...`);
+      
+    } catch (error) {
+      console.error('Failed to send card selection:', error);
+      this.showRoomStatus('Failed to send card selection: ' + error.message);
+    }
+  }
+
   highlightHandCards() {
     // Add a pulsing effect to all hand cards (no tint overlay)
     this.playerHand.forEach(card => {
@@ -2468,6 +2542,13 @@ export default class GameScene extends Phaser.Scene {
     if (this.gameStateManager) {
       this.gameStateManager.stopPolling();
     }
+    
+    // Clean up any existing card selection dialog
+    if (this.currentCardSelectionDialog) {
+      this.currentCardSelectionDialog.forEach(element => element.destroy());
+      this.currentCardSelectionDialog = null;
+    }
+    this.currentPendingSelectionId = null;
     
     // Call parent destroy
     super.destroy();
