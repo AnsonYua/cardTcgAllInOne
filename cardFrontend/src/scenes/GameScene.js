@@ -526,89 +526,10 @@ export default class GameScene extends Phaser.Scene {
       this.time.delayedCall(50, () => this.selectLeaderCard('opponent'));
     });
 
-    // Test Add Card button
-    this.testAddCardButton = this.add.image(0+130, height - 240, 'button');
-    this.testAddCardButton.setScale(0.8);
-    this.testAddCardButton.setInteractive();
-    
-    const testAddCardButtonText = this.add.text(0+130, height - 240, 'Test Add Card', {
-      fontSize: '12px',
-      fontFamily: 'Arial',
-      fill: '#ffffff'
-    });
-    testAddCardButtonText.setOrigin(0.5);
-    
-    this.testAddCardButton.on('pointerdown', () => {
-      // Click visual effect
-      this.testAddCardButton.setTint(0x888888);
-      this.testAddCardButton.setScale(0.76);
-      testAddCardButtonText.setScale(0.95);
-      
-      this.time.delayedCall(100, () => {
-        this.testAddCardButton.clearTint();
-        this.testAddCardButton.setScale(0.8);
-        testAddCardButtonText.setScale(1);
-      });
-      
-      this.time.delayedCall(50, () => this.testAddCard());
-    });
-
+  
     // Test buttons (only show in manual polling mode)
     if (this.isManualPollingMode) {
-      // Test Polling button
-      this.testPollingButton = this.add.image(0+130, height - 300, 'button');
-      this.testPollingButton.setScale(0.8);
-      this.testPollingButton.setInteractive();
       
-      const testPollingButtonText = this.add.text(0+130, height - 300, 'Test Polling', {
-        fontSize: '12px',
-        fontFamily: 'Arial',
-        fill: '#ffffff'
-      });
-      testPollingButtonText.setOrigin(0.5);
-      
-      this.testPollingButton.on('pointerdown', () => {
-        // Click visual effect
-        this.testPollingButton.setTint(0x888888);
-        this.testPollingButton.setScale(0.76);
-        testPollingButtonText.setScale(0.95);
-        
-        this.time.delayedCall(100, () => {
-          this.testPollingButton.clearTint();
-          this.testPollingButton.setScale(0.8);
-          testPollingButtonText.setScale(1);
-        });
-        
-        this.time.delayedCall(50, () => this.testPolling());
-      });
-
-      // Simulate Player 2 Join button
-      this.testJoinPlayer2Button = this.add.image(0+130, height - 360, 'button');
-      this.testJoinPlayer2Button.setScale(0.8);
-      this.testJoinPlayer2Button.setInteractive();
-      
-      const testJoinPlayer2ButtonText = this.add.text(0+130, height - 360, 'Player 2 Join', {
-        fontSize: '12px',
-        fontFamily: 'Arial',
-        fill: '#ffffff'
-      });
-      testJoinPlayer2ButtonText.setOrigin(0.5);
-      
-      this.testJoinPlayer2Button.on('pointerdown', () => {
-        // Click visual effect
-        this.testJoinPlayer2Button.setTint(0x888888);
-        this.testJoinPlayer2Button.setScale(0.76);
-        testJoinPlayer2ButtonText.setScale(0.95);
-        
-        this.time.delayedCall(100, () => {
-          this.testJoinPlayer2Button.clearTint();
-          this.testJoinPlayer2Button.setScale(0.8);
-          testJoinPlayer2ButtonText.setScale(1);
-        });
-        
-        this.time.delayedCall(50, () => this.simulatePlayer2Join());
-      });
-
       // Simulate Player 2 Redraw button
       this.testPlayer2RedrawButton = this.add.image(0+130, height - 420, 'button');
       this.testPlayer2RedrawButton.setScale(0.8);
@@ -1072,6 +993,14 @@ export default class GameScene extends Phaser.Scene {
 
     });
   }
+  apiZoneCardDataToCardObject(cardData){
+    return {
+      id: cardData.id,
+      name: cardData.id,
+      cardType: cardData.cardType,
+      type: cardData.cardType
+    }
+  }
 
   updateZones() {
     const playerZones = this.gameStateManager.getPlayerZones();
@@ -1085,9 +1014,10 @@ export default class GameScene extends Phaser.Scene {
         
       if(zoneType == 'leader') {
       }else if (zone && cardData && !zone.card &&cardData.length > 0 ) {
-        console.log('updateZones - cardData: 2');
-        
-        const card = new Card(this, zone.x, zone.y, cardData[0], {
+        console.log("debug cardData", JSON.stringify(cardData[0].cardDetails[0]));
+        const cardDataObject = this.apiZoneCardDataToCardObject(cardData[0].cardDetails[0]);
+        console.log("debug cardData22", JSON.stringify(cardDataObject));
+        const card = new Card(this, zone.x, zone.y,cardDataObject, {
           interactive: false,
           scale: 0.9,
           gameStateManager: this.gameStateManager
@@ -1103,7 +1033,8 @@ export default class GameScene extends Phaser.Scene {
       if(zoneType == 'leader') {
 
       }else if (zone && cardData && !zone.card && cardData.length > 0) {
-        const card = new Card(this, zone.x, zone.y, cardData[0], {
+        const cardDataObject = this.apiZoneCardDataToCardObject(cardData[0].cardDetails[0]);
+        const card = new Card(this, zone.x, zone.y,cardDataObject, {
           interactive: false,
           faceDown: cardData.faceDown || false,
           scale: 0.9,
@@ -1894,7 +1825,7 @@ export default class GameScene extends Phaser.Scene {
     if (leaderZone.card) {
       leaderZone.card.destroy();
     }
-
+    console.log("leader card cardData", cardData);
     // Create the final leader card
     const leaderCard = new Card(this, leaderZone.x, leaderZone.y, cardData, {
       interactive: true,
@@ -2002,35 +1933,6 @@ export default class GameScene extends Phaser.Scene {
     });
   }
 
-
-  async testAddCard() {
-    try {
-      console.log('Loading add card data...');
-      const response = await fetch('/addNewHand.json');
-      const addCardData = await response.json();
-      
-      if (addCardData.success) {
-        console.log('Add card data loaded:', addCardData.data);
-        
-        const { playerId, handCardsToAdd } = addCardData.data;
-        const isPlayerTarget = playerId === 'player-1';
-        
-        console.log(`Adding ${handCardsToAdd.length} cards to ${isPlayerTarget ? 'player' : 'opponent'} hand`);
-        
-        if (isPlayerTarget) {
-          // Add cards to player hand with animation
-          this.addCardsToPlayerHand(handCardsToAdd);
-        } else {
-          // Add cards to opponent hand (update count display)
-          this.addCardsToOpponentHand(handCardsToAdd);
-        }
-      } else {
-        console.error('Failed to load add card data');
-      }
-    } catch (error) {
-      console.error('Error loading add card data:', error);
-    }
-  }
 
   addCardsToPlayerHand(cardsToAdd) {
     // Get current game state to update
