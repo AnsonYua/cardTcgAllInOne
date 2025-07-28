@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GAME_CONFIG } from '../config/gameConfig.js';
 import Card from '../components/Card.js';
 import ShuffleAnimationManager from '../components/ShuffleAnimationManager.js';
+import GameSceneUtils from '../utils/GameSceneUtils.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor(config = { key: 'GameScene' }) {
@@ -1003,47 +1004,11 @@ export default class GameScene extends Phaser.Scene {
   }
 
   updateZones() {
-    const playerZones = this.gameStateManager.getPlayerZones();
-    const opponentId = this.gameStateManager.getOpponent();
-    const opponentZones = this.gameStateManager.getPlayerZones(opponentId);
-    console.log('updateZones - playerZones:', JSON.stringify(playerZones));
-    // Update player zones
-    Object.entries(playerZones).forEach(([zoneType, cardData]) => {
-      const zone = this.playerZones[zoneType];
-      console.log('updateZones - cardData:', zoneType, "cardData:", JSON.stringify(cardData), "zone card:", !zone.card);
-        
-      if(zoneType == 'leader') {
-      }else if (zone && cardData && !zone.card &&cardData.length > 0 ) {
-        console.log("debug cardData", JSON.stringify(cardData[0].cardDetails[0]));
-        const cardDataObject = this.apiZoneCardDataToCardObject(cardData[0].cardDetails[0]);
-        console.log("debug cardData22", JSON.stringify(cardDataObject));
-        const card = new Card(this, zone.x, zone.y,cardDataObject, {
-          interactive: false,
-          scale: 0.9,
-          gameStateManager: this.gameStateManager
-        });
-        zone.card = card;
-        zone.placeholder.setVisible(false);
-      }
-    });
-    
-    // Update opponent zones
-    Object.entries(opponentZones).forEach(([zoneType, cardData]) => {
-      const zone = this.opponentZones[zoneType];
-      if(zoneType == 'leader') {
+    GameSceneUtils.updateAllZones(this, this.gameStateManager);
+  }
 
-      }else if (zone && cardData && !zone.card && cardData.length > 0) {
-        const cardDataObject = this.apiZoneCardDataToCardObject(cardData[0].cardDetails[0]);
-        const card = new Card(this, zone.x, zone.y,cardDataObject, {
-          interactive: false,
-          faceDown: cardData.faceDown || false,
-          scale: 0.9,
-          gameStateManager: this.gameStateManager
-        });
-        zone.card = card;
-        zone.placeholder.setVisible(false);
-      }
-    });
+  updatePlayerZones(zonesData, zones, isOpponent = false) {
+    GameSceneUtils.updatePlayerZones(zonesData, zones, this, isOpponent);
   }
 
   updateUI() {
@@ -1156,20 +1121,23 @@ export default class GameScene extends Phaser.Scene {
   }
 
   canDropCardInZone(card, zoneType) {
-    const cardData = card.getCardData();
-    
-    // First check basic card type compatibility (local validation)
-    if (!card.canPlayInZone(zoneType)) {
-      return false;
-    }
-    
-    // Then check backend field effect restrictions via GameStateManager
-    if (this.gameStateManager) {
-      return this.gameStateManager.canPlayCardInZone(cardData, zoneType);
-    }
-    
-    // Fallback to basic validation if GameStateManager not available
-    return true;
+    return GameSceneUtils.canDropCardInZone(card, zoneType, this);
+  }
+
+  getFieldIndexFromZone(zoneType) {
+    return GameSceneUtils.getFieldIndexFromZone(zoneType);
+  }
+
+  showZoneHighlights(card) {
+    GameSceneUtils.showZoneHighlights(card, this);
+  }
+
+  clearZoneHighlights() {
+    GameSceneUtils.clearZoneHighlights(this);
+  }
+
+  showZoneRestrictionMessage(message) {
+    GameSceneUtils.showZoneRestrictionMessage(message, this);
   }
 
   async handleCardDrop(card, zoneType, x, y) {
@@ -1314,19 +1282,6 @@ export default class GameScene extends Phaser.Scene {
     return action;
   }
 
-  getFieldIndexFromZone(zoneType) {
-    // Backend field indices: 0=top, 1=left, 2=right, 3=help, 4=sp
-    const zoneToFieldMap = {
-      'top': 0,
-      'left': 1, 
-      'right': 2,
-      'help': 3,
-      'sp': 4
-    };
-    
-    return zoneToFieldMap[zoneType] !== undefined ? zoneToFieldMap[zoneType] : -1;
-  }
-
   handleZoneClick(zoneType, x, y) {
     // Check if we have a selected card and it's currently our turn
     if (!this.selectedCard) {
@@ -1431,80 +1386,15 @@ export default class GameScene extends Phaser.Scene {
   }
 
   showZoneHighlights(card) {
-    // Clear any existing highlights
-    this.clearZoneHighlights();
-    
-    // Check if it's the current player's turn and in main phase
-    const currentPhase = this.gameStateManager.getCurrentPhase();
-    const isCurrentPlayer = this.gameStateManager.isCurrentPlayer();
-    
-    if (!isCurrentPlayer || currentPhase !== 'MAIN_PHASE') {
-      return;
-    }
-
-    // Initialize zone highlights array if not exists
-    if (!this.zoneHighlights) {
-      this.zoneHighlights = [];
-    }
-
-    // Check each zone and highlight if valid
-    const zones = ['top', 'left', 'right', 'help', 'sp'];
-    zones.forEach(zoneType => {
-      const zone = this.playerZones[zoneType];
-      if (zone && this.canDropCardInZone(card, zoneType)) {
-        // Create a subtle highlight around the zone
-        const highlight = this.add.graphics();
-        highlight.lineStyle(3, 0x00ff00, 0.6); // Green with 60% opacity
-        highlight.strokeRoundedRect(zone.x - 65, zone.y - 95, 130, 190, 8);
-        
-        // Add a pulsing effect
-        this.tweens.add({
-          targets: highlight,
-          alpha: 0.3,
-          duration: 1000,
-          yoyo: true,
-          repeat: -1,
-          ease: 'Sine.easeInOut'
-        });
-        
-        this.zoneHighlights.push(highlight);
-      }
-    });
+    GameSceneUtils.showZoneHighlights(card, this);
   }
 
   clearZoneHighlights() {
-    if (this.zoneHighlights) {
-      this.zoneHighlights.forEach(highlight => {
-        highlight.destroy();
-      });
-      this.zoneHighlights = [];
-    }
+    GameSceneUtils.clearZoneHighlights(this);
   }
 
   showZoneRestrictionMessage(message) {
-    // Clear any existing restriction message
-    if (this.restrictionMessage) {
-      this.restrictionMessage.destroy();
-    }
-
-    // Create a temporary message display
-    const { width, height } = this.cameras.main;
-    this.restrictionMessage = this.add.text(width / 2, height / 2 - 50, message, {
-      fontSize: '18px',
-      fontFamily: 'Arial Bold',
-      fill: '#ff4444',
-      backgroundColor: '#000000',
-      padding: { x: 20, y: 10 },
-      align: 'center'
-    }).setOrigin(0.5).setDepth(2000);
-
-    // Auto-remove after 3 seconds
-    this.time.delayedCall(3000, () => {
-      if (this.restrictionMessage) {
-        this.restrictionMessage.destroy();
-        this.restrictionMessage = null;
-      }
-    });
+    GameSceneUtils.showZoneRestrictionMessage(message, this);
   }
 
   deselectAllHandCards() {
