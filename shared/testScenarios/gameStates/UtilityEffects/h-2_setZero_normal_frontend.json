@@ -764,6 +764,14 @@
                     "name": "總統特朗普",
                     "cardType": "character",
                     "power": 100
+                },
+                {
+                  "cardId": "c-10",
+                  "zone": "left",
+                  "name": "爱德华·科林斯汀 Edward Coristine (Doge 六子）",
+                  "cardType": "character",
+                  "gameType": "愛國者",
+                  "power": 40
                 }
             ],
             "selectCount": 1,

@@ -205,7 +205,7 @@ export default class GameSceneUtils {
   }
 
   /**
-   * Creates a card selection dialog UI
+   * Creates a card selection dialog UI with 3-section vertical layout
    * @param {string} selectionId - The selection ID
    * @param {Object} selection - The selection data with eligibleCards
    * @param {Object} scene - The GameScene instance
@@ -219,116 +219,222 @@ export default class GameSceneUtils {
       `Select ${selection.selectCount} opponent character card(s) to ${selection.effect.type} ${selection.effect.value !== undefined ? 'to ' + selection.effect.value : ''}` :
       `Select ${selection.selectCount} card(s)`;
     
-    // Larger dialog box to accommodate card list with images
-    const dialogWidth = 600; // Wider to accommodate card images
-    const cardSpacing = 80; // Match the spacing used below
-    const dialogHeight = 300 + (eligibleCards.length * cardSpacing); // Dynamic height based on card count
+    // Dialog dimensions with fixed height for better layout
+    const dialogWidth = Math.min(800, width * 0.9); // Responsive width, max 800px
+    const dialogHeight = 500; // Fixed height for consistent 3-section layout
+    const dialogX = width / 2;
+    const dialogY = height / 2;
+    
+    // Section heights
+    const titleSectionHeight = 120;
+    const buttonSectionHeight = 80;
+    const cardSectionHeight = dialogHeight - titleSectionHeight - buttonSectionHeight;
     
     // Semi-transparent background covering the whole screen
     const overlay = scene.add.graphics();
-    overlay.fillStyle(0x000000, 0.7);
+    overlay.fillStyle(0x000000, 0.75);
     overlay.fillRect(0, 0, width, height);
-    overlay.setDepth(1500); // Above game elements but below dialog
+    overlay.setDepth(1500);
     
+    // Main dialog background
     const dialogBg = scene.add.graphics();
-    dialogBg.fillStyle(0x333333);
-    dialogBg.fillRoundedRect(width/2 - dialogWidth/2, height/2 - dialogHeight/2, dialogWidth, dialogHeight, 10);
-    dialogBg.lineStyle(2, 0x666666);
-    dialogBg.strokeRoundedRect(width/2 - dialogWidth/2, height/2 - dialogHeight/2, dialogWidth, dialogHeight, 10);
-    dialogBg.setDepth(1502);
+    dialogBg.fillStyle(0x2a2a2a);
+    dialogBg.fillRoundedRect(dialogX - dialogWidth/2, dialogY - dialogHeight/2, dialogWidth, dialogHeight, 15);
+    dialogBg.lineStyle(3, 0x4a4a4a);
+    dialogBg.strokeRoundedRect(dialogX - dialogWidth/2, dialogY - dialogHeight/2, dialogWidth, dialogHeight, 15);
+    dialogBg.setDepth(1501);
     
-    // Dialog title
-    const titleText = scene.add.text(width/2, height/2 - dialogHeight/2 + 40, 'Card Selection Required', {
-      fontSize: '20px',
+    // ===============================
+    // SECTION 1: TITLE SECTION (TOP)
+    // ===============================
+    const titleSectionY = dialogY - dialogHeight/2 + titleSectionHeight/2;
+    
+    // Title section background
+    const titleBg = scene.add.graphics();
+    titleBg.fillStyle(0x3a3a3a, 0.8);
+    titleBg.fillRoundedRect(dialogX - dialogWidth/2 + 10, dialogY - dialogHeight/2 + 10, dialogWidth - 20, titleSectionHeight - 20, 10);
+    titleBg.setDepth(1502);
+    
+    // Main title
+    const titleText = scene.add.text(dialogX, titleSectionY - 25, 'Card Selection Required', {
+      fontSize: '24px',
       fontFamily: 'Arial Bold',
       fill: '#ffffff',
       align: 'center'
     });
     titleText.setOrigin(0.5);
-    titleText.setDepth(1502);
+    titleText.setDepth(1503);
     
     // Description text
-    const descText = scene.add.text(width/2, height/2 - dialogHeight/2 + 80, description, {
+    const descText = scene.add.text(dialogX, titleSectionY + 15, description, {
       fontSize: '16px',
       fontFamily: 'Arial',
-      fill: '#ffff99',
-      align: 'center'
+      fill: '#ffd700',
+      align: 'center',
+      wordWrap: { width: dialogWidth - 40 }
     });
     descText.setOrigin(0.5);
-    descText.setDepth(1502);
+    descText.setDepth(1503);
     
-    // Eligible cards list with images
+    // ==========================================
+    // SECTION 2: CARD SELECTION SECTION (MIDDLE)
+    // ==========================================
+    const cardSectionY = titleSectionY + titleSectionHeight/2 + cardSectionHeight/2;
+    
+    // Card section background
+    const cardBg = scene.add.graphics();
+    cardBg.fillStyle(0x1a1a1a, 0.9);
+    cardBg.fillRoundedRect(dialogX - dialogWidth/2 + 10, cardSectionY - cardSectionHeight/2 + 10, dialogWidth - 20, cardSectionHeight - 20, 10);
+    cardBg.lineStyle(1, 0x555555);
+    cardBg.strokeRoundedRect(dialogX - dialogWidth/2 + 10, cardSectionY - cardSectionHeight/2 + 10, dialogWidth - 20, cardSectionHeight - 20, 10);
+    cardBg.setDepth(1502);
+    
+    // Card selection label
+    const cardLabelText = scene.add.text(dialogX, cardSectionY - cardSectionHeight/2 + 30, 'Select a card:', {
+      fontSize: '18px',
+      fontFamily: 'Arial Bold',
+      fill: '#cccccc',
+      align: 'center'
+    });
+    cardLabelText.setOrigin(0.5);
+    cardLabelText.setDepth(1503);
+    
+    // Cards arranged horizontally and centered
     const cardListElements = [];
-    const startY = height/2 - dialogHeight/2 + 120;
+    const cardDisplayWidth = 180; // Increased card display width
+    const cardDisplayHeight = 240; // Increased card display height
+    const cardSpacing = 30; // Increased space between cards
+    const totalCardsWidth = (eligibleCards.length * cardDisplayWidth) + ((eligibleCards.length - 1) * cardSpacing);
+    const cardsStartX = dialogX - totalCardsWidth / 2;
+    const cardsY = cardSectionY + 10; // Adjusted position for larger cards
     
     eligibleCards.forEach((card, index) => {
-      const cardY = startY + (index * cardSpacing);
+      const cardX = cardsStartX + (index * (cardDisplayWidth + cardSpacing)) + cardDisplayWidth / 2;
       
-      // Create card image (small preview)
-      const cardImageKey = card.cardId; // Use cardId as texture key
+      // Card container background
+      const cardContainer = scene.add.graphics();
+      cardContainer.fillStyle(0x333333);
+      cardContainer.fillRoundedRect(cardX - cardDisplayWidth/2, cardsY - cardDisplayHeight/2, cardDisplayWidth, cardDisplayHeight, 8);
+      cardContainer.lineStyle(2, 0x666666);
+      cardContainer.strokeRoundedRect(cardX - cardDisplayWidth/2, cardsY - cardDisplayHeight/2, cardDisplayWidth, cardDisplayHeight, 8);
+      cardContainer.setDepth(1503);
+      cardListElements.push(cardContainer);
+      
+      // Use preview image key instead of cardId for image display
+      const previewImageKey = `${card.cardId}-preview`;
       let cardImage;
       
-      if (scene.textures.exists(cardImageKey)) {
-        cardImage = scene.add.image(width/2 - 150, cardY, cardImageKey);
-        cardImage.setScale(0.3); // Small scale for preview
-        cardImage.setDepth(1502);
+      if (scene.textures.exists(previewImageKey)) {
+        // Use preview image and scale to fill the entire container
+        cardImage = scene.add.image(cardX, cardsY, previewImageKey);
+        const maxScale = Math.min((cardDisplayWidth - 16) / cardImage.width, (cardDisplayHeight - 16) / cardImage.height);
+        cardImage.setScale(maxScale);
+        cardImage.setDepth(1504);
+        cardListElements.push(cardImage);
+      } else if (scene.textures.exists(card.cardId)) {
+        // Fallback to regular card image
+        cardImage = scene.add.image(cardX, cardsY, card.cardId);
+        const maxScale = Math.min((cardDisplayWidth - 16) / cardImage.width, (cardDisplayHeight - 16) / cardImage.height);
+        cardImage.setScale(maxScale);
+        cardImage.setDepth(1504);
         cardListElements.push(cardImage);
       } else {
-        // Fallback: create a placeholder rectangle if texture doesn't exist
+        // Fallback placeholder using the full container size
         const placeholder = scene.add.graphics();
         placeholder.fillStyle(0x666666);
-        placeholder.fillRoundedRect(width/2 - 170, cardY - 25, 40, 50, 5);
-        placeholder.lineStyle(1, 0xffffff);
-        placeholder.strokeRoundedRect(width/2 - 170, cardY - 25, 40, 50, 5);
-        placeholder.setDepth(1502);
+        placeholder.fillRoundedRect(cardX - cardDisplayWidth/2 + 8, cardsY - cardDisplayHeight/2 + 8, cardDisplayWidth - 16, cardDisplayHeight - 16, 8);
+        placeholder.lineStyle(2, 0xffffff);
+        placeholder.strokeRoundedRect(cardX - cardDisplayWidth/2 + 8, cardsY - cardDisplayHeight/2 + 8, cardDisplayWidth - 16, cardDisplayHeight - 16, 8);
+        placeholder.setDepth(1504);
         cardListElements.push(placeholder);
         
-        // Add card ID text on placeholder
-        const idText = scene.add.text(width/2 - 150, cardY, card.cardId, {
-          fontSize: '8px',
+        // Card ID on placeholder
+        const idText = scene.add.text(cardX, cardsY, card.cardId, {
+          fontSize: '14px',
           fontFamily: 'Arial',
           fill: '#ffffff',
           align: 'center'
         });
         idText.setOrigin(0.5);
-        idText.setDepth(1502);
+        idText.setDepth(1505);
         cardListElements.push(idText);
+        cardImage = placeholder; // Use placeholder for hover events
       }
       
-      // Card info text (card name, zone, power) - positioned to the right of image
-      const cardInfo = `${card.name} (${card.zone.toUpperCase()}) - Power: ${card.power}`;
-      const cardText = scene.add.text(width/2 - 50, cardY, cardInfo, {
-        fontSize: '14px',
-        fontFamily: 'Arial',
-        fill: '#ffffff',
-        align: 'left'
-      });
-      cardText.setOrigin(0, 0.5); // Left-aligned, centered vertically
-      cardText.setDepth(1502);
-      cardListElements.push(cardText);
+      // Make the card interactive for hover events
+      if (cardImage && cardImage.setInteractive) {
+        cardImage.setInteractive();
+        
+        // Create card data object for preview
+        const cardDataObject = {
+          cardId: card.cardId,
+          name: card.name,
+          power: card.power,
+          zone: card.zone,
+          gameType: card.gameType,
+          traits: card.traits || [],
+          description: card.description || ''
+        };
+        
+        // Add hover events
+        cardImage.on('pointerover', () => {
+          scene.game.canvas.style.cursor = 'pointer';
+          scene.showCardPreview(cardDataObject);
+        });
+        
+        cardImage.on('pointerout', () => {
+          scene.game.canvas.style.cursor = 'default';
+          scene.hideCardPreview();
+        });
+      }
     });
     
-    // OK button
-    const okButton = scene.add.image(width/2, height/2 + dialogHeight/2 - 50, 'button');
-    okButton.setScale(0.8);
+    // ===================================
+    // SECTION 3: BUTTON SECTION (BOTTOM)
+    // ===================================
+    const buttonSectionY = cardSectionY + cardSectionHeight/2 + buttonSectionHeight/2;
+    
+    // Button section background
+    const buttonBg = scene.add.graphics();
+    buttonBg.fillStyle(0x3a3a3a, 0.8);
+    buttonBg.fillRoundedRect(dialogX - dialogWidth/2 + 10, buttonSectionY - buttonSectionHeight/2 + 10, dialogWidth - 20, buttonSectionHeight - 20, 10);
+    buttonBg.setDepth(1502);
+    
+    // OK button (larger and more prominent)
+    const okButton = scene.add.image(dialogX, buttonSectionY, 'button');
+    okButton.setScale(1.0);
     okButton.setInteractive();
     okButton.setTint(0x4CAF50);
-    okButton.setDepth(1502);
+    okButton.setDepth(1503);
     
-    const okText = scene.add.text(width/2, height/2 + dialogHeight/2 - 50, 'OK', {
-      fontSize: '16px',
-      fontFamily: 'Arial',
+    const okText = scene.add.text(dialogX, buttonSectionY, 'CONFIRM SELECTION', {
+      fontSize: '18px',
+      fontFamily: 'Arial Bold',
       fill: '#ffffff'
     });
     okText.setOrigin(0.5);
-    okText.setDepth(1502);
+    okText.setDepth(1504);
+    
+    // Button hover effect
+    okButton.on('pointerover', () => {
+      okButton.setTint(0x66BB6A);
+      scene.input.setDefaultCursor('pointer');
+    });
+    okButton.on('pointerout', () => {
+      okButton.setTint(0x4CAF50);
+      scene.input.setDefaultCursor('default');
+    });
     
     // Collect all dialog elements for cleanup
-    const dialogElements = [overlay, dialogBg, titleText, descText, ...cardListElements, okButton, okText];
+    const dialogElements = [
+      overlay, dialogBg, titleBg, titleText, descText,
+      cardBg, cardLabelText, ...cardListElements,
+      buttonBg, okButton, okText
+    ];
     
     // OK button handler
     okButton.on('pointerdown', () => {
-      console.log('Card selection dialog OK clicked');
+      console.log('Card selection confirmed');
       onConfirm(selectionId, eligibleCards[0], dialogElements);
     });
     
