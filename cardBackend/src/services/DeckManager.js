@@ -1,6 +1,9 @@
 // src/services/DeckManager.js
 const fs = require('fs');
 const path = require('path');
+const DecksCollection = require('../models/DecksCollection');
+const PlayerDeck = require('../models/PlayerDeck');
+const Deck = require('../models/Deck');
 
 class DeckManager {
     constructor() {
@@ -27,7 +30,13 @@ class DeckManager {
             const characterCards = JSON.parse(cardsData);
             const leaderCards = JSON.parse(leaderCardsData);
             const utilityCards = JSON.parse(utilityCardsData);
-            this.decks = JSON.parse(decksData);
+            const decksRawData = JSON.parse(decksData);
+            
+            // Create DecksCollection instance (object-oriented approach)
+            this.decksCollection = DecksCollection.fromJSON(decksRawData);
+            
+            // Maintain backward compatibility with old this.decks access
+            this.decks = decksRawData;
             
             // Store separate collections for specific access
             this.leaderCards = leaderCards;
@@ -54,6 +63,7 @@ class DeckManager {
             }
             
             console.log(`DeckManager initialized synchronously with ${Object.keys(this.cards.cards).length} total cards`);
+            console.log(`DecksCollection loaded with ${this.decksCollection.getAllPlayerIds().length} players`);
             
         } catch (error) {
             console.error('Error initializing DeckManager synchronously:', error);
@@ -61,36 +71,31 @@ class DeckManager {
             this.cards = { cards: {} };
             this.leaderCards = { leaders: {} };
             this.decks = { playerDecks: {} };
+            this.decksCollection = new DecksCollection();
             throw error;
         }
     }
 
     async getPlayerDecks(playerId) {
-        let playerData = this.decks.playerDecks[playerId];
-        if(!playerData){
+        // Use object-oriented approach
+        const playerDeckCollection = this.decksCollection.getPlayerDecks(playerId);
+        if (!playerDeckCollection) {
             throw new Error('Player Deck not found');
         }
-        let cardUIDArr = [];
-        let leaderArr = [];
-        playerData["leaderUIMapping"] = {};
-        playerData["deckUIDMapping"] = {};
-        let idx = 0 
-        for(let cardId of playerData.decks[playerData.activeDeck].cards){   
-            //generate a unique randomID for each card
-            playerData["deckUIDMapping"]["cardId_"+idx] = cardId;
-            cardUIDArr.push("cardId_"+idx);
-            idx++;
-        }
-        playerData.decks[playerData.activeDeck].cardUID = cardUIDArr;
 
-        idx = 0 
-        for(let cardId of playerData.decks[playerData.activeDeck].leader){   
-            //generate a unique randomID for each card
-            playerData["leaderUIMapping"]["leaderId_"+idx] = cardId;
-            leaderArr.push("leaderId_"+idx);
-            idx++;
+        // Generate UIDs for active deck (for gameplay compatibility)
+        const uidMappings = playerDeckCollection.generateActiveDecksUIDs();
+        
+        // Return data in format compatible with existing API
+        const playerData = playerDeckCollection.toJSON();
+        
+        // Add the generated UIDs to the active deck for compatibility
+        const activeDeck = playerDeckCollection.getActiveDeck();
+        if (activeDeck && playerData.decks[playerData.activeDeck]) {
+            playerData.decks[playerData.activeDeck].cardUID = uidMappings.cardUID;
+            playerData.decks[playerData.activeDeck].leaderUID = uidMappings.leaderUID;
         }
-        playerData.decks[playerData.activeDeck].leaderUID = leaderArr;
+        
         return playerData;
     }
     getLeaderCards(cardId){
@@ -101,7 +106,13 @@ class DeckManager {
 
     async saveDecks() {
         const fs = require('fs').promises;
-        await fs.writeFile(this.decksPath, JSON.stringify(this.decks, null, 2));
+        
+        // Use object-oriented approach - save from DecksCollection
+        const dataToSave = this.decksCollection.toJSON();
+        await fs.writeFile(this.decksPath, JSON.stringify(dataToSave, null, 2));
+        
+        // Update backward compatibility reference
+        this.decks = dataToSave;
     }
 
     getCardDetails(cardId) {
@@ -134,12 +145,50 @@ class DeckManager {
         return drawnCards;
     }
 
+    // ============ NEW OBJECT-ORIENTED METHODS ============
+    
+    /**
+     * Get DecksCollection instance for object-oriented access
+     * @returns {DecksCollection} The decks collection instance
+     */
+    getDecksCollection() {
+        return this.decksCollection;
+    }
+
+    /**
+     * Get a specific player's deck collection
+     * @param {string} playerId - Player ID
+     * @returns {PlayerDeck|null} Player deck collection or null
+     */
+    getPlayerDeckCollection(playerId) {
+        return this.decksCollection.getPlayerDecks(playerId);
+    }
+
+
+    /**
+     * Get collection statistics
+     * @returns {Object} Statistics about decks and players
+     */
+    getDecksStats() {
+        return this.decksCollection.getStats();
+    }
+
+    /**
+     * Validate entire deck collection
+     * @returns {Object} Validation result with isValid boolean and errors array
+     */
+    validateDecksCollection() {
+        return this.decksCollection.validate();
+    }
+
+    // ============ LEGACY COMPATIBILITY METHODS ============
+
     /**
      * Check if DeckManager is properly initialized
      * @returns {boolean} - True if initialized, false otherwise
      */
     isInitialized() {
-        return !!(this.cards && this.cards.cards && this.leaderCards && this.decks);
+        return !!(this.cards && this.cards.cards && this.leaderCards && this.decks && this.decksCollection);
     }
 
     /**
@@ -152,7 +201,9 @@ class DeckManager {
             cardsLoaded: !!(this.cards && this.cards.cards),
             cardsCount: this.cards?.cards ? Object.keys(this.cards.cards).length : 0,
             leaderCardsLoaded: !!this.leaderCards,
-            decksLoaded: !!this.decks
+            decksLoaded: !!this.decks,
+            decksCollectionLoaded: !!this.decksCollection,
+            playersCount: this.decksCollection ? this.decksCollection.getAllPlayerIds().length : 0
         };
     }
 }

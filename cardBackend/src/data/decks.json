@@ -4,56 +4,6 @@
     "lastUpdated": "2025-01-13",
     "description": "Player deck configurations with updated card IDs"
   },
-  "defaultDecks": {
-    "starter": {
-      "id": "deck001",
-      "name": "Starter Deck",
-      "cards": [
-        "c-1", "c-2", "c-3", "c-4", "c-5", "c-6", "c-7", "c-8",
-        "c-9", "c-10", "c-11", "c-12", "c-13", "c-14", "c-15", "c-16",
-        "c-17", "c-18", "c-19", "c-20", "c-21", "c-22", "c-23", "c-24",
-        "h-1", "h-2", "h-3", "h-9", "sp-2", "sp-3"
-      ],
-      "maxCards": 30,
-      "minCards": 20
-    },
-    "balanced": {
-      "id": "deck002",
-      "name": "Balanced Deck",
-      "cards": [
-        "c-1", "c-7", "c-2", "c-23", "c-8", "c-14", "c-16", "c-18",
-        "c-19", "c-21", "c-24", "c-25", "c-27", "c-3", "c-4",
-        "c-5", "c-6", "c-28", "c-26", "c-15", "c-17", "c-20",
-        "h-1", "h-11", "h-13", "h-15", "sp-2", "sp-10"
-      ],
-      "maxCards": 30,
-      "minCards": 20
-    },
-    "trump": {
-      "id": "deck003",
-      "name": "Trump Theme Deck",
-      "cards": [
-        "c-1", "c-2", "c-7", "c-23", "c-5", "c-11", "c-22", "c-26",
-        "c-28", "c-8", "c-18", "c-19", "c-17", "c-20", "c-24", "c-25",
-        "c-27", "c-12", "c-14", "c-15", "c-16", "c-6",
-        "h-2", "h-11", "h-14", "sp-1", "sp-7", "sp-9"
-      ],
-      "maxCards": 30,
-      "minCards": 20
-    },
-    "economic": {
-      "id": "deck004", 
-      "name": "Economic Focus Deck",
-      "cards": [
-        "c-17", "c-19", "c-20", "c-24", "c-25", "c-27", "c-13",
-        "c-8", "c-14", "c-16", "c-18", "c-3", "c-4", "c-21",
-        "c-1", "c-2", "c-7", "c-5", "c-6", "c-15", "c-28", "c-26",
-        "h-15", "h-8", "h-9", "sp-5", "sp-4", "sp-6"
-      ],
-      "maxCards": 30,
-      "minCards": 20
-    }
-  },
   "playerDecks": {
     "playerId_1": {
       "activeDeck": "deck001",
