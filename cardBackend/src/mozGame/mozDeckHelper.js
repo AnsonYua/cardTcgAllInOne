@@ -5,9 +5,10 @@ class mozDeckLogic{
         this.cardInfoUtils = CardInfoUtils;
     }
     async prepareDeckForPlayer(playerId) {
+
+        //get player default deck and generate a uid mapping for each card (including leader cards)
         var playerDeck = await deckManager.getPlayerDecks(playerId);
-        console.log(`[mozDeckHelper] Player ${playerId} deck data:`, JSON.stringify(playerDeck, null, 2));
-        
+        console.log("debug playerDeck", JSON.stringify(playerDeck));
         if (!playerDeck) {
             throw new Error(`No deck found for player ${playerId}`);
         }
@@ -21,8 +22,8 @@ class mozDeckLogic{
             throw new Error(`Active deck ${activeDeckId} not found for player ${playerId}`);
         }
         
-        const sumCardList = this.possessLeaderCard(activeDeck);
-        const mainDeckCard = this.possesesMainDeckCard(activeDeck);
+        const sumCardList = this.shuffleLeaderDeck(activeDeck);
+        const mainDeckCard = this.shuffleMainDeck(activeDeck);
         
         const { drawnCards, mainDeck } = this.drawCards(mainDeckCard, 7);
         const hand = drawnCards;
@@ -32,6 +33,8 @@ class mozDeckLogic{
             leader: sumCardList,
             hand: hand,
             mainDeck: mainDeck,
+            leaderMapping: playerDeck.leaderUIMapping,
+            cardMapping: playerDeck.deckUIDMapping,
         };
     }
 
@@ -49,7 +52,7 @@ class mozDeckLogic{
             throw new Error(`Active deck ${activeDeckId} not found for player ${playerId}`);
         }
         
-        const mainDeckCard = this.possesesMainDeckCard(activeDeck);
+        const mainDeckCard = this.shuffleMainDeck(activeDeck);
         const { drawnCards, mainDeck } = this.drawCards(mainDeckCard, 7);
         const hand = drawnCards;
         return {
@@ -81,11 +84,11 @@ class mozDeckLogic{
         };
     }
 
-    possesesMainDeckCard(decks){
-        return this.shuffle(decks.cards);
+    shuffleMainDeck(decks){
+        return this.shuffle(decks.cardUID);
     }
-    possessLeaderCard(decks){
-        return this.shuffle(decks.leader).slice(0, 5);
+    shuffleLeaderDeck(decks){
+        return this.shuffle(decks.leaderUID).slice(0, 5);
     }
     shuffle(array) {
         for (let i = array.length - 1; i > 0; i--) {

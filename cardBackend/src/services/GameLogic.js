@@ -35,7 +35,9 @@ class GameLogic {
         this.mozGamePlay.effectSimulator = effectSimulator;
     }
 
-
+    /**
+     * In this phrase, player deck is not initialized
+     */
     async createNewGame(req) {
         var { playerId } = req.body;
         const gameId = uuidv4();
@@ -75,7 +77,10 @@ class GameLogic {
         await this.saveOrCreateGame(newGame, gameId);
         return newGame;
     }
-
+    /**
+     * 
+     * Deck and hand only initialized in gameEnv when both player joined
+     */
     async joinRoom(req) {
         var { playerId, gameId } = req.body;
         

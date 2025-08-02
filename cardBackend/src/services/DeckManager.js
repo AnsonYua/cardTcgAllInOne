@@ -67,36 +67,30 @@ class DeckManager {
 
     async getPlayerDecks(playerId) {
         let playerData = this.decks.playerDecks[playerId];
-        
-        // If player doesn't exist, create a default deck entry
-        if (!playerData) {
-            console.log(`Creating default deck for new player: ${playerId}`);
-            playerData = {
-                "activeDeck": "deck001",
-                "decks": {
-                    "deck001": {
-                        "id": "deck001",
-                        "name": "Starter Deck",
-                        "leader": [
-                            "s-1", "s-2", "s-3", "s-4"
-                        ],
-                        "cards": [
-                            "c-1", "c-2", "c-3", "c-4", "c-5", "c-6", "c-7", "c-8",
-                            "c-9", "c-10", "c-11", "c-12", "c-13", "c-14", "c-15", "c-16",
-                            "c-17", "c-18", "c-19", "c-20", "c-21", "c-22", "c-23", "c-24",
-                            "h-1", "h-2", "h-3", "h-9", "sp-2", "sp-3"
-                        ]
-                    }
-                }
-            };
-            
-            // Save the new player deck to the decks structure
-            this.decks.playerDecks[playerId] = playerData;
-            
-            // Optionally save to file (commented out for performance)
-            // await this.saveDecks();
+        if(!playerData){
+            throw new Error('Player Deck not found');
         }
-        
+        let cardUIDArr = [];
+        let leaderArr = [];
+        playerData["leaderUIMapping"] = {};
+        playerData["deckUIDMapping"] = {};
+        let idx = 0 
+        for(let cardId of playerData.decks[playerData.activeDeck].cards){   
+            //generate a unique randomID for each card
+            playerData["deckUIDMapping"]["cardId_"+idx] = cardId;
+            cardUIDArr.push("cardId_"+idx);
+            idx++;
+        }
+        playerData.decks[playerData.activeDeck].cardUID = cardUIDArr;
+
+        idx = 0 
+        for(let cardId of playerData.decks[playerData.activeDeck].leader){   
+            //generate a unique randomID for each card
+            playerData["leaderUIMapping"]["leaderId_"+idx] = cardId;
+            leaderArr.push("leaderId_"+idx);
+            idx++;
+        }
+        playerData.decks[playerData.activeDeck].leaderUID = leaderArr;
         return playerData;
     }
     getLeaderCards(cardId){

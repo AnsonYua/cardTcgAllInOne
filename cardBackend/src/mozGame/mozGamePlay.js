@@ -242,7 +242,6 @@ class mozGamePlay {
     updateInitialGameEnvironment(gameEnv){
         // Initialize event system
         this.initializeEventSystem(gameEnv);
-        
         // decide who goes first
         const leaderList = []
         const playerList = mozGamePlay.getPlayerFromGameEnv(gameEnv);
