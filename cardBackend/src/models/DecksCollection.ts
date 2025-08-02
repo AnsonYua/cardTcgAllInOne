@@ -1,20 +1,55 @@
-// src/models/DecksCollection.js
+// src/models/DecksCollection.ts
 
-const Deck = require('./Deck');
-const PlayerDeck = require('./PlayerDeck');
+import { Deck, DeckData, ValidationResult } from './Deck';
+import { PlayerDeck, PlayerDeckData } from './PlayerDeck';
+
+export interface DecksCollectionMetadata {
+    version: string;
+    lastUpdated: string;
+    description: string;
+}
+
+export interface DecksCollectionData {
+    metadata?: DecksCollectionMetadata;
+    playerDecks?: Record<string, PlayerDeckData>;
+}
+
+export interface DecksCollectionStats {
+    metadata: DecksCollectionMetadata;
+    playerDecks: {
+        count: number;
+        players: Array<{
+            playerId: string;
+            activeDeck: string | null;
+            totalDecks: number;
+            deckList: Array<{
+                id: string | null;
+                name: string;
+                totalCards: number;
+                totalLeaders: number;
+                cardTypes: Record<string, number>;
+            }>;
+        }>;
+    };
+}
 
 /**
- * Represents the player deck collection
+ * Represents the player deck collection with TypeScript type safety
  */
-class DecksCollection {
-    constructor(data = {}) {
+export class DecksCollection {
+    public readonly metadata: DecksCollectionMetadata;
+    
+    // Player deck collections with proper TypeScript typing
+    public playerDecks: Record<string, PlayerDeck>;
+
+    constructor(data: DecksCollectionData = {}) {
         this.metadata = data.metadata || {
             version: '1.1',
             lastUpdated: new Date().toISOString().split('T')[0],
             description: 'Player deck configurations'
         };
         
-        // Player deck collections (Java-like field declaration)
+        // Player deck collections (TypeScript typed)
         this.playerDecks = {};
         
         // Initialize from data
@@ -23,9 +58,9 @@ class DecksCollection {
 
     /**
      * Initialize collection from JSON data
-     * @param {Object} data - Raw JSON data
+     * @param data - Raw JSON data
      */
-    initializeFromData(data) {
+    private initializeFromData(data: DecksCollectionData): void {
         // Load player decks
         if (data.playerDecks && typeof data.playerDecks === 'object') {
             Object.entries(data.playerDecks).forEach(([playerId, playerData]) => {
@@ -34,22 +69,21 @@ class DecksCollection {
         }
     }
 
-
     /**
      * Get player deck collection
-     * @param {string} playerId - Player ID
-     * @returns {PlayerDeck|null} Player deck collection or null
+     * @param playerId - Player ID
+     * @returns Player deck collection or null
      */
-    getPlayerDecks(playerId) {
+    getPlayerDecks(playerId: string): PlayerDeck | null {
         return this.playerDecks[playerId] || null;
     }
 
     /**
      * Create or update player deck collection
-     * @param {string} playerId - Player ID
-     * @param {PlayerDeck} playerDeck - Player deck collection
+     * @param playerId - Player ID
+     * @param playerDeck - Player deck collection
      */
-    setPlayerDecks(playerId, playerDeck) {
+    setPlayerDecks(playerId: string, playerDeck: PlayerDeck): void {
         if (!(playerDeck instanceof PlayerDeck)) {
             throw new Error('Expected PlayerDeck instance');
         }
@@ -57,30 +91,29 @@ class DecksCollection {
         this.playerDecks[playerId] = playerDeck;
     }
 
-
     /**
      * Get all player IDs
-     * @returns {string[]} Array of player IDs
+     * @returns Array of player IDs
      */
-    getAllPlayerIds() {
+    getAllPlayerIds(): string[] {
         return Object.keys(this.playerDecks);
     }
 
     /**
      * Check if player exists
-     * @param {string} playerId - Player ID to check
-     * @returns {boolean} True if player exists
+     * @param playerId - Player ID to check
+     * @returns True if player exists
      */
-    hasPlayer(playerId) {
+    hasPlayer(playerId: string): boolean {
         return !!this.playerDecks[playerId];
     }
 
     /**
      * Remove player and their decks
-     * @param {string} playerId - Player ID to remove
-     * @returns {boolean} True if player was removed
+     * @param playerId - Player ID to remove
+     * @returns True if player was removed
      */
-    removePlayer(playerId) {
+    removePlayer(playerId: string): boolean {
         if (!this.playerDecks[playerId]) {
             return false;
         }
@@ -91,9 +124,9 @@ class DecksCollection {
 
     /**
      * Get collection statistics
-     * @returns {Object} Statistics about the entire collection
+     * @returns Statistics about the entire collection
      */
-    getStats() {
+    getStats(): DecksCollectionStats {
         return {
             metadata: this.metadata,
             playerDecks: {
@@ -105,10 +138,10 @@ class DecksCollection {
 
     /**
      * Validate entire collection
-     * @returns {Object} Validation result with isValid boolean and errors array
+     * @returns Validation result with isValid boolean and errors array
      */
-    validate() {
-        const errors = [];
+    validate(): ValidationResult {
+        const errors: string[] = [];
         
         // Validate player decks
         Object.entries(this.playerDecks).forEach(([playerId, playerDeck]) => {
@@ -126,10 +159,10 @@ class DecksCollection {
 
     /**
      * Convert to JSON format for storage (compatible with existing format)
-     * @returns {Object} Plain object representation
+     * @returns Plain object representation
      */
-    toJSON() {
-        const playerDecksObj = {};
+    toJSON(): DecksCollectionData {
+        const playerDecksObj: Record<string, PlayerDeckData> = {};
         Object.entries(this.playerDecks).forEach(([playerId, playerDeck]) => {
             playerDecksObj[playerId] = playerDeck.toJSON();
         });
@@ -142,12 +175,12 @@ class DecksCollection {
 
     /**
      * Create DecksCollection instance from JSON data
-     * @param {Object} jsonData - Plain object data
-     * @returns {DecksCollection} New DecksCollection instance
+     * @param jsonData - Plain object data
+     * @returns New DecksCollection instance
      */
-    static fromJSON(jsonData) {
+    static fromJSON(jsonData: DecksCollectionData): DecksCollection {
         return new DecksCollection(jsonData);
     }
 }
 
-module.exports = DecksCollection;
+export default DecksCollection;

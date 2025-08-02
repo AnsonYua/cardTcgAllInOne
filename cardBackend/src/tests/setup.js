@@ -18,8 +18,8 @@ let serverProcess;
 async function setupTestServer() {
     console.log('Starting test server...');
     
-    // Start the server in a separate process
-    serverProcess = spawn('node', ['server.js'], {
+    // Start the server in a separate process using TypeScript
+    serverProcess = spawn('npx', ['ts-node', 'server.ts'], {
         cwd: process.cwd(),
         stdio: 'pipe', // Capture stdout/stderr
         env: {

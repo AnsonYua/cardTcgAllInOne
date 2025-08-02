@@ -1,11 +1,51 @@
-// src/services/DeckManager.js
-const fs = require('fs');
-const path = require('path');
-const DecksCollection = require('../models/DecksCollection');
-const PlayerDeck = require('../models/PlayerDeck');
-const Deck = require('../models/Deck');
+// src/services/DeckManager.ts
+
+import * as fs from 'fs';
+import * as path from 'path';
+import { DecksCollection, DecksCollectionData, DecksCollectionStats } from '../models/DecksCollection';
+import { PlayerDeck, PlayerDeckData } from '../models/PlayerDeck';
+import { Deck, ValidationResult } from '../models/Deck';
+
+export interface CardData {
+    [cardId: string]: any;
+}
+
+export interface CardsCollection {
+    cards: CardData;
+    combos?: any;
+}
+
+export interface LeaderCardsCollection {
+    leaders: CardData;
+}
+
+export interface InitializationStatus {
+    initialized: boolean;
+    cardsLoaded: boolean;
+    cardsCount: number;
+    leaderCardsLoaded: boolean;
+    decksLoaded: boolean;
+    decksCollectionLoaded: boolean;
+    playersCount: number;
+}
+
+export interface PlayerDeckWithUIDs extends PlayerDeckData {
+    playerId: string;
+    decks: Record<string, any>;
+}
 
 class DeckManager {
+    private readonly cardsPath: string;
+    private readonly leaderCardPath: string;
+    private readonly decksPath: string;
+    private readonly spCardPath: string;
+    
+    // TypeScript typed collections
+    private decksCollection!: DecksCollection;
+    private cards!: CardsCollection;
+    private leaderCards!: LeaderCardsCollection;
+    private decks!: DecksCollectionData; // Backward compatibility
+
     constructor() {
         this.cardsPath = path.join(__dirname, '../data/characterCards.json');
         this.leaderCardPath = path.join(__dirname, '../data/leaderCards.json');
@@ -16,7 +56,7 @@ class DeckManager {
         this.initializeSync();
     }
 
-    initializeSync() {
+    private initializeSync(): void {
         try {
             console.log('Loading DeckManager synchronously...');
             
@@ -26,11 +66,11 @@ class DeckManager {
             const decksData = fs.readFileSync(this.decksPath, 'utf8');
             const utilityCardsData = fs.readFileSync(this.spCardPath, 'utf8');
 
-            // Parse all JSON data
-            const characterCards = JSON.parse(cardsData);
-            const leaderCards = JSON.parse(leaderCardsData);
-            const utilityCards = JSON.parse(utilityCardsData);
-            const decksRawData = JSON.parse(decksData);
+            // Parse all JSON data with type safety
+            const characterCards: any = JSON.parse(cardsData);
+            const leaderCards: any = JSON.parse(leaderCardsData);
+            const utilityCards: any = JSON.parse(utilityCardsData);
+            const decksRawData: DecksCollectionData = JSON.parse(decksData);
             
             // Create DecksCollection instance (object-oriented approach)
             this.decksCollection = DecksCollection.fromJSON(decksRawData);
@@ -76,7 +116,7 @@ class DeckManager {
         }
     }
 
-    async getPlayerDecks(playerId) {
+    public async getPlayerDecks(playerId: string): Promise<PlayerDeckWithUIDs> {
         // Use object-oriented approach
         const playerDeckCollection = this.decksCollection.getPlayerDecks(playerId);
         if (!playerDeckCollection) {
@@ -87,35 +127,35 @@ class DeckManager {
         const uidMappings = playerDeckCollection.generateActiveDecksUIDs();
         
         // Return data in format compatible with existing API
-        const playerData = playerDeckCollection.toJSON();
+        const playerData = playerDeckCollection.toJSON() as PlayerDeckWithUIDs;
         
         // Add the generated UIDs to the active deck for compatibility
         const activeDeck = playerDeckCollection.getActiveDeck();
-        if (activeDeck && playerData.decks[playerData.activeDeck]) {
-            playerData.decks[playerData.activeDeck].cardUID = uidMappings.cardUID;
-            playerData.decks[playerData.activeDeck].leaderUID = uidMappings.leaderUID;
+        if (activeDeck && playerData.decks[playerData.activeDeck!]) {
+            playerData.decks[playerData.activeDeck!].cardUID = uidMappings.cardUID;
+            playerData.decks[playerData.activeDeck!].leaderUID = uidMappings.leaderUID;
         }
         
         return playerData;
     }
-    getLeaderCards(cardId){
+
+    public getLeaderCards(cardId: string): any {
         const leaderCards = this.leaderCards.leaders[cardId];
         return leaderCards;
     }
 
-
-    async saveDecks() {
-        const fs = require('fs').promises;
+    public async saveDecks(): Promise<void> {
+        const fsPromises = fs.promises;
         
         // Use object-oriented approach - save from DecksCollection
         const dataToSave = this.decksCollection.toJSON();
-        await fs.writeFile(this.decksPath, JSON.stringify(dataToSave, null, 2));
+        await fsPromises.writeFile(this.decksPath, JSON.stringify(dataToSave, null, 2));
         
         // Update backward compatibility reference
         this.decks = dataToSave;
     }
 
-    getCardDetails(cardId) {
+    public getCardDetails(cardId: string): any {
         const cardDetails = this.cards.cards[cardId];
         if (!cardDetails) {
             console.warn(`Card not found: ${cardId}. Available cards:`, Object.keys(this.cards.cards).slice(0, 10));
@@ -124,16 +164,16 @@ class DeckManager {
         return cardDetails;
     }
 
-    async drawCards(playerId, count = 1) {
+    public async drawCards(playerId: string, count: number = 1): Promise<any[]> {
         const playerData = await this.getPlayerDecks(playerId);
-        const activeDeck = playerData.decks[playerData.activeDeck];
+        const activeDeck = playerData.decks[playerData.activeDeck!];
         
         if (!activeDeck) {
             throw new Error('No active deck found');
         }
 
         // Simulate drawing cards
-        const drawnCards = [];
+        const drawnCards: any[] = [];
         const remainingCards = [...activeDeck.cards];
         
         for (let i = 0; i < count && remainingCards.length > 0; i++) {
@@ -149,35 +189,34 @@ class DeckManager {
     
     /**
      * Get DecksCollection instance for object-oriented access
-     * @returns {DecksCollection} The decks collection instance
+     * @returns The decks collection instance
      */
-    getDecksCollection() {
+    public getDecksCollection(): DecksCollection {
         return this.decksCollection;
     }
 
     /**
      * Get a specific player's deck collection
-     * @param {string} playerId - Player ID
-     * @returns {PlayerDeck|null} Player deck collection or null
+     * @param playerId - Player ID
+     * @returns Player deck collection or null
      */
-    getPlayerDeckCollection(playerId) {
+    public getPlayerDeckCollection(playerId: string): PlayerDeck | null {
         return this.decksCollection.getPlayerDecks(playerId);
     }
 
-
     /**
      * Get collection statistics
-     * @returns {Object} Statistics about decks and players
+     * @returns Statistics about decks and players
      */
-    getDecksStats() {
+    public getDecksStats(): DecksCollectionStats {
         return this.decksCollection.getStats();
     }
 
     /**
      * Validate entire deck collection
-     * @returns {Object} Validation result with isValid boolean and errors array
+     * @returns Validation result with isValid boolean and errors array
      */
-    validateDecksCollection() {
+    public validateDecksCollection(): ValidationResult {
         return this.decksCollection.validate();
     }
 
@@ -185,17 +224,17 @@ class DeckManager {
 
     /**
      * Check if DeckManager is properly initialized
-     * @returns {boolean} - True if initialized, false otherwise
+     * @returns True if initialized, false otherwise
      */
-    isInitialized() {
+    public isInitialized(): boolean {
         return !!(this.cards && this.cards.cards && this.leaderCards && this.decks && this.decksCollection);
     }
 
     /**
      * Get initialization status for debugging
-     * @returns {Object} - Status object with details
+     * @returns Status object with details
      */
-    getInitializationStatus() {
+    public getInitializationStatus(): InitializationStatus {
         return {
             initialized: this.isInitialized(),
             cardsLoaded: !!(this.cards && this.cards.cards),
@@ -208,4 +247,5 @@ class DeckManager {
     }
 }
 
-module.exports = new DeckManager();
+// Export singleton instance
+export default new DeckManager();

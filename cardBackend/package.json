@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "start": "node dist/server.js",
+    "dev": "ts-node server.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:validate": "node src/tests/validateTests.js",
@@ -14,10 +18,9 @@
     "test:quick": "node src/tests/quickTest.js",
     "test:simple": "node src/tests/simpleTest.js",
     "test:dynamic": "node src/tests/dynamicTest.js",
-    "start": "node server.js",
-    "dev": "nodemon server.js",
     "run-test": "node test.cjs",
-    "run-testcase1": "node test_case1.cjs"
+    "run-testcase1": "node test_case1.cjs",
+    "type-check": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
@@ -33,9 +36,15 @@
   "devDependencies": {
     "@babel/core": "^7.24.0",
     "@babel/preset-env": "^7.24.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.1.0",
+    "@types/uuid": "^10.0.0",
     "babel-jest": "^30.0.0-beta.3",
     "jest": "^29.7.0",
     "node-fetch": "^3.3.2",
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
   }
 }
