@@ -2258,29 +2258,32 @@ export default class GameScene extends Phaser.Scene {
     
     // Clean up any existing card selection dialog
     if (this.currentCardSelectionDialog) {
-      this.currentCardSelectionDialog.forEach(element => element.destroy());
+      // Use cleanup function if available, otherwise fallback to element array
+      if (this.currentCardSelectionDialog.cleanup) {
+        this.currentCardSelectionDialog.cleanup();
+      } else if (Array.isArray(this.currentCardSelectionDialog)) {
+        this.currentCardSelectionDialog.forEach(element => element.destroy());
+      }
       this.currentCardSelectionDialog = null;
     }
     
     // Create dialog using GameSceneUtils (UI separation)
-    const dialogElements = GameSceneUtils.createCardSelectionDialog(
+    const dialogInterface = GameSceneUtils.createCardSelectionDialog(
       selectionId, 
       selection, 
       this, 
       (selectedId, selectedCard, elements) => this.handleCardSelectionChoice(selectedId, selectedCard, elements)
     );
     
-    // Store dialog elements for potential cleanup
-    this.currentCardSelectionDialog = dialogElements;
+    // Store dialog interface for potential cleanup
+    this.currentCardSelectionDialog = dialogInterface;
   }
 
   async handleCardSelectionChoice(selectionId, selectedCard, dialogElements) {
     console.log('Handling card selection choice:', selectionId, selectedCard);
     
-    // Remove dialog elements
-    dialogElements.forEach(element => element.destroy());
-    
-    // Clear the stored dialog reference and pending selection tracking
+    // Dialog elements are already cleaned up by the cleanup function in the button handler
+    // Just clear references
     this.currentCardSelectionDialog = null;
     this.currentPendingSelectionId = null;
     
@@ -2545,7 +2548,12 @@ export default class GameScene extends Phaser.Scene {
     
     // Clean up any existing card selection dialog
     if (this.currentCardSelectionDialog) {
-      this.currentCardSelectionDialog.forEach(element => element.destroy());
+      // Use cleanup function if available, otherwise fallback to element array
+      if (this.currentCardSelectionDialog.cleanup) {
+        this.currentCardSelectionDialog.cleanup();
+      } else if (Array.isArray(this.currentCardSelectionDialog)) {
+        this.currentCardSelectionDialog.forEach(element => element.destroy());
+      }
       this.currentCardSelectionDialog = null;
     }
     this.currentPendingSelectionId = null;

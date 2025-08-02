@@ -11,7 +11,7 @@ export default class DemoScene extends DemoSceneBasic {
     this.isDemoMode = true;
     console.log("DemoScene constructor called");
     this.inGamePlayerId = "playerId_2";
-    this.scenarioPath = 'UtilityEffects/h-2_setZero_normal';
+    this.scenarioPath = 'UtilityEffects/h-2_setZero_normal_multiple_select';
   }
 
 

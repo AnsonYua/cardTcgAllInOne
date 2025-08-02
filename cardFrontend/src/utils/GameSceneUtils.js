@@ -204,6 +204,23 @@ export default class GameSceneUtils {
     });
   }
 
+  static convertCardSelectionToCardDataObject(card){
+
+    var cardType = "character"
+    if(card.cardId.startsWith("c-")){
+      cardType = "character"
+    }else if(card.cardId.startsWith("h-")){
+      cardType = "utilityCard"
+    }else if(card.cardId.startsWith("s-")){
+      cardType = "leader"
+    }
+    return {
+      id: card.cardId,
+      name: card.cardId,
+      cardType: cardType,
+      type:cardType,
+    }
+  }
   /**
    * Creates a card selection dialog UI with 3-section vertical layout
    * @param {string} selectionId - The selection ID
@@ -219,15 +236,20 @@ export default class GameSceneUtils {
       `Select ${selection.selectCount} opponent character card(s) to ${selection.effect.type} ${selection.effect.value !== undefined ? 'to ' + selection.effect.value : ''}` :
       `Select ${selection.selectCount} card(s)`;
     
-    // Dialog dimensions with fixed height for better layout
-    const dialogWidth = Math.min(800, width * 0.9); // Responsive width, max 800px
-    const dialogHeight = 500; // Fixed height for consistent 3-section layout
+    // Dialog dimensions - compact size for better proportions
+    const dialogWidth = Math.min(900, width * 0.85); // Compact width for 4 cards + navigation
+    const dialogHeight = 450; // Reduced height for more compact appearance
     const dialogX = width / 2;
     const dialogY = height / 2;
     
-    // Section heights
-    const titleSectionHeight = 120;
-    const buttonSectionHeight = 80;
+    // Pagination settings - ensure at least 4 cards per page
+    const maxCardsPerPage = 4;
+    const totalPages = Math.ceil(eligibleCards.length / maxCardsPerPage);
+    let currentPage = 0;
+    
+    // Section heights - more compact proportions
+    const titleSectionHeight = 100;
+    const buttonSectionHeight = 70;
     const cardSectionHeight = dialogHeight - titleSectionHeight - buttonSectionHeight;
     
     // Semi-transparent background covering the whole screen
@@ -299,95 +321,280 @@ export default class GameSceneUtils {
     cardLabelText.setOrigin(0.5);
     cardLabelText.setDepth(1503);
     
-    // Cards arranged horizontally and centered
+    // Cards arranged horizontally with pagination support
     const cardListElements = [];
-    const cardDisplayWidth = 180; // Increased card display width
-    const cardDisplayHeight = 240; // Increased card display height
-    const cardSpacing = 30; // Increased space between cards
-    const totalCardsWidth = (eligibleCards.length * cardDisplayWidth) + ((eligibleCards.length - 1) * cardSpacing);
-    const cardsStartX = dialogX - totalCardsWidth / 2;
-    const cardsY = cardSectionY + 10; // Adjusted position for larger cards
+    const cardDisplayWidth = 160; // Slightly smaller cards for compact dialog
+    const cardDisplayHeight = 220; // Proportionally smaller height
+    const cardSpacing = 25; // Reduced spacing for compact layout;
     
-    eligibleCards.forEach((card, index) => {
-      const cardX = cardsStartX + (index * (cardDisplayWidth + cardSpacing)) + cardDisplayWidth / 2;
-      
-      // Card container background
-      const cardContainer = scene.add.graphics();
-      cardContainer.fillStyle(0x333333);
-      cardContainer.fillRoundedRect(cardX - cardDisplayWidth/2, cardsY - cardDisplayHeight/2, cardDisplayWidth, cardDisplayHeight, 8);
-      cardContainer.lineStyle(2, 0x666666);
-      cardContainer.strokeRoundedRect(cardX - cardDisplayWidth/2, cardsY - cardDisplayHeight/2, cardDisplayWidth, cardDisplayHeight, 8);
-      cardContainer.setDepth(1503);
-      cardListElements.push(cardContainer);
-      
-      // Use preview image key instead of cardId for image display
-      const previewImageKey = `${card.cardId}-preview`;
-      let cardImage;
-      
-      if (scene.textures.exists(previewImageKey)) {
-        // Use preview image and scale to fill the entire container
-        cardImage = scene.add.image(cardX, cardsY, previewImageKey);
-        const maxScale = Math.min((cardDisplayWidth - 16) / cardImage.width, (cardDisplayHeight - 16) / cardImage.height);
-        cardImage.setScale(maxScale);
-        cardImage.setDepth(1504);
-        cardListElements.push(cardImage);
-      } else if (scene.textures.exists(card.cardId)) {
-        // Fallback to regular card image
-        cardImage = scene.add.image(cardX, cardsY, card.cardId);
-        const maxScale = Math.min((cardDisplayWidth - 16) / cardImage.width, (cardDisplayHeight - 16) / cardImage.height);
-        cardImage.setScale(maxScale);
-        cardImage.setDepth(1504);
-        cardListElements.push(cardImage);
+    // Navigation arrows and pagination elements
+    let leftArrow = null;
+    let rightArrow = null;
+    let pageInfoText = null;
+    
+    // Function to create/update card display for current page with animation
+    const updateCardDisplay = (animateDirection = null) => {
+      // Fade out existing cards first if animating
+      if (animateDirection && cardListElements.length > 0) {
+        const fadeOutPromises = cardListElements.map(element => {
+          if (element && element.setAlpha) {
+            return new Promise(resolve => {
+              scene.tweens.add({
+                targets: element,
+                alpha: 0,
+                x: animateDirection === 'left' ? element.x + 50 : element.x - 50,
+                duration: 200,
+                ease: 'Power2.easeIn',
+                onComplete: () => {
+                  if (element && element.destroy) {
+                    element.destroy();
+                  }
+                  resolve();
+                }
+              });
+            });
+          } else {
+            if (element && element.destroy) {
+              element.destroy();
+            }
+            return Promise.resolve();
+          }
+        });
+        
+        // Wait for fade out to complete before creating new cards
+        Promise.all(fadeOutPromises).then(() => {
+          cardListElements.length = 0;
+          createAndAnimateCards(animateDirection);
+        });
       } else {
-        // Fallback placeholder using the full container size
-        const placeholder = scene.add.graphics();
-        placeholder.fillStyle(0x666666);
-        placeholder.fillRoundedRect(cardX - cardDisplayWidth/2 + 8, cardsY - cardDisplayHeight/2 + 8, cardDisplayWidth - 16, cardDisplayHeight - 16, 8);
-        placeholder.lineStyle(2, 0xffffff);
-        placeholder.strokeRoundedRect(cardX - cardDisplayWidth/2 + 8, cardsY - cardDisplayHeight/2 + 8, cardDisplayWidth - 16, cardDisplayHeight - 16, 8);
-        placeholder.setDepth(1504);
-        cardListElements.push(placeholder);
-        
-        // Card ID on placeholder
-        const idText = scene.add.text(cardX, cardsY, card.cardId, {
-          fontSize: '14px',
-          fontFamily: 'Arial',
-          fill: '#ffffff',
-          align: 'center'
+        // No animation, clear immediately
+        cardListElements.forEach(element => {
+          if (element && element.destroy) {
+            element.destroy();
+          }
         });
-        idText.setOrigin(0.5);
-        idText.setDepth(1505);
-        cardListElements.push(idText);
-        cardImage = placeholder; // Use placeholder for hover events
+        cardListElements.length = 0;
+        createAndAnimateCards(null);
       }
+    };
+    
+    // Function to create and animate in new cards
+    const createAndAnimateCards = (animateDirection) => {
+      // Get cards for current page
+      const startIndex = currentPage * maxCardsPerPage;
+      const endIndex = Math.min(startIndex + maxCardsPerPage, eligibleCards.length);
+      const currentPageCards = eligibleCards.slice(startIndex, endIndex);
       
-      // Make the card interactive for hover events
-      if (cardImage && cardImage.setInteractive) {
-        cardImage.setInteractive();
+      // Calculate layout for current page cards
+      const totalCardsWidth = (currentPageCards.length * cardDisplayWidth) + ((currentPageCards.length - 1) * cardSpacing);
+      const cardsStartX = dialogX - totalCardsWidth / 2;
+      const cardsY = cardSectionY + 10;
+      
+      // Create cards for current page
+      currentPageCards.forEach((card, index) => {
+        const cardX = cardsStartX + (index * (cardDisplayWidth + cardSpacing)) + cardDisplayWidth / 2;
         
-        // Create card data object for preview
-        const cardDataObject = {
-          cardId: card.cardId,
-          name: card.name,
-          power: card.power,
-          zone: card.zone,
-          gameType: card.gameType,
-          traits: card.traits || [],
-          description: card.description || ''
-        };
+        // Card container background
+        const cardContainer = scene.add.graphics();
+        cardContainer.fillStyle(0x333333);
+        cardContainer.fillRoundedRect(cardX - cardDisplayWidth/2, cardsY - cardDisplayHeight/2, cardDisplayWidth, cardDisplayHeight, 8);
+        cardContainer.lineStyle(2, 0x666666);
+        cardContainer.strokeRoundedRect(cardX - cardDisplayWidth/2, cardsY - cardDisplayHeight/2, cardDisplayWidth, cardDisplayHeight, 8);
+        cardContainer.setDepth(1503);
+        cardListElements.push(cardContainer);
         
-        // Add hover events
-        cardImage.on('pointerover', () => {
-          scene.game.canvas.style.cursor = 'pointer';
-          scene.showCardPreview(cardDataObject);
-        });
+        // Use preview image key instead of cardId for image display
+        const previewImageKey = `${card.cardId}_preview`;
+        let cardImage;
         
-        cardImage.on('pointerout', () => {
-          scene.game.canvas.style.cursor = 'default';
-          scene.hideCardPreview();
-        });
+        if (scene.textures.exists(previewImageKey)) {
+          // Use preview image and scale to fill the entire container
+          cardImage = scene.add.image(cardX, cardsY, previewImageKey);
+          const maxScale = Math.min((cardDisplayWidth - 16) / cardImage.width, (cardDisplayHeight - 16) / cardImage.height);
+          cardImage.setScale(maxScale);
+          cardImage.setDepth(1504);
+          cardListElements.push(cardImage);
+        } else if (scene.textures.exists(card.cardId)) {
+          // Fallback to regular card image
+          cardImage = scene.add.image(cardX, cardsY, card.cardId);
+          const maxScale = Math.min((cardDisplayWidth - 16) / cardImage.width, (cardDisplayHeight - 16) / cardImage.height);
+          cardImage.setScale(maxScale);
+          cardImage.setDepth(1504);
+          cardListElements.push(cardImage);
+        } else {
+          // Fallback placeholder using the full container size
+          const placeholder = scene.add.graphics();
+          placeholder.fillStyle(0x666666);
+          placeholder.fillRoundedRect(cardX - cardDisplayWidth/2 + 8, cardsY - cardDisplayHeight/2 + 8, cardDisplayWidth - 16, cardDisplayHeight - 16, 8);
+          placeholder.lineStyle(2, 0xffffff);
+          placeholder.strokeRoundedRect(cardX - cardDisplayWidth/2 + 8, cardsY - cardDisplayHeight/2 + 8, cardDisplayWidth - 16, cardDisplayHeight - 16, 8);
+          placeholder.setDepth(1504);
+          cardListElements.push(placeholder);
+          
+          // Card ID on placeholder
+          const idText = scene.add.text(cardX, cardsY, card.cardId, {
+            fontSize: '14px',
+            fontFamily: 'Arial',
+            fill: '#ffffff',
+            align: 'center'
+          });
+          idText.setOrigin(0.5);
+          idText.setDepth(1505);
+          cardListElements.push(idText);
+          cardImage = placeholder; // Use placeholder for hover events
+        }
+        
+        // Make the card interactive for hover events
+        if (cardImage && cardImage.setInteractive) {
+          cardImage.setInteractive();
+          
+          // Create card data object for preview
+          const cardDataObject = {
+            cardId: card.cardId,
+            name: card.name,
+            power: card.power,
+            zone: card.zone,
+            gameType: card.gameType,
+            traits: card.traits || [],
+            description: card.description || ''
+          };
+          
+          // Add hover events
+          cardImage.on('pointerover', () => {
+            scene.game.canvas.style.cursor = 'pointer';
+            scene.showCardPreview(GameSceneUtils.convertCardSelectionToCardDataObject(cardDataObject));
+          });
+          
+          cardImage.on('pointerout', () => {
+            scene.game.canvas.style.cursor = 'default';
+            scene.hideCardPreview();
+          });
+        }
+        
+        // Animate the card in if direction is specified
+        if (animateDirection && cardImage) {
+          // Set initial position and alpha for animation
+          const startX = animateDirection === 'left' ? cardX - 50 : cardX + 50;
+          cardImage.setPosition(startX, cardsY);
+          cardImage.setAlpha(0);
+          
+          // Animate to final position
+          scene.tweens.add({
+            targets: cardImage,
+            x: cardX,
+            alpha: 1,
+            duration: 300,
+            delay: index * 50, // Stagger animation for each card
+            ease: 'Power2.easeOut'
+          });
+        }
+        
+        // Also animate container if it exists
+        if (animateDirection && cardContainer) {
+          const startX = animateDirection === 'left' ? cardX - 50 : cardX + 50;
+          cardContainer.x = startX - cardX; // Offset from original position
+          cardContainer.alpha = 0;
+          
+          scene.tweens.add({
+            targets: cardContainer,
+            x: 0,
+            alpha: 1,
+            duration: 300,
+            delay: index * 50,
+            ease: 'Power2.easeOut'
+          });
+        }
+      });
+      
+      // Update pagination controls visibility
+      if (leftArrow) {
+        leftArrow.setVisible(currentPage > 0);
+        leftArrow.setAlpha(currentPage > 0 ? 1.0 : 0.3);
       }
-    });
+      if (rightArrow) {
+        rightArrow.setVisible(currentPage < totalPages - 1);
+        rightArrow.setAlpha(currentPage < totalPages - 1 ? 1.0 : 0.3);
+      }
+      if (pageInfoText) {
+        pageInfoText.setText(`Page ${currentPage + 1} of ${totalPages}`);
+      }
+    };
+    
+    // Create pagination controls if needed
+    if (totalPages > 1) {
+      // Left arrow
+      leftArrow = scene.add.graphics();
+      leftArrow.fillStyle(0x888888);
+      leftArrow.fillTriangle(
+        dialogX - dialogWidth/2 + 40, cardSectionY,
+        dialogX - dialogWidth/2 + 65, cardSectionY - 15,
+        dialogX - dialogWidth/2 + 65, cardSectionY + 15
+      );
+      leftArrow.setDepth(1504);
+      leftArrow.setInteractive(new Phaser.Geom.Rectangle(
+        dialogX - dialogWidth/2 + 30, cardSectionY - 20, 45, 40
+      ), Phaser.Geom.Rectangle.Contains);
+      
+      leftArrow.on('pointerdown', () => {
+        if (currentPage > 0) {
+          currentPage--;
+          updateCardDisplay('left'); // Animate from left
+        }
+      });
+      
+      leftArrow.on('pointerover', () => {
+        if (currentPage > 0) {
+          scene.game.canvas.style.cursor = 'pointer';
+        }
+      });
+      
+      leftArrow.on('pointerout', () => {
+        scene.game.canvas.style.cursor = 'default';
+      });
+      
+      // Right arrow
+      rightArrow = scene.add.graphics();
+      rightArrow.fillStyle(0x888888);
+      rightArrow.fillTriangle(
+        dialogX + dialogWidth/2 - 40, cardSectionY,
+        dialogX + dialogWidth/2 - 65, cardSectionY - 15,
+        dialogX + dialogWidth/2 - 65, cardSectionY + 15
+      );
+      rightArrow.setDepth(1504);
+      rightArrow.setInteractive(new Phaser.Geom.Rectangle(
+        dialogX + dialogWidth/2 - 75, cardSectionY - 20, 45, 40
+      ), Phaser.Geom.Rectangle.Contains);
+      
+      rightArrow.on('pointerdown', () => {
+        if (currentPage < totalPages - 1) {
+          currentPage++;
+          updateCardDisplay('right'); // Animate from right
+        }
+      });
+      
+      rightArrow.on('pointerover', () => {
+        if (currentPage < totalPages - 1) {
+          scene.game.canvas.style.cursor = 'pointer';
+        }
+      });
+      
+      rightArrow.on('pointerout', () => {
+        scene.game.canvas.style.cursor = 'default';
+      });
+      
+      // Page info text
+      pageInfoText = scene.add.text(dialogX, cardSectionY + cardSectionHeight/2 - 30, `Page ${currentPage + 1} of ${totalPages}`, {
+        fontSize: '14px',
+        fontFamily: 'Arial',
+        fill: '#cccccc',
+        align: 'center'
+      });
+      pageInfoText.setOrigin(0.5);
+      pageInfoText.setDepth(1504);
+    }
+    
+    // Initial card display (no animation)
+    updateCardDisplay();
     
     // ===================================
     // SECTION 3: BUTTON SECTION (BOTTOM)
@@ -425,20 +632,63 @@ export default class GameSceneUtils {
       scene.input.setDefaultCursor('default');
     });
     
-    // Collect all dialog elements for cleanup
-    const dialogElements = [
-      overlay, dialogBg, titleBg, titleText, descText,
-      cardBg, cardLabelText, ...cardListElements,
-      buttonBg, okButton, okText
-    ];
+    // Function to get all current dialog elements for cleanup
+    const getAllDialogElements = () => {
+      const elements = [
+        overlay, dialogBg, titleBg, titleText, descText,
+        cardBg, cardLabelText, 
+        buttonBg, okButton, okText
+      ];
+      
+      // Add all current card elements
+      cardListElements.forEach(element => {
+        if (element && !element.destroyed) {
+          elements.push(element);
+        }
+      });
+      
+      // Add pagination elements if they exist
+      if (leftArrow && !leftArrow.destroyed) elements.push(leftArrow);
+      if (rightArrow && !rightArrow.destroyed) elements.push(rightArrow);
+      if (pageInfoText && !pageInfoText.destroyed) elements.push(pageInfoText);
+      
+      return elements;
+    };
+    
+    // Store cleanup function for external access
+    const cleanupDialog = () => {
+      // Stop any running tweens first
+      scene.tweens.killTweensOf(cardListElements);
+      if (leftArrow) scene.tweens.killTweensOf(leftArrow);
+      if (rightArrow) scene.tweens.killTweensOf(rightArrow);
+      
+      // Get all elements and destroy them
+      const allElements = getAllDialogElements();
+      allElements.forEach(element => {
+        if (element && !element.destroyed) {
+          element.destroy();
+        }
+      });
+      
+      // Clear the card elements array
+      cardListElements.length = 0;
+    };
     
     // OK button handler
     okButton.on('pointerdown', () => {
       console.log('Card selection confirmed');
-      onConfirm(selectionId, eligibleCards[0], dialogElements);
+      // Use cleanup function instead of passing elements
+      cleanupDialog();
+      onConfirm(selectionId, eligibleCards[0], []);
     });
     
-    return dialogElements;
+    // Return cleanup function and initial elements for external cleanup if needed
+    const dialogInterface = {
+      elements: getAllDialogElements(),
+      cleanup: cleanupDialog
+    };
+    
+    return dialogInterface;
   }
 
   /**
