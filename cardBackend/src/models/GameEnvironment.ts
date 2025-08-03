@@ -75,8 +75,27 @@ export interface ZoneCard {
     card: string[]; // Array containing single card UID
 }
 
+export interface LeaderZoneCard {
+    id: string;
+    name?: string;
+    cardType?: string;
+    gameType?: string;
+    initialPoint?: number;
+    level?: number;
+    rarity?: string;
+    zoneCompatibility?: {
+        top: string[];
+        left: string[];
+        right: string[];
+    };
+    effects?: {
+        description?: string;
+        rules?: any[];
+    };
+}
+
 export interface PlayerZones {
-    leader?: { id: string };
+    leader?: LeaderZoneCard;
     top?: ZoneCard;
     left?: ZoneCard;
     right?: ZoneCard;
@@ -302,6 +321,16 @@ export class GameZones {
         } else {
             playerZones[zone] = { card: [cardUid] };
         }
+    }
+
+    public setLeaderInZone(playerId: string, leaderData: LeaderZoneCard): void {
+        const playerZones = this.getPlayerZones(playerId);
+        playerZones.leader = leaderData;
+    }
+
+    public getLeaderInZone(playerId: string): LeaderZoneCard | null {
+        const playerZones = this.getPlayerZones(playerId);
+        return playerZones.leader || null;
     }
 
     public getCardInZone(playerId: string, zone: ZoneType): string | null {

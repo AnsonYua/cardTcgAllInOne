@@ -58,10 +58,26 @@ export interface PlayerDeckData {
 export interface ZoneCard {
     card: string[];
 }
-export interface PlayerZones {
-    leader?: {
-        id: string;
+export interface LeaderZoneCard {
+    id: string;
+    name?: string;
+    cardType?: string;
+    gameType?: string;
+    initialPoint?: number;
+    level?: number;
+    rarity?: string;
+    zoneCompatibility?: {
+        top: string[];
+        left: string[];
+        right: string[];
     };
+    effects?: {
+        description?: string;
+        rules?: any[];
+    };
+}
+export interface PlayerZones {
+    leader?: LeaderZoneCard;
     top?: ZoneCard;
     left?: ZoneCard;
     right?: ZoneCard;
@@ -155,6 +171,8 @@ export declare class GameZones {
     initializePlayerZones(playerId: string): void;
     getPlayerZones(playerId: string): PlayerZones;
     setCardInZone(playerId: string, zone: ZoneType, cardUid: string): void;
+    setLeaderInZone(playerId: string, leaderData: LeaderZoneCard): void;
+    getLeaderInZone(playerId: string): LeaderZoneCard | null;
     getCardInZone(playerId: string, zone: ZoneType): string | null;
     isZoneOccupied(playerId: string, zone: ZoneType): boolean;
     clearZone(playerId: string, zone: ZoneType): void;

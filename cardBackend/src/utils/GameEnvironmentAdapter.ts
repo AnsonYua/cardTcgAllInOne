@@ -177,6 +177,34 @@ export class GameEnvironmentAdapter {
         player1.redraw = 0;
         player2.redraw = 0;
         
+        // Place leader cards in leader zones with complete data
+        const leader1ZoneData = {
+            id: leader1,
+            name: leader1Details.name,
+            cardType: leader1Details.cardType,
+            gameType: leader1Details.gameType,
+            initialPoint: leader1Details.initialPoint,
+            level: leader1Details.level,
+            rarity: leader1Details.rarity,
+            zoneCompatibility: leader1Details.zoneCompatibility,
+            effects: leader1Details.effects
+        };
+        
+        const leader2ZoneData = {
+            id: leader2,
+            name: leader2Details.name,
+            cardType: leader2Details.cardType,
+            gameType: leader2Details.gameType,
+            initialPoint: leader2Details.initialPoint,
+            level: leader2Details.level,
+            rarity: leader2Details.rarity,
+            zoneCompatibility: leader2Details.zoneCompatibility,
+            effects: leader2Details.effects
+        };
+        
+        gameEnv.zones.setLeaderInZone(gameEnv.playerId_1!, leader1ZoneData);
+        gameEnv.zones.setLeaderInZone(gameEnv.playerId_2!, leader2ZoneData);
+        
         // Prepare leader revealed data for events
         const leaderRevealed = {
             [gameEnv.playerId_1!]: {

@@ -169,6 +169,9 @@ class GameZones {
     }
     initializePlayerZones(playerId) {
         this.zones[playerId] = {};
+        for (const zone of Object.values(ZoneType)) {
+            this.zones[playerId][zone] = [];
+        }
     }
     getPlayerZones(playerId) {
         if (!this.zones[playerId]) {
@@ -177,23 +180,17 @@ class GameZones {
         return this.zones[playerId];
     }
     setCardInZone(playerId, zone, cardUid) {
+        
+    }
+    setLeaderInZone(playerId, leaderData) {
         const playerZones = this.getPlayerZones(playerId);
-        if (zone === ZoneType.LEADER) {
-            playerZones.leader = { id: cardUid };
-        }
-        else {
-            playerZones[zone] = { card: [cardUid] };
-        }
+        playerZones.leader.push(leaderData);
+    }
+    getLeaderInZone(playerId) {
+        const playerZones = this.getPlayerZones(playerId);
+        return playerZones.leader || null;
     }
     getCardInZone(playerId, zone) {
-        const playerZones = this.getPlayerZones(playerId);
-        if (zone === ZoneType.LEADER && playerZones.leader) {
-            return playerZones.leader.id;
-        }
-        else if (zone !== ZoneType.LEADER && playerZones[zone] && 'card' in playerZones[zone]) {
-            const zoneCard = playerZones[zone];
-            return zoneCard.card.length > 0 ? zoneCard.card[0] : null;
-        }
         return null;
     }
     isZoneOccupied(playerId, zone) {
