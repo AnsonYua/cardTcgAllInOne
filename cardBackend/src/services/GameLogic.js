@@ -138,23 +138,25 @@ class GameLogic {
         let gameEnv = gameData.gameEnv;
         
         // Check if room is in correct state
-        if (gameEnv.phase !== GamePhase.READY_PHASE) {
+        if (gameEnv.phase !== GamePhase.REDRAW_PHASE) {
             throw new Error('Room is not ready for player ready status. Current phase: ' + gameEnv.phase);
         }
         
-        // Handle redraw logic
-        gameEnv = await this.mozGamePlay.redrawInBegining(gameEnv, playerId, isRedraw);
+        // Handle redraw logic using new GameEnvironment class methods
+        const { GameEnvironmentAdapter } = require('../../dist/src/utils/GameEnvironmentAdapter');
+        let gameEnvClass = GameEnvironmentAdapter.fromLegacyJSON(gameEnv);
+        
+        // Use new class method for redraw processing
+        await gameEnvClass.processPlayerRedraw(playerId, isRedraw);
+        
+        // Convert back to legacy format
+        gameEnv = GameEnvironmentAdapter.toLegacyJSON(gameEnvClass);
+        
         // Track which players are ready
         if (!gameEnv.playersReady) {
             gameEnv.playersReady = {};
         }
         gameEnv.playersReady[playerId] = true;
-        
-        // Add player ready event
-        this.mozGamePlay.addGameEvent(gameEnv, 'PLAYER_READY', {
-            playerId: playerId,
-            isRedraw: isRedraw
-        });
         
         // Check if both players are ready
         const { getPlayerFromGameEnv } = require('../utils/gameUtils');

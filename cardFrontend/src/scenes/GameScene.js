@@ -1068,7 +1068,7 @@ export default class GameScene extends Phaser.Scene {
 
 
     // Check for READY_PHASE and trigger shuffle animation
-    if (gameState.gameEnv.phase === 'READY_PHASE' && !this.shuffleAnimationPlayed) {
+    if (gameState.gameEnv.phase === 'REDRAW_PHASE' && !this.shuffleAnimationPlayed) {
       console.log('READY_PHASE detected - triggering shuffle animation and redraw dialog');
       console.log('Game state during READY_PHASE:', JSON.stringify(gameState, null, 2));
       this.shuffleAnimationPlayed = true;

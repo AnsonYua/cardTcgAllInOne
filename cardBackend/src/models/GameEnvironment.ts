@@ -15,6 +15,7 @@ export enum GamePhase {
     WAITING_FOR_PLAYERS = 'WAITING_FOR_PLAYERS',
     BOTH_JOINED = 'BOTH_JOINED',
     READY_PHASE = 'READY_PHASE',
+    REDRAW_PHASE = 'REDRAW_PHASE',
     DRAW_PHASE = 'DRAW_PHASE',
     MAIN_PHASE = 'MAIN_PHASE',
     SP_PHASE = 'SP_PHASE',
@@ -44,6 +45,8 @@ export enum EventType {
     GAME_STARTED = 'GAME_STARTED',
     INITIAL_HAND_DEALT = 'INITIAL_HAND_DEALT',
     PLAYER_JOINED = 'PLAYER_JOINED',
+    PLAYER_READY = 'PLAYER_READY',
+    HAND_REDRAWN = 'HAND_REDRAWN',
     CARD_PLAYED = 'CARD_PLAYED',
     ZONE_FILLED = 'ZONE_FILLED',
     PHASE_CHANGE = 'PHASE_CHANGE',
@@ -189,6 +192,44 @@ export class Player {
 
     public getCardIdFromUid(cardUid: string): string | null {
         return this.deck.getCardIdFromUid(cardUid);
+    }
+
+    // ============ REDRAW METHODS ============
+
+    /**
+     * Handle player redraw request during initial game setup
+     * @param isRedraw - Whether the player wants to redraw their hand
+     * @returns Promise<boolean> - true if hand was reshuffled, false otherwise
+     */
+    public async requestRedraw(isRedraw: boolean): Promise<boolean> {
+        // Check if player has already used their redraw
+        if (this.redraw !== 0) {
+            return false; // Already used redraw
+        }
+        
+        // Mark redraw as used (first-time execution guard)
+        this.redraw = 1;
+        
+        if (isRedraw) {
+            // Import mozDeckHelper with proper path resolution for compiled code
+            const path = require('path');
+            const isCompiled = __dirname.includes('dist');
+            const mozDeckHelperPath = isCompiled 
+                ? path.join(__dirname, '../../../src/mozGame/mozDeckHelper.js') 
+                : path.join(__dirname, '../mozGame/mozDeckHelper.js');
+            const mozDeckHelper = require(mozDeckHelperPath);
+            
+            // Get reshuffled deck from mozDeckHelper
+            const reshuffleResult = await mozDeckHelper.reshuffleForPlayer(this.id);
+            
+            // Update player's hand and main deck with reshuffled cards
+            this.deck.hand = reshuffleResult.hand;
+            this.deck.mainDeck = reshuffleResult.mainDeck;
+            
+            return true; // Hand was reshuffled
+        }
+        
+        return false; // No reshuffle requested, but redraw is now marked as used
     }
 
     // ============ FIELD EFFECTS METHODS ============
@@ -533,6 +574,40 @@ export class GameEnvironment {
 
     public canStartGame(): boolean {
         return this.isGameReady() && this.phase === GamePhase.READY_PHASE;
+    }
+
+    // ============ PLAYER REDRAW OPERATIONS ============
+
+    /**
+     * Process player redraw request during initial game setup
+     * Handles the complete redraw workflow including events and deck reshuffling
+     * @param playerId - ID of the player requesting redraw
+     * @param isRedraw - Whether the player wants to redraw their hand
+     * @returns Promise<void>
+     * @throws Error if player not found
+     */
+    public async processPlayerRedraw(playerId: string, isRedraw: boolean): Promise<void> {
+        const player = this.getPlayer(playerId);
+        if (!player) {
+            throw new Error(`Player ${playerId} not found`);
+        }
+        
+        // Delegate to player's requestRedraw method which handles the core logic
+        const reshuffled = await player.requestRedraw(isRedraw);
+        
+        // Add PLAYER_READY event through EventManager
+        this.eventManager.addEvent(EventType.PLAYER_READY, {
+            playerId: playerId,
+            redrawRequested: isRedraw
+        });
+        
+        // Add HAND_REDRAWN event if reshuffling occurred
+        if (reshuffled) {
+            this.eventManager.addEvent(EventType.HAND_REDRAWN, {
+                playerId: playerId,
+                newHandSize: player.getHandSize()
+            });
+        }
     }
 
     // ============ ZONE OPERATIONS ============

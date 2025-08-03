@@ -7,6 +7,7 @@ export declare enum GamePhase {
     WAITING_FOR_PLAYERS = "WAITING_FOR_PLAYERS",
     BOTH_JOINED = "BOTH_JOINED",
     READY_PHASE = "READY_PHASE",
+    REDRAW_PHASE = "REDRAW_PHASE",
     DRAW_PHASE = "DRAW_PHASE",
     MAIN_PHASE = "MAIN_PHASE",
     SP_PHASE = "SP_PHASE",
@@ -33,6 +34,8 @@ export declare enum EventType {
     GAME_STARTED = "GAME_STARTED",
     INITIAL_HAND_DEALT = "INITIAL_HAND_DEALT",
     PLAYER_JOINED = "PLAYER_JOINED",
+    PLAYER_READY = "PLAYER_READY",
+    HAND_REDRAWN = "HAND_REDRAWN",
     CARD_PLAYED = "CARD_PLAYED",
     ZONE_FILLED = "ZONE_FILLED",
     PHASE_CHANGE = "PHASE_CHANGE",
@@ -135,6 +138,12 @@ export declare class Player {
     getDeckSize(): number;
     advanceToNextLeader(): boolean;
     getCardIdFromUid(cardUid: string): string | null;
+    /**
+     * Handle player redraw request during initial game setup
+     * @param isRedraw - Whether the player wants to redraw their hand
+     * @returns Promise<boolean> - true if hand was reshuffled, false otherwise
+     */
+    requestRedraw(isRedraw: boolean): Promise<boolean>;
     initializeFieldEffects(): void;
     addFieldEffect(effect: FieldEffect): void;
     clearFieldEffects(): void;
@@ -202,6 +211,15 @@ export declare class GameEnvironment {
     updatePhase(newPhase: GamePhase): void;
     isGameReady(): boolean;
     canStartGame(): boolean;
+    /**
+     * Process player redraw request during initial game setup
+     * Handles the complete redraw workflow including events and deck reshuffling
+     * @param playerId - ID of the player requesting redraw
+     * @param isRedraw - Whether the player wants to redraw their hand
+     * @returns Promise<void>
+     * @throws Error if player not found
+     */
+    processPlayerRedraw(playerId: string, isRedraw: boolean): Promise<void>;
     playCard(playerId: string, cardUid: string, zone: ZoneType, isFaceDown?: boolean): boolean;
     setLeader(playerId: string, leaderUid: string): boolean;
     areAllMainZonesFilled(): boolean;

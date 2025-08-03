@@ -7,7 +7,14 @@
 
 import { GameEnvironment, GamePhase, ZoneType, ActionType, EventType, Player } from '../models/GameEnvironment';
 import { PlayerDeckDataResp } from '../models/PlayerDeckDataResp';
-import CardInfoUtils from '../services/CardInfoUtils';
+
+// Import CardInfoUtils with proper path resolution for compiled code
+const path = require('path');
+const isCompiled = __dirname.includes('dist');
+const cardInfoUtilsPath = isCompiled 
+    ? path.join(__dirname, '../../../src/services/CardInfoUtils.js') 
+    : path.join(__dirname, '../services/CardInfoUtils.js');
+const CardInfoUtils = require(cardInfoUtilsPath);
 
 export class GameEnvironmentAdapter {
     
@@ -141,9 +148,9 @@ export class GameEnvironmentAdapter {
             throw new Error('Both players must have current leaders before initialization');
         }
         
-        // Use imported CardInfoUtils directly - use getLeaderCards for leader details
-        const leader1Details = CardInfoUtils.getLeaderCards(leader1);
-        const leader2Details = CardInfoUtils.getLeaderCards(leader2);
+        // Use imported CardInfoUtils directly
+        const leader1Details = CardInfoUtils.getCardDetails(leader1);
+        const leader2Details = CardInfoUtils.getCardDetails(leader2);
         
         if (!leader1Details || !leader2Details) {
             throw new Error('Unable to retrieve leader card details');
@@ -162,7 +169,7 @@ export class GameEnvironmentAdapter {
         gameEnv.firstPlayer = firstPlayer;
         
         // Update phase to START_REDRAW
-        gameEnv.updatePhase(GamePhase.READY_PHASE); // Using READY_PHASE instead of START_REDRAW
+        gameEnv.updatePhase(GamePhase.REDRAW_PHASE); // Using READY_PHASE instead of START_REDRAW
         
         // Initialize player redraw counts
         player1.redraw = 0;

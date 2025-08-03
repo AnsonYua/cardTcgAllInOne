@@ -1,8 +1,5 @@
 "use strict";
 // src/utils/GameEnvironmentAdapter.ts
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GameEnvironmentHelper = exports.GameEnvironmentValidator = exports.GameEnvironmentAdapter = void 0;
 /**
@@ -10,7 +7,13 @@ exports.GameEnvironmentHelper = exports.GameEnvironmentValidator = exports.GameE
  * and new object-oriented GameEnvironment class
  */
 const GameEnvironment_1 = require("../models/GameEnvironment");
-const CardInfoUtils_1 = __importDefault(require("../services/CardInfoUtils"));
+// Import CardInfoUtils with proper path resolution for compiled code
+const path = require('path');
+const isCompiled = __dirname.includes('dist');
+const cardInfoUtilsPath = isCompiled
+    ? path.join(__dirname, '../../../src/services/CardInfoUtils.js')
+    : path.join(__dirname, '../services/CardInfoUtils.js');
+const CardInfoUtils = require(cardInfoUtilsPath);
 class GameEnvironmentAdapter {
     /**
      * Convert legacy gameEnv JSON to GameEnvironment class instance
@@ -115,9 +118,9 @@ class GameEnvironmentAdapter {
         if (!leader1 || !leader2) {
             throw new Error('Both players must have current leaders before initialization');
         }
-        // Use imported CardInfoUtils directly - use getLeaderCards for leader details
-        const leader1Details = CardInfoUtils_1.default.getLeaderCards(leader1);
-        const leader2Details = CardInfoUtils_1.default.getLeaderCards(leader2);
+        // Use imported CardInfoUtils directly
+        const leader1Details = CardInfoUtils.getCardDetails(leader1);
+        const leader2Details = CardInfoUtils.getCardDetails(leader2);
         if (!leader1Details || !leader2Details) {
             throw new Error('Unable to retrieve leader card details');
         }
@@ -133,7 +136,7 @@ class GameEnvironmentAdapter {
         firstPlayer = 0;
         gameEnv.firstPlayer = firstPlayer;
         // Update phase to START_REDRAW
-        gameEnv.updatePhase(GameEnvironment_1.GamePhase.READY_PHASE); // Using READY_PHASE instead of START_REDRAW
+        gameEnv.updatePhase(GameEnvironment_1.GamePhase.REDRAW_PHASE); // Using READY_PHASE instead of START_REDRAW
         // Initialize player redraw counts
         player1.redraw = 0;
         player2.redraw = 0;

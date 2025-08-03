@@ -291,7 +291,7 @@ class mozGamePlay {
         
         return gameEnv;
     }
-    
+    /*
     async redrawInBegining(gameEnvInput,playerId,isRedraw){
         const { getPlayerData } = require('../utils/gameUtils');
         var gameEnv = gameEnvInput;
@@ -321,7 +321,7 @@ class mozGamePlay {
         // Note: Field initialization is now handled in GameLogic.startReady() when both players are ready
         // This method only handles the redraw logic during the initial ready phase
         return gameEnv;
-    }
+    }*/
 
     /**
      * Processes a player action in the game
