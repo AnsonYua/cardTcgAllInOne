@@ -1533,7 +1533,7 @@ export default class GameScene extends Phaser.Scene {
   showCardPreview(cardData) {
     // Remove existing preview card if any
     this.hideCardPreview();
-    
+    console.log("showCardPreview", cardData);
     if (this.cardPreviewZone && cardData) {
       // Create a larger preview card using original (full-detail) images
       this.previewCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y, cardData, {
