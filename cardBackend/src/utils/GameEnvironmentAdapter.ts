@@ -149,8 +149,8 @@ export class GameEnvironmentAdapter {
         }
         
         // Use imported CardInfoUtils directly
-        const leader1Details = CardInfoUtils.getCardDetails(leader1);
-        const leader2Details = CardInfoUtils.getCardDetails(leader2);
+        const leader1Details = CardInfoUtils.getLeaderCards(leader1);
+        const leader2Details = CardInfoUtils.getLeaderCards(leader2);
         
         if (!leader1Details || !leader2Details) {
             throw new Error('Unable to retrieve leader card details');
@@ -158,6 +158,8 @@ export class GameEnvironmentAdapter {
         
         // Determine first player based on leader initial points
         let firstPlayer = 0;
+        console.log("debug leader1Details", JSON.stringify(leader1Details));
+        console.log("debug leader2Details", JSON.stringify(leader2Details));
         if (leader2Details.initialPoint > leader1Details.initialPoint) {
             firstPlayer = 1;
         } else if (leader2Details.initialPoint === leader1Details.initialPoint) {
@@ -165,10 +167,10 @@ export class GameEnvironmentAdapter {
         }
         
         // For consistency with existing logic, set to 0
-        firstPlayer = 0;
+        //firstPlayer = 0;
         gameEnv.firstPlayer = firstPlayer;
         
-        // Update phase to START_REDRAW
+        // Update phase to REDRAW_PHASE
         gameEnv.updatePhase(GamePhase.REDRAW_PHASE); // Using READY_PHASE instead of START_REDRAW
         
         // Initialize player redraw counts
