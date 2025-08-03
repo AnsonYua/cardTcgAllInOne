@@ -5,7 +5,7 @@ class mozDeckLogic{
         this.cardInfoUtils = CardInfoUtils;
     }
     async prepareDeckForPlayer(playerId) {
-
+        console.log("debug prepareDeckForPlayer", playerId);
         //get player default deck and generate a uid mapping for each card (including leader cards)
         var playerDeck = await deckManager.getPlayerDecks(playerId);
         console.log("debug playerDeck", JSON.stringify(playerDeck));

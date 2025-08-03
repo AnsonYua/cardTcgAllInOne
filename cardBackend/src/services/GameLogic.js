@@ -100,7 +100,7 @@ class GameLogic {
         // Add second player
         gameEnv.playerId_2 = playerId;
         updatePhase(gameEnv, 'BOTH_JOINED');
-        
+        console.log("debug gameEnv", JSON.stringify(gameEnv));
         // Now prepare decks for both players
         const player1Id = gameEnv.playerId_1;
         const player2Id = gameEnv.playerId_2;
