@@ -113,6 +113,9 @@ class DeckManager {
             playerData.decks[playerData.activeDeck].cardUID = uidMappings.cardUID;
             playerData.decks[playerData.activeDeck].leaderUID = uidMappings.leaderUID;
         }
+        // Add compatibility fields that mozDeckHelper expects (properly typed)
+        playerData.leaderUIMapping = uidMappings.leaderUID;
+        playerData.deckUIDMapping = uidMappings.cardUID;
         return playerData;
     }
     getLeaderCards(cardId) {

@@ -111,7 +111,7 @@ class GameLogic {
         ];
         
         const results = await Promise.all(startTask);
-        
+        console.log("debug results11", JSON.stringify(results));
         // NEW: Set up unified structure with decks
         gameEnv.players[player1Id] = { "id": player1Id, "name": player1Id, "deck": results[0] };
         gameEnv.players[player2Id] = { "id": player2Id, "name": player2Id, "deck": results[1] };

@@ -8,7 +8,6 @@ class mozDeckLogic{
         console.log("debug prepareDeckForPlayer", playerId);
         //get player default deck and generate a uid mapping for each card (including leader cards)
         var playerDeck = await deckManager.getPlayerDecks(playerId);
-        console.log("debug playerDeck", JSON.stringify(playerDeck));
         if (!playerDeck) {
             throw new Error(`No deck found for player ${playerId}`);
         }
