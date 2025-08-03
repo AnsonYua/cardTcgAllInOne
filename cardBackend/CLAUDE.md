@@ -50,7 +50,7 @@ The game follows a specific battle flow managed by `mozGamePlay.js`:
 **Data Management:**
 - `src/services/DeckManager.js` - Deck loading and player deck management
 - `src/services/CardInfoUtils.js` - Card data utilities and queries
-- `src/mozGame/mozDeckHelper.js` - Deck preparation for games
+- `src/mozGame/mozDeckHelper.ts` - Deck preparation for games (TypeScript with comprehensive interfaces)
 - `src/data/` - JSON files containing card definitions (cards.json, decks.json, etc.)
 
 **API Layer:**

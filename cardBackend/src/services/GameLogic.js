@@ -76,6 +76,9 @@ class GameLogic {
         if (!gameData) {
             throw new Error('Game room not found');
         }
+        if(playerId=="playerId_1"){
+            throw new Error('duplicated playerID');
+        }
         
         // NEW: Convert legacy gameEnv to class for manipulation
         const { GameEnvironmentAdapter } = require('../../dist/src/utils/GameEnvironmentAdapter');
@@ -89,6 +92,9 @@ class GameLogic {
         // Now prepare decks for both players
         const player1Id = gameEnvClass.playerId_1;
         
+        // Prepare deck data for both players - generates shuffled cards, draws initial hand,
+        // creates UID mappings for frontend compatibility, and returns PlayerDeckDataResp class instances
+        // with 7-card hand, 4 shuffled leader cards, and complete deck/leader UID mappings
         const startTask = [
             mozDeckHelper.prepareDeckForPlayer(player1Id),
             mozDeckHelper.prepareDeckForPlayer(playerId)
@@ -108,7 +114,7 @@ class GameLogic {
         // This replaces mozGamePlay.updateInitialGameEnvironment() and handles:
         // - Event system initialization (already done in class constructor)
         // - First player determination based on leader initial points
-        // - Phase update to READY_PHASE
+        // - Phase update to GamePhase.READY_PHASE
         // - Player redraw count initialization
         // - Game started and initial hand dealt events
         GameEnvironmentAdapter.initializeGameEnvironment(gameEnvClass);
@@ -132,7 +138,7 @@ class GameLogic {
         let gameEnv = gameData.gameEnv;
         
         // Check if room is in correct state
-        if (gameEnv.phase !== 'READY_PHASE') {
+        if (gameEnv.phase !== GamePhase.READY_PHASE) {
             throw new Error('Room is not ready for player ready status. Current phase: ' + gameEnv.phase);
         }
         
@@ -211,7 +217,7 @@ class GameLogic {
             // No merge needed - all effects are already in gameEnv.players[].fieldEffects!
             
             // Transition to draw phase first - game officially starts
-            updatePhase(gameEnv, 'DRAW_PHASE');
+            updatePhase(gameEnv, GamePhase.DRAW_PHASE);
             gameEnv.gameStarted = true;
             
             // Set current player to first player
@@ -237,7 +243,7 @@ class GameLogic {
             
             // Add game start event
             this.mozGamePlay.addGameEvent(gameEnv, 'GAME_PHASE_START', {
-                phase: 'DRAW_PHASE',
+                phase: GamePhase.DRAW_PHASE,
                 currentPlayer: currentPlayerId,
                 message: 'Both players ready - draw phase started!'
             });
@@ -1221,12 +1227,12 @@ class GameLogic {
         }
 
         // If DRAW_PHASE_COMPLETE was acknowledged, transition to MAIN_PHASE
-        if (drawPhaseCompleted && gameData.gameEnv.phase === 'DRAW_PHASE') {
-            updatePhase(gameData.gameEnv, 'MAIN_PHASE');
+        if (drawPhaseCompleted && gameData.gameEnv.phase === GamePhase.DRAW_PHASE) {
+            updatePhase(gameData.gameEnv, GamePhase.MAIN_PHASE);
             
             // Add main phase start event
             this.mozGamePlay.addGameEvent(gameData.gameEnv, 'PHASE_CHANGE', {
-                phase: 'MAIN_PHASE',
+                phase: GamePhase.MAIN_PHASE,
                 currentPlayer: gameData.gameEnv.currentPlayer,
                 message: 'Draw phase acknowledged - main phase started!'
             });

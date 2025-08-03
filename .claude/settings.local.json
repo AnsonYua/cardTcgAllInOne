@@ -37,7 +37,14 @@
       "Bash(timeout 5s npm start)",
       "Bash(kill:*)",
       "Bash(npm start)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(timeout 5s npx ts-node server.ts)",
+      "Bash(--header 'Content-Type: application/json' )",
+      "Bash(--data '{\n    \"\"playerId\"\": \"\"playerId_2\"\", \n    \"\"gameId\"\": \"\"test-game-id\"\",\n    \"\"playerName\"\": \"\"Demo Opponent\"\"\n}' --max-time 10)",
+      "Bash(--header 'Content-Type: application/json' )",
+      "Bash(--data '{\n    \"\"playerId\"\": \"\"playerId_1\"\",\n    \"\"playerName\"\": \"\"Demo Player\"\"\n}' --max-time 10)",
+      "Bash(--header 'Content-Type: application/json' )",
+      "Bash(--header 'Content-Type: application/json' )"
     ],
     "deny": []
   }
