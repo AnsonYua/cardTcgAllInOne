@@ -36,7 +36,8 @@
       "Bash(ts-node:*)",
       "Bash(timeout 5s npm start)",
       "Bash(kill:*)",
-      "Bash(npm start)"
+      "Bash(npm start)",
+      "Bash(npx tsc:*)"
     ],
     "deny": []
   }

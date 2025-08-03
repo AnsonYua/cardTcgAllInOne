@@ -2,6 +2,7 @@
  * TypeScript class-based structure for GameEnvironment (gameEnv)
  * Converts the existing JSON-based gameEnv into a proper object-oriented structure
  */
+import { PlayerDeckDataResp } from './PlayerDeckDataResp';
 export declare enum GamePhase {
     WAITING_FOR_PLAYERS = "WAITING_FOR_PLAYERS",
     BOTH_JOINED = "BOTH_JOINED",
@@ -122,7 +123,7 @@ export interface NeutralizationAction {
 export declare class Player {
     id: string;
     name: string;
-    deck: PlayerDeckData;
+    deck: PlayerDeckDataResp;
     redraw: number;
     fieldEffects?: PlayerFieldEffects;
     constructor(id: string, name?: string);
@@ -132,6 +133,8 @@ export declare class Player {
     playCardFromHand(cardUid: string): boolean;
     getHandSize(): number;
     getDeckSize(): number;
+    advanceToNextLeader(): boolean;
+    getCardIdFromUid(cardUid: string): string | null;
     initializeFieldEffects(): void;
     addFieldEffect(effect: FieldEffect): void;
     clearFieldEffects(): void;

@@ -1,5 +1,6 @@
 const deckManager = require('../services/DeckManager');
 const CardInfoUtils = require('../services/CardInfoUtils');
+const { PlayerDeckDataResp } = require('../../dist/src/models/PlayerDeckDataResp');
 class mozDeckLogic{
     constructor() {
         this.cardInfoUtils = CardInfoUtils;
@@ -29,14 +30,15 @@ class mozDeckLogic{
 
         console.log("debug leaderUIDMapping", JSON.stringify(playerDeck.leaderUIDMapping));
         
-        return {
-            currentLeaderIdx: 0,
-            leader: sumCardList,
-            hand: hand,
-            mainDeck: mainDeck,
-            leaderMapping: playerDeck.leaderUIDMapping,
-            cardMapping: playerDeck.deckUIDMapping,
-        };
+        // Return PlayerDeckDataResp class instance instead of plain object
+        return new PlayerDeckDataResp(
+            0, // currentLeaderIdx
+            sumCardList, // leader
+            hand, // hand
+            mainDeck, // mainDeck
+            playerDeck.leaderUIDMapping, // leaderMapping
+            playerDeck.deckUIDMapping // cardMapping
+        );
     }
 
     async reshuffleForPlayer(playerId) {
@@ -56,10 +58,15 @@ class mozDeckLogic{
         const mainDeckCard = this.shuffleMainDeck(activeDeck);
         const { drawnCards, mainDeck } = this.drawCards(mainDeckCard, 7);
         const hand = drawnCards;
-        return {
-            hand: hand,
-            mainDeck: mainDeck,
-        };
+        // Return PlayerDeckDataResp class instance with only hand and mainDeck updated
+        return new PlayerDeckDataResp(
+            0, // currentLeaderIdx (default)
+            [], // leader (empty for reshuffle)
+            hand, // hand
+            mainDeck, // mainDeck
+            {}, // leaderMapping (empty for reshuffle)
+            {} // cardMapping (empty for reshuffle)
+        );
     }
 
     drawToHand(hand, mainDeckOrginal, count = 1) {

@@ -8,6 +8,8 @@ exports.createGameEnvironmentFromJSON = createGameEnvironmentFromJSON;
  * TypeScript class-based structure for GameEnvironment (gameEnv)
  * Converts the existing JSON-based gameEnv into a proper object-oriented structure
  */
+// ============ IMPORTS ============
+const PlayerDeckDataResp_1 = require("./PlayerDeckDataResp");
 // ============ ENUMS ============
 var GamePhase;
 (function (GamePhase) {
@@ -57,50 +59,33 @@ class Player {
         this.id = id;
         this.name = name;
         this.redraw = 0;
-        this.deck = {
-            currentLeaderIdx: 0,
-            leader: [],
-            hand: [],
-            mainDeck: [],
-            leaderMapping: {},
-            cardMapping: {}
-        };
+        this.deck = new PlayerDeckDataResp_1.PlayerDeckDataResp();
     }
     // ============ DECK METHODS ============
+    // Delegate to PlayerDeckDataResp class methods
     getCurrentLeader() {
-        if (this.deck.leader.length > this.deck.currentLeaderIdx) {
-            return this.deck.leader[this.deck.currentLeaderIdx];
-        }
-        return null;
+        return this.deck.getCurrentLeader();
     }
     getCurrentLeaderCardId() {
-        const leaderUid = this.getCurrentLeader();
-        if (leaderUid && this.deck.leaderMapping[leaderUid]) {
-            return this.deck.leaderMapping[leaderUid];
-        }
-        return null;
+        return this.deck.getCurrentLeaderCardId();
     }
     drawCard() {
-        if (this.deck.mainDeck.length > 0) {
-            const cardUid = this.deck.mainDeck.shift();
-            this.deck.hand.push(cardUid);
-            return cardUid;
-        }
-        return null;
+        return this.deck.drawCard();
     }
     playCardFromHand(cardUid) {
-        const index = this.deck.hand.indexOf(cardUid);
-        if (index !== -1) {
-            this.deck.hand.splice(index, 1);
-            return true;
-        }
-        return false;
+        return this.deck.playCardFromHand(cardUid);
     }
     getHandSize() {
-        return this.deck.hand.length;
+        return this.deck.getHandSize();
     }
     getDeckSize() {
-        return this.deck.mainDeck.length;
+        return this.deck.getDeckSize();
+    }
+    advanceToNextLeader() {
+        return this.deck.advanceToNextLeader();
+    }
+    getCardIdFromUid(cardUid) {
+        return this.deck.getCardIdFromUid(cardUid);
     }
     // ============ FIELD EFFECTS METHODS ============
     initializeFieldEffects() {
@@ -126,14 +111,17 @@ class Player {
         return {
             id: this.id,
             name: this.name,
-            deck: this.deck,
+            deck: this.deck.toJSON(), // Convert PlayerDeckDataResp to JSON
             redraw: this.redraw,
             ...(this.fieldEffects && { fieldEffects: this.fieldEffects })
         };
     }
     static fromJSON(data) {
         const player = new Player(data.id, data.name);
-        player.deck = data.deck;
+        // Convert deck data to PlayerDeckDataResp class
+        if (data.deck) {
+            player.deck = PlayerDeckDataResp_1.PlayerDeckDataResp.fromJSON(data.deck);
+        }
         player.redraw = data.redraw || 0;
         if (data.fieldEffects) {
             player.fieldEffects = data.fieldEffects;

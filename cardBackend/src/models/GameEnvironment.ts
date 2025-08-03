@@ -5,6 +5,10 @@
  * Converts the existing JSON-based gameEnv into a proper object-oriented structure
  */
 
+// ============ IMPORTS ============
+
+import { PlayerDeckDataResp } from './PlayerDeckDataResp';
+
 // ============ ENUMS ============
 
 export enum GamePhase {
@@ -141,7 +145,7 @@ export interface NeutralizationAction {
 export class Player {
     public id: string;
     public name: string;
-    public deck: PlayerDeckData;
+    public deck: PlayerDeckDataResp;
     public redraw: number;
     public fieldEffects?: PlayerFieldEffects;
 
@@ -149,57 +153,42 @@ export class Player {
         this.id = id;
         this.name = name;
         this.redraw = 0;
-        this.deck = {
-            currentLeaderIdx: 0,
-            leader: [],
-            hand: [],
-            mainDeck: [],
-            leaderMapping: {},
-            cardMapping: {}
-        };
+        this.deck = new PlayerDeckDataResp();
     }
 
     // ============ DECK METHODS ============
+    // Delegate to PlayerDeckDataResp class methods
 
     public getCurrentLeader(): string | null {
-        if (this.deck.leader.length > this.deck.currentLeaderIdx) {
-            return this.deck.leader[this.deck.currentLeaderIdx];
-        }
-        return null;
+        return this.deck.getCurrentLeader();
     }
 
     public getCurrentLeaderCardId(): string | null {
-        const leaderUid = this.getCurrentLeader();
-        if (leaderUid && this.deck.leaderMapping[leaderUid]) {
-            return this.deck.leaderMapping[leaderUid];
-        }
-        return null;
+        return this.deck.getCurrentLeaderCardId();
     }
 
     public drawCard(): string | null {
-        if (this.deck.mainDeck.length > 0) {
-            const cardUid = this.deck.mainDeck.shift()!;
-            this.deck.hand.push(cardUid);
-            return cardUid;
-        }
-        return null;
+        return this.deck.drawCard();
     }
 
     public playCardFromHand(cardUid: string): boolean {
-        const index = this.deck.hand.indexOf(cardUid);
-        if (index !== -1) {
-            this.deck.hand.splice(index, 1);
-            return true;
-        }
-        return false;
+        return this.deck.playCardFromHand(cardUid);
     }
 
     public getHandSize(): number {
-        return this.deck.hand.length;
+        return this.deck.getHandSize();
     }
 
     public getDeckSize(): number {
-        return this.deck.mainDeck.length;
+        return this.deck.getDeckSize();
+    }
+
+    public advanceToNextLeader(): boolean {
+        return this.deck.advanceToNextLeader();
+    }
+
+    public getCardIdFromUid(cardUid: string): string | null {
+        return this.deck.getCardIdFromUid(cardUid);
     }
 
     // ============ FIELD EFFECTS METHODS ============
@@ -230,7 +219,7 @@ export class Player {
         return {
             id: this.id,
             name: this.name,
-            deck: this.deck,
+            deck: this.deck.toJSON(), // Convert PlayerDeckDataResp to JSON
             redraw: this.redraw,
             ...(this.fieldEffects && { fieldEffects: this.fieldEffects })
         };
@@ -238,7 +227,10 @@ export class Player {
 
     public static fromJSON(data: any): Player {
         const player = new Player(data.id, data.name);
-        player.deck = data.deck;
+        // Convert deck data to PlayerDeckDataResp class
+        if (data.deck) {
+            player.deck = PlayerDeckDataResp.fromJSON(data.deck);
+        }
         player.redraw = data.redraw || 0;
         if (data.fieldEffects) {
             player.fieldEffects = data.fieldEffects;

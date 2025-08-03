@@ -10,6 +10,7 @@ const mozAIClass = require('../mozGame/mozAIClass');
 const playSequenceManager = require('./PlaySequenceManager');
 const effectSimulator = require('./EffectSimulator');
 const cardEffectRegistry = require('./CardEffectRegistry');
+const { GamePhase } = require('../../dist/src/models/GameEnvironment');
 
 // Utility function to update game phase
 function updatePhase(gameEnv, newPhase) {
@@ -42,32 +43,18 @@ class GameLogic {
         var { playerId } = req.body;
         const gameId = uuidv4();
         
-        // NEW: Create unified structure from the start
-        var gameEnv = {
-            phase: 'WAITING_FOR_PLAYERS',
-            playerId_1: playerId, // Store the actual playerId of player 1
-            playerId_2: null,
-            gameStarted: false,
-            players: {},
-            zones: {},
-            fieldEffects: {},
-            
-            // 🆕 ENHANCED NEUTRALIZATION TRACKING (January 2025)
-            neutralizationHistory: []  // Track all neutralization actions for debugging and audit trail
-        };
+        // NEW: Use GameEnvironment class for proper object-oriented structure
+        const { GameEnvironmentAdapter } = require('../../dist/src/utils/GameEnvironmentAdapter');
+        const gameEnvClass = GameEnvironmentAdapter.createNewGame(playerId);
         
-        // Initialize event system
-        this.mozGamePlay.initializeEventSystem(gameEnv);
+        // The GameEnvironmentAdapter.createNewGame already:
+        // - Initializes the GameEnvironment class with proper structure
+        // - Adds the first player using class methods
+        // - Creates the ROOM_CREATED event using class event manager
+        // - Sets up all required initial state
         
-        // NEW: Initialize play sequence system
-        this.playSequenceManager.initializePlaySequence(gameEnv);
-        
-        // Add room created event
-        this.mozGamePlay.addGameEvent(gameEnv, 'ROOM_CREATED', {
-            gameId: gameId,
-            createdBy: playerId,
-            status: 'WAITING_FOR_PLAYERS'
-        });
+        // Convert to legacy format only for file storage compatibility
+        var gameEnv = GameEnvironmentAdapter.toLegacyJSON(gameEnvClass);
 
         const newGame = {
             "gameId": gameId,
@@ -90,47 +77,44 @@ class GameLogic {
             throw new Error('Game room not found');
         }
         
-        let gameEnv = gameData.gameEnv;
+        // NEW: Convert legacy gameEnv to class for manipulation
+        const { GameEnvironmentAdapter } = require('../../dist/src/utils/GameEnvironmentAdapter');
+        let gameEnvClass = GameEnvironmentAdapter.fromLegacyJSON(gameData.gameEnv);
         
-        // Check if room is available
-        if (gameEnv.phase !== 'WAITING_FOR_PLAYERS') {
+        // Check if room is available using class property
+        if (gameEnvClass.phase !== GamePhase.WAITING_FOR_PLAYERS) {
             throw new Error('Room is not available for joining');
         }
         
-        // Add second player
-        gameEnv.playerId_2 = playerId;
-        updatePhase(gameEnv, 'BOTH_JOINED');
-        //console.log("debug gameEnv", JSON.stringify(gameEnv));
         // Now prepare decks for both players
-        const player1Id = gameEnv.playerId_1;
-        const player2Id = gameEnv.playerId_2;
+        const player1Id = gameEnvClass.playerId_1;
         
         const startTask = [
             mozDeckHelper.prepareDeckForPlayer(player1Id),
-            mozDeckHelper.prepareDeckForPlayer(player2Id)
+            mozDeckHelper.prepareDeckForPlayer(playerId)
         ];
         
         const results = await Promise.all(startTask);
-        //console.log("debug results11", JSON.stringify(results));
-        // NEW: Set up unified structure with decks
-        gameEnv.players[player1Id] = { "id": player1Id, "name": player1Id, "deck": results[0] };
-        gameEnv.players[player2Id] = { "id": player2Id, "name": player2Id, "deck": results[1] };
-        gameEnv.zones[player1Id] = {};
-        gameEnv.zones[player2Id] = {};
-        // NOTE: fieldEffects are now initialized per-player in gameEnv.players[playerId].fieldEffects by EffectSimulator
         
-        // Initialize game environment (deals hands, sets up leaders, etc.)
-        gameEnv = this.mozGamePlay.updateInitialGameEnvironment(gameEnv);
+        // NEW: Use adapter to add second player with class methods
+        // This handles:
+        // - Adding player 2 using gameEnvClass.addPlayer()
+        // - Setting deck data using class methods
+        // - Updating phase using gameEnvClass.updatePhase()
+        // - Adding PLAYER_JOINED event using gameEnvClass.eventManager.addEvent()
+        GameEnvironmentAdapter.addSecondPlayer(gameEnvClass, playerId, results[0], results[1]);
         
-        // Update to ready phase
-        updatePhase(gameEnv, 'READY_PHASE');
+        // NEW: Initialize game environment directly using class methods
+        // This replaces mozGamePlay.updateInitialGameEnvironment() and handles:
+        // - Event system initialization (already done in class constructor)
+        // - First player determination based on leader initial points
+        // - Phase update to READY_PHASE
+        // - Player redraw count initialization
+        // - Game started and initial hand dealt events
+        GameEnvironmentAdapter.initializeGameEnvironment(gameEnvClass);
         
-        // Add player joined event
-        this.mozGamePlay.addGameEvent(gameEnv, 'PLAYER_JOINED', {
-            playerId: playerId,
-            roomStatus: 'BOTH_JOINED',
-            readyForStart: true
-        });
+        // Convert class back to legacy format for file storage compatibility
+        let gameEnv = GameEnvironmentAdapter.toLegacyJSON(gameEnvClass);
 
         const updatedGame = {
             "gameId": gameId,

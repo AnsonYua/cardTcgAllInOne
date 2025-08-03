@@ -1,5 +1,8 @@
 "use strict";
 // src/utils/GameEnvironmentAdapter.ts
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GameEnvironmentHelper = exports.GameEnvironmentValidator = exports.GameEnvironmentAdapter = void 0;
 /**
@@ -7,6 +10,7 @@ exports.GameEnvironmentHelper = exports.GameEnvironmentValidator = exports.GameE
  * and new object-oriented GameEnvironment class
  */
 const GameEnvironment_1 = require("../models/GameEnvironment");
+const CardInfoUtils_1 = __importDefault(require("../services/CardInfoUtils"));
 class GameEnvironmentAdapter {
     /**
      * Convert legacy gameEnv JSON to GameEnvironment class instance
@@ -68,7 +72,7 @@ class GameEnvironmentAdapter {
         // Initialize event system
         gameEnv.eventManager.addEvent(GameEnvironment_1.EventType.ROOM_CREATED, {
             createdBy: player1Id,
-            status: 'WAITING_FOR_PLAYERS',
+            status: GameEnvironment_1.GamePhase.WAITING_FOR_PLAYERS,
             timestamp: Date.now()
         });
         return gameEnv;
@@ -79,7 +83,7 @@ class GameEnvironmentAdapter {
     static addSecondPlayer(gameEnv, player2Id, player1DeckData, player2DeckData) {
         // Add second player
         const player2 = gameEnv.addPlayer(player2Id);
-        // Set deck data for both players
+        // Set deck data for both players (now using PlayerDeckDataResp class instances)
         const player1 = gameEnv.getPlayer(gameEnv.playerId_1);
         if (player1) {
             player1.deck = player1DeckData;
@@ -90,8 +94,76 @@ class GameEnvironmentAdapter {
         // Add join event
         gameEnv.eventManager.addEvent(GameEnvironment_1.EventType.PLAYER_JOINED, {
             playerId: player2Id,
-            roomStatus: 'BOTH_JOINED',
+            roomStatus: GameEnvironment_1.GamePhase.BOTH_JOINED,
             readyForStart: true
+        });
+    }
+    /**
+     * Initialize game environment after both players have joined
+     * Replaces mozGamePlay.updateInitialGameEnvironment functionality
+     */
+    static initializeGameEnvironment(gameEnv) {
+        // Get both players
+        const player1 = gameEnv.getPlayer(gameEnv.playerId_1);
+        const player2 = gameEnv.getPlayer(gameEnv.playerId_2);
+        if (!player1 || !player2) {
+            throw new Error('Both players must exist before initializing game environment');
+        }
+        // Get leader cards for first player determination
+        const leader1 = player1.getCurrentLeaderCardId();
+        const leader2 = player2.getCurrentLeaderCardId();
+        if (!leader1 || !leader2) {
+            throw new Error('Both players must have current leaders before initialization');
+        }
+        // Use imported CardInfoUtils directly - use getLeaderCards for leader details
+        const leader1Details = CardInfoUtils_1.default.getLeaderCards(leader1);
+        const leader2Details = CardInfoUtils_1.default.getLeaderCards(leader2);
+        if (!leader1Details || !leader2Details) {
+            throw new Error('Unable to retrieve leader card details');
+        }
+        // Determine first player based on leader initial points
+        let firstPlayer = 0;
+        if (leader2Details.initialPoint > leader1Details.initialPoint) {
+            firstPlayer = 1;
+        }
+        else if (leader2Details.initialPoint === leader1Details.initialPoint) {
+            firstPlayer = Math.floor(Math.random() * 2);
+        }
+        // For consistency with existing logic, set to 0
+        firstPlayer = 0;
+        gameEnv.firstPlayer = firstPlayer;
+        // Update phase to START_REDRAW
+        gameEnv.updatePhase(GameEnvironment_1.GamePhase.READY_PHASE); // Using READY_PHASE instead of START_REDRAW
+        // Initialize player redraw counts
+        player1.redraw = 0;
+        player2.redraw = 0;
+        // Prepare leader revealed data for events
+        const leaderRevealed = {
+            [gameEnv.playerId_1]: {
+                cardId: leader1Details.id,
+                name: leader1Details.name,
+                initialPoint: leader1Details.initialPoint
+            },
+            [gameEnv.playerId_2]: {
+                cardId: leader2Details.id,
+                name: leader2Details.name,
+                initialPoint: leader2Details.initialPoint
+            }
+        };
+        // Add game started event
+        gameEnv.eventManager.addEvent(GameEnvironment_1.EventType.GAME_STARTED, {
+            players: [gameEnv.playerId_1, gameEnv.playerId_2],
+            firstPlayer: [gameEnv.playerId_1, gameEnv.playerId_2][firstPlayer],
+            leaderRevealed: leaderRevealed
+        });
+        // Add initial hand dealt events for each player
+        gameEnv.eventManager.addEvent(GameEnvironment_1.EventType.INITIAL_HAND_DEALT, {
+            playerId: gameEnv.playerId_1,
+            handSize: player1.getHandSize()
+        });
+        gameEnv.eventManager.addEvent(GameEnvironment_1.EventType.INITIAL_HAND_DEALT, {
+            playerId: gameEnv.playerId_2,
+            handSize: player2.getHandSize()
         });
     }
 }

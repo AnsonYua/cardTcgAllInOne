@@ -3,6 +3,7 @@
  * and new object-oriented GameEnvironment class
  */
 import { GameEnvironment } from '../models/GameEnvironment';
+import { PlayerDeckDataResp } from '../models/PlayerDeckDataResp';
 export declare class GameEnvironmentAdapter {
     /**
      * Convert legacy gameEnv JSON to GameEnvironment class instance
@@ -23,7 +24,12 @@ export declare class GameEnvironmentAdapter {
     /**
      * Add second player and initialize game data
      */
-    static addSecondPlayer(gameEnv: GameEnvironment, player2Id: string, player1DeckData: any, player2DeckData: any): void;
+    static addSecondPlayer(gameEnv: GameEnvironment, player2Id: string, player1DeckData: PlayerDeckDataResp, player2DeckData: PlayerDeckDataResp): void;
+    /**
+     * Initialize game environment after both players have joined
+     * Replaces mozGamePlay.updateInitialGameEnvironment functionality
+     */
+    static initializeGameEnvironment(gameEnv: GameEnvironment): void;
 }
 export declare class GameEnvironmentValidator {
     /**

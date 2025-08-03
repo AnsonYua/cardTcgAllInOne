@@ -18,6 +18,7 @@ import {
     GameEnvironmentValidator, 
     GameEnvironmentHelper 
 } from '../utils/GameEnvironmentAdapter';
+import { PlayerDeckDataResp } from '../models/PlayerDeckDataResp';
 
 // ============ EXAMPLE 1: Creating a New Game ============
 
@@ -35,24 +36,24 @@ export function exampleCreateNewGame(): GameEnvironment {
     const player2 = gameEnv.addPlayer('player_2', 'Bob');
     console.log('Added player 2:', player2.id);
     
-    // Set up sample deck data for both players
-    player1.deck = {
-        currentLeaderIdx: 0,
-        leader: ['s-1_uid_1', 's-2_uid_2', 's-3_uid_3', 's-4_uid_4'],
-        hand: ['c-1_uid_1', 'c-2_uid_2', 'c-3_uid_3'],
-        mainDeck: ['c-4_uid_4', 'c-5_uid_5', 'c-6_uid_6'],
-        leaderMapping: { 's-1_uid_1': 's-1', 's-2_uid_2': 's-2' },
-        cardMapping: { 'c-1_uid_1': 'c-1', 'c-2_uid_2': 'c-2' }
-    };
+    // Set up sample deck data for both players using PlayerDeckDataResp class
+    player1.deck = new PlayerDeckDataResp(
+        0, // currentLeaderIdx
+        ['s-1_uid_1', 's-2_uid_2', 's-3_uid_3', 's-4_uid_4'], // leader
+        ['c-1_uid_1', 'c-2_uid_2', 'c-3_uid_3'], // hand
+        ['c-4_uid_4', 'c-5_uid_5', 'c-6_uid_6'], // mainDeck
+        { 's-1_uid_1': 's-1', 's-2_uid_2': 's-2' }, // leaderMapping
+        { 'c-1_uid_1': 'c-1', 'c-2_uid_2': 'c-2' } // cardMapping
+    );
     
-    player2.deck = {
-        currentLeaderIdx: 0,
-        leader: ['s-5_uid_5', 's-6_uid_6', 's-7_uid_7', 's-8_uid_8'],
-        hand: ['c-7_uid_7', 'c-8_uid_8', 'c-9_uid_9'],
-        mainDeck: ['c-10_uid_10', 'c-11_uid_11', 'c-12_uid_12'],
-        leaderMapping: { 's-5_uid_5': 's-5', 's-6_uid_6': 's-6' },
-        cardMapping: { 'c-7_uid_7': 'c-7', 'c-8_uid_8': 'c-8' }
-    };
+    player2.deck = new PlayerDeckDataResp(
+        0, // currentLeaderIdx
+        ['s-5_uid_5', 's-6_uid_6', 's-7_uid_7', 's-8_uid_8'], // leader
+        ['c-7_uid_7', 'c-8_uid_8', 'c-9_uid_9'], // hand
+        ['c-10_uid_10', 'c-11_uid_11', 'c-12_uid_12'], // mainDeck
+        { 's-5_uid_5': 's-5', 's-6_uid_6': 's-6' }, // leaderMapping
+        { 'c-7_uid_7': 'c-7', 'c-8_uid_8': 'c-8' } // cardMapping
+    );
     
     // Update game phase
     gameEnv.updatePhase(GamePhase.READY_PHASE);

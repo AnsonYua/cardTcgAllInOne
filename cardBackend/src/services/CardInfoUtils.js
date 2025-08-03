@@ -1,30 +1,4 @@
-const DeckManager = require('./DeckManager');
-class CardInfoUtils {
-    constructor() {
-        this.deckManager = DeckManager;
-    }
+// src/services/CardInfoUtils.js - Compatibility bridge for TypeScript CardInfoUtils
+// This file bridges JavaScript requires to the compiled TypeScript version
 
-    getCurrentLeader(gameEnv, playerId){
-        // Validate unified structure
-        if (!gameEnv.players) {
-            throw new Error('Game environment must have unified structure with gameEnv.players');
-        }
-        
-        const playerData = gameEnv.players[playerId];
-        if (!playerData) {
-            throw new Error(`Player ${playerId} not found in gameEnv.players`);
-        }
-        
-        const deck = playerData.deck;
-        const crtLeaderCardUID = deck.leader[deck.currentLeaderIdx];
-        ///console.log("debug leaderMapping", JSON.stringify(deck.leaderMapping));
-        const crtLeaderCard = deck.leaderMapping[crtLeaderCardUID];
-        return this.deckManager.getLeaderCards(crtLeaderCard);
-    }
-
-    getCardDetails(cardId) {
-        return this.deckManager.getCardDetails(cardId);
-    }
-}
-
-module.exports = new CardInfoUtils();
+module.exports = require('../../dist/src/services/CardInfoUtils.js').default;
