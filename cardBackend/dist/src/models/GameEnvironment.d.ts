@@ -1,0 +1,228 @@
+/**
+ * TypeScript class-based structure for GameEnvironment (gameEnv)
+ * Converts the existing JSON-based gameEnv into a proper object-oriented structure
+ */
+export declare enum GamePhase {
+    WAITING_FOR_PLAYERS = "WAITING_FOR_PLAYERS",
+    BOTH_JOINED = "BOTH_JOINED",
+    READY_PHASE = "READY_PHASE",
+    DRAW_PHASE = "DRAW_PHASE",
+    MAIN_PHASE = "MAIN_PHASE",
+    SP_PHASE = "SP_PHASE",
+    BATTLE_PHASE = "BATTLE_PHASE",
+    END_PHASE = "END_PHASE"
+}
+export declare enum ZoneType {
+    TOP = "top",
+    LEFT = "left",
+    RIGHT = "right",
+    HELP = "help",
+    SP = "sp",
+    LEADER = "leader"
+}
+export declare enum ActionType {
+    PLAY_CARD = "PLAY_CARD",
+    PLAY_CARD_BACK = "PLAY_CARD_BACK",
+    PLAY_LEADER = "PLAY_LEADER",
+    APPLY_SET_POWER = "APPLY_SET_POWER",
+    APPLY_EFFECT = "APPLY_EFFECT"
+}
+export declare enum EventType {
+    ROOM_CREATED = "ROOM_CREATED",
+    GAME_STARTED = "GAME_STARTED",
+    INITIAL_HAND_DEALT = "INITIAL_HAND_DEALT",
+    PLAYER_JOINED = "PLAYER_JOINED",
+    CARD_PLAYED = "CARD_PLAYED",
+    ZONE_FILLED = "ZONE_FILLED",
+    PHASE_CHANGE = "PHASE_CHANGE",
+    TURN_SWITCH = "TURN_SWITCH",
+    ERROR_OCCURRED = "ERROR_OCCURRED",
+    BATTLE_CALCULATED = "BATTLE_CALCULATED",
+    VICTORY_POINTS_AWARDED = "VICTORY_POINTS_AWARDED"
+}
+export interface CardMapping {
+    [uid: string]: string;
+}
+export interface PlayerDeckData {
+    currentLeaderIdx: number;
+    leader: string[];
+    hand: string[];
+    mainDeck: string[];
+    leaderMapping: CardMapping;
+    cardMapping: CardMapping;
+}
+export interface ZoneCard {
+    card: string[];
+}
+export interface PlayerZones {
+    leader?: {
+        id: string;
+    };
+    top?: ZoneCard;
+    left?: ZoneCard;
+    right?: ZoneCard;
+    help?: ZoneCard;
+    sp?: ZoneCard;
+}
+export interface GameEvent {
+    id: string;
+    type: EventType;
+    data: any;
+    timestamp: number;
+    expiresAt: number;
+    frontendProcessed: boolean;
+}
+export interface PlaySequenceAction {
+    sequenceId: number;
+    playerId: string;
+    cardId: string;
+    action: ActionType;
+    zone: ZoneType;
+    isFaceDown?: boolean;
+    effectData?: any;
+}
+export interface PlaySequence {
+    globalSequence: number;
+    plays: PlaySequenceAction[];
+}
+export interface FieldEffect {
+    effectId: string;
+    source: string;
+    type: string;
+    target: {
+        scope: 'SELF' | 'OPPONENT' | 'ALL';
+        zones?: ZoneType[] | 'ALL';
+        gameTypes?: string[];
+        traits?: string[];
+    };
+    value: number | boolean;
+}
+export interface PlayerFieldEffects {
+    zoneRestrictions: {
+        [zone in ZoneType]?: string[] | 'ALL';
+    };
+    activeEffects: FieldEffect[];
+    specialEffects?: {
+        zonePlacementFreedom?: boolean;
+        immuneToNeutralization?: boolean;
+    };
+    calculatedPowers?: {
+        [cardId: string]: number;
+    };
+    disabledCards?: string[];
+    victoryPointModifiers?: number;
+}
+export interface NeutralizationAction {
+    timestamp: number;
+    playerId: string;
+    targetCardId: string;
+    neutralizedBy: string;
+    reason: string;
+}
+export declare class Player {
+    id: string;
+    name: string;
+    deck: PlayerDeckData;
+    redraw: number;
+    fieldEffects?: PlayerFieldEffects;
+    constructor(id: string, name?: string);
+    getCurrentLeader(): string | null;
+    getCurrentLeaderCardId(): string | null;
+    drawCard(): string | null;
+    playCardFromHand(cardUid: string): boolean;
+    getHandSize(): number;
+    getDeckSize(): number;
+    initializeFieldEffects(): void;
+    addFieldEffect(effect: FieldEffect): void;
+    clearFieldEffects(): void;
+    toJSON(): any;
+    static fromJSON(data: any): Player;
+}
+export declare class GameZones {
+    private zones;
+    initializePlayerZones(playerId: string): void;
+    getPlayerZones(playerId: string): PlayerZones;
+    setCardInZone(playerId: string, zone: ZoneType, cardUid: string): void;
+    getCardInZone(playerId: string, zone: ZoneType): string | null;
+    isZoneOccupied(playerId: string, zone: ZoneType): boolean;
+    clearZone(playerId: string, zone: ZoneType): void;
+    getAllPlayerIds(): string[];
+    areAllCharacterZonesFilled(playerId: string): boolean;
+    isHelpZoneFilled(playerId: string): boolean;
+    isSpZoneFilled(playerId: string): boolean;
+    toJSON(): any;
+    static fromJSON(data: any): GameZones;
+}
+export declare class EventManager {
+    private events;
+    private lastEventId;
+    addEvent(type: EventType, data: any): GameEvent;
+    getEvents(): GameEvent[];
+    getUnprocessedEvents(): GameEvent[];
+    acknowledgeEvents(eventIds: string[]): void;
+    private cleanupExpiredEvents;
+    getLastEventId(): number;
+    toJSON(): any;
+    static fromJSON(data: any): EventManager;
+}
+export declare class PlaySequenceManager {
+    private sequence;
+    constructor();
+    addPlay(playerId: string, cardId: string, action: ActionType, zone: ZoneType, isFaceDown?: boolean, effectData?: any): PlaySequenceAction;
+    getPlays(): PlaySequenceAction[];
+    getGlobalSequence(): number;
+    clearSequence(): void;
+    toJSON(): any;
+    static fromJSON(data: any): PlaySequenceManager;
+}
+export declare class GameEnvironment {
+    phase: GamePhase;
+    playerId_1: string | null;
+    playerId_2: string | null;
+    gameStarted: boolean;
+    firstPlayer: number;
+    players: {
+        [playerId: string]: Player;
+    };
+    zones: GameZones;
+    eventManager: EventManager;
+    playSequenceManager: PlaySequenceManager;
+    fieldEffects: {
+        [playerId: string]: PlayerFieldEffects;
+    };
+    neutralizationHistory: NeutralizationAction[];
+    constructor();
+    addPlayer(playerId: string, playerName?: string): Player;
+    getPlayer(playerId: string): Player | null;
+    getAllPlayers(): Player[];
+    getOpponentId(playerId: string): string | null;
+    updatePhase(newPhase: GamePhase): void;
+    isGameReady(): boolean;
+    canStartGame(): boolean;
+    playCard(playerId: string, cardUid: string, zone: ZoneType, isFaceDown?: boolean): boolean;
+    setLeader(playerId: string, leaderUid: string): boolean;
+    areAllMainZonesFilled(): boolean;
+    areAllSpZonesFilled(): boolean;
+    addNeutralizationAction(playerId: string, targetCardId: string, neutralizedBy: string, reason: string): void;
+    toJSON(): any;
+    static fromJSON(data: any): GameEnvironment;
+    clone(): GameEnvironment;
+    toString(): string;
+}
+export declare function createGameEnvironment(): GameEnvironment;
+export declare function createGameEnvironmentFromJSON(data: any): GameEnvironment;
+declare const _default: {
+    GameEnvironment: typeof GameEnvironment;
+    Player: typeof Player;
+    GameZones: typeof GameZones;
+    EventManager: typeof EventManager;
+    PlaySequenceManager: typeof PlaySequenceManager;
+    GamePhase: typeof GamePhase;
+    ZoneType: typeof ZoneType;
+    ActionType: typeof ActionType;
+    EventType: typeof EventType;
+    createGameEnvironment: typeof createGameEnvironment;
+    createGameEnvironmentFromJSON: typeof createGameEnvironmentFromJSON;
+};
+export default _default;
+//# sourceMappingURL=GameEnvironment.d.ts.map

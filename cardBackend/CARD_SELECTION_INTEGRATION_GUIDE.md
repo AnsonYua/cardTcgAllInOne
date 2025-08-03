@@ -6,10 +6,10 @@ I've created a completely revamped card selection system with **clear switch cas
 
 ## 🏗️ Architecture Overview
 
-### New Files Created:
-1. **`mozGamePlay_REVAMPED.js`** - New processAction method with clear switch cases
-2. **`GameLogic_SELECTCARD_REVAMPED.js`** - New selectCard method with proper routing
-3. **This integration guide** - Instructions for implementation
+### Integration Approach:
+1. **Card Selection Logic** - Implemented in existing mozGamePlay.js with clear switch cases
+2. **Enhanced Game Logic** - Integrated in existing GameLogic.js with proper routing
+3. **This integration guide** - Instructions and reference implementations (now integrated)
 
 ### Key Improvements:
 - ✅ **Clear Switch Cases**: Every action type and selection type has its own switch case
@@ -60,7 +60,7 @@ Replace the existing `processAction` method in `mozGamePlay.js`:
 ```javascript
 // In mozGamePlay.js - REPLACE the existing processAction method
 async processAction(gameEnvInput, playerId, action) {
-    // Copy the entire processAction method from mozGamePlay_REVAMPED.js
+    // Enhanced processAction method now integrated in existing mozGamePlay.js
     // This includes:
     // - validatePendingActions()
     // - handleSelectCardAction()  
@@ -74,7 +74,7 @@ async processAction(gameEnvInput, playerId, action) {
 Add these new methods to `mozGamePlay.js`:
 
 ```javascript
-// Add all these methods from mozGamePlay_REVAMPED.js:
+// Add these helper methods to mozGamePlay.js (now integrated):
 
 // Main selection routing
 async handleSelectCardAction(gameEnv, playerId, action)
@@ -109,7 +109,7 @@ Replace the existing `selectCard` method in `GameLogic.js`:
 ```javascript
 // In GameLogic.js - REPLACE the existing selectCard method
 async selectCard(req) {
-    // Copy the entire selectCard method from GameLogic_SELECTCARD_REVAMPED.js
+    // Enhanced selectCard method now integrated in existing GameLogic.js
     // This includes clear switch cases for all selection types
 }
 ```
@@ -119,7 +119,7 @@ async selectCard(req) {
 Add these methods to `GameLogic.js`:
 
 ```javascript
-// Add these methods from GameLogic_SELECTCARD_REVAMPED.js:
+// Add these helper methods to GameLogic.js (now integrated):
 async processDeckSearchSelection(gameEnv, selectionId, selectedCardIds)
 async processFieldTargetSelection(gameEnv, selectionId, selectedCardIds)  
 async processSingleTargetSelection(gameEnv, selectionId, selectedCardIds)

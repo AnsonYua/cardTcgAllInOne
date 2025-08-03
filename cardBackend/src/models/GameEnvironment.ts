@@ -1,0 +1,710 @@
+// src/models/GameEnvironment.ts
+
+/**
+ * TypeScript class-based structure for GameEnvironment (gameEnv)
+ * Converts the existing JSON-based gameEnv into a proper object-oriented structure
+ */
+
+// ============ ENUMS ============
+
+export enum GamePhase {
+    WAITING_FOR_PLAYERS = 'WAITING_FOR_PLAYERS',
+    BOTH_JOINED = 'BOTH_JOINED',
+    READY_PHASE = 'READY_PHASE',
+    DRAW_PHASE = 'DRAW_PHASE',
+    MAIN_PHASE = 'MAIN_PHASE',
+    SP_PHASE = 'SP_PHASE',
+    BATTLE_PHASE = 'BATTLE_PHASE',
+    END_PHASE = 'END_PHASE'
+}
+
+export enum ZoneType {
+    TOP = 'top',
+    LEFT = 'left',
+    RIGHT = 'right',
+    HELP = 'help',
+    SP = 'sp',
+    LEADER = 'leader'
+}
+
+export enum ActionType {
+    PLAY_CARD = 'PLAY_CARD',
+    PLAY_CARD_BACK = 'PLAY_CARD_BACK',
+    PLAY_LEADER = 'PLAY_LEADER',
+    APPLY_SET_POWER = 'APPLY_SET_POWER',
+    APPLY_EFFECT = 'APPLY_EFFECT'
+}
+
+export enum EventType {
+    ROOM_CREATED = 'ROOM_CREATED',
+    GAME_STARTED = 'GAME_STARTED',
+    INITIAL_HAND_DEALT = 'INITIAL_HAND_DEALT',
+    PLAYER_JOINED = 'PLAYER_JOINED',
+    CARD_PLAYED = 'CARD_PLAYED',
+    ZONE_FILLED = 'ZONE_FILLED',
+    PHASE_CHANGE = 'PHASE_CHANGE',
+    TURN_SWITCH = 'TURN_SWITCH',
+    ERROR_OCCURRED = 'ERROR_OCCURRED',
+    BATTLE_CALCULATED = 'BATTLE_CALCULATED',
+    VICTORY_POINTS_AWARDED = 'VICTORY_POINTS_AWARDED'
+}
+
+// ============ INTERFACES ============
+
+export interface CardMapping {
+    [uid: string]: string; // UID to cardId mapping
+}
+
+export interface PlayerDeckData {
+    currentLeaderIdx: number;
+    leader: string[]; // Array of leader UIDs
+    hand: string[]; // Array of card UIDs in hand
+    mainDeck: string[]; // Array of card UIDs in deck
+    leaderMapping: CardMapping;
+    cardMapping: CardMapping;
+}
+
+export interface ZoneCard {
+    card: string[]; // Array containing single card UID
+}
+
+export interface PlayerZones {
+    leader?: { id: string };
+    top?: ZoneCard;
+    left?: ZoneCard;
+    right?: ZoneCard;
+    help?: ZoneCard;
+    sp?: ZoneCard;
+}
+
+export interface GameEvent {
+    id: string;
+    type: EventType;
+    data: any;
+    timestamp: number;
+    expiresAt: number;
+    frontendProcessed: boolean;
+}
+
+export interface PlaySequenceAction {
+    sequenceId: number;
+    playerId: string;
+    cardId: string;
+    action: ActionType;
+    zone: ZoneType;
+    isFaceDown?: boolean;
+    effectData?: any;
+}
+
+export interface PlaySequence {
+    globalSequence: number;
+    plays: PlaySequenceAction[];
+}
+
+export interface FieldEffect {
+    effectId: string;
+    source: string;
+    type: string;
+    target: {
+        scope: 'SELF' | 'OPPONENT' | 'ALL';
+        zones?: ZoneType[] | 'ALL';
+        gameTypes?: string[];
+        traits?: string[];
+    };
+    value: number | boolean;
+}
+
+export interface PlayerFieldEffects {
+    zoneRestrictions: {
+        [zone in ZoneType]?: string[] | 'ALL';
+    };
+    activeEffects: FieldEffect[];
+    specialEffects?: {
+        zonePlacementFreedom?: boolean;
+        immuneToNeutralization?: boolean;
+    };
+    calculatedPowers?: { [cardId: string]: number };
+    disabledCards?: string[];
+    victoryPointModifiers?: number;
+}
+
+export interface NeutralizationAction {
+    timestamp: number;
+    playerId: string;
+    targetCardId: string;
+    neutralizedBy: string;
+    reason: string;
+}
+
+// ============ CLASSES ============
+
+export class Player {
+    public id: string;
+    public name: string;
+    public deck: PlayerDeckData;
+    public redraw: number;
+    public fieldEffects?: PlayerFieldEffects;
+
+    constructor(id: string, name: string = id) {
+        this.id = id;
+        this.name = name;
+        this.redraw = 0;
+        this.deck = {
+            currentLeaderIdx: 0,
+            leader: [],
+            hand: [],
+            mainDeck: [],
+            leaderMapping: {},
+            cardMapping: {}
+        };
+    }
+
+    // ============ DECK METHODS ============
+
+    public getCurrentLeader(): string | null {
+        if (this.deck.leader.length > this.deck.currentLeaderIdx) {
+            return this.deck.leader[this.deck.currentLeaderIdx];
+        }
+        return null;
+    }
+
+    public getCurrentLeaderCardId(): string | null {
+        const leaderUid = this.getCurrentLeader();
+        if (leaderUid && this.deck.leaderMapping[leaderUid]) {
+            return this.deck.leaderMapping[leaderUid];
+        }
+        return null;
+    }
+
+    public drawCard(): string | null {
+        if (this.deck.mainDeck.length > 0) {
+            const cardUid = this.deck.mainDeck.shift()!;
+            this.deck.hand.push(cardUid);
+            return cardUid;
+        }
+        return null;
+    }
+
+    public playCardFromHand(cardUid: string): boolean {
+        const index = this.deck.hand.indexOf(cardUid);
+        if (index !== -1) {
+            this.deck.hand.splice(index, 1);
+            return true;
+        }
+        return false;
+    }
+
+    public getHandSize(): number {
+        return this.deck.hand.length;
+    }
+
+    public getDeckSize(): number {
+        return this.deck.mainDeck.length;
+    }
+
+    // ============ FIELD EFFECTS METHODS ============
+
+    public initializeFieldEffects(): void {
+        this.fieldEffects = {
+            zoneRestrictions: {},
+            activeEffects: [],
+            specialEffects: {},
+            calculatedPowers: {},
+            disabledCards: [],
+            victoryPointModifiers: 0
+        };
+    }
+
+    public addFieldEffect(effect: FieldEffect): void {
+        if (!this.fieldEffects) this.initializeFieldEffects();
+        this.fieldEffects!.activeEffects.push(effect);
+    }
+
+    public clearFieldEffects(): void {
+        this.initializeFieldEffects();
+    }
+
+    // ============ SERIALIZATION ============
+
+    public toJSON(): any {
+        return {
+            id: this.id,
+            name: this.name,
+            deck: this.deck,
+            redraw: this.redraw,
+            ...(this.fieldEffects && { fieldEffects: this.fieldEffects })
+        };
+    }
+
+    public static fromJSON(data: any): Player {
+        const player = new Player(data.id, data.name);
+        player.deck = data.deck;
+        player.redraw = data.redraw || 0;
+        if (data.fieldEffects) {
+            player.fieldEffects = data.fieldEffects;
+        }
+        return player;
+    }
+}
+
+export class GameZones {
+    private zones: { [playerId: string]: PlayerZones } = {};
+
+    public initializePlayerZones(playerId: string): void {
+        this.zones[playerId] = {};
+    }
+
+    public getPlayerZones(playerId: string): PlayerZones {
+        if (!this.zones[playerId]) {
+            this.initializePlayerZones(playerId);
+        }
+        return this.zones[playerId];
+    }
+
+    public setCardInZone(playerId: string, zone: ZoneType, cardUid: string): void {
+        const playerZones = this.getPlayerZones(playerId);
+        
+        if (zone === ZoneType.LEADER) {
+            playerZones.leader = { id: cardUid };
+        } else {
+            playerZones[zone] = { card: [cardUid] };
+        }
+    }
+
+    public getCardInZone(playerId: string, zone: ZoneType): string | null {
+        const playerZones = this.getPlayerZones(playerId);
+        
+        if (zone === ZoneType.LEADER && playerZones.leader) {
+            return playerZones.leader.id;
+        } else if (zone !== ZoneType.LEADER && playerZones[zone] && 'card' in playerZones[zone]!) {
+            const zoneCard = playerZones[zone] as ZoneCard;
+            return zoneCard.card.length > 0 ? zoneCard.card[0] : null;
+        }
+        
+        return null;
+    }
+
+    public isZoneOccupied(playerId: string, zone: ZoneType): boolean {
+        return this.getCardInZone(playerId, zone) !== null;
+    }
+
+    public clearZone(playerId: string, zone: ZoneType): void {
+        const playerZones = this.getPlayerZones(playerId);
+        
+        if (zone === ZoneType.LEADER) {
+            delete playerZones.leader;
+        } else {
+            delete playerZones[zone];
+        }
+    }
+
+    public getAllPlayerIds(): string[] {
+        return Object.keys(this.zones);
+    }
+
+    // ============ VALIDATION METHODS ============
+
+    public areAllCharacterZonesFilled(playerId: string): boolean {
+        return this.isZoneOccupied(playerId, ZoneType.TOP) &&
+               this.isZoneOccupied(playerId, ZoneType.LEFT) &&
+               this.isZoneOccupied(playerId, ZoneType.RIGHT);
+    }
+
+    public isHelpZoneFilled(playerId: string): boolean {
+        return this.isZoneOccupied(playerId, ZoneType.HELP);
+    }
+
+    public isSpZoneFilled(playerId: string): boolean {
+        return this.isZoneOccupied(playerId, ZoneType.SP);
+    }
+
+    // ============ SERIALIZATION ============
+
+    public toJSON(): any {
+        return this.zones;
+    }
+
+    public static fromJSON(data: any): GameZones {
+        const gameZones = new GameZones();
+        gameZones.zones = data || {};
+        return gameZones;
+    }
+}
+
+export class EventManager {
+    private events: GameEvent[] = [];
+    private lastEventId: number = 0;
+
+    public addEvent(type: EventType, data: any): GameEvent {
+        this.lastEventId++;
+        const timestamp = Date.now();
+        
+        const event: GameEvent = {
+            id: `event_${timestamp}_${this.lastEventId}`,
+            type,
+            data,
+            timestamp,
+            expiresAt: timestamp + 3000, // 3 seconds expiry
+            frontendProcessed: false
+        };
+        
+        this.events.push(event);
+        this.cleanupExpiredEvents();
+        
+        return event;
+    }
+
+    public getEvents(): GameEvent[] {
+        this.cleanupExpiredEvents();
+        return [...this.events];
+    }
+
+    public getUnprocessedEvents(): GameEvent[] {
+        return this.events.filter(event => !event.frontendProcessed);
+    }
+
+    public acknowledgeEvents(eventIds: string[]): void {
+        this.events.forEach(event => {
+            if (eventIds.includes(event.id)) {
+                event.frontendProcessed = true;
+            }
+        });
+        this.cleanupExpiredEvents();
+    }
+
+    private cleanupExpiredEvents(): void {
+        const now = Date.now();
+        this.events = this.events.filter(event => 
+            event.expiresAt > now || !event.frontendProcessed
+        );
+    }
+
+    public getLastEventId(): number {
+        return this.lastEventId;
+    }
+
+    // ============ SERIALIZATION ============
+
+    public toJSON(): any {
+        return {
+            gameEvents: this.events,
+            lastEventId: this.lastEventId
+        };
+    }
+
+    public static fromJSON(data: any): EventManager {
+        const manager = new EventManager();
+        manager.events = data.gameEvents || [];
+        manager.lastEventId = data.lastEventId || 0;
+        return manager;
+    }
+}
+
+export class PlaySequenceManager {
+    private sequence: PlaySequence;
+
+    constructor() {
+        this.sequence = {
+            globalSequence: 0,
+            plays: []
+        };
+    }
+
+    public addPlay(playerId: string, cardId: string, action: ActionType, zone: ZoneType, isFaceDown: boolean = false, effectData?: any): PlaySequenceAction {
+        this.sequence.globalSequence++;
+        
+        const play: PlaySequenceAction = {
+            sequenceId: this.sequence.globalSequence,
+            playerId,
+            cardId,
+            action,
+            zone,
+            ...(isFaceDown && { isFaceDown }),
+            ...(effectData && { effectData })
+        };
+        
+        this.sequence.plays.push(play);
+        return play;
+    }
+
+    public getPlays(): PlaySequenceAction[] {
+        return [...this.sequence.plays];
+    }
+
+    public getGlobalSequence(): number {
+        return this.sequence.globalSequence;
+    }
+
+    public clearSequence(): void {
+        this.sequence = {
+            globalSequence: 0,
+            plays: []
+        };
+    }
+
+    // ============ SERIALIZATION ============
+
+    public toJSON(): any {
+        return this.sequence;
+    }
+
+    public static fromJSON(data: any): PlaySequenceManager {
+        const manager = new PlaySequenceManager();
+        manager.sequence = data || { globalSequence: 0, plays: [] };
+        return manager;
+    }
+}
+
+// ============ MAIN GAME ENVIRONMENT CLASS ============
+
+export class GameEnvironment {
+    // Core game state
+    public phase: GamePhase;
+    public playerId_1: string | null;
+    public playerId_2: string | null;
+    public gameStarted: boolean;
+    public firstPlayer: number;
+    
+    // Object-oriented components
+    public players: { [playerId: string]: Player };
+    public zones: GameZones;
+    public eventManager: EventManager;
+    public playSequenceManager: PlaySequenceManager;
+    
+    // Legacy compatibility
+    public fieldEffects: { [playerId: string]: PlayerFieldEffects };
+    public neutralizationHistory: NeutralizationAction[];
+
+    constructor() {
+        this.phase = GamePhase.WAITING_FOR_PLAYERS;
+        this.playerId_1 = null;
+        this.playerId_2 = null;
+        this.gameStarted = false;
+        this.firstPlayer = 0;
+        
+        this.players = {};
+        this.zones = new GameZones();
+        this.eventManager = new EventManager();
+        this.playSequenceManager = new PlaySequenceManager();
+        
+        this.fieldEffects = {};
+        this.neutralizationHistory = [];
+    }
+
+    // ============ PLAYER MANAGEMENT ============
+
+    public addPlayer(playerId: string, playerName?: string): Player {
+        const player = new Player(playerId, playerName || playerId);
+        this.players[playerId] = player;
+        this.zones.initializePlayerZones(playerId);
+        
+        // Set player IDs based on order
+        if (!this.playerId_1) {
+            this.playerId_1 = playerId;
+        } else if (!this.playerId_2) {
+            this.playerId_2 = playerId;
+        }
+        
+        return player;
+    }
+
+    public getPlayer(playerId: string): Player | null {
+        return this.players[playerId] || null;
+    }
+
+    public getAllPlayers(): Player[] {
+        return Object.values(this.players);
+    }
+
+    public getOpponentId(playerId: string): string | null {
+        if (playerId === this.playerId_1) return this.playerId_2;
+        if (playerId === this.playerId_2) return this.playerId_1;
+        return null;
+    }
+
+    // ============ GAME STATE METHODS ============
+
+    public updatePhase(newPhase: GamePhase): void {
+        const oldPhase = this.phase;
+        this.phase = newPhase;
+        
+        this.eventManager.addEvent(EventType.PHASE_CHANGE, {
+            oldPhase,
+            newPhase,
+            timestamp: Date.now()
+        });
+    }
+
+    public isGameReady(): boolean {
+        return this.playerId_1 !== null && this.playerId_2 !== null;
+    }
+
+    public canStartGame(): boolean {
+        return this.isGameReady() && this.phase === GamePhase.READY_PHASE;
+    }
+
+    // ============ ZONE OPERATIONS ============
+
+    public playCard(playerId: string, cardUid: string, zone: ZoneType, isFaceDown: boolean = false): boolean {
+        const player = this.getPlayer(playerId);
+        if (!player) return false;
+        
+        // Remove card from hand
+        if (!player.playCardFromHand(cardUid)) return false;
+        
+        // Place card in zone
+        this.zones.setCardInZone(playerId, zone, cardUid);
+        
+        // Record in play sequence
+        const action = isFaceDown ? ActionType.PLAY_CARD_BACK : ActionType.PLAY_CARD;
+        this.playSequenceManager.addPlay(playerId, cardUid, action, zone, isFaceDown);
+        
+        // Add event
+        this.eventManager.addEvent(EventType.CARD_PLAYED, {
+            playerId,
+            cardUid,
+            zone,
+            isFaceDown
+        });
+        
+        return true;
+    }
+
+    public setLeader(playerId: string, leaderUid: string): boolean {
+        const player = this.getPlayer(playerId);
+        if (!player) return false;
+        
+        this.zones.setCardInZone(playerId, ZoneType.LEADER, leaderUid);
+        this.playSequenceManager.addPlay(playerId, leaderUid, ActionType.PLAY_LEADER, ZoneType.LEADER);
+        
+        return true;
+    }
+
+    // ============ VALIDATION METHODS ============
+
+    public areAllMainZonesFilled(): boolean {
+        const playerIds = this.zones.getAllPlayerIds();
+        return playerIds.every(playerId => 
+            this.zones.areAllCharacterZonesFilled(playerId) && 
+            this.zones.isHelpZoneFilled(playerId)
+        );
+    }
+
+    public areAllSpZonesFilled(): boolean {
+        const playerIds = this.zones.getAllPlayerIds();
+        return playerIds.every(playerId => this.zones.isSpZoneFilled(playerId));
+    }
+
+    // ============ NEUTRALIZATION TRACKING ============
+
+    public addNeutralizationAction(playerId: string, targetCardId: string, neutralizedBy: string, reason: string): void {
+        this.neutralizationHistory.push({
+            timestamp: Date.now(),
+            playerId,
+            targetCardId,
+            neutralizedBy,
+            reason
+        });
+    }
+
+    // ============ SERIALIZATION ============
+
+    public toJSON(): any {
+        // Convert to legacy format for compatibility
+        const legacy = {
+            phase: this.phase,
+            playerId_1: this.playerId_1,
+            playerId_2: this.playerId_2,
+            gameStarted: this.gameStarted,
+            firstPlayer: this.firstPlayer,
+            
+            // Convert players to legacy format
+            players: {},
+            zones: this.zones.toJSON(),
+            fieldEffects: this.fieldEffects,
+            neutralizationHistory: this.neutralizationHistory,
+            
+            // Event system
+            ...this.eventManager.toJSON(),
+            
+            // Play sequence
+            playSequence: this.playSequenceManager.toJSON()
+        };
+        
+        // Convert players
+        for (const [playerId, player] of Object.entries(this.players)) {
+            legacy.players[playerId] = player.toJSON();
+        }
+        
+        return legacy;
+    }
+
+    public static fromJSON(data: any): GameEnvironment {
+        const gameEnv = new GameEnvironment();
+        
+        // Basic properties
+        gameEnv.phase = data.phase || GamePhase.WAITING_FOR_PLAYERS;
+        gameEnv.playerId_1 = data.playerId_1 || null;
+        gameEnv.playerId_2 = data.playerId_2 || null;
+        gameEnv.gameStarted = data.gameStarted || false;
+        gameEnv.firstPlayer = data.firstPlayer || 0;
+        
+        // Players
+        if (data.players) {
+            for (const [playerId, playerData] of Object.entries(data.players)) {
+                gameEnv.players[playerId] = Player.fromJSON(playerData);
+            }
+        }
+        
+        // Zones
+        gameEnv.zones = GameZones.fromJSON(data.zones);
+        
+        // Event system
+        gameEnv.eventManager = EventManager.fromJSON(data);
+        
+        // Play sequence
+        gameEnv.playSequenceManager = PlaySequenceManager.fromJSON(data.playSequence);
+        
+        // Legacy compatibility
+        gameEnv.fieldEffects = data.fieldEffects || {};
+        gameEnv.neutralizationHistory = data.neutralizationHistory || [];
+        
+        return gameEnv;
+    }
+
+    // ============ UTILITY METHODS ============
+
+    public clone(): GameEnvironment {
+        return GameEnvironment.fromJSON(this.toJSON());
+    }
+
+    public toString(): string {
+        return JSON.stringify(this.toJSON(), null, 2);
+    }
+}
+
+// ============ FACTORY FUNCTIONS ============
+
+export function createGameEnvironment(): GameEnvironment {
+    return new GameEnvironment();
+}
+
+export function createGameEnvironmentFromJSON(data: any): GameEnvironment {
+    return GameEnvironment.fromJSON(data);
+}
+
+// ============ EXPORTS ============
+
+export default {
+    GameEnvironment,
+    Player,
+    GameZones,
+    EventManager,
+    PlaySequenceManager,
+    GamePhase,
+    ZoneType,
+    ActionType,
+    EventType,
+    createGameEnvironment,
+    createGameEnvironmentFromJSON
+};
