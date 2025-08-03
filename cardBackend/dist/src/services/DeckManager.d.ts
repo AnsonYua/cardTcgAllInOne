@@ -23,8 +23,8 @@ export interface InitializationStatus {
 export interface PlayerDeckWithUIDs extends PlayerDeckData {
     playerId: string;
     decks: Record<string, any>;
-    leaderUIMapping: string[];
-    deckUIDMapping: string[];
+    leaderUIDMapping: Record<string, string>;
+    deckUIDMapping: Record<string, string>;
 }
 declare class DeckManager {
     private readonly cardsPath;

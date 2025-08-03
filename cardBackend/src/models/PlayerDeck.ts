@@ -21,8 +21,8 @@ export interface PlayerDeckStats {
 }
 
 export interface UIDMapping {
-    cardUID: string[];
-    leaderUID: string[];
+    cardUID: Record<string, string>;  // UID -> Card Name mapping
+    leaderUID: Record<string, string>; // UID -> Leader Name mapping
 }
 
 /**
@@ -37,7 +37,7 @@ export class PlayerDeck {
     
     // Runtime mappings for gameplay compatibility
     public deckUIDMapping: Record<string, string[]>;
-    public leaderUIMapping: Record<string, string[]>;
+    public leaderUIDMapping: Record<string, string[]>;
 
     constructor(playerId: string, data: PlayerDeckData = {}) {
         // Core player identification
@@ -51,7 +51,7 @@ export class PlayerDeck {
         
         // Runtime mappings for gameplay compatibility
         this.deckUIDMapping = {};
-        this.leaderUIMapping = {};
+        this.leaderUIDMapping = {};
         
         // Initialize decks from data
         if (data.decks && typeof data.decks === 'object') {
@@ -155,19 +155,28 @@ export class PlayerDeck {
     generateActiveDecksUIDs(): UIDMapping {
         const activeDeck = this.getActiveDeck();
         if (!activeDeck) {
-            return { cardUID: [], leaderUID: [] };
+            return { cardUID: {}, leaderUID: {} };
         }
         
-        // Generate unique IDs for cards and leaders
-        const cardUID = activeDeck.cards.map((cardId, index) => `${cardId}_${Date.now()}_${index}`);
-        const leaderUID = activeDeck.leader.map((leaderId, index) => `${leaderId}_${Date.now()}_${index}`);
+        // Generate unique IDs for cards and create UID -> Name mapping
+        const cardUID: Record<string, string> = {};
+        activeDeck.cards.forEach((cardId, index) => {
+            const uid = `${cardId}_${Date.now()}_${index}`;
+            cardUID[uid] = cardId;
+        });
         
-        // Store for future reference
+        // Generate unique IDs for leaders and create UID -> Name mapping
+        const leaderUID: Record<string, string> = {};
+        activeDeck.leader.forEach((leaderId, index) => {
+            const uid = `${leaderId}_${Date.now()}_${index}`;
+            leaderUID[uid] = leaderId;
+        });
+        
+        // Store UIDs for backward compatibility (convert to arrays for old code)
         if (activeDeck.id) {
-            this.deckUIDMapping[activeDeck.id] = cardUID;
-            this.leaderUIMapping[activeDeck.id] = leaderUID;
+            this.deckUIDMapping[activeDeck.id] = Object.keys(cardUID);
+            this.leaderUIDMapping[activeDeck.id] = Object.keys(leaderUID);
         }
-        
         return { cardUID, leaderUID };
     }
 

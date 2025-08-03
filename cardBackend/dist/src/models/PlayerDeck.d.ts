@@ -16,8 +16,8 @@ export interface PlayerDeckStats {
     }>;
 }
 export interface UIDMapping {
-    cardUID: string[];
-    leaderUID: string[];
+    cardUID: Record<string, string>;
+    leaderUID: Record<string, string>;
 }
 /**
  * Represents a player's deck collection with Java-like clear field declarations
@@ -27,7 +27,7 @@ export declare class PlayerDeck {
     activeDeck: string | null;
     decks: Record<string, Deck>;
     deckUIDMapping: Record<string, string[]>;
-    leaderUIMapping: Record<string, string[]>;
+    leaderUIDMapping: Record<string, string[]>;
     constructor(playerId: string, data?: PlayerDeckData);
     /**
      * Get the currently active deck

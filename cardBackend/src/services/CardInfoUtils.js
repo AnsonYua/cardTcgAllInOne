@@ -17,6 +17,7 @@ class CardInfoUtils {
         
         const deck = playerData.deck;
         const crtLeaderCardUID = deck.leader[deck.currentLeaderIdx];
+        ///console.log("debug leaderMapping", JSON.stringify(deck.leaderMapping));
         const crtLeaderCard = deck.leaderMapping[crtLeaderCardUID];
         return this.deckManager.getLeaderCards(crtLeaderCard);
     }

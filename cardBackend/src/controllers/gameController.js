@@ -9,25 +9,48 @@ class GameController {
             const gameState = await gameLogic.createNewGame(req);
             res.json(gameState);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            console.error('❌ Error in startGame:', error);
+            console.error('❌ Stack trace:', error.stack);
+            res.status(500).json({ 
+                error: error.message,
+                stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+                timestamp: new Date().toISOString()
+            });
         }
     }
 
     async joinRoom(req, res) {
         try {
+            console.log('🔍 joinRoom called with body:', req.body);
             const gameState = await gameLogic.joinRoom(req);
             res.json(gameState);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            console.error('❌ Error in joinRoom:', error);
+            console.error('❌ Stack trace:', error.stack);
+            console.error('❌ Request body:', req.body);
+            res.status(500).json({ 
+                error: error.message,
+                stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+                timestamp: new Date().toISOString(),
+                context: 'joinRoom endpoint'
+            });
         }
     }
     async getPlayerDecks(req, res) {
         try {
             const { playerId } = req.params;
+            console.log('🔍 getPlayerDecks called for playerId:', playerId);
             const decks = await deckManager.getPlayerDecks(playerId);
             res.json(decks);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            console.error('❌ Error in getPlayerDecks:', error);
+            console.error('❌ Stack trace:', error.stack);
+            res.status(500).json({ 
+                error: error.message,
+                stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+                timestamp: new Date().toISOString(),
+                context: 'getPlayerDecks endpoint'
+            });
         }
     }
 

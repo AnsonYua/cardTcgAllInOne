@@ -26,13 +26,15 @@ class mozDeckLogic{
         
         const { drawnCards, mainDeck } = this.drawCards(mainDeckCard, 7);
         const hand = drawnCards;
+
+        console.log("debug leaderUIDMapping", JSON.stringify(playerDeck.leaderUIDMapping));
         
         return {
             currentLeaderIdx: 0,
             leader: sumCardList,
             hand: hand,
             mainDeck: mainDeck,
-            leaderMapping: playerDeck.leaderUIMapping,
+            leaderMapping: playerDeck.leaderUIDMapping,
             cardMapping: playerDeck.deckUIDMapping,
         };
     }

@@ -249,6 +249,7 @@ class mozGamePlay {
         
         for (let playerId in playerList){
             let leader = this.cardInfoUtils.getCurrentLeader(gameEnv, playerList[playerId]);
+            console.log("leader card", JSON.stringify(leader));
             leaderList.push(leader);
             leaderRevealed[playerList[playerId]] = {
                 cardId: leader.cardId,

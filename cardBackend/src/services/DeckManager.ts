@@ -32,8 +32,8 @@ export interface InitializationStatus {
 export interface PlayerDeckWithUIDs extends PlayerDeckData {
     playerId: string;
     decks: Record<string, any>;
-    leaderUIMapping: string[];
-    deckUIDMapping: string[];
+    leaderUIDMapping: Record<string, string>;
+    deckUIDMapping:  Record<string, string>;
 }
 
 class DeckManager {
@@ -131,20 +131,21 @@ class DeckManager {
 
         // Generate UIDs for active deck (for gameplay compatibility)
         const uidMappings = playerDeckCollection.generateActiveDecksUIDs();
-        
         // Return data in format compatible with existing API
         const playerData = playerDeckCollection.toJSON() as PlayerDeckWithUIDs;
         
         // Add the generated UIDs to the active deck for compatibility
         const activeDeck = playerDeckCollection.getActiveDeck();
         if (activeDeck && playerData.decks[playerData.activeDeck!]) {
-            playerData.decks[playerData.activeDeck!].cardUID = uidMappings.cardUID;
-            playerData.decks[playerData.activeDeck!].leaderUID = uidMappings.leaderUID;
+            playerData.decks[playerData.activeDeck!].cardUID = Object.keys(uidMappings.cardUID);
+            playerData.decks[playerData.activeDeck!].leaderUID = Object.keys(uidMappings.leaderUID);
         }
         
         // Add compatibility fields that mozDeckHelper expects (properly typed)
-        playerData.leaderUIMapping = uidMappings.leaderUID;
+        // Convert dictionaries to arrays for existing code compatibility
+        playerData.leaderUIDMapping = uidMappings.leaderUID;
         playerData.deckUIDMapping = uidMappings.cardUID;
+        console.log("debug playerData222", JSON.stringify(playerData.deckUIDMapping));
         
         return playerData;
     }

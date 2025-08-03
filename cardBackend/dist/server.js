@@ -22,8 +22,18 @@ app.use(express_1.default.json());
 app.use('/api/game', gameRoutes);
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ error: 'Something went wrong!' });
+    console.error('🚨 Global error handler caught:', err);
+    console.error('🚨 Error stack:', err.stack);
+    console.error('🚨 Request URL:', req.url);
+    console.error('🚨 Request method:', req.method);
+    console.error('🚨 Request body:', req.body);
+    res.status(500).json({
+        error: err.message || 'Something went wrong!',
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+        timestamp: new Date().toISOString(),
+        url: req.url,
+        method: req.method
+    });
 });
 // 404 handler
 app.use((req, res) => {

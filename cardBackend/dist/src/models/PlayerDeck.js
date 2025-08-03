@@ -16,7 +16,7 @@ class PlayerDeck {
         this.decks = {};
         // Runtime mappings for gameplay compatibility
         this.deckUIDMapping = {};
-        this.leaderUIMapping = {};
+        this.leaderUIDMapping = {};
         // Initialize decks from data
         if (data.decks && typeof data.decks === 'object') {
             Object.entries(data.decks).forEach(([deckId, deckData]) => {
@@ -106,15 +106,24 @@ class PlayerDeck {
     generateActiveDecksUIDs() {
         const activeDeck = this.getActiveDeck();
         if (!activeDeck) {
-            return { cardUID: [], leaderUID: [] };
+            return { cardUID: {}, leaderUID: {} };
         }
-        // Generate unique IDs for cards and leaders
-        const cardUID = activeDeck.cards.map((cardId, index) => `${cardId}_${Date.now()}_${index}`);
-        const leaderUID = activeDeck.leader.map((leaderId, index) => `${leaderId}_${Date.now()}_${index}`);
-        // Store for future reference
+        // Generate unique IDs for cards and create UID -> Name mapping
+        const cardUID = {};
+        activeDeck.cards.forEach((cardId, index) => {
+            const uid = `${cardId}_${Date.now()}_${index}`;
+            cardUID[uid] = cardId;
+        });
+        // Generate unique IDs for leaders and create UID -> Name mapping
+        const leaderUID = {};
+        activeDeck.leader.forEach((leaderId, index) => {
+            const uid = `${leaderId}_${Date.now()}_${index}`;
+            leaderUID[uid] = leaderId;
+        });
+        // Store UIDs for backward compatibility (convert to arrays for old code)
         if (activeDeck.id) {
-            this.deckUIDMapping[activeDeck.id] = cardUID;
-            this.leaderUIMapping[activeDeck.id] = leaderUID;
+            this.deckUIDMapping[activeDeck.id] = Object.keys(cardUID);
+            this.leaderUIDMapping[activeDeck.id] = Object.keys(leaderUID);
         }
         return { cardUID, leaderUID };
     }
