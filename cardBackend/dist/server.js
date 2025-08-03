@@ -1,69 +1,58 @@
+"use strict";
 // server.ts - TypeScript version of the Express server
-
-import express, { Express, Request, Response, NextFunction } from 'express';
-import cors from 'cors';
-import { Server } from 'http';
-
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
 // Import configurations and routes (dynamic paths for dev/prod)
 const isCompiled = __filename.includes('dist');
 const configPath = isCompiled ? '../src/config/config' : './src/config/config';
 const routesPath = isCompiled ? '../src/routes/gameRoutes' : './src/routes/gameRoutes';
-
 const config = require(configPath);
 const gameRoutes = require(routesPath);
-
 // Import TypeScript DeckManager
-import DeckManager from './src/services/DeckManager';
-
-const app: Express = express();
-
+const DeckManager_1 = __importDefault(require("./src/services/DeckManager"));
+const app = (0, express_1.default)();
 // Middleware
-app.use(cors());
-app.use(express.json());
-
+app.use((0, cors_1.default)());
+app.use(express_1.default.json());
 // Routes
 app.use('/api/game', gameRoutes);
-
 // Error handling middleware
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ error: 'Something went wrong!' });
 });
-
 // 404 handler
-app.use((req: Request, res: Response) => {
+app.use((req, res) => {
     res.status(404).json({ error: 'Route not found' });
 });
-
-let server: Server | undefined;
-
+let server;
 // Start server (DeckManager is already initialized synchronously)
-function startServer(): Server {
+function startServer() {
     try {
         console.log('DeckManager already initialized synchronously');
-
         // Verify DeckManager is properly initialized
-        const initStatus = DeckManager.getInitializationStatus();
+        const initStatus = DeckManager_1.default.getInitializationStatus();
         console.log('DeckManager status:', initStatus);
-
         // Start the server
         server = app.listen(config.port, () => {
             console.log(`Server is running on port ${config.port}`);
         });
-
         // Handle server errors
-        server.on('error', (error: Error) => {
+        server.on('error', (error) => {
             console.error('Server error:', error);
             process.exit(1);
         });
-
         return server;
-    } catch (error) {
+    }
+    catch (error) {
         console.error('Failed to start server:', error);
         process.exit(1);
     }
 }
-
 // Handle process termination
 process.on('SIGTERM', () => {
     console.log('SIGTERM received. Shutting down gracefully...');
@@ -74,7 +63,6 @@ process.on('SIGTERM', () => {
         });
     }
 });
-
 process.on('SIGINT', () => {
     console.log('SIGINT received. Shutting down gracefully...');
     if (server) {
@@ -84,5 +72,5 @@ process.on('SIGINT', () => {
         });
     }
 });
-
 startServer();
+//# sourceMappingURL=server.js.map
