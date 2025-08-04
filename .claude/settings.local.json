@@ -44,7 +44,8 @@
       "Bash(--header 'Content-Type: application/json' )",
       "Bash(--data '{\n    \"\"playerId\"\": \"\"playerId_1\"\",\n    \"\"playerName\"\": \"\"Demo Player\"\"\n}' --max-time 10)",
       "Bash(--header 'Content-Type: application/json' )",
-      "Bash(--header 'Content-Type: application/json' )"
+      "Bash(--header 'Content-Type: application/json' )",
+      "Bash(git rm:*)"
     ],
     "deny": []
   }

@@ -10,7 +10,16 @@ const mozAIClass = require('../mozGame/mozAIClass');
 const playSequenceManager = require('./PlaySequenceManager');
 const effectSimulator = require('./EffectSimulator');
 const cardEffectRegistry = require('./CardEffectRegistry');
-const { GamePhase } = require('../../dist/src/models/GameEnvironment');
+// Import GameEnvironment enums and GameEnvironmentAdapter with proper path resolution for compiled code
+const isCompiled = __dirname.includes('dist');
+const gameEnvironmentPath = isCompiled 
+    ? path.join(__dirname, '../../../src/models/GameEnvironment.js') 
+    : path.join(__dirname, '../../dist/src/models/GameEnvironment.js');
+const gameEnvironmentAdapterPath = isCompiled 
+    ? path.join(__dirname, '../../../src/utils/GameEnvironmentAdapter.js') 
+    : path.join(__dirname, '../../dist/src/utils/GameEnvironmentAdapter.js');
+const { GamePhase, ActionType, ZoneType } = require(gameEnvironmentPath);
+const { GameEnvironmentAdapter } = require(gameEnvironmentAdapterPath);
 
 // Utility function to update game phase
 function updatePhase(gameEnv, newPhase) {
@@ -44,7 +53,6 @@ class GameLogic {
         const gameId = uuidv4();
         
         // NEW: Use GameEnvironment class for proper object-oriented structure
-        const { GameEnvironmentAdapter } = require('../../dist/src/utils/GameEnvironmentAdapter');
         const gameEnvClass = GameEnvironmentAdapter.createNewGame(playerId);
         
         // The GameEnvironmentAdapter.createNewGame already:
@@ -81,7 +89,6 @@ class GameLogic {
         }
         
         // NEW: Convert legacy gameEnv to class for manipulation
-        const { GameEnvironmentAdapter } = require('../../dist/src/utils/GameEnvironmentAdapter');
         let gameEnvClass = GameEnvironmentAdapter.fromLegacyJSON(gameData.gameEnv);
         
         // Check if room is available using class property
@@ -137,7 +144,6 @@ class GameLogic {
         var gameData = await this.readJSONFileAsync(gameId);
         
         // NEW: Work directly with GameEnvironment class throughout the method
-        const { GameEnvironmentAdapter } = require('../../dist/src/utils/GameEnvironmentAdapter');
         let gameEnvClass = GameEnvironmentAdapter.fromLegacyJSON(gameData.gameEnv);
         
         // Check if room is in correct state
@@ -185,8 +191,8 @@ class GameLogic {
                 gameEnvClass.playSequenceManager.addPlay(
                     playerId,
                     leader.id,
-                    "PLAY_LEADER",
-                    "leader",
+                    ActionType.PLAY_LEADER,
+                    ZoneType.LEADER,
                     false, // isFaceDown
                     {
                         leaderIndex: player.deck.currentLeaderIdx,
