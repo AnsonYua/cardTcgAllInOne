@@ -164,41 +164,12 @@ class GameLogic {
         console.log("🔍 Players Ready Status:", gameEnvClass.getPlayersReadyStatus());
         console.log("🔍 Both Ready:", bothReady);
         if (bothReady) {
-            console.log("🎯 Both players ready - generating DRAW_PHASE_COMPLETE event");
+            console.log("🎯 Both players ready - initializing player states");
             
-            // Initialize game fields for all players using class methods
-            // IMPORTANT: Record leader plays in first player order for proper sequencing
-            const firstPlayerIndex = gameEnvClass.firstPlayer || 0;
-            const orderedPlayerList = [
-                playerList[firstPlayerIndex],
-                playerList[1 - firstPlayerIndex]  // Other player
-            ];
-            
-            for (let playerId of orderedPlayerList) {
-                // Get player using class method
+            // Initialize basic player states (non-leader related initialization)
+            for (let playerId of playerList) {
                 const player = gameEnvClass.getPlayer(playerId);
                 if (!player) continue;
-                
-                // Get current leader using class method
-                const currentLeaderId = player.getCurrentLeaderCardId();
-                if (!currentLeaderId) continue;
-                
-                // Get leader details
-                const leader = this.mozGamePlay.cardInfoUtils.getLeaderCards(currentLeaderId);
-                if (!leader) continue;
-                
-                // Record leader card play using class methods
-                gameEnvClass.playSequenceManager.addPlay(
-                    playerId,
-                    leader.id,
-                    ActionType.PLAY_LEADER,
-                    ZoneType.LEADER,
-                    false, // isFaceDown
-                    {
-                        leaderIndex: player.deck.currentLeaderIdx,
-                        isInitialPlacement: true
-                    }
-                );
                 
                 // Initialize player state using class properties
                 player.turnAction = [];
@@ -206,29 +177,16 @@ class GameLogic {
                 player.redraw = 1;
                 player.playerPoint = 0;
                 
-                // Set leader in zone using class method
-                const leaderZoneData = {
-                    id: leader.id,
-                    name: leader.name,
-                    cardType: leader.cardType,
-                    gameType: leader.gameType,
-                    initialPoint: leader.initialPoint,
-                    level: leader.level,
-                    rarity: leader.rarity,
-                    zoneCompatibility: leader.zoneCompatibility,
-                    effects: leader.effects
-                };
-                gameEnvClass.zones.setLeaderInZone(playerId, leaderZoneData);
-                
                 // Initialize field effects for this player using class method
                 player.initializeFieldEffects();
             }
             
-            // UNIFIED EFFECT SIMULATION: Process all leader effects using class
+            // NOTE: Leader zone placement and PLAY_LEADER recording is already handled by
+            // GameEnvironmentAdapter.initializeGameEnvironment() called during joinGame()
+            
+            // UNIFIED EFFECT SIMULATION: Process all effects using class
             // Effects are applied directly to gameEnvClass.players[].fieldEffects (single source of truth)
             await this.effectSimulator.simulateCardPlaySequence(gameEnvClass.toJSON());
-            
-            // No merge needed - all effects are already in gameEnvClass.players[].fieldEffects!
             
             // Transition to draw phase first - game officially starts using class method
             gameEnvClass.updatePhase(GamePhase.DRAW_PHASE);

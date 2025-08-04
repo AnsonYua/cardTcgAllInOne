@@ -205,6 +205,33 @@ export class GameEnvironmentAdapter {
         gameEnv.zones.setLeaderInZone(gameEnv.playerId_1!, leader1ZoneData);
         gameEnv.zones.setLeaderInZone(gameEnv.playerId_2!, leader2ZoneData);
         
+        // Record leader plays in play sequence for proper effect simulation
+        // IMPORTANT: Record in first player order for correct sequencing
+        const orderedPlayerIds = [
+            [gameEnv.playerId_1!, gameEnv.playerId_2!][firstPlayer],
+            [gameEnv.playerId_1!, gameEnv.playerId_2!][1 - firstPlayer]
+        ];
+        
+        for (const playerId of orderedPlayerIds) {
+            const player = gameEnv.getPlayer(playerId);
+            if (!player) continue;
+            
+            const currentLeaderId = player.getCurrentLeaderCardId();
+            if (!currentLeaderId) continue;
+            
+            gameEnv.playSequenceManager.addPlay(
+                playerId,
+                currentLeaderId,
+                ActionType.PLAY_LEADER,
+                ZoneType.LEADER,
+                false, // isFaceDown
+                {
+                    leaderIndex: player.deck.currentLeaderIdx,
+                    isInitialPlacement: true
+                }
+            );
+        }
+        
         // Prepare leader revealed data for events
         const leaderRevealed = {
             [gameEnv.playerId_1!]: {
