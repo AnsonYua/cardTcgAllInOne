@@ -353,7 +353,7 @@
     },
     "zones": {
         "playerId_1": {
-            "leader": {
+            "leader": [{
                 "id": "s-1",
                 "name": "特朗普",
                 "cardType": "leader",
@@ -443,7 +443,7 @@
                         }
                     ]
                 }
-            },
+            }],
             "top": [],
             "left": [
                 {

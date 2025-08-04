@@ -1,7 +1,7 @@
 "use strict";
 // src/models/GameEnvironment.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GameEnvironment = exports.PlaySequenceManager = exports.EventManager = exports.GameZones = exports.Player = exports.EventType = exports.ActionType = exports.ZoneType = exports.GamePhase = void 0;
+exports.GameEnvironment = exports.PlaySequenceManager = exports.EventManager = exports.GameZones = exports.Player = exports.isLeaderZoneCardArray = exports.isZoneCardArray = exports.isLeaderZone = exports.EventType = exports.ActionType = exports.ZoneType = exports.GamePhase = void 0;
 exports.createGameEnvironment = createGameEnvironment;
 exports.createGameEnvironmentFromJSON = createGameEnvironmentFromJSON;
 /**
@@ -56,6 +56,19 @@ var EventType;
     EventType["BATTLE_CALCULATED"] = "BATTLE_CALCULATED";
     EventType["VICTORY_POINTS_AWARDED"] = "VICTORY_POINTS_AWARDED";
 })(EventType || (exports.EventType = EventType = {}));
+// Type guard functions
+const isLeaderZone = (zone) => {
+    return zone === ZoneType.LEADER;
+};
+exports.isLeaderZone = isLeaderZone;
+const isZoneCardArray = (content) => {
+    return Array.isArray(content) && (content.length === 0 || 'card' in content[0]);
+};
+exports.isZoneCardArray = isZoneCardArray;
+const isLeaderZoneCardArray = (content) => {
+    return Array.isArray(content) && (content.length === 0 || ('id' in content[0] && !('card' in content[0])));
+};
+exports.isLeaderZoneCardArray = isLeaderZoneCardArray;
 // ============ CLASSES ============
 class Player {
     constructor(id, name = id) {
@@ -167,30 +180,79 @@ class GameZones {
     constructor() {
         this.zones = {};
     }
+    /**
+     * Initialize empty zones for a player
+     */
     initializePlayerZones(playerId) {
-        this.zones[playerId] = {};
-        for (const zone of Object.values(ZoneType)) {
-            this.zones[playerId][zone] = [];
-        }
+        this.zones[playerId] = {
+            leader: [],
+            top: [],
+            left: [],
+            right: [],
+            help: [],
+            sp: []
+        };
+    }
+    /**
+     * Get the raw zones data structure
+     */
+    getZonesData() {
+        return this.zones;
+    }
+    /**
+     * Set the entire zones data structure (useful for deserialization)
+     */
+    setZonesData(zonesData) {
+        this.zones = zonesData;
     }
     getPlayerZones(playerId) {
+        //console.log("debug getPlayerZones", JSON.stringify(this.zones));
         if (!this.zones[playerId]) {
             this.initializePlayerZones(playerId);
         }
         return this.zones[playerId];
     }
     setCardInZone(playerId, zone, cardUid) {
-        
+        const playerZones = this.getPlayerZones(playerId);
+        if (zone === ZoneType.LEADER) {
+            // For leader zone, we need to create a basic LeaderZoneCard with just the id
+            const leaderCard = { id: cardUid };
+            if (!playerZones.leader)
+                playerZones.leader = [];
+            playerZones.leader.push(leaderCard);
+        }
+        else {
+            // For other zones, create a ZoneCard
+            const zoneCard = { card: [cardUid] };
+            const targetZone = playerZones[zone];
+            if (Array.isArray(targetZone)) {
+                targetZone.push(zoneCard);
+            }
+        }
     }
     setLeaderInZone(playerId, leaderData) {
         const playerZones = this.getPlayerZones(playerId);
+        if (!playerZones.leader)
+            playerZones.leader = [];
         playerZones.leader.push(leaderData);
     }
     getLeaderInZone(playerId) {
         const playerZones = this.getPlayerZones(playerId);
-        return playerZones.leader || null;
+        return playerZones.leader?.[0] || null;
     }
     getCardInZone(playerId, zone) {
+        const playerZones = this.getPlayerZones(playerId);
+        if (zone === ZoneType.LEADER) {
+            const leaderZone = playerZones.leader;
+            return leaderZone && leaderZone.length > 0 ? leaderZone[0].id : null;
+        }
+        else {
+            const targetZone = playerZones[zone];
+            if (Array.isArray(targetZone) && targetZone.length > 0) {
+                const zoneCard = targetZone[0];
+                return zoneCard.card && zoneCard.card.length > 0 ? zoneCard.card[0] : null;
+            }
+        }
         return null;
     }
     isZoneOccupied(playerId, zone) {
@@ -199,10 +261,15 @@ class GameZones {
     clearZone(playerId, zone) {
         const playerZones = this.getPlayerZones(playerId);
         if (zone === ZoneType.LEADER) {
-            delete playerZones.leader;
+            if (playerZones.leader) {
+                playerZones.leader.length = 0; // Clear the array
+            }
         }
         else {
-            delete playerZones[zone];
+            const targetZone = playerZones[zone];
+            if (Array.isArray(targetZone)) {
+                targetZone.length = 0; // Clear the array
+            }
         }
     }
     getAllPlayerIds() {
@@ -226,7 +293,7 @@ class GameZones {
     }
     static fromJSON(data) {
         const gameZones = new GameZones();
-        gameZones.zones = data || {};
+        gameZones.setZonesData(data || {});
         return gameZones;
     }
 }

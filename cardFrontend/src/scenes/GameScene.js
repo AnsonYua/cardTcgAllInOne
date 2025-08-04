@@ -1718,8 +1718,14 @@ export default class GameScene extends Phaser.Scene {
       console.error(`Mismatch between visual and data arrays for ${playerType} leader deck.`);
       return;
     }
-
-    console.log("topCard ", JSON.stringify(this.layout.player.leaderDeck));
+    const crtPlayer = this.gameStateManager.getPlayer().id;
+    const leaderCard = this.gameStateManager.getGameState().gameEnv.zones[crtPlayer].leader[0];
+    const leaderCardData = {
+      id: leaderCard.id,
+      name: leaderCard.id,
+      type: leaderCard.type,
+      cardType: leaderCard.type,
+    }
     
     this.tweens.add({
       targets: topCard,
@@ -1728,7 +1734,7 @@ export default class GameScene extends Phaser.Scene {
       rotation: 0,
       duration: 300,
       ease: 'Power2.easeInOut',
-      onComplete: () => this.handleLeaderCardPlacement(topCard, cardData, leaderZone, playerType)
+      onComplete: () => this.handleLeaderCardPlacement(topCard, leaderCardData, leaderZone, playerType)
     });
   }
 

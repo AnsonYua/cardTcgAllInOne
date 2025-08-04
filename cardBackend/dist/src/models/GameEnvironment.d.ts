@@ -77,13 +77,21 @@ export interface LeaderZoneCard {
     };
 }
 export interface PlayerZones {
-    leader?: LeaderZoneCard;
-    top?: ZoneCard;
-    left?: ZoneCard;
-    right?: ZoneCard;
-    help?: ZoneCard;
-    sp?: ZoneCard;
+    leader?: LeaderZoneCard[];
+    top?: ZoneCard[];
+    left?: ZoneCard[];
+    right?: ZoneCard[];
+    help?: ZoneCard[];
+    sp?: ZoneCard[];
 }
+export interface GameZonesData {
+    [playerId: string]: PlayerZones;
+}
+export type ZoneContent = ZoneCard[] | LeaderZoneCard[] | undefined;
+export type NonLeaderZoneType = Exclude<ZoneType, ZoneType.LEADER>;
+export declare const isLeaderZone: (zone: ZoneType) => zone is ZoneType.LEADER;
+export declare const isZoneCardArray: (content: ZoneContent) => content is ZoneCard[];
+export declare const isLeaderZoneCardArray: (content: ZoneContent) => content is LeaderZoneCard[];
 export interface GameEvent {
     id: string;
     type: EventType;
@@ -168,7 +176,18 @@ export declare class Player {
 }
 export declare class GameZones {
     private zones;
+    /**
+     * Initialize empty zones for a player
+     */
     initializePlayerZones(playerId: string): void;
+    /**
+     * Get the raw zones data structure
+     */
+    getZonesData(): GameZonesData;
+    /**
+     * Set the entire zones data structure (useful for deserialization)
+     */
+    setZonesData(zonesData: GameZonesData): void;
     getPlayerZones(playerId: string): PlayerZones;
     setCardInZone(playerId: string, zone: ZoneType, cardUid: string): void;
     setLeaderInZone(playerId: string, leaderData: LeaderZoneCard): void;
@@ -180,8 +199,8 @@ export declare class GameZones {
     areAllCharacterZonesFilled(playerId: string): boolean;
     isHelpZoneFilled(playerId: string): boolean;
     isSpZoneFilled(playerId: string): boolean;
-    toJSON(): any;
-    static fromJSON(data: any): GameZones;
+    toJSON(): GameZonesData;
+    static fromJSON(data: GameZonesData | any): GameZones;
 }
 export declare class EventManager {
     private events;
