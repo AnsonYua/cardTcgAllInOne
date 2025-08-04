@@ -182,11 +182,12 @@ class GameLogic {
                 if (!leader) continue;
                 
                 // Record leader card play using class methods
-                gameEnvClass.playSequenceManager.recordCardPlay(
+                gameEnvClass.playSequenceManager.addPlay(
                     playerId,
                     leader.id,
                     "PLAY_LEADER",
                     "leader",
+                    false, // isFaceDown
                     {
                         leaderIndex: player.deck.currentLeaderIdx,
                         isInitialPlacement: true

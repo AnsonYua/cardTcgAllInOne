@@ -230,6 +230,9 @@ export declare class GameEnvironment {
     playerId_2: string | null;
     gameStarted: boolean;
     firstPlayer: number;
+    playersReady: {
+        [playerId: string]: boolean;
+    };
     players: {
         [playerId: string]: Player;
     };
@@ -248,6 +251,12 @@ export declare class GameEnvironment {
     updatePhase(newPhase: GamePhase): void;
     isGameReady(): boolean;
     canStartGame(): boolean;
+    setPlayerReady(playerId: string, isReady?: boolean): void;
+    isPlayerReady(playerId: string): boolean;
+    areAllPlayersReady(): boolean;
+    getPlayersReadyStatus(): {
+        [playerId: string]: boolean;
+    };
     /**
      * Process player redraw request during initial game setup
      * Handles the complete redraw workflow including events and deck reshuffling

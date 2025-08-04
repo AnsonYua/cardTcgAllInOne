@@ -407,6 +407,7 @@ class GameEnvironment {
         this.playerId_2 = null;
         this.gameStarted = false;
         this.firstPlayer = 0;
+        this.playersReady = {};
         this.players = {};
         this.zones = new GameZones();
         this.eventManager = new EventManager();
@@ -456,6 +457,20 @@ class GameEnvironment {
     }
     canStartGame() {
         return this.isGameReady() && this.phase === GamePhase.READY_PHASE;
+    }
+    // ============ PLAYERS READY MANAGEMENT ============
+    setPlayerReady(playerId, isReady = true) {
+        this.playersReady[playerId] = isReady;
+    }
+    isPlayerReady(playerId) {
+        return this.playersReady[playerId] || false;
+    }
+    areAllPlayersReady() {
+        const playerIds = [this.playerId_1, this.playerId_2].filter(id => id !== null);
+        return playerIds.length === 2 && playerIds.every(id => this.playersReady[id] === true);
+    }
+    getPlayersReadyStatus() {
+        return { ...this.playersReady };
     }
     // ============ PLAYER REDRAW OPERATIONS ============
     /**
@@ -545,6 +560,7 @@ class GameEnvironment {
             playerId_2: this.playerId_2,
             gameStarted: this.gameStarted,
             firstPlayer: this.firstPlayer,
+            playersReady: this.playersReady,
             // Convert players to legacy format
             players: {},
             zones: this.zones.toJSON(),
@@ -569,6 +585,7 @@ class GameEnvironment {
         gameEnv.playerId_2 = data.playerId_2 || null;
         gameEnv.gameStarted = data.gameStarted || false;
         gameEnv.firstPlayer = data.firstPlayer || 0;
+        gameEnv.playersReady = data.playersReady || {};
         // Players
         if (data.players) {
             for (const [playerId, playerData] of Object.entries(data.players)) {
