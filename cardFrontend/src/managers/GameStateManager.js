@@ -61,6 +61,18 @@ export default class GameStateManager {
     return this.gameState.gameEnv.players[id];
   }
 
+  getPlayerLeader(isOpponent = false) {
+    const crtPlayer = isOpponent ? this.getOpponent() : this.gameState.playerId;
+    const leaderCard = this.gameState.gameEnv.zones[crtPlayer].leader[0];
+    const leaderCardData = {
+      id: leaderCard.id,
+      name: leaderCard.id,
+      type: leaderCard.type,
+      cardType: leaderCard.type,
+    }
+    return leaderCardData;
+  }
+
   getOpponent() {
     const players = Object.keys(this.gameState.gameEnv.players);
     return players.find(id => id !== this.gameState.playerId);

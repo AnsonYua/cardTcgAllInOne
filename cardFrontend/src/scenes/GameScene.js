@@ -1718,6 +1718,7 @@ export default class GameScene extends Phaser.Scene {
       console.error(`Mismatch between visual and data arrays for ${playerType} leader deck.`);
       return;
     }
+    /*
     const crtPlayer = this.gameStateManager.getPlayer().id;
     const leaderCard = this.gameStateManager.getGameState().gameEnv.zones[crtPlayer].leader[0];
     const leaderCardData = {
@@ -1725,7 +1726,8 @@ export default class GameScene extends Phaser.Scene {
       name: leaderCard.id,
       type: leaderCard.type,
       cardType: leaderCard.type,
-    }
+    }*/
+    const leaderCardData = this.gameStateManager.getPlayerLeader(playerType === 'opponent');
     
     this.tweens.add({
       targets: topCard,
