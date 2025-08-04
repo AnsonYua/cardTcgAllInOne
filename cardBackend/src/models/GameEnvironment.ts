@@ -152,14 +152,21 @@ export interface PlaySequence {
 export interface FieldEffect {
     effectId: string;
     source: string;
+    sourcePlayerId?: string;
     type: string;
     target: {
         scope: 'SELF' | 'OPPONENT' | 'ALL';
         zones?: ZoneType[] | 'ALL';
         gameTypes?: string[];
         traits?: string[];
+        playerId?: string;
     };
     value: number | boolean;
+    priority?: number;
+    unremovable?: boolean;
+    isEnabled?: boolean;
+    createdAt?: number;
+    effectData?: any;
 }
 
 export interface PlayerFieldEffects {

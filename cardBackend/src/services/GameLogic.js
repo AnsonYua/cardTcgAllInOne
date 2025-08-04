@@ -7,10 +7,14 @@ const mozAIClass = require('../mozGame/mozAIClass');
 
 // NEW: Card Effect System imports
 const playSequenceManager = require('./PlaySequenceManager');
-const effectSimulator = require('./EffectSimulator');
 const cardEffectRegistry = require('./CardEffectRegistry');
 // Import GameEnvironment enums and GameEnvironmentAdapter with proper path resolution for compiled code
 const isCompiled = __dirname.includes('dist');
+// Import TypeScript EffectSimulator with proper path resolution
+const effectSimulatorPath = isCompiled 
+    ? path.join(__dirname, '../../../src/services/EffectSimulator.js') 
+    : path.join(__dirname, '../../dist/src/services/EffectSimulator.js');
+const { effectSimulator } = require(effectSimulatorPath);
 const gameEnvironmentPath = isCompiled 
     ? path.join(__dirname, '../../../src/models/GameEnvironment.js') 
     : path.join(__dirname, '../../dist/src/models/GameEnvironment.js');
@@ -72,12 +76,12 @@ class GameLogic {
     constructor() {
         this.mozGamePlay = mozGamePlay;
         
-        // NEW: Initialize effect system with dependencies
+        // NEW: Initialize TypeScript effect system with dependencies
         effectSimulator.setCardInfoUtils(this.mozGamePlay.cardInfoUtils);
         
         // NEW: Add effect system references
         this.playSequenceManager = playSequenceManager;
-        this.effectSimulator = effectSimulator;
+        this.effectSimulator = effectSimulator; // Keep for legacy compatibility
         this.cardEffectRegistry = cardEffectRegistry;
         
         // NEW: Inject dependencies into mozGamePlay
@@ -218,9 +222,9 @@ class GameLogic {
             // NOTE: Leader zone placement and PLAY_LEADER recording is already handled by
             // GameEnvironmentAdapter.initializeGameEnvironment() called during joinGame()
             
-            // UNIFIED EFFECT SIMULATION: Process all effects using class
-            // Effects are applied directly to gameEnvClass.players[].fieldEffects (single source of truth)
-            await this.effectSimulator.simulateCardPlaySequence(gameEnvClass.toJSON());
+            // ENHANCED TYPESCRIPT CLASS-BASED EFFECT SIMULATION: Process all effects using class methods
+            // Effects are applied directly to gameEnvClass.players[].fieldEffects (true class integration)
+            await effectSimulator.simulateCardPlaySequenceWithClass(gameEnvClass);
             // Transition to draw phase first - game officially starts using class method
             gameEnvClass.updatePhase(GamePhase.DRAW_PHASE);
             gameEnvClass.gameStarted = true;
@@ -305,8 +309,11 @@ class GameLogic {
                     }
                 );
                 
-                // UNIFIED EFFECT SIMULATION: Process all effects directly on gameEnv
-                await this.effectSimulator.simulateCardPlaySequence(gameData.gameEnv);
+                // ENHANCED TYPESCRIPT CLASS-BASED EFFECT SIMULATION: Process all effects using class integration
+                // Convert to class, process with TypeScript class methods, then convert back
+                const gameEnvClass = GameEnvironmentAdapter.fromLegacyJSON(gameData.gameEnv);
+                await effectSimulator.simulateCardPlaySequenceWithClass(gameEnvClass);
+                gameData.gameEnv = GameEnvironmentAdapter.toLegacyJSON(gameEnvClass);
                 
                 // No merge needed - all effects applied directly to gameEnv.players[].fieldEffects!
             }
@@ -459,9 +466,14 @@ class GameLogic {
             console.log('   🔄 Running unified effect simulation for all plays...');
             
             try {
-                // UNIFIED EFFECT SIMULATION: All effects applied directly to gameEnv.players[].fieldEffects
-                // No separate computedState needed - single source of truth approach
-                await this.effectSimulator.simulateCardPlaySequence(gameEnv);
+                // ENHANCED TYPESCRIPT CLASS-BASED EFFECT SIMULATION: All effects applied using class methods
+                // Convert to class for enhanced TypeScript processing, then update original gameEnv
+                const gameEnvClass = GameEnvironmentAdapter.fromLegacyJSON(gameEnv);
+                await effectSimulator.simulateCardPlaySequenceWithClass(gameEnvClass);
+                
+                // Update the original gameEnv with class results
+                const updatedGameEnv = GameEnvironmentAdapter.toLegacyJSON(gameEnvClass);
+                Object.assign(gameEnv, updatedGameEnv);
                 
                 console.log('   ✅ Unified effect simulation completed - all effects in gameEnv.players[].fieldEffects');
             } catch (error) {

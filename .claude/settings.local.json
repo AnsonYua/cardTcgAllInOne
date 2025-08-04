@@ -45,7 +45,9 @@
       "Bash(--data '{\n    \"\"playerId\"\": \"\"playerId_1\"\",\n    \"\"playerName\"\": \"\"Demo Player\"\"\n}' --max-time 10)",
       "Bash(--header 'Content-Type: application/json' )",
       "Bash(--header 'Content-Type: application/json' )",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(timeout:*)",
+      "Bash(# Test a quick integration with the actual game logic\nnode -e \"\"\ntry {\n  console.log(''Testing full integration...'');\n  // Change to the backend directory\n  process.chdir(''/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend'');\n  \n  // Test GameLogic import\n  const GameLogic = require(''./src/services/GameLogic.js'');\n  console.log(''✅ GameLogic import successful'');\n  \n  // Test mozGamePlay import  \n  const mozGamePlay = require(''./src/mozGame/mozGamePlay.js'');\n  console.log(''✅ mozGamePlay import successful'');\n  \n  console.log(''🎉 All imports working correctly!'');\n  \n} catch(e) {\n  console.log(''❌ Error:'', e.message);\n  console.log(''Stack:'', e.stack?.split(''\\\\n'')[0]);\n}\n\"\")"
     ],
     "deny": []
   }

@@ -4,10 +4,16 @@ const CardEffectManager = require('../services/CardEffectManager');
 const FieldEffectProcessor = require('../services/FieldEffectProcessor');
 const { getPlayerFromGameEnv, getPlayerField } = require('../utils/gameUtils');
 const CardInfoUtils = require('../services/CardInfoUtils');
+const path = require('path');
 
 // UNIFIED EFFECT SYSTEM: Import for leader and card effect processing
 const playSequenceManager = require('../services/PlaySequenceManager');
-const effectSimulator = require('../services/EffectSimulator');
+// Import TypeScript EffectSimulator with proper path resolution for compiled code
+const isCompiled = __dirname.includes('dist');
+const effectSimulatorPath = isCompiled 
+    ? path.join(__dirname, '../../../src/services/EffectSimulator.js') 
+    : path.join(__dirname, '../../dist/src/services/EffectSimulator.js');
+const { effectSimulator } = require(effectSimulatorPath);
 
 // 🎯 PHASE 1: Card Selection Handler - Clean class implementation
 const CardSelectionHandler = require('../services/CardSelectionHandler');
