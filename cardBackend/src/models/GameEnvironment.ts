@@ -131,6 +131,7 @@ export interface GameEvent {
     timestamp: number;
     expiresAt: number;
     frontendProcessed: boolean;
+    requireFrontendAcknowledgment: boolean;
 }
 
 export interface PlaySequenceAction {
@@ -501,7 +502,7 @@ export class EventManager {
     private events: GameEvent[] = [];
     private lastEventId: number = 0;
 
-    public addEvent(type: EventType, data: any): GameEvent {
+    public addEvent(type: EventType, data: any, requireFrontendAcknowledgment: boolean = false): GameEvent {
         this.lastEventId++;
         const timestamp = Date.now();
         
@@ -511,7 +512,8 @@ export class EventManager {
             data,
             timestamp,
             expiresAt: timestamp + 3000, // 3 seconds expiry
-            frontendProcessed: false
+            frontendProcessed: false,
+            requireFrontendAcknowledgment: requireFrontendAcknowledgment
         };
         
         this.events.push(event);

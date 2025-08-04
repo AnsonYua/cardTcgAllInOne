@@ -119,7 +119,7 @@ class EventManager {
      * Add a new game event with automatic expiration and ID generation
      * Core method for all event creation throughout the game
      */
-    addGameEvent(gameEnv, eventType, eventData = {}) {
+    addGameEvent(gameEnv, eventType, eventData = {}, requireFrontendAcknowledgment = false) {
         console.log(`🎯 EventManager: Adding event ${eventType}`, eventData);
         
         // Ensure event system is initialized
@@ -136,7 +136,8 @@ class EventManager {
             data: eventData,
             timestamp: timestamp,
             expiresAt: timestamp + this.EVENT_EXPIRATION_MS,
-            frontendProcessed: false
+            frontendProcessed: false,
+            requireFrontendAcknowledgment: requireFrontendAcknowledgment
         };
         
         // Add to game events and increment counter

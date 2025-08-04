@@ -54,7 +54,7 @@ function drawCardForCurrentPlayer(gameEnvClass) {
         cardCount: 1,
         newHandSize: result.hand.length,
         requiresAcknowledgment: true
-    });
+    },true);
     
     // Add game start event using class event manager
     gameEnvClass.eventManager.addEvent('GAME_PHASE_START', {

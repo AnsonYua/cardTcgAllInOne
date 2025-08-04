@@ -794,36 +794,6 @@ export default class GameScene extends Phaser.Scene {
   setupEventListeners() {
     // Game state event handlers (for online mode)
     if (this.isOnlineMode && this.gameStateManager) {
-      // Register event handlers with GameStateManager
-      this.gameStateManager.addEventListener('ROOM_CREATED', (event) => {
-        console.log('Room created event received:', event);
-        this.showRoomStatus('Room created - waiting for player 2...');
-      });
-      
-      this.gameStateManager.addEventListener('PLAYER_JOINED', (event) => {
-        console.log('Player joined event received:', event);
-        this.showRoomStatus('Both players joined - hands dealt!');
-        this.displayGameInfo();
-        //this.showRedrawDialog();
-      });
-      
-      this.gameStateManager.addEventListener('PLAYER_READY', (event) => {
-        console.log('Player ready event received:', event);
-        this.showRoomStatus(`Player ${event.data.playerId} is ready!`);
-      });
-      
-      this.gameStateManager.addEventListener('GAME_PHASE_START', (event) => {
-        console.log('Game phase start event received - both players ready!', event);
-        this.showRoomStatus('Game started!');
-        if (this.waitingForPlayers) {
-          this.waitingForPlayers = false;
-          this.playShuffleDeckAnimation();
-        }
-      });
-      
-      this.gameStateManager.addEventListener('INITIAL_HAND_DEALT', (event) => {
-        console.log('Initial hand dealt event received:', event);
-      });
       
       // Draw phase events
       this.gameStateManager.addEventListener('DRAW_PHASE_COMPLETE', (event) => {
@@ -2876,7 +2846,7 @@ export default class GameScene extends Phaser.Scene {
                   tempCard.destroy();
                   
                   // Update the UI to show the new card in hand
-                  this.updatePlayerHand();
+                  this.updateGameState();
                   
                   // Call the completion callback
                   if (onComplete) {
