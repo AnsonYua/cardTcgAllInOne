@@ -213,12 +213,13 @@ export default class GameStateManager {
     
     events.forEach(event => {
       const handlers = this.eventHandlers.get(event.type) || [];
+      console.log('Processing event:', event.type);
       handlers.forEach(handler => handler(event));
     });
-
+    /*
     if (events.length > 0) {
       this.acknowledgeEvents(this.apiManager);
-    }
+    }*/
   }
 
   async acknowledgeEvents(apiManager) {

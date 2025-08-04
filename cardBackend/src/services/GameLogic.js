@@ -1,7 +1,6 @@
 // src/services/GameLogic.js
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
-const mozDeckHelper = require('../mozGame/mozDeckHelper');
 const mozGamePlay = require('../mozGame/mozGamePlay');
 const path = require('path');
 const mozAIClass = require('../mozGame/mozAIClass');
@@ -18,13 +17,54 @@ const gameEnvironmentPath = isCompiled
 const gameEnvironmentAdapterPath = isCompiled 
     ? path.join(__dirname, '../../../src/utils/GameEnvironmentAdapter.js') 
     : path.join(__dirname, '../../dist/src/utils/GameEnvironmentAdapter.js');
+const mozDeckHelperPath = isCompiled 
+    ? path.join(__dirname, '../../../src/mozGame/mozDeckHelper.js') 
+    : path.join(__dirname, '../mozGame/mozDeckHelper.js');
 const { GamePhase, ActionType, ZoneType } = require(gameEnvironmentPath);
 const { GameEnvironmentAdapter } = require(gameEnvironmentAdapterPath);
+const mozDeckHelper = require(mozDeckHelperPath);
 
 // Utility function to update game phase
 function updatePhase(gameEnv, newPhase) {
     gameEnv.phase = newPhase;
     console.log(`🎯 Phase updated to: ${newPhase}`);
+}
+
+// Draw card function for first player at game start
+function drawCardForCurrentPlayer(gameEnvClass) {
+    const currentPlayerId = gameEnvClass.currentPlayer;
+    const currentPlayer = gameEnvClass.getPlayer(currentPlayerId);
+    
+    if (!currentPlayer) {
+        console.warn(`Current player ${currentPlayerId} not found`);
+        return false;
+    }
+    
+    const hand = currentPlayer.deck.hand;
+    const mainDeck = currentPlayer.deck.mainDeck;
+    const result = mozDeckHelper.drawToHand(hand, mainDeck);
+    
+    // Update player deck
+    currentPlayer.deck.hand = result.hand;
+    currentPlayer.deck.mainDeck = result.mainDeck;
+    
+    // Add draw phase event using class event manager
+    gameEnvClass.eventManager.addEvent('DRAW_PHASE_COMPLETE', {
+        playerId: currentPlayerId,
+        cardCount: 1,
+        newHandSize: result.hand.length,
+        requiresAcknowledgment: true
+    });
+    
+    // Add game start event using class event manager
+    gameEnvClass.eventManager.addEvent('GAME_PHASE_START', {
+        phase: GamePhase.DRAW_PHASE,
+        currentPlayer: currentPlayerId,
+        message: 'Both players ready - draw phase started!'
+    });
+    
+    console.log(`🎯 Player ${currentPlayerId} drew 1 card. New hand size: ${result.hand.length}`);
+    return true;
 }
 
 
@@ -190,32 +230,8 @@ class GameLogic {
             gameEnvClass.currentPlayer = playerList[gameEnvClass.firstPlayer];
             gameEnvClass.currentTurn = 0;
             
-            // First player draws 1 card using class methods
-            const currentPlayerId = gameEnvClass.currentPlayer;
-            const currentPlayer = gameEnvClass.getPlayer(currentPlayerId);
-            if (currentPlayer) {
-                const hand = currentPlayer.deck.hand;
-                const mainDeck = currentPlayer.deck.mainDeck;
-                const mozDeckHelper = require('../mozGame/mozDeckHelper');
-                const result = mozDeckHelper.drawToHand(hand, mainDeck);
-                currentPlayer.deck.hand = result.hand;
-                currentPlayer.deck.mainDeck = result.mainDeck;
-                
-                // Add draw phase event using class event manager
-                gameEnvClass.eventManager.addEvent('DRAW_PHASE_COMPLETE', {
-                    playerId: currentPlayerId,
-                    cardCount: 1,
-                    newHandSize: result.hand.length,
-                    requiresAcknowledgment: true
-                });
-                
-                // Add game start event using class event manager
-                gameEnvClass.eventManager.addEvent('GAME_PHASE_START', {
-                    phase: GamePhase.DRAW_PHASE,
-                    currentPlayer: currentPlayerId,
-                    message: 'Both players ready - draw phase started!'
-                });
-            }
+            // First player draws 1 card using extracted function
+            drawCardForCurrentPlayer(gameEnvClass);
         }
         
         // Convert class back to legacy JSON format only for file storage

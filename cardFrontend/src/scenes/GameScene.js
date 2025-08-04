@@ -804,7 +804,7 @@ export default class GameScene extends Phaser.Scene {
         console.log('Player joined event received:', event);
         this.showRoomStatus('Both players joined - hands dealt!');
         this.displayGameInfo();
-        this.showRedrawDialog();
+        //this.showRedrawDialog();
       });
       
       this.gameStateManager.addEventListener('PLAYER_READY', (event) => {
@@ -2736,6 +2736,9 @@ export default class GameScene extends Phaser.Scene {
   }
 
   updatePhaseIndicator(phase, currentPlayer = null) {
+    if(phase == null){
+      return;
+    }
     if (this.phaseText) {
       let displayText = '';
       switch(phase) {
@@ -2764,6 +2767,7 @@ export default class GameScene extends Phaser.Scene {
           displayText = 'REDRAW PHASE';
           break;
         default:
+          console.log('Unknown phase:', phase);
           // Clean up any underscore-separated phases
           displayText = phase.replace(/_/g, ' ').toUpperCase();
       }

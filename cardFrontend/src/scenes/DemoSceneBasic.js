@@ -51,8 +51,8 @@ export default class DemoSceneBasic extends GameScene {
         this.gameStateManager.updateGameEnv(response.gameEnv);
         
         // Process any events
-        await this.gameStateManager.acknowledgeEvents(this.apiManager);
-        
+        //await this.gameStateManager.acknowledgeEvents(this.apiManager);
+        this.gameStateManager.processGameEvents();
         // Update UI with any changes
         this.updateGameState();
         
