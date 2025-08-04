@@ -165,7 +165,7 @@ export class GameEnvironmentAdapter {
         } else if (leader2Details.initialPoint === leader1Details.initialPoint) {
             firstPlayer = Math.floor(Math.random() * 2);
         }
-        
+        firstPlayer = 0;
         // For consistency with existing logic, set to 0
         //firstPlayer = 0;
         gameEnv.firstPlayer = firstPlayer;

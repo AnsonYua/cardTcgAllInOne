@@ -221,7 +221,6 @@ class GameLogic {
             // UNIFIED EFFECT SIMULATION: Process all effects using class
             // Effects are applied directly to gameEnvClass.players[].fieldEffects (single source of truth)
             await this.effectSimulator.simulateCardPlaySequence(gameEnvClass.toJSON());
-            
             // Transition to draw phase first - game officially starts using class method
             gameEnvClass.updatePhase(GamePhase.DRAW_PHASE);
             gameEnvClass.gameStarted = true;
