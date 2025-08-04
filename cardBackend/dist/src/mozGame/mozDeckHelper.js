@@ -130,14 +130,39 @@ class MozDeckLogic {
         return this.shuffle([...decks.leaderUID]).slice(0, 5); // Create copy to avoid modifying original
     }
     /**
-     * Fisher-Yates shuffle algorithm
+     * Enhanced Fisher-Yates shuffle algorithm with cryptographic randomness
+     * Performs multiple shuffle passes with cryptographically secure random numbers
      * @param array - Array to shuffle (will be modified)
      * @returns Shuffled array
      */
     shuffle(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
+        if (array.length <= 1)
+            return array;
+        // Import crypto module for cryptographically secure randomness
+        const crypto = require('crypto');
+        // Helper function to get cryptographically secure random integer
+        const getSecureRandomInt = (max) => {
+            const randomBytes = crypto.randomBytes(4);
+            const randomValue = randomBytes.readUInt32BE(0);
+            return randomValue % max;
+        };
+        // Perform multiple shuffle passes for enhanced randomness
+        const shufflePasses = Math.max(2, Math.ceil(Math.log2(array.length)) + 1);
+        for (let pass = 0; pass < shufflePasses; pass++) {
+            // Standard Fisher-Yates shuffle with secure random numbers
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = getSecureRandomInt(i + 1);
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            // Additional entropy injection: random swaps throughout the array
+            const extraSwaps = Math.floor(array.length / 4) + 1;
+            for (let k = 0; k < extraSwaps; k++) {
+                const idx1 = getSecureRandomInt(array.length);
+                const idx2 = getSecureRandomInt(array.length);
+                if (idx1 !== idx2) {
+                    [array[idx1], array[idx2]] = [array[idx2], array[idx1]];
+                }
+            }
         }
         return array;
     }

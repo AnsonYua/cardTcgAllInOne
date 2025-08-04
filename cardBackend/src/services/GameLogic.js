@@ -135,123 +135,132 @@ class GameLogic {
      
         var {playerId, gameId, isRedraw} = req.body;
         var gameData = await this.readJSONFileAsync(gameId);
-        let gameEnv = gameData.gameEnv;
+        
+        // NEW: Work directly with GameEnvironment class throughout the method
+        const { GameEnvironmentAdapter } = require('../../dist/src/utils/GameEnvironmentAdapter');
+        let gameEnvClass = GameEnvironmentAdapter.fromLegacyJSON(gameData.gameEnv);
         
         // Check if room is in correct state
-        if (gameEnv.phase !== GamePhase.REDRAW_PHASE) {
-            throw new Error('Room is not ready for player ready status. Current phase: ' + gameEnv.phase);
+        if (gameEnvClass.phase !== GamePhase.REDRAW_PHASE) {
+            throw new Error('Room is not ready for player ready status. Current phase: ' + gameEnvClass.phase);
         }
         
-        // Handle redraw logic using new GameEnvironment class methods
-        const { GameEnvironmentAdapter } = require('../../dist/src/utils/GameEnvironmentAdapter');
-        let gameEnvClass = GameEnvironmentAdapter.fromLegacyJSON(gameEnv);
-        
-        // Use new class method for redraw processing
+        // Use class method for redraw processing
         await gameEnvClass.processPlayerRedraw(playerId, isRedraw);
         
-        // Convert back to legacy format
-        gameEnv = GameEnvironmentAdapter.toLegacyJSON(gameEnvClass);
+        // Track which players are ready using class methods
+        gameEnvClass.setPlayerReady(playerId, true);
         
-        // Track which players are ready
-        if (!gameEnv.playersReady) {
-            gameEnv.playersReady = {};
-        }
-        gameEnv.playersReady[playerId] = true;
-        
-        // Check if both players are ready
-        const { getPlayerFromGameEnv } = require('../utils/gameUtils');
-        const playerList = getPlayerFromGameEnv(gameEnv);
-        const bothReady = gameEnv.playersReady[playerList[0]] && gameEnv.playersReady[playerList[1]];
+        // Check if both players are ready using class methods
+        const playerList = [gameEnvClass.playerId_1, gameEnvClass.playerId_2].filter(id => id);
+        const bothReady = gameEnvClass.areAllPlayersReady();
         console.log("🔍 Player List:", playerList);
-        console.log("🔍 Players Ready Status:", gameEnv.playersReady);
+        console.log("🔍 Players Ready Status:", gameEnvClass.getPlayersReadyStatus());
         console.log("🔍 Both Ready:", bothReady);
         if (bothReady) {
             console.log("🎯 Both players ready - generating DRAW_PHASE_COMPLETE event");
             
-            // Initialize game fields for all players (moved from redrawInBegining)
+            // Initialize game fields for all players using class methods
             // IMPORTANT: Record leader plays in first player order for proper sequencing
-            const firstPlayerIndex = gameEnv.firstPlayer || 0;
+            const firstPlayerIndex = gameEnvClass.firstPlayer || 0;
             const orderedPlayerList = [
                 playerList[firstPlayerIndex],
                 playerList[1 - firstPlayerIndex]  // Other player
             ];
             
             for (let playerId of orderedPlayerList) {
-                let leader = this.mozGamePlay.cardInfoUtils.getCurrentLeader(gameEnv, playerId);
+                // Get player using class method
+                const player = gameEnvClass.getPlayer(playerId);
+                if (!player) continue;
                 
-                // NEW: Record leader card play BEFORE setting up field
-                // This ensures leaders are processed in proper turn order by EffectSimulator
-                this.playSequenceManager.recordCardPlay(
-                    gameEnv,
+                // Get current leader using class method
+                const currentLeaderId = player.getCurrentLeaderCardId();
+                if (!currentLeaderId) continue;
+                
+                // Get leader details
+                const leader = this.mozGamePlay.cardInfoUtils.getLeaderCards(currentLeaderId);
+                if (!leader) continue;
+                
+                // Record leader card play using class methods
+                gameEnvClass.playSequenceManager.recordCardPlay(
                     playerId,
                     leader.id,
                     "PLAY_LEADER",
                     "leader",
                     {
-                        leaderIndex: gameEnv.players[playerId].deck.currentLeaderIdx,
+                        leaderIndex: player.deck.currentLeaderIdx,
                         isInitialPlacement: true
                     }
                 );
                 
-                // NEW: Initialize unified structure
-                gameEnv.players[playerId].turnAction = [];
-                gameEnv.players[playerId].isReady = true;
-                gameEnv.players[playerId].redraw = 1;
-                gameEnv.players[playerId].playerPoint = 0;
+                // Initialize player state using class properties
+                player.turnAction = [];
+                player.isReady = true;
+                player.redraw = 1;
+                player.playerPoint = 0;
                 
-                gameEnv.zones[playerId] = {
-                    leader: leader,
-                    top: [],
-                    left: [],
-                    right: [],
-                    help: [],
-                    sp: []
+                // Set leader in zone using class method
+                const leaderZoneData = {
+                    id: leader.id,
+                    name: leader.name,
+                    cardType: leader.cardType,
+                    gameType: leader.gameType,
+                    initialPoint: leader.initialPoint,
+                    level: leader.level,
+                    rarity: leader.rarity,
+                    zoneCompatibility: leader.zoneCompatibility,
+                    effects: leader.effects
                 };
+                gameEnvClass.zones.setLeaderInZone(playerId, leaderZoneData);
                 
-                // Initialize field effects for this player
-                this.mozGamePlay.fieldEffectProcessor.initializePlayerFieldEffects(gameEnv, playerId);
+                // Initialize field effects for this player using class method
+                player.initializeFieldEffects();
             }
             
-            // UNIFIED EFFECT SIMULATION: Process all leader effects directly on gameEnv
-            // Effects are applied directly to gameEnv.players[].fieldEffects (single source of truth)
-            await this.effectSimulator.simulateCardPlaySequence(gameEnv);
+            // UNIFIED EFFECT SIMULATION: Process all leader effects using class
+            // Effects are applied directly to gameEnvClass.players[].fieldEffects (single source of truth)
+            await this.effectSimulator.simulateCardPlaySequence(gameEnvClass.toJSON());
             
-            // No merge needed - all effects are already in gameEnv.players[].fieldEffects!
+            // No merge needed - all effects are already in gameEnvClass.players[].fieldEffects!
             
-            // Transition to draw phase first - game officially starts
-            updatePhase(gameEnv, GamePhase.DRAW_PHASE);
-            gameEnv.gameStarted = true;
+            // Transition to draw phase first - game officially starts using class method
+            gameEnvClass.updatePhase(GamePhase.DRAW_PHASE);
+            gameEnvClass.gameStarted = true;
             
-            // Set current player to first player
-            gameEnv.currentPlayer = playerList[gameEnv.firstPlayer];
-            gameEnv.currentTurn = 0;
+            // Set current player to first player using class properties
+            gameEnvClass.currentPlayer = playerList[gameEnvClass.firstPlayer];
+            gameEnvClass.currentTurn = 0;
             
-            // First player draws 1 card
-            const currentPlayerId = gameEnv.currentPlayer;
-            const hand = gameEnv.players[currentPlayerId].deck.hand;
-            const mainDeck = gameEnv.players[currentPlayerId].deck.mainDeck;
-            const mozDeckHelper = require('../mozGame/mozDeckHelper');
-            const result = mozDeckHelper.drawToHand(hand, mainDeck);
-            gameEnv.players[currentPlayerId].deck.hand = result.hand;
-            gameEnv.players[currentPlayerId].deck.mainDeck = result.mainDeck;
-            
-            // Add draw phase event that requires acknowledgment
-            this.mozGamePlay.addGameEvent(gameEnv, 'DRAW_PHASE_COMPLETE', {
-                playerId: currentPlayerId,
-                cardCount: 1,
-                newHandSize: result.hand.length,
-                requiresAcknowledgment: true
-            });
-            
-            // Add game start event
-            this.mozGamePlay.addGameEvent(gameEnv, 'GAME_PHASE_START', {
-                phase: GamePhase.DRAW_PHASE,
-                currentPlayer: currentPlayerId,
-                message: 'Both players ready - draw phase started!'
-            });
+            // First player draws 1 card using class methods
+            const currentPlayerId = gameEnvClass.currentPlayer;
+            const currentPlayer = gameEnvClass.getPlayer(currentPlayerId);
+            if (currentPlayer) {
+                const hand = currentPlayer.deck.hand;
+                const mainDeck = currentPlayer.deck.mainDeck;
+                const mozDeckHelper = require('../mozGame/mozDeckHelper');
+                const result = mozDeckHelper.drawToHand(hand, mainDeck);
+                currentPlayer.deck.hand = result.hand;
+                currentPlayer.deck.mainDeck = result.mainDeck;
+                
+                // Add draw phase event using class event manager
+                gameEnvClass.eventManager.addEvent('DRAW_PHASE_COMPLETE', {
+                    playerId: currentPlayerId,
+                    cardCount: 1,
+                    newHandSize: result.hand.length,
+                    requiresAcknowledgment: true
+                });
+                
+                // Add game start event using class event manager
+                gameEnvClass.eventManager.addEvent('GAME_PHASE_START', {
+                    phase: GamePhase.DRAW_PHASE,
+                    currentPlayer: currentPlayerId,
+                    message: 'Both players ready - draw phase started!'
+                });
+            }
         }
         
-        gameData.gameEnv = gameEnv;
+        // Convert class back to legacy JSON format only for file storage
+        gameData.gameEnv = GameEnvironmentAdapter.toLegacyJSON(gameEnvClass);
         await this.saveOrCreateGame(gameData, gameId);
         return gameData;
     }

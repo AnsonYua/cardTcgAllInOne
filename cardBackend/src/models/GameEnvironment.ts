@@ -590,6 +590,7 @@ export class GameEnvironment {
     public playerId_2: string | null;
     public gameStarted: boolean;
     public firstPlayer: number;
+    public playersReady: { [playerId: string]: boolean };
     
     // Object-oriented components
     public players: { [playerId: string]: Player };
@@ -607,6 +608,7 @@ export class GameEnvironment {
         this.playerId_2 = null;
         this.gameStarted = false;
         this.firstPlayer = 0;
+        this.playersReady = {};
         
         this.players = {};
         this.zones = new GameZones();
@@ -667,6 +669,25 @@ export class GameEnvironment {
 
     public canStartGame(): boolean {
         return this.isGameReady() && this.phase === GamePhase.READY_PHASE;
+    }
+
+    // ============ PLAYERS READY MANAGEMENT ============
+
+    public setPlayerReady(playerId: string, isReady: boolean = true): void {
+        this.playersReady[playerId] = isReady;
+    }
+
+    public isPlayerReady(playerId: string): boolean {
+        return this.playersReady[playerId] || false;
+    }
+
+    public areAllPlayersReady(): boolean {
+        const playerIds = [this.playerId_1, this.playerId_2].filter(id => id !== null);
+        return playerIds.length === 2 && playerIds.every(id => this.playersReady[id] === true);
+    }
+
+    public getPlayersReadyStatus(): { [playerId: string]: boolean } {
+        return { ...this.playersReady };
     }
 
     // ============ PLAYER REDRAW OPERATIONS ============
@@ -777,6 +798,7 @@ export class GameEnvironment {
             playerId_2: this.playerId_2,
             gameStarted: this.gameStarted,
             firstPlayer: this.firstPlayer,
+            playersReady: this.playersReady,
             
             // Convert players to legacy format
             players: {},
@@ -808,6 +830,7 @@ export class GameEnvironment {
         gameEnv.playerId_2 = data.playerId_2 || null;
         gameEnv.gameStarted = data.gameStarted || false;
         gameEnv.firstPlayer = data.firstPlayer || 0;
+        gameEnv.playersReady = data.playersReady || {};
         
         // Players
         if (data.players) {

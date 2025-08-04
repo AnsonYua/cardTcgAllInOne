@@ -83,7 +83,8 @@ declare class MozDeckLogic {
      */
     shuffleLeaderDeck(decks: DeckData): string[];
     /**
-     * Fisher-Yates shuffle algorithm
+     * Enhanced Fisher-Yates shuffle algorithm with cryptographic randomness
+     * Performs multiple shuffle passes with cryptographically secure random numbers
      * @param array - Array to shuffle (will be modified)
      * @returns Shuffled array
      */
