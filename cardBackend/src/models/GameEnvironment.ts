@@ -190,12 +190,18 @@ export class Player {
     public name: string;
     public deck: PlayerDeckDataResp;
     public redraw: number;
+    public turnAction: any[];
+    public playerPoint: number;
+    public isReady: boolean;
     public fieldEffects?: PlayerFieldEffects;
 
     constructor(id: string, name: string = id) {
         this.id = id;
         this.name = name;
         this.redraw = 0;
+        this.turnAction = [];
+        this.playerPoint = 0;
+        this.isReady = false;
         this.deck = new PlayerDeckDataResp();
     }
 
@@ -272,8 +278,36 @@ export class Player {
         return false; // No reshuffle requested, but redraw is now marked as used
     }
 
-    // ============ FIELD EFFECTS METHODS ============
+    // ============ PLAYER STATE INITIALIZATION ============
 
+    /**
+     * Initialize all player state for game start
+     * Includes field effects, player stats, and game state
+     */
+    public initializeForGameStart(): void {
+        // Initialize field effects
+        this.fieldEffects = {
+            zoneRestrictions: {},
+            activeEffects: [],
+            specialEffects: {},
+            calculatedPowers: {},
+            disabledCards: [],
+            victoryPointModifiers: 0
+        };
+        
+        // Initialize player game state
+        this.turnAction = [];
+        this.playerPoint = 0;
+        
+        // NOTE: redraw and isReady are handled elsewhere:
+        // - redraw is managed by requestRedraw() method and mozGamePlay.js
+        // - isReady is managed by GameEnvironment.setPlayerReady() method
+    }
+
+    /**
+     * Legacy method for backwards compatibility
+     * @deprecated Use initializeForGameStart() instead
+     */
     public initializeFieldEffects(): void {
         this.fieldEffects = {
             zoneRestrictions: {},
@@ -302,6 +336,9 @@ export class Player {
             name: this.name,
             deck: this.deck.toJSON(), // Convert PlayerDeckDataResp to JSON
             redraw: this.redraw,
+            turnAction: this.turnAction,
+            playerPoint: this.playerPoint,
+            isReady: this.isReady,
             ...(this.fieldEffects && { fieldEffects: this.fieldEffects })
         };
     }
@@ -313,6 +350,9 @@ export class Player {
             player.deck = PlayerDeckDataResp.fromJSON(data.deck);
         }
         player.redraw = data.redraw || 0;
+        player.turnAction = data.turnAction || [];
+        player.playerPoint = data.playerPoint || 0;
+        player.isReady = data.isReady || false;
         if (data.fieldEffects) {
             player.fieldEffects = data.fieldEffects;
         }

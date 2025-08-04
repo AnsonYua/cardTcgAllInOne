@@ -166,19 +166,13 @@ class GameLogic {
         if (bothReady) {
             console.log("🎯 Both players ready - initializing player states");
             
-            // Initialize basic player states (non-leader related initialization)
+            // Initialize all player states using consolidated method
             for (let playerId of playerList) {
                 const player = gameEnvClass.getPlayer(playerId);
                 if (!player) continue;
                 
-                // Initialize player state using class properties
-                player.turnAction = [];
-                player.isReady = true;
-                player.redraw = 1;
-                player.playerPoint = 0;
-                
-                // Initialize field effects for this player using class method
-                player.initializeFieldEffects();
+                // Initialize all player state (field effects, game stats, etc.) in one call
+                player.initializeForGameStart();
             }
             
             // NOTE: Leader zone placement and PLAY_LEADER recording is already handled by
