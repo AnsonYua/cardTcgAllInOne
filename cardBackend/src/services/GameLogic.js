@@ -96,6 +96,9 @@ class GameLogic {
         // NEW: Initialize TypeScript effect system with dependencies
         effectSimulator.setCardInfoUtils(this.mozGamePlay.cardInfoUtils);
         
+        // IMPORTANT: Inject mozGamePlay.calculatePlayerPoint to avoid circular dependency
+        effectSimulator.setCalculatePlayerPointFunction(this.mozGamePlay.calculatePlayerPoint.bind(this.mozGamePlay));
+        
         // NEW: Add effect system references
         this.playSequenceManager = playSequenceManager;
         this.effectSimulator = effectSimulator; // Keep for legacy compatibility

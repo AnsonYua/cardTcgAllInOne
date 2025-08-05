@@ -28,13 +28,9 @@
 import { GameEnvironment, Player, FieldEffect } from '../models/GameEnvironment';
 import CardInfoUtils from './CardInfoUtils';
 
-// Import mozGamePlay with proper path resolution for compiled code
-const path = require('path');
-const isCompiled = __dirname.includes('dist');
-const mozGamePlayPath = isCompiled 
-    ? path.join(__dirname, '../../../src/mozGame/mozGamePlay.js') 
-    : path.join(__dirname, '../mozGame/mozGamePlay.js');
-const mozGamePlay = require(mozGamePlayPath);
+// IMPORTANT: Avoid circular dependency with mozGamePlay
+// mozGamePlay imports EffectSimulator, so we cannot import mozGamePlay here
+// Instead, we'll use dependency injection to get the calculatePlayerPoint method
 
 // Import required types and interfaces
 interface PlaySequenceEntry {
@@ -71,6 +67,7 @@ interface EffectRule {
 
 export class EffectSimulator {
     private cardInfoUtils: any = null;
+    private calculatePlayerPointFunc: any = null;
 
     /**
      * Set CardInfoUtils dependency
@@ -78,6 +75,14 @@ export class EffectSimulator {
      */
     public setCardInfoUtils(cardInfoUtils: any): void {
         this.cardInfoUtils = cardInfoUtils;
+    }
+
+    /**
+     * Set calculatePlayerPoint function dependency to avoid circular imports
+     * @param calculatePlayerPointFunc - Function reference from mozGamePlay
+     */
+    public setCalculatePlayerPointFunction(calculatePlayerPointFunc: any): void {
+        this.calculatePlayerPointFunc = calculatePlayerPointFunc;
     }
 
     /**
@@ -367,13 +372,16 @@ export class EffectSimulator {
                 // Use existing mozGamePlay logic for point calculation
                 const oldPlayerPoint = player.playerPoint || 0;
                 
-                // Calculate new player point using existing logic but with class data
-                const gameEnvJSON = gameEnvClass.toJSON();
-                const newPlayerPoint = await mozGamePlay.calculatePlayerPoint(gameEnvJSON, playerId);
-                
-                player.playerPoint = newPlayerPoint;
-                
-                console.log(`   📊 Player ${playerId}: ${oldPlayerPoint} → ${newPlayerPoint} points`);
+                // Calculate new player point using injected function to avoid circular dependency
+                if (this.calculatePlayerPointFunc) {
+                    const gameEnvJSON = gameEnvClass.toJSON();
+                    const newPlayerPoint = await this.calculatePlayerPointFunc(gameEnvJSON, playerId);
+                    player.playerPoint = newPlayerPoint;
+                    console.log(`   📊 Player ${playerId}: ${oldPlayerPoint} → ${newPlayerPoint} points`);
+                } else {
+                    console.warn('⚠️ calculatePlayerPointFunc not set - skipping point calculation');
+                    player.playerPoint = oldPlayerPoint; // Keep existing points
+                }
             }
         }
     }
