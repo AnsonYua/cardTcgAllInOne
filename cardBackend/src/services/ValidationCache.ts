@@ -26,13 +26,7 @@ import {
     ZoneType 
 } from '../models/GameEnvironment';
 
-// Import CardInfoUtils with proper path resolution for compiled code
-const path = require('path');
-const isCompiled = __dirname.includes('dist');
-const cardInfoUtilsPath = isCompiled 
-    ? path.join(__dirname, '../../../src/services/CardInfoUtils.js') 
-    : path.join(__dirname, '../services/CardInfoUtils.js');
-const CardInfoUtils = require(cardInfoUtilsPath);
+import { CardInfoUtils } from './CardInfoUtils';
 
 interface PlayerValidationState {
     availableActions: AvailableAction[];

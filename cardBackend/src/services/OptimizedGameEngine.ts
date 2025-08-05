@@ -31,14 +31,7 @@ import {
 
 import { IncrementalEffectManager, incrementalEffectManager } from './IncrementalEffectManager';
 import { ValidationCache, validationCache } from './ValidationCache';
-
-// Import CardInfoUtils with proper path resolution for compiled code
-const path = require('path');
-const isCompiled = __dirname.includes('dist');
-const cardInfoUtilsPath = isCompiled 
-    ? path.join(__dirname, '../../../src/services/CardInfoUtils.js') 
-    : path.join(__dirname, '../services/CardInfoUtils.js');
-const CardInfoUtils = require(cardInfoUtilsPath);
+import { CardInfoUtils } from './CardInfoUtils';
 
 interface OptimizedGameConfig {
     enableCaching: boolean;
@@ -91,9 +84,8 @@ export class OptimizedGameEngine {
     public async initialize(): Promise<void> {
         console.log('🔄 Initializing OptimizedGameEngine...');
         
-        // Initialize CardInfoUtils
+        // Initialize CardInfoUtils (ready to use immediately after construction)
         this.cardInfoUtils = new CardInfoUtils();
-        await this.cardInfoUtils.initialize();
         
         // Set dependencies
         this.incrementalManager.setCardInfoUtils(this.cardInfoUtils);
