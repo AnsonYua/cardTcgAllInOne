@@ -28,6 +28,14 @@
 import { GameEnvironment, Player, FieldEffect } from '../models/GameEnvironment';
 import CardInfoUtils from './CardInfoUtils';
 
+// Import mozGamePlay with proper path resolution for compiled code
+const path = require('path');
+const isCompiled = __dirname.includes('dist');
+const mozGamePlayPath = isCompiled 
+    ? path.join(__dirname, '../../../src/mozGame/mozGamePlay.js') 
+    : path.join(__dirname, '../mozGame/mozGamePlay.js');
+const mozGamePlay = require(mozGamePlayPath);
+
 // Import required types and interfaces
 interface PlaySequenceEntry {
     sequenceId: number;
@@ -357,7 +365,6 @@ export class EffectSimulator {
             const player = gameEnvClass.getPlayer(playerId);
             if (player) {
                 // Use existing mozGamePlay logic for point calculation
-                const mozGamePlay = require('../mozGame/mozGamePlay');
                 const oldPlayerPoint = player.playerPoint || 0;
                 
                 // Calculate new player point using existing logic but with class data

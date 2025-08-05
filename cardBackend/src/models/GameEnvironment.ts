@@ -191,6 +191,79 @@ export interface NeutralizationAction {
     reason: string;
 }
 
+// ============ OPTIMIZED VALIDATION SYSTEM INTERFACES ============
+
+export interface ValidationState {
+    playerRestrictions: Map<string, PlayerRestrictions>;
+    availableActions: Map<string, AvailableAction[]>;
+    cardValidations: Map<string, CardValidation>;
+    lastUpdated: number;
+}
+
+export interface PlayerRestrictions {
+    playerId: string;
+    zoneRestrictions: {
+        [key: string]: string[] | 'ALL';
+    };
+    specialEffects: {
+        zonePlacementFreedom: boolean;
+        immuneToNeutralization: boolean;
+        canPlayMultipleCards: boolean;
+    };
+    disabledCards: Set<string>;
+    calculatedPowers: Map<string, number>;
+    placementValidations: Map<string, Map<ZoneType, boolean>>; // cardId -> zone -> canPlace
+}
+
+export interface AvailableAction {
+    type: 'PLAY_CARD' | 'PLAY_CARD_FACE_DOWN' | 'USE_SPECIAL_ABILITY';
+    cardId: string;
+    validZones: ZoneType[];
+    restrictions?: string[];
+    cost?: number;
+}
+
+export interface CardValidation {
+    cardId: string;
+    canPlay: boolean;
+    validZones: ZoneType[];
+    restrictions: string[];
+    lastValidated: number;
+}
+
+export interface EffectDelta {
+    sequenceId: number;
+    cardId: string;
+    playerId: string;
+    effects: CalculatedEffect[];
+    affectedPlayers: string[];
+    timestamp: number;
+}
+
+export interface CalculatedEffect {
+    type: 'ZONE_RESTRICTION' | 'POWER_BOOST' | 'POWER_NULLIFICATION' | 'CARD_DISABLE' | 'SPECIAL_EFFECT';
+    sourceCardId: string;
+    sourcePlayerId: string;
+    targetPlayerId: string;
+    targetCardId?: string;
+    targetZone?: ZoneType;
+    value?: any;
+    data?: any;
+}
+
+export interface GameResult {
+    success: boolean;
+    error?: string;
+    gameState?: any;
+    validationState?: ValidationState;
+}
+
+export interface ValidationResult {
+    isValid: boolean;
+    error?: string;
+    warnings?: string[];
+}
+
 // ============ CLASSES ============
 
 export class Player {
@@ -609,6 +682,13 @@ export class PlaySequenceManager {
     public getGlobalSequence(): number {
         return this.sequence.globalSequence;
     }
+    public getNextSequenceId(): number {
+        return this.sequence.globalSequence + 1;
+    }
+    public recordAction(action: PlaySequenceAction): void {
+        this.sequence.globalSequence = action.sequenceId;
+        this.sequence.plays.push(action);
+    }
 
     public clearSequence(): void {
         this.sequence = {
@@ -647,6 +727,9 @@ export class GameEnvironment {
     public eventManager: EventManager;
     public playSequenceManager: PlaySequenceManager;
     
+    // OPTIMIZED VALIDATION SYSTEM
+    public validationState: ValidationState;
+    
     // Legacy compatibility
     public fieldEffects: { [playerId: string]: PlayerFieldEffects };
     public neutralizationHistory: NeutralizationAction[];
@@ -663,6 +746,14 @@ export class GameEnvironment {
         this.zones = new GameZones();
         this.eventManager = new EventManager();
         this.playSequenceManager = new PlaySequenceManager();
+        
+        // Initialize optimized validation system
+        this.validationState = {
+            playerRestrictions: new Map(),
+            availableActions: new Map(),
+            cardValidations: new Map(),
+            lastUpdated: Date.now()
+        };
         
         this.fieldEffects = {};
         this.neutralizationHistory = [];
@@ -774,6 +865,15 @@ export class GameEnvironment {
     }
 
     // ============ ZONE OPERATIONS ============
+
+    public isZoneOccupied(playerId: string, zone: ZoneType): boolean {
+        return this.zones.isZoneOccupied(playerId, zone);
+    }
+
+    public placeCardInZone(playerId: string, zone: ZoneType, cardId: string, isFaceDown: boolean = false): boolean {
+        this.zones.setCardInZone(playerId, zone, cardId);
+        return true;
+    }
 
     public playCard(playerId: string, cardUid: string, zone: ZoneType, isFaceDown: boolean = false): boolean {
         const player = this.getPlayer(playerId);
