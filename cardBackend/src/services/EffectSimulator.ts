@@ -339,49 +339,53 @@ export class EffectSimulator {
             // Get player zones from unified structure
             const zones = gameEnvClass.zones.getPlayerZones(playerId);
             
-            // Process each zone
+            // Process only CHARACTER ZONES (top, left, right) - leader, help, sp zones don't contribute to power
+            const characterZones = ['top', 'left', 'right'];
+            
             for (const [zoneName, zoneCards] of Object.entries(zones)) {
+                // Skip non-character zones (leader, help, sp don't have power)
+                if (!characterZones.includes(zoneName)) {
+                    console.log(`     ⏭️ Skipping zone ${zoneName} (no power contribution)`);
+                    continue;
+                }
+                //zone dont have cards
                 if (!Array.isArray(zoneCards) || zoneCards.length === 0) continue;
                 
-                console.log(`     📋 Processing zone ${zoneName} with ${zoneCards.length} cards`);
+                console.log(`     📋 Processing CHARACTER zone ${zoneName} with ${zoneCards.length} cards`);
                 
                 for (const zoneCard of zoneCards) {
-                    let cardUid: string | null = null;
-                    let cardDetails: any = null;
-                    
-                    // Handle different zone card types
-                    if (zoneName === 'leader') {
-                        // Leader zone uses LeaderZoneCard format
-                        const leaderCard = zoneCard as any; // LeaderZoneCard
-                        cardUid = leaderCard.id;
-                        cardDetails = leaderCard; // Already contains full details
-                    } else {
-                        // Other zones use ZoneCard format
-                        const regularCard = zoneCard as any; // ZoneCard
-                        if (regularCard.card && regularCard.card.length > 0) {
-                            cardUid = regularCard.card[0];
-                            
-                            // Look up card details using CardInfoUtils
-                            if (this.cardInfoUtils) {
-                                try {
-                                    cardDetails = await this.cardInfoUtils.getCardDetails(cardUid);
-                                } catch (error) {
-                                    console.error(`     ❌ Error getting card details for ${cardUid}:`, error);
-                                    continue;
-                                }
-                            } else {
-                                console.warn(`     ⚠️ CardInfoUtils not available for card lookup: ${cardUid}`);
-                                continue;
-                            }
-                        }
-                    }
-                    
-                    if (!cardUid || !cardDetails) {
-                        console.log(`     ⚠️ Skipping invalid card in zone ${zoneName}`);
+                    // Extract cardUid from ZoneCard format
+                    const regularCard = zoneCard as any; // ZoneCard
+                    if (!regularCard.card || regularCard.card.length === 0) {
+                        console.log(`     ⚠️ Skipping invalid card structure in zone ${zoneName}`);
                         continue;
                     }
                     
-                    console.log(`       🎴 Processing card ${cardUid} (${cardDetails.name || 'Unknown'})`);
+                    const cardUid = regularCard.card[0]; // This is the unique game UID
+                    
+                    // Convert cardUid to actual cardId using .split("_")[0]
+                    const cardId = cardUid.split("_")[0];
+                    
+                    console.log(`       🎴 Processing cardUid: ${cardUid} → cardId: ${cardId}`);
+                    
+                    // Look up card details using the actual cardId
+                    let cardDetails: any = null;
+                    if (this.cardInfoUtils) {
+                        try {
+                            cardDetails = await this.cardInfoUtils.getCardDetails(cardId);
+                        } catch (error) {
+                            console.error(`     ❌ Error getting card details for cardId ${cardId} (from uid ${cardUid}):`, error);
+                            continue;
+                        }
+                    } else {
+                        console.warn(`     ⚠️ CardInfoUtils not available for card lookup: ${cardId}`);
+                        continue;
+                    }
+                    
+                    if (!cardDetails) {
+                        console.log(`     ⚠️ No card details found for cardId ${cardId} (from uid ${cardUid})`);
+                        continue;
+                    }
                     
                     // Calculate final power for this card using ALL active effects
                     const basePower = cardDetails.power || cardDetails.initialPoint || 0;
