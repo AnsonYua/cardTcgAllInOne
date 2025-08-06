@@ -118,7 +118,7 @@ export class EffectSimulator {
             }
             
             // 4. Calculate final power values using class methods
-            this.calculateFinalPowersWithClass(gameEnvClass);
+            await this.calculateFinalPowersWithClass(gameEnvClass);
             
             // 5. Calculate player points using class methods
             await this.calculatePlayerPointsWithClass(gameEnvClass);
@@ -314,47 +314,146 @@ export class EffectSimulator {
 
     /**
      * Calculate final powers using GameEnvironment class methods
+     * Updated for unified GameEnvironment structure with proper card lookup
      * @param gameEnvClass - GameEnvironment class instance
      */
-    private calculateFinalPowersWithClass(gameEnvClass: GameEnvironment): void {
+    private async calculateFinalPowersWithClass(gameEnvClass: GameEnvironment): Promise<void> {
         console.log('⚡ Calculating final powers using TypeScript class methods...');
         
         const playerIds = [gameEnvClass.playerId_1, gameEnvClass.playerId_2].filter(id => id) as string[];
         
         for (const playerId of playerIds) {
             const player = gameEnvClass.getPlayer(playerId);
-            if (player && player.fieldEffects) {
-                // Calculate powers for all cards this player has on the field
-                const zones = gameEnvClass.zones.getPlayerZones(playerId);
+            if (!player || !player.fieldEffects) {
+                console.log(`   ⚠️ No player or fieldEffects found for ${playerId}`);
+                continue;
+            }
                 
-                for (const [zoneName, zoneCards] of Object.entries(zones)) {
-                    if (Array.isArray(zoneCards)) {
-                        for (const cardObj of zoneCards) {
-                            if (cardObj.cardDetails && cardObj.cardDetails[0]) {
-                                const cardId = cardObj.cardDetails[0].id;
-                                const basePower = cardObj.cardDetails[0].power || 0;
-                                
-                                // Apply all power effects
-                                let finalPower = basePower;
-                                if (player.fieldEffects?.activeEffects) {
-                                    for (const effect of player.fieldEffects.activeEffects) {
-                                        if (effect.type === 'powerBoost' && this.isCardTargetedByEffect(cardObj.cardDetails[0], effect)) {
-                                            finalPower += effect.value;
-                                        } else if (effect.type === 'setPower' && this.isCardTargetedByEffect(cardObj.cardDetails[0], effect)) {
-                                            finalPower = effect.value;
-                                        }
-                                    }
+            // Initialize calculatedPowers if not present
+            if (!player.fieldEffects.calculatedPowers) {
+                player.fieldEffects.calculatedPowers = {};
+            }
+            
+            console.log(`   🔍 Processing cards for player ${playerId}`);
+            
+            // Get player zones from unified structure
+            const zones = gameEnvClass.zones.getPlayerZones(playerId);
+            
+            // Process each zone
+            for (const [zoneName, zoneCards] of Object.entries(zones)) {
+                if (!Array.isArray(zoneCards) || zoneCards.length === 0) continue;
+                
+                console.log(`     📋 Processing zone ${zoneName} with ${zoneCards.length} cards`);
+                
+                for (const zoneCard of zoneCards) {
+                    let cardUid: string | null = null;
+                    let cardDetails: any = null;
+                    
+                    // Handle different zone card types
+                    if (zoneName === 'leader') {
+                        // Leader zone uses LeaderZoneCard format
+                        const leaderCard = zoneCard as any; // LeaderZoneCard
+                        cardUid = leaderCard.id;
+                        cardDetails = leaderCard; // Already contains full details
+                    } else {
+                        // Other zones use ZoneCard format
+                        const regularCard = zoneCard as any; // ZoneCard
+                        if (regularCard.card && regularCard.card.length > 0) {
+                            cardUid = regularCard.card[0];
+                            
+                            // Look up card details using CardInfoUtils
+                            if (this.cardInfoUtils) {
+                                try {
+                                    cardDetails = await this.cardInfoUtils.getCardDetails(cardUid);
+                                } catch (error) {
+                                    console.error(`     ❌ Error getting card details for ${cardUid}:`, error);
+                                    continue;
                                 }
-                                
-                                if (player.fieldEffects?.calculatedPowers) {
-                                    player.fieldEffects.calculatedPowers[cardId] = finalPower;
+                            } else {
+                                console.warn(`     ⚠️ CardInfoUtils not available for card lookup: ${cardUid}`);
+                                continue;
+                            }
+                        }
+                    }
+                    
+                    if (!cardUid || !cardDetails) {
+                        console.log(`     ⚠️ Skipping invalid card in zone ${zoneName}`);
+                        continue;
+                    }
+                    
+                    console.log(`       🎴 Processing card ${cardUid} (${cardDetails.name || 'Unknown'})`);
+                    
+                    // Calculate final power for this card using ALL active effects
+                    const basePower = cardDetails.power || cardDetails.initialPoint || 0;
+                    let finalPower = basePower;
+                    
+                    // Collect ALL active effects from ALL players (cross-player effects)
+                    const allActiveEffects: any[] = [];
+                    
+                    // Add this player's effects
+                    if (player.fieldEffects.activeEffects) {
+                        allActiveEffects.push(...player.fieldEffects.activeEffects);
+                    }
+                    
+                    // Add opponent's effects that can target this player
+                    const opponentId = gameEnvClass.getOpponentId(playerId);
+                    if (opponentId) {
+                        const opponent = gameEnvClass.getPlayer(opponentId);
+                        if (opponent?.fieldEffects?.activeEffects) {
+                            // Include opponent effects that target this player
+                            for (const opponentEffect of opponent.fieldEffects.activeEffects) {
+                                if (opponentEffect.target?.scope === 'OPPONENT' || 
+                                    opponentEffect.target?.scope === 'ALL' ||
+                                    opponentEffect.target?.playerId === playerId) {
+                                    allActiveEffects.push(opponentEffect);
                                 }
                             }
                         }
                     }
+                    
+                    console.log(`         🔧 Applying ${allActiveEffects.length} total active effects (including cross-player)`);
+                    
+                    // Apply all effects in priority order (setPower effects first, then boosts)
+                    const setPowerEffects = allActiveEffects.filter(e => e.type === 'setPower' || e.type === 'POWER_NULLIFICATION');
+                    const boostEffects = allActiveEffects.filter(e => e.type === 'powerBoost');
+                    const otherEffects = allActiveEffects.filter(e => e.type !== 'setPower' && e.type !== 'POWER_NULLIFICATION' && e.type !== 'powerBoost');
+                    
+                    // Apply setPower/nullification effects first (they override base power)
+                    for (const effect of setPowerEffects) {
+                        if (this.isCardTargetedByEffect(cardDetails, effect)) {
+                            finalPower = (effect.value as number) || 0;
+                            console.log(`           🚫 Applied ${effect.type} ${effect.value} from ${effect.source} (${effect.sourcePlayerId || 'unknown'})`);
+                        }
+                    }
+                    
+                    // Then apply power boost effects (additive)
+                    for (const effect of boostEffects) {
+                        if (this.isCardTargetedByEffect(cardDetails, effect)) {
+                            finalPower += (effect.value as number) || 0;
+                            console.log(`           ⚡ Applied powerBoost +${effect.value} from ${effect.source} (${effect.sourcePlayerId || 'unknown'})`);
+                        }
+                    }
+                    
+                    // Apply other effect types (special effects, immunities, etc.)
+                    for (const effect of otherEffects) {
+                        if (this.isCardTargetedByEffect(cardDetails, effect)) {
+                            console.log(`           ✨ Applied special effect ${effect.type} from ${effect.source} (${effect.sourcePlayerId || 'unknown'})`);
+                            // Handle special effects like immunity, zone freedom, etc.
+                            // These typically don't modify power directly but could affect other calculations
+                        }
+                    }
+                    
+                    // Store calculated power in fieldEffects
+                    player.fieldEffects.calculatedPowers[cardUid] = finalPower;
+                    console.log(`         💫 Final power for ${cardUid}: ${basePower} → ${finalPower}`);
                 }
             }
+            
+            console.log(`   ✅ Completed power calculation for player ${playerId}`);
+            console.log(`      📊 Calculated powers:`, player.fieldEffects.calculatedPowers);
         }
+        
+        console.log('✅ Final power calculation completed for all players');
     }
 
     /**

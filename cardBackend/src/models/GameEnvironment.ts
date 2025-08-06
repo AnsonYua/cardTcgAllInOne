@@ -193,43 +193,11 @@ export interface NeutralizationAction {
 
 // ============ OPTIMIZED VALIDATION SYSTEM INTERFACES ============
 
-export interface ValidationState {
-    playerRestrictions: Map<string, PlayerRestrictions>;
-    availableActions: Map<string, AvailableAction[]>;
-    cardValidations: Map<string, CardValidation>;
-    lastUpdated: number;
-}
+// REMOVED: ValidationState interface - using fieldEffects as single source of truth
 
-export interface PlayerRestrictions {
-    playerId: string;
-    zoneRestrictions: {
-        [key: string]: string[] | 'ALL';
-    };
-    specialEffects: {
-        zonePlacementFreedom: boolean;
-        immuneToNeutralization: boolean;
-        canPlayMultipleCards: boolean;
-    };
-    disabledCards: Set<string>;
-    calculatedPowers: Map<string, number>;
-    placementValidations: Map<string, Map<ZoneType, boolean>>; // cardId -> zone -> canPlace
-}
-
-export interface AvailableAction {
-    type: 'PLAY_CARD' | 'PLAY_CARD_FACE_DOWN' | 'USE_SPECIAL_ABILITY';
-    cardId: string;
-    validZones: ZoneType[];
-    restrictions?: string[];
-    cost?: number;
-}
-
-export interface CardValidation {
-    cardId: string;
-    canPlay: boolean;
-    validZones: ZoneType[];
-    restrictions: string[];
-    lastValidated: number;
-}
+// REMOVED: PlayerRestrictions, AvailableAction, CardValidation interfaces
+// These duplicated functionality already provided by PlayerFieldEffects
+// Using existing fieldEffects system as single source of truth
 
 export interface EffectDelta {
     sequenceId: number;
@@ -255,7 +223,7 @@ export interface GameResult {
     success: boolean;
     error?: string;
     gameState?: any;
-    validationState?: ValidationState;
+    // REMOVED: validationState - using fieldEffects as single source of truth
 }
 
 export interface ValidationResult {
@@ -727,8 +695,7 @@ export class GameEnvironment {
     public eventManager: EventManager;
     public playSequenceManager: PlaySequenceManager;
     
-    // OPTIMIZED VALIDATION SYSTEM
-    public validationState: ValidationState;
+    // REMOVED: validationState - using existing fieldEffects as single source of truth
     
     // Legacy compatibility
     public fieldEffects: { [playerId: string]: PlayerFieldEffects };
@@ -747,13 +714,7 @@ export class GameEnvironment {
         this.eventManager = new EventManager();
         this.playSequenceManager = new PlaySequenceManager();
         
-        // Initialize optimized validation system
-        this.validationState = {
-            playerRestrictions: new Map(),
-            availableActions: new Map(),
-            cardValidations: new Map(),
-            lastUpdated: Date.now()
-        };
+        // REMOVED: validationState initialization - using fieldEffects as single source of truth
         
         this.fieldEffects = {};
         this.neutralizationHistory = [];
@@ -955,6 +916,8 @@ export class GameEnvironment {
             fieldEffects: this.fieldEffects,
             neutralizationHistory: this.neutralizationHistory,
             
+            // REMOVED: validationState serialization - using fieldEffects as single source of truth
+            
             // Event system
             ...this.eventManager.toJSON(),
             
@@ -1000,6 +963,8 @@ export class GameEnvironment {
         // Legacy compatibility
         gameEnv.fieldEffects = data.fieldEffects || {};
         gameEnv.neutralizationHistory = data.neutralizationHistory || [];
+        
+        // REMOVED: validationState deserialization - using fieldEffects as single source of truth
         
         return gameEnv;
     }

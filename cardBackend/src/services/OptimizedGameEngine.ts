@@ -24,10 +24,31 @@ import {
     ZoneType,
     PlaySequenceAction,
     ActionType,
-    EventType,
-    AvailableAction,
-    PlayerRestrictions
+    EventType
 } from '../models/GameEnvironment';
+
+// Define local interfaces since removed from GameEnvironment
+interface AvailableAction {
+    type: 'PLAY_CARD' | 'PLAY_CARD_FACE_DOWN';
+    cardId: string;
+    validZones: ZoneType[];
+    restrictions: string[];
+}
+
+interface PlayerRestrictions {
+    playerId: string;
+    zoneRestrictions: {
+        [zone in ZoneType]?: string[] | 'ALL';
+    };
+    specialEffects: {
+        zonePlacementFreedom?: boolean;
+        immuneToNeutralization?: boolean;
+        canPlayMultipleCards?: boolean;
+    };
+    disabledCards: Set<string>;
+    calculatedPowers: Map<string, number>;
+    placementValidations: Map<string, Map<ZoneType, boolean>>;
+}
 
 import { IncrementalEffectManager, incrementalEffectManager } from './IncrementalEffectManager';
 import { ValidationCache, validationCache } from './ValidationCache';
@@ -54,6 +75,7 @@ export class OptimizedGameEngine {
     private incrementalManager: IncrementalEffectManager;
     private validationCache: ValidationCache;
     private cardInfoUtils: any = null;
+    private initialized: boolean = false;
 
     constructor(config?: Partial<OptimizedGameConfig>) {
         this.config = {
@@ -91,7 +113,15 @@ export class OptimizedGameEngine {
         this.incrementalManager.setCardInfoUtils(this.cardInfoUtils);
         this.validationCache.setCardInfoUtils(this.cardInfoUtils);
         
+        this.initialized = true;
         console.log('✅ OptimizedGameEngine initialized');
+    }
+
+    /**
+     * Check if this engine instance is initialized
+     */
+    public isInitialized(): boolean {
+        return this.initialized;
     }
 
     /**
@@ -113,8 +143,7 @@ export class OptimizedGameEngine {
             if (!validation.isValid) {
                 return { 
                     success: false, 
-                    error: validation.error,
-                    validationState: gameEnv.validationState
+                    error: validation.error
                 };
             }
 
@@ -138,16 +167,14 @@ export class OptimizedGameEngine {
 
             return { 
                 success: true, 
-                gameState: gameEnv,
-                validationState: gameEnv.validationState
+                gameState: gameEnv
             };
 
         } catch (error: any) {
             console.error(`❌ Error in card play:`, error);
             return { 
                 success: false, 
-                error: `Internal error: ${error?.message || 'Unknown error'}`,
-                validationState: gameEnv.validationState
+                error: `Internal error: ${error?.message || 'Unknown error'}`
             };
         }
     }
@@ -179,10 +206,10 @@ export class OptimizedGameEngine {
             return { isValid: false, error: `Zone ${zone} is already occupied` };
         }
 
-        // Get player restrictions
-        const restrictions = gameEnv.validationState.playerRestrictions.get(playerId);
-        if (!restrictions) {
-            return { isValid: false, error: 'Player restrictions not found' };
+        // Get player field effects (single source of truth)
+        const playerFieldEffects = gameEnv.fieldEffects[playerId];
+        if (!playerFieldEffects) {
+            return { isValid: false, error: 'Player field effects not found' };
         }
 
         // Face-down cards bypass most restrictions
@@ -198,8 +225,8 @@ export class OptimizedGameEngine {
             }
         }
 
-        // Zone restrictions check
-        const allowedTypes = restrictions.zoneRestrictions[zone];
+        // Zone restrictions check using fieldEffects
+        const allowedTypes = playerFieldEffects.zoneRestrictions && playerFieldEffects.zoneRestrictions[zone];
         if (allowedTypes && allowedTypes !== 'ALL') {
             const cardDetails = await this.cardInfoUtils.getCardDetails(cardId);
             if (!cardDetails) {
@@ -215,12 +242,12 @@ export class OptimizedGameEngine {
         }
 
         // Special effects check
-        if (restrictions.specialEffects.zonePlacementFreedom) {
+        if (playerFieldEffects.specialEffects && playerFieldEffects.specialEffects.zonePlacementFreedom) {
             return { isValid: true }; // Freedom effect bypasses restrictions
         }
 
         // Card-specific restrictions
-        if (restrictions.disabledCards.has(cardId)) {
+        if (playerFieldEffects.disabledCards && playerFieldEffects.disabledCards.includes(cardId)) {
             return { isValid: false, error: 'Card is disabled' };
         }
 
@@ -396,11 +423,11 @@ export class OptimizedGameEngine {
             return this.validationCache.getValidZones(playerId, cardId);
         }
 
-        // Fallback implementation
+        // Fallback implementation using fieldEffects
         const validZones: ZoneType[] = [];
-        const restrictions = gameEnv.validationState.playerRestrictions.get(playerId);
+        const playerFieldEffects = gameEnv.fieldEffects[playerId];
         
-        if (!restrictions) return validZones;
+        if (!playerFieldEffects) return validZones;
 
         for (const zone of Object.values(ZoneType)) {
             if (!gameEnv.isZoneOccupied(playerId, zone)) {
@@ -492,15 +519,15 @@ export class OptimizedGameEngine {
     private exportValidationState(gameEnv: GameEnvironment): any {
         const validation: any = {};
         
-        for (const [playerId, restrictions] of gameEnv.validationState.playerRestrictions) {
+        for (const [playerId, fieldEffects] of Object.entries(gameEnv.fieldEffects)) {
             validation[playerId] = {
-                zoneRestrictions: restrictions.zoneRestrictions,
+                zoneRestrictions: fieldEffects.zoneRestrictions,
                 availableActions: this.getAvailableActions(gameEnv, playerId),
                 cardPlacements: this.config.enableCaching ? 
                     this.exportCardPlacements(playerId) : {},
-                specialEffects: restrictions.specialEffects,
-                disabledCards: Array.from(restrictions.disabledCards),
-                calculatedPowers: Object.fromEntries(restrictions.calculatedPowers)
+                specialEffects: fieldEffects.specialEffects,
+                disabledCards: fieldEffects.disabledCards || [],
+                calculatedPowers: fieldEffects.calculatedPowers || {}
             };
         }
         
@@ -511,10 +538,10 @@ export class OptimizedGameEngine {
      * Export card placement validations
      */
     private exportCardPlacements(playerId: string): any {
-        const validationState = this.validationCache.getPlayerValidationState(playerId);
+        const playerValidationState = this.validationCache.getPlayerValidationState(playerId);
         const placements: any = {};
         
-        for (const [cardId, zoneMap] of validationState.validPlacements) {
+        for (const [cardId, zoneMap] of playerValidationState.validPlacements) {
             placements[cardId] = Object.fromEntries(zoneMap);
         }
         
@@ -537,5 +564,62 @@ export class OptimizedGameEngine {
     }
 }
 
-// Export singleton instance
-export const optimizedGameEngine = new OptimizedGameEngine();
+// OptimizedGameEngine class exported automatically with 'export class' declaration above
+
+// Game Engine Manager - Handles multiple concurrent games
+class OptimizedGameEngineManager {
+    private gameEngines: Map<string, OptimizedGameEngine> = new Map();
+    
+    /**
+     * Get or create a game engine for a specific game
+     */
+    public getGameEngine(gameId: string): OptimizedGameEngine {
+        if (!this.gameEngines.has(gameId)) {
+            console.log(`🚀 Creating new OptimizedGameEngine for game: ${gameId}`);
+            this.gameEngines.set(gameId, new OptimizedGameEngine());
+        }
+        return this.gameEngines.get(gameId)!;
+    }
+    
+    /**
+     * Initialize a game engine for a specific game
+     */
+    public async initializeGameEngine(gameId: string): Promise<void> {
+        const engine = this.getGameEngine(gameId);
+        if (!engine.isInitialized()) {
+            await engine.initialize();
+            console.log(`✅ OptimizedGameEngine initialized for game: ${gameId}`);
+        }
+    }
+    
+    /**
+     * Remove game engine when game ends
+     */
+    public removeGameEngine(gameId: string): void {
+        const engine = this.gameEngines.get(gameId);
+        if (engine) {
+            engine.dispose();
+            this.gameEngines.delete(gameId);
+            console.log(`🗑️ OptimizedGameEngine removed for game: ${gameId}`);
+        }
+    }
+    
+    /**
+     * Get metrics for all active games
+     */
+    public getGlobalMetrics(): any {
+        const metrics: any = {
+            activeGames: this.gameEngines.size,
+            gameEngines: {}
+        };
+        
+        this.gameEngines.forEach((engine, gameId) => {
+            metrics.gameEngines[gameId] = engine.getPerformanceMetrics();
+        });
+        
+        return metrics;
+    }
+}
+
+// Export singleton manager for handling multiple games
+export const optimizedGameEngineManager = new OptimizedGameEngineManager();

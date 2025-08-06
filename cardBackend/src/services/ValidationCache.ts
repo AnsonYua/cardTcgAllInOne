@@ -19,12 +19,38 @@
 import { 
     GameEnvironment, 
     Player, 
-    PlayerRestrictions,
-    AvailableAction,
-    CardValidation,
     ValidationResult,
     ZoneType 
 } from '../models/GameEnvironment';
+
+// Define local interfaces since ValidationState interfaces were removed
+interface PlayerRestrictions {
+    playerId: string;
+    zoneRestrictions: {
+        [zone in ZoneType]?: string[] | 'ALL';
+    };
+    specialEffects: {
+        zonePlacementFreedom?: boolean;
+        immuneToNeutralization?: boolean;
+        canPlayMultipleCards?: boolean;
+    };
+    disabledCards: Set<string>;
+    calculatedPowers: Map<string, number>;
+    placementValidations: Map<string, Map<ZoneType, boolean>>;
+}
+
+interface AvailableAction {
+    type: 'PLAY_CARD' | 'PLAY_CARD_FACE_DOWN';
+    cardId: string;
+    validZones: ZoneType[];
+    restrictions: string[];
+}
+
+interface CardValidation {
+    cardId: string;
+    zones: Map<ZoneType, boolean>;
+    restrictions: string[];
+}
 
 import { CardInfoUtils } from './CardInfoUtils';
 
@@ -76,12 +102,26 @@ export class ValidationCache {
         const availableActions: AvailableAction[] = [];
         const cardValidations = new Map<string, Map<ZoneType, boolean>>();
         
-        // Get player restrictions
-        const restrictions = gameEnv.validationState.playerRestrictions.get(playerId);
-        if (!restrictions) {
-            console.log(`   ⚠️ No restrictions found for player ${playerId}`);
+        // Get player restrictions from fieldEffects (single source of truth)
+        const playerFieldEffects = gameEnv.fieldEffects[playerId];
+        if (!playerFieldEffects) {
+            console.log(`   ⚠️ No field effects found for player ${playerId}`);
             return;
         }
+        
+        // Convert fieldEffects to PlayerRestrictions format for compatibility
+        const restrictions: PlayerRestrictions = {
+            playerId,
+            zoneRestrictions: playerFieldEffects.zoneRestrictions || {},
+            specialEffects: {
+                zonePlacementFreedom: playerFieldEffects.specialEffects?.zonePlacementFreedom || false,
+                immuneToNeutralization: playerFieldEffects.specialEffects?.immuneToNeutralization || false,
+                canPlayMultipleCards: false
+            },
+            disabledCards: new Set(playerFieldEffects.disabledCards || []),
+            calculatedPowers: new Map(Object.entries(playerFieldEffects.calculatedPowers || {})),
+            placementValidations: new Map()
+        };
 
         // Pre-validate each card in hand for all zones
         for (const cardId of player.deck.hand) {

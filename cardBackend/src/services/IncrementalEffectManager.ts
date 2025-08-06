@@ -22,10 +22,25 @@ import {
     FieldEffect, 
     EffectDelta, 
     CalculatedEffect, 
-    PlayerRestrictions,
     ZoneType,
     PlaySequenceAction 
 } from '../models/GameEnvironment';
+
+// Define local interface since PlayerRestrictions was removed
+interface PlayerRestrictions {
+    playerId: string;
+    zoneRestrictions: {
+        [zone in ZoneType]?: string[] | 'ALL';
+    };
+    specialEffects: {
+        zonePlacementFreedom?: boolean;
+        immuneToNeutralization?: boolean;
+        canPlayMultipleCards?: boolean;
+    };
+    disabledCards: Set<string>;
+    calculatedPowers: Map<string, number>;
+    placementValidations: Map<string, Map<ZoneType, boolean>>;
+}
 
 // Import mozGamePlay with proper path resolution for compiled code
 const path = require('path');
@@ -54,7 +69,6 @@ export class IncrementalEffectManager {
      */
     public async processNewEffects(gameEnv: GameEnvironment): Promise<void> {
         console.log('🔄 Processing incremental effects...');
-        
         const newPlays = gameEnv.playSequenceManager.getPlays()
             .filter(play => play.sequenceId > this.lastProcessedSequence);
             
@@ -117,7 +131,7 @@ export class IncrementalEffectManager {
                 console.log(`   ⚠️ Card details not found for ${play.cardId}`);
                 return effects;
             }
-            
+            console.log("cardDetails", JSON.stringify(cardDetails));
             // Process leader effects
             if (play.action === 'PLAY_LEADER') {
                 const leaderEffects = await this.calculateLeaderEffects(gameEnv, play, cardDetails);
@@ -157,6 +171,7 @@ export class IncrementalEffectManager {
         
         // Zone restriction effects
         for (const [zone, allowedTypes] of Object.entries(leaderCard.zoneCompatibility)) {
+            console.log("cardDetails 22", zone, " allowedTypes ", allowedTypes);
             if (allowedTypes && allowedTypes !== 'ALL') {
                 effects.push({
                     type: 'ZONE_RESTRICTION',
@@ -189,7 +204,7 @@ export class IncrementalEffectManager {
                 }
             }
         }
-        
+        console.log("cardDetails 33 ", JSON.stringify(effects));
         return effects;
     }
 
@@ -424,11 +439,11 @@ export class IncrementalEffectManager {
                 placementValidations: new Map() // Will be populated by ValidationCache
             };
             
-            gameEnv.validationState.playerRestrictions.set(playerId, restrictions);
+            // REMOVED: validationState usage - fieldEffects is the single source of truth
+            console.log('✅ Field effects updated via existing system');
         }
         
-        gameEnv.validationState.lastUpdated = Date.now();
-        console.log('✅ Validation state updated');
+        console.log('✅ Effect delta applied - using fieldEffects system');
     }
 
     /**

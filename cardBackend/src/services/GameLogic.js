@@ -17,10 +17,13 @@ const effectSimulatorPath = isCompiled
 const { effectSimulator } = require(effectSimulatorPath);
 
 // Import OptimizedGameEngine for improved performance (O(1) vs O(n²))
+// PERFORMANCE UPGRADE (Jan 2025): Card play processing upgraded from O(n²) to O(1)
+// - Uses incremental effect processing instead of full replay
+// - Maintains EffectSimulator as fallback for reliability
 const optimizedGameEnginePath = isCompiled 
     ? path.join(__dirname, '../../../src/services/OptimizedGameEngine.js') 
     : path.join(__dirname, '../../dist/src/services/OptimizedGameEngine.js');
-const { optimizedGameEngine } = require(optimizedGameEnginePath);
+const { optimizedGameEngineManager } = require(optimizedGameEnginePath);
 const gameEnvironmentPath = isCompiled 
     ? path.join(__dirname, '../../../src/models/GameEnvironment.js') 
     : path.join(__dirname, '../../dist/src/models/GameEnvironment.js');
@@ -40,15 +43,11 @@ function updatePhase(gameEnv, newPhase) {
     console.log(`🎯 Phase updated to: ${newPhase}`);
 }
 
-// Initialize OptimizedGameEngine on startup
-let optimizedEngineInitialized = false;
-async function initializeOptimizedEngine() {
-    if (!optimizedEngineInitialized) {
-        console.log('🚀 Initializing OptimizedGameEngine...');
-        await optimizedGameEngine.initialize();
-        optimizedEngineInitialized = true;
-        console.log('✅ OptimizedGameEngine initialized');
-    }
+// Initialize OptimizedGameEngine per game - No longer singleton!
+async function initializeOptimizedEngine(gameId) {
+    console.log(`🚀 Initializing OptimizedGameEngine for game: ${gameId}...`);
+    await optimizedGameEngineManager.initializeGameEngine(gameId);
+    console.log(`✅ OptimizedGameEngine initialized for game: ${gameId}`);
 }
 
 // Draw card function for first player at game start
@@ -224,9 +223,6 @@ class GameLogic {
         // Check if both players are ready using class methods
         const playerList = [gameEnvClass.playerId_1, gameEnvClass.playerId_2].filter(id => id);
         const bothReady = gameEnvClass.areAllPlayersReady();
-        console.log("🔍 Player List:", playerList);
-        console.log("🔍 Players Ready Status:", gameEnvClass.getPlayersReadyStatus());
-        console.log("🔍 Both Ready:", bothReady);
         if (bothReady) {
             console.log("🎯 Both players ready - initializing player states");
             
@@ -243,11 +239,12 @@ class GameLogic {
             // GameEnvironmentAdapter.initializeGameEnvironment() called during joinGame()
             
             // OPTIMIZED GAME ENGINE INITIALIZATION: Initialize for high-performance processing
-            await initializeOptimizedEngine();
-            await optimizedGameEngine.initializeGame(gameEnvClass);
+            await initializeOptimizedEngine(gameId);
+            const gameEngine = optimizedGameEngineManager.getGameEngine(gameId);
+            await gameEngine.initializeGame(gameEnvClass);
             
-            // LEGACY COMPATIBILITY: Also run EffectSimulator for existing features
-            await effectSimulator.simulateCardPlaySequenceWithClass(gameEnvClass);
+            // Note: OptimizedGameEngine.initializeGame() handles initial leader effects
+            // No need for separate EffectSimulator call during game creation
             // Transition to draw phase first - game officially starts using class method
             gameEnvClass.updatePhase(GamePhase.DRAW_PHASE);
             gameEnvClass.gameStarted = true;
@@ -268,15 +265,11 @@ class GameLogic {
     
     async processPlayerAction(req) {
         var {playerId ,gameId,action} = req.body;
-        console.log(`DEBUG: Processing action for ${playerId} in game ${gameId}: ${action.type}`);
         
         try {
             var gameData = await this.readJSONFileAsync(gameId);
-            console.log(`DEBUG: Game data loaded successfully`);
             
-            console.log(`DEBUG: About to call checkIsPlayOkForAction`);
             const result = await this.mozGamePlay.checkIsPlayOkForAction(gameData.gameEnv,playerId,action);
-            console.log(`DEBUG: checkIsPlayOkForAction result: ${result}`);
             
             if(!result){
                 return this.mozGamePlay.throwError("Not your turn");
@@ -301,9 +294,7 @@ class GameLogic {
                 phaseWhenPlayed = gameData.gameEnv.phase || 'SETUP';
             }
             
-            console.log(`DEBUG: About to call processAction`);
             const actionResult = await this.mozGamePlay.processAction(gameData.gameEnv,playerId,action);
-            console.log(`DEBUG: processAction completed`);
             
             if (actionResult.hasOwnProperty('error')){
                 return actionResult;
@@ -336,14 +327,30 @@ class GameLogic {
                 const gameEnvClass = GameEnvironmentAdapter.fromLegacyJSON(gameData.gameEnv);
                 
                 // Initialize optimized engine if not already done
-                await initializeOptimizedEngine();
+                await initializeOptimizedEngine(gameId);
                 
-                // For now, continue using EffectSimulator for compatibility
-                // TODO: Replace with optimizedGameEngine.playCard() for better performance
-                await effectSimulator.simulateCardPlaySequenceWithClass(gameEnvClass);
+                // PERFORMANCE IMPROVEMENT: Replace O(n²) full simulation with O(1) incremental processing
+                const isFaceDown = action.type === 'PlayCardBack';
+                const zoneType = zoneToRecord.toUpperCase(); // Convert 'top' -> 'TOP' for enum
+                
+                const gameEngine = optimizedGameEngineManager.getGameEngine(gameId);
+                const playResult = await gameEngine.playCard(
+                    gameEnvClass, 
+                    playerId, 
+                    cardToRecord, 
+                    zoneType, 
+                    isFaceDown
+                );
+                
+                if (!playResult.success) {
+                    console.error('⚠️ OptimizedGameEngine play failed, falling back to EffectSimulator');
+                    // Fallback to legacy system if optimized engine fails
+                    await effectSimulator.simulateCardPlaySequenceWithClass(gameEnvClass);
+                } else {
+                    console.log(`⚡ Card play processed with O(1) optimization in ${playResult.processingTime}ms`);
+                }
+                
                 gameData.gameEnv = GameEnvironmentAdapter.toLegacyJSON(gameEnvClass);
-                
-                // No merge needed - all effects applied directly to gameEnv.players[].fieldEffects!
             }
             
             const updatedGameData = this.addUpdateUUID(gameData);
@@ -489,7 +496,7 @@ class GameLogic {
         // - Cross-player effects (e.g., Powell nullifying opponent's economic cards)
         // - Card abilities and interactions
         //
-        // The result is a 'computedState' object with all effects calculated
+        // All effects are applied directly to gameEnv.players[].fieldEffects (single source of truth)
         if (gameEnv.playSequence.plays.length > 0) {
             console.log('   🔄 Running unified effect simulation for all plays...');
             
@@ -498,8 +505,9 @@ class GameLogic {
                 const gameEnvClass = GameEnvironmentAdapter.fromLegacyJSON(gameEnv);
                 
                 // Initialize optimized engine for test scenarios
-                await initializeOptimizedEngine();
-                await optimizedGameEngine.initializeGame(gameEnvClass);
+                await initializeOptimizedEngine(gameId);
+                const gameEngine = optimizedGameEngineManager.getGameEngine(gameId);
+                await gameEngine.initializeGame(gameEnvClass);
                 
                 // Continue using EffectSimulator for compatibility during transition
                 await effectSimulator.simulateCardPlaySequenceWithClass(gameEnvClass);
