@@ -1161,9 +1161,6 @@ class mozGamePlay {
         // Handle both unified and legacy formats
         const hand = this.getPlayerHand(gameEnv, playerId);
         console.log("hand", JSON.stringify(hand));
-        if (!hand || action["card_idx"] >= hand.length) {
-            return false;
-        }
         
         const cardToPlay = hand[action["card_idx"]];
         const cardDetails = mozDeckHelper.getDeckCardDetails(cardToPlay);

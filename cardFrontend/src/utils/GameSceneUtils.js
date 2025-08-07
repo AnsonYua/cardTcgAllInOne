@@ -2,6 +2,7 @@
  * Utility class for handling GameScene-related operations
  */
 import Card from '../components/Card.js';
+import { GAME_CONFIG } from '../config/gameConfig.js';
 
 export default class GameSceneUtils {
   /**
@@ -119,22 +120,155 @@ export default class GameSceneUtils {
   }
 
   /**
-   * Creates a zone object with standard properties
-   * @param {number} x - X coordinate
-   * @param {number} y - Y coordinate
+   * Creates a fully functional zone with Phaser objects
+   * Consolidates zone creation logic from GameScene and ZoneManager
+   * @param {Phaser.Scene} scene - The Phaser scene
+   * @param {number} x - X position
+   * @param {number} y - Y position
    * @param {string} type - Zone type
    * @param {boolean} isPlayerZone - Whether it's a player zone
-   * @returns {Object} - Zone object
+   * @returns {Object} - Zone object with placeholder, label, and interaction
    */
-  static createZone(x, y, type, isPlayerZone) {
+  static createZone(scene, x, y, type, isPlayerZone) {
+    let placeholder;
+    
+    // Show deck cards for deck zones, placeholder for others
+    if (type === 'deck') {
+      const initialDeckStack = this.createDeckStack(scene, x, y, isPlayerZone ? 'player' : 'opponent');
+      placeholder = initialDeckStack[0];
+      
+      // Store initial deck stacks on scene
+      if (isPlayerZone) {
+        scene.initialPlayerDeckStack = initialDeckStack;
+      } else {
+        scene.initialOpponentDeckStack = initialDeckStack;
+      }
+    } else if (type === 'cardPreview') {
+      placeholder = scene.add.image(x, y, 'zone-placeholder');
+    } else if (type === 'leaderDeck') {
+      placeholder = scene.add.image(x, y, 'zone-placeholder');
+    } else {
+      placeholder = scene.add.image(x, y, 'zone-placeholder');
+    }
+    
+    // Zone label
+    const label = scene.add.text(x, y + 95, type.toUpperCase(), {
+      fontSize: '12px',
+      fontFamily: 'Arial',
+      fill: '#ffffff',
+      align: 'center'
+    });
+    label.setOrigin(0.5);
+    
+    // Zone-specific styling
+    if (type === 'leaderDeck') {
+      placeholder.setRotation(Math.PI / 2);
+      label.setAlpha(1);
+      label.setY(label.y - 20);
+    } else if (type === 'cardPreview') {
+      placeholder.setScale(3);
+      label.setAlpha(0);
+    } else {
+      label.setAlpha(1);
+    }
+    
+    // Zone interaction (only for player zones)
+    let dropZone = null;
+    if (isPlayerZone) {
+      dropZone = scene.add.zone(x, y, 130, 190);
+      dropZone.setRectangleDropZone(130, 190);
+      dropZone.setData('zoneType', type);
+      
+      // Visual feedback for drop zones
+      dropZone.on('dragenter', (pointer, gameObject) => {
+        if (scene.canDropCardInZone && scene.canDropCardInZone(gameObject, type)) {
+          const highlight = scene.add.image(x, y, 'zone-highlight');
+          highlight.setTint(GAME_CONFIG.colors.success);
+          dropZone.setData('highlight', highlight);
+        }
+      });
+      
+      dropZone.on('dragleave', () => {
+        const highlight = dropZone.getData('highlight');
+        if (highlight) {
+          highlight.destroy();
+          dropZone.setData('highlight', null);
+        }
+      });
+      
+      dropZone.on('drop', (pointer, gameObject) => {
+        if (scene.handleCardDrop) {
+          scene.handleCardDrop(gameObject, type, x, y);
+        }
+        const highlight = dropZone.getData('highlight');
+        if (highlight) {
+          highlight.destroy();
+          dropZone.setData('highlight', null);
+        }
+      });
+
+      // Add zone click handling for card placement when card is selected
+      dropZone.setInteractive();
+      dropZone.on('pointerdown', (pointer) => {
+        console.log('dropZone clicked');
+        if (scene.handleZoneClick) {
+          scene.handleZoneClick(type, x, y);
+        }
+      });
+    }
+    
     return {
+      placeholder,
+      label,
+      dropZone,
       x,
       y,
-      type,
-      isPlayerZone,
       card: null,
-      placeholder: null
+      type,
+      isPlayerZone
     };
+  }
+
+  /**
+   * Creates a deck stack visualization
+   * Consolidates deck creation logic from GameScene, ZoneManager, and CardManagerHelper
+   * @param {Phaser.Scene} scene - The Phaser scene
+   * @param {number} x - X position
+   * @param {number} y - Y position
+   * @param {string} owner - 'player' or 'opponent'
+   * @param {Object} options - Options for deck creation
+   * @returns {Array} - Array of deck card images
+   */
+  static createDeckStack(scene, x, y, owner, options = {}) {
+    const config = {
+      numCards: 5,
+      stackOffset: 1,
+      scale: 0.95,
+      ...options
+    };
+    
+    const deckCards = [];
+    
+    for (let i = 0; i < config.numCards; i++) {
+      // Ensure pixel-perfect positioning
+      const cardX = Math.round(x + (i * config.stackOffset));
+      const cardY = Math.round(y - (i * config.stackOffset));
+      const card = scene.add.image(cardX, cardY, 'card-back');
+      
+      // Scale card to match game config dimensions
+      const scaleX = GAME_CONFIG.card.width / card.width;
+      const scaleY = GAME_CONFIG.card.height / card.height;
+      const scale = Math.min(scaleX, scaleY) * config.scale;
+      card.setScale(scale);
+      
+      // Ensure crisp rendering
+      card.setDepth(i);
+      card.setOrigin(0.5, 0.5);
+      
+      deckCards.push(card);
+    }
+    
+    return deckCards;
   }
 
   /**

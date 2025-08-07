@@ -139,19 +139,19 @@ export default class GameScene extends Phaser.Scene {
     console.log('Opponent entries:', opponentEntries);
     opponentEntries.forEach(([zoneType, position]) => {
       console.log('Processing zone:', zoneType);
-      const zone = this.createZone(position.x, position.y, zoneType, false);
+      const zone = GameSceneUtils.createZone(this, position.x, position.y, zoneType, false);
       this.opponentZones[zoneType] = zone;
     });
     
     // Create player zones
     this.playerZones = {};
     Object.entries(this.layout.player).forEach(([zoneType, position]) => {
-      const zone = this.createZone(position.x, position.y, zoneType, true);
+      const zone = GameSceneUtils.createZone(this, position.x, position.y, zoneType, true);
       this.playerZones[zoneType] = zone;
     });
 
     Object.entries(this.layout.functionalArea).forEach(([zoneType, position]) => {
-      const zone = this.createZone(position.x, position.y, zoneType, false);
+      const zone = GameSceneUtils.createZone(this, position.x, position.y, zoneType, false);
       if (zoneType === 'cardPreview') {
         this.cardPreviewZone = zone;
       }
@@ -165,100 +165,6 @@ export default class GameScene extends Phaser.Scene {
   }
   
  
-  createZone(x, y, type, isPlayerZone) {
-    let placeholder;
-    
-    // Show deck cards for deck zones, placeholder for others
-    if (type === 'deck') {
-      // Create deck stack for initial display
-      const initialDeckStack = this.createDeckStack(x, y, isPlayerZone ? 'player' : 'opponent');
-      placeholder = initialDeckStack[0]; // Use the first card as the main placeholder reference
-      
-      // Store the initial deck stacks for later reference
-      if (isPlayerZone) {
-        this.initialPlayerDeckStack = initialDeckStack;
-      } else {
-        this.initialOpponentDeckStack = initialDeckStack;
-      }
-    } else if (type === 'cardPreview') {
-      placeholder = this.add.image(x, y, 'zone-placeholder');
-    } else if (type === 'leaderDeck') {
-      // Create placeholder for leaderDeck zones
-      placeholder = this.add.image(x, y, 'zone-placeholder');
-    } else {
-      // Zone placeholder for non-deck zones
-      placeholder = this.add.image(x, y, 'zone-placeholder');
-    }
-    
-    // Zone label
-    const label = this.add.text(x, y + 95, type.toUpperCase(), {
-      fontSize: '12px',
-      fontFamily: 'Arial',
-      fill: '#ffffff',
-      align: 'center'
-    });
-    label.setOrigin(0.5);
-    if(type === 'leaderDeck' ) {
-      placeholder.setRotation(Math.PI / 2); // Rotate 90 degrees
-      label.setAlpha(1); // Show the label
-      label.setY(label.y - 20); // Move label up by 5 pixels
-    }else if(type === 'cardPreview'){
-      placeholder.setScale(3);
-      label.setAlpha(0); 
-    }else{
-      label.setAlpha(1); // Show the label
-    }
-    
-    // Zone interaction (only for player zones)
-    if (isPlayerZone) {
-      const dropZone = this.add.zone(x, y, 130, 190);
-      dropZone.setRectangleDropZone(130, 190);
-      dropZone.setData('zoneType', type);
-      
-      // Visual feedback for drop zones
-      dropZone.on('dragenter', (pointer, gameObject) => {
-        if (this.canDropCardInZone(gameObject, type)) {
-          const highlight = this.add.image(x, y, 'zone-highlight');
-          highlight.setTint(GAME_CONFIG.colors.success);
-          dropZone.setData('highlight', highlight);
-        }
-      });
-      
-      dropZone.on('dragleave', () => {
-        const highlight = dropZone.getData('highlight');
-        if (highlight) {
-          highlight.destroy();
-          dropZone.setData('highlight', null);
-        }
-      });
-      
-      dropZone.on('drop', (pointer, gameObject) => {
-        this.handleCardDrop(gameObject, type, x, y);
-        const highlight = dropZone.getData('highlight');
-        if (highlight) {
-          highlight.destroy();
-          dropZone.setData('highlight', null);
-        }
-      });
-
-      // Add zone click handling for card placement when card is selected
-      dropZone.setInteractive();
-      dropZone.on('pointerdown', (pointer) => {
-        console.log('dropZone clicked');
-        this.handleZoneClick(type, x, y);
-      });
-    }
-    
-    return {
-      placeholder,
-      label,
-      x,
-      y,
-      card: null,
-      type,
-      isPlayerZone
-    };
-  }
 
   createBattleArea() {
     const { x, y } = this.layout.battle;
@@ -310,42 +216,6 @@ export default class GameScene extends Phaser.Scene {
     // The initial deck stacks are already visible, so no need to hide them
   }
 
-  createDeckStack(x, y, owner) {
-    // Create a stack of card backs to represent the deck
-    const numCards = 5;
-    const stackOffset = 1;
-    const deckCards = [];
-    
-    for (let i = 0; i < numCards; i++) {
-      // Ensure pixel-perfect positioning
-      const cardX = Math.round(x + (i * stackOffset));
-      const cardY = Math.round(y - (i * stackOffset));
-      const card = this.add.image(cardX, cardY, 'card-back');
-      
-      // Scale card to match our card config dimensions
-      const scaleX = GAME_CONFIG.card.width / card.width;
-      const scaleY = GAME_CONFIG.card.height / card.height;
-      const scale = Math.min(scaleX, scaleY) * 0.95;
-      card.setScale(scale);
-      
-      // Ensure crisp rendering
-      card.setDepth(i);
-      card.setOrigin(0.5, 0.5); // Center origin for crisp rendering
-      
-      deckCards.push(card);
-      
-      // Store reference for potential updates
-      if (owner === 'player') {
-        if (!this.playerDeckCards) this.playerDeckCards = [];
-        this.playerDeckCards.push(card);
-      } else {
-        if (!this.opponentDeckCards) this.opponentDeckCards = [];
-        this.opponentDeckCards.push(card);
-      }
-    }
-    
-    return deckCards;
-  }
 
   createUI() {
     const { width, height } = this.cameras.main;
