@@ -1135,7 +1135,7 @@ class mozGamePlay {
         console.log("hand", JSON.stringify(action.cardUID));
         let  cardToPlay = null
         for (let idx in hand){
-            console.log(hand[idx].includes(action.cardUID))
+            console.log(hand[idx])
             if(hand[idx].includes(action.cardUID)){
                 cardToPlay = action.cardUID
             }

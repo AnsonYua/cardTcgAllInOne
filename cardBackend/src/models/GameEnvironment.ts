@@ -559,6 +559,8 @@ export interface GameResult {
     success: boolean;
     error?: string;
     gameState?: any;
+    requiresCardSelection?: boolean;
+    processingTime?: number;
     // REMOVED: validationState - using fieldEffects as single source of truth
 }
 
@@ -1158,6 +1160,10 @@ export class GameEnvironment {
     // Legacy compatibility
     public fieldEffects: { [playerId: string]: PlayerFieldEffects };
     public neutralizationHistory: NeutralizationAction[];
+    
+    // Event system
+    public gameEvents?: any[];
+    public lastEventId?: number;
 
     constructor() {
         this.phase = GamePhase.WAITING_FOR_PLAYERS;
@@ -1244,7 +1250,7 @@ export class GameEnvironment {
 
     public areAllPlayersReady(): boolean {
         const playerIds = [this.playerId_1, this.playerId_2].filter(id => id !== null);
-        return playerIds.length === 2 && playerIds.every(id => this.playersReady[id] === true);
+        return playerIds.length === 2 && playerIds.every(id => id && this.playersReady[id] === true);
     }
 
     public getPlayersReadyStatus(): { [playerId: string]: boolean } {

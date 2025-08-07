@@ -1,0 +1,24 @@
+node:internal/modules/cjs/loader:1408
+  throw err;
+  ^
+
+Error: Cannot find module './server.ts'
+Require stack:
+- /Users/hello/Desktop/card/unity/cardGameRevamp/imaginaryUncacheableRequireResolveScript
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1405:15)
+    at Function.resolve (node:internal/modules/helpers:145:19)
+    at requireResolveNonCached (/opt/homebrew/lib/node_modules/ts-node/dist/bin.js:549:16)
+    at getProjectSearchDir (/opt/homebrew/lib/node_modules/ts-node/dist/bin.js:519:40)
+    at phase3 (/opt/homebrew/lib/node_modules/ts-node/dist/bin.js:267:27)
+    at bootstrap (/opt/homebrew/lib/node_modules/ts-node/dist/bin.js:47:30)
+    at main (/opt/homebrew/lib/node_modules/ts-node/dist/bin.js:33:12)
+    at Object.<anonymous> (/opt/homebrew/lib/node_modules/ts-node/dist/bin.js:579:5)
+    at Module._compile (node:internal/modules/cjs/loader:1734:14)
+    at Object..js (node:internal/modules/cjs/loader:1899:10) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/Users/hello/Desktop/card/unity/cardGameRevamp/imaginaryUncacheableRequireResolveScript'
+  ]
+}
+
+Node.js v23.11.0

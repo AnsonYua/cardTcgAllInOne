@@ -138,9 +138,20 @@ export class OptimizedGameEngine {
         console.log(`🎮 Playing card ${cardId} in ${zone} (faceDown: ${faceDown}) by ${playerId}`);
 
         try {
+            // STEP 0: TURN AUTHORIZATION - Check if it's player's turn
+            const turnCheck = await this.checkIsPlayOkForAction(gameEnv, playerId);
+            if (!turnCheck) {
+                this.addErrorEvent(gameEnv, 'TURN_ERROR', 'Not your turn', playerId);
+                return { 
+                    success: false, 
+                    error: 'Not your turn'
+                };
+            }
+
             // STEP 1: INSTANT VALIDATION - No simulation needed
             const validation = await this.validateCardPlayInstant(gameEnv, playerId, cardId, zone, faceDown);
             if (!validation.isValid) {
+                this.addErrorEvent(gameEnv, 'VALIDATION_ERROR', validation.error!, playerId);
                 return { 
                     success: false, 
                     error: validation.error
@@ -149,16 +160,42 @@ export class OptimizedGameEngine {
 
             // STEP 2: EXECUTE CARD PLAY - Update game state
             const playAction = await this.executeCardPlay(gameEnv, playerId, cardId, zone, faceDown);
+            
+            // STEP 3: ADD GAME EVENTS - Frontend integration
+            this.addSuccessEvents(gameEnv, playerId, cardId, zone, faceDown);
 
-            // STEP 3: INCREMENTAL PROCESSING - Only process new effects
+            // STEP 4: INCREMENTAL PROCESSING - Only process new effects
             await this.incrementalManager.processNewEffects(gameEnv);
 
-            // STEP 4: UPDATE VALIDATION CACHE - Keep frontend data fresh
+            // STEP 5: HANDLE CARD EFFECTS - Check for search effects requiring player selection
+            const effectResult = await this.processCardEffects(gameEnv, playerId, cardId);
+            if (effectResult?.requiresCardSelection) {
+                return { 
+                    success: true, 
+                    gameState: gameEnv,
+                    requiresCardSelection: true
+                };
+            }
+
+            // STEP 6: TURN MANAGEMENT - Check if turn should end and switch players
+            const turnResult = await this.shouldUpdateTurn(gameEnv, playerId);
+            if (turnResult.turnSwitched) {
+                this.addGameEvent(gameEnv, EventType.TURN_SWITCH, {
+                    oldPlayer: playerId,
+                    newPlayer: gameEnv.currentPlayer,
+                    turn: gameEnv.currentTurn
+                });
+            }
+
+            // STEP 7: PHASE MANAGEMENT - Check if phase should advance
+            await this.checkPhaseProgression(gameEnv);
+
+            // STEP 8: UPDATE VALIDATION CACHE - Keep frontend data fresh
             if (this.config.enableCaching) {
                 await this.updateValidationCaches(gameEnv, playAction);
             }
 
-            // STEP 5: UPDATE METRICS
+            // STEP 9: UPDATE METRICS
             if (this.config.enableMetrics) {
                 this.updateMetrics(startTime);
             }
@@ -167,11 +204,13 @@ export class OptimizedGameEngine {
 
             return { 
                 success: true, 
-                gameState: gameEnv
+                gameState: gameEnv,
+                processingTime: Date.now() - startTime
             };
 
         } catch (error: any) {
             console.error(`❌ Error in card play:`, error);
+            this.addErrorEvent(gameEnv, 'INTERNAL_ERROR', `Internal error: ${error?.message || 'Unknown error'}`, playerId);
             return { 
                 success: false, 
                 error: `Internal error: ${error?.message || 'Unknown error'}`
@@ -193,29 +232,51 @@ export class OptimizedGameEngine {
         // Check if player exists
         const player = gameEnv.players[playerId];
         if (!player) {
+            console.log("validateCardPlayInstant Player not found")
             return { isValid: false, error: 'Player not found' };
         }
 
         // Check if card is in player's hand
         if (!player.deck.hand.includes(cardId)) {
+            console.log(cardId)
+            console.log(JSON.stringify(player.deck.hand))
+            console.log("validateCardPlayInstant Card not in hand")
             return { isValid: false, error: 'Card not in hand' };
         }
 
         // Check if zone is occupied
         if (gameEnv.isZoneOccupied(playerId, zone)) {
+            console.log(`Zone ${zone} is already occupied` )
             return { isValid: false, error: `Zone ${zone} is already occupied` };
         }
 
-        // Get player field effects (single source of truth)
-        const playerFieldEffects = gameEnv.fieldEffects[playerId];
+        // Get player field effects (single source of truth) or initialize if missing
+        let playerFieldEffects = gameEnv.fieldEffects[playerId];
         if (!playerFieldEffects) {
-            return { isValid: false, error: 'Player field effects not found' };
+            console.log('Player field effects not found, initializing...');
+            // Initialize field effects for the player
+            gameEnv.fieldEffects[playerId] = {
+                zoneRestrictions: {
+                    top: 'ALL',
+                    left: 'ALL', 
+                    right: 'ALL',
+                    help: 'ALL',
+                    sp: 'ALL'
+                },
+                activeEffects: [],
+                specialEffects: {},
+                calculatedPowers: {},
+                disabledCards: [],
+                victoryPointModifiers: 0
+            };
+            playerFieldEffects = gameEnv.fieldEffects[playerId];
         }
 
         // Face-down cards bypass most restrictions
         if (faceDown) {
             return await this.validateFaceDownPlacement(gameEnv, playerId, zone);
         }
+        console.log("card33444 ")
 
         // Check cached validation first
         if (this.config.enableCaching) {
@@ -224,7 +285,7 @@ export class OptimizedGameEngine {
                 return { isValid: canPlace };
             }
         }
-
+        console.log("card33444555 ")
         // Zone restrictions check using fieldEffects
         const allowedTypes = playerFieldEffects.zoneRestrictions && playerFieldEffects.zoneRestrictions[zone];
         if (allowedTypes && allowedTypes !== 'ALL') {
@@ -240,17 +301,17 @@ export class OptimizedGameEngine {
                 };
             }
         }
-
+        console.log("card33444555666 ")
         // Special effects check
         if (playerFieldEffects.specialEffects && playerFieldEffects.specialEffects.zonePlacementFreedom) {
             return { isValid: true }; // Freedom effect bypasses restrictions
         }
-
+        console.log("card33444555666777 ")
         // Card-specific restrictions
         if (playerFieldEffects.disabledCards && playerFieldEffects.disabledCards.includes(cardId)) {
             return { isValid: false, error: 'Card is disabled' };
         }
-
+        console.log("card33444555666777888 ")
         return { isValid: true };
     }
 
@@ -437,6 +498,187 @@ export class OptimizedGameEngine {
         }
 
         return validZones;
+    }
+
+    /**
+     * Check if action is allowed for player (turn authorization)
+     */
+    private async checkIsPlayOkForAction(gameEnv: GameEnvironment, playerId: string): Promise<boolean> {
+        // Check if it's player's turn
+        return gameEnv.currentPlayer === playerId;
+    }
+
+    /**
+     * Add game event for frontend integration
+     */
+    private addGameEvent(gameEnv: GameEnvironment, eventType: EventType, eventData: any = {}): void {
+        if (!gameEnv.gameEvents) gameEnv.gameEvents = [];
+        if (!gameEnv.lastEventId) gameEnv.lastEventId = 0;
+        
+        const eventId = `event_${Date.now()}_${++gameEnv.lastEventId}`;
+        const event = {
+            id: eventId,
+            type: eventType,
+            data: eventData,
+            timestamp: Date.now(),
+            expiresAt: Date.now() + 3000, // 3 seconds
+            frontendProcessed: false,
+            requireFrontendAcknowledgment: false
+        };
+        
+        gameEnv.gameEvents.push(event);
+        console.log(`🎯 Event added: ${eventType} (ID: ${eventId})`);
+    }
+
+    /**
+     * Add error event for frontend integration
+     */
+    private addErrorEvent(gameEnv: GameEnvironment, errorType: string, errorMessage: string, playerId?: string): void {
+        this.addGameEvent(gameEnv, 'ERROR_OCCURRED' as EventType, {
+            errorType,
+            message: errorMessage,
+            playerId,
+            timestamp: Date.now()
+        });
+    }
+
+    /**
+     * Add success events for card placement
+     */
+    private addSuccessEvents(gameEnv: GameEnvironment, playerId: string, cardId: string, zone: ZoneType, faceDown: boolean): void {
+        // Get card details for event
+        const cardDetails = this.getCardDetails(cardId);
+        
+        // Add CARD_PLAYED event
+        this.addGameEvent(gameEnv, 'CARD_PLAYED' as EventType, {
+            playerId,
+            card: {
+                cardId: cardDetails?.id || cardId,
+                name: cardDetails?.name || 'Unknown Card',
+                cardType: cardDetails?.cardType || 'unknown',
+                power: cardDetails?.power || 0,
+                gameType: cardDetails?.gameType || 'unknown',
+                traits: cardDetails?.traits || []
+            },
+            zone: zone.toLowerCase(),
+            isFaceDown: faceDown,
+            timestamp: Date.now()
+        });
+
+        // Add ZONE_FILLED event
+        this.addGameEvent(gameEnv, 'ZONE_FILLED' as EventType, {
+            playerId,
+            zone: zone.toLowerCase(),
+            cardCount: 1,
+            timestamp: Date.now()
+        });
+    }
+
+    /**
+     * Process card effects (placeholder for search effects)
+     */
+    private async processCardEffects(gameEnv: GameEnvironment, playerId: string, cardId: string): Promise<any> {
+        // TODO: Implement card effect processing for search effects
+        // For now, return null to indicate no special handling needed
+        return null;
+    }
+
+    /**
+     * Check if turn should update and switch players
+     */
+    private async shouldUpdateTurn(gameEnv: GameEnvironment, playerId: string): Promise<{ turnSwitched: boolean }> {
+        // Card placement always ends turn in this game
+        const opponentId = this.getOpponentId(gameEnv, playerId);
+        
+        // Switch to opponent
+        gameEnv.currentPlayer = opponentId;
+        gameEnv.currentTurn = (gameEnv.currentTurn || 0) + 1;
+        gameEnv.phase = 'DRAW_PHASE' as any; // Next player enters draw phase
+        
+        // Draw card for new current player
+        this.drawCardForPlayer(gameEnv, opponentId);
+        
+        return { turnSwitched: true };
+    }
+
+    /**
+     * Check if phase should progress (main -> SP -> battle)
+     */
+    private async checkPhaseProgression(gameEnv: GameEnvironment): Promise<void> {
+        // Check if all main zones filled
+        const allMainZonesFilled = this.areAllMainZonesFilled(gameEnv);
+        if (allMainZonesFilled && gameEnv.phase === 'MAIN_PHASE') {
+            this.addGameEvent(gameEnv, 'ALL_MAIN_ZONES_FILLED' as EventType, {
+                message: 'All character and help zones filled, advancing to SP phase'
+            });
+            
+            // Advance to SP phase
+            gameEnv.phase = 'SP_PHASE' as any;
+            this.addGameEvent(gameEnv, 'PHASE_CHANGE' as EventType, {
+                oldPhase: 'MAIN_PHASE',
+                newPhase: 'SP_PHASE',
+                reason: 'All main zones filled'
+            });
+        }
+    }
+
+    /**
+     * Check if all main zones are filled for both players
+     */
+    private areAllMainZonesFilled(gameEnv: GameEnvironment): boolean {
+        const players = [gameEnv.playerId_1, gameEnv.playerId_2].filter(Boolean);
+        
+        for (const playerId of players) {
+            const playerZones = gameEnv.zones.getPlayerZones(playerId!);
+            if (!playerZones) return false;
+            
+            // Check character zones (top, left, right)
+            if (!playerZones.top?.length || !playerZones.left?.length || !playerZones.right?.length) {
+                return false;
+            }
+            
+            // Check help zone
+            if (!playerZones.help?.length) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    /**
+     * Draw card for player
+     */
+    private drawCardForPlayer(gameEnv: GameEnvironment, playerId: string): void {
+        const player = gameEnv.players[playerId];
+        if (!player || !player.deck.mainDeck.length) return;
+        
+        // Move card from deck to hand
+        const drawnCard = player.deck.mainDeck.shift();
+        if (drawnCard) {
+            player.deck.hand.push(drawnCard);
+            this.addGameEvent(gameEnv, 'CARD_DRAWN' as EventType, {
+                playerId,
+                handSize: player.deck.hand.length
+            });
+        }
+    }
+
+    /**
+     * Get card details (placeholder - should integrate with CardInfoUtils)
+     */
+    private getCardDetails(cardId: string): any {
+        // TODO: Integrate with CardInfoUtils to get proper card details
+        // For now, return basic structure
+        const baseId = cardId.split('_')[0];
+        return {
+            id: baseId,
+            name: `Card ${baseId}`,
+            cardType: 'character',
+            gameType: 'unknown',
+            power: 100,
+            traits: []
+        };
     }
 
     /**

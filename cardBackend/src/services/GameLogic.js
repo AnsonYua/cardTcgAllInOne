@@ -286,83 +286,41 @@ class GameLogic {
             if (action.type === 'PlayCard' || action.type === 'PlayCardBack') {
                 const originalPlayerHand = gameData.gameEnv.players[playerId].deck.hand;
                 
-                // Determine if this is the new UID/zone-based format or legacy index-based format
-                const isUidFormat = action.hasOwnProperty('cardUID') && action.hasOwnProperty('zone');
-                
-                if (isUidFormat) {
-                    // NEW FORMAT: Use cardUID and zone directly
-                    cardToRecord = action.cardUID;
-                    zoneToRecord = action.zone.toLowerCase();
-                    
-                    // Find card index for backward compatibility
-                    cardIndex = originalPlayerHand.findIndex(handCardUID => handCardUID === cardToRecord);
-                    
-                    // Map zone to field index for backward compatibility
-                    const zoneMapping = ['top', 'left', 'right', 'help', 'sp'];
-                    fieldIndex = zoneMapping.indexOf(zoneToRecord);
-                    
-                    console.log(`🎯 GameLogic: Using new format - UID: ${cardToRecord}, Zone: ${zoneToRecord}`);
-                } else {
-                    // LEGACY FORMAT: Use field_idx and card_idx
-                    cardToRecord = originalPlayerHand[action.card_idx];
-                    
-                    // Get zone name from field index
-                    const zoneMapping = ['top', 'left', 'right', 'help', 'sp'];
-                    zoneToRecord = zoneMapping[action.field_idx];
-                    
-                    cardIndex = action.card_idx;
-                    fieldIndex = action.field_idx;
-                    
-                    console.log(`🎯 GameLogic: Using legacy format - Index: ${cardIndex}, Field: ${fieldIndex}`);
+                // Use only UID/zone-based format - legacy index format removed
+                if (!action.hasOwnProperty('cardUID') || !action.hasOwnProperty('zone')) {
+                    return this.mozGamePlay.throwError("Invalid action format: cardUID and zone required");
                 }
+                
+                cardToRecord = action.cardUID;
+                zoneToRecord = action.zone.toLowerCase();
+                
+                // Find card index for play sequence recording
+                cardIndex = originalPlayerHand.findIndex(handCardUID => handCardUID === cardToRecord);
+                
+                // Map zone to field index for play sequence recording
+                const zoneMapping = ['top', 'left', 'right', 'help', 'sp'];
+                fieldIndex = zoneMapping.indexOf(zoneToRecord);
+                
+                console.log(`🎯 GameLogic: Processing card play - UID: ${cardToRecord}, Zone: ${zoneToRecord}`);
                 
                 // CRITICAL: Capture turn and phase BEFORE processAction changes them
                 turnWhenPlayed = gameData.gameEnv.currentTurn || 0;
                 phaseWhenPlayed = gameData.gameEnv.phase || 'SETUP';
             }
             
-            const actionResult = await this.mozGamePlay.processAction(gameData.gameEnv,playerId,action);
-            
-            if (actionResult.hasOwnProperty('error')){
-                return actionResult;
-            }
-            
-            // Always update gameEnv and save
-            gameData.gameEnv = actionResult.requiresCardSelection ? actionResult.gameEnv : actionResult;
-            
-            // NEW: Record card play and simulate if card was played
-            if (!actionResult.hasOwnProperty('error') && cardToRecord && zoneToRecord) {
-                // Record the card play with correct timing (before state changes)
-                this.playSequenceManager.recordCardPlay(
-                    gameData.gameEnv,
-                    playerId,
-                    cardToRecord,
-                    "PLAY_CARD",
-                    zoneToRecord,
-                    {
-                        isFaceDown: action.type === 'PlayCardBack',
-                        cardIndex: cardIndex,
-                        fieldIndex: fieldIndex,
-                        // Include original action format for debugging
-                        originalFormat: action.hasOwnProperty('cardUID') ? 'uid' : 'index'
-                    },
-                    {
-                        turnNumber: turnWhenPlayed,
-                        phaseWhenPlayed: phaseWhenPlayed
-                    }
-                );
-                
-                // OPTIMIZED CARD PLAY PROCESSING: Use high-performance O(1) system
+            // OPTIMIZED PROCESSING: Use OptimizedGameEngine for card plays, mozGamePlay for others
+            if (cardToRecord && zoneToRecord) {
+                // Card play actions: Use OptimizedGameEngine
                 const gameEnvClass = GameEnvironmentAdapter.fromLegacyJSON(gameData.gameEnv);
                 
                 // Initialize optimized engine if not already done
                 await initializeOptimizedEngine(gameId);
+                const gameEngine = optimizedGameEngineManager.getGameEngine(gameId);
                 
-                // PERFORMANCE IMPROVEMENT: Replace O(n²) full simulation with O(1) incremental processing
+                // PERFORMANCE IMPROVEMENT: Single O(1) incremental processing path
                 const isFaceDown = action.type === 'PlayCardBack';
                 const zoneType = zoneToRecord.toUpperCase(); // Convert 'top' -> 'TOP' for enum
                 
-                const gameEngine = optimizedGameEngineManager.getGameEngine(gameId);
                 const playResult = await gameEngine.playCard(
                     gameEnvClass, 
                     playerId, 
@@ -372,14 +330,45 @@ class GameLogic {
                 );
                 
                 if (!playResult.success) {
-                    console.error('⚠️ OptimizedGameEngine play failed, falling back to EffectSimulator');
-                    // Fallback to legacy system if optimized engine fails
-                    await effectSimulator.simulateCardPlaySequenceWithClass(gameEnvClass);
-                } else {
-                    console.log(`⚡ Card play processed with O(1) optimization in ${playResult.processingTime}ms`);
+                    return this.mozGamePlay.throwError(playResult.error || "Card play failed validation");
                 }
                 
+                console.log(`⚡ Card play processed with O(1) optimization in ${playResult.processingTime}ms`);
+                
+                // Record the card play with correct timing 
+                this.playSequenceManager.recordCardPlay(
+                    gameEnvClass.getGameState(),
+                    playerId,
+                    cardToRecord,
+                    "PLAY_CARD",
+                    zoneToRecord,
+                    {
+                        isFaceDown: action.type === 'PlayCardBack',
+                        cardIndex: cardIndex,
+                        fieldIndex: fieldIndex
+                    },
+                    {
+                        turnNumber: turnWhenPlayed,
+                        phaseWhenPlayed: phaseWhenPlayed
+                    }
+                );
+                
                 gameData.gameEnv = GameEnvironmentAdapter.toLegacyJSON(gameEnvClass);
+                
+                // Handle card selection if required
+                if (playResult.requiresCardSelection) {
+                    return { gameEnv: gameData.gameEnv, requiresCardSelection: true };
+                }
+                
+            } else {
+                // Non-card actions: delegate to mozGamePlay for other action types
+                const actionResult = await this.mozGamePlay.processAction(gameData.gameEnv, playerId, action);
+                
+                if (actionResult.hasOwnProperty('error')){
+                    return actionResult;
+                }
+                
+                gameData.gameEnv = actionResult.requiresCardSelection ? actionResult.gameEnv : actionResult;
             }
             
             const updatedGameData = this.addUpdateUUID(gameData);
