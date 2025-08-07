@@ -1,7 +1,10 @@
 /**
- * Zone Mapping Utility
- * Provides consistent zone name handling between frontend and backend
+ * Frontend ZoneMapping Wrapper
+ * Provides ES6 module interface for the shared ZoneMapping utility
  */
+
+// Load the shared ZoneMapping utility and make it available as ES6 exports
+// This is a lightweight wrapper to convert CommonJS to ES6 modules
 
 // Standard zone names used throughout the system
 export const ZONE_NAMES = {
@@ -29,44 +32,76 @@ export const ZONE_INDICES = {
   [ZONE_NAMES.SP]: 4
 };
 
+/**
+ * Frontend-compatible ZoneMapping class
+ */
 export class ZoneMapping {
   
   /**
-   * Convert zone index to zone name
+   * Convert field index to zone name
    */
-  static indexToZone(index) {
+  static getZoneFromIndex(fieldIndex) {
     const zones = [ZONE_NAMES.TOP, ZONE_NAMES.LEFT, ZONE_NAMES.RIGHT, ZONE_NAMES.HELP, ZONE_NAMES.SP];
-    return zones[index] || null;
+    if (typeof fieldIndex !== 'number' || fieldIndex < 0 || fieldIndex >= zones.length) {
+      console.warn(`Invalid field index: ${fieldIndex}`);
+      return null;
+    }
+    return zones[fieldIndex];
   }
   
   /**
-   * Convert zone name to zone index
+   * Convert zone name to field index
    */
-  static zoneToIndex(zoneName) {
-    return ZONE_INDICES[zoneName] ?? -1;
+  static getIndexFromZone(zoneName) {
+    if (typeof zoneName !== 'string') {
+      console.warn(`Invalid zone name type: ${typeof zoneName}`);
+      return -1;
+    }
+    
+    const normalizedZone = zoneName.toLowerCase();
+    return ZONE_INDICES[normalizedZone] ?? -1;
   }
   
   /**
    * Validate zone name
    */
   static isValidZone(zoneName) {
-    return Object.values(ZONE_NAMES).includes(zoneName);
+    if (typeof zoneName !== 'string') return false;
+    return Object.values(ZONE_NAMES).includes(zoneName.toLowerCase());
   }
   
   /**
-   * Get zone type (character/utility/leader)
+   * Normalize zone name to lowercase standard format
    */
-  static getZoneType(zoneName) {
-    if ([ZONE_NAMES.TOP, ZONE_NAMES.LEFT, ZONE_NAMES.RIGHT].includes(zoneName)) {
-      return ZONE_TYPES.CHARACTER;
-    }
-    if ([ZONE_NAMES.HELP, ZONE_NAMES.SP].includes(zoneName)) {
-      return ZONE_TYPES.UTILITY;
-    }
-    if (zoneName === ZONE_NAMES.LEADER) {
-      return ZONE_TYPES.LEADER;
-    }
-    return null;
+  static normalizeZone(zoneName) {
+    if (typeof zoneName !== 'string') return null;
+    const normalized = zoneName.toLowerCase();
+    return Object.values(ZONE_NAMES).includes(normalized) ? normalized : null;
+  }
+  
+  /**
+   * Check if zone is for character placement
+   */
+  static isCharacterZone(zoneName) {
+    if (typeof zoneName !== 'string') return false;
+    const characterZones = [ZONE_NAMES.TOP, ZONE_NAMES.LEFT, ZONE_NAMES.RIGHT];
+    return characterZones.includes(zoneName.toLowerCase());
+  }
+  
+  /**
+   * Check if zone is for utility cards (help/sp)
+   */
+  static isUtilityZone(zoneName) {
+    if (typeof zoneName !== 'string') return false;
+    const utilityZones = [ZONE_NAMES.HELP, ZONE_NAMES.SP];
+    return utilityZones.includes(zoneName.toLowerCase());
+  }
+  
+  /**
+   * Get all valid zone names
+   */
+  static getAllZones() {
+    return Object.values(ZONE_NAMES);
   }
   
   /**
@@ -84,81 +119,72 @@ export class ZoneMapping {
   }
   
   /**
-   * Convert legacy field_idx to zone name
+   * Convert legacy action format to new format
    */
-  static fieldIndexToZone(fieldIdx) {
-    return this.indexToZone(fieldIdx);
+  static convertLegacyAction(legacyAction, playerHand) {
+    if (!legacyAction || typeof legacyAction.card_idx !== 'number' || typeof legacyAction.field_idx !== 'number') {
+      console.warn('Invalid legacy action format');
+      return null;
+    }
+
+    if (!Array.isArray(playerHand) || legacyAction.card_idx >= playerHand.length) {
+      console.warn('Invalid player hand or card index out of range');
+      return null;
+    }
+
+    const zoneName = this.getZoneFromIndex(legacyAction.field_idx);
+    if (!zoneName) {
+      console.warn(`Invalid field index: ${legacyAction.field_idx}`);
+      return null;
+    }
+
+    const cardUID = playerHand[legacyAction.card_idx];
+    if (!cardUID) {
+      console.warn(`Card not found at index: ${legacyAction.card_idx}`);
+      return null;
+    }
+
+    return {
+      type: legacyAction.type,
+      cardUID: cardUID,
+      zone: zoneName
+    };
   }
   
   /**
-   * Convert zone name to legacy field_idx
+   * Convert new action format to legacy format for backward compatibility
    */
-  static zoneToFieldIndex(zoneName) {
-    return this.zoneToIndex(zoneName);
-  }
-  
-  /**
-   * Normalize zone name (handle case variations)
-   */
-  static normalizeZone(zoneName) {
-    if (!zoneName) return null;
-    const normalized = zoneName.toLowerCase().trim();
-    return Object.values(ZONE_NAMES).find(zone => zone === normalized) || null;
-  }
-  
-  /**
-   * Convert action from old format to new format
-   */
-  static convertLegacyAction(legacyAction, hand) {
-    if (legacyAction.cardUID && legacyAction.zone) {
-      return legacyAction; // Already new format
+  static convertToLegacyAction(newAction, playerHand) {
+    if (!newAction || !newAction.cardUID || !newAction.zone) {
+      console.warn('Invalid new action format');
+      return null;
     }
-    
-    if (legacyAction.card_idx !== undefined && legacyAction.field_idx !== undefined) {
-      // Convert from legacy format
-      const cardUID = hand[legacyAction.card_idx];
-      const zone = this.indexToZone(legacyAction.field_idx);
-      
-      return {
-        ...legacyAction,
-        cardUID,
-        zone,
-        // Keep legacy fields for backward compatibility
-        card_idx: legacyAction.card_idx,
-        field_idx: legacyAction.field_idx
-      };
+
+    if (!Array.isArray(playerHand)) {
+      console.warn('Invalid player hand');
+      return null;
     }
-    
-    return legacyAction;
-  }
-  
-  /**
-   * Convert action from new format to old format
-   */
-  static convertToLegacyAction(newAction, hand) {
-    if (newAction.card_idx !== undefined && newAction.field_idx !== undefined) {
-      return newAction; // Already legacy format
+
+    const cardIndex = playerHand.findIndex(handCardUID => handCardUID === newAction.cardUID);
+    if (cardIndex === -1) {
+      console.warn(`Card UID not found in hand: ${newAction.cardUID}`);
+      return null;
     }
-    
-    if (newAction.cardUID && newAction.zone) {
-      // Convert to legacy format
-      const card_idx = hand.findIndex(cardUID => cardUID === newAction.cardUID);
-      const field_idx = this.zoneToIndex(newAction.zone);
-      
-      return {
-        ...newAction,
-        card_idx,
-        field_idx,
-        // Keep new fields for forward compatibility
-        cardUID: newAction.cardUID,
-        zone: newAction.zone
-      };
+
+    const fieldIndex = this.getIndexFromZone(newAction.zone);
+    if (fieldIndex === -1) {
+      console.warn(`Invalid zone name: ${newAction.zone}`);
+      return null;
     }
-    
-    return newAction;
+
+    return {
+      type: newAction.type,
+      card_idx: cardIndex,
+      field_idx: fieldIndex
+    };
   }
 }
 
 // Export zone constants for easy access
-export { ZONE_NAMES as ZONES };
+export const ZONES = ZONE_NAMES;
 export default ZoneMapping;
