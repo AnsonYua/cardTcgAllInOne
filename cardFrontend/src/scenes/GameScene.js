@@ -1385,9 +1385,10 @@ export default class GameScene extends Phaser.Scene {
     if (success) {
       // Move card to zone position
       card.moveToPosition(x, y);
-      card.options.draggable = false;
-      card.deselect(); // Remove selection highlight
-
+      
+      // Disable card interaction - cards in zones should not be clickable
+      card.disableInteraction();
+      
       // Set zone placement for hover preview system
       card.setZonePlacement(true, zoneType, true); // true = player zone
       console.log(`[GameScene] Card ${card.cardData?.id} placed in player zone: ${zoneType}`);

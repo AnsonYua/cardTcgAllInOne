@@ -76,6 +76,9 @@ export default class Card extends Phaser.GameObjects.Container {
     this.zoneType = null;
     this.isPlayerZone = false;
     
+    // Interaction state tracking
+    this.isInteractionDisabled = false;
+    
     // Power overlay for character cards in zones
     this.powerOverlay = null;
     
@@ -260,7 +263,12 @@ export default class Card extends Phaser.GameObjects.Container {
     // Hover effects with zone-specific preview support
     this.on('pointerover', (pointer, localX, localY, event) => {
       if (!this.isDragging) {
-        this.scene.game.canvas.style.cursor = 'pointer';
+        // Set cursor based on interaction state
+        if (this.isInteractionDisabled) {
+          this.scene.game.canvas.style.cursor = 'default';
+        } else {
+          this.scene.game.canvas.style.cursor = 'pointer';
+        }
         
         // Emit different events based on whether card is in zone or in hand
         if (this.isInZone) {
@@ -301,6 +309,12 @@ export default class Card extends Phaser.GameObjects.Container {
         // Check if card is still valid before processing click
         if (!this.visible || !this.active) {
           console.error(`Card ${this.cardData?.id} - cannot process click, card is not visible or active`);
+          return;
+        }
+        
+        // Skip interaction if card is disabled (placed in zone)
+        if (this.isInteractionDisabled) {
+          console.log(`Card ${this.cardData?.id} clicked but interaction is disabled - no selection`);
           return;
         }
         
@@ -759,6 +773,51 @@ export default class Card extends Phaser.GameObjects.Container {
       zoneType: this.zoneType,
       isPlayerZone: this.isPlayerZone
     };
+  }
+
+  /**
+   * Disable card interaction (clicking, selection, dragging)
+   * Used when cards are placed in zones and should no longer be interactive
+   * Preserves hover events for preview system
+   */
+  disableInteraction() {
+    console.log(`[Card] Disabling interaction for card ${this.cardData?.id}`);
+    
+    // Update options to reflect disabled state
+    this.options.interactive = false;
+    this.options.draggable = false;
+    
+    // Clear any existing selection state
+    if (this.isSelected) {
+      this.deselectSilently();
+    }
+    
+    // Add flag to track disabled state
+    this.isInteractionDisabled = true;
+    
+    // Don't call disableInteractive() - we still want hover events for preview system
+    // Instead, we'll modify the click handler behavior in setupInteraction
+  }
+
+  /**
+   * Re-enable card interaction
+   * Used if cards need to become interactive again (e.g., returned to hand)
+   */
+  enableInteraction() {
+    console.log(`[Card] Enabling interaction for card ${this.cardData?.id}`);
+    
+    // Update options
+    this.options.interactive = true;
+    // Note: draggable should be set based on context, not always enabled
+    
+    // Clear disabled flag
+    this.isInteractionDisabled = false;
+    
+    // Re-enable Phaser interactivity
+    this.setInteractive();
+    
+    // Restore normal event handlers by calling setupInteraction again
+    this.setupInteraction();
   }
 
   // Hover animation methods removed - no animations on hover

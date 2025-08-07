@@ -43,6 +43,9 @@ export default class GameSceneUtils {
         zone.card = card;
         zone.placeholder.setVisible(false);
 
+        // Disable interaction for cards placed in zones - they should not be clickable
+        card.disableInteraction();
+
         // Set zone placement tracking for hover preview system
         card.setZonePlacement(true, zoneType, !isOpponent);
         console.log(`[GameSceneUtils] Set zone placement for card ${cardDataObject.id}: zone=${zoneType}, isPlayer=${!isOpponent}`);
