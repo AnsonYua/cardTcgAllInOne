@@ -564,64 +564,62 @@ class DynamicTestRunner {
     }
 
     async convertActionToBackendFormat(actionStep, gameId) {
-        // Convert frontend action format to backend format
-        // Frontend: { actionType: "PlayCard", cardId: "c-1", zone: "top" }
-        // Backend: { type: "PlayCard", card_idx: 0, field_idx: 0 }
+        // NEW: Support both legacy format conversion and new UID/zone format
+        // Test format: { actionType: "PlayCard", cardId: "c-1", zone: "top" }
+        // New backend format: { type: "PlayCard", cardUID: "c-1_1754551822157_24", zone: "top" }
+        // Legacy backend format: { type: "PlayCard", card_idx: 0, field_idx: 0 }
         
         const { action, playerId } = actionStep;
         
-        // Get current game state to find card index in hand
+        // Get current game state to find card UID in hand
         const gameState = await this.testHelper.getPlayerData(playerId, gameId);
         const playerHand = gameState.gameEnv.players[playerId].deck.hand;
         
-        // Find card index in hand
-        // Handle both cardId lookup and direct cardIndex
-        let cardIdx;
+        // Find the actual card UID in hand
+        let cardUID;
         
         if (action.cardIndex !== undefined) {
-            // Direct index provided
-            cardIdx = action.cardIndex;
-            if (cardIdx < 0 || cardIdx >= playerHand.length) {
-                throw new Error(`Card index ${cardIdx} out of range. Hand has ${playerHand.length} cards.`);
+            // Direct index provided - get UID from that position
+            if (action.cardIndex < 0 || action.cardIndex >= playerHand.length) {
+                throw new Error(`Card index ${action.cardIndex} out of range. Hand has ${playerHand.length} cards.`);
             }
+            cardUID = playerHand[action.cardIndex];
         } else if (action.cardId) {
-            // Look up card by ID
-            cardIdx = playerHand.findIndex(card => {
-                if (typeof card === 'string') {
-                    return card === action.cardId;
-                } else if (card && card.id) {
-                    return card.id === action.cardId;
+            // Look up card UID by base card ID
+            cardUID = playerHand.find(handCardUID => {
+                if (typeof handCardUID === 'string') {
+                    // Extract base card ID from UID (before first underscore)
+                    const baseCardId = handCardUID.split('_')[0];
+                    return baseCardId === action.cardId;
+                } else if (handCardUID && handCardUID.id) {
+                    return handCardUID.id === action.cardId;
                 }
                 return false;
             });
-            if (cardIdx === -1) {
+            
+            if (!cardUID) {
                 throw new Error(`Card ${action.cardId} not found in player ${playerId}'s hand. Hand contains: ${JSON.stringify(playerHand)}`);
             }
             
-            // Debug: Log the card index conversion
-            console.log(`DEBUG: Converting ${action.cardId} → index ${cardIdx} in hand: ${JSON.stringify(playerHand)}`);
+            // Debug: Log the card UID resolution
+            console.log(`DEBUG: Converting ${action.cardId} → UID ${cardUID} in hand: ${JSON.stringify(playerHand)}`);
         } else {
             throw new Error('Action must specify either cardId or cardIndex');
         }
         
-        // Convert zone name to field index
-        const zoneMapping = {
-            'top': 0,
-            'left': 1,
-            'right': 2,
-            'help': 3,
-            'sp': 4
-        };
+        // Validate zone name
+        const validZones = ['top', 'left', 'right', 'help', 'sp'];
+        const normalizedZone = action.zone.toLowerCase();
         
-        const fieldIdx = zoneMapping[action.zone.toLowerCase()];
-        if (fieldIdx === undefined) {
+        if (!validZones.includes(normalizedZone)) {
             throw new Error(`Invalid zone: ${action.zone}`);
         }
         
+        // Return new UID/zone-based format
         return {
             type: action.actionType,
-            card_idx: cardIdx,
-            field_idx: fieldIdx
+            cardUID: cardUID,
+            zone: normalizedZone
         };
     }
 

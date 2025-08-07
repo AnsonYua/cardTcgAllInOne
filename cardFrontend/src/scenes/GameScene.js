@@ -3,6 +3,7 @@ import { GAME_CONFIG } from '../config/gameConfig.js';
 import Card from '../components/Card.js';
 import ShuffleAnimationManager from '../components/ShuffleAnimationManager.js';
 import GameSceneUtils from '../utils/GameSceneUtils.js';
+import { ZoneMapping } from '../../shared/utils/ZoneMapping.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor(config = { key: 'GameScene' }) {
@@ -1244,37 +1245,46 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createBackendAction(cardData, zoneType) {
-    // Get the current hand from game state to find card index
+    // Get the current hand from game state to find card UID
     const hand = this.gameStateManager.getPlayerHand();
     
-    // Find the index of this card in the player's hand
-    // The frontend hand contains full card objects, but backend expects index from its card ID array
-    const cardIndex = hand.findIndex(handCard => handCard.id === cardData.id);
+    // Find the actual UID of this card in the player's hand
+    // Backend hand contains UID strings like "c-1_1754551822157_24"
+    // Frontend cardData.id is the base ID like "c-1"
+    // We need to find the actual UID that matches this base ID
+    const cardUID = hand.find(handCardUID => {
+      // Extract base card ID from UID (before first underscore)
+      const baseCardId = typeof handCardUID === 'string' 
+        ? handCardUID.split('_')[0] 
+        : handCardUID.id;
+      return baseCardId === cardData.id;
+    });
     
-    if (cardIndex === -1) {
+    if (!cardUID) {
       console.error(`Card ${cardData.id} not found in player hand`);
-      console.log('Available hand cards:', hand.map(card => card.id));
+      console.log('Available hand cards (UIDs):', hand);
+      console.log('Looking for base card ID:', cardData.id);
       return null;
     }
     
-    // Convert zone name to field index
-    const fieldIndex = this.getFieldIndexFromZone(zoneType);
+    // Validate and normalize zone name using ZoneMapping utility
+    const normalizedZone = ZoneMapping.normalizeZone(zoneType);
     
-    if (fieldIndex === -1) {
+    if (!normalizedZone) {
       console.error(`Invalid zone type: ${zoneType}`);
       return null;
     }
     
-    // Create action in backend expected format
+    // Create action in new UID/zone-based format
     const action = {
       type: cardData.faceDown ? 'PlayCardBack' : 'PlayCard',
-      card_idx: cardIndex,
-      field_idx: fieldIndex
+      cardUID: cardUID,
+      zone: normalizedZone
     };
     
-    console.log(`Created backend action for card ${cardData.id}:`);
-    console.log(`  - Frontend hand index: ${cardIndex}`);
-    console.log(`  - Zone: ${zoneType} -> field_idx: ${fieldIndex}`);
+    console.log(`Created backend action for card ${cardData.id} (NEW UID/ZONE FORMAT):`);
+    console.log(`  - Card UID: ${cardUID}`);
+    console.log(`  - Zone: ${normalizedZone}`);
     console.log(`  - Face down: ${cardData.faceDown} -> type: ${action.type}`);
     
     return action;

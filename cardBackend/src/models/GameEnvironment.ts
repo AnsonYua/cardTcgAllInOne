@@ -656,9 +656,22 @@ export class Player {
             // Get reshuffled deck from mozDeckHelper
             const reshuffleResult = await mozDeckHelper.reshuffleForPlayer(this.id);
             
-            // Update player's hand and main deck with reshuffled cards
+            // CRITICAL FIX: Update player's hand, main deck AND cardMapping
+            // This ensures the frontend can find all reshuffled cards using their new UIDs
             this.deck.hand = reshuffleResult.hand;
             this.deck.mainDeck = reshuffleResult.mainDeck;
+            
+            // Update cardMapping with new UID mappings from reshuffle
+            if (reshuffleResult.cardMapping && Object.keys(reshuffleResult.cardMapping).length > 0) {
+                // Merge the new mappings with existing ones (preserving leaders and other cards)
+                this.deck.cardMapping = {
+                    ...this.deck.cardMapping,
+                    ...reshuffleResult.cardMapping
+                };
+                console.log("🔄 Updated cardMapping after reshuffle:", Object.keys(this.deck.cardMapping).length, "total cards");
+            } else {
+                console.warn("⚠️  No cardMapping returned from reshuffleForPlayer - this may cause card lookup issues");
+            }
             
             return true; // Hand was reshuffled
         }

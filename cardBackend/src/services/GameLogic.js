@@ -280,14 +280,41 @@ class GameLogic {
             let zoneToRecord = null;
             let turnWhenPlayed = null;
             let phaseWhenPlayed = null;
+            let cardIndex = null;
+            let fieldIndex = null;
+            
             if (action.type === 'PlayCard' || action.type === 'PlayCardBack') {
-                // CRITICAL: Capture card ID BEFORE processAction modifies the hand
                 const originalPlayerHand = gameData.gameEnv.players[playerId].deck.hand;
-                cardToRecord = originalPlayerHand[action.card_idx];
                 
-                // Get zone name from field index
-                const zoneMapping = ['top', 'left', 'right', 'help', 'sp'];
-                zoneToRecord = zoneMapping[action.field_idx];
+                // Determine if this is the new UID/zone-based format or legacy index-based format
+                const isUidFormat = action.hasOwnProperty('cardUID') && action.hasOwnProperty('zone');
+                
+                if (isUidFormat) {
+                    // NEW FORMAT: Use cardUID and zone directly
+                    cardToRecord = action.cardUID;
+                    zoneToRecord = action.zone.toLowerCase();
+                    
+                    // Find card index for backward compatibility
+                    cardIndex = originalPlayerHand.findIndex(handCardUID => handCardUID === cardToRecord);
+                    
+                    // Map zone to field index for backward compatibility
+                    const zoneMapping = ['top', 'left', 'right', 'help', 'sp'];
+                    fieldIndex = zoneMapping.indexOf(zoneToRecord);
+                    
+                    console.log(`🎯 GameLogic: Using new format - UID: ${cardToRecord}, Zone: ${zoneToRecord}`);
+                } else {
+                    // LEGACY FORMAT: Use field_idx and card_idx
+                    cardToRecord = originalPlayerHand[action.card_idx];
+                    
+                    // Get zone name from field index
+                    const zoneMapping = ['top', 'left', 'right', 'help', 'sp'];
+                    zoneToRecord = zoneMapping[action.field_idx];
+                    
+                    cardIndex = action.card_idx;
+                    fieldIndex = action.field_idx;
+                    
+                    console.log(`🎯 GameLogic: Using legacy format - Index: ${cardIndex}, Field: ${fieldIndex}`);
+                }
                 
                 // CRITICAL: Capture turn and phase BEFORE processAction changes them
                 turnWhenPlayed = gameData.gameEnv.currentTurn || 0;
@@ -314,8 +341,10 @@ class GameLogic {
                     zoneToRecord,
                     {
                         isFaceDown: action.type === 'PlayCardBack',
-                        cardIndex: action.card_idx,
-                        fieldIndex: action.field_idx
+                        cardIndex: cardIndex,
+                        fieldIndex: fieldIndex,
+                        // Include original action format for debugging
+                        originalFormat: action.hasOwnProperty('cardUID') ? 'uid' : 'index'
                     },
                     {
                         turnNumber: turnWhenPlayed,

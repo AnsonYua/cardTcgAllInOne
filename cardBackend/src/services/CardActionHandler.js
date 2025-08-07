@@ -31,6 +31,8 @@
 // =======================================================================================
 
 const mozDeckHelper = require('../mozGame/mozDeckHelper');
+const path = require('path');
+const { ZoneMapping } = require(path.join(__dirname, '../../../shared/utils/ZoneMapping'));
 
 // TurnPhase constants (defined inline in mozGamePlay.js)
 const TurnPhase = {
@@ -150,40 +152,85 @@ class CardActionHandler {
     // =======================================================================================
 
     /**
-     * Validate basic placement requirements: position bounds, card index, card existence
+     * Validate basic placement requirements: position bounds, card index/UID, card existence
+     * Supports both legacy index-based format and new UID/zone-based format
      */
     async validateBasicPlacement(gameEnv, playerId, action) {
         console.log(`🎯 CardActionHandler: Validating basic placement for action:`, action);
         
-        // Validate field position index (0-4 for top, left, right, help, sp)
-        if (action.field_idx >= this.POSITION_DICT.length) {
-            this.addErrorEvent(gameEnv, 'INVALID_POSITION', "position out of range", playerId);
-            return { isValid: false, error: "position out of range" };
-        }
-        
-        const playPos = this.POSITION_DICT[action.field_idx];
+        // Determine if this is the new UID/zone-based format or legacy index-based format
+        const isUidFormat = action.hasOwnProperty('cardUID') && action.hasOwnProperty('zone');
         const hand = [...this.getPlayerHand(gameEnv, playerId)];
         
-        // Validate card index in hand (prevent playing non-existent cards)
-        if (action.card_idx >= hand.length) {
-            this.addErrorEvent(gameEnv, 'INVALID_CARD_INDEX', "hand card out of range", playerId);
-            return { isValid: false, error: "hand card out of range" };
+        let playPos, cardToPlay, cardDetails;
+        
+        if (isUidFormat) {
+            console.log(`🎯 Using new UID/zone-based format`);
+            
+            // NEW FORMAT: Use cardUID and zone directly with validation
+            playPos = ZoneMapping.normalizeZone(action.zone);
+            
+            // Validate zone name using ZoneMapping utility
+            if (!playPos) {
+                this.addErrorEvent(gameEnv, 'INVALID_ZONE', `Invalid zone: ${action.zone}`, playerId);
+                return { isValid: false, error: `Invalid zone: ${action.zone}` };
+            }
+            
+            // Find card in hand by UID
+            const cardUID = action.cardUID;
+            const cardIndex = hand.findIndex(handCardUID => handCardUID === cardUID);
+            
+            if (cardIndex === -1) {
+                this.addErrorEvent(gameEnv, 'CARD_NOT_IN_HAND', `Card ${cardUID} not found in hand`, playerId);
+                return { isValid: false, error: `Card ${cardUID} not found in hand` };
+            }
+            
+            cardToPlay = hand[cardIndex];
+            cardDetails = mozDeckHelper.getDeckCardDetails(cardToPlay);
+            
+            if (!cardDetails) {
+                this.addErrorEvent(gameEnv, 'CARD_NOT_FOUND', "Card details not found", playerId);
+                return { isValid: false, error: "Card details not found" };
+            }
+            
+            console.log(`🎯 New format validation passed - Zone: ${playPos}, Card: ${cardDetails.name}, UID: ${cardUID}`);
+            
+            // Store the card index for backward compatibility with existing code
+            action._resolvedCardIndex = cardIndex;
+            
+        } else {
+            console.log(`🎯 Using legacy index-based format`);
+            
+            // LEGACY FORMAT: Use field_idx and card_idx
+            // Validate field position index (0-4 for top, left, right, help, sp)
+            if (action.field_idx >= this.POSITION_DICT.length) {
+                this.addErrorEvent(gameEnv, 'INVALID_POSITION', "position out of range", playerId);
+                return { isValid: false, error: "position out of range" };
+            }
+            
+            playPos = this.POSITION_DICT[action.field_idx];
+            
+            // Validate card index in hand (prevent playing non-existent cards)
+            if (action.card_idx >= hand.length) {
+                this.addErrorEvent(gameEnv, 'INVALID_CARD_INDEX', "hand card out of range", playerId);
+                return { isValid: false, error: "hand card out of range" };
+            }
+            
+            // Get card details from deck manager
+            cardToPlay = hand[action.card_idx];
+            cardDetails = mozDeckHelper.getDeckCardDetails(cardToPlay);
+            
+            if (!cardDetails) {
+                this.addErrorEvent(gameEnv, 'CARD_NOT_FOUND', "Card not found", playerId);
+                return { isValid: false, error: "Card not found" };
+            }
+            
+            console.log(`🎯 Legacy format validation passed - Position: ${playPos}, Card: ${cardDetails.name}`);
         }
-        
-        // Get card details from deck manager
-        const cardToPlay = hand[action.card_idx];
-        const cardDetails = mozDeckHelper.getDeckCardDetails(cardToPlay);
-        
-        if (!cardDetails) {
-            this.addErrorEvent(gameEnv, 'CARD_NOT_FOUND', "Card not found", playerId);
-            return { isValid: false, error: "Card not found" };
-        }
-        
-        console.log(`🎯 Basic validation passed - Position: ${playPos}, Card: ${cardDetails.name}`);
         
         return {
             isValid: true,
-            data: { playPos, cardDetails, hand }
+            data: { playPos, cardDetails, hand, isUidFormat }
         };
     }
 
@@ -422,9 +469,12 @@ class CardActionHandler {
     async executeCardPlacement(gameEnv, playerId, action, cardDetails, playPos, isPlayInFaceDown, hand) {
         console.log(`🎯 CardActionHandler: Executing card placement - ${cardDetails.name} in ${playPos} (faceDown: ${isPlayInFaceDown})`);
         
+        // Determine card index - use resolved index for new format, or direct index for legacy format
+        const cardIndex = action._resolvedCardIndex !== undefined ? action._resolvedCardIndex : action.card_idx;
+        
         // Create card object for field placement with all necessary metadata
         const cardObj = {
-            "card": hand.splice(action.card_idx, 1),        // Remove card from hand
+            "card": hand.splice(cardIndex, 1),              // Remove card from hand using correct index
             "cardDetails": [cardDetails],                    // Store card data for effects
             "isBack": [isPlayInFaceDown],                   // Track if face down (for battle calculations)
             "valueOnField": isPlayInFaceDown ? 0 : cardDetails.power  // Power for calculations (face-down = 0)

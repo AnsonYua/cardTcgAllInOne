@@ -134,14 +134,36 @@ class MozDeckLogic {
         const { drawnCards, mainDeck } = this.drawCards(mainDeckCard, 7);
         const hand = drawnCards;
         
-        // Return PlayerDeckDataResp class instance with only hand and mainDeck updated
+        // CRITICAL FIX: Generate new UID mappings for reshuffled cards
+        // This ensures the cardMapping includes all new UIDs created during reshuffle
+        const cardMapping: Record<string, string> = {};
+        
+        // Create mappings for hand cards
+        hand.forEach((cardUID) => {
+            const cardId = this.extractCardIdFromUID(cardUID);
+            if (cardId) {
+                cardMapping[cardUID] = cardId;
+            }
+        });
+        
+        // Create mappings for remaining main deck cards
+        mainDeck.forEach((cardUID) => {
+            const cardId = this.extractCardIdFromUID(cardUID);
+            if (cardId) {
+                cardMapping[cardUID] = cardId;
+            }
+        });
+        
+        console.log("🔄 Reshuffle cardMapping generated:", Object.keys(cardMapping).length, "cards");
+        
+        // Return PlayerDeckDataResp class instance with complete UID mappings
         return new PlayerDeckDataResp(
             0, // currentLeaderIdx (default)
             [], // leader (empty for reshuffle)
             hand, // hand
             mainDeck, // mainDeck
             {}, // leaderMapping (empty for reshuffle)
-            {} // cardMapping (empty for reshuffle)
+            cardMapping // cardMapping with new UIDs
         );
     }
 
@@ -274,6 +296,23 @@ class MozDeckLogic {
     getFieldIdx(field: string): number {
         const fieldArr = ["top", "left", "right", "help", "sp"];
         return fieldArr.indexOf(field);
+    }
+
+    /**
+     * Extract base card ID from UID (format: cardId_timestamp_index)
+     * @param uid - Card UID to extract base ID from
+     * @returns Base card ID or null if invalid format
+     */
+    private extractCardIdFromUID(uid: string): string | null {
+        if (!uid) return null;
+        
+        // UID format: cardId_timestamp_index (e.g., "c-1_1754551822157_24")
+        const parts = uid.split('_');
+        if (parts.length >= 3) {
+            return parts[0]; // Return the base card ID (e.g., "c-1")
+        }
+        
+        return null;
     }
 
     /**
