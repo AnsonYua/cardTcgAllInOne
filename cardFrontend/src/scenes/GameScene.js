@@ -3,7 +3,7 @@ import { GAME_CONFIG } from '../config/gameConfig.js';
 import Card from '../components/Card.js';
 import ShuffleAnimationManager from '../components/ShuffleAnimationManager.js';
 import GameSceneUtils from '../utils/GameSceneUtils.js';
-import { ZoneMapping } from '../../shared/utils/ZoneMapping.js';
+import { ZoneMapping } from '../utils/ZoneMapping.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor(config = { key: 'GameScene' }) {
