@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_CONFIG } from '../config/gameConfig.js';
+import PowerOverlay from './PowerOverlay.js';
 
 // Utility function to determine card type and properties from ID
 function getCardInfoFromId(id) {
@@ -69,6 +70,14 @@ export default class Card extends Phaser.GameObjects.Container {
     this.isSelected = false;
     this.isDragging = false;
     this.originalPosition = { x, y };
+    
+    // Power overlay for character cards in zones
+    this.powerOverlay = null;
+    
+    // Create power overlay if this is a character card
+    if (this.cardData && this.cardData.type === 'character') {
+      this.createPowerOverlay();
+    }
     
     this.create();
     this.setupInteraction();
@@ -151,6 +160,10 @@ export default class Card extends Phaser.GameObjects.Container {
     }
     
     this.setScale(this.options.scale);
+    
+    // Create power overlay for character cards (initially hidden)
+    this.createPowerOverlay();
+    
     this.updateVisualState();
   }
 
@@ -392,6 +405,9 @@ export default class Card extends Phaser.GameObjects.Container {
       this.powerText.setText(displayPower.toString());
     }
     
+    // Update power overlay for character cards
+    this.updatePowerOverlay(true);
+    
     // Check if card is disabled by effects
     const isDisabled = this.isCardDisabled();
     
@@ -478,6 +494,7 @@ export default class Card extends Phaser.GameObjects.Container {
     this.disabledOverlay = null;
     this.cardImage = null;
     this.powerText = null;
+    this.powerOverlay = null;
     
     // Recreate card
     this.create();
@@ -601,6 +618,104 @@ export default class Card extends Phaser.GameObjects.Container {
    */
   refreshFromEffects() {
     this.updateVisualState();
+  }
+  
+  /**
+   * Create power overlay component for character cards
+   * Only creates overlay for character type cards
+   */
+  createPowerOverlay() {
+    // Only create power overlay for character cards
+    if (this.cardData && this.cardData.type === 'character') {
+      if (this.powerOverlay) {
+        this.powerOverlay.destroy();
+      }
+      
+      this.powerOverlay = new PowerOverlay(this.scene);
+      this.add(this.powerOverlay);
+      
+      // Set proper depth for overlay
+      this.powerOverlay.setDepth(1000);
+      
+      // Initially hidden until placed in character zone
+      this.powerOverlay.setVisible(false);
+      
+      console.log('[Card] Created PowerOverlay for character card:', this.cardData.id);
+      
+      // Update power display immediately
+      this.updatePowerOverlay();
+    }
+  }
+  
+  /**
+   * Get the current display power for this card from game state
+   * @returns {number} The current power value including all effects
+   */
+  getDisplayPower() {
+    if (!this.gameStateManager || !this.cardData) {
+      return this.cardData?.power || 0;
+    }
+    
+    // Get player data from game state
+    const player = this.gameStateManager.getPlayer();
+    if (!player) {
+      return this.cardData.power || 0;
+    }
+    
+    // Check if this card has computed power in field effects
+    const fieldEffects = player.fieldEffects;
+    if (fieldEffects && fieldEffects.calculatedPowers && fieldEffects.calculatedPowers[this.cardData.id]) {
+      return fieldEffects.calculatedPowers[this.cardData.id];
+    }
+    
+    // Fall back to base power
+    return this.cardData.power || 0;
+  }
+  
+  /**
+   * Update power overlay with current power values
+   * @param {boolean} animate - Whether to animate changes
+   */
+  updatePowerOverlay(animate = true) {
+    if (!this.powerOverlay || this.cardData?.type !== 'character') {
+      console.log('[Card] updatePowerOverlay skipped - no overlay or not character:', this.cardData?.id, 'type:', this.cardData?.type);
+      return;
+    }
+    
+    // Get current and base power values
+    const currentPower = this.getDisplayPower();
+    const basePower = this.cardData.power || 0;
+    
+    console.log('[Card] updatePowerOverlay for', this.cardData.id, '- currentPower:', currentPower, 'basePower:', basePower);
+    
+    // Hide overlay for face-down cards
+    if (this.options.faceDown) {
+      this.powerOverlay.setVisible(false);
+      return;
+    }
+    
+    // Update power display with simple text for now
+    if (this.powerOverlay.updatePower) {
+      this.powerOverlay.updatePower(currentPower, basePower, animate);
+    } else {
+      console.warn('[Card] PowerOverlay missing updatePower method');
+    }
+  }
+  
+  /**
+   * Set whether the power overlay should be visible
+   * Used when card is placed in/removed from zones
+   * @param {boolean} visible - Whether overlay should be shown
+   * @param {boolean} animate - Whether to animate the change
+   */
+  setPowerOverlayVisible(visible, animate = true) {
+    console.log('[Card] setPowerOverlayVisible called:', visible, 'for card:', this.cardData?.id, 'powerOverlay exists:', !!this.powerOverlay);
+    if (this.powerOverlay) {
+      this.powerOverlay.setVisible(visible);
+      if (visible) {
+        this.updatePowerOverlay(animate);
+      }
+    }
   }
 
   // Hover animation methods removed - no animations on hover

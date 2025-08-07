@@ -1169,6 +1169,12 @@ export default class GameScene extends Phaser.Scene {
         if (zone) {
           zone.card = card;
           zone.placeholder.setVisible(false);
+          
+          // Show power overlay for character cards in character zones
+          if (card.cardData?.type === 'character' && 
+              ['top', 'left', 'right'].includes(zoneType)) {
+            card.setPowerOverlayVisible(true, true);
+          }
         }
         
         // Deselect the card
@@ -1360,6 +1366,13 @@ export default class GameScene extends Phaser.Scene {
       card.options.draggable = false;
       card.deselect(); // Remove selection highlight
 
+      // Activate power overlay for character cards in character zones
+      if (cardData.type === 'character' && ['top', 'left', 'right'].includes(zoneType.toLowerCase())) {
+        console.log('[GameScene] Activating power overlay for character card in zone:', zoneType);
+        card.setPowerOverlayVisible(true);
+        card.updatePowerOverlay();
+      }
+
       // Remove from hand
       const handIndex = this.playerHand.indexOf(card);
       if (handIndex > -1) {
@@ -1374,6 +1387,12 @@ export default class GameScene extends Phaser.Scene {
       if (zone) {
         zone.card = card;
         zone.placeholder.setVisible(false);
+        
+        // Show power overlay for character cards in character zones
+        if (card.cardData?.type === 'character' && 
+            ['top', 'left', 'right'].includes(zoneType)) {
+          card.setPowerOverlayVisible(true, true);
+        }
       }
 
       // Clear selection and zone highlights
