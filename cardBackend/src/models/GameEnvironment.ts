@@ -600,6 +600,10 @@ export class Player {
     public getCurrentLeaderCardId(): string | null {
         return this.deck.getCurrentLeaderCardId();
     }
+    
+    public getCurrentLeaderCardUId(): string | null {
+        return this.deck.getCurrentLeaderCardUId();
+    }
 
     public drawCard(): string | null {
         return this.deck.drawCard();
@@ -835,7 +839,9 @@ export class GameZones {
         
         // Create unified ZoneCard using factory function
         const zoneCard = createZoneCard(cardUid, cardId, resolvedCardData, isFaceDown, playerId);
-        
+        console.log("test222 ", JSON.stringify(zoneCard))
+        zoneCard.cardUid = cardUid
+        console.log("test333 ", JSON.stringify(zoneCard))
         // Place card in appropriate zone
         if (zone === ZoneType.LEADER) {
             if (!playerZones.leader) playerZones.leader = [];
@@ -869,7 +875,7 @@ export class GameZones {
 
     public setLeaderInZone(playerId: string, leaderData: any): void {
         // Convert old-style leaderData to new unified ZoneCard structure
-        const cardUid = leaderData.id || `${leaderData.cardId || 'unknown'}_${playerId}_leader`;
+        const cardUid = leaderData.uid
         const cardId = leaderData.id?.split("_")[0] || leaderData.cardId || leaderData.id;
         
         // Ensure leaderData has proper structure for CardData

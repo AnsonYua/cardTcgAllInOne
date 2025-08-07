@@ -1698,7 +1698,6 @@ export default class GameScene extends Phaser.Scene {
       cardType: leaderCard.type,
     }*/
     const leaderCardData = this.gameStateManager.getPlayerLeader(playerType === 'opponent');
-    
     this.tweens.add({
       targets: topCard,
       x: leaderZone.x,

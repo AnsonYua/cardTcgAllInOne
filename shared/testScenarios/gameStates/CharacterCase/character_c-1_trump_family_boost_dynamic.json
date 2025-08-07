@@ -1,496 +1,889 @@
 {
-  "gameId": "character_c-1_trump_family_boost_dynamic",
-  "description": "Dynamic test for c-1 (總統特朗普) trait-based power boost: +10 to 特朗普家族 trait cards",
-  "testType": "dynamic",
+  "description": "h-2 Make America Great Again - setPower effect validation with real game state",
+  "gameId": "h2_setpower_validation",
+  "testType": "utility_effect",
+  "category": "setPower",
+  "tags": ["h-2", "MAGA", "setPower", "cross-player", "card-selection", "validation"],
   "initialGameEnv": {
-    "phase": "MAIN_PHASE",
-    "round": 1,
-    "gameStarted": true,
-    "currentPlayer": "playerId_1",
-    "currentTurn": 0,
-    "firstPlayer": 0,
-    "players": {
-      "playerId_1": {
-        "id": "playerId_1",
-        "name": "playerId_1",
-        "deck": {
-          "hand": ["c-1", "c-2", "c-5", "h-1", "sp-1"],
-          "mainDeck": ["c-6", "c-7", "c-8", "c-9", "c-10", "c-11", "c-12", "c-13", "c-14", "c-15", "c-16", "c-17", "c-18", "c-19", "c-20", "h-2", "h-3", "h-4", "sp-2", "sp-3"],
-          "leader": ["s-1", "s-2", "s-3", "s-4"],
-          "currentLeaderIdx": 0
+    "gameId": "4743116b-5ab5-4f35-8bc9-f153f4c15acd",
+    "gameEnv": {
+        "phase": "MAIN_PHASE",
+        "playerId_1": "playerId_1",
+        "playerId_2": "playerId_2",
+        "gameStarted": true,
+        "firstPlayer": 0,
+        "playersReady": {
+            "playerId_1": true,
+            "playerId_2": true
         },
-        "isReady": true,
-        "redraw": 1,
-        "turnAction": [],
-        "playerPoint": 0,
-        "fieldEffects": {
-          "zoneRestrictions": {
-            "TOP": ["右翼", "自由", "經濟"],
-            "LEFT": ["右翼", "自由", "愛國者"],
-            "RIGHT": ["右翼", "愛國者", "經濟"],
-            "HELP": "ALL",
-            "SP": "ALL"
-          },
-          "activeEffects": [
+        "players": {
+            "playerId_1": {
+                "id": "playerId_1",
+                "name": "playerId_1",
+                "deck": {
+                    "currentLeaderIdx": 0,
+                    "leader": [
+                        "s-1_1754542269951_0",
+                        "s-3_1754542269951_2",
+                        "s-4_1754542269951_3",
+                        "s-2_1754542269951_1"
+                    ],
+                    "hand": [
+                        "c-14_1754542276778_13",
+                        "h-1_1754542276778_24",
+                        "c-23_1754542276778_22",
+                        "c-10_1754542276778_9",
+                        "c-8_1754542276778_7",
+                        "c-9_1754542276778_8",
+                        "c-24_1754542276778_23",
+                        "c-1_1754542276778_0"
+                    ],
+                    "mainDeck": [
+                        "c-5_1754542276778_4",
+                        "c-18_1754542276778_17",
+                        "c-16_1754542276778_15",
+                        "c-3_1754542276778_2",
+                        "h-9_1754542276778_27",
+                        "h-2_1754542276778_25",
+                        "c-22_1754542276778_21",
+                        "c-7_1754542276778_6",
+                        "c-20_1754542276778_19",
+                        "c-11_1754542276778_10",
+                        "c-19_1754542276778_18",
+                        "c-6_1754542276778_5",
+                        "c-15_1754542276778_14",
+                        "c-13_1754542276778_12",
+                        "sp-3_1754542276778_29",
+                        "c-12_1754542276778_11",
+                        "h-3_1754542276778_26",
+                        "c-2_1754542276778_1",
+                        "c-17_1754542276778_16",
+                        "c-4_1754542276778_3",
+                        "c-21_1754542276778_20",
+                        "sp-2_1754542276778_28"
+                    ],
+                    "leaderMapping": {
+                        "s-1_1754542269951_0": "s-1",
+                        "s-2_1754542269951_1": "s-2",
+                        "s-3_1754542269951_2": "s-3",
+                        "s-4_1754542269951_3": "s-4"
+                    },
+                    "cardMapping": {
+                        "c-1_1754542269950_0": "c-1",
+                        "c-2_1754542269951_1": "c-2",
+                        "c-3_1754542269951_2": "c-3",
+                        "c-4_1754542269951_3": "c-4",
+                        "c-5_1754542269951_4": "c-5",
+                        "c-6_1754542269951_5": "c-6",
+                        "c-7_1754542269951_6": "c-7",
+                        "c-8_1754542269951_7": "c-8",
+                        "c-9_1754542269951_8": "c-9",
+                        "c-10_1754542269951_9": "c-10",
+                        "c-11_1754542269951_10": "c-11",
+                        "c-12_1754542269951_11": "c-12",
+                        "c-13_1754542269951_12": "c-13",
+                        "c-14_1754542269951_13": "c-14",
+                        "c-15_1754542269951_14": "c-15",
+                        "c-16_1754542269951_15": "c-16",
+                        "c-17_1754542269951_16": "c-17",
+                        "c-18_1754542269951_17": "c-18",
+                        "c-19_1754542269951_18": "c-19",
+                        "c-20_1754542269951_19": "c-20",
+                        "c-21_1754542269951_20": "c-21",
+                        "c-22_1754542269951_21": "c-22",
+                        "c-23_1754542269951_22": "c-23",
+                        "c-24_1754542269951_23": "c-24",
+                        "h-1_1754542269951_24": "h-1",
+                        "h-2_1754542269951_25": "h-2",
+                        "h-3_1754542269951_26": "h-3",
+                        "h-9_1754542269951_27": "h-9",
+                        "sp-2_1754542269951_28": "sp-2",
+                        "sp-3_1754542269951_29": "sp-3"
+                    }
+                },
+                "redraw": 1,
+                "turnAction": [],
+                "playerPoint": 0,
+                "isReady": false,
+                "fieldEffects": {
+                    "zoneRestrictions": {},
+                    "activeEffects": [],
+                    "specialEffects": {},
+                    "calculatedPowers": {},
+                    "disabledCards": [],
+                    "victoryPointModifiers": 0
+                }
+            },
+            "playerId_2": {
+                "id": "playerId_2",
+                "name": "playerId_2",
+                "deck": {
+                    "currentLeaderIdx": 0,
+                    "leader": [
+                        "s-6_1754542269952_1",
+                        "s-3_1754542269952_2",
+                        "s-2_1754542269952_3",
+                        "s-5_1754542269952_0"
+                    ],
+                    "hand": [
+                        "c-24_1754542279514_10",
+                        "h-15_1754542279514_25",
+                        "sp-10_1754542279514_27",
+                        "c-27_1754542279514_12",
+                        "c-3_1754542279514_13",
+                        "c-16_1754542279514_6",
+                        "c-21_1754542279514_9"
+                    ],
+                    "mainDeck": [
+                        "c-6_1754542279514_16",
+                        "c-23_1754542279514_3",
+                        "c-18_1754542279514_7",
+                        "c-7_1754542279514_1",
+                        "c-26_1754542279514_18",
+                        "c-15_1754542279514_19",
+                        "sp-2_1754542279514_26",
+                        "c-8_1754542279514_4",
+                        "c-28_1754542279514_17",
+                        "c-1_1754542279514_0",
+                        "c-17_1754542279514_20",
+                        "h-13_1754542279514_24",
+                        "c-20_1754542279514_21",
+                        "c-25_1754542279514_11",
+                        "h-1_1754542279514_22",
+                        "c-5_1754542279514_15",
+                        "c-2_1754542279514_2",
+                        "h-11_1754542279514_23",
+                        "c-14_1754542279514_5",
+                        "c-4_1754542279514_14",
+                        "c-19_1754542279514_8"
+                    ],
+                    "leaderMapping": {
+                        "s-5_1754542269952_0": "s-5",
+                        "s-6_1754542269952_1": "s-6",
+                        "s-3_1754542269952_2": "s-3",
+                        "s-2_1754542269952_3": "s-2"
+                    },
+                    "cardMapping": {
+                        "c-1_1754542269952_0": "c-1",
+                        "c-7_1754542269952_1": "c-7",
+                        "c-2_1754542269952_2": "c-2",
+                        "c-23_1754542269952_3": "c-23",
+                        "c-8_1754542269952_4": "c-8",
+                        "c-14_1754542269952_5": "c-14",
+                        "c-16_1754542269952_6": "c-16",
+                        "c-18_1754542269952_7": "c-18",
+                        "c-19_1754542269952_8": "c-19",
+                        "c-21_1754542269952_9": "c-21",
+                        "c-24_1754542269952_10": "c-24",
+                        "c-25_1754542269952_11": "c-25",
+                        "c-27_1754542269952_12": "c-27",
+                        "c-3_1754542269952_13": "c-3",
+                        "c-4_1754542269952_14": "c-4",
+                        "c-5_1754542269952_15": "c-5",
+                        "c-6_1754542269952_16": "c-6",
+                        "c-28_1754542269952_17": "c-28",
+                        "c-26_1754542269952_18": "c-26",
+                        "c-15_1754542269952_19": "c-15",
+                        "c-17_1754542269952_20": "c-17",
+                        "c-20_1754542269952_21": "c-20",
+                        "h-1_1754542269952_22": "h-1",
+                        "h-11_1754542269952_23": "h-11",
+                        "h-13_1754542269952_24": "h-13",
+                        "h-15_1754542269952_25": "h-15",
+                        "sp-2_1754542269952_26": "sp-2",
+                        "sp-10_1754542269952_27": "sp-10"
+                    }
+                },
+                "redraw": 1,
+                "turnAction": [],
+                "playerPoint": 0,
+                "isReady": false,
+                "fieldEffects": {
+                    "zoneRestrictions": {},
+                    "activeEffects": [],
+                    "specialEffects": {},
+                    "calculatedPowers": {},
+                    "disabledCards": [],
+                    "victoryPointModifiers": 0
+                }
+            }
+        },
+        "zones": {
+            "playerId_1": {
+                "leader": [
+                    {
+                        "cardUid": "s-1",
+                        "cardId": "s-1",
+                        "cardData": {
+                            "id": "s-1",
+                            "name": "特朗普",
+                            "cardType": "leader",
+                            "gameType": "右翼",
+                            "initialPoint": 110,
+                            "level": 7,
+                            "rarity": "legendary",
+                            "zoneCompatibility": {
+                                "top": [
+                                    "右翼",
+                                    "自由",
+                                    "經濟"
+                                ],
+                                "left": [
+                                    "右翼",
+                                    "自由",
+                                    "愛國者"
+                                ],
+                                "right": [
+                                    "右翼",
+                                    "愛國者",
+                                    "經濟"
+                                ]
+                            },
+                            "effects": {
+                                "description": "全部召喚出來的角色擁有右翼或愛國者屬性能力值 +45。如對方領袖卡為「鮑威爾」，我方召喚出來擁有經濟屬性的原能力值變成 0",
+                                "rules": [
+                                    {
+                                        "id": "trump_rightWing_patriot_boost",
+                                        "type": "continuous",
+                                        "trigger": {
+                                            "event": "always",
+                                            "conditions": []
+                                        },
+                                        "target": {
+                                            "owner": "self",
+                                            "zones": [
+                                                "top",
+                                                "left",
+                                                "right"
+                                            ],
+                                            "filters": [
+                                                {
+                                                    "type": "gameTypeOr",
+                                                    "values": [
+                                                        "右翼",
+                                                        "愛國者"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        "effect": {
+                                            "type": "powerBoost",
+                                            "value": 45
+                                        }
+                                    },
+                                    {
+                                        "id": "trump_vs_powell_economy_nerf",
+                                        "type": "continuous",
+                                        "trigger": {
+                                            "event": "always",
+                                            "conditions": [
+                                                {
+                                                    "type": "opponentLeader",
+                                                    "value": "鮑威爾"
+                                                }
+                                            ]
+                                        },
+                                        "target": {
+                                            "owner": "self",
+                                            "zones": [
+                                                "top",
+                                                "left",
+                                                "right"
+                                            ],
+                                            "filters": [
+                                                {
+                                                    "type": "gameType",
+                                                    "value": "經濟"
+                                                }
+                                            ]
+                                        },
+                                        "effect": {
+                                            "type": "setPower",
+                                            "value": 0
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "isFaceDown": false,
+                        "placedAt": 1754542269956,
+                        "placedBy": "playerId_1"
+                    }
+                ],
+                "top": [],
+                "left": [],
+                "right": [],
+                "help": [],
+                "sp": []
+            },
+            "playerId_2": {
+                "leader": [
+                    {
+                        "cardUid": "s-6",
+                        "cardId": "s-6",
+                        "cardData": {
+                            "id": "s-6",
+                            "name": "鮑威爾",
+                            "cardType": "leader",
+                            "gameType": "經濟",
+                            "initialPoint": 95,
+                            "level": 6,
+                            "rarity": "epic",
+                            "zoneCompatibility": {
+                                "top": [
+                                    "經濟",
+                                    "自由"
+                                ],
+                                "left": [
+                                    "經濟",
+                                    "左翼",
+                                    "右翼"
+                                ],
+                                "right": [
+                                    "經濟",
+                                    "左翼",
+                                    "右翼"
+                                ]
+                            },
+                            "effects": {
+                                "description": "全部召喚出來的角色擁有自由或經濟屬性能力值 +30。如對方領袖卡為「特朗普」，我方召喚出來擁有經濟屬性能力值再加 +20。如對方領袖卡為「特朗普」，我方不能召喚擁有右翼的角色",
+                                "rules": [
+                                    {
+                                        "id": "powell_freedom_economy_boost",
+                                        "type": "continuous",
+                                        "trigger": {
+                                            "event": "always",
+                                            "conditions": []
+                                        },
+                                        "target": {
+                                            "owner": "self",
+                                            "zones": [
+                                                "top",
+                                                "left",
+                                                "right"
+                                            ],
+                                            "filters": [
+                                                {
+                                                    "type": "gameTypeOr",
+                                                    "values": [
+                                                        "自由",
+                                                        "經濟"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        "effect": {
+                                            "type": "powerBoost",
+                                            "value": 30
+                                        }
+                                    },
+                                    {
+                                        "id": "powell_vs_trump_economy_extra_boost",
+                                        "type": "continuous",
+                                        "trigger": {
+                                            "event": "always",
+                                            "conditions": [
+                                                {
+                                                    "type": "opponentLeader",
+                                                    "value": "特朗普"
+                                                }
+                                            ]
+                                        },
+                                        "target": {
+                                            "owner": "self",
+                                            "zones": [
+                                                "top",
+                                                "left",
+                                                "right"
+                                            ],
+                                            "filters": [
+                                                {
+                                                    "type": "gameType",
+                                                    "value": "經濟"
+                                                }
+                                            ]
+                                        },
+                                        "effect": {
+                                            "type": "powerBoost",
+                                            "value": 20
+                                        }
+                                    },
+                                    {
+                                        "id": "powell_vs_trump_rightwing_restriction",
+                                        "type": "restriction",
+                                        "trigger": {
+                                            "event": "always",
+                                            "conditions": [
+                                                {
+                                                    "type": "opponentLeader",
+                                                    "value": "特朗普"
+                                                }
+                                            ]
+                                        },
+                                        "target": {
+                                            "owner": "self",
+                                            "zones": [
+                                                "top",
+                                                "left",
+                                                "right"
+                                            ],
+                                            "filters": [
+                                                {
+                                                    "type": "gameType",
+                                                    "value": "右翼"
+                                                }
+                                            ]
+                                        },
+                                        "effect": {
+                                            "type": "preventSummon",
+                                            "value": true
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "isFaceDown": false,
+                        "placedAt": 1754542269956,
+                        "placedBy": "playerId_2"
+                    }
+                ],
+                "top": [],
+                "left": [],
+                "right": [],
+                "help": [],
+                "sp": []
+            }
+        },
+        "fieldEffects": {},
+        "neutralizationHistory": [],
+        "gameEvents": [
             {
-              "effectId": "s-1_trump_rightWing_patriot_boost",
-              "source": "s-1",
-              "type": "powerBoost",
-              "target": {
-                "scope": "SELF",
-                "zones": ["top", "left", "right"],
-                "gameTypes": ["右翼", "愛國者"]
-              },
-              "value": 45
+                "id": "event_1754542259851_1",
+                "type": "ROOM_CREATED",
+                "data": {
+                    "createdBy": "playerId_1",
+                    "status": "WAITING_FOR_PLAYERS",
+                    "timestamp": 1754542259851
+                },
+                "timestamp": 1754542259851,
+                "expiresAt": 1754542262851,
+                "frontendProcessed": false,
+                "requireFrontendAcknowledgment": false
             },
             {
-              "effectId": "s-1_trump_vs_powell_economy_nerf",
-              "source": "s-1",
-              "type": "powerBoost",
-              "target": {
-                "scope": "OPPONENT",
-                "zones": ["top", "left", "right"],
-                "gameTypes": ["經濟"]
-              },
-              "value": -20
-            }
-          ],
-          "calculatedPowers": {},
-          "disabledCards": [],
-          "victoryPointModifiers": 0
-        }
-      },
-      "playerId_2": {
-        "id": "playerId_2",
-        "name": "playerId_2",
-        "deck": {
-          "hand": ["c-21", "c-22", "c-23", "h-5", "sp-1"],
-          "mainDeck": ["c-24", "c-25", "c-26", "c-27", "c-28", "c-10", "c-3", "c-4", "c-11", "c-12", "c-13", "c-14", "c-15", "h-1", "h-2", "h-3", "sp-2", "sp-3"],
-          "leader": ["s-2", "s-3", "s-4", "s-5"],
-          "currentLeaderIdx": 0
-        },
-        "isReady": true,
-        "redraw": 1,
-        "turnAction": [],
-        "playerPoint": 0,
-        "fieldEffects": {
-          "zoneRestrictions": {
-            "TOP": ["左翼", "自由", "經濟", "右翼", "愛國者"],
-            "LEFT": ["左翼", "自由", "經濟", "右翼", "愛國者"],
-            "RIGHT": ["左翼", "自由", "經濟", "右翼", "愛國者"],
-            "HELP": "ALL",
-            "SP": "ALL"
-          },
-          "activeEffects": [
+                "id": "event_1754542269955_2",
+                "type": "PHASE_CHANGE",
+                "data": {
+                    "oldPhase": "WAITING_FOR_PLAYERS",
+                    "newPhase": "BOTH_JOINED",
+                    "timestamp": 1754542269955
+                },
+                "timestamp": 1754542269955,
+                "expiresAt": 1754542272955,
+                "frontendProcessed": false,
+                "requireFrontendAcknowledgment": false
+            },
             {
-              "effectId": "s-2_biden_all_boost",
-              "source": "s-2",
-              "type": "powerBoost",
-              "target": {
-                "scope": "SELF",
-                "zones": ["top", "left", "right"],
-                "gameTypes": []
-              },
-              "value": 40
+                "id": "event_1754542269955_3",
+                "type": "PLAYER_JOINED",
+                "data": {
+                    "playerId": "playerId_2",
+                    "roomStatus": "BOTH_JOINED",
+                    "readyForStart": true
+                },
+                "timestamp": 1754542269955,
+                "expiresAt": 1754542272955,
+                "frontendProcessed": false,
+                "requireFrontendAcknowledgment": false
+            },
+            {
+                "id": "event_1754542269956_4",
+                "type": "PHASE_CHANGE",
+                "data": {
+                    "oldPhase": "BOTH_JOINED",
+                    "newPhase": "REDRAW_PHASE",
+                    "timestamp": 1754542269956
+                },
+                "timestamp": 1754542269956,
+                "expiresAt": 1754542272956,
+                "frontendProcessed": false,
+                "requireFrontendAcknowledgment": false
+            },
+            {
+                "id": "event_1754542269956_5",
+                "type": "GAME_STARTED",
+                "data": {
+                    "players": [
+                        "playerId_1",
+                        "playerId_2"
+                    ],
+                    "firstPlayer": "playerId_1",
+                    "leaderRevealed": {
+                        "playerId_1": {
+                            "cardId": "s-1",
+                            "name": "特朗普",
+                            "initialPoint": 110
+                        },
+                        "playerId_2": {
+                            "cardId": "s-6",
+                            "name": "鮑威爾",
+                            "initialPoint": 95
+                        }
+                    }
+                },
+                "timestamp": 1754542269956,
+                "expiresAt": 1754542272956,
+                "frontendProcessed": false,
+                "requireFrontendAcknowledgment": false
+            },
+            {
+                "id": "event_1754542269956_6",
+                "type": "INITIAL_HAND_DEALT",
+                "data": {
+                    "playerId": "playerId_1",
+                    "handSize": 7
+                },
+                "timestamp": 1754542269956,
+                "expiresAt": 1754542272956,
+                "frontendProcessed": false,
+                "requireFrontendAcknowledgment": false
+            },
+            {
+                "id": "event_1754542269956_7",
+                "type": "INITIAL_HAND_DEALT",
+                "data": {
+                    "playerId": "playerId_2",
+                    "handSize": 7
+                },
+                "timestamp": 1754542269956,
+                "expiresAt": 1754542272956,
+                "frontendProcessed": false,
+                "requireFrontendAcknowledgment": false
+            },
+            {
+                "id": "event_1754542276780_8",
+                "type": "PLAYER_READY",
+                "data": {
+                    "playerId": "playerId_1",
+                    "redrawRequested": true
+                },
+                "timestamp": 1754542276780,
+                "expiresAt": 1754542279780,
+                "frontendProcessed": false,
+                "requireFrontendAcknowledgment": false
+            },
+            {
+                "id": "event_1754542276780_9",
+                "type": "HAND_REDRAWN",
+                "data": {
+                    "playerId": "playerId_1",
+                    "newHandSize": 7
+                },
+                "timestamp": 1754542276780,
+                "expiresAt": 1754542279780,
+                "frontendProcessed": false,
+                "requireFrontendAcknowledgment": false
+            },
+            {
+                "id": "event_1754542279516_10",
+                "type": "PLAYER_READY",
+                "data": {
+                    "playerId": "playerId_2",
+                    "redrawRequested": true
+                },
+                "timestamp": 1754542279516,
+                "expiresAt": 1754542282516,
+                "frontendProcessed": false,
+                "requireFrontendAcknowledgment": false
+            },
+            {
+                "id": "event_1754542279516_11",
+                "type": "HAND_REDRAWN",
+                "data": {
+                    "playerId": "playerId_2",
+                    "newHandSize": 7
+                },
+                "timestamp": 1754542279516,
+                "expiresAt": 1754542282516,
+                "frontendProcessed": false,
+                "requireFrontendAcknowledgment": false
+            },
+            {
+                "id": "event_1754542279518_12",
+                "type": "PHASE_CHANGE",
+                "data": {
+                    "oldPhase": "REDRAW_PHASE",
+                    "newPhase": "DRAW_PHASE",
+                    "timestamp": 1754542279518
+                },
+                "timestamp": 1754542279518,
+                "expiresAt": 1754542282518,
+                "frontendProcessed": false,
+                "requireFrontendAcknowledgment": false
+            },
+            {
+                "id": "event_1754542279518_14",
+                "type": "GAME_PHASE_START",
+                "data": {
+                    "phase": "DRAW_PHASE",
+                    "currentPlayer": "playerId_1",
+                    "message": "Both players ready - draw phase started!"
+                },
+                "timestamp": 1754542279518,
+                "expiresAt": 1754542282518,
+                "frontendProcessed": false,
+                "requireFrontendAcknowledgment": false
+            },
+            {
+                "id": "event_1754542328127_15",
+                "type": "PHASE_CHANGE",
+                "data": {
+                    "phase": "MAIN_PHASE",
+                    "message": "Draw phase acknowledged - main phase started!"
+                },
+                "timestamp": 1754542328127,
+                "expiresAt": 1754542331127,
+                "frontendProcessed": false,
+                "requireFrontendAcknowledgment": false
             }
-          ],
-          "calculatedPowers": {},
-          "disabledCards": [],
-          "victoryPointModifiers": 0
-        }
-      }
-    },
-    "zones": {
-      "playerId_1": {
-        "leader": {
-          "id": "s-1",
-          "name": "特朗普",
-          "cardType": "leader",
-          "gameType": "愛國者",
-          "initialPoint": 100,
-          "level": 8,
-          "rarity": "legendary",
-          "zoneCompatibility": {
-            "top": ["右翼", "自由", "經濟"],
-            "left": ["右翼", "自由", "愛國者"],
-            "right": ["右翼", "愛國者", "經濟"]
-          },
-          "effects": {
-            "description": "我方場上全部右翼和愛國者類型的角色卡 原能力值加 +45",
-            "rules": [
-              {
-                "id": "trump_rightWing_patriot_boost",
-                "type": "continuous",
-                "trigger": {
-                  "event": "always",
-                  "conditions": []
-                },
-                "target": {
-                  "owner": "self",
-                  "zones": ["top", "left", "right"],
-                  "filters": [
-                    {
-                      "type": "gameType",
-                      "values": ["右翼", "愛國者"]
+        ],
+        "lastEventId": 15,
+        "playSequence": {
+            "globalSequence": 2,
+            "plays": [
+                {
+                    "sequenceId": 1,
+                    "playerId": "playerId_1",
+                    "cardId": "s-1",
+                    "action": "PLAY_LEADER",
+                    "zone": "leader",
+                    "effectData": {
+                        "leaderIndex": 0,
+                        "isInitialPlacement": true
                     }
-                  ]
                 },
-                "effect": {
-                  "type": "powerBoost",
-                  "value": 45
-                }
-              },
-              {
-                "id": "trump_vs_powell_economy_nerf",
-                "type": "continuous",
-                "trigger": {
-                  "event": "always",
-                  "conditions": []
-                },
-                "target": {
-                  "owner": "opponent",
-                  "zones": ["top", "left", "right"],
-                  "filters": [
-                    {
-                      "type": "gameType",
-                      "value": "經濟"
+                {
+                    "sequenceId": 2,
+                    "playerId": "playerId_2",
+                    "cardId": "s-6",
+                    "action": "PLAY_LEADER",
+                    "zone": "leader",
+                    "effectData": {
+                        "leaderIndex": 0,
+                        "isInitialPlacement": true
                     }
-                  ]
-                },
-                "effect": {
-                  "type": "powerBoost",
-                  "value": -20
                 }
-              }
             ]
-          }
-        },
-        "top": [],
-        "left": [],
-        "right": [],
-        "help": [],
-        "sp": []
-      },
-      "playerId_2": {
-        "leader": {
-          "id": "s-2",
-          "name": "拜登",
-          "cardType": "leader",
-          "gameType": "左翼",
-          "initialPoint": 100,
-          "level": 7,
-          "rarity": "legendary",
-          "zoneCompatibility": {
-            "top": ["左翼", "自由", "經濟", "右翼", "愛國者"],
-            "left": ["左翼", "自由", "經濟", "右翼", "愛國者"],
-            "right": ["左翼", "自由", "經濟", "右翼", "愛國者"]
-          },
-          "effects": {
-            "description": "全部召喚出來的角色能力值 +40",
-            "rules": [
-              {
-                "id": "biden_all_boost",
-                "type": "continuous",
-                "trigger": {
-                  "event": "always",
-                  "conditions": []
-                },
-                "target": {
-                  "owner": "self",
-                  "zones": ["top", "left", "right"],
-                  "filters": []
-                },
-                "effect": {
-                  "type": "powerBoost",
-                  "value": 40
-                }
-              }
-            ]
-          }
-        },
-        "top": [],
-        "left": [],
-        "right": [],
-        "help": [],
-        "sp": []
-      }
-    },
-    "gameEvents": [],
-    "lastEventId": 1,
-    "pendingPlayerAction": null,
-    "pendingCardSelections": {},
-    "playSequence": {
-      "globalSequence": 2,
-      "plays": [
-        {
-          "sequenceId": 1,
-          "playerId": "playerId_1",
-          "cardId": "s-1",
-          "zone": "leader",
-          "timestamp": 1000,
-          "faceDown": false
-        },
-        {
-          "sequenceId": 2,
-          "playerId": "playerId_2",
-          "cardId": "s-2",
-          "zone": "leader",
-          "timestamp": 1001,
-          "faceDown": false
         }
-      ]
-    }
+    },
+    "lastUpdate": "2025-08-07T04:52:08.127Z",
+    "updateUUID": "52148f9d-e442-4a21-97e4-6fed356ac3af"
   },
   "playerActions": [
     {
       "step": 1,
-      "description": "Player 1 places c-1 (總統特朗普, 特朗普家族 trait) in TOP zone",
-      "playerId": "playerId_1",
-      "action": {
-        "actionType": "PlayCard",
-        "cardId": "c-1",
-        "zone": "top"
-      },
-      "expectedResult": {
-        "success": true,
-        "noError": true,
-        "cardPlaced": true
-      },
-      "expectedEffects": [
-        "c-1 triggers its own trait-based boost effect",
-        "Biden leader effect applies +40 universal boost"
-      ]
-    },
-    {
-      "step": 2,
-      "description": "Player 2 places c-21 (奧巴馬) in TOP zone",
       "playerId": "playerId_2",
+      "description": "Player 2 selects c-1 with h-2's setPower effect",
       "action": {
-        "actionType": "PlayCard",
-        "cardId": "c-21",
-        "zone": "top"
+        "actionType": "SelectCard",
+        "selectionId": "playerId_2_setPower_1753090836037",
+        "cardIds": ["c-1"]
       },
       "expectedResult": {
         "success": true,
-        "noError": true,
-        "cardPlaced": true
-      },
-      "expectedEffects": [
-        "Biden leader effect applies +40 universal boost"
-      ]
-    },
-    {
-      "step": 3,
-      "description": "Player 1 places c-2 (前總統特朗普, 特朗普家族 trait) in LEFT zone",
-      "playerId": "playerId_1",
-      "action": {
-        "actionType": "PlayCard",
-        "cardId": "c-2",
-        "zone": "left"
-      },
-      "expectedResult": {
-        "success": true,
-        "noError": true,
-        "cardPlaced": true
-      },
-      "expectedEffects": [
-        "c-1's trait boost applies to c-2 (特朗普家族)",
-        "c-2's type boost applies to itself (右翼)",
-        "Biden leader effect applies +40 universal boost"
-      ]
-    },
-    {
-      "step": 4,
-      "description": "Player 2 places c-22 in LEFT zone",
-      "playerId": "playerId_2",
-      "action": {
-        "actionType": "PlayCard",
-        "cardId": "c-22",
-        "zone": "left"
-      },
-      "expectedResult": {
-        "success": true,
-        "noError": true,
-        "cardPlaced": true
-      },
-      "expectedEffects": [
-        "Biden leader effect applies +40 universal boost"
-      ]
+        "message": "Card selection completed successfully"
+      }
     }
   ],
+
   "expectedStateChanges": {
-    "zones.playerId_1.top.length": 1,
-    "zones.playerId_1.left.length": 1,
-    "zones.playerId_2.top.length": 1,
-    "zones.playerId_2.left.length": 1,
-    "players.playerId_1.deck.hand.length": 3,
-    "players.playerId_2.deck.hand.length": 3,
-    "playSequence.plays.length": 4,
-    "currentTurn": 3,
-    "currentPlayer": "playerId_1"
+    "players.playerId_1.fieldEffects.activeEffects.length": 4,
+    "zones.playerId_1.left.0.valueOnField": 0,
+    "players.playerId_1.fieldEffects.calculatedPowers.c-1": 0,
+    "playSequence.plays.length": 5,
+    "players.playerId_1.playerPoint": 0
   },
-  "validationPoints": {
-    "playerId_1_card_c-1_power": {
-      "description": "Validate c-1 power with self-boost + leader boost",
-      "expected": {
-        "cardId": "c-1",
-        "finalPower": 150
-      },
-      "powerBreakdown": {
-        "basePower": 100,
-        "characterSelfBoost": 10,
-        "bidenLeaderBoost": 40,
-        "total": 150
-      }
-    },
-    "playerId_1_card_c-2_power": {
-      "description": "Validate c-2 power with trait boost from c-1 + self-boost + leader boost",
-      "expected": {
-        "cardId": "c-2",
-        "finalPower": 140
-      },
-      "powerBreakdown": {
-        "basePower": 80,
-        "traitBoostFromC1": 10,
-        "characterSelfBoost": 10,
-        "bidenLeaderBoost": 40,
-        "total": 140
-      }
-    },
-    "playerId_2_card_c-21_power": {
-      "description": "Validate c-21 power with only leader boost (no trait match)",
-      "expected": {
-        "cardId": "c-21",
-        "finalPower": 120
-      },
-      "powerBreakdown": {
-        "basePower": 80,
-        "bidenLeaderBoost": 40,
-        "total": 120
-      }
-    }
-  },
-  "errorCases": [
+
+  "validationPoints": [
     {
-      "description": "Test playing card not in hand",
+      "cardId": "c-1",
+      "zone": "left",
       "playerId": "playerId_1",
-      "action": {
-        "actionType": "PlayCard",
-        "cardId": "c-99",
-        "zone": "right"
-      },
-      "expectedError": "CARD_NOT_IN_HAND"
+      "description": "c-1 power should be set to 0 by h-2's setPower effect",
+      "expectedPower": 0,
+      "powerSource": "h-2 setPower effect overrides all other effects including leader boost (+45) and character boost (+10)"
     }
   ],
+
+  "activeEffectsValidation": {
+    "playerId_1": {
+      "requiredEffects": [
+        {
+          "source": "s-1",
+          "type": "powerBoost",
+          "target": {
+            "scope": "SELF",
+            "gameTypes": ["右翼", "愛國者"]
+          },
+          "value": 45,
+          "description": "Trump leader power boost for 右翼/愛國者 cards"
+        },
+        {
+          "source": "s-1",
+          "type": "setPower",
+          "target": {
+            "scope": "SELF",
+            "gameTypes": ["經濟"]
+          },
+          "value": 0,
+          "description": "Trump vs Powell conditional economic card nerf"
+        },
+        {
+          "source": "c-1",
+          "type": "powerBoost",
+          "target": {
+            "scope": "SELF",
+            "traits": ["特朗普家族"]
+          },
+          "value": 10,
+          "description": "c-1 character effect boosting Trump family cards"
+        },
+        {
+          "source": "h-2",
+          "type": "setPower",
+          "target": {
+            "scope": "OPPONENT",
+            "specificCards": ["c-1"]
+          },
+          "value": 0,
+          "description": "h-2's MAGA effect setting c-1 power to 0 (NEW - should be added)"
+        }
+      ],
+      "totalEffectsCount": 4
+    }
+  },
+
+  "playSequenceValidation": {
+    "expectedPlays": 5,
+    "newPlayValidation": {
+      "type": "APPLY_SET_POWER",
+      "playerId": "playerId_2",
+      "targetPlayerId": "playerId_1",
+      "sourceCard": "h-2",
+      "selectedCardIds": ["c-1"],
+      "powerValue": 0,
+      "description": "setPower effect recorded in play sequence for replay consistency"
+    }
+  },
+
   "cardDefinitions": {
     "c-1": {
+      "id": "c-1",
       "name": "總統特朗普",
       "cardType": "character",
       "gameType": "愛國者",
       "power": 100,
       "traits": ["特朗普家族"],
+      "rarity": "legendary"
+    },
+    "h-2": {
+      "id": "h-2",
+      "name": "Make America Great Again",
+      "cardType": "help",
       "effects": {
-        "description": "我方場上全部擁有特朗普家族特徵的角色卡 原能力值加 +10",
+        "description": "選擇對方一張角色卡，原能力值 變成 0",
         "rules": [
           {
-            "id": "trump_president_boost",
-            "type": "continuous",
+            "id": "maga_nerf",
+            "type": "triggered",
             "trigger": {
-              "event": "always",
+              "event": "onPlay",
               "conditions": []
             },
             "target": {
-              "owner": "self",
+              "owner": "opponent",
               "zones": ["top", "left", "right"],
-              "filters": [
-                {
-                  "type": "trait",
-                  "value": "特朗普家族"
-                }
-              ]
+              "requiresSelection": true,
+              "selectCount": 1,
+              "filters": []
             },
             "effect": {
-              "type": "powerBoost",
-              "value": 10
+              "type": "setPower",
+              "value": 0
             }
           }
         ]
       }
     },
-    "c-2": {
-      "name": "前總統特朗普(YMCA)",
-      "cardType": "character",
+    "s-1": {
+      "id": "s-1", 
+      "name": "特朗普",
+      "cardType": "leader",
       "gameType": "右翼",
-      "power": 80,
-      "traits": ["特朗普家族"],
-      "effects": {
-        "description": "我方場上全部右翼類型的角色卡 原能力值加 +10",
-        "rules": [
-          {
-            "id": "trump_ymca_boost",
-            "type": "continuous",
-            "trigger": {
-              "event": "always",
-              "conditions": []
-            },
-            "target": {
-              "owner": "self",
-              "zones": ["top", "left", "right"],
-              "filters": [
-                {
-                  "type": "gameType",
-                  "value": "右翼"
-                }
-              ]
-            },
-            "effect": {
-              "type": "powerBoost",
-              "value": 10
-            }
-          }
-        ]
+      "initialPoint": 110,
+      "level": 7,
+      "rarity": "legendary",
+      "zoneCompatibility": {
+        "top": ["右翼", "自由", "經濟"],
+        "left": ["右翼", "自由", "愛國者"],
+        "right": ["右翼", "愛國者", "經濟"]
       }
     },
-    "c-21": {
-      "name": "奧巴馬",
-      "cardType": "character",
+    "s-2": {
+      "id": "s-2",
+      "name": "拜登", 
+      "cardType": "leader",
       "gameType": "左翼",
-      "power": 80,
-      "traits": ["Deep State"],
-      "effects": {
-        "description": "所有角色卡原能力值加 +50 (只適用在某一張角色卡上，我方優先)",
-        "rules": [
-          {
-            "id": "obama_single_boost",
-            "type": "continuous",
-            "trigger": {
-              "event": "always",
-              "conditions": []
-            },
-            "target": {
-              "owner": "both",
-              "zones": ["top", "left", "right"],
-              "filters": [],
-              "targetCount": 1
-            },
-            "effect": {
-              "type": "powerBoost",
-              "value": 50
-            }
-          }
-        ]
-      }
-    },
-    "c-22": {
-      "name": "Test Card",
-      "cardType": "character",
-      "gameType": "左翼",
-      "power": 60,
-      "traits": [],
-      "effects": {
-        "description": "No special effects",
-        "rules": []
+      "initialPoint": 100,
+      "level": 7,
+      "rarity": "legendary",
+      "zoneCompatibility": {
+        "top": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+        "left": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+        "right": ["左翼", "自由", "經濟", "右翼", "愛國者"]
       }
     }
+  },
+
+  "testNotes": {
+    "purpose": "Validate h-2 Make America Great Again setPower effect with fixed implementation",
+    "basedOnRealGameState": "Created from actual user game environment with pending card selection",
+    "keyValidations": [
+      "Card selection workflow completion",
+      "setPower effect properly recorded in activeEffects",
+      "setPower effect added to playSequence for replay consistency",
+      "Power display synchronization (valueOnField = 0)",
+      "Effect overrides multiple existing power modifiers",
+      "Cross-player effect targeting with specificCards",
+      "Turn progression after card selection"
+    ],
+    "powerCalculationFlow": {
+      "before": {
+        "basePower": 100,
+        "trumpLeaderBoost": 45,
+        "characterBoost": 10,
+        "total": 155,
+        "note": "c-1 benefits from both leader and character power boosts"
+      },
+      "after": {
+        "setPowerEffect": 0,
+        "note": "setPower effect overrides ALL other modifiers (priority)",
+        "total": 0
+      }
+    },
+    "architecturalFixes": {
+      "playSequenceIntegration": "setPower effects now recorded as APPLY_SET_POWER actions",
+      "effectSimulatorSupport": "Added APPLY_SET_POWER case to executePlayUnified method",
+      "replayConsistency": "Effects survive simulateCardPlaySequence calls",
+      "displaySynchronization": "valueOnField updated to match calculated power"
+    },
+    "testCoverage": {
+      "cardSelectionWorkflow": "Complete selection from trigger to completion",
+      "effectPersistence": "Effects survive turn switching and replay",
+      "crossPlayerEffects": "Effect stored in target player's activeEffects",
+      "prioritySystem": "setPower overrides powerBoost effects",
+      "gameStateIntegrity": "All game state properly updated post-selection"
+    },
+    "realWorldScenario": "Based on user's actual game where c-1 power wasn't updating to 0 after h-2 selection"
   }
 }

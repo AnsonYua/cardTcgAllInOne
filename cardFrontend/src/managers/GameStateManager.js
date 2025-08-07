@@ -64,11 +64,12 @@ export default class GameStateManager {
   getPlayerLeader(isOpponent = false) {
     const crtPlayer = isOpponent ? this.getOpponent() : this.gameState.playerId;
     const leaderCard = this.gameState.gameEnv.zones[crtPlayer].leader[0];
+    console.log("da22ssd",this.gameState.gameEnv.zones[crtPlayer].leader[0])
     const leaderCardData = {
-      id: leaderCard.id,
-      name: leaderCard.id,
-      type: leaderCard.type,
-      cardType: leaderCard.type,
+      id: leaderCard.cardId,
+      name: leaderCard.cardId,
+      type: leaderCard.cardData.cardType,
+      cardType: leaderCard.cardData.cardType,
     }
     return leaderCardData;
   }

@@ -177,9 +177,11 @@ export class GameEnvironmentAdapter {
         player1.redraw = 0;
         player2.redraw = 0;
         
+        
         // Place leader cards in leader zones with complete data
         const leader1ZoneData = {
             id: leader1,
+            uid: player1.getCurrentLeaderCardUId(),
             name: leader1Details.name,
             cardType: leader1Details.cardType,
             gameType: leader1Details.gameType,
@@ -192,6 +194,7 @@ export class GameEnvironmentAdapter {
         
         const leader2ZoneData = {
             id: leader2,
+            uid: player2.getCurrentLeaderCardUId(),
             name: leader2Details.name,
             cardType: leader2Details.cardType,
             gameType: leader2Details.gameType,

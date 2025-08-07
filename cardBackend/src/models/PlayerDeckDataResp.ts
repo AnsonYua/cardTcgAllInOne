@@ -56,6 +56,14 @@ export class PlayerDeckDataResp {
         return null;
     }
 
+        /**
+     * Get current leader card ID (mapped from UID)
+     */
+    public getCurrentLeaderCardUId(): string | null {
+        const leaderUid = this.getCurrentLeader();
+        return leaderUid;
+    }
+
     /**
      * Draw a card from main deck to hand
      */
