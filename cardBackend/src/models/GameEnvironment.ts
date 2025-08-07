@@ -1130,6 +1130,8 @@ export class GameEnvironment {
     public playerId_2: string | null;
     public gameStarted: boolean;
     public firstPlayer: number;
+    public currentPlayer: string | null;
+    public currentTurn: number;
     public playersReady: { [playerId: string]: boolean };
     
     // Object-oriented components
@@ -1150,6 +1152,8 @@ export class GameEnvironment {
         this.playerId_2 = null;
         this.gameStarted = false;
         this.firstPlayer = 0;
+        this.currentPlayer = null;
+        this.currentTurn = 0;
         this.playersReady = {};
         
         this.players = {};
@@ -1351,6 +1355,8 @@ export class GameEnvironment {
             playerId_2: this.playerId_2,
             gameStarted: this.gameStarted,
             firstPlayer: this.firstPlayer,
+            currentPlayer: this.currentPlayer,
+            currentTurn: this.currentTurn,
             playersReady: this.playersReady,
             
             // Convert players to legacy format
@@ -1385,6 +1391,8 @@ export class GameEnvironment {
         gameEnv.playerId_2 = data.playerId_2 || null;
         gameEnv.gameStarted = data.gameStarted || false;
         gameEnv.firstPlayer = data.firstPlayer || 0;
+        gameEnv.currentPlayer = data.currentPlayer || null;
+        gameEnv.currentTurn = data.currentTurn || 0;
         gameEnv.playersReady = data.playersReady || {};
         
         // Players

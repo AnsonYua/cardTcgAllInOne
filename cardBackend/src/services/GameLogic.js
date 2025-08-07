@@ -177,7 +177,7 @@ class GameLogic {
         // - Adding player 2 using gameEnvClass.addPlayer()
         // - Setting deck data using class methods
         // - Updating phase using gameEnvClass.updatePhase()
-        // - Adding PLAYER_JOINED event using gameEnvClass.eventManager.addEvent()
+    // - Adding PLAYER_JOINED event using gameEnvClass.eventManager.addEvent()
         GameEnvironmentAdapter.addSecondPlayer(gameEnvClass, playerId, results[0], results[1]);
         
         // NEW: Initialize game environment directly using class methods

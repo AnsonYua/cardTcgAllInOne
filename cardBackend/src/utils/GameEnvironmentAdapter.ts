@@ -5,16 +5,8 @@
  * and new object-oriented GameEnvironment class
  */
 
-import { GameEnvironment, GamePhase, ZoneType, ActionType, EventType, Player } from '../models/GameEnvironment';
+import { GameEnvironment, GamePhase, ZoneType, ActionType, EventType, Player, CardInfoUtilsSingleton } from '../models/GameEnvironment';
 import { PlayerDeckDataResp } from '../models/PlayerDeckDataResp';
-
-// Import CardInfoUtils with proper path resolution for compiled code
-const path = require('path');
-const isCompiled = __dirname.includes('dist');
-const cardInfoUtilsPath = isCompiled 
-    ? path.join(__dirname, '../../../src/services/CardInfoUtils.js') 
-    : path.join(__dirname, '../services/CardInfoUtils.js');
-const CardInfoUtils = require(cardInfoUtilsPath);
 
 export class GameEnvironmentAdapter {
     
@@ -148,7 +140,12 @@ export class GameEnvironmentAdapter {
             throw new Error('Both players must have current leaders before initialization');
         }
         
-        // Use imported CardInfoUtils directly
+        // Use CardInfoUtils singleton for leader data lookup
+        const CardInfoUtils = CardInfoUtilsSingleton.getInstance();
+        if (!CardInfoUtils) {
+            throw new Error('CardInfoUtils not available');
+        }
+        
         const leader1Details = CardInfoUtils.getLeaderCards(leader1);
         const leader2Details = CardInfoUtils.getLeaderCards(leader2);
         
@@ -167,46 +164,25 @@ export class GameEnvironmentAdapter {
         }
         firstPlayer = 0;
         // For consistency with existing logic, set to 0
-        //firstPlayer = 0;
         gameEnv.firstPlayer = firstPlayer;
         
         // Update phase to REDRAW_PHASE
-        gameEnv.updatePhase(GamePhase.REDRAW_PHASE); // Using READY_PHASE instead of START_REDRAW
+        gameEnv.updatePhase(GamePhase.REDRAW_PHASE);
         
         // Initialize player redraw counts
         player1.redraw = 0;
         player2.redraw = 0;
         
+        // Use unified GameEnvironment.setLeader method instead of manual data conversion
+        const leader1Uid = player1.getCurrentLeaderCardUId();
+        const leader2Uid = player2.getCurrentLeaderCardUId();
         
-        // Place leader cards in leader zones with complete data
-        const leader1ZoneData = {
-            id: leader1,
-            uid: player1.getCurrentLeaderCardUId(),
-            name: leader1Details.name,
-            cardType: leader1Details.cardType,
-            gameType: leader1Details.gameType,
-            initialPoint: leader1Details.initialPoint,
-            level: leader1Details.level,
-            rarity: leader1Details.rarity,
-            zoneCompatibility: leader1Details.zoneCompatibility,
-            effects: leader1Details.effects
-        };
+        if (!leader1Uid || !leader2Uid) {
+            throw new Error('Both players must have valid leader UIDs before initialization');
+        }
         
-        const leader2ZoneData = {
-            id: leader2,
-            uid: player2.getCurrentLeaderCardUId(),
-            name: leader2Details.name,
-            cardType: leader2Details.cardType,
-            gameType: leader2Details.gameType,
-            initialPoint: leader2Details.initialPoint,
-            level: leader2Details.level,
-            rarity: leader2Details.rarity,
-            zoneCompatibility: leader2Details.zoneCompatibility,
-            effects: leader2Details.effects
-        };
-        
-        gameEnv.zones.setLeaderInZone(gameEnv.playerId_1!, leader1ZoneData);
-        gameEnv.zones.setLeaderInZone(gameEnv.playerId_2!, leader2ZoneData);
+        gameEnv.setLeader(gameEnv.playerId_1!, leader1Uid);
+        gameEnv.setLeader(gameEnv.playerId_2!, leader2Uid);
         
         // Record leader plays in play sequence for proper effect simulation
         // IMPORTANT: Record in first player order for correct sequencing
