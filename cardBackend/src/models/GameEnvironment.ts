@@ -8,6 +8,37 @@
 // ============ IMPORTS ============
 
 import { PlayerDeckDataResp } from './PlayerDeckDataResp';
+import * as path from 'path';
+
+// ============ CARDINFUTILS SINGLETON ============
+
+/**
+ * CardInfoUtils singleton with proper path resolution
+ * Handles both compiled (dist/) and source (src/) environments
+ */
+class CardInfoUtilsSingleton {
+    private static instance: any = null;
+    
+    public static getInstance(): any {
+        if (!CardInfoUtilsSingleton.instance) {
+            try {
+                const isCompiled = __dirname.includes('dist');
+                const cardInfoUtilsPath = isCompiled 
+                    ? path.join(__dirname, '../../../src/services/CardInfoUtils.js') 
+                    : path.join(__dirname, '../services/CardInfoUtils.js');
+                CardInfoUtilsSingleton.instance = require(cardInfoUtilsPath);
+            } catch (error) {
+                console.error('❌ Failed to load CardInfoUtils:', error);
+                CardInfoUtilsSingleton.instance = null;
+            }
+        }
+        return CardInfoUtilsSingleton.instance;
+    }
+    
+    public static reset(): void {
+        CardInfoUtilsSingleton.instance = null;
+    }
+}
 
 // ============ ENUMS ============
 
@@ -71,36 +102,341 @@ export interface PlayerDeckData {
     cardMapping: CardMapping;
 }
 
-export interface ZoneCard {
-    card: string[]; // Array containing single card UID
+// ==============================================================================
+// COMPREHENSIVE ZONECARD ARCHITECTURE (January 2025)
+// ==============================================================================
+// Unified card system supporting all card types with type safety and performance
+
+// Base card data interfaces (matching JSON structure)
+export interface BaseCardData {
+    id: string;
+    name: string;
+    cardType: string;
+    rarity: string;
+    effects: {
+        description: string;
+        rules: EffectRule[];
+        immuneToNeutralization?: boolean;
+    };
 }
 
-export interface LeaderZoneCard {
-    id: string;
-    name?: string;
-    cardType?: string;
-    gameType?: string;
-    initialPoint?: number;
-    level?: number;
-    rarity?: string;
-    zoneCompatibility?: {
+export interface CharacterCardData extends BaseCardData {
+    cardType: 'character';
+    gameType: string;           // Single classification for zone placement
+    power: number;              // Combat strength
+    traits: string[];           // Array of traits for effect targeting
+}
+
+export interface LeaderCardData extends BaseCardData {
+    cardType: 'leader';
+    gameType: string;
+    initialPoint: number;       // Victory points (not power)
+    level: number;              // Priority for SP execution
+    zoneCompatibility: {        // Zone restriction rules
         top: string[];
         left: string[];
         right: string[];
     };
-    effects?: {
-        description?: string;
-        rules?: any[];
+}
+
+export interface UtilityCardData extends BaseCardData {
+    cardType: 'help' | 'sp';
+    // Utilities have no power/points - pure effect-based
+}
+
+// Union type for all card data
+export type CardData = CharacterCardData | LeaderCardData | UtilityCardData;
+
+// Effect system interfaces (matching JSON structure)
+export interface EffectRule {
+    id: string;
+    type: 'continuous' | 'triggered' | 'restriction';
+    trigger: {
+        event: string;
+        conditions?: any[];
+    };
+    target: {
+        owner: 'self' | 'opponent' | 'both';
+        zones: string[];
+        filters?: any[];
+        requiresSelection?: boolean;
+        selectCount?: number;
+        targetCount?: number;
+    };
+    effect: {
+        type: string;
+        value: any;
+        [key: string]: any;
     };
 }
 
+// ==============================================================================
+// UNIFIED ZONECARD INTERFACES
+// ==============================================================================
+
+/**
+ * Base ZoneCard interface - unified structure for all cards in zones
+ * Provides common properties and methods for zone-based operations
+ */
+export interface BaseZoneCard {
+    // Core identification
+    cardUid: string;            // Unique game instance ID (e.g., "c-1_game1_001")
+    cardId: string;             // Base card ID (e.g., "c-1")
+    
+    // Card data (embedded for performance)
+    cardData: CardData;         // Complete card data from JSON
+    
+    // Zone-specific state
+    isFaceDown: boolean;        // Face-down status (affects all mechanics)
+    placedAt?: number;          // Timestamp when placed
+    placedBy?: string;          // Player ID who placed card
+}
+
+/**
+ * Character Zone Card - for character cards in TOP/LEFT/RIGHT zones
+ * Handles power calculation, gameType classification, trait-based effects
+ */
+export interface CharacterZoneCard extends BaseZoneCard {
+    cardData: CharacterCardData;
+}
+
+/**
+ * Leader Zone Card - for leader cards in LEADER zone
+ * Handles zone restrictions, global effects, victory points
+ */
+export interface LeaderZoneCard extends BaseZoneCard {
+    cardData: LeaderCardData;
+    isFaceDown: false;          // Leaders are always face-up
+}
+
+/**
+ * Utility Zone Card - for help/sp cards in HELP/SP zones
+ * Handles interactive effects, cross-player targeting, special mechanics
+ */
+export interface UtilityZoneCard extends BaseZoneCard {
+    cardData: UtilityCardData;
+}
+
+// ==============================================================================
+// ZONE CARD UTILITY FUNCTIONS
+// ==============================================================================
+
+/**
+ * Factory function to create appropriate ZoneCard implementation
+ */
+export function createZoneCard(
+    cardUid: string,
+    cardId: string,
+    cardData: CardData,
+    isFaceDown: boolean = false,
+    placedBy: string = ''
+): BaseZoneCard {
+    const baseCard: BaseZoneCard = {
+        cardUid,
+        cardId,
+        cardData,
+        isFaceDown,
+        placedAt: Date.now(),
+        placedBy
+    };
+
+    switch ((cardData as CardData).cardType) {
+        case 'character':
+            return {
+                ...baseCard,
+                cardData: cardData as CharacterCardData
+            } as CharacterZoneCard;
+            
+        case 'leader':
+            return {
+                ...baseCard,
+                cardData: cardData as LeaderCardData,
+                isFaceDown: false  // Leaders are always face-up
+            } as LeaderZoneCard;
+            
+        case 'help':
+        case 'sp':
+            return {
+                ...baseCard,
+                cardData: cardData as UtilityCardData
+            } as UtilityZoneCard;
+            
+        default:
+            throw new Error(`Unknown card type: ${(cardData as CardData).cardType}`);
+    }
+}
+
+/**
+ * Type guard functions for zone card types
+ */
+export function isCharacterZoneCard(card: BaseZoneCard): card is CharacterZoneCard {
+    return card.cardData.cardType === 'character';
+}
+
+export function isLeaderZoneCard(card: BaseZoneCard): card is LeaderZoneCard {
+    return card.cardData.cardType === 'leader';
+}
+
+export function isUtilityZoneCard(card: BaseZoneCard): card is UtilityZoneCard {
+    return ['help', 'sp'].includes(card.cardData.cardType);
+}
+
+/**
+ * Card property accessors that handle face-down mechanics
+ */
+export class ZoneCardUtils {
+    /**
+     * Get effective power for a card (0 if face-down)
+     */
+    static getEffectivePower(card: BaseZoneCard): number {
+        if (card.isFaceDown || !isCharacterZoneCard(card)) {
+            return 0;
+        }
+        return card.cardData.power;
+    }
+
+    /**
+     * Get game type for zone compatibility (empty if face-down)
+     */
+    static getEffectiveGameType(card: BaseZoneCard): string {
+        if (card.isFaceDown) {
+            return ''; // Face-down cards bypass all restrictions
+        }
+        if (isCharacterZoneCard(card) || isLeaderZoneCard(card)) {
+            return card.cardData.gameType;
+        }
+        return '';
+    }
+
+    /**
+     * Get traits for effect targeting (empty if face-down)
+     */
+    static getEffectiveTraits(card: BaseZoneCard): string[] {
+        if (card.isFaceDown || !isCharacterZoneCard(card)) {
+            return [];
+        }
+        return card.cardData.traits || [];
+    }
+
+    /**
+     * Check if card can trigger effects (false if face-down)
+     */
+    static canTriggerEffects(card: BaseZoneCard): boolean {
+        return !card.isFaceDown && card.cardData.effects?.rules?.length > 0;
+    }
+
+    /**
+     * Check if card can contribute to power calculation
+     */
+    static canContributeToCalculation(card: BaseZoneCard): boolean {
+        return !card.isFaceDown;
+    }
+
+    /**
+     * Get zone compatibility for leader cards
+     */
+    static getZoneCompatibility(leader: LeaderZoneCard): { [zone: string]: string[] } {
+        return leader.cardData.zoneCompatibility;
+    }
+
+    /**
+     * Check if character can be placed in zone under leader
+     */
+    static canCharacterBePlacedInZone(
+        character: CharacterZoneCard, 
+        zone: ZoneType, 
+        leader: LeaderZoneCard
+    ): boolean {
+        // Face-down cards bypass all restrictions
+        if (character.isFaceDown) {
+            return true;
+        }
+
+        const zoneKey = zone.toLowerCase() as keyof typeof leader.cardData.zoneCompatibility;
+        const allowedTypes = leader.cardData.zoneCompatibility[zoneKey] || [];
+        return allowedTypes.includes(character.cardData.gameType);
+    }
+
+    /**
+     * Get display name (hidden if face-down)
+     */
+    static getDisplayName(card: BaseZoneCard): string {
+        return card.isFaceDown ? 'Hidden Card' : card.cardData.name;
+    }
+
+    /**
+     * Get card effects (empty if face-down)
+     */
+    static getActiveEffects(card: BaseZoneCard): EffectRule[] {
+        if (card.isFaceDown) {
+            return [];
+        }
+        return card.cardData.effects?.rules || [];
+    }
+}
+
+/**
+ * Legacy compatibility interfaces (deprecated but supported during transition)
+ */
+export interface LegacyZoneCard {
+    card?: string[];  // Old format: [\"cardUid\"]
+}
+
+/**
+ * Utility function to convert legacy zone card format to unified format
+ */
+export async function convertLegacyToUnified(
+    legacyCard: LegacyZoneCard,
+    cardInfoUtils?: any  // Optional - will use singleton if not provided
+): Promise<BaseZoneCard | null> {
+    if (!legacyCard.card || legacyCard.card.length === 0) {
+        return null;
+    }
+    
+    const cardUid = legacyCard.card[0];
+    const cardId = cardUid.split('_')[0];
+    
+    try {
+        // Use provided cardInfoUtils or singleton
+        const CardInfoUtils = cardInfoUtils || CardInfoUtilsSingleton.getInstance();
+        
+        if (!CardInfoUtils) {
+            console.warn(`CardInfoUtils not available for legacy conversion: ${cardUid}`);
+            return null;
+        }
+        
+        let cardData: CardData;
+        
+        // Determine card type from ID prefix and look up data
+        if (cardId.startsWith('s-')) {
+            cardData = await CardInfoUtils.getLeaderCards(cardId);
+        } else {
+            cardData = await CardInfoUtils.getCardDetails(cardId);
+        }
+        
+        if (!cardData) {
+            console.warn(`Could not resolve card data for legacy card: ${cardUid}`);
+            return null;
+        }
+        
+        return createZoneCard(cardUid, cardId, cardData, false, '');
+        
+    } catch (error) {
+        console.error(`Error converting legacy card ${cardUid}:`, error);
+        return null;
+    }
+}
+
+// Legacy type aliases for backward compatibility
+export type ZoneCard = BaseZoneCard;  // Deprecated: use BaseZoneCard
+
 export interface PlayerZones {
-    leader?: LeaderZoneCard[];
-    top?: ZoneCard[];
-    left?: ZoneCard[];
-    right?: ZoneCard[];
-    help?: ZoneCard[];
-    sp?: ZoneCard[];
+    leader?: LeaderZoneCard[];        // Leaders extend ZoneCard
+    top?: CharacterZoneCard[];        // Characters extend ZoneCard
+    left?: CharacterZoneCard[];       // Characters extend ZoneCard  
+    right?: CharacterZoneCard[];      // Characters extend ZoneCard
+    help?: UtilityZoneCard[];         // Utility cards extend ZoneCard
+    sp?: UtilityZoneCard[];           // Utility cards extend ZoneCard
 }
 
 export interface GameZonesData {
@@ -307,7 +643,6 @@ export class Player {
         
         if (isRedraw) {
             // Import mozDeckHelper with proper path resolution for compiled code
-            const path = require('path');
             const isCompiled = __dirname.includes('dist');
             const mozDeckHelperPath = isCompiled 
                 ? path.join(__dirname, '../../../src/mozGame/mozDeckHelper.js') 
@@ -448,28 +783,120 @@ export class GameZones {
         return this.zones[playerId];
     }
 
-    public setCardInZone(playerId: string, zone: ZoneType, cardUid: string): void {
+    public setCardInZone(playerId: string, zone: ZoneType, cardUid: string, cardData?: CardData, isFaceDown: boolean = false): void {
         const playerZones = this.getPlayerZones(playerId);
         
-        if (zone === ZoneType.LEADER) {
-            // For leader zone, we need to create a basic LeaderZoneCard with just the id
-            const leaderCard: LeaderZoneCard = { id: cardUid };
-            if (!playerZones.leader) playerZones.leader = [];
-            playerZones.leader.push(leaderCard);
-        } else {
-            // For other zones, create a ZoneCard
-            const zoneCard: ZoneCard = { card: [cardUid] };
-            const targetZone = playerZones[zone];
-            if (Array.isArray(targetZone)) {
-                targetZone.push(zoneCard);
+        // Extract cardId from cardUid (e.g., "c-43_player1_001" → "c-43")
+        const cardId = cardUid.split("_")[0];
+        
+        // If no cardData provided, look up the card details using CardInfoUtils
+        let resolvedCardData = cardData;
+        if (!resolvedCardData) {
+            try {
+                const CardInfoUtils = CardInfoUtilsSingleton.getInstance();
+                
+                if (CardInfoUtils) {
+                    if (zone === ZoneType.LEADER) {
+                        // Look up leader card data
+                        resolvedCardData = CardInfoUtils.getLeaderCards(cardId);
+                    } else {
+                        // Look up character/utility card data
+                        resolvedCardData = CardInfoUtils.getCardDetails(cardId);
+                    }
+                }
+                
+                if (!resolvedCardData) {
+                    console.warn(`⚠️ Could not resolve card data for cardId ${cardId}, using basic fallback`);
+                    resolvedCardData = { 
+                        id: cardId, 
+                        name: 'Unknown Card',
+                        cardType: 'character',
+                        gameType: 'unknown',
+                        power: 0,
+                        traits: [],
+                        rarity: 'common',
+                        effects: { description: '', rules: [] }
+                    } as CharacterCardData;
+                }
+            } catch (error) {
+                console.warn(`⚠️ Error looking up card data for ${cardId}:`, error);
+                resolvedCardData = { 
+                    id: cardId, 
+                    name: 'Unknown Card',
+                    cardType: 'character',
+                    gameType: 'unknown',
+                    power: 0,
+                    traits: [],
+                    rarity: 'common',
+                    effects: { description: '', rules: [] }
+                } as CharacterCardData;
             }
         }
+        
+        // Create unified ZoneCard using factory function
+        const zoneCard = createZoneCard(cardUid, cardId, resolvedCardData, isFaceDown, playerId);
+        
+        // Place card in appropriate zone
+        if (zone === ZoneType.LEADER) {
+            if (!playerZones.leader) playerZones.leader = [];
+            playerZones.leader.push(zoneCard as LeaderZoneCard);
+            
+        } else if (zone === ZoneType.TOP || zone === ZoneType.LEFT || zone === ZoneType.RIGHT) {
+            // Character zones
+            const targetZone = playerZones[zone] as CharacterZoneCard[];
+            if (Array.isArray(targetZone)) {
+                targetZone.push(zoneCard as CharacterZoneCard);
+            }
+            
+        } else if (zone === ZoneType.HELP || zone === ZoneType.SP) {
+            // Utility zones (help/sp cards)
+            const targetZone = playerZones[zone] as UtilityZoneCard[];
+            if (Array.isArray(targetZone)) {
+                targetZone.push(zoneCard as UtilityZoneCard);
+            }
+        }
+        
+        console.log(`✅ Set card in zone: ${cardUid} (${cardId}) → ${zone} for player ${playerId}${isFaceDown ? ' (face-down)' : ''} with data: ${resolvedCardData.name || 'Unknown'}`);
     }
 
-    public setLeaderInZone(playerId: string, leaderData: LeaderZoneCard): void {
+    /**
+     * Enhanced method that accepts resolved card data for proper object creation
+     * This should be used when full card data is available
+     */
+    public setCardInZoneWithData(playerId: string, zone: ZoneType, cardUid: string, cardData: any, isFaceDown: boolean = false): void {
+        this.setCardInZone(playerId, zone, cardUid, cardData, isFaceDown);
+    }
+
+    public setLeaderInZone(playerId: string, leaderData: any): void {
+        // Convert old-style leaderData to new unified ZoneCard structure
+        const cardUid = leaderData.id || `${leaderData.cardId || 'unknown'}_${playerId}_leader`;
+        const cardId = leaderData.id?.split("_")[0] || leaderData.cardId || leaderData.id;
+        
+        // Ensure leaderData has proper structure for CardData
+        const normalizedLeaderData: LeaderCardData = {
+            id: cardId,
+            name: leaderData.name || 'Unknown Leader',
+            cardType: 'leader',
+            gameType: leaderData.gameType || 'unknown',
+            initialPoint: leaderData.initialPoint || 0,
+            level: leaderData.level || 1,
+            rarity: leaderData.rarity || 'common',
+            zoneCompatibility: leaderData.zoneCompatibility || {
+                top: [],
+                left: [],
+                right: []
+            },
+            effects: leaderData.effects || { description: '', rules: [] }
+        };
+        
+        // Create unified LeaderZoneCard using factory function
+        const leaderCard = createZoneCard(cardUid, cardId, normalizedLeaderData, false, playerId) as LeaderZoneCard;
+        
         const playerZones = this.getPlayerZones(playerId);
         if (!playerZones.leader) playerZones.leader = [];
-        playerZones.leader.push(leaderData);
+        playerZones.leader.push(leaderCard);
+        
+        console.log(`✅ Set leader in zone: ${cardUid} (${cardId}) for player ${playerId} - ${normalizedLeaderData.name}`);
     }
 
     public getLeaderInZone(playerId: string): LeaderZoneCard | null {
@@ -480,15 +907,25 @@ export class GameZones {
     public getCardInZone(playerId: string, zone: ZoneType): string | null {
         const playerZones = this.getPlayerZones(playerId);
         
-        if (zone === ZoneType.LEADER) {
-            const leaderZone = playerZones.leader;
-            return leaderZone && leaderZone.length > 0 ? leaderZone[0].id : null;
-        } else {
-            const targetZone = playerZones[zone];
-            if (Array.isArray(targetZone) && targetZone.length > 0) {
-                const zoneCard = targetZone[0];
-                return zoneCard.card && zoneCard.card.length > 0 ? zoneCard.card[0] : null;
-            }
+        // All zones now use unified ZoneCard structure with cardUid property
+        const targetZone = playerZones[zone];
+        if (Array.isArray(targetZone) && targetZone.length > 0) {
+            const zoneCard = targetZone[0] as BaseZoneCard;
+            return zoneCard.cardUid || null;
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Get the full card object (with data) from a zone
+     */
+    public getCardObjectInZone(playerId: string, zone: ZoneType): BaseZoneCard | null {
+        const playerZones = this.getPlayerZones(playerId);
+        
+        const targetZone = playerZones[zone];
+        if (Array.isArray(targetZone) && targetZone.length > 0) {
+            return targetZone[0] as BaseZoneCard;
         }
         
         return null;
@@ -990,6 +1427,9 @@ export function createGameEnvironmentFromJSON(data: any): GameEnvironment {
     return GameEnvironment.fromJSON(data);
 }
 
+// Export singleton for external use
+export { CardInfoUtilsSingleton };
+
 // ============ EXPORTS ============
 
 export default {
@@ -1003,5 +1443,6 @@ export default {
     ActionType,
     EventType,
     createGameEnvironment,
-    createGameEnvironmentFromJSON
+    createGameEnvironmentFromJSON,
+    CardInfoUtilsSingleton
 };
