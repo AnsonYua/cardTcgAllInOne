@@ -43,23 +43,13 @@ export default class GameSceneUtils {
         zone.card = card;
         zone.placeholder.setVisible(false);
 
-        // Add hover events using scene methods
-        // Note: Card's setupInteraction() already handles basic pointer events
-        // We need to remove the default listeners first, then add our custom ones
-        zone.card.removeAllListeners('pointerover');
-        zone.card.removeAllListeners('pointerout');
-        zone.card.on('pointerover', () => {
-          if (!zone.card.isDragging) {
-            scene.game.canvas.style.cursor = 'pointer';
-            scene.showCardPreview(cardDataObject);
-          }
-        });
-        zone.card.on('pointerout', () => {
-          if (!zone.card.isDragging) {
-            scene.game.canvas.style.cursor = 'default';
-            scene.hideCardPreview();
-          }
-        });
+        // Set zone placement tracking for hover preview system
+        card.setZonePlacement(true, zoneType, !isOpponent);
+        console.log(`[GameSceneUtils] Set zone placement for card ${cardDataObject.id}: zone=${zoneType}, isPlayer=${!isOpponent}`);
+
+        // The Card component now handles zone hover events automatically via setupInteraction()
+        // No need to manually add hover events here as Card will emit zone-card-hover/unhover events
+        // which GameScene listens for and handles with the new hover preview system
       }
     });
   }

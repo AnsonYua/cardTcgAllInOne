@@ -71,6 +71,11 @@ export default class Card extends Phaser.GameObjects.Container {
     this.isDragging = false;
     this.originalPosition = { x, y };
     
+    // Zone placement tracking for hover preview system
+    this.isInZone = false;
+    this.zoneType = null;
+    this.isPlayerZone = false;
+    
     // Power overlay for character cards in zones
     this.powerOverlay = null;
     
@@ -252,11 +257,17 @@ export default class Card extends Phaser.GameObjects.Container {
     this.setSize(120, 180);
     this.setInteractive();
 
-    // Hover effects
-    this.on('pointerover', () => {
+    // Hover effects with zone-specific preview support
+    this.on('pointerover', (pointer, localX, localY, event) => {
       if (!this.isDragging) {
         this.scene.game.canvas.style.cursor = 'pointer';
-        this.scene.events.emit('card-hover', this);
+        
+        // Emit different events based on whether card is in zone or in hand
+        if (this.isInZone) {
+          this.scene.events.emit('zone-card-hover', this, pointer.worldX, pointer.worldY);
+        } else {
+          this.scene.events.emit('card-hover', this);
+        }
         
         // NO ANIMATION - just cursor change and event emission
       }
@@ -265,7 +276,13 @@ export default class Card extends Phaser.GameObjects.Container {
     this.on('pointerout', () => {
       if (!this.isDragging) {
         this.scene.game.canvas.style.cursor = 'default';
-        this.scene.events.emit('card-unhover', this);
+        
+        // Emit different events based on whether card is in zone or in hand
+        if (this.isInZone) {
+          this.scene.events.emit('zone-card-unhover', this);
+        } else {
+          this.scene.events.emit('card-unhover', this);
+        }
         
         // NO ANIMATION - just cursor change and event emission
       }
@@ -716,6 +733,32 @@ export default class Card extends Phaser.GameObjects.Container {
         this.updatePowerOverlay(animate);
       }
     }
+  }
+
+  /**
+   * Set the zone placement status of this card
+   * Used by GameScene when cards are placed in or removed from zones
+   * @param {boolean} inZone - Whether the card is currently in a zone
+   * @param {string} zoneType - The type of zone (top, left, right, help, sp)
+   * @param {boolean} isPlayerZone - Whether this is a player zone or opponent zone
+   */
+  setZonePlacement(inZone, zoneType = null, isPlayerZone = false) {
+    this.isInZone = inZone;
+    this.zoneType = zoneType;
+    this.isPlayerZone = isPlayerZone;
+    console.log(`[Card] ${this.cardData?.id} zone placement updated: inZone=${inZone}, type=${zoneType}, player=${isPlayerZone}`);
+  }
+  
+  /**
+   * Get the current zone placement status
+   * @returns {Object} Zone placement information
+   */
+  getZonePlacement() {
+    return {
+      isInZone: this.isInZone,
+      zoneType: this.zoneType,
+      isPlayerZone: this.isPlayerZone
+    };
   }
 
   // Hover animation methods removed - no animations on hover

@@ -841,7 +841,7 @@ export default class GameScene extends Phaser.Scene {
     
     this.events.on('card-drag-start', (card) => {
       this.draggedCard = card;
-      // Hide preview when dragging starts
+      // Hide all previews when dragging starts
       this.hideCardPreview();
     });
     
@@ -860,6 +860,24 @@ export default class GameScene extends Phaser.Scene {
     this.events.on('card-unhover', (card) => {
       // Hide preview when not hovering
       if (!this.draggedCard) {
+        this.hideCardPreview();
+      }
+    });
+    
+    // Zone card hover events - use the same simple preview system as hand cards
+    this.events.on('zone-card-hover', (card) => {
+      // Show preview for zone cards (same as hand cards)
+      if (!this.draggedCard && card.isInZone) {
+        // Don't show preview for face-down cards (unless debugging)
+        if (!card.isFaceDown() || this.isTestMode) {
+          this.showCardPreview(card.getCardData());
+        }
+      }
+    });
+    
+    this.events.on('zone-card-unhover', (card) => {
+      // Hide preview for zone cards (same as hand cards)
+      if (!this.draggedCard && card.isInZone) {
         this.hideCardPreview();
       }
     });
@@ -1156,6 +1174,10 @@ export default class GameScene extends Phaser.Scene {
         card.moveToPosition(x, y);
         card.options.draggable = false;
         
+        // Set zone placement for hover preview system
+        card.setZonePlacement(true, zoneType, true); // true = player zone
+        console.log(`[GameScene] Card ${card.cardData?.id} placed in player zone: ${zoneType}`);
+        
         // Remove from hand
         const handIndex = this.playerHand.indexOf(card);
         if (handIndex > -1) {
@@ -1366,6 +1388,10 @@ export default class GameScene extends Phaser.Scene {
       card.options.draggable = false;
       card.deselect(); // Remove selection highlight
 
+      // Set zone placement for hover preview system
+      card.setZonePlacement(true, zoneType, true); // true = player zone
+      console.log(`[GameScene] Card ${card.cardData?.id} placed in player zone: ${zoneType}`);
+
       // Activate power overlay for character cards in character zones
       if (cardData.type === 'character' && ['top', 'left', 'right'].includes(zoneType.toLowerCase())) {
         console.log('[GameScene] Activating power overlay for character card in zone:', zoneType);
@@ -1554,6 +1580,7 @@ export default class GameScene extends Phaser.Scene {
       this.previewCard = null;
     }
   }
+  
 
   async loadLeaderCardsData() {
     try {
@@ -2896,6 +2923,13 @@ export default class GameScene extends Phaser.Scene {
       ease: 'Power2.easeOut',
       yoyo: true
     });
+  }
+
+  destroy() {
+    // Clean up hover preview resources
+    this.hideCardPreview();
+    
+    super.destroy();
   }
 
 }
