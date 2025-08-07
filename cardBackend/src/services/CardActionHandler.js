@@ -34,6 +34,9 @@ const mozDeckHelper = require('../mozGame/mozDeckHelper');
 const path = require('path');
 const { ZoneMapping } = require(path.join(__dirname, '../../../shared/utils/ZoneMapping'));
 
+// 🎯 REFACTORING UTILITIES: Use the same utility modules as mozGamePlay.js
+const CardDataValidator = require('../utils/CardDataValidator');
+
 // TurnPhase constants (defined inline in mozGamePlay.js)
 const TurnPhase = {
     START_REDRAW: 'START_REDRAW',
@@ -175,7 +178,7 @@ class CardActionHandler {
                 this.addErrorEvent(gameEnv, 'INVALID_ZONE', `Invalid zone: ${action.zone}`, playerId);
                 return { isValid: false, error: `Invalid zone: ${action.zone}` };
             }
-            
+            console.log("hand ",JSON.stringify(hand))
             // Find card in hand by UID
             const cardUID = action.cardUID;
             const cardIndex = hand.findIndex(handCardUID => handCardUID === cardUID);
@@ -186,7 +189,9 @@ class CardActionHandler {
             }
             
             cardToPlay = hand[cardIndex];
-            cardDetails = mozDeckHelper.getDeckCardDetails(cardToPlay);
+            // Extract base card ID from UID using utility - REFACTORED
+            const baseCardId = CardDataValidator.extractCardIdFromUID(cardToPlay);
+            cardDetails = mozDeckHelper.getDeckCardDetails(baseCardId);
             
             if (!cardDetails) {
                 this.addErrorEvent(gameEnv, 'CARD_NOT_FOUND', "Card details not found", playerId);

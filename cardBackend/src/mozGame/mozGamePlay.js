@@ -33,6 +33,11 @@ const CardActionHandler = require('../services/CardActionHandler');
 // 🎯 PHASE 6: Game Flow Orchestrator - Master coordinator for all manager classes
 const GameFlowOrchestrator = require('../services/GameFlowOrchestrator');
 
+// 🎯 REFACTORING UTILITIES: Centralized utility modules for cleaner code
+const PlayerStateManager = require('../utils/PlayerStateManager');
+const CardDataValidator = require('../utils/CardDataValidator');
+const ZoneManager = require('../utils/ZoneManager');
+
 const { json } = require('express');
 const TurnPhase = {
     START_REDRAW: 'START_REDRAW',
@@ -114,59 +119,37 @@ class mozGamePlay {
      * - Turn-based: Strict turn switching after each player action
      */
 
-    // Helper methods for unified format compatibility
+    // Helper methods for unified format compatibility - REFACTORED to use PlayerStateManager
     getPlayerHand(gameEnv, playerId) {
-        if (!gameEnv.players) {
-            throw new Error('Game environment must have unified structure with gameEnv.players');
-        }
-        return gameEnv.players[playerId].deck.hand;
+        return PlayerStateManager.getPlayerHand(gameEnv, playerId);
     }
 
     getPlayerMainDeck(gameEnv, playerId) {
-        if (!gameEnv.players) {
-            throw new Error('Game environment must have unified structure with gameEnv.players');
-        }
-        return gameEnv.players[playerId].deck.mainDeck;
+        return PlayerStateManager.getPlayerMainDeck(gameEnv, playerId);
     }
 
     getPlayerDeck(gameEnv, playerId) {
-        if (!gameEnv.players) {
-            throw new Error('Game environment must have unified structure with gameEnv.players');
-        }
-        return gameEnv.players[playerId].deck;
+        return PlayerStateManager.getPlayerDeck(gameEnv, playerId);
     }
 
     setPlayerHand(gameEnv, playerId, hand) {
-        if (!gameEnv.players) {
-            throw new Error('Game environment must have unified structure with gameEnv.players');
-        }
-        gameEnv.players[playerId].deck.hand = hand;
+        PlayerStateManager.setPlayerHand(gameEnv, playerId, hand);
     }
 
     setPlayerMainDeck(gameEnv, playerId, mainDeck) {
-        if (!gameEnv.players) {
-            throw new Error('Game environment must have unified structure with gameEnv.players');
-        }
-        gameEnv.players[playerId].deck.mainDeck = mainDeck;
+        PlayerStateManager.setPlayerMainDeck(gameEnv, playerId, mainDeck);
     }
 
     getPlayerField(gameEnv, playerId) {
-        if (!gameEnv.zones) {
-            throw new Error('Game environment must have unified structure with gameEnv.zones');
-        }
-        return gameEnv.zones[playerId];
+        return PlayerStateManager.getPlayerField(gameEnv, playerId);
     }
 
     getPlayerZone(gameEnv, playerId, zone) {
-        const field = this.getPlayerField(gameEnv, playerId);
-        return field ? field[zone] : null;
+        return PlayerStateManager.getPlayerZone(gameEnv, playerId, zone);
     }
 
     getPlayerData(gameEnv, playerId) {
-        if (!gameEnv.players) {
-            throw new Error('Game environment must have unified structure with gameEnv.players');
-        }
-        return gameEnv.players[playerId];
+        return PlayerStateManager.getPlayerData(gameEnv, playerId);
     }
 
     // =======================================================================================
@@ -485,14 +468,9 @@ class mozGamePlay {
                     for (const helpCard of helpCards) {
                         console.log(`DEBUG: Help card structure:`, helpCard);
                         
-                        // Handle both legacy and new card structures safely
-                        let cardData = null;
-                        if (helpCard.cardDetails && Array.isArray(helpCard.cardDetails) && helpCard.cardDetails.length > 0) {
-                            cardData = helpCard.cardDetails[0];
-                        } else if (helpCard.id) {
-                            // Direct card object
-                            cardData = helpCard;
-                        } else {
+                        // Handle both legacy and new card structures safely - REFACTORED
+                        const cardData = CardDataValidator.extractCardData(helpCard);
+                        if (!cardData) {
                             console.warn(`Skipping help card with invalid structure:`, helpCard);
                             continue;
                         }
@@ -515,14 +493,9 @@ class mozGamePlay {
                     for (const characterCard of characterCards) {
                         console.log(`DEBUG: Character card structure:`, characterCard);
                         
-                        // Handle both legacy and new card structures safely
-                        let cardData = null;
-                        if (characterCard.cardDetails && Array.isArray(characterCard.cardDetails) && characterCard.cardDetails.length > 0) {
-                            cardData = characterCard.cardDetails[0];
-                        } else if (characterCard.id) {
-                            // Direct card object
-                            cardData = characterCard;
-                        } else {
+                        // Handle both legacy and new card structures safely - REFACTORED
+                        const cardData = CardDataValidator.extractCardData(characterCard);
+                        if (!cardData) {
                             console.warn(`Skipping character card with invalid structure:`, characterCard);
                             continue;
                         }
@@ -1116,10 +1089,9 @@ class mozGamePlay {
                             isFaceDown = cardObj.isBack;
                         }
                         
-                        if (cardObj.cardDetails && Array.isArray(cardObj.cardDetails) && cardObj.cardDetails.length > 0) {
-                            cardId = cardObj.cardDetails[0].id;
-                        } else if (cardObj.id) {
-                            cardId = cardObj.id;
+                        const cardData = CardDataValidator.extractCardData(cardObj);
+                        if (cardData?.id) {
+                            cardId = cardData.id;
                         } else if (typeof cardObj === 'string') {
                             cardId = cardObj;
                         }
@@ -1160,10 +1132,24 @@ class mozGamePlay {
         // Get card details to check card type
         // Handle both unified and legacy formats
         const hand = this.getPlayerHand(gameEnv, playerId);
-        console.log("hand", JSON.stringify(hand));
+        console.log("hand", JSON.stringify(action.cardUID));
+        let  cardToPlay = null
+        for (let idx in hand){
+            console.log(hand[idx].includes(action.cardUID))
+            if(hand[idx].includes(action.cardUID)){
+                cardToPlay = action.cardUID
+            }
+        }
+        console.log("hand22", JSON.stringify(cardToPlay));
+        if(!cardToPlay){
+            return false
+        }
+       
         
-        const cardToPlay = hand[action["card_idx"]];
-        const cardDetails = mozDeckHelper.getDeckCardDetails(cardToPlay);
+        // Extract base card ID from UID (e.g., "c-1_1754551822157_24" → "c-1")
+        const baseCardId = cardToPlay.split("_")[0];
+        console.log(baseCardId)
+        const cardDetails = mozDeckHelper.getDeckCardDetails(baseCardId);
         if (!cardDetails) {
             return false;
         }
@@ -1454,13 +1440,8 @@ class mozGamePlay {
         for (const zone of fields) {
             if (playerField[zone] && playerField[zone].length > 0) {
                 for (const cardObj of playerField[zone]) {
-                    // Handle both legacy and new card structures safely
-                    let cardName = null;
-                    if (cardObj.cardDetails && Array.isArray(cardObj.cardDetails) && cardObj.cardDetails.length > 0) {
-                        cardName = cardObj.cardDetails[0].name;
-                    } else if (cardObj.name) {
-                        cardName = cardObj.name;
-                    }
+                    // Handle both legacy and new card structures safely - REFACTORED
+                    const cardName = CardDataValidator.extractCardName(cardObj);
                     
                     if (cardName && cardName.includes(name)) {
                         return true;
@@ -1491,19 +1472,14 @@ class mozGamePlay {
             if (targetField[zone] && targetField[zone].length > 0) {
                 for (const cardObj of targetField[zone]) {
                     if (this.matchesFilters(cardObj, target.filters)) {
-                        // Handle both legacy and new card structures safely
-                        let cardData = null;
-                        if (cardObj.cardDetails && Array.isArray(cardObj.cardDetails) && cardObj.cardDetails.length > 0) {
-                            cardData = cardObj.cardDetails[0];
-                        } else if (cardObj.id) {
-                            cardData = cardObj;
-                        }
+                        // Handle both legacy and new card structures safely - REFACTORED
+                        const cardData = CardDataValidator.extractCardData(cardObj);
                         
                         targets.push({ 
-                            cardId: cardData ? cardData.id : null, 
+                            cardId: cardData?.id || null, 
                             zone, 
                             cardObj,
-                            name: cardData ? cardData.name : null,
+                            name: cardData?.name || null,
                             cardType: cardData ? cardData.cardType : null
                         });
                         if (target.limit && targets.length >= target.limit) {
@@ -1524,44 +1500,14 @@ class mozGamePlay {
     }
     
     /**
-     * Safely extract card data from both old and new card formats
+     * Safely extract card data from both old and new card formats - REFACTORED to use CardDataValidator
      */
     getCardData(cardObj) {
-        // Handle new format (direct card object)
-        if (cardObj.id && cardObj.cardType) {
-            return cardObj;
-        }
-        
-        // Handle old format (cardDetails array)
-        if (cardObj.cardDetails && Array.isArray(cardObj.cardDetails) && cardObj.cardDetails.length > 0) {
-            return cardObj.cardDetails[0];
-        }
-        
-        console.warn('Unable to extract card data from:', cardObj);
-        return null;
+        return CardDataValidator.extractCardData(cardObj);
     }
 
     matchesFilters(cardObj, filters) {
-        if (!filters || filters.length === 0) return true;
-        
-        const cardData = this.getCardData(cardObj);
-        if (!cardData) return false;
-        
-        for (const filter of filters) {
-            if (filter.type === 'hasTrait') {
-                const traits = cardData.traits || [];
-                if (!traits.includes(filter.value)) return false;
-            } else if (filter.type === 'hasGameType') {
-                const gameType = cardData.gameType;
-                if (Array.isArray(filter.value)) {
-                    if (!filter.value.includes(gameType)) return false;
-                } else {
-                    if (gameType !== filter.value) return false;
-                }
-            }
-        }
-        
-        return true;
+        return CardDataValidator.matchesFilters(cardObj, filters);
     }
     
     calculateComboBonus(characterPowers, characterCards, gameEnv, playerId) {
