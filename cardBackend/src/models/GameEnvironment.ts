@@ -46,6 +46,7 @@ export enum GamePhase {
     WAITING_FOR_PLAYERS = 'WAITING_FOR_PLAYERS',
     BOTH_JOINED = 'BOTH_JOINED',
     READY_PHASE = 'READY_PHASE',
+    START_REDRAW = 'START_REDRAW',
     REDRAW_PHASE = 'REDRAW_PHASE',
     DRAW_PHASE = 'DRAW_PHASE',
     MAIN_PHASE = 'MAIN_PHASE',
@@ -74,17 +75,22 @@ export enum ActionType {
 export enum EventType {
     ROOM_CREATED = 'ROOM_CREATED',
     GAME_STARTED = 'GAME_STARTED',
+    GAME_CREATED = 'GAME_CREATED',
     INITIAL_HAND_DEALT = 'INITIAL_HAND_DEALT',
     PLAYER_JOINED = 'PLAYER_JOINED',
     PLAYER_READY = 'PLAYER_READY',
     HAND_REDRAWN = 'HAND_REDRAWN',
     CARD_PLAYED = 'CARD_PLAYED',
+    CARD_DRAWN = 'CARD_DRAWN',
     ZONE_FILLED = 'ZONE_FILLED',
     PHASE_CHANGE = 'PHASE_CHANGE',
     TURN_SWITCH = 'TURN_SWITCH',
     ERROR_OCCURRED = 'ERROR_OCCURRED',
     BATTLE_CALCULATED = 'BATTLE_CALCULATED',
-    VICTORY_POINTS_AWARDED = 'VICTORY_POINTS_AWARDED'
+    BATTLE_RESULT = 'BATTLE_RESULT',
+    VICTORY_POINTS_AWARDED = 'VICTORY_POINTS_AWARDED',
+    DRAW_PHASE_COMPLETE = 'DRAW_PHASE_COMPLETE',
+    GAME_PHASE_START = 'GAME_PHASE_START'
 }
 
 // ============ INTERFACES ============
@@ -1140,6 +1146,7 @@ export class PlaySequenceManager {
 
 export class GameEnvironment {
     // Core game state
+    public gameId?: string; // Add gameId property
     public phase: GamePhase;
     public playerId_1: string | null;
     public playerId_2: string | null;
