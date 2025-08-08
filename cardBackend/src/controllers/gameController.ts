@@ -2,6 +2,7 @@
 
 import { Request, Response } from 'express';
 import { gameLogic, GameLogic } from '../services/GameLogic';
+import { GamePhase, EventType } from '../models/GameEnvironment';
 import DeckManager from '../services/DeckManager';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -425,24 +426,34 @@ export class GameController {
             // The acknowledgeEvents should work at the game level, not player level
             const gameState = await this.gameLogic.getPlayerGameStateWithOutPlayer(gameId);
             if (!gameState.success || !gameState.gameEnv) {
-                // Try alternative approach - load the game file directly
-                try {
-                    res.status(404).json({
-                            error: 'Game not found',
-                            timestamp: new Date().toISOString(),
-                            context: 'acknowledgeEvents endpoint'
-                        });
-                } catch (loadError) {
-                    res.status(404).json({
+                res.status(404).json({
                         error: 'Game not found',
                         timestamp: new Date().toISOString(),
                         context: 'acknowledgeEvents endpoint'
                     });
-                    return;
-                }
             } else {
+                // Check if we're acknowledging any DRAW_PHASE_COMPLETE events
+                const allEvents = gameState.gameEnv.eventManager.getEvents();
+                const drawPhaseCompleteEvents = allEvents.filter(event => 
+                    eventIds.includes(event.id) && event.type === 'DRAW_PHASE_COMPLETE'
+                );
+                
                 // Acknowledge the events using EventManager method
                 gameState.gameEnv.eventManager.acknowledgeEvents(eventIds);
+                
+                // IMPORTANT: Phase transition logic when acknowledging DRAW_PHASE_COMPLETE
+                if (drawPhaseCompleteEvents.length > 0 && gameState.gameEnv.phase === GamePhase.DRAW_PHASE) {
+                    console.log(`🎯 Acknowledging DRAW_PHASE_COMPLETE events - transitioning to MAIN_PHASE`);
+                    gameState.gameEnv.updatePhase(GamePhase.MAIN_PHASE);
+                    
+                    // Add phase transition event
+                    gameState.gameEnv.eventManager.addEvent(EventType.PHASE_CHANGE, {
+                        oldPhase: GamePhase.DRAW_PHASE,
+                        newPhase: GamePhase.MAIN_PHASE,
+                        reason: 'DRAW_PHASE_COMPLETE acknowledged',
+                        timestamp: Date.now()
+                    });
+                }
                 
                 // Save updated game state
                 await (this.gameLogic as any).saveGameToFile(gameId, gameState.gameEnv);
