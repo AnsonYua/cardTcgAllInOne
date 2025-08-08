@@ -280,7 +280,6 @@ export default class MenuScene extends Phaser.Scene {
       try {
         // Step 1: Only create room (no auto-join)
         const createResponse = await this.apiManager.createGame(this.playerName);
-        
         if (createResponse.gameId && createResponse.gameEnv) {
           const gameId = createResponse.gameId;
           

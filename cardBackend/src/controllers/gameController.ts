@@ -60,8 +60,13 @@ export class GameController {
             
             const gameState = await this.gameLogic.createGame(playerId);
             
-            if (gameState.success) {
-                res.json(gameState);
+            if (gameState.success && gameState.gameEnv) {
+                // Extract gameId to root level for API compatibility
+                res.json({
+                    success: true,
+                    gameId: gameState.gameEnv.gameId,
+                    gameEnv: gameState.gameEnv
+                });
             } else {
                 res.status(400).json({
                     error: gameState.error || 'Failed to create game',
@@ -109,8 +114,13 @@ export class GameController {
             
             const gameState = await this.gameLogic.joinGame(gameId, playerId);
             
-            if (gameState.success) {
-                res.json(gameState);
+            if (gameState.success && gameState.gameEnv) {
+                // Extract gameId to root level for API compatibility
+                res.json({
+                    success: true,
+                    gameId: gameState.gameEnv.gameId,
+                    gameEnv: gameState.gameEnv
+                });
             } else {
                 res.status(400).json({
                     error: gameState.error || 'Failed to join game',
@@ -202,8 +212,13 @@ export class GameController {
             
             const gameState = await this.gameLogic.getPlayerGameState(gameId as string, playerId);
             
-            if (gameState.success) {
-                res.json(gameState);
+            if (gameState.success && gameState.gameEnv) {
+                // Extract gameId to root level for API compatibility
+                res.json({
+                    success: true,
+                    gameId: gameState.gameEnv.gameId,
+                    gameEnv: gameState.gameEnv
+                });
             } else {
                 res.status(400).json({
                     error: gameState.error || 'Failed to get player data',
@@ -240,7 +255,7 @@ export class GameController {
         try {
             console.log('🎮 Starting ready phase for:', req.body);
             
-            const { gameId, playerId } = req.body;
+            const { gameId, playerId, redraw } = req.body;
             
             if (!gameId || !playerId) {
                 res.status(400).json({
@@ -251,12 +266,27 @@ export class GameController {
                 return;
             }
             
-            // TODO: Implement startReady in new GameLogic
-            res.status(501).json({
-                error: 'startReady not yet implemented in TypeScript version',
-                timestamp: new Date().toISOString(),
-                context: 'startReady endpoint - needs implementation'
-            });
+            // Convert redraw parameter (request uses "redraw", internal uses "isRedraw")
+            const isRedraw = redraw === true || redraw === 'true';
+            
+            console.log(`🎯 Processing startReady for player ${playerId}, redraw: ${isRedraw}`);
+            
+            // Use GameLogic startReady method
+            const result = await gameLogic.startReady(gameId, playerId, isRedraw);
+            
+            if (result.success) {
+                res.json({
+                    success: true,
+                    gameEnv: result.gameEnv?.toJSON(),
+                    message: 'Player ready status updated successfully'
+                });
+            } else {
+                res.status(400).json({
+                    error: result.error,
+                    timestamp: new Date().toISOString(),
+                    context: 'startReady endpoint'
+                });
+            }
             
         } catch (error) {
             console.error('❌ Error in startReady:', error);
@@ -304,8 +334,14 @@ export class GameController {
                     action.faceDown || false
                 );
                 
-                if (result.success) {
-                    res.json(result);
+                if (result.success && result.gameEnv) {
+                    // Extract gameId to root level for API compatibility
+                    res.json({
+                        success: true,
+                        gameId: result.gameEnv.gameId,
+                        gameEnv: result.gameEnv,
+                        requiresCardSelection: result.requiresCardSelection
+                    });
                 } else {
                     res.status(400).json({
                         error: result.error,
@@ -316,7 +352,15 @@ export class GameController {
             } else {
                 // For other actions, use legacy method until fully migrated
                 const gameState = await this.gameLogic.processPlayerAction(gameId, playerId, action);
-                res.json(gameState);
+                if (gameState.success && gameState.gameEnv) {
+                    res.json({
+                        success: true,
+                        gameId: gameState.gameEnv.gameId,
+                        gameEnv: gameState.gameEnv
+                    });
+                } else {
+                    res.json(gameState);
+                }
             }
             
         } catch (error) {

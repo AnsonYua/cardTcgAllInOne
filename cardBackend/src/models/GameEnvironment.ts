@@ -8,8 +8,8 @@
 // ============ IMPORTS ============
 
 import { PlayerDeckDataResp } from './PlayerDeckDataResp';
-import * as path from 'path';
-
+import cardInfoUtilsInstance from '../services/CardInfoUtils';
+import mozDeckHelperInstance from '../mozGame/mozDeckHelper';
 // ============ CARDINFUTILS SINGLETON ============
 
 /**
@@ -22,11 +22,7 @@ class CardInfoUtilsSingleton {
     public static getInstance(): any {
         if (!CardInfoUtilsSingleton.instance) {
             try {
-                const isCompiled = __dirname.includes('dist');
-                const cardInfoUtilsPath = isCompiled 
-                    ? path.join(__dirname, '../../../src/services/CardInfoUtils.js') 
-                    : path.join(__dirname, '../services/CardInfoUtils.js');
-                CardInfoUtilsSingleton.instance = require(cardInfoUtilsPath);
+                CardInfoUtilsSingleton.instance = cardInfoUtilsInstance;
             } catch (error) {
                 console.error('❌ Failed to load CardInfoUtils:', error);
                 CardInfoUtilsSingleton.instance = null;
@@ -654,15 +650,8 @@ export class Player {
         this.redraw = 1;
         
         if (isRedraw) {
-            // Import mozDeckHelper with proper path resolution for compiled code
-            const isCompiled = __dirname.includes('dist');
-            const mozDeckHelperPath = isCompiled 
-                ? path.join(__dirname, '../../../src/mozGame/mozDeckHelper.js') 
-                : path.join(__dirname, '../mozGame/mozDeckHelper.js');
-            const mozDeckHelper = require(mozDeckHelperPath);
-            
             // Get reshuffled deck from mozDeckHelper
-            const reshuffleResult = await mozDeckHelper.reshuffleForPlayer(this.id);
+            const reshuffleResult = await mozDeckHelperInstance.reshuffleForPlayer(this.id);
             
             // CRITICAL FIX: Update player's hand, main deck AND cardMapping
             // This ensures the frontend can find all reshuffled cards using their new UIDs
@@ -1201,9 +1190,9 @@ export class GameEnvironment {
         this.zones.initializePlayerZones(playerId);
         
         // Set player IDs based on order
-        if (!this.playerId_1) {
+        if (playerId == "playerId_1") {
             this.playerId_1 = playerId;
-        } else if (!this.playerId_2) {
+        } else if (playerId == "playerId_2") {
             this.playerId_2 = playerId;
         }
         
@@ -1376,6 +1365,7 @@ export class GameEnvironment {
     public toJSON(): any {
         // Convert to legacy format for compatibility
         const legacy = {
+            gameId: this.gameId, // CRITICAL FIX: Include gameId in serialized output
             phase: this.phase,
             playerId_1: this.playerId_1,
             playerId_2: this.playerId_2,
@@ -1412,6 +1402,7 @@ export class GameEnvironment {
         const gameEnv = new GameEnvironment();
         
         // Basic properties
+        gameEnv.gameId = data.gameId || null; // CRITICAL FIX: Set gameId from data
         gameEnv.phase = data.phase || GamePhase.WAITING_FOR_PLAYERS;
         gameEnv.playerId_1 = data.playerId_1 || null;
         gameEnv.playerId_2 = data.playerId_2 || null;

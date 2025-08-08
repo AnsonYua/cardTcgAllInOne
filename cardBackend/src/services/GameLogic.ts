@@ -16,7 +16,9 @@ const mozGamePlay = require('../mozGame/mozGamePlay');
 const mozAIClass = require('../mozGame/mozAIClass');
 const playSequenceManager = require('./PlaySequenceManager');
 const cardEffectRegistry = require('./CardEffectRegistry');
-const mozDeckHelper = require('../mozGame/mozDeckHelper');
+
+// Import TypeScript modules
+import mozDeckHelper from '../mozGame/mozDeckHelper';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -150,16 +152,12 @@ export class GameLogic {
             gameEnv.firstPlayer = 0;
             gameEnv.currentPlayer = playerId;
             gameEnv.currentTurn = 1;
-            
             // Initialize game engine for this game
             await initializeOptimizedEngine(gameId);
-            
             // Add first player to game
             gameEnv.addPlayer(playerId, `Player 1`);
-            
             // Set player ready status
             gameEnv.setPlayerReady(playerId, true);
-            
             // Add game creation event
             gameEnv.eventManager.addEvent(EventType.GAME_CREATED, {
                 gameId: gameId,
@@ -167,7 +165,7 @@ export class GameLogic {
                 phase: gameEnv.phase,
                 timestamp: Date.now()
             });
-            
+            console.log("aaa",JSON.stringify(gameEnv))
             // Save game to file system
             await this.saveGameToFile(gameId, gameEnv);
             
@@ -188,7 +186,7 @@ export class GameLogic {
     }
 
     /**
-     * Join an existing game
+     * Join an existing game with complete initialization
      * @param gameId - Game ID to join
      * @param playerId - Player ID joining
      * @returns Promise<GameLogicResult>
@@ -206,6 +204,14 @@ export class GameLogic {
                 };
             }
             
+            // Check if room is available
+            if (gameEnv.phase !== GamePhase.WAITING_FOR_PLAYERS) {
+                return {
+                    success: false,
+                    error: 'Room is not available for joining'
+                };
+            }
+            
             // Check if game is full
             if (gameEnv.playerId_2 && gameEnv.playerId_2 !== playerId) {
                 return {
@@ -214,24 +220,46 @@ export class GameLogic {
                 };
             }
             
-            // Add second player
+            // Add second player if not already added
             if (!gameEnv.playerId_2) {
                 gameEnv.playerId_2 = playerId;
                 gameEnv.addPlayer(playerId, `Player 2`);
                 
-                // Update phase when both players join
-                gameEnv.phase = GamePhase.BOTH_JOINED;
+                console.log(`📋 Preparing decks for both players...`);
                 
-                // Add player join event
+                // Now prepare decks for both players (MISSING FUNCTIONALITY RESTORED)
+                const player1Id = gameEnv.playerId_1!;
+                const player2Id = gameEnv.playerId_2!;
+                
+                // Prepare decks using TypeScript mozDeckHelper
+                const startTasks = [
+                    mozDeckHelper.prepareDeckForPlayer(player1Id),
+                    mozDeckHelper.prepareDeckForPlayer(player2Id)
+                ];
+                
+                const deckResults = await Promise.all(startTasks);
+                const player1DeckData = deckResults[0];
+                const player2DeckData = deckResults[1];
+                
+                console.log(`🎯 Decks prepared. Player 1 hand size: ${player1DeckData.hand.length}, Player 2 hand size: ${player2DeckData.hand.length}`);
+                
+                // Set up game environment with decks using GameEnvironmentAdapter
+                GameEnvironmentAdapter.addSecondPlayer(gameEnv, player2Id, player1DeckData, player2DeckData);
+                
+                // Initialize complete game environment (MISSING FUNCTIONALITY RESTORED)
+                GameEnvironmentAdapter.initializeGameEnvironment(gameEnv);
+                
+                // Update phase to REDRAW_PHASE for startReady compatibility (MISSING FUNCTIONALITY RESTORED)
+                gameEnv.phase = GamePhase.REDRAW_PHASE;
+                
+                // Add player joined event
                 gameEnv.eventManager.addEvent(EventType.PLAYER_JOINED, {
-                    gameId: gameId,
                     playerId: playerId,
-                    playerCount: 2,
-                    phase: gameEnv.phase,
-                    timestamp: Date.now()
+                    roomStatus: GamePhase.BOTH_JOINED,
+                    readyForStart: true
                 });
                 
-                console.log(`✅ Player ${playerId} joined game ${gameId}`);
+                console.log(`✅ Player ${playerId} joined game ${gameId}. Game initialized and ready for start.`);
             }
             
             // Set player ready
@@ -400,6 +428,93 @@ export class GameLogic {
         } catch (error) {
             console.error(`❌ Error loading game ${gameId}:`, error);
             return null;
+        }
+    }
+
+    /**
+     * Handle player ready status with optional hand redraw
+     * @param gameId - Game ID
+     * @param playerId - Player ID marking ready
+     * @param isRedraw - Whether player wants to redraw their hand
+     * @returns Promise<GameLogicResult>
+     */
+    async startReady(gameId: string, playerId: string, isRedraw: boolean): Promise<GameLogicResult> {
+        try {
+            console.log(`🎮 Player ${playerId} marking ready, redraw: ${isRedraw}`);
+            
+            // Load game environment
+            const gameEnv = await this.loadGameFromFile(gameId);
+            if (!gameEnv) {
+                return {
+                    success: false,
+                    error: 'Game not found'
+                };
+            }
+            
+            // Check if room is in correct state
+            if (gameEnv.phase !== GamePhase.REDRAW_PHASE) {
+                return {
+                    success: false,
+                    error: `Room is not ready for player ready status. Current phase: ${gameEnv.phase}`
+                };
+            }
+            
+            // Use class method for redraw processing
+            await gameEnv.processPlayerRedraw(playerId, isRedraw);
+            
+            // Track which players are ready using class methods
+            gameEnv.setPlayerReady(playerId, true);
+            
+            // Check if both players are ready using class methods
+            const playerList = [gameEnv.playerId_1, gameEnv.playerId_2].filter(id => id);
+            const bothReady = gameEnv.areAllPlayersReady();
+            
+            if (bothReady) {
+                console.log("🎯 Both players ready - initializing player states");
+                
+                // Initialize all player states using consolidated method
+                for (let pid of playerList) {
+                    if (!pid) continue;
+                    const player = gameEnv.getPlayer(pid);
+                    if (!player) continue;
+                    
+                    // Initialize all player state (field effects, game stats, etc.) in one call
+                    player.initializeForGameStart();
+                }
+                
+                // OPTIMIZED GAME ENGINE INITIALIZATION: Initialize for high-performance processing
+                await initializeOptimizedEngine(gameId);
+                const gameEngine = optimizedGameEngineManager.getGameEngine(gameId);
+                await gameEngine.initializeGame(gameEnv);
+                
+                // Transition to draw phase first - game officially starts using class method
+                updatePhase(gameEnv, GamePhase.DRAW_PHASE);
+                gameEnv.gameStarted = true;
+                
+                // Set current player to first player using class properties
+                gameEnv.currentPlayer = playerList[gameEnv.firstPlayer];
+                gameEnv.currentTurn = 0;
+                
+                // First player draws 1 card using extracted function
+                drawCardForCurrentPlayer(gameEnv);
+                
+                console.log(`✅ Game ${gameId} started successfully - first player: ${gameEnv.currentPlayer}`);
+            }
+            
+            // Save updated game state
+            await this.saveGameToFile(gameId, gameEnv);
+            
+            return {
+                success: true,
+                gameEnv: gameEnv
+            };
+            
+        } catch (error) {
+            console.error('❌ Error in startReady:', error);
+            return {
+                success: false,
+                error: `Failed to start ready: ${error instanceof Error ? error.message : 'Unknown error'}`
+            };
         }
     }
 
