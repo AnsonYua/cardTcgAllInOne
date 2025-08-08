@@ -98,6 +98,16 @@ export default class GameStateManager {
     return player ? player.deck.hand : [];
   }
 
+  getPlayerHandDetails(playerId = null) {
+    const currentPlayerId = this.getCurrentPlayerId();
+    if(playerId == null) {
+      playerId = currentPlayerId;
+    }
+    
+    const player = this.getPlayer(playerId);
+    return player ? player.deck.handDetails : [];
+  }
+
   getVictoryPoints(playerId = null) {
     const id = playerId || this.gameState.playerId;
     return this.gameState.gameEnv.victoryPoints[id] || 0;
@@ -139,10 +149,9 @@ export default class GameStateManager {
 
   canPlayCardInZone(card, zone, playerId = null) {
     const restrictions = this.getZoneRestrictions(playerId, zone);
-    console.log(JSON.stringify(card))
+    console.log("restrcition " , JSON.stringify(restrictions))
     if (restrictions === "ALL") return true;
-    
-    return Array.isArray(restrictions) ? restrictions.includes(card.gameType) : false;
+    return Array.isArray(restrictions) ? restrictions.includes(card.cardDetails.gameType) : false;
   }
 
   getModifiedCardPower(card, playerId = null) {
@@ -177,23 +186,7 @@ export default class GameStateManager {
         return false;
       }
     }
-    
-    // Check game type filter
-    if (target.gameTypes && target.gameTypes !== "ALL") {
-      if (!target.gameTypes.includes(card.gameType)) {
-        return false;
-      }
-    }
-    
-    // Check traits filter
-    if (target.traits && target.traits !== "ALL") {
-      const cardTraits = card.traits || [];
-      const hasMatchingTrait = target.traits.some(trait => cardTraits.includes(trait));
-      if (!hasMatchingTrait) {
-        return false;
-      }
-    }
-    
+
     return true;
   }
 
@@ -387,7 +380,7 @@ export default class GameStateManager {
     const restrictions = this.getComputedZoneRestrictions(playerId, zone);
     if (restrictions === "ALL") return true;
     
-    return Array.isArray(restrictions) ? restrictions.includes(card.gameType) : false;
+    return Array.isArray(restrictions) ? restrictions.includes(card.cardDetails.gameType) : false;
   }
   
   /**

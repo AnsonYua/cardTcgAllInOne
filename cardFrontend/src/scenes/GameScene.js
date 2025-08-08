@@ -834,9 +834,9 @@ export default class GameScene extends Phaser.Scene {
 
   updatePlayerHand() {
     // Get hand from game state manager
-    const hand = this.gameStateManager.getPlayerHand();
-    console.log('updatePlayerHand - hand data:', JSON.stringify(hand));
-    this.updatePlayerHandWithCards(hand);
+    const handDetails =  this.gameStateManager.getPlayerHandDetails()
+    console.log('updatePlayerHand - hand data:', JSON.stringify(handDetails));
+    this.updatePlayerHandWithCards(handDetails);
   }
   
   updatePlayerHandWithCards(hand) {
@@ -858,13 +858,21 @@ export default class GameScene extends Phaser.Scene {
     // Create cards
     hand.forEach((cardData, index) => {
       let processedCardData = cardData;
+
+      processedCardData = {
+          id: cardData.uid,
+          name: cardData.uid,
+          cardType: this.getCardTypeFromId(cardData.uid),
+          cardDetails:cardData
+        };
+      /*
       if (typeof cardData === 'string') {
         processedCardData = {
           id: cardData,
           name: cardData,
           cardType: this.getCardTypeFromId(cardData)
         };
-      }
+      }*/
       
       const x = startX + (index * cardSpacing);
       const card = new Card(this, x, 0, processedCardData, {
@@ -1222,7 +1230,6 @@ export default class GameScene extends Phaser.Scene {
         // It's a field effect restriction from the leader/backend
         const restrictions = this.gameStateManager.getZoneRestrictions(null, zoneType);
         if (restrictions !== "ALL" && Array.isArray(restrictions)) {
-          console.log(`Field effect restriction: Card type ${cardData.gameType} not allowed in ${zoneType} zone. Allowed types: ${restrictions.join(', ')}`);
           this.showZoneRestrictionMessage(`This zone only allows: ${restrictions.join(', ')}`);
         } else {
           console.log(`Cannot place ${cardData.id} in ${zoneType} zone due to field effects`);

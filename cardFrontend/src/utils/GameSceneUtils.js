@@ -584,7 +584,6 @@ export default class GameSceneUtils {
             name: card.name,
             power: card.power,
             zone: card.zone,
-            gameType: card.gameType,
             traits: card.traits || [],
             description: card.description || ''
           };

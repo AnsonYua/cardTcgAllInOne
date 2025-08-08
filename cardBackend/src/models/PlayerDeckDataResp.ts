@@ -5,6 +5,8 @@
  * Converts the mozDeckHelper.prepareDeckForPlayer response into a proper class
  */
 
+import DeckManager from '../services/DeckManager';
+
 export interface CardMapping {
     [uid: string]: string; // UID to cardId mapping
 }
@@ -74,6 +76,8 @@ export class PlayerDeckDataResp {
         if (this.mainDeck.length > 0) {
             const cardUid = this.mainDeck.shift()!;
             this.hand.push(cardUid);
+            // Auto-populate handDetails after hand changes
+            this.populateHandDetails();
             return cardUid;
         }
         return null;
@@ -203,13 +207,73 @@ export class PlayerDeckDataResp {
     }
 
     /**
+     * Auto-populate handDetails using DeckManager
+     * Extracts cardId from UID and looks up full card data
+     */
+    public populateHandDetails(): void {
+        
+        this.handDetails = this.hand.map(uid => {
+            try {
+                // Extract cardId from UID (assuming format like "cardId" or "cardId_suffix")
+                let cardId = uid;
+                if (uid.includes('_')) {
+                    cardId = uid.split('_')[0];
+                } else if (uid.includes('-')) {
+                    // Keep the full cardId including "-" (like "c-1", "h-2", "s-3")
+                    cardId = uid;
+                }
+                
+                // Get card data from DeckManager
+                let cardData = DeckManager.getCardDetails(cardId);
+                
+                // If not found in regular cards, try leader cards
+                if (!cardData) {
+                    cardData = DeckManager.getLeaderCards(cardId);
+                }
+                
+                if (cardData) {
+                    return {
+                        uid: uid,
+                        id: cardData.id,
+                        name: cardData.name,
+                        cardType: cardData.cardType,
+                        gameType: cardData.gameType,
+                        power: cardData.power || 0,
+                        traits: cardData.traits || [],
+                        description: cardData.effects?.description || '',
+                        rarity: cardData.rarity,
+                        effects: cardData.effects
+                    };
+                } else {
+                    console.warn(`Card data not found for UID: ${uid}, cardId: ${cardId}`);
+                    return {
+                        uid: uid,
+                        id: cardId,
+                        name: `Unknown Card (${cardId})`,
+                        cardType: 'unknown',
+                        power: 0
+                    };
+                }
+            } catch (error) {
+                console.error(`Error populating handDetails for UID: ${uid}`, error);
+                return {
+                    uid: uid,
+                    id: uid,
+                    name: `Error Card (${uid})`,
+                    cardType: 'error',
+                    power: 0
+                };
+            }
+        });
+    }
+
+    /**
      * Add a card to hand with full details
      */
     public addCardToHand(cardUid: string, cardDetails?: any): void {
         this.hand.push(cardUid);
-        if (cardDetails) {
-            this.addCardToHandDetails({ uid: cardUid, ...cardDetails });
-        }
+        // Auto-populate handDetails after hand changes
+        this.populateHandDetails();
     }
 
     // ============ VALIDATION METHODS ============
@@ -302,7 +366,7 @@ export class PlayerDeckDataResp {
      * Create from JSON (legacy format)
      */
     public static fromJSON(data: any): PlayerDeckDataResp {
-        return new PlayerDeckDataResp(
+        const instance = new PlayerDeckDataResp(
             data.currentLeaderIdx || 0,
             data.leader || [],
             data.hand || [],
@@ -311,13 +375,20 @@ export class PlayerDeckDataResp {
             data.cardMapping || {},
             data.handDetails || []
         );
+        
+        // Auto-populate handDetails if not provided or empty
+        if (!data.handDetails || data.handDetails.length === 0) {
+            instance.populateHandDetails();
+        }
+        
+        return instance;
     }
 
     /**
      * Create from mozDeckHelper response
      */
     public static fromMozDeckHelperResponse(response: any): PlayerDeckDataResp {
-        return new PlayerDeckDataResp(
+        const instance = new PlayerDeckDataResp(
             response.currentLeaderIdx || 0,
             response.leader || [],
             response.hand || [],
@@ -326,6 +397,13 @@ export class PlayerDeckDataResp {
             response.cardMapping || {},
             response.handDetails || []
         );
+        
+        // Auto-populate handDetails if not provided or empty
+        if (!response.handDetails || response.handDetails.length === 0) {
+            instance.populateHandDetails();
+        }
+        
+        return instance;
     }
 
     /**

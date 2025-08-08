@@ -49,7 +49,8 @@ export default class Card extends Phaser.GameObjects.Container {
         this.cardData = {
           ...cardData,
           type: cardInfo.type,
-          folder: cardInfo.folder
+          folder: cardInfo.folder,
+          details:cardInfo.cardDetails
         };
       } else {
         this.cardData = cardData;

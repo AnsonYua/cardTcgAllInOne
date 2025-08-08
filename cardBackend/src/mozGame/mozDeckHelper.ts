@@ -100,14 +100,20 @@ class MozDeckLogic {
         console.log("debug leaderUIDMapping", JSON.stringify(playerDeckCopy.leaderUIDMapping));
         
         // Return PlayerDeckDataResp class instance instead of plain object
-        return new PlayerDeckDataResp(
+        const deckResp = new PlayerDeckDataResp(
             0, // currentLeaderIdx
             sumCardList, // leader
             hand, // hand
             mainDeck, // mainDeck
             playerDeckCopy.leaderUIDMapping, // leaderMapping
             playerDeckCopy.deckUIDMapping // cardMapping
+            // handDetails will be auto-populated by constructor since empty
         );
+        
+        // Ensure handDetails are populated with card data
+        deckResp.populateHandDetails();
+        
+        return deckResp;
     }
 
     /**
@@ -152,7 +158,7 @@ class MozDeckLogic {
         console.log("🔄 Reshuffle cardMapping generated:", Object.keys(cardMapping).length, "cards");
         
         // Return PlayerDeckDataResp class instance with complete UID mappings
-        return new PlayerDeckDataResp(
+        const deckResp = new PlayerDeckDataResp(
             0, // currentLeaderIdx (default)
             [], // leader (empty for reshuffle)
             hand, // hand
@@ -160,6 +166,11 @@ class MozDeckLogic {
             {}, // leaderMapping (empty for reshuffle)
             cardMapping // cardMapping with new UIDs
         );
+        
+        // Ensure handDetails are populated with card data
+        deckResp.populateHandDetails();
+        
+        return deckResp;
     }
 
     /**
