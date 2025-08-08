@@ -562,6 +562,164 @@ export class GameLogic {
         }
     }
 
+    /**
+     * Acknowledge game events and handle phase transitions
+     * @param gameId - Game ID
+     * @param eventIds - Array of event IDs to acknowledge
+     * @returns Promise<GameLogicResult>
+     */
+    async acknowledgeEvents(gameId: string, eventIds: string[]): Promise<GameLogicResult> {
+        try {
+            console.log(`🔔 Acknowledging ${eventIds.length} events for game ${gameId}`);
+            
+            // Load game environment
+            const gameEnv = await this.loadGameFromFile(gameId);
+            if (!gameEnv) {
+                return {
+                    success: false,
+                    error: 'Game not found'
+                };
+            }
+            
+            // Check if we're acknowledging any DRAW_PHASE_COMPLETE events
+            const allEvents = gameEnv.eventManager.getEvents();
+            const drawPhaseCompleteEvents = allEvents.filter(event => 
+                eventIds.includes(event.id) && event.type === EventType.DRAW_PHASE_COMPLETE
+            );
+            
+            // Acknowledge the events using EventManager method
+            gameEnv.eventManager.acknowledgeEvents(eventIds);
+            
+            // IMPORTANT: Phase transition logic when acknowledging DRAW_PHASE_COMPLETE
+            if (drawPhaseCompleteEvents.length > 0 && gameEnv.phase === GamePhase.DRAW_PHASE) {
+                console.log(`🎯 Acknowledging DRAW_PHASE_COMPLETE events - transitioning to MAIN_PHASE`);
+                gameEnv.updatePhase(GamePhase.MAIN_PHASE);
+                
+                // Add phase transition event
+                gameEnv.eventManager.addEvent(EventType.PHASE_CHANGE, {
+                    oldPhase: GamePhase.DRAW_PHASE,
+                    newPhase: GamePhase.MAIN_PHASE,
+                    reason: 'DRAW_PHASE_COMPLETE acknowledged',
+                    timestamp: Date.now()
+                });
+            }
+            
+            // Save updated game state
+            await this.saveGameToFile(gameId, gameEnv);
+            
+            console.log(`✅ Events acknowledged successfully for game ${gameId}`);
+            
+            return {
+                success: true,
+                gameId: gameId,
+                gameEnv: gameEnv
+            };
+            
+        } catch (error) {
+            console.error('❌ Error acknowledging events:', error);
+            return {
+                success: false,
+                error: `Failed to acknowledge events: ${error instanceof Error ? error.message : 'Unknown error'}`
+            };
+        }
+    }
+
+    /**
+     * Inject a complete game state for testing purposes
+     * @param gameId - Game ID to inject state into
+     * @param gameEnv - Complete game environment to inject
+     * @returns Promise<GameLogicResult>
+     */
+    async injectGameState(gameId: string, gameEnv: any): Promise<GameLogicResult> {
+        try {
+            console.log(`🧪 Injecting game state for testing: ${gameId}`);
+            
+            if (!gameEnv) {
+                return {
+                    success: false,
+                    error: 'No game environment provided for injection'
+                };
+            }
+            
+            // Convert plain object to GameEnvironment instance if needed
+            let gameEnvironment: GameEnvironment;
+            if (gameEnv instanceof GameEnvironment) {
+                gameEnvironment = gameEnv;
+            } else {
+                // Create GameEnvironment from JSON data
+                gameEnvironment = GameEnvironment.fromJSON(gameEnv);
+            }
+            
+            // CRITICAL: Initialize play sequence manager if not present
+            if (!gameEnvironment.playSequenceManager) {
+                console.log('🔧 Initializing missing play sequence manager');
+                // Use the existing constructor logic which creates a new PlaySequenceManager
+                const PlaySequenceManager = require('../services/PlaySequenceManager');
+                gameEnvironment.playSequenceManager = new PlaySequenceManager();
+            }
+            
+            // CRITICAL: Record leader plays if leaders exist in zones but not in play sequence
+            const playerIds = [gameEnvironment.playerId_1, gameEnvironment.playerId_2].filter(Boolean);
+            for (const playerId of playerIds as string[]) {
+                const playerZones = (gameEnvironment.zones as any)[playerId];
+                if (playerId && playerZones && playerZones.leader) {
+                    const leaderId = playerZones.leader.id;
+                    
+                    // Check if this leader play is already recorded
+                    const playSequenceData = gameEnvironment.playSequenceManager.toJSON();
+                    const existingLeaderPlay = playSequenceData.plays.find((play: any) => 
+                        play.action === 'PLAY_LEADER' && 
+                        play.playerId === playerId && 
+                        play.cardId === leaderId
+                    );
+                    
+                    if (!existingLeaderPlay) {
+                        console.log(`🔧 Recording missing leader play: ${leaderId} for ${playerId}`);
+                        gameEnvironment.playSequenceManager.addPlay(playerId, leaderId, 'PLAY_LEADER' as any, 'leader' as any);
+                    }
+                }
+            }
+            
+            // CRITICAL: Initialize field effects if needed
+            for (const playerId of playerIds as string[]) {
+                const player = (gameEnvironment.players as any)[playerId];
+                if (playerId && player && !player.fieldEffects) {
+                    console.log(`🔧 Initializing field effects for ${playerId}`);
+                    player.fieldEffects = {
+                        zoneRestrictions: {},
+                        activeEffects: [],
+                        specialEffects: {},
+                        calculatedPowers: {},
+                        disabledCards: [],
+                        victoryPointModifiers: 0
+                    };
+                }
+            }
+            
+            // TODO: Run unified effect simulation through EffectSimulator
+            // This would process all plays including leaders for complete effect simulation
+            // For now, we'll save the state as-is for basic testing
+            
+            // Save the injected game state
+            await this.saveGameToFile(gameId, gameEnvironment);
+            
+            console.log(`✅ Game state injected successfully: ${gameId}`);
+            
+            return {
+                success: true,
+                gameId: gameId,
+                gameEnv: gameEnvironment
+            };
+            
+        } catch (error) {
+            console.error('❌ Error injecting game state:', error);
+            return {
+                success: false,
+                error: `Failed to inject game state: ${error instanceof Error ? error.message : 'Unknown error'}`
+            };
+        }
+    }
+
 
     // ============ LEGACY COMPATIBILITY METHODS ============
 

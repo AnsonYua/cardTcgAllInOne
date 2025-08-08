@@ -422,48 +422,23 @@ export class GameController {
             
             console.log(`🔔 Acknowledging ${eventIds.length} events for game ${gameId}`);
             
-            // Load game environment - we need a playerId, so let's use a dummy one to load the game
-            // The acknowledgeEvents should work at the game level, not player level
-            const gameState = await this.gameLogic.getPlayerGameStateWithOutPlayer(gameId);
-            if (!gameState.success || !gameState.gameEnv) {
+            // Use GameLogic service method for business logic
+            const result = await this.gameLogic.acknowledgeEvents(gameId, eventIds);
+            
+            if (!result.success) {
                 res.status(404).json({
-                        error: 'Game not found',
-                        timestamp: new Date().toISOString(),
-                        context: 'acknowledgeEvents endpoint'
-                    });
-            } else {
-                // Check if we're acknowledging any DRAW_PHASE_COMPLETE events
-                const allEvents = gameState.gameEnv.eventManager.getEvents();
-                const drawPhaseCompleteEvents = allEvents.filter(event => 
-                    eventIds.includes(event.id) && event.type === 'DRAW_PHASE_COMPLETE'
-                );
-                
-                // Acknowledge the events using EventManager method
-                gameState.gameEnv.eventManager.acknowledgeEvents(eventIds);
-                
-                // IMPORTANT: Phase transition logic when acknowledging DRAW_PHASE_COMPLETE
-                if (drawPhaseCompleteEvents.length > 0 && gameState.gameEnv.phase === GamePhase.DRAW_PHASE) {
-                    console.log(`🎯 Acknowledging DRAW_PHASE_COMPLETE events - transitioning to MAIN_PHASE`);
-                    gameState.gameEnv.updatePhase(GamePhase.MAIN_PHASE);
-                    
-                    // Add phase transition event
-                    gameState.gameEnv.eventManager.addEvent(EventType.PHASE_CHANGE, {
-                        oldPhase: GamePhase.DRAW_PHASE,
-                        newPhase: GamePhase.MAIN_PHASE,
-                        reason: 'DRAW_PHASE_COMPLETE acknowledged',
-                        timestamp: Date.now()
-                    });
-                }
-                
-                // Save updated game state
-                await (this.gameLogic as any).saveGameToFile(gameId, gameState.gameEnv);
+                    error: result.error || 'Failed to acknowledge events',
+                    timestamp: new Date().toISOString(),
+                    context: 'acknowledgeEvents endpoint'
+                });
+                return;
             }
             
             console.log(`✅ Events acknowledged successfully for game ${gameId}`);
             
             res.json({
                 success: true,
-                gameId: gameState.gameId,
+                gameId: result.gameId,
                 acknowledgedEvents: eventIds.length,
                 message: 'Events acknowledged successfully',
                 timestamp: new Date().toISOString()
@@ -475,6 +450,113 @@ export class GameController {
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
                 context: 'acknowledgeEvents endpoint'
+            });
+        }
+    }
+
+    // ============ TEST ENDPOINTS ============
+
+    /**
+     * Get test scenario for testing
+     * GET /api/game/test/getTestScenario?scenarioPath=...
+     */
+    async getTestScenario(req: Request, res: Response): Promise<void> {
+        try {
+            const { scenarioPath } = req.query;
+            
+            if (!scenarioPath || typeof scenarioPath !== 'string') {
+                res.status(400).json({
+                    error: 'Missing required parameter: scenarioPath',
+                    timestamp: new Date().toISOString(),
+                    context: 'getTestScenario endpoint'
+                });
+                return;
+            }
+            
+            console.log(`📋 Loading test scenario: ${scenarioPath}`);
+            
+            // Build the full path to the test scenario
+            const scenarioFilePath = path.join(__dirname, '../../../shared/testScenarios/gameStates', scenarioPath + '.json');
+            
+            // Check if file exists
+            if (!fs.existsSync(scenarioFilePath)) {
+                res.status(404).json({
+                    error: `Test scenario not found: ${scenarioPath}`,
+                    timestamp: new Date().toISOString(),
+                    context: 'getTestScenario endpoint'
+                });
+                return;
+            }
+            
+            // Read and parse the scenario file
+            const scenarioContent = await fs.promises.readFile(scenarioFilePath, 'utf8');
+            const scenario = JSON.parse(scenarioContent);
+            
+            console.log(`✅ Test scenario loaded successfully: ${scenarioPath}`);
+            
+            res.json({
+                success: true,
+                scenarioPath: scenarioPath,
+                scenario: scenario,
+                timestamp: new Date().toISOString()
+            });
+            
+        } catch (error) {
+            console.error('❌ Error in getTestScenario:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'getTestScenario endpoint'
+            });
+        }
+    }
+
+    /**
+     * Inject game state for testing
+     * POST /api/game/test/injectGameState
+     */
+    async injectGameState(req: Request, res: Response): Promise<void> {
+        try {
+            const { gameId, gameEnv } = req.body;
+            
+            if (!gameId || !gameEnv) {
+                res.status(400).json({
+                    error: 'Missing required parameters: gameId and gameEnv',
+                    timestamp: new Date().toISOString(),
+                    context: 'injectGameState endpoint'
+                });
+                return;
+            }
+            
+            console.log(`🧪 Injecting game state for testing: ${gameId}`);
+            
+            // Use GameLogic service method for business logic
+            const result = await this.gameLogic.injectGameState(gameId, gameEnv);
+            
+            if (!result.success) {
+                res.status(400).json({
+                    error: result.error || 'Failed to inject game state',
+                    timestamp: new Date().toISOString(),
+                    context: 'injectGameState endpoint'
+                });
+                return;
+            }
+            
+            console.log(`✅ Game state injected successfully: ${gameId}`);
+            
+            res.json({
+                success: true,
+                gameId: result.gameId,
+                message: 'Game state injected successfully',
+                timestamp: new Date().toISOString()
+            });
+            
+        } catch (error) {
+            console.error('❌ Error in injectGameState:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'injectGameState endpoint'
             });
         }
     }

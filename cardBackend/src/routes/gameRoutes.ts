@@ -162,32 +162,24 @@ router.post('/test/setCase', async (req: Request, res: Response) => {
 
 /**
  * Get test scenario
- * GET /api/game/test/getTestScenario
+ * GET /api/game/test/getTestScenario?scenarioPath=...
  */
-router.get('/test/getTestScenario', async (req: Request, res: Response) => {
-    try {
-        if (process.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'development') {
+router.get('/test/getTestScenario', 
+    // Environment check middleware
+    (req: Request, res: Response, next: NextFunction) => {
+        // Allow in development for now, restrict in production
+        if (process.env.NODE_ENV === 'production') {
             res.status(403).json({ 
-                error: 'Test endpoints only available in test/development environment',
+                error: 'This endpoint is only available in test/development environment',
                 timestamp: new Date().toISOString()
             });
             return;
         }
-        
-        // TODO: Implement test scenario retrieval when needed
-        res.json({
-            scenario: 'not implemented',
-            timestamp: new Date().toISOString()
-        });
-        
-    } catch (error) {
-        res.status(500).json({
-            error: (error as Error).message,
-            timestamp: new Date().toISOString(),
-            context: 'getTestScenario endpoint'
-        });
-    }
-});
+        next();
+    },
+    // Main handler - use controller method
+    gameController.getTestScenario.bind(gameController)
+);
 
 /**
  * Inject game state for testing
@@ -206,24 +198,8 @@ router.post('/test/injectGameState',
         }
         next();
     },
-    // Main handler
-    async (req: Request, res: Response) => {
-        try {
-            // TODO: Implement game state injection when needed
-            res.json({
-                success: true,
-                message: 'Game state injection (not implemented)',
-                timestamp: new Date().toISOString()
-            });
-            
-        } catch (error) {
-            res.status(500).json({
-                error: (error as Error).message,
-                timestamp: new Date().toISOString(),
-                context: 'injectGameState endpoint'
-            });
-        }
-    }
+    // Main handler - use controller method
+    gameController.injectGameState.bind(gameController)
 );
 
 // ============ ERROR HANDLING MIDDLEWARE ============

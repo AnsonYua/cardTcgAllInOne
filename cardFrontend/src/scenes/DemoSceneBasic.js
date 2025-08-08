@@ -20,6 +20,7 @@ export default class DemoSceneBasic extends GameScene {
     this.isTestMode = true;
     //const scenarioPath = 'CharacterCase/character_c-1_trump_family_boost_dynamic';
     const gameEnv = await this.apiManager.requestTestScenario(scenarioPath);
+    console.log(JSON.stringify(gameEnv))
     await this.apiManager.requestSetTestScenario(gameEnv);
     
     this.gameStateManager.initializeGame(
