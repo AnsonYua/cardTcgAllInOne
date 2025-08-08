@@ -1,0 +1,664 @@
+{
+  "metadata": {
+    "version": "1.1",
+    "lastUpdated": "2025-01-13",
+    "cardType": "character"
+  },
+  "cards": {
+    "c-1": {
+      "id": "c-1",
+      "name": "總統特朗普",
+      "cardType": "character",
+      "gameType": "愛國者",
+      "power": 100,
+      "traits": ["特朗普家族"],
+      "rarity": "legendary",
+      "effects": {
+        "description": "我方場上全部擁有特朗普家族特徵的角色卡 原能力值加 +10",
+        "rules": [
+          {
+            "id": "trump_president_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "trait",
+                  "value": "特朗普家族"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 10
+            }
+          }
+        ]
+      }
+    },
+    "c-2": {
+      "id": "c-2",
+      "name": "前總統特朗普(YMCA)",
+      "cardType": "character",
+      "gameType": "右翼",
+      "power": 80,
+      "traits": ["特朗普家族"],
+      "rarity": "rare",
+      "effects": {
+        "description": "我方場上全部右翼類型的角色卡 原能力值加 +10",
+        "rules": [
+          {
+            "id": "trump_ymca_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "gameType",
+                  "value": "右翼"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 10
+            }
+          }
+        ]
+      }
+    },
+    "c-3": {
+      "id": "c-3",
+      "name": "拜登(Sleepy Joe)",
+      "cardType": "character",
+      "gameType": "左翼",
+      "power": 110,
+      "traits": ["Deep State"],
+      "rarity": "rare",
+      "effects": {
+        "description": "",
+        "rules": []
+      }
+    },
+    "c-4": {
+      "id": "c-4",
+      "name": "拜登 2020",
+      "cardType": "character",
+      "gameType": "左翼",
+      "power": 120,
+      "traits": ["Deep State"],
+      "rarity": "rare",
+      "effects": {
+        "description": "",
+        "rules": []
+      }
+    },
+    "c-5": {
+      "id": "c-5",
+      "name": "特朗普忠粉",
+      "cardType": "character",
+      "gameType": "左翼",
+      "power": 50,
+      "traits": ["平民"],
+      "rarity": "common",
+      "effects": {
+        "description": "當這張卡登場時，抽1張卡",
+        "rules": [
+          {
+            "id": "trump_fan_draw",
+            "type": "triggered",
+            "trigger": {
+              "event": "onSummon",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": [],
+              "filters": []
+            },
+            "effect": {
+              "type": "drawCards",
+              "value": 1
+            }
+          }
+        ]
+      }
+    },
+    "c-6": {
+      "id": "c-6",
+      "name": "拜登忠粉",
+      "cardType": "character",
+      "gameType": "右翼",
+      "power": 50,
+      "traits": ["平民"],
+      "rarity": "common",
+      "effects": {
+        "description": "當這張卡登場時，抽1張卡",
+        "rules": [
+          {
+            "id": "biden_fan_draw",
+            "type": "triggered",
+            "trigger": {
+              "event": "onSummon",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": [],
+              "filters": []
+            },
+            "effect": {
+              "type": "drawCards",
+              "value": 1
+            }
+          }
+        ]
+      }
+    },
+    "c-7": {
+      "id": "c-7",
+      "name": "特朗普(天選之人)",
+      "cardType": "character",
+      "gameType": "愛國者",
+      "power": 100,
+      "traits": ["特朗普家族"],
+      "rarity": "legendary",
+      "effects": {
+        "description": "",
+        "rules": []
+      }
+    },
+    "c-8": {
+      "id": "c-8",
+      "name": "馬斯克 (Father Of Doge)",
+      "cardType": "character",
+      "gameType": "自由",
+      "power": 80,
+      "traits": ["富商", "Doge"],
+      "rarity": "epic",
+      "effects": {
+        "description": "",
+        "rules": []
+      }
+    },
+    "c-9": {
+      "id": "c-9",
+      "name": "艾利茲(Marko Elez doge) (Doge 六子）",
+      "cardType": "character",
+      "gameType": "自由",
+      "power": 30,
+      "traits": [],
+      "rarity": "rare",
+      "effects": {
+        "description": "當這個卡登場時，可以從自己的卡組上面查看4張卡片，自由選出一張卡加進手牌，其餘放到卡組之下。",
+        "rules": [
+          {
+            "id": "elijah_search",
+            "type": "triggered",
+            "trigger": {
+              "event": "onSummon",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": [],
+              "filters": []
+            },
+            "effect": {
+              "type": "searchCard",
+              "searchCount": 4,
+              "selectCount": 1,
+              "destination": "hand",
+              "filters": []
+            }
+          }
+        ]
+      }
+    },
+    "c-10": {
+      "id": "c-10",
+      "name": "爱德华·科林斯汀 Edward Coristine (Doge 六子）",
+      "cardType": "character",
+      "gameType": "愛國者",
+      "power": 40,
+      "traits": [],
+      "rarity": "rare",
+      "effects": {
+        "description": "當這個卡登場時，可以從自己的卡組上面查看7張卡片，選出一張SP卡 放到打出到 SP 卡區，其餘放到卡組之下。",
+        "rules": [
+          {
+            "id": "edward_sp_search",
+            "type": "triggered",
+            "trigger": {
+              "event": "onSummon",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": [],
+              "filters": []
+            },
+            "effect": {
+              "type": "searchCard",
+              "searchCount": 7,
+              "selectCount": 1,
+              "destination": "spZone",
+              "filters": [
+                {
+                  "type": "cardType",
+                  "value": "sp"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "c-11": {
+      "id": "c-11",
+      "name": "伊桑·邵川Ethan Shaortran(Doge 六子）",
+      "cardType": "character",
+      "gameType": "愛國者",
+      "power": 50,
+      "traits": ["平民"],
+      "rarity": "common",
+      "effects": {
+        "description": "",
+        "rules": []
+      }
+    },
+    "c-12": {
+      "id": "c-12",
+      "name": "盧克·法里托Luke Farritor(Doge 六子）",
+      "cardType": "character",
+      "gameType": "自由",
+      "power": 30,
+      "traits": [],
+      "rarity": "rare",
+      "effects": {
+        "description": "當這個卡登場時，可以從自己的卡組上面查看7張卡片，選出一張HELP卡打出到HELP卡區，其餘放到卡組之下。",
+        "rules": [
+          {
+            "id": "luke_help_search",
+            "type": "triggered",
+            "trigger": {
+              "event": "onSummon",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": [],
+              "filters": []
+            },
+            "effect": {
+              "type": "searchCard",
+              "searchCount": 7,
+              "selectCount": 1,
+              "destination": "helpZone",
+              "filters": [
+                {
+                  "type": "cardType",
+                  "value": "help"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "c-13": {
+      "id": "c-13",
+      "name": "科里斯汀Gautier Cole Killian(Doge六子）",
+      "cardType": "character",
+      "gameType": "經濟",
+      "power": 40,
+      "traits": ["平民"],
+      "rarity": "common",
+      "effects": {
+        "description": "",
+        "rules": []
+      }
+    },
+    "c-14": {
+      "id": "c-14",
+      "name": "克里格 Gavin Kliger(Doge六子）",
+      "cardType": "character",
+      "gameType": "自由",
+      "power": 60,
+      "traits": [],
+      "rarity": "common",
+      "effects": {
+        "description": "",
+        "rules": []
+      }
+    },
+    "c-15": {
+      "id": "c-15",
+      "name": "Tik Tok難民",
+      "cardType": "character",
+      "gameType": "自由",
+      "power": 50,
+      "traits": ["平民"],
+      "rarity": "common",
+      "effects": {
+        "description": "",
+        "rules": []
+      }
+    },
+    "c-16": {
+      "id": "c-16",
+      "name": "朱克伯格",
+      "cardType": "character",
+      "gameType": "自由",
+      "power": 70,
+      "traits": ["富商"],
+      "rarity": "rare",
+      "effects": {
+        "description": "",
+        "rules": []
+      }
+    },
+    "c-17": {
+      "id": "c-17",
+      "name": "貝索斯",
+      "cardType": "character",
+      "gameType": "經濟",
+      "power": 60,
+      "traits": ["富商"],
+      "rarity": "rare",
+      "effects": {
+        "description": "",
+        "rules": []
+      }
+    },
+    "c-18": {
+      "id": "c-18",
+      "name": "提姆·庫克 Tim Cook",
+      "cardType": "character",
+      "gameType": "自由",
+      "power": 60,
+      "traits": ["富商"],
+      "rarity": "rare",
+      "effects": {
+        "description": "",
+        "rules": []
+      }
+    },
+    "c-19": {
+      "id": "c-19",
+      "name": "比爾蓋茨 Bill gates",
+      "cardType": "character",
+      "gameType": "經濟",
+      "power": 70,
+      "traits": ["富商"],
+      "rarity": "epic",
+      "effects": {
+        "description": "我方場上全部擁有富商特徵的角色卡 原能力值加 +10",
+        "rules": [
+          {
+            "id": "gates_rich_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "trait",
+                  "value": "富商"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 10
+            }
+          }
+        ]
+      }
+    },
+    "c-20": {
+      "id": "c-20",
+      "name": "巴飛特",
+      "cardType": "character",
+      "gameType": "經濟",
+      "power": 70,
+      "traits": ["富商"],
+      "rarity": "epic",
+      "effects": {
+        "description": "玩家指定我方場上其中一張有富商特徵角色卡，原能力值加 +50",
+        "rules": [
+          {
+            "id": "buffett_single_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "targetCount": 1,
+              "filters": [
+                {
+                  "type": "trait",
+                  "value": "富商"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 50
+            }
+          }
+        ]
+      }
+    },
+    "c-21": {
+      "id": "c-21",
+      "name": "奧巴馬",
+      "cardType": "character",
+      "gameType": "左翼",
+      "power": 80,
+      "traits": ["Deep State"],
+      "rarity": "epic",
+      "effects": {
+        "description": "玩家指定我方場上其中一張角色卡，原能力值+50",
+        "rules": [
+          {
+            "id": "obama_single_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "targetCount": 1,
+              "filters": []
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 50
+            }
+          }
+        ]
+      }
+    },
+    "c-22": {
+      "id": "c-22",
+      "name": "貝森特",
+      "cardType": "character",
+      "gameType": "愛國者",
+      "power": 60,
+      "traits": [],
+      "rarity": "common",
+      "effects": {
+        "description": "",
+        "rules": []
+      }
+    },
+    "c-23": {
+      "id": "c-23",
+      "name": "巴倫·川普 Barron Trump",
+      "cardType": "character",
+      "gameType": "右翼",
+      "power": 50,
+      "traits": ["特朗普家族"],
+      "rarity": "rare",
+      "effects": {
+        "description": "",
+        "rules": []
+      }
+    },
+    "c-24": {
+      "id": "c-24",
+      "name": "佩洛西",
+      "cardType": "character",
+      "gameType": "經濟",
+      "power": 60,
+      "traits": ["富商"],
+      "rarity": "rare",
+      "effects": {
+        "description": "",
+        "rules": []
+      }
+    },
+    "c-25": {
+      "id": "c-25",
+      "name": "幣圈大佬",
+      "cardType": "character",
+      "gameType": "經濟",
+      "power": 70,
+      "traits": ["富商"],
+      "rarity": "rare",
+      "effects": {
+        "description": "",
+        "rules": []
+      }
+    },
+    "c-26": {
+      "id": "c-26",
+      "name": "熱血Reddit 網民",
+      "cardType": "character",
+      "gameType": "愛國者",
+      "power": 70,
+      "traits": ["平民"],
+      "rarity": "common",
+      "effects": {
+        "description": "",
+        "rules": []
+      }
+    },
+    "c-27": {
+      "id": "c-27",
+      "name": "華爾街狼人",
+      "cardType": "character",
+      "gameType": "經濟",
+      "power": 70,
+      "traits": ["富商"],
+      "rarity": "rare",
+      "effects": {
+        "description": "",
+        "rules": []
+      }
+    },
+    "c-28": {
+      "id": "c-28",
+      "name": "美國農民眾",
+      "cardType": "character",
+      "gameType": "右翼",
+      "power": 60,
+      "traits": ["平民"],
+      "rarity": "common",
+      "effects": {
+        "description": "當這張卡登場時，抽1張卡",
+        "rules": [
+          {
+            "id": "farmers_draw",
+            "type": "triggered",
+            "trigger": {
+              "event": "onSummon",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": [],
+              "filters": []
+            },
+            "effect": {
+              "type": "drawCards",
+              "value": 1
+            }
+          }
+        ]
+      }
+    }
+  },
+  "combos": {
+    "allSameType": {
+      "description": "三張相同類型角色卡",
+      "points": 250,
+      "conditions": [
+        {
+          "type": "sameGameType",
+          "count": 3
+        }
+      ]
+    },
+    "twoSameType": {
+      "description": "兩張相同類型角色卡",
+      "points": 50,
+      "conditions": [
+        {
+          "type": "sameGameType",
+          "count": 2
+        }
+      ]
+    },
+    "freedomEconomy": {
+      "description": "自由 + 經濟組合",
+      "points": 170,
+      "conditions": [
+        {
+          "type": "gameTypeCombo",
+          "types": ["自由", "經濟"]
+        }
+      ]
+    },
+    "rightWingPatriot": {
+      "description": "右翼 + 愛國者組合",
+      "points": 150,
+      "conditions": [
+        {
+          "type": "gameTypeCombo",
+          "types": ["右翼", "愛國者"]
+        }
+      ]
+    },
+    "leftWingEconomy": {
+      "description": "左翼 + 經濟組合",
+      "points": 120,
+      "conditions": [
+        {
+          "type": "gameTypeCombo",
+          "types": ["左翼", "經濟"]
+        }
+      ]
+    }
+  }
+}

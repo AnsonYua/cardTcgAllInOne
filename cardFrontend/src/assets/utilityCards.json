@@ -1,0 +1,821 @@
+{
+  "metadata": {
+    "version": "1.1",
+    "lastUpdated": "2025-01-13",
+    "cardType": "utility"
+  },
+  "cards": {
+    "sp-1": {
+      "id": "sp-1",
+      "name": "「天選之人」",
+      "cardType": "sp",
+      "effects": {
+        "description": "如我方場上有角色卡或領導卡名字為特朗普，對方場上的SP卡和HELP效果變為無效。",
+        "rules": [
+          {
+            "id": "chosen_one_neutralize",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": [
+                {
+                  "type": "allyFieldContainsName",
+                  "value": "特朗普"
+                }
+              ]
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": ["help", "sp"],
+              "filters": []
+            },
+            "effect": {
+              "type": "neutralizeEffect",
+              "value": true
+            }
+          }
+        ]
+      }
+    },
+    "h-1": {
+      "id": "h-1",
+      "name": "Deep State",
+      "cardType": "help",
+      "effects": {
+        "description": "選擇對方場上的一張SP卡或HELP卡，立即移除該卡的效果，並使其未來無效。",
+        "rules": [
+          {
+            "id": "deep_state_neutralize",
+            "type": "triggered",
+            "trigger": {
+              "event": "onPlay",
+              "conditions": []
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": ["help", "sp"],
+              "filters": [],
+              "requiresSelection": true,
+              "selectCount": 1
+            },
+            "effect": {
+              "type": "neutralizeEffect",
+              "value": true,
+              "undoEffect": true
+            }
+          }
+        ]
+      }
+    },
+    "h-2": {
+      "id": "h-2",
+      "name": "Make America Great Again",
+      "cardType": "help",
+      "effects": {
+        "description": "選擇對方一張角色卡，原能力值 變成 0",
+        "rules": [
+          {
+            "id": "maga_nerf",
+            "type": "triggered",
+            "trigger": {
+              "event": "onPlay",
+              "conditions": []
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": ["top", "left", "right"],
+              "requiresSelection": true,
+              "selectCount": 1,
+              "filters": []
+            },
+            "effect": {
+              "type": "setPower",
+              "value": 0
+            }
+          }
+        ]
+      }
+    },
+    "h-3": {
+      "id": "h-3",
+      "name": "doge 全員集合",
+      "cardType": "help",
+      "effects": {
+        "description": "我方場上擁有Doge特徵的全部角色卡，原能力值 +40",
+        "rules": [
+          {
+            "id": "doge_assembly_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "trait",
+                  "value": "Doge"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 40
+            }
+          }
+        ]
+      }
+    },
+    "h-4": {
+      "id": "h-4",
+      "name": "「解放日」",
+      "cardType": "help",
+      "effects": {
+        "description": "對手角色卡登場效果無效",
+        "rules": [
+          {
+            "id": "liberation_day_silence",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": ["top", "left", "right"],
+              "filters": []
+            },
+            "effect": {
+              "type": "silenceOnSummon",
+              "value": true
+            }
+          }
+        ]
+      }
+    },
+    "sp-2": {
+      "id": "sp-2",
+      "name": "減息周期",
+      "cardType": "sp",
+      "effects": {
+        "description": "我方場上全部角色卡，原能力值 +30",
+        "rules": [
+          {
+            "id": "rate_cut_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": []
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 30
+            }
+          }
+        ]
+      }
+    },
+    "sp-3": {
+      "id": "sp-3",
+      "name": "加息周期",
+      "cardType": "sp",
+      "effects": {
+        "description": "對方場上全部角色卡，原能力值 -30",
+        "rules": [
+          {
+            "id": "rate_hike_nerf",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": ["top", "left", "right"],
+              "filters": []
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": -30
+            }
+          }
+        ]
+      }
+    },
+    "h-5": {
+      "id": "h-5",
+      "name": "失智老人",
+      "cardType": "help",
+      "effects": {
+        "description": "可在上，左，右區域打出任可屬於的角色卡。而且全部召喚出來的角色能力值再 +20. 這張卡的效果不能被無效文化 。",
+        "rules": [
+          {
+            "id": "dementia_placement_freedom",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": []
+            },
+            "effect": {
+              "type": "zonePlacementFreedom",
+              "value": true
+            }
+          },
+          {
+            "id": "dementia_power_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": []
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 20
+            }
+          }
+        ],
+        "immuneToNeutralization": true
+      }
+    },
+    "h-6": {
+      "id": "h-6",
+      "name": "You have no card",
+      "cardType": "help",
+      "effects": {
+        "description": "如對方擁有4 張手牌以上，隨機選出兩張廢棄",
+        "rules": [
+          {
+            "id": "no_card_discard",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": [
+                {
+                  "type": "opponentHandCount",
+                  "operator": ">=",
+                  "value": 4
+                }
+              ]
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": ["hand"],
+              "filters": []
+            },
+            "effect": {
+              "type": "randomDiscard",
+              "value": 2
+            }
+          }
+        ]
+      }
+    },
+    "sp-4": {
+      "id": "sp-4",
+      "name": "關稅掃射",
+      "cardType": "sp",
+      "effects": {
+        "description": "場上全部擁有自由或經濟特徵角色卡，原能力值 -50",
+        "rules": [
+          {
+            "id": "tariff_sweep_nerf",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "both",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "gameTypeOr",
+                  "values": ["自由", "經濟"]
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": -50
+            }
+          }
+        ]
+      }
+    },
+    "h-7": {
+      "id": "h-7",
+      "name": "拜登退選",
+      "cardType": "help",
+      "effects": {
+        "description": "對方不能打出HELP 卡",
+        "rules": [
+          {
+            "id": "biden_withdrawal_restriction",
+            "type": "restriction",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": ["help"],
+              "filters": []
+            },
+            "effect": {
+              "type": "preventPlay",
+              "value": true
+            }
+          }
+        ]
+      }
+    },
+    "sp-5": {
+      "id": "sp-5",
+      "name": "破頂",
+      "cardType": "sp",
+      "effects": {
+        "description": "我方場上擁有自由或經濟特徵的全部角色卡，原能力值 +30",
+        "rules": [
+          {
+            "id": "break_high_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "gameTypeOr",
+                  "values": ["自由", "經濟"]
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 30
+            }
+          }
+        ]
+      }
+    },
+    "h-8": {
+      "id": "h-8",
+      "name": "破低",
+      "cardType": "help",
+      "effects": {
+        "description": "對方場上擁有自由或經濟特徵的全部角色卡，原能力值 -30",
+        "rules": [
+          {
+            "id": "break_low_nerf",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "gameTypeOr",
+                  "values": ["自由", "經濟"]
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": -30
+            }
+          }
+        ]
+      }
+    },
+    "h-9": {
+      "id": "h-9",
+      "name": "bitcoin 真香",
+      "cardType": "help",
+      "effects": {
+        "description": "我方抽2張卡片",
+        "rules": [
+          {
+            "id": "bitcoin_draw",
+            "type": "triggered",
+            "trigger": {
+              "event": "onPlay",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": [],
+              "filters": []
+            },
+            "effect": {
+              "type": "drawCards",
+              "value": 2
+            }
+          }
+        ]
+      }
+    },
+    "h-10": {
+      "id": "h-10",
+      "name": "加洲大火",
+      "cardType": "help",
+      "effects": {
+        "description": "對方的HELP卡無效",
+        "rules": [
+          {
+            "id": "california_fire_neutralize",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": ["help"],
+              "filters": []
+            },
+            "effect": {
+              "type": "neutralizeEffect",
+              "value": true
+            }
+          }
+        ]
+      }
+    },
+    "h-11": {
+      "id": "h-11",
+      "name": "海湖莊園",
+      "cardType": "help",
+      "effects": {
+        "description": "此卡登場時，可以從自己的卡組上面查看5張卡片，選出一張角色卡加到手牌",
+        "rules": [
+          {
+            "id": "mar_a_lago_search",
+            "type": "triggered",
+            "trigger": {
+              "event": "onPlay",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": [],
+              "filters": []
+            },
+            "effect": {
+              "type": "searchCard",
+              "searchCount": 5,
+              "selectCount": 1,
+              "destination": "hand",
+              "filters": [
+                {
+                  "type": "cardType",
+                  "value": "character"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "h-12": {
+      "id": "h-12",
+      "name": "美債危機",
+      "cardType": "help",
+      "effects": {
+        "description": "對方的SP卡無效，在SP回合對方必須打出一張SP卡或任意卡牌背面放置。如是SP卡，則無效果。",
+        "rules": [
+          {
+            "id": "debt_crisis_sp_neutralize",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": ["sp"],
+              "filters": []
+            },
+            "effect": {
+              "type": "neutralizeEffect",
+              "value": true
+            }
+          },
+          {
+            "id": "debt_crisis_force_sp",
+            "type": "restriction",
+            "trigger": {
+              "event": "spPhase",
+              "conditions": []
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": ["sp"],
+              "filters": []
+            },
+            "effect": {
+              "type": "forceSPPlay",
+              "value": true
+            }
+          }
+        ]
+      }
+    },
+    "h-13": {
+      "id": "h-13",
+      "name": "TikTok下架",
+      "cardType": "help",
+      "effects": {
+        "description": "我方場上擁有平民特徵的全部角色卡，原能力值 +30",
+        "rules": [
+          {
+            "id": "tiktok_ban_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "trait",
+                  "value": "平民"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 30
+            }
+          }
+        ]
+      }
+    },
+    "sp-6": {
+      "id": "sp-6",
+      "name": "DeepSeek風暴",
+      "cardType": "sp",
+      "effects": {
+        "description": "在全場總能力結算後，對方的總能力值-80",
+        "rules": [
+          {
+            "id": "deepseek_storm_final_nerf",
+            "type": "triggered",
+            "trigger": {
+              "event": "finalCalculation",
+              "conditions": []
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": [],
+              "filters": []
+            },
+            "effect": {
+              "type": "totalPowerNerf",
+              "value": 80
+            }
+          }
+        ]
+      }
+    },
+    "h-14": {
+      "id": "h-14",
+      "name": "聯邦大法官",
+      "cardType": "help",
+      "effects": {
+        "description": "玩家指定對方場上其中一張有特朗普家族特徵角色卡，原能力值-60",
+        "rules": [
+          {
+            "id": "federal_judge_trump_nerf",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": ["top", "left", "right"],
+              "targetCount": 1,
+              "filters": [
+                {
+                  "type": "trait",
+                  "value": "特朗普家族"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": -60
+            }
+          }
+        ]
+      }
+    },
+    "h-15": {
+      "id": "h-15",
+      "name": "天才法案",
+      "cardType": "help",
+      "effects": {
+        "description": "我方場上擁有經濟特徵的全部角色卡，原能力值 +50",
+        "rules": [
+          {
+            "id": "genius_act_economy_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "gameType",
+                  "value": "經濟"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 50
+            }
+          }
+        ]
+      }
+    },
+    "sp-7": {
+      "id": "sp-7",
+      "name": "No King Day (無國王日)",
+      "cardType": "sp",
+      "effects": {
+        "description": "對方場上擁有特朗普家族特徵的角色卡，原能力值  -30",
+        "rules": [
+          {
+            "id": "no_king_day_trump_nerf",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "trait",
+                  "value": "特朗普家族"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": -30
+            }
+          }
+        ]
+      }
+    },
+    "sp-8": {
+      "id": "sp-8",
+      "name": "反特斯拉示威(Tesla Takedown)",
+      "cardType": "sp",
+      "effects": {
+        "description": "對方場上擁有Doge特徵的全部角色卡,原能力值 -40。對方領袖卡是馬斯克的時候, 特殊組合的加乘變成0",
+        "rules": [
+          {
+            "id": "tesla_takedown_doge_nerf",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "trait",
+                  "value": "Doge"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": -40
+            }
+          },
+          {
+            "id": "tesla_takedown_musk_combo_disable",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": [
+                {
+                  "type": "opponentLeader",
+                  "value": "馬斯克"
+                }
+              ]
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": [],
+              "filters": []
+            },
+            "effect": {
+              "type": "disableComboBonus",
+              "value": true
+            }
+          }
+        ]
+      }
+    },
+    "sp-9": {
+      "id": "sp-9",
+      "name": "國會山莊騷亂",
+      "cardType": "sp",
+      "effects": {
+        "description": "如對方場上有角色卡或領導卡名字為特朗普, 特殊組合的加乘變成0",
+        "rules": [
+          {
+            "id": "capitol_riot_trump_combo_disable",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": [
+                {
+                  "type": "opponentFieldContainsName",
+                  "value": "特朗普"
+                }
+              ]
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": [],
+              "filters": []
+            },
+            "effect": {
+              "type": "disableComboBonus",
+              "value": true
+            }
+          }
+        ]
+      }
+    },
+    "sp-10": {
+      "id": "sp-10",
+      "name": "民主黨集結",
+      "cardType": "sp",
+      "effects": {
+        "description": "我方場上擁有左翼特徵的全部角色卡，原能力值 +30",
+        "rules": [
+          {
+            "id": "democratic_rally_leftwing_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "gameType",
+                  "value": "左翼"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 30
+            }
+          }
+        ]
+      }
+    }
+  }
+}

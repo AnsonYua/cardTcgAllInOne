@@ -94,7 +94,9 @@ export default class GameSceneUtils {
     
     // Then check backend field effect restrictions via GameStateManager
     if (scene.gameStateManager) {
-      return scene.gameStateManager.canPlayCardInZone(cardData, zoneType);
+      // Pass the current playerId to ensure field effects are checked correctly
+      const playerId = scene.gameStateManager.getCurrentPlayerId();
+      return scene.gameStateManager.canPlayCardInZone(cardData, zoneType, playerId);
     }
     
     // Fallback to basic validation if GameStateManager not available

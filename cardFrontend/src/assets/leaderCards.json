@@ -1,0 +1,441 @@
+{
+  "metadata": {
+    "version": "1.1",
+    "lastUpdated": "2025-01-13",
+    "cardType": "leader"
+  },
+  "leaders": {
+    "s-1": {
+      "id": "s-1",
+      "name": "特朗普",
+      "cardType": "leader",
+      "gameType": "右翼",
+      "initialPoint": 110,
+      "level": 7,
+      "rarity": "legendary",
+      "zoneCompatibility": {
+        "top": ["右翼", "自由", "經濟"],
+        "left": ["右翼", "自由", "愛國者"],
+        "right": ["右翼", "愛國者", "經濟"]
+      },
+      "effects": {
+        "description": "全部召喚出來的角色擁有右翼或愛國者屬性能力值 +45。如對方領袖卡為「鮑威爾」，我方召喚出來擁有經濟屬性的原能力值變成 0",
+        "rules": [
+          {
+            "id": "trump_rightWing_patriot_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "gameTypeOr",
+                  "values": ["右翼", "愛國者"]
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 45
+            }
+          },
+          {
+            "id": "trump_vs_powell_economy_nerf",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": [
+                {
+                  "type": "opponentLeader",
+                  "value": "鮑威爾"
+                }
+              ]
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "gameType",
+                  "value": "經濟"
+                }
+              ]
+            },
+            "effect": {
+              "type": "setPower",
+              "value": 0
+            }
+          }
+        ]
+      }
+    },
+    "s-2": {
+      "id": "s-2",
+      "name": "拜登",
+      "cardType": "leader",
+      "gameType": "左翼",
+      "initialPoint": 100,
+      "level": 7,
+      "rarity": "legendary",
+      "zoneCompatibility": {
+        "top": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+        "left": ["左翼", "自由", "經濟", "右翼", "愛國者"],
+        "right": ["左翼", "自由", "經濟", "右翼", "愛國者"]
+      },
+      "effects": {
+        "description": "全部召喚出來的角色能力值 +40",
+        "rules": [
+          {
+            "id": "biden_all_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": []
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 40
+            }
+          }
+        ]
+      }
+    },
+    "s-3": {
+      "id": "s-3",
+      "name": "馬斯克",
+      "cardType": "leader",
+      "gameType": "自由",
+      "initialPoint": 91,
+      "level": 6,
+      "rarity": "epic",
+      "zoneCompatibility": {
+        "top": ["自由", "經濟"],
+        "left": ["左翼", "自由"],
+        "right": ["右翼", "自由"]
+      },
+      "effects": {
+        "description": "全部召喚出來的角色擁有自由屬性能力值 +50。全部召喚出來的角色如擁有Doge在角色名字，能力值 再+20",
+        "rules": [
+          {
+            "id": "musk_freedom_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "gameType",
+                  "value": "自由"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 50
+            }
+          },
+          {
+            "id": "musk_doge_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "nameContains",
+                  "value": "Doge"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 20
+            }
+          }
+        ]
+      }
+    },
+    "s-4": {
+      "id": "s-4",
+      "name": "賀錦麗",
+      "cardType": "leader",
+      "gameType": "左翼",
+      "initialPoint": 69,
+      "level": 4,
+      "rarity": "rare",
+      "zoneCompatibility": {
+        "top": ["左翼", "經濟", "自由"],
+        "left": ["左翼", "經濟"],
+        "right": ["左翼", "自由", "經濟"]
+      },
+      "effects": {
+        "description": "全部召喚出來的角色擁有左翼屬性能力值 +40。全部召喚出來的角色擁有經濟屬性能力值 +20。如對方領袖卡為「特朗普」，我方「右」區域召喚出來的角色變成0",
+        "rules": [
+          {
+            "id": "harris_leftwing_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "gameType",
+                  "value": "左翼"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 40
+            }
+          },
+          {
+            "id": "harris_economy_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "gameType",
+                  "value": "經濟"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 20
+            }
+          },
+          {
+            "id": "harris_vs_trump_right_nerf",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": [
+                {
+                  "type": "opponentLeader",
+                  "value": "特朗普"
+                }
+              ]
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["right"],
+              "filters": []
+            },
+            "effect": {
+              "type": "setPower",
+              "value": 0
+            }
+          }
+        ]
+      }
+    },
+    "s-5": {
+      "id": "s-5",
+      "name": "范斯",
+      "cardType": "leader",
+      "gameType": "右翼",
+      "initialPoint": 75,
+      "level": 5,
+      "rarity": "epic",
+      "zoneCompatibility": {
+        "top": ["右翼", "經濟", "自由"],
+        "left": ["右翼", "經濟"],
+        "right": ["右翼", "自由", "愛國者"]
+      },
+      "effects": {
+        "description": "全部召喚出來的角色擁有右翼屬性能力值 +40。全部召喚出來的角色擁有自由屬性能力值 +20。全部召喚出來的角色擁有經濟屬性能力值 +10",
+        "rules": [
+          {
+            "id": "vance_rightwing_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "gameType",
+                  "value": "右翼"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 40
+            }
+          },
+          {
+            "id": "vance_freedom_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "gameType",
+                  "value": "自由"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 20
+            }
+          },
+          {
+            "id": "vance_economy_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "gameType",
+                  "value": "經濟"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 10
+            }
+          }
+        ]
+      }
+    },
+    "s-6": {
+      "id": "s-6",
+      "name": "鮑威爾",
+      "cardType": "leader",
+      "gameType": "經濟",
+      "initialPoint": 95,
+      "level": 6,
+      "rarity": "epic",
+      "zoneCompatibility": {
+        "top": ["經濟", "自由"],
+        "left": ["經濟", "左翼", "右翼"],
+        "right": ["經濟", "左翼", "右翼"]
+      },
+      "effects": {
+        "description": "全部召喚出來的角色擁有自由或經濟屬性能力值 +30。如對方領袖卡為「特朗普」，我方召喚出來擁有經濟屬性能力值再加 +20。如對方領袖卡為「特朗普」，我方不能召喚擁有右翼的角色",
+        "rules": [
+          {
+            "id": "powell_freedom_economy_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": []
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "gameTypeOr",
+                  "values": ["自由", "經濟"]
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 30
+            }
+          },
+          {
+            "id": "powell_vs_trump_economy_extra_boost",
+            "type": "continuous",
+            "trigger": {
+              "event": "always",
+              "conditions": [
+                {
+                  "type": "opponentLeader",
+                  "value": "特朗普"
+                }
+              ]
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "gameType",
+                  "value": "經濟"
+                }
+              ]
+            },
+            "effect": {
+              "type": "powerBoost",
+              "value": 20
+            }
+          },
+          {
+            "id": "powell_vs_trump_rightwing_restriction",
+            "type": "restriction",
+            "trigger": {
+              "event": "always",
+              "conditions": [
+                {
+                  "type": "opponentLeader",
+                  "value": "特朗普"
+                }
+              ]
+            },
+            "target": {
+              "owner": "self",
+              "zones": ["top", "left", "right"],
+              "filters": [
+                {
+                  "type": "gameType",
+                  "value": "右翼"
+                }
+              ]
+            },
+            "effect": {
+              "type": "preventSummon",
+              "value": true
+            }
+          }
+        ]
+      }
+    }
+  }
+}

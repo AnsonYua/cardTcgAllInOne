@@ -113,17 +113,21 @@ export default class GameStateManager {
 
   // Field Effects Methods
   getPlayerFieldEffects(playerId = null) {
-    const id = playerId || this.gameState.playerId;
-    // NEW: Access fieldEffects from unified structure
-    return this.gameState.gameEnv.fieldEffects ? this.gameState.gameEnv.fieldEffects[id] : null;
+    const id = playerId;
+    // Access fieldEffects from player structure (single source of truth)
+    console.log("fieldEffects " ,playerId)
+    const player = this.gameState.gameEnv.players[id];
+    if (player && player.fieldEffects) {
+      return player.fieldEffects;
+    }
+    return null;
   }
 
   getZoneRestrictions(playerId = null, zone = null) {
     const fieldEffects = this.getPlayerFieldEffects(playerId);
-    if (!fieldEffects) return "ALL";
-    
+    console.log("fieldEffects " ,JSON.stringify(fieldEffects))
     if (zone) {
-      return fieldEffects.zoneRestrictions[zone.toUpperCase()] || "ALL";
+      return fieldEffects.zoneRestrictions[zone.toLowerCase()];
     }
     return fieldEffects.zoneRestrictions;
   }
@@ -135,6 +139,7 @@ export default class GameStateManager {
 
   canPlayCardInZone(card, zone, playerId = null) {
     const restrictions = this.getZoneRestrictions(playerId, zone);
+    console.log(JSON.stringify(card))
     if (restrictions === "ALL") return true;
     
     return Array.isArray(restrictions) ? restrictions.includes(card.gameType) : false;
@@ -362,7 +367,7 @@ export default class GameStateManager {
       const restrictions = computedState.activeRestrictions[id];
       
       if (zone) {
-        return restrictions[zone.toUpperCase()] || "ALL";
+        return restrictions[zone.toLowerCase()];
       }
       return restrictions;
     }
