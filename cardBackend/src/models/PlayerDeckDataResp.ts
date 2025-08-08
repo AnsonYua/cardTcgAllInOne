@@ -16,6 +16,7 @@ export class PlayerDeckDataResp {
     public mainDeck: string[]; // Array of card UIDs in deck
     public leaderMapping: CardMapping; // UID to cardId mapping for leaders
     public cardMapping: CardMapping; // UID to cardId mapping for cards
+    public handDetails: any[]; // Array of detailed card objects for hand cards
 
     constructor(
         currentLeaderIdx: number = 0,
@@ -23,7 +24,8 @@ export class PlayerDeckDataResp {
         hand: string[] = [],
         mainDeck: string[] = [],
         leaderMapping: CardMapping = {},
-        cardMapping: CardMapping = {}
+        cardMapping: CardMapping = {},
+        handDetails: any[] = []
     ) {
         this.currentLeaderIdx = currentLeaderIdx;
         this.leader = leader;
@@ -31,6 +33,7 @@ export class PlayerDeckDataResp {
         this.mainDeck = mainDeck;
         this.leaderMapping = leaderMapping;
         this.cardMapping = cardMapping;
+        this.handDetails = handDetails;
     }
 
     // ============ DECK METHODS ============
@@ -83,6 +86,8 @@ export class PlayerDeckDataResp {
         const index = this.hand.indexOf(cardUid);
         if (index !== -1) {
             this.hand.splice(index, 1);
+            // Also remove from handDetails
+            this.removeCardFromHandDetails(cardUid);
             return true;
         }
         return false;
@@ -154,6 +159,59 @@ export class PlayerDeckDataResp {
         }));
     }
 
+    /**
+     * Get hand details array
+     */
+    public getHandDetails(): any[] {
+        return this.handDetails;
+    }
+
+    /**
+     * Set hand details array
+     */
+    public setHandDetails(handDetails: any[]): void {
+        this.handDetails = handDetails;
+    }
+
+    /**
+     * Add card details to hand details
+     */
+    public addCardToHandDetails(cardDetails: any): void {
+        this.handDetails.push(cardDetails);
+    }
+
+    /**
+     * Remove card details from hand details by UID
+     */
+    public removeCardFromHandDetails(cardUid: string): boolean {
+        const index = this.handDetails.findIndex(card => card.uid === cardUid || card.id === cardUid);
+        if (index !== -1) {
+            this.handDetails.splice(index, 1);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Update hand details to match hand array
+     */
+    public syncHandDetails(cardDataLookup: (uid: string) => any): void {
+        this.handDetails = this.hand.map(uid => {
+            const cardData = cardDataLookup(uid);
+            return cardData ? { uid, ...cardData } : { uid };
+        });
+    }
+
+    /**
+     * Add a card to hand with full details
+     */
+    public addCardToHand(cardUid: string, cardDetails?: any): void {
+        this.hand.push(cardUid);
+        if (cardDetails) {
+            this.addCardToHandDetails({ uid: cardUid, ...cardDetails });
+        }
+    }
+
     // ============ VALIDATION METHODS ============
 
     /**
@@ -218,7 +276,8 @@ export class PlayerDeckDataResp {
             [...this.hand],
             [...this.mainDeck],
             { ...this.leaderMapping },
-            { ...this.cardMapping }
+            { ...this.cardMapping },
+            [...this.handDetails]
         );
     }
 
@@ -234,7 +293,8 @@ export class PlayerDeckDataResp {
             hand: this.hand,
             mainDeck: this.mainDeck,
             leaderMapping: this.leaderMapping,
-            cardMapping: this.cardMapping
+            cardMapping: this.cardMapping,
+            handDetails: this.handDetails
         };
     }
 
@@ -248,7 +308,8 @@ export class PlayerDeckDataResp {
             data.hand || [],
             data.mainDeck || [],
             data.leaderMapping || {},
-            data.cardMapping || {}
+            data.cardMapping || {},
+            data.handDetails || []
         );
     }
 
@@ -262,7 +323,8 @@ export class PlayerDeckDataResp {
             response.hand || [],
             response.mainDeck || [],
             response.leaderMapping || {},
-            response.cardMapping || {}
+            response.cardMapping || {},
+            response.handDetails || []
         );
     }
 
@@ -282,9 +344,10 @@ export function createPlayerDeckDataResp(
     hand: string[] = [],
     mainDeck: string[] = [],
     leaderMapping: CardMapping = {},
-    cardMapping: CardMapping = {}
+    cardMapping: CardMapping = {},
+    handDetails: any[] = []
 ): PlayerDeckDataResp {
-    return new PlayerDeckDataResp(currentLeaderIdx, leader, hand, mainDeck, leaderMapping, cardMapping);
+    return new PlayerDeckDataResp(currentLeaderIdx, leader, hand, mainDeck, leaderMapping, cardMapping, handDetails);
 }
 
 export function createPlayerDeckDataRespFromJSON(data: any): PlayerDeckDataResp {
