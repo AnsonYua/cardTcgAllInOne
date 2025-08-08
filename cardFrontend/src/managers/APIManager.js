@@ -125,13 +125,6 @@ export default class APIManager {
     });
   }
 
-  async requestSetTestScenario(gameEnv) {
-    return this.request('/test/injectGameState', {
-      method: 'POST',
-      body: JSON.stringify(gameEnv)
-    });
-  }
-
   // Demo/Mock API methods for development
   async createMockGame(playerName) {
     // Simulate API delay

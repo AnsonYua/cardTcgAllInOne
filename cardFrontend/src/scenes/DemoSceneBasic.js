@@ -18,17 +18,26 @@ export default class DemoSceneBasic extends GameScene {
   // Override simulateSetScenario for demo-specific functionality
   async simulateSetScenario(scenarioPath) {
     this.isTestMode = true;
-    //const scenarioPath = 'CharacterCase/character_c-1_trump_family_boost_dynamic';
-    const gameEnv = await this.apiManager.requestTestScenario(scenarioPath);
-    console.log(JSON.stringify(gameEnv))
-    await this.apiManager.requestSetTestScenario(gameEnv);
+    
+    // Get scenario from API - new response structure
+    const response = await this.apiManager.requestTestScenario(scenarioPath);
+    console.log('Scenario response:', JSON.stringify(response));
+    
+    // Extract scenario data from new API response structure
+    const scenario = response.scenario;
+    const gameId = scenario.gameId;
+    const gameEnv = scenario.initialGameEnv;
+    
+    // Inject game state using the new API method
+    await this.apiManager.injectGameState(gameId, gameEnv);
     
     this.gameStateManager.initializeGame(
-      gameEnv.gameId, 
+      gameId, 
       this.inGamePlayerId,
       'Test Player'
     );
-    console.log("", gameEnv.gameEnv.players.playerId_1.deck.leader);
+    
+    console.log("Leader data:", gameEnv.players.playerId_1.deck.leader);
     this.showRoomStatus('set scenario completed,please trigger test polling');
   }
 
