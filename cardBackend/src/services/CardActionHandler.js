@@ -65,15 +65,15 @@ class CardActionHandler {
         this.mozGamePlay = mozGamePlay;
         
         // Bind required methods from mozGamePlay for clean delegation
-        this.getPlayerHand = mozGamePlay.getPlayerHand.bind(mozGamePlay);
-        this.setPlayerHand = mozGamePlay.setPlayerHand.bind(mozGamePlay);
-        this.getPlayerData = mozGamePlay.getPlayerData.bind(mozGamePlay);
-        this.monsterInField = mozGamePlay.monsterInField.bind(mozGamePlay);
-        this.addGameEvent = mozGamePlay.addGameEvent.bind(mozGamePlay);
-        this.addErrorEvent = mozGamePlay.addErrorEvent.bind(mozGamePlay);
-        this.throwError = mozGamePlay.throwError.bind(mozGamePlay);
-        this.processCharacterSummonEffects = mozGamePlay.processCharacterSummonEffects.bind(mozGamePlay);
-        this.processUtilityCardEffects = mozGamePlay.processUtilityCardEffects.bind(mozGamePlay);
+        this.getPlayerHand = mozGamePlay.getPlayerHand?.bind(mozGamePlay) || (() => {});
+        this.setPlayerHand = mozGamePlay.setPlayerHand?.bind(mozGamePlay) || (() => {});
+        this.getPlayerData = mozGamePlay.getPlayerData?.bind(mozGamePlay) || (() => {});
+        this.monsterInField = mozGamePlay.monsterInField?.bind(mozGamePlay) || (() => {});
+        this.addGameEvent = mozGamePlay.addGameEvent?.bind(mozGamePlay) || (() => {});
+        this.addErrorEvent = mozGamePlay.addErrorEvent?.bind(mozGamePlay) || (() => {});
+        this.throwError = mozGamePlay.throwError?.bind(mozGamePlay) || (() => {});
+        this.processCharacterSummonEffects = mozGamePlay.processCharacterSummonEffects?.bind(mozGamePlay) || (() => {});
+        this.processUtilityCardEffects = mozGamePlay.processUtilityCardEffects?.bind(mozGamePlay) || (() => {});
         
         // Import required utilities
         this.fieldEffectProcessor = mozGamePlay.fieldEffectProcessor;

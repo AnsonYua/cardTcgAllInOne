@@ -5,6 +5,9 @@
  * Provides utilities for retrieving card information and leader data
  */
 
+// Import DeckManager at the top level
+import DeckManager from './DeckManager';
+
 // ============ INTERFACES ============
 
 export interface GameEnvPlayers {
@@ -104,10 +107,8 @@ class CardInfoUtils {
     private deckManager: DeckManagerInterface;
 
     constructor() {
-        // Import DeckManager with proper path resolution for compiled code
-        // Use require for compatibility with compiled JavaScript
-        // Path works from dist/src/services/ to src/services/DeckManager.js bridge
-        this.deckManager = require('../../../src/services/DeckManager');
+        // Initialize DeckManager with proper TypeScript import (singleton instance)
+        this.deckManager = DeckManager;
     }
 
     /**

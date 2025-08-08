@@ -27,10 +27,10 @@ class BattleCalculator {
         this.mozGamePlay = mozGamePlay;
         
         // Helper method references for cleaner code
-        this.getPlayerField = mozGamePlay.getPlayerField.bind(mozGamePlay);
-        this.getOpponentId = mozGamePlay.getOpponentId.bind(mozGamePlay);
-        this.applyEffectRule = mozGamePlay.applyEffectRule.bind(mozGamePlay);
-        this.calculateComboBonus = mozGamePlay.calculateComboBonus.bind(mozGamePlay);
+        this.getPlayerField = mozGamePlay.getPlayerField?.bind(mozGamePlay) || (() => {});
+        this.getOpponentId = mozGamePlay.getOpponentId?.bind(mozGamePlay) || (() => {});
+        this.applyEffectRule = mozGamePlay.applyEffectRule?.bind(mozGamePlay) || (() => {});
+        this.calculateComboBonus = mozGamePlay.calculateComboBonus?.bind(mozGamePlay) || (() => {});
     }
 
     /**

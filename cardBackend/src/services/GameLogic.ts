@@ -120,8 +120,10 @@ export class GameLogic {
         // NEW: Initialize TypeScript effect system with dependencies
         effectSimulator.setCardInfoUtils(this.mozGamePlay.cardInfoUtils);
         
-        // IMPORTANT: Inject mozGamePlay.calculatePlayerPoint to avoid circular dependency
-        effectSimulator.setCalculatePlayerPointFunction(this.mozGamePlay.calculatePlayerPoint.bind(this.mozGamePlay));
+        // IMPORTANT: Inject mozGamePlay.calculatePlayerPoint to avoid circular dependency (with defensive binding)
+        if (this.mozGamePlay && this.mozGamePlay.calculatePlayerPoint) {
+            effectSimulator.setCalculatePlayerPointFunction(this.mozGamePlay.calculatePlayerPoint.bind(this.mozGamePlay));
+        }
         
         console.log('🎮 GameLogic initialized with TypeScript class support');
     }

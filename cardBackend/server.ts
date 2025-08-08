@@ -4,13 +4,9 @@ import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { Server } from 'http';
 
-// Import configurations and routes (dynamic paths for dev/prod)
-const isCompiled = __filename.includes('dist');
-const configPath = isCompiled ? '../src/config/config' : './src/config/config';
-const routesPath = isCompiled ? '../src/routes/gameRoutes' : './src/routes/gameRoutes';
-
-const config = require(configPath);
-const gameRoutes = require(routesPath);
+// Import configurations and routes (TypeScript imports)
+import gameRoutes from './src/routes/gameRoutes';
+const config = require('./src/config/config');
 
 // Import TypeScript DeckManager
 import DeckManager from './src/services/DeckManager';

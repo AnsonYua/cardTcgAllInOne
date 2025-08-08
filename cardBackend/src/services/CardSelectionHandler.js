@@ -18,13 +18,13 @@ class CardSelectionHandler {
     constructor(mozGamePlay) {
         this.mozGamePlay = mozGamePlay;
         
-        // Helper method references for cleaner code
-        this.getPlayerMainDeck = mozGamePlay.getPlayerMainDeck.bind(mozGamePlay);
-        this.getPlayerHand = mozGamePlay.getPlayerHand.bind(mozGamePlay);
-        this.getPlayerField = mozGamePlay.getPlayerField.bind(mozGamePlay);
-        this.addGameEvent = mozGamePlay.addGameEvent.bind(mozGamePlay);
-        this.addErrorEvent = mozGamePlay.addErrorEvent.bind(mozGamePlay);
-        this.throwError = mozGamePlay.throwError.bind(mozGamePlay);
+        // Helper method references for cleaner code (with defensive binding)
+        this.getPlayerMainDeck = mozGamePlay.getPlayerMainDeck?.bind(mozGamePlay) || (() => {});
+        this.getPlayerHand = mozGamePlay.getPlayerHand?.bind(mozGamePlay) || (() => {});
+        this.getPlayerField = mozGamePlay.getPlayerField?.bind(mozGamePlay) || (() => {});
+        this.addGameEvent = mozGamePlay.addGameEvent?.bind(mozGamePlay) || (() => {});
+        this.addErrorEvent = mozGamePlay.addErrorEvent?.bind(mozGamePlay) || (() => {});
+        this.throwError = mozGamePlay.throwError?.bind(mozGamePlay) || (() => {});
     }
 
     /**

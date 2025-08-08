@@ -9,6 +9,7 @@
 
 import { PlayerDeckDataResp } from '../models/PlayerDeckDataResp';
 import CardInfoUtils from '../services/CardInfoUtils';
+import DeckManager from '../services/DeckManager';
 
 // ============ INTERFACES ============
 
@@ -59,18 +60,12 @@ export interface FieldArea {
 // ============ MOZ DECK LOGIC CLASS ============
 
 class MozDeckLogic {
-    private deckManager: DeckManagerInterface;
+    private deckManager: typeof DeckManager;
     private cardInfoUtils: typeof CardInfoUtils;
 
     constructor() {
-        // Import DeckManager with proper path resolution for compiled code
-        // The path needs to work from the compiled dist/ directory
-        const path = require('path');
-        const isCompiled = __dirname.includes('dist');
-        const deckManagerPath = isCompiled 
-            ? path.join(__dirname, '../../../src/services/DeckManager.js') 
-            : path.join(__dirname, '../services/DeckManager.js');
-        this.deckManager = require(deckManagerPath);
+        // Initialize DeckManager TypeScript singleton
+        this.deckManager = DeckManager;
         this.cardInfoUtils = CardInfoUtils;
     }
 

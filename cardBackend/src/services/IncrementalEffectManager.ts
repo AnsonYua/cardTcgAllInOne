@@ -42,13 +42,8 @@ interface PlayerRestrictions {
     placementValidations: Map<string, Map<ZoneType, boolean>>;
 }
 
-// Import mozGamePlay with proper path resolution for compiled code
-const path = require('path');
-const isCompiled = __dirname.includes('dist');
-const mozGamePlayPath = isCompiled 
-    ? path.join(__dirname, '../../../src/mozGame/mozGamePlay.js') 
-    : path.join(__dirname, '../mozGame/mozGamePlay.js');
-const mozGamePlay = require(mozGamePlayPath);
+// Import mozGamePlay TypeScript module
+import { mozGamePlay } from '../mozGame/mozGamePlay';
 
 export class IncrementalEffectManager {
     private effectDeltas: Map<number, EffectDelta> = new Map();

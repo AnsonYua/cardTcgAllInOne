@@ -38,15 +38,15 @@ class TurnManager {
         this.mozGamePlay = mozGamePlay;
         
         // Helper method references for cleaner code
-        this.getPlayerData = mozGamePlay.getPlayerData.bind(mozGamePlay);
-        this.getPlayerHand = mozGamePlay.getPlayerHand.bind(mozGamePlay);
-        this.getPlayerMainDeck = mozGamePlay.getPlayerMainDeck.bind(mozGamePlay);
-        this.setPlayerHand = mozGamePlay.setPlayerHand.bind(mozGamePlay);
-        this.setPlayerMainDeck = mozGamePlay.setPlayerMainDeck.bind(mozGamePlay);
-        this.getPlayerField = mozGamePlay.getPlayerField.bind(mozGamePlay);
-        this.addGameEvent = mozGamePlay.addGameEvent.bind(mozGamePlay);
+        this.getPlayerData = mozGamePlay.getPlayerData?.bind(mozGamePlay) || (() => {});
+        this.getPlayerHand = mozGamePlay.getPlayerHand?.bind(mozGamePlay) || (() => {});
+        this.getPlayerMainDeck = mozGamePlay.getPlayerMainDeck?.bind(mozGamePlay) || (() => {});
+        this.setPlayerHand = mozGamePlay.setPlayerHand?.bind(mozGamePlay) || (() => {});
+        this.setPlayerMainDeck = mozGamePlay.setPlayerMainDeck?.bind(mozGamePlay) || (() => {});
+        this.getPlayerField = mozGamePlay.getPlayerField?.bind(mozGamePlay) || (() => {});
+        this.addGameEvent = mozGamePlay.addGameEvent?.bind(mozGamePlay) || (() => {});
         this.getPlayerFromGameEnv = getPlayerFromGameEnv;
-        this.getPlayerZone = mozGamePlay.getPlayerZone.bind(mozGamePlay);
+        this.getPlayerZone = mozGamePlay.getPlayerZone?.bind(mozGamePlay) || (() => {});
         
         // Import required helpers
         this.mozDeckHelper = require('../mozGame/mozDeckHelper');
