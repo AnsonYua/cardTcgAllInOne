@@ -211,8 +211,9 @@ export default class GameStateManager {
 
   processGameEvents() {
     const events = this.gameState.gameEnv.gameEvents || [];
+    console.log("events "+JSON.stringify(events))
     const unprocessedEvents = events.filter(event => event.requireFrontendAcknowledgment);
-    
+    console.log("events filter "+JSON.stringify(unprocessedEvents))
     unprocessedEvents.forEach(event => {
       const handlers = this.eventHandlers.get(event.type) || [];
       console.log('Processing event:', event.type);

@@ -64,7 +64,7 @@ export class GameController {
                 // Extract gameId to root level for API compatibility
                 res.json({
                     success: true,
-                    gameId: gameState.gameEnv.gameId,
+                    gameId: gameState.gameId,
                     gameEnv: gameState.gameEnv
                 });
             } else {
@@ -118,7 +118,7 @@ export class GameController {
                 // Extract gameId to root level for API compatibility
                 res.json({
                     success: true,
-                    gameId: gameState.gameEnv.gameId,
+                    gameId: gameState.gameId,
                     gameEnv: gameState.gameEnv
                 });
             } else {
@@ -216,7 +216,7 @@ export class GameController {
                 // Extract gameId to root level for API compatibility
                 res.json({
                     success: true,
-                    gameId: gameState.gameEnv.gameId,
+                    gameId: gameState.gameId,
                     gameEnv: gameState.gameEnv
                 });
             } else {
@@ -255,7 +255,7 @@ export class GameController {
         try {
             console.log('🎮 Starting ready phase for:', req.body);
             
-            const { gameId, playerId, redraw } = req.body;
+            const { gameId, playerId, isRedraw } = req.body;
             
             if (!gameId || !playerId) {
                 res.status(400).json({
@@ -266,23 +266,24 @@ export class GameController {
                 return;
             }
             
-            // Convert redraw parameter (request uses "redraw", internal uses "isRedraw")
-            const isRedraw = redraw === true || redraw === 'true';
+            // Convert isRedraw to boolean following original design
+            const wantRedraw = isRedraw === true || isRedraw === 'true';
             
-            console.log(`🎯 Processing startReady for player ${playerId}, redraw: ${isRedraw}`);
+            console.log(`🎯 Processing startReady for player ${playerId}, redraw: ${wantRedraw}`);
             
             // Use GameLogic startReady method
-            const result = await gameLogic.startReady(gameId, playerId, isRedraw);
+            const result = await gameLogic.startReady(gameId, playerId, wantRedraw);
             
-            if (result.success) {
+            if (result.success && result.gameEnv) {
+                // Extract gameId to root level for API compatibility
                 res.json({
                     success: true,
-                    gameEnv: result.gameEnv?.toJSON(),
-                    message: 'Player ready status updated successfully'
+                    gameId: result.gameId,
+                    gameEnv: result.gameEnv
                 });
             } else {
                 res.status(400).json({
-                    error: result.error,
+                    error: result.error || 'Failed to start ready phase',
                     timestamp: new Date().toISOString(),
                     context: 'startReady endpoint'
                 });
@@ -290,6 +291,7 @@ export class GameController {
             
         } catch (error) {
             console.error('❌ Error in startReady:', error);
+            console.error('❌ Stack trace:', (error as Error).stack);
             
             const errorResponse: ErrorResponse = {
                 error: (error as Error).message,
@@ -304,6 +306,7 @@ export class GameController {
             res.status(500).json(errorResponse);
         }
     }
+
 
     /**
      * Process player action
@@ -338,7 +341,7 @@ export class GameController {
                     // Extract gameId to root level for API compatibility
                     res.json({
                         success: true,
-                        gameId: result.gameEnv.gameId,
+                        gameId: result.gameId,
                         gameEnv: result.gameEnv,
                         requiresCardSelection: result.requiresCardSelection
                     });
@@ -355,7 +358,7 @@ export class GameController {
                 if (gameState.success && gameState.gameEnv) {
                     res.json({
                         success: true,
-                        gameId: gameState.gameEnv.gameId,
+                        gameId: gameState.gameId,
                         gameEnv: gameState.gameEnv
                     });
                 } else {
@@ -395,6 +398,74 @@ export class GameController {
         };
         
         return fieldIndex ? (zoneMap[fieldIndex] || 'LEFT') : 'LEFT';
+    }
+
+    // ============ EVENT MANAGEMENT ENDPOINTS ============
+
+    /**
+     * Acknowledge events endpoint
+     * POST /api/game/player/acknowledgeEvents
+     */
+    async acknowledgeEvents(req: Request, res: Response): Promise<void> {
+        try {
+            const { gameId, eventIds } = req.body;
+            
+            if (!gameId || !eventIds || !Array.isArray(eventIds)) {
+                res.status(400).json({
+                    error: 'Missing required parameters: gameId and eventIds array',
+                    timestamp: new Date().toISOString(),
+                    context: 'acknowledgeEvents endpoint'
+                });
+                return;
+            }
+            
+            console.log(`🔔 Acknowledging ${eventIds.length} events for game ${gameId}`);
+            
+            // Load game environment - we need a playerId, so let's use a dummy one to load the game
+            // The acknowledgeEvents should work at the game level, not player level
+            const gameState = await this.gameLogic.getPlayerGameStateWithOutPlayer(gameId);
+            if (!gameState.success || !gameState.gameEnv) {
+                // Try alternative approach - load the game file directly
+                try {
+                    res.status(404).json({
+                            error: 'Game not found',
+                            timestamp: new Date().toISOString(),
+                            context: 'acknowledgeEvents endpoint'
+                        });
+                } catch (loadError) {
+                    res.status(404).json({
+                        error: 'Game not found',
+                        timestamp: new Date().toISOString(),
+                        context: 'acknowledgeEvents endpoint'
+                    });
+                    return;
+                }
+            } else {
+                // Acknowledge the events using EventManager method
+                gameState.gameEnv.eventManager.acknowledgeEvents(eventIds);
+                
+                // Save updated game state
+                await (this.gameLogic as any).saveGameToFile(gameId, gameState.gameEnv);
+            }
+            
+            console.log(`✅ Events acknowledged successfully for game ${gameId}`);
+            
+            res.json({
+                success: true,
+                gameId: gameState.gameId,
+                acknowledgedEvents: eventIds.length,
+                message: 'Events acknowledged successfully',
+                timestamp: new Date().toISOString()
+            });
+            
+        } catch (error) {
+            console.error('❌ Error acknowledging events:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'acknowledgeEvents endpoint'
+            });
+        }
     }
 
     // ============ HEALTH CHECK ENDPOINTS ============

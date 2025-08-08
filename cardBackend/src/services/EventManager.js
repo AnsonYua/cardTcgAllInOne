@@ -333,7 +333,6 @@ class EventManager {
         this.addGameEvent(gameEnv, this.EVENT_TYPES.GAME_STARTED, {
             players: playerList,
             firstPlayer: playerList[firstPlayer],
-            gameId: gameEnv.gameId,
             timestamp: Date.now()
         });
         

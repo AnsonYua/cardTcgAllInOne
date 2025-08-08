@@ -1036,9 +1036,10 @@ export class EventManager {
         this.events.forEach(event => {
             if (eventIds.includes(event.id)) {
                 event.frontendProcessed = true;
+                event.requireFrontendAcknowledgment = false;
             }
         });
-        this.cleanupExpiredEvents();
+        //this.cleanupExpiredEvents();
     }
 
     private cleanupExpiredEvents(): void {
@@ -1135,7 +1136,6 @@ export class PlaySequenceManager {
 
 export class GameEnvironment {
     // Core game state
-    public gameId?: string; // Add gameId property
     public phase: GamePhase;
     public playerId_1: string | null;
     public playerId_2: string | null;
@@ -1235,7 +1235,7 @@ export class GameEnvironment {
     }
 
     // ============ PLAYERS READY MANAGEMENT ============
-
+    //set Ready , then draw card and start the games
     public setPlayerReady(playerId: string, isReady: boolean = true): void {
         this.playersReady[playerId] = isReady;
     }
@@ -1365,7 +1365,6 @@ export class GameEnvironment {
     public toJSON(): any {
         // Convert to legacy format for compatibility
         const legacy = {
-            gameId: this.gameId, // CRITICAL FIX: Include gameId in serialized output
             phase: this.phase,
             playerId_1: this.playerId_1,
             playerId_2: this.playerId_2,
@@ -1402,7 +1401,6 @@ export class GameEnvironment {
         const gameEnv = new GameEnvironment();
         
         // Basic properties
-        gameEnv.gameId = data.gameId || null; // CRITICAL FIX: Set gameId from data
         gameEnv.phase = data.phase || GamePhase.WAITING_FOR_PLAYERS;
         gameEnv.playerId_1 = data.playerId_1 || null;
         gameEnv.playerId_2 = data.playerId_2 || null;

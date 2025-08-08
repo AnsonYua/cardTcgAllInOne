@@ -670,11 +670,11 @@ export default class GameScene extends Phaser.Scene {
       this.gameStateManager.addEventListener('DRAW_PHASE_COMPLETE', (event) => {
         this.handleDrawPhaseComplete(event);
       });
-      
+      /*
       this.gameStateManager.addEventListener('PHASE_CHANGE', (event) => {
         console.log('Phase change event received:', event);
         this.handlePhaseChange(event);
-      });
+      });*/
     }
     
     // Card interaction events
@@ -943,6 +943,7 @@ export default class GameScene extends Phaser.Scene {
     }
     
     // Check for DRAW_PHASE and trigger draw animation
+    /*
     if (gameState.gameEnv.phase === 'DRAW_PHASE' && !this.drawPhaseAnimationPlayed) {
       const currentPlayer = gameState.gameEnv.currentPlayer;
       const currentPlayerId = this.gameStateManager.getCurrentPlayerId();
@@ -956,7 +957,6 @@ export default class GameScene extends Phaser.Scene {
         
         // Temporarily update the displayed hand to not show the new card
         this.updatePlayerHandWithCards(handWithoutNewCard);
-        
         this.playDrawCardAnimation(() => {
           // Show acknowledgment UI after animation completes
           this.showDrawPhaseAcknowledgment({
@@ -966,7 +966,7 @@ export default class GameScene extends Phaser.Scene {
           });
         });
       }
-    }
+    }*/
  
     
     // Debug logging for troubleshooting
@@ -2503,6 +2503,7 @@ export default class GameScene extends Phaser.Scene {
     
     if (event.data.playerId === currentPlayerId) {
       // Play draw card animation for current player
+      console.log("here ddd ");
       this.playDrawCardAnimation(() => {
         // Show acknowledgment UI after animation completes
         this.showDrawPhaseAcknowledgment(event.data);
@@ -2680,9 +2681,10 @@ export default class GameScene extends Phaser.Scene {
   }
 
   playDrawCardAnimation(onComplete) {
+    console.log("here ddd22")
     // Get the current hand from game state (the new card should be the last one)
     const currentHand = this.gameStateManager.getPlayerHand();
-    const newCardData = currentHand[currentHand.length - 1];
+    const newCardData = currentHand[currentHand.length - 1].split("_")[0];
     
     // Process card data the same way the hand does
     let processedCardData = newCardData;
@@ -2693,7 +2695,6 @@ export default class GameScene extends Phaser.Scene {
         cardType: this.getCardTypeFromId(newCardData)
       };
     }
-    
     
     // Get deck position for animation start
     const playerDeckPosition = this.layout.player.deck;

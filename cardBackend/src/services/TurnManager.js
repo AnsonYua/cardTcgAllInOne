@@ -206,8 +206,7 @@ class TurnManager {
         this.addGameEvent(gameEnv, 'DRAW_PHASE_COMPLETE', {
             playerId: currentPlayer,
             cardCount: 1,
-            newHandSize: result.hand.length,
-            requiresAcknowledgment: true
+            newHandSize: result.hand.length
         });
         
         this.addGameEvent(gameEnv, 'TURN_SWITCH', {

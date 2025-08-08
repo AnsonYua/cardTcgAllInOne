@@ -24,6 +24,7 @@ import mozDeckHelper from '../mozGame/mozDeckHelper';
 
 export interface GameLogicResult {
     success: boolean;
+    gameId?: string;
     gameEnv?: GameEnvironment;
     error?: string;
     requiresCardSelection?: boolean;
@@ -39,6 +40,7 @@ export interface CardPlayResult {
 
 export interface PlayerActionResult {
     success: boolean;
+    gameId?: string;
     error?: string;
     gameEnv?: GameEnvironment;
     requiresCardSelection?: boolean;
@@ -90,20 +92,13 @@ function drawCardForCurrentPlayer(gameEnvClass: GameEnvironment): boolean {
     currentPlayer.deck.hand = result.hand;
     currentPlayer.deck.mainDeck = result.mainDeck;
     
-    // Add draw phase event using class event manager
+    // FIXED: Add draw phase event using class event manager
+    // This should only fire AFTER the draw action completes, not during game start
     gameEnvClass.eventManager.addEvent(EventType.DRAW_PHASE_COMPLETE, {
         playerId: currentPlayerId,
         cardCount: 1,
-        newHandSize: result.hand.length,
-        requiresAcknowledgment: true
+        newHandSize: result.hand.length
     }, true);
-    
-    // Add game start event using class event manager
-    gameEnvClass.eventManager.addEvent(EventType.GAME_PHASE_START, {
-        phase: GamePhase.DRAW_PHASE,
-        currentPlayer: currentPlayerId,
-        message: 'Both players ready - draw phase started!'
-    });
     
     console.log(`🎯 Player ${currentPlayerId} drew 1 card. New hand size: ${result.hand.length}`);
     return true;
@@ -145,7 +140,6 @@ export class GameLogic {
             const gameEnv = new GameEnvironment();
             
             // Initialize game with TypeScript class structure
-            gameEnv.gameId = gameId;
             gameEnv.playerId_1 = playerId;
             gameEnv.phase = GamePhase.WAITING_FOR_PLAYERS;
             gameEnv.gameStarted = false;
@@ -156,8 +150,6 @@ export class GameLogic {
             await initializeOptimizedEngine(gameId);
             // Add first player to game
             gameEnv.addPlayer(playerId, `Player 1`);
-            // Set player ready status
-            gameEnv.setPlayerReady(playerId, true);
             // Add game creation event
             gameEnv.eventManager.addEvent(EventType.GAME_CREATED, {
                 gameId: gameId,
@@ -173,6 +165,7 @@ export class GameLogic {
             
             return {
                 success: true,
+                gameId: gameId,
                 gameEnv: gameEnv
             };
             
@@ -262,14 +255,13 @@ export class GameLogic {
                 console.log(`✅ Player ${playerId} joined game ${gameId}. Game initialized and ready for start.`);
             }
             
-            // Set player ready
-            gameEnv.setPlayerReady(playerId, true);
             
             // Save updated game
             await this.saveGameToFile(gameId, gameEnv);
             
             return {
                 success: true,
+                gameId: gameId,
                 gameEnv: gameEnv
             };
             
@@ -327,6 +319,7 @@ export class GameLogic {
             
             return {
                 success: true,
+                gameId: gameId,
                 gameEnv: gameEnv,
                 requiresCardSelection: result.requiresCardSelection
             };
@@ -340,6 +333,30 @@ export class GameLogic {
         }
     }
 
+    async getPlayerGameStateWithOutPlayer(gameId: string): Promise<GameLogicResult> {
+        try {
+            // Load game from file
+            const gameEnv = await this.loadGameFromFile(gameId);
+            if (!gameEnv) {
+                return {
+                    success: false,
+                    error: 'Game not found'
+                };
+            }    
+            return {
+                success: true,
+                gameId: gameId,
+                gameEnv: gameEnv
+            };
+            
+        } catch (error) {
+            console.error('❌ Error getting game state:', error);
+            return {
+                success: false,
+                error: `Failed to get game state: ${error instanceof Error ? error.message : 'Unknown error'}`
+            };
+        }
+    }
     /**
      * Get game state for a player
      * @param gameId - Game ID
@@ -368,6 +385,7 @@ export class GameLogic {
             
             return {
                 success: true,
+                gameId: gameId,
                 gameEnv: gameEnv
             };
             
@@ -433,6 +451,7 @@ export class GameLogic {
 
     /**
      * Handle player ready status with optional hand redraw
+     * FIXED: Proper phase flow without premature DRAW_PHASE_COMPLETE events
      * @param gameId - Game ID
      * @param playerId - Player ID marking ready
      * @param isRedraw - Whether player wants to redraw their hand
@@ -459,18 +478,18 @@ export class GameLogic {
                 };
             }
             
-            // Use class method for redraw processing
+            // STEP 1: Process individual player redraw and mark them as ready
             await gameEnv.processPlayerRedraw(playerId, isRedraw);
-            
-            // Track which players are ready using class methods
             gameEnv.setPlayerReady(playerId, true);
             
-            // Check if both players are ready using class methods
+            console.log(`✅ Player ${playerId} marked ready (redraw: ${isRedraw})`);
+            
+            // STEP 2: Check if both players are ready
             const playerList = [gameEnv.playerId_1, gameEnv.playerId_2].filter(id => id);
             const bothReady = gameEnv.areAllPlayersReady();
             
             if (bothReady) {
-                console.log("🎯 Both players ready - initializing player states");
+                console.log("🎯 Both players ready - starting game initialization");
                 
                 // Initialize all player states using consolidated method
                 for (let pid of playerList) {
@@ -487,7 +506,7 @@ export class GameLogic {
                 const gameEngine = optimizedGameEngineManager.getGameEngine(gameId);
                 await gameEngine.initializeGame(gameEnv);
                 
-                // Transition to draw phase first - game officially starts using class method
+                // RESTORED ORIGINAL FLOW: Transition to DRAW_PHASE and immediately execute draw
                 updatePhase(gameEnv, GamePhase.DRAW_PHASE);
                 gameEnv.gameStarted = true;
                 
@@ -495,10 +514,34 @@ export class GameLogic {
                 gameEnv.currentPlayer = playerList[gameEnv.firstPlayer];
                 gameEnv.currentTurn = 0;
                 
-                // First player draws 1 card using extracted function
-                drawCardForCurrentPlayer(gameEnv);
+                // Add game start event - frontend will see DRAW_PHASE started
+                gameEnv.eventManager.addEvent(EventType.GAME_PHASE_START, {
+                    phase: GamePhase.DRAW_PHASE,
+                    currentPlayer: gameEnv.currentPlayer,
+                    message: 'Both players ready - draw phase started!'
+                });
                 
-                console.log(`✅ Game ${gameId} started successfully - first player: ${gameEnv.currentPlayer}`);
+                // RESTORED: Execute draw immediately when both players are ready
+                console.log(`🎯 Executing immediate draw for current player: ${gameEnv.currentPlayer}`);
+                const drawSuccess = drawCardForCurrentPlayer(gameEnv);
+                
+                if (drawSuccess) {
+                    console.log(`✅ Draw executed successfully for player ${gameEnv.currentPlayer}`);
+                    // Generate DRAW_PHASE_COMPLETE event after draw execution
+                    gameEnv.eventManager.addEvent(EventType.DRAW_PHASE_COMPLETE, {
+                        phase: GamePhase.MAIN_PHASE,
+                        currentPlayer: gameEnv.currentPlayer,
+                        message: 'Draw completed - transitioning to main phase!'
+                    });
+                } else {
+                    console.log(`❌ Draw failed for player ${gameEnv.currentPlayer}`);
+                    gameEnv.eventManager.addEvent(EventType.ERROR_OCCURRED, {
+                        message: 'Failed to draw card for current player',
+                        currentPlayer: gameEnv.currentPlayer
+                    });
+                }
+                
+                console.log(`✅ Game ${gameId} started successfully with immediate draw - first player: ${gameEnv.currentPlayer}`);
             }
             
             // Save updated game state
@@ -506,6 +549,7 @@ export class GameLogic {
             
             return {
                 success: true,
+                gameId: gameId,
                 gameEnv: gameEnv
             };
             
@@ -517,6 +561,7 @@ export class GameLogic {
             };
         }
     }
+
 
     // ============ LEGACY COMPATIBILITY METHODS ============
 

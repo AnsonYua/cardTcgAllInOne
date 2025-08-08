@@ -77,6 +77,7 @@ router.post('/player/joinRoom', gameController.joinRoom.bind(gameController));
  */
 router.post('/player/startReady', gameController.startReady.bind(gameController));
 
+
 // ============ GAME ACTION ENDPOINTS ============
 
 /**
@@ -113,22 +114,7 @@ router.post('/player/selectCard', async (req: Request, res: Response) => {
  * Acknowledge events
  * POST /api/game/player/acknowledgeEvents
  */
-router.post('/player/acknowledgeEvents', async (req: Request, res: Response) => {
-    try {
-        // Simple event acknowledgment for now
-        res.json({
-            success: true,
-            message: 'Events acknowledged',
-            timestamp: new Date().toISOString()
-        });
-    } catch (error) {
-        res.status(500).json({
-            error: (error as Error).message,
-            timestamp: new Date().toISOString(),
-            context: 'acknowledgeEvents endpoint'
-        });
-    }
-});
+router.post('/player/acknowledgeEvents', gameController.acknowledgeEvents.bind(gameController));
 
 /**
  * Next round
