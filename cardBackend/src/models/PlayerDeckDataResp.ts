@@ -6,6 +6,7 @@
  */
 
 import DeckManager from '../services/DeckManager';
+import mozDeckHelperInstance from '../mozGame/mozDeckHelper';
 
 export interface CardMapping {
     [uid: string]: string; // UID to cardId mapping
@@ -316,6 +317,51 @@ export class PlayerDeckDataResp {
         this.hand.push(cardUid);
         // Auto-populate handDetails after hand changes
         this.populateHandDetails();
+    }
+
+    /**
+     * Handle player redraw request during initial game setup
+     * @param playerId - ID of the player requesting redraw 
+     * @param isRedraw - Whether the player wants to redraw their hand
+     * @returns Promise<boolean> - true if hand was reshuffled, false otherwise
+     */
+    public async requestRedraw(playerId: string, isRedraw: boolean, redrawState: { redraw: number }): Promise<boolean> {
+        // Check if player has already used their redraw
+        if (redrawState.redraw !== 0) {
+            return false; // Already used redraw
+        }
+        
+        // Mark redraw as used (first-time execution guard)
+        redrawState.redraw = 1;
+        
+        if (isRedraw) {
+            // Get reshuffled deck from mozDeckHelper
+            const reshuffleResult = await mozDeckHelperInstance.reshuffleForPlayer(playerId);
+            
+            // CRITICAL FIX: Update player's hand, main deck AND cardMapping
+            // This ensures the frontend can find all reshuffled cards using their new UIDs
+            this.hand = reshuffleResult.hand;
+            this.mainDeck = reshuffleResult.mainDeck;
+            
+            // Update cardMapping with new UID mappings from reshuffle
+            if (reshuffleResult.cardMapping && Object.keys(reshuffleResult.cardMapping).length > 0) {
+                // Merge the new mappings with existing ones (preserving leaders and other cards)
+                this.cardMapping = {
+                    ...this.cardMapping,
+                    ...reshuffleResult.cardMapping
+                };
+                console.log("🔄 Updated cardMapping after reshuffle:", Object.keys(this.cardMapping).length, "total cards");
+            } else {
+                console.warn("⚠️  No cardMapping returned from reshuffleForPlayer - this may cause card lookup issues");
+            }
+            
+            // FIXED: Populate handDetails after hand changes (this was missing in the original)
+            this.populateHandDetails();
+            
+            return true; // Hand was reshuffled
+        }
+        
+        return false; // No reshuffle requested, but redraw is now marked as used
     }
 
     // ============ VALIDATION METHODS ============

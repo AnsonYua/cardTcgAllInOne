@@ -9,7 +9,6 @@
 
 import { PlayerDeckDataResp } from './PlayerDeckDataResp';
 import cardInfoUtilsInstance from '../services/CardInfoUtils';
-import mozDeckHelperInstance from '../mozGame/mozDeckHelper';
 // ============ CARDINFUTILS SINGLETON ============
 
 /**
@@ -638,48 +637,6 @@ export class Player {
         return this.deck.getCardIdFromUid(cardUid);
     }
 
-    // ============ REDRAW METHODS ============
-
-    /**
-     * Handle player redraw request during initial game setup
-     * @param isRedraw - Whether the player wants to redraw their hand
-     * @returns Promise<boolean> - true if hand was reshuffled, false otherwise
-     */
-    public async requestRedraw(isRedraw: boolean): Promise<boolean> {
-        // Check if player has already used their redraw
-        if (this.redraw !== 0) {
-            return false; // Already used redraw
-        }
-        
-        // Mark redraw as used (first-time execution guard)
-        this.redraw = 1;
-        
-        if (isRedraw) {
-            // Get reshuffled deck from mozDeckHelper
-            const reshuffleResult = await mozDeckHelperInstance.reshuffleForPlayer(this.id);
-            
-            // CRITICAL FIX: Update player's hand, main deck AND cardMapping
-            // This ensures the frontend can find all reshuffled cards using their new UIDs
-            this.deck.hand = reshuffleResult.hand;
-            this.deck.mainDeck = reshuffleResult.mainDeck;
-            
-            // Update cardMapping with new UID mappings from reshuffle
-            if (reshuffleResult.cardMapping && Object.keys(reshuffleResult.cardMapping).length > 0) {
-                // Merge the new mappings with existing ones (preserving leaders and other cards)
-                this.deck.cardMapping = {
-                    ...this.deck.cardMapping,
-                    ...reshuffleResult.cardMapping
-                };
-                console.log("🔄 Updated cardMapping after reshuffle:", Object.keys(this.deck.cardMapping).length, "total cards");
-            } else {
-                console.warn("⚠️  No cardMapping returned from reshuffleForPlayer - this may cause card lookup issues");
-            }
-            
-            return true; // Hand was reshuffled
-        }
-        
-        return false; // No reshuffle requested, but redraw is now marked as used
-    }
 
     // ============ PLAYER STATE INITIALIZATION ============
 
@@ -1289,8 +1246,11 @@ export class GameEnvironment {
             throw new Error(`Player ${playerId} not found`);
         }
         
-        // Delegate to player's requestRedraw method which handles the core logic
-        const reshuffled = await player.requestRedraw(isRedraw);
+        // Delegate to player deck's requestRedraw method which handles the core logic
+        const redrawState = { redraw: player.redraw };
+        const reshuffled = await player.deck.requestRedraw(playerId, isRedraw, redrawState);
+        // Update player's redraw state after the call
+        player.redraw = redrawState.redraw;
         
         // Add PLAYER_READY event through EventManager
         this.eventManager.addEvent(EventType.PLAYER_READY, {
