@@ -2688,7 +2688,6 @@ export default class GameScene extends Phaser.Scene {
   }
 
   playDrawCardAnimation(onComplete) {
-    console.log("here ddd22")
     // Get the current hand from game state (the new card should be the last one)
     const currentHand = this.gameStateManager.getPlayerHand();
     const newCardData = currentHand[currentHand.length - 1].split("_")[0];
@@ -2777,7 +2776,7 @@ export default class GameScene extends Phaser.Scene {
                 // Add a brief pause before showing acknowledgment
                 this.time.delayedCall(200, () => {
                   // Remove temporary card
-                  tempCard.destroy();
+                 // tempCard.destroy();
                   
                   // Update the UI to show the new card in hand
                   this.updateGameState();

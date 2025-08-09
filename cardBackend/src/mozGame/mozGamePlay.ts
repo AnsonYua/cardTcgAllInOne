@@ -377,18 +377,30 @@ export class MozGamePlay {
                 };
             }
             
-            // Draw card using moz deck helper
-            const result = mozDeckHelper.drawToHand(player.deck.hand, player.deck.mainDeck, 1);
+            // Check if deck has cards to draw
+            if (player.deck.getDeckSize() === 0) {
+                return {
+                    success: false,
+                    error: 'No cards left to draw'
+                };
+            }
             
-            // Update player deck
-            player.deck.hand = result.hand;
-            player.deck.mainDeck = result.mainDeck;
+            // Use PlayerDeckDataResp.drawCard() method instead of mozDeckHelper
+            const drawnCardUid = player.deck.drawCard();
+            
+            if (!drawnCardUid) {
+                return {
+                    success: false,
+                    error: 'Failed to draw card'
+                };
+            }
             
             // Add draw event
             gameEnv.eventManager.addEvent(EventType.CARD_DRAWN, {
                 playerId: action.playerId,
                 cardCount: 1,
-                newHandSize: result.hand.length,
+                cardUid: drawnCardUid,
+                newHandSize: player.deck.getHandSize(),
                 timestamp: Date.now()
             });
             

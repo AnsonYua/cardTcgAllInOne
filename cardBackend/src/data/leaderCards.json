@@ -82,9 +82,9 @@
       "level": 7,
       "rarity": "legendary",
       "zoneCompatibility": {
-        "top": ["左翼", "自由", "經濟", "右翼", "愛國者"],
-        "left": ["左翼", "自由", "經濟", "右翼", "愛國者"],
-        "right": ["左翼", "自由", "經濟", "右翼", "愛國者"]
+        "top": ["ALL"],
+        "left": ["ALL"],
+        "right": ["ALL"]
       },
       "effects": {
         "description": "全部召喚出來的角色能力值 +40",

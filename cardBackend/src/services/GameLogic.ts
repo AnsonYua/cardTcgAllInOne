@@ -84,23 +84,30 @@ function drawCardForCurrentPlayer(gameEnvClass: GameEnvironment): boolean {
         return false;
     }
     
-    const hand = currentPlayer.deck.hand;
-    const mainDeck = currentPlayer.deck.mainDeck;
-    const result = mozDeckHelper.drawToHand(hand, mainDeck);
+    // Check if deck has cards to draw
+    if (currentPlayer.deck.getDeckSize() === 0) {
+        console.warn(`Player ${currentPlayerId} has no cards left to draw`);
+        return false;
+    }
     
-    // Update player deck
-    currentPlayer.deck.hand = result.hand;
-    currentPlayer.deck.mainDeck = result.mainDeck;
+    // Use PlayerDeckDataResp.drawCard() method instead of mozDeckHelper
+    const drawnCardUid = currentPlayer.deck.drawCard();
+    
+    if (!drawnCardUid) {
+        console.warn(`Failed to draw card for player ${currentPlayerId}`);
+        return false;
+    }
     
     // FIXED: Add draw phase event using class event manager
     // This should only fire AFTER the draw action completes, not during game start
     gameEnvClass.eventManager.addEvent(EventType.DRAW_PHASE_COMPLETE, {
         playerId: currentPlayerId,
         cardCount: 1,
-        newHandSize: result.hand.length
+        cardUid: drawnCardUid,
+        newHandSize: currentPlayer.deck.getHandSize()
     }, true);
     
-    console.log(`🎯 Player ${currentPlayerId} drew 1 card. New hand size: ${result.hand.length}`);
+    console.log(`🎯 Player ${currentPlayerId} drew 1 card (${drawnCardUid}). New hand size: ${currentPlayer.deck.getHandSize()}`);
     return true;
 }
 

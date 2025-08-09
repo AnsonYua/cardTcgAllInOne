@@ -154,7 +154,7 @@ export class IncrementalEffectManager {
         if (!leaderCard.zoneCompatibility) {
             return effects;
         }
-        
+        console.log("leader zoneCap ",JSON.stringify(leaderCard.zoneCompatibility))
         // Zone restriction effects
         for (const [zone, allowedTypes] of Object.entries(leaderCard.zoneCompatibility)) {
             console.log("cardDetails 22", zone, " allowedTypes ", allowedTypes);
