@@ -684,19 +684,23 @@ export class Player {
     // ============ PLAYER STATE INITIALIZATION ============
 
     /**
-     * Initialize all player state for game start
-     * Includes field effects, player stats, and game state
+     * Initialize player game state without resetting field effects
+     * Preserves existing fieldEffects while resetting other game state
+     * Used in startReady to avoid losing fieldEffects from joinRoom
      */
-    public initializeForGameStart(): void {
-        // Initialize field effects
-        this.fieldEffects = {
-            zoneRestrictions: {},
-            activeEffects: [],
-            specialEffects: {},
-            calculatedPowers: {},
-            disabledCards: [],
-            victoryPointModifiers: 0
-        };
+    public initializeGameStateOnly(): void {
+        // Initialize field effects only if they don't exist yet
+        if (!this.fieldEffects) {
+            this.fieldEffects = {
+                zoneRestrictions: {},
+                activeEffects: [],
+                specialEffects: {},
+                calculatedPowers: {},
+                disabledCards: [],
+                victoryPointModifiers: 0
+            };
+        }
+        // If fieldEffects already exist, preserve them and don't reset
         
         // Initialize player game state
         this.turnAction = [];
@@ -709,7 +713,7 @@ export class Player {
 
     /**
      * Legacy method for backwards compatibility
-     * @deprecated Use initializeForGameStart() instead
+     * @deprecated Use initializeGameStateOnly() for game start without resetting fieldEffects
      */
     public initializeFieldEffects(): void {
         this.fieldEffects = {
@@ -727,9 +731,6 @@ export class Player {
         this.fieldEffects!.activeEffects.push(effect);
     }
 
-    public clearFieldEffects(): void {
-        this.initializeFieldEffects();
-    }
 
     // ============ SERIALIZATION ============
 

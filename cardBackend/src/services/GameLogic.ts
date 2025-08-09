@@ -498,14 +498,14 @@ export class GameLogic {
             if (bothReady) {
                 console.log("🎯 Both players ready - starting game initialization");
                 
-                // Initialize all player states using consolidated method
+                // Initialize player game state without resetting fieldEffects (preserve from joinRoom)
                 for (let pid of playerList) {
                     if (!pid) continue;
                     const player = gameEnv.getPlayer(pid);
                     if (!player) continue;
                     
-                    // Initialize all player state (field effects, game stats, etc.) in one call
-                    player.initializeForGameStart();
+                    // Initialize game state only, preserving existing fieldEffects from joinRoom
+                    player.initializeGameStateOnly();
                 }
                 
                 // OPTIMIZED GAME ENGINE INITIALIZATION: Initialize for high-performance processing

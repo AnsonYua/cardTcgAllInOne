@@ -239,12 +239,12 @@ export class GameEnvironmentAdapter {
         
         try {
             // Initialize fieldEffects structure only (using legacy method for precision)
-            // Note: initializeForGameStart() resets turnAction/playerPoint which we don't want here
+            // Note: initializeGameStateOnly() would reset turnAction/playerPoint which we don't want here
             for (const playerId of Object.keys(gameEnv.players)) {
                 const player = gameEnv.players[playerId];
                 if (player && !player.fieldEffects) {
                     console.log(`🔧 Initializing fieldEffects for ${playerId}`);
-                    // @ts-ignore - intentionally using deprecated method for precision (initializeForGameStart resets player stats)
+                    // @ts-ignore - intentionally using deprecated method for precision (initializeGameStateOnly resets player stats)
                     player.initializeFieldEffects();
                 }
             }
