@@ -36,7 +36,7 @@ import CardInfoUtils from './CardInfoUtils';
 interface PlaySequenceEntry {
     sequenceId: number;
     playerId: string;
-    cardId: string;
+    cardUid: string;
     action: string;
     zone: string;
     data?: any;
@@ -108,7 +108,7 @@ export class EffectSimulator {
             
             // 3. Replay each action in sequence using class methods
             for (const play of sortedPlays) {
-                console.log(`▶️ Executing play ${play.sequenceId}: ${play.action} ${play.cardId} by ${play.playerId}`);
+                console.log(`▶️ Executing play ${play.sequenceId}: ${play.action} ${play.cardUid} by ${play.playerId}`);
                 
                 // STEP 1: Execute core play action using class methods
                 await this.executePlayWithClass(gameEnvClass, play);
@@ -179,10 +179,12 @@ export class EffectSimulator {
      * @param play - Play sequence entry
      */
     private async executeLeaderPlayWithClass(gameEnvClass: GameEnvironment, play: PlaySequenceEntry): Promise<void> {
-        console.log(`   🏛️ Processing PLAY_LEADER: ${play.cardId} for ${play.playerId}`);
+        console.log(`   🏛️ Processing PLAY_LEADER: ${play.cardUid} for ${play.playerId}`);
         
         const player = gameEnvClass.getPlayer(play.playerId);
-        const leaderCard = this.cardInfoUtils?.getCardDetails(play.cardId);
+        // Extract base card ID from UID for card details lookup
+        const cardId = play.cardUid.split('_')[0];
+        const leaderCard = this.cardInfoUtils?.getCardDetails(cardId);
         
         if (!player || !leaderCard) {
             console.warn(`Cannot process leader play - missing player or leader data`);
@@ -206,7 +208,7 @@ export class EffectSimulator {
         // Process leader effects
         if (leaderCard.effects?.rules) {
             for (const rule of leaderCard.effects.rules) {
-                await this.processLeaderEffectRuleWithClass(gameEnvClass, rule, play.playerId, play.cardId);
+                await this.processLeaderEffectRuleWithClass(gameEnvClass, rule, play.playerId, play.cardUid);
             }
         }
     }
@@ -217,7 +219,7 @@ export class EffectSimulator {
      * @param play - Play sequence entry
      */
     private async executeCardPlayWithClass(gameEnvClass: GameEnvironment, play: PlaySequenceEntry): Promise<void> {
-        console.log(`   🃏 Processing PLAY_CARD: ${play.cardId} for ${play.playerId}`);
+        console.log(`   🃏 Processing PLAY_CARD: ${play.cardUid} for ${play.playerId}`);
         // Card placement is already handled by the zones system
         // This method is for any additional card play processing
     }
@@ -228,7 +230,7 @@ export class EffectSimulator {
      * @param play - Play sequence entry
      */
     private async executeEffectApplicationWithClass(gameEnvClass: GameEnvironment, play: PlaySequenceEntry): Promise<void> {
-        console.log(`   ⚡ Processing ${play.action}: ${play.cardId} for ${play.playerId}`);
+        console.log(`   ⚡ Processing ${play.action}: ${play.cardUid} for ${play.playerId}`);
         
         if (play.action === 'APPLY_SET_POWER' && play.data?.targetCards) {
             for (const targetInfo of play.data.targetCards) {
@@ -245,13 +247,15 @@ export class EffectSimulator {
      */
     private async processAllCardEffectsWithClass(gameEnvClass: GameEnvironment, play: PlaySequenceEntry): Promise<void> {
         // Process immediate effects from the played card
-        if (play.cardId && play.playerId) {
+        if (play.cardUid && play.playerId) {
             const player = gameEnvClass.getPlayer(play.playerId);
-            const cardDetails = this.cardInfoUtils?.getCardDetails(play.cardId);
+            // Extract base card ID from UID for card details lookup
+            const cardId = play.cardUid.split('_')[0];
+            const cardDetails = this.cardInfoUtils?.getCardDetails(cardId);
             
             if (player && cardDetails && cardDetails.effects?.rules) {
                 for (const rule of cardDetails.effects.rules) {
-                    await this.processCardEffectRuleWithClass(gameEnvClass, rule, play.playerId, play.cardId);
+                    await this.processCardEffectRuleWithClass(gameEnvClass, rule, play.playerId, play.cardUid);
                 }
             }
         }

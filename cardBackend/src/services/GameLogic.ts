@@ -670,7 +670,7 @@ export class GameLogic {
                     const existingLeaderPlay = playSequenceData.plays.find((play: any) => 
                         play.action === 'PLAY_LEADER' && 
                         play.playerId === playerId && 
-                        play.cardId === leaderId
+                        play.cardUid === leaderId
                     );
                     
                     if (!existingLeaderPlay) {

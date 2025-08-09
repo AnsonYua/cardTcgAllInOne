@@ -472,10 +472,15 @@ export interface GameEvent {
     requireFrontendAcknowledgment: boolean;
 }
 
+/**
+ * Represents a single play action in the game sequence
+ * Tracks card plays with unique instance identifiers for proper effect processing
+ */
 export interface PlaySequenceAction {
     sequenceId: number;
     playerId: string;
-    cardId: string;
+    /** Unique card instance identifier (e.g., "c-43_player1_001") - NOT base card ID */
+    cardUid: string;
     action: ActionType;
     zone: ZoneType;
     isFaceDown?: boolean;
@@ -539,7 +544,7 @@ export interface NeutralizationAction {
 
 export interface EffectDelta {
     sequenceId: number;
-    cardId: string;
+    cardUid: string;
     playerId: string;
     effects: CalculatedEffect[];
     affectedPlayers: string[];
@@ -548,7 +553,7 @@ export interface EffectDelta {
 
 export interface CalculatedEffect {
     type: 'ZONE_RESTRICTION' | 'POWER_BOOST' | 'POWER_NULLIFICATION' | 'CARD_DISABLE' | 'SPECIAL_EFFECT';
-    sourceCardId: string;
+    sourceCardUid: string;
     sourcePlayerId: string;
     targetPlayerId: string;
     targetCardId?: string;
@@ -1080,13 +1085,23 @@ export class PlaySequenceManager {
         };
     }
 
-    public addPlay(playerId: string, cardId: string, action: ActionType, zone: ZoneType, isFaceDown: boolean = false, effectData?: any): PlaySequenceAction {
+    /**
+     * Add a play action to the sequence
+     * @param playerId - ID of the player making the play
+     * @param cardUid - Unique card instance identifier (e.g., "c-43_player1_001")
+     * @param action - Type of action being performed
+     * @param zone - Zone where the card is being played
+     * @param isFaceDown - Whether card is played face-down (optional)
+     * @param effectData - Additional effect data (optional)
+     * @returns The created PlaySequenceAction
+     */
+    public addPlay(playerId: string, cardUid: string, action: ActionType, zone: ZoneType, isFaceDown: boolean = false, effectData?: any): PlaySequenceAction {
         this.sequence.globalSequence++;
         
         const play: PlaySequenceAction = {
             sequenceId: this.sequence.globalSequence,
             playerId,
-            cardId,
+            cardUid,
             action,
             zone,
             ...(isFaceDown && { isFaceDown }),

@@ -73,13 +73,13 @@ export class IncrementalEffectManager {
      * Coordinates calculation, application, and delta storage for THIS card
      */
     private async orchestrateCardEffectWorkflow(gameEnv: GameEnvironment, play: PlaySequenceAction): Promise<void> {
-        console.log(`▶️ Processing effects for ${play.action} ${play.cardId} by ${play.playerId}`);
+        console.log(`▶️ Processing effects for ${play.action} ${play.cardUid} by ${play.playerId}`);
         
         // Determine what effects this card should produce based on its properties and game state
         const derivedEffects = await this.deriveCardEffectRules(gameEnv, play);
         console.log("derived ",JSON.stringify(derivedEffects))
         if (derivedEffects.length === 0) {
-            console.log(`   ℹ️ No effects to apply for card ${play.cardId}`);
+            console.log(`   ℹ️ No effects to apply for card ${play.cardUid}`);
             return;
         }
         
@@ -89,7 +89,7 @@ export class IncrementalEffectManager {
         // Store delta for potential rollback
         const effectDelta: EffectDelta = {
             sequenceId: play.sequenceId,
-            cardId: play.cardId,
+            cardUid: play.cardUid,
             playerId: play.playerId,
             effects: derivedEffects,
             affectedPlayers: this.getAffectedPlayers(derivedEffects),
@@ -98,7 +98,7 @@ export class IncrementalEffectManager {
         
         this.effectDeltas.set(play.sequenceId, effectDelta);
         
-        console.log(`   ✅ Applied ${derivedEffects.length} effects for card ${play.cardId}`);
+        console.log(`   ✅ Applied ${derivedEffects.length} effects for card ${play.cardUid}`);
     }
 
     /**
@@ -110,9 +110,11 @@ export class IncrementalEffectManager {
         
         try {
             // Get card details
-            const cardDetails = await this.getCardDetails(play.cardId);
+            // Extract base card ID from UID for card details lookup
+            const cardId = play.cardUid.split('_')[0];
+            const cardDetails = await this.getCardDetails(cardId);
             if (!cardDetails) {
-                console.log(`   ⚠️ Card details not found for ${play.cardId}`);
+                console.log(`   ⚠️ Card details not found for ${play.cardUid} (cardId: ${cardId})`);
                 return effects;
             }
             console.log("cardDetails", JSON.stringify(cardDetails));
@@ -134,10 +136,10 @@ export class IncrementalEffectManager {
                 effects.push(...utilityEffects);
             }
             
-            console.log(`   📊 Derived ${effects.length} effects from ${play.cardId}`);
+            console.log(`   📊 Derived ${effects.length} effects from ${play.cardUid}`);
             
         } catch (error) {
-            console.error(`❌ Error deriving effects for ${play.cardId}:`, error);
+            console.error(`❌ Error deriving effects for ${play.cardUid}:`, error);
         }
         
         return effects;
@@ -159,7 +161,7 @@ export class IncrementalEffectManager {
             if (allowedTypes && allowedTypes !== 'ALL') {
                 effects.push({
                     type: 'ZONE_RESTRICTION',
-                    sourceCardId: play.cardId,
+                    sourceCardUid: play.cardUid,
                     sourcePlayerId: play.playerId,
                     targetPlayerId: play.playerId,
                     targetZone: zone as ZoneType,
@@ -175,7 +177,7 @@ export class IncrementalEffectManager {
                 if (rule.effect.type === 'powerBoost') {
                     effects.push({
                         type: 'POWER_BOOST',
-                        sourceCardId: play.cardId,
+                        sourceCardUid: play.cardUid,
                         sourcePlayerId: play.playerId,
                         targetPlayerId: rule.target.scope === 'OPPONENT' ? this.getOpponentId(gameEnv, play.playerId) : play.playerId,
                         value: rule.effect.value,
@@ -207,7 +209,7 @@ export class IncrementalEffectManager {
                 case 'powerBoost':
                     effects.push({
                         type: 'POWER_BOOST',
-                        sourceCardId: play.cardId,
+                        sourceCardUid: play.cardUid,
                         sourcePlayerId: play.playerId,
                         targetPlayerId: rule.target.scope === 'OPPONENT' ? this.getOpponentId(gameEnv, play.playerId) : play.playerId,
                         value: rule.effect.value,
@@ -218,7 +220,7 @@ export class IncrementalEffectManager {
                 case 'setPower':
                     effects.push({
                         type: 'POWER_NULLIFICATION',
-                        sourceCardId: play.cardId,
+                        sourceCardUid: play.cardUid,
                         sourcePlayerId: play.playerId,
                         targetPlayerId: rule.target.scope === 'OPPONENT' ? this.getOpponentId(gameEnv, play.playerId) : play.playerId,
                         value: rule.effect.value,
@@ -246,7 +248,7 @@ export class IncrementalEffectManager {
                 case 'zonePlacementFreedom':
                     effects.push({
                         type: 'SPECIAL_EFFECT',
-                        sourceCardId: play.cardId,
+                        sourceCardUid: play.cardUid,
                         sourcePlayerId: play.playerId,
                         targetPlayerId: play.playerId,
                         value: true,
@@ -257,7 +259,7 @@ export class IncrementalEffectManager {
                 case 'immuneToNeutralization':
                     effects.push({
                         type: 'SPECIAL_EFFECT',
-                        sourceCardId: play.cardId,
+                        sourceCardUid: play.cardUid,
                         sourcePlayerId: play.playerId,
                         targetPlayerId: play.playerId,
                         value: true,
@@ -317,8 +319,8 @@ export class IncrementalEffectManager {
         
         // Add to active effects for later power calculation
         const fieldEffect: FieldEffect = {
-            effectId: `${effect.sourceCardId}_powerBoost`,
-            source: effect.sourceCardId,
+            effectId: `${effect.sourceCardUid}_powerBoost`,
+            source: effect.sourceCardUid,
             sourcePlayerId: effect.sourcePlayerId,
             type: 'powerBoost',
             target: {
@@ -342,8 +344,8 @@ export class IncrementalEffectManager {
         if (!player || !player.fieldEffects) return;
         
         const fieldEffect: FieldEffect = {
-            effectId: `${effect.sourceCardId}_nullification`,
-            source: effect.sourceCardId,
+            effectId: `${effect.sourceCardUid}_nullification`,
+            source: effect.sourceCardUid,
             sourcePlayerId: effect.sourcePlayerId,
             type: 'POWER_NULLIFICATION',
             target: {
@@ -460,7 +462,7 @@ export class IncrementalEffectManager {
         // Implementation would reverse the effects applied in applyEffectDelta
         // This is complex and would require storing the previous state
         // For now, we'll mark this as a feature for future implementation
-        console.log(`⏪ Rolling back effects for card ${delta.cardId} (sequence ${delta.sequenceId})`);
+        console.log(`⏪ Rolling back effects for card ${delta.cardUid} (sequence ${delta.sequenceId})`);
     }
 
     /**

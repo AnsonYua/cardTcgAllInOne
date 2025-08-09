@@ -61,13 +61,16 @@ gameEnv.eventManager.acknowledgeEvents(['event_id_1', 'event_id_2']);
 Action sequence tracking:
 
 ```typescript
+// addPlay method signature: (playerId, cardUid, action, zone, isFaceDown?, effectData?)
+// Note: Second parameter is cardUid (unique instance), not cardId (base card ID)
 gameEnv.playSequenceManager.addPlay(
     'player_1', 
-    'c-1_uid', 
+    'c-1_randomTimestamp_001',  // cardUid: unique instance identifier
     ActionType.PLAY_CARD, 
     ZoneType.TOP
 );
 const plays = gameEnv.playSequenceManager.getPlays();
+// Each play entry has: { sequenceId, playerId, cardUid, action, zone, ... }
 ```
 
 ## Integration with Existing Code

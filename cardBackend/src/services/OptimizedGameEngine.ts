@@ -369,7 +369,7 @@ export class OptimizedGameEngine {
         const playAction: PlaySequenceAction = {
             sequenceId: gameEnv.playSequenceManager.getNextSequenceId(),
             playerId,
-            cardId,
+            cardUid: cardId,
             action: faceDown ? ActionType.PLAY_CARD_BACK : ActionType.PLAY_CARD,
             zone,
             isFaceDown: faceDown,
@@ -403,7 +403,9 @@ export class OptimizedGameEngine {
         this.validationCache.invalidatePlayer(playAction.playerId);
         
         // If card affects opponent, invalidate their cache too
-        const cardDetails = await this.cardInfoUtils.getCardDetails(playAction.cardId);
+        // Extract base card ID from UID for card details lookup
+        const cardId = playAction.cardUid.split('_')[0];
+        const cardDetails = await this.cardInfoUtils.getCardDetails(cardId);
         if (cardDetails && cardDetails.effects && cardDetails.effects.rules) {
             for (const rule of cardDetails.effects.rules) {
                 if (rule.target.scope === 'OPPONENT') {

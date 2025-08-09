@@ -72,8 +72,8 @@ describe('GetTestScenario API Tests', () => {
             // Validate play sequence
             expect(result.playSequence).toBeDefined();
             expect(result.playSequence.plays.length).toBe(2);
-            expect(result.playSequence.plays[0].cardId).toBe('s-1');
-            expect(result.playSequence.plays[1].cardId).toBe('s-2');
+            expect(result.playSequence.plays[0].cardUid).toBe('s-1');
+            expect(result.playSequence.plays[1].cardUid).toBe('s-2');
             
             console.log('✅ simple_test scenario returns complete gameEnv with Trump vs Biden setup');
         });
