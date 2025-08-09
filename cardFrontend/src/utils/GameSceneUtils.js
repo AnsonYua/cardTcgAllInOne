@@ -86,7 +86,6 @@ export default class GameSceneUtils {
    */
   static canDropCardInZone(card, zoneType, scene) {
     const cardData = card.getCardData();
-    console.log("play card check "+ card.canPlayInZone(zoneType))
     // First check basic card type compatibility (local validation)
     if (!card.canPlayInZone(zoneType)) {
       return false;
@@ -295,7 +294,7 @@ export default class GameSceneUtils {
     // Clear any existing highlights
     this.clearZoneHighlights(scene);
     
-    console.log("show screen hidelight")
+    console.log("show screen highlight")
     // Check if it's the current player's turn and in main phase
     const currentPhase = scene.gameStateManager.getCurrentPhase();
     const isCurrentPlayer = scene.gameStateManager.isCurrentPlayer();

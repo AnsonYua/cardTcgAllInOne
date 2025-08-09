@@ -2776,7 +2776,7 @@ export default class GameScene extends Phaser.Scene {
                 // Add a brief pause before showing acknowledgment
                 this.time.delayedCall(200, () => {
                   // Remove temporary card
-                 // tempCard.destroy();
+                  tempCard.destroy();
                   
                   // Update the UI to show the new card in hand
                   this.updateGameState();

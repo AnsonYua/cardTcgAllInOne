@@ -150,7 +150,8 @@ export default class GameStateManager {
   canPlayCardInZone(card, zone, playerId = null) {
     const restrictions = this.getZoneRestrictions(playerId, zone);
     console.log("restrcition " , JSON.stringify(restrictions))
-    if (restrictions === "ALL") return true;
+    if (restrictions.includes("ALL")) return true;
+    if (card.cardDetails.gameType === "ALL") return true;
     return Array.isArray(restrictions) ? restrictions.includes(card.cardDetails.gameType) : false;
   }
 
