@@ -26,24 +26,8 @@ import {
     PlaySequenceAction 
 } from '../models/GameEnvironment';
 
-// Define local interface since PlayerRestrictions was removed
-interface PlayerRestrictions {
-    playerId: string;
-    zoneRestrictions: {
-        [zone in ZoneType]?: string[] | 'ALL';
-    };
-    specialEffects: {
-        zonePlacementFreedom?: boolean;
-        immuneToNeutralization?: boolean;
-        canPlayMultipleCards?: boolean;
-    };
-    disabledCards: Set<string>;
-    calculatedPowers: Map<string, number>;
-    placementValidations: Map<string, Map<ZoneType, boolean>>;
-}
 
-// Import mozGamePlay TypeScript module
-import { mozGamePlay } from '../mozGame/mozGamePlay';
+// No additional imports needed
 
 export class IncrementalEffectManager {
     private effectDeltas: Map<number, EffectDelta> = new Map();
@@ -60,6 +44,10 @@ export class IncrementalEffectManager {
     /**
      * Process only NEW effects since last processing
      * O(1) complexity per card play
+     * 
+     * CORRECT ORDER (as per user specification):
+     * 1. FIRST: Update fieldEffects.zoneRestrictions and fieldEffects.activeEffects for new cards
+     * 2. THEN: Calculate power points for both players by looking at characters in left, right, and top zones
      */
     public async processNewEffects(gameEnv: GameEnvironment): Promise<void> {
         console.log('🔄 Processing incremental effects...');
@@ -68,54 +56,56 @@ export class IncrementalEffectManager {
             
         console.log(`📋 Found ${newPlays.length} new plays to process (last processed: ${gameEnv.lastProcessedSequence})`);
         
+        // STEP 1: FIRST - Update fieldEffects.zoneRestrictions and fieldEffects.activeEffects
         for (const play of newPlays) {
-            await this.processCardEffects(gameEnv, play);
+            await this.orchestrateCardEffectWorkflow(gameEnv, play);
             gameEnv.lastProcessedSequence = play.sequenceId;
         }
         
-        // Update validation state after processing new effects
-        await this.updateValidationState(gameEnv);
+        // STEP 2: THEN - Calculate power points for both players after field effects are updated
+        await this.calculatePlayerPowerPoints(gameEnv);
         
         console.log('✅ Incremental processing completed');
     }
 
     /**
-     * Process effects for a single card play
-     * Only calculates effects for THIS card
+     * Orchestrate the complete effect processing workflow for a single card play
+     * Coordinates calculation, application, and delta storage for THIS card
      */
-    private async processCardEffects(gameEnv: GameEnvironment, play: PlaySequenceAction): Promise<void> {
+    private async orchestrateCardEffectWorkflow(gameEnv: GameEnvironment, play: PlaySequenceAction): Promise<void> {
         console.log(`▶️ Processing effects for ${play.action} ${play.cardId} by ${play.playerId}`);
         
-        // Calculate effects for this specific card
-        const calculatedEffects = await this.calculateCardEffects(gameEnv, play);
-        
-        if (calculatedEffects.length === 0) {
+        // Determine what effects this card should produce based on its properties and game state
+        const derivedEffects = await this.deriveCardEffectRules(gameEnv, play);
+        console.log("derived ",JSON.stringify(derivedEffects))
+        if (derivedEffects.length === 0) {
             console.log(`   ℹ️ No effects to apply for card ${play.cardId}`);
             return;
         }
         
         // Apply effects incrementally to existing state
-        await this.applyEffectDelta(gameEnv, calculatedEffects);
+        await this.applyEffectDelta(gameEnv, derivedEffects);
         
         // Store delta for potential rollback
         const effectDelta: EffectDelta = {
             sequenceId: play.sequenceId,
             cardId: play.cardId,
             playerId: play.playerId,
-            effects: calculatedEffects,
-            affectedPlayers: this.getAffectedPlayers(calculatedEffects),
+            effects: derivedEffects,
+            affectedPlayers: this.getAffectedPlayers(derivedEffects),
             timestamp: Date.now()
         };
         
         this.effectDeltas.set(play.sequenceId, effectDelta);
         
-        console.log(`   ✅ Applied ${calculatedEffects.length} effects for card ${play.cardId}`);
+        console.log(`   ✅ Applied ${derivedEffects.length} effects for card ${play.cardId}`);
     }
 
     /**
-     * Calculate effects for a specific card without full simulation
+     * Derive and determine what effects a card should produce based on its rules and properties
+     * Analyzes card data and game state to resolve the specific effects this card generates
      */
-    private async calculateCardEffects(gameEnv: GameEnvironment, play: PlaySequenceAction): Promise<CalculatedEffect[]> {
+    private async deriveCardEffectRules(gameEnv: GameEnvironment, play: PlaySequenceAction): Promise<CalculatedEffect[]> {
         const effects: CalculatedEffect[] = [];
         
         try {
@@ -144,10 +134,10 @@ export class IncrementalEffectManager {
                 effects.push(...utilityEffects);
             }
             
-            console.log(`   📊 Calculated ${effects.length} effects for ${play.cardId}`);
+            console.log(`   📊 Derived ${effects.length} effects from ${play.cardId}`);
             
         } catch (error) {
-            console.error(`❌ Error calculating effects for ${play.cardId}:`, error);
+            console.error(`❌ Error deriving effects for ${play.cardId}:`, error);
         }
         
         return effects;
@@ -403,42 +393,6 @@ export class IncrementalEffectManager {
         }
     }
 
-    /**
-     * Update validation state for frontend
-     */
-    private async updateValidationState(gameEnv: GameEnvironment): Promise<void> {
-        console.log('🔄 Updating validation state for frontend...');
-        
-        // Update player restrictions from fieldEffects
-        for (const [playerId, player] of Object.entries(gameEnv.players)) {
-            if (!player.fieldEffects) continue;
-            
-            const restrictions: PlayerRestrictions = {
-                playerId,
-                zoneRestrictions: {
-                    top: player.fieldEffects.zoneRestrictions?.top || 'ALL',
-                    left: player.fieldEffects.zoneRestrictions?.left || 'ALL',
-                    right: player.fieldEffects.zoneRestrictions?.right || 'ALL',
-                    help: player.fieldEffects.zoneRestrictions?.help || 'ALL',
-                    sp: player.fieldEffects.zoneRestrictions?.sp || 'ALL',
-                    leader: player.fieldEffects.zoneRestrictions?.leader || 'ALL'
-                },
-                specialEffects: {
-                    zonePlacementFreedom: player.fieldEffects.specialEffects?.zonePlacementFreedom || false,
-                    immuneToNeutralization: player.fieldEffects.specialEffects?.immuneToNeutralization || false,
-                    canPlayMultipleCards: false // Add logic if needed
-                },
-                disabledCards: new Set(player.fieldEffects.disabledCards || []),
-                calculatedPowers: new Map(Object.entries(player.fieldEffects.calculatedPowers || {})),
-                placementValidations: new Map() // Will be populated by ValidationCache
-            };
-            
-            // REMOVED: validationState usage - fieldEffects is the single source of truth
-            console.log('✅ Field effects updated via existing system');
-        }
-        
-        console.log('✅ Effect delta applied - using fieldEffects system');
-    }
 
     /**
      * Get affected players from calculated effects
@@ -507,6 +461,135 @@ export class IncrementalEffectManager {
         // This is complex and would require storing the previous state
         // For now, we'll mark this as a feature for future implementation
         console.log(`⏪ Rolling back effects for card ${delta.cardId} (sequence ${delta.sequenceId})`);
+    }
+
+    /**
+     * Calculate power points for both players based on characters in left, right, and top zones
+     * This is called AFTER field effects have been updated
+     * 
+     * This method directly calculates power by examining cards in character zones (left, right, top)
+     * and applies any field effects that have been updated in the previous step.
+     */
+    private async calculatePlayerPowerPoints(gameEnv: GameEnvironment): Promise<void> {
+        console.log('⚡ Calculating player power points after field effects update...');
+        
+        // Get both players
+        const playerIds = [gameEnv.playerId_1, gameEnv.playerId_2].filter(id => id);
+        
+        for (const playerId of playerIds) {
+            if (!playerId) continue;
+            
+            const player = gameEnv.getPlayer(playerId);
+            if (!player) continue;
+            
+            try {
+                // Calculate power for this player by looking at cards in character zones
+                const totalPower = await this.calculatePlayerPower(gameEnv, playerId);
+                
+                // Update player's power point in the game state
+                player.playerPoint = totalPower;
+                
+                console.log(`✅ Player ${playerId} power calculated: ${totalPower}`);
+                
+            } catch (error) {
+                console.error(`❌ Error calculating power for player ${playerId}:`, error);
+                // Keep existing power if calculation fails
+                console.log(`   Keeping existing power: ${player.playerPoint || 0}`);
+            }
+        }
+        
+        console.log('✅ Player power points calculation completed');
+    }
+
+    /**
+     * Calculate power for a single player by examining characters in left, right, and top zones
+     * Uses the updated fieldEffects to apply power modifications
+     */
+    private async calculatePlayerPower(gameEnv: GameEnvironment, playerId: string): Promise<number> {
+        console.log(`⚡ Calculating power for player ${playerId}...`);
+        
+        const player = gameEnv.getPlayer(playerId);
+        if (!player) return 0;
+        
+        let totalPower = 0;
+        const characterZones: ZoneType[] = [ZoneType.TOP, ZoneType.LEFT, ZoneType.RIGHT];
+        
+        // Step 1: Calculate base power from characters in zones
+        for (const zone of characterZones) {
+            const cardInZone = gameEnv.zones.getCardInZone(playerId, zone);
+            if (!cardInZone) continue;
+            
+            // Get card details
+            const cardDetails = await this.getCardDetails(cardInZone);
+            if (!cardDetails) continue;
+            
+            // Only face-up cards contribute power
+            const zoneCard = gameEnv.zones.getCardObjectInZone(playerId, zone);
+            if (zoneCard?.isFaceDown) {
+                console.log(`   Card ${cardInZone} in ${zone} is face-down, contributes 0 power`);
+                continue;
+            }
+            
+            // Get base power
+            let cardPower = cardDetails.power || 0;
+            
+            // Step 2: Apply field effects if any calculated power is available
+            if (player.fieldEffects?.calculatedPowers && 
+                player.fieldEffects.calculatedPowers[cardInZone] !== undefined) {
+                cardPower = player.fieldEffects.calculatedPowers[cardInZone];
+                console.log(`   Using calculated power override for ${cardInZone}: ${cardPower}`);
+            }
+            
+            // Step 3: Apply active effects (power boosts, etc.)
+            if (player.fieldEffects?.activeEffects) {
+                for (const effect of player.fieldEffects.activeEffects) {
+                    if (effect.type === 'powerBoost' && this.effectAppliesToCard(effect, cardDetails, zone)) {
+                        cardPower += effect.value || 0;
+                        console.log(`   Applied power boost +${effect.value} to ${cardInZone} from ${effect.source}`);
+                    }
+                }
+            }
+            
+            // Ensure power is never negative
+            cardPower = Math.max(0, cardPower);
+            totalPower += cardPower;
+            
+            console.log(`   ${cardInZone} (${zone}): ${cardPower} power`);
+        }
+        
+        // TODO: Add combo bonuses calculation here if needed
+        // This would require implementing combo logic based on card combinations
+        
+        console.log(`   Total power for ${playerId}: ${totalPower}`);
+        return Math.max(0, totalPower);
+    }
+
+    /**
+     * Check if a field effect applies to a specific card
+     */
+    private effectAppliesToCard(effect: any, cardDetails: any, zone: ZoneType): boolean {
+        // Check zone restrictions
+        if (effect.target?.zones && effect.target.zones.length > 0) {
+            if (!effect.target.zones.includes(zone)) {
+                return false;
+            }
+        }
+        
+        // Check game type restrictions
+        if (effect.target?.gameTypes && effect.target.gameTypes.length > 0) {
+            if (!effect.target.gameTypes.includes(cardDetails.gameType)) {
+                return false;
+            }
+        }
+        
+        // Check trait restrictions
+        if (effect.target?.traits && effect.target.traits.length > 0) {
+            if (!cardDetails.traits || !effect.target.traits.some((trait: string) => cardDetails.traits.includes(trait))) {
+                return false;
+            }
+        }
+        
+        return true;
     }
 
     /**

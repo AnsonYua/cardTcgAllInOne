@@ -184,34 +184,19 @@ export class GameEnvironmentAdapter {
             throw new Error('Both players must have valid leader UIDs before initialization');
         }
         
-        gameEnv.setLeader(gameEnv.playerId_1!, leader1Uid);
-        gameEnv.setLeader(gameEnv.playerId_2!, leader2Uid);
-        
-        // Record leader plays in play sequence for proper effect simulation
-        // IMPORTANT: Record in first player order for correct sequencing
+        // Set leaders - this automatically records PLAY_LEADER actions in play sequence
+        // IMPORTANT: Set leaders in first player order for correct sequencing  
         const orderedPlayerIds = [
             [gameEnv.playerId_1!, gameEnv.playerId_2!][firstPlayer],
             [gameEnv.playerId_1!, gameEnv.playerId_2!][1 - firstPlayer]
         ];
+        const orderedLeaderUids = [
+            [leader1Uid, leader2Uid][firstPlayer],
+            [leader1Uid, leader2Uid][1 - firstPlayer]
+        ];
         
-        for (const playerId of orderedPlayerIds) {
-            const player = gameEnv.getPlayer(playerId);
-            if (!player) continue;
-            
-            const currentLeaderId = player.getCurrentLeaderCardId();
-            if (!currentLeaderId) continue;
-            
-            gameEnv.playSequenceManager.addPlay(
-                playerId,
-                currentLeaderId,
-                ActionType.PLAY_LEADER,
-                ZoneType.LEADER,
-                false, // isFaceDown
-                {
-                    leaderIndex: player.deck.currentLeaderIdx,
-                    isInitialPlacement: true
-                }
-            );
+        for (let i = 0; i < orderedPlayerIds.length; i++) {
+            gameEnv.setLeader(orderedPlayerIds[i], orderedLeaderUids[i]);
         }
         
         // Prepare leader revealed data for events
