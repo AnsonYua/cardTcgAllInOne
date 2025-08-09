@@ -47,7 +47,6 @@ import { mozGamePlay } from '../mozGame/mozGamePlay';
 
 export class IncrementalEffectManager {
     private effectDeltas: Map<number, EffectDelta> = new Map();
-    private lastProcessedSequence: number = 0;
     private cardInfoUtils: any = null;
 
     /**
@@ -65,13 +64,13 @@ export class IncrementalEffectManager {
     public async processNewEffects(gameEnv: GameEnvironment): Promise<void> {
         console.log('🔄 Processing incremental effects...');
         const newPlays = gameEnv.playSequenceManager.getPlays()
-            .filter(play => play.sequenceId > this.lastProcessedSequence);
+            .filter(play => play.sequenceId > gameEnv.lastProcessedSequence);
             
-        console.log(`📋 Found ${newPlays.length} new plays to process`);
+        console.log(`📋 Found ${newPlays.length} new plays to process (last processed: ${gameEnv.lastProcessedSequence})`);
         
         for (const play of newPlays) {
             await this.processCardEffects(gameEnv, play);
-            this.lastProcessedSequence = play.sequenceId;
+            gameEnv.lastProcessedSequence = play.sequenceId;
         }
         
         // Update validation state after processing new effects
@@ -496,7 +495,7 @@ export class IncrementalEffectManager {
             this.effectDeltas.delete(sequenceId);
         }
         
-        this.lastProcessedSequence = targetSequence;
+        gameEnv.lastProcessedSequence = targetSequence;
         console.log(`✅ Rolled back ${deltasToRollback.length} effect deltas`);
     }
 
@@ -513,10 +512,10 @@ export class IncrementalEffectManager {
     /**
      * Get processing metrics for performance monitoring
      */
-    public getMetrics(): any {
+    public getMetrics(gameEnv?: GameEnvironment): any {
         return {
             effectDeltasStored: this.effectDeltas.size,
-            lastProcessedSequence: this.lastProcessedSequence,
+            lastProcessedSequence: gameEnv?.lastProcessedSequence || 0,
             totalEffectsProcessed: Array.from(this.effectDeltas.values())
                 .reduce((total, delta) => total + delta.effects.length, 0)
         };

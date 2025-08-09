@@ -240,7 +240,7 @@ export class GameLogic {
                 GameEnvironmentAdapter.addSecondPlayer(gameEnv, player2Id, player1DeckData, player2DeckData);
                 
                 // Initialize complete game environment (MISSING FUNCTIONALITY RESTORED)
-                GameEnvironmentAdapter.initializeGameEnvironment(gameEnv);
+                await GameEnvironmentAdapter.initializeGameEnvironment(gameEnv);
                 
                 // Update phase to REDRAW_PHASE for startReady compatibility (MISSING FUNCTIONALITY RESTORED)
                 gameEnv.phase = GamePhase.REDRAW_PHASE;

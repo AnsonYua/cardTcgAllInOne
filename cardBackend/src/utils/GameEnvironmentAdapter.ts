@@ -7,6 +7,9 @@
 
 import { GameEnvironment, GamePhase, ZoneType, ActionType, EventType, Player, CardInfoUtilsSingleton } from '../models/GameEnvironment';
 import { PlayerDeckDataResp } from '../models/PlayerDeckDataResp';
+import { EffectSimulator } from '../services/EffectSimulator';
+import { incrementalEffectManager } from '../services/IncrementalEffectManager';
+import CardInfoUtils from '../services/CardInfoUtils';
 
 export class GameEnvironmentAdapter {
     
@@ -123,7 +126,7 @@ export class GameEnvironmentAdapter {
      * Initialize game environment after both players have joined
      * Replaces mozGamePlay.updateInitialGameEnvironment functionality
      */
-    public static initializeGameEnvironment(gameEnv: GameEnvironment): void {
+    public static async initializeGameEnvironment(gameEnv: GameEnvironment): Promise<void> {
         // Get both players
         const player1 = gameEnv.getPlayer(gameEnv.playerId_1!);
         const player2 = gameEnv.getPlayer(gameEnv.playerId_2!);
@@ -162,8 +165,8 @@ export class GameEnvironmentAdapter {
         } else if (leader2Details.initialPoint === leader1Details.initialPoint) {
             firstPlayer = Math.floor(Math.random() * 2);
         }
-        firstPlayer = 0;
         // For consistency with existing logic, set to 0
+        firstPlayer = 0;
         gameEnv.firstPlayer = firstPlayer;
         
         // Update phase to REDRAW_PHASE
@@ -242,6 +245,38 @@ export class GameEnvironmentAdapter {
             playerId: gameEnv.playerId_2!,
             handSize: player2.getHandSize()
         });
+        
+        // Initialize field effects by processing PLAY_LEADER actions through IncrementalEffectManager
+        // This follows the same pattern as OptimizedGameEngine.playCard() step 4
+        console.log('🔮 DEBUG: About to initialize field effects through IncrementalEffectManager pattern...');
+        console.log('🔮 DEBUG: Play sequence length:', gameEnv.playSequenceManager.getPlays().length);
+        console.log('🔮 DEBUG: Players:', Object.keys(gameEnv.players));
+        
+        try {
+            // Initialize fieldEffects structure only (using legacy method for precision)
+            // Note: initializeForGameStart() resets turnAction/playerPoint which we don't want here
+            for (const playerId of Object.keys(gameEnv.players)) {
+                const player = gameEnv.players[playerId];
+                if (player && !player.fieldEffects) {
+                    console.log(`🔧 Initializing fieldEffects for ${playerId}`);
+                    // @ts-ignore - intentionally using deprecated method for precision (initializeForGameStart resets player stats)
+                    player.initializeFieldEffects();
+                }
+            }
+            
+            // Set dependencies like OptimizedGameEngine does (line 113-114)
+            incrementalEffectManager.setCardInfoUtils(CardInfoUtils);
+            
+            // Process new effects (PLAY_LEADER actions) - same as OptimizedGameEngine step 4 (line 168)
+            console.log('🔮 DEBUG: About to call processNewEffects...');
+            await incrementalEffectManager.processNewEffects(gameEnv);
+            
+            console.log('✅ Field effects initialized successfully using IncrementalEffectManager pattern');
+        } catch (error: any) {
+            console.error('❌ Error initializing field effects:', error);
+            console.error('❌ Stack trace:', error.stack);
+            throw error;
+        }
     }
 }
 

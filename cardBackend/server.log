@@ -1,0 +1,179 @@
+
+> cardbackend@1.0.0 dev
+> nodemon
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] reading config ./nodemon.json[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] or send SIGHUP to 91836 to restart[39m
+[33m[nodemon] ignoring: dist/**/* node_modules/**/* src/tests/**/* src/gameData/**/* *.test.ts *.test.js[39m
+[33m[nodemon] watching path(s): src/**/* server.ts[39m
+[33m[nodemon] watching extensions: ts,js,json[39m
+[32m[nodemon] starting `ts-node server.ts`[39m
+[33m[nodemon] spawning[39m
+[33m[nodemon] child pid: 91861[39m
+[33m[nodemon] watching 404 files[39m
+Loading DeckManager synchronously...
+DeckManager initialized synchronously with 59 total cards
+DecksCollection loaded with 2 players
+🎯 CardActionHandler: Initialized with comprehensive card placement logic
+🎯 GameFlowOrchestrator: Initialized with complete manager class coordination
+🎮 GameLogic initialized with TypeScript class support
+🎮 GameController initialized with TypeScript support
+DeckManager already initialized synchronously
+DeckManager status: {
+  initialized: true,
+  cardsLoaded: true,
+  cardsCount: 59,
+  leaderCardsLoaded: true,
+  decksLoaded: true,
+  decksCollectionLoaded: true,
+  playersCount: 2
+}
+Server error: Error: listen EADDRINUSE: address already in use :::8080
+    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+    at listenInCluster (node:net:1996:12)
+    at Server.listen (node:net:2101:7)
+    at Function.listen (/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/node_modules/express/lib/application.js:635:24)
+    at startServer (/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/server.ts:57:22)
+    at Object.<anonymous> (/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/server.ts:95:1)
+    at Module._compile (node:internal/modules/cjs/loader:1734:14)
+    at Module.m._compile (/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/node_modules/ts-node/src/index.ts:1618:23)
+    at loadTS (node:internal/modules/cjs/loader:1826:10)
+    at Object.require.extensions.<computed> [as .ts] (/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/node_modules/ts-node/src/index.ts:1621:12) {
+  code: 'EADDRINUSE',
+  errno: -48,
+  syscall: 'listen',
+  address: '::',
+  port: 8080
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[33m[nodemon] files triggering change check: src/gameData/e52f7630-80e9-4ed8-b2bb-1079c9717d0a.json[39m
+[33m[nodemon] changes after filters (before/after): 1/0[39m
+[33m[nodemon] files triggering change check: src/gameData/51ac8794-06b3-436c-a90e-7d27c241dc12.json[39m
+[33m[nodemon] changes after filters (before/after): 1/0[39m
+[33m[nodemon] files triggering change check: src/utils/GameEnvironmentAdapter.ts[39m
+[33m[nodemon] matched rule: **/src/**/*[39m
+[33m[nodemon] changes after filters (before/after): 1/1[39m
+[33m[nodemon] delaying restart for 1000ms[39m
+[32m[nodemon] restarting due to changes...[39m
+[33m[nodemon] src/utils/GameEnvironmentAdapter.ts[39m
+
+[32m[nodemon] starting `ts-node server.ts`[39m
+[33m[nodemon] spawning[39m
+[33m[nodemon] child pid: 3185[39m
+Loading DeckManager synchronously...
+DeckManager initialized synchronously with 59 total cards
+DecksCollection loaded with 2 players
+🎯 CardActionHandler: Initialized with comprehensive card placement logic
+🎯 GameFlowOrchestrator: Initialized with complete manager class coordination
+🎮 GameLogic initialized with TypeScript class support
+🎮 GameController initialized with TypeScript support
+DeckManager already initialized synchronously
+DeckManager status: {
+  initialized: true,
+  cardsLoaded: true,
+  cardsCount: 59,
+  leaderCardsLoaded: true,
+  decksLoaded: true,
+  decksCollectionLoaded: true,
+  playersCount: 2
+}
+Server is running on port 8080
+🔍 joinRoom called with body: {
+  playerId: 'playerId_2',
+  gameId: 'e52f7630-80e9-4ed8-b2bb-1079c9717d0a',
+  playerName: 'Demo Opponent'
+}
+🎮 Player playerId_2 joining game: e52f7630-80e9-4ed8-b2bb-1079c9717d0a
+📂 Game e52f7630-80e9-4ed8-b2bb-1079c9717d0a loaded from file
+📋 Preparing decks for both players...
+debug prepareDeckForPlayer playerId_1
+debug playerData222 {"c-1_1754673334300_0":"c-1","c-2_1754673334300_1":"c-2","c-3_1754673334300_2":"c-3","c-4_1754673334300_3":"c-4","c-5_1754673334300_4":"c-5","c-6_1754673334300_5":"c-6","c-7_1754673334300_6":"c-7","c-8_1754673334300_7":"c-8","c-9_1754673334300_8":"c-9","c-10_1754673334300_9":"c-10","c-11_1754673334300_10":"c-11","c-12_1754673334300_11":"c-12","c-13_1754673334300_12":"c-13","c-14_1754673334300_13":"c-14","c-15_1754673334300_14":"c-15","c-16_1754673334300_15":"c-16","c-17_1754673334300_16":"c-17","c-18_1754673334300_17":"c-18","c-19_1754673334300_18":"c-19","c-20_1754673334300_19":"c-20","c-21_1754673334300_20":"c-21","c-22_1754673334300_21":"c-22","c-23_1754673334300_22":"c-23","c-24_1754673334300_23":"c-24","h-1_1754673334300_24":"h-1","h-2_1754673334300_25":"h-2","h-3_1754673334300_26":"h-3","h-9_1754673334300_27":"h-9","sp-2_1754673334300_28":"sp-2","sp-3_1754673334300_29":"sp-3"}
+debug prepareDeckForPlayer playerId_2
+debug playerData222 {"c-1_1754673334300_0":"c-1","c-7_1754673334300_1":"c-7","c-2_1754673334300_2":"c-2","c-23_1754673334300_3":"c-23","c-8_1754673334300_4":"c-8","c-14_1754673334300_5":"c-14","c-16_1754673334300_6":"c-16","c-18_1754673334300_7":"c-18","c-19_1754673334300_8":"c-19","c-21_1754673334300_9":"c-21","c-24_1754673334300_10":"c-24","c-25_1754673334300_11":"c-25","c-27_1754673334300_12":"c-27","c-3_1754673334300_13":"c-3","c-4_1754673334300_14":"c-4","c-5_1754673334300_15":"c-5","c-6_1754673334300_16":"c-6","c-28_1754673334300_17":"c-28","c-26_1754673334300_18":"c-26","c-15_1754673334300_19":"c-15","c-17_1754673334300_20":"c-17","c-20_1754673334300_21":"c-20","h-1_1754673334300_22":"h-1","h-11_1754673334300_23":"h-11","h-13_1754673334300_24":"h-13","h-15_1754673334300_25":"h-15","sp-2_1754673334300_26":"sp-2","sp-10_1754673334300_27":"sp-10"}
+debug leaderUIDMapping {"s-1_1754673334300_0":"s-1","s-2_1754673334300_1":"s-2","s-3_1754673334300_2":"s-3","s-4_1754673334300_3":"s-4"}
+debug leaderUIDMapping {"s-5_1754673334300_0":"s-5","s-6_1754673334300_1":"s-6","s-3_1754673334300_2":"s-3","s-2_1754673334300_3":"s-2"}
+🎯 Decks prepared. Player 1 hand size: 7, Player 2 hand size: 7
+debug leader1Details {"id":"s-2","name":"拜登","cardType":"leader","gameType":"左翼","initialPoint":100,"level":7,"rarity":"legendary","zoneCompatibility":{"top":["左翼","自由","經濟","右翼","愛國者"],"left":["左翼","自由","經濟","右翼","愛國者"],"right":["左翼","自由","經濟","右翼","愛國者"]},"effects":{"description":"全部召喚出來的角色能力值 +40","rules":[{"id":"biden_all_boost","type":"continuous","trigger":{"event":"always","conditions":[]},"target":{"owner":"self","zones":["top","left","right"],"filters":[]},"effect":{"type":"powerBoost","value":40}}]}}
+debug leader2Details {"id":"s-3","name":"馬斯克","cardType":"leader","gameType":"自由","initialPoint":91,"level":6,"rarity":"epic","zoneCompatibility":{"top":["自由","經濟"],"left":["左翼","自由"],"right":["右翼","自由"]},"effects":{"description":"全部召喚出來的角色擁有自由屬性能力值 +50。全部召喚出來的角色如擁有Doge在角色名字，能力值 再+20","rules":[{"id":"musk_freedom_boost","type":"continuous","trigger":{"event":"always","conditions":[]},"target":{"owner":"self","zones":["top","left","right"],"filters":[{"type":"gameType","value":"自由"}]},"effect":{"type":"powerBoost","value":50}},{"id":"musk_doge_boost","type":"continuous","trigger":{"event":"always","conditions":[]},"target":{"owner":"self","zones":["top","left","right"],"filters":[{"type":"nameContains","value":"Doge"}]},"effect":{"type":"powerBoost","value":20}}]}}
+test222  {"cardUid":"s-2_1754673334300_1","cardId":"s-2","cardData":{"id":"s-2","name":"拜登","cardType":"leader","gameType":"左翼","initialPoint":100,"level":7,"rarity":"legendary","zoneCompatibility":{"top":["左翼","自由","經濟","右翼","愛國者"],"left":["左翼","自由","經濟","右翼","愛國者"],"right":["左翼","自由","經濟","右翼","愛國者"]},"effects":{"description":"全部召喚出來的角色能力值 +40","rules":[{"id":"biden_all_boost","type":"continuous","trigger":{"event":"always","conditions":[]},"target":{"owner":"self","zones":["top","left","right"],"filters":[]},"effect":{"type":"powerBoost","value":40}}]}},"isFaceDown":false,"placedAt":1754673334302,"placedBy":"playerId_1"}
+test333  {"cardUid":"s-2_1754673334300_1","cardId":"s-2","cardData":{"id":"s-2","name":"拜登","cardType":"leader","gameType":"左翼","initialPoint":100,"level":7,"rarity":"legendary","zoneCompatibility":{"top":["左翼","自由","經濟","右翼","愛國者"],"left":["左翼","自由","經濟","右翼","愛國者"],"right":["左翼","自由","經濟","右翼","愛國者"]},"effects":{"description":"全部召喚出來的角色能力值 +40","rules":[{"id":"biden_all_boost","type":"continuous","trigger":{"event":"always","conditions":[]},"target":{"owner":"self","zones":["top","left","right"],"filters":[]},"effect":{"type":"powerBoost","value":40}}]}},"isFaceDown":false,"placedAt":1754673334302,"placedBy":"playerId_1"}
+✅ Set card in zone: s-2_1754673334300_1 (s-2) → leader for player playerId_1 with data: 拜登
+test222  {"cardUid":"s-3_1754673334300_2","cardId":"s-3","cardData":{"id":"s-3","name":"馬斯克","cardType":"leader","gameType":"自由","initialPoint":91,"level":6,"rarity":"epic","zoneCompatibility":{"top":["自由","經濟"],"left":["左翼","自由"],"right":["右翼","自由"]},"effects":{"description":"全部召喚出來的角色擁有自由屬性能力值 +50。全部召喚出來的角色如擁有Doge在角色名字，能力值 再+20","rules":[{"id":"musk_freedom_boost","type":"continuous","trigger":{"event":"always","conditions":[]},"target":{"owner":"self","zones":["top","left","right"],"filters":[{"type":"gameType","value":"自由"}]},"effect":{"type":"powerBoost","value":50}},{"id":"musk_doge_boost","type":"continuous","trigger":{"event":"always","conditions":[]},"target":{"owner":"self","zones":["top","left","right"],"filters":[{"type":"nameContains","value":"Doge"}]},"effect":{"type":"powerBoost","value":20}}]}},"isFaceDown":false,"placedAt":1754673334302,"placedBy":"playerId_2"}
+test333  {"cardUid":"s-3_1754673334300_2","cardId":"s-3","cardData":{"id":"s-3","name":"馬斯克","cardType":"leader","gameType":"自由","initialPoint":91,"level":6,"rarity":"epic","zoneCompatibility":{"top":["自由","經濟"],"left":["左翼","自由"],"right":["右翼","自由"]},"effects":{"description":"全部召喚出來的角色擁有自由屬性能力值 +50。全部召喚出來的角色如擁有Doge在角色名字，能力值 再+20","rules":[{"id":"musk_freedom_boost","type":"continuous","trigger":{"event":"always","conditions":[]},"target":{"owner":"self","zones":["top","left","right"],"filters":[{"type":"gameType","value":"自由"}]},"effect":{"type":"powerBoost","value":50}},{"id":"musk_doge_boost","type":"continuous","trigger":{"event":"always","conditions":[]},"target":{"owner":"self","zones":["top","left","right"],"filters":[{"type":"nameContains","value":"Doge"}]},"effect":{"type":"powerBoost","value":20}}]}},"isFaceDown":false,"placedAt":1754673334302,"placedBy":"playerId_2"}
+✅ Set card in zone: s-3_1754673334300_2 (s-3) → leader for player playerId_2 with data: 馬斯克
+🔮 Initializing field effects through unified effect system...
+🎬 Starting enhanced TypeScript class-based effect simulation...
+🔧 Initializing field effects using TypeScript class methods...
+   ✅ Initialized field effects for playerId_1
+   ✅ Initialized field effects for playerId_2
+📋 Replaying 4 plays directly on GameEnvironment class...
+▶️ Executing play 1: PLAY_LEADER s-2_1754673334300_1 by playerId_1
+   🏛️ Processing PLAY_LEADER: s-2_1754673334300_1 for playerId_1
+Cannot process leader play - missing player or leader data
+▶️ Executing play 2: PLAY_LEADER s-3_1754673334300_2 by playerId_2
+   🏛️ Processing PLAY_LEADER: s-3_1754673334300_2 for playerId_2
+Cannot process leader play - missing player or leader data
+▶️ Executing play 3: PLAY_LEADER s-2 by playerId_1
+   🏛️ Processing PLAY_LEADER: s-2 for playerId_1
+Cannot process leader play - missing player or leader data
+▶️ Executing play 4: PLAY_LEADER s-3 by playerId_2
+   🏛️ Processing PLAY_LEADER: s-3 for playerId_2
+Cannot process leader play - missing player or leader data
+⚡ Calculating final powers using TypeScript class methods...
+   🌐 Collected 0 total active effects from all players
+   🔍 Processing cards for player playerId_1
+     ⏭️ Skipping zone leader (no power contribution)
+     ⏭️ Skipping zone help (no power contribution)
+     ⏭️ Skipping zone sp (no power contribution)
+   ✅ Completed power calculation for player playerId_1
+      📊 Calculated powers: {}
+   🔍 Processing cards for player playerId_2
+     ⏭️ Skipping zone leader (no power contribution)
+     ⏭️ Skipping zone help (no power contribution)
+     ⏭️ Skipping zone sp (no power contribution)
+   ✅ Completed power calculation for player playerId_2
+      📊 Calculated powers: {}
+✅ Final power calculation completed for all players
+📊 Calculating player points using TypeScript class methods...
+⚠️ calculatePlayerPointFunc not set - skipping point calculation
+⚠️ calculatePlayerPointFunc not set - skipping point calculation
+✅ Enhanced TypeScript class-based simulation completed
+✅ Field effects initialized successfully
+✅ Player playerId_2 joined game e52f7630-80e9-4ed8-b2bb-1079c9717d0a. Game initialized and ready for start.
+💾 Game e52f7630-80e9-4ed8-b2bb-1079c9717d0a saved to file
+[33m[nodemon] files triggering change check: src/gameData/e52f7630-80e9-4ed8-b2bb-1079c9717d0a.json[39m
+[33m[nodemon] changes after filters (before/after): 1/0[39m
+[33m[nodemon] files triggering change check: src/services/GameLogic.ts[39m
+[33m[nodemon] matched rule: **/src/**/*[39m
+[33m[nodemon] changes after filters (before/after): 1/1[39m
+[33m[nodemon] delaying restart for 1000ms[39m
+[32m[nodemon] restarting due to changes...[39m
+[33m[nodemon] src/services/GameLogic.ts[39m
+
+[32m[nodemon] starting `ts-node server.ts`[39m
+[33m[nodemon] spawning[39m
+[33m[nodemon] child pid: 8656[39m
+Loading DeckManager synchronously...
+DeckManager initialized synchronously with 59 total cards
+DecksCollection loaded with 2 players
+🎯 CardActionHandler: Initialized with comprehensive card placement logic
+🎯 GameFlowOrchestrator: Initialized with complete manager class coordination
+🎮 GameLogic initialized with TypeScript class support
+🎮 GameController initialized with TypeScript support
+DeckManager already initialized synchronously
+DeckManager status: {
+  initialized: true,
+  cardsLoaded: true,
+  cardsCount: 59,
+  leaderCardsLoaded: true,
+  decksLoaded: true,
+  decksCollectionLoaded: true,
+  playersCount: 2
+}
+Server is running on port 8080
+SIGTERM received. Shutting down gracefully...
+Server closed
+[32m[nodemon] clean exit - waiting for changes before restart[39m
+[33m[nodemon] exiting[39m

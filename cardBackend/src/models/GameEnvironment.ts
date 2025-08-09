@@ -1160,6 +1160,9 @@ export class GameEnvironment {
     // Event system
     public gameEvents?: any[];
     public lastEventId?: number;
+    
+    // Incremental effect processing
+    public lastProcessedSequence: number;
 
     constructor() {
         this.phase = GamePhase.WAITING_FOR_PLAYERS;
@@ -1180,6 +1183,7 @@ export class GameEnvironment {
         
         this.fieldEffects = {};
         this.neutralizationHistory = [];
+        this.lastProcessedSequence = 0;
     }
 
     // ============ PLAYER MANAGEMENT ============
@@ -1386,7 +1390,10 @@ export class GameEnvironment {
             ...this.eventManager.toJSON(),
             
             // Play sequence
-            playSequence: this.playSequenceManager.toJSON()
+            playSequence: this.playSequenceManager.toJSON(),
+            
+            // Incremental effect processing
+            lastProcessedSequence: this.lastProcessedSequence
         };
         
         // Convert players
@@ -1429,6 +1436,9 @@ export class GameEnvironment {
         // Legacy compatibility
         gameEnv.fieldEffects = data.fieldEffects || {};
         gameEnv.neutralizationHistory = data.neutralizationHistory || [];
+        
+        // Incremental effect processing
+        gameEnv.lastProcessedSequence = data.lastProcessedSequence || 0;
         
         // REMOVED: validationState deserialization - using fieldEffects as single source of truth
         
