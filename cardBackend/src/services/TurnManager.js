@@ -129,8 +129,8 @@ class TurnManager {
         console.log(`🎯 TurnManager: Checking if player ${playerId} should skip turn`);
         
         // ===== STEP 1: CHECK IF PLAYER HAS CARDS TO PLAY =====
-        const hand = this.getPlayerHand(gameEnv, playerId) || [];
-        if (hand.length === 0) {
+        const player = gameEnv.getPlayer(playerId);
+        if (!player || player.deck.getHandSize() === 0) {
             console.log(`🎯 Player ${playerId} should skip - no cards in hand`);
             return true;
         }
@@ -193,20 +193,26 @@ class TurnManager {
         
         // ===== STEP 4: CURRENT PLAYER DRAWS 1 CARD =====
         const currentPlayer = gameEnv.currentPlayer;
-        const hand = this.getPlayerHand(gameEnv, currentPlayer);
-        const mainDeck = this.getPlayerMainDeck(gameEnv, currentPlayer);
-        const result = this.mozDeckHelper.drawToHand(hand, mainDeck);
+        const player = gameEnv.getPlayer(currentPlayer);
         
-        this.setPlayerHand(gameEnv, currentPlayer, result.hand);
-        this.setPlayerMainDeck(gameEnv, currentPlayer, result.mainDeck);
+        if (!player) {
+            throw new Error(`Player ${currentPlayer} not found`);
+        }
         
-        console.log(`🎯 Player ${currentPlayer} drew 1 card - hand size: ${result.hand.length}`);
+        // Use PlayerDeckDataResp.drawCard() method instead of mozDeckHelper
+        const drawnCardUid = player.deck.drawCard();
+        
+        if (!drawnCardUid) {
+            console.warn(`🎯 Player ${currentPlayer} could not draw card - deck is empty`);
+        } else {
+            console.log(`🎯 Player ${currentPlayer} drew 1 card - hand size: ${player.deck.getHandSize()}`);
+        }
         
         // ===== STEP 5: GENERATE EVENTS FOR FRONTEND =====
         this.addGameEvent(gameEnv, 'DRAW_PHASE_COMPLETE', {
             playerId: currentPlayer,
             cardCount: 1,
-            newHandSize: result.hand.length
+            newHandSize: player.deck.getHandSize()
         });
         
         this.addGameEvent(gameEnv, 'TURN_SWITCH', {
@@ -285,10 +291,11 @@ class TurnManager {
         
         for (const playerId of playerList) {
             const shouldSkip = this.shouldSkipSpPhase(gameEnv, playerId);
-            const hand = this.getPlayerHand(gameEnv, playerId) || [];
+            const player = gameEnv.getPlayer(playerId);
+            const handSize = player ? player.deck.getHandSize() : 0;
             
             // If any player has cards in hand and their SP zone isn't pre-occupied, they can play any card face-down
-            if (hand.length > 0 && !shouldSkip) {
+            if (handSize > 0 && !shouldSkip) {
                 allPlayersShouldSkipSp = false;
                 console.log(`🎮 Player ${playerId} can play SP cards - SP phase needed`);
                 break;

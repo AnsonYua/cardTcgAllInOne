@@ -31,15 +31,7 @@ export interface DeckData {
     leaderUID: string[];
 }
 
-export interface DrawResult {
-    drawnCards: string[];
-    mainDeck: string[];
-}
 
-export interface DrawToHandResult {
-    hand: string[];
-    mainDeck: string[];
-}
 
 export interface CardData {
     cardType?: string;
@@ -94,7 +86,8 @@ class MozDeckLogic {
         const sumCardList = this.shuffleLeaderDeck(activeDeck);
         const mainDeckCard = this.shuffleMainDeck(activeDeck);
         
-        const { drawnCards, mainDeck } = this.drawCards(mainDeckCard, 7);
+        const drawnCards = mainDeckCard.splice(0, 7);
+        const mainDeck = mainDeckCard;
         const hand = drawnCards;
 
         console.log("debug leaderUIDMapping", JSON.stringify(playerDeckCopy.leaderUIDMapping));
@@ -132,7 +125,8 @@ class MozDeckLogic {
         }
         
         const mainDeckCard = this.shuffleMainDeck(activeDeck);
-        const { drawnCards, mainDeck } = this.drawCards(mainDeckCard, 7);
+        const drawnCards = mainDeckCard.splice(0, 7);
+        const mainDeck = mainDeckCard;
         const hand = drawnCards;
         
         // CRITICAL FIX: Generate new UID mappings for reshuffled cards
@@ -141,7 +135,7 @@ class MozDeckLogic {
         
         // Create mappings for hand cards
         hand.forEach((cardUID) => {
-            const cardId = this.extractCardIdFromUID(cardUID);
+            const cardId = cardUID.split('_')[0]; // Extract base cardId from UID
             if (cardId) {
                 cardMapping[cardUID] = cardId;
             }
@@ -149,7 +143,7 @@ class MozDeckLogic {
         
         // Create mappings for remaining main deck cards
         mainDeck.forEach((cardUID) => {
-            const cardId = this.extractCardIdFromUID(cardUID);
+            const cardId = cardUID.split('_')[0]; // Extract base cardId from UID
             if (cardId) {
                 cardMapping[cardUID] = cardId;
             }
@@ -173,40 +167,7 @@ class MozDeckLogic {
         return deckResp;
     }
 
-    /**
-     * Draw cards to hand from main deck
-     * @param hand - Current hand (will be modified)
-     * @param mainDeckOriginal - Main deck to draw from (will be modified)
-     * @param count - Number of cards to draw (default: 1)
-     * @returns Object with updated hand and main deck
-     */
-    drawToHand(hand: string[], mainDeckOriginal: string[], count: number = 1): DrawToHandResult {
-        const { drawnCards, mainDeck } = this.drawCards(mainDeckOriginal, count);
-        for (let i = 0; i < drawnCards.length; i++) {
-            hand.push(drawnCards[i]);
-        }
-        return {
-            hand: hand,
-            mainDeck: mainDeck
-        };
-    }
 
-    /**
-     * Draw cards from main deck
-     * @param mainDeck - Main deck array (will be modified)
-     * @param count - Number of cards to draw (default: 1)
-     * @returns Object with drawn cards and updated main deck
-     */
-    drawCards(mainDeck: string[], count: number = 1): DrawResult {
-        if (count > mainDeck.length) {
-            throw new Error(`Cannot draw ${count} cards. Only ${mainDeck.length} cards remaining.`);
-        }
-        const drawnCards = mainDeck.splice(0, count);
-        return {
-            drawnCards,    // Cards that were drawn
-            mainDeck      // Updated main deck
-        };
-    }
 
     /**
      * Shuffle main deck cards
@@ -269,14 +230,6 @@ class MozDeckLogic {
         return array;
     }
 
-    /**
-     * Get card details by card ID
-     * @param cardId - Card ID to get details for
-     * @returns Card details or null if not found
-     */
-    getDeckCardDetails(cardId: string): any {
-        return this.deckManager.getCardDetails(cardId);
-    }
 
     /**
      * Check if there are any character cards in the field area
@@ -304,22 +257,6 @@ class MozDeckLogic {
         return fieldArr.indexOf(field);
     }
 
-    /**
-     * Extract base card ID from UID (format: cardId_timestamp_index)
-     * @param uid - Card UID to extract base ID from
-     * @returns Base card ID or null if invalid format
-     */
-    private extractCardIdFromUID(uid: string): string | null {
-        if (!uid) return null;
-        
-        // UID format: cardId_timestamp_index (e.g., "c-1_1754551822157_24")
-        const parts = uid.split('_');
-        if (parts.length >= 3) {
-            return parts[0]; // Return the base card ID (e.g., "c-1")
-        }
-        
-        return null;
-    }
 
     /**
      * Check if card is eligible for a specific field based on leader compatibility

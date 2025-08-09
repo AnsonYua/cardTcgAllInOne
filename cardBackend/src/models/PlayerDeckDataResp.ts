@@ -84,6 +84,48 @@ export class PlayerDeckDataResp {
     }
 
     /**
+     * Draw multiple cards from main deck to hand
+     * @param count - Number of cards to draw (default: 1)
+     * @returns Array of drawn card UIDs
+     */
+    public drawCards(count: number = 1): string[] {
+        const drawnCards: string[] = [];
+        
+        if (count > this.mainDeck.length) {
+            throw new Error(`Cannot draw ${count} cards. Only ${this.mainDeck.length} cards remaining.`);
+        }
+        
+        for (let i = 0; i < count && this.mainDeck.length > 0; i++) {
+            const cardUid = this.mainDeck.shift()!;
+            this.hand.push(cardUid);
+            drawnCards.push(cardUid);
+        }
+        
+        // Auto-populate handDetails after hand changes
+        this.populateHandDetails();
+        
+        return drawnCards;
+    }
+
+    /**
+     * Draw multiple cards from main deck without adding to hand (utility method)
+     * Used for initial deck setup where hand is managed separately
+     * @param count - Number of cards to draw (default: 1)
+     * @returns Object with drawn cards and remaining main deck
+     */
+    public drawCardsFromDeck(count: number = 1): { drawnCards: string[], mainDeck: string[] } {
+        if (count > this.mainDeck.length) {
+            throw new Error(`Cannot draw ${count} cards. Only ${this.mainDeck.length} cards remaining.`);
+        }
+        
+        const drawnCards = this.mainDeck.splice(0, count);
+        return {
+            drawnCards,
+            mainDeck: [...this.mainDeck] // Return a copy to avoid mutation
+        };
+    }
+
+    /**
      * Play a card from hand (remove from hand)
      */
     public playCardFromHand(cardUid: string): boolean {
