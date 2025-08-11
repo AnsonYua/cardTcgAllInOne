@@ -12,7 +12,7 @@ export default class DemoScene extends DemoSceneBasic {
     console.log("DemoScene constructor called");
     this.inGamePlayerId = "playerId_1";
     //this.scenarioPath = 'UtilityEffects/h-2_setZero_normal_multiple_select';
-    this.scenarioPath = 'CharacterCase/character_c-1_trump_family_boost_dynamic';
+    this.scenarioPath = 'CharacterCase/sample_play_card';
   }
 
 

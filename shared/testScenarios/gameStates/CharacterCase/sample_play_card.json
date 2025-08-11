@@ -1,0 +1,1476 @@
+{
+  "description": "sample_play_card",
+  "gameId": "sample_play_card",
+  "testType": "charcterPlayCard",
+  "category": "",
+  "tags": [
+    "PlayCard"
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 0,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "currentLeaderIdx": 0,
+          "leader": [
+            "s-3_1754928029921_2",
+            "s-1_1754928029921_0",
+            "s-4_1754928029921_3",
+            "s-2_1754928029921_1"
+          ],
+          "hand": [
+            "c-11_1754928041861_10",
+            "c-9_1754928041861_8",
+            "c-12_1754928041861_11",
+            "c-8_1754928041861_7",
+            "sp-2_1754928041861_28",
+            "c-21_1754928041861_20",
+            "c-17_1754928041861_16",
+            "c-23_1754928041861_22"
+          ],
+          "mainDeck": [
+            "c-14_1754928041861_13",
+            "c-1_1754928041861_0",
+            "c-13_1754928041861_12",
+            "c-18_1754928041861_17",
+            "h-2_1754928041861_25",
+            "c-5_1754928041861_4",
+            "c-10_1754928041861_9",
+            "c-7_1754928041861_6",
+            "c-16_1754928041861_15",
+            "h-3_1754928041861_26",
+            "c-4_1754928041861_3",
+            "c-3_1754928041861_2",
+            "sp-3_1754928041861_29",
+            "c-22_1754928041861_21",
+            "c-20_1754928041861_19",
+            "c-6_1754928041861_5",
+            "c-19_1754928041861_18",
+            "c-24_1754928041861_23",
+            "c-15_1754928041861_14",
+            "c-2_1754928041861_1",
+            "h-9_1754928041861_27",
+            "h-1_1754928041861_24"
+          ],
+          "leaderMapping": {
+            "s-1_1754928029921_0": "s-1",
+            "s-2_1754928029921_1": "s-2",
+            "s-3_1754928029921_2": "s-3",
+            "s-4_1754928029921_3": "s-4"
+          },
+          "cardMapping": {
+            "c-1_1754928029921_0": "c-1",
+            "c-2_1754928029921_1": "c-2",
+            "c-3_1754928029921_2": "c-3",
+            "c-4_1754928029921_3": "c-4",
+            "c-5_1754928029921_4": "c-5",
+            "c-6_1754928029921_5": "c-6",
+            "c-7_1754928029921_6": "c-7",
+            "c-8_1754928029921_7": "c-8",
+            "c-9_1754928029921_8": "c-9",
+            "c-10_1754928029921_9": "c-10",
+            "c-11_1754928029921_10": "c-11",
+            "c-12_1754928029921_11": "c-12",
+            "c-13_1754928029921_12": "c-13",
+            "c-14_1754928029921_13": "c-14",
+            "c-15_1754928029921_14": "c-15",
+            "c-16_1754928029921_15": "c-16",
+            "c-17_1754928029921_16": "c-17",
+            "c-18_1754928029921_17": "c-18",
+            "c-19_1754928029921_18": "c-19",
+            "c-20_1754928029921_19": "c-20",
+            "c-21_1754928029921_20": "c-21",
+            "c-22_1754928029921_21": "c-22",
+            "c-23_1754928029921_22": "c-23",
+            "c-24_1754928029921_23": "c-24",
+            "h-1_1754928029921_24": "h-1",
+            "h-2_1754928029921_25": "h-2",
+            "h-3_1754928029921_26": "h-3",
+            "h-9_1754928029921_27": "h-9",
+            "sp-2_1754928029921_28": "sp-2",
+            "sp-3_1754928029921_29": "sp-3",
+            "c-11_1754928041861_10": "c-11",
+            "c-9_1754928041861_8": "c-9",
+            "c-12_1754928041861_11": "c-12",
+            "c-8_1754928041861_7": "c-8",
+            "sp-2_1754928041861_28": "sp-2",
+            "c-21_1754928041861_20": "c-21",
+            "c-17_1754928041861_16": "c-17",
+            "c-23_1754928041861_22": "c-23",
+            "c-14_1754928041861_13": "c-14",
+            "c-1_1754928041861_0": "c-1",
+            "c-13_1754928041861_12": "c-13",
+            "c-18_1754928041861_17": "c-18",
+            "h-2_1754928041861_25": "h-2",
+            "c-5_1754928041861_4": "c-5",
+            "c-10_1754928041861_9": "c-10",
+            "c-7_1754928041861_6": "c-7",
+            "c-16_1754928041861_15": "c-16",
+            "h-3_1754928041861_26": "h-3",
+            "c-4_1754928041861_3": "c-4",
+            "c-3_1754928041861_2": "c-3",
+            "sp-3_1754928041861_29": "sp-3",
+            "c-22_1754928041861_21": "c-22",
+            "c-20_1754928041861_19": "c-20",
+            "c-6_1754928041861_5": "c-6",
+            "c-19_1754928041861_18": "c-19",
+            "c-24_1754928041861_23": "c-24",
+            "c-15_1754928041861_14": "c-15",
+            "c-2_1754928041861_1": "c-2",
+            "h-9_1754928041861_27": "h-9",
+            "h-1_1754928041861_24": "h-1"
+          },
+          "handDetails": [
+            {
+              "uid": "c-11_1754928041861_10",
+              "id": "c-11",
+              "name": "伊桑·邵川Ethan Shaortran(Doge 六子）",
+              "cardType": "character",
+              "gameType": "愛國者",
+              "power": 50,
+              "traits": [
+                "平民"
+              ],
+              "description": "",
+              "rarity": "common",
+              "effects": {
+                "description": "",
+                "rules": []
+              }
+            },
+            {
+              "uid": "c-9_1754928041861_8",
+              "id": "c-9",
+              "name": "艾利茲(Marko Elez doge) (Doge 六子）",
+              "cardType": "character",
+              "gameType": "自由",
+              "power": 30,
+              "traits": [],
+              "description": "當這個卡登場時，可以從自己的卡組上面查看4張卡片，自由選出一張卡加進手牌，其餘放到卡組之下。",
+              "rarity": "rare",
+              "effects": {
+                "description": "當這個卡登場時，可以從自己的卡組上面查看4張卡片，自由選出一張卡加進手牌，其餘放到卡組之下。",
+                "rules": [
+                  {
+                    "id": "elijah_search",
+                    "type": "triggered",
+                    "trigger": {
+                      "event": "onSummon",
+                      "conditions": []
+                    },
+                    "target": {
+                      "owner": "self",
+                      "zones": [],
+                      "filters": []
+                    },
+                    "effect": {
+                      "type": "searchCard",
+                      "searchCount": 4,
+                      "selectCount": 1,
+                      "destination": "hand",
+                      "filters": []
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "uid": "c-12_1754928041861_11",
+              "id": "c-12",
+              "name": "盧克·法里托Luke Farritor(Doge 六子）",
+              "cardType": "character",
+              "gameType": "自由",
+              "power": 30,
+              "traits": [],
+              "description": "當這個卡登場時，可以從自己的卡組上面查看7張卡片，選出一張HELP卡打出到HELP卡區，其餘放到卡組之下。",
+              "rarity": "rare",
+              "effects": {
+                "description": "當這個卡登場時，可以從自己的卡組上面查看7張卡片，選出一張HELP卡打出到HELP卡區，其餘放到卡組之下。",
+                "rules": [
+                  {
+                    "id": "luke_help_search",
+                    "type": "triggered",
+                    "trigger": {
+                      "event": "onSummon",
+                      "conditions": []
+                    },
+                    "target": {
+                      "owner": "self",
+                      "zones": [],
+                      "filters": []
+                    },
+                    "effect": {
+                      "type": "searchCard",
+                      "searchCount": 7,
+                      "selectCount": 1,
+                      "destination": "helpZone",
+                      "filters": [
+                        {
+                          "type": "cardType",
+                          "value": "help"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "uid": "c-8_1754928041861_7",
+              "id": "c-8",
+              "name": "馬斯克 (Father Of Doge)",
+              "cardType": "character",
+              "gameType": "自由",
+              "power": 80,
+              "traits": [
+                "富商",
+                "Doge"
+              ],
+              "description": "",
+              "rarity": "epic",
+              "effects": {
+                "description": "",
+                "rules": []
+              }
+            },
+            {
+              "uid": "sp-2_1754928041861_28",
+              "id": "sp-2",
+              "name": "減息周期",
+              "cardType": "sp",
+              "power": 0,
+              "traits": [],
+              "description": "我方場上全部角色卡，原能力值 +30",
+              "effects": {
+                "description": "我方場上全部角色卡，原能力值 +30",
+                "rules": [
+                  {
+                    "id": "rate_cut_boost",
+                    "type": "continuous",
+                    "trigger": {
+                      "event": "always",
+                      "conditions": []
+                    },
+                    "target": {
+                      "owner": "self",
+                      "zones": [
+                        "top",
+                        "left",
+                        "right"
+                      ],
+                      "filters": []
+                    },
+                    "effect": {
+                      "type": "powerBoost",
+                      "value": 30
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "uid": "c-21_1754928041861_20",
+              "id": "c-21",
+              "name": "奧巴馬",
+              "cardType": "character",
+              "gameType": "左翼",
+              "power": 80,
+              "traits": [
+                "Deep State"
+              ],
+              "description": "玩家指定我方場上其中一張角色卡，原能力值+50",
+              "rarity": "epic",
+              "effects": {
+                "description": "玩家指定我方場上其中一張角色卡，原能力值+50",
+                "rules": [
+                  {
+                    "id": "obama_single_boost",
+                    "type": "continuous",
+                    "trigger": {
+                      "event": "always",
+                      "conditions": []
+                    },
+                    "target": {
+                      "owner": "self",
+                      "zones": [
+                        "top",
+                        "left",
+                        "right"
+                      ],
+                      "targetCount": 1,
+                      "filters": []
+                    },
+                    "effect": {
+                      "type": "powerBoost",
+                      "value": 50
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "uid": "c-17_1754928041861_16",
+              "id": "c-17",
+              "name": "貝索斯",
+              "cardType": "character",
+              "gameType": "經濟",
+              "power": 60,
+              "traits": [
+                "富商"
+              ],
+              "description": "",
+              "rarity": "rare",
+              "effects": {
+                "description": "",
+                "rules": []
+              }
+            },
+            {
+              "uid": "c-23_1754928041861_22",
+              "id": "c-23",
+              "name": "巴倫·川普 Barron Trump",
+              "cardType": "character",
+              "gameType": "右翼",
+              "power": 50,
+              "traits": [
+                "特朗普家族"
+              ],
+              "description": "",
+              "rarity": "rare",
+              "effects": {
+                "description": "",
+                "rules": []
+              }
+            }
+          ]
+        },
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0,
+        "isReady": false,
+        "fieldEffects": {
+          "zoneRestrictions": {
+            "top": [
+              "自由",
+              "經濟"
+            ],
+            "left": [
+              "左翼",
+              "自由"
+            ],
+            "right": [
+              "右翼",
+              "自由"
+            ]
+          },
+          "activeEffects": [
+            {
+              "effectId": "s-3_1754928029921_2_powerBoost",
+              "source": "s-3_1754928029921_2",
+              "sourcePlayerId": "playerId_1",
+              "type": "powerBoost",
+              "target": {
+                "scope": "SELF",
+                "zones": [
+                  "top",
+                  "left",
+                  "right"
+                ]
+              },
+              "value": 50
+            },
+            {
+              "effectId": "s-3_1754928029921_2_powerBoost",
+              "source": "s-3_1754928029921_2",
+              "sourcePlayerId": "playerId_1",
+              "type": "powerBoost",
+              "target": {
+                "scope": "SELF",
+                "zones": [
+                  "top",
+                  "left",
+                  "right"
+                ]
+              },
+              "value": 20
+            }
+          ],
+          "specialEffects": {},
+          "calculatedPowers": {},
+          "disabledCards": [],
+          "victoryPointModifiers": 0
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "playerId_2",
+        "deck": {
+          "currentLeaderIdx": 0,
+          "leader": [
+            "s-3_1754928029922_2",
+            "s-5_1754928029922_0",
+            "s-6_1754928029922_1",
+            "s-2_1754928029922_3"
+          ],
+          "hand": [
+            "c-20_1754928044734_21",
+            "c-15_1754928044734_19",
+            "c-24_1754928044734_10",
+            "c-7_1754928044734_1",
+            "h-1_1754928044734_22",
+            "c-21_1754928044734_9",
+            "c-19_1754928044734_8"
+          ],
+          "mainDeck": [
+            "c-8_1754928044734_4",
+            "c-18_1754928044734_7",
+            "c-6_1754928044734_16",
+            "h-15_1754928044734_25",
+            "c-1_1754928044734_0",
+            "c-23_1754928044734_3",
+            "c-2_1754928044734_2",
+            "c-16_1754928044734_6",
+            "h-13_1754928044734_24",
+            "c-17_1754928044734_20",
+            "c-25_1754928044734_11",
+            "sp-2_1754928044734_26",
+            "c-27_1754928044734_12",
+            "c-28_1754928044734_17",
+            "c-3_1754928044734_13",
+            "c-5_1754928044734_15",
+            "c-14_1754928044734_5",
+            "c-4_1754928044734_14",
+            "h-11_1754928044734_23",
+            "c-26_1754928044734_18",
+            "sp-10_1754928044734_27"
+          ],
+          "leaderMapping": {
+            "s-5_1754928029922_0": "s-5",
+            "s-6_1754928029922_1": "s-6",
+            "s-3_1754928029922_2": "s-3",
+            "s-2_1754928029922_3": "s-2"
+          },
+          "cardMapping": {
+            "c-1_1754928029922_0": "c-1",
+            "c-7_1754928029922_1": "c-7",
+            "c-2_1754928029922_2": "c-2",
+            "c-23_1754928029922_3": "c-23",
+            "c-8_1754928029922_4": "c-8",
+            "c-14_1754928029922_5": "c-14",
+            "c-16_1754928029922_6": "c-16",
+            "c-18_1754928029922_7": "c-18",
+            "c-19_1754928029922_8": "c-19",
+            "c-21_1754928029922_9": "c-21",
+            "c-24_1754928029922_10": "c-24",
+            "c-25_1754928029922_11": "c-25",
+            "c-27_1754928029922_12": "c-27",
+            "c-3_1754928029922_13": "c-3",
+            "c-4_1754928029922_14": "c-4",
+            "c-5_1754928029922_15": "c-5",
+            "c-6_1754928029922_16": "c-6",
+            "c-28_1754928029922_17": "c-28",
+            "c-26_1754928029922_18": "c-26",
+            "c-15_1754928029922_19": "c-15",
+            "c-17_1754928029922_20": "c-17",
+            "c-20_1754928029922_21": "c-20",
+            "h-1_1754928029922_22": "h-1",
+            "h-11_1754928029922_23": "h-11",
+            "h-13_1754928029922_24": "h-13",
+            "h-15_1754928029922_25": "h-15",
+            "sp-2_1754928029922_26": "sp-2",
+            "sp-10_1754928029922_27": "sp-10",
+            "c-20_1754928044734_21": "c-20",
+            "c-15_1754928044734_19": "c-15",
+            "c-24_1754928044734_10": "c-24",
+            "c-7_1754928044734_1": "c-7",
+            "h-1_1754928044734_22": "h-1",
+            "c-21_1754928044734_9": "c-21",
+            "c-19_1754928044734_8": "c-19",
+            "c-8_1754928044734_4": "c-8",
+            "c-18_1754928044734_7": "c-18",
+            "c-6_1754928044734_16": "c-6",
+            "h-15_1754928044734_25": "h-15",
+            "c-1_1754928044734_0": "c-1",
+            "c-23_1754928044734_3": "c-23",
+            "c-2_1754928044734_2": "c-2",
+            "c-16_1754928044734_6": "c-16",
+            "h-13_1754928044734_24": "h-13",
+            "c-17_1754928044734_20": "c-17",
+            "c-25_1754928044734_11": "c-25",
+            "sp-2_1754928044734_26": "sp-2",
+            "c-27_1754928044734_12": "c-27",
+            "c-28_1754928044734_17": "c-28",
+            "c-3_1754928044734_13": "c-3",
+            "c-5_1754928044734_15": "c-5",
+            "c-14_1754928044734_5": "c-14",
+            "c-4_1754928044734_14": "c-4",
+            "h-11_1754928044734_23": "h-11",
+            "c-26_1754928044734_18": "c-26",
+            "sp-10_1754928044734_27": "sp-10"
+          },
+          "handDetails": [
+            {
+              "uid": "c-20_1754928044734_21",
+              "id": "c-20",
+              "name": "巴飛特",
+              "cardType": "character",
+              "gameType": "經濟",
+              "power": 70,
+              "traits": [
+                "富商"
+              ],
+              "description": "玩家指定我方場上其中一張有富商特徵角色卡，原能力值加 +50",
+              "rarity": "epic",
+              "effects": {
+                "description": "玩家指定我方場上其中一張有富商特徵角色卡，原能力值加 +50",
+                "rules": [
+                  {
+                    "id": "buffett_single_boost",
+                    "type": "continuous",
+                    "trigger": {
+                      "event": "always",
+                      "conditions": []
+                    },
+                    "target": {
+                      "owner": "self",
+                      "zones": [
+                        "top",
+                        "left",
+                        "right"
+                      ],
+                      "targetCount": 1,
+                      "filters": [
+                        {
+                          "type": "trait",
+                          "value": "富商"
+                        }
+                      ]
+                    },
+                    "effect": {
+                      "type": "powerBoost",
+                      "value": 50
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "uid": "c-15_1754928044734_19",
+              "id": "c-15",
+              "name": "Tik Tok難民",
+              "cardType": "character",
+              "gameType": "自由",
+              "power": 50,
+              "traits": [
+                "平民"
+              ],
+              "description": "",
+              "rarity": "common",
+              "effects": {
+                "description": "",
+                "rules": []
+              }
+            },
+            {
+              "uid": "c-24_1754928044734_10",
+              "id": "c-24",
+              "name": "佩洛西",
+              "cardType": "character",
+              "gameType": "經濟",
+              "power": 60,
+              "traits": [
+                "富商"
+              ],
+              "description": "",
+              "rarity": "rare",
+              "effects": {
+                "description": "",
+                "rules": []
+              }
+            },
+            {
+              "uid": "c-7_1754928044734_1",
+              "id": "c-7",
+              "name": "特朗普(天選之人)",
+              "cardType": "character",
+              "gameType": "愛國者",
+              "power": 100,
+              "traits": [
+                "特朗普家族"
+              ],
+              "description": "",
+              "rarity": "legendary",
+              "effects": {
+                "description": "",
+                "rules": []
+              }
+            },
+            {
+              "uid": "h-1_1754928044734_22",
+              "id": "h-1",
+              "name": "Deep State",
+              "cardType": "help",
+              "power": 0,
+              "traits": [],
+              "description": "選擇對方場上的一張SP卡或HELP卡，立即移除該卡的效果，並使其未來無效。",
+              "effects": {
+                "description": "選擇對方場上的一張SP卡或HELP卡，立即移除該卡的效果，並使其未來無效。",
+                "rules": [
+                  {
+                    "id": "deep_state_neutralize",
+                    "type": "triggered",
+                    "trigger": {
+                      "event": "onPlay",
+                      "conditions": []
+                    },
+                    "target": {
+                      "owner": "opponent",
+                      "zones": [
+                        "help",
+                        "sp"
+                      ],
+                      "filters": [],
+                      "requiresSelection": true,
+                      "selectCount": 1
+                    },
+                    "effect": {
+                      "type": "neutralizeEffect",
+                      "value": true,
+                      "undoEffect": true
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "uid": "c-21_1754928044734_9",
+              "id": "c-21",
+              "name": "奧巴馬",
+              "cardType": "character",
+              "gameType": "左翼",
+              "power": 80,
+              "traits": [
+                "Deep State"
+              ],
+              "description": "玩家指定我方場上其中一張角色卡，原能力值+50",
+              "rarity": "epic",
+              "effects": {
+                "description": "玩家指定我方場上其中一張角色卡，原能力值+50",
+                "rules": [
+                  {
+                    "id": "obama_single_boost",
+                    "type": "continuous",
+                    "trigger": {
+                      "event": "always",
+                      "conditions": []
+                    },
+                    "target": {
+                      "owner": "self",
+                      "zones": [
+                        "top",
+                        "left",
+                        "right"
+                      ],
+                      "targetCount": 1,
+                      "filters": []
+                    },
+                    "effect": {
+                      "type": "powerBoost",
+                      "value": 50
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "uid": "c-19_1754928044734_8",
+              "id": "c-19",
+              "name": "比爾蓋茨 Bill gates",
+              "cardType": "character",
+              "gameType": "經濟",
+              "power": 70,
+              "traits": [
+                "富商"
+              ],
+              "description": "我方場上全部擁有富商特徵的角色卡 原能力值加 +10",
+              "rarity": "epic",
+              "effects": {
+                "description": "我方場上全部擁有富商特徵的角色卡 原能力值加 +10",
+                "rules": [
+                  {
+                    "id": "gates_rich_boost",
+                    "type": "continuous",
+                    "trigger": {
+                      "event": "always",
+                      "conditions": []
+                    },
+                    "target": {
+                      "owner": "self",
+                      "zones": [
+                        "top",
+                        "left",
+                        "right"
+                      ],
+                      "filters": [
+                        {
+                          "type": "trait",
+                          "value": "富商"
+                        }
+                      ]
+                    },
+                    "effect": {
+                      "type": "powerBoost",
+                      "value": 10
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "redraw": 1,
+        "turnAction": [],
+        "playerPoint": 0,
+        "isReady": false,
+        "fieldEffects": {
+          "zoneRestrictions": {
+            "top": [
+              "自由",
+              "經濟"
+            ],
+            "left": [
+              "左翼",
+              "自由"
+            ],
+            "right": [
+              "右翼",
+              "自由"
+            ]
+          },
+          "activeEffects": [
+            {
+              "effectId": "s-3_1754928029922_2_powerBoost",
+              "source": "s-3_1754928029922_2",
+              "sourcePlayerId": "playerId_2",
+              "type": "powerBoost",
+              "target": {
+                "scope": "SELF",
+                "zones": [
+                  "top",
+                  "left",
+                  "right"
+                ]
+              },
+              "value": 50
+            },
+            {
+              "effectId": "s-3_1754928029922_2_powerBoost",
+              "source": "s-3_1754928029922_2",
+              "sourcePlayerId": "playerId_2",
+              "type": "powerBoost",
+              "target": {
+                "scope": "SELF",
+                "zones": [
+                  "top",
+                  "left",
+                  "right"
+                ]
+              },
+              "value": 20
+            }
+          ],
+          "specialEffects": {},
+          "calculatedPowers": {},
+          "disabledCards": [],
+          "victoryPointModifiers": 0
+        }
+      }
+    },
+    "zones": {
+      "playerId_1": {
+        "leader": [
+          {
+            "cardUid": "s-3_1754928029921_2",
+            "cardId": "s-3",
+            "cardData": {
+              "id": "s-3",
+              "name": "馬斯克",
+              "cardType": "leader",
+              "gameType": "自由",
+              "initialPoint": 91,
+              "level": 6,
+              "rarity": "epic",
+              "zoneCompatibility": {
+                "top": [
+                  "自由",
+                  "經濟"
+                ],
+                "left": [
+                  "左翼",
+                  "自由"
+                ],
+                "right": [
+                  "右翼",
+                  "自由"
+                ]
+              },
+              "effects": {
+                "description": "全部召喚出來的角色擁有自由屬性能力值 +50。全部召喚出來的角色如擁有Doge在角色名字，能力值 再+20",
+                "rules": [
+                  {
+                    "id": "musk_freedom_boost",
+                    "type": "continuous",
+                    "trigger": {
+                      "event": "always",
+                      "conditions": []
+                    },
+                    "target": {
+                      "owner": "self",
+                      "zones": [
+                        "top",
+                        "left",
+                        "right"
+                      ],
+                      "filters": [
+                        {
+                          "type": "gameType",
+                          "value": "自由"
+                        }
+                      ]
+                    },
+                    "effect": {
+                      "type": "powerBoost",
+                      "value": 50
+                    }
+                  },
+                  {
+                    "id": "musk_doge_boost",
+                    "type": "continuous",
+                    "trigger": {
+                      "event": "always",
+                      "conditions": []
+                    },
+                    "target": {
+                      "owner": "self",
+                      "zones": [
+                        "top",
+                        "left",
+                        "right"
+                      ],
+                      "filters": [
+                        {
+                          "type": "nameContains",
+                          "value": "Doge"
+                        }
+                      ]
+                    },
+                    "effect": {
+                      "type": "powerBoost",
+                      "value": 20
+                    }
+                  }
+                ]
+              }
+            },
+            "isFaceDown": false,
+            "placedAt": 1754928029930,
+            "placedBy": "playerId_1"
+          }
+        ],
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      },
+      "playerId_2": {
+        "leader": [
+          {
+            "cardUid": "s-3_1754928029922_2",
+            "cardId": "s-3",
+            "cardData": {
+              "id": "s-3",
+              "name": "馬斯克",
+              "cardType": "leader",
+              "gameType": "自由",
+              "initialPoint": 91,
+              "level": 6,
+              "rarity": "epic",
+              "zoneCompatibility": {
+                "top": [
+                  "自由",
+                  "經濟"
+                ],
+                "left": [
+                  "左翼",
+                  "自由"
+                ],
+                "right": [
+                  "右翼",
+                  "自由"
+                ]
+              },
+              "effects": {
+                "description": "全部召喚出來的角色擁有自由屬性能力值 +50。全部召喚出來的角色如擁有Doge在角色名字，能力值 再+20",
+                "rules": [
+                  {
+                    "id": "musk_freedom_boost",
+                    "type": "continuous",
+                    "trigger": {
+                      "event": "always",
+                      "conditions": []
+                    },
+                    "target": {
+                      "owner": "self",
+                      "zones": [
+                        "top",
+                        "left",
+                        "right"
+                      ],
+                      "filters": [
+                        {
+                          "type": "gameType",
+                          "value": "自由"
+                        }
+                      ]
+                    },
+                    "effect": {
+                      "type": "powerBoost",
+                      "value": 50
+                    }
+                  },
+                  {
+                    "id": "musk_doge_boost",
+                    "type": "continuous",
+                    "trigger": {
+                      "event": "always",
+                      "conditions": []
+                    },
+                    "target": {
+                      "owner": "self",
+                      "zones": [
+                        "top",
+                        "left",
+                        "right"
+                      ],
+                      "filters": [
+                        {
+                          "type": "nameContains",
+                          "value": "Doge"
+                        }
+                      ]
+                    },
+                    "effect": {
+                      "type": "powerBoost",
+                      "value": 20
+                    }
+                  }
+                ]
+              }
+            },
+            "isFaceDown": false,
+            "placedAt": 1754928029931,
+            "placedBy": "playerId_2"
+          }
+        ],
+        "top": [],
+        "left": [],
+        "right": [],
+        "help": [],
+        "sp": []
+      }
+    },
+    "fieldEffects": {},
+    "neutralizationHistory": [],
+    "gameEvents": [
+      {
+        "id": "event_1754928022170_1",
+        "type": "GAME_CREATED",
+        "data": {
+          "gameId": "8c4e6be9-3c57-48d4-b011-8a14ee1679c1",
+          "createdBy": "playerId_1",
+          "phase": "WAITING_FOR_PLAYERS",
+          "timestamp": 1754928022170
+        },
+        "timestamp": 1754928022170,
+        "expiresAt": 1754928025170,
+        "frontendProcessed": false,
+        "requireFrontendAcknowledgment": false
+      },
+      {
+        "id": "event_1754928029929_2",
+        "type": "PHASE_CHANGE",
+        "data": {
+          "oldPhase": "WAITING_FOR_PLAYERS",
+          "newPhase": "BOTH_JOINED",
+          "timestamp": 1754928029929
+        },
+        "timestamp": 1754928029929,
+        "expiresAt": 1754928032929,
+        "frontendProcessed": false,
+        "requireFrontendAcknowledgment": false
+      },
+      {
+        "id": "event_1754928029929_3",
+        "type": "PLAYER_JOINED",
+        "data": {
+          "playerId": "playerId_2",
+          "roomStatus": "BOTH_JOINED",
+          "readyForStart": true
+        },
+        "timestamp": 1754928029929,
+        "expiresAt": 1754928032929,
+        "frontendProcessed": false,
+        "requireFrontendAcknowledgment": false
+      },
+      {
+        "id": "event_1754928029930_4",
+        "type": "PHASE_CHANGE",
+        "data": {
+          "oldPhase": "BOTH_JOINED",
+          "newPhase": "REDRAW_PHASE",
+          "timestamp": 1754928029930
+        },
+        "timestamp": 1754928029930,
+        "expiresAt": 1754928032930,
+        "frontendProcessed": false,
+        "requireFrontendAcknowledgment": false
+      },
+      {
+        "id": "event_1754928029931_5",
+        "type": "GAME_STARTED",
+        "data": {
+          "players": [
+            "playerId_1",
+            "playerId_2"
+          ],
+          "firstPlayer": "playerId_1",
+          "leaderRevealed": {
+            "playerId_1": {
+              "cardId": "s-3",
+              "name": "馬斯克",
+              "initialPoint": 91
+            },
+            "playerId_2": {
+              "cardId": "s-3",
+              "name": "馬斯克",
+              "initialPoint": 91
+            }
+          }
+        },
+        "timestamp": 1754928029931,
+        "expiresAt": 1754928032931,
+        "frontendProcessed": false,
+        "requireFrontendAcknowledgment": false
+      },
+      {
+        "id": "event_1754928029931_6",
+        "type": "INITIAL_HAND_DEALT",
+        "data": {
+          "playerId": "playerId_1",
+          "handSize": 7
+        },
+        "timestamp": 1754928029931,
+        "expiresAt": 1754928032931,
+        "frontendProcessed": false,
+        "requireFrontendAcknowledgment": false
+      },
+      {
+        "id": "event_1754928029931_7",
+        "type": "INITIAL_HAND_DEALT",
+        "data": {
+          "playerId": "playerId_2",
+          "handSize": 7
+        },
+        "timestamp": 1754928029931,
+        "expiresAt": 1754928032931,
+        "frontendProcessed": false,
+        "requireFrontendAcknowledgment": false
+      },
+      {
+        "id": "event_1754928029936_8",
+        "type": "PLAYER_JOINED",
+        "data": {
+          "playerId": "playerId_2",
+          "roomStatus": "BOTH_JOINED",
+          "readyForStart": true
+        },
+        "timestamp": 1754928029936,
+        "expiresAt": 1754928032936,
+        "frontendProcessed": false,
+        "requireFrontendAcknowledgment": false
+      },
+      {
+        "id": "event_1754928041864_9",
+        "type": "PLAYER_READY",
+        "data": {
+          "playerId": "playerId_1",
+          "redrawRequested": true
+        },
+        "timestamp": 1754928041864,
+        "expiresAt": 1754928044864,
+        "frontendProcessed": false,
+        "requireFrontendAcknowledgment": false
+      },
+      {
+        "id": "event_1754928041864_10",
+        "type": "HAND_REDRAWN",
+        "data": {
+          "playerId": "playerId_1",
+          "newHandSize": 7
+        },
+        "timestamp": 1754928041864,
+        "expiresAt": 1754928044864,
+        "frontendProcessed": false,
+        "requireFrontendAcknowledgment": false
+      },
+      {
+        "id": "event_1754928044736_11",
+        "type": "PLAYER_READY",
+        "data": {
+          "playerId": "playerId_2",
+          "redrawRequested": true
+        },
+        "timestamp": 1754928044736,
+        "expiresAt": 1754928047736,
+        "frontendProcessed": false,
+        "requireFrontendAcknowledgment": false
+      },
+      {
+        "id": "event_1754928044736_12",
+        "type": "HAND_REDRAWN",
+        "data": {
+          "playerId": "playerId_2",
+          "newHandSize": 7
+        },
+        "timestamp": 1754928044736,
+        "expiresAt": 1754928047736,
+        "frontendProcessed": false,
+        "requireFrontendAcknowledgment": false
+      },
+      {
+        "id": "event_1754928044737_13",
+        "type": "GAME_PHASE_START",
+        "data": {
+          "phase": "DRAW_PHASE",
+          "currentPlayer": "playerId_1",
+          "message": "Both players ready - draw phase started!"
+        },
+        "timestamp": 1754928044737,
+        "expiresAt": 1754928047737,
+        "frontendProcessed": false,
+        "requireFrontendAcknowledgment": false
+      },
+      {
+        "id": "event_1754928047755_16",
+        "type": "PHASE_CHANGE",
+        "data": {
+          "oldPhase": "DRAW_PHASE",
+          "newPhase": "MAIN_PHASE",
+          "timestamp": 1754928047755
+        },
+        "timestamp": 1754928047755,
+        "expiresAt": 1754928050755,
+        "frontendProcessed": false,
+        "requireFrontendAcknowledgment": false
+      },
+      {
+        "id": "event_1754928047755_17",
+        "type": "PHASE_CHANGE",
+        "data": {
+          "oldPhase": "DRAW_PHASE",
+          "newPhase": "MAIN_PHASE",
+          "reason": "DRAW_PHASE_COMPLETE acknowledged",
+          "timestamp": 1754928047755
+        },
+        "timestamp": 1754928047755,
+        "expiresAt": 1754928050755,
+        "frontendProcessed": false,
+        "requireFrontendAcknowledgment": false
+      }
+    ],
+    "lastEventId": 17,
+    "playSequence": {
+      "globalSequence": 2,
+      "plays": [
+        {
+          "sequenceId": 1,
+          "playerId": "playerId_1",
+          "cardUid": "s-3_1754928029921_2",
+          "action": "PLAY_LEADER",
+          "zone": "leader"
+        },
+        {
+          "sequenceId": 2,
+          "playerId": "playerId_2",
+          "cardUid": "s-3_1754928029922_2",
+          "action": "PLAY_LEADER",
+          "zone": "leader"
+        }
+      ]
+    },
+    "lastProcessedSequence": 2
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "playerId": "playerId_2",
+      "description": "Player 2 selects c-1 with h-2's setPower effect",
+      "action": {
+        "actionType": "SelectCard",
+        "selectionId": "playerId_2_setPower_1753090836037",
+        "cardIds": [
+          "c-1"
+        ]
+      },
+      "expectedResult": {
+        "success": true,
+        "message": "Card selection completed successfully"
+      }
+    }
+  ],
+  "expectedStateChanges": {
+    "players.playerId_1.fieldEffects.activeEffects.length": 4,
+    "zones.playerId_1.left.0.valueOnField": 0,
+    "players.playerId_1.fieldEffects.calculatedPowers.c-1": 0,
+    "playSequence.plays.length": 5,
+    "players.playerId_1.playerPoint": 0
+  },
+  "validationPoints": [
+    {
+      "cardId": "c-1",
+      "zone": "left",
+      "playerId": "playerId_1",
+      "description": "c-1 power should be set to 0 by h-2's setPower effect",
+      "expectedPower": 0,
+      "powerSource": "h-2 setPower effect overrides all other effects including leader boost (+45) and character boost (+10)"
+    }
+  ],
+  "activeEffectsValidation": {
+    "playerId_1": {
+      "requiredEffects": [
+        {
+          "source": "s-1",
+          "type": "powerBoost",
+          "target": {
+            "scope": "SELF",
+            "gameTypes": [
+              "右翼",
+              "愛國者"
+            ]
+          },
+          "value": 45,
+          "description": "Trump leader power boost for 右翼/愛國者 cards"
+        },
+        {
+          "source": "s-1",
+          "type": "setPower",
+          "target": {
+            "scope": "SELF",
+            "gameTypes": [
+              "經濟"
+            ]
+          },
+          "value": 0,
+          "description": "Trump vs Powell conditional economic card nerf"
+        },
+        {
+          "source": "c-1",
+          "type": "powerBoost",
+          "target": {
+            "scope": "SELF",
+            "traits": [
+              "特朗普家族"
+            ]
+          },
+          "value": 10,
+          "description": "c-1 character effect boosting Trump family cards"
+        },
+        {
+          "source": "h-2",
+          "type": "setPower",
+          "target": {
+            "scope": "OPPONENT",
+            "specificCards": [
+              "c-1"
+            ]
+          },
+          "value": 0,
+          "description": "h-2's MAGA effect setting c-1 power to 0 (NEW - should be added)"
+        }
+      ],
+      "totalEffectsCount": 4
+    }
+  },
+  "playSequenceValidation": {
+    "expectedPlays": 5,
+    "newPlayValidation": {
+      "type": "APPLY_SET_POWER",
+      "playerId": "playerId_2",
+      "targetPlayerId": "playerId_1",
+      "sourceCard": "h-2",
+      "selectedCardIds": [
+        "c-1"
+      ],
+      "powerValue": 0,
+      "description": "setPower effect recorded in play sequence for replay consistency"
+    }
+  },
+  "cardDefinitions": {
+    "c-1": {
+      "id": "c-1",
+      "name": "總統特朗普",
+      "cardType": "character",
+      "gameType": "愛國者",
+      "power": 100,
+      "traits": [
+        "特朗普家族"
+      ],
+      "rarity": "legendary"
+    },
+    "h-2": {
+      "id": "h-2",
+      "name": "Make America Great Again",
+      "cardType": "help",
+      "effects": {
+        "description": "選擇對方一張角色卡，原能力值 變成 0",
+        "rules": [
+          {
+            "id": "maga_nerf",
+            "type": "triggered",
+            "trigger": {
+              "event": "onPlay",
+              "conditions": []
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": [
+                "top",
+                "left",
+                "right"
+              ],
+              "requiresSelection": true,
+              "selectCount": 1,
+              "filters": []
+            },
+            "effect": {
+              "type": "setPower",
+              "value": 0
+            }
+          }
+        ]
+      }
+    },
+    "s-1": {
+      "id": "s-1",
+      "name": "特朗普",
+      "cardType": "leader",
+      "gameType": "右翼",
+      "initialPoint": 110,
+      "level": 7,
+      "rarity": "legendary",
+      "zoneCompatibility": {
+        "top": [
+          "右翼",
+          "自由",
+          "經濟"
+        ],
+        "left": [
+          "右翼",
+          "自由",
+          "愛國者"
+        ],
+        "right": [
+          "右翼",
+          "愛國者",
+          "經濟"
+        ]
+      }
+    },
+    "s-2": {
+      "id": "s-2",
+      "name": "拜登",
+      "cardType": "leader",
+      "gameType": "左翼",
+      "initialPoint": 100,
+      "level": 7,
+      "rarity": "legendary",
+      "zoneCompatibility": {
+        "top": [
+          "左翼",
+          "自由",
+          "經濟",
+          "右翼",
+          "愛國者"
+        ],
+        "left": [
+          "左翼",
+          "自由",
+          "經濟",
+          "右翼",
+          "愛國者"
+        ],
+        "right": [
+          "左翼",
+          "自由",
+          "經濟",
+          "右翼",
+          "愛國者"
+        ]
+      }
+    }
+  },
+  "testNotes": {
+    "purpose": "Validate h-2 Make America Great Again setPower effect with fixed implementation",
+    "basedOnRealGameState": "Created from actual user game environment with pending card selection",
+    "keyValidations": [
+      "Card selection workflow completion",
+      "setPower effect properly recorded in activeEffects",
+      "setPower effect added to playSequence for replay consistency",
+      "Power display synchronization (valueOnField = 0)",
+      "Effect overrides multiple existing power modifiers",
+      "Cross-player effect targeting with specificCards",
+      "Turn progression after card selection"
+    ],
+    "powerCalculationFlow": {
+      "before": {
+        "basePower": 100,
+        "trumpLeaderBoost": 45,
+        "characterBoost": 10,
+        "total": 155,
+        "note": "c-1 benefits from both leader and character power boosts"
+      },
+      "after": {
+        "setPowerEffect": 0,
+        "note": "setPower effect overrides ALL other modifiers (priority)",
+        "total": 0
+      }
+    },
+    "architecturalFixes": {
+      "playSequenceIntegration": "setPower effects now recorded as APPLY_SET_POWER actions",
+      "effectSimulatorSupport": "Added APPLY_SET_POWER case to executePlayUnified method",
+      "replayConsistency": "Effects survive simulateCardPlaySequence calls",
+      "displaySynchronization": "valueOnField updated to match calculated power"
+    },
+    "testCoverage": {
+      "cardSelectionWorkflow": "Complete selection from trigger to completion",
+      "effectPersistence": "Effects survive turn switching and replay",
+      "crossPlayerEffects": "Effect stored in target player's activeEffects",
+      "prioritySystem": "setPower overrides powerBoost effects",
+      "gameStateIntegrity": "All game state properly updated post-selection"
+    },
+    "realWorldScenario": "Based on user's actual game where c-1 power wasn't updating to 0 after h-2 selection"
+  }
+}
