@@ -2384,6 +2384,9 @@ export default class GameScene extends Phaser.Scene {
     });
     this.roomStatusText.setOrigin(0.5);
     
+    // Set high depth to ensure status messages appear above all game elements
+    this.roomStatusText.setDepth(2000);
+    
     // Auto-hide after 5 seconds
     this.time.delayedCall(5000, () => {
       if (this.roomStatusText) {
@@ -2410,6 +2413,9 @@ export default class GameScene extends Phaser.Scene {
       strokeThickness: 2
     });
     this.errorMessageText.setOrigin(0.5);
+    
+    // Set high depth to ensure error messages appear above all game elements (leader cards use depth 1001)
+    this.errorMessageText.setDepth(2000);
     
     // Auto-hide after 4 seconds
     this.time.delayedCall(4000, () => {
