@@ -551,7 +551,7 @@ export interface EffectDelta {
 }
 
 export interface CalculatedEffect {
-    type: 'ZONE_RESTRICTION' | 'POWER_BOOST' | 'POWER_NULLIFICATION' | 'CARD_DISABLE' | 'SPECIAL_EFFECT';
+    type: 'ZONE_RESTRICTION' | 'POWER_BOOST' | 'POWER_NULLIFICATION' | 'CARD_DISABLE' | 'SPECIAL_EFFECT' | 'DRAW_CARDS' | 'SEARCH_CARD';
     sourceCardUid: string;
     sourcePlayerId: string;
     targetPlayerId: string;
@@ -1133,6 +1133,10 @@ export class GameEnvironment {
     // Event system
     public gameEvents?: any[];
     public lastEventId?: number;
+    
+    // Card selection system
+    public pendingPlayerAction?: any;
+    public pendingCardSelections?: { [selectionId: string]: any };
     
     // Incremental effect processing
     public lastProcessedSequence: number;

@@ -76,29 +76,29 @@ export class IncrementalEffectManager {
         console.log(`▶️ Processing effects for ${play.action} ${play.cardUid} by ${play.playerId}`);
         
         // Determine what effects this card should produce based on its properties and game state
-        const derivedEffects = await this.calculateCardGameEffects(gameEnv, play);
-        console.log("derived ",JSON.stringify(derivedEffects))
-        if (derivedEffects.length === 0) {
+        const calculatedEffects = await this.calculateCardGameEffects(gameEnv, play);
+        console.log("calculated effects: ", JSON.stringify(calculatedEffects))
+        if (calculatedEffects.length === 0) {
             console.log(`   ℹ️ No effects to apply for card ${play.cardUid}`);
             return;
         }
         
         // Apply effects incrementally to existing state
-        await this.applyEffectDelta(gameEnv, derivedEffects);
+        await this.applyEffectDelta(gameEnv, calculatedEffects);
         
         // Store delta for potential rollback
         const effectDelta: EffectDelta = {
             sequenceId: play.sequenceId,
             cardUid: play.cardUid,
             playerId: play.playerId,
-            effects: derivedEffects,
-            affectedPlayers: this.getAffectedPlayers(derivedEffects),
+            effects: calculatedEffects,
+            affectedPlayers: this.getAffectedPlayers(calculatedEffects),
             timestamp: Date.now()
         };
         
         this.effectDeltas.set(play.sequenceId, effectDelta);
         
-        console.log(`   ✅ Applied ${derivedEffects.length} effects for card ${play.cardUid}`);
+        console.log(`   ✅ Applied ${calculatedEffects.length} effects for card ${play.cardUid}`);
     }
 
     /**
