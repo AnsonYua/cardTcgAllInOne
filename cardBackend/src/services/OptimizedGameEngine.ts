@@ -30,7 +30,7 @@ import {
 // Define local interfaces since removed from GameEnvironment
 interface AvailableAction {
     type: 'PLAY_CARD' | 'PLAY_CARD_FACE_DOWN';
-    cardId: string;
+    cardUID: string;
     validZones: ZoneType[];
     restrictions: string[];
 }
@@ -130,12 +130,12 @@ export class OptimizedGameEngine {
     public async playCard(
         gameEnv: GameEnvironment, 
         playerId: string, 
-        cardId: string, 
+        cardUID: string, 
         zone: ZoneType, 
         faceDown: boolean = false
     ): Promise<GameResult> {
         const startTime = Date.now();
-        console.log(`🎮 Playing card ${cardId} in ${zone} (faceDown: ${faceDown}) by ${playerId}`);
+        console.log(`🎮 Playing card ${cardUID} in ${zone} (faceDown: ${faceDown}) by ${playerId}`);
 
         try {
             // STEP 0: TURN AUTHORIZATION - Check if it's player's turn
@@ -148,8 +148,8 @@ export class OptimizedGameEngine {
                 };
             }
 
-            // STEP 1: INSTANT VALIDATION - No simulation needed
-            const validation = await this.validateCardPlayInstant(gameEnv, playerId, cardId, zone, faceDown);
+            // STEP 1: FIELD EFFECTS VALIDATION - No simulation needed
+            const validation = await this.validateCardPlacementWithFieldEffects(gameEnv, playerId, cardUID, zone, faceDown);
             if (!validation.isValid) {
                 this.addErrorEvent(gameEnv, 'VALIDATION_ERROR', validation.error!, playerId);
                 return { 
@@ -159,16 +159,16 @@ export class OptimizedGameEngine {
             }
 
             // STEP 2: EXECUTE CARD PLAY - Update game state
-            const playAction = await this.executeCardPlay(gameEnv, playerId, cardId, zone, faceDown);
+            const playAction = await this.executeCardPlay(gameEnv, playerId, cardUID, zone, faceDown);
             
             // STEP 3: ADD GAME EVENTS - Frontend integration
-            this.addSuccessEvents(gameEnv, playerId, cardId, zone, faceDown);
+            this.addSuccessEvents(gameEnv, playerId, cardUID, zone, faceDown);
 
             // STEP 4: INCREMENTAL PROCESSING - Only process new effects
             await this.incrementalManager.processNewEffects(gameEnv);
 
             // STEP 5: HANDLE CARD EFFECTS - Check for search effects requiring player selection
-            const effectResult = await this.processCardEffects(gameEnv, playerId, cardId);
+            const effectResult = await this.processCardEffects(gameEnv, playerId, cardUID);
             if (effectResult?.requiresCardSelection) {
                 return { 
                     success: true, 
@@ -219,12 +219,13 @@ export class OptimizedGameEngine {
     }
 
     /**
-     * INSTANT VALIDATION - No simulation required (O(1))
+     * FIELD EFFECTS VALIDATION FOR CARD PLACEMENT - No simulation required (O(1))
+     * Validates card placement against field effects: zone restrictions, special effects, disabled cards
      */
-    private async validateCardPlayInstant(
+    private async validateCardPlacementWithFieldEffects(
         gameEnv: GameEnvironment, 
         playerId: string, 
-        cardId: string, 
+        cardUID: string, 
         zone: ZoneType,
         faceDown: boolean
     ): Promise<ValidationResult> {
@@ -237,8 +238,8 @@ export class OptimizedGameEngine {
         }
 
         // Check if card is in player's hand
-        if (!player.deck.hand.includes(cardId)) {
-            console.log(cardId)
+        if (!player.deck.hand.includes(cardUID)) {
+            console.log(cardUID)
             console.log(JSON.stringify(player.deck.hand))
             console.log("validateCardPlayInstant Card not in hand")
             return { isValid: false, error: 'Card not in hand' };
@@ -250,46 +251,56 @@ export class OptimizedGameEngine {
             return { isValid: false, error: `Zone ${zone} is already occupied` };
         }
 
-        // Get player field effects (single source of truth) or initialize if missing
-        let playerFieldEffects = gameEnv.fieldEffects[playerId];
+        // Get player field effects (single source of truth - gameEnv.players[playerId].fieldEffects ONLY)
+        let playerFieldEffects = (gameEnv as any).players[playerId]?.fieldEffects;
         if (!playerFieldEffects) {
             console.log('Player field effects not found, initializing...');
-            // Initialize field effects for the player
-            gameEnv.fieldEffects[playerId] = {
-                zoneRestrictions: {
-                    top: 'ALL',
-                    left: 'ALL', 
-                    right: 'ALL',
-                    help: 'ALL',
-                    sp: 'ALL'
-                },
-                activeEffects: [],
-                specialEffects: {},
-                calculatedPowers: {},
-                disabledCards: [],
-                victoryPointModifiers: 0
-            };
-            playerFieldEffects = gameEnv.fieldEffects[playerId];
+            // Initialize field effects for the player in the correct location
+            const targetPlayer = (gameEnv as any).players[playerId];
+            if (targetPlayer) {
+                targetPlayer.fieldEffects = {
+                    zoneRestrictions: {
+                        top: 'ALL',
+                        left: 'ALL', 
+                        right: 'ALL',
+                        help: 'ALL',
+                        sp: 'ALL'
+                    },
+                    activeEffects: [],
+                    specialEffects: {},
+                    calculatedPowers: {},
+                    disabledCards: [],
+                    victoryPointModifiers: 0
+                };
+                playerFieldEffects = targetPlayer.fieldEffects;
+                console.log('Initialized field effects for player:', playerId);
+            } else {
+                console.log('Target player not found for field effects initialization');
+                return { isValid: false, error: 'Player not found for field effects' };
+            }
         }
 
         // Face-down cards bypass most restrictions
         if (faceDown) {
-            return await this.validateFaceDownPlacement(gameEnv, playerId, zone);
+            return await this.validateFaceDownPlacement(gameEnv, zone);
         }
-        console.log("card33444 ")
 
-        // Check cached validation first
-        if (this.config.enableCaching) {
-            const canPlace = this.validationCache.canPlaceCard(playerId, cardId, zone);
-            if (canPlace !== undefined) {
-                return { isValid: canPlace };
-            }
+        // PRIORITY 1: Special effects check - Must come first to bypass other restrictions
+        if (playerFieldEffects.specialEffects && playerFieldEffects.specialEffects.zonePlacementFreedom) {
+            return { isValid: true }; // h-5 (失智老人) freedom effect bypasses all restrictions
         }
-        console.log("card33444555 ")
-        // Zone restrictions check using fieldEffects
+
+        // PRIORITY 2: Card-specific restrictions (disabled cards)
+        if (playerFieldEffects.disabledCards && playerFieldEffects.disabledCards.includes(cardUID)) {
+            return { isValid: false, error: 'Card is disabled' };
+        }
+
+        // PRIORITY 3: Zone compatibility restrictions
         const allowedTypes = playerFieldEffects.zoneRestrictions && playerFieldEffects.zoneRestrictions[zone];
         if (allowedTypes && allowedTypes !== 'ALL') {
-            const cardDetails = await this.cardInfoUtils.getCardDetails(cardId);
+            // Extract base card ID from UID (e.g., "c-6_1754930809990_5" -> "c-6")
+            const baseCardId = cardUID.split('_')[0];
+            const cardDetails = await this.cardInfoUtils.getCardDetails(baseCardId);
             if (!cardDetails) {
                 return { isValid: false, error: 'Card details not found' };
             }
@@ -297,21 +308,22 @@ export class OptimizedGameEngine {
             if (Array.isArray(allowedTypes) && !allowedTypes.includes(cardDetails.gameType)) {
                 return { 
                     isValid: false, 
-                    error: `Card type ${cardDetails.gameType} not allowed in ${zone}` 
+                    error: `Card type ${cardDetails.gameType} not allowed in ${zone}. Allowed types: ${allowedTypes.join(', ')}` 
                 };
             }
         }
-        console.log("card33444555666 ")
-        // Special effects check
-        if (playerFieldEffects.specialEffects && playerFieldEffects.specialEffects.zonePlacementFreedom) {
-            return { isValid: true }; // Freedom effect bypasses restrictions
+
+        // PRIORITY 4: Cache validation (optional optimization)
+        if (this.config.enableCaching) {
+            try {
+                const canPlace = this.validationCache.canPlaceCard(playerId, cardUID, zone);
+                if (canPlace !== undefined) {
+                    return { isValid: canPlace };
+                }
+            } catch (cacheError) {
+                // Continue with non-cached validation on cache errors
+            }
         }
-        console.log("card33444555666777 ")
-        // Card-specific restrictions
-        if (playerFieldEffects.disabledCards && playerFieldEffects.disabledCards.includes(cardId)) {
-            return { isValid: false, error: 'Card is disabled' };
-        }
-        console.log("card33444555666777888 ")
         return { isValid: true };
     }
 
@@ -320,7 +332,6 @@ export class OptimizedGameEngine {
      */
     private async validateFaceDownPlacement(
         gameEnv: GameEnvironment, 
-        playerId: string, 
         zone: ZoneType
     ): Promise<ValidationResult> {
         
@@ -350,26 +361,26 @@ export class OptimizedGameEngine {
     private async executeCardPlay(
         gameEnv: GameEnvironment, 
         playerId: string, 
-        cardId: string, 
+        cardUID: string, 
         zone: ZoneType,
         faceDown: boolean
     ): Promise<PlaySequenceAction> {
         
         // Remove card from hand
         const player = gameEnv.players[playerId];
-        const cardIndex = player.deck.hand.indexOf(cardId);
+        const cardIndex = player.deck.hand.indexOf(cardUID);
         if (cardIndex !== -1) {
             player.deck.hand.splice(cardIndex, 1);
         }
 
         // Place card in zone
-        gameEnv.placeCardInZone(playerId, zone, cardId, faceDown);
+        gameEnv.placeCardInZone(playerId, zone, cardUID, faceDown);
 
         // Create play sequence action
         const playAction: PlaySequenceAction = {
             sequenceId: gameEnv.playSequenceManager.getNextSequenceId(),
             playerId,
-            cardUid: cardId,
+            cardUid: cardUID,
             action: faceDown ? ActionType.PLAY_CARD_BACK : ActionType.PLAY_CARD,
             zone,
             isFaceDown: faceDown,
@@ -382,13 +393,13 @@ export class OptimizedGameEngine {
         // Generate game event
         gameEnv.eventManager.addEvent(EventType.CARD_PLAYED, {
             playerId,
-            cardId,
+            cardUID,
             zone,
             faceDown,
             sequenceId: playAction.sequenceId
         });
 
-        console.log(`   📝 Recorded play action: ${playAction.action} ${cardId} in ${zone}`);
+        console.log(`   📝 Recorded play action: ${playAction.action} ${cardUID} in ${zone}`);
 
         return playAction;
     }
@@ -404,8 +415,8 @@ export class OptimizedGameEngine {
         
         // If card affects opponent, invalidate their cache too
         // Extract base card ID from UID for card details lookup
-        const cardId = playAction.cardUid.split('_')[0];
-        const cardDetails = await this.cardInfoUtils.getCardDetails(cardId);
+        const baseCardId = playAction.cardUid.split('_')[0];
+        const cardDetails = await this.cardInfoUtils.getCardDetails(baseCardId);
         if (cardDetails && cardDetails.effects && cardDetails.effects.rules) {
             for (const rule of cardDetails.effects.rules) {
                 if (rule.target.scope === 'OPPONENT') {
@@ -462,13 +473,13 @@ export class OptimizedGameEngine {
         
         if (!player) return actions;
 
-        for (const cardId of player.deck.hand) {
-            const validZones = this.getValidZonesRealtime(gameEnv, playerId, cardId);
+        for (const cardUID of player.deck.hand) {
+            const validZones = this.getValidZonesRealtime(gameEnv, playerId, cardUID);
             
             if (validZones.length > 0) {
                 actions.push({
                     type: 'PLAY_CARD',
-                    cardId,
+                    cardUID,
                     validZones,
                     restrictions: []
                 });
@@ -481,14 +492,14 @@ export class OptimizedGameEngine {
     /**
      * Get valid zones for card in real-time
      */
-    private getValidZonesRealtime(gameEnv: GameEnvironment, playerId: string, cardId: string): ZoneType[] {
+    private getValidZonesRealtime(gameEnv: GameEnvironment, playerId: string, cardUID: string): ZoneType[] {
         if (this.config.enableCaching) {
-            return this.validationCache.getValidZones(playerId, cardId);
+            return this.validationCache.getValidZones(playerId, cardUID);
         }
 
-        // Fallback implementation using fieldEffects
+        // Fallback implementation using fieldEffects (single source of truth)
         const validZones: ZoneType[] = [];
-        const playerFieldEffects = gameEnv.fieldEffects[playerId];
+        const playerFieldEffects = gameEnv.players[playerId]?.fieldEffects;
         
         if (!playerFieldEffects) return validZones;
 
@@ -547,15 +558,15 @@ export class OptimizedGameEngine {
     /**
      * Add success events for card placement
      */
-    private addSuccessEvents(gameEnv: GameEnvironment, playerId: string, cardId: string, zone: ZoneType, faceDown: boolean): void {
+    private addSuccessEvents(gameEnv: GameEnvironment, playerId: string, cardUID: string, zone: ZoneType, faceDown: boolean): void {
         // Get card details for event
-        const cardDetails = this.getCardDetails(cardId);
+        const cardDetails = this.getCardDetails(cardUID);
         
         // Add CARD_PLAYED event
         this.addGameEvent(gameEnv, 'CARD_PLAYED' as EventType, {
             playerId,
             card: {
-                cardId: cardDetails?.id || cardId,
+                cardUID: cardDetails?.id || cardUID,
                 name: cardDetails?.name || 'Unknown Card',
                 cardType: cardDetails?.cardType || 'unknown',
                 power: cardDetails?.power || 0,
@@ -579,7 +590,7 @@ export class OptimizedGameEngine {
     /**
      * Process card effects (placeholder for search effects)
      */
-    private async processCardEffects(gameEnv: GameEnvironment, playerId: string, cardId: string): Promise<any> {
+    private async processCardEffects(gameEnv: GameEnvironment, playerId: string, cardUID: string): Promise<any> {
         // TODO: Implement card effect processing for search effects
         // For now, return null to indicate no special handling needed
         return null;
@@ -669,10 +680,10 @@ export class OptimizedGameEngine {
     /**
      * Get card details (placeholder - should integrate with CardInfoUtils)
      */
-    private getCardDetails(cardId: string): any {
+    private getCardDetails(cardUID: string): any {
         // TODO: Integrate with CardInfoUtils to get proper card details
         // For now, return basic structure
-        const baseId = cardId.split('_')[0];
+        const baseId = cardUID.split('_')[0];
         return {
             id: baseId,
             name: `Card ${baseId}`,
@@ -763,16 +774,20 @@ export class OptimizedGameEngine {
     private exportValidationState(gameEnv: GameEnvironment): any {
         const validation: any = {};
         
-        for (const [playerId, fieldEffects] of Object.entries(gameEnv.fieldEffects)) {
-            validation[playerId] = {
-                zoneRestrictions: fieldEffects.zoneRestrictions,
-                availableActions: this.getAvailableActions(gameEnv, playerId),
-                cardPlacements: this.config.enableCaching ? 
-                    this.exportCardPlacements(playerId) : {},
-                specialEffects: fieldEffects.specialEffects,
-                disabledCards: fieldEffects.disabledCards || [],
-                calculatedPowers: fieldEffects.calculatedPowers || {}
-            };
+        // Use single source of truth: gameEnv.players[].fieldEffects
+        for (const [playerId, player] of Object.entries(gameEnv.players)) {
+            const fieldEffects = player.fieldEffects;
+            if (fieldEffects) {
+                validation[playerId] = {
+                    zoneRestrictions: fieldEffects.zoneRestrictions,
+                    availableActions: this.getAvailableActions(gameEnv, playerId),
+                    cardPlacements: this.config.enableCaching ? 
+                        this.exportCardPlacements(playerId) : {},
+                    specialEffects: fieldEffects.specialEffects,
+                    disabledCards: fieldEffects.disabledCards || [],
+                    calculatedPowers: fieldEffects.calculatedPowers || {}
+                };
+            }
         }
         
         return validation;
@@ -785,8 +800,8 @@ export class OptimizedGameEngine {
         const playerValidationState = this.validationCache.getPlayerValidationState(playerId);
         const placements: any = {};
         
-        for (const [cardId, zoneMap] of playerValidationState.validPlacements) {
-            placements[cardId] = Object.fromEntries(zoneMap);
+        for (const [cardUID, zoneMap] of playerValidationState.validPlacements) {
+            placements[cardUID] = Object.fromEntries(zoneMap);
         }
         
         return placements;

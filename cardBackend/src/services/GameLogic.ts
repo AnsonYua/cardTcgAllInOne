@@ -282,17 +282,17 @@ export class GameLogic {
     }
 
     /**
-     * Play a card using optimized processing
+     * Play a card using optimized processing with comprehensive validation
      * @param gameId - Game ID
      * @param playerId - Player ID
-     * @param cardId - Card ID to play
+     * @param cardUID - Card UID to play (e.g., "c-1_1754551822157_24")
      * @param zone - Zone to place card
      * @param faceDown - Whether to play face down
      * @returns Promise<PlayerActionResult>
      */
-    async playCard(gameId: string, playerId: string, cardId: string, zone: string, faceDown: boolean = false): Promise<PlayerActionResult> {
+    async playCard(gameId: string, playerId: string, cardUID: string, zone: string, faceDown: boolean = false): Promise<PlayerActionResult> {
         try {
-            console.log(`🎮 Playing card ${cardId} in ${zone} for player ${playerId}`);
+            console.log(`🎮 Playing card ${cardUID} in ${zone} for player ${playerId}`);
             
             // Load game environment
             const gameEnv = await this.loadGameFromFile(gameId);
@@ -310,7 +310,7 @@ export class GameLogic {
             }
             
             // Use optimized card play processing
-            const result = await gameEngine.playCard(gameEnv, playerId, cardId, zone as any, faceDown);
+            const result = await gameEngine.playCard(gameEnv, playerId, cardUID, zone as any, faceDown);
             
             if (!result.success) {
                 return {
@@ -322,7 +322,7 @@ export class GameLogic {
             // Save updated game state
             await this.saveGameToFile(gameId, gameEnv);
             
-            console.log(`✅ Card ${cardId} played successfully`);
+            console.log(`✅ Card ${cardUID} played successfully`);
             
             return {
                 success: true,
@@ -728,42 +728,6 @@ export class GameLogic {
     }
 
 
-    // ============ LEGACY COMPATIBILITY METHODS ============
-
-    /**
-     * Legacy method for backward compatibility
-     * Processes player actions using the new TypeScript system
-     */
-    async processPlayerAction(gameId: string, playerId: string, action: any): Promise<PlayerActionResult> {
-        try {
-            // Convert legacy action to new format
-            if (action.type === 'PlayCard') {
-                const zoneMap: { [key: number]: string } = {
-                    1: ZoneType.LEFT,
-                    2: ZoneType.TOP,
-                    3: ZoneType.RIGHT,
-                    4: ZoneType.HELP
-                };
-                
-                const zone = zoneMap[action.field_idx] || 'LEFT';
-                const cardId = action.card_idx; // This should be the actual card ID
-                
-                return this.playCard(gameId, playerId, cardId, zone, false);
-            }
-            
-            return {
-                success: false,
-                error: 'Unknown action type'
-            };
-            
-        } catch (error) {
-            console.error('❌ Error processing player action:', error);
-            return {
-                success: false,
-                error: `Failed to process action: ${error instanceof Error ? error.message : 'Unknown error'}`
-            };
-        }
-    }
 }
 
 // ============ EXPORT SINGLETON ============

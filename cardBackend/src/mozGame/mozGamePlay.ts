@@ -45,10 +45,9 @@ export enum TurnPhase {
 export interface PlayerAction {
     type: string;
     playerId?: string;
-    card_idx?: any;
     field_idx?: number;
     isRedraw?: boolean;
-    cardId?: string;
+    cardUID?: string;  // Modern card identification (replaces cardId and card_idx)
     zone?: string;
     [key: string]: any;
 }
@@ -284,16 +283,23 @@ export class MozGamePlay {
      */
     private async handlePlayCard(gameEnv: GameEnvironment, action: PlayerAction): Promise<GamePlayResult> {
         try {
-            console.log(`🃏 Handling play card: ${action.cardId || action.card_idx}`);
+            console.log(`🃏 Handling play card: ${action.cardUID}`);
             
-            // Extract card and zone information
-            const cardId = action.cardId || action.card_idx;
-            const zone = this.mapFieldIndexToZone(action.field_idx);
+            // Extract card information - only accept cardUID
+            const cardId = action.cardUID;
             
-            if (!cardId || !zone) {
+            if (!cardId) {
                 return {
                     success: false,
-                    error: 'Invalid card or zone specified'
+                    error: 'cardUID is required for play card action'
+                };
+            }
+            const zone = this.mapFieldIndexToZone(action.field_idx);
+            
+            if (!zone) {
+                return {
+                    success: false,
+                    error: 'Invalid zone specified'
                 };
             }
             
@@ -328,13 +334,13 @@ export class MozGamePlay {
      */
     private async handlePlayLeader(gameEnv: GameEnvironment, action: PlayerAction): Promise<GamePlayResult> {
         try {
-            console.log(`👑 Handling play leader: ${action.cardId || action.card_idx}`);
+            console.log(`👑 Handling play leader: ${action.cardUID}`);
             
-            const leaderId = action.cardId || action.card_idx;
+            const leaderId = action.cardUID;
             if (!leaderId) {
                 return {
                     success: false,
-                    error: 'No leader specified'
+                    error: 'cardUID is required for play leader action'
                 };
             }
             

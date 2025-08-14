@@ -41,7 +41,7 @@ interface PlayerRestrictions {
 
 interface AvailableAction {
     type: 'PLAY_CARD' | 'PLAY_CARD_FACE_DOWN';
-    cardId: string;
+    cardUID: string;
     validZones: ZoneType[];
     restrictions: string[];
 }
@@ -103,7 +103,7 @@ export class ValidationCache {
         const cardValidations = new Map<string, Map<ZoneType, boolean>>();
         
         // Get player restrictions from fieldEffects (single source of truth)
-        const playerFieldEffects = gameEnv.fieldEffects[playerId];
+        const playerFieldEffects = gameEnv.players[playerId]?.fieldEffects;
         if (!playerFieldEffects) {
             console.log(`   ⚠️ No field effects found for player ${playerId}`);
             return;
@@ -144,7 +144,7 @@ export class ValidationCache {
                 // Face-up placement
                 availableActions.push({
                     type: 'PLAY_CARD',
-                    cardId,
+                    cardUID: cardId,
                     validZones: validZones,
                     restrictions: []
                 });
@@ -154,7 +154,7 @@ export class ValidationCache {
                 if (faceDownZones.length > 0) {
                     availableActions.push({
                         type: 'PLAY_CARD_FACE_DOWN',
-                        cardId,
+                        cardUID: cardId,
                         validZones: faceDownZones,
                         restrictions: []
                     });
@@ -362,7 +362,7 @@ export class ValidationCache {
         // Remove actions for this card
         const actions = this.actionCache.get(playerId);
         if (actions) {
-            const filteredActions = actions.filter(action => action.cardId !== cardId);
+            const filteredActions = actions.filter(action => action.cardUID !== cardId);
             this.actionCache.set(playerId, filteredActions);
         }
         

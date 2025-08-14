@@ -76,7 +76,7 @@ export class IncrementalEffectManager {
         console.log(`▶️ Processing effects for ${play.action} ${play.cardUid} by ${play.playerId}`);
         
         // Determine what effects this card should produce based on its properties and game state
-        const derivedEffects = await this.deriveCardEffectRules(gameEnv, play);
+        const derivedEffects = await this.calculateCardGameEffects(gameEnv, play);
         console.log("derived ",JSON.stringify(derivedEffects))
         if (derivedEffects.length === 0) {
             console.log(`   ℹ️ No effects to apply for card ${play.cardUid}`);
@@ -102,10 +102,10 @@ export class IncrementalEffectManager {
     }
 
     /**
-     * Derive and determine what effects a card should produce based on its rules and properties
+     * Calculate and determine what game effects a card should produce based on its rules and properties
      * Analyzes card data and game state to resolve the specific effects this card generates
      */
-    private async deriveCardEffectRules(gameEnv: GameEnvironment, play: PlaySequenceAction): Promise<CalculatedEffect[]> {
+    private async calculateCardGameEffects(gameEnv: GameEnvironment, play: PlaySequenceAction): Promise<CalculatedEffect[]> {
         const effects: CalculatedEffect[] = [];
         
         try {
@@ -196,6 +196,7 @@ export class IncrementalEffectManager {
 
     /**
      * Calculate character card effects
+     * Handles: powerBoost, drawCards, searchCard (the 3 actual character effect types)
      */
     private async calculateCharacterEffects(gameEnv: GameEnvironment, play: PlaySequenceAction, cardDetails: any): Promise<CalculatedEffect[]> {
         const effects: CalculatedEffect[] = [];
@@ -211,20 +212,39 @@ export class IncrementalEffectManager {
                         type: 'POWER_BOOST',
                         sourceCardUid: play.cardUid,
                         sourcePlayerId: play.playerId,
-                        targetPlayerId: rule.target.scope === 'OPPONENT' ? this.getOpponentId(gameEnv, play.playerId) : play.playerId,
+                        targetPlayerId: rule.target.owner === 'opponent' ? this.getOpponentId(gameEnv, play.playerId) : play.playerId,
                         value: rule.effect.value,
-                        data: rule.target
+                        data: {
+                            zones: rule.target.zones,
+                            filters: rule.target.filters,
+                            targetCount: rule.target.targetCount
+                        }
                     });
                     break;
                     
-                case 'setPower':
+                case 'drawCards':
                     effects.push({
-                        type: 'POWER_NULLIFICATION',
+                        type: 'DRAW_CARDS',
                         sourceCardUid: play.cardUid,
                         sourcePlayerId: play.playerId,
-                        targetPlayerId: rule.target.scope === 'OPPONENT' ? this.getOpponentId(gameEnv, play.playerId) : play.playerId,
+                        targetPlayerId: play.playerId, // Draw effects always target self
                         value: rule.effect.value,
-                        data: rule.target
+                        data: { trigger: rule.trigger.event }
+                    });
+                    break;
+                    
+                case 'searchCard':
+                    effects.push({
+                        type: 'SEARCH_CARD',
+                        sourceCardUid: play.cardUid,
+                        sourcePlayerId: play.playerId,
+                        targetPlayerId: play.playerId, // Search effects always target self
+                        value: rule.effect.searchCount,
+                        data: {
+                            selectCount: rule.effect.selectCount,
+                            destination: rule.effect.destination,
+                            filters: rule.effect.filters
+                        }
                     });
                     break;
             }
@@ -292,6 +312,12 @@ export class IncrementalEffectManager {
                     break;
                 case 'CARD_DISABLE':
                     this.applyCardDisable(gameEnv, effect);
+                    break;
+                case 'DRAW_CARDS':
+                    this.applyDrawCards(gameEnv, effect);
+                    break;
+                case 'SEARCH_CARD':
+                    this.applySearchCard(gameEnv, effect);
                     break;
             }
         }
@@ -395,6 +421,59 @@ export class IncrementalEffectManager {
         }
     }
 
+    /**
+     * Apply draw cards effect
+     */
+    private applyDrawCards(gameEnv: GameEnvironment, effect: CalculatedEffect): void {
+        const player = gameEnv.players[effect.targetPlayerId];
+        if (!player) return;
+        
+        // Draw specified number of cards from deck to hand
+        const drawCount = effect.value || 1;
+        for (let i = 0; i < drawCount && player.deck.mainDeck.length > 0; i++) {
+            const drawnCard = player.deck.mainDeck.shift();
+            if (drawnCard) {
+                player.deck.hand.push(drawnCard);
+            }
+        }
+        
+        console.log(`   📥 Player ${effect.targetPlayerId} drew ${drawCount} cards (triggered by ${effect.sourceCardUid})`);
+    }
+
+    /**
+     * Apply search card effect
+     */
+    private applySearchCard(gameEnv: GameEnvironment, effect: CalculatedEffect): void {
+        // Note: Search effects require player interaction and should be handled
+        // by the game flow system (mozGamePlay.js) rather than automatic application
+        // This method marks the effect as requiring card selection
+        
+        console.log(`   🔍 Search effect triggered by ${effect.sourceCardUid}: search ${effect.value} cards, select ${effect.data?.selectCount}`);
+        
+        // Add to pending card selections for player interaction
+        if (!gameEnv.pendingCardSelections) {
+            gameEnv.pendingCardSelections = {};
+        }
+        
+        const selectionId = `${effect.sourceCardUid}_search_${Date.now()}`;
+        gameEnv.pendingCardSelections[selectionId] = {
+            playerId: effect.targetPlayerId,
+            effectSource: effect.sourceCardUid,
+            searchCount: effect.value,
+            selectCount: effect.data?.selectCount || 1,
+            destination: effect.data?.destination || 'hand',
+            filters: effect.data?.filters || [],
+            effectType: 'searchCard'
+        };
+        
+        // Set pending action to trigger frontend card selection
+        gameEnv.pendingPlayerAction = {
+            type: 'cardSelection',
+            selectionId: selectionId
+        };
+        
+        console.log(`   ⏳ Card selection required: ${selectionId}`);
+    }
 
     /**
      * Get affected players from calculated effects

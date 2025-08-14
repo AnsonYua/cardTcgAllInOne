@@ -330,11 +330,26 @@ export class GameController {
             
             // Use new TypeScript method for card play actions
             if (action.type === 'PlayCard') {
+                // Only accept cardUID parameter - no legacy fallbacks
+                const cardUID = action.cardUID;
+                
+                if (!cardUID) {
+                    res.status(400).json({
+                        error: 'cardUID is required for PlayCard action',
+                        timestamp: new Date().toISOString(),
+                        context: 'playerAction endpoint - PlayCard validation'
+                    });
+                    return;
+                }
+                
+                // Handle different frontend formats for zone identification
+                const zone = action.zone || this.mapFieldIndexToZone(action.field_idx);
+                
                 const result = await this.gameLogic.playCard(
                     gameId, 
                     playerId, 
-                    action.cardId || action.card_idx,
-                    this.mapFieldIndexToZone(action.field_idx),
+                    cardUID,
+                    zone,
                     action.faceDown || false
                 );
                 
@@ -354,17 +369,12 @@ export class GameController {
                     });
                 }
             } else {
-                // For other actions, use legacy method until fully migrated
-                const gameState = await this.gameLogic.processPlayerAction(gameId, playerId, action);
-                if (gameState.success && gameState.gameEnv) {
-                    res.json({
-                        success: true,
-                        gameId: gameState.gameId,
-                        gameEnv: gameState.gameEnv
-                    });
-                } else {
-                    res.json(gameState);
-                }
+                // Reject unsupported action types
+                res.status(400).json({
+                    error: `Unsupported action type: ${action.type}. Only 'PlayCard' actions are supported through this endpoint.`,
+                    timestamp: new Date().toISOString(),
+                    context: 'playerAction endpoint - unsupported action type'
+                });
             }
             
         } catch (error) {
@@ -387,7 +397,7 @@ export class GameController {
     // ============ UTILITY METHODS ============
 
     /**
-     * Map field index to zone type for backward compatibility
+     * Map field index to zone type for backward compatibility with field_idx parameter
      */
     private mapFieldIndexToZone(fieldIndex?: number): string {
         const zoneMap: { [key: number]: string } = {
