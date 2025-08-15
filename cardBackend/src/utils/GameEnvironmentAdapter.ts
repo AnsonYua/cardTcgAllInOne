@@ -8,7 +8,7 @@
 import { GameEnvironment, GamePhase, ZoneType, ActionType, EventType, Player, CardInfoUtilsSingleton } from '../models/GameEnvironment';
 import { PlayerDeckDataResp } from '../models/PlayerDeckDataResp';
 import { EffectSimulator } from '../services/EffectSimulator';
-import { incrementalEffectManager } from '../services/IncrementalEffectManager';
+import { enhancedEffectManager } from '../services/EnhancedEffectManager';
 import CardInfoUtils from '../services/CardInfoUtils';
 
 export class GameEnvironmentAdapter {
@@ -231,9 +231,9 @@ export class GameEnvironmentAdapter {
             handSize: player2.getHandSize()
         });
         
-        // Initialize field effects by processing PLAY_LEADER actions through IncrementalEffectManager
+        // Initialize field effects by processing PLAY_LEADER actions through EnhancedEffectManager
         // This follows the same pattern as OptimizedGameEngine.playCard() step 4
-        console.log('🔮 DEBUG: About to initialize field effects through IncrementalEffectManager pattern...');
+        console.log('🔮 DEBUG: About to initialize field effects through EnhancedEffectManager...');
         console.log('🔮 DEBUG: Play sequence length:', gameEnv.playSequenceManager.getPlays().length);
         console.log('🔮 DEBUG: Players:', Object.keys(gameEnv.players));
         
@@ -249,14 +249,11 @@ export class GameEnvironmentAdapter {
                 }
             }
             
-            // Set dependencies like OptimizedGameEngine does (line 113-114)
-            incrementalEffectManager.setCardInfoUtils(CardInfoUtils);
+            // Process all existing effects (PLAY_LEADER actions) using enhanced system
+            console.log('🔮 DEBUG: About to call processAllExistingEffects...');
+            await enhancedEffectManager.processAllExistingEffects(gameEnv);
             
-            // Process new effects (PLAY_LEADER actions) - same as OptimizedGameEngine step 4 (line 168)
-            console.log('🔮 DEBUG: About to call processNewEffects...');
-            await incrementalEffectManager.processNewEffects(gameEnv);
-            
-            console.log('✅ Field effects initialized successfully using IncrementalEffectManager pattern');
+            console.log('✅ Field effects initialized successfully using EnhancedEffectManager');
         } catch (error: any) {
             console.error('❌ Error initializing field effects:', error);
             console.error('❌ Stack trace:', error.stack);

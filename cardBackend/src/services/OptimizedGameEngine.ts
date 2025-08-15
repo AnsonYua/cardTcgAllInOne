@@ -50,7 +50,7 @@ interface PlayerRestrictions {
     placementValidations: Map<string, Map<ZoneType, boolean>>;
 }
 
-import { IncrementalEffectManager, incrementalEffectManager } from './IncrementalEffectManager';
+import { enhancedEffectManager } from './EnhancedEffectManager';
 import { ValidationCache, validationCache } from './ValidationCache';
 import { CardInfoUtils } from './CardInfoUtils';
 
@@ -72,7 +72,6 @@ interface PerformanceMetrics {
 export class OptimizedGameEngine {
     private config: OptimizedGameConfig;
     private metrics: PerformanceMetrics;
-    private incrementalManager: IncrementalEffectManager;
     private validationCache: ValidationCache;
     private cardInfoUtils: any = null;
     private initialized: boolean = false;
@@ -94,7 +93,6 @@ export class OptimizedGameEngine {
             lastOperationTime: 0
         };
 
-        this.incrementalManager = incrementalEffectManager;
         this.validationCache = validationCache;
 
         console.log('🚀 OptimizedGameEngine initialized with config:', this.config);
@@ -110,7 +108,6 @@ export class OptimizedGameEngine {
         this.cardInfoUtils = new CardInfoUtils();
         
         // Set dependencies
-        this.incrementalManager.setCardInfoUtils(this.cardInfoUtils);
         this.validationCache.setCardInfoUtils(this.cardInfoUtils);
         
         this.initialized = true;
@@ -164,8 +161,8 @@ export class OptimizedGameEngine {
             // STEP 3: ADD GAME EVENTS - Frontend integration
             this.addSuccessEvents(gameEnv, playerId, cardUID, zone, faceDown);
 
-            // STEP 4: INCREMENTAL PROCESSING - Only process new effects
-            await this.incrementalManager.processNewEffects(gameEnv);
+            // STEP 4: ENHANCED PROCESSING - Process effects with new system
+            await enhancedEffectManager.processCardEffects(gameEnv, playAction);
 
             // STEP 5: HANDLE CARD EFFECTS - Check for search effects requiring player selection
             const effectResult = await this.processCardEffects(gameEnv, playerId, cardUID);
@@ -440,7 +437,7 @@ export class OptimizedGameEngine {
         console.log('🔄 Initializing game for optimized processing...');
 
         // Process existing play sequence
-        await this.incrementalManager.processNewEffects(gameEnv);
+        await enhancedEffectManager.processAllExistingEffects(gameEnv);
 
         // Build initial validation caches
         if (this.config.enableCaching) {
@@ -725,12 +722,10 @@ export class OptimizedGameEngine {
      * Get performance metrics
      */
     public getPerformanceMetrics(): PerformanceMetrics & {
-        incrementalManagerMetrics: any;
         cacheMetrics: any;
     } {
         return {
             ...this.metrics,
-            incrementalManagerMetrics: this.incrementalManager.getMetrics(),
             cacheMetrics: this.config.enableCaching ? this.validationCache.getMetrics() : null
         };
     }

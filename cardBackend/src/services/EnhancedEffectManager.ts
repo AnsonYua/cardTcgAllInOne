@@ -26,34 +26,59 @@ import { PlaySequenceAction } from '../models/GameEnvironment.js';
  */
 export class EnhancedEffectManager {
     private effectCollections: Map<string, ActiveEffectCollection> = new Map();
+    private calculatePlayerPointFunc: any = null;
     
     constructor() {
         console.log('🚀 EnhancedEffectManager initialized with direct JSON-to-Class approach');
     }
     
     /**
-     * Main orchestration method - simplified workflow without unnecessary transformations
+     * Set calculatePlayerPoint function dependency
      */
-    async processCardEffects(gameEnv: GameEnvironment, play: PlaySequenceAction): Promise<void> {
+    public setCalculatePlayerPointFunction(calculatePlayerPointFunc: any): void {
+        this.calculatePlayerPointFunc = calculatePlayerPointFunc;
+    }
+    
+    /**
+     * Main orchestration method - simplified workflow without unnecessary transformations
+     * Now returns selection requirements for search effects
+     */
+    async processCardEffects(gameEnv: GameEnvironment, play: PlaySequenceAction): Promise<{
+        requiresCardSelection?: boolean;
+        selectionData?: any;
+    }> {
         console.log(`🎯 Processing card effects for ${play.cardUid} (${play.action})`);
         
         // Get card details
         const cardDetails = this.getCardDetails(gameEnv, play);
         if (!cardDetails?.effects?.rules) {
             console.log(`   ➡️ No effects found for card ${play.cardUid}`);
-            return;
+            return {};
         }
         
         // Create ActiveEffect instances directly from JSON rules
         const activeEffects = this.createActiveEffectsFromJSON(cardDetails.effects.rules, play);
         
-        // Apply effects to game environment
-        await this.applyActiveEffects(gameEnv, activeEffects);
+        // Apply effects to game environment and check for selection requirements
+        const selectionResult = await this.applyActiveEffects(gameEnv, activeEffects);
         
         // Store effects for incremental processing (if needed)
         this.storeActiveEffects(play.playerId, activeEffects);
         
+        // Update player points if calculation function is available
+        if (this.calculatePlayerPointFunc) {
+            try {
+                for (const playerId of Object.keys(gameEnv.players)) {
+                    const newPoints = await this.calculatePlayerPointFunc(gameEnv.toJSON(), playerId);
+                    gameEnv.players[playerId].playerPoint = newPoints;
+                }
+            } catch (error) {
+                console.error('❌ Error calculating player points:', error);
+            }
+        }
+        
         console.log(`   ✅ Processed ${activeEffects.length} effects for ${play.cardUid}`);
+        return selectionResult || {};
     }
     
     /**
@@ -100,8 +125,14 @@ export class EnhancedEffectManager {
     /**
      * Apply ActiveEffect instances to game environment
      * Direct application without unnecessary data transformations
+     * Now returns selection requirements for search effects
      */
-    private async applyActiveEffects(gameEnv: GameEnvironment, activeEffects: ActiveEffect[]): Promise<void> {
+    private async applyActiveEffects(gameEnv: GameEnvironment, activeEffects: ActiveEffect[]): Promise<{
+        requiresCardSelection?: boolean;
+        selectionData?: any;
+    }> {
+        let selectionResult: { requiresCardSelection?: boolean; selectionData?: any } = {};
+        
         for (const effect of activeEffects) {
             switch (effect.effectType) {
                 case 'powerBoost':
@@ -117,7 +148,10 @@ export class EnhancedEffectManager {
                     break;
                     
                 case 'searchCard':
-                    await this.applySearchCardDirect(gameEnv, effect);
+                    const searchResult = await this.applySearchCardDirect(gameEnv, effect);
+                    if (searchResult?.requiresCardSelection) {
+                        selectionResult = searchResult;
+                    }
                     break;
                     
                 case 'neutralizeEffect':
@@ -132,6 +166,8 @@ export class EnhancedEffectManager {
                     console.warn(`   ⚠️ Unknown effect type: ${effect.effectType}`);
             }
         }
+        
+        return selectionResult;
     }
     
     /**
@@ -225,19 +261,101 @@ export class EnhancedEffectManager {
     
     /**
      * Apply search card effect directly from ActiveEffect
+     * Returns selection requirement for frontend handling
      */
-    private async applySearchCardDirect(gameEnv: GameEnvironment, effect: ActiveEffect): Promise<void> {
+    private async applySearchCardDirect(gameEnv: GameEnvironment, effect: ActiveEffect): Promise<{
+        requiresCardSelection?: boolean;
+        selectionData?: any;
+    }> {
         const player = gameEnv.players[effect.targetPlayerId];
-        if (!player) return;
+        if (!player) return {};
         
-        // Search card logic (simplified - integrate with existing search system)
-        const searchCount = effect.rule.effect.searchCount || 1;
+        // Extract search parameters from effect rule
+        const searchCount = effect.rule.effect.searchCount || 7;
         const selectCount = effect.rule.effect.selectCount || 1;
+        const destination = effect.rule.effect.destination || 'hand';
         
-        console.log(`   🔍 Applied search card: search ${searchCount}, select ${selectCount} for ${effect.targetPlayerId}`);
+        console.log(`   🔍 Processing search effect: search ${searchCount}, select ${selectCount}, destination: ${destination}`);
         
-        // Note: Full implementation would integrate with CardSelectionHandler
-        // This is a simplified version for demonstration
+        // Create pending card selection in gameEnv
+        const selectionId = `${effect.targetPlayerId}_search_${Date.now()}`;
+        
+        if (!gameEnv.pendingCardSelections) {
+            gameEnv.pendingCardSelections = {};
+        }
+        
+        // Get eligible cards from deck based on effect filters
+        const eligibleCards = this.getEligibleCardsForSearch(gameEnv, effect, searchCount);
+        
+        gameEnv.pendingCardSelections[selectionId] = {
+            playerId: effect.targetPlayerId,
+            eligibleCards: eligibleCards,
+            selectCount: selectCount,
+            effect: {
+                type: 'searchCard',
+                destination: destination,
+                sourceCard: effect.sourceCardUid
+            },
+            effectType: 'searchCard',
+            sourceCard: effect.sourceCardUid
+        };
+        
+        // Set pending player action
+        gameEnv.pendingPlayerAction = {
+            type: 'cardSelection',
+            selectionId: selectionId
+        };
+        
+        console.log(`   🎯 Created card selection requirement: ${selectionId}`);
+        
+        return {
+            requiresCardSelection: true,
+            selectionData: {
+                selectionId: selectionId,
+                playerId: effect.targetPlayerId,
+                searchCount: searchCount,
+                selectCount: selectCount,
+                destination: destination
+            }
+        };
+    }
+    
+    /**
+     * Get eligible cards for search effect
+     */
+    private getEligibleCardsForSearch(gameEnv: GameEnvironment, effect: ActiveEffect, searchCount: number): any[] {
+        const player = gameEnv.players[effect.targetPlayerId];
+        if (!player?.deck?.mainDeck) return [];
+        
+        // Get top cards from deck for search
+        const searchCards = player.deck.mainDeck.slice(0, Math.min(searchCount, player.deck.mainDeck.length));
+        
+        // Convert to card selection format with card details
+        return searchCards.map(cardUid => {
+            const cardId = this.extractCardIdFromUid(cardUid);
+            const cardDetails = this.getCardDetailsByCardId(cardId);
+            
+            return {
+                cardId: cardId,
+                cardUid: cardUid,
+                zone: 'deck',
+                cardData: cardDetails || { id: cardId, name: `Card ${cardId}` }
+            };
+        });
+    }
+    
+    /**
+     * Get card details by card ID (helper method)
+     */
+    private getCardDetailsByCardId(cardId: string): any {
+        // This would integrate with CardInfoUtils in a real implementation
+        // For now, return basic structure
+        return {
+            id: cardId,
+            name: `Card ${cardId}`,
+            cardType: 'character',
+            power: 100
+        };
     }
     
     /**
@@ -364,6 +482,58 @@ export class EnhancedEffectManager {
         return collection ? collection.getActive() : [];
     }
     
+    /**
+     * Process all existing play sequence actions for their effects
+     * Used during game initialization and state reconstruction
+     */
+    async processAllExistingEffects(gameEnv: GameEnvironment): Promise<void> {
+        console.log('🔄 Processing all existing play sequence actions for effects...');
+        
+        if (!gameEnv.playSequenceManager) {
+            console.log('   ➡️ No play sequence manager found');
+            return;
+        }
+        
+        const plays = gameEnv.playSequenceManager.getPlays();
+        console.log(`   📊 Found ${plays.length} plays to process`);
+        
+        // Process each play in sequence order
+        for (const play of plays) {
+            try {
+                const result = await this.processCardEffects(gameEnv, play);
+                // Note: During initialization, we don't handle card selection requirements
+                // as these are for runtime interactions only
+                if (result.requiresCardSelection) {
+                    console.log(`   🔍 Skipping card selection requirement during initialization for ${play.cardUid}`);
+                }
+            } catch (error) {
+                console.error(`❌ Error processing play ${play.sequenceId}:`, error);
+                // Continue with other plays
+            }
+        }
+        
+        console.log('✅ Completed processing all existing effects');
+    }
+    
+    /**
+     * Calculate player points using integrated calculation function
+     */
+    async calculatePlayerPoints(gameEnv: GameEnvironment, playerId: string): Promise<number> {
+        if (!this.calculatePlayerPointFunc) {
+            console.warn('⚠️ calculatePlayerPointFunc not set - returning 0');
+            return 0;
+        }
+        
+        try {
+            const points = await this.calculatePlayerPointFunc(gameEnv.toJSON(), playerId);
+            console.log(`📊 Calculated ${points} points for ${playerId}`);
+            return points;
+        } catch (error) {
+            console.error(`❌ Error calculating points for ${playerId}:`, error);
+            return 0;
+        }
+    }
+
     /**
      * Get effect statistics for debugging
      */

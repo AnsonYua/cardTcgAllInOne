@@ -33,34 +33,15 @@ import {
 import { enhancedEffectManager } from './EnhancedEffectManager.js';
 
 /**
- * @deprecated This class provides compatibility during migration to the new ActiveEffect system.
- * Use EnhancedEffectManager and ActiveEffect classes for new code.
+ * @deprecated This class has been replaced by EnhancedEffectManager.
+ * Only basic compatibility methods remain. Use EnhancedEffectManager for new code.
  */
 export class IncrementalEffectManager {
-    private effectDeltas: Map<string, EffectDelta[]> = new Map();
-    
     constructor() {
-        console.log('🔄 IncrementalEffectManager: Compatibility layer active');
-        console.log('💡 Recommendation: Use EnhancedEffectManager for new code');
+        console.log('🔄 IncrementalEffectManager: Minimal compatibility layer');
+        console.log('💡 Use EnhancedEffectManager for all new effect processing');
     }
     
-    /**
-     * @deprecated Use enhancedEffectManager.processCardEffects() instead
-     * 
-     * Maintains API compatibility by delegating to the new system
-     */
-    async orchestrateCardEffectWorkflow(gameEnv: GameEnvironment, play: PlaySequenceAction): Promise<void> {
-        console.log('🔄 Compatibility: Delegating to EnhancedEffectManager');
-        
-        try {
-            // Delegate to new system
-            await enhancedEffectManager.processCardEffects(gameEnv, play);
-        } catch (error) {
-            console.error('❌ Error in compatibility layer:', error);
-            // Graceful fallback - ensure field effects exist
-            this.ensureFieldEffectsStructure(gameEnv);
-        }
-    }
     
     /**
      * @deprecated Use ActiveEffect.appliesTo() and enhanced field effects instead
@@ -128,24 +109,6 @@ export class IncrementalEffectManager {
         );
     }
     
-    /**
-     * @deprecated ActiveEffect system handles state management differently
-     */
-    rollbackToSnapshot(gameEnv: GameEnvironment, snapshotId: string): void {
-        console.warn('⚠️ DEPRECATED: rollbackToSnapshot is not supported in the new ActiveEffect system');
-        console.log('💡 Use ActiveEffect state management patterns instead');
-    }
-    
-    /**
-     * @deprecated Use ActiveEffectCollection.clear() instead
-     */
-    clearEffectDeltas(playerId: string): void {
-        console.log('🔄 Compatibility: Clearing effect deltas');
-        this.effectDeltas.delete(playerId);
-        
-        // Also clear enhanced effects if possible
-        console.log('💡 Consider using enhancedEffectManager.clearPlayerEffects() instead');
-    }
     
     /**
      * Ensure field effects structure exists (for compatibility)
@@ -197,37 +160,8 @@ export class IncrementalEffectManager {
         ];
     }
     
-    // Compatibility stubs for removed methods
     
-    /**
-     * @deprecated This method was removed. Dependencies are now handled differently.
-     */
-    setCardInfoUtils(cardInfoUtils: any): void {
-        console.warn('⚠️ DEPRECATED: setCardInfoUtils is no longer needed in the new system');
-    }
     
-    /**
-     * @deprecated Use enhancedEffectManager.processCardEffects() instead
-     */
-    async processNewEffects(gameEnv: GameEnvironment, play?: PlaySequenceAction): Promise<void> {
-        console.warn('⚠️ DEPRECATED: processNewEffects - use enhancedEffectManager.processCardEffects() instead');
-        if (play) {
-            return this.orchestrateCardEffectWorkflow(gameEnv, play);
-        }
-    }
-    
-    /**
-     * @deprecated Metrics are handled differently in the new system
-     */
-    getMetrics(): any {
-        console.warn('⚠️ DEPRECATED: getMetrics is not available in the new system');
-        return {
-            totalEffectsProcessed: 0,
-            averageProcessingTime: 0,
-            cacheHitRate: 0,
-            message: 'Metrics moved to EnhancedEffectManager system'
-        };
-    }
 }
 
 // Export singleton for compatibility
