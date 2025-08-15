@@ -491,6 +491,7 @@ export interface PlaySequence {
     plays: PlaySequenceAction[];
 }
 
+// Legacy FieldEffect interface - use ActiveEffect instead for new code
 export interface FieldEffect {
     effectId: string;
     source: string;
@@ -511,11 +512,28 @@ export interface FieldEffect {
     effectData?: any;
 }
 
+// Enhanced FieldEffect using ActiveEffect for type-safe effect processing
+export interface EnhancedFieldEffect {
+    // Runtime context
+    effectId: string;
+    sourceCardUid: string;
+    sourcePlayerId: string;
+    targetPlayerId: string;
+    createdAt: number;
+    isActive: boolean;
+    
+    // Direct JSON structure preservation
+    rule: EffectRule;
+}
+
 export interface PlayerFieldEffects {
     zoneRestrictions: {
         [zone in ZoneType]?: string[] | 'ALL';
     };
+    // Legacy format - maintaining compatibility
     activeEffects: FieldEffect[];
+    // New enhanced format - preferred for new code
+    activeEffectsEnhanced?: EnhancedFieldEffect[];
     specialEffects?: {
         zonePlacementFreedom?: boolean;
         immuneToNeutralization?: boolean;
@@ -541,25 +559,18 @@ export interface NeutralizationAction {
 // These duplicated functionality already provided by PlayerFieldEffects
 // Using existing fieldEffects system as single source of truth
 
+// EffectDelta interface deprecated - replaced by ActiveEffect state management
 export interface EffectDelta {
     sequenceId: number;
     cardUid: string;
     playerId: string;
-    effects: CalculatedEffect[];
+    effects: any[]; // Replaced by ActiveEffect instances
     affectedPlayers: string[];
     timestamp: number;
 }
 
-export interface CalculatedEffect {
-    type: 'ZONE_RESTRICTION' | 'POWER_BOOST' | 'POWER_NULLIFICATION' | 'CARD_DISABLE' | 'SPECIAL_EFFECT' | 'DRAW_CARDS' | 'SEARCH_CARD';
-    sourceCardUid: string;
-    sourcePlayerId: string;
-    targetPlayerId: string;
-    targetCardId?: string;
-    targetZone?: ZoneType;
-    value?: any;
-    data?: any;
-}
+// CalculatedEffect interface removed - replaced by ActiveEffect class system
+// See ActiveEffect.ts for the new type-safe effect processing
 
 export interface GameResult {
     success: boolean;
