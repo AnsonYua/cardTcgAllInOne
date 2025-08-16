@@ -577,6 +577,7 @@ export interface GameResult {
     error?: string;
     gameState?: any;
     requiresCardSelection?: boolean;
+    selectionData?: any;
     processingTime?: number;
     // REMOVED: validationState - using fieldEffects as single source of truth
 }

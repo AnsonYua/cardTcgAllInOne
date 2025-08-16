@@ -161,16 +161,14 @@ export class OptimizedGameEngine {
             // STEP 3: ADD GAME EVENTS - Frontend integration
             this.addSuccessEvents(gameEnv, playerId, cardUID, zone, faceDown);
 
-            // STEP 4: ENHANCED PROCESSING - Process effects with new system
-            await enhancedEffectManager.processCardEffects(gameEnv, playAction);
-
-            // STEP 5: HANDLE CARD EFFECTS - Check for search effects requiring player selection
-            const effectResult = await this.processCardEffects(gameEnv, playerId, cardUID);
+            // STEP 4: ENHANCED PROCESSING - Process effects with new system (handles all effects including search)
+            const effectResult = await enhancedEffectManager.processCardEffects(gameEnv, playAction);
             if (effectResult?.requiresCardSelection) {
                 return { 
                     success: true, 
                     gameState: gameEnv,
-                    requiresCardSelection: true
+                    requiresCardSelection: true,
+                    selectionData: effectResult.selectionData
                 };
             }
 
@@ -584,14 +582,6 @@ export class OptimizedGameEngine {
         });
     }
 
-    /**
-     * Process card effects (placeholder for search effects)
-     */
-    private async processCardEffects(gameEnv: GameEnvironment, playerId: string, cardUID: string): Promise<any> {
-        // TODO: Implement card effect processing for search effects
-        // For now, return null to indicate no special handling needed
-        return null;
-    }
 
     /**
      * Check if turn should update and switch players

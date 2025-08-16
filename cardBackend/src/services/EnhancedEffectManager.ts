@@ -5,10 +5,9 @@
  * with type-safe TypeScript classes for better clarity and maintainability.
  */
 
-import { GameEnvironment } from '../models/GameEnvironment.js';
+import { GameEnvironment, EnhancedFieldEffect } from '../models/GameEnvironment.js';
 import { 
     ActiveEffect, 
-    ActiveEffectCollection, 
     EffectRule, 
     EffectRuntimeContext 
 } from '../models/ActiveEffect.js';
@@ -25,7 +24,6 @@ import { PlaySequenceAction } from '../models/GameEnvironment.js';
  * 5. Maintains backward compatibility
  */
 export class EnhancedEffectManager {
-    private effectCollections: Map<string, ActiveEffectCollection> = new Map();
     private calculatePlayerPointFunc: any = null;
     
     constructor() {
@@ -60,10 +58,8 @@ export class EnhancedEffectManager {
         const activeEffects = this.createActiveEffectsFromJSON(cardDetails.effects.rules, play);
         
         // Apply effects to game environment and check for selection requirements
+        // Note: Individual apply methods already store effects in fieldEffects - no separate storage needed
         const selectionResult = await this.applyActiveEffects(gameEnv, activeEffects);
-        
-        // Store effects for incremental processing (if needed)
-        this.storeActiveEffects(play.playerId, activeEffects);
         
         // Update player points if calculation function is available
         if (this.calculatePlayerPointFunc) {
@@ -399,43 +395,6 @@ export class EnhancedEffectManager {
     /**
      * Calculate total power for a card using ActiveEffect collection
      */
-    calculateCardPowerWithEffects(
-        gameEnv: GameEnvironment, 
-        cardId: string, 
-        cardData: any, 
-        zone: string, 
-        playerId: string, 
-        basePower: number
-    ): number {
-        const effectCollection = this.getPlayerEffectCollection(playerId);
-        if (!effectCollection) {
-            return basePower;
-        }
-        
-        return effectCollection.calculatePowerModification(cardId, cardData, zone, playerId, basePower);
-    }
-    
-    /**
-     * Get effect collection for a player
-     */
-    private getPlayerEffectCollection(playerId: string): ActiveEffectCollection | undefined {
-        return this.effectCollections.get(playerId);
-    }
-    
-    /**
-     * Store ActiveEffect instances for a player
-     */
-    private storeActiveEffects(playerId: string, activeEffects: ActiveEffect[]): void {
-        let collection = this.effectCollections.get(playerId);
-        if (!collection) {
-            collection = new ActiveEffectCollection();
-            this.effectCollections.set(playerId, collection);
-        }
-        
-        for (const effect of activeEffects) {
-            collection.add(effect);
-        }
-    }
     
     /**
      * Get card details from game environment
@@ -467,19 +426,22 @@ export class EnhancedEffectManager {
     }
     
     /**
-     * Clear all effects for a player (for round transitions)
+     * Clear all effects for a player from fieldEffects (for round transitions)
      */
-    clearPlayerEffects(playerId: string): void {
-        this.effectCollections.delete(playerId);
+    clearPlayerEffects(gameEnv: GameEnvironment, playerId: string): void {
+        const player = gameEnv.players[playerId];
+        if (player?.fieldEffects?.activeEffectsEnhanced) {
+            player.fieldEffects.activeEffectsEnhanced = [];
+        }
         console.log(`🧹 Cleared all effects for ${playerId}`);
     }
     
     /**
-     * Get all active effects for a player
+     * Get all active effects for a player from fieldEffects (as EnhancedFieldEffect)
      */
-    getActiveEffects(playerId: string): ActiveEffect[] {
-        const collection = this.effectCollections.get(playerId);
-        return collection ? collection.getActive() : [];
+    getActiveEffects(gameEnv: GameEnvironment, playerId: string): EnhancedFieldEffect[] {
+        const player = gameEnv.players[playerId];
+        return player?.fieldEffects?.activeEffectsEnhanced || [];
     }
     
     /**
@@ -535,20 +497,22 @@ export class EnhancedEffectManager {
     }
 
     /**
-     * Get effect statistics for debugging
+     * Get effect statistics for debugging from fieldEffects
      */
-    getEffectStatistics(): any {
+    getEffectStatistics(gameEnv: GameEnvironment): any {
         const stats = {
-            totalPlayers: this.effectCollections.size,
+            totalPlayers: Object.keys(gameEnv.players).length,
             playerStats: {} as any
         };
         
-        for (const [playerId, collection] of this.effectCollections) {
+        for (const [playerId, player] of Object.entries(gameEnv.players)) {
+            const effects = player.fieldEffects?.activeEffectsEnhanced || [];
             stats.playerStats[playerId] = {
-                totalEffects: collection.size,
-                activeEffects: collection.getActive().length,
-                effectTypes: collection.getActive().reduce((acc, effect) => {
-                    acc[effect.effectType] = (acc[effect.effectType] || 0) + 1;
+                totalEffects: effects.length,
+                activeEffects: effects.length,
+                effectTypes: effects.reduce((acc, effect) => {
+                    const effectType = effect.rule.effect.type;
+                    acc[effectType] = (acc[effectType] || 0) + 1;
                     return acc;
                 }, {} as any)
             };
