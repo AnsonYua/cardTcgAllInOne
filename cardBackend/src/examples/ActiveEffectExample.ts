@@ -7,7 +7,7 @@
 
 import { ActiveEffect, ActiveEffectCollection } from '../models/ActiveEffect';
 import { GameEnvironment } from '../models/GameEnvironment';
-import { enhancedEffectManager } from '../services/EnhancedEffectManager';
+import { effectSimulator } from '../services/EffectSimulator';
 
 /**
  * Example: Direct JSON usage without transformation layers

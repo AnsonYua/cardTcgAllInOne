@@ -7,8 +7,7 @@
 
 import { GameEnvironment, GamePhase, ZoneType, ActionType, EventType, Player, CardInfoUtilsSingleton } from '../models/GameEnvironment';
 import { PlayerDeckDataResp } from '../models/PlayerDeckDataResp';
-import { EffectSimulator } from '../services/EffectSimulator';
-import { enhancedEffectManager } from '../services/EnhancedEffectManager';
+import { effectSimulator } from '../services/EffectSimulator';
 import CardInfoUtils from '../services/CardInfoUtils';
 
 export class GameEnvironmentAdapter {
@@ -231,9 +230,9 @@ export class GameEnvironmentAdapter {
             handSize: player2.getHandSize()
         });
         
-        // Initialize field effects by processing PLAY_LEADER actions through EnhancedEffectManager
+        // Initialize field effects by processing PLAY_LEADER actions through EffectSimulator
         // This follows the same pattern as OptimizedGameEngine.playCard() step 4
-        console.log('🔮 DEBUG: About to initialize field effects through EnhancedEffectManager...');
+        console.log('🔮 DEBUG: About to initialize field effects through EffectSimulator...');
         console.log('🔮 DEBUG: Play sequence length:', gameEnv.playSequenceManager.getPlays().length);
         console.log('🔮 DEBUG: Players:', Object.keys(gameEnv.players));
         
@@ -249,11 +248,11 @@ export class GameEnvironmentAdapter {
                 }
             }
             
-            // Process all existing effects (PLAY_LEADER actions) using enhanced system
-            console.log('🔮 DEBUG: About to call processAllExistingEffects...');
-            await enhancedEffectManager.processAllExistingEffects(gameEnv);
+            // Process all existing effects (PLAY_LEADER actions) using EffectSimulator
+            console.log('🔮 DEBUG: About to call simulateCardPlaySequenceWithClass...');
+            await effectSimulator.simulateCardPlaySequenceWithClass(gameEnv);
             
-            console.log('✅ Field effects initialized successfully using EnhancedEffectManager');
+            console.log('✅ Field effects initialized successfully using EffectSimulator');
         } catch (error: any) {
             console.error('❌ Error initializing field effects:', error);
             console.error('❌ Stack trace:', error.stack);

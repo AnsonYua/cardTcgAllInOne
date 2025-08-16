@@ -129,11 +129,7 @@ export class GameLogic {
             effectSimulator.setCalculatePlayerPointFunction(this.mozGamePlay.calculatePlayerPoint.bind(this.mozGamePlay));
         }
         
-        // IMPORTANT: Also inject into EnhancedEffectManager for unified effect system
-        const { enhancedEffectManager } = require('./EnhancedEffectManager');
-        if (this.mozGamePlay && this.mozGamePlay.calculatePlayerPoint) {
-            enhancedEffectManager.setCalculatePlayerPointFunction(this.mozGamePlay.calculatePlayerPoint.bind(this.mozGamePlay));
-        }
+        // EnhancedEffectManager removed - redundant with EffectSimulator
         
         console.log('🎮 GameLogic initialized with TypeScript class support');
     }

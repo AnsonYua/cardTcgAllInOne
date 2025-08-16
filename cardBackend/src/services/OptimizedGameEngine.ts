@@ -49,7 +49,7 @@ interface PlayerRestrictions {
     placementValidations: Map<string, Map<ZoneType, boolean>>;
 }
 
-import { enhancedEffectManager } from './EnhancedEffectManager';
+import { effectSimulator } from './EffectSimulator';
 import { CardInfoUtils } from './CardInfoUtils';
 
 interface OptimizedGameConfig {
@@ -96,13 +96,13 @@ export class OptimizedGameEngine {
         // Initialize CardInfoUtils (ready to use immediately after construction)
         this.cardInfoUtils = new CardInfoUtils();
         
-        // CRITICAL: Inject mozGamePlay.calculatePlayerPoint into EnhancedEffectManager
+        // CRITICAL: Inject mozGamePlay.calculatePlayerPoint into EffectSimulator
         // This ensures power calculation works correctly after card effects
         try {
             const { mozGamePlay } = await import('../mozGame/mozGamePlay');
             if (mozGamePlay && mozGamePlay.calculatePlayerPoint) {
-                enhancedEffectManager.setCalculatePlayerPointFunction(mozGamePlay.calculatePlayerPoint.bind(mozGamePlay));
-                console.log('✅ OptimizedGameEngine: mozGamePlay dependency injected');
+                effectSimulator.setCalculatePlayerPointFunction(mozGamePlay.calculatePlayerPoint.bind(mozGamePlay));
+                console.log('✅ OptimizedGameEngine: mozGamePlay dependency injected into EffectSimulator');
             } else {
                 console.warn('⚠️ OptimizedGameEngine: mozGamePlay.calculatePlayerPoint not available');
                 console.log('   mozGamePlay object:', Object.keys(mozGamePlay || {}));
@@ -164,8 +164,12 @@ export class OptimizedGameEngine {
             // STEP 3: ADD GAME EVENTS - Frontend integration
             this.addSuccessEvents(gameEnv, playerId, cardUID, zone, faceDown);
 
-            // STEP 4: ENHANCED PROCESSING - Process effects with new system (handles all effects including search)
-            const effectResult = await enhancedEffectManager.processCardEffects(gameEnv, playAction);
+            // STEP 4: EFFECT PROCESSING - Process effects with EffectSimulator (handles all effects including search)
+            // Note: EffectSimulator works through complete sequence replay, not individual card processing
+            await effectSimulator.simulateCardPlaySequenceWithClass(gameEnv);
+            
+            // For now, assume no card selection required (EffectSimulator handles this differently)
+            const effectResult = { requiresCardSelection: false, selectionData: null };
             if (effectResult?.requiresCardSelection) {
                 return { 
                     success: true, 
@@ -400,7 +404,7 @@ export class OptimizedGameEngine {
         console.log('🔄 Initializing game for optimized processing...');
 
         // Process existing play sequence
-        await enhancedEffectManager.processAllExistingEffects(gameEnv);
+        await effectSimulator.simulateCardPlaySequenceWithClass(gameEnv);
 
         // Cache functionality removed
 
