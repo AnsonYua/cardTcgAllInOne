@@ -390,21 +390,6 @@
                 ]
               },
               "value": 50
-            },
-            {
-              "effectId": "s-3_1754928029921_2_powerBoost",
-              "source": "s-3_1754928029921_2",
-              "sourcePlayerId": "playerId_1",
-              "type": "powerBoost",
-              "target": {
-                "scope": "SELF",
-                "zones": [
-                  "top",
-                  "left",
-                  "right"
-                ]
-              },
-              "value": 20
             }
           ],
           "specialEffects": {},

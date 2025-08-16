@@ -598,20 +598,30 @@ export class OptimizedGameEngine {
     }
 
     /**
-     * Get card details (placeholder - should integrate with CardInfoUtils)
+     * Get card details using CardInfoUtils
      */
     private getCardDetails(cardUID: string): any {
-        // TODO: Integrate with CardInfoUtils to get proper card details
-        // For now, return basic structure
         const baseId = cardUID.split('_')[0];
-        return {
-            id: baseId,
-            name: `Card ${baseId}`,
-            cardType: 'character',
-            gameType: 'unknown',
-            power: 100,
-            traits: []
-        };
+        
+        if (!this.cardInfoUtils) {
+            console.warn('⚠️ CardInfoUtils not initialized, returning mock data');
+            return {
+                id: baseId,
+                name: `Card ${baseId}`,
+                cardType: 'character',
+                gameType: 'unknown',
+                power: 100,
+                traits: []
+            };
+        }
+        
+        const cardDetails = this.cardInfoUtils.getCardDetails(baseId);
+        if (!cardDetails) {
+            console.warn(`⚠️ Card details not found for ${baseId}`);
+            return null;
+        }
+        
+        return cardDetails;
     }
 
     /**

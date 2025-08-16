@@ -24,9 +24,24 @@ import {
  */
 export class EnhancedEffectManager {
     private calculatePlayerPointFunc: any = null;
+    private cardInfoUtils: any = null;
     
     constructor() {
         console.log('🚀 EnhancedEffectManager initialized with direct JSON-to-Class approach');
+        this.initializeCardInfoUtils();
+    }
+    
+    /**
+     * Initialize CardInfoUtils for card data lookup
+     */
+    private initializeCardInfoUtils(): void {
+        try {
+            const { CardInfoUtils } = require('./CardInfoUtils');
+            this.cardInfoUtils = new CardInfoUtils();
+            console.log('✅ CardInfoUtils initialized in EnhancedEffectManager');
+        } catch (error) {
+            console.error('❌ Failed to initialize CardInfoUtils:', error);
+        }
     }
     
     /**
@@ -368,17 +383,31 @@ export class EnhancedEffectManager {
     }
     
     /**
-     * Get card details by card ID (helper method)
+     * Get card details by card ID using CardInfoUtils instance
      */
     private getCardDetailsByCardId(cardId: string): any {
-        // This would integrate with CardInfoUtils in a real implementation
-        // For now, return basic structure
-        return {
-            id: cardId,
-            name: `Card ${cardId}`,
-            cardType: 'character',
-            power: 100
-        };
+        if (!this.cardInfoUtils) {
+            console.error('❌ CardInfoUtils not initialized for getCardDetailsByCardId');
+            return {
+                id: cardId,
+                name: `Card ${cardId}`,
+                cardType: 'character',
+                power: 100
+            };
+        }
+        
+        const cardDetails = this.cardInfoUtils.getCardDetails(cardId);
+        if (!cardDetails) {
+            console.warn(`⚠️ Card details not found for ${cardId}, returning fallback`);
+            return {
+                id: cardId,
+                name: `Card ${cardId}`,
+                cardType: 'character',
+                power: 100
+            };
+        }
+        
+        return cardDetails;
     }
     
     /**
@@ -424,16 +453,23 @@ export class EnhancedEffectManager {
      */
     
     /**
-     * Get card details from game environment
+     * Get card details using CardInfoUtils instance
      */
     private getCardDetails(gameEnv: GameEnvironment, play: PlaySequenceAction): any {
-        // Implementation depends on existing card lookup system
-        // This is a simplified version
         const cardId = this.extractCardIdFromUid(play.cardUid);
         
-        // Look up card details from game environment or card data system
-        // Return card with effects.rules array
-        return null; // Placeholder - implement based on existing system
+        if (!this.cardInfoUtils) {
+            console.error('❌ CardInfoUtils not initialized in EnhancedEffectManager');
+            return null;
+        }
+        
+        const cardDetails = this.cardInfoUtils.getCardDetails(cardId);
+        if (!cardDetails) {
+            console.warn(`⚠️ Card details not found for ${cardId}`);
+            return null;
+        }
+        
+        return cardDetails;
     }
     
     /**
