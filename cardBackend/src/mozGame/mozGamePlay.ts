@@ -210,13 +210,13 @@ export class MozGamePlay {
             }
             
             // Use battle calculator for power computation
-            const powerResult = await this.battleCalculator.calculateTotalPower(gameEnvClass, playerId);
+            const totalPower = await this.battleCalculator.calculatePlayerPoints(gameEnvClass, playerId);
             
             // Update player's power in game state
-            player.playerPoint = powerResult.totalPower;
+            player.playerPoint = totalPower;
             
-            console.log(`✅ Player ${playerId} total power: ${powerResult.totalPower}`);
-            return powerResult.totalPower;
+            console.log(`✅ Player ${playerId} total power: ${totalPower}`);
+            return totalPower;
             
         } catch (error) {
             console.error(`❌ Error calculating power for ${playerId}:`, error);

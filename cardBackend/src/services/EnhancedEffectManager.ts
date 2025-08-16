@@ -79,8 +79,10 @@ export class EnhancedEffectManager {
         if (this.calculatePlayerPointFunc) {
             try {
                 for (const playerId of Object.keys(gameEnv.players)) {
-                    const newPoints = await this.calculatePlayerPointFunc(gameEnv.toJSON(), playerId);
+                    // Pass GameEnvironment class directly, not JSON
+                    const newPoints = await this.calculatePlayerPointFunc(gameEnv, playerId);
                     gameEnv.players[playerId].playerPoint = newPoints;
+                    console.log(`✅ Updated ${playerId} playerPoint: ${newPoints}`);
                 }
             } catch (error) {
                 console.error('❌ Error calculating player points:', error);

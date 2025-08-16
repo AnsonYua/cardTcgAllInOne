@@ -96,6 +96,21 @@ export class OptimizedGameEngine {
         // Initialize CardInfoUtils (ready to use immediately after construction)
         this.cardInfoUtils = new CardInfoUtils();
         
+        // CRITICAL: Inject mozGamePlay.calculatePlayerPoint into EnhancedEffectManager
+        // This ensures power calculation works correctly after card effects
+        try {
+            const { mozGamePlay } = await import('../mozGame/mozGamePlay');
+            if (mozGamePlay && mozGamePlay.calculatePlayerPoint) {
+                enhancedEffectManager.setCalculatePlayerPointFunction(mozGamePlay.calculatePlayerPoint.bind(mozGamePlay));
+                console.log('✅ OptimizedGameEngine: mozGamePlay dependency injected');
+            } else {
+                console.warn('⚠️ OptimizedGameEngine: mozGamePlay.calculatePlayerPoint not available');
+                console.log('   mozGamePlay object:', Object.keys(mozGamePlay || {}));
+            }
+        } catch (error) {
+            console.error('❌ OptimizedGameEngine: Failed to inject mozGamePlay dependency:', error);
+        }
+        
         this.initialized = true;
         console.log('✅ OptimizedGameEngine initialized');
     }
@@ -343,6 +358,11 @@ export class OptimizedGameEngine {
 
         // Place card in zone
         gameEnv.placeCardInZone(playerId, zone, cardUID, faceDown);
+        
+        // Debug: Verify card was placed immediately after placement
+        const playerZones = gameEnv.zones.getPlayerZones(playerId);
+        const zoneName = zone.toLowerCase() as keyof typeof playerZones;
+        console.log(`🔍 IMMEDIATE CHECK: ${zone} zone after placement:`, playerZones?.[zoneName]);
 
         // Create play sequence action
         const playAction: PlaySequenceAction = {

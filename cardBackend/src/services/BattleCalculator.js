@@ -22,12 +22,15 @@
 //
 // =======================================================================================
 
+// Import utility functions
+const { getPlayerFromGameEnv, getPlayerField } = require('../utils/gameUtils');
+
 class BattleCalculator {
     constructor(mozGamePlay) {
         this.mozGamePlay = mozGamePlay;
         
-        // Helper method references for cleaner code
-        this.getPlayerField = mozGamePlay.getPlayerField?.bind(mozGamePlay) || (() => {});
+        // Use imported utility functions directly
+        this.getPlayerField = getPlayerField;
         this.getOpponentId = mozGamePlay.getOpponentId?.bind(mozGamePlay) || (() => {});
         this.applyEffectRule = mozGamePlay.applyEffectRule?.bind(mozGamePlay) || (() => {});
         this.calculateComboBonus = mozGamePlay.calculateComboBonus?.bind(mozGamePlay) || (() => {});
@@ -42,11 +45,14 @@ class BattleCalculator {
     async calculatePlayerPoints(gameEnv, playerId) {
         console.log(`🎯 BattleCalculator: Starting power calculation for player: ${playerId}`);
         
-        // Initialize calculation context
+        // Initialize calculation context - use GameZones class method
+        const playerField = gameEnv.zones.getPlayerZones(playerId);
+        console.log(`🔍 DEBUG: playerField for ${playerId}:`, playerField);
+        
         const calculationContext = {
             gameEnv,
             playerId,
-            playerField: this.getPlayerField(gameEnv, playerId),
+            playerField: playerField,
             currentLeader: null,
             characterPowers: {},
             totalPoints: 0,
@@ -54,7 +60,11 @@ class BattleCalculator {
             cardData: this.loadCardData()
         };
         
-        calculationContext.currentLeader = calculationContext.playerField.leader;
+        if (calculationContext.playerField) {
+            calculationContext.currentLeader = calculationContext.playerField.leader;
+        } else {
+            console.log(`⚠️ PlayerField is null for ${playerId}`);
+        }
         
         console.log(`📋 Player field zones:`, {
             top: calculationContext.playerField.top?.length || 0,
@@ -64,6 +74,14 @@ class BattleCalculator {
             sp: calculationContext.playerField.sp?.length || 0,
             leader: calculationContext.currentLeader?.name || 'None'
         });
+        
+        // Debug: Show actual zone contents
+        console.log(`🔍 DEBUG: Zone contents for ${playerId}:`);
+        console.log(`  - top:`, calculationContext.playerField.top);
+        console.log(`  - left:`, calculationContext.playerField.left);
+        console.log(`  - right:`, calculationContext.playerField.right);
+        console.log(`  - help:`, calculationContext.playerField.help);
+        console.log(`  - leader:`, calculationContext.playerField.leader);
 
         // ===== EXECUTE CALCULATION STEPS IN ORDER =====
         const steps = [
@@ -159,25 +177,45 @@ class BattleCalculator {
         let cardData = null;
         let isFaceDown = false;
         
-        // Handle both legacy and new card structures safely
-        if (cardObj.cardDetails && Array.isArray(cardObj.cardDetails) && cardObj.cardDetails.length > 0) {
+        console.log(`🔍 DEBUG extractCardInfo: Processing cardObj:`, JSON.stringify(cardObj, null, 2));
+        
+        // Handle NEW zone card structure (current format)
+        if (cardObj.cardData) {
+            cardData = cardObj.cardData;
+            console.log(`🔍 DEBUG extractCardInfo: Using cardObj.cardData`);
+        }
+        // Handle legacy card structures safely  
+        else if (cardObj.cardDetails && Array.isArray(cardObj.cardDetails) && cardObj.cardDetails.length > 0) {
             cardData = cardObj.cardDetails[0];
+            console.log(`🔍 DEBUG extractCardInfo: Using cardObj.cardDetails[0]`);
         } else if (cardObj.id) {
             cardData = cardObj;
+            console.log(`🔍 DEBUG extractCardInfo: Using cardObj directly`);
         }
         
-        if (cardObj.isBack && Array.isArray(cardObj.isBack) && cardObj.isBack.length > 0) {
+        // Handle NEW zone card structure (current format)
+        if (typeof cardObj.isFaceDown === 'boolean') {
+            isFaceDown = cardObj.isFaceDown;
+            console.log(`🔍 DEBUG extractCardInfo: Using cardObj.isFaceDown = ${isFaceDown}`);
+        }
+        // Handle legacy isBack format
+        else if (cardObj.isBack && Array.isArray(cardObj.isBack) && cardObj.isBack.length > 0) {
             isFaceDown = cardObj.isBack[0];
+            console.log(`🔍 DEBUG extractCardInfo: Using cardObj.isBack[0] = ${isFaceDown}`);
         } else if (typeof cardObj.isBack === 'boolean') {
             isFaceDown = cardObj.isBack;
+            console.log(`🔍 DEBUG extractCardInfo: Using cardObj.isBack = ${isFaceDown}`);
         }
 
-        return {
+        const result = {
             cardData,
             cardId: cardData?.id,
             isFaceDown,
             isValid: cardData && cardData.cardType === 'character' && !isFaceDown
         };
+        
+        console.log(`🔍 DEBUG extractCardInfo: Final result:`, result);
+        return result;
     }
 
     /**
@@ -381,7 +419,19 @@ class BattleCalculator {
         }
 
         // Calculate combo bonuses using existing combo system
-        context.comboPoints = this.calculateComboBonus(context.characterPowers, context.cardData.characterCards, context.gameEnv, context.playerId);
+        if (this.calculateComboBonus && typeof this.calculateComboBonus === 'function') {
+            context.comboPoints = this.calculateComboBonus(context.characterPowers, context.cardData.characterCards, context.gameEnv, context.playerId);
+        } else {
+            console.log(`🎲 calculateComboBonus method not available - no combos calculated`);
+            context.comboPoints = 0;
+        }
+        
+        // Ensure comboPoints is a valid number
+        if (typeof context.comboPoints !== 'number' || isNaN(context.comboPoints)) {
+            console.log(`🎲 Invalid combo points (${context.comboPoints}), setting to 0`);
+            context.comboPoints = 0;
+        }
+        
         context.totalPoints += context.comboPoints;
         
         console.log(`🎲 Combo points: ${context.comboPoints}`);
@@ -430,20 +480,9 @@ class BattleCalculator {
     async applyFinalEffects(context) {
         console.log(`⚡ BattleCalculator: Applying final calculation effects`);
         
-        // Delegate to existing applyFinalCalculationEffects method
-        const finalPower = this.mozGamePlay.applyFinalCalculationEffects(
-            context.gameEnv, 
-            context.playerId, 
-            context.totalPoints
-        );
-        
-        const modification = finalPower - context.totalPoints;
-        if (modification !== 0) {
-            console.log(`⚡ Final effects modified power by: ${modification > 0 ? '+' : ''}${modification}`);
-            context.totalPoints = finalPower;
-        } else {
-            console.log(`⚡ No final effects applied`);
-        }
+        // Note: No final calculation effects method available in mozGamePlay
+        // This step is included for potential future expansion
+        console.log(`⚡ No final calculation effects to apply - total power remains: ${context.totalPoints}`);
     }
 
     // =======================================================================================

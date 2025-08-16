@@ -773,7 +773,20 @@ export class GameZones {
     }
 
     public setCardInZone(playerId: string, zone: ZoneType, cardUid: string, cardData?: CardData, isFaceDown: boolean = false): void {
-        const playerZones = this.getPlayerZones(playerId);
+        console.log(`🔍 setCardInZone ENTRY: playerId=${playerId}, zone=${zone}, cardUid=${cardUid}, isFaceDown=${isFaceDown}`);
+        
+        // Convert zone to lowercase to match ZoneType enum values
+        const normalizedZone = zone.toLowerCase() as ZoneType;
+        console.log(`🔍 DEBUG: Normalized zone from "${zone}" to "${normalizedZone}"`);
+        
+        let playerZones;
+        try {
+            playerZones = this.getPlayerZones(playerId);
+            console.log(`🔍 setCardInZone: playerZones found:`, !!playerZones);
+        } catch (error) {
+            console.error(`❌ Error in setCardInZone getPlayerZones:`, error);
+            return;
+        }
         
         // Extract cardId from cardUid (e.g., "c-43_player1_001" → "c-43")
         const cardId = cardUid.split("_")[0];
@@ -828,24 +841,38 @@ export class GameZones {
         zoneCard.cardUid = cardUid
         console.log("test333 ", JSON.stringify(zoneCard))
         // Place card in appropriate zone
-        if (zone === ZoneType.LEADER) {
+        console.log(`🔍 DEBUG: About to place card in zone ${normalizedZone}. Zone types: LEADER=${ZoneType.LEADER}, LEFT=${ZoneType.LEFT}`);
+        console.log(`🔍 DEBUG: Zone comparison: normalizedZone === ZoneType.LEADER? ${normalizedZone === ZoneType.LEADER}, normalizedZone === ZoneType.LEFT? ${normalizedZone === ZoneType.LEFT}`);
+        console.log(`🔍 DEBUG: Zone type check: typeof normalizedZone = ${typeof normalizedZone}, normalizedZone value = "${normalizedZone}"`);
+        if (normalizedZone === ZoneType.LEADER) {
+            console.log(`🔍 DEBUG: Placing leader card`);
             if (!playerZones.leader) playerZones.leader = [];
             playerZones.leader.push(zoneCard as LeaderZoneCard);
             
-        } else if (zone === ZoneType.TOP || zone === ZoneType.LEFT || zone === ZoneType.RIGHT) {
+        } else if (normalizedZone === ZoneType.TOP || normalizedZone === ZoneType.LEFT || normalizedZone === ZoneType.RIGHT) {
             // Character zones
-            const targetZone = playerZones[zone] as CharacterZoneCard[];
+            console.log(`🔍 DEBUG: Accessing zone ${normalizedZone} in playerZones. Available keys:`, Object.keys(playerZones));
+            const targetZone = playerZones[normalizedZone] as CharacterZoneCard[];
+            console.log(`🔍 DEBUG: targetZone for ${normalizedZone}:`, targetZone, 'isArray:', Array.isArray(targetZone));
             if (Array.isArray(targetZone)) {
                 targetZone.push(zoneCard as CharacterZoneCard);
+                console.log(`🔍 DEBUG: After push, ${normalizedZone} zone has ${targetZone.length} cards`);
+            } else {
+                console.log(`❌ ERROR: targetZone for ${normalizedZone} is not an array! Type:`, typeof targetZone, 'Value:', targetZone);
             }
             
-        } else if (zone === ZoneType.HELP || zone === ZoneType.SP) {
+        } else if (normalizedZone === ZoneType.HELP || normalizedZone === ZoneType.SP) {
             // Utility zones (help/sp cards)
-            const targetZone = playerZones[zone] as UtilityZoneCard[];
+            const targetZone = playerZones[normalizedZone] as UtilityZoneCard[];
             if (Array.isArray(targetZone)) {
                 targetZone.push(zoneCard as UtilityZoneCard);
             }
         }
+        
+        // Final verification
+        const finalPlayerZones = this.getPlayerZones(playerId);
+        const finalZoneContent = finalPlayerZones[normalizedZone];
+        console.log(`🔍 FINAL DEBUG: After placement, ${normalizedZone} zone contains:`, finalZoneContent);
         
         console.log(`✅ Set card in zone: ${cardUid} (${cardId}) → ${zone} for player ${playerId}${isFaceDown ? ' (face-down)' : ''} with data: ${resolvedCardData.name || 'Unknown'}`);
     }
@@ -1289,8 +1316,18 @@ export class GameEnvironment {
         return this.zones.isZoneOccupied(playerId, zone);
     }
 
-    public placeCardInZone(playerId: string, zone: ZoneType, cardId: string, isFaceDown: boolean = false): boolean {
-        this.zones.setCardInZone(playerId, zone, cardId);
+    public placeCardInZone(playerId: string, zone: ZoneType, cardUID: string, isFaceDown: boolean = false): boolean {
+        // Debug: Log what we're trying to place
+        console.log(`🔍 placeCardInZone called: playerId=${playerId}, zone=${zone}, cardUID=${cardUID}, isFaceDown=${isFaceDown}`);
+        
+        // Pass cardUID and isFaceDown to setCardInZone
+        this.zones.setCardInZone(playerId, zone, cardUID, undefined, isFaceDown);
+        
+        // Debug: Check if placement succeeded
+        const playerZones = this.zones.getPlayerZones(playerId);
+        const zoneName = zone.toLowerCase() as keyof typeof playerZones;
+        console.log(`🔍 After setCardInZone: ${zone} zone contains:`, playerZones[zoneName]);
+        
         return true;
     }
 
