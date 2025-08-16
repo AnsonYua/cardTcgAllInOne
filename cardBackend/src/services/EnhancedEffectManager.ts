@@ -5,13 +5,12 @@
  * with type-safe TypeScript classes for better clarity and maintainability.
  */
 
-import { GameEnvironment, EnhancedFieldEffect } from '../models/GameEnvironment.js';
+import { GameEnvironment, EnhancedFieldEffect, PlaySequenceAction } from '../models/GameEnvironment';
 import { 
     ActiveEffect, 
     EffectRule, 
     EffectRuntimeContext 
-} from '../models/ActiveEffect.js';
-import { PlaySequenceAction } from '../models/GameEnvironment.js';
+} from '../models/ActiveEffect';
 
 /**
  * Enhanced Effect Manager - Direct JSON-to-Class approach
@@ -194,8 +193,22 @@ export class EnhancedEffectManager {
         }
         player.fieldEffects.activeEffectsEnhanced.push(enhancedFieldEffect);
         
-        // Maintain backward compatibility with legacy format
-        const legacyFieldEffect = effect.toLegacyFieldEffect();
+        // Maintain backward compatibility with legacy format using direct properties
+        const legacyFieldEffect = {
+            effectId: effect.effectId,
+            source: effect.sourceCardUid,
+            sourcePlayerId: effect.sourcePlayerId,
+            type: effect.effectType,
+            target: {
+                scope: (effect.targetScope === 'opponent' ? 'OPPONENT' : effect.targetScope === 'both' ? 'ALL' : 'SELF') as 'OPPONENT' | 'ALL' | 'SELF',
+                zones: effect.rule.target.zones as any,
+                gameTypes: effect.rule.target.filters?.filter(f => f.type === 'gameType').map(f => f.value || '').filter(Boolean),
+                traits: effect.rule.target.filters?.filter(f => f.type === 'trait').map(f => f.value || '').filter(Boolean)
+            },
+            value: effect.effectValue,
+            isEnabled: effect.isActive,
+            createdAt: effect.createdAt
+        };
         player.fieldEffects.activeEffects.push(legacyFieldEffect);
         
         console.log(`   ⚡ Applied power boost: +${effect.effectValue} for ${effect.targetPlayerId}`);
@@ -226,8 +239,22 @@ export class EnhancedEffectManager {
         
         player.fieldEffects.activeEffectsEnhanced.push(enhancedFieldEffect);
         
-        // Legacy compatibility
-        const legacyFieldEffect = effect.toLegacyFieldEffect();
+        // Legacy compatibility using direct properties
+        const legacyFieldEffect = {
+            effectId: effect.effectId,
+            source: effect.sourceCardUid,
+            sourcePlayerId: effect.sourcePlayerId,
+            type: effect.effectType,
+            target: {
+                scope: (effect.targetScope === 'opponent' ? 'OPPONENT' : effect.targetScope === 'both' ? 'ALL' : 'SELF') as 'OPPONENT' | 'ALL' | 'SELF',
+                zones: effect.rule.target.zones as any,
+                gameTypes: effect.rule.target.filters?.filter(f => f.type === 'gameType').map(f => f.value || '').filter(Boolean),
+                traits: effect.rule.target.filters?.filter(f => f.type === 'trait').map(f => f.value || '').filter(Boolean)
+            },
+            value: effect.effectValue,
+            isEnabled: effect.isActive,
+            createdAt: effect.createdAt
+        };
         player.fieldEffects.activeEffects.push(legacyFieldEffect);
         
         console.log(`   🎯 Applied set power: ${effect.effectValue} for ${effect.targetPlayerId}`);

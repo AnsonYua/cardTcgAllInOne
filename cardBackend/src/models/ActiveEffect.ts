@@ -262,27 +262,6 @@ export class ActiveEffect {
         return this.rule.target.requiresSelection ?? false;
     }
     
-    /**
-     * Convert to legacy FieldEffect format for compatibility
-     * @deprecated Use ActiveEffect directly instead
-     */
-    toLegacyFieldEffect(): any {
-        return {
-            effectId: this.effectId,
-            source: this.sourceCardUid,
-            sourcePlayerId: this.sourcePlayerId,
-            type: this.rule.effect.type,
-            target: {
-                scope: this.rule.target.owner === 'opponent' ? 'OPPONENT' : 'SELF',
-                zones: this.rule.target.zones,
-                filters: this.rule.target.filters
-            },
-            value: this.rule.effect.value,
-            trigger: this.rule.trigger,
-            isActive: this.isActive,
-            createdAt: this.createdAt
-        };
-    }
     
     /**
      * Create a copy of this effect (for incremental processing)

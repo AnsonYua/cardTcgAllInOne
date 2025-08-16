@@ -5,8 +5,8 @@
  * CalculatedEffect -> FieldEffect approach to the direct JSON -> ActiveEffect approach.
  */
 
-import { ActiveEffect, EffectRule } from '../models/ActiveEffect.js';
-import { FieldEffect, EnhancedFieldEffect } from '../models/GameEnvironment.js';
+import { ActiveEffect, EffectRule } from '../models/ActiveEffect';
+import { FieldEffect, EnhancedFieldEffect } from '../models/GameEnvironment';
 
 /**
  * Migration helper for transitioning effect systems
@@ -54,7 +54,21 @@ export class EffectMigrationHelper {
      * Convert ActiveEffect to legacy FieldEffect for backward compatibility
      */
     static convertActiveEffectToLegacyFieldEffect(activeEffect: ActiveEffect): FieldEffect {
-        return activeEffect.toLegacyFieldEffect();
+        return {
+            effectId: activeEffect.effectId,
+            source: activeEffect.sourceCardUid,
+            sourcePlayerId: activeEffect.sourcePlayerId,
+            type: activeEffect.effectType,
+            target: {
+                scope: (activeEffect.targetScope === 'opponent' ? 'OPPONENT' : activeEffect.targetScope === 'both' ? 'ALL' : 'SELF') as 'OPPONENT' | 'ALL' | 'SELF',
+                zones: activeEffect.rule.target.zones as any,
+                gameTypes: activeEffect.rule.target.filters?.filter(f => f.type === 'gameType').map(f => f.value || '').filter(Boolean),
+                traits: activeEffect.rule.target.filters?.filter(f => f.type === 'trait').map(f => f.value || '').filter(Boolean)
+            },
+            value: activeEffect.effectValue,
+            isEnabled: activeEffect.isActive,
+            createdAt: activeEffect.createdAt
+        };
     }
     
     /**
@@ -143,8 +157,22 @@ export class EffectMigrationHelper {
      */
     static validateEffectCompatibility(legacyEffect: FieldEffect, activeEffect: ActiveEffect): boolean {
         try {
-            // Check if essential properties match
-            const legacyConverted = activeEffect.toLegacyFieldEffect();
+            // Check if essential properties match using direct properties
+            const legacyConverted = {
+                effectId: activeEffect.effectId,
+                source: activeEffect.sourceCardUid,
+                sourcePlayerId: activeEffect.sourcePlayerId,
+                type: activeEffect.effectType,
+                target: {
+                    scope: (activeEffect.targetScope === 'opponent' ? 'OPPONENT' : activeEffect.targetScope === 'both' ? 'ALL' : 'SELF') as 'OPPONENT' | 'ALL' | 'SELF',
+                    zones: activeEffect.rule.target.zones as any,
+                    gameTypes: activeEffect.rule.target.filters?.filter(f => f.type === 'gameType').map(f => f.value || '').filter(Boolean),
+                    traits: activeEffect.rule.target.filters?.filter(f => f.type === 'trait').map(f => f.value || '').filter(Boolean)
+                },
+                value: activeEffect.effectValue,
+                    isEnabled: activeEffect.isActive,
+                createdAt: activeEffect.createdAt
+            };
             
             return (
                 legacyEffect.type === legacyConverted.type &&

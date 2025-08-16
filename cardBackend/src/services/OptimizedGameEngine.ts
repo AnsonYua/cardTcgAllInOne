@@ -10,8 +10,7 @@
  * 
  * KEY FEATURES:
  * ✅ Incremental Processing: Only new effects processed per card play
- * ✅ Instant Validation: Pre-computed validations for immediate frontend response
- * ✅ Effect Caching: Smart caching with selective invalidation
+ * ✅ Direct Validation: Real-time validations for frontend response
  * ✅ Backward Compatibility: Works with existing API and frontend expectations
  * ✅ Performance Monitoring: Built-in metrics and profiling
  */
@@ -51,20 +50,16 @@ interface PlayerRestrictions {
 }
 
 import { enhancedEffectManager } from './EnhancedEffectManager';
-import { ValidationCache, validationCache } from './ValidationCache';
 import { CardInfoUtils } from './CardInfoUtils';
 
 interface OptimizedGameConfig {
-    enableCaching: boolean;
     enableMetrics: boolean;
-    maxCacheSize: number;
     validationTimeout: number;
 }
 
 interface PerformanceMetrics {
     cardPlaysProcessed: number;
     averageProcessingTime: number;
-    cacheHitRate: number;
     totalValidationTime: number;
     lastOperationTime: number;
 }
@@ -72,15 +67,12 @@ interface PerformanceMetrics {
 export class OptimizedGameEngine {
     private config: OptimizedGameConfig;
     private metrics: PerformanceMetrics;
-    private validationCache: ValidationCache;
     private cardInfoUtils: any = null;
     private initialized: boolean = false;
 
     constructor(config?: Partial<OptimizedGameConfig>) {
         this.config = {
-            enableCaching: true,
             enableMetrics: true,
-            maxCacheSize: 1000,
             validationTimeout: 5000,
             ...config
         };
@@ -88,12 +80,9 @@ export class OptimizedGameEngine {
         this.metrics = {
             cardPlaysProcessed: 0,
             averageProcessingTime: 0,
-            cacheHitRate: 0,
             totalValidationTime: 0,
             lastOperationTime: 0
         };
-
-        this.validationCache = validationCache;
 
         console.log('🚀 OptimizedGameEngine initialized with config:', this.config);
     }
@@ -106,9 +95,6 @@ export class OptimizedGameEngine {
         
         // Initialize CardInfoUtils (ready to use immediately after construction)
         this.cardInfoUtils = new CardInfoUtils();
-        
-        // Set dependencies
-        this.validationCache.setCardInfoUtils(this.cardInfoUtils);
         
         this.initialized = true;
         console.log('✅ OptimizedGameEngine initialized');
@@ -135,6 +121,7 @@ export class OptimizedGameEngine {
         console.log(`🎮 Playing card ${cardUID} in ${zone} (faceDown: ${faceDown}) by ${playerId}`);
 
         try {
+            console.log(`🎮 Execute play card 1`);
             // STEP 0: TURN AUTHORIZATION - Check if it's player's turn
             const turnCheck = await this.checkIsPlayOkForAction(gameEnv, playerId);
             if (!turnCheck) {
@@ -144,7 +131,7 @@ export class OptimizedGameEngine {
                     error: 'Not your turn'
                 };
             }
-
+            console.log(`🎮 Execute play card 2`);
             // STEP 1: FIELD EFFECTS VALIDATION - No simulation needed
             const validation = await this.validateCardPlacementWithFieldEffects(gameEnv, playerId, cardUID, zone, faceDown);
             if (!validation.isValid) {
@@ -154,10 +141,11 @@ export class OptimizedGameEngine {
                     error: validation.error
                 };
             }
+            console.log(`🎮 Execute play card`);
 
             // STEP 2: EXECUTE CARD PLAY - Update game state
             const playAction = await this.executeCardPlay(gameEnv, playerId, cardUID, zone, faceDown);
-            
+            console.log(`🎮 Execute play card complete`);
             // STEP 3: ADD GAME EVENTS - Frontend integration
             this.addSuccessEvents(gameEnv, playerId, cardUID, zone, faceDown);
 
@@ -185,10 +173,7 @@ export class OptimizedGameEngine {
             // STEP 7: PHASE MANAGEMENT - Check if phase should advance
             await this.checkPhaseProgression(gameEnv);
 
-            // STEP 8: UPDATE VALIDATION CACHE - Keep frontend data fresh
-            if (this.config.enableCaching) {
-                await this.updateValidationCaches(gameEnv, playAction);
-            }
+            // STEP 8: (Cache functionality removed)
 
             // STEP 9: UPDATE METRICS
             if (this.config.enableMetrics) {
@@ -224,14 +209,14 @@ export class OptimizedGameEngine {
         zone: ZoneType,
         faceDown: boolean
     ): Promise<ValidationResult> {
-        
+        console.log(`🎮 validate 1`);
         // Check if player exists
         const player = gameEnv.players[playerId];
         if (!player) {
             console.log("validateCardPlayInstant Player not found")
             return { isValid: false, error: 'Player not found' };
         }
-
+        console.log(`🎮 validate 2`);
         // Check if card is in player's hand
         if (!player.deck.hand.includes(cardUID)) {
             console.log(cardUID)
@@ -239,13 +224,13 @@ export class OptimizedGameEngine {
             console.log("validateCardPlayInstant Card not in hand")
             return { isValid: false, error: 'Card not in hand' };
         }
-
+        console.log(`🎮 validate 3`);
         // Check if zone is occupied
         if (gameEnv.isZoneOccupied(playerId, zone)) {
             console.log(`Zone ${zone} is already occupied` )
             return { isValid: false, error: `Zone ${zone} is already occupied` };
         }
-
+        console.log(`🎮 validate 4`);
         // Get player field effects (single source of truth - gameEnv.players[playerId].fieldEffects ONLY)
         let playerFieldEffects = (gameEnv as any).players[playerId]?.fieldEffects;
         if (!playerFieldEffects) {
@@ -274,22 +259,22 @@ export class OptimizedGameEngine {
                 return { isValid: false, error: 'Player not found for field effects' };
             }
         }
-
+        console.log(`🎮 validate 4`);
         // Face-down cards bypass most restrictions
         if (faceDown) {
             return await this.validateFaceDownPlacement(gameEnv, zone);
         }
-
+        console.log(`🎮 validate 5`);
         // PRIORITY 1: Special effects check - Must come first to bypass other restrictions
         if (playerFieldEffects.specialEffects && playerFieldEffects.specialEffects.zonePlacementFreedom) {
             return { isValid: true }; // h-5 (失智老人) freedom effect bypasses all restrictions
         }
-
+        console.log(`🎮 validate 6`);
         // PRIORITY 2: Card-specific restrictions (disabled cards)
         if (playerFieldEffects.disabledCards && playerFieldEffects.disabledCards.includes(cardUID)) {
             return { isValid: false, error: 'Card is disabled' };
         }
-
+        console.log(`🎮 validate 7`);
         // PRIORITY 3: Zone compatibility restrictions
         const allowedTypes = playerFieldEffects.zoneRestrictions && playerFieldEffects.zoneRestrictions[zone];
         if (allowedTypes && allowedTypes !== 'ALL') {
@@ -307,18 +292,7 @@ export class OptimizedGameEngine {
                 };
             }
         }
-
-        // PRIORITY 4: Cache validation (optional optimization)
-        if (this.config.enableCaching) {
-            try {
-                const canPlace = this.validationCache.canPlaceCard(playerId, cardUID, zone);
-                if (canPlace !== undefined) {
-                    return { isValid: canPlace };
-                }
-            } catch (cacheError) {
-                // Continue with non-cached validation on cache errors
-            }
-        }
+        console.log(`🎮 validate 8 (cache removed)`);
         return { isValid: true };
     }
 
@@ -399,34 +373,6 @@ export class OptimizedGameEngine {
         return playAction;
     }
 
-    /**
-     * Update validation caches after card play
-     */
-    private async updateValidationCaches(gameEnv: GameEnvironment, playAction: PlaySequenceAction): Promise<void> {
-        console.log('🔄 Updating validation caches...');
-
-        // Invalidate affected caches
-        this.validationCache.invalidatePlayer(playAction.playerId);
-        
-        // If card affects opponent, invalidate their cache too
-        // Extract base card ID from UID for card details lookup
-        const baseCardId = playAction.cardUid.split('_')[0];
-        const cardDetails = await this.cardInfoUtils.getCardDetails(baseCardId);
-        if (cardDetails && cardDetails.effects && cardDetails.effects.rules) {
-            for (const rule of cardDetails.effects.rules) {
-                if (rule.target.scope === 'OPPONENT') {
-                    const opponentId = this.getOpponentId(gameEnv, playAction.playerId);
-                    this.validationCache.invalidatePlayer(opponentId);
-                    break;
-                }
-            }
-        }
-
-        // Rebuild caches for affected players
-        await this.validationCache.precomputeValidations(gameEnv, playAction.playerId);
-        
-        console.log('✅ Validation caches updated');
-    }
 
     /**
      * Initialize game for optimized processing
@@ -437,12 +383,7 @@ export class OptimizedGameEngine {
         // Process existing play sequence
         await enhancedEffectManager.processAllExistingEffects(gameEnv);
 
-        // Build initial validation caches
-        if (this.config.enableCaching) {
-            for (const playerId of Object.keys(gameEnv.players)) {
-                await this.validationCache.precomputeValidations(gameEnv, playerId);
-            }
-        }
+        // Cache functionality removed
 
         console.log('✅ Game initialized for optimized processing');
     }
@@ -451,11 +392,7 @@ export class OptimizedGameEngine {
      * Get available actions for player (instant response)
      */
     public getAvailableActions(gameEnv: GameEnvironment, playerId: string): AvailableAction[] {
-        if (this.config.enableCaching) {
-            return this.validationCache.getAvailableActions(playerId);
-        }
-
-        // Fallback to real-time calculation (slower)
+        // Use real-time calculation (cache removed)
         return this.calculateAvailableActionsRealtime(gameEnv, playerId);
     }
 
@@ -488,11 +425,7 @@ export class OptimizedGameEngine {
      * Get valid zones for card in real-time
      */
     private getValidZonesRealtime(gameEnv: GameEnvironment, playerId: string, cardUID: string): ZoneType[] {
-        if (this.config.enableCaching) {
-            return this.validationCache.getValidZones(playerId, cardUID);
-        }
-
-        // Fallback implementation using fieldEffects (single source of truth)
+        // Implementation using fieldEffects (single source of truth)
         const validZones: ZoneType[] = [];
         const playerFieldEffects = gameEnv.players[playerId]?.fieldEffects;
         
@@ -701,22 +634,15 @@ export class OptimizedGameEngine {
         const totalTime = this.metrics.averageProcessingTime * (this.metrics.cardPlaysProcessed - 1) + processingTime;
         this.metrics.averageProcessingTime = totalTime / this.metrics.cardPlaysProcessed;
         
-        // Update cache hit rate
-        if (this.config.enableCaching) {
-            const cacheMetrics = this.validationCache.getMetrics();
-            this.metrics.cacheHitRate = cacheMetrics.hitRate;
-        }
+        // Cache functionality removed
     }
 
     /**
      * Get performance metrics
      */
-    public getPerformanceMetrics(): PerformanceMetrics & {
-        cacheMetrics: any;
-    } {
+    public getPerformanceMetrics(): PerformanceMetrics {
         return {
-            ...this.metrics,
-            cacheMetrics: this.config.enableCaching ? this.validationCache.getMetrics() : null
+            ...this.metrics
         };
     }
 
@@ -727,7 +653,6 @@ export class OptimizedGameEngine {
         this.metrics = {
             cardPlaysProcessed: 0,
             averageProcessingTime: 0,
-            cacheHitRate: 0,
             totalValidationTime: 0,
             lastOperationTime: 0
         };
@@ -747,7 +672,6 @@ export class OptimizedGameEngine {
             // Performance metrics (optional)
             performance: this.config.enableMetrics ? {
                 validationComputeTime: this.metrics.lastOperationTime,
-                cacheHitRate: this.metrics.cacheHitRate,
                 incrementalProcessingTime: this.metrics.averageProcessingTime
             } : undefined
         };
@@ -766,8 +690,7 @@ export class OptimizedGameEngine {
                 validation[playerId] = {
                     zoneRestrictions: fieldEffects.zoneRestrictions,
                     availableActions: this.getAvailableActions(gameEnv, playerId),
-                    cardPlacements: this.config.enableCaching ? 
-                        this.exportCardPlacements(playerId) : {},
+                    cardPlacements: {},
                     specialEffects: fieldEffects.specialEffects,
                     disabledCards: fieldEffects.disabledCards || [],
                     calculatedPowers: fieldEffects.calculatedPowers || {}
@@ -782,14 +705,8 @@ export class OptimizedGameEngine {
      * Export card placement validations
      */
     private exportCardPlacements(playerId: string): any {
-        const playerValidationState = this.validationCache.getPlayerValidationState(playerId);
-        const placements: any = {};
-        
-        for (const [cardUID, zoneMap] of playerValidationState.validPlacements) {
-            placements[cardUID] = Object.fromEntries(zoneMap);
-        }
-        
-        return placements;
+        // Cache functionality removed - return empty object for now
+        return {};
     }
 
     /**
@@ -798,9 +715,7 @@ export class OptimizedGameEngine {
     public dispose(): void {
         console.log('🔄 Disposing OptimizedGameEngine...');
         
-        if (this.config.enableCaching) {
-            this.validationCache.clearAllCaches();
-        }
+        // Cache functionality removed
         
         this.resetMetrics();
         

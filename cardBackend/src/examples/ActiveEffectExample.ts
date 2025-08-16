@@ -5,9 +5,9 @@
  * and directly uses JSON structures with type-safe TypeScript classes.
  */
 
-import { ActiveEffect, ActiveEffectCollection } from '../models/ActiveEffect.js';
-import { GameEnvironment } from '../models/GameEnvironment.js';
-import { enhancedEffectManager } from '../services/EnhancedEffectManager.js';
+import { ActiveEffect, ActiveEffectCollection } from '../models/ActiveEffect';
+import { GameEnvironment } from '../models/GameEnvironment';
+import { enhancedEffectManager } from '../services/EnhancedEffectManager';
 
 /**
  * Example: Direct JSON usage without transformation layers
