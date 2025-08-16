@@ -161,81 +161,52 @@ class CardActionHandler {
     async validateBasicPlacement(gameEnv, playerId, action) {
         console.log(`🎯 CardActionHandler: Validating basic placement for action:`, action);
         
-        // Determine if this is the new UID/zone-based format or legacy index-based format
-        const isUidFormat = action.hasOwnProperty('cardUID') && action.hasOwnProperty('zone');
+        // Modern format using cardUID and zone
         const hand = [...this.getPlayerHand(gameEnv, playerId)];
         
         let playPos, cardToPlay, cardDetails;
         
-        if (isUidFormat) {
-            console.log(`🎯 Using new UID/zone-based format`);
-            
-            // NEW FORMAT: Use cardUID and zone directly with validation
-            playPos = ZoneMapping.normalizeZone(action.zone);
-            
-            // Validate zone name using ZoneMapping utility
-            if (!playPos) {
-                this.addErrorEvent(gameEnv, 'INVALID_ZONE', `Invalid zone: ${action.zone}`, playerId);
-                return { isValid: false, error: `Invalid zone: ${action.zone}` };
-            }
-            console.log("hand ",JSON.stringify(hand))
-            // Find card in hand by UID
-            const cardUID = action.cardUID;
-            const cardIndex = hand.findIndex(handCardUID => handCardUID === cardUID);
-            
-            if (cardIndex === -1) {
-                this.addErrorEvent(gameEnv, 'CARD_NOT_IN_HAND', `Card ${cardUID} not found in hand`, playerId);
-                return { isValid: false, error: `Card ${cardUID} not found in hand` };
-            }
-            
-            cardToPlay = hand[cardIndex];
-            // Extract base card ID from UID using utility - REFACTORED
-            const baseCardId = CardDataValidator.extractCardIdFromUID(cardToPlay);
-            cardDetails = mozDeckHelper.getDeckCardDetails(baseCardId);
-            
-            if (!cardDetails) {
-                this.addErrorEvent(gameEnv, 'CARD_NOT_FOUND', "Card details not found", playerId);
-                return { isValid: false, error: "Card details not found" };
-            }
-            
-            console.log(`🎯 New format validation passed - Zone: ${playPos}, Card: ${cardDetails.name}, UID: ${cardUID}`);
-            
-            // Store the card index for backward compatibility with existing code
-            action._resolvedCardIndex = cardIndex;
-            
-        } else {
-            console.log(`🎯 Using legacy index-based format`);
-            
-            // LEGACY FORMAT: Use field_idx and card_idx
-            // Validate field position index (0-4 for top, left, right, help, sp)
-            if (action.field_idx >= this.POSITION_DICT.length) {
-                this.addErrorEvent(gameEnv, 'INVALID_POSITION', "position out of range", playerId);
-                return { isValid: false, error: "position out of range" };
-            }
-            
-            playPos = this.POSITION_DICT[action.field_idx];
-            
-            // Validate card index in hand (prevent playing non-existent cards)
-            if (action.card_idx >= hand.length) {
-                this.addErrorEvent(gameEnv, 'INVALID_CARD_INDEX', "hand card out of range", playerId);
-                return { isValid: false, error: "hand card out of range" };
-            }
-            
-            // Get card details from deck manager
-            cardToPlay = hand[action.card_idx];
-            cardDetails = mozDeckHelper.getDeckCardDetails(cardToPlay);
-            
-            if (!cardDetails) {
-                this.addErrorEvent(gameEnv, 'CARD_NOT_FOUND', "Card not found", playerId);
-                return { isValid: false, error: "Card not found" };
-            }
-            
-            console.log(`🎯 Legacy format validation passed - Position: ${playPos}, Card: ${cardDetails.name}`);
+        // Validate that required fields are present
+        if (!action.cardUID || !action.zone) {
+            this.addErrorEvent(gameEnv, 'INVALID_ACTION_FORMAT', 'Action must include cardUID and zone', playerId);
+            return { isValid: false, error: 'Action must include cardUID and zone' };
         }
+        
+        console.log(`🎯 Using modern UID/zone-based format`);
+        
+        // Use cardUID and zone directly with validation
+        playPos = ZoneMapping.normalizeZone(action.zone);
+        
+        // Validate zone name using ZoneMapping utility
+        if (!playPos) {
+            this.addErrorEvent(gameEnv, 'INVALID_ZONE', `Invalid zone: ${action.zone}`, playerId);
+            return { isValid: false, error: `Invalid zone: ${action.zone}` };
+        }
+        console.log("hand ",JSON.stringify(hand))
+        // Find card in hand by UID
+        const cardUID = action.cardUID;
+        const cardIndex = hand.findIndex(handCardUID => handCardUID === cardUID);
+        
+        if (cardIndex === -1) {
+            this.addErrorEvent(gameEnv, 'CARD_NOT_IN_HAND', `Card ${cardUID} not found in hand`, playerId);
+            return { isValid: false, error: `Card ${cardUID} not found in hand` };
+        }
+        
+        cardToPlay = hand[cardIndex];
+        // Extract base card ID from UID using utility
+        const baseCardId = CardDataValidator.extractCardIdFromUID(cardToPlay);
+        cardDetails = mozDeckHelper.getDeckCardDetails(baseCardId);
+        
+        if (!cardDetails) {
+            this.addErrorEvent(gameEnv, 'CARD_NOT_FOUND', "Card details not found", playerId);
+            return { isValid: false, error: "Card details not found" };
+        }
+        
+        console.log(`🎯 Modern format validation passed - Zone: ${playPos}, Card: ${cardDetails.name}, UID: ${cardUID}`);
         
         return {
             isValid: true,
-            data: { playPos, cardDetails, hand, isUidFormat }
+            data: { playPos, cardDetails, hand }
         };
     }
 
@@ -474,14 +445,23 @@ class CardActionHandler {
     async executeCardPlacement(gameEnv, playerId, action, cardDetails, playPos, isPlayInFaceDown, hand) {
         console.log(`🎯 CardActionHandler: Executing card placement - ${cardDetails.name} in ${playPos} (faceDown: ${isPlayInFaceDown})`);
         
-        // Determine card index - use resolved index for new format, or direct index for legacy format
-        const cardIndex = action._resolvedCardIndex !== undefined ? action._resolvedCardIndex : action.card_idx;
+        // Get the cardUID for proper hand/handDetails synchronization
+        const cardUID = action.cardUID;
+        
+        // CRITICAL FIX: Use proper playCardFromHand method to update both hand and handDetails
+        const player = gameEnv.players[playerId];
+        if (!player || !player.playCardFromHand(cardUID)) {
+            console.error(`❌ Failed to remove card ${cardUID} from hand for player ${playerId}`);
+            return null;
+        }
+        
+        console.log(`✅ Successfully removed card ${cardUID} from hand and handDetails`);
         
         // Create card object for field placement with all necessary metadata
         const cardObj = {
-            "card": hand.splice(cardIndex, 1),              // Remove card from hand using correct index
-            "cardDetails": [cardDetails],                    // Store card data for effects
-            "isBack": [isPlayInFaceDown],                   // Track if face down (for battle calculations)
+            "card": [cardUID],                              // Store cardUID in array format for field
+            "cardDetails": [cardDetails],                   // Store card data for effects
+            "isBack": [isPlayInFaceDown],                  // Track if face down (for battle calculations)
             "valueOnField": isPlayInFaceDown ? 0 : cardDetails.power  // Power for calculations (face-down = 0)
         };
         
@@ -490,8 +470,7 @@ class CardActionHandler {
         const playerData = getPlayerData(gameEnv, playerId);
         const playerField = getPlayerField(gameEnv, playerId);
         
-        // Update player hand and field
-        this.setPlayerHand(gameEnv, playerId, hand);   // Update hand (card removed)
+        // Place card on field (hand already updated by playCardFromHand)
         playerField[playPos].push(cardObj);            // Place card on field
         
         // Record action in turn history

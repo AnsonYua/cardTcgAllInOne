@@ -335,11 +335,10 @@ export class OptimizedGameEngine {
         faceDown: boolean
     ): Promise<PlaySequenceAction> {
         
-        // Remove card from hand
+        // Remove card from hand and handDetails
         const player = gameEnv.players[playerId];
-        const cardIndex = player.deck.hand.indexOf(cardUID);
-        if (cardIndex !== -1) {
-            player.deck.hand.splice(cardIndex, 1);
+        if (!player.playCardFromHand(cardUID)) {
+            throw new Error(`Failed to remove card ${cardUID} from hand for player ${playerId}`);
         }
 
         // Place card in zone

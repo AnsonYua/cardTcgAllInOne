@@ -328,22 +328,20 @@ export class GameController {
                 return;
             }
             
-            // Use new TypeScript method for card play actions
+            // Use modern TypeScript method for card play actions
             if (action.type === 'PlayCard') {
-                // Only accept cardUID parameter - no legacy fallbacks
+                // Require both cardUID and zone - no legacy fallbacks
                 const cardUID = action.cardUID;
+                const zone = action.zone;
                 
-                if (!cardUID) {
+                if (!cardUID || !zone) {
                     res.status(400).json({
-                        error: 'cardUID is required for PlayCard action',
+                        error: 'Both cardUID and zone are required for PlayCard action',
                         timestamp: new Date().toISOString(),
                         context: 'playerAction endpoint - PlayCard validation'
                     });
                     return;
                 }
-                
-                // Handle different frontend formats for zone identification
-                const zone = action.zone || this.mapFieldIndexToZone(action.field_idx);
                 
                 const result = await this.gameLogic.playCard(
                     gameId, 

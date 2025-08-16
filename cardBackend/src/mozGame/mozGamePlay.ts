@@ -45,9 +45,8 @@ export enum TurnPhase {
 export interface PlayerAction {
     type: string;
     playerId?: string;
-    field_idx?: number;
     isRedraw?: boolean;
-    cardUID?: string;  // Modern card identification (replaces cardId and card_idx)
+    cardUID?: string;  // Modern card identification
     zone?: string;
     [key: string]: any;
 }
