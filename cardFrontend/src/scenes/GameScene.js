@@ -594,25 +594,27 @@ export default class GameScene extends Phaser.Scene {
       return; // Labels not created yet
     }
     
-    // Get current victory points from game state manager
-    const playerVP = this.gameStateManager.getVictoryPoints();
+    // Get current player power from game state
+    const gameState = this.gameStateManager.getGameState();
     const opponent = this.gameStateManager.getOpponent();
-    const opponentVP = this.gameStateManager.getVictoryPoints(opponent);
+    
+    // Access player power from gameEnv.players[].playerPoint
+    const playerPower = gameState.gameEnv.players?.[gameState.playerId]?.playerPoint || 0;
+    const opponentPower = gameState.gameEnv.players?.[opponent]?.playerPoint || 0;
     
     // Debug logging to verify data mapping
-    const gameState = this.gameStateManager.getGameState();
-    console.log('Victory Points Debug Info:');
+    console.log('Player Power Debug Info:');
     console.log('  Player ID:', gameState.playerId);
     console.log('  Opponent ID:', opponent);
-    console.log('  Victory Points Object:', gameState.gameEnv.victoryPoints);
-    console.log('  Player VP:', playerVP);
-    console.log('  Opponent VP:', opponentVP);
+    console.log('  Player Power:', playerPower);
+    console.log('  Opponent Power:', opponentPower);
+    console.log('  Players Data:', gameState.gameEnv.players);
     
-    // Update player victory point label
-    this.playerVictoryPointLabel.setText(`Victory Points: ${playerVP}`);
+    // Update player label to show power
+    this.playerVictoryPointLabel.setText(`Player Power: ${playerPower}`);
     
-    // Update opponent victory point label
-    this.opponentVictoryPointLabel.setText(`Victory Points: ${opponentVP}`);
+    // Update opponent label to show power  
+    this.opponentVictoryPointLabel.setText(`Opponent Power: ${opponentPower}`);
     
     // Update player names if available
     if (gameState.playerName) {
