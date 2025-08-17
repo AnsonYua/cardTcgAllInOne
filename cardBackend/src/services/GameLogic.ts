@@ -653,7 +653,15 @@ export class GameLogic {
                 gameEnvironment = gameEnv;
             } else {
                 // Create GameEnvironment from JSON data
+                console.log('🔧 Converting JSON to GameEnvironment class...');
+                console.log('Players in input data:', Object.keys(gameEnv.players || {}));
                 gameEnvironment = GameEnvironment.fromJSON(gameEnv);
+                console.log('Players after conversion:', Object.keys(gameEnvironment.players || {}));
+                
+                // Verify player instances are properly created
+                for (const [playerId, player] of Object.entries(gameEnvironment.players || {})) {
+                    console.log(`Player ${playerId} has toJSON method:`, typeof (player as any).toJSON === 'function');
+                }
             }
             
             // CRITICAL: Initialize play sequence manager if not present

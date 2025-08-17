@@ -97,7 +97,6 @@ export class IncrementalEffectManager {
                 activeEffects: [],
                 activeEffectsEnhanced: [],
                 specialEffects: {},
-                calculatedPowers: {},
                 disabledCards: [],
                 victoryPointModifiers: 0
             };
