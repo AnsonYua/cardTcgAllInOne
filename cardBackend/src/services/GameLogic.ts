@@ -8,7 +8,7 @@ import { Request, Response } from 'express';
 // Import TypeScript modules with proper types
 import { GameEnvironment, GamePhase, ActionType, ZoneType, EventType, Player } from '../models/GameEnvironment';
 import { GameEnvironmentAdapter } from '../utils/GameEnvironmentAdapter';
-import { effectSimulator, EffectSimulator } from './EffectSimulator';
+import { enhancedEffectManager } from './EnhancedEffectManager';
 import { optimizedGameEngineManager, OptimizedGameEngine } from './OptimizedGameEngine';
 
 // Import JavaScript modules (will be converted later)
@@ -121,15 +121,12 @@ export class GameLogic {
         this.mozGamePlay = mozGamePlay;
         this.baseDataPath = path.join(__dirname, '../gameData');
         
-        // NEW: Initialize TypeScript effect system with dependencies
-        effectSimulator.setCardInfoUtils(this.mozGamePlay.cardInfoUtils);
-        
+        // Initialize EnhancedEffectManager with dependencies (EFFICIENT INCREMENTAL APPROACH)
         // IMPORTANT: Inject mozGamePlay.calculatePlayerPoint to avoid circular dependency (with defensive binding)
         if (this.mozGamePlay && this.mozGamePlay.calculatePlayerPoint) {
-            effectSimulator.setCalculatePlayerPointFunction(this.mozGamePlay.calculatePlayerPoint.bind(this.mozGamePlay));
+            enhancedEffectManager.setCalculatePlayerPointFunction(this.mozGamePlay.calculatePlayerPoint.bind(this.mozGamePlay));
+            console.log('✅ GameLogic: mozGamePlay dependency injected into EnhancedEffectManager');
         }
-        
-        // EnhancedEffectManager removed - redundant with EffectSimulator
         
         console.log('🎮 GameLogic initialized with TypeScript class support');
     }
@@ -698,16 +695,51 @@ export class GameLogic {
                         zoneRestrictions: {},
                         activeEffects: [],
                         specialEffects: {},
-                        calculatedPowers: {},
                         disabledCards: [],
                         victoryPointModifiers: 0
                     };
                 }
             }
             
-            // TODO: Run unified effect simulation through EffectSimulator
-            // This would process all plays including leaders for complete effect simulation
-            // For now, we'll save the state as-is for basic testing
+            // CRITICAL: Run unified effect simulation to populate currentPower fields
+            console.log('🔧 Running unified effect simulation for injected game state...');
+            
+            try {
+                // Import and initialize EffectSimulator if needed
+                const { effectSimulator } = require('./EffectSimulator');
+                
+                // Run complete play sequence simulation to apply all effects
+                if (gameEnvironment.playSequenceManager && gameEnvironment.playSequenceManager.toJSON().plays.length > 0) {
+                    console.log(`📊 Simulating ${gameEnvironment.playSequenceManager.toJSON().plays.length} plays for effect processing`);
+                    await effectSimulator.simulateCardPlaySequence(gameEnvironment);
+                    console.log('✅ Play sequence simulation completed');
+                } else {
+                    console.log('ℹ️ No play sequence found, initializing field effects only');
+                }
+                
+                // Additionally trigger BattleCalculator to ensure currentPower fields are populated
+                console.log('⚡ Running BattleCalculator to populate currentPower in zone cards...');
+                
+                // Import BattleCalculator
+                const BattleCalculator = require('./BattleCalculator.ts');
+                const battleCalculator = new BattleCalculator.default();
+                
+                // Calculate power for all players to populate currentPower fields
+                for (const playerId of playerIds as string[]) {
+                    if (playerId) {
+                        console.log(`📊 Calculating power for ${playerId} to populate currentPower...`);
+                        const playerPower = await battleCalculator.calculatePlayerPoints(gameEnvironment, playerId);
+                        console.log(`✅ Player ${playerId} power calculated: ${playerPower}`);
+                    }
+                }
+                
+                console.log('🎯 currentPower fields should now be populated in zone cards');
+                
+            } catch (effectError) {
+                const error = effectError as Error;
+                console.warn('⚠️ Effect simulation failed, continuing with basic injection:', error.message || error);
+                // Continue with basic injection even if effect simulation fails
+            }
             
             // Save the injected game state
             await this.saveGameToFile(gameId, gameEnvironment);

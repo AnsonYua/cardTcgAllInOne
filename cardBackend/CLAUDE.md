@@ -432,11 +432,8 @@ gameEnv.players[playerId].fieldEffects = {
     immuneToNeutralization: true       // h-5 immunity to h-1 neutralization
   },
   
-  // NEW: Calculated card powers (no more computedState!)
-  calculatedPowers: {
-    "43": 195,    // Card 43 with +45 bonus = 195 total
-    "44": 150     // Card 44 base power
-  },
+  // NOTE: Calculated powers now stored directly in zone cards as currentPower field
+  // No longer need separate calculatedPowers storage
   
   // NEW: Disabled cards (no more computedState!)
   disabledCards: [],
@@ -460,8 +457,9 @@ gameEnv.players[playerId].fieldEffects = {
 // Zone restrictions for card placement validation
 const restrictions = gameEnv.players[playerId].fieldEffects.zoneRestrictions;
 
-// Calculated card powers for battle calculations  
-const cardPower = gameEnv.players[playerId].fieldEffects.calculatedPowers[cardId];
+// Card powers now stored directly in zone cards (NEW - January 2025)
+const leftCard = gameEnv.zones[playerId].left[0];
+const cardPower = leftCard.currentPower; // Direct access to final power!
 
 // Active effects for game logic
 const effects = gameEnv.players[playerId].fieldEffects.activeEffects;
@@ -474,14 +472,18 @@ const isImmune = gameEnv.players[playerId].fieldEffects.specialEffects?.immuneTo
 const isDisabled = gameEnv.players[playerId].fieldEffects.disabledCards.includes(cardId);
 ```
 
-**New Unified Accessor Functions:**
+**Enhanced Zone Card Access (NEW - January 2025):**
 ```javascript
-// Unified accessor functions (replace old computedState methods)
-effectSimulator.getCalculatedPower(gameEnv, playerId, cardId)
-effectSimulator.getZoneRestrictions(gameEnv, playerId)
-effectSimulator.getActiveEffects(gameEnv, playerId)
-effectSimulator.isCardDisabledUnified(gameEnv, cardId)
-effectSimulator.getVictoryPointModifiers(gameEnv, playerId)
+// Direct access to card power through zone cards - no separate lookup needed!
+const getCardCurrentPower = (gameEnv, playerId, zone, cardIndex = 0) => {
+  const zoneCard = gameEnv.zones[playerId][zone][cardIndex];
+  return zoneCard?.currentPower || zoneCard?.cardData?.power || 0;
+};
+
+// Zone restrictions and other effects still accessed through fieldEffects
+const getZoneRestrictions = (gameEnv, playerId) => gameEnv.players[playerId].fieldEffects.zoneRestrictions;
+const getActiveEffects = (gameEnv, playerId) => gameEnv.players[playerId].fieldEffects.activeEffects;
+const isCardDisabled = (gameEnv, playerId, cardId) => gameEnv.players[playerId].fieldEffects.disabledCards.includes(cardId);
 ```
 
 **Benefits for Developers:**

@@ -67,7 +67,6 @@ interface EffectRule {
 
 export class EffectSimulator {
     private cardInfoUtils: any = null;
-    private calculatePlayerPointFunc: any = null;
 
     /**
      * Set CardInfoUtils dependency
@@ -75,14 +74,6 @@ export class EffectSimulator {
      */
     public setCardInfoUtils(cardInfoUtils: any): void {
         this.cardInfoUtils = cardInfoUtils;
-    }
-
-    /**
-     * Set calculatePlayerPoint function dependency to avoid circular imports
-     * @param calculatePlayerPointFunc - Function reference from mozGamePlay
-     */
-    public setCalculatePlayerPointFunction(calculatePlayerPointFunc: any): void {
-        this.calculatePlayerPointFunc = calculatePlayerPointFunc;
     }
 
     /**
@@ -121,7 +112,8 @@ export class EffectSimulator {
             await this.calculateFinalPowersWithClass(gameEnvClass);
             
             // 5. Calculate player points using class methods
-            await this.calculatePlayerPointsWithClass(gameEnvClass);
+            // Note: Power calculations now handled by EnhancedEffectManager (incremental approach)
+            console.log('ℹ️ EffectSimulator: Power calculations delegated to EnhancedEffectManager');
             
             console.log('✅ Enhanced TypeScript class-based simulation completed');
             
@@ -344,10 +336,7 @@ export class EffectSimulator {
                 continue;
             }
                 
-            // Initialize calculatedPowers if not present
-            if (!player.fieldEffects.calculatedPowers) {
-                player.fieldEffects.calculatedPowers = {};
-            }
+            // NOTE: calculatedPowers no longer used - power values stored directly in zone cards
             
             console.log(`   🔍 Processing cards for player ${playerId}`);
             
@@ -419,8 +408,7 @@ export class EffectSimulator {
                 }
             }
             
-            console.log(`   ✅ Completed power calculation for player ${playerId}`);
-            console.log(`      📊 Calculated powers:`, player.fieldEffects.calculatedPowers);
+            console.log(`   ✅ Completed effect processing for player ${playerId}`);
         }
         
         console.log('✅ Final power calculation completed for all players');
@@ -472,39 +460,12 @@ export class EffectSimulator {
             }
         }
         
-        // Store calculated power in fieldEffects
-        player.fieldEffects.calculatedPowers[cardUid] = finalPower;
-        console.log(`         💫 Final power for ${cardUid}: ${basePower} → ${finalPower}`);
+        // NOTE: Power values are now stored directly in zone cards as currentPower by BattleCalculator
+        // No need to store in calculatedPowers - this is handled by the enhanced BattleCalculator
+        console.log(`         💫 Final power calculated for ${cardUid}: ${basePower} → ${finalPower}`);
     }
 
-    /**
-     * Calculate player points using GameEnvironment class methods
-     * @param gameEnvClass - GameEnvironment class instance
-     */
-    private async calculatePlayerPointsWithClass(gameEnvClass: GameEnvironment): Promise<void> {
-        console.log('📊 Calculating player points using TypeScript class methods...');
-        
-        const playerIds = [gameEnvClass.playerId_1, gameEnvClass.playerId_2].filter(id => id) as string[];
-        
-        for (const playerId of playerIds) {
-            const player = gameEnvClass.getPlayer(playerId);
-            if (player) {
-                // Use existing mozGamePlay logic for point calculation
-                const oldPlayerPoint = player.playerPoint || 0;
-                
-                // Calculate new player point using injected function to avoid circular dependency
-                if (this.calculatePlayerPointFunc) {
-                    const gameEnvJSON = gameEnvClass.toJSON();
-                    const newPlayerPoint = await this.calculatePlayerPointFunc(gameEnvJSON, playerId);
-                    player.playerPoint = newPlayerPoint;
-                    console.log(`   📊 Player ${playerId}: ${oldPlayerPoint} → ${newPlayerPoint} points`);
-                } else {
-                    console.warn('⚠️ calculatePlayerPointFunc not set - skipping point calculation');
-                    player.playerPoint = oldPlayerPoint; // Keep existing points
-                }
-            }
-        }
-    }
+    // Note: calculatePlayerPointsWithClass method removed - power calculation now handled by EnhancedEffectManager
 
     /**
      * Apply set power effect using GameEnvironment class methods
@@ -513,11 +474,9 @@ export class EffectSimulator {
      * @param value - Power value to set
      */
     private async applySetPowerEffectWithClass(gameEnvClass: GameEnvironment, targetInfo: any, value: number): Promise<void> {
-        const targetPlayer = gameEnvClass.getPlayer(targetInfo.playerId);
-        if (targetPlayer?.fieldEffects?.calculatedPowers) {
-            targetPlayer.fieldEffects.calculatedPowers[targetInfo.cardId] = value;
-            console.log(`     ✅ Set power for ${targetInfo.cardId} to ${value}`);
-        }
+        // NOTE: Power values now managed directly by BattleCalculator in zone cards
+        // This method is deprecated - effects are processed by BattleCalculator's enhanced pipeline
+        console.log(`     📝 Set power effect recorded for ${targetInfo.cardId} to ${value} (will be applied by BattleCalculator)`);
     }
 
     /**

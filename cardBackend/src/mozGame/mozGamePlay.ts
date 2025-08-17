@@ -15,7 +15,7 @@ const playSequenceManager = require('../services/PlaySequenceManager');
 
 // Manager classes
 const CardSelectionHandler = require('../services/CardSelectionHandler');
-const BattleCalculator = require('../services/BattleCalculator');
+import BattleCalculator from '../services/BattleCalculator';
 const TurnManager = require('../services/TurnManager');
 const EventManager = require('../services/EventManager');
 const CardActionHandler = require('../services/CardActionHandler');
@@ -576,12 +576,9 @@ export class MozGamePlay {
         try {
             console.log('⚡ Processing unified effects...');
             
-            // Use effect simulator for unified processing
-            if (this.effectSimulator) {
-                await this.effectSimulator.simulateCardPlaySequenceWithClass(gameEnv);
-            } else {
-                console.warn('⚠️ Effect simulator not available');
-            }
+            // Note: Effect processing now handled by EnhancedEffectManager in OptimizedGameEngine
+            // Avoiding double processing by disabling EffectSimulator here
+            console.log('ℹ️ Unified effects delegated to EnhancedEffectManager for incremental processing');
             
         } catch (error) {
             console.error('❌ Error processing unified effects:', error);

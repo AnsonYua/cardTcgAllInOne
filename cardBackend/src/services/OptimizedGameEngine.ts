@@ -45,11 +45,10 @@ interface PlayerRestrictions {
         canPlayMultipleCards?: boolean;
     };
     disabledCards: Set<string>;
-    calculatedPowers: Map<string, number>;
     placementValidations: Map<string, Map<ZoneType, boolean>>;
 }
 
-import { effectSimulator } from './EffectSimulator';
+import { enhancedEffectManager } from './EnhancedEffectManager';
 import { CardInfoUtils } from './CardInfoUtils';
 
 interface OptimizedGameConfig {
@@ -96,13 +95,13 @@ export class OptimizedGameEngine {
         // Initialize CardInfoUtils (ready to use immediately after construction)
         this.cardInfoUtils = new CardInfoUtils();
         
-        // CRITICAL: Inject mozGamePlay.calculatePlayerPoint into EffectSimulator
-        // This ensures power calculation works correctly after card effects
+        // CRITICAL: Inject mozGamePlay.calculatePlayerPoint into EnhancedEffectManager
+        // This ensures power calculation works correctly after card effects (EFFICIENT INCREMENTAL APPROACH)
         try {
             const { mozGamePlay } = await import('../mozGame/mozGamePlay');
             if (mozGamePlay && mozGamePlay.calculatePlayerPoint) {
-                effectSimulator.setCalculatePlayerPointFunction(mozGamePlay.calculatePlayerPoint.bind(mozGamePlay));
-                console.log('✅ OptimizedGameEngine: mozGamePlay dependency injected into EffectSimulator');
+                enhancedEffectManager.setCalculatePlayerPointFunction(mozGamePlay.calculatePlayerPoint.bind(mozGamePlay));
+                console.log('✅ OptimizedGameEngine: mozGamePlay dependency injected into EnhancedEffectManager');
             } else {
                 console.warn('⚠️ OptimizedGameEngine: mozGamePlay.calculatePlayerPoint not available');
                 console.log('   mozGamePlay object:', Object.keys(mozGamePlay || {}));
@@ -164,12 +163,9 @@ export class OptimizedGameEngine {
             // STEP 3: ADD GAME EVENTS - Frontend integration
             this.addSuccessEvents(gameEnv, playerId, cardUID, zone, faceDown);
 
-            // STEP 4: EFFECT PROCESSING - Process effects with EffectSimulator (handles all effects including search)
-            // Note: EffectSimulator works through complete sequence replay, not individual card processing
-            await effectSimulator.simulateCardPlaySequenceWithClass(gameEnv);
-            
-            // For now, assume no card selection required (EffectSimulator handles this differently)
-            const effectResult = { requiresCardSelection: false, selectionData: null };
+            // STEP 4: EFFECT PROCESSING - Process effects INCREMENTALLY (only current card)
+            // This is the EFFICIENT approach: no replay of entire history needed
+            const effectResult = await enhancedEffectManager.processCardEffects(gameEnv, playAction);
             if (effectResult?.requiresCardSelection) {
                 return { 
                     success: true, 
@@ -267,7 +263,6 @@ export class OptimizedGameEngine {
                     },
                     activeEffects: [],
                     specialEffects: {},
-                    calculatedPowers: {},
                     disabledCards: [],
                     victoryPointModifiers: 0
                 };
@@ -403,8 +398,19 @@ export class OptimizedGameEngine {
     public async initializeGame(gameEnv: GameEnvironment): Promise<void> {
         console.log('🔄 Initializing game for optimized processing...');
 
-        // Process existing play sequence
-        await effectSimulator.simulateCardPlaySequenceWithClass(gameEnv);
+        // Initialize fieldEffects for existing game state (minimal setup for incremental processing)
+        console.log('🔄 Initializing fieldEffects for incremental processing...');
+        
+        // Basic fieldEffects initialization - incremental processing will handle actual effects
+        const playerIds = [gameEnv.playerId_1, gameEnv.playerId_2].filter(id => id) as string[];
+        for (const playerId of playerIds) {
+            const player = gameEnv.getPlayer(playerId);
+            if (player && !player.fieldEffects) {
+                // @ts-ignore - using legacy method for basic initialization
+                player.initializeFieldEffects();
+                console.log(`   ✅ Initialized fieldEffects for ${playerId}`);
+            }
+        }
 
         // Cache functionality removed
 
@@ -725,8 +731,7 @@ export class OptimizedGameEngine {
                     availableActions: this.getAvailableActions(gameEnv, playerId),
                     cardPlacements: {},
                     specialEffects: fieldEffects.specialEffects,
-                    disabledCards: fieldEffects.disabledCards || [],
-                    calculatedPowers: fieldEffects.calculatedPowers || {}
+                    disabledCards: fieldEffects.disabledCards || []
                 };
             }
         }

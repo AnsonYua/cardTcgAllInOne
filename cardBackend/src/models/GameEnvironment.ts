@@ -199,6 +199,7 @@ export interface BaseZoneCard {
  */
 export interface CharacterZoneCard extends BaseZoneCard {
     cardData: CharacterCardData;
+    currentPower?: number;  // Final power after applying all effects
 }
 
 /**
@@ -538,7 +539,6 @@ export interface PlayerFieldEffects {
         zonePlacementFreedom?: boolean;
         immuneToNeutralization?: boolean;
     };
-    calculatedPowers?: { [cardId: string]: number };
     disabledCards?: string[];
     victoryPointModifiers?: number;
 }
@@ -664,7 +664,6 @@ export class Player {
                 zoneRestrictions: {},
                 activeEffects: [],
                 specialEffects: {},
-                calculatedPowers: {},
                 disabledCards: [],
                 victoryPointModifiers: 0
             };
@@ -689,7 +688,6 @@ export class Player {
             zoneRestrictions: {},
             activeEffects: [],
             specialEffects: {},
-            calculatedPowers: {},
             disabledCards: [],
             victoryPointModifiers: 0
         };
