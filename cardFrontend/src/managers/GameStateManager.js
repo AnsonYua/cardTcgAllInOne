@@ -319,17 +319,57 @@ export default class GameStateManager {
    * @returns {number} Computed power value
    */
   getComputedCardPower(card, playerId = null) {
-    const id = playerId || this.gameState.playerId;
-    const computedState = this.gameState.gameEnv.computedState;
-    
-    if (computedState && computedState.playerPowers && computedState.playerPowers[id]) {
-      const cardPower = computedState.playerPowers[id][card.id];
-      if (cardPower) {
-        return cardPower.finalPower;
+    // For character cards, try to find the card in zones and get currentPower
+    if (card.type === 'character') {
+      const currentPower = this.getCardCurrentPowerFromZones(card.id, playerId);
+      if (currentPower !== null) {
+        return currentPower;
       }
     }
     
     return card.power || 0;
+  }
+
+  /**
+   * Find a card in zones and get its currentPower value
+   * @param {string} cardId - Card ID to search for
+   * @param {string} playerId - Player ID (defaults to current player)
+   * @returns {number|null} Current power or null if not found
+   */
+  getCardCurrentPowerFromZones(cardId, playerId = null) {
+    const id = playerId || this.gameState.playerId;
+    const zones = this.gameState.gameEnv.zones?.[id];
+    
+    if (!zones) {
+      return null;
+    }
+    
+    // Search through all zones for the card
+    const zoneNames = ['top', 'left', 'right', 'help', 'sp'];
+    
+    for (const zoneName of zoneNames) {
+      const zone = zones[zoneName];
+      if (zone && Array.isArray(zone)) {
+        for (const zoneCard of zone) {
+          // Check if this zone card contains our target card
+          if (zoneCard.cardData && zoneCard.cardData.id === cardId) {
+            // Return currentPower if available, otherwise fall back to base power
+            return zoneCard.currentPower !== undefined ? zoneCard.currentPower : (zoneCard.cardData.power || 0);
+          }
+          // Also check the card array format (legacy)
+          if (zoneCard.card && Array.isArray(zoneCard.card)) {
+            const cardUid = zoneCard.card[0];
+            // Extract cardId from UID (format: cardId_timestamp_number)
+            const extractedCardId = cardUid ? cardUid.split('_')[0] : null;
+            if (extractedCardId === cardId) {
+              return zoneCard.currentPower !== undefined ? zoneCard.currentPower : null;
+            }
+          }
+        }
+      }
+    }
+    
+    return null;
   }
   
   /**
@@ -338,30 +378,31 @@ export default class GameStateManager {
    * @returns {boolean} Whether card is disabled
    */
   isCardDisabled(card) {
-    const computedState = this.gameState.gameEnv.computedState;
+    // Check if current player has disabled cards in their fieldEffects
+    const player = this.getPlayer();
     
-    if (computedState && computedState.disabledCards) {
-      return computedState.disabledCards.some(d => d.cardId === card.id);
+    if (player && player.fieldEffects && player.fieldEffects.disabledCards) {
+      return player.fieldEffects.disabledCards.includes(card.id);
     }
     
     return false;
   }
   
   /**
-   * Get active zone restrictions (from computed state)
+   * Get active zone restrictions (from field effects)
    * @param {string} playerId - Player ID (defaults to current player)
    * @param {string} zone - Specific zone to check
    * @returns {string|Array} Zone restrictions
    */
   getComputedZoneRestrictions(playerId = null, zone = null) {
     const id = playerId || this.gameState.playerId;
-    const computedState = this.gameState.gameEnv.computedState;
+    const player = this.gameState.gameEnv.players?.[id];
     
-    if (computedState && computedState.activeRestrictions && computedState.activeRestrictions[id]) {
-      const restrictions = computedState.activeRestrictions[id];
+    if (player && player.fieldEffects && player.fieldEffects.zoneRestrictions) {
+      const restrictions = player.fieldEffects.zoneRestrictions;
       
       if (zone) {
-        return restrictions[zone.toLowerCase()];
+        return restrictions[zone.toUpperCase()];
       }
       return restrictions;
     }
@@ -420,10 +461,10 @@ export default class GameStateManager {
    */
   getDisabledCards(playerId = null) {
     const id = playerId || this.gameState.playerId;
-    const computedState = this.gameState.gameEnv.computedState;
+    const player = this.gameState.gameEnv.players?.[id];
     
-    if (computedState && computedState.disabledCards) {
-      return computedState.disabledCards.filter(d => d.playerId === id);
+    if (player && player.fieldEffects && player.fieldEffects.disabledCards) {
+      return player.fieldEffects.disabledCards;
     }
     
     return [];
@@ -436,10 +477,10 @@ export default class GameStateManager {
    */
   getVictoryPointModifier(playerId = null) {
     const id = playerId || this.gameState.playerId;
-    const computedState = this.gameState.gameEnv.computedState;
+    const player = this.gameState.gameEnv.players?.[id];
     
-    if (computedState && computedState.victoryPointModifiers) {
-      return computedState.victoryPointModifiers[id] || 0;
+    if (player && player.fieldEffects && player.fieldEffects.victoryPointModifiers !== undefined) {
+      return player.fieldEffects.victoryPointModifiers || 0;
     }
     
     return 0;
@@ -529,19 +570,21 @@ export default class GameStateManager {
   }
   
   /**
-   * Get final power for a card (checks computed state first, then original)
+   * Get final power for a card (checks zone cards first, then original)
    * @param {string} cardId - Card ID to check
    * @returns {number} Final power value
    */
   getCardFinalPower(cardId) {
-    const computedState = this.gameState.gameEnv.computedState;
+    // Check zone cards first for currentPower
+    const playerIds = [this.gameState.playerId];
+    if (this.gameState.gameEnv.players) {
+      playerIds.push(...Object.keys(this.gameState.gameEnv.players).filter(id => id !== this.gameState.playerId));
+    }
     
-    // Check computed state first
-    if (computedState && computedState.playerPowers) {
-      for (const [playerId, powers] of Object.entries(computedState.playerPowers)) {
-        if (powers[cardId]) {
-          return powers[cardId].finalPower;
-        }
+    for (const playerId of playerIds) {
+      const currentPower = this.getCardCurrentPowerFromZones(cardId, playerId);
+      if (currentPower !== null) {
+        return currentPower;
       }
     }
     

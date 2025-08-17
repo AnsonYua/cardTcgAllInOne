@@ -688,16 +688,12 @@ export default class Card extends Phaser.GameObjects.Container {
       return this.cardData?.power || 0;
     }
     
-    // Get player data from game state
-    const player = this.gameStateManager.getPlayer();
-    if (!player) {
-      return this.cardData.power || 0;
-    }
-    
-    // Check if this card has computed power in field effects
-    const fieldEffects = player.fieldEffects;
-    if (fieldEffects && fieldEffects.calculatedPowers && fieldEffects.calculatedPowers[this.cardData.id]) {
-      return fieldEffects.calculatedPowers[this.cardData.id];
+    // For character cards, try to find the card in zones and get currentPower
+    if (this.cardData.type === 'character') {
+      const currentPower = this.gameStateManager.getCardCurrentPowerFromZones(this.cardData.id);
+      if (currentPower !== null) {
+        return currentPower;
+      }
     }
     
     // Fall back to base power

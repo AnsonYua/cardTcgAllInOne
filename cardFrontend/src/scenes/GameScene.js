@@ -628,17 +628,17 @@ export default class GameScene extends Phaser.Scene {
     }
     
     // Add visual feedback for victory point changes
-    if (playerVP >= 50) {
+    if (playerPower >= 50) {
       this.playerVictoryPointLabel.setFill('#00FF00'); // Green for winner
       this.playerVictoryPointLabel.setFontSize('22px');
-    } else if (playerVP > 0) {
+    } else if (playerPower > 0) {
       this.playerVictoryPointLabel.setFill('#FFD700'); // Gold for progress
     }
     
-    if (opponentVP >= 50) {
+    if (opponentPower >= 50) {
       this.opponentVictoryPointLabel.setFill('#00FF00'); // Green for winner
       this.opponentVictoryPointLabel.setFontSize('22px');
-    } else if (opponentVP > 0) {
+    } else if (opponentPower > 0) {
       this.opponentVictoryPointLabel.setFill('#FFD700'); // Gold for progress
     }
   }
