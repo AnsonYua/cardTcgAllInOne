@@ -1425,6 +1425,11 @@ export class GameEnvironment {
         
         // Convert players
         for (const [playerId, player] of Object.entries(this.players)) {
+            if (typeof player.toJSON !== 'function') {
+                console.error(`❌ Player ${playerId} does not have toJSON method. Type:`, typeof player, 'Constructor:', player.constructor?.name);
+                console.error('Player object keys:', Object.keys(player));
+                throw new Error(`Player ${playerId} is not a proper Player instance - missing toJSON method`);
+            }
             legacy.players[playerId] = player.toJSON();
         }
         
