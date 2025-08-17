@@ -9,6 +9,7 @@
 
 import { PlayerDeckDataResp } from './PlayerDeckDataResp';
 import cardInfoUtilsInstance from '../services/CardInfoUtils';
+import { enhancedEffectManager } from '../services/EnhancedEffectManager';
 // ============ CARDINFUTILS SINGLETON ============
 
 /**
@@ -1354,12 +1355,72 @@ export class GameEnvironment {
         return true;
     }
 
-    public setLeader(playerId: string, leaderUid: string): boolean {
+    public async setLeader(playerId: string, leaderUid: string): Promise<boolean> {
         const player = this.getPlayer(playerId);
         if (!player) return false;
         
+        // Step 1: Set card in zone
         this.zones.setCardInZone(playerId, ZoneType.LEADER, leaderUid);
+        
+        // Step 2: Record play in sequence
         this.playSequenceManager.addPlay(playerId, leaderUid, ActionType.PLAY_LEADER, ZoneType.LEADER);
+        
+        // Step 2.5: Ensure fieldEffects are initialized before processing leader effects
+        if (!player.fieldEffects) {
+            console.log(`🔧 Initializing fieldEffects for ${playerId} before leader effect processing`);
+            player.initializeFieldEffects();
+        }
+        
+        // Step 2.7: PROCESS ZONE COMPATIBILITY (Option A)
+        // Handle leader zoneCompatibility separately from effects since it's not an effect rule
+        try {
+            // Get leader card data to access zoneCompatibility
+            const baseCardId = leaderUid.split('_')[0]; // Extract card ID from UID
+            const CardInfoUtils = CardInfoUtilsSingleton.getInstance();
+            const leaderCardData = CardInfoUtils?.getLeaderCards(baseCardId);
+            
+            if (leaderCardData?.zoneCompatibility && player.fieldEffects) {
+                console.log(`🎯 Applying zone restrictions for leader ${baseCardId} (${playerId})`);
+                
+                // Apply zone compatibility to fieldEffects.zoneRestrictions
+                player.fieldEffects.zoneRestrictions = {
+                    top: leaderCardData.zoneCompatibility.top || ['ALL'],
+                    left: leaderCardData.zoneCompatibility.left || ['ALL'],
+                    right: leaderCardData.zoneCompatibility.right || ['ALL'],
+                    help: 'ALL', // Help zone always accepts all cards
+                    sp: 'ALL'    // SP zone always accepts all cards
+                };
+                
+                console.log(`✅ Zone restrictions applied:`, player.fieldEffects.zoneRestrictions);
+            } else {
+                console.warn(`⚠️ No zoneCompatibility found for leader ${baseCardId}`);
+            }
+        } catch (error) {
+            console.error(`❌ Error processing zone compatibility for ${leaderUid}:`, error);
+            // Continue execution even if zone compatibility processing fails
+        }
+        
+        // Step 3: PROCESS LEADER EFFECTS (similar to playCard step 4)
+        // This processes powerBoost and other dynamic effects from effects.rules
+        try {
+            const playAction: PlaySequenceAction = {
+                sequenceId: this.playSequenceManager.getNextSequenceId(),
+                playerId,
+                cardUid: leaderUid,
+                action: ActionType.PLAY_LEADER,
+                zone: ZoneType.LEADER,
+                isFaceDown: false,
+                effectData: {}
+            };
+            
+            console.log(`🎯 Processing leader effects for ${leaderUid} (${playerId})`);
+            await enhancedEffectManager.processCardEffects(this, playAction);
+            console.log(`✅ Leader effects processed for ${leaderUid}`);
+            
+        } catch (error) {
+            console.error(`❌ Error processing leader effects for ${leaderUid}:`, error);
+            // Continue execution even if effect processing fails
+        }
         
         return true;
     }

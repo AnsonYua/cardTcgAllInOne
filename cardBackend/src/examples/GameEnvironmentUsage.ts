@@ -140,14 +140,14 @@ export function exampleConvertLegacyJSON(): GameEnvironment {
 
 // ============ EXAMPLE 3: Game Operations ============
 
-export function exampleGameOperations(): void {
+export async function exampleGameOperations(): Promise<void> {
     console.log('\\n=== Example 3: Game Operations ===');
     
     const gameEnv = exampleCreateNewGame();
     
     // Set leaders for both players
-    gameEnv.setLeader('player_1', 's-1_uid_1');
-    gameEnv.setLeader('player_2', 's-5_uid_5');
+    await gameEnv.setLeader('player_1', 's-1_uid_1');
+    await gameEnv.setLeader('player_2', 's-5_uid_5');
     
     console.log('Set leaders for both players');
     
@@ -183,13 +183,13 @@ export function exampleGameOperations(): void {
 
 // ============ EXAMPLE 4: Serialization and Validation ============
 
-export function exampleSerializationAndValidation(): void {
+export async function exampleSerializationAndValidation(): Promise<void> {
     console.log('\\n=== Example 4: Serialization and Validation ===');
     
     const gameEnv = exampleCreateNewGame();
     
     // Make some modifications
-    gameEnv.setLeader('player_1', 's-1_uid_1');
+    await gameEnv.setLeader('player_1', 's-1_uid_1');
     gameEnv.playCard('player_1', 'c-1_uid_1', ZoneType.TOP);
     
     // Validate the game environment
@@ -290,14 +290,14 @@ export function exampleIntegrationWithExistingCode(): void {
 
 // ============ RUN ALL EXAMPLES ============
 
-export function runAllExamples(): void {
+export async function runAllExamples(): Promise<void> {
     console.log('🎮 GameEnvironment Class System Examples\\n');
     
     try {
         exampleCreateNewGame();
         exampleConvertLegacyJSON();
-        exampleGameOperations();
-        exampleSerializationAndValidation();
+        await exampleGameOperations();
+        await exampleSerializationAndValidation();
         exampleIntegrationWithExistingCode();
         
         console.log('\\n✅ All examples completed successfully!');
@@ -324,5 +324,5 @@ export default {
 
 // Run examples if this file is executed directly
 if (require.main === module) {
-    runAllExamples();
+    runAllExamples().catch(console.error);
 }

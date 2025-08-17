@@ -194,8 +194,9 @@ export class GameEnvironmentAdapter {
             [leader1Uid, leader2Uid][1 - firstPlayer]
         ];
         
+        // Set leaders sequentially to ensure proper effect processing order
         for (let i = 0; i < orderedPlayerIds.length; i++) {
-            gameEnv.setLeader(orderedPlayerIds[i], orderedLeaderUids[i]);
+            await gameEnv.setLeader(orderedPlayerIds[i], orderedLeaderUids[i]);
         }
         
         // Prepare leader revealed data for events
