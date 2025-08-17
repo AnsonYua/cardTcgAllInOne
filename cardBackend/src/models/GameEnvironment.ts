@@ -1199,6 +1199,11 @@ export class GameEnvironment {
         
         this.fieldEffects = {};
         this.neutralizationHistory = [];
+        
+        // Initialize card selection system
+        this.pendingPlayerAction = null;
+        this.pendingCardSelections = {};
+        
         this.lastProcessedSequence = 0;
     }
 
@@ -1480,6 +1485,10 @@ export class GameEnvironment {
             
             // Play sequence
             playSequence: this.playSequenceManager.toJSON(),
+            
+            // Card selection system - CRITICAL FIX: Include in API response
+            pendingPlayerAction: this.pendingPlayerAction || null,
+            pendingCardSelections: this.pendingCardSelections || {},
             
             // Incremental effect processing
             lastProcessedSequence: this.lastProcessedSequence

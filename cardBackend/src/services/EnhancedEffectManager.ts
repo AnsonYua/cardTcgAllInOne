@@ -148,7 +148,10 @@ export class EnhancedEffectManager {
         for (const effect of activeEffects) {
             switch (effect.effectType) {
                 case 'powerBoost':
-                    this.applyPowerBoostDirect(gameEnv, effect);
+                    const powerBoostResult = await this.applyPowerBoostDirect(gameEnv, effect);
+                    if (powerBoostResult?.requiresCardSelection) {
+                        selectionResult = powerBoostResult;
+                    }
                     break;
                     
                 case 'setPower':
@@ -184,13 +187,22 @@ export class EnhancedEffectManager {
     
     /**
      * Apply power boost effect directly from ActiveEffect
-     * No parsing needed - use original JSON structure
+     * Now supports requiresSelection for manual target selection
      */
-    private applyPowerBoostDirect(gameEnv: GameEnvironment, effect: ActiveEffect): void {
+    private async applyPowerBoostDirect(gameEnv: GameEnvironment, effect: ActiveEffect): Promise<{
+        requiresCardSelection?: boolean;
+        selectionData?: any;
+    }> {
         const player = gameEnv.players[effect.targetPlayerId];
         if (!player?.fieldEffects) {
             console.warn(`   ⚠️ Player ${effect.targetPlayerId} not found or missing fieldEffects`);
-            return;
+            return {};
+        }
+        
+        // Check if effect requires manual target selection
+        if (effect.requiresSelection) {
+            console.log(`   🎯 Power boost effect requires manual target selection`);
+            return await this.createCardSelectionForPowerBoost(gameEnv, effect);
         }
         
         // Convert ActiveEffect to enhanced field effect format
@@ -231,6 +243,199 @@ export class EnhancedEffectManager {
         
         console.log(`   ⚡ Applied power boost: +${effect.effectValue} for ${effect.targetPlayerId}`);
         console.log(`   📊 Targeting: ${effect.rule.target.zones.join(', ')} zones with filters: ${JSON.stringify(effect.rule.target.filters)}`);
+        
+        return {}; // No selection required
+    }
+    
+    /**
+     * Create card selection for power boost effects that require manual targeting
+     * Reuses existing pendingCardSelections system
+     */
+    private async createCardSelectionForPowerBoost(gameEnv: GameEnvironment, effect: ActiveEffect): Promise<{
+        requiresCardSelection?: boolean;
+        selectionData?: any;
+    }> {
+        const player = gameEnv.players[effect.targetPlayerId];
+        if (!player) return {};
+        
+        // Extract selection parameters from effect rule
+        const selectCount = effect.rule.target.selectCount || 1;
+        
+        console.log(`   🔍 Creating powerBoost target selection: select ${selectCount} targets`);
+        
+        // Create pending card selection in gameEnv
+        const selectionId = `${effect.targetPlayerId}_powerBoost_${Date.now()}`;
+        
+        if (!gameEnv.pendingCardSelections) {
+            gameEnv.pendingCardSelections = {};
+        }
+        
+        // Get eligible cards from player's zones based on effect filters
+        const eligibleCards = this.getEligibleCardsForPowerBoost(gameEnv, effect);
+        
+        gameEnv.pendingCardSelections[selectionId] = {
+            playerId: effect.targetPlayerId,
+            eligibleCards: eligibleCards,
+            selectCount: selectCount,
+            effect: {
+                type: 'powerBoost',
+                value: effect.effectValue,
+                sourceCard: effect.sourceCardUid
+            },
+            effectType: 'powerBoost',
+            sourceCard: effect.sourceCardUid,
+            targetPlayerId: effect.targetPlayerId
+        };
+        
+        // Set pending player action
+        gameEnv.pendingPlayerAction = {
+            type: 'cardSelection',
+            selectionId: selectionId
+        };
+        
+        console.log(`   🎯 Created powerBoost selection requirement: ${selectionId} with ${eligibleCards.length} eligible targets`);
+        
+        return {
+            requiresCardSelection: true,
+            selectionData: {
+                selectionId: selectionId,
+                playerId: effect.targetPlayerId,
+                selectCount: selectCount,
+                effectType: 'powerBoost',
+                value: effect.effectValue
+            }
+        };
+    }
+    
+    /**
+     * Get eligible cards for power boost target selection
+     */
+    private getEligibleCardsForPowerBoost(gameEnv: GameEnvironment, effect: ActiveEffect): any[] {
+        const targetPlayerId = effect.targetPlayerId;
+        const zones = effect.rule.target.zones;
+        const filters = effect.rule.target.filters || [];
+        
+        const eligibleCards: any[] = [];
+        
+        // Check each specified zone
+        for (const zone of zones) {
+            const playerZones = gameEnv.zones.getPlayerZones(targetPlayerId);
+            if (!playerZones) continue;
+            
+            // Type-safe zone access
+            let zoneCards: any[] | undefined;
+            switch (zone) {
+                case 'top':
+                    zoneCards = playerZones.top;
+                    break;
+                case 'left':
+                    zoneCards = playerZones.left;
+                    break;
+                case 'right':
+                    zoneCards = playerZones.right;
+                    break;
+                case 'help':
+                    zoneCards = playerZones.help;
+                    break;
+                case 'sp':
+                    zoneCards = playerZones.sp;
+                    break;
+                case 'leader':
+                    zoneCards = playerZones.leader;
+                    break;
+                default:
+                    continue;
+            }
+            
+            if (!Array.isArray(zoneCards)) continue;
+            
+            for (const zoneCard of zoneCards) {
+                const cardData = this.extractCardDataFromZone(zoneCard);
+                if (!cardData) continue;
+                
+                // Skip face-down cards
+                if (cardData.isFaceDown) continue;
+                
+                // Apply filters
+                if (this.cardMatchesFilters(cardData, filters)) {
+                    eligibleCards.push({
+                        cardId: cardData.cardId,
+                        cardUid: cardData.cardUid,
+                        zone: zone,
+                        cardData: {
+                            id: cardData.cardId,
+                            name: cardData.name,
+                            power: cardData.basePower,
+                            gameType: cardData.gameType,
+                            traits: cardData.traits
+                        }
+                    });
+                }
+            }
+        }
+        
+        return eligibleCards;
+    }
+    
+    /**
+     * Helper method to extract card data from zone card (reused from BattleCalculator pattern)
+     */
+    private extractCardDataFromZone(zoneCard: any): any {
+        // Handle new unified structure
+        if (zoneCard.cardUid && zoneCard.cardData) {
+            return {
+                cardUid: zoneCard.cardUid,
+                cardId: zoneCard.cardId || zoneCard.cardUid.split('_')[0],
+                basePower: zoneCard.cardData.power || 0,
+                gameType: zoneCard.cardData.gameType || '',
+                traits: zoneCard.cardData.traits || [],
+                name: zoneCard.cardData.name || '',
+                isFaceDown: zoneCard.isFaceDown || false
+            };
+        }
+        
+        // Handle legacy structure
+        if (zoneCard.card && Array.isArray(zoneCard.card) && zoneCard.card.length > 0) {
+            const cardUid = zoneCard.card[0];
+            const cardId = cardUid.split('_')[0];
+            
+            // Look up card data
+            const cardData = this.getCardDetailsByCardId(cardId);
+            if (!cardData) return null;
+            
+            return {
+                cardUid: cardUid,
+                cardId: cardId,
+                basePower: cardData.power || 0,
+                gameType: cardData.gameType || '',
+                traits: cardData.traits || [],
+                name: cardData.name || '',
+                isFaceDown: zoneCard.isBack || false
+            };
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Helper method to check if a card matches effect filters
+     */
+    private cardMatchesFilters(cardData: any, filters: any[]): boolean {
+        for (const filter of filters) {
+            switch (filter.type) {
+                case 'gameType':
+                    if (cardData.gameType !== filter.value) return false;
+                    break;
+                case 'trait':
+                    if (!cardData.traits || !cardData.traits.includes(filter.value)) return false;
+                    break;
+                case 'nameContains':
+                    if (!cardData.name || !cardData.name.includes(filter.value)) return false;
+                    break;
+                // Add more filter types as needed
+            }
+        }
+        return true;
     }
     
     /**

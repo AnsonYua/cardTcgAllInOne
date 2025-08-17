@@ -443,15 +443,16 @@
         "rules": [
           {
             "id": "buffett_single_boost",
-            "type": "continuous",
+            "type": "triggered",
             "trigger": {
-              "event": "always",
+              "event": "onSummon",
               "conditions": []
             },
             "target": {
               "owner": "self",
               "zones": ["top", "left", "right"],
-              "targetCount": 1,
+              "requiresSelection": true,
+              "selectCount": 1,
               "filters": [
                 {
                   "type": "trait",
