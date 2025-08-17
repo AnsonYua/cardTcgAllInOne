@@ -440,6 +440,7 @@ export class BattleCalculator {
                 basePower: zoneCard.cardData.power || 0,
                 gameType: zoneCard.cardData.gameType || '',
                 traits: zoneCard.cardData.traits || [],
+                name: zoneCard.cardData.name || '',
                 isFaceDown: zoneCard.isFaceDown || false
             };
         }
@@ -462,6 +463,7 @@ export class BattleCalculator {
                 basePower: cardData.power || 0,
                 gameType: cardData.gameType || '',
                 traits: cardData.traits || [],
+                name: cardData.name || '',
                 isFaceDown: zoneCard.isBack || false
             };
         }
