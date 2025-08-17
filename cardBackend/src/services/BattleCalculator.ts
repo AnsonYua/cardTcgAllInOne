@@ -316,6 +316,16 @@ export class BattleCalculator {
             }
         }
         
+        // Check nameContains targeting (for effects like musk_doge_boost)
+        if (target.nameContains && target.nameContains.length > 0) {
+            const hasMatchingName = target.nameContains.some(nameFilter => 
+                cardData.name && cardData.name.includes(nameFilter)
+            );
+            if (!hasMatchingName) {
+                return false;
+            }
+        }
+        
         // Additional targeting can be added in future if FieldEffect interface is extended
         // For now, we use the existing FieldEffect.target properties
         

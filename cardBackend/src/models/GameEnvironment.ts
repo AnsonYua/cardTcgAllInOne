@@ -504,6 +504,7 @@ export interface FieldEffect {
         zones?: ZoneType[] | 'ALL';
         gameTypes?: string[];
         traits?: string[];
+        nameContains?: string[];  // Support for name-based targeting (e.g., "Doge" cards)
         playerId?: string;
     };
     value: number | boolean;
