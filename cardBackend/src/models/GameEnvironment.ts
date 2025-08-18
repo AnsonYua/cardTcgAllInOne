@@ -1534,6 +1534,10 @@ export class GameEnvironment {
         // Incremental effect processing
         gameEnv.lastProcessedSequence = data.lastProcessedSequence || 0;
         
+        // Card selection system restoration - CRITICAL FIX for persistence
+        gameEnv.pendingPlayerAction = data.pendingPlayerAction || null;
+        gameEnv.pendingCardSelections = data.pendingCardSelections || {};
+        
         // REMOVED: validationState deserialization - using fieldEffects as single source of truth
         
         return gameEnv;
