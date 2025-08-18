@@ -54,12 +54,13 @@ export class EnhancedEffectManager {
     /**
      * Main orchestration method - simplified workflow without unnecessary transformations
      * Now returns selection requirements for search effects
+     * Now supports trigger event filtering for correct effect processing
      */
-    async processCardEffects(gameEnv: GameEnvironment, play: PlaySequenceAction): Promise<{
+    async processCardEffects(gameEnv: GameEnvironment, play: PlaySequenceAction, triggerEvent?: string): Promise<{
         requiresCardSelection?: boolean;
         selectionData?: any;
     }> {
-        console.log(`🎯 Processing card effects for ${play.cardUid} (${play.action})`);
+        console.log(`🎯 Processing card effects for ${play.cardUid} (${play.action}) with trigger: ${triggerEvent || 'default'}`);
         
         // Get card details
         const cardDetails = this.getCardDetails(gameEnv, play);
@@ -68,8 +69,8 @@ export class EnhancedEffectManager {
             return {};
         }
         
-        // Create ActiveEffect instances directly from JSON rules
-        const activeEffects = this.createActiveEffectsFromJSON(cardDetails.effects.rules, play);
+        // Create ActiveEffect instances directly from JSON rules with trigger filtering
+        const activeEffects = this.createActiveEffectsFromJSON(cardDetails.effects.rules, play, triggerEvent);
         
         // Apply effects to game environment and check for selection requirements
         // Note: Individual apply methods already store effects in fieldEffects - no separate storage needed
@@ -95,12 +96,18 @@ export class EnhancedEffectManager {
     
     /**
      * Create ActiveEffect instances directly from JSON effect rules
-     * Eliminates the CalculatedEffect intermediate layer
+     * Now includes trigger event filtering for correct effect processing
      */
-    private createActiveEffectsFromJSON(rules: EffectRule[], play: PlaySequenceAction): ActiveEffect[] {
+    private createActiveEffectsFromJSON(rules: EffectRule[], play: PlaySequenceAction, triggerEvent?: string): ActiveEffect[] {
         const activeEffects: ActiveEffect[] = [];
         
         for (const rule of rules) {
+            // CRITICAL FIX: Filter effects based on trigger event
+            if (!this.shouldProcessEffect(rule, triggerEvent)) {
+                console.log(`   ⏭️ Skipping effect ${rule.id} - trigger mismatch (rule: ${rule.type}/${rule.trigger?.event}, current: ${triggerEvent})`);
+                continue;
+            }
+            
             // Determine target player based on rule
             const targetPlayerId = this.determineTargetPlayer(rule, play);
             
@@ -114,10 +121,42 @@ export class EnhancedEffectManager {
             
             activeEffects.push(activeEffect);
             
-            console.log(`   📝 Created ActiveEffect: ${activeEffect.getDescription()}`);
+            console.log(`   📝 Created ActiveEffect: ${activeEffect.getDescription()} (trigger: ${rule.trigger?.event})`);
         }
         
+        console.log(`   🎯 Processed ${activeEffects.length} matching effects out of ${rules.length} total rules`);
         return activeEffects;
+    }
+    
+    /**
+     * Determine if an effect should be processed based on trigger event
+     */
+    private shouldProcessEffect(rule: EffectRule, triggerEvent?: string): boolean {
+        // If no trigger event specified, process all effects (backward compatibility)
+        if (!triggerEvent) {
+            return true;
+        }
+        
+        // Handle different effect types
+        switch (rule.type) {
+            case 'triggered':
+                // Triggered effects only process when their trigger event matches
+                return rule.trigger?.event === triggerEvent;
+                
+            case 'continuous':
+                // Continuous effects are processed during power calculation, not during card play
+                // Skip them during onSummon/onPlay events
+                if (triggerEvent === 'onSummon' || triggerEvent === 'onPlay') {
+                    return false;
+                }
+                // Process continuous effects during other contexts (like power calculation)
+                return triggerEvent === 'always' || triggerEvent === 'powerCalculation';
+                
+            default:
+                // Unknown effect types - process by default for safety
+                console.warn(`   ⚠️ Unknown effect type: ${rule.type}, processing by default`);
+                return true;
+        }
     }
     
     /**

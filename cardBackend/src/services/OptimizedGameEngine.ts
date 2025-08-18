@@ -165,7 +165,9 @@ export class OptimizedGameEngine {
 
             // STEP 4: EFFECT PROCESSING - Process effects INCREMENTALLY (only current card)
             // This is the EFFICIENT approach: no replay of entire history needed
-            const effectResult = await enhancedEffectManager.processCardEffects(gameEnv, playAction);
+            // CRITICAL FIX: Pass trigger event for proper effect filtering
+            const triggerEvent = this.determineTriggerEvent(playAction, faceDown);
+            const effectResult = await enhancedEffectManager.processCardEffects(gameEnv, playAction, triggerEvent);
             if (effectResult?.requiresCardSelection) {
                 return { 
                     success: true, 
@@ -674,6 +676,32 @@ export class OptimizedGameEngine {
         this.metrics.averageProcessingTime = totalTime / this.metrics.cardPlaysProcessed;
         
         // Cache functionality removed
+    }
+
+    /**
+     * Determine trigger event based on card type and action
+     * CRITICAL: This enables proper trigger event filtering for effects
+     */
+    private determineTriggerEvent(playAction: PlaySequenceAction, faceDown: boolean): string {
+        // Face-down cards don't trigger summon effects
+        if (faceDown) {
+            return 'onPlay';
+        }
+        
+        // Extract card type from card UID
+        const cardId = playAction.cardUid.split('_')[0];
+        
+        // Get card details to determine type
+        const cardDetails = this.getCardDetails(playAction.cardUid);
+        
+        if (cardDetails?.cardType === 'character') {
+            return 'onSummon';
+        } else if (cardDetails?.cardType === 'help' || cardDetails?.cardType === 'sp') {
+            return 'onPlay';
+        }
+        
+        // Default to onPlay for unknown card types
+        return 'onPlay';
     }
 
     /**
