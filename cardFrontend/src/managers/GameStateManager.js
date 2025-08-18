@@ -422,7 +422,15 @@ export default class GameStateManager {
     const restrictions = this.getComputedZoneRestrictions(playerId, zone);
     if (restrictions === "ALL") return true;
     
-    return Array.isArray(restrictions) ? restrictions.includes(card.cardDetails.gameType) : false;
+    // Check for 'ALL' in array format
+    if (Array.isArray(restrictions)) {
+      if (restrictions.includes("ALL")) {
+        return true;
+      }
+      return restrictions.includes(card.cardDetails.gameType);
+    }
+    
+    return false;
   }
   
   /**

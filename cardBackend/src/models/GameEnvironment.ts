@@ -357,6 +357,12 @@ export class ZoneCardUtils {
 
         const zoneKey = zone.toLowerCase() as keyof typeof leader.cardData.zoneCompatibility;
         const allowedTypes = leader.cardData.zoneCompatibility[zoneKey] || [];
+        
+        // Check for 'ALL' first (allows all card types)
+        if (allowedTypes.includes('ALL')) {
+            return true;
+        }
+        
         return allowedTypes.includes(character.cardData.gameType);
     }
 
