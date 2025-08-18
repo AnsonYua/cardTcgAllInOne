@@ -301,11 +301,18 @@ export class OptimizedGameEngine {
                 return { isValid: false, error: 'Card details not found' };
             }
 
-            if (Array.isArray(allowedTypes) && !allowedTypes.includes(cardDetails.gameType)) {
-                return { 
-                    isValid: false, 
-                    error: `Card type ${cardDetails.gameType} not allowed in ${zone}. Allowed types: ${allowedTypes.join(', ')}` 
-                };
+            if (Array.isArray(allowedTypes)) {
+                // Check if 'ALL' is in the array (allows all card types)
+                if (allowedTypes.includes('ALL')) {
+                    return { isValid: true };
+                }
+                // Check if specific card type is allowed
+                if (!allowedTypes.includes(cardDetails.gameType)) {
+                    return { 
+                        isValid: false, 
+                        error: `Card type ${cardDetails.gameType} not allowed in ${zone}. Allowed types: ${allowedTypes.join(', ')}` 
+                    };
+                }
             }
         }
         console.log(`🎮 validate 8 (cache removed)`);

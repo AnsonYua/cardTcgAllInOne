@@ -9,7 +9,7 @@ import { effectSimulator } from '../services/EffectSimulator';
 const mozDeckHelper = require('./mozDeckHelper');
 const mozPhaseManager = require('./mozPhaseManager');
 const CardEffectManager = require('../services/CardEffectManager');
-const FieldEffectProcessor = require('../services/FieldEffectProcessor');
+// FieldEffectProcessor removed - legacy functionality moved to OptimizedGameEngine
 const { getPlayerFromGameEnv, getPlayerField } = require('../utils/gameUtils');
 const playSequenceManager = require('../services/PlaySequenceManager');
 
@@ -84,7 +84,7 @@ export interface CardData {
 export class MozGamePlay {
     public cardEffectManager: any;
     public cardInfoUtils: typeof CardInfoUtils;
-    public fieldEffectProcessor: any;
+    // fieldEffectProcessor removed - legacy functionality moved to OptimizedGameEngine
     public playSequenceManager: any;
     public effectSimulator: any;
     
@@ -99,7 +99,7 @@ export class MozGamePlay {
     constructor() {
         this.cardEffectManager = CardEffectManager;
         this.cardInfoUtils = CardInfoUtils;
-        this.fieldEffectProcessor = FieldEffectProcessor;
+        // FieldEffectProcessor removed - legacy functionality moved to OptimizedGameEngine
         
         // UNIFIED EFFECT SYSTEM: Dependencies for replay-based effect calculation
         // NOTE: These are injected by GameLogic.ts during initialization to ensure proper dependency setup

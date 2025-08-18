@@ -55,7 +55,7 @@ The game will be accessible at `http://localhost:3000`.
 ### Backend
 - **Framework**: Node.js with Express.js.
 - **Game Logic**: The core game mechanics are managed by modules in `src/mozGame/`, which handle phases, player actions, and card effects.
-- **Field Effects System**: `FieldEffectProcessor` service manages leader card effects including zone restrictions and power modifications.
+- **Field Effects System**: Unified effect system in `OptimizedGameEngine` manages leader card effects including zone restrictions and power modifications.
 - **State Management**: Game state is persisted as JSON files in `src/gameData/`. This file-based approach ensures that games are not lost if the server restarts.
 - **API**: A RESTful API provides endpoints for the frontend to create games, perform actions, and poll for state updates.
 
@@ -132,7 +132,7 @@ The field effects system allows leader cards to impose continuous effects on the
 ### Implementation
 
 **Backend:**
-- `FieldEffectProcessor` service class manages all field effect logic
+- `OptimizedGameEngine` with unified effect system manages all field effect logic
 - Field effects stored in `gameEnv[playerId].fieldEffects`
 - Integration points in game setup, card placement validation, and power calculation
 

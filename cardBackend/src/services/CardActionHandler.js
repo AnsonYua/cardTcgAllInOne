@@ -76,7 +76,7 @@ class CardActionHandler {
         this.processUtilityCardEffects = mozGamePlay.processUtilityCardEffects?.bind(mozGamePlay) || (() => {});
         
         // Import required utilities
-        this.fieldEffectProcessor = mozGamePlay.fieldEffectProcessor;
+        // Note: FieldEffectProcessor dependency removed - using simplified validation
         
         // Position mapping for consistent zone handling
         this.POSITION_DICT = ["top", "left", "right", "help", "sp"];
@@ -230,17 +230,13 @@ class CardActionHandler {
             }
         }
         
-        // 2. Leader zone restrictions validation (unified field effects system)
-        const fieldEffectCheck = await this.fieldEffectProcessor.validateCardPlacementWithFieldEffects(
-            gameEnv,
-            playerId,
-            cardDetails,
-            playPos
-        );
+        // 2. Basic zone restrictions validation (legacy path - simplified)
+        // Note: Full validation handled by OptimizedGameEngine in production flow
+        const fieldEffectCheck = await this.validateBasicZoneRestrictions(gameEnv, playerId, cardDetails, playPos);
         
-        if (!fieldEffectCheck.canPlace) {
-            this.addErrorEvent(gameEnv, 'FIELD_EFFECT_RESTRICTION', fieldEffectCheck.reason, playerId);
-            return { isValid: false, error: fieldEffectCheck.reason };
+        if (!fieldEffectCheck.isValid) {
+            this.addErrorEvent(gameEnv, 'FIELD_EFFECT_RESTRICTION', fieldEffectCheck.error, playerId);
+            return { isValid: false, error: fieldEffectCheck.error };
         }
         
         // 3. Check card effect restrictions from existing field cards
@@ -250,6 +246,51 @@ class CardActionHandler {
         }
         
         console.log(`🎯 Advanced restrictions validation passed`);
+        return { isValid: true };
+    }
+
+    /**
+     * Basic zone restrictions validation (legacy path - simplified)
+     * Replaces FieldEffectProcessor dependency with simplified logic
+     */
+    async validateBasicZoneRestrictions(gameEnv, playerId, cardDetails, zone) {
+        const { getPlayerFieldEffects } = require('../utils/gameUtils');
+        let playerFieldEffects = getPlayerFieldEffects(gameEnv, playerId);
+        
+        // If no field effects, allow placement (basic compatibility)
+        if (!playerFieldEffects) {
+            return { isValid: true };
+        }
+        
+        // Check for zone placement freedom (special effects)
+        if (playerFieldEffects.specialEffects && 
+            playerFieldEffects.specialEffects.zonePlacementFreedom) {
+            return { isValid: true };
+        }
+        
+        // Basic zone restriction check
+        const zoneRestrictions = playerFieldEffects.zoneRestrictions && 
+                                playerFieldEffects.zoneRestrictions[zone.toUpperCase()];
+        
+        // If no restrictions or ALL allowed, permit placement
+        if (!zoneRestrictions || 
+            zoneRestrictions === "ALL" || 
+            (Array.isArray(zoneRestrictions) && zoneRestrictions.includes("ALL"))) {
+            return { isValid: true };
+        }
+        
+        // Simplified type checking (legacy compatibility)
+        const cardTypeToCheck = (zone.toUpperCase() === 'HELP' || zone.toUpperCase() === 'SP') 
+            ? cardDetails.cardType 
+            : cardDetails.gameType;
+            
+        if (Array.isArray(zoneRestrictions) && !zoneRestrictions.includes(cardTypeToCheck)) {
+            return { 
+                isValid: false, 
+                error: `Card type '${cardTypeToCheck}' not allowed in ${zone}. Allowed types: ${zoneRestrictions.join(', ')} (legacy validation)` 
+            };
+        }
+        
         return { isValid: true };
     }
 

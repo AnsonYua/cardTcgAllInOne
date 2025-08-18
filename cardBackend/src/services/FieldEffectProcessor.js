@@ -123,15 +123,13 @@ class FieldEffectProcessor {
     }
 
     /**
-     * Validates if a card can be placed in a zone considering field effects
-     * @param {Object} gameEnv - Game environment
-     * @param {string} playerId - Player ID
-     * @param {Object} cardDetails - Card to be placed
-     * @param {string} zone - Target zone
-     * @returns {Object} Validation result with canPlace and reason
+     * @deprecated Use OptimizedGameEngine.validateCardPlacementWithFieldEffects() instead
+     * This method is maintained for legacy compatibility only
      */
     async validateCardPlacementWithFieldEffects(gameEnv, playerId, cardDetails, zone) {
-        // Initialize field effects if not present
+        console.warn('⚠️ DEPRECATED: FieldEffectProcessor.validateCardPlacementWithFieldEffects is deprecated. Use OptimizedGameEngine instead.');
+        
+        // Fallback to basic validation for legacy compatibility
         const { getPlayerFieldEffects } = require('../utils/gameUtils');
         let playerFieldEffects = getPlayerFieldEffects(gameEnv, playerId);
         if (!playerFieldEffects) {
@@ -139,36 +137,13 @@ class FieldEffectProcessor {
             playerFieldEffects = getPlayerFieldEffects(gameEnv, playerId);
         }
         
-        // Check for zone placement freedom immunity first (now in fieldEffects)
-        if (playerFieldEffects.specialEffects && 
-            playerFieldEffects.specialEffects.zonePlacementFreedom) {
-            console.log(`🔓 Zone placement freedom active for ${playerId} - bypassing restrictions`);
-            return { canPlace: true, reason: "Zone placement freedom immunity" };
-        }
-        
+        // Basic zone restriction check
         const zoneRestrictions = playerFieldEffects.zoneRestrictions[zone.toUpperCase()];
-        
-        // If no restrictions, allow placement
-        // Handle both "ALL" string and ["ALL"] array formats
         if (zoneRestrictions === "ALL" || (Array.isArray(zoneRestrictions) && zoneRestrictions.includes("ALL"))) {
-            return { canPlace: true, reason: "No restrictions" };
+            return { canPlace: true, reason: "No restrictions (legacy path)" };
         }
         
-        // Check if card's type is allowed
-        // For character cards, check gameType (愛國者, 右翼, etc.)
-        // For utility cards (help/SP), check cardType since they don't have gameType
-        const cardTypeToCheck = (zone.toUpperCase() === 'HELP' || zone.toUpperCase() === 'SP') 
-            ? cardDetails.cardType 
-            : cardDetails.gameType;
-            
-        if (Array.isArray(zoneRestrictions) && !zoneRestrictions.includes(cardTypeToCheck)) {
-            return { 
-                canPlace: false, 
-                reason: `Card type '${cardTypeToCheck}' not allowed in ${zone}. Allowed types: ${zoneRestrictions.join(', ')}` 
-            };
-        }
-        
-        return { canPlace: true, reason: "Field effect validation passed" };
+        return { canPlace: true, reason: "Legacy validation - use OptimizedGameEngine for full validation" };
     }
 
     /**

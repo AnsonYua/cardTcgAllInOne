@@ -365,7 +365,7 @@ target: {
 
 #### ✅ **IMPLEMENTED Effect Types (3/13)**
 ```javascript
-// In EffectSimulator.js and FieldEffectProcessor.js
+// In EffectSimulator.js (unified effect system)
 case 'powerBoost':     // ✅ FULLY IMPLEMENTED - 25 instances across all cards
 case 'setPower':       // ✅ FULLY IMPLEMENTED - 3 instances (leaders + h-2)  
 case 'preventSummon':  // ✅ PARTIALLY IMPLEMENTED - 1 instance (Powell leader)
