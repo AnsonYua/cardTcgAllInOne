@@ -515,28 +515,13 @@ export interface FieldEffect {
     effectData?: any;
 }
 
-// Enhanced FieldEffect using ActiveEffect for type-safe effect processing
-export interface EnhancedFieldEffect {
-    // Runtime context
-    effectId: string;
-    sourceCardUid: string;
-    sourcePlayerId: string;
-    targetPlayerId: string;
-    createdAt: number;
-    isActive: boolean;
-    
-    // Direct JSON structure preservation
-    rule: EffectRule;
-}
 
 export interface PlayerFieldEffects {
     zoneRestrictions: {
         [zone in ZoneType]?: string[] | 'ALL';
     };
-    // Legacy format - maintaining compatibility
+    // Active effects for all field effect processing
     activeEffects: FieldEffect[];
-    // New enhanced format - preferred for new code
-    activeEffectsEnhanced?: EnhancedFieldEffect[];
     specialEffects?: {
         zonePlacementFreedom?: boolean;
         immuneToNeutralization?: boolean;

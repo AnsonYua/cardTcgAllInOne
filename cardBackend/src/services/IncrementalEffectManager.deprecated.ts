@@ -95,7 +95,6 @@ export class IncrementalEffectManager {
             player.fieldEffects = {
                 zoneRestrictions: {},
                 activeEffects: [],
-                activeEffectsEnhanced: [],
                 specialEffects: {},
                 disabledCards: [],
                 victoryPointModifiers: 0

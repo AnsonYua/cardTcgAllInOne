@@ -6,7 +6,7 @@
  */
 
 import { ActiveEffect, EffectRule } from '../models/ActiveEffect';
-import { FieldEffect, EnhancedFieldEffect } from '../models/GameEnvironment';
+import { FieldEffect } from '../models/GameEnvironment';
 
 /**
  * Migration helper for transitioning effect systems
@@ -71,34 +71,6 @@ export class EffectMigrationHelper {
         };
     }
     
-    /**
-     * Convert enhanced FieldEffect to ActiveEffect
-     */
-    static convertEnhancedFieldEffectToActiveEffect(enhancedEffect: EnhancedFieldEffect): ActiveEffect {
-        return new ActiveEffect(enhancedEffect.rule, {
-            effectId: enhancedEffect.effectId,
-            sourceCardUid: enhancedEffect.sourceCardUid,
-            sourcePlayerId: enhancedEffect.sourcePlayerId,
-            targetPlayerId: enhancedEffect.targetPlayerId,
-            createdAt: enhancedEffect.createdAt,
-            isActive: enhancedEffect.isActive
-        });
-    }
-    
-    /**
-     * Convert ActiveEffect to enhanced FieldEffect
-     */
-    static convertActiveEffectToEnhancedFieldEffect(activeEffect: ActiveEffect): EnhancedFieldEffect {
-        return {
-            effectId: activeEffect.effectId,
-            sourceCardUid: activeEffect.sourceCardUid,
-            sourcePlayerId: activeEffect.sourcePlayerId,
-            targetPlayerId: activeEffect.targetPlayerId,
-            createdAt: activeEffect.createdAt,
-            isActive: activeEffect.isActive,
-            rule: activeEffect.rule
-        };
-    }
     
     /**
      * Reconstruct filters from legacy gameTypes and traits arrays
@@ -127,30 +99,6 @@ export class EffectMigrationHelper {
         return filters;
     }
     
-    /**
-     * Migrate all legacy effects in a player's fieldEffects to enhanced format
-     */
-    static migratePlayerFieldEffects(fieldEffects: any): void {
-        if (!fieldEffects.activeEffects) {
-            return;
-        }
-        
-        // Initialize enhanced effects array if not exists
-        if (!fieldEffects.activeEffectsEnhanced) {
-            fieldEffects.activeEffectsEnhanced = [];
-        }
-        
-        // Convert each legacy effect to enhanced format
-        for (const legacyEffect of fieldEffects.activeEffects) {
-            const activeEffect = this.convertLegacyFieldEffectToActiveEffect(legacyEffect);
-            if (activeEffect) {
-                const enhancedEffect = this.convertActiveEffectToEnhancedFieldEffect(activeEffect);
-                fieldEffects.activeEffectsEnhanced.push(enhancedEffect);
-            }
-        }
-        
-        console.log(`🔄 Migrated ${fieldEffects.activeEffects.length} legacy effects to enhanced format`);
-    }
     
     /**
      * Validate effect compatibility between old and new systems
@@ -185,79 +133,8 @@ export class EffectMigrationHelper {
         }
     }
     
-    /**
-     * Get migration statistics for a game environment
-     */
-    static getMigrationStatistics(gameEnv: any): any {
-        const stats = {
-            totalPlayers: Object.keys(gameEnv.players || {}).length,
-            playersWithLegacyEffects: 0,
-            playersWithEnhancedEffects: 0,
-            totalLegacyEffects: 0,
-            totalEnhancedEffects: 0,
-            migrationNeeded: false
-        };
-        
-        for (const [playerId, player] of Object.entries(gameEnv.players || {})) {
-            const fieldEffects = (player as any).fieldEffects;
-            if (!fieldEffects) continue;
-            
-            if (fieldEffects.activeEffects && fieldEffects.activeEffects.length > 0) {
-                stats.playersWithLegacyEffects++;
-                stats.totalLegacyEffects += fieldEffects.activeEffects.length;
-            }
-            
-            if (fieldEffects.activeEffectsEnhanced && fieldEffects.activeEffectsEnhanced.length > 0) {
-                stats.playersWithEnhancedEffects++;
-                stats.totalEnhancedEffects += fieldEffects.activeEffectsEnhanced.length;
-            }
-        }
-        
-        stats.migrationNeeded = stats.totalLegacyEffects > 0 && stats.totalEnhancedEffects === 0;
-        
-        return stats;
-    }
     
-    /**
-     * Perform automatic migration of entire game environment
-     */
-    static performFullMigration(gameEnv: any): void {
-        console.log('🚀 Starting full effect system migration...');
-        
-        const initialStats = this.getMigrationStatistics(gameEnv);
-        console.log('📊 Pre-migration stats:', initialStats);
-        
-        // Migrate each player's effects
-        for (const [playerId, player] of Object.entries(gameEnv.players || {})) {
-            const fieldEffects = (player as any).fieldEffects;
-            if (fieldEffects) {
-                this.migratePlayerFieldEffects(fieldEffects);
-            }
-        }
-        
-        const finalStats = this.getMigrationStatistics(gameEnv);
-        console.log('📊 Post-migration stats:', finalStats);
-        console.log('✅ Migration completed successfully');
-    }
     
-    /**
-     * Create compatibility layer for old IncrementalEffectManager calls
-     */
-    static createCompatibilityLayer(): any {
-        return {
-            // Wrapper methods that delegate to new system
-            processCardEffects: (gameEnv: any, play: any) => {
-                console.log('🔄 Compatibility layer: delegating to EnhancedEffectManager');
-                // Implementation would delegate to new system
-            },
-            
-            calculateCardPower: (gameEnv: any, cardId: string, cardData: any, zone: string, playerId: string, basePower: number) => {
-                console.log('🔄 Compatibility layer: delegating power calculation');
-                // Implementation would delegate to new system
-                return basePower; // Placeholder
-            }
-        };
-    }
 }
 
 /**
@@ -265,35 +142,7 @@ export class EffectMigrationHelper {
  */
 export class EffectSystemUtils {
     
-    /**
-     * Check if a game environment is using the new effect system
-     */
-    static isUsingEnhancedEffects(gameEnv: any): boolean {
-        for (const player of Object.values(gameEnv.players || {})) {
-            const fieldEffects = (player as any).fieldEffects;
-            if (fieldEffects?.activeEffectsEnhanced && fieldEffects.activeEffectsEnhanced.length > 0) {
-                return true;
-            }
-        }
-        return false;
-    }
     
-    /**
-     * Get recommended migration strategy
-     */
-    static getRecommendedMigrationStrategy(gameEnv: any): string {
-        const stats = EffectMigrationHelper.getMigrationStatistics(gameEnv);
-        
-        if (stats.totalLegacyEffects === 0 && stats.totalEnhancedEffects === 0) {
-            return 'CLEAN_START'; // No effects, can start with new system
-        } else if (stats.totalLegacyEffects > 0 && stats.totalEnhancedEffects === 0) {
-            return 'FULL_MIGRATION'; // Only legacy effects, migrate all
-        } else if (stats.totalLegacyEffects === 0 && stats.totalEnhancedEffects > 0) {
-            return 'ALREADY_MIGRATED'; // Only enhanced effects, already using new system
-        } else {
-            return 'HYBRID_STATE'; // Mixed state, need careful migration
-        }
-    }
     
     /**
      * Validate effect system consistency
@@ -306,19 +155,13 @@ export class EffectSystemUtils {
             const fieldEffects = (player as any).fieldEffects;
             if (!fieldEffects) continue;
             
-            // Check for duplicate effects
-            const legacyCount = fieldEffects.activeEffects?.length || 0;
-            const enhancedCount = fieldEffects.activeEffectsEnhanced?.length || 0;
+            // Validate activeEffects structure (unified system)
+            const effectsCount = fieldEffects.activeEffects?.length || 0;
             
-            if (legacyCount > 0 && enhancedCount > 0) {
-                warnings.push(`Player ${playerId} has both legacy (${legacyCount}) and enhanced (${enhancedCount}) effects`);
-            }
-            
-            // Validate enhanced effects structure
-            if (fieldEffects.activeEffectsEnhanced) {
-                for (const effect of fieldEffects.activeEffectsEnhanced) {
-                    if (!effect.rule || !effect.effectId) {
-                        issues.push(`Player ${playerId} has malformed enhanced effect: missing rule or effectId`);
+            if (fieldEffects.activeEffects) {
+                for (const effect of fieldEffects.activeEffects) {
+                    if (!effect.effectId || !effect.type) {
+                        issues.push(`Player ${playerId} has malformed effect: missing effectId or type`);
                     }
                 }
             }
