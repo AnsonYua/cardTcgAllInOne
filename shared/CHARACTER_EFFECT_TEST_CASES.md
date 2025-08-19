@@ -243,7 +243,7 @@ Final Power = Base Power + Character Effects + Leader Effects + Trait Bonuses
 
 ### Card Selection Workflow
 1. **Effect Triggers**: Character summon activates search effect
-2. **Pending Selection**: `pendingPlayerAction` and `pendingCardSelections` created
+2. **Pending Selection**: `pendingCardSelections` created (consolidated system)
 3. **Frontend Display**: Show available cards to player
 4. **Selection Completion**: `POST /api/game/player/selectCard` 
 5. **State Update**: Cards placed, deck modified, game continues

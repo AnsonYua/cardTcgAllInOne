@@ -59,7 +59,7 @@ async function testC20CardSelection() {
                     top: [], left: [], right: [], help: [], sp: []
                 }
             },
-            pendingPlayerAction: null,
+            // REFACTOR: Consolidated card selection system - removed pendingPlayerAction
             pendingCardSelections: {},
             gameEvents: [],
             playSequence: {
@@ -100,11 +100,12 @@ async function testC20CardSelection() {
         console.log('\n🔍 VERIFICATION RESULTS:');
         console.log('==========================================');
         
-        // Check if pendingPlayerAction exists
-        if (gameEnv.pendingPlayerAction) {
-            console.log('✅ pendingPlayerAction found:', gameEnv.pendingPlayerAction);
+        // REFACTOR: Check consolidated card selection system
+        const hasPendingSelection = gameEnv.pendingCardSelections && Object.keys(gameEnv.pendingCardSelections).length > 0;
+        if (hasPendingSelection) {
+            console.log('✅ Pending card selection found via consolidated system');
         } else {
-            console.log('❌ pendingPlayerAction missing or null');
+            console.log('❌ No pending card selections found');
         }
         
         // Check if pendingCardSelections exists  
@@ -143,7 +144,7 @@ async function testC20CardSelection() {
         }
         
         console.log('\n🎯 TEST SUMMARY:');
-        const hasSelection = !!gameEnv.pendingPlayerAction;
+        const hasSelection = gameEnv.pendingCardSelections && Object.keys(gameEnv.pendingCardSelections).length > 0;
         const hasSelectionData = !!(gameEnv.pendingCardSelections && Object.keys(gameEnv.pendingCardSelections).length > 0);
         
         if (hasSelection && hasSelectionData) {
@@ -153,7 +154,7 @@ async function testC20CardSelection() {
             console.log('✅ Frontend can now detect and show selection UI');
         } else {
             console.log('❌ ISSUE: Card selection system still not working properly');
-            if (!hasSelection) console.log('   - Missing pendingPlayerAction');
+            if (!hasSelection) console.log('   - Missing pendingCardSelections');
             if (!hasSelectionData) console.log('   - Missing pendingCardSelections');
         }
         

@@ -9,7 +9,9 @@ The `processAction` function in `src/mozGame/mozGamePlay.js` is the core game en
 ### 1. Blocking Logic (Lines 115-131)
 ```javascript
 // Check for pending player actions that block normal gameplay
-if (gameEnv.pendingPlayerAction) {
+// REFACTOR: Use consolidated detection
+const hasPendingSelection = gameEnv.pendingCardSelections && Object.keys(gameEnv.pendingCardSelections).length > 0;
+if (hasPendingSelection) {
     // Block all actions until pending selection is completed
     // Only the player with pending action can complete it
 }
@@ -334,7 +336,7 @@ GET /player/{playerId}?gameId={gameId}
   "gameEnv": {
     "phase": "MAIN_PHASE|SP_PHASE|BATTLE_PHASE",
     "currentPlayer": "playerId_1",
-    "pendingPlayerAction": null | { type: "cardSelection", selectionId: "..." },
+    // REFACTOR: Consolidated selection system - removed pendingPlayerAction
     "players": {
       "playerId_1": {
         "Field": { /* placed cards */ },

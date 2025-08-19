@@ -24,7 +24,7 @@ All character card effects have been successfully implemented and are production
 
 ### 4. API Integration ✅
 - **Endpoint**: `POST /api/game/player/selectCard` (already implemented)
-- **Selection State**: pendingPlayerAction and pendingCardSelections
+- **Selection State**: pendingCardSelections (consolidated from dual fields)
 - **Event System**: CARD_SELECTION_REQUIRED and CARD_SELECTION_COMPLETED events
 
 ### 5. Code Cleanup ✅
@@ -38,7 +38,9 @@ All character card effects have been successfully implemented and are production
 
 1. **Detect Selection Required**:
 ```javascript
-if (gameEnv.pendingPlayerAction?.type === 'cardSelection') {
+// REFACTOR: Use consolidated detection
+const pendingSelections = gameEnv.pendingCardSelections;
+if (pendingSelections && Object.keys(pendingSelections).length > 0) {
   // Show card selection UI
 }
 ```

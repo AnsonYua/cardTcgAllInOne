@@ -27,10 +27,7 @@ describe('CardSelectionHandler Integration Tests', () => {
             const mockGameEnv = {
                 currentPlayer: testPlayerId1,
                 phase: 'MAIN_PHASE',
-                pendingPlayerAction: {
-                    type: 'cardSelection',
-                    selectionId: 'test_selection_123'
-                },
+                // REFACTOR: Consolidated card selection system - removed pendingPlayerAction
                 pendingCardSelections: {
                     'test_selection_123': {
                         selectionId: 'test_selection_123',
@@ -70,7 +67,7 @@ describe('CardSelectionHandler Integration Tests', () => {
                 // Return a mock successful result
                 return {
                     ...gameEnv,
-                    pendingPlayerAction: null,
+                    // REFACTOR: Consolidated card selection system - removed pendingPlayerAction
                     pendingCardSelections: {}
                 };
             };

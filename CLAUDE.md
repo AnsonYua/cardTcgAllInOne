@@ -132,7 +132,7 @@ npm run format
 - **No In-Memory Storage**: Games survive server restarts
 - **Unified Structure**: Single gameEnv format eliminates backend/frontend transformation
 - **Event System**: 30+ event types for precise frontend updates
-- **Card Selection Workflow**: `pendingPlayerAction` and `pendingCardSelections` handle player input requirements
+- **Card Selection Workflow**: `pendingCardSelections` handles player input requirements with consolidated detection
 
 ### Face-Down Card Mechanics
 - **Complete Restriction Bypass**: Face-down cards ignore zone compatibility
@@ -198,7 +198,7 @@ const allowedTypes = leader[zone];
 - All game data returned in `gameEnv` object
 - Single `phase` field for game state (eliminated duplicate `roomStatus`)
 - No separate response fields (eliminated `requiresCardSelection`)
-- Card selection detected via `pendingPlayerAction` existence
+- Card selection detected via `pendingCardSelections` object inspection
 - Detailed selection data in `pendingCardSelections[selectionId]`
 
 ## Demo Mode

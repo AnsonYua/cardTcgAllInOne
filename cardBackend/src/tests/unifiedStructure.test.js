@@ -90,7 +90,7 @@ describe('Unified GameEnv Structure Tests', () => {
                 },
                 gameEvents: [],
                 lastEventId: 1,
-                pendingPlayerAction: null,
+                // REFACTOR: Consolidated card selection system - removed pendingPlayerAction
                 pendingCardSelections: {},
                 playSequence: { globalSequence: 0, plays: [] },
                 computedState: {

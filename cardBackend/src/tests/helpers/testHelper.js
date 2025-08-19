@@ -545,7 +545,7 @@ class TestHelper {
                 },
                 gameEvents: [],
                 lastEventId: 1,
-                pendingPlayerAction: null,
+                // REFACTOR: Consolidated card selection system - removed pendingPlayerAction
                 pendingCardSelections: {},
                 playSequence: {
                     globalSequence: 0,

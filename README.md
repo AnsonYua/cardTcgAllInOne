@@ -234,7 +234,7 @@ The `gameEnv` object is the single source of truth for the game's state, with a 
       }
     ],
 
-    "pendingPlayerAction": null,
+    // REFACTOR: Consolidated card selection system - removed pendingPlayerAction
     "pendingCardSelections": {}
   },
   "lastUpdate": "2025-07-14T10:00:00.000Z"

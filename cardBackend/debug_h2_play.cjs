@@ -89,7 +89,7 @@ async function debugH2Play() {
             },
             gameEvents: [],
             lastEventId: 0,
-            pendingPlayerAction: null,
+            // REFACTOR: Consolidated card selection system - removed pendingPlayerAction
             pendingCardSelections: {},
             playSequence: { globalSequence: 0, plays: [] }
         };
@@ -109,7 +109,9 @@ async function debugH2Play() {
         console.log('Phase:', result.gameEnv.phase);
         console.log('Current player:', result.gameEnv.currentPlayer);
         console.log('Help zone contents:', result.gameEnv.zones.playerId_2.help);
-        console.log('Pending selection:', result.gameEnv.pendingPlayerAction);
+        // REFACTOR: Check consolidated selection system
+        const hasPendingSelection = result.gameEnv.pendingCardSelections && Object.keys(result.gameEnv.pendingCardSelections).length > 0;
+        console.log('Pending selection:', hasPendingSelection ? Object.keys(result.gameEnv.pendingCardSelections) : 'none');
         
         return true;
         

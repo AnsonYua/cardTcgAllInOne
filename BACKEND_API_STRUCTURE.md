@@ -106,7 +106,7 @@ This document defines the standardized API response structure for the Revolution
     },
     
     // Card Selection Workflows
-    "pendingPlayerAction": null,
+    // REFACTOR: Consolidated card selection system - removed pendingPlayerAction
     "pendingCardSelections": {},
     
     // Real-time Events

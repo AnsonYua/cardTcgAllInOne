@@ -83,7 +83,7 @@ async function testDuplicateFix() {
             },
             gameEvents: [],
             lastEventId: 0,
-            pendingPlayerAction: null,
+            // REFACTOR: Consolidated card selection system - removed pendingPlayerAction
             pendingCardSelections: {},
             playSequence: { globalSequence: 0, plays: [] }
         };
