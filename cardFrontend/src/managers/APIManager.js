@@ -78,12 +78,13 @@ export default class APIManager {
     });
   }
 
-  async selectCard(selectionId, selectedCardIds, playerId, gameId) {
+  async selectCard(selectionId, selectedCardIdentifiers, playerId, gameId) {
     return this.request('/player/selectCard', {
       method: 'POST',
       body: JSON.stringify({
         selectionId,
-        selectedCardIds,
+        selectedCardUIds: selectedCardIdentifiers, // Use new UID parameter name
+        selectedCardIds: selectedCardIdentifiers,  // Keep backward compatibility 
         playerId,
         gameId
       })
@@ -91,7 +92,7 @@ export default class APIManager {
   }
 
   // Card Selection - New unified approach using playerAction endpoint
-  async submitCardSelection(selectionId, selectedCardIds) {
+  async submitCardSelection(selectionId, selectedCardIdentifiers) {
     // Get current player and game info from game state
     const gameState = this.getGameState();
     if (!gameState || !gameState.playerId || !gameState.gameId) {
@@ -101,7 +102,8 @@ export default class APIManager {
     const action = {
       type: 'SelectCard',
       selectionId: selectionId,
-      selectedCardIds: selectedCardIds
+      selectedCardUIds: selectedCardIdentifiers, // Use new UID parameter name
+      selectedCardIds: selectedCardIdentifiers   // Keep backward compatibility
     };
 
     return this.playerAction(gameState.playerId, gameState.gameId, action);

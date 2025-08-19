@@ -345,12 +345,12 @@ export class GameLogic {
      * @param gameId - Game ID
      * @param playerId - Player ID making the selection
      * @param selectionId - Selection ID from pendingCardSelections
-     * @param selectedCardIds - Array of selected card IDs
+     * @param selectedCardIdentifiers - Array of selected card identifiers (supports both IDs and UIDs)
      * @returns Promise<PlayerActionResult>
      */
-    async selectCard(gameId: string, playerId: string, selectionId: string, selectedCardIds: string[]): Promise<PlayerActionResult> {
+    async selectCard(gameId: string, playerId: string, selectionId: string, selectedCardIdentifiers: string[]): Promise<PlayerActionResult> {
         try {
-            console.log(`🎯 Processing card selection for player ${playerId}: ${selectionId} with cards: ${selectedCardIds.join(', ')}`);
+            console.log(`🎯 Processing card selection for player ${playerId}: ${selectionId} with cards: ${selectedCardIdentifiers.join(', ')}`);
             
             // Load game environment
             const gameEnv = await this.loadGameFromFile(gameId);
@@ -386,7 +386,7 @@ export class GameLogic {
             // Create action object matching expected format
             const action = {
                 selectionId: selectionId,
-                selectedCardIds: selectedCardIds
+                selectedCardUIds: selectedCardIdentifiers
             };
             
             // Process selection through handler

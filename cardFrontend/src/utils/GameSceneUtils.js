@@ -592,6 +592,7 @@ export default class GameSceneUtils {
           // Create card data object for preview
           const cardDataObject = {
             cardId: card.cardId,
+            cardUid: card.cardUid, // Include UID if available
             name: card.name,
             power: card.power,
             zone: card.zone,
@@ -873,9 +874,14 @@ export default class GameSceneUtils {
         try {
           // Call backend API to submit card selection using correct selectCard endpoint
           const gameState = scene.gameStateManager.getGameState();
+          
+          // Extract UID if available, fallback to cardId for backward compatibility
+          const cardIdentifier = selectedCard.cardUid || selectedCard.cardId;
+          console.log('Sending card identifier:', cardIdentifier, '(UID available:', !!selectedCard.cardUid, ')');
+          
           const response = await scene.apiManager.selectCard(
             selectionId, 
-            [selectedCard.cardId],
+            [cardIdentifier],
             gameState.playerId,
             gameState.gameId
           );

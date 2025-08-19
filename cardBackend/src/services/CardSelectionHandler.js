@@ -42,7 +42,9 @@ class CardSelectionHandler {
         console.log(`🎯 CardSelectionHandler: Routing SelectCard action for player: ${playerId}`);
         
         // ===== STEP 1: VALIDATE REQUIRED PARAMETERS =====
-        if (!action.selectionId || !action.selectedCardIds) {
+        // Support both selectedCardIds (backward compatibility) and selectedCardUIds (new system)
+        const selectedCardIdentifiers = action.selectedCardUIds || action.selectedCardIds;
+        if (!action.selectionId || !selectedCardIdentifiers) {
             this.addErrorEvent(gameEnv, 'INVALID_SELECTION_DATA', 
                 'Missing required selection parameters', playerId);
             return this.throwError('Missing required selection parameters');
@@ -90,15 +92,15 @@ class CardSelectionHandler {
         switch (selectionType) {
             case 'deckSearch':
                 console.log(`📦 Routing to deck search selection handler`);
-                return await this.handleDeckSearchSelection(gameEnv, action.selectionId, action.selectedCardIds);
+                return await this.handleDeckSearchSelection(gameEnv, action.selectionId, selectedCardIdentifiers);
 
             case 'fieldTarget':
                 console.log(`🎯 Routing to field target selection handler`);
-                return await this.handleFieldTargetSelection(gameEnv, action.selectionId, action.selectedCardIds);
+                return await this.handleFieldTargetSelection(gameEnv, action.selectionId, selectedCardIdentifiers);
 
             case 'singleTarget':
                 console.log(`🎯 Routing to single target selection handler`);
-                return await this.handleSingleTargetSelection(gameEnv, action.selectionId, action.selectedCardIds);
+                return await this.handleSingleTargetSelection(gameEnv, action.selectionId, selectedCardIdentifiers);
 
             default:
                 console.log(`❌ Unknown selection type: ${selectionType}`);
@@ -123,26 +125,25 @@ class CardSelectionHandler {
      * Processes selections from deck search effects where player searched deck
      * and now selects which cards to place in which zones
      */
-    async handleDeckSearchSelection(gameEnv, selectionId, selectedCardIds) {
+    async handleDeckSearchSelection(gameEnv, selectionId, selectedCardIdentifiers) {
         console.log(`📦 CardSelectionHandler: Processing deck search selection: ${selectionId}`);
         
         const selection = gameEnv.pendingCardSelections[selectionId];
         const { playerId, searchedCards, selectCount, effect } = selection;
 
         // ===== STEP 1: VALIDATE SELECTION COUNT =====
-        if (selectedCardIds.length !== selectCount) {
+        if (selectedCardIdentifiers.length !== selectCount) {
             this.addErrorEvent(gameEnv, 'INVALID_SELECTION_COUNT', 
                 `Must select exactly ${selectCount} cards`, playerId);
             return this.throwError(`Must select exactly ${selectCount} cards`);
         }
 
-        // ===== STEP 2: VALIDATE CARD CHOICES =====
-        for (const cardId of selectedCardIds) {
-            if (!selection.eligibleCards.includes(cardId)) {
-                this.addErrorEvent(gameEnv, 'INVALID_CARD_SELECTION', 
-                    `Invalid card selection: ${cardId}`, playerId);
-                return this.throwError(`Invalid card selection: ${cardId}`);
-            }
+        // ===== STEP 2: VALIDATE CARD CHOICES USING UNIFIED VALIDATION =====
+        const validation = this.validateCardSelection(selectedCardIdentifiers, selection.eligibleCards);
+        if (!validation.valid) {
+            this.addErrorEvent(gameEnv, 'INVALID_CARD_SELECTION', 
+                `Invalid card selection: ${validation.invalidCard}`, playerId);
+            return this.throwError(`Invalid card selection: ${validation.invalidCard}`);
         }
 
         // ===== STEP 3: ROUTE TO DESTINATION HANDLER =====
@@ -151,15 +152,15 @@ class CardSelectionHandler {
         switch (effect.destination) {
             case 'hand':
                 console.log(`📝 Moving selected cards to hand`);
-                return await this.moveDeckSearchCardsToHand(gameEnv, selectionId, selectedCardIds);
+                return await this.moveDeckSearchCardsToHand(gameEnv, selectionId, selectedCardIdentifiers);
 
             case 'spZone':
                 console.log(`🌟 Moving selected cards to SP zone`);
-                return await this.moveDeckSearchCardsToSpZone(gameEnv, selectionId, selectedCardIds);
+                return await this.moveDeckSearchCardsToSpZone(gameEnv, selectionId, selectedCardIdentifiers);
 
             case 'helpZone':
                 console.log(`🆘 Moving selected cards to Help zone`);
-                return await this.moveDeckSearchCardsToHelpZone(gameEnv, selectionId, selectedCardIds);
+                return await this.moveDeckSearchCardsToHelpZone(gameEnv, selectionId, selectedCardIdentifiers);
 
             default:
                 console.log(`❌ Unknown destination: ${effect.destination}`);
@@ -173,8 +174,8 @@ class CardSelectionHandler {
      * 📝 MOVE DECK SEARCH CARDS TO HAND
      * Used by: c-9 (艾利茲), h-11 (海湖莊園)
      */
-    async moveDeckSearchCardsToHand(gameEnv, selectionId, selectedCardIds) {
-        console.log(`📝 CardSelectionHandler: Moving ${selectedCardIds.length} cards to hand`);
+    async moveDeckSearchCardsToHand(gameEnv, selectionId, selectedCardIdentifiers) {
+        console.log(`📝 CardSelectionHandler: Moving ${selectedCardIdentifiers.length} cards to hand`);
         
         const selection = gameEnv.pendingCardSelections[selectionId];
         const { playerId, searchedCards } = selection;
@@ -183,7 +184,7 @@ class CardSelectionHandler {
         const deck = this.getPlayerMainDeck(gameEnv, playerId);
         const hand = this.getPlayerHand(gameEnv, playerId);
 
-        for (const cardId of selectedCardIds) {
+        for (const cardId of selectedCardIdentifiers) {
             // Remove from deck
             const deckIndex = deck.indexOf(cardId);
             if (deckIndex !== -1) {
@@ -201,7 +202,7 @@ class CardSelectionHandler {
         }
 
         // Put remaining searched cards back to bottom of deck
-        this.returnUnselectedCardsToDeck(gameEnv, playerId, searchedCards, selectedCardIds);
+        this.returnUnselectedCardsToDeck(gameEnv, playerId, searchedCards, selectedCardIdentifiers);
 
         // Complete the selection
         return await this.completeCardSelection(gameEnv, selectionId);
@@ -211,8 +212,8 @@ class CardSelectionHandler {
      * 🌟 MOVE DECK SEARCH CARDS TO SP ZONE
      * Used by: c-10 (爱德华)
      */
-    async moveDeckSearchCardsToSpZone(gameEnv, selectionId, selectedCardIds) {
-        console.log(`🌟 CardSelectionHandler: Moving ${selectedCardIds.length} cards to SP zone`);
+    async moveDeckSearchCardsToSpZone(gameEnv, selectionId, selectedCardIdentifiers) {
+        console.log(`🌟 CardSelectionHandler: Moving ${selectedCardIdentifiers.length} cards to SP zone`);
         
         const selection = gameEnv.pendingCardSelections[selectionId];
         const { playerId, searchedCards } = selection;
@@ -222,13 +223,13 @@ class CardSelectionHandler {
         if (playerField.sp.length > 0) {
             // SP zone occupied - card goes to hand instead
             console.log(`🌟 SP zone occupied, moving card to hand instead`);
-            return await this.moveDeckSearchCardsToHand(gameEnv, selectionId, selectedCardIds);
+            return await this.moveDeckSearchCardsToHand(gameEnv, selectionId, selectedCardIdentifiers);
         }
 
         // Get player's deck
         const deck = this.getPlayerMainDeck(gameEnv, playerId);
 
-        for (const cardId of selectedCardIds) {
+        for (const cardId of selectedCardIdentifiers) {
             // Remove from deck
             const deckIndex = deck.indexOf(cardId);
             if (deckIndex !== -1) {
@@ -256,7 +257,7 @@ class CardSelectionHandler {
         }
 
         // Put remaining searched cards back to bottom of deck
-        this.returnUnselectedCardsToDeck(gameEnv, playerId, searchedCards, selectedCardIds);
+        this.returnUnselectedCardsToDeck(gameEnv, playerId, searchedCards, selectedCardIdentifiers);
 
         // Complete the selection
         return await this.completeCardSelection(gameEnv, selectionId);
@@ -266,8 +267,8 @@ class CardSelectionHandler {
      * 🆘 MOVE DECK SEARCH CARDS TO HELP ZONE
      * Used by: c-12 (盧克)
      */
-    async moveDeckSearchCardsToHelpZone(gameEnv, selectionId, selectedCardIds) {
-        console.log(`🆘 CardSelectionHandler: Moving ${selectedCardIds.length} cards to Help zone`);
+    async moveDeckSearchCardsToHelpZone(gameEnv, selectionId, selectedCardIdentifiers) {
+        console.log(`🆘 CardSelectionHandler: Moving ${selectedCardIdentifiers.length} cards to Help zone`);
         
         const selection = gameEnv.pendingCardSelections[selectionId];
         const { playerId, searchedCards } = selection;
@@ -283,7 +284,7 @@ class CardSelectionHandler {
         // Get player's deck
         const deck = this.getPlayerMainDeck(gameEnv, playerId);
 
-        for (const cardId of selectedCardIds) {
+        for (const cardId of selectedCardIdentifiers) {
             // Remove from deck
             const deckIndex = deck.indexOf(cardId);
             if (deckIndex !== -1) {
@@ -325,7 +326,7 @@ class CardSelectionHandler {
         }
 
         // Put remaining searched cards back to bottom of deck
-        this.returnUnselectedCardsToDeck(gameEnv, playerId, searchedCards, selectedCardIds);
+        this.returnUnselectedCardsToDeck(gameEnv, playerId, searchedCards, selectedCardIdentifiers);
 
         // Complete the selection
         return await this.completeCardSelection(gameEnv, selectionId);
@@ -344,30 +345,25 @@ class CardSelectionHandler {
      * Processes selections from battlefield targeting effects where player chooses
      * specific cards on the field to affect
      */
-    async handleFieldTargetSelection(gameEnv, selectionId, selectedCardIds) {
+    async handleFieldTargetSelection(gameEnv, selectionId, selectedCardIdentifiers) {
         console.log(`🎯 CardSelectionHandler: Processing field target selection: ${selectionId}`);
         
         const selection = gameEnv.pendingCardSelections[selectionId];
         const { playerId, selectCount, effectType } = selection;
 
         // ===== STEP 1: VALIDATE SELECTION COUNT =====
-        if (selectedCardIds.length !== selectCount) {
+        if (selectedCardIdentifiers.length !== selectCount) {
             this.addErrorEvent(gameEnv, 'INVALID_SELECTION_COUNT', 
                 `Must select exactly ${selectCount} cards`, playerId);
             return this.throwError(`Must select exactly ${selectCount} cards`);
         }
 
-        // ===== STEP 2: VALIDATE CARD CHOICES =====
-        for (const cardId of selectedCardIds) {
-            const isValidCard = selection.eligibleCards.some(card => 
-                (typeof card === 'string' && card === cardId) ||
-                (typeof card === 'object' && card.cardId === cardId)
-            );
-            if (!isValidCard) {
-                this.addErrorEvent(gameEnv, 'INVALID_CARD_SELECTION', 
-                    `Invalid card selection: ${cardId}`, playerId);
-                return this.throwError(`Invalid card selection: ${cardId}`);
-            }
+        // ===== STEP 2: VALIDATE CARD CHOICES USING UNIFIED VALIDATION =====
+        const validation = this.validateCardSelection(selectedCardIdentifiers, selection.eligibleCards);
+        if (!validation.valid) {
+            this.addErrorEvent(gameEnv, 'INVALID_CARD_SELECTION', 
+                `Invalid card selection: ${validation.invalidCard}`, playerId);
+            return this.throwError(`Invalid card selection: ${validation.invalidCard}`);
         }
 
         // ===== STEP 3: ROUTE TO EFFECT HANDLER =====
@@ -376,11 +372,11 @@ class CardSelectionHandler {
         switch (effectType) {
             case 'neutralizeEffect':
                 console.log(`🚫 Applying neutralization effect`);
-                return await this.applyNeutralizationEffect(gameEnv, selectionId, selectedCardIds);
+                return await this.applyNeutralizationEffect(gameEnv, selectionId, selectedCardIdentifiers);
 
             case 'setPower':
                 console.log(`⚡ Applying set power effect`);
-                return await this.applySetPowerEffect(gameEnv, selectionId, selectedCardIds);
+                return await this.applySetPowerEffect(gameEnv, selectionId, selectedCardIdentifiers);
 
             default:
                 console.log(`❌ Unknown effect type: ${effectType}`);
@@ -394,22 +390,22 @@ class CardSelectionHandler {
      * 🚫 APPLY NEUTRALIZATION EFFECT
      * Used by: h-1 (Deep State)
      */
-    async applyNeutralizationEffect(gameEnv, selectionId, selectedCardIds) {
-        console.log(`🚫 CardSelectionHandler: Applying neutralization to ${selectedCardIds.length} cards`);
+    async applyNeutralizationEffect(gameEnv, selectionId, selectedCardIdentifiers) {
+        console.log(`🚫 CardSelectionHandler: Applying neutralization to ${selectedCardIdentifiers.length} cards`);
         
         // Delegate to mozGamePlay's existing neutralization logic
-        return await this.mozGamePlay.applyNeutralizationSelection(gameEnv, selectionId, selectedCardIds);
+        return await this.mozGamePlay.applyNeutralizationSelection(gameEnv, selectionId, selectedCardIdentifiers);
     }
 
     /**
      * ⚡ APPLY SET POWER EFFECT
      * Used by: h-2 (Make America Great Again)
      */
-    async applySetPowerEffect(gameEnv, selectionId, selectedCardIds) {
-        console.log(`⚡ CardSelectionHandler: Applying set power to ${selectedCardIds.length} cards`);
+    async applySetPowerEffect(gameEnv, selectionId, selectedCardIdentifiers) {
+        console.log(`⚡ CardSelectionHandler: Applying set power to ${selectedCardIdentifiers.length} cards`);
         
         // Delegate to mozGamePlay's existing set power logic
-        return await this.mozGamePlay.applySetPowerSelection(gameEnv, selectionId, selectedCardIds);
+        return await this.mozGamePlay.applySetPowerSelection(gameEnv, selectionId, selectedCardIdentifiers);
     }
 
     // =======================================================================================
@@ -426,31 +422,28 @@ class CardSelectionHandler {
      * Processes selections where player must choose exactly one target from valid options
      * These effects have targetCount: 1 in their rules
      */
-    async handleSingleTargetSelection(gameEnv, selectionId, selectedCardIds) {
+    async handleSingleTargetSelection(gameEnv, selectionId, selectedCardIdentifiers) {
         console.log(`🎯 CardSelectionHandler: Processing single target selection: ${selectionId}`);
         
         const selection = gameEnv.pendingCardSelections[selectionId];
         const { playerId, effectType } = selection;
 
         // ===== STEP 1: VALIDATE EXACTLY ONE SELECTION =====
-        if (selectedCardIds.length !== 1) {
+        if (selectedCardIdentifiers.length !== 1) {
             this.addErrorEvent(gameEnv, 'INVALID_SELECTION_COUNT', 
                 'Must select exactly 1 target', playerId);
             return this.throwError('Must select exactly 1 target');
         }
 
-        // ===== STEP 2: VALIDATE CARD CHOICE =====
-        const selectedCardId = selectedCardIds[0];
-        const isValidCard = selection.eligibleCards.some(card => 
-            (typeof card === 'string' && card === selectedCardId) ||
-            (typeof card === 'object' && card.cardId === selectedCardId)
-        );
-        
-        if (!isValidCard) {
+        // ===== STEP 2: VALIDATE CARD CHOICE USING UNIFIED VALIDATION =====
+        const validation = this.validateCardSelection(selectedCardIdentifiers, selection.eligibleCards);
+        if (!validation.valid) {
             this.addErrorEvent(gameEnv, 'INVALID_CARD_SELECTION', 
-                `Invalid card selection: ${selectedCardId}`, playerId);
-            return this.throwError(`Invalid card selection: ${selectedCardId}`);
+                `Invalid card selection: ${validation.invalidCard}`, playerId);
+            return this.throwError(`Invalid card selection: ${validation.invalidCard}`);
         }
+
+        const selectedCardId = selectedCardIdentifiers[0];
 
         // ===== STEP 3: ROUTE TO EFFECT HANDLER =====
         console.log(`🎯 Single target effect type: ${effectType}`);
@@ -533,12 +526,44 @@ class CardSelectionHandler {
     // =======================================================================================
 
     /**
+     * ✅ UNIFIED CARD SELECTION VALIDATION
+     * Validates selected card identifiers (supports both UIDs and IDs) against eligible cards
+     * @param {string[]} selectedCardIdentifiers - Array of selected card UIDs or IDs
+     * @param {Array} eligibleCards - Array of eligible cards (strings or objects)
+     * @returns {Object} - Validation result with success status and details
+     */
+    validateCardSelection(selectedCardIdentifiers, eligibleCards) {
+        console.log(`🔍 Validating selection: ${selectedCardIdentifiers.join(', ')} against ${eligibleCards.length} eligible cards`);
+        
+        for (const identifier of selectedCardIdentifiers) {
+            const isValidCard = eligibleCards.some(card => {
+                if (typeof card === 'string') {
+                    // Simple string comparison for basic card IDs
+                    return card === identifier;
+                } else if (typeof card === 'object' && card) {
+                    // Object comparison supports both cardId and cardUid
+                    return card.cardId === identifier || card.cardUid === identifier;
+                }
+                return false;
+            });
+            
+            if (!isValidCard) {
+                console.log(`❌ Invalid card selection: ${identifier}`);
+                return { valid: false, invalidCard: identifier };
+            }
+        }
+        
+        console.log(`✅ All selected cards are valid`);
+        return { valid: true };
+    }
+
+    /**
      * 🔄 RETURN UNSELECTED CARDS TO DECK
      * Puts the cards that weren't selected back to the bottom of the deck
      */
-    returnUnselectedCardsToDeck(gameEnv, playerId, searchedCards, selectedCardIds) {
+    returnUnselectedCardsToDeck(gameEnv, playerId, searchedCards, selectedCardIdentifiers) {
         const deck = this.getPlayerMainDeck(gameEnv, playerId);
-        const unselectedCards = searchedCards.filter(cardId => !selectedCardIds.includes(cardId));
+        const unselectedCards = searchedCards.filter(cardId => !selectedCardIdentifiers.includes(cardId));
         
         // Add unselected cards to bottom of deck
         deck.push(...unselectedCards);

@@ -400,31 +400,34 @@ export class GameController {
         try {
             console.log('🎯 Processing card selection:', req.body);
             
-            const { gameId, playerId, selectionId, selectedCardIds } = req.body;
+            const { gameId, playerId, selectionId, selectedCardIds, selectedCardUIds } = req.body;
             
-            if (!gameId || !playerId || !selectionId || !selectedCardIds) {
+            // Support both selectedCardUIds (new) and selectedCardIds (backward compatibility)
+            const selectedCardIdentifiers = selectedCardUIds || selectedCardIds;
+            
+            if (!gameId || !playerId || !selectionId || !selectedCardIdentifiers) {
                 res.status(400).json({
-                    error: 'Missing required parameters: gameId, playerId, selectionId, selectedCardIds',
+                    error: 'Missing required parameters: gameId, playerId, selectionId, and either selectedCardUIds or selectedCardIds',
                     timestamp: new Date().toISOString(),
                     context: 'selectCard endpoint'
                 });
                 return;
             }
             
-            // Validate selectedCardIds is an array
-            if (!Array.isArray(selectedCardIds)) {
+            // Validate selectedCardIdentifiers is an array
+            if (!Array.isArray(selectedCardIdentifiers)) {
                 res.status(400).json({
-                    error: 'selectedCardIds must be an array',
+                    error: 'selectedCardUIds or selectedCardIds must be an array',
                     timestamp: new Date().toISOString(),
                     context: 'selectCard endpoint - validation'
                 });
                 return;
             }
             
-            console.log(`🎯 Processing selection ${selectionId} for player ${playerId} with cards: ${selectedCardIds.join(', ')}`);
+            console.log(`🎯 Processing selection ${selectionId} for player ${playerId} with cards: ${selectedCardIdentifiers.join(', ')}`);
             
             // Process card selection through GameLogic
-            const result = await this.gameLogic.selectCard(gameId, playerId, selectionId, selectedCardIds);
+            const result = await this.gameLogic.selectCard(gameId, playerId, selectionId, selectedCardIdentifiers);
             
             if (result.success && result.gameEnv) {
                 // Extract gameId to root level for API compatibility
