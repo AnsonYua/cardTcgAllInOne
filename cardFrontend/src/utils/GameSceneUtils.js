@@ -863,15 +863,33 @@ export default class GameSceneUtils {
     };
     
     // OK button handler
-    okButton.on('pointerdown', () => {
+    okButton.on('pointerdown', async () => {
       console.log('Card selection confirmed');
       
       // Check if a card is selected
       if (selectedCard) {
         console.log('Confirming selection of card:', selectedCard.cardId);
-        // Use cleanup function instead of passing elements
-        cleanupDialog();
-        onConfirm(selectionId, selectedCard, []);
+        
+        try {
+          // Call backend API to submit card selection
+          const response = await scene.apiManager.submitCardSelection(selectionId, [selectedCard.cardId]);
+          
+          if (response.success) {
+            console.log('Card selection submitted successfully');
+            // Use cleanup function instead of passing elements
+            cleanupDialog();
+            // Call original confirmation for any additional frontend logic
+            onConfirm(selectionId, selectedCard, []);
+          } else {
+            console.error('Card selection submission failed:', response.error);
+            // Show error feedback but keep dialog open
+            // TODO: Add visual error feedback
+          }
+        } catch (error) {
+          console.error('Error submitting card selection:', error);
+          // Show error feedback but keep dialog open
+          // TODO: Add visual error feedback
+        }
       } else {
         console.log('No card selected - cannot confirm');
         // Could add visual feedback here (shake button, show message, etc.)

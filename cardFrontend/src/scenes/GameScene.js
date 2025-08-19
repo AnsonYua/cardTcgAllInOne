@@ -37,6 +37,12 @@ export default class GameScene extends Phaser.Scene {
   async create() {
     console.log('GameScene create method called');
     console.log('Initial game state:', this.gameStateManager?.getGameState());
+    
+    // Set up API manager reference in GameStateManager for card selection
+    if (this.apiManager && this.gameStateManager) {
+      this.gameStateManager.setApiManager(this.apiManager);
+    }
+    
     this.createBackground();
     this.createGameBoard();
     this.createUI();

@@ -43,8 +43,21 @@ export default class GameStateManager {
     this.gameState.playerName = playerName;
   }
 
+  setApiManager(apiManager) {
+    this.apiManager = apiManager;
+    // Set initial game state in API manager
+    if (apiManager) {
+      apiManager.setGameState(this.gameState);
+    }
+  }
+
   updateGameEnv(gameEnv) {
     this.gameState.gameEnv = { ...this.gameState.gameEnv, ...gameEnv };
+    
+    // Update API manager with new game state for card selection
+    if (this.apiManager) {
+      this.apiManager.setGameState(this.gameState);
+    }
   }
 
   updateUIState(uiState) {

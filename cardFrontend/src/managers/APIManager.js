@@ -90,6 +90,34 @@ export default class APIManager {
     });
   }
 
+  // Card Selection - New unified approach using playerAction endpoint
+  async submitCardSelection(selectionId, selectedCardIds) {
+    // Get current player and game info from game state
+    const gameState = this.getGameState();
+    if (!gameState || !gameState.playerId || !gameState.gameId) {
+      throw new Error('Game state not available for card selection');
+    }
+
+    const action = {
+      type: 'SelectCard',
+      selectionId: selectionId,
+      selectedCardIds: selectedCardIds
+    };
+
+    return this.playerAction(gameState.playerId, gameState.gameId, action);
+  }
+
+  // Helper method to get current game state (should be set by GameStateManager)
+  getGameState() {
+    // This will need to be set by the scene or passed in
+    return this.currentGameState || null;
+  }
+
+  // Method to set game state (called by scenes)
+  setGameState(gameState) {
+    this.currentGameState = gameState;
+  }
+
   async acknowledgeEvents(gameId, eventIds) {
     return this.request('/player/acknowledgeEvents', {
       method: 'POST',
