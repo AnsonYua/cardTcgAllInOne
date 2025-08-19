@@ -101,10 +101,13 @@ class TurnManager {
         }
         
         // ===== STEP 3: SWITCH TURNS IF COMPLETE AND NO PENDING SELECTIONS =====
-        if (currentTurnActionComplete && !gameEnv.pendingPlayerAction) {
+        // REFACTOR: Use consolidated pending selection detection
+        const hasPendingSelection = gameEnv.pendingCardSelections && Object.keys(gameEnv.pendingCardSelections).length > 0;
+        
+        if (currentTurnActionComplete && !hasPendingSelection) {
             console.log(`🎯 Turn complete - switching to next player`);
             gameEnv = await this.startNewTurn(gameEnv);
-        } else if (gameEnv.pendingPlayerAction) {
+        } else if (hasPendingSelection) {
             console.log(`🎯 Turn switch delayed - pending card selection must be completed first`);
         } else {
             console.log(`🎯 Turn continues - player ${playerId} still has actions available`);

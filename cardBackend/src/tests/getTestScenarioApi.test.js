@@ -203,8 +203,7 @@ describe('GetTestScenario API Tests', () => {
             expect(result.gameEvents).toBeDefined();
             expect(result.lastEventId).toBeDefined();
             
-            // Card selection system
-            expect(result.pendingPlayerAction).toBeDefined();
+            // Card selection system - REFACTOR: Consolidated to single field
             expect(result.pendingCardSelections).toBeDefined();
             
             // Play sequence system

@@ -1164,8 +1164,7 @@ export class GameEnvironment {
     public gameEvents?: any[];
     public lastEventId?: number;
     
-    // Card selection system
-    public pendingPlayerAction?: any;
+    // Card selection system - REFACTOR: Consolidated to single field
     public pendingCardSelections?: { [selectionId: string]: any };
     
     // Incremental effect processing
@@ -1191,8 +1190,7 @@ export class GameEnvironment {
         this.fieldEffects = {};
         this.neutralizationHistory = [];
         
-        // Initialize card selection system
-        this.pendingPlayerAction = null;
+        // Initialize card selection system - REFACTOR: Single field only
         this.pendingCardSelections = {};
         
         this.lastProcessedSequence = 0;
@@ -1477,8 +1475,7 @@ export class GameEnvironment {
             // Play sequence
             playSequence: this.playSequenceManager.toJSON(),
             
-            // Card selection system - CRITICAL FIX: Include in API response
-            pendingPlayerAction: this.pendingPlayerAction || null,
+            // Card selection system - REFACTOR: Single field consolidation
             pendingCardSelections: this.pendingCardSelections || {},
             
             // Incremental effect processing
@@ -1534,8 +1531,7 @@ export class GameEnvironment {
         // Incremental effect processing
         gameEnv.lastProcessedSequence = data.lastProcessedSequence || 0;
         
-        // Card selection system restoration - CRITICAL FIX for persistence
-        gameEnv.pendingPlayerAction = data.pendingPlayerAction || null;
+        // Card selection system restoration - REFACTOR: Single field only
         gameEnv.pendingCardSelections = data.pendingCardSelections || {};
         
         // REMOVED: validationState deserialization - using fieldEffects as single source of truth
@@ -1551,6 +1547,32 @@ export class GameEnvironment {
 
     public toString(): string {
         return JSON.stringify(this.toJSON(), null, 2);
+    }
+
+    // ============ CARD SELECTION HELPERS ============
+
+    /**
+     * Check if there are pending card selections requiring player input
+     * Replaces pendingPlayerAction checking logic
+     */
+    public hasPendingCardSelection(): boolean {
+        return this.pendingCardSelections && Object.keys(this.pendingCardSelections).length > 0;
+    }
+
+    /**
+     * Get the first pending selection (for single selection scenarios)
+     */
+    public getFirstPendingSelection(): { selectionId: string; selectionData: any } | null {
+        if (!this.hasPendingCardSelection()) {
+            return null;
+        }
+        
+        const selectionIds = Object.keys(this.pendingCardSelections);
+        const selectionId = selectionIds[0];
+        return {
+            selectionId,
+            selectionData: this.pendingCardSelections[selectionId]
+        };
     }
 }
 

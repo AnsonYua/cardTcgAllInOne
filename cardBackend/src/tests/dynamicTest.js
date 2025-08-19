@@ -103,18 +103,21 @@ class DynamicTestRunner {
                 // Handle different action types
                 if (actionStep.action.actionType === 'SelectCard') {
                     // Handle card selection actions
-                    // First get current game state to find the selectionId
+                    // First get current game state to find the selectionId - REFACTOR: Use consolidated field
                     const currentState = await this.testHelper.getPlayerData(actionStep.playerId, scenario.gameId);
-                    const pendingAction = currentState.gameEnv.pendingPlayerAction;
+                    const pendingSelections = currentState.gameEnv.pendingCardSelections;
                     
-                    if (!pendingAction || pendingAction.type !== 'cardSelection') {
+                    if (!pendingSelections || Object.keys(pendingSelections).length === 0) {
                         throw new Error('No pending card selection found in game state');
                     }
+                    
+                    // Get first pending selection
+                    const selectionId = Object.keys(pendingSelections)[0];
                     
                     const selectionData = {
                         playerId: actionStep.playerId,
                         gameId: scenario.gameId,
-                        selectionId: pendingAction.selectionId,
+                        selectionId: selectionId,
                         selectedCardIds: actionStep.action.cardIds
                     };
                     

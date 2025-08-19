@@ -43,10 +43,7 @@ This guide explains the complete API workflow for both types of card selection.
   "gameEnv": {
     "phase": "MAIN_PHASE",
     "currentTurn": "playerId_1",
-    "pendingPlayerAction": {
-      "type": "cardSelection",
-      "selectionId": "playerId_1_1640995200001"
-    },
+    // REFACTOR: Consolidated card selection system - removed pendingPlayerAction
     "pendingCardSelections": {
       "playerId_1_1640995200001": {
         "playerId": "playerId_1",
@@ -83,12 +80,14 @@ This guide explains the complete API workflow for both types of card selection.
 
 ### Step 3: Frontend Detects Selection Required
 
-**Frontend Logic**:
+**Frontend Logic - REFACTOR: Consolidated Selection Detection**:
 ```javascript
-// Check for pending selection in game state
-if (gameEnv.pendingPlayerAction?.type === 'cardSelection') {
-  const selectionId = gameEnv.pendingPlayerAction.selectionId;
-  const selectionData = gameEnv.pendingCardSelections[selectionId];
+// Check for pending selection in game state using consolidated approach
+const pendingSelections = gameEnv.pendingCardSelections;
+if (pendingSelections && Object.keys(pendingSelections).length > 0) {
+  // Get first pending selection (most common case)
+  const selectionId = Object.keys(pendingSelections)[0];
+  const selectionData = pendingSelections[selectionId];
   
   // Show card selection UI
   showCardSelectionModal({
@@ -138,7 +137,7 @@ if (gameEnv.pendingPlayerAction?.type === 'cardSelection') {
   "gameEnv": {
     "phase": "MAIN_PHASE",
     "currentTurn": "playerId_2",
-    "pendingPlayerAction": null,
+    // REFACTOR: Consolidated - removed pendingPlayerAction field
     "pendingCardSelections": {},
     "zones": {
       "playerId_1": {
@@ -333,9 +332,11 @@ if (gameEnv.pendingPlayerAction?.type === 'cardSelection') {
 
 ```javascript
 function checkForPendingSelection(gameEnv) {
-  if (gameEnv.pendingPlayerAction?.type === 'cardSelection') {
-    const selectionId = gameEnv.pendingPlayerAction.selectionId;
-    const selectionData = gameEnv.pendingCardSelections[selectionId];
+  // REFACTOR: Use consolidated selection detection
+  const pendingSelections = gameEnv.pendingCardSelections;
+  if (pendingSelections && Object.keys(pendingSelections).length > 0) {
+    const selectionId = Object.keys(pendingSelections)[0];
+    const selectionData = pendingSelections[selectionId];
     
     showCardSelectionUI(selectionId, selectionData);
     return true;
@@ -476,7 +477,7 @@ All card selection actions generate appropriate game events:
 1. **Start Game**: Create a game with players
 2. **Get c-12 in Hand**: Ensure Luke card is available
 3. **Play c-12**: Summon Luke to trigger search effect
-4. **Verify Selection**: Check that pendingPlayerAction is set
+4. **Verify Selection**: Check that pendingCardSelections contains selection data
 5. **Complete Selection**: Call completeCardSelection API
 6. **Verify Result**: Check that Help card is placed correctly
 
@@ -655,7 +656,7 @@ if (target.targetCount && targets.length > target.targetCount) {
   "gameEnv": {
     "phase": "MAIN_PHASE",
     "currentPlayer": "playerId_2",
-    "pendingPlayerAction": null,
+    // REFACTOR: Consolidated - removed pendingPlayerAction field
     "pendingCardSelections": {},
     "neutralizedEffects": {
       "playerId_2": {

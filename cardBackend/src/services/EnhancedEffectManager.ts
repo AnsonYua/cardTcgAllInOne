@@ -309,11 +309,8 @@ export class EnhancedEffectManager {
             targetPlayerId: effect.targetPlayerId
         };
         
-        // Set pending player action
-        gameEnv.pendingPlayerAction = {
-            type: 'cardSelection',
-            selectionId: selectionId
-        };
+        // REFACTOR: Remove pendingPlayerAction - selection detected via pendingCardSelections
+        // Selection existence handled by hasPendingCardSelection() helper method
         
         console.log(`   🎯 Created powerBoost selection requirement: ${selectionId} with ${eligibleCards.length} eligible targets`);
         
@@ -552,11 +549,8 @@ export class EnhancedEffectManager {
             sourceCard: effect.sourceCardUid
         };
         
-        // Set pending player action
-        gameEnv.pendingPlayerAction = {
-            type: 'cardSelection',
-            selectionId: selectionId
-        };
+        // REFACTOR: Remove pendingPlayerAction - selection detected via pendingCardSelections
+        // Selection existence handled by hasPendingCardSelection() helper method
         
         console.log(`   🎯 Created card selection requirement: ${selectionId}`);
         

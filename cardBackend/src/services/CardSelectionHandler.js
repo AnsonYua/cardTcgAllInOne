@@ -520,9 +520,8 @@ class CardSelectionHandler {
     async completeCardSelection(gameEnv, selectionId) {
         console.log(`✅ CardSelectionHandler: Completing card selection: ${selectionId}`);
 
-        // Clean up selection data
+        // Clean up selection data - REFACTOR: Only delete from consolidated field
         delete gameEnv.pendingCardSelections[selectionId];
-        delete gameEnv.pendingPlayerAction;
 
         // Add completion event
         this.addGameEvent(gameEnv, 'CARD_SELECTION_COMPLETED', {
