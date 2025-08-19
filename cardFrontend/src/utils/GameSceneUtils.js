@@ -456,6 +456,10 @@ export default class GameSceneUtils {
     const cardDisplayHeight = 220; // Proportionally smaller height
     const cardSpacing = 25; // Reduced spacing for compact layout;
     
+    // Selection state management
+    let selectedCard = null;
+    let selectedCardHighlight = null;
+    
     // Navigation arrows and pagination elements
     let leftArrow = null;
     let rightArrow = null;
@@ -463,6 +467,14 @@ export default class GameSceneUtils {
     
     // Function to create/update card display for current page with animation
     const updateCardDisplay = (animateDirection = null) => {
+      // Clear selection when changing pages
+      selectedCard = null;
+      if (selectedCardHighlight) {
+        selectedCardHighlight.destroy();
+        selectedCardHighlight = null;
+      }
+      // Update OK button state will be called after the button is created
+      
       // Fade out existing cards first if animating
       if (animateDirection && cardListElements.length > 0) {
         const fadeOutPromises = cardListElements.map(element => {
@@ -596,6 +608,11 @@ export default class GameSceneUtils {
           cardImage.on('pointerout', () => {
             scene.game.canvas.style.cursor = 'default';
             scene.hideCardPreview();
+          });
+          
+          // Add click handler for card selection
+          cardImage.on('pointerdown', () => {
+            selectCard(card, cardX, cardsY);
           });
         }
         
@@ -735,14 +752,55 @@ export default class GameSceneUtils {
     buttonBg.fillRoundedRect(dialogX - dialogWidth/2 + 10, buttonSectionY - buttonSectionHeight/2 + 10, dialogWidth - 20, buttonSectionHeight - 20, 10);
     buttonBg.setDepth(1502);
     
+    // Helper function to select a card
+    const selectCard = (card, cardX, cardsY) => {
+      // Clear previous selection
+      if (selectedCardHighlight) {
+        selectedCardHighlight.destroy();
+        selectedCardHighlight = null;
+      }
+      
+      // Set new selection
+      selectedCard = card;
+      
+      // Create selection highlight
+      selectedCardHighlight = scene.add.graphics();
+      selectedCardHighlight.lineStyle(4, 0x00ff00); // Green highlight
+      selectedCardHighlight.strokeRoundedRect(
+        cardX - cardDisplayWidth/2 - 2, 
+        cardsY - cardDisplayHeight/2 - 2, 
+        cardDisplayWidth + 4, 
+        cardDisplayHeight + 4, 
+        10
+      );
+      selectedCardHighlight.setDepth(1506);
+      cardListElements.push(selectedCardHighlight);
+      
+      // Update OK button state
+      updateOKButtonState();
+      
+      console.log('Card selected:', card.cardId);
+    };
+    
+    // Function to update OK button visual state
+    const updateOKButtonState = () => {
+      if (selectedCard) {
+        okButton.setTint(0x4CAF50); // Green when enabled
+        okText.setText('CONFIRM SELECTION');
+      } else {
+        okButton.setTint(0x888888); // Gray when disabled
+        okText.setText('SELECT A CARD');
+      }
+    };
+    
     // OK button (larger and more prominent)
     const okButton = scene.add.image(dialogX, buttonSectionY, 'button');
     okButton.setScale(1.0);
     okButton.setInteractive();
-    okButton.setTint(0x4CAF50);
+    okButton.setTint(0x888888); // Start disabled (gray)
     okButton.setDepth(1503);
     
-    const okText = scene.add.text(dialogX, buttonSectionY, 'CONFIRM SELECTION', {
+    const okText = scene.add.text(dialogX, buttonSectionY, 'SELECT A CARD', {
       fontSize: '18px',
       fontFamily: 'Arial Bold',
       fill: '#ffffff'
@@ -752,11 +810,13 @@ export default class GameSceneUtils {
     
     // Button hover effect
     okButton.on('pointerover', () => {
-      okButton.setTint(0x66BB6A);
-      scene.input.setDefaultCursor('pointer');
+      if (selectedCard) {
+        okButton.setTint(0x66BB6A);
+        scene.input.setDefaultCursor('pointer');
+      }
     });
     okButton.on('pointerout', () => {
-      okButton.setTint(0x4CAF50);
+      updateOKButtonState(); // Restore proper state
       scene.input.setDefaultCursor('default');
     });
     
@@ -805,10 +865,21 @@ export default class GameSceneUtils {
     // OK button handler
     okButton.on('pointerdown', () => {
       console.log('Card selection confirmed');
-      // Use cleanup function instead of passing elements
-      cleanupDialog();
-      onConfirm(selectionId, eligibleCards[0], []);
+      
+      // Check if a card is selected
+      if (selectedCard) {
+        console.log('Confirming selection of card:', selectedCard.cardId);
+        // Use cleanup function instead of passing elements
+        cleanupDialog();
+        onConfirm(selectionId, selectedCard, []);
+      } else {
+        console.log('No card selected - cannot confirm');
+        // Could add visual feedback here (shake button, show message, etc.)
+      }
     });
+    
+    // Initialize button state
+    updateOKButtonState();
     
     // Return cleanup function and initial elements for external cleanup if needed
     const dialogInterface = {
