@@ -1556,14 +1556,14 @@ export class GameEnvironment {
      * Replaces pendingPlayerAction checking logic
      */
     public hasPendingCardSelection(): boolean {
-        return this.pendingCardSelections && Object.keys(this.pendingCardSelections).length > 0;
+        return !!this.pendingCardSelections && Object.keys(this.pendingCardSelections).length > 0;
     }
 
     /**
      * Get the first pending selection (for single selection scenarios)
      */
     public getFirstPendingSelection(): { selectionId: string; selectionData: any } | null {
-        if (!this.hasPendingCardSelection()) {
+        if (!this.pendingCardSelections || Object.keys(this.pendingCardSelections).length === 0) {
             return null;
         }
         
