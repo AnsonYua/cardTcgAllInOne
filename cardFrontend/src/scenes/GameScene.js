@@ -2198,27 +2198,18 @@ export default class GameScene extends Phaser.Scene {
     this.currentCardSelectionDialog = dialogInterface;
   }
 
-  async handleCardSelectionChoice(selectionId, selectedCard, dialogElements) {
+  handleCardSelectionChoice(selectionId, selectedCard, dialogElements) {
     console.log('Handling card selection choice:', selectionId, selectedCard);
     
     // Dialog elements are already cleaned up by the cleanup function in the button handler
-    // Just clear references
+    // Just clear references and update UI
     this.currentCardSelectionDialog = null;
     this.currentPendingSelectionId = null;
     
-    try {
-      const gameState = this.gameStateManager.getGameState();
-      console.log(`Player selected card: ${selectedCard.cardId} for selection: ${selectionId}`);
-      
-      // Call the API to submit the card selection
-      await this.apiManager.selectCard(selectionId, [selectedCard.cardId], gameState.playerId, gameState.gameId);
-      
-      this.showRoomStatus(`Card selection sent (${selectedCard.name}). Polling for game updates...`);
-      
-    } catch (error) {
-      console.error('Failed to send card selection:', error);
-      this.showRoomStatus('Failed to send card selection: ' + error.message);
-    }
+    // API call is now handled by GameSceneUtils button handler to avoid duplicate calls
+    // This method only handles cleanup and UI updates after successful selection
+    console.log(`Card selection UI cleanup completed for: ${selectedCard.cardId}`);
+    this.showRoomStatus(`Card selection sent (${selectedCard.name || selectedCard.cardId}). Polling for game updates...`);
   }
 
   highlightHandCards() {

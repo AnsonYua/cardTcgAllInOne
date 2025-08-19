@@ -392,6 +392,73 @@ export class GameController {
         }
     }
 
+    /**
+     * Process card selection from frontend
+     * POST /api/game/player/selectCard
+     */
+    async selectCard(req: GameRequest, res: Response): Promise<void> {
+        try {
+            console.log('🎯 Processing card selection:', req.body);
+            
+            const { gameId, playerId, selectionId, selectedCardIds } = req.body;
+            
+            if (!gameId || !playerId || !selectionId || !selectedCardIds) {
+                res.status(400).json({
+                    error: 'Missing required parameters: gameId, playerId, selectionId, selectedCardIds',
+                    timestamp: new Date().toISOString(),
+                    context: 'selectCard endpoint'
+                });
+                return;
+            }
+            
+            // Validate selectedCardIds is an array
+            if (!Array.isArray(selectedCardIds)) {
+                res.status(400).json({
+                    error: 'selectedCardIds must be an array',
+                    timestamp: new Date().toISOString(),
+                    context: 'selectCard endpoint - validation'
+                });
+                return;
+            }
+            
+            console.log(`🎯 Processing selection ${selectionId} for player ${playerId} with cards: ${selectedCardIds.join(', ')}`);
+            
+            // Process card selection through GameLogic
+            const result = await this.gameLogic.selectCard(gameId, playerId, selectionId, selectedCardIds);
+            
+            if (result.success && result.gameEnv) {
+                // Extract gameId to root level for API compatibility
+                res.json({
+                    success: true,
+                    gameId: result.gameId,
+                    gameEnv: result.gameEnv
+                });
+            } else {
+                res.status(400).json({
+                    error: result.error || 'Card selection failed',
+                    timestamp: new Date().toISOString(),
+                    context: 'selectCard endpoint'
+                });
+            }
+            
+        } catch (error) {
+            console.error('❌ Error in selectCard:', error);
+            console.error('❌ Stack trace:', (error as Error).stack);
+            
+            const errorResponse: ErrorResponse = {
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'selectCard endpoint'
+            };
+            
+            if (process.env.NODE_ENV === 'development') {
+                errorResponse.stack = (error as Error).stack;
+            }
+            
+            res.status(500).json(errorResponse);
+        }
+    }
+
     // ============ UTILITY METHODS ============
 
     /**

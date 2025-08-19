@@ -24,7 +24,12 @@ class CardSelectionHandler {
         this.getPlayerField = mozGamePlay.getPlayerField?.bind(mozGamePlay) || (() => {});
         this.addGameEvent = mozGamePlay.addGameEvent?.bind(mozGamePlay) || (() => {});
         this.addErrorEvent = mozGamePlay.addErrorEvent?.bind(mozGamePlay) || (() => {});
-        this.throwError = mozGamePlay.throwError?.bind(mozGamePlay) || (() => {});
+        
+        // Create a proper error return method
+        this.throwError = (errorMessage) => {
+            console.error(`🚨 CardSelectionHandler Error: ${errorMessage}`);
+            return { success: false, error: errorMessage };
+        };
     }
 
     /**
@@ -51,10 +56,38 @@ class CardSelectionHandler {
             return this.throwError('Invalid or expired card selection');
         }
 
-        console.log(`🎯 Selection type detected: ${selection.selectionType}`);
+        // ===== STEP 2.5: INFER SELECTION TYPE IF MISSING =====
+        let selectionType = selection.selectionType;
+        
+        // Backward compatibility: Infer selection type if not present
+        if (!selectionType) {
+            if (selection.eligibleCards && selection.eligibleCards.length > 0) {
+                // Check if this is a single target effect based on effect type and select count
+                if (selection.selectCount === 1 && selection.effectType && 
+                    ['powerBoost', 'powerNerf'].includes(selection.effectType)) {
+                    selectionType = 'singleTarget';
+                    console.log(`🔄 Inferred selection type as 'singleTarget' based on selectCount=1 and effectType=${selection.effectType}`);
+                }
+                // If eligible cards have zone information, it's a field target selection
+                else if (selection.eligibleCards[0].zone) {
+                    selectionType = 'fieldTarget';
+                    console.log(`🔄 Inferred selection type as 'fieldTarget' based on eligible cards with zones`);
+                } else {
+                    // Otherwise assume it's a deck search
+                    selectionType = 'deckSearch';
+                    console.log(`🔄 Inferred selection type as 'deckSearch' based on eligible cards without zones`);
+                }
+            } else {
+                // Default to single target if no eligible cards specified
+                selectionType = 'singleTarget';
+                console.log(`🔄 Inferred selection type as 'singleTarget' as fallback`);
+            }
+        }
+        
+        console.log(`🎯 Selection type detected: ${selectionType}`);
 
         // ===== STEP 3: ROUTE TO APPROPRIATE HANDLER BASED ON SELECTION TYPE =====
-        switch (selection.selectionType) {
+        switch (selectionType) {
             case 'deckSearch':
                 console.log(`📦 Routing to deck search selection handler`);
                 return await this.handleDeckSearchSelection(gameEnv, action.selectionId, action.selectedCardIds);
@@ -68,10 +101,10 @@ class CardSelectionHandler {
                 return await this.handleSingleTargetSelection(gameEnv, action.selectionId, action.selectedCardIds);
 
             default:
-                console.log(`❌ Unknown selection type: ${selection.selectionType}`);
+                console.log(`❌ Unknown selection type: ${selectionType}`);
                 this.addErrorEvent(gameEnv, 'INVALID_SELECTION_TYPE', 
-                    `Unknown selection type: ${selection.selectionType}`, playerId);
-                return this.throwError(`Unknown selection type: ${selection.selectionType}`);
+                    `Unknown selection type: ${selectionType}`, playerId);
+                return this.throwError(`Unknown selection type: ${selectionType}`);
         }
     }
 
@@ -545,9 +578,12 @@ class CardSelectionHandler {
             await this.mozGamePlay.effectSimulator.simulateCardPlaySequence(gameEnv);
         }
 
-        // Check if turn should advance
-        const currentPlayerId = gameEnv.currentPlayer;
-        return await this.mozGamePlay.shouldUpdateTurn(gameEnv, currentPlayerId);
+        // For card selections, we typically don't advance turns automatically
+        // Card selections are usually part of the current player's turn actions
+        // The turn advancement should happen when the player ends their turn or plays a card
+        console.log(`✅ Game flow continued successfully after card selection`);
+        
+        return { success: true, gameEnv: gameEnv };
     }
 }
 

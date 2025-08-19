@@ -871,8 +871,14 @@ export default class GameSceneUtils {
         console.log('Confirming selection of card:', selectedCard.cardId);
         
         try {
-          // Call backend API to submit card selection
-          const response = await scene.apiManager.submitCardSelection(selectionId, [selectedCard.cardId]);
+          // Call backend API to submit card selection using correct selectCard endpoint
+          const gameState = scene.gameStateManager.getGameState();
+          const response = await scene.apiManager.selectCard(
+            selectionId, 
+            [selectedCard.cardId],
+            gameState.playerId,
+            gameState.gameId
+          );
           
           if (response.success) {
             console.log('Card selection submitted successfully');

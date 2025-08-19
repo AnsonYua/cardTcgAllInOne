@@ -16,6 +16,7 @@ const mozGamePlay = require('../mozGame/mozGamePlay');
 const mozAIClass = require('../mozGame/mozAIClass');
 const playSequenceManager = require('./PlaySequenceManager');
 const cardEffectRegistry = require('./CardEffectRegistry');
+const CardSelectionHandler = require('./CardSelectionHandler');
 
 // Import TypeScript modules
 import mozDeckHelper from '../mozGame/mozDeckHelper';
@@ -335,6 +336,85 @@ export class GameLogic {
             return {
                 success: false,
                 error: `Failed to play card: ${error instanceof Error ? error.message : 'Unknown error'}`
+            };
+        }
+    }
+
+    /**
+     * Process card selection from frontend
+     * @param gameId - Game ID
+     * @param playerId - Player ID making the selection
+     * @param selectionId - Selection ID from pendingCardSelections
+     * @param selectedCardIds - Array of selected card IDs
+     * @returns Promise<PlayerActionResult>
+     */
+    async selectCard(gameId: string, playerId: string, selectionId: string, selectedCardIds: string[]): Promise<PlayerActionResult> {
+        try {
+            console.log(`🎯 Processing card selection for player ${playerId}: ${selectionId} with cards: ${selectedCardIds.join(', ')}`);
+            
+            // Load game environment
+            const gameEnv = await this.loadGameFromFile(gameId);
+            if (!gameEnv) {
+                return {
+                    success: false,
+                    error: 'Game not found'
+                };
+            }
+            
+            // Validate that the player exists in the game
+            const player = gameEnv.getPlayer(playerId);
+            if (!player) {
+                return {
+                    success: false,
+                    error: 'Player not found in game'
+                };
+            }
+            
+            // Validate that the selection exists
+            if (!gameEnv.pendingCardSelections || !gameEnv.pendingCardSelections[selectionId]) {
+                return {
+                    success: false,
+                    error: 'Invalid or expired card selection'
+                };
+            }
+            
+            const selection = gameEnv.pendingCardSelections[selectionId];
+            
+            // Create CardSelectionHandler instance
+            const selectionHandler = new CardSelectionHandler(this.mozGamePlay);
+            
+            // Create action object matching expected format
+            const action = {
+                selectionId: selectionId,
+                selectedCardIds: selectedCardIds
+            };
+            
+            // Process selection through handler
+            const result = await selectionHandler.handleSelectCardAction(gameEnv, playerId, action);
+            
+            if (!result.success) {
+                return {
+                    success: false,
+                    error: result.error || 'Card selection failed'
+                };
+            }
+            
+            // Save updated game state
+            await this.saveGameToFile(gameId, gameEnv);
+            
+            console.log(`✅ Card selection ${selectionId} completed successfully for player ${playerId}`);
+            
+            return {
+                success: true,
+                gameId: gameId,
+                gameEnv: gameEnv
+            };
+            
+        } catch (error) {
+            console.error('❌ Error processing card selection:', error);
+            return {
+                success: false,
+                error: `Failed to process card selection: ${error instanceof Error ? error.message : 'Unknown error'}`
             };
         }
     }

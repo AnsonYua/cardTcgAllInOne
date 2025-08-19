@@ -99,16 +99,10 @@ router.post('/player/playerAiAction', async (req: Request, res: Response) => {
 });
 
 /**
- * Select card (placeholder for card selection workflows)
+ * Select card (card selection workflows)
  * POST /api/game/player/selectCard
  */
-router.post('/player/selectCard', async (req: Request, res: Response) => {
-    // TODO: Implement card selection when needed
-    res.status(501).json({
-        error: 'Card selection not yet implemented',
-        timestamp: new Date().toISOString()
-    });
-});
+router.post('/player/selectCard', gameController.selectCard.bind(gameController));
 
 /**
  * Acknowledge events
