@@ -465,7 +465,7 @@
             "effect": {
               "type": "powerBoost",
               "value": 50,
-              "selectionType": "targetSelection"
+              "selectionType": "SingleTargetSelection"
             }
           }
         ]

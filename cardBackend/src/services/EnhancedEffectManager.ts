@@ -305,7 +305,7 @@ export class EnhancedEffectManager {
                 sourceCard: effect.sourceCardUid
             },
             effectType: 'powerBoost',
-            selectionType: 'powerBoost', // Added the missing selectionType field
+            selectionType: this.getDynamicSelectionType(effect), // Dynamic selectionType from card data
             sourceCard: effect.sourceCardUid,
             targetPlayerId: effect.targetPlayerId
         };
@@ -547,7 +547,7 @@ export class EnhancedEffectManager {
                 sourceCard: effect.sourceCardUid
             },
             effectType: 'searchCard',
-            selectionType: 'searchCard', // Added the missing selectionType field
+            selectionType: this.getDynamicSelectionType(effect), // Dynamic selectionType from card data
             sourceCard: effect.sourceCardUid
         };
         
@@ -687,6 +687,69 @@ export class EnhancedEffectManager {
      */
     private extractCardIdFromUid(cardUid: string): string {
         return cardUid.split('_')[0];
+    }
+    
+    /**
+     * Get matching effect rule from card data for an ActiveEffect
+     */
+    private getMatchingEffectRule(effect: ActiveEffect): any {
+        const cardId = this.extractCardIdFromUid(effect.sourceCardUid);
+        const cardDetails = this.getCardDetailsByCardId(cardId);
+        
+        if (!cardDetails?.effects?.rules) {
+            return null;
+        }
+        
+        const matchingRule = cardDetails.effects.rules.find((rule: any) => 
+            rule.id === effect.rule.id || 
+            (rule.effect.type === effect.effectType && rule.type === effect.rule.type)
+        );
+        
+        return matchingRule;
+    }
+
+    /**
+     * Get selectionType dynamically from card data instead of hardcoding
+     */
+    private getDynamicSelectionType(effect: ActiveEffect): string {
+        try {
+            const cardId = this.extractCardIdFromUid(effect.sourceCardUid);
+            const matchingRule = this.getMatchingEffectRule(effect);
+            
+            if (!matchingRule) {
+                console.warn(`⚠️ No matching effect rule found for card ${cardId}, using fallback`);
+                return this.getDefaultSelectionType(effect.effectType);
+            }
+            
+            if (matchingRule?.effect?.selectionType) {
+                console.log(`   ✅ Found dynamic selectionType: ${matchingRule.effect.selectionType} for ${cardId}/${effect.rule.id}`);
+                return matchingRule.effect.selectionType;
+            }
+            
+            // Fallback to default selection type based on effect type
+            const fallbackType = this.getDefaultSelectionType(effect.effectType);
+            console.log(`   ⚠️ Using fallback selectionType: ${fallbackType} for ${cardId}/${effect.effectType}`);
+            return fallbackType;
+            
+        } catch (error) {
+            console.error(`❌ Error getting selectionType for effect:`, error);
+            return this.getDefaultSelectionType(effect.effectType);
+        }
+    }
+    
+    /**
+     * Get default selectionType based on effect type (fallback)
+     */
+    private getDefaultSelectionType(effectType: string): string {
+        const defaultMappings: { [key: string]: string } = {
+            'powerBoost': 'targetSelection',
+            'searchCard': 'deckSearch',
+            'setPower': 'targetSelection',
+            'drawCards': 'cardDraw',
+            'neutralizeEffect': 'neutralize'
+        };
+        
+        return defaultMappings[effectType] || 'generic';
     }
     
     /**
