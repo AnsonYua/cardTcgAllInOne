@@ -25,6 +25,7 @@ import {
     ActionType,
     EventType
 } from '../models/GameEnvironment';
+import PostActionHandler, { ActionContext, PostActionResult } from './PostActionHandler';
 
 // Define local interfaces since removed from GameEnvironment
 interface AvailableAction {
@@ -68,6 +69,7 @@ export class OptimizedGameEngine {
     private metrics: PerformanceMetrics;
     private cardInfoUtils: any = null;
     private initialized: boolean = false;
+    private postActionHandler: PostActionHandler | null = null;
 
     constructor(config?: Partial<OptimizedGameConfig>) {
         this.config = {
@@ -102,6 +104,10 @@ export class OptimizedGameEngine {
             if (mozGamePlay && mozGamePlay.calculatePlayerPoint) {
                 enhancedEffectManager.setCalculatePlayerPointFunction(mozGamePlay.calculatePlayerPoint.bind(mozGamePlay));
                 console.log('✅ OptimizedGameEngine: mozGamePlay dependency injected into EnhancedEffectManager');
+                
+                // Initialize PostActionHandler with mozGamePlay and OptimizedGameEngine managers
+                this.postActionHandler = new PostActionHandler(mozGamePlay, this, this);
+                console.log('✅ OptimizedGameEngine: PostActionHandler initialized with turn/phase managers');
             } else {
                 console.warn('⚠️ OptimizedGameEngine: mozGamePlay.calculatePlayerPoint not available');
                 console.log('   mozGamePlay object:', Object.keys(mozGamePlay || {}));
@@ -177,20 +183,27 @@ export class OptimizedGameEngine {
                 };
             }
 
-            // STEP 6: TURN MANAGEMENT - Check if turn should end and switch players
-            const turnResult = await this.shouldUpdateTurn(gameEnv, playerId);
-            if (turnResult.turnSwitched) {
-                this.addGameEvent(gameEnv, EventType.TURN_SWITCH, {
-                    oldPlayer: playerId,
-                    newPlayer: gameEnv.currentPlayer,
-                    turn: gameEnv.currentTurn
+            // STEP 6-8: UNIFIED POST-ACTION PROCESSING via PostActionHandler
+            if (this.postActionHandler) {
+                const actionContext: ActionContext = PostActionHandler.createContext('PLAY_CARD', playerId, {
+                    skipTurnCheck: false,   // Card plays trigger turn switching
+                    skipPhaseCheck: false   // Card plays may trigger phase changes
                 });
+
+                try {
+                    const postActionResult = await this.postActionHandler.execute(gameEnv, actionContext);
+                    if (!postActionResult.success) {
+                        console.error(`⚠️ PostActionHandler failed: ${postActionResult.error}`);
+                        // Continue anyway - don't fail the entire card play
+                    }
+                } catch (error) {
+                    console.error('❌ Error in PostActionHandler execution:', error);
+                    // Continue anyway - don't fail the entire card play
+                }
+            } else {
+                console.error('⚠️ PostActionHandler not available - card play may not complete properly');
+                // PostActionHandler is required for consistent turn/phase management
             }
-
-            // STEP 7: PHASE MANAGEMENT - Check if phase should advance
-            await this.checkPhaseProgression(gameEnv);
-
-            // STEP 8: (Cache functionality removed)
 
             // STEP 9: UPDATE METRICS
             if (this.config.enableMetrics) {
@@ -556,8 +569,9 @@ export class OptimizedGameEngine {
 
     /**
      * Check if turn should update and switch players
+     * Used by PostActionHandler for unified turn management
      */
-    private async shouldUpdateTurn(gameEnv: GameEnvironment, playerId: string): Promise<{ turnSwitched: boolean }> {
+    public async shouldUpdateTurn(gameEnv: GameEnvironment, playerId: string): Promise<{ turnSwitched: boolean }> {
         // Card placement always ends turn in this game
         const opponentId = this.getOpponentId(gameEnv, playerId);
         
@@ -574,8 +588,9 @@ export class OptimizedGameEngine {
 
     /**
      * Check if phase should progress (main -> SP -> battle)
+     * Used by PostActionHandler for unified phase management
      */
-    private async checkPhaseProgression(gameEnv: GameEnvironment): Promise<void> {
+    public async checkPhaseProgression(gameEnv: GameEnvironment): Promise<void> {
         // Check if all main zones filled
         const allMainZonesFilled = this.areAllMainZonesFilled(gameEnv);
         if (allMainZonesFilled && gameEnv.phase === 'MAIN_PHASE') {

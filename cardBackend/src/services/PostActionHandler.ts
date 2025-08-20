@@ -33,10 +33,14 @@ export interface PostActionResult {
 export class PostActionHandler {
     private mozGamePlay: any;
     private enhancedEffectManager: any;
+    private turnManager?: any;
+    private phaseManager?: any;
 
-    constructor(mozGamePlay: any) {
+    constructor(mozGamePlay: any, turnManager?: any, phaseManager?: any) {
         this.mozGamePlay = mozGamePlay;
         this.enhancedEffectManager = mozGamePlay?.enhancedEffectManager;
+        this.turnManager = turnManager;
+        this.phaseManager = phaseManager;
     }
 
     /**
@@ -81,7 +85,7 @@ export class PostActionHandler {
             return {
                 success: false,
                 gameEnv: gameEnv,
-                error: error.message
+                error: error instanceof Error ? error.message : 'Unknown error occurred'
             };
         }
     }
@@ -115,13 +119,15 @@ export class PostActionHandler {
      * Turn progression management - consistent across all actions
      */
     private async checkTurnProgression(gameEnv: GameEnvironment, playerId: string): Promise<boolean> {
-        if (!this.mozGamePlay.shouldUpdateTurn) {
+        const turnManagerToUse = this.turnManager || this.mozGamePlay;
+        
+        if (!turnManagerToUse?.shouldUpdateTurn) {
             console.log(`⚠️ Turn management not available`);
             return false;
         }
 
         try {
-            const turnResult = await this.mozGamePlay.shouldUpdateTurn(gameEnv, playerId);
+            const turnResult = await turnManagerToUse.shouldUpdateTurn(gameEnv, playerId);
             
             if (turnResult.turnSwitched) {
                 // Add turn switch event
@@ -146,14 +152,16 @@ export class PostActionHandler {
      * Phase progression management - consistent across all actions
      */
     private async checkPhaseProgression(gameEnv: GameEnvironment): Promise<boolean> {
-        if (!this.mozGamePlay.checkPhaseProgression) {
+        const phaseManagerToUse = this.phaseManager || this.mozGamePlay;
+        
+        if (!phaseManagerToUse?.checkPhaseProgression) {
             console.log(`⚠️ Phase management not available`);
             return false;
         }
 
         try {
             const oldPhase = gameEnv.phase;
-            await this.mozGamePlay.checkPhaseProgression(gameEnv);
+            await phaseManagerToUse.checkPhaseProgression(gameEnv);
             const newPhase = gameEnv.phase;
             
             if (oldPhase !== newPhase) {

@@ -595,6 +595,15 @@ class CardSelectionHandler {
     private async completeCardSelection(gameEnv: GameEnvironment, selectionId: string): Promise<CardSelectionResult> {
         console.log(`✅ CardSelectionHandler: Completing card selection: ${selectionId}`);
 
+        // Get the playerId from the selection data before cleanup
+        const selection = gameEnv.pendingCardSelections?.[selectionId];
+        const playerId = selection?.playerId;
+
+        if (!playerId) {
+            console.error(`❌ Could not find playerId for selection: ${selectionId}`);
+            return { success: false, error: 'Player ID not found for card selection' };
+        }
+
         // Clean up selection data
         if (gameEnv.pendingCardSelections) {
             delete gameEnv.pendingCardSelections[selectionId];
@@ -602,20 +611,21 @@ class CardSelectionHandler {
 
         // Add completion event
         this.addGameEvent(gameEnv, 'CARD_SELECTION_COMPLETED', {
-            selectionId: selectionId
+            selectionId: selectionId,
+            playerId: playerId
         });
 
-        // Continue game flow
-        return await this.continueGameFlow(gameEnv);
+        // Continue game flow with proper playerId
+        return await this.continueGameFlow(gameEnv, playerId);
     }
 
-    private async continueGameFlow(gameEnv: GameEnvironment): Promise<CardSelectionResult> {
-        console.log(`🎮 CardSelectionHandler: Using unified PostActionHandler for game flow continuation`);
+    private async continueGameFlow(gameEnv: GameEnvironment, playerId: string): Promise<CardSelectionResult> {
+        console.log(`🎮 CardSelectionHandler: Using unified PostActionHandler for game flow continuation for player: ${playerId}`);
 
-        // Create action context for card selection completion
-        const actionContext: ActionContext = PostActionHandler.createContext('CARD_SELECTION', 'system', {
-            skipTurnCheck: true,   // Card selections don't typically switch turns
-            skipPhaseCheck: true   // Card selections don't typically change phases
+        // Create action context for card selection completion with proper playerId
+        const actionContext: ActionContext = PostActionHandler.createContext('CARD_SELECTION', playerId, {
+            skipTurnCheck: false,   // Card selections should trigger turn management
+            skipPhaseCheck: false   // Card selections should trigger phase progression checks
         });
 
         try {
