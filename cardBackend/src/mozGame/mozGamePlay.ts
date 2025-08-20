@@ -602,21 +602,7 @@ export class MozGamePlay {
 
     // ============ LEGACY COMPATIBILITY ============
 
-    /**
-     * Legacy method for getting card details
-     * @deprecated Use CardInfoUtils directly instead
-     */
-    getCardDetails(cardId: string): any {
-        return this.cardInfoUtils.getCardDetails(cardId);
-    }
-
-    /**
-     * Legacy method for getting leader cards
-     * @deprecated Use CardInfoUtils directly instead
-     */
-    getLeaderCards(leaderId: string): any {
-        return this.cardInfoUtils.getLeaderCards(leaderId);
-    }
+    // Legacy methods getCardDetails() and getLeaderCards() removed - use CardInfoUtils directly instead
 }
 
 // ============ EXPORT SINGLETON ============

@@ -122,29 +122,7 @@ class FieldEffectProcessor {
         console.log(`🧹 Cleared leader effects for ${playerId}`);
     }
 
-    /**
-     * @deprecated Use OptimizedGameEngine.validateCardPlacementWithFieldEffects() instead
-     * This method is maintained for legacy compatibility only
-     */
-    async validateCardPlacementWithFieldEffects(gameEnv, playerId, cardDetails, zone) {
-        console.warn('⚠️ DEPRECATED: FieldEffectProcessor.validateCardPlacementWithFieldEffects is deprecated. Use OptimizedGameEngine instead.');
-        
-        // Fallback to basic validation for legacy compatibility
-        const { getPlayerFieldEffects } = require('../utils/gameUtils');
-        let playerFieldEffects = getPlayerFieldEffects(gameEnv, playerId);
-        if (!playerFieldEffects) {
-            this.initializePlayerFieldEffects(gameEnv, playerId);
-            playerFieldEffects = getPlayerFieldEffects(gameEnv, playerId);
-        }
-        
-        // Basic zone restriction check
-        const zoneRestrictions = playerFieldEffects.zoneRestrictions[zone.toUpperCase()];
-        if (zoneRestrictions === "ALL" || (Array.isArray(zoneRestrictions) && zoneRestrictions.includes("ALL"))) {
-            return { canPlace: true, reason: "No restrictions (legacy path)" };
-        }
-        
-        return { canPlace: true, reason: "Legacy validation - use OptimizedGameEngine for full validation" };
-    }
+    // validateCardPlacementWithFieldEffects() method removed - use OptimizedGameEngine.validateCardPlacementWithFieldEffects() instead
 
     /**
      * Calculates modified power for a card considering field effects

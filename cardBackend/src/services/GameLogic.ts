@@ -386,8 +386,8 @@ export class GameLogic {
             
             const selection = gameEnv.pendingCardSelections[selectionId];
             
-            // Create CardSelectionHandler instance
-            const selectionHandler = new CardSelectionHandler(this.mozGamePlay);
+            // Create CardSelectionHandler instance with gameId for turn management
+            const selectionHandler = new CardSelectionHandler(this.mozGamePlay, gameId);
             
             // Create action object matching expected format
             const action = {
@@ -396,7 +396,7 @@ export class GameLogic {
                 selectedCardUIds: selectedCardIdentifiers
             };
             
-            // Process selection through handler
+            // Process selection through handler with unified turn/phase management
             const result = await selectionHandler.handleSelectCardAction(gameEnv, playerId, action);
             
             if (!result.success) {

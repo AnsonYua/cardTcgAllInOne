@@ -26,6 +26,7 @@ import {
     EventType
 } from '../models/GameEnvironment';
 import PostActionHandler, { ActionContext, PostActionResult } from './PostActionHandler';
+// CardSelectionHandler import removed - not used in OptimizedGameEngine
 
 // Define local interfaces since removed from GameEnvironment
 interface AvailableAction {
@@ -70,6 +71,7 @@ export class OptimizedGameEngine {
     private cardInfoUtils: any = null;
     private initialized: boolean = false;
     private postActionHandler: PostActionHandler | null = null;
+    // cardSelectionHandler property removed - not managed by OptimizedGameEngine
 
     constructor(config?: Partial<OptimizedGameConfig>) {
         this.config = {
@@ -108,6 +110,8 @@ export class OptimizedGameEngine {
                 // Initialize PostActionHandler with mozGamePlay and OptimizedGameEngine managers
                 this.postActionHandler = new PostActionHandler(mozGamePlay, this, this);
                 console.log('✅ OptimizedGameEngine: PostActionHandler initialized with turn/phase managers');
+                
+                // CardSelectionHandler initialization removed - not managed by OptimizedGameEngine
             } else {
                 console.warn('⚠️ OptimizedGameEngine: mozGamePlay.calculatePlayerPoint not available');
                 console.log('   mozGamePlay object:', Object.keys(mozGamePlay || {}));
@@ -126,6 +130,8 @@ export class OptimizedGameEngine {
     public isInitialized(): boolean {
         return this.initialized;
     }
+
+    // getCardSelectionHandler method removed - CardSelectionHandler not managed by OptimizedGameEngine
 
     /**
      * MAIN CARD PLAY METHOD - Optimized O(1) processing
