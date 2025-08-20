@@ -8,13 +8,13 @@ import { effectSimulator } from '../services/EffectSimulator';
 // Import JavaScript modules (will be converted later in the migration)
 const mozDeckHelper = require('./mozDeckHelper');
 const mozPhaseManager = require('./mozPhaseManager');
-const CardEffectManager = require('../services/CardEffectManager');
+// Legacy CardEffectManager removed - using EnhancedEffectManager instead
 // FieldEffectProcessor removed - legacy functionality moved to OptimizedGameEngine
 const { getPlayerFromGameEnv, getPlayerField } = require('../utils/gameUtils');
 const playSequenceManager = require('../services/PlaySequenceManager');
 
 // Manager classes
-const CardSelectionHandler = require('../services/CardSelectionHandler');
+import { CardSelectionHandler } from '../services/CardSelectionHandler';
 import BattleCalculator from '../services/BattleCalculator';
 const TurnManager = require('../services/TurnManager');
 const EventManager = require('../services/EventManager');
@@ -82,7 +82,7 @@ export interface CardData {
 // ============ MAIN MOZGAMEPLAY CLASS ============
 
 export class MozGamePlay {
-    public cardEffectManager: any;
+    // Legacy cardEffectManager removed - using EnhancedEffectManager instead
     public cardInfoUtils: typeof CardInfoUtils;
     // fieldEffectProcessor removed - legacy functionality moved to OptimizedGameEngine
     public playSequenceManager: any;
@@ -97,7 +97,7 @@ export class MozGamePlay {
     public gameFlowOrchestrator: any;
 
     constructor() {
-        this.cardEffectManager = CardEffectManager;
+        // Legacy cardEffectManager removed - using EnhancedEffectManager instead
         this.cardInfoUtils = CardInfoUtils;
         // FieldEffectProcessor removed - legacy functionality moved to OptimizedGameEngine
         

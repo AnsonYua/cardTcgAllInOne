@@ -15,8 +15,8 @@ import { optimizedGameEngineManager, OptimizedGameEngine } from './OptimizedGame
 const mozGamePlay = require('../mozGame/mozGamePlay');
 const mozAIClass = require('../mozGame/mozAIClass');
 const playSequenceManager = require('./PlaySequenceManager');
-const cardEffectRegistry = require('./CardEffectRegistry');
-const CardSelectionHandler = require('./CardSelectionHandler');
+// Legacy CardEffectRegistry removed - using EnhancedEffectManager instead
+import { CardSelectionHandler } from './CardSelectionHandler';
 
 // Import TypeScript modules
 import mozDeckHelper from '../mozGame/mozDeckHelper';
@@ -385,6 +385,7 @@ export class GameLogic {
             
             // Create action object matching expected format
             const action = {
+                type: 'SelectCard' as const,
                 selectionId: selectionId,
                 selectedCardUIds: selectedCardIdentifiers
             };
