@@ -14,6 +14,7 @@
 
 import { GameEnvironment } from '../models/GameEnvironment';
 import { ActiveEffect } from '../models/ActiveEffect';
+import PostActionHandler, { ActionContext, PostActionResult } from './PostActionHandler';
 import { 
     CardSelectionData, 
     EligibleCard, 
@@ -30,6 +31,7 @@ import {
 
 class CardSelectionHandler {
     private mozGamePlay: any;
+    private postActionHandler: PostActionHandler;
     private getPlayerMainDeck: (gameEnv: GameEnvironment, playerId: string) => string[];
     private getPlayerHand: (gameEnv: GameEnvironment, playerId: string) => string[];
     private getPlayerField: (gameEnv: GameEnvironment, playerId: string) => any;
@@ -38,6 +40,7 @@ class CardSelectionHandler {
 
     constructor(mozGamePlay: any) {
         this.mozGamePlay = mozGamePlay;
+        this.postActionHandler = new PostActionHandler(mozGamePlay);
         
         // Defensive binding with proper typing
         this.getPlayerMainDeck = mozGamePlay.getPlayerMainDeck?.bind(mozGamePlay) || (() => []);
@@ -607,29 +610,28 @@ class CardSelectionHandler {
     }
 
     private async continueGameFlow(gameEnv: GameEnvironment): Promise<CardSelectionResult> {
-        console.log(`🎮 CardSelectionHandler: Continuing game flow after selection`);
+        console.log(`🎮 CardSelectionHandler: Using unified PostActionHandler for game flow continuation`);
 
-        // Direct player point recalculation using stored effects (no replay needed)
-        if (this.mozGamePlay.enhancedEffectManager) {
-            console.log(`📊 Recalculating player points with stored effects`);
+        // Create action context for card selection completion
+        const actionContext: ActionContext = PostActionHandler.createContext('CARD_SELECTION', 'system', {
+            skipTurnCheck: true,   // Card selections don't typically switch turns
+            skipPhaseCheck: true   // Card selections don't typically change phases
+        });
+
+        try {
+            // Use unified PostActionHandler pipeline
+            const result = await this.postActionHandler.execute(gameEnv, actionContext);
             
-            try {
-                // Directly calculate and update player points using already-stored effects in fieldEffects
-                const playerIds = Object.keys(gameEnv.players);
-                for (const playerId of playerIds) {
-                    const playerPoints = await this.mozGamePlay.enhancedEffectManager.calculatePlayerPoints(gameEnv, playerId);
-                    gameEnv.players[playerId].playerPoint = playerPoints; // UPDATE the actual playerPoint field
-                    console.log(`✅ Player ${playerId} points updated: ${playerPoints}`);
-                }
-            } catch (error) {
-                console.error(`❌ Error during point recalculation:`, error);
-                // Continue anyway - don't fail the entire selection process
+            if (result.success) {
+                return { success: true, gameEnv: result.gameEnv };
+            } else {
+                console.error(`❌ PostActionHandler failed: ${result.error}`);
+                return { success: false, error: result.error };
             }
-        } else {
-            console.warn(`⚠️ EnhancedEffectManager not available - skipping recalculation`);
+        } catch (error) {
+            console.error(`❌ Error in PostActionHandler execution:`, error);
+            return { success: false, error: 'Post-action processing failed' };
         }
-
-        return { success: true, gameEnv: gameEnv };
     }
 
     // Delegate to existing methods for complex effect processing

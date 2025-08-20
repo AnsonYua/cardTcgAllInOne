@@ -76,19 +76,8 @@ export class EnhancedEffectManager {
         // Note: Individual apply methods already store effects in fieldEffects - no separate storage needed
         const selectionResult = await this.applyActiveEffects(gameEnv, activeEffects);
         
-        // Update player points if calculation function is available
-        if (this.calculatePlayerPointFunc) {
-            try {
-                for (const playerId of Object.keys(gameEnv.players)) {
-                    // Pass GameEnvironment class directly, not JSON
-                    const newPoints = await this.calculatePlayerPointFunc(gameEnv, playerId);
-                    gameEnv.players[playerId].playerPoint = newPoints;
-                    console.log(`✅ Updated ${playerId} playerPoint: ${newPoints}`);
-                }
-            } catch (error) {
-                console.error('❌ Error calculating player points:', error);
-            }
-        }
+        // REMOVED: Player point updates now handled by PostActionHandler for consistency
+        // This eliminates code duplication and ensures unified post-action processing
         
         console.log(`   ✅ Processed ${activeEffects.length} effects for ${play.cardUid}`);
         return selectionResult || {};

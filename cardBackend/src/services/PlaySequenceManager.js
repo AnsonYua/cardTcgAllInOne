@@ -1,30 +1,32 @@
 // src/services/PlaySequenceManager.js
 /**
- * 🎬 PLAY SEQUENCE MANAGER - Replay System Foundation 
- * ===================================================
+ * 🎬 PLAY SEQUENCE MANAGER - Historical Action Tracking System
+ * ============================================================
  * 
- * This class is THE FOUNDATION of the replay system. It tracks every action that happens
- * in a game so they can be replayed in the exact same order to reconstruct game state.
+ * This class tracks every action that happens in a game for historical analysis,
+ * debugging, and game state verification. Effects are applied directly when actions
+ * occur through the unified PostActionHandler system.
  * 
  * 🎯 CORE PURPOSE:
  * - Record ALL game actions in chronological order (leaders, cards, effects)  
- * - Provide sorted sequence for replay simulation
- * - Enable consistent game state reconstruction from scratch
- * - Support debugging by showing complete action history
+ * - Provide complete action history for debugging and analysis
+ * - Support game state verification and troubleshooting
+ * - Enable action sequence analysis and statistics
  * 
- * 🔄 DIRECT INTEGRATION:
- * This data provides historical tracking for debugging and game state analysis.
- * Effects are applied directly when actions occur, no replay simulation needed.
+ * 🔄 UNIFIED EFFECT SYSTEM INTEGRATION (January 2025):
+ * Effects are now processed through the unified PostActionHandler pipeline.
+ * This sequence data provides historical tracking for debugging and analysis.
+ * No replay simulation needed - effects applied directly via PostActionHandler.
  * 
  * 📋 ACTION TYPES TRACKED:
  * - PLAY_LEADER: Leader placement during game setup
  * - PLAY_CARD: Regular card placement in zones
- * - APPLY_SET_POWER: Card selection effects (NEW - January 2025)
+ * - APPLY_SET_POWER: Card selection effects (h-2 "Make America Great Again")
  * - APPLY_EFFECT: Other card effects (future enhancement)
  * 
  * 🆕 CARD SELECTION TRACKING (January 2025):
- * Now records card selection effects like h-2 "Make America Great Again" with complete
- * target information for replay consistency.
+ * Records card selection effects with complete target information for historical analysis.
+ * Effects are applied through PostActionHandler, not through replay simulation.
  * 
  * 📊 DATA STRUCTURE:
  * gameEnv.playSequence = {
@@ -77,22 +79,22 @@ class PlaySequenceManager {
     }
 
     /**
-     * 📝 RECORD CARD PLAY - The Heart of Replay System
+     * 📝 RECORD CARD PLAY - Historical Action Tracking
      * ================================================
      * 
-     * This is THE FUNCTION that records every action in the game for replay.
+     * This function records every action in the game for historical analysis.
      * Every leader placement, card play, and effect execution goes through here!
      * 
      * 🎯 WHAT IT RECORDS:
      * - PLAY_LEADER: s-1, s-2, etc. during game setup
      * - PLAY_CARD: c-1, h-2, etc. during gameplay  
-     * - APPLY_SET_POWER: Card selection effects (NEW - h-2 targeting)
+     * - APPLY_SET_POWER: Card selection effects (h-2 targeting)
      * 
-     * 🔄 REPLAY FLOW:
+     * 🔄 UNIFIED EFFECT FLOW (January 2025):
      * 1. This function records action → gameEnv.playSequence.plays
-     * 2. EffectSimulator reads plays → replays them in order
-     * 3. Each replay rebuilds fieldEffects step by step
-     * 4. Final state matches what originally happened
+     * 2. PostActionHandler processes effects directly (no replay simulation)
+     * 3. Historical data available for debugging and analysis
+     * 4. Effects applied immediately through unified pipeline
      * 
      * 📊 EXAMPLE RECORDED PLAY:
      * {
@@ -107,8 +109,9 @@ class PlaySequenceManager {
      *   phaseWhenPlayed: "MAIN_PHASE"  
      * }
      * 
-     * 🆕 NEW CARD SELECTION RECORDING (January 2025):
-     * When h-2 card selection completes, mozGamePlay.js calls this with:
+     * 🆕 CARD SELECTION TRACKING (January 2025):
+     * When h-2 card selection completes, effects are applied directly via PostActionHandler.
+     * Historical record includes:
      * - action: "APPLY_SET_POWER"
      * - data: { selectedCardIds: ["c-1"], targetPlayerId: "playerId_1", ... }
      * 
@@ -150,16 +153,17 @@ class PlaySequenceManager {
     }
 
     /**
-     * 🔄 GET PLAY SEQUENCE - Feed for Replay Simulation
-     * =================================================
+     * 🔄 GET PLAY SEQUENCE - Historical Data for Analysis
+     * ===================================================
      * 
-     * This function provides the sorted action sequence for historical tracking and debugging.
-     * Actions are stored in chronological order for game state analysis.
+     * This function provides the sorted action sequence for historical analysis and debugging.
+     * Actions are stored in chronological order for game state verification.
      * 
      * 🎯 PURPOSE: 
      * - Sort all recorded actions by sequenceId (chronological order)
      * - Return clean array for debugging and historical analysis
      * - Maintain complete action history for troubleshooting
+     * - Support game state verification and statistics
      * 
      * 📋 TYPICAL SEQUENCE FOR h-2 EXAMPLE:
      * [
@@ -170,11 +174,12 @@ class PlaySequenceManager {
      *   {sequenceId: 5, action: "APPLY_SET_POWER", cardId: "h-2"}   // h-2 selection effect
      * ]
      * 
-     * 🔄 REPLAY INTEGRATION:
-     * EffectSimulator iterates through this array and calls:
-     * - executePlayUnified() for each action
-     * - activateEffectsUnified() for card effects  
-     * - checkTriggeredEffectsUnified() for reactions
+     * 🔄 UNIFIED SYSTEM INTEGRATION (January 2025):
+     * PostActionHandler processes effects directly when actions occur.
+     * This historical data supports:
+     * - Debugging game state issues
+     * - Action sequence analysis
+     * - Game flow verification
      * 
      * @param {Object} gameEnv - Game environment
      * @returns {Array} Sorted array of play records for replay simulation
