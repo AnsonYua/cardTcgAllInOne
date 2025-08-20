@@ -219,7 +219,8 @@
               "searchCount": 4,
               "selectCount": 1,
               "destination": "hand",
-              "filters": []
+              "filters": [],
+              "selectionType": "deckSearch"
             }
           }
         ]
@@ -258,7 +259,8 @@
                   "type": "cardType",
                   "value": "sp"
                 }
-              ]
+              ],
+              "selectionType": "spSearch"
             }
           }
         ]
@@ -462,7 +464,8 @@
             },
             "effect": {
               "type": "powerBoost",
-              "value": 50
+              "value": 50,
+              "selectionType": "targetSelection"
             }
           }
         ]

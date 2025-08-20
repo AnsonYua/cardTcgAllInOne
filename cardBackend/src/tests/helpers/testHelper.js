@@ -104,12 +104,12 @@ class TestHelper {
     /**
      * Complete card selection
      */
-    async completeCardSelection(gameId, playerId, selectionId, selectedCardIds) {
+    async completeCardSelection(gameId, playerId, selectionId, selectedCardUIds) {
         return await this.makeRequest('POST', '/player/selectCard', {
             gameId,
             playerId,
             selectionId,
-            selectedCardIds
+            selectedCardUIds
         });
     }
 

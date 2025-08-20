@@ -400,14 +400,14 @@ export class GameController {
         try {
             console.log('🎯 Processing card selection:', req.body);
             
-            const { gameId, playerId, selectionId, selectedCardIds, selectedCardUIds } = req.body;
+            const { gameId, playerId, selectionId, selectedCardUIds } = req.body;
             
-            // Support both selectedCardUIds (new) and selectedCardIds (backward compatibility)
-            const selectedCardIdentifiers = selectedCardUIds || selectedCardIds;
+            // Use selectedCardUIds (unified UID-based system)
+            const selectedCardIdentifiers = selectedCardUIds;
             
             if (!gameId || !playerId || !selectionId || !selectedCardIdentifiers) {
                 res.status(400).json({
-                    error: 'Missing required parameters: gameId, playerId, selectionId, and either selectedCardUIds or selectedCardIds',
+                    error: 'Missing required parameters: gameId, playerId, selectionId, and selectedCardUIds',
                     timestamp: new Date().toISOString(),
                     context: 'selectCard endpoint'
                 });
@@ -417,7 +417,7 @@ export class GameController {
             // Validate selectedCardIdentifiers is an array
             if (!Array.isArray(selectedCardIdentifiers)) {
                 res.status(400).json({
-                    error: 'selectedCardUIds or selectedCardIds must be an array',
+                    error: 'selectedCardUIds must be an array',
                     timestamp: new Date().toISOString(),
                     context: 'selectCard endpoint - validation'
                 });

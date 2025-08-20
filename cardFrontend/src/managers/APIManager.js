@@ -83,8 +83,7 @@ export default class APIManager {
       method: 'POST',
       body: JSON.stringify({
         selectionId,
-        selectedCardUIds: selectedCardIdentifiers, // Use new UID parameter name
-        selectedCardIds: selectedCardIdentifiers,  // Keep backward compatibility 
+        selectedCardUIds: selectedCardIdentifiers,
         playerId,
         gameId
       })
@@ -102,8 +101,7 @@ export default class APIManager {
     const action = {
       type: 'SelectCard',
       selectionId: selectionId,
-      selectedCardUIds: selectedCardIdentifiers, // Use new UID parameter name
-      selectedCardIds: selectedCardIdentifiers   // Keep backward compatibility
+      selectedCardUIds: selectedCardIdentifiers
     };
 
     return this.playerAction(gameState.playerId, gameState.gameId, action);

@@ -305,6 +305,7 @@ export class EnhancedEffectManager {
                 sourceCard: effect.sourceCardUid
             },
             effectType: 'powerBoost',
+            selectionType: 'powerBoost', // Added the missing selectionType field
             sourceCard: effect.sourceCardUid,
             targetPlayerId: effect.targetPlayerId
         };
@@ -546,6 +547,7 @@ export class EnhancedEffectManager {
                 sourceCard: effect.sourceCardUid
             },
             effectType: 'searchCard',
+            selectionType: 'searchCard', // Added the missing selectionType field
             sourceCard: effect.sourceCardUid
         };
         

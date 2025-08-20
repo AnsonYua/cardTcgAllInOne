@@ -288,6 +288,20 @@ export class BattleCalculator {
     private isEffectApplicableToCard(effect: FieldEffect, cardData: any, zone: string): boolean {
         const target = effect.target;
         
+        // ⭐ NEW: Handle SPECIFIC targeting with cardIds (for card selection effects)
+        if (target.scope === 'SPECIFIC' && target.cardIds) {
+            // Check if this specific card is targeted by ID or UID
+            const isTargeted = target.cardIds.some(targetCardId => 
+                targetCardId === cardData.cardId || targetCardId === cardData.cardUid
+            );
+            if (!isTargeted) {
+                return false;
+            }
+            // If card is specifically targeted, return true (skip other filters)
+            console.log(`    🎯 Effect targets specific card: ${cardData.cardId}/${cardData.cardUid}`);
+            return true;
+        }
+        
         // Check zone targeting (convert string zone to match FieldEffect zones)
         if (target.zones && target.zones !== 'ALL') {
             const zoneArray = Array.isArray(target.zones) ? target.zones : [];
@@ -325,9 +339,6 @@ export class BattleCalculator {
                 return false;
             }
         }
-        
-        // Additional targeting can be added in future if FieldEffect interface is extended
-        // For now, we use the existing FieldEffect.target properties
         
         return true;
     }

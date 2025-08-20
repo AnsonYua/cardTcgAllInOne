@@ -42,8 +42,8 @@ class CardSelectionHandler {
         console.log(`🎯 CardSelectionHandler: Routing SelectCard action for player: ${playerId}`);
         
         // ===== STEP 1: VALIDATE REQUIRED PARAMETERS =====
-        // Support both selectedCardIds (backward compatibility) and selectedCardUIds (new system)
-        const selectedCardIdentifiers = action.selectedCardUIds || action.selectedCardIds;
+        // Use selectedCardUIds (unified UID-based system)
+        const selectedCardIdentifiers = action.selectedCardUIds;
         if (!action.selectionId || !selectedCardIdentifiers) {
             this.addErrorEvent(gameEnv, 'INVALID_SELECTION_DATA', 
                 'Missing required selection parameters', playerId);
@@ -473,20 +473,42 @@ class CardSelectionHandler {
         console.log(`⚡ CardSelectionHandler: Applying power boost to: ${selectedCardId}`);
         
         const selection = gameEnv.pendingCardSelections[selectionId];
-        const { effect } = selection;
+        const { effect, playerId } = selection;
+        const boostValue = effect.value || 50;
         
-        // Apply power boost through unified effect system
-        if (gameEnv.players && gameEnv.players[selection.playerId] && gameEnv.players[selection.playerId].fieldEffects) {
-            if (!gameEnv.players[selection.playerId].fieldEffects.calculatedPowers) {
-                gameEnv.players[selection.playerId].fieldEffects.calculatedPowers = {};
+        // ✅ FIXED: Store as proper activeEffect object (not calculatedPowers)
+        // 🎯 CRITICAL: Find which player owns the target card and store effect there
+        const targetPlayerId = this.findCardOwner(gameEnv, selectedCardId);
+        const targetPlayer = gameEnv.players[targetPlayerId];
+        
+        console.log(`🎯 Target card ${selectedCardId} belongs to player: ${targetPlayerId}`);
+        
+        if (targetPlayer && targetPlayer.fieldEffects) {
+            // Initialize activeEffects array if needed
+            if (!targetPlayer.fieldEffects.activeEffects) {
+                targetPlayer.fieldEffects.activeEffects = [];
             }
             
-            // Get current power and apply boost
-            const currentPower = gameEnv.players[selection.playerId].fieldEffects.calculatedPowers[selectedCardId] || 0;
-            const boostValue = effect.value || 50;
-            gameEnv.players[selection.playerId].fieldEffects.calculatedPowers[selectedCardId] = currentPower + boostValue;
+            // Create proper activeEffect object that BattleCalculator can read
+            const activeEffect = {
+                effectId: `${selectionId}_powerBoost_${Date.now()}`,
+                source: effect.sourceCard || 'cardSelection',
+                sourcePlayerId: playerId, // Who triggered the effect
+                type: 'powerBoost', // ⭐ This is what BattleCalculator looks for
+                target: {
+                    scope: 'SPECIFIC',
+                    cardIds: [selectedCardId]
+                },
+                value: boostValue,
+                isEnabled: true,
+                createdAt: Date.now()
+            };
             
-            console.log(`⚡ Boosted ${selectedCardId} by +${boostValue} power`);
+            // Add to activeEffects (not calculatedPowers!)
+            targetPlayer.fieldEffects.activeEffects.push(activeEffect);
+            
+            console.log(`⚡ Added powerBoost effect: +${boostValue} to ${selectedCardId} in ${targetPlayerId}'s activeEffects`);
+            console.log(`📊 Player ${targetPlayerId} now has ${targetPlayer.fieldEffects.activeEffects.length} active effects`);
         }
 
         // Complete the selection
@@ -501,20 +523,42 @@ class CardSelectionHandler {
         console.log(`⚡ CardSelectionHandler: Applying power nerf to: ${selectedCardId}`);
         
         const selection = gameEnv.pendingCardSelections[selectionId];
-        const { effect } = selection;
+        const { effect, playerId } = selection;
+        const nerfValue = effect.value || 60;
         
-        // Apply power nerf through unified effect system
-        if (gameEnv.players && gameEnv.players[selection.playerId] && gameEnv.players[selection.playerId].fieldEffects) {
-            if (!gameEnv.players[selection.playerId].fieldEffects.calculatedPowers) {
-                gameEnv.players[selection.playerId].fieldEffects.calculatedPowers = {};
+        // ✅ FIXED: Store as proper activeEffect object (not calculatedPowers)
+        // 🎯 CRITICAL: Find which player owns the target card and store effect there
+        const targetPlayerId = this.findCardOwner(gameEnv, selectedCardId);
+        const targetPlayer = gameEnv.players[targetPlayerId];
+        
+        console.log(`🎯 Target card ${selectedCardId} belongs to player: ${targetPlayerId}`);
+        
+        if (targetPlayer && targetPlayer.fieldEffects) {
+            // Initialize activeEffects array if needed
+            if (!targetPlayer.fieldEffects.activeEffects) {
+                targetPlayer.fieldEffects.activeEffects = [];
             }
             
-            // Get current power and apply nerf
-            const currentPower = gameEnv.players[selection.playerId].fieldEffects.calculatedPowers[selectedCardId] || 0;
-            const nerfValue = effect.value || 60;
-            gameEnv.players[selection.playerId].fieldEffects.calculatedPowers[selectedCardId] = currentPower - nerfValue;
+            // Create proper activeEffect object that BattleCalculator can read
+            const activeEffect = {
+                effectId: `${selectionId}_powerReduction_${Date.now()}`,
+                source: effect.sourceCard || 'cardSelection',
+                sourcePlayerId: playerId, // Who triggered the effect
+                type: 'powerReduction', // ⭐ BattleCalculator handles this type
+                target: {
+                    scope: 'SPECIFIC',
+                    cardIds: [selectedCardId]
+                },
+                value: nerfValue,
+                isEnabled: true,
+                createdAt: Date.now()
+            };
             
-            console.log(`⚡ Nerfed ${selectedCardId} by -${nerfValue} power`);
+            // Add to activeEffects (not calculatedPowers!)
+            targetPlayer.fieldEffects.activeEffects.push(activeEffect);
+            
+            console.log(`⚡ Added powerReduction effect: -${nerfValue} to ${selectedCardId} in ${targetPlayerId}'s activeEffects`);
+            console.log(`📊 Player ${targetPlayerId} now has ${targetPlayer.fieldEffects.activeEffects.length} active effects`);
         }
 
         // Complete the selection
@@ -555,6 +599,51 @@ class CardSelectionHandler {
         
         console.log(`✅ All selected cards are valid`);
         return { valid: true };
+    }
+
+    /**
+     * 🔍 FIND CARD OWNER
+     * Determines which player owns a specific card by searching all zones
+     */
+    findCardOwner(gameEnv, cardIdentifier) {
+        // Search through all players' zones to find the card
+        for (const playerId of Object.keys(gameEnv.players)) {
+            const playerZones = gameEnv.zones[playerId];
+            if (!playerZones) continue;
+            
+            // Check all character zones and other zones
+            const allZones = ['top', 'left', 'right', 'help', 'sp', 'leader'];
+            
+            for (const zoneName of allZones) {
+                const zone = playerZones[zoneName];
+                if (!zone) continue;
+                
+                // Handle array zones (top, left, right, help, sp)
+                if (Array.isArray(zone)) {
+                    const found = zone.some(card => 
+                        card.cardId === cardIdentifier || 
+                        card.cardUid === cardIdentifier ||
+                        card.cardId === cardIdentifier.split('_')[0]  // Handle UID format
+                    );
+                    if (found) {
+                        console.log(`🔍 Found card ${cardIdentifier} in ${playerId}'s ${zoneName} zone`);
+                        return playerId;
+                    }
+                }
+                // Handle single card zones (leader)
+                else if (zone && typeof zone === 'object') {
+                    if (zone.cardId === cardIdentifier || 
+                        zone.cardUid === cardIdentifier ||
+                        zone.cardId === cardIdentifier.split('_')[0]) {
+                        console.log(`🔍 Found card ${cardIdentifier} in ${playerId}'s ${zoneName} zone`);
+                        return playerId;
+                    }
+                }
+            }
+        }
+        
+        console.warn(`⚠️ Could not find owner for card: ${cardIdentifier}`);
+        return null;
     }
 
     /**

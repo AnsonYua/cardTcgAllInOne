@@ -506,12 +506,13 @@ export interface FieldEffect {
     sourcePlayerId?: string;
     type: string;
     target: {
-        scope: 'SELF' | 'OPPONENT' | 'ALL';
+        scope: 'SELF' | 'OPPONENT' | 'ALL' | 'SPECIFIC';  // ⭐ Added SPECIFIC scope
         zones?: ZoneType[] | 'ALL';
         gameTypes?: string[];
         traits?: string[];
         nameContains?: string[];  // Support for name-based targeting (e.g., "Doge" cards)
         playerId?: string;
+        cardIds?: string[];  // ⭐ Added cardIds for specific targeting (card selection effects)
     };
     value: number | boolean;
     priority?: number;

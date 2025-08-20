@@ -118,7 +118,7 @@ class DynamicTestRunner {
                         playerId: actionStep.playerId,
                         gameId: scenario.gameId,
                         selectionId: selectionId,
-                        selectedCardIds: actionStep.action.cardIds
+                        selectedCardUIds: actionStep.action.cardIds
                     };
                     
                     result = await this.testHelper.makeRequest('POST', '/player/selectCard', selectionData);
