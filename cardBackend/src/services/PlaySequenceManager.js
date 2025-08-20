@@ -12,9 +12,9 @@
  * - Enable consistent game state reconstruction from scratch
  * - Support debugging by showing complete action history
  * 
- * 🔄 REPLAY INTEGRATION:
- * This data feeds directly into EffectSimulator.simulateCardPlaySequence() which replays
- * all actions to rebuild fieldEffects, zone restrictions, and calculated powers.
+ * 🔄 DIRECT INTEGRATION:
+ * This data provides historical tracking for debugging and game state analysis.
+ * Effects are applied directly when actions occur, no replay simulation needed.
  * 
  * 📋 ACTION TYPES TRACKED:
  * - PLAY_LEADER: Leader placement during game setup
@@ -153,13 +153,13 @@ class PlaySequenceManager {
      * 🔄 GET PLAY SEQUENCE - Feed for Replay Simulation
      * =================================================
      * 
-     * This function provides the sorted action sequence to EffectSimulator for replay.
-     * This is what gets replayed in chronological order to rebuild game state!
+     * This function provides the sorted action sequence for historical tracking and debugging.
+     * Actions are stored in chronological order for game state analysis.
      * 
      * 🎯 PURPOSE: 
      * - Sort all recorded actions by sequenceId (chronological order)
-     * - Return clean array for EffectSimulator.simulateCardPlaySequence()
-     * - Ensure replay happens in exact same order as original game
+     * - Return clean array for debugging and historical analysis
+     * - Maintain complete action history for troubleshooting
      * 
      * 📋 TYPICAL SEQUENCE FOR h-2 EXAMPLE:
      * [

@@ -3,7 +3,7 @@
 import * as path from 'path';
 import { GameEnvironment, GamePhase, ZoneType, EventType, Player } from '../models/GameEnvironment';
 import CardInfoUtils from '../services/CardInfoUtils';
-import { effectSimulator } from '../services/EffectSimulator';
+// Removed: effectSimulator import - legacy system replaced by EnhancedEffectManager
 
 // Import JavaScript modules (will be converted later in the migration)
 const mozDeckHelper = require('./mozDeckHelper');
@@ -86,7 +86,7 @@ export class MozGamePlay {
     public cardInfoUtils: typeof CardInfoUtils;
     // fieldEffectProcessor removed - legacy functionality moved to OptimizedGameEngine
     public playSequenceManager: any;
-    public effectSimulator: any;
+    public enhancedEffectManager: any; // Modern effect manager for power/point recalculation
     
     // Manager classes
     public cardSelectionHandler: any;
@@ -101,10 +101,10 @@ export class MozGamePlay {
         this.cardInfoUtils = CardInfoUtils;
         // FieldEffectProcessor removed - legacy functionality moved to OptimizedGameEngine
         
-        // UNIFIED EFFECT SYSTEM: Dependencies for replay-based effect calculation
+        // UNIFIED EFFECT SYSTEM: Dependencies for direct effect processing
         // NOTE: These are injected by GameLogic.ts during initialization to ensure proper dependency setup
         this.playSequenceManager = null;
-        this.effectSimulator = null;
+        this.enhancedEffectManager = null; // Injected by GameLogic.ts during initialization
         
         // Initialize manager classes
         this.cardSelectionHandler = new CardSelectionHandler(this);

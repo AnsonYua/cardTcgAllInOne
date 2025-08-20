@@ -125,8 +125,14 @@ export class GameLogic {
         // Initialize EnhancedEffectManager with dependencies (EFFICIENT INCREMENTAL APPROACH)
         // IMPORTANT: Inject mozGamePlay.calculatePlayerPoint to avoid circular dependency (with defensive binding)
         if (this.mozGamePlay && this.mozGamePlay.calculatePlayerPoint) {
-            enhancedEffectManager.setCalculatePlayerPointFunction(this.mozGamePlay.calculatePlayerPoint.bind(this.mozGamePlay));
+        enhancedEffectManager.setCalculatePlayerPointFunction(this.mozGamePlay.calculatePlayerPoint.bind(this.mozGamePlay));
             console.log('✅ GameLogic: mozGamePlay dependency injected into EnhancedEffectManager');
+        }
+        
+        // BIDIRECTIONAL INJECTION: Inject EnhancedEffectManager back into mozGamePlay
+        if (this.mozGamePlay) {
+            this.mozGamePlay.enhancedEffectManager = enhancedEffectManager;
+            console.log('✅ GameLogic: EnhancedEffectManager injected into mozGamePlay');
         }
         
         console.log('🎮 GameLogic initialized with TypeScript class support');

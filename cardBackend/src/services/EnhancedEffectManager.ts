@@ -780,38 +780,10 @@ export class EnhancedEffectManager {
         return player?.fieldEffects?.activeEffects || [];
     }
     
-    /**
-     * Process all existing play sequence actions for their effects
-     * Used during game initialization and state reconstruction
-     */
-    async processAllExistingEffects(gameEnv: GameEnvironment): Promise<void> {
-        console.log('🔄 Processing all existing play sequence actions for effects...');
-        
-        if (!gameEnv.playSequenceManager) {
-            console.log('   ➡️ No play sequence manager found');
-            return;
-        }
-        
-        const plays = gameEnv.playSequenceManager.getPlays();
-        console.log(`   📊 Found ${plays.length} plays to process`);
-        
-        // Process each play in sequence order
-        for (const play of plays) {
-            try {
-                const result = await this.processCardEffects(gameEnv, play);
-                // Note: During initialization, we don't handle card selection requirements
-                // as these are for runtime interactions only
-                if (result.requiresCardSelection) {
-                    console.log(`   🔍 Skipping card selection requirement during initialization for ${play.cardUid}`);
-                }
-            } catch (error) {
-                console.error(`❌ Error processing play ${play.sequenceId}:`, error);
-                // Continue with other plays
-            }
-        }
-        
-        console.log('✅ Completed processing all existing effects');
-    }
+    // REMOVED: processAllExistingEffects() - Legacy replay logic removed
+    // This function replayed all card plays to reconstruct effects.
+    // With direct effect storage in fieldEffects, replay is no longer needed.
+    // Effects are stored immediately when applied in CardSelectionHandler.
     
     /**
      * Calculate player points using integrated calculation function

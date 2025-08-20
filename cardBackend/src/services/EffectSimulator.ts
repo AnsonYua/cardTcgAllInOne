@@ -508,25 +508,10 @@ export class EffectSimulator {
         return true; // Default to true if no specific targeting
     }
 
-    // LEGACY COMPATIBILITY: Support for JSON-based operations
-    /**
-     * Legacy JSON-based simulation for backward compatibility
-     * @param gameEnv - Game environment JSON object
-     */
-    public async simulateCardPlaySequence(gameEnv: any): Promise<void> {
-        console.log('⚠️ Using legacy JSON-based simulation - consider upgrading to class-based method');
-        
-        // Import GameEnvironmentAdapter for conversion
-        const { GameEnvironmentAdapter } = require('../utils/GameEnvironmentAdapter');
-        
-        // Convert to class, process, then update original object
-        const gameEnvClass = GameEnvironmentAdapter.fromLegacyJSON(gameEnv);
-        await this.simulateCardPlaySequenceWithClass(gameEnvClass);
-        
-        // Update original gameEnv object with results
-        const updatedGameEnv = GameEnvironmentAdapter.toLegacyJSON(gameEnvClass);
-        Object.assign(gameEnv, updatedGameEnv);
-    }
+    // REMOVED: Legacy simulateCardPlaySequence method
+    // This method has been removed as it's replaced by the EnhancedEffectManager system.
+    // The modern architecture uses direct integration with EnhancedEffectManager 
+    // for power/point recalculation rather than the old simulateCardPlaySequence approach.
 }
 
 // Export singleton instance for backward compatibility

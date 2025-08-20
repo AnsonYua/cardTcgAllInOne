@@ -609,10 +609,24 @@ class CardSelectionHandler {
     private async continueGameFlow(gameEnv: GameEnvironment): Promise<CardSelectionResult> {
         console.log(`🎮 CardSelectionHandler: Continuing game flow after selection`);
 
-        // Run unified effect simulation
-        if (this.mozGamePlay.effectSimulator) {
-            console.log(`🔄 Running unified effect simulation`);
-            await this.mozGamePlay.effectSimulator.simulateCardPlaySequence(gameEnv);
+        // Direct player point recalculation using stored effects (no replay needed)
+        if (this.mozGamePlay.enhancedEffectManager) {
+            console.log(`📊 Recalculating player points with stored effects`);
+            
+            try {
+                // Directly calculate and update player points using already-stored effects in fieldEffects
+                const playerIds = Object.keys(gameEnv.players);
+                for (const playerId of playerIds) {
+                    const playerPoints = await this.mozGamePlay.enhancedEffectManager.calculatePlayerPoints(gameEnv, playerId);
+                    gameEnv.players[playerId].playerPoint = playerPoints; // UPDATE the actual playerPoint field
+                    console.log(`✅ Player ${playerId} points updated: ${playerPoints}`);
+                }
+            } catch (error) {
+                console.error(`❌ Error during point recalculation:`, error);
+                // Continue anyway - don't fail the entire selection process
+            }
+        } else {
+            console.warn(`⚠️ EnhancedEffectManager not available - skipping recalculation`);
         }
 
         return { success: true, gameEnv: gameEnv };
