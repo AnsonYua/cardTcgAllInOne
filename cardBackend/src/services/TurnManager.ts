@@ -27,7 +27,7 @@ import {
     getPlayerData, 
     getPlayerField 
 } from '../utils/gameUtils';
-import { GameEnvironment, Player, PlayerZones, GamePhase } from '../models/GameEnvironment';
+import { GameEnvironment, Player, PlayerZones, GamePhase, EventType } from '../models/GameEnvironment';
 
 
 interface TurnUpdateResult {
@@ -257,14 +257,14 @@ class TurnManager {
         }
         
         // ===== STEP 5: GENERATE EVENTS FOR FRONTEND =====
-        this.addGameEvent(gameEnv, 'DRAW_PHASE_COMPLETE', {
+        this.addGameEvent(gameEnv, EventType.DRAW_PHASE_COMPLETE, {
             playerId: currentPlayer,
             cardCount: 1,
             cardUid: drawnCardUid,
             newHandSize: player.deck.getHandSize()
         });
         
-        this.addGameEvent(gameEnv, 'TURN_SWITCH', {
+        this.addGameEvent(gameEnv, EventType.TURN_SWITCH, {
             newPlayer: currentPlayer,
             turn: gameEnv.currentTurn,
             phase: 'DRAW_PHASE'

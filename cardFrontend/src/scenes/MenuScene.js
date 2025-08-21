@@ -178,7 +178,7 @@ export default class MenuScene extends Phaser.Scene {
   }
 
   showNameInput() {
-    const name = prompt('Enter your player name:');
+    const name = prompt('👤 Enter your player name:\n\n(This name will be visible to other players)');
     if (name && name.trim()) {
       this.playerName = name.trim();
       this.playerNameText.setText(this.playerName);
@@ -187,23 +187,19 @@ export default class MenuScene extends Phaser.Scene {
   }
 
   async createGame() {
-    if (!this.playerName) {
-      alert('Please enter your name first');
-      return;
-    }
-    
     this.showLoadingMessage('Creating game...');
     
     try {
       if (this.isOnlineMode) {
         // Create game room via API
-        const response = await this.apiManager.createGame(this.playerName);
+        const playerName = this.playerName || 'Player 1'; // Default name if not set
+        const response = await this.apiManager.createGame(playerName);
         
         if (response.gameId && response.gameEnv) {
           // For game creator, always use playerId_1
           const playerId = 'playerId_1';
           
-          this.gameStateManager.initializeGame(response.gameId, playerId, this.playerName);
+          this.gameStateManager.initializeGame(response.gameId, playerId, playerName);
           this.gameStateManager.updateGameEnv(response.gameEnv);
           
           this.hideLoadingMessage();
@@ -229,45 +225,54 @@ export default class MenuScene extends Phaser.Scene {
   }
 
   async showJoinGameInput() {
-    if (!this.playerName) {
-      alert('Please enter your name first');
+    const gameId = prompt('🎮 Enter Game ID to join:');
+    if (!gameId) {
+      return; // User cancelled
+    }
+    
+    const trimmedGameId = gameId.trim();
+    if (!trimmedGameId) {
+      alert('❌ Game ID cannot be empty. Please enter a valid Game ID.');
       return;
     }
     
-    const gameId = prompt('Enter Game ID:');
-    if (gameId && gameId.trim()) {
-      this.showLoadingMessage('Joining game...');
-      
-      try {
-        if (this.isOnlineMode) {
-          // Join room using new API
-          const playerId = 'playerId_2';
-          const response = await this.apiManager.joinRoom(gameId.trim(), this.playerName);
+    if (trimmedGameId.length < 3) {
+      alert('❌ Game ID seems too short. Please check and try again.');
+      return;
+    }
+    
+    this.showLoadingMessage('Joining game...');
+    
+    try {
+      if (this.isOnlineMode) {
+        // Join room using new API
+        const playerId = 'playerId_2';
+        const playerName = this.playerName || 'Player 2'; // Default name if not set
+        const response = await this.apiManager.joinRoom(trimmedGameId, playerName);
+        
+        if (response.gameEnv) {
+          this.gameStateManager.initializeGame(trimmedGameId, playerId, playerName);
+          this.gameStateManager.updateGameEnv(response.gameEnv);
           
-          if (response.gameEnv) {
-            this.gameStateManager.initializeGame(gameId.trim(), playerId, this.playerName);
-            this.gameStateManager.updateGameEnv(response.gameEnv);
-            
-            this.hideLoadingMessage();
-            this.showConnectionStatus(`🎮 Joined room ${gameId.trim()}! Both players ready.`);
-            this.scene.start('GameScene', { 
-              gameStateManager: this.gameStateManager, 
-              apiManager: this.apiManager,
-              isOnlineMode: true
-            });
-            return;
-          }
+          this.hideLoadingMessage();
+          this.showConnectionStatus(`🎮 Joined room ${trimmedGameId}! Both players ready.`);
+          this.scene.start('GameScene', { 
+            gameStateManager: this.gameStateManager, 
+            apiManager: this.apiManager,
+            isOnlineMode: true
+          });
+          return;
         }
-        
-        // Fallback to demo mode
-        this.joinOfflineDemoGame(gameId.trim());
-        
-      } catch (error) {
-        console.error('Failed to join game:', error);
-        this.hideLoadingMessage();
-        this.showErrorMessage('Failed to join game. Starting demo mode...');
-        setTimeout(() => this.joinOfflineDemoGame(gameId.trim()), 2000);
       }
+      
+      // Fallback to demo mode
+      this.joinOfflineDemoGame(trimmedGameId);
+      
+    } catch (error) {
+      console.error('Failed to join game:', error);
+      this.hideLoadingMessage();
+      this.showErrorMessage('Failed to join game. Starting demo mode...');
+      setTimeout(() => this.joinOfflineDemoGame(trimmedGameId), 2000);
     }
   }
 
@@ -279,12 +284,13 @@ export default class MenuScene extends Phaser.Scene {
       this.showLoadingMessage('Creating demo room...');
       try {
         // Step 1: Only create room (no auto-join)
-        const createResponse = await this.apiManager.createGame(this.playerName);
+        const playerName = this.playerName || 'Demo Player';
+        const createResponse = await this.apiManager.createGame(playerName);
         if (createResponse.gameId && createResponse.gameEnv) {
           const gameId = createResponse.gameId;
           
           // Initialize game state for player 1 (the human player in demo)
-          this.gameStateManager.initializeGame(gameId, 'playerId_1', this.playerName);
+          this.gameStateManager.initializeGame(gameId, 'playerId_1', playerName);
           this.gameStateManager.updateGameEnv(createResponse.gameEnv);
           
           console.log('Demo game created with gameId:', gameId);
@@ -449,8 +455,9 @@ export default class MenuScene extends Phaser.Scene {
   createOfflineDemoGame() {
     const gameId = 'demo_' + Date.now();
     const playerId = 'player_' + Date.now();
+    const playerName = this.playerName || 'Player 1';
     
-    this.gameStateManager.initializeGame(gameId, playerId, this.playerName);
+    this.gameStateManager.initializeGame(gameId, playerId, playerName);
     this.setupDemoGameState();
     
     this.scene.start('DemoScene', { 
@@ -464,7 +471,8 @@ export default class MenuScene extends Phaser.Scene {
 
   joinOfflineDemoGame(gameId) {
     const playerId = 'player_' + Date.now();
-    this.gameStateManager.initializeGame(gameId, playerId, this.playerName);
+    const playerName = this.playerName || 'Player 2';
+    this.gameStateManager.initializeGame(gameId, playerId, playerName);
     this.setupDemoGameState();
     
     this.scene.start('DemoScene', { 
