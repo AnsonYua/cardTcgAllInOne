@@ -189,6 +189,11 @@ export class MozGamePlay {
         }
     }
 
+    addGameEvent(gameEnv: GameEnvironment, eventType: EventType, data: any): void {
+        console.log("i am heree")
+        gameEnv.eventManager.addEvent(eventType,data);
+    }
+
     /**
      * Complete battle calculation system
      * Calculates final power values and determines winner

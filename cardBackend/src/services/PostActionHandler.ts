@@ -46,7 +46,6 @@ export class PostActionHandler {
      */
     async execute(gameEnv: GameEnvironment, context: ActionContext): Promise<PostActionResult> {
         console.log(`🔄 PostActionHandler: Executing pipeline for ${context.type} by ${context.playerId}`);
-        
         try {
             // STEP 1: Update player points using stored effects
             await this.updateAllPlayerPoints(gameEnv);

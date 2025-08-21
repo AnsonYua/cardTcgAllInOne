@@ -309,7 +309,6 @@ export class GameLogic {
                     error: 'Game not found'
                 };
             }
-            
             // Get optimized game engine for this game
             const gameEngine = optimizedGameEngineManager.getGameEngine(gameId);
             if (!gameEngine.isInitialized()) {

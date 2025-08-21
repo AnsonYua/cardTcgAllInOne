@@ -1548,6 +1548,7 @@ export class GameEnvironment {
         
         // Card selection system restoration - REFACTOR: Single field only
         gameEnv.pendingCardSelections = data.pendingCardSelections || {};
+      
         
         // REMOVED: validationState deserialization - using fieldEffects as single source of truth
         
