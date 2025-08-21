@@ -21,16 +21,17 @@ if (hasPendingSelection) {
 
 ### 2. Card Play Validation (Lines 134-220)
 ```javascript
-if (action["type"] == "PlayCard" || action["type"] == "PlayCardBack") {
-    // Validate position, hand index, card existence
+if (action["type"] == "PlayCard") {
+    // Validate cardUID, zone, card existence
     // Check zone compatibility and card placement rules
     // Validate card type vs phase restrictions
+    // Face-up/face-down controlled by faceDown parameter
 }
 ```
 
 **Flow**:
-1. **Position validation**: Ensure field position exists (top/left/right/help/sp)
-2. **Hand validation**: Check card index is valid in player's hand
+1. **Position validation**: Ensure zone exists (TOP/LEFT/RIGHT/HELP/SP)
+2. **Card validation**: Check cardUID is valid and card exists in player's hand
 3. **Zone compatibility**: Use `OptimizedGameEngine.validateCardPlacementWithFieldEffects()` for leader/zone rules via unified Field Effects System
 4. **Phase restrictions**: SP cards only in SP_PHASE, characters/help in MAIN_PHASE
 5. **Zone occupancy**: One card per zone, face-down rules for help zone
@@ -140,8 +141,9 @@ POST /player/playerAction
   "playerId": "playerId_1",
   "action": {
     "type": "PlayCard",       // Face-up placement
-    "card_idx": 0,            // Index in hand
-    "field_idx": 0            // 0=top, 1=left, 2=right, 3=help, 4=sp
+    "cardUID": "card-uid-1",  // Unique identifier for the card
+    "zone": "TOP",            // TOP/LEFT/RIGHT/HELP/SP
+    "faceDown": false         // Optional, defaults to false
   }
 }
 
@@ -151,9 +153,10 @@ POST /player/playerAction
   "gameId": "uuid",
   "playerId": "playerId_1", 
   "action": {
-    "type": "PlayCardBack",   // Face-down placement
-    "card_idx": 2,            // Any card from hand
-    "field_idx": 1            // Can place in any zone (with phase restrictions)
+    "type": "PlayCard",       // Single action type for both face-up/face-down
+    "cardUID": "card-uid-2",  // Unique identifier for any card
+    "zone": "LEFT",           // Can place in any zone (with phase restrictions)
+    "faceDown": true          // Face-down strategic placement
   }
 }
 
@@ -174,7 +177,7 @@ POST /player/selectCard
 {
   "gameId": "uuid",
   "selectionId": "playerId_1_timestamp", 
-  "selectedCardIds": ["43"],
+  "selectedCardUIds": ["card-uid-43"],
   "playerId": "playerId_1"
 }
 
@@ -185,8 +188,8 @@ POST /player/playerAction
   "playerId": "playerId_2",
   "action": {
     "type": "PlayCard",
-    "card_idx": 1,
-    "field_idx": 1        // left zone
+    "cardUID": "card-uid-3",
+    "zone": "LEFT"
   }
 }
 
@@ -205,9 +208,10 @@ POST /player/playerAction
   "gameId": "uuid",
   "playerId": "playerId_1", 
   "action": {
-    "type": "PlayCardBack",  // MUST be face-down in SP zone
-    "card_idx": 2,
-    "field_idx": 4           // 4 = SP zone
+    "type": "PlayCard",      // Single action type
+    "cardUID": "card-uid-sp1", // SP card unique identifier
+    "zone": "SP",            // SP zone
+    "faceDown": true         // MUST be face-down in SP zone
   }
 }
 
@@ -217,9 +221,10 @@ POST /player/playerAction
   "gameId": "uuid",
   "playerId": "playerId_2",
   "action": {
-    "type": "PlayCardBack",  // MUST be face-down in SP zone
-    "card_idx": 0,
-    "field_idx": 4
+    "type": "PlayCard",      // Single action type
+    "cardUID": "card-uid-sp2", // SP card unique identifier
+    "zone": "SP",            // SP zone
+    "faceDown": true         // MUST be face-down in SP zone
   }
 }
 
@@ -292,8 +297,9 @@ The game supports strategic face-down card placement for bluffing and zone filli
 4. **Resource Conservation**: Save strong cards for later rounds while still filling zones
 
 ### Action Types:
-- `"type": "PlayCard"` - Place card face-up (normal placement)
-- `"type": "PlayCardBack"` - Place card face-down (strategic placement)
+- `"type": "PlayCard"` - Place card (face-up or face-down controlled by `faceDown` parameter)
+  - `"faceDown": false` (default) - Place card face-up (normal placement)
+  - `"faceDown": true` - Place card face-down (strategic placement)
 
 ## Card Selection Flow
 When cards trigger search effects during placement:
