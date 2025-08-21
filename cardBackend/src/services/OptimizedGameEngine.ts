@@ -107,9 +107,9 @@ export class OptimizedGameEngine {
                 enhancedEffectManager.setCalculatePlayerPointFunction(mozGamePlay.calculatePlayerPoint.bind(mozGamePlay));
                 console.log('✅ OptimizedGameEngine: mozGamePlay dependency injected into EnhancedEffectManager');
                 
-                // Initialize PostActionHandler with mozGamePlay and OptimizedGameEngine managers
-                this.postActionHandler = new PostActionHandler(mozGamePlay, this, this);
-                console.log('✅ OptimizedGameEngine: PostActionHandler initialized with turn/phase managers');
+                // Initialize PostActionHandler with unified mozGamePlay delegation
+                this.postActionHandler = new PostActionHandler(mozGamePlay);
+                console.log('✅ OptimizedGameEngine: PostActionHandler initialized with unified delegation architecture');
                 
                 // CardSelectionHandler initialization removed - not managed by OptimizedGameEngine
             } else {
@@ -573,24 +573,6 @@ export class OptimizedGameEngine {
     }
 
 
-    /**
-     * Check if turn should update and switch players
-     * Used by PostActionHandler for unified turn management
-     */
-    public async shouldUpdateTurn(gameEnv: GameEnvironment, playerId: string): Promise<{ turnSwitched: boolean }> {
-        // Card placement always ends turn in this game
-        const opponentId = this.getOpponentId(gameEnv, playerId);
-        
-        // Switch to opponent
-        gameEnv.currentPlayer = opponentId;
-        gameEnv.currentTurn = (gameEnv.currentTurn || 0) + 1;
-        gameEnv.phase = 'DRAW_PHASE' as any; // Next player enters draw phase
-        
-        // Draw card for new current player
-        this.drawCardForPlayer(gameEnv, opponentId);
-        
-        return { turnSwitched: true };
-    }
 
     /**
      * Check if phase should progress (main -> SP -> battle)

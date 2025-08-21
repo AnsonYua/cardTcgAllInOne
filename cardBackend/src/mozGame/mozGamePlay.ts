@@ -600,6 +600,30 @@ export class MozGamePlay {
         return fieldIndex ? (zoneMap[fieldIndex] || null) : null;
     }
 
+    // ============ POSTACTIONHANDLER DELEGATION METHODS ============
+    
+    /**
+     * Delegate turn management to TurnManager for consistent behavior
+     * Used by PostActionHandler for unified turn switching
+     */
+    async shouldUpdateTurn(gameEnv: GameEnvironment, playerId: string): Promise<{ turnSwitched: boolean }> {
+        console.log('🎯 mozGamePlay: Using TurnManager for turn management');
+        return await this.turnManager.shouldUpdateTurn(gameEnv, playerId);
+    }
+
+    /**
+     * Basic phase progression implementation
+     * Used by PostActionHandler for unified phase progression
+     */
+    async checkPhaseProgression(gameEnv: GameEnvironment): Promise<void> {
+        console.log('🎯 mozGamePlay: Using basic phase progression');
+        
+        // Basic phase progression logic - can be expanded as needed
+        // For now, just return without changing phase to avoid errors
+        // TODO: Implement proper phase progression logic here if needed
+        return Promise.resolve();
+    }
+
     // ============ LEGACY COMPATIBILITY ============
 
     // Legacy methods getCardDetails() and getLeaderCards() removed - use CardInfoUtils directly instead

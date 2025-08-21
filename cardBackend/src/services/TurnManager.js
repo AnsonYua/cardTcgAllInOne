@@ -76,7 +76,13 @@ class TurnManager {
         
         // ===== STEP 1: CHECK IF PLAYER COMPLETED THEIR TURN ACTION =====
         if (gameEnv.phase === TurnPhase.MAIN_PHASE) {
-            const playerAction = this.getPlayerData(gameEnv, playerId).turnAction;
+            // Fix: Use gameEnv.players structure directly instead of non-existent getPlayerData
+            const player = gameEnv.players?.[playerId];
+            if (!player) {
+                console.log(`⚠️ TurnManager: Player ${playerId} not found in gameEnv.players`);
+                return { turnSwitched: false };
+            }
+            const playerAction = player.turnAction;
             const currentTurn = gameEnv.currentTurn;
             
             // Check if player played a card this turn
@@ -103,17 +109,20 @@ class TurnManager {
         // ===== STEP 3: SWITCH TURNS IF COMPLETE AND NO PENDING SELECTIONS =====
         // REFACTOR: Use consolidated pending selection detection
         const hasPendingSelection = gameEnv.pendingCardSelections && Object.keys(gameEnv.pendingCardSelections).length > 0;
+        let turnSwitched = false;
         
         if (currentTurnActionComplete && !hasPendingSelection) {
             console.log(`🎯 Turn complete - switching to next player`);
             gameEnv = await this.startNewTurn(gameEnv);
+            turnSwitched = true;
         } else if (hasPendingSelection) {
             console.log(`🎯 Turn switch delayed - pending card selection must be completed first`);
         } else {
             console.log(`🎯 Turn continues - player ${playerId} still has actions available`);
         }
         
-        return gameEnv;
+        // Return standardized format expected by PostActionHandler
+        return { turnSwitched };
     }
 
     /**

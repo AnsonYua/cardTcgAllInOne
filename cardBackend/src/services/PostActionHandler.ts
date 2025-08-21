@@ -33,14 +33,12 @@ export interface PostActionResult {
 export class PostActionHandler {
     private mozGamePlay: any;
     private enhancedEffectManager: any;
-    private turnManager?: any;
-    private phaseManager?: any;
 
-    constructor(mozGamePlay: any, turnManager?: any, phaseManager?: any) {
+    constructor(mozGamePlay: any) {
         this.mozGamePlay = mozGamePlay;
         this.enhancedEffectManager = mozGamePlay?.enhancedEffectManager;
-        this.turnManager = turnManager;
-        this.phaseManager = phaseManager;
+        
+        console.log('🎯 PostActionHandler: Initialized with unified mozGamePlay delegation architecture');
     }
 
     /**
@@ -116,18 +114,25 @@ export class PostActionHandler {
     }
 
     /**
-     * Turn progression management - consistent across all actions
+     * Turn progression management - unified through mozGamePlay → OptimizedGameEngine
      */
     private async checkTurnProgression(gameEnv: GameEnvironment, playerId: string): Promise<boolean> {
-        const turnManagerToUse = this.turnManager || this.mozGamePlay;
-        
-        if (!turnManagerToUse?.shouldUpdateTurn) {
-            console.log(`⚠️ Turn management not available`);
+        // Unified architecture: PostActionHandler → mozGamePlay → OptimizedGameEngine
+        if (!this.mozGamePlay) {
+            console.log(`⚠️ PostActionHandler: mozGamePlay instance not available`);
+            return false;
+        }
+
+        // Check for delegation method availability
+        if (typeof this.mozGamePlay.shouldUpdateTurn !== 'function') {
+            console.log(`⚠️ PostActionHandler: mozGamePlay.shouldUpdateTurn method not available`);
+            console.log(`Available methods:`, Object.getOwnPropertyNames(this.mozGamePlay).filter(name => typeof this.mozGamePlay[name] === 'function'));
             return false;
         }
 
         try {
-            const turnResult = await turnManagerToUse.shouldUpdateTurn(gameEnv, playerId);
+            console.log(`🎯 PostActionHandler: Calling mozGamePlay.shouldUpdateTurn for ${playerId}`);
+            const turnResult = await this.mozGamePlay.shouldUpdateTurn(gameEnv, playerId);
             
             if (turnResult.turnSwitched) {
                 // Add turn switch event
@@ -149,19 +154,26 @@ export class PostActionHandler {
     }
 
     /**
-     * Phase progression management - consistent across all actions
+     * Phase progression management - unified through mozGamePlay → OptimizedGameEngine
      */
     private async checkPhaseProgression(gameEnv: GameEnvironment): Promise<boolean> {
-        const phaseManagerToUse = this.phaseManager || this.mozGamePlay;
-        
-        if (!phaseManagerToUse?.checkPhaseProgression) {
-            console.log(`⚠️ Phase management not available`);
+        // Unified architecture: PostActionHandler → mozGamePlay → OptimizedGameEngine
+        if (!this.mozGamePlay) {
+            console.log(`⚠️ PostActionHandler: mozGamePlay instance not available`);
+            return false;
+        }
+
+        // Check for delegation method availability
+        if (typeof this.mozGamePlay.checkPhaseProgression !== 'function') {
+            console.log(`⚠️ PostActionHandler: mozGamePlay.checkPhaseProgression method not available`);
+            console.log(`Available methods:`, Object.getOwnPropertyNames(this.mozGamePlay).filter(name => typeof this.mozGamePlay[name] === 'function'));
             return false;
         }
 
         try {
+            console.log(`🎯 PostActionHandler: Calling mozGamePlay.checkPhaseProgression`);
             const oldPhase = gameEnv.phase;
-            await phaseManagerToUse.checkPhaseProgression(gameEnv);
+            await this.mozGamePlay.checkPhaseProgression(gameEnv);
             const newPhase = gameEnv.phase;
             
             if (oldPhase !== newPhase) {

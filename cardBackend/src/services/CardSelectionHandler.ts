@@ -41,30 +41,10 @@ class CardSelectionHandler {
     constructor(mozGamePlay: any, gameId?: string) {
         this.mozGamePlay = mozGamePlay;
         
-        // MINIMAL FIX: Create PostActionHandler with turn managers for proper turn switching
-        // If gameId provided, try to get turn managers from OptimizedGameEngine, fallback to mozGamePlay
-        let turnManager = mozGamePlay;
-        let phaseManager = mozGamePlay;
-        
-        if (gameId) {
-            try {
-                const { optimizedGameEngineManager } = require('./OptimizedGameEngineManager');
-                const gameEngine = optimizedGameEngineManager.getGameEngine(gameId);
-                if (gameEngine && gameEngine.isInitialized()) {
-                    turnManager = gameEngine;  // OptimizedGameEngine has turn management methods
-                    phaseManager = gameEngine; // OptimizedGameEngine has phase management methods
-                    console.log('🎯 CardSelectionHandler: Using OptimizedGameEngine for turn/phase management');
-                } else {
-                    console.log('🎯 CardSelectionHandler: OptimizedGameEngine not available, using mozGamePlay');
-                }
-            } catch (error) {
-                console.log('🎯 CardSelectionHandler: Could not access OptimizedGameEngine, using mozGamePlay for turn management');
-            }
-        } else {
-            console.log('🎯 CardSelectionHandler: No gameId provided, using mozGamePlay for turn management');
-        }
-        
-        this.postActionHandler = new PostActionHandler(mozGamePlay, turnManager, phaseManager);
+        // Unified architecture: PostActionHandler → mozGamePlay → OptimizedGameEngine
+        // mozGamePlay now handles delegation to OptimizedGameEngine internally
+        this.postActionHandler = new PostActionHandler(mozGamePlay);
+        console.log('🎯 CardSelectionHandler: Initialized with unified delegation architecture');
         
         // Defensive binding with proper typing
         this.getPlayerMainDeck = mozGamePlay.getPlayerMainDeck?.bind(mozGamePlay) || (() => []);

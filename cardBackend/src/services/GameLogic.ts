@@ -11,8 +11,9 @@ import { GameEnvironmentAdapter } from '../utils/GameEnvironmentAdapter';
 import { enhancedEffectManager } from './EnhancedEffectManager';
 import { optimizedGameEngineManager, OptimizedGameEngine } from './OptimizedGameEngine';
 
-// Import JavaScript modules (will be converted later)
-const mozGamePlay = require('../mozGame/mozGamePlay');
+// Import JavaScript modules (will be converted later)  
+const mozGamePlayModule = require('../mozGame/mozGamePlay');
+const mozGamePlay = mozGamePlayModule.default || mozGamePlayModule;
 const mozAIClass = require('../mozGame/mozAIClass');
 const playSequenceManager = require('./PlaySequenceManager');
 // Legacy CardEffectRegistry removed - using EnhancedEffectManager instead
@@ -385,6 +386,13 @@ export class GameLogic {
             }
             
             const selection = gameEnv.pendingCardSelections[selectionId];
+            
+            // Ensure OptimizedGameEngine is initialized for consistent turn management
+            await initializeOptimizedEngine(gameId);
+            const gameEngine = optimizedGameEngineManager.getGameEngine(gameId);
+            if (!gameEngine.isInitialized()) {
+                await gameEngine.initialize();
+            }
             
             // Create CardSelectionHandler instance with gameId for turn management
             const selectionHandler = new CardSelectionHandler(this.mozGamePlay, gameId);
