@@ -84,16 +84,24 @@ Here's the complete sequence of API calls for both players from game initializat
 ### Phase 1: Game Setup
 ```javascript
 // 1. Player 1 starts the game
-POST /player/startGame
+POST /api/game/player/startGame
 {
-  "playerId": "playerId_1",
-  "players": ["playerId_1", "playerId_2"]
+  "playerId": "playerId_1"
 }
 // Returns: { success: true, gameId: "uuid", gameEnv: {...} }
-// Game state: Both players receive initial hands, but game hasn't started yet
+// Game state: Player 1 creates game, waits for player 2 to join
 
-// 2. Both players ready up (with optional hand redraw)
-POST /player/startReady
+// 2. Player 2 joins the game
+POST /api/game/player/joinRoom
+{
+  "playerId": "playerId_2",
+  "gameId": "uuid"
+}
+// Returns: { success: true, gameId: "uuid", gameEnv: {...} }
+// Game state: Both players joined, ready for ready phase
+
+// 3. Both players ready up (with optional hand redraw)
+POST /api/game/player/startReady
 {
   "playerId": "playerId_1",
   "gameId": "uuid",
@@ -101,7 +109,7 @@ POST /player/startReady
 }
 // Returns: { success: true, gameEnv: {...} }
 
-POST /player/startReady  
+POST /api/game/player/startReady  
 {
   "playerId": "playerId_2",
   "gameId": "uuid", 
@@ -135,7 +143,7 @@ Players alternate turns placing cards until all character zones (3) + help zone 
 
 ```javascript
 // Turn 1: Player 1 places character card (face-up)
-POST /player/playerAction
+POST /api/game/player/playerAction
 {
   "gameId": "uuid",
   "playerId": "playerId_1",
@@ -148,7 +156,7 @@ POST /player/playerAction
 }
 
 // Alternative: Play card face-down (strategic/bluffing)
-POST /player/playerAction
+POST /api/game/player/playerAction
 {
   "gameId": "uuid",
   "playerId": "playerId_1", 
@@ -173,7 +181,7 @@ POST /player/playerAction
 }
 
 // Complete card selection:
-POST /player/selectCard
+POST /api/game/player/selectCard
 {
   "gameId": "uuid",
   "selectionId": "playerId_1_timestamp", 
@@ -182,7 +190,7 @@ POST /player/selectCard
 }
 
 // Turn 2: Player 2 places character card
-POST /player/playerAction
+POST /api/game/player/playerAction
 {
   "gameId": "uuid", 
   "playerId": "playerId_2",
@@ -203,7 +211,7 @@ Game automatically transitions to SP_PHASE when all character+help zones are fil
 
 ```javascript
 // Player 1 SP card - MUST be played face-down
-POST /player/playerAction
+POST /api/game/player/playerAction
 {
   "gameId": "uuid",
   "playerId": "playerId_1", 
@@ -216,7 +224,7 @@ POST /player/playerAction
 }
 
 // Player 2 SP card - MUST be played face-down
-POST /player/playerAction
+POST /api/game/player/playerAction
 {
   "gameId": "uuid",
   "playerId": "playerId_2",
@@ -241,7 +249,7 @@ Game automatically calculates battle results and victory points.
 
 ```javascript
 // Check battle results (automatically calculated after SP phase)
-GET /player/playerId_1?gameId=uuid
+GET /api/game/player/playerId_1?gameId=uuid
 // Returns game state with:
 // - battleResults: {
 //     playerId_1: { power: 250, combos: { totalBonus: 150 }, totalPoints: 400 },
@@ -268,8 +276,8 @@ If no player has reached 50 victory points, the game continues to the next round
 // 4. Players draw new hands and repeat the cycle
 
 // Players continue using existing APIs for the new round:
-// - GET /player/:playerId?gameId=X (to check new leader and game state)
-// - POST /player/playerAction (to play cards with new leader)
+// - GET /api/game/player/:playerId?gameId=X (to check new leader and game state)
+// - POST /api/game/player/playerAction (to play cards with new leader)
 // - etc.
 ```
 
@@ -308,13 +316,13 @@ When cards trigger search effects during placement:
 
 ```javascript
 // 1. Normal card play triggers search effect
-POST /player/playerAction → Returns requiresCardSelection: true
+POST /api/game/player/playerAction → Returns requiresCardSelection: true
 
 // 2. Game blocks all other actions until selection completed
-POST /player/playerAction → Returns "You must complete your card selection first"
+POST /api/game/player/playerAction → Returns "You must complete your card selection first"
 
 // 3. Player completes selection  
-POST /player/selectCard → Game resumes normal flow
+POST /api/game/player/selectCard → Game resumes normal flow
 
 // 4. Selected cards added to hand, remaining cards to deck bottom
 ```
@@ -323,28 +331,66 @@ POST /player/selectCard → Game resumes normal flow
 For games against AI, use the AI action endpoint:
 
 ```javascript
-// After human player's turn, trigger AI
-POST /player/playerAiAction
-{
-  "gameId": "uuid",
-  "playerId": "playerId_2"  // AI player ID
-}
+// NOTE: AI endpoints are not currently implemented in the backend
+// This is a planned feature for future development
+// POST /api/game/player/playerAiAction // [NOT IMPLEMENTED]
+// {
+//   "gameId": "uuid",
+//   "playerId": "playerId_2"  // AI player ID
+// }
 // AI automatically selects and plays appropriate cards
 ```
 
+## Real-Time Event System
+
+The game includes a comprehensive event system for real-time frontend integration:
+
+### Event System Overview
+- **Real-time Updates**: All game state changes generate events stored in `gameEnv.gameEvents` array
+- **Polling Integration**: Frontend polls `GET /api/game/player/:playerId?gameId=X` every 1 second
+- **Event Processing**: Frontend processes unprocessed events and updates UI accordingly
+- **Event Acknowledgment**: Frontend calls `POST /api/game/player/acknowledgeEvents` to mark events processed
+- **Automatic Cleanup**: Events expire after 3 seconds and are automatically removed
+
+### Event Categories
+
+**Setup Events**: `GAME_STARTED`, `INITIAL_HAND_DEALT`, `PLAYER_READY`, `HAND_REDRAWN`, `GAME_PHASE_START`, `CARD_DRAWN`
+
+**Turn & Phase Events**: `TURN_SWITCH`, `PHASE_CHANGE`, `ALL_MAIN_ZONES_FILLED`, `ALL_SP_ZONES_FILLED`
+
+**Card Action Events**: `CARD_PLAYED`, `ZONE_FILLED`, `CARD_EFFECT_TRIGGERED`, `CARD_SELECTION_REQUIRED`, `CARD_SELECTION_COMPLETED`
+
+**SP & Battle Events**: `SP_CARDS_REVEALED`, `SP_EFFECTS_EXECUTED`, `BATTLE_CALCULATED`, `VICTORY_POINTS_AWARDED`, `NEXT_ROUND_START`
+
+**Error Events**: `ERROR_OCCURRED`, `CARD_SELECTION_PENDING`, `WAITING_FOR_PLAYER`, `ZONE_COMPATIBILITY_ERROR`, `PHASE_RESTRICTION_ERROR`, `ZONE_OCCUPIED_ERROR`
+
+### Event Acknowledgment API
+
+```javascript
+// Acknowledge processed events
+POST /api/game/player/acknowledgeEvents
+{
+  "gameId": "uuid",
+  "playerId": "playerId_1",
+  "eventIds": ["event_1640995200001", "event_1640995201001"]
+}
+```
+
 ## Game State Checking
-Monitor game progress:
+Monitor game progress using the polling system (poll every 1 second for real-time updates):
 
 ```javascript
 // Get current state
-GET /player/{playerId}?gameId={gameId}
+GET /api/game/player/{playerId}?gameId={gameId}
 
 // Response includes:
 {
   "gameEnv": {
     "phase": "MAIN_PHASE|SP_PHASE|BATTLE_PHASE",
     "currentPlayer": "playerId_1",
-    // REFACTOR: Consolidated selection system - removed pendingPlayerAction
+    "gameEvents": [ /* Array of unprocessed events for real-time updates */ ],
+    // Card selection detected via pendingCardSelections object inspection
+    "pendingCardSelections": { /* Active card selections requiring player input */ },
     "players": {
       "playerId_1": {
         "Field": { /* placed cards */ },
