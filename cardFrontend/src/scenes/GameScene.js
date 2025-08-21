@@ -28,13 +28,13 @@ export default class GameScene extends Phaser.Scene {
     console.log('GameScene init called with data:', data);
     this.gameStateManager = data.gameStateManager;
     this.apiManager = data.apiManager;
-    this.isOnlineMode = data.isOnlineMode || false;
     this.isManualPollingMode = data.isManualPollingMode || false;
     this.gameMode = data.gameMode || 'host';  // 'host' or 'join' mode
     this.shuffleAnimationPlayed = false; // Track if shuffle animation has been played
     this.drawPhaseAnimationPlayed = false; // Track if draw phase animation has been played
     
     console.log('GameScene initialized with mode:', this.gameMode);
+    console.log('Manual polling mode:', this.isManualPollingMode);
   }
 
   async create() {
@@ -51,12 +51,12 @@ export default class GameScene extends Phaser.Scene {
     this.createUI();
     this.setupEventListeners();
     
-    // Start polling if in online mode and not manual polling mode
-    if (this.isOnlineMode && this.apiManager && !this.isManualPollingMode) {
-      console.log('Starting API polling...');
+    // Start polling if not in manual polling mode
+    if (this.apiManager && !this.isManualPollingMode) {
+      console.log('Starting automatic API polling...');
       this.gameStateManager.startPolling(this.apiManager);
     } else if (this.isManualPollingMode) {
-      console.log('Manual polling mode enabled - use test button to poll');
+      console.log('Manual polling mode enabled - use test buttons to poll');
     }
     
     // Demo mode uses real backend calls with test buttons, not mock data
@@ -674,8 +674,8 @@ export default class GameScene extends Phaser.Scene {
   }
 
   setupEventListeners() {
-    // Game state event handlers (for online mode)
-    if (this.isOnlineMode && this.gameStateManager) {
+    // Game state event handlers
+    if (this.gameStateManager) {
       
       // Draw phase events
       this.gameStateManager.addEventListener('DRAW_PHASE_COMPLETE', (event) => {
@@ -807,8 +807,8 @@ export default class GameScene extends Phaser.Scene {
   }
 
   updateLeaderCardsFromBackend() {
-    // In online mode, extract leader cards from backend response
-    if (this.isOnlineMode) {
+    // Extract leader cards from backend response
+    if (this.gameStateManager) {
       const gameState = this.gameStateManager.getGameState();
       const player = this.gameStateManager.getPlayer();
       const opponent = this.gameStateManager.getOpponent();
@@ -1113,8 +1113,8 @@ export default class GameScene extends Phaser.Scene {
     
     const gameState = this.gameStateManager.getGameState();
     
-    // If in online mode, send API call to backend
-    if (this.isOnlineMode && this.apiManager) {
+    // Send API call to backend if API manager available
+    if (this.apiManager) {
       try {
         // Convert frontend card placement to backend action format
         const action = this.createBackendAction(cardData, zoneType);
@@ -1475,8 +1475,8 @@ export default class GameScene extends Phaser.Scene {
     try {
       console.log('Loading leader cards data...');
       
-      // Try to get leader cards from API/game state first
-      if (this.isOnlineMode && this.gameStateManager) {
+      // Try to get leader cards from game state first
+      if (this.gameStateManager) {
         const gameState = this.gameStateManager.getGameState();
         const player = this.gameStateManager.getPlayer();
         
@@ -1962,8 +1962,8 @@ export default class GameScene extends Phaser.Scene {
     const { width } = this.cameras.main;
     
     // Connection status indicator (top right)
-    const statusText = this.isOnlineMode ? '🟢 Online' : '🔴 Demo';
-    const statusColor = this.isOnlineMode ? '#51CF66' : '#FF6B6B';
+    const statusText = this.isManualPollingMode ? '🎮 Demo Mode' : '🟢 Live Game';
+    const statusColor = this.isManualPollingMode ? '#FFD700' : '#51CF66';
     
     this.connectionStatusText = this.add.text(width-50, 30, statusText, {
       fontSize: '14px',
@@ -2618,8 +2618,8 @@ export default class GameScene extends Phaser.Scene {
   }
 
   async acknowledgeDrawPhaseEvent() {
-    if (!this.isOnlineMode || !this.apiManager) {
-      console.log('Not in online mode or no API manager - skipping acknowledgment');
+    if (!this.apiManager) {
+      console.log('No API manager available - skipping acknowledgment');
       return;
     }
     

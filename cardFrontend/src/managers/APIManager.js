@@ -205,21 +205,4 @@ export default class APIManager {
     return navigator.onLine;
   }
 
-  async testConnection() {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
-      const response = await fetch(this.baseUrl + '/health', {
-        method: 'GET',
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      return response.ok;
-    } catch (error) {
-      console.warn('API connection test failed:', error);
-      return false;
-    }
-  }
 }

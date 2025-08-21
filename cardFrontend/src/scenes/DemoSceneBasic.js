@@ -43,8 +43,8 @@ export default class DemoSceneBasic extends GameScene {
 
 
   async testPolling() {
-    if (!this.isOnlineMode || !this.apiManager) {
-      console.log('Not in online mode or no API manager available');
+    if (!this.apiManager) {
+      console.log('No API manager available');
       return;
     }
 

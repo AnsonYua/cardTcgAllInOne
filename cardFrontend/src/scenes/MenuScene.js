@@ -8,13 +8,11 @@ export default class MenuScene extends Phaser.Scene {
     super({ key: 'MenuScene' });
     this.gameStateManager = new GameStateManager();
     this.apiManager = new APIManager();
-    this.isOnlineMode = false;
   }
 
   async create() {
     this.createBackground();
     this.createTitle();
-    await this.checkConnection();
     this.createMenuUI();
   }
 
@@ -190,28 +188,26 @@ export default class MenuScene extends Phaser.Scene {
     this.showLoadingMessage('Creating game...');
     
     try {
-      if (this.isOnlineMode) {
-        // Create game room via API
-        const playerName = this.playerName || 'Player 1'; // Default name if not set
-        const response = await this.apiManager.createGame(playerName);
+      // Create game room via API
+      const playerName = this.playerName || 'Player 1'; // Default name if not set
+      const response = await this.apiManager.createGame(playerName);
+      
+      if (response.gameId && response.gameEnv) {
+        // For game creator, always use playerId_1
+        const playerId = 'playerId_1';
         
-        if (response.gameId && response.gameEnv) {
-          // For game creator, always use playerId_1
-          const playerId = 'playerId_1';
-          
-          this.gameStateManager.initializeGame(response.gameId, playerId, playerName);
-          this.gameStateManager.updateGameEnv(response.gameEnv);
-          
-          this.hideLoadingMessage();
-          this.showConnectionStatus(`🎮 Room created! Game ID: ${response.gameId} (Waiting for player 2...)`);
-          this.scene.start('GameScene', { 
-            gameStateManager: this.gameStateManager, 
-            apiManager: this.apiManager,
-            isOnlineMode: true,
-            gameMode: 'host'  // Host mode for game creator
-          });
-          return;
-        }
+        this.gameStateManager.initializeGame(response.gameId, playerId, playerName);
+        this.gameStateManager.updateGameEnv(response.gameEnv);
+        
+        this.hideLoadingMessage();
+        this.showConnectionStatus(`🎮 Room created! Game ID: ${response.gameId} (Waiting for player 2...)`);
+        this.scene.start('GameScene', { 
+          gameStateManager: this.gameStateManager, 
+          apiManager: this.apiManager,
+          isManualPollingMode: false,  // Automatic polling for real games
+          gameMode: 'host'  // Host mode for game creator
+        });
+        return;
       }
       
       // Fallback to demo mode
@@ -251,8 +247,7 @@ export default class MenuScene extends Phaser.Scene {
     this.scene.start('DemoScene', { 
       gameStateManager: this.gameStateManager, 
       apiManager: this.apiManager,
-      isOnlineMode: this.isOnlineMode,
-      isManualPollingMode: true,
+      isManualPollingMode: true,  // Manual polling for demo mode
       scenarioPath: 'CharacterCase/sample_play_card_all',
       inGamePlayerId: 'playerId_2',
       gameId: trimmedGameId,
@@ -263,48 +258,42 @@ export default class MenuScene extends Phaser.Scene {
   async startDemo() {
     // Start demo with preset name
     this.playerName = 'Demo Player';
-    // Try to create real game via API first
-    if (this.isOnlineMode) {
-      this.showLoadingMessage('Creating demo room...');
-      try {
-        // Step 1: Only create room (no auto-join)
-        const playerName = this.playerName || 'Demo Player';
-        const createResponse = await this.apiManager.createGame(playerName);
-        if (createResponse.gameId && createResponse.gameEnv) {
-          const gameId = createResponse.gameId;
-          
-          // Initialize game state for player 1 (the human player in demo)
-          this.gameStateManager.initializeGame(gameId, 'playerId_1', playerName);
-          this.gameStateManager.updateGameEnv(createResponse.gameEnv);
-          
-          console.log('Demo game created with gameId:', gameId);
-          console.log('Initial game environment:', createResponse.gameEnv);
-          
-          this.hideLoadingMessage();
-          this.showConnectionStatus(`🎮 Demo room created! Game ID: ${gameId} (Use test buttons to control)`);
-          this.scene.start('DemoScene', { 
-            gameStateManager: this.gameStateManager, 
-            apiManager: this.apiManager,
-            isOnlineMode: true,
-            isManualPollingMode: true,  // Demo mode uses manual polling
-            scenarioPath: 'CharacterCase/sample_play_card_all',
-            inGamePlayerId: 'playerId_1',
-            gameId: gameId,
-            gameMode: 'host'  // Host mode
-          });
-          return;
-        }
-      } catch (error) {
-        console.error('Failed to create demo game via API:', error);
+    this.showLoadingMessage('Creating demo room...');
+    
+    try {
+      // Create demo game via API
+      const playerName = this.playerName || 'Demo Player';
+      const createResponse = await this.apiManager.createGame(playerName);
+      if (createResponse.gameId && createResponse.gameEnv) {
+        const gameId = createResponse.gameId;
+        
+        // Initialize game state for player 1 (the human player in demo)
+        this.gameStateManager.initializeGame(gameId, 'playerId_1', playerName);
+        this.gameStateManager.updateGameEnv(createResponse.gameEnv);
+        
+        console.log('Demo game created with gameId:', gameId);
+        console.log('Initial game environment:', createResponse.gameEnv);
+        
         this.hideLoadingMessage();
-        this.showErrorMessage('API unavailable. Starting offline demo...');
-        setTimeout(() => this.createOfflineDemoGame(), 2000);
+        this.showConnectionStatus(`🎮 Demo room created! Game ID: ${gameId} (Use test buttons to control)`);
+        this.scene.start('DemoScene', { 
+          gameStateManager: this.gameStateManager, 
+          apiManager: this.apiManager,
+          isManualPollingMode: true,  // Demo mode uses manual polling
+          scenarioPath: 'CharacterCase/sample_play_card_all',
+          inGamePlayerId: 'playerId_1',
+          gameId: gameId,
+          gameMode: 'host'  // Host mode
+        });
         return;
       }
-    }else{
-      alert("API unavailable. Starting offline demo...");
+    } catch (error) {
+      console.error('Failed to create demo game via API:', error);
+      this.hideLoadingMessage();
+      this.showErrorMessage('API unavailable. Starting offline demo...');
+      setTimeout(() => this.createOfflineDemoGame(), 2000);
+      return;
     }
-    
   }
 
   setupDemoGameState() {
@@ -363,25 +352,6 @@ export default class MenuScene extends Phaser.Scene {
     ];
   }
 
-  async checkConnection() {
-    this.showLoadingMessage('Checking server connection...');
-    
-    try {
-      this.isOnlineMode = await this.apiManager.testConnection();
-      
-      if (this.isOnlineMode) {
-        this.showConnectionStatus('🟢 Online Mode - Connected to server');
-      } else {
-        this.showConnectionStatus('🔴 Demo Mode - Server unavailable');
-      }
-    } catch (error) {
-      console.error('Connection test failed:', error);
-      this.isOnlineMode = false;
-      this.showConnectionStatus('🔴 Demo Mode - Server unavailable');
-    }
-    
-    this.hideLoadingMessage();
-  }
 
   showConnectionStatus(message) {
     if (this.connectionStatusText) {
@@ -392,7 +362,7 @@ export default class MenuScene extends Phaser.Scene {
     this.connectionStatusText = this.add.text(width - 20, 20, message, {
       fontSize: '14px',
       fontFamily: 'Arial',
-      fill: this.isOnlineMode ? '#51CF66' : '#FF6B6B'
+      fill: '#51CF66'  // Always green for status messages
     });
     this.connectionStatusText.setOrigin(1, 0);
   }
@@ -451,8 +421,7 @@ export default class MenuScene extends Phaser.Scene {
     this.scene.start('DemoScene', { 
       gameStateManager: this.gameStateManager,
       apiManager: this.apiManager,
-      isOnlineMode: false,  // Offline demo mode
-      isManualPollingMode: false,
+      isManualPollingMode: true,  // Manual polling for offline demo
       scenarioPath: 'CharacterCase/sample_play_card_all',
       inGamePlayerId: 'playerId_1',
       gameId: gameId,
@@ -470,8 +439,7 @@ export default class MenuScene extends Phaser.Scene {
     this.scene.start('DemoScene', { 
       gameStateManager: this.gameStateManager,
       apiManager: this.apiManager,
-      isOnlineMode: false,  // Offline demo mode
-      isManualPollingMode: false,
+      isManualPollingMode: true,  // Manual polling for offline demo
       scenarioPath: 'CharacterCase/sample_play_card_all',
       inGamePlayerId: 'playerId_2',
       gameId: gameId,
