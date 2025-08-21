@@ -17,7 +17,8 @@ const playSequenceManager = require('../services/PlaySequenceManager');
 import { CardSelectionHandler } from '../services/CardSelectionHandler';
 import BattleCalculator from '../services/BattleCalculator';
 import TurnManager from '../services/TurnManager';
-const EventManager = require('../services/EventManager');
+import { env } from 'process';
+import { UnifiedEventManager } from '../services/UnifiedEventManager';
 const CardActionHandler = require('../services/CardActionHandler');
 const GameFlowOrchestrator = require('../services/GameFlowOrchestrator');
 
@@ -92,7 +93,7 @@ export class MozGamePlay {
     public cardSelectionHandler: any;
     public battleCalculator: any;
     public turnManager: any;
-    public eventManager: any;
+    public eventManager: UnifiedEventManager;
     public cardActionHandler: any;
     public gameFlowOrchestrator: any;
 
@@ -110,7 +111,7 @@ export class MozGamePlay {
         this.cardSelectionHandler = new CardSelectionHandler(this);
         this.battleCalculator = new BattleCalculator(this);
         this.turnManager = new TurnManager(this);
-        this.eventManager = new EventManager();
+        this.eventManager = new UnifiedEventManager();
         this.cardActionHandler = new CardActionHandler(this);
         this.gameFlowOrchestrator = new GameFlowOrchestrator(this);
     }
@@ -190,8 +191,11 @@ export class MozGamePlay {
     }
 
     addGameEvent(gameEnv: GameEnvironment, eventType: EventType, data: any): void {
-        console.log("i am heree")
-        gameEnv.eventManager.addEvent(eventType,data);
+        if(eventType == EventType.DRAW_PHASE_COMPLETE){
+
+        }else{
+            gameEnv.eventManager.addEvent(eventType,data);
+        }
     }
 
     /**
@@ -611,7 +615,7 @@ export class MozGamePlay {
      * Delegate turn management to TurnManager for consistent behavior
      * Used by PostActionHandler for unified turn switching
      */
-    async shouldUpdateTurn(gameEnv: GameEnvironment, playerId: string): Promise<{ turnSwitched: boolean }> {
+    async shouldUpdateTurn(gameEnv: GameEnvironment, playerId: string): Promise<{ turnSwitched: boolean, gameEnv: GameEnvironment }> {
         console.log('🎯 mozGamePlay: Using TurnManager for turn management');
         return await this.turnManager.shouldUpdateTurn(gameEnv, playerId);
     }

@@ -10,6 +10,7 @@
 import { PlayerDeckDataResp } from './PlayerDeckDataResp';
 import cardInfoUtilsInstance from '../services/CardInfoUtils';
 import { enhancedEffectManager } from '../services/EnhancedEffectManager';
+import { UnifiedEventManager, GameEvent } from '../services/UnifiedEventManager';
 // ============ CARDINFUTILS SINGLETON ============
 
 /**
@@ -86,7 +87,8 @@ export enum EventType {
     BATTLE_RESULT = 'BATTLE_RESULT',
     VICTORY_POINTS_AWARDED = 'VICTORY_POINTS_AWARDED',
     DRAW_PHASE_COMPLETE = 'DRAW_PHASE_COMPLETE',
-    GAME_PHASE_START = 'GAME_PHASE_START'
+    GAME_PHASE_START = 'GAME_PHASE_START',
+    CARD_SELECTION_REQUIRED = 'CARD_SELECTION_REQUIRED'
 }
 
 // ============ INTERFACES ============
@@ -469,15 +471,7 @@ export const isLeaderZoneCardArray = (content: ZoneContent): content is LeaderZo
     return Array.isArray(content) && (content.length === 0 || ('id' in content[0] && !('card' in content[0])));
 };
 
-export interface GameEvent {
-    id: string;
-    type: EventType;
-    data: any;
-    timestamp: number;
-    expiresAt: number;
-    frontendProcessed: boolean;
-    requireFrontendAcknowledgment: boolean;
-}
+// GameEvent interface now imported from UnifiedEventManager
 
 /**
  * Represents a single play action in the game sequence
@@ -995,76 +989,7 @@ export class GameZones {
     }
 }
 
-export class EventManager {
-    private events: GameEvent[] = [];
-    private lastEventId: number = 0;
-
-    public addEvent(type: EventType, data: any, requireFrontendAcknowledgment: boolean = false): GameEvent {
-        this.lastEventId++;
-        const timestamp = Date.now();
-        
-        const event: GameEvent = {
-            id: `event_${timestamp}_${this.lastEventId}`,
-            type,
-            data,
-            timestamp,
-            expiresAt: timestamp + 3000, // 3 seconds expiry
-            frontendProcessed: false,
-            requireFrontendAcknowledgment: requireFrontendAcknowledgment
-        };
-        
-        this.events.push(event);
-        this.cleanupExpiredEvents();
-        
-        return event;
-    }
-
-    public getEvents(): GameEvent[] {
-        this.cleanupExpiredEvents();
-        return [...this.events];
-    }
-
-    public getUnprocessedEvents(): GameEvent[] {
-        return this.events.filter(event => !event.frontendProcessed);
-    }
-
-    public acknowledgeEvents(eventIds: string[]): void {
-        this.events.forEach(event => {
-            if (eventIds.includes(event.id)) {
-                event.frontendProcessed = true;
-                event.requireFrontendAcknowledgment = false;
-            }
-        });
-        //this.cleanupExpiredEvents();
-    }
-
-    private cleanupExpiredEvents(): void {
-        const now = Date.now();
-        this.events = this.events.filter(event => 
-            event.expiresAt > now || !event.frontendProcessed
-        );
-    }
-
-    public getLastEventId(): number {
-        return this.lastEventId;
-    }
-
-    // ============ SERIALIZATION ============
-
-    public toJSON(): any {
-        return {
-            gameEvents: this.events,
-            lastEventId: this.lastEventId
-        };
-    }
-
-    public static fromJSON(data: any): EventManager {
-        const manager = new EventManager();
-        manager.events = data.gameEvents || [];
-        manager.lastEventId = data.lastEventId || 0;
-        return manager;
-    }
-}
+// EventManager class removed - now using UnifiedEventManager
 
 export class PlaySequenceManager {
     private sequence: PlaySequence;
@@ -1164,7 +1089,7 @@ export class GameEnvironment {
     // Object-oriented components
     public players: { [playerId: string]: Player };
     public zones: GameZones;
-    public eventManager: EventManager;
+    public eventManager: UnifiedEventManager;
     public playSequenceManager: PlaySequenceManager;
     
     // REMOVED: validationState - using existing fieldEffects as single source of truth
@@ -1195,7 +1120,7 @@ export class GameEnvironment {
         
         this.players = {};
         this.zones = new GameZones();
-        this.eventManager = new EventManager();
+        this.eventManager = new UnifiedEventManager();
         this.playSequenceManager = new PlaySequenceManager(this);
         
         // REMOVED: validationState initialization - using fieldEffects as single source of truth
@@ -1534,7 +1459,7 @@ export class GameEnvironment {
         gameEnv.zones = GameZones.fromJSON(data.zones);
         
         // Event system
-        gameEnv.eventManager = EventManager.fromJSON(data);
+        gameEnv.eventManager = UnifiedEventManager.fromJSON(data);
         
         // Play sequence
         gameEnv.playSequenceManager = PlaySequenceManager.fromJSON(data.playSequence);
@@ -1611,7 +1536,6 @@ export default {
     GameEnvironment,
     Player,
     GameZones,
-    EventManager,
     PlaySequenceManager,
     GamePhase,
     ZoneType,

@@ -53,7 +53,10 @@ export class PostActionHandler {
             // STEP 2: Turn management (if not skipped)
             let turnSwitched = false;
             if (!context.skipTurnCheck) {
-                turnSwitched = await this.checkTurnProgression(gameEnv, context.playerId);
+                const turnResult = await this.checkTurnProgression(gameEnv, context.playerId);
+                turnSwitched = turnResult.isSwitch;
+                // Update gameEnv with any changes from turn progression
+                Object.assign(gameEnv, turnResult.gameEnv);
             }
 
             // STEP 3: Phase management (if not skipped)  
@@ -115,18 +118,18 @@ export class PostActionHandler {
     /**
      * Turn progression management - unified through mozGamePlay → OptimizedGameEngine
      */
-    private async checkTurnProgression(gameEnv: GameEnvironment, playerId: string): Promise<boolean> {
+    private async checkTurnProgression(gameEnv: GameEnvironment, playerId: string): Promise<{isSwitch: boolean, gameEnv: GameEnvironment}> {
         // Unified architecture: PostActionHandler → mozGamePlay → OptimizedGameEngine
         if (!this.mozGamePlay) {
             console.log(`⚠️ PostActionHandler: mozGamePlay instance not available`);
-            return false;
+            return { isSwitch: false, gameEnv: gameEnv };
         }
 
         // Check for delegation method availability
         if (typeof this.mozGamePlay.shouldUpdateTurn !== 'function') {
             console.log(`⚠️ PostActionHandler: mozGamePlay.shouldUpdateTurn method not available`);
             console.log(`Available methods:`, Object.getOwnPropertyNames(this.mozGamePlay).filter(name => typeof this.mozGamePlay[name] === 'function'));
-            return false;
+            return { isSwitch: false, gameEnv: gameEnv };
         }
 
         try {
@@ -134,21 +137,24 @@ export class PostActionHandler {
             const turnResult = await this.mozGamePlay.shouldUpdateTurn(gameEnv, playerId);
             
             if (turnResult.turnSwitched) {
+                // Use the updated gameEnv from TurnManager
+                const updatedGameEnv = turnResult.gameEnv;
+                
                 // Add turn switch event
-                this.addGameEvent(gameEnv, EventType.TURN_SWITCH, {
+                this.addGameEvent(updatedGameEnv, EventType.TURN_SWITCH, {
                     oldPlayer: playerId,
-                    newPlayer: gameEnv.currentPlayer,
-                    turn: gameEnv.currentTurn
+                    newPlayer: updatedGameEnv.currentPlayer,
+                    turn: updatedGameEnv.currentTurn
                 });
                 
-                console.log(`🔄 PostActionHandler: Turn switched from ${playerId} to ${gameEnv.currentPlayer}`);
-                return true;
+                console.log(`🔄 PostActionHandler: Turn switched from ${playerId} to ${updatedGameEnv.currentPlayer}`);
+                return { isSwitch: true, gameEnv: updatedGameEnv };
             }
             
-            return false;
+            return { isSwitch: false, gameEnv: turnResult.gameEnv };
         } catch (error) {
             console.error(`❌ PostActionHandler: Error checking turn progression:`, error);
-            return false;
+            return { isSwitch: false, gameEnv: gameEnv };
         }
     }
 
@@ -192,13 +198,9 @@ export class PostActionHandler {
      */
     private generateCompletionEvents(gameEnv: GameEnvironment, context: ActionContext): void {
         try {
-            // Add action completion event
-            this.addGameEvent(gameEnv, 'ACTION_COMPLETED', {
-                actionType: context.type,
-                playerId: context.playerId,
-                timestamp: Date.now(),
-                duration: Date.now() - context.startTime
-            });
+            // Note: Action completion events removed for now as ACTION_COMPLETED is not in EventType enum
+            // If needed, add ACTION_COMPLETED to EventType enum in GameEnvironment.ts
+            console.log(`✅ PostActionHandler: Action ${context.type} completed for ${context.playerId}`);
             
         } catch (error) {
             console.error(`❌ PostActionHandler: Error generating completion events:`, error);
@@ -221,7 +223,7 @@ export class PostActionHandler {
     /**
      * Helper method to add game events
      */
-    private addGameEvent(gameEnv: GameEnvironment, eventType: string, data: any): void {
+    private addGameEvent(gameEnv: GameEnvironment, eventType: EventType, data: any): void {
         if (this.mozGamePlay.addGameEvent) {
             this.mozGamePlay.addGameEvent(gameEnv, eventType, data);
         }

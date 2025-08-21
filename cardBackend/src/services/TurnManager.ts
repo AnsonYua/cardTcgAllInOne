@@ -32,6 +32,7 @@ import { GameEnvironment, Player, PlayerZones, GamePhase } from '../models/GameE
 
 interface TurnUpdateResult {
     turnSwitched: boolean;
+    gameEnv: GameEnvironment;
 }
 
 interface TurnInfo {
@@ -150,7 +151,7 @@ class TurnManager {
         }
         
         // Return standardized format expected by PostActionHandler
-        return { turnSwitched };
+        return { turnSwitched, gameEnv };
     }
 
     /**
