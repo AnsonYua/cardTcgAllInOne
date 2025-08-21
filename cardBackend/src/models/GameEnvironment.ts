@@ -1371,7 +1371,7 @@ export class GameEnvironment {
         this.zones.setCardInZone(playerId, ZoneType.LEADER, leaderUid);
         
         // Step 2: Record play in sequence
-        this.playSequenceManager.addPlay(playerId, leaderUid, ActionType.PLAY_LEADER, ZoneType.LEADER, false, undefined, this.currentTurn);
+        this.playSequenceManager.addPlay(playerId, leaderUid, ActionType.PLAY_LEADER, ZoneType.LEADER, false, undefined, -1);
         
         // Step 2.5: Ensure fieldEffects are initialized before processing leader effects
         if (!player.fieldEffects) {
@@ -1419,7 +1419,7 @@ export class GameEnvironment {
                 zone: ZoneType.LEADER,
                 isFaceDown: false,
                 effectData: {},
-                turnNumber: -1 // hardcode to 0 to indicate it is for play a leader
+                turnNumber: -1 // hardcode to -1 to indicate it is for play a leader
             };
             
             console.log(`🎯 Processing leader effects for ${leaderUid} (${playerId})`);
