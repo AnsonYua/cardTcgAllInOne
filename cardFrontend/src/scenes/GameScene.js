@@ -30,8 +30,11 @@ export default class GameScene extends Phaser.Scene {
     this.apiManager = data.apiManager;
     this.isOnlineMode = data.isOnlineMode || false;
     this.isManualPollingMode = data.isManualPollingMode || false;
+    this.gameMode = data.gameMode || 'host';  // 'host' or 'join' mode
     this.shuffleAnimationPlayed = false; // Track if shuffle animation has been played
     this.drawPhaseAnimationPlayed = false; // Track if draw phase animation has been played
+    
+    console.log('GameScene initialized with mode:', this.gameMode);
   }
 
   async create() {

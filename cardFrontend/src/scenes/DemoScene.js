@@ -10,9 +10,12 @@ export default class DemoScene extends DemoSceneBasic {
     // Demo specific properties
     this.isDemoMode = true;
     console.log("DemoScene constructor called");
+    
+    // Default values - will be overridden by init() method
     this.inGamePlayerId = "playerId_1";
-    //this.scenarioPath = 'UtilityEffects/h-2_setZero_normal_multiple_select';
     this.scenarioPath = 'CharacterCase/sample_play_card_all';
+    this.gameId = null;
+    this.gameMode = 'host';
   }
 
 
@@ -26,6 +29,32 @@ export default class DemoScene extends DemoSceneBasic {
     this.isOnlineMode = data.isOnlineMode || false;
     this.isManualPollingMode = true;  // Demo mode uses manual controls
     this.isDemoMode = true;  // Flag to identify this as demo mode
+    
+    // Override default values with passed parameters
+    if (data.scenarioPath) {
+      this.scenarioPath = data.scenarioPath;
+      console.log('DemoScene using scenarioPath:', this.scenarioPath);
+    }
+    
+    if (data.inGamePlayerId) {
+      this.inGamePlayerId = data.inGamePlayerId;
+      console.log('DemoScene using inGamePlayerId:', this.inGamePlayerId);
+    }
+    
+    if (data.gameId) {
+      this.gameId = data.gameId;
+      console.log('DemoScene using gameId:', this.gameId);
+    }
+    
+    if (data.gameMode) {
+      this.gameMode = data.gameMode;
+      console.log('DemoScene using gameMode:', this.gameMode);
+    } else {
+      // Default gameMode based on playerId if not specified
+      this.gameMode = (this.inGamePlayerId === 'playerId_1') ? 'host' : 'join';
+      console.log('DemoScene defaulting to gameMode:', this.gameMode);
+    }
+    
     console.log('DemoScene initialized with demo-specific settings');
   }
 

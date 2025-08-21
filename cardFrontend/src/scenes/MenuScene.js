@@ -207,7 +207,8 @@ export default class MenuScene extends Phaser.Scene {
           this.scene.start('GameScene', { 
             gameStateManager: this.gameStateManager, 
             apiManager: this.apiManager,
-            isOnlineMode: true
+            isOnlineMode: true,
+            gameMode: 'host'  // Host mode for game creator
           });
           return;
         }
@@ -241,39 +242,22 @@ export default class MenuScene extends Phaser.Scene {
       return;
     }
     
-    this.showLoadingMessage('Joining game...');
+    // Always start DemoScene in join mode with the provided gameId
+    const playerId = 'playerId_2';
+    const playerName = this.playerName || 'Player 2';
     
-    try {
-      if (this.isOnlineMode) {
-        // Join room using new API
-        const playerId = 'playerId_2';
-        const playerName = this.playerName || 'Player 2'; // Default name if not set
-        const response = await this.apiManager.joinRoom(trimmedGameId, playerName);
-        
-        if (response.gameEnv) {
-          this.gameStateManager.initializeGame(trimmedGameId, playerId, playerName);
-          this.gameStateManager.updateGameEnv(response.gameEnv);
-          
-          this.hideLoadingMessage();
-          this.showConnectionStatus(`🎮 Joined room ${trimmedGameId}! Both players ready.`);
-          this.scene.start('GameScene', { 
-            gameStateManager: this.gameStateManager, 
-            apiManager: this.apiManager,
-            isOnlineMode: true
-          });
-          return;
-        }
-      }
-      
-      // Fallback to demo mode
-      this.joinOfflineDemoGame(trimmedGameId);
-      
-    } catch (error) {
-      console.error('Failed to join game:', error);
-      this.hideLoadingMessage();
-      this.showErrorMessage('Failed to join game. Starting demo mode...');
-      setTimeout(() => this.joinOfflineDemoGame(trimmedGameId), 2000);
-    }
+    this.gameStateManager.initializeGame(trimmedGameId, playerId, playerName);
+    
+    this.scene.start('DemoScene', { 
+      gameStateManager: this.gameStateManager, 
+      apiManager: this.apiManager,
+      isOnlineMode: this.isOnlineMode,
+      isManualPollingMode: true,
+      scenarioPath: 'CharacterCase/sample_play_card_all',
+      inGamePlayerId: 'playerId_2',
+      gameId: trimmedGameId,
+      gameMode: 'join'  // Join mode
+    });
   }
 
   async startDemo() {
@@ -302,7 +286,11 @@ export default class MenuScene extends Phaser.Scene {
             gameStateManager: this.gameStateManager, 
             apiManager: this.apiManager,
             isOnlineMode: true,
-            isManualPollingMode: true  // Demo mode uses manual polling
+            isManualPollingMode: true,  // Demo mode uses manual polling
+            scenarioPath: 'CharacterCase/sample_play_card_all',
+            inGamePlayerId: 'playerId_1',
+            gameId: gameId,
+            gameMode: 'host'  // Host mode
           });
           return;
         }
@@ -464,7 +452,11 @@ export default class MenuScene extends Phaser.Scene {
       gameStateManager: this.gameStateManager,
       apiManager: this.apiManager,
       isOnlineMode: false,  // Offline demo mode
-      isManualPollingMode: false
+      isManualPollingMode: false,
+      scenarioPath: 'CharacterCase/sample_play_card_all',
+      inGamePlayerId: 'playerId_1',
+      gameId: gameId,
+      gameMode: 'host'  // Host mode
     });
   }
 
@@ -479,7 +471,11 @@ export default class MenuScene extends Phaser.Scene {
       gameStateManager: this.gameStateManager,
       apiManager: this.apiManager,
       isOnlineMode: false,  // Offline demo mode
-      isManualPollingMode: false
+      isManualPollingMode: false,
+      scenarioPath: 'CharacterCase/sample_play_card_all',
+      inGamePlayerId: 'playerId_2',
+      gameId: gameId,
+      gameMode: 'join'  // Join mode
     });
   }
 }
