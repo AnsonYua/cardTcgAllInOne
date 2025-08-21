@@ -83,6 +83,14 @@ export default class DemoScene extends DemoSceneBasic {
           enableHover: true,
           fontSize: '12px'
         }
+      },
+      {
+        text: 'Acknowledge Draw',
+        onClick: () => this.opponentAcknowledgeDraw(),
+        options: { 
+          enableHover: true,
+          fontSize: '12px'
+        }
       }
     ];
 
@@ -105,5 +113,52 @@ export default class DemoScene extends DemoSceneBasic {
     //const scenarioPath = 'CharacterCase/character_c-1_trump_family_boost_dynamic';
     const _scenarioPath = this.scenarioPath;
     await super.simulateSetScenario(_scenarioPath);
+  }
+
+  async opponentAcknowledgeDraw() {
+    try {
+      const gameState = this.gameStateManager.getGameState();
+      const gameId = gameState.gameId;
+      
+      if (!gameId) {
+        throw new Error('No gameId found. Make sure a game is active.');
+      }
+      
+      // Get all current game events
+      const allEvents = gameState.gameEnv.gameEvents || [];
+      console.log('All events:', allEvents);
+      
+      // Filter for DRAW_PHASE_COMPLETE events that haven't been processed
+      const drawEvents = allEvents.filter(event => 
+        event.type === 'DRAW_PHASE_COMPLETE' && 
+        !event.frontendProcessed && 
+        event.requireFrontendAcknowledgment
+      );
+      
+      if (drawEvents.length === 0) {
+        console.log('No unprocessed draw events found');
+        this.showRoomStatus('No unprocessed draw events to acknowledge');
+        return;
+      }
+      
+      // Extract event IDs
+      const eventIds = drawEvents.map(event => event.id);
+      console.log('Found draw events to acknowledge:', eventIds);
+      
+      // Call the acknowledgeEvents API
+      const response = await this.apiManager.acknowledgeEvents(gameId, eventIds);
+      
+      console.log('Acknowledge events response:', response);
+      this.showRoomStatus(`Successfully acknowledged ${eventIds.length} draw event(s): ${eventIds.join(', ')}`);
+      
+      // Optional: Force a poll to get updated game state
+      if (this.testPolling) {
+        setTimeout(() => this.testPolling(), 100);
+      }
+      
+    } catch (error) {
+      console.error('Failed to acknowledge draw events:', error);
+      this.showRoomStatus('Failed to acknowledge draw events: ' + error.message);
+    }
   }
 }

@@ -201,6 +201,13 @@ export class OptimizedGameEngine {
                     if (!postActionResult.success) {
                         console.error(`⚠️ PostActionHandler failed: ${postActionResult.error}`);
                         // Continue anyway - don't fail the entire card play
+                    } else {
+                        // CRITICAL FIX: Use updated gameEnv from PostActionHandler
+                        if (postActionResult.gameEnv) {
+                            // Copy updated properties from PostActionHandler result
+                            Object.assign(gameEnv, postActionResult.gameEnv);
+                            console.log(`🔄 OptimizedGameEngine: Applied PostActionHandler gameEnv updates`);
+                        }
                     }
                 } catch (error) {
                     console.error('❌ Error in PostActionHandler execution:', error);

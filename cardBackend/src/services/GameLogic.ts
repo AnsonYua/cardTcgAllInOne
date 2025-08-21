@@ -326,15 +326,16 @@ export class GameLogic {
                 };
             }
             
-            // Save updated game state
-            await this.saveGameToFile(gameId, gameEnv);
+            // Save updated game state (use result.gameState to ensure we save the modified state)
+            const updatedGameEnv = result.gameState;
+            await this.saveGameToFile(gameId, updatedGameEnv);
             
             console.log(`✅ Card ${cardUID} played successfully`);
             
             return {
                 success: true,
                 gameId: gameId,
-                gameEnv: gameEnv,
+                gameEnv: updatedGameEnv,
                 requiresCardSelection: result.requiresCardSelection
             };
             
