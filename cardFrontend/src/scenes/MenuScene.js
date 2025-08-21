@@ -248,7 +248,7 @@ export default class MenuScene extends Phaser.Scene {
       gameStateManager: this.gameStateManager, 
       apiManager: this.apiManager,
       isManualPollingMode: true,  // Manual polling for demo mode
-      scenarioPath: 'CharacterCase/sample_play_card_all',
+      scenarioPath: 'CharacterCase/debug_player2',
       inGamePlayerId: 'playerId_2',
       gameId: trimmedGameId,
       gameMode: 'join'  // Join mode
@@ -280,7 +280,8 @@ export default class MenuScene extends Phaser.Scene {
           gameStateManager: this.gameStateManager, 
           apiManager: this.apiManager,
           isManualPollingMode: true,  // Demo mode uses manual polling
-          scenarioPath: 'CharacterCase/sample_play_card_all',
+          //scenarioPath: 'CharacterCase/sample_play_card_all',
+          scenarioPath: 'CharacterCase/debug_player2',
           inGamePlayerId: 'playerId_1',
           gameId: gameId,
           gameMode: 'host'  // Host mode

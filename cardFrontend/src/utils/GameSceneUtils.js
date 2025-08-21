@@ -23,8 +23,8 @@ export default class GameSceneUtils {
       }
       
       if (zone && cardData && !zone.card && cardData.length > 0) {
-        console.log("debug cardData", JSON.stringify(cardData[0].cardDetails[0]));
-        const cardDataObject = scene.apiZoneCardDataToCardObject(cardData[0].cardDetails[0]);
+        console.log("debug cardData", JSON.stringify(cardData[0].cardData));
+        const cardDataObject = scene.apiZoneCardDataToCardObject(cardData[0].cardData);
         console.log("debug cardData22", JSON.stringify(cardDataObject));
         
         const cardOptions = {
