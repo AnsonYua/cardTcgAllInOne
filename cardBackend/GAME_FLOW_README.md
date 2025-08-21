@@ -252,23 +252,25 @@ GET /player/playerId_1?gameId=uuid
 // - Final victory points awarded
 // - Overall game winner (if 50+ points reached)
 
-// Start next round (if game continues)
-POST /player/nextRound
-{
-  "gameId": "uuid"
-}
-// Returns: { success: true, gameEnv: {...} } // New round with next leaders
+// NOTE: Round progression is currently automatic after battle completion
+// The game advances to the next leader (currentLeaderIdx++) and prepares for next round
+// No manual API call required - the system handles round transitions automatically
 ```
 
 ### Phase 5: Next Round (if game continues)
 If no player has reached 50 victory points, the game continues to the next round:
 
 ```javascript
-// Game automatically:
+// Game automatically handles:
 // 1. Advances to next leader (currentLeaderIdx++)
 // 2. Clears all field zones
 // 3. Resets to MAIN_PHASE
 // 4. Players draw new hands and repeat the cycle
+
+// Players continue using existing APIs for the new round:
+// - GET /player/:playerId?gameId=X (to check new leader and game state)
+// - POST /player/playerAction (to play cards with new leader)
+// - etc.
 ```
 
 ## Face-Down Card Mechanics
