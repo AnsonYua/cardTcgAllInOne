@@ -110,17 +110,9 @@ router.post('/player/selectCard', gameController.selectCard.bind(gameController)
  */
 router.post('/player/acknowledgeEvents', gameController.acknowledgeEvents.bind(gameController));
 
-/**
- * Next round
- * POST /api/game/player/nextRound
- */
-router.post('/player/nextRound', async (req: Request, res: Response) => {
-    // TODO: Implement next round logic when needed
-    res.status(501).json({
-        error: 'Next round logic not yet implemented',
-        timestamp: new Date().toISOString()
-    });
-});
+// NOTE: Next round logic is handled automatically after battle completion
+// No manual API endpoint needed - the game transitions rounds automatically
+// via internal GameFlowOrchestrator.prepareNextRound() method
 
 // ============ TEST ENDPOINTS ============
 

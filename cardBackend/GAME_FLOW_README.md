@@ -168,16 +168,27 @@ POST /api/game/player/playerAction
   }
 }
 
-// If card has search effect, might return:
+// If card has search effect, returns standard gameEnv with pendingCardSelections:
 {
-  "requiresCardSelection": true,
-  "cardSelection": {
-    "selectionId": "playerId_1_timestamp",
-    "eligibleCards": ["43", "44", "45"],
-    "selectCount": 1,
-    "prompt": "Select 1 card(s) from 3 available cards"
-  },
-  "gameEnv": { /* updated game state */ }
+  "success": true,
+  "gameEnv": {
+    "phase": "MAIN_PHASE",
+    "currentPlayer": "playerId_1",
+    "pendingCardSelections": {
+      "playerId_1_timestamp": {
+        "playerId": "playerId_1",
+        "eligibleCards": [
+          {"cardId": "43", "name": "Card Name 1", "power": 150},
+          {"cardId": "44", "name": "Card Name 2", "power": 120},
+          {"cardId": "45", "name": "Card Name 3", "power": 180}
+        ],
+        "selectCount": 1,
+        "effect": {"type": "searchDeck", "destination": "hand"},
+        "prompt": "Select 1 card(s) from 3 available cards"
+      }
+    },
+    /* rest of game state */
+  }
 }
 
 // Complete card selection:
@@ -316,15 +327,19 @@ When cards trigger search effects during placement:
 
 ```javascript
 // 1. Normal card play triggers search effect
-POST /api/game/player/playerAction → Returns requiresCardSelection: true
+// Response: Standard gameEnv with pendingCardSelections populated
+POST /api/game/player/playerAction → Returns gameEnv.pendingCardSelections[selectionId]
 
-// 2. Game blocks all other actions until selection completed
-POST /api/game/player/playerAction → Returns "You must complete your card selection first"
+// 2. Frontend detects card selection needed
+// Check: Object.keys(gameEnv.pendingCardSelections).length > 0
 
-// 3. Player completes selection  
-POST /api/game/player/selectCard → Game resumes normal flow
+// 3. Game blocks other actions until selection completed  
+POST /api/game/player/playerAction → Returns error event "You must complete your card selection first"
 
-// 4. Selected cards added to hand, remaining cards to deck bottom
+// 4. Player completes selection
+POST /api/game/player/selectCard → Selection completed, gameEnv.pendingCardSelections cleared
+
+// 5. Selected cards processed according to effect (hand, zones, etc.)
 ```
 
 ## AI Opponent Integration
@@ -389,8 +404,12 @@ GET /api/game/player/{playerId}?gameId={gameId}
     "phase": "MAIN_PHASE|SP_PHASE|BATTLE_PHASE",
     "currentPlayer": "playerId_1",
     "gameEvents": [ /* Array of unprocessed events for real-time updates */ ],
-    // Card selection detected via pendingCardSelections object inspection
-    "pendingCardSelections": { /* Active card selections requiring player input */ },
+    // Card selection detected via: Object.keys(pendingCardSelections).length > 0
+    "pendingCardSelections": { 
+      // Empty object = no selections needed
+      // Contains selectionId key = card selection required
+      "playerId_X_timestamp": { /* selection details */ }
+    },
     "players": {
       "playerId_1": {
         "Field": { /* placed cards */ },
