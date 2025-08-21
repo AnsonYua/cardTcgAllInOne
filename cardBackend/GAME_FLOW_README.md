@@ -255,42 +255,70 @@ POST /api/game/player/playerAction
 // 5. Returns final battle results in BATTLE_PHASE
 ```
 
-### Phase 4: BATTLE_PHASE - Battle Resolution
-Game automatically calculates battle results and victory points.
+### Phase 4: BATTLE_PHASE - Automatic Battle Resolution
 
+**Important**: The battle calculation is **completely automatic** - no API calls needed to trigger it.
+
+**Automatic Process** (handled internally by the game):
+1. **SP Card Reveal**: Both SP cards automatically revealed when both players fill SP zones
+2. **SP Effects Execution**: SP effects processed in leader initialPoint priority order
+3. **Battle Calculation**: Power totals + combo bonuses calculated for both players
+4. **Victory Points Award**: Points awarded to round winner
+5. **Round Transition**: Game automatically advances to next leader if game continues
+
+**Frontend Integration** (status checking only):
 ```javascript
-// Check battle results (automatically calculated after SP phase)
+// Poll for battle results - NO ACTION REQUIRED, just checking status
 GET /api/game/player/playerId_1?gameId=uuid
-// Returns game state with:
-// - battleResults: {
-//     playerId_1: { power: 250, combos: { totalBonus: 150 }, totalPoints: 400 },
-//     playerId_2: { power: 180, combos: { totalBonus: 200 }, totalPoints: 380 },
-//     winner: { playerId: "playerId_1", totalPoints: 400 }
-//   }
-// - spRevealComplete: true
-// - Final victory points awarded
-// - Overall game winner (if 50+ points reached)
 
-// NOTE: Round progression is currently automatic after battle completion
-// The game advances to the next leader (currentLeaderIdx++) and prepares for next round
-// No manual API call required - the system handles round transitions automatically
+// Response includes completed battle data:
+{
+  "gameEnv": {
+    "phase": "BATTLE_PHASE", // or "MAIN_PHASE" if next round started
+    "battleResults": {
+      "playerId_1": { "power": 250, "combos": { "totalBonus": 150 }, "totalPoints": 400 },
+      "playerId_2": { "power": 180, "combos": { "totalBonus": 200 }, "totalPoints": 380 },
+      "winner": { "playerId": "playerId_1", "totalPoints": 400 }
+    },
+    "spRevealComplete": true,
+    "gameEvents": [
+      { "type": "SP_CARDS_REVEALED", /* ... */ },
+      { "type": "BATTLE_CALCULATED", /* ... */ },
+      { "type": "VICTORY_POINTS_AWARDED", /* ... */ }
+    ]
+    // Game may have already advanced to next round automatically
+  }
+}
 ```
 
-### Phase 5: Next Round (if game continues)
-If no player has reached 50 victory points, the game continues to the next round:
+### Phase 5: Next Round (Manual Implementation Required)
 
+**Current Status**: The game **does NOT automatically advance to the next round** after battle completion.
+
+**What Actually Happens**:
+- Game remains in `BATTLE_PHASE` after battle calculation
+- Players can view battle results via polling
+- **No automatic leader advancement** or zone clearing occurs
+
+**Implementation Gap**:
 ```javascript
-// Game automatically handles:
-// 1. Advances to next leader (currentLeaderIdx++)
-// 2. Clears all field zones
-// 3. Resets to MAIN_PHASE
-// 4. Players draw new hands and repeat the cycle
+// MISSING: Automatic next round logic after battle completion
+// The following capabilities exist in the codebase but are not automatically triggered:
 
-// Players continue using existing APIs for the new round:
-// - GET /api/game/player/:playerId?gameId=X (to check new leader and game state)
-// - POST /api/game/player/playerAction (to play cards with new leader)
-// - etc.
+// Available methods (not automatically called):
+// - player.deck.advanceToNextLeader() // Advances currentLeaderIdx++
+// - Zone clearing logic // Would need to be implemented
+// - Phase reset to MAIN_PHASE // Would need to be implemented 
+// - New hand dealing // Would need to be implemented
+
+// Current state after battle: Game stays in BATTLE_PHASE
+// Next round progression requires manual implementation or additional API endpoints
 ```
+
+**For Frontend Developers**:
+- Poll `GET /api/game/player/:playerId?gameId=X` to check battle results
+- Game will remain in `BATTLE_PHASE` until next round logic is implemented
+- Victory condition checking (50+ points) is not currently automated
 
 ## Face-Down Card Mechanics
 
@@ -436,10 +464,7 @@ GET /api/game/player/{playerId}?gameId={gameId}
             "zonePlacementFreedom": false,
             "immuneToNeutralization": false
           },
-          "calculatedPowers": {
-            "43": 195,
-            "44": 150
-          },
+          // NOTE: calculatedPowers no longer used - power values stored directly in zone cards as currentPower
           "disabledCards": [],
           "victoryPointModifiers": 0
         }
@@ -503,11 +528,9 @@ gameEnv.players[playerId].fieldEffects = {
     immuneToNeutralization: false    // h-5 immunity to neutralization effects
   },
   
-  // Pre-calculated card powers with all effects applied
-  calculatedPowers: {
-    "43": 195,    // Card 43 with +45 leader bonus = 195 total
-    "44": 150     // Card 44 base power
-  },
+  // NOTE: calculatedPowers removed in latest implementation
+  // Power values are now stored directly in zone cards as currentPower field
+  // Access via: gameEnv.zones[playerId][zone][cardIndex].currentPower
   
   // Cards disabled by effects
   disabledCards: [],
