@@ -1370,8 +1370,20 @@ export class GameEnvironment {
         // Step 1: Set card in zone
         this.zones.setCardInZone(playerId, ZoneType.LEADER, leaderUid);
         
-        // Step 2: Record play in sequence
-        this.playSequenceManager.addPlay(playerId, leaderUid, ActionType.PLAY_LEADER, ZoneType.LEADER, false, undefined, -1);
+        // Step 2: Create shared PlaySequenceAction for both recording and processing
+        const leaderPlayAction: PlaySequenceAction = {
+            sequenceId: this.playSequenceManager.getNextSequenceId(),
+            playerId,
+            cardUid: leaderUid,
+            action: ActionType.PLAY_LEADER,
+            zone: ZoneType.LEADER,
+            isFaceDown: false,
+            effectData: {},
+            turnNumber: -1 // hardcode to -1 to indicate it is for play a leader
+        };
+        
+        // Step 2.1: Record play in sequence using shared object
+        this.playSequenceManager.recordAction(leaderPlayAction);
         
         // Step 2.5: Ensure fieldEffects are initialized before processing leader effects
         if (!player.fieldEffects) {
@@ -1408,22 +1420,11 @@ export class GameEnvironment {
             // Continue execution even if zone compatibility processing fails
         }
         
-        // Step 3: PROCESS LEADER EFFECTS (similar to playCard step 4)
+        // Step 3: PROCESS LEADER EFFECTS using the shared action object
         // This processes powerBoost and other dynamic effects from effects.rules
         try {
-            const playAction: PlaySequenceAction = {
-                sequenceId: this.playSequenceManager.getNextSequenceId(),
-                playerId,
-                cardUid: leaderUid,
-                action: ActionType.PLAY_LEADER,
-                zone: ZoneType.LEADER,
-                isFaceDown: false,
-                effectData: {},
-                turnNumber: -1 // hardcode to -1 to indicate it is for play a leader
-            };
-            
             console.log(`🎯 Processing leader effects for ${leaderUid} (${playerId})`);
-            await enhancedEffectManager.processCardEffects(this, playAction);
+            await enhancedEffectManager.processCardEffects(this, leaderPlayAction);
             console.log(`✅ Leader effects processed for ${leaderUid}`);
             
         } catch (error) {
