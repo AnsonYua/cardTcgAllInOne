@@ -514,10 +514,8 @@ class CardActionHandler {
         // Place card on field (hand already updated by playCardFromHand)
         playerField[playPos].push(cardObj);            // Place card on field
         
-        // Record action in turn history
-        action.selectedCard = cardObj;                     // Track action details for history
-        action.turn = gameEnv.currentTurn;
-        this.getPlayerData(gameEnv, playerId).turnAction.push(action);
+        // Record action in play sequence (turnAction removed - using playSequence.plays instead)
+        // Note: Action is now recorded via PlaySequenceManager in the PostActionHandler workflow
         
         // Generate events for frontend synchronization
         this.generatePlacementEvents(gameEnv, playerId, cardDetails, playPos, isPlayInFaceDown);

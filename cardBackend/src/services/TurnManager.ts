@@ -21,29 +21,59 @@
 //
 // =======================================================================================
 
-const { getPlayerFromGameEnv } = require('../utils/gameUtils');
+import { join } from 'path';
+import { 
+    getPlayerFromGameEnv, 
+    getPlayerData, 
+    getPlayerField 
+} from '../utils/gameUtils';
+import { GameEnvironment, Player, PlayerZones, GamePhase } from '../models/GameEnvironment';
 
-const TurnPhase = {
-    START_REDRAW: "START_REDRAW",
-    DRAW_PHASE: "DRAW_PHASE", 
-    MAIN_PHASE: "MAIN_PHASE",
-    SP_PHASE: "SP_PHASE",
-    BATTLE_PHASE: "BATTLE_PHASE",
-    END_PHASE: "END_PHASE",
-    GAME_END: "GAME_END"
-};
+
+interface TurnUpdateResult {
+    turnSwitched: boolean;
+}
+
+interface TurnInfo {
+    currentTurn: number;
+    currentPlayer: string | null;
+    currentPhase: string;
+    playerList: string[];
+    firstPlayer: number;
+}
+
+interface ZoneStatus {
+    top: number;
+    left: number;
+    right: number;
+    help: number;
+    sp: number;
+}
 
 class TurnManager {
-    constructor(mozGamePlay) {
+    private mozGamePlay: any;
+    private getPlayerData: (gameEnv: GameEnvironment, playerId: string) => Player | null;
+    private getPlayerField: (gameEnv: GameEnvironment, playerId: string) => PlayerZones | null;
+    private getPlayerHand: (...args: any[]) => any;
+    private getPlayerMainDeck: (...args: any[]) => any;
+    private setPlayerHand: (...args: any[]) => any;
+    private setPlayerMainDeck: (...args: any[]) => any;
+    private addGameEvent: (...args: any[]) => any;
+    private getPlayerFromGameEnv: (gameEnv: GameEnvironment) => string[];
+    private getPlayerZone: (...args: any[]) => any;
+    private mozDeckHelper: any;
+
+    constructor(mozGamePlay: any) {
         this.mozGamePlay = mozGamePlay;
         
         // Helper method references for cleaner code
-        this.getPlayerData = mozGamePlay.getPlayerData?.bind(mozGamePlay) || (() => {});
+        // Fix: Use gameUtils functions directly instead of binding non-existent mozGamePlay methods
+        this.getPlayerData = getPlayerData;
+        this.getPlayerField = getPlayerField;
         this.getPlayerHand = mozGamePlay.getPlayerHand?.bind(mozGamePlay) || (() => {});
         this.getPlayerMainDeck = mozGamePlay.getPlayerMainDeck?.bind(mozGamePlay) || (() => {});
         this.setPlayerHand = mozGamePlay.setPlayerHand?.bind(mozGamePlay) || (() => {});
         this.setPlayerMainDeck = mozGamePlay.setPlayerMainDeck?.bind(mozGamePlay) || (() => {});
-        this.getPlayerField = mozGamePlay.getPlayerField?.bind(mozGamePlay) || (() => {});
         this.addGameEvent = mozGamePlay.addGameEvent?.bind(mozGamePlay) || (() => {});
         this.getPlayerFromGameEnv = getPlayerFromGameEnv;
         this.getPlayerZone = mozGamePlay.getPlayerZone?.bind(mozGamePlay) || (() => {});
@@ -64,34 +94,30 @@ class TurnManager {
      * - Whether they should skip due to no valid moves
      * - Whether there's a pending card selection
      * 
-     * @param {Object} gameEnv - Current game environment
-     * @param {string} playerId - Current player ID
-     * @returns {Object} Updated game environment (may include turn switch)
+     * @param gameEnv - Current game environment
+     * @param playerId - Current player ID
+     * @returns Updated game environment (may include turn switch)
      */
-    async shouldUpdateTurn(gameEnv, playerId) {
+    async shouldUpdateTurn(gameEnv: GameEnvironment, playerId: string): Promise<TurnUpdateResult> {
         console.log(`🎯 TurnManager: Checking if turn should update for player: ${playerId}`);
         
         let currentTurnActionComplete = false;
         let shouldSkipTurn = false;
         
         // ===== STEP 1: CHECK IF PLAYER COMPLETED THEIR TURN ACTION =====
-        if (gameEnv.phase === TurnPhase.MAIN_PHASE) {
-            // Fix: Use gameEnv.players structure directly instead of non-existent getPlayerData
-            const player = gameEnv.players?.[playerId];
-            if (!player) {
-                console.log(`⚠️ TurnManager: Player ${playerId} not found in gameEnv.players`);
-                return { turnSwitched: false };
-            }
-            const playerAction = player.turnAction;
+        if (gameEnv.phase === GamePhase.MAIN_PHASE) {
+            // ✅ CORRECT: Use play sequence to check if player played a card this turn
+            const playSequence = gameEnv.playSequenceManager.getPlays() || [];
             const currentTurn = gameEnv.currentTurn;
             
             // Check if player played a card this turn
-            for (let idx in playerAction) {
-                if ((playerAction[idx].type === "PlayCard" || 
-                     playerAction[idx].type === "PlayCardBack") &&
-                    playerAction[idx].turn === currentTurn) {
+            for (const play of playSequence) {
+                // Check for card play actions by this player in the current turn
+                if ((play.action === "PLAY_CARD" || play.action === "PLAY_CARD_BACK") &&
+                    play.playerId === playerId &&
+                    play.turnNumber === currentTurn) {
                     currentTurnActionComplete = true;
-                    console.log(`🎯 Player ${playerId} completed turn action - played card`);
+                    console.log(`🎯 Player ${playerId} completed turn action - played card (sequenceId: ${play.sequenceId}, turn: ${play.turnNumber})`);
                     break;
                 }
             }
@@ -110,10 +136,12 @@ class TurnManager {
         // REFACTOR: Use consolidated pending selection detection
         const hasPendingSelection = gameEnv.pendingCardSelections && Object.keys(gameEnv.pendingCardSelections).length > 0;
         let turnSwitched = false;
-        
+
+        console.log("aa ", currentTurnActionComplete)
+        console.log("aa 12", hasPendingSelection)
         if (currentTurnActionComplete && !hasPendingSelection) {
             console.log(`🎯 Turn complete - switching to next player`);
-            gameEnv = await this.startNewTurn(gameEnv);
+            await this.startNewTurn(gameEnv);
             turnSwitched = true;
         } else if (hasPendingSelection) {
             console.log(`🎯 Turn switch delayed - pending card selection must be completed first`);
@@ -133,15 +161,15 @@ class TurnManager {
      * - All character zones are occupied
      * - Help zone is occupied (any card can be played face-down here)
      * 
-     * @param {Object} gameEnv - Current game environment
-     * @param {string} playerId - Player ID to check
-     * @returns {boolean} True if player should skip their turn
+     * @param gameEnv - Current game environment
+     * @param playerId - Player ID to check
+     * @returns True if player should skip their turn
      */
-    async shouldPlayerSkipTurn(gameEnv, playerId) {
+    async shouldPlayerSkipTurn(gameEnv: GameEnvironment, playerId: string): Promise<boolean> {
         console.log(`🎯 TurnManager: Checking if player ${playerId} should skip turn`);
         
         // ===== STEP 1: CHECK IF PLAYER HAS CARDS TO PLAY =====
-        const player = gameEnv.getPlayer(playerId);
+        const player = (gameEnv as any).getPlayer(playerId);
         if (!player || player.deck.getHandSize() === 0) {
             console.log(`🎯 Player ${playerId} should skip - no cards in hand`);
             return true;
@@ -149,10 +177,16 @@ class TurnManager {
         
         // ===== STEP 2: CHECK CHARACTER ZONES AVAILABILITY =====
         const playerField = this.getPlayerField(gameEnv, playerId);
-        const characterZones = ['top', 'left', 'right'];
+        if (!playerField) {
+            console.log(`⚠️ TurnManager: Player field not found for ${playerId}, assuming should not skip`);
+            return false; // If we can't access player field, don't skip (safer default)
+        }
+        
+        const characterZones: (keyof PlayerZones)[] = ['top', 'left', 'right'];
         
         for (const zone of characterZones) {
-            if (!playerField[zone] || playerField[zone].length === 0) {
+            const zoneData = playerField[zone];
+            if (!zoneData || (Array.isArray(zoneData) && zoneData.length === 0)) {
                 console.log(`🎯 Player ${playerId} should not skip - ${zone} zone available for character cards`);
                 return false; // Found available character zone
             }
@@ -160,7 +194,8 @@ class TurnManager {
         
         // ===== STEP 3: CHECK HELP ZONE AVAILABILITY =====
         // Help zone is special - any card can be played face-down here
-        if (!playerField.help || playerField.help.length === 0) {
+        const helpZone = playerField.help;
+        if (!helpZone || (Array.isArray(helpZone) && helpZone.length === 0)) {
             console.log(`🎯 Player ${playerId} should not skip - help zone available for any card (face-down)`);
             return false; // Help zone is available - any card can be played face-down
         }
@@ -179,10 +214,10 @@ class TurnManager {
      * 4. Current player draws 1 card
      * 5. Generate events for frontend
      * 
-     * @param {Object} gameEnv - Current game environment
-     * @returns {Object} Updated game environment with new turn
+     * @param gameEnv - Current game environment
+     * @returns Updated game environment with new turn
      */
-    async startNewTurn(gameEnv) {
+    async startNewTurn(gameEnv: GameEnvironment): Promise<GameEnvironment> {
         console.log(`🎯 TurnManager: Starting new turn ${gameEnv.currentTurn + 1}`);
         
         // ===== STEP 1: INCREMENT TURN COUNTER =====
@@ -201,11 +236,11 @@ class TurnManager {
         console.log(`🎯 Turn ${gameEnv.currentTurn}: Current player is now ${gameEnv.currentPlayer}`);
         
         // ===== STEP 3: TRANSITION TO DRAW_PHASE =====
-        gameEnv.phase = TurnPhase.DRAW_PHASE;
+        gameEnv.phase = GamePhase.DRAW_PHASE;
         
         // ===== STEP 4: CURRENT PLAYER DRAWS 1 CARD =====
         const currentPlayer = gameEnv.currentPlayer;
-        const player = gameEnv.getPlayer(currentPlayer);
+        const player = (gameEnv as any).getPlayer(currentPlayer);
         
         if (!player) {
             throw new Error(`Player ${currentPlayer} not found`);
@@ -247,14 +282,14 @@ class TurnManager {
      * - All character zones (top, left, right) for all players  
      * - All help zones for all players
      * 
-     * @param {Object} gameEnv - Current game environment
-     * @returns {boolean} True if main phase is complete
+     * @param gameEnv - Current game environment
+     * @returns True if main phase is complete
      */
-    async checkIsMainPhaseComplete(gameEnv) {
+    async checkIsMainPhaseComplete(gameEnv: GameEnvironment): Promise<boolean> {
         console.log(`🎮 TurnManager: Checking if main phase is complete`);
         
         // ===== STEP 1: VALIDATE PHASE =====
-        if (gameEnv.phase !== TurnPhase.MAIN_PHASE) {
+        if (gameEnv.phase !== GamePhase.MAIN_PHASE) {
             console.log(`🎮 Not in main phase (${gameEnv.phase}) - cannot check completion`);
             return false;
         }
@@ -291,10 +326,10 @@ class TurnManager {
      * - SP_PHASE: If any player can play SP cards or SP effects need execution
      * - BATTLE_PHASE: If all SP zones are occupied and no SP cards on field
      * 
-     * @param {Object} gameEnv - Current game environment
-     * @returns {Object} Updated game environment with new phase
+     * @param gameEnv - Current game environment
+     * @returns Updated game environment with new phase
      */
-    async advanceToSpPhaseOrBattle(gameEnv) {
+    async advanceToSpPhaseOrBattle(gameEnv: GameEnvironment): Promise<GameEnvironment> {
         console.log(`🎮 TurnManager: Advancing from main phase to SP phase or battle`);
         
         // ===== STEP 1: CHECK IF ANY PLAYER CAN PLAY SP CARDS =====
@@ -303,7 +338,7 @@ class TurnManager {
         
         for (const playerId of playerList) {
             const shouldSkip = this.shouldSkipSpPhase(gameEnv, playerId);
-            const player = gameEnv.getPlayer(playerId);
+            const player = (gameEnv as any).getPlayer(playerId);
             const handSize = player ? player.deck.getHandSize() : 0;
             
             // If any player has cards in hand and their SP zone isn't pre-occupied, they can play any card face-down
@@ -332,10 +367,10 @@ class TurnManager {
      * 
      * Checks if any SP cards are already on the field that need to execute effects
      * 
-     * @param {Object} gameEnv - Current game environment
-     * @returns {boolean} True if SP phase is needed for existing SP cards
+     * @param gameEnv - Current game environment
+     * @returns True if SP phase is needed for existing SP cards
      */
-    async checkNeedsSpPhase(gameEnv) {
+    async checkNeedsSpPhase(gameEnv: GameEnvironment): Promise<boolean> {
         console.log(`🎮 TurnManager: Checking if SP phase is needed for existing SP cards`);
         
         const playerList = this.getPlayerFromGameEnv(gameEnv);
@@ -343,7 +378,7 @@ class TurnManager {
         for (const playerId of playerList) {
             const playerField = this.getPlayerField(gameEnv, playerId);
             
-            if (playerField.sp && playerField.sp.length > 0) {
+            if (playerField && playerField.sp && Array.isArray(playerField.sp) && playerField.sp.length > 0) {
                 console.log(`🎮 SP cards found on field for ${playerId} - SP phase needed`);
                 return true;
             }
@@ -358,10 +393,10 @@ class TurnManager {
      * 
      * Delegates to mozGamePlay's startSpPhase method for SP card execution
      * 
-     * @param {Object} gameEnv - Current game environment
-     * @returns {Object} Updated game environment
+     * @param gameEnv - Current game environment
+     * @returns Updated game environment
      */
-    async startSpPhase(gameEnv) {
+    async startSpPhase(gameEnv: GameEnvironment): Promise<GameEnvironment> {
         console.log(`🎮 TurnManager: Starting SP phase execution`);
         
         // Delegate to mozGamePlay for SP card execution logic
@@ -373,10 +408,10 @@ class TurnManager {
      * 
      * Delegates to mozGamePlay's concludeLeaderBattleAndNewStart method
      * 
-     * @param {Object} gameEnv - Current game environment
-     * @returns {Object} Updated game environment
+     * @param gameEnv - Current game environment
+     * @returns Updated game environment
      */
-    async concludeLeaderBattleAndNewStart(gameEnv) {
+    async concludeLeaderBattleAndNewStart(gameEnv: GameEnvironment): Promise<GameEnvironment> {
         console.log(`🎮 TurnManager: Concluding leader battle and starting new round`);
         
         // Delegate to mozGamePlay for battle conclusion logic
@@ -390,13 +425,16 @@ class TurnManager {
     /**
      * 🔍 SHOULD SKIP HELP PHASE - Check Help Zone Occupation
      * 
-     * @param {Object} gameEnv - Current game environment
-     * @param {string} playerId - Player ID to check
-     * @returns {boolean} True if Help phase should be skipped
+     * @param gameEnv - Current game environment
+     * @param playerId - Player ID to check
+     * @returns True if Help phase should be skipped
      */
-    shouldSkipHelpPhase(gameEnv, playerId) {
-        const helpZone = this.getPlayerField(gameEnv, playerId).help;
-        const shouldSkip = helpZone && helpZone.length > 0;
+    shouldSkipHelpPhase(gameEnv: GameEnvironment, playerId: string): boolean {
+        const playerField = this.getPlayerField(gameEnv, playerId);
+        if (!playerField) return false;
+        
+        const helpZone = playerField.help;
+        const shouldSkip = !!(helpZone && Array.isArray(helpZone) && helpZone.length > 0);
         
         if (shouldSkip) {
             console.log(`🔍 TurnManager: Player ${playerId} should skip help phase - zone occupied`);
@@ -408,13 +446,16 @@ class TurnManager {
     /**
      * 🔍 SHOULD SKIP SP PHASE - Check SP Zone Occupation
      * 
-     * @param {Object} gameEnv - Current game environment
-     * @param {string} playerId - Player ID to check
-     * @returns {boolean} True if SP phase should be skipped
+     * @param gameEnv - Current game environment
+     * @param playerId - Player ID to check
+     * @returns True if SP phase should be skipped
      */
-    shouldSkipSpPhase(gameEnv, playerId) {
-        const spZone = this.getPlayerField(gameEnv, playerId).sp;
-        const shouldSkip = spZone && spZone.length > 0;
+    shouldSkipSpPhase(gameEnv: GameEnvironment, playerId: string): boolean {
+        const playerField = this.getPlayerField(gameEnv, playerId);
+        if (!playerField) return false;
+        
+        const spZone = playerField.sp;
+        const shouldSkip = !!(spZone && Array.isArray(spZone) && spZone.length > 0);
         
         if (shouldSkip) {
             console.log(`🔍 TurnManager: Player ${playerId} should skip SP phase - zone occupied`);
@@ -426,19 +467,19 @@ class TurnManager {
     /**
      * 🔍 SHOULD SKIP CURRENT PHASE - Generic Phase Skipping Check
      * 
-     * @param {Object} gameEnv - Current game environment
-     * @param {string} playerId - Player ID to check
-     * @param {string} phase - Current phase to check
-     * @returns {boolean} True if phase should be skipped
+     * @param gameEnv - Current game environment
+     * @param playerId - Player ID to check
+     * @param phase - Current phase to check
+     * @returns True if phase should be skipped
      */
-    shouldSkipCurrentPhase(gameEnv, playerId, phase) {
+    shouldSkipCurrentPhase(gameEnv: GameEnvironment, playerId: string, phase: string): boolean {
         console.log(`🔍 TurnManager: Checking if player ${playerId} should skip ${phase}`);
         
         switch (phase) {
-            case TurnPhase.MAIN_PHASE:
+            case GamePhase.MAIN_PHASE:
                 return this.shouldSkipHelpPhase(gameEnv, playerId);
                 
-            case TurnPhase.SP_PHASE:
+            case GamePhase.SP_PHASE:
                 return this.shouldSkipSpPhase(gameEnv, playerId);
                 
             default:
@@ -454,10 +495,10 @@ class TurnManager {
     /**
      * 🔧 GET CURRENT TURN INFO - Debugging Helper
      * 
-     * @param {Object} gameEnv - Current game environment
-     * @returns {Object} Current turn information
+     * @param gameEnv - Current game environment
+     * @returns Current turn information
      */
-    getCurrentTurnInfo(gameEnv) {
+    getCurrentTurnInfo(gameEnv: GameEnvironment): TurnInfo {
         return {
             currentTurn: gameEnv.currentTurn,
             currentPlayer: gameEnv.currentPlayer,
@@ -470,48 +511,59 @@ class TurnManager {
     /**
      * 🔧 IS PLAYER CURRENT TURN - Check if Player's Turn
      * 
-     * @param {Object} gameEnv - Current game environment
-     * @param {string} playerId - Player ID to check
-     * @returns {boolean} True if it's the player's turn
+     * @param gameEnv - Current game environment
+     * @param playerId - Player ID to check
+     * @returns True if it's the player's turn
      */
-    isPlayerCurrentTurn(gameEnv, playerId) {
+    isPlayerCurrentTurn(gameEnv: GameEnvironment, playerId: string): boolean {
         return gameEnv.currentPlayer === playerId;
     }
 
     /**
      * 🔧 GET NEXT PLAYER - Get Next Player in Turn Order
      * 
-     * @param {Object} gameEnv - Current game environment
-     * @returns {string} Next player's ID
+     * @param gameEnv - Current game environment
+     * @returns Next player's ID
      */
-    getNextPlayer(gameEnv) {
+    getNextPlayer(gameEnv: GameEnvironment): string {
         const playerList = this.getPlayerFromGameEnv(gameEnv);
-        const currentPlayerIndex = playerList.indexOf(gameEnv.currentPlayer);
+        const currentPlayer = gameEnv.currentPlayer;
+        if (!currentPlayer) {
+            throw new Error('Current player is null');
+        }
+        const currentPlayerIndex = playerList.indexOf(currentPlayer);
         const nextPlayerIndex = (currentPlayerIndex + 1) % playerList.length;
-        return playerList[nextPlayerIndex];
+        const nextPlayer = playerList[nextPlayerIndex];
+        if (!nextPlayer) {
+            throw new Error(`Next player not found at index ${nextPlayerIndex}`);
+        }
+        return nextPlayer;
     }
 
     /**
      * 📊 LOG TURN SUMMARY - Comprehensive Logging for Debugging
      * 
-     * @param {Object} gameEnv - Current game environment
+     * @param gameEnv - Current game environment
      */
-    logTurnSummary(gameEnv) {
+    logTurnSummary(gameEnv: GameEnvironment): void {
         const turnInfo = this.getCurrentTurnInfo(gameEnv);
         console.log(`📊 TurnManager Summary:`, turnInfo);
         
         // Log zone status for all players
         for (const playerId of turnInfo.playerList) {
             const playerField = this.getPlayerField(gameEnv, playerId);
-            console.log(`📊 ${playerId} zones:`, {
-                top: playerField.top?.length || 0,
-                left: playerField.left?.length || 0,
-                right: playerField.right?.length || 0,
-                help: playerField.help?.length || 0,
-                sp: playerField.sp?.length || 0
-            });
+            if (playerField && playerId) {
+                const zoneStatus: ZoneStatus = {
+                    top: Array.isArray(playerField.top) ? playerField.top.length : 0,
+                    left: Array.isArray(playerField.left) ? playerField.left.length : 0,
+                    right: Array.isArray(playerField.right) ? playerField.right.length : 0,
+                    help: Array.isArray(playerField.help) ? playerField.help.length : 0,
+                    sp: Array.isArray(playerField.sp) ? playerField.sp.length : 0
+                };
+                console.log(`📊 ${playerId} zones:`, zoneStatus);
+            }
         }
     }
 }
 
-module.exports = TurnManager;
+export default TurnManager;

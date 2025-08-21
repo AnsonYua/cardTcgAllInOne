@@ -10,13 +10,13 @@ const mozDeckHelper = require('./mozDeckHelper');
 const mozPhaseManager = require('./mozPhaseManager');
 // Legacy CardEffectManager removed - using EnhancedEffectManager instead
 // FieldEffectProcessor removed - legacy functionality moved to OptimizedGameEngine
-const { getPlayerFromGameEnv, getPlayerField } = require('../utils/gameUtils');
+import { getPlayerFromGameEnv, getPlayerField } from '../utils/gameUtils';
 const playSequenceManager = require('../services/PlaySequenceManager');
 
 // Manager classes
 import { CardSelectionHandler } from '../services/CardSelectionHandler';
 import BattleCalculator from '../services/BattleCalculator';
-const TurnManager = require('../services/TurnManager');
+import TurnManager from '../services/TurnManager';
 const EventManager = require('../services/EventManager');
 const CardActionHandler = require('../services/CardActionHandler');
 const GameFlowOrchestrator = require('../services/GameFlowOrchestrator');

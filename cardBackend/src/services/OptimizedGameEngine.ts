@@ -399,7 +399,8 @@ export class OptimizedGameEngine {
             action: faceDown ? ActionType.PLAY_CARD_BACK : ActionType.PLAY_CARD,
             zone,
             isFaceDown: faceDown,
-            effectData: {}
+            effectData: {},
+            turnNumber: gameEnv.currentTurn
         };
 
         // Record in play sequence

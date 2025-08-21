@@ -28,7 +28,7 @@ const mozGamePlay = require('../mozGame/mozGamePlay');
 // Import all manager classes for validation
 const CardSelectionHandler = require('../services/CardSelectionHandler');
 const BattleCalculator = require('../services/BattleCalculator');
-const TurnManager = require('../services/TurnManager');
+const TurnManager = require('../services/TurnManager').default || require('../services/TurnManager');
 const EventManager = require('../services/EventManager');
 const CardActionHandler = require('../services/CardActionHandler');
 const GameFlowOrchestrator = require('../services/GameFlowOrchestrator');

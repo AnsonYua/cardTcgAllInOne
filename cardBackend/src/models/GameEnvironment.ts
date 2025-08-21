@@ -492,6 +492,8 @@ export interface PlaySequenceAction {
     zone: ZoneType;
     isFaceDown?: boolean;
     effectData?: any;
+    /** Turn number when this action was performed - for turn completion tracking */
+    turnNumber?: number;
 }
 
 export interface PlaySequence {
@@ -589,7 +591,7 @@ export class Player {
     public name: string;
     public deck: PlayerDeckDataResp;
     public redraw: number;
-    public turnAction: any[];
+    // REMOVED: turnAction - replaced by gameEnv.playSequence.plays for cleaner architecture
     public playerPoint: number;
     public isReady: boolean;
     public fieldEffects?: PlayerFieldEffects;
@@ -598,7 +600,7 @@ export class Player {
         this.id = id;
         this.name = name;
         this.redraw = 0;
-        this.turnAction = [];
+        // REMOVED: turnAction initialization - using playSequence.plays instead
         this.playerPoint = 0;
         this.isReady = false;
         this.deck = new PlayerDeckDataResp();
@@ -665,7 +667,7 @@ export class Player {
         // If fieldEffects already exist, preserve them and don't reset
         
         // Initialize player game state
-        this.turnAction = [];
+        // REMOVED: turnAction initialization - using playSequence.plays instead
         this.playerPoint = 0;
         
         // NOTE: redraw and isReady are handled elsewhere:
@@ -701,7 +703,7 @@ export class Player {
             name: this.name,
             deck: this.deck.toJSON(), // Convert PlayerDeckDataResp to JSON
             redraw: this.redraw,
-            turnAction: this.turnAction,
+            // REMOVED: turnAction - using playSequence.plays instead
             playerPoint: this.playerPoint,
             isReady: this.isReady,
             ...(this.fieldEffects && { fieldEffects: this.fieldEffects })
@@ -715,7 +717,7 @@ export class Player {
             player.deck = PlayerDeckDataResp.fromJSON(data.deck);
         }
         player.redraw = data.redraw || 0;
-        player.turnAction = data.turnAction || [];
+        // REMOVED: turnAction assignment - using playSequence.plays instead
         player.playerPoint = data.playerPoint || 0;
         player.isReady = data.isReady || false;
         if (data.fieldEffects) {
@@ -1066,12 +1068,14 @@ export class EventManager {
 
 export class PlaySequenceManager {
     private sequence: PlaySequence;
+    private gameEnv?: GameEnvironment; // Reference to parent GameEnvironment for auto-injection
 
-    constructor() {
+    constructor(gameEnv?: GameEnvironment) {
         this.sequence = {
             globalSequence: 0,
             plays: []
         };
+        this.gameEnv = gameEnv;
     }
 
     /**
@@ -1082,9 +1086,10 @@ export class PlaySequenceManager {
      * @param zone - Zone where the card is being played
      * @param isFaceDown - Whether card is played face-down (optional)
      * @param effectData - Additional effect data (optional)
+     * @param turnNumber - Turn number when this action was performed (optional)
      * @returns The created PlaySequenceAction
      */
-    public addPlay(playerId: string, cardUid: string, action: ActionType, zone: ZoneType, isFaceDown: boolean = false, effectData?: any): PlaySequenceAction {
+    public addPlay(playerId: string, cardUid: string, action: ActionType, zone: ZoneType, isFaceDown: boolean = false, effectData?: any, turnNumber?: number): PlaySequenceAction {
         this.sequence.globalSequence++;
         
         const play: PlaySequenceAction = {
@@ -1094,7 +1099,8 @@ export class PlaySequenceManager {
             action,
             zone,
             ...(isFaceDown && { isFaceDown }),
-            ...(effectData && { effectData })
+            ...(effectData && { effectData }),
+            ...(turnNumber !== undefined && { turnNumber })
         };
         
         this.sequence.plays.push(play);
@@ -1112,6 +1118,12 @@ export class PlaySequenceManager {
         return this.sequence.globalSequence + 1;
     }
     public recordAction(action: PlaySequenceAction): void {
+        // Auto-inject turnNumber if not provided and gameEnv is available
+        if (action.turnNumber === undefined && this.gameEnv) {
+            console.log(`🔧 Auto-injecting turnNumber ${this.gameEnv.currentTurn} for action ${action.sequenceId}`);
+            action.turnNumber = this.gameEnv.currentTurn;
+        }
+        
         this.sequence.globalSequence = action.sequenceId;
         this.sequence.plays.push(action);
     }
@@ -1184,7 +1196,7 @@ export class GameEnvironment {
         this.players = {};
         this.zones = new GameZones();
         this.eventManager = new EventManager();
-        this.playSequenceManager = new PlaySequenceManager();
+        this.playSequenceManager = new PlaySequenceManager(this);
         
         // REMOVED: validationState initialization - using fieldEffects as single source of truth
         
@@ -1338,7 +1350,7 @@ export class GameEnvironment {
         
         // Record in play sequence
         const action = isFaceDown ? ActionType.PLAY_CARD_BACK : ActionType.PLAY_CARD;
-        this.playSequenceManager.addPlay(playerId, cardUid, action, zone, isFaceDown);
+        this.playSequenceManager.addPlay(playerId, cardUid, action, zone, isFaceDown, undefined, this.currentTurn);
         
         // Add event
         this.eventManager.addEvent(EventType.CARD_PLAYED, {
@@ -1359,7 +1371,7 @@ export class GameEnvironment {
         this.zones.setCardInZone(playerId, ZoneType.LEADER, leaderUid);
         
         // Step 2: Record play in sequence
-        this.playSequenceManager.addPlay(playerId, leaderUid, ActionType.PLAY_LEADER, ZoneType.LEADER);
+        this.playSequenceManager.addPlay(playerId, leaderUid, ActionType.PLAY_LEADER, ZoneType.LEADER, false, undefined, this.currentTurn);
         
         // Step 2.5: Ensure fieldEffects are initialized before processing leader effects
         if (!player.fieldEffects) {
@@ -1406,7 +1418,8 @@ export class GameEnvironment {
                 action: ActionType.PLAY_LEADER,
                 zone: ZoneType.LEADER,
                 isFaceDown: false,
-                effectData: {}
+                effectData: {},
+                turnNumber: this.currentTurn
             };
             
             console.log(`🎯 Processing leader effects for ${leaderUid} (${playerId})`);
