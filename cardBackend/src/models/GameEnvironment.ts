@@ -1419,7 +1419,7 @@ export class GameEnvironment {
                 zone: ZoneType.LEADER,
                 isFaceDown: false,
                 effectData: {},
-                turnNumber: this.currentTurn
+                turnNumber: -1 // hardcode to 0 to indicate it is for play a leader
             };
             
             console.log(`🎯 Processing leader effects for ${leaderUid} (${playerId})`);
