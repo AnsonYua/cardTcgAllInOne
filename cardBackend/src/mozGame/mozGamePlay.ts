@@ -192,7 +192,10 @@ export class MozGamePlay {
 
     addGameEvent(gameEnv: GameEnvironment, eventType: EventType, data: any): void {
         if(eventType == EventType.DRAW_PHASE_COMPLETE){
-
+            gameEnv.eventManager.addEvent(
+                EventType.DRAW_PHASE_COMPLETE, 
+                data,
+                true);
         }else{
             gameEnv.eventManager.addEvent(eventType,data);
         }

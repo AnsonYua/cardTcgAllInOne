@@ -260,6 +260,7 @@ class TurnManager {
         this.addGameEvent(gameEnv, 'DRAW_PHASE_COMPLETE', {
             playerId: currentPlayer,
             cardCount: 1,
+            cardUid: drawnCardUid,
             newHandSize: player.deck.getHandSize()
         });
         
