@@ -19,7 +19,7 @@ import BattleCalculator from '../services/BattleCalculator';
 import TurnManager from '../services/TurnManager';
 import { env } from 'process';
 import { UnifiedEventManager } from '../services/UnifiedEventManager';
-const CardActionHandler = require('../services/CardActionHandler');
+import { CardActionHandler } from '../services/CardActionHandler';
 const GameFlowOrchestrator = require('../services/GameFlowOrchestrator');
 
 // Utility modules

@@ -22,6 +22,7 @@
   },
   "include": [
     "src/**/*.ts",
+    "shared/**/*.ts",
     "server.ts",
     "*.ts"
   ],

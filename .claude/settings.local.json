@@ -67,7 +67,11 @@
       "Bash(# Test the fix with debug logging\necho \"\"Testing field effects initialization with debug logging...\"\"\n\necho \"\"Step 1: Creating game...\"\"\nGAME_RESPONSE=$(curl -s -X POST http://localhost:8080/api/game/player/startGame -H \"\"Content-Type: application/json\"\" -d ''{\"\"playerId\"\": \"\"playerId_1\"\"}'')\nGAME_ID=$(echo $GAME_RESPONSE | jq -r ''.gameId'')\necho \"\"Created game: $GAME_ID\"\"\n\necho -e \"\"\\nStep 2: Joining game (should show our debug logs)...\"\"\nJOIN_RESPONSE=$(curl -s -X POST http://localhost:8080/api/game/player/joinRoom -H \"\"Content-Type: application/json\"\" -d \"\"{\\\"\"playerId\\\"\": \\\"\"playerId_2\\\"\", \\\"\"gameId\\\"\": \\\"\"$GAME_ID\\\"\"}\"\")\n\necho \"\"Join successful:\"\" $(echo $JOIN_RESPONSE | jq -r ''.success'')\n\necho -e \"\"\\n=== CHECKING FIELD EFFECTS ===\"\"\n\necho \"\"Player 1 fieldEffects:\"\"\necho $JOIN_RESPONSE | jq ''.gameEnv.players.playerId_1.fieldEffects // \"\"not found\"\"''\n\necho -e \"\"\\nPlayer 2 fieldEffects:\"\"  \necho $JOIN_RESPONSE | jq ''.gameEnv.players.playerId_2.fieldEffects // \"\"not found\"\"''\n\nif [ \"\"$(echo $JOIN_RESPONSE | jq ''.gameEnv.players.playerId_1.fieldEffects'')\"\" != \"\"null\"\" ]; then\n    echo -e \"\"\\n=== PLAYER 1 FIELD EFFECTS DETAILS ===\"\"\n    echo \"\"Zone restrictions:\"\"\n    echo $JOIN_RESPONSE | jq ''.gameEnv.players.playerId_1.fieldEffects.zoneRestrictions''\n    echo \"\"Active effects:\"\"\n    echo $JOIN_RESPONSE | jq ''.gameEnv.players.playerId_1.fieldEffects.activeEffects''\nfi\n\nif [ \"\"$(echo $JOIN_RESPONSE | jq ''.gameEnv.players.playerId_2.fieldEffects'')\"\" != \"\"null\"\" ]; then\n    echo -e \"\"\\n=== PLAYER 2 FIELD EFFECTS DETAILS ===\"\"\n    echo \"\"Zone restrictions:\"\"\n    echo $JOIN_RESPONSE | jq ''.gameEnv.players.playerId_2.fieldEffects.zoneRestrictions''\n    echo \"\"Active effects:\"\"\n    echo $JOIN_RESPONSE | jq ''.gameEnv.players.playerId_2.fieldEffects.activeEffects''\nfi)",
       "Bash(/usr/bin/timeout 10s npm run dev)",
       "Bash(git log:*)",
-      "Bash(gtimeout:*)"
+      "Bash(gtimeout:*)",
+      "Bash(npm config list:*)",
+      "Bash(__NEW_LINE__ echo \"1. Services (core logic):\")",
+      "Bash(__NEW_LINE__ echo -e \"\\n2. Game logic files:\")",
+      "Bash(__NEW_LINE__ echo -e \"\\n3. Utilities:\")"
     ],
     "deny": []
   }
