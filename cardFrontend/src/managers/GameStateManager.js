@@ -424,14 +424,14 @@ export default class GameStateManager {
   getComputedZoneRestrictions(playerId = null, zone = null) {
     const id = playerId || this.gameState.playerId;
     const player = this.gameState.gameEnv.players?.[id];
-    
+    console.log("restrcition ", JSON.stringify(player.fieldEffects))
     if (player && player.fieldEffects) {
       // Prioritize activeZoneRestrictions (computed with preventSummon effects)
       const restrictions = player.fieldEffects.activeZoneRestrictions || player.fieldEffects.zoneRestrictions;
       
       if (restrictions) {
         if (zone) {
-          return restrictions[zone.toUpperCase()];
+          return restrictions[zone.toLowerCase()];
         }
         return restrictions;
       }
