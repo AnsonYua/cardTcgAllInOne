@@ -149,10 +149,14 @@ export default class GameStateManager {
   getZoneRestrictions(playerId = null, zone = null) {
     const fieldEffects = this.getPlayerFieldEffects(playerId);
     console.log("fieldEffects " ,JSON.stringify(fieldEffects))
+    
+    // Use activeZoneRestrictions if available (computed with preventSummon effects)
+    const restrictions = fieldEffects?.activeZoneRestrictions || fieldEffects?.zoneRestrictions;
+    
     if (zone) {
-      return fieldEffects.zoneRestrictions[zone.toLowerCase()];
+      return restrictions?.[zone.toLowerCase()];
     }
-    return fieldEffects.zoneRestrictions;
+    return restrictions;
   }
 
   getActiveEffects(playerId = null) {
@@ -161,10 +165,20 @@ export default class GameStateManager {
   }
 
   canPlayCardInZone(card, zone, playerId = null) {
-    const restrictions = this.getZoneRestrictions(playerId, zone);
-    console.log("restrcition " , JSON.stringify(restrictions))
-    if (restrictions.includes("ALL")) return true;
+    // Use computed restrictions (includes preventSummon effects)
+    const restrictions = this.getComputedZoneRestrictions(playerId, zone);
+    console.log("restrictions (with preventSummon effects): " , JSON.stringify(restrictions))
+    
+    // Handle 'ALL' string case
+    if (restrictions === "ALL") return true;
+    
+    // Handle array with 'ALL' element
+    if (Array.isArray(restrictions) && restrictions.includes("ALL")) return true;
+    
+    // Handle card with 'ALL' gameType
     if (card.cardDetails.gameType === "ALL") return true;
+    
+    // Check if card's gameType is in the allowed list
     return Array.isArray(restrictions) ? restrictions.includes(card.cardDetails.gameType) : false;
   }
 
@@ -402,7 +416,7 @@ export default class GameStateManager {
   }
   
   /**
-   * Get active zone restrictions (from field effects)
+   * Get active zone restrictions (computed with preventSummon effects)
    * @param {string} playerId - Player ID (defaults to current player)
    * @param {string} zone - Specific zone to check
    * @returns {string|Array} Zone restrictions
@@ -411,21 +425,24 @@ export default class GameStateManager {
     const id = playerId || this.gameState.playerId;
     const player = this.gameState.gameEnv.players?.[id];
     
-    if (player && player.fieldEffects && player.fieldEffects.zoneRestrictions) {
-      const restrictions = player.fieldEffects.zoneRestrictions;
+    if (player && player.fieldEffects) {
+      // Prioritize activeZoneRestrictions (computed with preventSummon effects)
+      const restrictions = player.fieldEffects.activeZoneRestrictions || player.fieldEffects.zoneRestrictions;
       
-      if (zone) {
-        return restrictions[zone.toUpperCase()];
+      if (restrictions) {
+        if (zone) {
+          return restrictions[zone.toUpperCase()];
+        }
+        return restrictions;
       }
-      return restrictions;
     }
     
-    // Fallback to original field effects
+    // Fallback to original field effects method
     return this.getZoneRestrictions(playerId, zone);
   }
   
   /**
-   * Check if card can be played in zone (using computed restrictions)
+   * Check if card can be played in zone (using computed restrictions with preventSummon effects)
    * @param {Object} card - Card object
    * @param {string} zone - Zone name
    * @param {string} playerId - Player ID (defaults to current player)
@@ -433,15 +450,23 @@ export default class GameStateManager {
    */
   canPlayCardInZoneComputed(card, zone, playerId = null) {
     const restrictions = this.getComputedZoneRestrictions(playerId, zone);
+    console.log("computed restrictions (with preventSummon effects): " , JSON.stringify(restrictions))
+    
+    // Handle 'ALL' string case
     if (restrictions === "ALL") return true;
     
-    // Check for 'ALL' in array format
+    // Handle array cases
     if (Array.isArray(restrictions)) {
+      // Check for 'ALL' in array
       if (restrictions.includes("ALL")) {
         return true;
       }
+      // Check if card's gameType is allowed
       return restrictions.includes(card.cardDetails.gameType);
     }
+    
+    // Handle card with 'ALL' gameType
+    if (card.cardDetails.gameType === "ALL") return true;
     
     return false;
   }
