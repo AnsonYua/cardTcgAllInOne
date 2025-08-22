@@ -71,7 +71,8 @@
       "Bash(npm config list:*)",
       "Bash(__NEW_LINE__ echo \"1. Services (core logic):\")",
       "Bash(__NEW_LINE__ echo -e \"\\n2. Game logic files:\")",
-      "Bash(__NEW_LINE__ echo -e \"\\n3. Utilities:\")"
+      "Bash(__NEW_LINE__ echo -e \"\\n3. Utilities:\")",
+      "Bash(npm start:*)"
     ],
     "deny": []
   }

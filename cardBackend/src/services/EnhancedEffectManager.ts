@@ -70,7 +70,7 @@ export class EnhancedEffectManager {
         }
         
         // Create ActiveEffect instances directly from JSON rules with trigger filtering
-        const activeEffects = this.createActiveEffectsFromJSON(cardDetails.effects.rules, play, triggerEvent);
+        const activeEffects = this.createActiveEffectsFromJSON(cardDetails.effects.rules, play, triggerEvent, gameEnv);
         
         // Apply effects to game environment and check for selection requirements
         // Note: Individual apply methods already store effects in fieldEffects - no separate storage needed
@@ -87,12 +87,12 @@ export class EnhancedEffectManager {
      * Create ActiveEffect instances directly from JSON effect rules
      * Now includes trigger event filtering for correct effect processing
      */
-    private createActiveEffectsFromJSON(rules: EffectRule[], play: PlaySequenceAction, triggerEvent?: string): ActiveEffect[] {
+    private createActiveEffectsFromJSON(rules: EffectRule[], play: PlaySequenceAction, triggerEvent?: string, gameEnv?: GameEnvironment): ActiveEffect[] {
         const activeEffects: ActiveEffect[] = [];
-        
+        console.log("bbb12 ",JSON.stringify(triggerEvent))
         for (const rule of rules) {
             // CRITICAL FIX: Filter effects based on trigger event
-            if (!this.shouldProcessEffect(rule, triggerEvent)) {
+            if (!this.shouldProcessEffect(rule, triggerEvent, play, gameEnv)) {
                 console.log(`   ⏭️ Skipping effect ${rule.id} - trigger mismatch (rule: ${rule.type}/${rule.trigger?.event}, current: ${triggerEvent})`);
                 continue;
             }
@@ -118,32 +118,95 @@ export class EnhancedEffectManager {
     }
     
     /**
-     * Determine if an effect should be processed based on trigger event
+     * Determine if an effect should be processed based on trigger event and conditions
      */
-    private shouldProcessEffect(rule: EffectRule, triggerEvent?: string): boolean {
-        // If no trigger event specified, process all effects (backward compatibility)
-        if (!triggerEvent) {
-            return true;
-        }
-        
-        // Handle different effect types
+    private shouldProcessEffect(rule: EffectRule, triggerEvent?: string, play?: PlaySequenceAction, gameEnv?: GameEnvironment): boolean {        
+        // Check if trigger event matches
+        console.log("acaca12 ",JSON.stringify(rule))
+        let shouldProcess = false;
         switch (rule.type) {
             case 'triggered':
                 // Triggered effects only process when their trigger event matches
-                return rule.trigger?.event === triggerEvent;
+                shouldProcess = rule.trigger?.event === triggerEvent;
+                break;
                 
             case 'continuous':
                 // Continuous effects are processed during power calculation, not during card play
                 // Skip them during onSummon/onPlay events
                 if (triggerEvent === 'onSummon' || triggerEvent === 'onPlay') {
-                    return false;
+                    shouldProcess = false;
+                } else {
+                    // Process continuous effects during other contexts (like power calculation)
+                    shouldProcess = triggerEvent === 'always' || triggerEvent === 'powerCalculation';
                 }
-                // Process continuous effects during other contexts (like power calculation)
-                return triggerEvent === 'always' || triggerEvent === 'powerCalculation';
+                break;
                 
             default:
                 // Unknown effect types - process by default for safety
                 console.warn(`   ⚠️ Unknown effect type: ${rule.type}, processing by default`);
+                shouldProcess = true;
+                break;
+        }
+        
+        // If event check failed, don't process
+        if (!shouldProcess) {
+            return false;
+        }
+        console.log("aaaa12 ",JSON.stringify(rule))
+        // Check trigger conditions (NEW: This was missing!)
+        if (rule.trigger?.conditions && rule.trigger.conditions.length > 0) {
+            if (!play || !gameEnv) {
+                console.warn(`   ⚠️ Cannot evaluate conditions without play context and gameEnv`);
+                return false;
+            }
+            const conditionResult = this.evaluateConditions(rule.trigger.conditions, play, gameEnv);
+            console.log("aaaa1 ",JSON.stringify(conditionResult))
+            return conditionResult;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Evaluate trigger conditions for effects
+     */
+    private evaluateConditions(conditions: any[], play: PlaySequenceAction, gameEnv: GameEnvironment): boolean {
+        // All conditions must be true (AND logic)
+        for (const condition of conditions) {
+            if (!this.evaluateCondition(condition, play, gameEnv)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * Evaluate a single condition
+     */
+    private evaluateCondition(condition: any, play: PlaySequenceAction, gameEnv: GameEnvironment): boolean {
+        switch (condition.type) {
+            case 'opponentLeader':
+                // Check opponent's leader name
+                const currentPlayerId = play.playerId;
+                const opponentId = currentPlayerId === 'playerId_1' ? 'playerId_2' : 'playerId_1';
+                console.log("caca ",JSON.stringify(gameEnv.zones))
+                console.log("caca111 ",JSON.stringify(opponentId))
+                const opponentZones = gameEnv.zones.getPlayerZones(opponentId);
+                if (!opponentZones.leader || opponentZones.leader.length === 0) {
+                    console.warn(`   ⚠️ No opponent leader found for condition check`);
+                    return false;
+                }
+                const opponentLeader = opponentZones.leader[0];
+                
+                // Extract leader data
+                const leaderData = opponentLeader.cardData || opponentLeader;
+                const leaderName = leaderData.name;
+                
+                console.log(`   🔍 Checking opponentLeader condition: ${leaderName} === ${condition.value}`);
+                return leaderName === condition.value;
+                
+            default:
+                console.warn(`   ⚠️ Unknown condition type: ${condition.type}, returning true`);
                 return true;
         }
     }
