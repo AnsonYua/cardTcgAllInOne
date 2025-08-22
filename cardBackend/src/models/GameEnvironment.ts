@@ -1344,14 +1344,14 @@ export class GameEnvironment {
             console.error(`❌ Error processing zone compatibility for ${leaderUid}:`, error);
             // Continue execution even if zone compatibility processing fails
         }
-        
+        console.log("aaa1 ",JSON.stringify(player.fieldEffects))
         // Step 3: PROCESS LEADER EFFECTS using the shared action object
         // This processes powerBoost and other dynamic effects from effects.rules
         try {
             console.log(`🎯 Processing leader effects for ${leaderUid} (${playerId})`);
             await enhancedEffectManager.processCardEffects(this, leaderPlayAction);
             console.log(`✅ Leader effects processed for ${leaderUid}`);
-            
+            console.log("aaa122 ",JSON.stringify(player.fieldEffects)) 
         } catch (error) {
             console.error(`❌ Error processing leader effects for ${leaderUid}:`, error);
             // Continue execution even if effect processing fails
