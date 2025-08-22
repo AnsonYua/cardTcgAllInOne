@@ -1288,14 +1288,17 @@ export class GameEnvironment {
         return true;
     }
 
-    public async setLeader(playerId: string, leaderUid: string): Promise<boolean> {
+    /**
+     * Phase 1: Set leader in zone and record action (basic setup only)
+     */
+    public setLeaderBasic(playerId: string, leaderUid: string): boolean {
         const player = this.getPlayer(playerId);
         if (!player) return false;
         
         // Step 1: Set card in zone
         this.zones.setCardInZone(playerId, ZoneType.LEADER, leaderUid);
         
-        // Step 2: Create shared PlaySequenceAction for both recording and processing
+        // Step 2: Create shared PlaySequenceAction for recording
         const leaderPlayAction: PlaySequenceAction = {
             sequenceId: this.playSequenceManager.getNextSequenceId(),
             playerId,
@@ -1307,24 +1310,63 @@ export class GameEnvironment {
             turnNumber: -1 // hardcode to -1 to indicate it is for play a leader
         };
         
-        // Step 2.1: Record play in sequence using shared object
+        // Step 3: Record play in sequence
         this.playSequenceManager.recordAction(leaderPlayAction);
         
-        // Step 2.5: Ensure fieldEffects are initialized before processing leader effects
+        // Step 4: Initialize fieldEffects if needed
         if (!player.fieldEffects) {
-            console.log(`🔧 Initializing fieldEffects for ${playerId} before leader effect processing`);
+            console.log(`🔧 Initializing fieldEffects for ${playerId}`);
             player.initializeFieldEffects();
         }
         
-        // Step 2.7: PROCESS ZONE COMPATIBILITY (Option A)
-        // Handle leader zoneCompatibility separately from effects since it's not an effect rule
+        console.log(`✅ Leader ${leaderUid} set for ${playerId} (basic setup)`);
+        return true;
+    }
+
+    /**
+     * Phase 2: Process all leader effects and zone restrictions after both leaders are set
+     */
+    public async processAllLeaderEffects(): Promise<void> {
+        console.log(`🎯 Processing leader effects for all players after both leaders are set`);
+        
+        // Get all recorded PLAY_LEADER actions from the play sequence
+        const allActions = this.playSequenceManager.getPlays();
+        const leaderActions = allActions.filter(action => action.action === ActionType.PLAY_LEADER);
+        
+        for (const leaderAction of leaderActions) {
+            const playerId = leaderAction.playerId;
+            const leaderUid = leaderAction.cardUid;
+            const player = this.getPlayer(playerId);
+            
+            if (!player || !player.fieldEffects) {
+                console.warn(`⚠️ Skipping leader effects for ${playerId} - player or fieldEffects not found`);
+                continue;
+            }
+            
+            // Step 1: Process zone compatibility/restrictions
+            await this.processLeaderZoneRestrictions(playerId, leaderUid);
+            
+            // Step 2: Process leader effects (powerBoost, conditions, etc.)
+            await this.processLeaderEffects(playerId, leaderAction);
+        }
+        
+        console.log(`✅ All leader effects processed`);
+    }
+
+    /**
+     * Process zone restrictions for a specific leader
+     */
+    private async processLeaderZoneRestrictions(playerId: string, leaderUid: string): Promise<void> {
+        const player = this.getPlayer(playerId);
+        if (!player?.fieldEffects) return;
+        
         try {
             // Get leader card data to access zoneCompatibility
             const baseCardId = leaderUid.split('_')[0]; // Extract card ID from UID
             const CardInfoUtils = CardInfoUtilsSingleton.getInstance();
             const leaderCardData = CardInfoUtils?.getLeaderCards(baseCardId);
             
-            if (leaderCardData?.zoneCompatibility && player.fieldEffects) {
+            if (leaderCardData?.zoneCompatibility) {
                 console.log(`🎯 Applying zone restrictions for leader ${baseCardId} (${playerId})`);
                 
                 // Apply zone compatibility to fieldEffects.zoneRestrictions
@@ -1336,26 +1378,41 @@ export class GameEnvironment {
                     sp: 'ALL'    // SP zone always accepts all cards
                 };
                 
-                console.log(`✅ Zone restrictions applied:`, player.fieldEffects.zoneRestrictions);
+                console.log(`✅ Zone restrictions applied for ${baseCardId}:`, player.fieldEffects.zoneRestrictions);
             } else {
                 console.warn(`⚠️ No zoneCompatibility found for leader ${baseCardId}`);
             }
         } catch (error) {
             console.error(`❌ Error processing zone compatibility for ${leaderUid}:`, error);
-            // Continue execution even if zone compatibility processing fails
         }
-        console.log("aaa1 ",JSON.stringify(player.fieldEffects))
-        // Step 3: PROCESS LEADER EFFECTS using the shared action object
-        // This processes powerBoost and other dynamic effects from effects.rules
+    }
+
+    /**
+     * Process dynamic effects for a specific leader
+     */
+    private async processLeaderEffects(playerId: string, leaderAction: PlaySequenceAction): Promise<void> {
         try {
-            console.log(`🎯 Processing leader effects for ${leaderUid} (${playerId})`);
-            await enhancedEffectManager.processCardEffects(this, leaderPlayAction);
-            console.log(`✅ Leader effects processed for ${leaderUid}`);
-            console.log("aaa122 ",JSON.stringify(player.fieldEffects)) 
+            console.log(`🎯 Processing leader effects for ${leaderAction.cardUid} (${playerId})`);
+            await enhancedEffectManager.processCardEffects(this, leaderAction);
+            console.log(`✅ Leader effects processed for ${leaderAction.cardUid}`);
         } catch (error) {
-            console.error(`❌ Error processing leader effects for ${leaderUid}:`, error);
-            // Continue execution even if effect processing fails
+            console.error(`❌ Error processing leader effects for ${leaderAction.cardUid}:`, error);
         }
+    }
+
+    /**
+     * @deprecated Use setLeaderBasic() and processAllLeaderEffects() instead
+     * Legacy method - kept for backward compatibility
+     */
+    public async setLeader(playerId: string, leaderUid: string): Promise<boolean> {
+        console.warn(`⚠️ setLeader() is deprecated. Use setLeaderBasic() + processAllLeaderEffects() instead`);
+        
+        // Phase 1: Basic setup
+        const basicResult = this.setLeaderBasic(playerId, leaderUid);
+        if (!basicResult) return false;
+        
+        // Phase 2: Process effects immediately (for backward compatibility)
+        await this.processAllLeaderEffects();
         
         return true;
     }

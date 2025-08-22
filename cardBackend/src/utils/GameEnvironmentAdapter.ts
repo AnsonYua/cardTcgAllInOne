@@ -194,10 +194,17 @@ export class GameEnvironmentAdapter {
             [leader1Uid, leader2Uid][1 - firstPlayer]
         ];
         
-        // Set leaders sequentially to ensure proper effect processing order
+        // Phase 1: Set both leaders in zones first (basic setup only - no effects processing)
         for (let i = 0; i < orderedPlayerIds.length; i++) {
-            await gameEnv.setLeader(orderedPlayerIds[i], orderedLeaderUids[i]);
+            const success = gameEnv.setLeaderBasic(orderedPlayerIds[i], orderedLeaderUids[i]);
+            if (!success) {
+                throw new Error(`Failed to set leader for ${orderedPlayerIds[i]}`);
+            }
         }
+        
+        // Phase 2: Process fieldEffects, zone compatibility, and leader effects for both players
+        // This allows for proper cross-player effect evaluation (e.g., opponentLeader conditions)
+        await gameEnv.processAllLeaderEffects();
         
         // Prepare leader revealed data for events
         const leaderRevealed = {
