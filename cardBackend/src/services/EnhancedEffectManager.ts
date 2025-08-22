@@ -265,7 +265,7 @@ export class EnhancedEffectManager {
                     break;
                     
                 case 'preventSummon':
-                    this.applyPreventSummonDirect(gameEnv, effect);
+                    this.applyPreventSummonToActiveEffects(gameEnv, effect);
                     break;
                     
                 default:
@@ -692,7 +692,42 @@ export class EnhancedEffectManager {
     }
     
     /**
-     * Apply prevent summon effect directly from ActiveEffect
+     * Add preventSummon effect to activeEffects array instead of applying directly
+     */
+    private applyPreventSummonToActiveEffects(gameEnv: GameEnvironment, effect: ActiveEffect): void {
+        const player = gameEnv.players[effect.targetPlayerId];
+        if (!player?.fieldEffects) {
+            console.warn(`   ⚠️ Player ${effect.targetPlayerId} not found or missing fieldEffects`);
+            return;
+        }
+        
+        // Store effect in activeEffects format (same pattern as powerBoost)
+        const fieldEffect = {
+            effectId: effect.effectId,
+            source: effect.sourceCardUid,
+            sourcePlayerId: effect.sourcePlayerId,
+            type: effect.effectType,
+            target: {
+                scope: (effect.targetScope === 'opponent' ? 'OPPONENT' : effect.targetScope === 'both' ? 'ALL' : 'SELF') as 'OPPONENT' | 'ALL' | 'SELF',
+                zones: effect.rule.target.zones as any,
+                gameTypes: effect.rule.target.filters?.filter(f => f.type === 'gameType').map(f => f.value || '').filter(Boolean),
+                traits: effect.rule.target.filters?.filter(f => f.type === 'trait').map(f => f.value || '').filter(Boolean),
+                nameContains: effect.rule.target.filters?.filter(f => f.type === 'nameContains').map(f => f.value || '').filter(Boolean)
+            },
+            value: true, // Use true to indicate the prevention is active
+            isEnabled: effect.isActive,
+            createdAt: effect.createdAt
+        };
+        
+        player.fieldEffects.activeEffects.push(fieldEffect);
+        
+        console.log(`   🚫 Added preventSummon effect to activeEffects for ${effect.targetPlayerId}`);
+        console.log(`   📊 Targeting: ${effect.rule.target.zones.join(', ')} zones with filters: ${JSON.stringify(effect.rule.target.filters)}`);
+    }
+
+    /**
+     * @deprecated - Use applyPreventSummonToActiveEffects instead
+     * Legacy method that applied preventSummon directly to zoneRestrictions
      */
     private applyPreventSummonDirect(gameEnv: GameEnvironment, effect: ActiveEffect): void {
         const player = gameEnv.players[effect.targetPlayerId];
