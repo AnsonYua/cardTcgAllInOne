@@ -688,6 +688,86 @@ export class Player {
         this.fieldEffects!.activeEffects.push(effect);
     }
 
+    /**
+     * Get active zone restrictions computed on-demand by combining base zoneRestrictions with preventSummon effects
+     */
+    public get activeZoneRestrictions(): { [zone in ZoneType]?: string[] | 'ALL' } {
+        if (!this.fieldEffects) return {};
+
+        // All possible gameTypes in the system
+        const ALL_GAME_TYPES = ['右翼', '左翼', '愛國者', '經濟', '自由'];
+
+        // Start with base zone restrictions from leaders
+        const activeRestrictions: { [zone in ZoneType]?: string[] | 'ALL' } = {};
+        
+        // Copy base zone restrictions
+        Object.keys(this.fieldEffects.zoneRestrictions).forEach((zone: string) => {
+            const zoneType = zone as ZoneType;
+            activeRestrictions[zoneType] = this.fieldEffects!.zoneRestrictions[zoneType];
+        });
+
+        // Apply preventSummon effects from activeEffects
+        this.fieldEffects.activeEffects.forEach(effect => {
+            if (effect.type === 'preventSummon' && effect.isEnabled) {
+                // Apply preventSummon restrictions to specified zones
+                const targetZones = effect.target.zones || [];
+                
+                // Handle both array and 'ALL' cases
+                const zonesToProcess = targetZones === 'ALL' 
+                    ? [ZoneType.TOP, ZoneType.LEFT, ZoneType.RIGHT, ZoneType.HELP, ZoneType.SP]
+                    : targetZones as ZoneType[];
+                
+                zonesToProcess.forEach((zone: ZoneType) => {
+                    const zoneType = zone as ZoneType;
+                    
+                    // If zone had restrictions, modify them
+                    if (activeRestrictions[zoneType]) {
+                        if (activeRestrictions[zoneType] === 'ALL') {
+                            // If it was 'ALL', create list excluding prevented gameTypes
+                            if (effect.target.gameTypes?.length) {
+                                // Start with ALL gameTypes, remove the prevented ones
+                                activeRestrictions[zoneType] = ALL_GAME_TYPES.filter(
+                                    gameType => !effect.target.gameTypes!.includes(gameType)
+                                );
+                            } else {
+                                // If no specific gameTypes specified, prevent all
+                                activeRestrictions[zoneType] = [];
+                            }
+                        } else {
+                            // If it was an array, apply additional restrictions
+                            const currentRestrictions = activeRestrictions[zoneType] as string[];
+                            
+                            // Filter based on preventSummon target filters
+                            if (effect.target.gameTypes?.length) {
+                                // Remove specific gameTypes from allowed list
+                                activeRestrictions[zoneType] = currentRestrictions.filter(
+                                    gameType => !effect.target.gameTypes!.includes(gameType)
+                                );
+                            } else {
+                                // If no specific gameTypes, prevent all
+                                activeRestrictions[zoneType] = [];
+                            }
+                        }
+                    } else {
+                        // Zone had no restrictions initially, now prevent based on effect
+                        if (effect.target.gameTypes?.length) {
+                            // Create restrictions excluding the prevented gameTypes
+                            // Start with ALL gameTypes, remove the prevented ones
+                            activeRestrictions[zoneType] = ALL_GAME_TYPES.filter(
+                                gameType => !effect.target.gameTypes!.includes(gameType)
+                            );
+                        } else {
+                            // Prevent all
+                            activeRestrictions[zoneType] = [];
+                        }
+                    }
+                });
+            }
+        });
+
+        return activeRestrictions;
+    }
+
 
     // ============ SERIALIZATION ============
 
@@ -700,7 +780,12 @@ export class Player {
             // REMOVED: turnAction - using playSequence.plays instead
             playerPoint: this.playerPoint,
             isReady: this.isReady,
-            ...(this.fieldEffects && { fieldEffects: this.fieldEffects })
+            ...(this.fieldEffects && { 
+                fieldEffects: {
+                    ...this.fieldEffects,
+                    activeZoneRestrictions: this.activeZoneRestrictions // Include computed getter
+                }
+            })
         };
     }
 
