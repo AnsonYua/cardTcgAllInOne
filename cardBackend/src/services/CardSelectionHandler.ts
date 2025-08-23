@@ -29,11 +29,12 @@ import {
     ActiveEffectData
 } from '../models/CardSelection';
 
+// Import PlayerStateManager for deck/hand access
+const PlayerStateManager = require('../utils/PlayerStateManager');
+
 class CardSelectionHandler {
     private mozGamePlay: any;
     public postActionHandler: PostActionHandler;
-    private getPlayerMainDeck: (gameEnv: GameEnvironment, playerId: string) => string[];
-    private getPlayerHand: (gameEnv: GameEnvironment, playerId: string) => string[];
     private getPlayerField: (gameEnv: GameEnvironment, playerId: string) => any;
     private addGameEvent: (gameEnv: GameEnvironment, eventType: string, data: any) => void;
     private addErrorEvent: (gameEnv: GameEnvironment, eventType: string, message: string, playerId: string) => void;
@@ -46,9 +47,7 @@ class CardSelectionHandler {
         this.postActionHandler = new PostActionHandler(mozGamePlay);
         console.log('🎯 CardSelectionHandler: Initialized with unified delegation architecture');
         
-        // Defensive binding with proper typing
-        this.getPlayerMainDeck = mozGamePlay.getPlayerMainDeck?.bind(mozGamePlay) || (() => []);
-        this.getPlayerHand = mozGamePlay.getPlayerHand?.bind(mozGamePlay) || (() => []);
+        // Use PlayerStateManager static methods directly instead of binding non-existent mozGamePlay methods
         this.getPlayerField = mozGamePlay.getPlayerField?.bind(mozGamePlay) || (() => ({}));
         this.addGameEvent = mozGamePlay.addGameEvent?.bind(mozGamePlay) || (() => {});
         this.addErrorEvent = mozGamePlay.addErrorEvent?.bind(mozGamePlay) || (() => {});
@@ -417,9 +416,11 @@ class CardSelectionHandler {
         }
 
         const { playerId } = selection;
-        const deck = this.getPlayerMainDeck(gameEnv, playerId);
-        const hand = this.getPlayerHand(gameEnv, playerId);
-
+        const deck = PlayerStateManager.getPlayerMainDeck(gameEnv, playerId);
+        const hand = PlayerStateManager.getPlayerHand(gameEnv, playerId);
+        console.log("deck a ",JSON.stringify(deck))
+        console.log("deck ab ",JSON.stringify(hand))
+        console.log("deck abcc ",JSON.stringify(selectedCardIdentifiers))
         for (const cardId of selectedCardIdentifiers) {
             const deckIndex = deck.indexOf(cardId);
             if (deckIndex !== -1) {
@@ -453,7 +454,7 @@ class CardSelectionHandler {
             return await this.moveDeckSearchCardsToHand(gameEnv, selectionId, selectedCardIdentifiers);
         }
 
-        const deck = this.getPlayerMainDeck(gameEnv, playerId);
+        const deck = PlayerStateManager.getPlayerMainDeck(gameEnv, playerId);
 
         for (const cardId of selectedCardIdentifiers) {
             const deckIndex = deck.indexOf(cardId);
@@ -499,7 +500,7 @@ class CardSelectionHandler {
             return await this.moveDeckSearchCardsToHand(gameEnv, selectionId, selectedCardIdentifiers);
         }
 
-        const deck = this.getPlayerMainDeck(gameEnv, playerId);
+        const deck = PlayerStateManager.getPlayerMainDeck(gameEnv, playerId);
 
         for (const cardId of selectedCardIdentifiers) {
             const deckIndex = deck.indexOf(cardId);
