@@ -1478,7 +1478,7 @@ export class GameEnvironment {
     private async processLeaderEffects(playerId: string, leaderAction: PlaySequenceAction): Promise<void> {
         try {
             console.log(`🎯 Processing leader effects for ${leaderAction.cardUid} (${playerId})`);
-            await enhancedEffectManager.processCardEffects(this, leaderAction);
+            await enhancedEffectManager.processCardEffects(this, leaderAction, 'always');
             console.log(`✅ Leader effects processed for ${leaderAction.cardUid}`);
         } catch (error) {
             console.error(`❌ Error processing leader effects for ${leaderAction.cardUid}:`, error);
