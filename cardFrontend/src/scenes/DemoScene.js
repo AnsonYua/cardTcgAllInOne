@@ -13,7 +13,7 @@ export default class DemoScene extends DemoSceneBasic {
     
     // Default values - will be overridden by init() method
     this.inGamePlayerId = "playerId_1";
-    this.scenarioPath = 'CharacterCase/sample_play_card_all';
+    this.scenarioPath = 'CharacterCase/c_9_play_and_draw_hand';
     this.gameId = null;
     this.gameMode = 'host';
   }
