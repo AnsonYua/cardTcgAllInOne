@@ -305,7 +305,11 @@ export class EnhancedEffectManager {
             target: {
                 scope: (effect.targetScope === 'opponent' ? 'OPPONENT' : effect.targetScope === 'both' ? 'ALL' : 'SELF') as 'OPPONENT' | 'ALL' | 'SELF',
                 zones: effect.rule.target.zones as any,
-                gameTypes: effect.rule.target.filters?.filter(f => f.type === 'gameType').map(f => f.value || '').filter(Boolean),
+                gameTypes: effect.rule.target.filters?.filter(f => 
+                    f.type === 'gameType' || f.type === 'gameTypeOr'
+                ).flatMap(f => 
+                    f.type === 'gameType' ? (f.value ? [f.value] : []) : (f.values || [])
+                ).filter((v): v is string => Boolean(v)),
                 traits: effect.rule.target.filters?.filter(f => f.type === 'trait').map(f => f.value || '').filter(Boolean),
                 nameContains: effect.rule.target.filters?.filter(f => f.type === 'nameContains').map(f => f.value || '').filter(Boolean)
             },
@@ -498,6 +502,9 @@ export class EnhancedEffectManager {
                 case 'gameType':
                     if (cardData.gameType !== filter.value) return false;
                     break;
+                case 'gameTypeOr':
+                    if (!filter.values || !filter.values.includes(cardData.gameType)) return false;
+                    break;
                 case 'trait':
                     if (!cardData.traits || !cardData.traits.includes(filter.value)) return false;
                     break;
@@ -526,7 +533,11 @@ export class EnhancedEffectManager {
             target: {
                 scope: (effect.targetScope === 'opponent' ? 'OPPONENT' : effect.targetScope === 'both' ? 'ALL' : 'SELF') as 'OPPONENT' | 'ALL' | 'SELF',
                 zones: effect.rule.target.zones as any,
-                gameTypes: effect.rule.target.filters?.filter(f => f.type === 'gameType').map(f => f.value || '').filter(Boolean),
+                gameTypes: effect.rule.target.filters?.filter(f => 
+                    f.type === 'gameType' || f.type === 'gameTypeOr'
+                ).flatMap(f => 
+                    f.type === 'gameType' ? (f.value ? [f.value] : []) : (f.values || [])
+                ).filter((v): v is string => Boolean(v)),
                 traits: effect.rule.target.filters?.filter(f => f.type === 'trait').map(f => f.value || '').filter(Boolean),
                 nameContains: effect.rule.target.filters?.filter(f => f.type === 'nameContains').map(f => f.value || '').filter(Boolean)
             },
@@ -710,7 +721,11 @@ export class EnhancedEffectManager {
             target: {
                 scope: (effect.targetScope === 'opponent' ? 'OPPONENT' : effect.targetScope === 'both' ? 'ALL' : 'SELF') as 'OPPONENT' | 'ALL' | 'SELF',
                 zones: effect.rule.target.zones as any,
-                gameTypes: effect.rule.target.filters?.filter(f => f.type === 'gameType').map(f => f.value || '').filter(Boolean),
+                gameTypes: effect.rule.target.filters?.filter(f => 
+                    f.type === 'gameType' || f.type === 'gameTypeOr'
+                ).flatMap(f => 
+                    f.type === 'gameType' ? (f.value ? [f.value] : []) : (f.values || [])
+                ).filter((v): v is string => Boolean(v)),
                 traits: effect.rule.target.filters?.filter(f => f.type === 'trait').map(f => f.value || '').filter(Boolean),
                 nameContains: effect.rule.target.filters?.filter(f => f.type === 'nameContains').map(f => f.value || '').filter(Boolean)
             },

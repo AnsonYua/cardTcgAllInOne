@@ -199,6 +199,98 @@ class DeckManager {
     // ============ NEW OBJECT-ORIENTED METHODS ============
     
     /**
+     * Update decks collection from a new JSON file path
+     * @param newDecksPath - Path to the new decks.json file
+     * @param options - Configuration options
+     * @param options.validateOnly - If true, only validates without updating (default: false)
+     * @param options.skipValidation - If true, skips full validation for faster updates (default: false)
+     * @param options.throwOnValidationError - If true, throws error on validation failure (default: true when updating)
+     * @returns Validation result if validateOnly is true, otherwise void
+     * @throws Error if file cannot be read, parsed, or validation fails (when throwOnValidationError is true)
+     */
+    public updateDecksFromPath(
+        newDecksPath: string, 
+        options: {
+            validateOnly?: boolean;
+            skipValidation?: boolean;
+            throwOnValidationError?: boolean;
+        } = {}
+    ): ValidationResult | void {
+        const {
+            validateOnly = false,
+            skipValidation = false,
+            throwOnValidationError = !validateOnly
+        } = options;
+
+        try {
+            console.log(`${validateOnly ? 'Validating' : 'Updating'} decks from new path: ${newDecksPath}`);
+            
+            // Validate that the file exists and is readable
+            if (!fs.existsSync(newDecksPath)) {
+                throw new Error(`Decks file does not exist: ${newDecksPath}`);
+            }
+            
+            // Read and parse the new decks data
+            const newDecksData = fs.readFileSync(newDecksPath, 'utf8');
+            const parsedDecksData: DecksCollectionData = JSON.parse(newDecksData);
+            
+            // Validate the structure (basic check)
+            if (!parsedDecksData.playerDecks || typeof parsedDecksData.playerDecks !== 'object') {
+                throw new Error('Invalid decks file structure: missing or invalid playerDecks');
+            }
+            
+            // Create temporary DecksCollection for validation
+            const tempDecksCollection = DecksCollection.fromJSON(parsedDecksData);
+            let validationResult: ValidationResult | null = null;
+            
+            // Perform validation unless explicitly skipped
+            if (!skipValidation) {
+                validationResult = tempDecksCollection.validate();
+                
+                if (validateOnly) {
+                    console.log(`📋 Validation result for ${newDecksPath}:`, validationResult);
+                    return validationResult;
+                }
+                
+                // Check validation result before updating (if throwOnValidationError is true)
+                if (!validationResult.isValid && throwOnValidationError) {
+                    throw new Error(`Decks validation failed: ${validationResult.errors.join(', ')}`);
+                }
+            }
+            
+            // Only proceed with update if not in validateOnly mode
+            if (!validateOnly) {
+                // Update the DecksCollection instance
+                this.decksCollection = tempDecksCollection;
+                
+                // Update backward compatibility reference
+                this.decks = parsedDecksData;
+                
+                console.log(`✅ Successfully updated decks from ${newDecksPath}`);
+                console.log(`📊 New collection stats: ${this.decksCollection.getAllPlayerIds().length} players loaded`);
+                
+                if (validationResult) {
+                    console.log(`🔍 Validation: ${validationResult.isValid ? 'PASSED' : 'WARNING - FAILED'}`);
+                } else if (skipValidation) {
+                    console.log(`⚠️ Validation was skipped for faster update`);
+                }
+            }
+            
+        } catch (error) {
+            console.error(`❌ Error ${validateOnly ? 'validating' : 'updating'} decks from path ${newDecksPath}:`, error);
+            throw new Error(`Failed to ${validateOnly ? 'validate' : 'update'} decks from ${newDecksPath}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    }
+    
+    /**
+     * Get the current decks file path
+     * @returns Current decks.json file path
+     */
+    public getCurrentDecksPath(): string {
+        return this.decksPath;
+    }
+    
+    /**
      * Get DecksCollection instance for object-oriented access
      * @returns The decks collection instance
      */
