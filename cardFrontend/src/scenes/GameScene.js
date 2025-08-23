@@ -2865,6 +2865,18 @@ export default class GameScene extends Phaser.Scene {
       // await this.waitForDelay(200); 
     }
     
+    // Acknowledge all processed events (backend sync now fixed)
+    try {
+      if (this.cardMoveQueue.length > 0) {
+        const eventIds = this.cardMoveQueue.map(moveData => moveData.event.id);
+        await this.apiManager.acknowledgeEvents(this.gameStateManager.getGameState().gameId, eventIds);
+        console.log(`Acknowledged ${eventIds.length} CARD_MOVED_TO_HAND events`);
+      }
+    } catch (error) {
+      console.error('Failed to acknowledge card move events:', error);
+      this.showRoomStatus('Failed to acknowledge card moves: ' + error.message);
+    }
+    
     // Update UI after all animations complete - backend sync is now fixed
     this.updateGameState();
     
