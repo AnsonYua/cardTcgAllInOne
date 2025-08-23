@@ -191,9 +191,10 @@ export class MozGamePlay {
     }
 
     addGameEvent(gameEnv: GameEnvironment, eventType: EventType, data: any): void {
-        if(eventType == EventType.DRAW_PHASE_COMPLETE){
+        console.log("i am here "+ eventType)
+        if(eventType == EventType.DRAW_PHASE_COMPLETE || eventType == EventType.CARD_MOVED_TO_HAND){
             gameEnv.eventManager.addEvent(
-                EventType.DRAW_PHASE_COMPLETE, 
+                eventType, 
                 data,
                 true);
         }else{

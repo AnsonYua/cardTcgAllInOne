@@ -12,7 +12,7 @@
  * - Better error handling
  */
 
-import { GameEnvironment } from '../models/GameEnvironment';
+import { EventType, GameEnvironment } from '../models/GameEnvironment';
 import { ActiveEffect } from '../models/ActiveEffect';
 import PostActionHandler, { ActionContext, PostActionResult } from './PostActionHandler';
 import { 
@@ -428,7 +428,7 @@ class CardSelectionHandler {
             }
             hand.push(cardId);
             
-            this.addGameEvent(gameEnv, 'CARD_MOVED_TO_HAND', {
+            this.addGameEvent(gameEnv, EventType.CARD_MOVED_TO_HAND, {
                 playerId: playerId,
                 cardId: cardId,
                 source: 'deckSearch'
