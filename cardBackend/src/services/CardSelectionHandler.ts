@@ -428,6 +428,22 @@ class CardSelectionHandler {
             }
             hand.push(cardId);
             
+            // CRITICAL FIX: Also update handDetails array to keep it in sync
+            if (gameEnv.players?.[playerId]?.deck?.handDetails) {
+                const cardDetails = this.getCardDetails(cardId);
+                if (cardDetails) {
+                    gameEnv.players[playerId].deck.handDetails.push({
+                        uid: cardId,
+                        id: cardDetails.id,
+                        name: cardDetails.name,
+                        cardType: cardDetails.cardType,
+                        gameType: cardDetails.gameType,
+                        traits: cardDetails.traits || [],
+                        power: cardDetails.power || 0
+                    });
+                }
+            }
+            
             this.addGameEvent(gameEnv, EventType.CARD_MOVED_TO_HAND, {
                 playerId: playerId,
                 cardId: cardId,

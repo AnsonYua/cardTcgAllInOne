@@ -2865,7 +2865,7 @@ export default class GameScene extends Phaser.Scene {
       // await this.waitForDelay(200); 
     }
     
-    // Update UI after all animations complete - this rebuilds hand with correct positions
+    // Update UI after all animations complete - backend sync is now fixed
     this.updateGameState();
     
     // Show completion message
