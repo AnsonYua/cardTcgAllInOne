@@ -2207,8 +2207,8 @@ export default class GameScene extends Phaser.Scene {
     this.currentCardSelectionDialog = dialogInterface;
   }
 
-  handleCardSelectionChoice(selectionId, selectedCard, dialogElements) {
-    console.log('Handling card selection choice:', selectionId, selectedCard);
+  handleCardSelectionChoice(selectionId, selectedCards, dialogElements) {
+    console.log('Handling card selection choice:', selectionId, selectedCards);
     
     // Dialog elements are already cleaned up by the cleanup function in the button handler
     // Just clear references and update UI
@@ -2217,8 +2217,13 @@ export default class GameScene extends Phaser.Scene {
     
     // API call is now handled by GameSceneUtils button handler to avoid duplicate calls
     // This method only handles cleanup and UI updates after successful selection
-    console.log(`Card selection UI cleanup completed for: ${selectedCard.cardId}`);
-    this.showRoomStatus(`Card selection sent (${selectedCard.name || selectedCard.cardId}). Polling for game updates...`);
+    const cardCount = Array.isArray(selectedCards) ? selectedCards.length : 1;
+    const cardNames = Array.isArray(selectedCards) ? 
+      selectedCards.map(c => c.name || c.cardId).join(', ') : 
+      (selectedCards.name || selectedCards.cardId);
+    
+    console.log(`Card selection UI cleanup completed for: ${cardCount} card(s)`);
+    this.showRoomStatus(`Card selection sent (${cardNames}). Polling for game updates...`);
   }
 
   highlightHandCards() {

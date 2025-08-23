@@ -456,7 +456,12 @@ export default class GameSceneUtils {
     const cardDisplayHeight = 220; // Proportionally smaller height
     const cardSpacing = 25; // Reduced spacing for compact layout;
     
-    // Selection state management
+    // Selection state management (supports both single and multiple selection)
+    const maxSelections = selection.selectCount || 1;
+    let selectedCards = [];
+    let selectedCardHighlights = [];
+    
+    // Legacy single selection compatibility
     let selectedCard = null;
     let selectedCardHighlight = null;
     
@@ -467,12 +472,17 @@ export default class GameSceneUtils {
     
     // Function to create/update card display for current page with animation
     const updateCardDisplay = (animateDirection = null) => {
-      // Clear selection when changing pages
+      // Clear selections when changing pages
       selectedCard = null;
+      selectedCards.length = 0;
       if (selectedCardHighlight) {
         selectedCardHighlight.destroy();
         selectedCardHighlight = null;
       }
+      selectedCardHighlights.forEach(highlight => {
+        if (highlight) highlight.destroy();
+      });
+      selectedCardHighlights.length = 0;
       // Update OK button state will be called after the button is created
       
       // Fade out existing cards first if animating
@@ -753,44 +763,99 @@ export default class GameSceneUtils {
     buttonBg.fillRoundedRect(dialogX - dialogWidth/2 + 10, buttonSectionY - buttonSectionHeight/2 + 10, dialogWidth - 20, buttonSectionHeight - 20, 10);
     buttonBg.setDepth(1502);
     
-    // Helper function to select a card
+    // Helper function to toggle card selection (supports both single and multiple)
     const selectCard = (card, cardX, cardsY) => {
-      // Clear previous selection
-      if (selectedCardHighlight) {
-        selectedCardHighlight.destroy();
-        selectedCardHighlight = null;
+      if (maxSelections === 1) {
+        // Single selection mode (legacy compatibility)
+        if (selectedCardHighlight) {
+          selectedCardHighlight.destroy();
+          selectedCardHighlight = null;
+        }
+        
+        selectedCard = card;
+        selectedCards = [card];
+        
+        // Create selection highlight
+        selectedCardHighlight = scene.add.graphics();
+        selectedCardHighlight.lineStyle(4, 0x00ff00);
+        selectedCardHighlight.strokeRoundedRect(
+          cardX - cardDisplayWidth/2 - 2, 
+          cardsY - cardDisplayHeight/2 - 2, 
+          cardDisplayWidth + 4, 
+          cardDisplayHeight + 4, 
+          10
+        );
+        selectedCardHighlight.setDepth(1506);
+        selectedCardHighlights = [selectedCardHighlight];
+        cardListElements.push(selectedCardHighlight);
+        
+        console.log('Card selected (single):', card.cardId);
+      } else {
+        // Multiple selection mode
+        const index = selectedCards.findIndex(c => c.cardId === card.cardId);
+        
+        if (index > -1) {
+          // Deselect card
+          selectedCards.splice(index, 1);
+          const highlight = selectedCardHighlights.splice(index, 1)[0];
+          if (highlight) {
+            highlight.destroy();
+            const elementIndex = cardListElements.indexOf(highlight);
+            if (elementIndex > -1) {
+              cardListElements.splice(elementIndex, 1);
+            }
+          }
+          console.log('Card deselected:', card.cardId);
+        } else {
+          // Select card (if under limit)
+          if (selectedCards.length < maxSelections) {
+            selectedCards.push(card);
+            
+            // Create selection highlight
+            const highlight = scene.add.graphics();
+            highlight.lineStyle(4, 0x00ff00);
+            highlight.strokeRoundedRect(
+              cardX - cardDisplayWidth/2 - 2, 
+              cardsY - cardDisplayHeight/2 - 2, 
+              cardDisplayWidth + 4, 
+              cardDisplayHeight + 4, 
+              10
+            );
+            highlight.setDepth(1506);
+            selectedCardHighlights.push(highlight);
+            cardListElements.push(highlight);
+            
+            console.log('Card selected:', card.cardId, `(${selectedCards.length}/${maxSelections})`);
+          } else {
+            console.log('Maximum selections reached:', maxSelections);
+          }
+        }
+        
+        // Update legacy compatibility
+        selectedCard = selectedCards.length > 0 ? selectedCards[0] : null;
+        selectedCardHighlight = selectedCardHighlights.length > 0 ? selectedCardHighlights[0] : null;
       }
-      
-      // Set new selection
-      selectedCard = card;
-      
-      // Create selection highlight
-      selectedCardHighlight = scene.add.graphics();
-      selectedCardHighlight.lineStyle(4, 0x00ff00); // Green highlight
-      selectedCardHighlight.strokeRoundedRect(
-        cardX - cardDisplayWidth/2 - 2, 
-        cardsY - cardDisplayHeight/2 - 2, 
-        cardDisplayWidth + 4, 
-        cardDisplayHeight + 4, 
-        10
-      );
-      selectedCardHighlight.setDepth(1506);
-      cardListElements.push(selectedCardHighlight);
       
       // Update OK button state
       updateOKButtonState();
-      
-      console.log('Card selected:', card.cardId);
     };
     
-    // Function to update OK button visual state
+    // Function to update OK button visual state (supports multiple selection)
     const updateOKButtonState = () => {
-      if (selectedCard) {
+      if (selectedCards.length >= 1) {
         okButton.setTint(0x4CAF50); // Green when enabled
-        okText.setText('CONFIRM SELECTION');
+        if (maxSelections > 1) {
+          okText.setText(`CONFIRM SELECTION (${selectedCards.length}/${maxSelections})`);
+        } else {
+          okText.setText('CONFIRM SELECTION');
+        }
       } else {
         okButton.setTint(0x888888); // Gray when disabled
-        okText.setText('SELECT A CARD');
+        if (maxSelections > 1) {
+          okText.setText(`SELECT ${maxSelections} CARDS`);
+        } else {
+          okText.setText('SELECT A CARD');
+        }
       }
     };
     
@@ -811,7 +876,7 @@ export default class GameSceneUtils {
     
     // Button hover effect
     okButton.on('pointerover', () => {
-      if (selectedCard) {
+      if (selectedCards.length >= 1) {
         okButton.setTint(0x66BB6A);
         scene.input.setDefaultCursor('pointer');
       }
@@ -867,21 +932,21 @@ export default class GameSceneUtils {
     okButton.on('pointerdown', async () => {
       console.log('Card selection confirmed');
       
-      // Check if a card is selected
-      if (selectedCard) {
-        console.log('Confirming selection of card:', selectedCard.cardId);
+      // Check if cards are selected
+      if (selectedCards.length >= 1) {
+        console.log(`Confirming selection of ${selectedCards.length} card(s):`, selectedCards.map(c => c.cardId));
         
         try {
           // Call backend API to submit card selection using correct selectCard endpoint
           const gameState = scene.gameStateManager.getGameState();
           
-          // Extract UID if available, fallback to cardId for backward compatibility
-          const cardIdentifier = selectedCard.cardUid || selectedCard.cardId;
-          console.log('Sending card identifier:', cardIdentifier, '(UID available:', !!selectedCard.cardUid, ')');
+          // Extract UIDs if available, fallback to cardId for backward compatibility
+          const cardIdentifiers = selectedCards.map(card => card.cardUid || card.cardId);
+          console.log('Sending card identifiers:', cardIdentifiers);
           
           const response = await scene.apiManager.selectCard(
             selectionId, 
-            [cardIdentifier],
+            cardIdentifiers,
             gameState.playerId,
             gameState.gameId
           );
@@ -891,7 +956,7 @@ export default class GameSceneUtils {
             // Use cleanup function instead of passing elements
             cleanupDialog();
             // Call original confirmation for any additional frontend logic
-            onConfirm(selectionId, selectedCard, []);
+            onConfirm(selectionId, selectedCards.length === 1 ? selectedCards[0] : selectedCards, []);
           } else {
             console.error('Card selection submission failed:', response.error);
             // Show error feedback but keep dialog open

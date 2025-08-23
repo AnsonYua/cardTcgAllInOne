@@ -217,7 +217,7 @@
             "effect": {
               "type": "searchCard",
               "searchCount": 4,
-              "selectCount": 1,
+              "selectCount": 2,
               "destination": "hand",
               "filters": [],
               "selectionType": "deckSearch"

@@ -74,7 +74,8 @@
       "Bash(__NEW_LINE__ echo -e \"\\n3. Utilities:\")",
       "Bash(npm start:*)",
       "Bash(sudo chown:*)",
-      "Bash(../../cardBackend/node_modules/.bin/ts-node test_s6_leader.ts)"
+      "Bash(../../cardBackend/node_modules/.bin/ts-node test_s6_leader.ts)",
+      "Bash(git stash push:*)"
     ],
     "deny": []
   }
