@@ -639,6 +639,89 @@ export class GameController {
         }
     }
 
+    // ============ DECK MANAGEMENT ENDPOINTS ============
+
+    /**
+     * Update deck from file path
+     * POST /api/game/deck/updateFromPath
+     */
+    async updateDeckFromPath(req: GameRequest, res: Response): Promise<void> {
+        try {
+            console.log('🃏 Updating deck from path:', req.body.deckPath);
+            
+            const { deckPath, validateOnly, skipValidation } = req.body;
+            
+            if (!deckPath) {
+                res.status(400).json({
+                    error: 'deckPath is required',
+                    timestamp: new Date().toISOString(),
+                    context: 'updateDeckFromPath endpoint'
+                });
+                return;
+            }
+
+            // Validate path exists
+            if (!fs.existsSync(deckPath)) {
+                res.status(400).json({
+                    error: `Deck file does not exist: ${deckPath}`,
+                    timestamp: new Date().toISOString(),
+                    context: 'updateDeckFromPath endpoint'
+                });
+                return;
+            }
+
+            const options = {
+                validateOnly: Boolean(validateOnly),
+                skipValidation: Boolean(skipValidation),
+                throwOnValidationError: !validateOnly // Only throw errors when actually updating
+            };
+
+            console.log(`🔧 Update options:`, options);
+
+            // Call DeckManager with consolidated function
+            const result = this.deckManager.updateDecksFromPath(deckPath, options);
+            
+            if (validateOnly && result) {
+                // Return validation results
+                res.json({
+                    success: true,
+                    validation: result,
+                    message: `Validation ${result.isValid ? 'passed' : 'failed'} for deck file`,
+                    deckPath,
+                    timestamp: new Date().toISOString()
+                });
+            } else {
+                // Return update success
+                const stats = this.deckManager.getDecksStats();
+                res.json({
+                    success: true,
+                    message: 'Deck updated successfully from path',
+                    deckPath,
+                    stats: {
+                        playersCount: stats.playerDecks.count,
+                        playersLoaded: stats.playerDecks.players.length
+                    },
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+        } catch (error) {
+            console.error('❌ Error in updateDeckFromPath:', error);
+            
+            const errorResponse: ErrorResponse = {
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'updateDeckFromPath endpoint'
+            };
+            
+            if (process.env.NODE_ENV === 'development') {
+                errorResponse.stack = (error as Error).stack;
+            }
+            
+            res.status(500).json(errorResponse);
+        }
+    }
+
     // ============ HEALTH CHECK ENDPOINTS ============
 
     /**

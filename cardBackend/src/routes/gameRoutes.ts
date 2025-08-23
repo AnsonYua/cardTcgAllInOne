@@ -168,6 +168,26 @@ router.get('/test/getTestScenario',
 );
 
 /**
+ * Update deck from file path
+ * POST /api/game/deck/updateFromPath
+ */
+router.post('/deck/updateFromPath', async (req: Request, res: Response) => {
+    try {
+        await gameController.updateDeckFromPath(req, res);
+    } catch (error) {
+        console.error('❌ Route error updating deck from path:', error);
+        if (!res.headersSent) {
+            res.status(500).json({
+                success: false,
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'updateDeckFromPath route handler'
+            });
+        }
+    }
+});
+
+/**
  * Inject game state for testing
  * POST /api/game/test/injectGameState
  */
