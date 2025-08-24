@@ -2740,116 +2740,161 @@ export default class GameScene extends Phaser.Scene {
     // Get the current hand from game state (the new card should be the last one)
     const currentHand = this.gameStateManager.getPlayerHand();
     const newCardData = currentHand[currentHand.length - 1].split("_")[0];
+    const totalCards = this.playerHand.length + 1; // Including this new card
     
-    // Process card data the same way the hand does
-    let processedCardData = newCardData;
-    if (typeof newCardData === 'string') {
-      processedCardData = {
-        id: newCardData,
-        name: newCardData,
-        cardType: this.getCardTypeFromId(newCardData)
-      };
-    }
-    
-    // Get deck position for animation start
-    const playerDeckPosition = this.layout.player.deck;
-    
-    // Create temporary card at deck position (card back)
-    const tempCard = this.add.image(playerDeckPosition.x, playerDeckPosition.y, 'card-back');
-    
-    // Set the card to hand card size immediately
-    const scaleX = GAME_CONFIG.card.width / tempCard.width;
-    const scaleY = GAME_CONFIG.card.height / tempCard.height;
-    const handScale = Math.min(scaleX, scaleY) * 0.95 * 1.15; // Match hand card scale
-    tempCard.setScale(handScale);
-    tempCard.setDepth(2000); // Above everything else
-    
-    // Calculate spacing for current hand size
-    const currentHandLength = this.playerHand.length; // Current cards displayed in hand
-    const totalCards = currentHandLength + 1; // Including this new card
-    const cardSpacing = Math.min(160, (this.cameras.main.width - 200) / totalCards);
-    const startX = -(totalCards - 1) * cardSpacing / 2;
-    const newCardX = startX + (currentHandLength * cardSpacing); // Position for new card (rightmost)
-    
-    // Convert to world coordinates
-    const worldTargetX = this.handContainer.x + newCardX;
-    const worldTargetY = this.handContainer.y;
-    
-    // Animate existing hand cards to slide left to make space for new card
-    this.slideHandCardsLeft(totalCards, cardSpacing);
-    
-    // Animate new card from deck to hand position
-    this.tweens.add({
-      targets: tempCard,
-      x: worldTargetX,
-      y: worldTargetY,
-      duration: 500,
-      ease: 'Power2.easeOut',
+    // Use unified animation with callback-based completion
+    this.animateCardToHandUnified({
+      cardId: newCardData,
+      targetHandLength: totalCards,
+      cardIndex: this.playerHand.length, // Position at end (rightmost)
       onComplete: () => {
-        // Flip animation: card back to card face
-        this.tweens.add({
-          targets: tempCard,
-          scaleX: 0, // Flip to invisible
-          duration: 150,
-          ease: 'Power2.easeIn',
-          onComplete: () => {
-            // Change to actual card image using the same logic as Card class
-            const cardKey = `${processedCardData.id}-preview`;
-            // Check if texture exists before setting it
-            if (this.textures.exists(cardKey)) {
-              tempCard.setTexture(cardKey);
-            } else {
-              // Fallback: try without -preview suffix
-              const fallbackKey = processedCardData.id;
-              if (this.textures.exists(fallbackKey)) {
-                tempCard.setTexture(fallbackKey);
-              }
-              // If no texture found, keep card-back as fallback
-            }
-            
-            // Recalculate scale for the new texture to maintain consistent card size
-            const newScaleX = GAME_CONFIG.card.width / tempCard.width;
-            const newScaleY = GAME_CONFIG.card.height / tempCard.height;
-            const newHandScale = Math.min(newScaleX, newScaleY) * 0.95 * 1.15;
-            
-            // Update Y scale to match the new texture
-            tempCard.setScale(0, newHandScale);
-            
-            // Flip back to visible with correct scale
-            this.tweens.add({
-              targets: tempCard,
-              scaleX: newHandScale, // Flip back to visible with correct scale
-              duration: 150,
-              ease: 'Power2.easeOut',
-              onComplete: () => {
-                // Add a brief pause before showing acknowledgment
-                this.time.delayedCall(200, () => {
-                  // Remove temporary card
-                  tempCard.destroy();
-                  
-                  // Update the UI to show the new card in hand
-                  this.updateGameState();
-                  
-                  // Call the completion callback
-                  if (onComplete) {
-                    onComplete();
-                  }
-                });
-              }
-            });
-          }
-        });
+        // Update the UI to show the new card in hand
+        this.updateGameState();
+        
+        // Call the original completion callback
+        if (onComplete) {
+          onComplete();
+        }
+      },
+      isPromise: false
+    });
+  }
+
+  // ============ UNIFIED CARD ANIMATION SYSTEM ============
+
+  /**
+   * Unified card animation function for both draw and move-to-hand scenarios
+   * @param {Object} options - Animation configuration
+   * @param {string} options.cardId - Card ID to animate
+   * @param {number} options.targetHandLength - Final hand length after this card
+   * @param {number} options.cardIndex - Index position in target hand (default: rightmost)
+   * @param {Function} options.onComplete - Completion callback (optional)
+   * @param {boolean} options.isPromise - Return promise vs. use callback (default: false)
+   */
+  animateCardToHandUnified(options) {
+    const { 
+      cardId, 
+      targetHandLength, 
+      cardIndex = targetHandLength - 1, 
+      onComplete, 
+      isPromise = false 
+    } = options;
+
+    const executeAnimation = (resolve) => {
+      console.log(`Animating card ${cardId} to hand at position ${cardIndex}`);
+      
+      // Process card data consistently
+      let processedCardData = cardId;
+      if (typeof cardId === 'string') {
+        processedCardData = {
+          id: cardId.split('_')[0], // Remove UID suffix if present
+          name: cardId,
+          cardType: this.getCardTypeFromId(cardId.split('_')[0])
+        };
       }
-    });
-    
-    // Add some visual flair - slight rotation during animation
-    this.tweens.add({
-      targets: tempCard,
-      rotation: 0.1,
-      duration: 300,
-      ease: 'Power2.easeOut',
-      yoyo: true
-    });
+      
+      // Get deck position for animation start
+      const playerDeckPosition = this.getPlayerDeckPosition();
+      
+      // Create temporary card at deck position
+      const tempCard = this.add.image(playerDeckPosition.x, playerDeckPosition.y, 'card-back');
+      
+      // Set proper scale matching hand cards
+      const scaleX = GAME_CONFIG.card.width / tempCard.width;
+      const scaleY = GAME_CONFIG.card.height / tempCard.height;
+      const handScale = Math.min(scaleX, scaleY) * 0.95 * 1.15;
+      tempCard.setScale(handScale);
+      tempCard.setDepth(2000);
+      
+      // Calculate positioning with unified logic
+      const cardSpacing = Math.min(160, (this.cameras.main.width - 200) / targetHandLength);
+      const startX = -(targetHandLength - 1) * cardSpacing / 2;
+      const newCardX = startX + (cardIndex * cardSpacing);
+      
+      // Convert to world coordinates
+      const worldTargetX = this.handContainer.x + newCardX;
+      const worldTargetY = this.handContainer.y;
+      
+      // Slide existing hand cards to make space
+      this.slideHandCardsLeft(targetHandLength, cardSpacing);
+      
+      // Stage 1: Move card to position
+      this.tweens.add({
+        targets: tempCard,
+        x: worldTargetX,
+        y: worldTargetY,
+        duration: 500,
+        ease: 'Power2.easeOut',
+        onComplete: () => {
+          // Stage 2: Flip to change texture
+          this.tweens.add({
+            targets: tempCard,
+            scaleX: 0,
+            duration: 150,
+            ease: 'Power2.easeIn',
+            onComplete: () => {
+              // Change to actual card texture
+              const cardKey = `${processedCardData.id}-preview`;
+              if (this.textures.exists(cardKey)) {
+                tempCard.setTexture(cardKey);
+              } else {
+                const fallbackKey = processedCardData.id;
+                if (this.textures.exists(fallbackKey)) {
+                  tempCard.setTexture(fallbackKey);
+                }
+              }
+              
+              // Recalculate scale for new texture
+              const newScaleX = GAME_CONFIG.card.width / tempCard.width;
+              const newScaleY = GAME_CONFIG.card.height / tempCard.height;
+              const newHandScale = Math.min(newScaleX, newScaleY) * 0.95 * 1.15;
+              tempCard.setScale(0, newHandScale);
+              
+              // Stage 3: Flip back to visible
+              this.tweens.add({
+                targets: tempCard,
+                scaleX: newHandScale,
+                duration: 150,
+                ease: 'Power2.easeOut',
+                onComplete: () => {
+                  // Create actual Card object in hand
+                  const relativeX = tempCard.x - this.handContainer.x;
+                  const relativeY = tempCard.y - this.handContainer.y;
+                  
+                  const newCard = new Card(this, relativeX, relativeY, processedCardData, {
+                    interactive: true,
+                    draggable: true,
+                    scale: 1.1,
+                    gameStateManager: this.gameStateManager,
+                    usePreview: true
+                  });
+                  
+                  this.input.setDraggable(newCard);
+                  this.playerHand.push(newCard);
+                  this.handContainer.add(newCard);
+                  newCard.originalPosition = { x: relativeX, y: relativeY };
+                  
+                  // Cleanup and completion
+                  this.time.delayedCall(200, () => {
+                    tempCard.destroy();
+                    console.log(`Animation complete for card ${cardId}`);
+                    
+                    if (onComplete) onComplete();
+                    if (resolve) resolve();
+                  });
+                }
+              });
+            }
+          });
+        }
+      });
+    };
+
+    if (isPromise) {
+      return new Promise(executeAnimation);
+    } else {
+      executeAnimation();
+    }
   }
 
   // ============ CARD MOVEMENT ANIMATION SYSTEM ============
@@ -2903,136 +2948,14 @@ export default class GameScene extends Phaser.Scene {
   }
 
   animateCardToHand(moveData, cardIndex) {
-    return new Promise((resolve) => {
-      const { cardId, source } = moveData;
-      console.log(`Animating card ${cardId} from ${source} to hand at index ${cardIndex}`);
-      
-      // Get deck position (same as existing draw animation)
-      const playerDeckPosition = this.getPlayerDeckPosition();
-      
-      // Create temporary card at deck position
-      const tempCard = this.add.image(playerDeckPosition.x, playerDeckPosition.y, 'card-back');
-      
-      // Set proper scale matching existing hand cards
-      const scaleX = GAME_CONFIG.card.width / tempCard.width;
-      const scaleY = GAME_CONFIG.card.height / tempCard.height;
-      const handScale = Math.min(scaleX, scaleY) * 0.95 * 1.15; // Match existing hand card scale
-      tempCard.setScale(handScale);
-      tempCard.setDepth(2000);
-      
-      // Calculate positioning and sliding using the same incremental hand size for consistency
-      const currentTargetLength = this.initialHandSize + cardIndex + 1; // Hand size after THIS card
-      const cardSpacing = Math.min(160, (this.cameras.main.width - 200) / currentTargetLength);
-      const startX = -(currentTargetLength - 1) * cardSpacing / 2;
-      const newCardX = startX + ((this.initialHandSize + cardIndex) * cardSpacing); // Position for this specific card
-      
-      // Convert to world coordinates
-      const worldTargetX = this.handContainer.x + newCardX;
-      const worldTargetY = this.handContainer.y;
-      
-      // Slide existing hand cards using the SAME spacing calculation
-      this.slideHandCardsLeft(currentTargetLength, cardSpacing);
-      
-      // Animate from deck to hand position
-      this.tweens.add({
-        targets: tempCard,
-        x: worldTargetX,
-        y: worldTargetY,
-        duration: 500,
-        ease: 'Power2.easeOut',
-        onComplete: () => {
-          // Flip animation: card back to card face (matches draw animation exactly)
-          this.tweens.add({
-            targets: tempCard,
-            scaleX: 0, // Flip to invisible
-            duration: 150,
-            ease: 'Power2.easeIn',
-            onComplete: () => {
-              // Process card data the same way the working animation does
-              let processedCardData = cardId;
-              if (typeof cardId === 'string') {
-                processedCardData = {
-                  id: cardId.split('_')[0], // Remove UID suffix if present
-                  name: cardId,
-                  cardType: this.getCardTypeFromId(cardId.split('_')[0])
-                };
-              }
-              
-              // Change to actual card image using the same logic as working animation
-              const cardKey = `${processedCardData.id}-preview`;
-              // Check if texture exists before setting it
-              if (this.textures.exists(cardKey)) {
-                tempCard.setTexture(cardKey);
-              } else {
-                // Fallback: try without -preview suffix
-                const fallbackKey = processedCardData.id;
-                if (this.textures.exists(fallbackKey)) {
-                  tempCard.setTexture(fallbackKey);
-                }
-                // If no texture found, keep card-back as fallback
-              }
-              
-              // Recalculate scale for the new texture to maintain consistent card size
-              const newScaleX = GAME_CONFIG.card.width / tempCard.width;
-              const newScaleY = GAME_CONFIG.card.height / tempCard.height;
-              const newHandScale = Math.min(newScaleX, newScaleY) * 0.95 * 1.15;
-              
-              // Update Y scale to match the new texture
-              tempCard.setScale(0, newHandScale);
-              
-              // Flip back to visible with correct scale
-              this.tweens.add({
-                targets: tempCard,
-                scaleX: newHandScale, // Flip back to visible with correct scale
-                duration: 150,
-                ease: 'Power2.easeOut',
-                onComplete: () => {
-                  // Calculate position relative to hand container (same as working draw animation)
-                  const relativeX = tempCard.x - this.handContainer.x;
-                  const relativeY = tempCard.y - this.handContainer.y;
-                  
-                  // Convert temporary card to actual hand card (match existing hand card scale)
-                  const newCard = new Card(this, relativeX, relativeY, processedCardData, {
-                    interactive: true,
-                    draggable: true,
-                    scale: 1.1, // Match existing hand cards scale
-                    gameStateManager: this.gameStateManager,
-                    usePreview: true
-                  });
-                  
-                  // Set up drag and drop (same as working draw animation)
-                  this.input.setDraggable(newCard);
-                  
-                  // Add to hand array and container (same as working draw animation)
-                  this.playerHand.push(newCard);
-                  this.handContainer.add(newCard);
-                  
-                  // Update original position for drag/drop (same as working draw animation)
-                  newCard.originalPosition = { x: relativeX, y: relativeY };
-                  
-                  // Add a brief pause like the working animation
-                  this.time.delayedCall(200, () => {
-                    // Remove temporary card
-                    tempCard.destroy();
-                    
-                    console.log(`Animation complete for card ${cardId}`);
-                    resolve();
-                  });
-                }
-              });
-            }
-          });
-        }
-      });
-      
-      // Add some visual flair - slight rotation during animation (matches working animation)
-      this.tweens.add({
-        targets: tempCard,
-        rotation: 0.1,
-        duration: 300,
-        ease: 'Power2.easeOut',
-        yoyo: true
-      });
+    const { cardId } = moveData;
+    const currentTargetLength = this.initialHandSize + cardIndex + 1;
+    
+    return this.animateCardToHandUnified({
+      cardId,
+      targetHandLength: currentTargetLength,
+      cardIndex: this.initialHandSize + cardIndex,
+      isPromise: true
     });
   }
 
