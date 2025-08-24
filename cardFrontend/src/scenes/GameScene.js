@@ -4,6 +4,7 @@ import Card from '../components/Card.js';
 import ShuffleAnimationManager from '../components/ShuffleAnimationManager.js';
 import GameSceneUtils from '../utils/GameSceneUtils.js';
 import { ZoneMapping } from '../utils/ZoneMapping.js';
+import CardAnimationUtils from '../utils/CardAnimationUtils.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor(config = { key: 'GameScene' }) {
@@ -879,7 +880,7 @@ export default class GameScene extends Phaser.Scene {
       processedCardData = {
           id: cardData.uid,
           name: cardData.uid,
-          cardType: this.getCardTypeFromId(cardData.uid),
+          cardType: CardAnimationUtils.getCardTypeFromId(cardData.uid),
           cardDetails:cardData
         };
       /*
@@ -1546,7 +1547,7 @@ export default class GameScene extends Phaser.Scene {
     return cardIds.map(cardId => ({
       id: cardId,
       name: cardId, // Use ID as name for now
-      type: cardType || this.getCardTypeFromId(cardId),
+      type: cardType || CardAnimationUtils.getCardTypeFromId(cardId),
       power: cardType === 'character' ? Math.floor(Math.random() * 5) + 1 : undefined // Mock power for characters
     }));
   }
@@ -2530,7 +2531,7 @@ export default class GameScene extends Phaser.Scene {
     if (event.data.playerId === currentPlayerId) {
       // Play draw card animation for current player
       console.log("here ddd ");
-      this.playDrawCardAnimation(() => {
+      CardAnimationUtils.playDrawCardAnimation(this, () => {
         // Show acknowledgment UI after animation completes
         this.showDrawPhaseAcknowledgment(event.data);
       });
@@ -2576,7 +2577,7 @@ export default class GameScene extends Phaser.Scene {
     
     // Start processing queue if not already running
     if (!this.processingCardMoves) {
-      this.processCardMoveQueue();
+      CardAnimationUtils.processCardMoveQueue(this);
     }
   }
 
@@ -2760,221 +2761,10 @@ export default class GameScene extends Phaser.Scene {
     });
   }
 
-  // ============ UNIFIED CARD ANIMATION SYSTEM ============
 
-  /**
-   * Unified card animation function for both draw and move-to-hand scenarios
-   * @param {Object} options - Animation configuration
-   * @param {string} options.cardId - Card ID to animate
-   * @param {number} options.targetHandLength - Final hand length after this card
-   * @param {number} options.cardIndex - Index position in target hand (default: rightmost)
-   * @param {Function} options.onComplete - Completion callback (optional)
-   * @param {boolean} options.isPromise - Return promise vs. use callback (default: false)
-   */
-  animateCardToHandUnified(options) {
-    const { 
-      cardId, 
-      targetHandLength, 
-      cardIndex = targetHandLength - 1, 
-      onComplete, 
-      isPromise = false 
-    } = options;
 
-    const executeAnimation = (resolve) => {
-      console.log(`Animating card ${cardId} to hand at position ${cardIndex}`);
-      
-      // Process card data consistently
-      let processedCardData = cardId;
-      if (typeof cardId === 'string') {
-        processedCardData = {
-          id: cardId.split('_')[0], // Remove UID suffix if present
-          name: cardId,
-          cardType: this.getCardTypeFromId(cardId.split('_')[0])
-        };
-      }
-      
-      // Get deck position for animation start
-      const playerDeckPosition = this.getPlayerDeckPosition();
-      
-      // Create temporary card at deck position
-      const tempCard = this.add.image(playerDeckPosition.x, playerDeckPosition.y, 'card-back');
-      
-      // Set proper scale matching hand cards
-      const scaleX = GAME_CONFIG.card.width / tempCard.width;
-      const scaleY = GAME_CONFIG.card.height / tempCard.height;
-      const handScale = Math.min(scaleX, scaleY) * 0.95 * 1.15;
-      tempCard.setScale(handScale);
-      tempCard.setDepth(2000);
-      
-      // Calculate positioning with unified logic
-      const cardSpacing = Math.min(160, (this.cameras.main.width - 200) / targetHandLength);
-      const startX = -(targetHandLength - 1) * cardSpacing / 2;
-      const newCardX = startX + (cardIndex * cardSpacing);
-      
-      // Convert to world coordinates
-      const worldTargetX = this.handContainer.x + newCardX;
-      const worldTargetY = this.handContainer.y;
-      
-      // Slide existing hand cards to make space
-      this.slideHandCardsLeft(targetHandLength, cardSpacing);
-      
-      // Stage 1: Move card to position
-      this.tweens.add({
-        targets: tempCard,
-        x: worldTargetX,
-        y: worldTargetY,
-        duration: 500,
-        ease: 'Power2.easeOut',
-        onComplete: () => {
-          // Stage 2: Flip to change texture
-          this.tweens.add({
-            targets: tempCard,
-            scaleX: 0,
-            duration: 150,
-            ease: 'Power2.easeIn',
-            onComplete: () => {
-              // Change to actual card texture
-              const cardKey = `${processedCardData.id}-preview`;
-              if (this.textures.exists(cardKey)) {
-                tempCard.setTexture(cardKey);
-              } else {
-                const fallbackKey = processedCardData.id;
-                if (this.textures.exists(fallbackKey)) {
-                  tempCard.setTexture(fallbackKey);
-                }
-              }
-              
-              // Recalculate scale for new texture
-              const newScaleX = GAME_CONFIG.card.width / tempCard.width;
-              const newScaleY = GAME_CONFIG.card.height / tempCard.height;
-              const newHandScale = Math.min(newScaleX, newScaleY) * 0.95 * 1.15;
-              tempCard.setScale(0, newHandScale);
-              
-              // Stage 3: Flip back to visible
-              this.tweens.add({
-                targets: tempCard,
-                scaleX: newHandScale,
-                duration: 150,
-                ease: 'Power2.easeOut',
-                onComplete: () => {
-                  // Create actual Card object in hand
-                  const relativeX = tempCard.x - this.handContainer.x;
-                  const relativeY = tempCard.y - this.handContainer.y;
-                  
-                  const newCard = new Card(this, relativeX, relativeY, processedCardData, {
-                    interactive: true,
-                    draggable: true,
-                    scale: 1.1,
-                    gameStateManager: this.gameStateManager,
-                    usePreview: true
-                  });
-                  
-                  this.input.setDraggable(newCard);
-                  this.playerHand.push(newCard);
-                  this.handContainer.add(newCard);
-                  newCard.originalPosition = { x: relativeX, y: relativeY };
-                  
-                  // Cleanup and completion
-                  this.time.delayedCall(200, () => {
-                    tempCard.destroy();
-                    console.log(`Animation complete for card ${cardId}`);
-                    
-                    if (onComplete) onComplete();
-                    if (resolve) resolve();
-                  });
-                }
-              });
-            }
-          });
-        }
-      });
-    };
 
-    if (isPromise) {
-      return new Promise(executeAnimation);
-    } else {
-      executeAnimation();
-    }
-  }
 
-  // ============ CARD MOVEMENT ANIMATION SYSTEM ============
-
-  async processCardMoveQueue() {
-    if (this.processingCardMoves || !this.cardMoveQueue?.length) {
-      return;
-    }
-    
-    this.processingCardMoves = true;
-    console.log(`Processing ${this.cardMoveQueue.length} card moves sequentially`);
-    
-    // Store initial hand and queue sizes for consistent positioning
-    this.initialHandSize = this.playerHand.length;
-    this.initialQueueSize = this.cardMoveQueue.length;
-    
-    // Process each card move with animation (sliding handled per card for proper timing)
-    for (let i = 0; i < this.cardMoveQueue.length; i++) {
-      const moveData = this.cardMoveQueue[i];
-      await this.animateCardToHand(moveData, i);
-      // Small delay between animations for visual clarity
-      // await this.waitForDelay(200); 
-    }
-    
-    // Acknowledge all processed events (backend sync now fixed)
-    try {
-      if (this.cardMoveQueue.length > 0) {
-        const eventIds = this.cardMoveQueue.map(moveData => moveData.event.id);
-        await this.apiManager.acknowledgeEvents(this.gameStateManager.getGameState().gameId, eventIds);
-        console.log(`Acknowledged ${eventIds.length} CARD_MOVED_TO_HAND events`);
-      }
-    } catch (error) {
-      console.error('Failed to acknowledge card move events:', error);
-      this.showRoomStatus('Failed to acknowledge card moves: ' + error.message);
-    }
-    
-    // Update UI after all animations complete - backend sync is now fixed
-    this.updateGameState();
-    
-    // Show completion message
-    const cardCount = this.cardMoveQueue.length;
-    this.showRoomStatus(`${cardCount} card(s) added to hand from deck search`);
-    
-    // Clear queue and reset flag
-    this.cardMoveQueue = [];
-    this.processingCardMoves = false;
-    
-    // Reset initial size tracking for next batch
-    this.initialQueueSize = null;
-    this.initialHandSize = null;
-  }
-
-  animateCardToHand(moveData, cardIndex) {
-    const { cardId } = moveData;
-    const currentTargetLength = this.initialHandSize + cardIndex + 1;
-    
-    return this.animateCardToHandUnified({
-      cardId,
-      targetHandLength: currentTargetLength,
-      cardIndex: this.initialHandSize + cardIndex,
-      isPromise: true
-    });
-  }
-
-  waitForDelay(ms) {
-    return new Promise(resolve => {
-      this.time.delayedCall(ms, resolve);
-    });
-  }
-
-  getPlayerDeckPosition() {
-    // Use existing deck position logic (same as playDrawCardAnimation)
-    const width = this.scale.width;
-    const height = this.scale.height;
-    
-    return {
-      x: width * 0.9,  // Right side for player deck
-      y: height * 0.65 // Below center
-    };
-  }
 
   destroy() {
     // Clean up hover preview resources
