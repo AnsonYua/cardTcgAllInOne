@@ -1412,13 +1412,6 @@ export default class GameScene extends Phaser.Scene {
   }
 
 
-  getCardTypeFromId(cardId) {
-    if (cardId.startsWith('c-')) return 'character';
-    if (cardId.startsWith('h-')) return 'help';
-    if (cardId.startsWith('sp-')) return 'sp';
-    if (cardId.startsWith('s-')) return 'leader';
-    return 'unknown';
-  }
 
 
   // Mock data methods removed - demo mode uses real backend calls
@@ -1868,7 +1861,7 @@ export default class GameScene extends Phaser.Scene {
         const worldTargetY = this.handContainer.y;
         
         // Animate existing hand cards to slide left to make space for this card
-        this.slideHandCardsLeft(totalCards, cardSpacing);
+        CardAnimationUtils.slideHandCardsLeft(this, totalCards, cardSpacing);
         
         // Animate new card from deck to hand position
         this.tweens.add({
@@ -1945,25 +1938,6 @@ export default class GameScene extends Phaser.Scene {
     });
   }
 
-  slideHandCardsLeft(newTotalCards, cardSpacing) {
-    // Recalculate positions for all existing cards with new spacing
-    const newStartX = -(newTotalCards - 1) * cardSpacing / 2;
-    
-    this.playerHand.forEach((card, index) => {
-      const newX = newStartX + (index * cardSpacing);
-      
-      // Animate existing cards to new positions
-      this.tweens.add({
-        targets: card,
-        x: newX,
-        duration: 300,
-        ease: 'Power2.easeOut'
-      });
-      
-      // Update original position for drag/drop functionality
-      card.originalPosition.x = newX;
-    });
-  }
 
   createConnectionStatus() {
     const { width } = this.cameras.main;
@@ -2737,29 +2711,6 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  playDrawCardAnimation(onComplete) {
-    // Get the current hand from game state (the new card should be the last one)
-    const currentHand = this.gameStateManager.getPlayerHand();
-    const newCardData = currentHand[currentHand.length - 1].split("_")[0];
-    const totalCards = this.playerHand.length + 1; // Including this new card
-    
-    // Use unified animation with callback-based completion
-    this.animateCardToHandUnified({
-      cardId: newCardData,
-      targetHandLength: totalCards,
-      cardIndex: this.playerHand.length, // Position at end (rightmost)
-      onComplete: () => {
-        // Update the UI to show the new card in hand
-        this.updateGameState();
-        
-        // Call the original completion callback
-        if (onComplete) {
-          onComplete();
-        }
-      },
-      isPromise: false
-    });
-  }
 
 
 
