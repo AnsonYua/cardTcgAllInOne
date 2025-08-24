@@ -2912,19 +2912,20 @@ export default class GameScene extends Phaser.Scene {
       tempCard.setScale(handScale);
       tempCard.setDepth(2000);
       
-      // Calculate positioning exactly like working draw animation
-      const currentHandLength = this.playerHand.length + cardIndex; // Account for cards added so far
-      const totalCards = currentHandLength + 1; // Including this new card
-      const cardSpacing = Math.min(160, (this.cameras.main.width - 200) / totalCards);
-      const startX = -(totalCards - 1) * cardSpacing / 2;
-      const newCardX = startX + (currentHandLength * cardSpacing); // Position for new card
+      // Calculate positioning for multiple card animations correctly
+      const finalHandLength = this.playerHand.length + this.cardMoveQueue.length; // Final hand size after all cards
+      const cardSpacing = Math.min(160, (this.cameras.main.width - 200) / finalHandLength);
+      const startX = -(finalHandLength - 1) * cardSpacing / 2;
+      const newCardX = startX + ((this.playerHand.length + cardIndex) * cardSpacing); // Position for this specific card
       
       // Convert to world coordinates
       const worldTargetX = this.handContainer.x + newCardX;
       const worldTargetY = this.handContainer.y;
       
-      // Slide existing hand cards left to make space for new card (matches draw pattern)
-      this.slideHandCardsLeft(totalCards, cardSpacing);
+      // Slide existing hand cards left to make space for all new cards (only for first card)
+      if (cardIndex === 0) {
+        this.slideHandCardsLeft(finalHandLength, cardSpacing);
+      }
       
       // Animate from deck to hand position
       this.tweens.add({
