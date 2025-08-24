@@ -2862,7 +2862,11 @@ export default class GameScene extends Phaser.Scene {
     this.processingCardMoves = true;
     console.log(`Processing ${this.cardMoveQueue.length} card moves sequentially`);
     
-    // Process each card move with animation and slide logic (matches draw pattern exactly)
+    // Store initial hand and queue sizes for consistent positioning
+    this.initialHandSize = this.playerHand.length;
+    this.initialQueueSize = this.cardMoveQueue.length;
+    
+    // Process each card move with animation (sliding handled per card for proper timing)
     for (let i = 0; i < this.cardMoveQueue.length; i++) {
       const moveData = this.cardMoveQueue[i];
       await this.animateCardToHand(moveData, i);
@@ -2892,6 +2896,10 @@ export default class GameScene extends Phaser.Scene {
     // Clear queue and reset flag
     this.cardMoveQueue = [];
     this.processingCardMoves = false;
+    
+    // Reset initial size tracking for next batch
+    this.initialQueueSize = null;
+    this.initialHandSize = null;
   }
 
   animateCardToHand(moveData, cardIndex) {
@@ -2912,20 +2920,18 @@ export default class GameScene extends Phaser.Scene {
       tempCard.setScale(handScale);
       tempCard.setDepth(2000);
       
-      // Calculate positioning for multiple card animations correctly
-      const finalHandLength = this.playerHand.length + this.cardMoveQueue.length; // Final hand size after all cards
-      const cardSpacing = Math.min(160, (this.cameras.main.width - 200) / finalHandLength);
-      const startX = -(finalHandLength - 1) * cardSpacing / 2;
-      const newCardX = startX + ((this.playerHand.length + cardIndex) * cardSpacing); // Position for this specific card
+      // Calculate positioning and sliding using the same incremental hand size for consistency
+      const currentTargetLength = this.initialHandSize + cardIndex + 1; // Hand size after THIS card
+      const cardSpacing = Math.min(160, (this.cameras.main.width - 200) / currentTargetLength);
+      const startX = -(currentTargetLength - 1) * cardSpacing / 2;
+      const newCardX = startX + ((this.initialHandSize + cardIndex) * cardSpacing); // Position for this specific card
       
       // Convert to world coordinates
       const worldTargetX = this.handContainer.x + newCardX;
       const worldTargetY = this.handContainer.y;
       
-      // Slide existing hand cards left to make space for all new cards (only for first card)
-      if (cardIndex === 0) {
-        this.slideHandCardsLeft(finalHandLength, cardSpacing);
-      }
+      // Slide existing hand cards using the SAME spacing calculation
+      this.slideHandCardsLeft(currentTargetLength, cardSpacing);
       
       // Animate from deck to hand position
       this.tweens.add({
@@ -3056,6 +3062,10 @@ export default class GameScene extends Phaser.Scene {
       this.cardMoveQueue = [];
     }
     this.processingCardMoves = false;
+    
+    // Reset initial size tracking
+    this.initialQueueSize = null;
+    this.initialHandSize = null;
     
     super.destroy();
   }
