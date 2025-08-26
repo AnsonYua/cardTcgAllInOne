@@ -2,7 +2,7 @@ import { GAME_CONFIG } from '../config/gameConfig.js';
 
 export default class APIManager {
   constructor() {
-    this.baseUrl = GAME_CONFIG.apiBaseUrl;
+    this.baseUrl = GAME_CONFIG.api.baseUrl;
   }
 
   async request(endpoint, options = {}) {
