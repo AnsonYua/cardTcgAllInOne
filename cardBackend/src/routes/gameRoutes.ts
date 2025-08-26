@@ -17,10 +17,10 @@ const router = express.Router();
 // ============ IMAGE SERVING ENDPOINTS ============
 
 /**
- * Serve images from data/image folder
- * GET /api/game/image/:fileName
+ * Serve images from data/image folder (supports subfolders)
+ * GET /api/game/image/*
  */
-router.get('/image/:fileName', gameController.serveImage.bind(gameController));
+router.get('/image/*', gameController.serveImage.bind(gameController));
 
 // ============ HEALTH CHECK ENDPOINTS ============
 

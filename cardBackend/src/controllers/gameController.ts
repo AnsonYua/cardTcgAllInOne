@@ -772,34 +772,39 @@ export class GameController {
     // ============ IMAGE SERVING ENDPOINTS ============
 
     /**
-     * Serve images from data/image folder
-     * GET /api/game/image/:fileName
+     * Serve images from data/image folder (supports subfolders)
+     * GET /api/game/image/*
      */
     async serveImage(req: Request, res: Response): Promise<void> {
         try {
-            const { fileName } = req.params;
+            // Get the full path from the wildcard route (everything after /image/)
+            const imagePath_requested = req.params[0];
             
-            if (!fileName) {
+            if (!imagePath_requested) {
                 res.status(400).json({
-                    error: 'fileName parameter is required',
+                    error: 'Image path is required',
                     timestamp: new Date().toISOString(),
                     context: 'serveImage endpoint'
                 });
                 return;
             }
             
-            console.log(`🖼️ Serving image: ${fileName}`);
+            console.log(`🖼️ Serving image: ${imagePath_requested}`);
             
-            // Sanitize fileName to prevent path traversal attacks
-            const sanitizedFileName = path.basename(fileName);
+            // Sanitize the path to prevent directory traversal attacks
+            // Remove any ../ or .\ attempts and normalize path separators
+            const sanitizedImagePath = imagePath_requested
+                .replace(/\.\./g, '')  // Remove ..
+                .replace(/[\\]/g, '/') // Normalize path separators
+                .replace(/\/+/g, '/'); // Remove double slashes
             
-            // Build path to image file
-            const imagePath = path.join(__dirname, '../data/image', sanitizedFileName);
+            // Build full path to image file
+            const imagePath = path.join(__dirname, '../data/image', sanitizedImagePath);
             
             // Check if file exists
             if (!fs.existsSync(imagePath)) {
                 res.status(404).json({
-                    error: `Image not found: ${sanitizedFileName}`,
+                    error: `Image not found: ${sanitizedImagePath}`,
                     timestamp: new Date().toISOString(),
                     context: 'serveImage endpoint'
                 });
@@ -807,7 +812,7 @@ export class GameController {
             }
             
             // Get file extension to set proper Content-Type
-            const ext = path.extname(sanitizedFileName).toLowerCase();
+            const ext = path.extname(sanitizedImagePath).toLowerCase();
             let contentType = 'application/octet-stream';
             
             switch (ext) {
@@ -848,7 +853,7 @@ export class GameController {
                         });
                     }
                 } else {
-                    console.log(`✅ Image served successfully: ${sanitizedFileName}`);
+                    console.log(`✅ Image served successfully: ${sanitizedImagePath}`);
                 }
             });
             
