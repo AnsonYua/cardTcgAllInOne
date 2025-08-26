@@ -75,7 +75,8 @@
       "Bash(npm start:*)",
       "Bash(sudo chown:*)",
       "Bash(../../cardBackend/node_modules/.bin/ts-node test_s6_leader.ts)",
-      "Bash(git stash push:*)"
+      "Bash(git stash push:*)",
+      "Bash(pip3 install:*)"
     ],
     "deny": []
   }
