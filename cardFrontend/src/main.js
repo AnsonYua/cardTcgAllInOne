@@ -54,6 +54,9 @@ const config = {
 
 const game = new Phaser.Game(config);
 
+// Ensure PreloaderScene starts first
+game.scene.start('PreloaderScene');
+
 window.addEventListener('resize', () => {
   game.scale.refresh();
 });

@@ -136,11 +136,7 @@ export default class MenuScene extends Phaser.Scene {
   }
 
   createButton(x, y, text, callback) {
-    // Check if button texture exists, if not create it
-    if (!this.textures.exists('button')) {
-      this.createButtonTexture();
-    }
-    
+    console.log('[MenuScene] Creating button - texture exists:', this.textures.exists('button'));
     const button = this.add.image(x, y, 'button');
     button.setInteractive();
     
