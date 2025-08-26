@@ -14,6 +14,14 @@ export interface RouteHandler {
 
 const router = express.Router();
 
+// ============ IMAGE SERVING ENDPOINTS ============
+
+/**
+ * Serve images from data/image folder
+ * GET /api/game/image/:fileName
+ */
+router.get('/image/:fileName', gameController.serveImage.bind(gameController));
+
 // ============ HEALTH CHECK ENDPOINTS ============
 
 /**
@@ -32,6 +40,12 @@ router.get('/status', (req: Request, res: Response) => {
 });
 
 // ============ PLAYER DATA ENDPOINTS ============
+
+/**
+ * Get game resource data (gcgdecks.json)
+ * GET /api/game/player/gameResource
+ */
+router.get('/player/gameResource', gameController.getGameResource.bind(gameController));
 
 /**
  * Get player game data

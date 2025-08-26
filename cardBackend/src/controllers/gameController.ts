@@ -152,6 +152,53 @@ export class GameController {
     // ============ PLAYER DATA ENDPOINTS ============
 
     /**
+     * Get game resource data (gcgdecks.json)
+     * GET /api/game/player/gameResource
+     */
+    async getGameResource(req: Request, res: Response): Promise<void> {
+        try {
+            console.log('📋 Getting game resource data (gcgdecks.json)');
+            
+            // Build path to gcgdecks.json
+            const gcgDecksPath = path.join(__dirname, '../data/gcgdecks.json');
+            
+            // Check if file exists
+            if (!fs.existsSync(gcgDecksPath)) {
+                res.status(404).json({
+                    error: 'Game resource file not found',
+                    timestamp: new Date().toISOString(),
+                    context: 'getGameResource endpoint'
+                });
+                return;
+            }
+            
+            // Read and parse the gcgdecks.json file
+            const gcgDecksContent = await fs.promises.readFile(gcgDecksPath, 'utf8');
+            const gcgDecksData = JSON.parse(gcgDecksContent);
+            
+            console.log('✅ Game resource data loaded successfully');
+            
+            res.json(gcgDecksData);
+            
+        } catch (error) {
+            console.error('❌ Error in getGameResource:', error);
+            console.error('❌ Stack trace:', (error as Error).stack);
+            
+            const errorResponse: ErrorResponse = {
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'getGameResource endpoint'
+            };
+            
+            if (process.env.NODE_ENV === 'development') {
+                errorResponse.stack = (error as Error).stack;
+            }
+            
+            res.status(500).json(errorResponse);
+        }
+    }
+
+    /**
      * Get player decks
      * GET /api/game/player/:playerId/decks
      */
@@ -712,6 +759,107 @@ export class GameController {
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
                 context: 'updateDeckFromPath endpoint'
+            };
+            
+            if (process.env.NODE_ENV === 'development') {
+                errorResponse.stack = (error as Error).stack;
+            }
+            
+            res.status(500).json(errorResponse);
+        }
+    }
+
+    // ============ IMAGE SERVING ENDPOINTS ============
+
+    /**
+     * Serve images from data/image folder
+     * GET /api/game/image/:fileName
+     */
+    async serveImage(req: Request, res: Response): Promise<void> {
+        try {
+            const { fileName } = req.params;
+            
+            if (!fileName) {
+                res.status(400).json({
+                    error: 'fileName parameter is required',
+                    timestamp: new Date().toISOString(),
+                    context: 'serveImage endpoint'
+                });
+                return;
+            }
+            
+            console.log(`🖼️ Serving image: ${fileName}`);
+            
+            // Sanitize fileName to prevent path traversal attacks
+            const sanitizedFileName = path.basename(fileName);
+            
+            // Build path to image file
+            const imagePath = path.join(__dirname, '../data/image', sanitizedFileName);
+            
+            // Check if file exists
+            if (!fs.existsSync(imagePath)) {
+                res.status(404).json({
+                    error: `Image not found: ${sanitizedFileName}`,
+                    timestamp: new Date().toISOString(),
+                    context: 'serveImage endpoint'
+                });
+                return;
+            }
+            
+            // Get file extension to set proper Content-Type
+            const ext = path.extname(sanitizedFileName).toLowerCase();
+            let contentType = 'application/octet-stream';
+            
+            switch (ext) {
+                case '.png':
+                    contentType = 'image/png';
+                    break;
+                case '.jpg':
+                case '.jpeg':
+                    contentType = 'image/jpeg';
+                    break;
+                case '.gif':
+                    contentType = 'image/gif';
+                    break;
+                case '.webp':
+                    contentType = 'image/webp';
+                    break;
+                case '.svg':
+                    contentType = 'image/svg+xml';
+                    break;
+                default:
+                    contentType = 'application/octet-stream';
+                    break;
+            }
+            
+            // Set appropriate headers for image serving
+            res.setHeader('Content-Type', contentType);
+            res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 1 day
+            
+            // Serve the image file
+            res.sendFile(imagePath, (err) => {
+                if (err) {
+                    console.error('❌ Error serving image:', err);
+                    if (!res.headersSent) {
+                        res.status(500).json({
+                            error: 'Failed to serve image',
+                            timestamp: new Date().toISOString(),
+                            context: 'serveImage endpoint'
+                        });
+                    }
+                } else {
+                    console.log(`✅ Image served successfully: ${sanitizedFileName}`);
+                }
+            });
+            
+        } catch (error) {
+            console.error('❌ Error in serveImage:', error);
+            console.error('❌ Stack trace:', (error as Error).stack);
+            
+            const errorResponse: ErrorResponse = {
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'serveImage endpoint'
             };
             
             if (process.env.NODE_ENV === 'development') {
