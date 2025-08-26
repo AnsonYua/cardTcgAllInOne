@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_CONFIG } from './config/gameConfig.js';
 import PreloaderScene from './scenes/PreloaderScene.js';
+import CardResourcePreloader from './scenes/CardResourcePreloader.js';
 import MenuScene from './scenes/MenuScene.js';
 import GameScene from './scenes/GameScene.js';
 import DemoScene from './scenes/DemoScene.js';
@@ -41,6 +42,7 @@ const config = {
   },
   scene: [
     PreloaderScene,
+    CardResourcePreloader,
     MenuScene,
     GameScene,
     DemoScene,

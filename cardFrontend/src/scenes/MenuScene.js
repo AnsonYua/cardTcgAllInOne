@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GAME_CONFIG } from '../config/gameConfig.js';
 import GameStateManager from '../managers/GameStateManager.js';
 import APIManager from '../managers/APIManager.js';
+import CardResourcePreloader from './CardResourcePreloader.js';
 
 export default class MenuScene extends Phaser.Scene {
   constructor() {
@@ -135,6 +136,11 @@ export default class MenuScene extends Phaser.Scene {
   }
 
   createButton(x, y, text, callback) {
+    // Check if button texture exists, if not create it
+    if (!this.textures.exists('button')) {
+      this.createButtonTexture();
+    }
+    
     const button = this.add.image(x, y, 'button');
     button.setInteractive();
     
@@ -201,12 +207,16 @@ export default class MenuScene extends Phaser.Scene {
         
         this.hideLoadingMessage();
         this.showConnectionStatus(`🎮 Room created! Game ID: ${response.gameId} (Waiting for player 2...)`);
-        this.scene.start('GameScene', { 
+        
+        // Store scene data and use CardResourcePreloader before GameScene
+        const sceneData = { 
           gameStateManager: this.gameStateManager, 
           apiManager: this.apiManager,
           isManualPollingMode: false,  // Automatic polling for real games
           gameMode: 'host'  // Host mode for game creator
-        });
+        };
+        
+        CardResourcePreloader.preloadBeforeScene(this, 'GameScene', sceneData);
         return;
       }
       
@@ -244,7 +254,8 @@ export default class MenuScene extends Phaser.Scene {
     
     this.gameStateManager.initializeGame(trimmedGameId, playerId, playerName);
     
-    this.scene.start('DemoScene', { 
+    // Store scene data and use CardResourcePreloader before DemoScene
+    const sceneData = { 
       gameStateManager: this.gameStateManager, 
       apiManager: this.apiManager,
       isManualPollingMode: true,  // Manual polling for demo mode
@@ -252,7 +263,9 @@ export default class MenuScene extends Phaser.Scene {
       inGamePlayerId: 'playerId_2',
       gameId: trimmedGameId,
       gameMode: 'join'  // Join mode
-    });
+    };
+    
+    CardResourcePreloader.preloadBeforeScene(this, 'DemoScene', sceneData);
   }
 
   async startDemo() {
@@ -276,7 +289,9 @@ export default class MenuScene extends Phaser.Scene {
         
         this.hideLoadingMessage();
         this.showConnectionStatus(`🎮 Demo room created! Game ID: ${gameId} (Use test buttons to control)`);
-        this.scene.start('DemoScene', { 
+        
+        // Store scene data and use CardResourcePreloader before DemoScene
+        const sceneData = { 
           gameStateManager: this.gameStateManager, 
           apiManager: this.apiManager,
           isManualPollingMode: true,  // Demo mode uses manual polling
@@ -285,7 +300,9 @@ export default class MenuScene extends Phaser.Scene {
           inGamePlayerId: 'playerId_1',
           gameId: gameId,
           gameMode: 'host'  // Host mode
-        });
+        };
+        
+        CardResourcePreloader.preloadBeforeScene(this, 'DemoScene', sceneData);
         return;
       }
     } catch (error) {
@@ -419,7 +436,8 @@ export default class MenuScene extends Phaser.Scene {
     this.gameStateManager.initializeGame(gameId, playerId, playerName);
     this.setupDemoGameState();
     
-    this.scene.start('DemoScene', { 
+    // Store scene data and use CardResourcePreloader before DemoScene
+    const sceneData = { 
       gameStateManager: this.gameStateManager,
       apiManager: this.apiManager,
       isManualPollingMode: true,  // Manual polling for offline demo
@@ -427,7 +445,9 @@ export default class MenuScene extends Phaser.Scene {
       inGamePlayerId: 'playerId_1',
       gameId: gameId,
       gameMode: 'host'  // Host mode
-    });
+    };
+    
+    CardResourcePreloader.preloadBeforeScene(this, 'DemoScene', sceneData);
   }
 
 
@@ -437,7 +457,8 @@ export default class MenuScene extends Phaser.Scene {
     this.gameStateManager.initializeGame(gameId, playerId, playerName);
     this.setupDemoGameState();
     
-    this.scene.start('DemoScene', { 
+    // Store scene data and use CardResourcePreloader before DemoScene
+    const sceneData = { 
       gameStateManager: this.gameStateManager,
       apiManager: this.apiManager,
       isManualPollingMode: true,  // Manual polling for offline demo
@@ -445,6 +466,8 @@ export default class MenuScene extends Phaser.Scene {
       inGamePlayerId: 'playerId_2',
       gameId: gameId,
       gameMode: 'join'  // Join mode
-    });
+    };
+    
+    CardResourcePreloader.preloadBeforeScene(this, 'DemoScene', sceneData);
   }
 }
