@@ -8,7 +8,18 @@ export default class PreloaderScene extends Phaser.Scene {
 
   preload() {
     this.createLoadingBar();
-    this.loadAssets();
+    
+    // Start by fetching the resource list from API
+    this.fetchResourceList()
+      .then(() => {
+        // After getting resource list, load all assets
+        this.loadAssets();
+      })
+      .catch((error) => {
+        console.error('[PreloaderScene] Failed to fetch resource list, using fallback:', error);
+        // Fallback to static loading if API fails
+        this.loadAssets();
+      });
     
     this.load.on('progress', (value) => {
       this.progressBar.clear();
@@ -52,24 +63,64 @@ export default class PreloaderScene extends Phaser.Scene {
     this.loadingText.setOrigin(0.5, 0.5);
   }
 
-  loadAssets() {
-    let rootPath  = "http://localhost:8080/api/game/image/"
-    let imageToLoad = [
-      "cardback.png",
-      "EXB-001.png",
-      "EXR-001.png",
-      "R-001.png",
-    ]
+  async fetchResourceList() {
+    const apiUrl = "http://localhost:8080/api/game/resources";
+    
+    this.updateLoadingText('Fetching resource list...');
+    
+    try {
+      console.log('[PreloaderScene] Fetching resource list from:', apiUrl);
+      
+      const response = await fetch(apiUrl);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const resourceData = await response.json();
+      console.log('[PreloaderScene] Resource list received:', resourceData);
+      
+      // Store the dynamic resource list
+      this.dynamicResources = resourceData;
+      
+      return resourceData;
+      
+    } catch (error) {
+      console.error('[PreloaderScene] API call failed:', error);
+      // Set fallback resources if API fails
+      this.dynamicResources = this.getFallbackResources();
+      throw error;
+    }
+  }
 
+  getFallbackResources() {
+    // Fallback resource list if API is unavailable
+    return {
+      images: [
+        "cardback.png",
+        "EXB-001.png", 
+        "EXR-001.png",
+        "R-001.png",
+      ],
+      rootPath: "http://localhost:8080/api/game/image/",
+      loadPreviews: true
+    };
+  }
+
+  loadAssets() {
+    this.updateLoadingText('Loading game assets...');
     
-    // Load actual card back image
+    // Use dynamic resources if available, otherwise use fallback
+    const resources = this.dynamicResources || this.getFallbackResources();
+    const { images, rootPath, loadPreviews = true } = resources;
+
+    console.log('[PreloaderScene] Loading assets with resources:', resources);
+
+    // Load dynamic backend images (both full-size and previews)
+    this.loadBackendImages(rootPath, images, loadPreviews);
+    
+    // Load static local assets
     this.load.image('card-back', 'src/assets/cardBack.png');
-    
-    // Load leader card back image
     this.load.image('card-back-leader', 'src/assets/cardBackLeader.png');
-    
-    // Load all card images
-    this.loadCardImages();
     
     // Create placeholder card textures
     this.createCardTextures();
@@ -78,142 +129,48 @@ export default class PreloaderScene extends Phaser.Scene {
     this.createUITextures();
   }
 
-  loadCardImages() {
-    // Load all card files from each folder
-    this.scanAndLoadFolder('character', 'c-');
-    this.scanAndLoadFolder('leader', 's-');
-    this.scanAndLoadFolder('utilityCard', 'h-');
-    this.scanAndLoadFolder('utilityCard', 'sp-');
-  }
-
-  scanAndLoadFolder(folderName, prefix) {
-    console.log(`[PreloaderScene] Loading ${folderName} files with prefix ${prefix}`);
+  loadBackendImages(rootPath, imageList, loadPreviews = true) {
+    console.log(`[PreloaderScene] Loading backend images from: ${rootPath} (previews: ${loadPreviews})`);
     
-    // Use a predefined list of known card ranges to avoid 404 scanning
-    let cardRange;
-    if (prefix === 'c-') cardRange = 28;      // Character cards c-1 to c-28
-    else if (prefix === 's-') cardRange = 6;  // Leader cards s-1 to s-6  
-    else if (prefix === 'h-') cardRange = 15; // Help cards h-1 to h-15
-    else if (prefix === 'sp-') cardRange = 10; // SP cards sp-1 to sp-10
-    else cardRange = 10;
+    imageList.forEach(imageName => {
+      const imageKey = this.getImageKey(imageName);
+      
+      // Load full-size image: http://localhost:8080/api/game/image/cardback.png
+      const fullImageUrl = `${rootPath}${imageName}`;
+      this.load.image(imageKey, fullImageUrl);
+      console.log(`[PreloaderScene] Queuing: ${imageKey} from ${fullImageUrl}`);
+      
+      // Load preview image if enabled: http://localhost:8080/api/game/image/previews/cardback.png
+      if (loadPreviews) {
+        const previewKey = `${imageKey}-preview`;
+        const previewImageUrl = `${rootPath}previews/${imageName}`;
+        this.load.image(previewKey, previewImageUrl);
+        console.log(`[PreloaderScene] Queuing: ${previewKey} from ${previewImageUrl}`);
+      }
+    });
     
-    const foundFiles = [];
+    // Handle successful loads
+    this.load.on('filecomplete', (key, type) => {
+      if (type === 'image') {
+        console.log(`[PreloaderScene] ✅ Successfully loaded: ${key}`);
+      }
+    });
     
-    // Load images and let Phaser handle missing files gracefully
-    for (let i = 1; i <= cardRange; i++) {
-      const cardId = `${prefix}${i}`;
-      const imagePath = `src/assets/${folderName}/${cardId}.png`;
-      const previewPath = `src/assets/${folderName}/${cardId}-preview.png`;
-      
-      foundFiles.push(cardId);
-      
-      // Load main image
-      this.load.image(cardId, imagePath);
-      
-      // Load preview image  
-      this.load.image(`${cardId}-preview`, previewPath);
-      
-      // Handle successful loads
-      this.load.once(`filecomplete-image-${cardId}`, () => {
-        console.log(`[PreloaderScene] Successfully loaded: ${cardId}`);
-      });
-      
-      this.load.once(`filecomplete-image-${cardId}-preview`, () => {
-        console.log(`[PreloaderScene] Successfully loaded: ${cardId}-preview`);
-      });
-    }
-    
-    // Handle load errors silently
+    // Handle load errors gracefully
     this.load.on('loaderror', (fileObj) => {
-      if (fileObj.key.startsWith(prefix)) {
-        // Don't log errors, just handle them silently
-      }
-    });
-    
-    console.log(`[PreloaderScene] Queued ${foundFiles.length} ${folderName} files for loading`);
-    return foundFiles;
-  }
-
-  createPreviewFallback(cardId) {
-    // Create a preview version from the main image after it loads
-    this.load.once('filecomplete-image-' + cardId, () => {
-      if (!this.textures.exists(`${cardId}-preview`)) {
-        // Use the main image as preview with slight modification
-        this.textures.addImage(`${cardId}-preview`, this.textures.get(cardId).source[0]);
-        console.log(`[PreloaderScene] Created preview fallback for ${cardId}`);
-      }
+      console.warn(`[PreloaderScene] ❌ Failed to load: ${fileObj.key} from ${fileObj.src}`);
     });
   }
 
-  getCardInfo(cardId) {
-    if (cardId.startsWith('c-')) return { folder: 'character' };
-    if (cardId.startsWith('h-') || cardId.startsWith('sp-')) return { folder: 'utilityCard' };
-    if (cardId.startsWith('s-')) return { folder: 'leader' };
-    return null;
-  }
-
-  createFallbackTexture(cardId) {
-    // Create a simple colored rectangle as fallback
-    this.load.once('complete', () => {
-      if (!this.textures.exists(cardId)) {
-        console.log(`Creating fallback texture for ${cardId}`);
-        const graphics = this.add.graphics();
-        graphics.fillStyle(0x4444ff);
-        graphics.fillRoundedRect(0, 0, 130, 190, 10);
-        graphics.generateTexture(cardId, 130, 190);
-        graphics.destroy();
-      }
-      
-      if (!this.textures.exists(`${cardId}-preview`)) {
-        console.log(`Creating fallback preview texture for ${cardId}-preview`);
-        const graphics = this.add.graphics();
-        graphics.fillStyle(0x6666ff);
-        graphics.fillRoundedRect(0, 0, 130, 190, 10);
-        graphics.generateTexture(`${cardId}-preview`, 130, 190);
-        graphics.destroy();
-      }
-    });
-  }
-
-  loadImagesFromFolder(folderName, prefix) {
-    // Since we can't dynamically scan folders in the browser, we'll load a reasonable range
-    // and handle missing files gracefully
-    let maxCards;
-    
-    // Set reasonable limits based on card type to reduce 404 errors
-    if (prefix === 'c-') maxCards = 28; // Character cards
-    else if (prefix === 's-') maxCards = 6; // Leader cards  
-    else if (prefix === 'h-') maxCards = 15; // Help cards
-    else if (prefix === 'sp-') maxCards = 10; // SP cards
-    else maxCards = 10; // Default
-    
-    console.log(`[PreloaderScene] Loading ${folderName} images with prefix ${prefix} (max: ${maxCards})`);
-    
-    for (let i = 1; i <= maxCards; i++) {
-      const cardId = `${prefix}${i}`;
-      
-      // Load original image
-      this.load.image(cardId, `src/assets/${folderName}/${cardId}.png`);
-      console.log(`[PreloaderScene] Queuing load: ${cardId} from src/assets/${folderName}/${cardId}.png`);
-      
-      // Load preview image
-      this.load.image(`${cardId}-preview`, `src/assets/${folderName}/${cardId}-preview.png`);
-      console.log(`[PreloaderScene] Queuing load: ${cardId}-preview from src/assets/${folderName}/${cardId}-preview.png`);
+  updateLoadingText(text) {
+    if (this.loadingText) {
+      this.loadingText.setText(text);
     }
-    
-    // Handle load success
-    this.load.on('filecomplete', (key, type, data) => {
-      if (key.startsWith(prefix)) {
-        console.log(`[PreloaderScene] Successfully loaded: ${key}`);
-      }
-    });
-    
-    // Handle load errors gracefully (files that don't exist)
-    this.load.on('loaderror', (fileObj) => {
-      if (fileObj.key.startsWith(prefix)) {
-        console.log(`[PreloaderScene] Card image not found: ${fileObj.src} (this is normal for unused card slots)`);
-      }
-    });
+  }
+
+  getImageKey(imageName) {
+    // Convert filename to appropriate key (remove extension)
+    return imageName.replace(/\.[^/.]+$/, "");
   }
 
   createCardTextures() {
