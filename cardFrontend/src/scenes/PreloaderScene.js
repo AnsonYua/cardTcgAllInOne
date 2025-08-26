@@ -53,16 +53,17 @@ export default class PreloaderScene extends Phaser.Scene {
   }
 
   loadAssets() {
-    let rootPath = "http://localhost:8080/api/game/image/"
-    let imageToLoad = [
-      "cardback.png",
-      "EXB-001.png", 
-      "EXR-001.png",
-      "R-001.png",
-    ]
+    // Use centralized API configuration for image base URL
+    const rootPath = GAME_CONFIG.api.imageBaseUrl;
+    const imageMapping = {
+      [GAME_CONFIG.imageKey.cardback]: "cardback.png",
+      [GAME_CONFIG.imageKey.exBase]: "EXB-001.png", 
+      [GAME_CONFIG.imageKey.extraResource]: "EXR-001.png",
+      [GAME_CONFIG.imageKey.resource]: "R-001.png",
+    }
 
-    // Load specific backend images (both full-size and previews)
-    this.loadBackendImages(rootPath, imageToLoad);
+    // Load specific backend images using the mapping (both full-size and previews)
+    this.loadBackendImagesWithMapping(rootPath, imageMapping);
     
     // Load actual card back image
     this.load.image('card-back', 'src/assets/cardBack.png');
@@ -77,6 +78,39 @@ export default class PreloaderScene extends Phaser.Scene {
     this.createUITextures();
   }
 
+  loadBackendImagesWithMapping(rootPath, imageMapping) {
+    console.log(`[PreloaderScene] Loading backend images from: ${rootPath}`);
+    console.log(`[PreloaderScene] Image mapping:`, imageMapping);
+    
+    Object.entries(imageMapping).forEach(([imageKey, imagePath]) => {
+      const previewKey = `${imageKey}-preview`;
+      
+      // Load full-size image: http://localhost:8080/api/game/image/cardback.png
+      const fullImageUrl = `${rootPath}${imagePath}`;
+      this.load.image(imageKey, fullImageUrl);
+      
+      // Load preview image: http://localhost:8080/api/game/image/previews/cardback.png
+      const previewImageUrl = `${rootPath}previews/${imagePath}`;
+      this.load.image(previewKey, previewImageUrl);
+      
+      console.log(`[PreloaderScene] Queuing: ${imageKey} from ${fullImageUrl}`);
+      console.log(`[PreloaderScene] Queuing: ${previewKey} from ${previewImageUrl}`);
+    });
+    
+    // Handle successful loads
+    this.load.on('filecomplete', (key, type) => {
+      if (type === 'image') {
+        console.log(`[PreloaderScene] ✅ Successfully loaded: ${key}`);
+      }
+    });
+    
+    // Handle load errors gracefully
+    this.load.on('loaderror', (fileObj) => {
+      console.warn(`[PreloaderScene] ❌ Failed to load: ${fileObj.key} from ${fileObj.src}`);
+    });
+  }
+
+  // Legacy method for backward compatibility
   loadBackendImages(rootPath, imageList) {
     console.log(`[PreloaderScene] Loading backend images from: ${rootPath}`);
     
@@ -151,7 +185,7 @@ export default class PreloaderScene extends Phaser.Scene {
     buttonGraphics.fillRoundedRect(0, 0, 200, 50, 8);
     buttonGraphics.lineStyle(2, 0x357ABD);
     buttonGraphics.strokeRoundedRect(0, 0, 200, 50, 8);
-    buttonGraphics.generateTexture('button', 200, 50);
+    buttonGraphics.generateTexture(GAME_CONFIG.imageKey.button, 200, 50);
     buttonGraphics.destroy();
   }
 }

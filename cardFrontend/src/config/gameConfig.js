@@ -82,5 +82,14 @@ export const GAME_CONFIG = {
     highlight: 0xFFD700,
     error: 0xFF6B6B,
     success: 0x51CF66
+  },
+
+  imageKey:{
+    cardback:"cardback",
+    exBase:"exBase",
+    extraResource:"extraResource",
+    resource:"resource",
+    button:"button"
   }
+
 };
