@@ -21,6 +21,7 @@ export default class CardResourcePreloader extends Phaser.Scene {
   }
 
   preload() {
+    console.log('[CardResourcePreloader] Scene initialized, creating loading interface...');
     this.createLoadingBar();
     
     // Start by fetching the resource list from API
@@ -35,7 +36,7 @@ export default class CardResourcePreloader extends Phaser.Scene {
         this.loadCardResources();
       });
     
-    // Loading progress events
+    // Loading progress events - matching PreloaderScene pattern
     this.load.on('progress', (value) => {
       this.updateProgressBar(value);
       this.updateLoadingText(`Loading resources... ${Math.round(value * 100)}%`);
@@ -59,8 +60,11 @@ export default class CardResourcePreloader extends Phaser.Scene {
   }
 
   createLoadingBar() {
-    const width = this.cameras.main.width;
-    const height = this.cameras.main.height;
+    // Safe camera access with fallback values - matching PreloaderScene pattern
+    const width = this.cameras?.main?.width || this.sys?.game?.config?.width || 1920;
+    const height = this.cameras?.main?.height || this.sys?.game?.config?.height || 1080;
+    
+    console.log(`[CardResourcePreloader] Creating loading bar with dimensions: ${width}x${height}`);
 
     this.progressBox = this.add.graphics();
     this.progressBox.fillStyle(0x222222);
@@ -73,25 +77,33 @@ export default class CardResourcePreloader extends Phaser.Scene {
       fill: '#ffffff'
     });
     this.loadingText.setOrigin(0.5, 0.5);
+    
+    console.log('[CardResourcePreloader] Loading UI created successfully');
   }
 
   async fetchResourceList() {
-    // TODO: Replace this placeholder with actual API call when backend is ready
-    const placeholderApiUrl = "http://localhost:8080/api/game/resources";
+    const apiUrl = GAME_CONFIG.api.getFullUrl(GAME_CONFIG.api.endpoints.gameResource);
     
-    this.updateLoadingText('Fetching resource list from server...');
+    this.updateLoadingText('Fetching deck data from server...');
     
     try {
-      console.log('[CardResourcePreloader] [PLACEHOLDER] Would fetch from:', placeholderApiUrl);
+      console.log('[CardResourcePreloader] Fetching deck data from:', apiUrl);
       
-      // PLACEHOLDER: Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: GAME_CONFIG.api.headers,
+        signal: AbortSignal.timeout(GAME_CONFIG.api.timeout)
+      });
       
-      // PLACEHOLDER: Use fallback resources for now
-      const resourceData = this.getFallbackResources();
-      resourceData.source = 'placeholder'; // Mark as placeholder data
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
       
-      console.log('[CardResourcePreloader] [PLACEHOLDER] Using fallback resource list:', resourceData);
+      const deckData = await response.json();
+      console.log('[CardResourcePreloader] Deck data received:', deckData);
+      
+      // Process the deck data to extract unique card images
+      const resourceData = this.processDeckData(deckData);
       
       // Store the resource list
       this.dynamicResources = resourceData;
@@ -99,11 +111,46 @@ export default class CardResourcePreloader extends Phaser.Scene {
       return resourceData;
       
     } catch (error) {
-      console.error('[CardResourcePreloader] [PLACEHOLDER] Error in placeholder:', error);
-      // Set fallback resources if something fails
+      console.error('[CardResourcePreloader] API call failed:', error);
+      // Set fallback resources if API fails
       this.dynamicResources = this.getFallbackResources();
       throw error;
     }
+  }
+
+  processDeckData(deckData) {
+    console.log('[CardResourcePreloader] Processing deck data...');
+    
+    // Extract all card paths from all decks and deduplicate
+    const allCardPaths = new Set();
+    
+    // Loop through all decks in deckData.decks
+    if (deckData.decks) {
+      Object.keys(deckData.decks).forEach(deckKey => {
+        const deck = deckData.decks[deckKey];
+        if (deck.cards && Array.isArray(deck.cards)) {
+          deck.cards.forEach(cardPath => {
+            // Add .png extension if not present
+            const imagePath = cardPath.endsWith('.png') ? cardPath : `${cardPath}.png`;
+            allCardPaths.add(imagePath);
+          });
+        }
+      });
+    }
+    
+    // Convert set to array
+    const uniqueCardPaths = Array.from(allCardPaths);
+    
+    console.log(`[CardResourcePreloader] Found ${uniqueCardPaths.length} unique cards to load:`, uniqueCardPaths);
+    
+    return {
+      images: uniqueCardPaths,
+      rootPath: GAME_CONFIG.api.imageBaseUrl,
+      loadPreviews: true,
+      version: "1.0.0",
+      timestamp: new Date().toISOString(),
+      source: 'api'
+    };
   }
 
   getFallbackResources() {
@@ -114,12 +161,12 @@ export default class CardResourcePreloader extends Phaser.Scene {
         "EXB-001.png", 
         "EXR-001.png",
         "R-001.png",
-        "ST01-001.png",
-        "ST01-002.png",
-        "ST01-003.png",
-        "ST01-004.png"
+        "st01/ST01-001.png",
+        "st01/ST01-002.png",
+        "st01/ST01-003.png",
+        "st01/ST01-004.png"
       ],
-      rootPath: "http://localhost:8080/api/game/image/",
+      rootPath: GAME_CONFIG.api.imageBaseUrl,
       loadPreviews: true,
       version: "fallback",
       timestamp: new Date().toISOString()
@@ -140,48 +187,96 @@ export default class CardResourcePreloader extends Phaser.Scene {
   }
 
   loadBackendImages(rootPath, imageList, loadPreviews = true) {
-    console.log(`[CardResourcePreloader] [PLACEHOLDER] Loading backend images from: ${rootPath} (previews: ${loadPreviews})`);
+    console.log(`[CardResourcePreloader] Loading backend images from: ${rootPath} (previews: ${loadPreviews})`);
     
-    imageList.forEach(imageName => {
-      const imageKey = this.getImageKey(imageName);
+    imageList.forEach(imagePath => {
+      const imageKey = this.getImageKey(imagePath);
       
-      // TODO: Replace with actual backend image URLs when backend is ready
-      // Load full-size image: http://localhost:8080/api/game/image/cardback.png
-      const fullImageUrl = `${rootPath}${imageName}`;
+      // Load full-size image using GAME_CONFIG helper
+      const fullImageUrl = GAME_CONFIG.api.getImageUrl(imagePath);
       this.load.image(imageKey, fullImageUrl);
-      console.log(`[CardResourcePreloader] [PLACEHOLDER] Queuing: ${imageKey} from ${fullImageUrl}`);
+      console.log(`[CardResourcePreloader] Queuing: ${imageKey} from ${fullImageUrl}`);
       
-      // Load preview image if enabled: http://localhost:8080/api/game/image/previews/cardback.png
+      // Load preview image if enabled using GAME_CONFIG helper
       if (loadPreviews) {
         const previewKey = `${imageKey}-preview`;
-        const previewImageUrl = `${rootPath}previews/${imageName}`;
+        const previewImageUrl = GAME_CONFIG.api.getPreviewImageUrl(imagePath);
         this.load.image(previewKey, previewImageUrl);
-        console.log(`[CardResourcePreloader] [PLACEHOLDER] Queuing: ${previewKey} from ${previewImageUrl}`);
+        console.log(`[CardResourcePreloader] Queuing: ${previewKey} from ${previewImageUrl}`);
       }
     });
   }
 
   updateProgressBar(value) {
+    if (!this.progressBar) return;
+    
+    // Safe camera access with fallback values - matching PreloaderScene pattern  
+    const width = this.cameras?.main?.width || this.sys?.game?.config?.width || 1920;
+    const height = this.cameras?.main?.height || this.sys?.game?.config?.height || 1080;
+    
     this.progressBar.clear();
     this.progressBar.fillStyle(GAME_CONFIG.colors.highlight);
     this.progressBar.fillRect(
-      this.cameras.main.width / 2 - 200,
-      this.cameras.main.height / 2 - 10,
+      width / 2 - 200,
+      height / 2 - 10,
       400 * value,
       20
     );
   }
 
   updateLoadingText(text) {
-    if (this.loadingText) {
-      this.loadingText.setText(text);
+    // Enhanced safety checks
+    if (this.loadingText && typeof this.loadingText === 'object' && this.loadingText.active && this.loadingText.setText) {
+      try {
+        this.loadingText.setText(text);
+        console.log(`[CardResourcePreloader] Loading text updated: ${text}`);
+      } catch (error) {
+        console.warn('[CardResourcePreloader] Could not update loading text:', error);
+        // If the text object is corrupted, try to recreate it
+        this.recreateLoadingText(text);
+      }
+    } else {
+      console.warn(`[CardResourcePreloader] Loading text not available - state:`, {
+        exists: !!this.loadingText,
+        type: typeof this.loadingText,
+        active: this.loadingText?.active,
+        hasSetText: !!this.loadingText?.setText
+      });
+      // Try to recreate the loading text
+      this.recreateLoadingText(text);
+    }
+  }
+
+  recreateLoadingText(text) {
+    try {
+      if (this.loadingText && this.loadingText.destroy) {
+        this.loadingText.destroy();
+      }
+      
+      // Safe camera access with fallback values
+      const width = this.cameras?.main?.width || this.sys?.game?.config?.width || 1920;
+      const height = this.cameras?.main?.height || this.sys?.game?.config?.height || 1080;
+      
+      console.log(`[CardResourcePreloader] Recreating text with dimensions: ${width}x${height}`);
+      
+      this.loadingText = this.add.text(width / 2, height / 2 - 50, text, {
+        fontSize: '18px',
+        fill: '#ffffff'
+      });
+      this.loadingText.setOrigin(0.5, 0.5);
+      console.log('[CardResourcePreloader] Loading text recreated successfully');
+    } catch (error) {
+      console.error('[CardResourcePreloader] Failed to recreate loading text:', error);
+      this.loadingText = null;
     }
   }
 
 
-  getImageKey(imageName) {
-    // Convert filename to appropriate key (remove extension)
-    return imageName.replace(/\.[^/.]+$/, "");
+  getImageKey(imagePath) {
+    // Extract filename from path and remove extension
+    // Example: "st01/ST01-012" -> "ST01-012"
+    const filename = imagePath.split('/').pop(); // Get last part after slash
+    return filename.replace(/\.[^/.]+$/, "");     // Remove extension
   }
 
   onLoadingComplete() {
@@ -190,10 +285,16 @@ export default class CardResourcePreloader extends Phaser.Scene {
       texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
     });
     
-    // Clean up loading interface
-    this.progressBar.destroy();
-    this.progressBox.destroy();
-    this.loadingText.destroy();
+    // Clean up loading interface - matching PreloaderScene pattern
+    if (this.progressBar) {
+      this.progressBar.destroy();
+    }
+    if (this.progressBox) {
+      this.progressBox.destroy();
+    }
+    if (this.loadingText) {
+      this.loadingText.destroy();
+    }
     
     // Transition to target scene with scene data
     console.log(`[CardResourcePreloader] Loading complete, transitioning to: ${this.targetScene}`);

@@ -7,8 +7,35 @@ export const GAME_CONFIG = {
   minHeight: 768,
   
   // API Configuration
-  apiBaseUrl: 'http://localhost:8080/api/game',
-  pollInterval: 1000,
+  api: {
+    baseUrl: 'http://localhost:8080/api/game',
+    imageBaseUrl: 'http://localhost:8080/api/game/image/',
+    endpoints: {
+      gameResource: '/player/gameResource',
+      createGame: '/player/startGame',
+      joinRoom: '/player/joinRoom',
+      playerAction: '/player/playerAction',
+      selectCard: '/player/selectCard',
+      acknowledgeEvents: '/player/acknowledgeEvents',
+      nextRound: '/player/nextRound',
+      getPlayer: '/player',
+      startReady: '/player/startReady',
+      health: '/health'
+    },
+    pollInterval: 1000,
+    timeout: 10000,
+    retryAttempts: 3,
+    retryDelay: 1000,
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache'
+    },
+    // Helper functions
+    getFullUrl: (endpoint) => `${GAME_CONFIG.api.baseUrl}${endpoint}`,
+    getImageUrl: (imagePath) => `${GAME_CONFIG.api.imageBaseUrl}${imagePath}`,
+    getPreviewImageUrl: (imagePath) => `${GAME_CONFIG.api.imageBaseUrl}previews/${imagePath}`
+  },
   
   // Game Constants
   maxHandSize: 7,
