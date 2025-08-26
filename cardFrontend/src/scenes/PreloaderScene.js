@@ -53,6 +53,15 @@ export default class PreloaderScene extends Phaser.Scene {
   }
 
   loadAssets() {
+    let rootPath  = "http://localhost:8080/api/game/image/"
+    let imageToLoad = [
+      "cardback.png",
+      "EXB-001.png",
+      "EXR-001.png",
+      "R-001.png",
+    ]
+
+    
     // Load actual card back image
     this.load.image('card-back', 'src/assets/cardBack.png');
     
