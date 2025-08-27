@@ -18,31 +18,6 @@ class CardDataValidator {
                cardObj.cardDetails.length > 0;
     }
 
-    /**
-     * Validate isBack array structure (used multiple times in original code)  
-     * @param {Object} cardObj - Card object to validate
-     * @returns {boolean} True if isBack is valid
-     */
-    static hasValidIsBack(cardObj) {
-        return cardObj && 
-               cardObj.isBack && 
-               Array.isArray(cardObj.isBack) && 
-               cardObj.isBack.length > 0;
-    }
-
-    /**
-     * Check if card is face down with proper validation
-     * @param {Object} cardObj - Card object to check
-     * @returns {boolean} True if card is face down
-     */
-    static isFaceDown(cardObj) {
-        if (!this.hasValidIsBack(cardObj)) {
-            return false;
-        }
-        // Handle both boolean and string values
-        const faceDownValue = cardObj.isBack[0];
-        return faceDownValue === true || faceDownValue === 'true';
-    }
 
     /**
      * Extract card data from cardObj with multiple fallback strategies
@@ -200,8 +175,6 @@ class CardDataValidator {
         return {
             isValid: cardObj && (this.hasValidCardDetails(cardObj) || (cardObj.id && cardObj.cardType)),
             hasCardDetails: this.hasValidCardDetails(cardObj),
-            hasIsBack: this.hasValidIsBack(cardObj),
-            isFaceDown: this.isFaceDown(cardObj),
             cardData: this.extractCardData(cardObj)
         };
     }

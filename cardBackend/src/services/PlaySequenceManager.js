@@ -103,7 +103,7 @@ class PlaySequenceManager {
      *   cardId: "h-2", 
      *   action: "PLAY_CARD",
      *   zone: "help",
-     *   data: { isFaceDown: false },
+     *   data: {},
      *   timestamp: "2025-01-21T10:05:00Z",
      *   turnNumber: 4,
      *   phaseWhenPlayed: "MAIN_PHASE"  

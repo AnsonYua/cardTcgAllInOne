@@ -114,7 +114,7 @@ class TurnManager {
             // Check if player played a card this turn
             for (const play of playSequence) {
                 // Check for card play actions by this player in the current turn
-                if ((play.action === "PLAY_CARD" || play.action === "PLAY_CARD_BACK") &&
+                if ((play.action === "PLAY_CARD") &&
                     play.playerId === playerId &&
                     play.turnNumber === currentTurn) {
                     currentTurnActionComplete = true;

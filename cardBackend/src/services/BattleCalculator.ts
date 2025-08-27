@@ -29,7 +29,6 @@ interface CardPowerData {
     zone: string;
     gameType: string;
     traits: string[];
-    isFaceDown: boolean;
 }
 
 interface ComboRule {
@@ -177,11 +176,7 @@ export class BattleCalculator {
                 const cardData = this.extractCardDataFromZone(zoneCard);
                 if (!cardData) continue;
                 
-                // Skip face-down cards (they contribute 0 power)
-                if (cardData.isFaceDown) {
-                    console.log(`  ⏭️ Skipping face-down card ${cardData.cardUid}`);
-                    continue;
-                }
+                // All cards contribute to power calculation
                 
                 // ENHANCED: Use comprehensive effect processing pipeline
                 const finalPower = this.processCardPowerWithEffectPipeline(
@@ -200,8 +195,7 @@ export class BattleCalculator {
                     finalPower: finalPower,
                     zone: zone,
                     gameType: cardData.gameType,
-                    traits: cardData.traits,
-                    isFaceDown: cardData.isFaceDown
+                    traits: cardData.traits
                 });
                 
                 console.log(`    🔧 Applied effects to ${cardData.cardId}: ${cardData.basePower} → ${finalPower}`);
@@ -451,8 +445,7 @@ export class BattleCalculator {
                 basePower: zoneCard.cardData.power || 0,
                 gameType: zoneCard.cardData.gameType || '',
                 traits: zoneCard.cardData.traits || [],
-                name: zoneCard.cardData.name || '',
-                isFaceDown: zoneCard.isFaceDown || false
+                name: zoneCard.cardData.name || ''
             };
         }
         
@@ -474,8 +467,7 @@ export class BattleCalculator {
                 basePower: cardData.power || 0,
                 gameType: cardData.gameType || '',
                 traits: cardData.traits || [],
-                name: cardData.name || '',
-                isFaceDown: zoneCard.isBack || false
+                name: cardData.name || ''
             };
         }
         

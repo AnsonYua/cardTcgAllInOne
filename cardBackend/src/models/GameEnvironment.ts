@@ -63,7 +63,6 @@ export enum ZoneType {
 
 export enum ActionType {
     PLAY_CARD = 'PLAY_CARD',
-    PLAY_CARD_BACK = 'PLAY_CARD_BACK',
     PLAY_LEADER = 'PLAY_LEADER',
     APPLY_SET_POWER = 'APPLY_SET_POWER',
     APPLY_EFFECT = 'APPLY_EFFECT'
@@ -277,17 +276,14 @@ export function isUtilityZoneCard(card: BaseZoneCard): card is UtilityZoneCard {
 }
 
 /**
- * Card property accessors that handle face-down mechanics
+ * Card property accessors and utilities
  */
 export class ZoneCardUtils {
    
     /**
-     * Get game type for zone compatibility (empty if face-down)
+     * Get game type for zone compatibility
      */
     static getEffectiveGameType(card: BaseZoneCard): string {
-        if (card.isFaceDown) {
-            return ''; // Face-down cards bypass all restrictions
-        }
         if (isCharacterZoneCard(card) || isLeaderZoneCard(card)) {
             return card.cardData.gameType;
         }
@@ -295,27 +291,27 @@ export class ZoneCardUtils {
     }
 
     /**
-     * Get traits for effect targeting (empty if face-down)
+     * Get traits for effect targeting
      */
     static getEffectiveTraits(card: BaseZoneCard): string[] {
-        if (card.isFaceDown || !isCharacterZoneCard(card)) {
+        if (!isCharacterZoneCard(card)) {
             return [];
         }
         return card.cardData.traits || [];
     }
 
     /**
-     * Check if card can trigger effects (false if face-down)
+     * Check if card can trigger effects
      */
     static canTriggerEffects(card: BaseZoneCard): boolean {
-        return !card.isFaceDown && card.cardData.effects?.rules?.length > 0;
+        return card.cardData.effects?.rules?.length > 0;
     }
 
     /**
      * Check if card can contribute to power calculation
      */
     static canContributeToCalculation(card: BaseZoneCard): boolean {
-        return !card.isFaceDown;
+        return true;
     }
 
     /**
@@ -333,11 +329,6 @@ export class ZoneCardUtils {
         zone: ZoneType, 
         leader: LeaderZoneCard
     ): boolean {
-        // Face-down cards bypass all restrictions
-        if (character.isFaceDown) {
-            return true;
-        }
-
         const zoneKey = zone.toLowerCase() as keyof typeof leader.cardData.zoneCompatibility;
         const allowedTypes = leader.cardData.zoneCompatibility[zoneKey] || [];
         
@@ -350,19 +341,16 @@ export class ZoneCardUtils {
     }
 
     /**
-     * Get display name (hidden if face-down)
+     * Get display name
      */
     static getDisplayName(card: BaseZoneCard): string {
-        return card.isFaceDown ? 'Hidden Card' : card.cardData.name;
+        return card.cardData.name;
     }
 
     /**
-     * Get card effects (empty if face-down)
+     * Get card effects
      */
     static getActiveEffects(card: BaseZoneCard): EffectRule[] {
-        if (card.isFaceDown) {
-            return [];
-        }
         return card.cardData.effects?.rules || [];
     }
 }
@@ -465,7 +453,6 @@ export interface PlaySequenceAction {
     cardUid: string;
     action: ActionType;
     zone: ZoneType;
-    isFaceDown?: boolean;
     effectData?: any;
     /** Turn number when this action was performed - for turn completion tracking */
     turnNumber?: number;
@@ -826,8 +813,8 @@ export class GameZones {
         return this.zones[playerId];
     }
 
-    public setCardInZone(playerId: string, zone: ZoneType, cardUid: string, cardData?: CardData, isFaceDown: boolean = false): void {
-        console.log(`🔍 setCardInZone ENTRY: playerId=${playerId}, zone=${zone}, cardUid=${cardUid}, isFaceDown=${isFaceDown}`);
+    public setCardInZone(playerId: string, zone: ZoneType, cardUid: string, cardData?: CardData): void {
+        console.log(`🔍 setCardInZone ENTRY: playerId=${playerId}, zone=${zone}, cardUid=${cardUid}`);
         
         // Convert zone to lowercase to match ZoneType enum values
         const normalizedZone = zone.toLowerCase() as ZoneType;
@@ -890,7 +877,7 @@ export class GameZones {
         }
         
         // Create unified ZoneCard using factory function
-        const zoneCard = createZoneCard(cardUid, cardId, resolvedCardData, isFaceDown, playerId);
+        const zoneCard = createZoneCard(cardUid, cardId, resolvedCardData, playerId);
         console.log("test222 ", JSON.stringify(zoneCard))
         zoneCard.cardUid = cardUid
         console.log("test333 ", JSON.stringify(zoneCard))
@@ -928,15 +915,15 @@ export class GameZones {
         const finalZoneContent = finalPlayerZones[normalizedZone];
         console.log(`🔍 FINAL DEBUG: After placement, ${normalizedZone} zone contains:`, finalZoneContent);
         
-        console.log(`✅ Set card in zone: ${cardUid} (${cardId}) → ${zone} for player ${playerId}${isFaceDown ? ' (face-down)' : ''} with data: ${resolvedCardData.name || 'Unknown'}`);
+        console.log(`✅ Set card in zone: ${cardUid} (${cardId}) → ${zone} for player ${playerId} with data: ${resolvedCardData.name || 'Unknown'}`);
     }
 
     /**
      * Enhanced method that accepts resolved card data for proper object creation
      * This should be used when full card data is available
      */
-    public setCardInZoneWithData(playerId: string, zone: ZoneType, cardUid: string, cardData: any, isFaceDown: boolean = false): void {
-        this.setCardInZone(playerId, zone, cardUid, cardData, isFaceDown);
+    public setCardInZoneWithData(playerId: string, zone: ZoneType, cardUid: string, cardData: any): void {
+        this.setCardInZone(playerId, zone, cardUid, cardData);
     }
 
     public setLeaderInZone(playerId: string, leaderData: any): void {
@@ -1075,12 +1062,11 @@ export class PlaySequenceManager {
      * @param cardUid - Unique card instance identifier (e.g., "c-43_player1_001")
      * @param action - Type of action being performed
      * @param zone - Zone where the card is being played
-     * @param isFaceDown - Whether card is played face-down (optional)
      * @param effectData - Additional effect data (optional)
      * @param turnNumber - Turn number when this action was performed (optional)
      * @returns The created PlaySequenceAction
      */
-    public addPlay(playerId: string, cardUid: string, action: ActionType, zone: ZoneType, isFaceDown: boolean = false, effectData?: any, turnNumber?: number): PlaySequenceAction {
+    public addPlay(playerId: string, cardUid: string, action: ActionType, zone: ZoneType, effectData?: any, turnNumber?: number): PlaySequenceAction {
         this.sequence.globalSequence++;
         
         const play: PlaySequenceAction = {
@@ -1089,7 +1075,6 @@ export class PlaySequenceManager {
             cardUid,
             action,
             zone,
-            ...(isFaceDown && { isFaceDown }),
             ...(effectData && { effectData }),
             ...(turnNumber !== undefined && { turnNumber })
         };
@@ -1314,12 +1299,12 @@ export class GameEnvironment {
         return this.zones.isZoneOccupied(playerId, zone);
     }
 
-    public placeCardInZone(playerId: string, zone: ZoneType, cardUID: string, isFaceDown: boolean = false): boolean {
+    public placeCardInZone(playerId: string, zone: ZoneType, cardUID: string): boolean {
         // Debug: Log what we're trying to place
-        console.log(`🔍 placeCardInZone called: playerId=${playerId}, zone=${zone}, cardUID=${cardUID}, isFaceDown=${isFaceDown}`);
+        console.log(`🔍 placeCardInZone called: playerId=${playerId}, zone=${zone}, cardUID=${cardUID}`);
         
-        // Pass cardUID and isFaceDown to setCardInZone
-        this.zones.setCardInZone(playerId, zone, cardUID, undefined, isFaceDown);
+        // Pass cardUID to setCardInZone
+        this.zones.setCardInZone(playerId, zone, cardUID, undefined);
         
         // Debug: Check if placement succeeded
         const playerZones = this.zones.getPlayerZones(playerId);
@@ -1329,7 +1314,7 @@ export class GameEnvironment {
         return true;
     }
 
-    public playCard(playerId: string, cardUid: string, zone: ZoneType, isFaceDown: boolean = false): boolean {
+    public playCard(playerId: string, cardUid: string, zone: ZoneType): boolean {
         const player = this.getPlayer(playerId);
         if (!player) return false;
         
@@ -1340,15 +1325,13 @@ export class GameEnvironment {
         this.zones.setCardInZone(playerId, zone, cardUid);
         
         // Record in play sequence
-        const action = isFaceDown ? ActionType.PLAY_CARD_BACK : ActionType.PLAY_CARD;
-        this.playSequenceManager.addPlay(playerId, cardUid, action, zone, isFaceDown, undefined, this.currentTurn);
+        this.playSequenceManager.addPlay(playerId, cardUid, ActionType.PLAY_CARD, zone, undefined, this.currentTurn);
         
         // Add event
         this.eventManager.addEvent(EventType.CARD_PLAYED, {
             playerId,
             cardUid,
-            zone,
-            isFaceDown
+            zone
         });
         
         return true;
@@ -1371,7 +1354,6 @@ export class GameEnvironment {
             cardUid: leaderUid,
             action: ActionType.PLAY_LEADER,
             zone: ZoneType.LEADER,
-            isFaceDown: false,
             effectData: {},
             turnNumber: -1 // hardcode to -1 to indicate it is for play a leader
         };
