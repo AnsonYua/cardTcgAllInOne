@@ -356,13 +356,7 @@ export class OptimizedGameEngine {
         // Phase-specific restrictions for face-down cards
         const currentPhase = gameEnv.phase;
         
-        if (currentPhase === 'SP_PHASE' && zone !== ZoneType.SP) {
-            return { 
-                isValid: false, 
-                error: 'During SP_PHASE, cards can only be placed in SP zone' 
-            };
-        }
-
+     
         if (currentPhase === 'MAIN_PHASE' && zone === ZoneType.SP) {
             return { 
                 isValid: false, 

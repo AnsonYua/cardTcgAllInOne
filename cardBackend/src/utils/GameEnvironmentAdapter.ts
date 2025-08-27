@@ -394,7 +394,7 @@ export class GameEnvironmentHelper {
      */
     public static isGamePlayable(gameEnv: GameEnvironment): boolean {
         return gameEnv.isGameReady() && 
-               [GamePhase.MAIN_PHASE, GamePhase.SP_PHASE, GamePhase.DRAW_PHASE].includes(gameEnv.phase);
+               [GamePhase.MAIN_PHASE,GamePhase.DRAW_PHASE].includes(gameEnv.phase);
     }
     
     /**

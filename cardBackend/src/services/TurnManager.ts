@@ -480,10 +480,7 @@ class TurnManager {
         switch (phase) {
             case GamePhase.MAIN_PHASE:
                 return this.shouldSkipHelpPhase(gameEnv, playerId);
-                
-            case GamePhase.SP_PHASE:
-                return this.shouldSkipSpPhase(gameEnv, playerId);
-                
+
             default:
                 console.log(`🔍 No skipping logic for phase: ${phase}`);
                 return false;

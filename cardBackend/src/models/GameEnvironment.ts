@@ -46,8 +46,8 @@ export enum GamePhase {
     START_REDRAW = 'START_REDRAW',
     REDRAW_PHASE = 'REDRAW_PHASE',
     DRAW_PHASE = 'DRAW_PHASE',
+    RESOURCE_PHASE = 'RESOURCE_PHASE',
     MAIN_PHASE = 'MAIN_PHASE',
-    SP_PHASE = 'SP_PHASE',
     BATTLE_PHASE = 'BATTLE_PHASE',
     END_PHASE = 'END_PHASE'
 }
@@ -191,8 +191,6 @@ export interface BaseZoneCard {
     // Card data (embedded for performance)
     cardData: CardData;         // Complete card data from JSON
     
-    // Zone-specific state
-    isFaceDown: boolean;        // Face-down status (affects all mechanics)
     placedAt?: number;          // Timestamp when placed
     placedBy?: string;          // Player ID who placed card
 }
@@ -212,7 +210,6 @@ export interface CharacterZoneCard extends BaseZoneCard {
  */
 export interface LeaderZoneCard extends BaseZoneCard {
     cardData: LeaderCardData;
-    isFaceDown: false;          // Leaders are always face-up
 }
 
 /**
@@ -234,14 +231,12 @@ export function createZoneCard(
     cardUid: string,
     cardId: string,
     cardData: CardData,
-    isFaceDown: boolean = false,
     placedBy: string = ''
 ): BaseZoneCard {
     const baseCard: BaseZoneCard = {
         cardUid,
         cardId,
         cardData,
-        isFaceDown,
         placedAt: Date.now(),
         placedBy
     };
@@ -253,13 +248,7 @@ export function createZoneCard(
                 cardData: cardData as CharacterCardData
             } as CharacterZoneCard;
             
-        case 'leader':
-            return {
-                ...baseCard,
-                cardData: cardData as LeaderCardData,
-                isFaceDown: false  // Leaders are always face-up
-            } as LeaderZoneCard;
-            
+
         case 'help':
         case 'sp':
             return {
@@ -291,16 +280,7 @@ export function isUtilityZoneCard(card: BaseZoneCard): card is UtilityZoneCard {
  * Card property accessors that handle face-down mechanics
  */
 export class ZoneCardUtils {
-    /**
-     * Get effective power for a card (0 if face-down)
-     */
-    static getEffectivePower(card: BaseZoneCard): number {
-        if (card.isFaceDown || !isCharacterZoneCard(card)) {
-            return 0;
-        }
-        return card.cardData.power;
-    }
-
+   
     /**
      * Get game type for zone compatibility (empty if face-down)
      */

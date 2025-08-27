@@ -543,7 +543,7 @@ export class MozGamePlay {
         
         switch (action.type) {
             case 'PlayCard':
-                if (currentPhase !== GamePhase.MAIN_PHASE && currentPhase !== GamePhase.SP_PHASE) {
+                if (currentPhase !== GamePhase.MAIN_PHASE ) {
                     return {
                         valid: false,
                         error: `Cannot play cards during ${currentPhase}`
