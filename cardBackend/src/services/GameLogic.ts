@@ -8,8 +8,7 @@ import { Request, Response } from 'express';
 // Import TypeScript modules with proper types
 import { GameEnvironment, GamePhase, ActionType, ZoneType, EventType, Player } from '../models/GameEnvironment';
 import { GameEnvironmentAdapter } from '../utils/GameEnvironmentAdapter';
-import { enhancedEffectManager } from './EnhancedEffectManager';
-import { optimizedGameEngineManager, OptimizedGameEngine } from './OptimizedGameEngine';
+// PLACEHOLDER: Enhanced effect manager - implement effect processing functionality
 
 // Import JavaScript modules (will be converted later)  
 const mozGamePlayModule = require('../mozGame/mozGamePlay');
@@ -17,7 +16,6 @@ const mozGamePlay = mozGamePlayModule.default || mozGamePlayModule;
 const mozAIClass = require('../mozGame/mozAIClass');
 const playSequenceManager = require('./PlaySequenceManager');
 // Legacy CardEffectRegistry removed - using EnhancedEffectManager instead
-import { CardSelectionHandler } from './CardSelectionHandler';
 
 // Import TypeScript modules
 import mozDeckHelper from '../mozGame/mozDeckHelper';
@@ -65,12 +63,211 @@ function updatePhase(gameEnv: GameEnvironment, newPhase: GamePhase): void {
     console.log(`🎯 Phase updated to: ${newPhase}`);
 }
 
-// Initialize OptimizedGameEngine per game - No longer singleton!
-async function initializeOptimizedEngine(gameId: string): Promise<void> {
-    console.log(`🚀 Initializing OptimizedGameEngine for game: ${gameId}...`);
-    await optimizedGameEngineManager.initializeGameEngine(gameId);
-    console.log(`✅ OptimizedGameEngine initialized for game: ${gameId}`);
+// PLACEHOLDER: Game engine initialization - implement game setup logic
+async function initializeGameEngine(gameId: string): Promise<void> {
+    console.log(`🚀 [PLACEHOLDER] Initializing game engine for game: ${gameId}...`);
+    // TODO: Implement game initialization logic
+    // - Set up game state
+    // - Initialize card systems
+    // - Prepare for gameplay
+    console.log(`✅ [PLACEHOLDER] Game engine initialized for game: ${gameId}`);
 }
+
+// PLACEHOLDER: Initialize game state - implement game setup logic
+async function initializeGame(gameEnv: GameEnvironment): Promise<void> {
+    console.log(`🎮 [PLACEHOLDER] Initializing game state...`);
+    // TODO: Implement game state initialization
+    // - Set up initial game state
+    // - Initialize player resources
+    // - Prepare game mechanics
+    console.log(`✅ [PLACEHOLDER] Game state initialized`);
+}
+
+// PLACEHOLDER: Play card function - implement card placement logic
+async function playCard(
+    gameEnv: GameEnvironment, 
+    playerId: string, 
+    cardUID: string, 
+    zone: any, 
+    faceDown: boolean
+): Promise<CardPlayResult> {
+    console.log(`🃏 [PLACEHOLDER] Playing card: ${cardUID} for player ${playerId} in zone ${zone}, faceDown: ${faceDown}`);
+    
+    // TODO: Implement card play logic
+    // - Validate card placement
+    // - Apply card effects
+    // - Update game state
+    // - Process turn progression
+    
+    // Return placeholder success result
+    return {
+        success: true,
+        gameState: gameEnv,
+        requiresCardSelection: false,
+        processingTime: Date.now()
+    };
+}
+
+// PLACEHOLDER: Select card function - implement card selection logic
+async function selectCard(
+    gameEnv: GameEnvironment,
+    selectionId: string,
+    selectedCardIdentifiers: string[]
+): Promise<{success: boolean; error?: string; gameState?: GameEnvironment}> {
+    console.log(`🎯 [PLACEHOLDER] Selecting cards: ${selectedCardIdentifiers.join(', ')} for selection ${selectionId}`);
+    
+    // TODO: Implement card selection logic
+    // - Validate selection
+    // - Apply selection effects
+    // - Update pending selections
+    // - Process turn progression
+    
+    // Return placeholder success result
+    return {
+        success: true,
+        gameState: gameEnv
+    };
+}
+
+// PLACEHOLDER: Card Selection Handler - implement comprehensive card selection system
+class CardSelectionHandlerPlaceholder {
+    constructor(mozGamePlay: any, gameId?: string) {
+        console.log('🚧 [PLACEHOLDER] CardSelectionHandler initialized - implement actual functionality');
+        // TODO: Implement card selection handler initialization
+        // - Set up card selection state management
+        // - Initialize selection validation rules
+        // - Prepare selection effect processing
+    }
+
+    async handleSelectCardAction(
+        gameEnv: GameEnvironment, 
+        playerId: string, 
+        action: any
+    ): Promise<{success: boolean; error?: string; gameState?: GameEnvironment}> {
+        console.log(`🎯 [PLACEHOLDER] Handling select card action for player: ${playerId}`, action);
+        
+        // TODO: Implement comprehensive card selection logic
+        // - Process different selection types (deck search, field target, etc.)
+        // - Validate player selections
+        // - Apply card effects based on selection
+        // - Update game state accordingly
+        // - Handle turn progression
+        
+        // Return placeholder result
+        return {
+            success: false,
+            error: 'Card selection functionality not implemented - placeholder needed',
+            gameState: gameEnv
+        };
+    }
+}
+
+// PLACEHOLDER: Enhanced Effect Manager - implement effect processing system
+class EnhancedEffectManagerPlaceholder {
+    constructor() {
+        console.log('🚧 [PLACEHOLDER] EnhancedEffectManager initialized - implement actual functionality');
+    }
+
+    setCalculatePlayerPointFunction(calculateFunction: any): void {
+        console.log('🚧 [PLACEHOLDER] Calculate player point function not implemented');
+        // TODO: Implement player point calculation function setup
+    }
+
+    async processCardEffects(gameEnv: GameEnvironment, action: any, trigger: string): Promise<void> {
+        console.log(`🚧 [PLACEHOLDER] Processing card effects for trigger: ${trigger} - not implemented`);
+        // TODO: Implement card effect processing logic
+        // - Parse card effects from card data
+        // - Apply effects based on triggers
+        // - Update game state accordingly
+    }
+
+    async calculateAllPlayerPoints(gameEnv: GameEnvironment): Promise<void> {
+        console.log('🚧 [PLACEHOLDER] Calculate all player points - not implemented');
+        // TODO: Implement player point calculation
+        // - Calculate base card powers
+        // - Apply power modifications from effects
+        // - Update player scores
+    }
+}
+
+// PLACEHOLDER: Turn Manager - implement turn management system
+class TurnManagerPlaceholder {
+    constructor(mozGamePlay: any) {
+        console.log('🚧 [PLACEHOLDER] TurnManager initialized - implement actual functionality');
+        // TODO: Implement turn manager initialization
+        // - Set up turn state tracking
+        // - Initialize turn progression logic
+        // - Prepare turn validation rules
+    }
+
+    async endTurn(gameEnv: GameEnvironment, playerId: string): Promise<{success: boolean; error?: string}> {
+        console.log(`🚧 [PLACEHOLDER] End turn for player: ${playerId} - not implemented`);
+        // TODO: Implement end turn logic
+        // - Validate turn ending conditions
+        // - Apply end-of-turn effects
+        // - Switch to next player
+        // - Update turn counter
+        
+        return { success: false, error: 'Turn management not implemented' };
+    }
+
+    async shouldUpdateTurn(gameEnv: GameEnvironment, playerId: string): Promise<boolean> {
+        console.log(`🚧 [PLACEHOLDER] Should update turn check for player: ${playerId} - not implemented`);
+        // TODO: Implement turn update logic
+        // - Check if turn should progress
+        // - Validate player actions
+        // - Determine next turn state
+        
+        return false; // Placeholder - no turn updates
+    }
+}
+
+// PLACEHOLDER: Game Flow Orchestrator - implement game flow coordination
+class GameFlowOrchestratorPlaceholder {
+    constructor(mozGamePlay: any) {
+        console.log('🚧 [PLACEHOLDER] GameFlowOrchestrator initialized - implement actual functionality');
+        // TODO: Implement game flow orchestrator initialization
+        // - Set up game state coordination
+        // - Initialize phase management
+        // - Prepare flow validation rules
+    }
+
+    async orchestrateCardSelection(gameEnv: GameEnvironment, playerId: string, action: any): Promise<{success: boolean; error?: string}> {
+        console.log(`🚧 [PLACEHOLDER] Orchestrate card selection for player: ${playerId} - not implemented`);
+        // TODO: Implement card selection orchestration
+        // - Coordinate selection workflow
+        // - Validate selection rules  
+        // - Apply selection effects
+        // - Update game flow state
+        
+        return { success: false, error: 'Card selection orchestration not implemented' };
+    }
+}
+
+// PLACEHOLDER: Post Action Handler - implement post-action processing
+class PostActionHandlerPlaceholder {
+    constructor(mozGamePlay: any) {
+        console.log('🚧 [PLACEHOLDER] PostActionHandler initialized - implement actual functionality');
+        // TODO: Implement post action handler initialization
+        // - Set up action processing pipeline
+        // - Initialize validation rules
+        // - Prepare state update logic
+    }
+
+    async execute(gameEnv: GameEnvironment, context: any): Promise<{success: boolean; gameEnv: GameEnvironment}> {
+        console.log('🚧 [PLACEHOLDER] Execute post action processing - not implemented', context);
+        // TODO: Implement post action execution
+        // - Process action consequences
+        // - Update player states
+        // - Handle turn progression
+        // - Apply game rule validations
+        
+        return { success: false, gameEnv };
+    }
+}
+
+// Export the placeholder classes for use in other modules
+export { CardSelectionHandlerPlaceholder, EnhancedEffectManagerPlaceholder, TurnManagerPlaceholder, GameFlowOrchestratorPlaceholder, PostActionHandlerPlaceholder };
 
 // Draw card function for first player at game start
 function drawCardForCurrentPlayer(gameEnvClass: GameEnvironment): boolean {
@@ -126,14 +323,18 @@ export class GameLogic {
         // Initialize EnhancedEffectManager with dependencies (EFFICIENT INCREMENTAL APPROACH)
         // IMPORTANT: Inject mozGamePlay.calculatePlayerPoint to avoid circular dependency (with defensive binding)
         if (this.mozGamePlay && this.mozGamePlay.calculatePlayerPoint) {
+        // PLACEHOLDER: Set up effect manager calculation function
+        const enhancedEffectManager = new EnhancedEffectManagerPlaceholder();
         enhancedEffectManager.setCalculatePlayerPointFunction(this.mozGamePlay.calculatePlayerPoint.bind(this.mozGamePlay));
             console.log('✅ GameLogic: mozGamePlay dependency injected into EnhancedEffectManager');
         }
         
         // BIDIRECTIONAL INJECTION: Inject EnhancedEffectManager back into mozGamePlay
         if (this.mozGamePlay) {
-            this.mozGamePlay.enhancedEffectManager = enhancedEffectManager;
-            console.log('✅ GameLogic: EnhancedEffectManager injected into mozGamePlay');
+            // PLACEHOLDER: Inject effect manager into mozGamePlay
+            const enhancedEffectManagerInstance = new EnhancedEffectManagerPlaceholder();
+            this.mozGamePlay.enhancedEffectManager = enhancedEffectManagerInstance;
+            console.log('✅ GameLogic: EnhancedEffectManager placeholder injected into mozGamePlay');
         }
         
         console.log('🎮 GameLogic initialized with TypeScript class support');
@@ -161,7 +362,7 @@ export class GameLogic {
             gameEnv.currentPlayer = playerId;
             gameEnv.currentTurn = 1;
             // Initialize game engine for this game
-            await initializeOptimizedEngine(gameId);
+            await initializeGameEngine(gameId);
             // Add first player to game
             gameEnv.addPlayer(playerId, `Player 1`);
             // Add game creation event
@@ -309,14 +510,8 @@ export class GameLogic {
                     error: 'Game not found'
                 };
             }
-            // Get optimized game engine for this game
-            const gameEngine = optimizedGameEngineManager.getGameEngine(gameId);
-            if (!gameEngine.isInitialized()) {
-                await gameEngine.initialize();
-            }
-            
-            // Use optimized card play processing
-            const result = await gameEngine.playCard(gameEnv, playerId, cardUID, zone as any, faceDown);
+            // PLACEHOLDER: Card play processing
+            const result = await playCard(gameEnv, playerId, cardUID, zone as any, faceDown);
             
             if (!result.success) {
                 return {
@@ -326,7 +521,7 @@ export class GameLogic {
             }
             
             // Save updated game state (use result.gameState to ensure we save the modified state)
-            const updatedGameEnv = result.gameState;
+            const updatedGameEnv = result.gameState || gameEnv;
             await this.saveGameToFile(gameId, updatedGameEnv);
             
             console.log(`✅ Card ${cardUID} played successfully`);
@@ -387,25 +582,11 @@ export class GameLogic {
             
             const selection = gameEnv.pendingCardSelections[selectionId];
             
-            // Ensure OptimizedGameEngine is initialized for consistent turn management
-            await initializeOptimizedEngine(gameId);
-            const gameEngine = optimizedGameEngineManager.getGameEngine(gameId);
-            if (!gameEngine.isInitialized()) {
-                await gameEngine.initialize();
-            }
+            // PLACEHOLDER: Initialize game engine for card selection
+            await initializeGameEngine(gameId);
             
-            // Create CardSelectionHandler instance with gameId for turn management
-            const selectionHandler = new CardSelectionHandler(this.mozGamePlay, gameId);
-            
-            // Create action object matching expected format
-            const action = {
-                type: 'SelectCard' as const,
-                selectionId: selectionId,
-                selectedCardUIds: selectedCardIdentifiers
-            };
-            
-            // Process selection through handler with unified turn/phase management
-            const result = await selectionHandler.handleSelectCardAction(gameEnv, playerId, action);
+            // PLACEHOLDER: Process card selection
+            const result = await selectCard(gameEnv, selectionId, selectedCardIdentifiers);
             
             if (!result.success) {
                 return {
@@ -602,10 +783,9 @@ export class GameLogic {
                     player.initializeGameStateOnly();
                 }
                 
-                // OPTIMIZED GAME ENGINE INITIALIZATION: Initialize for high-performance processing
-                await initializeOptimizedEngine(gameId);
-                const gameEngine = optimizedGameEngineManager.getGameEngine(gameId);
-                await gameEngine.initializeGame(gameEnv);
+                // PLACEHOLDER: Initialize game engine for game start
+                await initializeGameEngine(gameId);
+                await initializeGame(gameEnv);
                 
                 // RESTORED ORIGINAL FLOW: Transition to DRAW_PHASE and immediately execute draw
                 updatePhase(gameEnv, GamePhase.DRAW_PHASE);

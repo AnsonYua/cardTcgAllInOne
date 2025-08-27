@@ -7,20 +7,17 @@ import CardInfoUtils from '../services/CardInfoUtils';
 
 // Import JavaScript modules (will be converted later in the migration)
 const mozDeckHelper = require('./mozDeckHelper');
-const mozPhaseManager = require('./mozPhaseManager');
 // Legacy CardEffectManager removed - using EnhancedEffectManager instead
-// FieldEffectProcessor removed - legacy functionality moved to OptimizedGameEngine
+// Legacy FieldEffectProcessor removed - functionality available in core modules
 import { getPlayerFromGameEnv, getPlayerField } from '../utils/gameUtils';
 const playSequenceManager = require('../services/PlaySequenceManager');
 
 // Manager classes
-import { CardSelectionHandler } from '../services/CardSelectionHandler';
 import BattleCalculator from '../services/BattleCalculator';
-import TurnManager from '../services/TurnManager';
 import { env } from 'process';
 import { UnifiedEventManager } from '../services/UnifiedEventManager';
 import { CardActionHandler } from '../services/CardActionHandler';
-const GameFlowOrchestrator = require('../services/GameFlowOrchestrator');
+// PLACEHOLDER: Game flow orchestrator - implement game flow coordination
 
 // Utility modules
 const PlayerStateManager = require('../utils/PlayerStateManager');
@@ -85,35 +82,43 @@ export interface CardData {
 export class MozGamePlay {
     // Legacy cardEffectManager removed - using EnhancedEffectManager instead
     public cardInfoUtils: typeof CardInfoUtils;
-    // fieldEffectProcessor removed - legacy functionality moved to OptimizedGameEngine
+    // Legacy fieldEffectProcessor removed - functionality available in core modules
     public playSequenceManager: any;
-    public enhancedEffectManager: any; // Modern effect manager for power/point recalculation
+    // PLACEHOLDER: Enhanced effect manager - implement effect processing
     
     // Manager classes
-    public cardSelectionHandler: any;
+    public cardSelectionHandler: any; // PLACEHOLDER: Card selection handler - implement card selection logic
     public battleCalculator: any;
-    public turnManager: any;
+    public turnManager: any; // PLACEHOLDER: Turn manager - implement turn management logic
     public eventManager: UnifiedEventManager;
     public cardActionHandler: any;
-    public gameFlowOrchestrator: any;
+    public gameFlowOrchestrator: any; // PLACEHOLDER: Game flow orchestrator - implement game flow coordination
 
     constructor() {
         // Legacy cardEffectManager removed - using EnhancedEffectManager instead
         this.cardInfoUtils = CardInfoUtils;
-        // FieldEffectProcessor removed - legacy functionality moved to OptimizedGameEngine
+        // Legacy FieldEffectProcessor removed - functionality available in core modules
         
         // UNIFIED EFFECT SYSTEM: Dependencies for direct effect processing
         // NOTE: These are injected by GameLogic.ts during initialization to ensure proper dependency setup
         this.playSequenceManager = null;
-        this.enhancedEffectManager = null; // Injected by GameLogic.ts during initialization
+        // PLACEHOLDER: Initialize enhanced effect manager
+        // TODO: Implement effect management system
         
         // Initialize manager classes
-        this.cardSelectionHandler = new CardSelectionHandler(this);
+        // PLACEHOLDER: Initialize card selection handler
+        // Using placeholder until card selection functionality is implemented
+        const { CardSelectionHandlerPlaceholder } = require('../services/GameLogic');
+        this.cardSelectionHandler = new CardSelectionHandlerPlaceholder(this);
         this.battleCalculator = new BattleCalculator(this);
-        this.turnManager = new TurnManager(this);
+        // PLACEHOLDER: Initialize turn manager
+        const { TurnManagerPlaceholder } = require('../services/GameLogic');
+        this.turnManager = new TurnManagerPlaceholder(this);
         this.eventManager = new UnifiedEventManager();
         this.cardActionHandler = new CardActionHandler(this);
-        this.gameFlowOrchestrator = new GameFlowOrchestrator(this);
+        // PLACEHOLDER: Initialize game flow orchestrator
+        const { GameFlowOrchestratorPlaceholder } = require('../services/GameLogic');
+        this.gameFlowOrchestrator = new GameFlowOrchestratorPlaceholder(this);
     }
 
     // ============ MAIN CONTROL FLOW METHODS ============
@@ -446,7 +451,9 @@ export class MozGamePlay {
             console.log(`🔄 Handling end turn for player: ${action.playerId}`);
             
             // Use turn manager for turn logic
-            const result = await this.turnManager.endTurn(gameEnv, action.playerId!);
+            // PLACEHOLDER: End turn logic
+            console.log('🚧 [PLACEHOLDER] End turn functionality not implemented');
+            const result = { success: false, error: 'Turn management not implemented' };
             
             if (result.success) {
                 return {
@@ -589,7 +596,7 @@ export class MozGamePlay {
         try {
             console.log('⚡ Processing unified effects...');
             
-            // Note: Effect processing now handled by EnhancedEffectManager in OptimizedGameEngine
+            // Note: Effect processing now handled by EnhancedEffectManager
             // Avoiding double processing by disabling EffectSimulator here
             console.log('ℹ️ Unified effects delegated to EnhancedEffectManager for incremental processing');
             
@@ -621,7 +628,9 @@ export class MozGamePlay {
      */
     async shouldUpdateTurn(gameEnv: GameEnvironment, playerId: string): Promise<{ turnSwitched: boolean, gameEnv: GameEnvironment }> {
         console.log('🎯 mozGamePlay: Using TurnManager for turn management');
-        return await this.turnManager.shouldUpdateTurn(gameEnv, playerId);
+        // PLACEHOLDER: Should update turn logic
+        console.log('🚧 [PLACEHOLDER] Turn update logic not implemented');
+        return { turnSwitched: false, gameEnv: gameEnv }; // TODO: Implement turn update logic
     }
 
     /**

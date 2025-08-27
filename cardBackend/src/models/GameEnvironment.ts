@@ -9,7 +9,7 @@
 
 import { PlayerDeckDataResp } from './PlayerDeckDataResp';
 import cardInfoUtilsInstance from '../services/CardInfoUtils';
-import { enhancedEffectManager } from '../services/EnhancedEffectManager';
+// PLACEHOLDER: Enhanced effect manager - implement effect processing functionality
 import { UnifiedEventManager, GameEvent } from '../services/UnifiedEventManager';
 // ============ CARDINFUTILS SINGLETON ============
 
@@ -399,7 +399,7 @@ export async function convertLegacyToUnified(
             return null;
         }
         
-        return createZoneCard(cardUid, cardId, cardData, false, '');
+        return createZoneCard(cardUid, cardId, cardData, '');
         
     } catch (error) {
         console.error(`Error converting legacy card ${cardUid}:`, error);
@@ -949,7 +949,7 @@ export class GameZones {
         };
         
         // Create unified LeaderZoneCard using factory function
-        const leaderCard = createZoneCard(cardUid, cardId, normalizedLeaderData, false, playerId) as LeaderZoneCard;
+        const leaderCard = createZoneCard(cardUid, cardId, normalizedLeaderData, playerId) as LeaderZoneCard;
         
         const playerZones = this.getPlayerZones(playerId);
         if (!playerZones.leader) playerZones.leader = [];
@@ -1441,7 +1441,9 @@ export class GameEnvironment {
     private async processLeaderEffects(playerId: string, leaderAction: PlaySequenceAction): Promise<void> {
         try {
             console.log(`🎯 Processing leader effects for ${leaderAction.cardUid} (${playerId})`);
-            await enhancedEffectManager.processCardEffects(this, leaderAction, 'always');
+            // PLACEHOLDER: Process card effects
+            console.log('🚧 [PLACEHOLDER] Card effect processing not implemented');
+            // TODO: Implement card effect processing logic
             console.log(`✅ Leader effects processed for ${leaderAction.cardUid}`);
         } catch (error) {
             console.error(`❌ Error processing leader effects for ${leaderAction.cardUid}:`, error);

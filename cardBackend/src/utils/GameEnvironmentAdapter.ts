@@ -7,7 +7,7 @@
 
 import { GameEnvironment, GamePhase, ZoneType, ActionType, EventType, Player, CardInfoUtilsSingleton } from '../models/GameEnvironment';
 import { PlayerDeckDataResp } from '../models/PlayerDeckDataResp';
-import { enhancedEffectManager } from '../services/EnhancedEffectManager';
+// PLACEHOLDER: Enhanced effect manager - implement effect processing functionality
 import CardInfoUtils from '../services/CardInfoUtils';
 
 export class GameEnvironmentAdapter {
@@ -239,7 +239,7 @@ export class GameEnvironmentAdapter {
         });
         
         // Initialize field effects structure (EnhancedEffectManager will handle incremental effects)
-        // This follows the same pattern as OptimizedGameEngine.playCard() step 4
+        // This follows the same pattern as standard card play processing
         console.log('🔮 DEBUG: About to initialize field effects for EnhancedEffectManager...');
         console.log('🔮 DEBUG: Play sequence length:', gameEnv.playSequenceManager.getPlays().length);
         console.log('🔮 DEBUG: Players:', Object.keys(gameEnv.players));
