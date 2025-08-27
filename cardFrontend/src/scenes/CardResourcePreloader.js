@@ -189,18 +189,21 @@ export default class CardResourcePreloader extends Phaser.Scene {
   loadBackendImages(rootPath, imageList, loadPreviews = true) {
     console.log(`[CardResourcePreloader] Loading backend images from: ${rootPath} (previews: ${loadPreviews})`);
     
+    // Generate timestamp for cache busting
+    const timestamp = Date.now();
+    
     imageList.forEach(imagePath => {
       const imageKey = this.getImageKey(imagePath);
       
-      // Load full-size image using GAME_CONFIG helper
-      const fullImageUrl = GAME_CONFIG.api.getImageUrl(imagePath);
+      // Load full-size image using GAME_CONFIG helper with timestamp
+      const fullImageUrl = `${GAME_CONFIG.api.getImageUrl(imagePath)}?t=${timestamp}`;
       this.load.image(imageKey, fullImageUrl);
       console.log(`[CardResourcePreloader] Queuing: ${imageKey} from ${fullImageUrl}`);
       
-      // Load preview image if enabled using GAME_CONFIG helper
+      // Load preview image if enabled using GAME_CONFIG helper with timestamp
       if (loadPreviews) {
         const previewKey = `${imageKey}-preview`;
-        const previewImageUrl = GAME_CONFIG.api.getPreviewImageUrl(imagePath);
+        const previewImageUrl = `${GAME_CONFIG.api.getPreviewImageUrl(imagePath)}?t=${timestamp}`;
         this.load.image(previewKey, previewImageUrl);
         console.log(`[CardResourcePreloader] Queuing: ${previewKey} from ${previewImageUrl}`);
       }

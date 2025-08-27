@@ -100,35 +100,52 @@ export default class GameScene extends Phaser.Scene {
 
     const startY = 45;
     const cardHeight = 160;
+    const playerStartX = -50;
     this.layout = {
       functionalArea: {
         cardPreview: {
-          x: width * 0.5 + 130 +  50 + 130 + 80 + 130 + 130 ,
+          x: width * 0.5 + 730,
           y: startY + 100+ cardHeight
         },
       },
       // Opponent zones (top area)
       opponent: {
-        top: { x: width * 0.5, y:  startY + 100+ cardHeight + 10+ 15},
-        left: { x: width * 0.5- 130- 50, y: startY + 100+ 0},
-        right: { x:  width * 0.5 + 130 +  50, y: startY + 100+ 0},
-        help: { x:width * 0.5- 130- 50, y:  startY + 100+ cardHeight + 10+ 15},
-        sp: { x: width * 0.5 + 130 +  50, y:  startY + 100+ cardHeight + 10+ 15},
-        leader: { x: width * 0.5, y: startY + 100+ 0},
-        deck: { x: width * 0.5 - 130 -  50 - 130 - 50 , y: startY + 100+ cardHeight+10+15},
-        leaderDeck: { x: width * 0.5 + 130 +  50 + 130 + 50 , y: startY + 100+ cardHeight+10+15},
+        top: { x: playerStartX + width * 0.5 - 320, 
+               y:  startY + 100+ cardHeight + 10+ 15},
+        left: { x: playerStartX + width * 0.5-200 + 10, 
+                y:  startY + 100+ cardHeight + 10+ 15},
+        right: { x: playerStartX + width * 0.5 -80 + 20, 
+                 y:  startY + 100+ cardHeight + 10+ 15},
+        help: { x:playerStartX + width * 0.5 + 40 + 30, 
+                y:  startY + 100+ cardHeight + 10+ 15},
+        sp: { x: playerStartX + width * 0.5+160 + 40, 
+              y:  startY + 100+ cardHeight + 10+ 15},
+        leader: {  x: playerStartX + width * 0.5 +280 + 50, 
+                  y:  startY + 100+ cardHeight + 10+ 15},
+        deck: { x: width * 0.5 - 500, 
+                y: startY + 100+ cardHeight+10+15},
+        leaderDeck: { x: width * 0.5 + 430 , y: startY + 100+ cardHeight+10+15},
         
       },
       // Player zones (bottom area)
+    
       player: {
-        top: { x: width * 0.5, y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70},
-        left: { x: width * 0.5- 130- 50, y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 + cardHeight +30 },
-        right: { x: width * 0.5 + 130 +  50,y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 + cardHeight +30 },
-        help: { x: width * 0.5- 130- 50, y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70},
-        sp: { x: width * 0.5 + 130 +  50, y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 },
-        leader: { x: width * 0.5, y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 + cardHeight +30},
-        deck: { x: width * 0.5 + 130 + 50+130+50 , y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70},
-        leaderDeck: { x: width * 0.5 - 130 - 50 - 130 - 70 , y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 + 50}
+        sp: { x: playerStartX + width * 0.5 - 320, 
+              y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 },
+        help:{ x: playerStartX + width * 0.5-200 + 10, 
+               y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70},
+        top: { x: playerStartX + width * 0.5 -80 + 20, 
+               y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70},
+        leader: { x: playerStartX + width * 0.5 + 40 + 30, 
+                  y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 },
+        left: { x: playerStartX + width * 0.5+160 + 40, 
+           y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70},
+        right: { x: playerStartX + width * 0.5 +280 + 50,
+           y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 },
+        deck: { x: width * 0.5 + 420 , 
+                y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70},
+        leaderDeck: { x: width * 0.5 - 550 , 
+                      y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 + 50}
       },
       // Battle area (center)
       //battle: { x: width * 0.5, y: height * 0.45 },
@@ -137,7 +154,6 @@ export default class GameScene extends Phaser.Scene {
     };
     
     this.createZones();
-    //this.createBattleArea();
   }
 
   createZones() {

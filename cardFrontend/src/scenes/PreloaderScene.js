@@ -82,15 +82,18 @@ export default class PreloaderScene extends Phaser.Scene {
     console.log(`[PreloaderScene] Loading backend images from: ${rootPath}`);
     console.log(`[PreloaderScene] Image mapping:`, imageMapping);
     
+    // Generate timestamp for cache busting
+    const timestamp = Date.now();
+    
     Object.entries(imageMapping).forEach(([imageKey, imagePath]) => {
       const previewKey = `${imageKey}-preview`;
       
-      // Load full-size image: http://localhost:8080/api/game/image/cardback.png
-      const fullImageUrl = `${rootPath}${imagePath}`;
+      // Load full-size image with timestamp: http://localhost:8080/api/game/image/cardback.png?t=1234567890
+      const fullImageUrl = `${rootPath}${imagePath}?t=${timestamp}`;
       this.load.image(imageKey, fullImageUrl);
       
-      // Load preview image: http://localhost:8080/api/game/image/previews/cardback.png
-      const previewImageUrl = `${rootPath}previews/${imagePath}`;
+      // Load preview image with timestamp: http://localhost:8080/api/game/image/previews/cardback.png?t=1234567890
+      const previewImageUrl = `${rootPath}previews/${imagePath}?t=${timestamp}`;
       this.load.image(previewKey, previewImageUrl);
       
       console.log(`[PreloaderScene] Queuing: ${imageKey} from ${fullImageUrl}`);
@@ -114,16 +117,19 @@ export default class PreloaderScene extends Phaser.Scene {
   loadBackendImages(rootPath, imageList) {
     console.log(`[PreloaderScene] Loading backend images from: ${rootPath}`);
     
+    // Generate timestamp for cache busting
+    const timestamp = Date.now();
+    
     imageList.forEach(imageName => {
       const imageKey = this.getImageKey(imageName);
       const previewKey = `${imageKey}-preview`;
       
-      // Load full-size image: http://localhost:8080/api/game/image/cardback.png
-      const fullImageUrl = `${rootPath}${imageName}`;
+      // Load full-size image with timestamp: http://localhost:8080/api/game/image/cardback.png?t=1234567890
+      const fullImageUrl = `${rootPath}${imageName}?t=${timestamp}`;
       this.load.image(imageKey, fullImageUrl);
       
-      // Load preview image: http://localhost:8080/api/game/image/previews/cardback.png
-      const previewImageUrl = `${rootPath}previews/${imageName}`;
+      // Load preview image with timestamp: http://localhost:8080/api/game/image/previews/cardback.png?t=1234567890
+      const previewImageUrl = `${rootPath}previews/${imageName}?t=${timestamp}`;
       this.load.image(previewKey, previewImageUrl);
       
       console.log(`[PreloaderScene] Queuing: ${imageKey} from ${fullImageUrl}`);

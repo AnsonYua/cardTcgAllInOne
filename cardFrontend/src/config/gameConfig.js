@@ -85,7 +85,7 @@ export const GAME_CONFIG = {
   },
 
   imageKey:{
-    cardback:"cardback",
+    cardback:"cardback-gvg",
     exBase:"exBase",
     extraResource:"extraResource",
     resource:"resource",

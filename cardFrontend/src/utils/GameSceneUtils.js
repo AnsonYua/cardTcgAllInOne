@@ -243,7 +243,7 @@ export default class GameSceneUtils {
   static createDeckStack(scene, x, y, owner, options = {}) {
     const config = {
       numCards: 5,
-      stackOffset: 1,
+      stackOffset: 0,
       scale: 0.95,
       ...options
     };
@@ -254,7 +254,7 @@ export default class GameSceneUtils {
       // Ensure pixel-perfect positioning
       const cardX = Math.round(x + (i * config.stackOffset));
       const cardY = Math.round(y - (i * config.stackOffset));
-      const card = scene.add.image(cardX, cardY, 'card-back');
+      const card = scene.add.image(cardX, cardY, GAME_CONFIG.imageKey.cardback);
       
       // Scale card to match game config dimensions
       const scaleX = GAME_CONFIG.card.width / card.width;
@@ -262,9 +262,32 @@ export default class GameSceneUtils {
       const scale = Math.min(scaleX, scaleY) * config.scale;
       card.setScale(scale);
       
+      // Add rounded corners using mask
+      const cornerRadius = GAME_CONFIG.card.cornerRadius;
+      const cardWidth = card.displayWidth;
+      const cardHeight = card.displayHeight;
+      
+      // Create rounded rectangle mask
+      const maskShape = scene.add.graphics();
+      maskShape.fillStyle(0xffffff);
+      maskShape.fillRoundedRect(
+        cardX - cardWidth/2, 
+        cardY - cardHeight/2, 
+        cardWidth, 
+        cardHeight, 
+        cornerRadius
+      );
+      
+      // Apply mask to card
+      const mask = new Phaser.Display.Masks.GeometryMask(scene, maskShape);
+      card.setMask(mask);
+      
       // Ensure crisp rendering
       card.setDepth(i);
       card.setOrigin(0.5, 0.5);
+      
+      // Store mask reference for cleanup if needed
+      card.roundedMask = maskShape;
       
       deckCards.push(card);
     }
