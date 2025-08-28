@@ -48,23 +48,32 @@ export enum GamePhase {
     DRAW_PHASE = 'DRAW_PHASE',
     RESOURCE_PHASE = 'RESOURCE_PHASE',
     MAIN_PHASE = 'MAIN_PHASE',
-    BATTLE_PHASE = 'BATTLE_PHASE',
+    ATTACK_PHASE = 'ATTACK_PHASE',
+    BLOCK_PHASE = 'BLOCK_PHASE',
+    DAMAGE_PHASE = 'DAMAGE_PHASE',
     END_PHASE = 'END_PHASE'
 }
 
 export enum ZoneType {
-    TOP = 'top',
-    LEFT = 'left',
-    RIGHT = 'right',
-    HELP = 'help',
-    SP = 'sp',
-    LEADER = 'leader'
+    SLOT1 = 'slot1',
+    SLOT2 = 'slot2',
+    SLOT3 = 'slot3',
+    SLOT4 = 'slot4',
+    SLOT5 = 'slot5',
+    SLOT6 = 'slot6',
+    BASE = 'base'
 }
 
 export enum ActionType {
-    PLAY_CARD = 'PLAY_CARD',
-    PLAY_LEADER = 'PLAY_LEADER',
-    APPLY_SET_POWER = 'APPLY_SET_POWER',
+    PLAY_UNIT = 'PLAY_UNIT',
+    PLAY_PILOT = 'PLAY_PILOT', 
+    PLAY_COMMAND = 'PLAY_COMMAND',
+    PLAY_BASE = 'PLAY_BASE',
+    PAIR_PILOT = 'PAIR_PILOT',
+    ACTIVATE_ABILITY = 'ACTIVATE_ABILITY',
+    ATTACK = 'ATTACK',
+    BLOCK = 'BLOCK',
+    REST_CARD = 'REST_CARD',
     APPLY_EFFECT = 'APPLY_EFFECT'
 }
 
@@ -82,9 +91,13 @@ export enum EventType {
     PHASE_CHANGE = 'PHASE_CHANGE',
     TURN_SWITCH = 'TURN_SWITCH',
     ERROR_OCCURRED = 'ERROR_OCCURRED',
-    BATTLE_CALCULATED = 'BATTLE_CALCULATED',
-    BATTLE_RESULT = 'BATTLE_RESULT',
-    VICTORY_POINTS_AWARDED = 'VICTORY_POINTS_AWARDED',
+    UNITS_DEPLOYED = 'UNITS_DEPLOYED',
+    PILOT_PAIRED = 'PILOT_PAIRED',
+    ATTACK_DECLARED = 'ATTACK_DECLARED',
+    BLOCK_DECLARED = 'BLOCK_DECLARED',
+    DAMAGE_DEALT = 'DAMAGE_DEALT',
+    UNIT_DESTROYED = 'UNIT_DESTROYED',
+    ABILITY_ACTIVATED = 'ABILITY_ACTIVATED',
     DRAW_PHASE_COMPLETE = 'DRAW_PHASE_COMPLETE',
     GAME_PHASE_START = 'GAME_PHASE_START',
     CARD_SELECTION_REQUIRED = 'CARD_SELECTION_REQUIRED',
@@ -111,45 +124,47 @@ export interface PlayerDeckData {
 // ==============================================================================
 // Unified card system supporting all card types with type safety and performance
 
-// Base card data interfaces (matching JSON structure)
+// Base card data interfaces (matching st01Card.json structure)
 export interface BaseCardData {
     id: string;
     name: string;
     cardType: string;
-    rarity: string;
-    effects: {
-        description: string;
-        rules: EffectRule[];
-        immuneToNeutralization?: boolean;
-    };
-}
-
-export interface CharacterCardData extends BaseCardData {
-    cardType: 'character';
-    gameType: string;           // Single classification for zone placement
-    power: number;              // Combat strength
+    color: string;
+    level: number;
+    cost: number;
+    zone: string[];             // Array of zone types this card can be played in
     traits: string[];           // Array of traits for effect targeting
-}
-
-export interface LeaderCardData extends BaseCardData {
-    cardType: 'leader';
-    gameType: string;
-    initialPoint: number;       // Victory points (not power)
-    level: number;              // Priority for SP execution
-    zoneCompatibility: {        // Zone restriction rules
-        top: string[];
-        left: string[];
-        right: string[];
+    link: string[];             // Array of linked pilots/units
+    ap: number;                 // Attack Power
+    hp: number;                 // Health Points
+    effects: {
+        description: string[];
+        rules: EffectRule[];
     };
 }
 
-export interface UtilityCardData extends BaseCardData {
-    cardType: 'help' | 'sp';
-    // Utilities have no power/points - pure effect-based
+export interface UnitCardData extends BaseCardData {
+    cardType: 'unit';
+    // Units are the primary combat cards with AP/HP
+}
+
+export interface PilotCardData extends BaseCardData {
+    cardType: 'pilot';
+    // Pilots can be paired with units for enhanced effects
+}
+
+export interface CommandCardData extends BaseCardData {
+    cardType: 'command';
+    // Command cards provide temporary effects and abilities
+}
+
+export interface BaseStructureData extends BaseCardData {
+    cardType: 'base';
+    // Base cards provide ongoing effects and board presence
 }
 
 // Union type for all card data
-export type CardData = CharacterCardData | LeaderCardData | UtilityCardData;
+export type CardData = UnitCardData | PilotCardData | CommandCardData | BaseStructureData;
 
 // Effect system interfaces (matching JSON structure)
 export interface EffectRule {
@@ -195,28 +210,42 @@ export interface BaseZoneCard {
 }
 
 /**
- * Character Zone Card - for character cards in TOP/LEFT/RIGHT zones
- * Handles power calculation, gameType classification, trait-based effects
+ * Unit Zone Card - for unit cards in slot zones
+ * Handles AP/HP calculation, zone compatibility, combat mechanics
  */
-export interface CharacterZoneCard extends BaseZoneCard {
-    cardData: CharacterCardData;
-    currentPower?: number;  // Final power after applying all effects
+export interface UnitZoneCard extends BaseZoneCard {
+    cardData: UnitCardData;
+    currentAP?: number;     // Current Attack Power after modifiers
+    currentHP?: number;     // Current Health Points after damage
+    isRested?: boolean;     // Whether the unit is rested (tapped)
+    pairedPilot?: string;   // UID of paired pilot if any
 }
 
 /**
- * Leader Zone Card - for leader cards in LEADER zone
- * Handles zone restrictions, global effects, victory points
+ * Pilot Zone Card - for pilot cards (can be paired with units)
+ * Handles pilot-unit pairing and enhancement effects
  */
-export interface LeaderZoneCard extends BaseZoneCard {
-    cardData: LeaderCardData;
+export interface PilotZoneCard extends BaseZoneCard {
+    cardData: PilotCardData;
+    pairedUnit?: string;    // UID of paired unit if any
 }
 
 /**
- * Utility Zone Card - for help/sp cards in HELP/SP zones
- * Handles interactive effects, cross-player targeting, special mechanics
+ * Command Zone Card - for command cards
+ * Handles one-time and ongoing command effects
  */
-export interface UtilityZoneCard extends BaseZoneCard {
-    cardData: UtilityCardData;
+export interface CommandZoneCard extends BaseZoneCard {
+    cardData: CommandCardData;
+    isActivated?: boolean;  // Whether the command has been activated
+}
+
+/**
+ * Base Structure Zone Card - for base cards
+ * Handles base effects and board control
+ */
+export interface BaseStructureZoneCard extends BaseZoneCard {
+    cardData: BaseStructureData;
+    isRested?: boolean;     // Whether the base is rested (tapped)
 }
 
 // ==============================================================================
@@ -241,19 +270,36 @@ export function createZoneCard(
     };
 
     switch ((cardData as CardData).cardType) {
-        case 'character':
+        case 'unit':
             return {
                 ...baseCard,
-                cardData: cardData as CharacterCardData
-            } as CharacterZoneCard;
+                cardData: cardData as UnitCardData,
+                currentAP: cardData.ap,
+                currentHP: cardData.hp,
+                isRested: false,
+                pairedPilot: undefined
+            } as UnitZoneCard;
             
-
-        case 'help':
-        case 'sp':
+        case 'pilot':
             return {
                 ...baseCard,
-                cardData: cardData as UtilityCardData
-            } as UtilityZoneCard;
+                cardData: cardData as PilotCardData,
+                pairedUnit: undefined
+            } as PilotZoneCard;
+            
+        case 'command':
+            return {
+                ...baseCard,
+                cardData: cardData as CommandCardData,
+                isActivated: false
+            } as CommandZoneCard;
+            
+        case 'base':
+            return {
+                ...baseCard,
+                cardData: cardData as BaseStructureData,
+                isRested: false
+            } as BaseStructureZoneCard;
             
         default:
             throw new Error(`Unknown card type: ${(cardData as CardData).cardType}`);
@@ -263,41 +309,61 @@ export function createZoneCard(
 /**
  * Type guard functions for zone card types
  */
-export function isCharacterZoneCard(card: BaseZoneCard): card is CharacterZoneCard {
-    return card.cardData.cardType === 'character';
+export function isUnitZoneCard(card: BaseZoneCard): card is UnitZoneCard {
+    return card.cardData.cardType === 'unit';
 }
 
-export function isLeaderZoneCard(card: BaseZoneCard): card is LeaderZoneCard {
-    return card.cardData.cardType === 'leader';
+export function isPilotZoneCard(card: BaseZoneCard): card is PilotZoneCard {
+    return card.cardData.cardType === 'pilot';
 }
 
-export function isUtilityZoneCard(card: BaseZoneCard): card is UtilityZoneCard {
-    return ['help', 'sp'].includes(card.cardData.cardType);
+export function isCommandZoneCard(card: BaseZoneCard): card is CommandZoneCard {
+    return card.cardData.cardType === 'command';
+}
+
+export function isBaseStructureZoneCard(card: BaseZoneCard): card is BaseStructureZoneCard {
+    return card.cardData.cardType === 'base';
 }
 
 /**
- * Card property accessors and utilities
+ * Card property accessors and utilities for new card system
  */
 export class ZoneCardUtils {
    
     /**
-     * Get game type for zone compatibility
+     * Get card color for gameplay mechanics
      */
-    static getEffectiveGameType(card: BaseZoneCard): string {
-        if (isCharacterZoneCard(card) || isLeaderZoneCard(card)) {
-            return card.cardData.gameType;
-        }
-        return '';
+    static getCardColor(card: BaseZoneCard): string {
+        return card.cardData.color;
     }
 
     /**
      * Get traits for effect targeting
      */
     static getEffectiveTraits(card: BaseZoneCard): string[] {
-        if (!isCharacterZoneCard(card)) {
-            return [];
-        }
         return card.cardData.traits || [];
+    }
+
+    /**
+     * Get linked pilots/units
+     */
+    static getLinkedCards(card: BaseZoneCard): string[] {
+        return card.cardData.link || [];
+    }
+
+    /**
+     * Get valid zones for card placement
+     */
+    static getValidZones(card: BaseZoneCard): string[] {
+        return card.cardData.zone || [];
+    }
+
+    /**
+     * Check if card can be placed in specific zone
+     */
+    static canBePlacedInZone(card: BaseZoneCard, targetZone: string): boolean {
+        const validZones = card.cardData.zone || [];
+        return validZones.includes(targetZone) || validZones.includes('Any');
     }
 
     /**
@@ -308,36 +374,46 @@ export class ZoneCardUtils {
     }
 
     /**
-     * Check if card can contribute to power calculation
+     * Get current AP for unit cards
      */
-    static canContributeToCalculation(card: BaseZoneCard): boolean {
-        return true;
-    }
-
-    /**
-     * Get zone compatibility for leader cards
-     */
-    static getZoneCompatibility(leader: LeaderZoneCard): { [zone: string]: string[] } {
-        return leader.cardData.zoneCompatibility;
-    }
-
-    /**
-     * Check if character can be placed in zone under leader
-     */
-    static canCharacterBePlacedInZone(
-        character: CharacterZoneCard, 
-        zone: ZoneType, 
-        leader: LeaderZoneCard
-    ): boolean {
-        const zoneKey = zone.toLowerCase() as keyof typeof leader.cardData.zoneCompatibility;
-        const allowedTypes = leader.cardData.zoneCompatibility[zoneKey] || [];
-        
-        // Check for 'ALL' first (allows all card types)
-        if (allowedTypes.includes('ALL')) {
-            return true;
+    static getCurrentAP(card: BaseZoneCard): number {
+        if (isUnitZoneCard(card)) {
+            return card.currentAP || card.cardData.ap;
         }
-        
-        return allowedTypes.includes(character.cardData.gameType);
+        return card.cardData.ap;
+    }
+
+    /**
+     * Get current HP for unit cards
+     */
+    static getCurrentHP(card: BaseZoneCard): number {
+        if (isUnitZoneCard(card)) {
+            return card.currentHP || card.cardData.hp;
+        }
+        return card.cardData.hp;
+    }
+
+    /**
+     * Check if unit is paired with pilot
+     */
+    static isPaired(card: BaseZoneCard): boolean {
+        if (isUnitZoneCard(card)) {
+            return !!card.pairedPilot;
+        }
+        if (isPilotZoneCard(card)) {
+            return !!card.pairedUnit;
+        }
+        return false;
+    }
+
+    /**
+     * Check if card is rested (tapped)
+     */
+    static isRested(card: BaseZoneCard): boolean {
+        if (isUnitZoneCard(card) || isBaseStructureZoneCard(card)) {
+            return card.isRested || false;
+        }
+        return false;
     }
 
     /**
@@ -409,14 +485,22 @@ export async function convertLegacyToUnified(
 
 // Legacy type aliases for backward compatibility
 export type ZoneCard = BaseZoneCard;  // Deprecated: use BaseZoneCard
+// Type aliases for new card system
+export type CharacterZoneCard = UnitZoneCard;        // Backward compatibility
+export type LeaderZoneCard = BaseStructureZoneCard;  // Backward compatibility
+export type UtilityZoneCard = CommandZoneCard;       // Backward compatibility
 
 export interface PlayerZones {
-    leader?: LeaderZoneCard[];        // Leaders extend ZoneCard
-    top?: CharacterZoneCard[];        // Characters extend ZoneCard
-    left?: CharacterZoneCard[];       // Characters extend ZoneCard  
-    right?: CharacterZoneCard[];      // Characters extend ZoneCard
-    help?: UtilityZoneCard[];         // Utility cards extend ZoneCard
-    sp?: UtilityZoneCard[];           // Utility cards extend ZoneCard
+    slot1?: UnitZoneCard[];           // Unit cards in slot 1
+    slot2?: UnitZoneCard[];           // Unit cards in slot 2
+    slot3?: UnitZoneCard[];           // Unit cards in slot 3
+    slot4?: UnitZoneCard[];           // Unit cards in slot 4
+    slot5?: UnitZoneCard[];           // Unit cards in slot 5
+    slot6?: UnitZoneCard[];           // Unit cards in slot 6
+    base?: BaseStructureZoneCard[];   // Base cards
+    // Pilots and commands may be stored separately or in special zones
+    pilots?: PilotZoneCard[];         // Pilot cards (for pairing)
+    commands?: CommandZoneCard[];     // Active command cards
 }
 
 export interface GameZonesData {
@@ -424,20 +508,24 @@ export interface GameZonesData {
 }
 
 // Utility types for zone operations
-export type ZoneContent = ZoneCard[] | LeaderZoneCard[] | undefined;
-export type NonLeaderZoneType = Exclude<ZoneType, ZoneType.LEADER>;
+export type ZoneContent = ZoneCard[] | BaseZoneCard[] | undefined;
+export type NonBaseZoneType = Exclude<ZoneType, ZoneType.BASE>;
 
-// Type guard functions
-export const isLeaderZone = (zone: ZoneType): zone is ZoneType.LEADER => {
-    return zone === ZoneType.LEADER;
+// Type guard functions for zones
+export const isBaseZone = (zone: ZoneType): zone is ZoneType.BASE => {
+    return zone === ZoneType.BASE;
+};
+
+export const isSlotZone = (zone: ZoneType): boolean => {
+    return [ZoneType.SLOT1, ZoneType.SLOT2, ZoneType.SLOT3, ZoneType.SLOT4, ZoneType.SLOT5, ZoneType.SLOT6].includes(zone);
 };
 
 export const isZoneCardArray = (content: ZoneContent): content is ZoneCard[] => {
-    return Array.isArray(content) && (content.length === 0 || 'card' in content[0]);
+    return Array.isArray(content) && (content.length === 0 || 'cardUid' in content[0]);
 };
 
-export const isLeaderZoneCardArray = (content: ZoneContent): content is LeaderZoneCard[] => {
-    return Array.isArray(content) && (content.length === 0 || ('id' in content[0] && !('card' in content[0])));
+export const isBaseZoneCardArray = (content: ZoneContent): content is BaseZoneCard[] => {
+    return Array.isArray(content) && (content.length === 0 || ('cardUid' in content[0] && content[0].cardData?.cardType === 'base'));
 };
 
 // GameEvent interface now imported from UnifiedEventManager
@@ -470,13 +558,15 @@ export interface FieldEffect {
     sourcePlayerId?: string;
     type: string;
     target: {
-        scope: 'SELF' | 'OPPONENT' | 'ALL' | 'SPECIFIC';  // ⭐ Added SPECIFIC scope
+        scope: 'SELF' | 'OPPONENT' | 'ALL' | 'SPECIFIC';
         zones?: ZoneType[] | 'ALL';
-        gameTypes?: string[];
-        traits?: string[];
-        nameContains?: string[];  // Support for name-based targeting (e.g., "Doge" cards)
+        colors?: string[];        // Color-based targeting (Blue, White, etc.)
+        traits?: string[];        // Trait-based targeting
+        nameContains?: string[];  // Name-based targeting
         playerId?: string;
-        cardIds?: string[];  // ⭐ Added cardIds for specific targeting (card selection effects)
+        cardIds?: string[];       // Specific card targeting
+        level?: string;           // Level-based targeting (<=2, >=3, etc.)
+        cost?: string;            // Cost-based targeting
     };
     value: number | boolean;
     priority?: number;
@@ -496,9 +586,16 @@ export interface PlayerFieldEffects {
     specialEffects?: {
         zonePlacementFreedom?: boolean;
         immuneToNeutralization?: boolean;
+        untargetable?: boolean;           // Cannot be targeted by opponent effects
+        canPlayFromResource?: boolean;    // Can play cards from resource zone
     };
-    disabledCards?: string[];
+    disabledCards?: string[];             // Cards that cannot activate/attack
+    restedCards?: string[];               // Cards that are rested (tapped)
     victoryPointModifiers?: number;
+    resourceModifiers?: {
+        bonusResources?: number;          // Extra resources per turn
+        resourceCostReduction?: number;   // Reduce costs by this amount
+    };
 }
 
 export interface NeutralizationAction {
@@ -662,10 +759,11 @@ export class Player {
     public get activeZoneRestrictions(): { [zone in ZoneType]?: string[] | 'ALL' } {
         if (!this.fieldEffects) return {};
 
-        // All possible gameTypes in the system
-        const ALL_GAME_TYPES = ['右翼', '左翼', '愛國者', '經濟', '自由'];
+        // All possible traits/colors in the new system
+        const ALL_TRAITS = ['Earth Federation', 'White Base Team', 'Academy', 'Newtype', 'Warship'];
+        const ALL_COLORS = ['Blue', 'White', 'Red', 'Green', 'Yellow'];
 
-        // Start with base zone restrictions from leaders
+        // Start with base zone restrictions
         const activeRestrictions: { [zone in ZoneType]?: string[] | 'ALL' } = {};
         
         // Copy base zone restrictions
@@ -682,7 +780,7 @@ export class Player {
                 
                 // Handle both array and 'ALL' cases
                 const zonesToProcess = targetZones === 'ALL' 
-                    ? [ZoneType.TOP, ZoneType.LEFT, ZoneType.RIGHT, ZoneType.HELP, ZoneType.SP]
+                    ? [ZoneType.SLOT1, ZoneType.SLOT2, ZoneType.SLOT3, ZoneType.SLOT4, ZoneType.SLOT5, ZoneType.SLOT6, ZoneType.BASE]
                     : targetZones as ZoneType[];
                 
                 zonesToProcess.forEach((zone: ZoneType) => {
@@ -691,14 +789,16 @@ export class Player {
                     // If zone had restrictions, modify them
                     if (activeRestrictions[zoneType]) {
                         if (activeRestrictions[zoneType] === 'ALL') {
-                            // If it was 'ALL', create list excluding prevented gameTypes
-                            if (effect.target.gameTypes?.length) {
-                                // Start with ALL gameTypes, remove the prevented ones
-                                activeRestrictions[zoneType] = ALL_GAME_TYPES.filter(
-                                    gameType => !effect.target.gameTypes!.includes(gameType)
+                            // If it was 'ALL', create list excluding prevented traits/colors
+                            if (effect.target.traits?.length || effect.target.colors?.length) {
+                                // Start with ALL traits, remove the prevented ones
+                                const preventedTraits = effect.target.traits || [];
+                                const preventedColors = effect.target.colors || [];
+                                activeRestrictions[zoneType] = [...ALL_TRAITS, ...ALL_COLORS].filter(
+                                    item => !preventedTraits.includes(item) && !preventedColors.includes(item)
                                 );
                             } else {
-                                // If no specific gameTypes specified, prevent all
+                                // If no specific traits/colors specified, prevent all
                                 activeRestrictions[zoneType] = [];
                             }
                         } else {
@@ -706,23 +806,24 @@ export class Player {
                             const currentRestrictions = activeRestrictions[zoneType] as string[];
                             
                             // Filter based on preventSummon target filters
-                            if (effect.target.gameTypes?.length) {
-                                // Remove specific gameTypes from allowed list
+                            if (effect.target.traits?.length || effect.target.colors?.length) {
+                                const preventedTraits = effect.target.traits || [];
+                                const preventedColors = effect.target.colors || [];
                                 activeRestrictions[zoneType] = currentRestrictions.filter(
-                                    gameType => !effect.target.gameTypes!.includes(gameType)
+                                    item => !preventedTraits.includes(item) && !preventedColors.includes(item)
                                 );
                             } else {
-                                // If no specific gameTypes, prevent all
+                                // If no specific traits/colors, prevent all
                                 activeRestrictions[zoneType] = [];
                             }
                         }
                     } else {
                         // Zone had no restrictions initially, now prevent based on effect
-                        if (effect.target.gameTypes?.length) {
-                            // Create restrictions excluding the prevented gameTypes
-                            // Start with ALL gameTypes, remove the prevented ones
-                            activeRestrictions[zoneType] = ALL_GAME_TYPES.filter(
-                                gameType => !effect.target.gameTypes!.includes(gameType)
+                        if (effect.target.traits?.length || effect.target.colors?.length) {
+                            const preventedTraits = effect.target.traits || [];
+                            const preventedColors = effect.target.colors || [];
+                            activeRestrictions[zoneType] = [...ALL_TRAITS, ...ALL_COLORS].filter(
+                                item => !preventedTraits.includes(item) && !preventedColors.includes(item)
                             );
                         } else {
                             // Prevent all
@@ -782,12 +883,15 @@ export class GameZones {
      */
     public initializePlayerZones(playerId: string): void {
         this.zones[playerId] = {
-            leader: [],
-            top: [],
-            left: [],
-            right: [],
-            help: [],
-            sp: []
+            slot1: [],
+            slot2: [],
+            slot3: [],
+            slot4: [],
+            slot5: [],
+            slot6: [],
+            base: [],
+            pilots: [],
+            commands: []
         };
     }
 
@@ -829,7 +933,7 @@ export class GameZones {
             return;
         }
         
-        // Extract cardId from cardUid (e.g., "c-43_player1_001" → "c-43")
+        // Extract cardId from cardUid (e.g., "ST01-001_player1_001" → "ST01-001")
         const cardId = cardUid.split("_")[0];
         
         // If no cardData provided, look up the card details using CardInfoUtils
@@ -839,13 +943,8 @@ export class GameZones {
                 const CardInfoUtils = CardInfoUtilsSingleton.getInstance();
                 
                 if (CardInfoUtils) {
-                    if (zone === ZoneType.LEADER) {
-                        // Look up leader card data
-                        resolvedCardData = CardInfoUtils.getLeaderCards(cardId);
-                    } else {
-                        // Look up character/utility card data
-                        resolvedCardData = CardInfoUtils.getCardDetails(cardId);
-                    }
+                    // Look up card data from st01Card.json structure
+                    resolvedCardData = CardInfoUtils.getCardDetails(cardId);
                 }
                 
                 if (!resolvedCardData) {
@@ -853,26 +952,34 @@ export class GameZones {
                     resolvedCardData = { 
                         id: cardId, 
                         name: 'Unknown Card',
-                        cardType: 'character',
-                        gameType: 'unknown',
-                        power: 0,
+                        cardType: 'unit',
+                        color: 'Blue',
+                        level: 1,
+                        cost: 1,
+                        zone: ['Space', 'Earth'],
                         traits: [],
-                        rarity: 'common',
-                        effects: { description: '', rules: [] }
-                    } as CharacterCardData;
+                        link: [],
+                        ap: 1,
+                        hp: 1,
+                        effects: { description: [], rules: [] }
+                    } as UnitCardData;
                 }
             } catch (error) {
                 console.warn(`⚠️ Error looking up card data for ${cardId}:`, error);
                 resolvedCardData = { 
                     id: cardId, 
                     name: 'Unknown Card',
-                    cardType: 'character',
-                    gameType: 'unknown',
-                    power: 0,
+                    cardType: 'unit',
+                    color: 'Blue',
+                    level: 1,
+                    cost: 1,
+                    zone: ['Space', 'Earth'],
                     traits: [],
-                    rarity: 'common',
-                    effects: { description: '', rules: [] }
-                } as CharacterCardData;
+                    link: [],
+                    ap: 1,
+                    hp: 1,
+                    effects: { description: [], rules: [] }
+                } as UnitCardData;
             }
         }
         
@@ -882,31 +989,35 @@ export class GameZones {
         zoneCard.cardUid = cardUid
         console.log("test333 ", JSON.stringify(zoneCard))
         // Place card in appropriate zone
-        console.log(`🔍 DEBUG: About to place card in zone ${normalizedZone}. Zone types: LEADER=${ZoneType.LEADER}, LEFT=${ZoneType.LEFT}`);
-        console.log(`🔍 DEBUG: Zone comparison: normalizedZone === ZoneType.LEADER? ${normalizedZone === ZoneType.LEADER}, normalizedZone === ZoneType.LEFT? ${normalizedZone === ZoneType.LEFT}`);
-        console.log(`🔍 DEBUG: Zone type check: typeof normalizedZone = ${typeof normalizedZone}, normalizedZone value = "${normalizedZone}"`);
-        if (normalizedZone === ZoneType.LEADER) {
-            console.log(`🔍 DEBUG: Placing leader card`);
-            if (!playerZones.leader) playerZones.leader = [];
-            playerZones.leader.push(zoneCard as LeaderZoneCard);
-            
-        } else if (normalizedZone === ZoneType.TOP || normalizedZone === ZoneType.LEFT || normalizedZone === ZoneType.RIGHT) {
-            // Character zones
-            console.log(`🔍 DEBUG: Accessing zone ${normalizedZone} in playerZones. Available keys:`, Object.keys(playerZones));
-            const targetZone = playerZones[normalizedZone] as CharacterZoneCard[];
-            console.log(`🔍 DEBUG: targetZone for ${normalizedZone}:`, targetZone, 'isArray:', Array.isArray(targetZone));
+        console.log(`🔍 DEBUG: About to place card in zone ${normalizedZone}`);
+        
+        if (isSlotZone(normalizedZone)) {
+            // Slot zones (slot1-slot6) - primarily for units
+            console.log(`🔍 DEBUG: Placing in slot zone ${normalizedZone}`);
+            const targetZone = playerZones[normalizedZone] as UnitZoneCard[];
             if (Array.isArray(targetZone)) {
-                targetZone.push(zoneCard as CharacterZoneCard);
+                targetZone.push(zoneCard as UnitZoneCard);
                 console.log(`🔍 DEBUG: After push, ${normalizedZone} zone has ${targetZone.length} cards`);
-            } else {
-                console.log(`❌ ERROR: targetZone for ${normalizedZone} is not an array! Type:`, typeof targetZone, 'Value:', targetZone);
             }
             
-        } else if (normalizedZone === ZoneType.HELP || normalizedZone === ZoneType.SP) {
-            // Utility zones (help/sp cards)
-            const targetZone = playerZones[normalizedZone] as UtilityZoneCard[];
-            if (Array.isArray(targetZone)) {
-                targetZone.push(zoneCard as UtilityZoneCard);
+        } else if (normalizedZone === ZoneType.BASE) {
+            // Base zone
+            console.log(`🔍 DEBUG: Placing base card`);
+            if (!playerZones.base) playerZones.base = [];
+            playerZones.base.push(zoneCard as BaseStructureZoneCard);
+            
+        } else {
+            // Handle pilots and commands in special zones
+            if (zoneCard.cardData.cardType === 'pilot') {
+                console.log(`🔍 DEBUG: Placing pilot card in pilots zone`);
+                if (!playerZones.pilots) playerZones.pilots = [];
+                playerZones.pilots.push(zoneCard as PilotZoneCard);
+            } else if (zoneCard.cardData.cardType === 'command') {
+                console.log(`🔍 DEBUG: Placing command card in commands zone`);
+                if (!playerZones.commands) playerZones.commands = [];
+                playerZones.commands.push(zoneCard as CommandZoneCard);
+            } else {
+                console.warn(`⚠️ Unknown zone placement for card type ${zoneCard.cardData.cardType} in zone ${normalizedZone}`);
             }
         }
         
@@ -932,7 +1043,7 @@ export class GameZones {
         const cardId = leaderData.id?.split("_")[0] || leaderData.cardId || leaderData.id;
         
         // Ensure leaderData has proper structure for CardData
-        const normalizedLeaderData: LeaderCardData = {
+        const normalizedLeaderData: BaseStructureData = {
             id: cardId,
             name: leaderData.name || 'Unknown Leader',
             cardType: 'leader',
@@ -948,8 +1059,8 @@ export class GameZones {
             effects: leaderData.effects || { description: '', rules: [] }
         };
         
-        // Create unified LeaderZoneCard using factory function
-        const leaderCard = createZoneCard(cardUid, cardId, normalizedLeaderData, playerId) as LeaderZoneCard;
+        // Create unified BaseStructureZoneCard using factory function
+        const leaderCard = createZoneCard(cardUid, cardId, normalizedLeaderData, playerId) as BaseStructureZoneCard;
         
         const playerZones = this.getPlayerZones(playerId);
         if (!playerZones.leader) playerZones.leader = [];
@@ -958,9 +1069,9 @@ export class GameZones {
         console.log(`✅ Set leader in zone: ${cardUid} (${cardId}) for player ${playerId} - ${normalizedLeaderData.name}`);
     }
 
-    public getLeaderInZone(playerId: string): LeaderZoneCard | null {
+    public getLeaderInZone(playerId: string): BaseStructureZoneCard | null {
         const playerZones = this.getPlayerZones(playerId);
-        return playerZones.leader?.[0] || null;
+        return playerZones.base?.[0] || null;
     }
 
     public getCardInZone(playerId: string, zone: ZoneType): string | null {
@@ -997,9 +1108,9 @@ export class GameZones {
     public clearZone(playerId: string, zone: ZoneType): void {
         const playerZones = this.getPlayerZones(playerId);
         
-        if (zone === ZoneType.LEADER) {
-            if (playerZones.leader) {
-                playerZones.leader.length = 0; // Clear the array
+        if (zone === ZoneType.BASE) {
+            if (playerZones.base) {
+                playerZones.base.length = 0; // Clear the array
             }
         } else {
             const targetZone = playerZones[zone];
@@ -1015,18 +1126,39 @@ export class GameZones {
 
     // ============ VALIDATION METHODS ============
 
+    public areAllSlotZonesFilled(playerId: string): boolean {
+        return this.isZoneOccupied(playerId, ZoneType.SLOT1) &&
+               this.isZoneOccupied(playerId, ZoneType.SLOT2) &&
+               this.isZoneOccupied(playerId, ZoneType.SLOT3) &&
+               this.isZoneOccupied(playerId, ZoneType.SLOT4) &&
+               this.isZoneOccupied(playerId, ZoneType.SLOT5) &&
+               this.isZoneOccupied(playerId, ZoneType.SLOT6);
+    }
+
+    public isBaseZoneFilled(playerId: string): boolean {
+        return this.isZoneOccupied(playerId, ZoneType.BASE);
+    }
+
+    public getOccupiedSlotCount(playerId: string): number {
+        let count = 0;
+        const slotZones = [ZoneType.SLOT1, ZoneType.SLOT2, ZoneType.SLOT3, ZoneType.SLOT4, ZoneType.SLOT5, ZoneType.SLOT6];
+        slotZones.forEach(zone => {
+            if (this.isZoneOccupied(playerId, zone)) count++;
+        });
+        return count;
+    }
+
+    // Backward compatibility methods
     public areAllCharacterZonesFilled(playerId: string): boolean {
-        return this.isZoneOccupied(playerId, ZoneType.TOP) &&
-               this.isZoneOccupied(playerId, ZoneType.LEFT) &&
-               this.isZoneOccupied(playerId, ZoneType.RIGHT);
+        return this.areAllSlotZonesFilled(playerId);
     }
 
     public isHelpZoneFilled(playerId: string): boolean {
-        return this.isZoneOccupied(playerId, ZoneType.HELP);
+        return this.isBaseZoneFilled(playerId);
     }
 
     public isSpZoneFilled(playerId: string): boolean {
-        return this.isZoneOccupied(playerId, ZoneType.SP);
+        return false; // SP zones don't exist in new system
     }
 
     // ============ SERIALIZATION ============
@@ -1324,14 +1456,28 @@ export class GameEnvironment {
         // Place card in zone
         this.zones.setCardInZone(playerId, zone, cardUid);
         
+        // Determine action type based on card type
+        const cardData = this.zones.getCardObjectInZone(playerId, zone);
+        let actionType = ActionType.PLAY_UNIT; // default
+        
+        if (cardData) {
+            switch (cardData.cardData.cardType) {
+                case 'unit': actionType = ActionType.PLAY_UNIT; break;
+                case 'pilot': actionType = ActionType.PLAY_PILOT; break;
+                case 'command': actionType = ActionType.PLAY_COMMAND; break;
+                case 'base': actionType = ActionType.PLAY_BASE; break;
+            }
+        }
+        
         // Record in play sequence
-        this.playSequenceManager.addPlay(playerId, cardUid, ActionType.PLAY_CARD, zone, undefined, this.currentTurn);
+        this.playSequenceManager.addPlay(playerId, cardUid, actionType, zone, undefined, this.currentTurn);
         
         // Add event
         this.eventManager.addEvent(EventType.CARD_PLAYED, {
             playerId,
             cardUid,
-            zone
+            zone,
+            cardType: cardData?.cardData.cardType
         });
         
         return true;
@@ -1344,22 +1490,22 @@ export class GameEnvironment {
         const player = this.getPlayer(playerId);
         if (!player) return false;
         
-        // Step 1: Set card in zone
-        this.zones.setCardInZone(playerId, ZoneType.LEADER, leaderUid);
+        // Step 1: Set card in zone (base zone for leaders/bases)
+        this.zones.setCardInZone(playerId, ZoneType.BASE, leaderUid);
         
         // Step 2: Create shared PlaySequenceAction for recording
-        const leaderPlayAction: PlaySequenceAction = {
+        const basePlayAction: PlaySequenceAction = {
             sequenceId: this.playSequenceManager.getNextSequenceId(),
             playerId,
             cardUid: leaderUid,
-            action: ActionType.PLAY_LEADER,
-            zone: ZoneType.LEADER,
+            action: ActionType.PLAY_BASE,
+            zone: ZoneType.BASE,
             effectData: {},
-            turnNumber: -1 // hardcode to -1 to indicate it is for play a leader
+            turnNumber: -1 // hardcode to -1 to indicate it is for play a base
         };
         
         // Step 3: Record play in sequence
-        this.playSequenceManager.recordAction(leaderPlayAction);
+        this.playSequenceManager.recordAction(basePlayAction);
         
         // Step 4: Initialize fieldEffects if needed
         if (!player.fieldEffects) {
@@ -1367,7 +1513,7 @@ export class GameEnvironment {
             player.initializeFieldEffects();
         }
         
-        console.log(`✅ Leader ${leaderUid} set for ${playerId} (basic setup)`);
+        console.log(`✅ Base card ${leaderUid} set for ${playerId} (basic setup)`);
         return true;
     }
 
@@ -1377,13 +1523,13 @@ export class GameEnvironment {
     public async processAllLeaderEffects(): Promise<void> {
         console.log(`🎯 Processing leader effects for all players after both leaders are set`);
         
-        // Get all recorded PLAY_LEADER actions from the play sequence
+        // Get all recorded PLAY_BASE actions from the play sequence
         const allActions = this.playSequenceManager.getPlays();
-        const leaderActions = allActions.filter(action => action.action === ActionType.PLAY_LEADER);
+        const baseActions = allActions.filter(action => action.action === ActionType.PLAY_BASE);
         
-        for (const leaderAction of leaderActions) {
-            const playerId = leaderAction.playerId;
-            const leaderUid = leaderAction.cardUid;
+        for (const baseAction of baseActions) {
+            const playerId = baseAction.playerId;
+            const baseUid = baseAction.cardUid;
             const player = this.getPlayer(playerId);
             
             if (!player || !player.fieldEffects) {
@@ -1392,19 +1538,19 @@ export class GameEnvironment {
             }
             
             // Step 1: Process zone compatibility/restrictions
-            await this.processLeaderZoneRestrictions(playerId, leaderUid);
+            await this.processBaseZoneRestrictions(playerId, baseUid);
             
-            // Step 2: Process leader effects (powerBoost, conditions, etc.)
-            await this.processLeaderEffects(playerId, leaderAction);
+            // Step 2: Process base effects (powerBoost, conditions, etc.)
+            await this.processBaseEffects(playerId, baseAction);
         }
         
-        console.log(`✅ All leader effects processed`);
+        console.log(`✅ All base effects processed`);
     }
 
     /**
-     * Process zone restrictions for a specific leader
+     * Process zone restrictions for a specific base card
      */
-    private async processLeaderZoneRestrictions(playerId: string, leaderUid: string): Promise<void> {
+    private async processBaseZoneRestrictions(playerId: string, baseUid: string): Promise<void> {
         const player = this.getPlayer(playerId);
         if (!player?.fieldEffects) return;
         
@@ -1418,12 +1564,15 @@ export class GameEnvironment {
                 console.log(`🎯 Applying zone restrictions for leader ${baseCardId} (${playerId})`);
                 
                 // Apply zone compatibility to fieldEffects.zoneRestrictions
+                // For the new system, all slots accept all cards by default
                 player.fieldEffects.zoneRestrictions = {
-                    top: leaderCardData.zoneCompatibility.top || ['ALL'],
-                    left: leaderCardData.zoneCompatibility.left || ['ALL'],
-                    right: leaderCardData.zoneCompatibility.right || ['ALL'],
-                    help: 'ALL', // Help zone always accepts all cards
-                    sp: 'ALL'    // SP zone always accepts all cards
+                    slot1: 'ALL',
+                    slot2: 'ALL', 
+                    slot3: 'ALL',
+                    slot4: 'ALL',
+                    slot5: 'ALL',
+                    slot6: 'ALL',
+                    base: 'ALL'   // Base zone accepts base cards
                 };
                 
                 console.log(`✅ Zone restrictions applied for ${baseCardId}:`, player.fieldEffects.zoneRestrictions);
@@ -1472,14 +1621,25 @@ export class GameEnvironment {
     public areAllMainZonesFilled(): boolean {
         const playerIds = this.zones.getAllPlayerIds();
         return playerIds.every(playerId => 
-            this.zones.areAllCharacterZonesFilled(playerId) && 
-            this.zones.isHelpZoneFilled(playerId)
+            this.zones.areAllSlotZonesFilled(playerId)
         );
     }
 
-    public areAllSpZonesFilled(): boolean {
+    public areAnySlotZonesFilled(): boolean {
         const playerIds = this.zones.getAllPlayerIds();
-        return playerIds.every(playerId => this.zones.isSpZoneFilled(playerId));
+        return playerIds.some(playerId => 
+            this.zones.getOccupiedSlotCount(playerId) > 0
+        );
+    }
+
+    public areAllBaseZonesFilled(): boolean {
+        const playerIds = this.zones.getAllPlayerIds();
+        return playerIds.every(playerId => this.zones.isBaseZoneFilled(playerId));
+    }
+
+    // Backward compatibility
+    public areAllSpZonesFilled(): boolean {
+        return this.areAllBaseZonesFilled();
     }
 
     // ============ NEUTRALIZATION TRACKING ============

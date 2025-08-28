@@ -7,8 +7,7 @@
 
 import { GameEnvironment, GamePhase, ZoneType, ActionType, EventType, Player, CardInfoUtilsSingleton } from '../models/GameEnvironment';
 import { PlayerDeckDataResp } from '../models/PlayerDeckDataResp';
-// PLACEHOLDER: Enhanced effect manager - implement effect processing functionality
-import CardInfoUtils from '../services/CardInfoUtils';
+
 
 export class GameEnvironmentAdapter {
     

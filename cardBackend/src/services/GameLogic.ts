@@ -372,7 +372,6 @@ export class GameLogic {
                 phase: gameEnv.phase,
                 timestamp: Date.now()
             });
-            console.log("aaa",JSON.stringify(gameEnv))
             // Save game to file system
             await this.saveGameToFile(gameId, gameEnv);
             
