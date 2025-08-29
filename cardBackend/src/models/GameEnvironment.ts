@@ -2,7 +2,7 @@
 // Main GameEnvironment class for custom trading card game
 
 import { GamePhase, ZoneType, EventType, ActionType } from './GameEnums';
-import { Player, PlayerFieldEffects, PlayerZones, SlotZone } from './Player';
+import { Player, PlayerZones, SlotZone } from './Player';
 import { PlaySequenceManager, PlaySequenceAction } from './PlaySequence';
 import { BaseZoneCard } from './CardSystem';
 
@@ -53,8 +53,6 @@ export class GameEnvironment {
     public players: { [playerId: string]: Player };
     public playSequenceManager: PlaySequenceManager;
     
-    // Legacy compatibility
-    public fieldEffects: { [playerId: string]: PlayerFieldEffects };
     
     // Event system
     public gameEvents?: any[];
@@ -79,7 +77,6 @@ export class GameEnvironment {
         this.players = {};
         this.playSequenceManager = new PlaySequenceManager(this);
         
-        this.fieldEffects = {};
         this.pendingCardSelections = {};
         this.lastProcessedSequence = 0;
     }
@@ -205,7 +202,6 @@ export class GameEnvironment {
             ),
             
             zones: this.getZonesData(),
-            fieldEffects: this.fieldEffects,
             pendingCardSelections: this.pendingCardSelections,
             lastProcessedSequence: this.lastProcessedSequence,
             
@@ -240,7 +236,6 @@ export class GameEnvironment {
             gameEnv.playSequenceManager = PlaySequenceManager.fromJSON(data.playSequence);
         }
         
-        gameEnv.fieldEffects = data.fieldEffects || {};
         gameEnv.pendingCardSelections = data.pendingCardSelections || {};
         gameEnv.lastProcessedSequence = data.lastProcessedSequence || 0;
         

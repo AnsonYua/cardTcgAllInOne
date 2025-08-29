@@ -8,12 +8,14 @@ import {
     PilotZoneCard, 
     CommandZoneCard, 
     BaseStructureZoneCard,
+    EnergyZoneCard,
     CardData,
     createZoneCard,
     isUnitZoneCard,
     isPilotZoneCard,
     isCommandZoneCard,
-    isBaseStructureZoneCard
+    isBaseStructureZoneCard,
+    isEnergyZoneCard
 } from './CardSystem';
 
 // ============ ZONE INTERFACES ============
@@ -31,8 +33,9 @@ export interface PlayerZones {
     slot5: SlotZone;
     slot6: SlotZone;
     base: BaseStructureZoneCard[];
-    commands: CommandZoneCard[];
-    shield: BaseZoneCard[];  // Any card from deck can be placed as shield
+    shieldArea: BaseZoneCard[];    // Any card from deck can be placed as shield
+    energyArea: EnergyZoneCard[];  // Energy cards for resource management
+    trashArea: BaseZoneCard[];     // Discarded/destroyed cards
 }
 
 // ============ ZONE UTILITY FUNCTIONS ============
@@ -47,6 +50,14 @@ export const isSlotZone = (zone: ZoneType): boolean => {
 
 export const isShieldZone = (zone: ZoneType): zone is ZoneType.SHIELD => {
     return zone === ZoneType.SHIELD;
+};
+
+export const isEnergyZone = (zone: ZoneType): zone is ZoneType.ENERGY => {
+    return zone === ZoneType.ENERGY;
+};
+
+export const isTrashZone = (zone: ZoneType): zone is ZoneType.TRASH => {
+    return zone === ZoneType.TRASH;
 };
 
 export type ZoneContent = BaseZoneCard[] | undefined;
@@ -185,8 +196,9 @@ export class Player {
             slot5: {},
             slot6: {},
             base: [],
-            commands: [],
-            shield: []
+            shieldArea: [],
+            energyArea: [],
+            trashArea: []
         };
     }
 
@@ -240,15 +252,21 @@ export class Player {
             
         } else if (normalizedZone === ZoneType.SHIELD) {
             // Shield can accept any card type from deck
-            this.zones.shield.push(zoneCard);
+            this.zones.shieldArea.push(zoneCard);
             console.log(`✅ Set shield card in ${zone}: ${cardUid}`);
             
+        } else if (normalizedZone === ZoneType.ENERGY) {
+            // Energy cards go to energy zone
+            this.zones.energyArea.push(zoneCard as EnergyZoneCard);
+            console.log(`✅ Set energy card in ${zone}: ${cardUid}`);
+            
+        } else if (normalizedZone === ZoneType.TRASH) {
+            // Any card can go to trash area
+            this.zones.trashArea.push(zoneCard);
+            console.log(`🗑️ Set card in trash area: ${cardUid}`);
+            
         } else {
-            if (zoneCard.cardData.cardType === 'command') {
-                this.zones.commands.push(zoneCard as CommandZoneCard);
-            } else {
-                console.warn(`⚠️ Unknown zone placement for card type ${zoneCard.cardData.cardType} in zone ${normalizedZone}`);
-            }
+            console.warn(`⚠️ Unknown zone placement for card type ${zoneCard.cardData.cardType} in zone ${normalizedZone}`);
         }
         
         console.log(`✅ Set card in zone: ${cardUid} (${cardId}) → ${zone} for player ${this.id}`);
@@ -268,7 +286,15 @@ export class Player {
         }
         
         if (zone === ZoneType.SHIELD) {
-            return this.zones.shield.length > 0 ? this.zones.shield[0].cardUid : null;
+            return this.zones.shieldArea.length > 0 ? this.zones.shieldArea[0].cardUid : null;
+        }
+        
+        if (zone === ZoneType.ENERGY) {
+            return this.zones.energyArea.length > 0 ? this.zones.energyArea[0].cardUid : null;
+        }
+        
+        if (zone === ZoneType.TRASH) {
+            return this.zones.trashArea.length > 0 ? this.zones.trashArea[0].cardUid : null;
         }
         
         const targetZone = this.zones[zone];
@@ -289,7 +315,15 @@ export class Player {
         }
         
         if (zone === ZoneType.SHIELD) {
-            return this.zones.shield.length > 0 ? this.zones.shield[0] : null;
+            return this.zones.shieldArea.length > 0 ? this.zones.shieldArea[0] : null;
+        }
+        
+        if (zone === ZoneType.ENERGY) {
+            return this.zones.energyArea.length > 0 ? this.zones.energyArea[0] : null;
+        }
+        
+        if (zone === ZoneType.TRASH) {
+            return this.zones.trashArea.length > 0 ? this.zones.trashArea[0] : null;
         }
         
         const targetZone = this.zones[zone];
@@ -311,7 +345,15 @@ export class Player {
         }
         
         if (zone === ZoneType.SHIELD) {
-            return this.zones.shield.length > 0;
+            return this.zones.shieldArea.length > 0;
+        }
+        
+        if (zone === ZoneType.ENERGY) {
+            return this.zones.energyArea.length > 0;
+        }
+        
+        if (zone === ZoneType.TRASH) {
+            return this.zones.trashArea.length > 0;
         }
         
         return this.getCardInZone(zone) !== null;
@@ -342,7 +384,11 @@ export class Player {
         } else if (zone === ZoneType.BASE) {
             this.zones.base.length = 0;
         } else if (zone === ZoneType.SHIELD) {
-            this.zones.shield.length = 0;
+            this.zones.shieldArea.length = 0;
+        } else if (zone === ZoneType.ENERGY) {
+            this.zones.energyArea.length = 0;
+        } else if (zone === ZoneType.TRASH) {
+            this.zones.trashArea.length = 0;
         } else {
             const targetZone = this.zones[zone];
             if (Array.isArray(targetZone)) {
@@ -400,15 +446,15 @@ export class Player {
     // ============ SHIELD ZONE METHODS ============
 
     public getShieldCards(): BaseZoneCard[] {
-        return this.zones.shield;
+        return this.zones.shieldArea;
     }
 
     public getShieldCount(): number {
-        return this.zones.shield.length;
+        return this.zones.shieldArea.length;
     }
 
     public hasShield(): boolean {
-        return this.zones.shield.length > 0;
+        return this.zones.shieldArea.length > 0;
     }
 
     public addShieldCard(cardUid: string, cardData?: CardData): void {
@@ -416,9 +462,9 @@ export class Player {
     }
 
     public removeShieldCard(cardUid: string): boolean {
-        const index = this.zones.shield.findIndex(card => card.cardUid === cardUid);
+        const index = this.zones.shieldArea.findIndex(card => card.cardUid === cardUid);
         if (index >= 0) {
-            this.zones.shield.splice(index, 1);
+            this.zones.shieldArea.splice(index, 1);
             return true;
         }
         return false;
@@ -507,6 +553,95 @@ export class Player {
         const slotZone = this.zones[slotKey];
         
         return slotZone.unit?.damageReceived || 0;
+    }
+
+    // ============ ENERGY MANAGEMENT METHODS ============
+
+    public getEnergyCards(): EnergyZoneCard[] {
+        return this.zones.energyArea;
+    }
+
+    public getAvailableEnergy(): number {
+        return this.zones.energyArea
+            .filter(card => !card.isRested && !card.isExtraEnergy)
+            .reduce((total, card) => total + (card.energyValue || 0), 0);
+    }
+
+    public getTotalEnergyValue(): number {
+        return this.zones.energyArea
+            .filter(card => !card.isExtraEnergy)
+            .reduce((total, card) => total + (card.energyValue || 0), 0);
+    }
+
+    public tapEnergy(cardUid: string): boolean {
+        const energyCard = this.zones.energyArea.find(card => card.cardUid === cardUid);
+        if (!energyCard || energyCard.isRested || energyCard.isExtraEnergy) return false;
+        
+        energyCard.isRested = true;
+        console.log(`⚡ Energy ${cardUid} tapped`);
+        return true;
+    }
+
+    public consumeEnergy(cardUid: string): boolean {
+        const energyCard = this.zones.energyArea.find(card => card.cardUid === cardUid);
+        if (!energyCard || energyCard.isExtraEnergy) return false;
+        
+        if (energyCard.cardData.energyType === 'consumable') {
+            energyCard.isExtraEnergy = true;
+            console.log(`💥 Consumable energy ${cardUid} consumed and removed`);
+            return true;
+        } else {
+            // Permanent energy just gets tapped
+            energyCard.isRested = true;
+            console.log(`⚡ Permanent energy ${cardUid} tapped`);
+            return true;
+        }
+    }
+
+    public untapAllEnergy(): void {
+        this.zones.energyArea.forEach(card => {
+            if (!card.isExtraEnergy) {
+                card.isRested = false;
+            }
+        });
+        console.log(`🔄 All energy untapped for player ${this.id}`);
+    }
+
+    public removeConsumedEnergy(): void {
+        this.zones.energyArea = this.zones.energyArea.filter(card => !card.isExtraEnergy);
+        console.log(`🧹 Consumed energy cards removed for player ${this.id}`);
+    }
+
+    // ============ TRASH AREA METHODS ============
+
+    public getTrashCards(): BaseZoneCard[] {
+        return this.zones.trashArea;
+    }
+
+    public getTrashCount(): number {
+        return this.zones.trashArea.length;
+    }
+
+    public hasTrash(): boolean {
+        return this.zones.trashArea.length > 0;
+    }
+
+    public addTrashCard(cardUid: string, cardData?: CardData): void {
+        this.setCardInZone(ZoneType.TRASH, cardUid, cardData);
+    }
+
+    public removeTrashCard(cardUid: string): boolean {
+        const index = this.zones.trashArea.findIndex(card => card.cardUid === cardUid);
+        if (index >= 0) {
+            this.zones.trashArea.splice(index, 1);
+            return true;
+        }
+        return false;
+    }
+
+    public clearTrash(): void {
+        this.zones.trashArea.length = 0;
+        console.log(`🗑️ Trash area cleared for player ${this.id}`);
     }
 
     // ============ DECK METHODS ============

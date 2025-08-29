@@ -61,7 +61,14 @@ export interface BaseStructureData extends BaseCardData {
     zoneCompatibility?: any;            // Zone compatibility rules
 }
 
-export type CardData = UnitCardData | PilotCardData | CommandCardData | BaseStructureData;
+export interface EnergyCardData extends BaseCardData {
+    cardType: 'energy';
+    energyType: 'permanent' | 'consumable';  // Permanent or single-use
+    energyValue: number;                     // Energy amount provided
+    rarity?: string;                         // Card rarity
+}
+
+export type CardData = UnitCardData | PilotCardData | CommandCardData | BaseStructureData | EnergyCardData;
 
 // ============ ZONE CARD INTERFACES ============
 
@@ -94,6 +101,13 @@ export interface CommandZoneCard extends BaseZoneCard {
 export interface BaseStructureZoneCard extends BaseZoneCard {
     cardData: BaseStructureData;
     isRested?: boolean;     // Whether the base is rested (tapped)
+}
+
+export interface EnergyZoneCard extends BaseZoneCard {
+    cardData: EnergyCardData;
+    isRested?: boolean;        // Whether energy is tapped/exhausted
+    isExtraEnergy?: boolean;   // For consumable energy - whether used up
+    energyValue?: number;      // Current energy value (may be modified)
 }
 
 // ============ ZONE CARD UTILITIES ============
@@ -144,6 +158,15 @@ export function createZoneCard(
                 isRested: false
             } as BaseStructureZoneCard;
             
+        case 'energy':
+            return {
+                ...baseCard,
+                cardData: cardData as EnergyCardData,
+                isRested: false,
+                isExtraEnergy: false,
+                energyValue: (cardData as EnergyCardData).energyValue
+            } as EnergyZoneCard;
+            
         default:
             throw new Error(`Unknown card type: ${(cardData as CardData).cardType}`);
     }
@@ -164,6 +187,10 @@ export function isCommandZoneCard(card: BaseZoneCard): card is CommandZoneCard {
 
 export function isBaseStructureZoneCard(card: BaseZoneCard): card is BaseStructureZoneCard {
     return card.cardData.cardType === 'base';
+}
+
+export function isEnergyZoneCard(card: BaseZoneCard): card is EnergyZoneCard {
+    return card.cardData.cardType === 'energy';
 }
 
 export class ZoneCardUtils {

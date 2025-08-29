@@ -65,17 +65,8 @@ export class GameLogic {
             gameEnv.playerId_1 = playerId;
             gameEnv.phase = GamePhase.WAITING_FOR_PLAYERS;
             gameEnv.gameStarted = false;
-            gameEnv.firstPlayer = 0;
-            gameEnv.currentPlayer = playerId;
-            gameEnv.currentTurn = 1;
+            gameEnv.playersReady[playerId] = true;
             
-            // TODO: Initialize your custom trading card game mechanics here
-            // - Load your custom card data from st01Card.json
-            // - Set up game-specific rules
-            // - Initialize player resources and zones
-            
-            console.log('🚧 [PLACEHOLDER] Custom game mechanics not implemented');
-            console.log('🚧 [PLACEHOLDER] Add your custom trading card game logic here');
             
             // Save game to file system
             await this.saveGameToFile(gameId, gameEnv);
@@ -136,14 +127,16 @@ export class GameLogic {
             if (!gameEnv.playerId_2) {
                 gameEnv.playerId_2 = playerId;
                 
-                // TODO: Initialize second player with custom game mechanics
-                // - Load player deck from st01Card.json structure
-                // - Set up player zones (slot1-slot6, base)
-                // - Initialize player resources
+ 
+                // TODO: Implement your custom card play logic here
+                // - load gcgdecks.json
+                // - assist the deck to both player 
+                // - shuffle the deck
+                // - random pick the first player
+                // - draw 5 hand for each player
+                // - set redraw to false and wait for player to redraw or skips redraw and get ready to star the game
                 
-                console.log('🚧 [PLACEHOLDER] Custom player initialization not implemented');
-                console.log('🚧 [PLACEHOLDER] Add your custom deck loading and player setup here');
-                
+     
                 // Update phase
                 gameEnv.phase = GamePhase.BOTH_JOINED;
                 
@@ -189,15 +182,7 @@ export class GameLogic {
                     error: 'Game not found'
                 };
             }
-            
-            // TODO: Implement your custom card play logic here
-            // - Validate card placement rules for your game
-            // - Check zone compatibility (slot1-slot6, base)
-            // - Apply card effects based on your st01Card.json structure
-            // - Handle unit/pilot/command/base card types
-            // - Process AP/HP mechanics
-            // - Handle traits and link systems
-            
+           
             console.log('🚧 [PLACEHOLDER] Custom card play logic not implemented');
             console.log('🚧 [PLACEHOLDER] Add your custom card placement and effect processing here');
             

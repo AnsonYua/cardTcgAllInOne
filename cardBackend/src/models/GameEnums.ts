@@ -24,7 +24,9 @@ export enum ZoneType {
     SLOT5 = 'slot5',
     SLOT6 = 'slot6',
     BASE = 'base',
-    SHIELD = 'shield'
+    SHIELD = 'shield',
+    ENERGY = 'energy',
+    TRASH = 'trash'
 }
 
 export enum ActionType {
@@ -33,6 +35,9 @@ export enum ActionType {
     PLAY_COMMAND = 'PLAY_COMMAND',
     PLAY_BASE = 'PLAY_BASE',
     PLAY_SHIELD = 'PLAY_SHIELD',
+    PLAY_ENERGY = 'PLAY_ENERGY',
+    TAP_ENERGY = 'TAP_ENERGY',
+    CONSUME_ENERGY = 'CONSUME_ENERGY',
     PAIR_PILOT = 'PAIR_PILOT',
     ACTIVATE_ABILITY = 'ACTIVATE_ABILITY',
     ATTACK = 'ATTACK',
