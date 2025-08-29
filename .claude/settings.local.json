@@ -77,7 +77,8 @@
       "Bash(../../cardBackend/node_modules/.bin/ts-node test_s6_leader.ts)",
       "Bash(git stash push:*)",
       "Bash(pip3 install:*)",
-      "Bash(/usr/bin/timeout 10s npm start)"
+      "Bash(/usr/bin/timeout 10s npm start)",
+      "Bash(cp:*)"
     ],
     "deny": []
   }

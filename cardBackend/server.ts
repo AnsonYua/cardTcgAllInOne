@@ -1,26 +1,60 @@
-// server.ts - TypeScript version of the Express server
+// server.ts - Custom Trading Card Game Server
 
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { Server } from 'http';
+import * as path from 'path';
 
-// Import configurations and routes (TypeScript imports)
+// Import routes for custom trading card game
 import gameRoutes from './src/routes/gameRoutes';
-const config = require('./src/config/config');
 
-// Import TypeScript DeckManager
-import DeckManager from './src/services/DeckManager';
+// ============ SERVER CONFIGURATION ============
 
 const app: Express = express();
+const PORT = process.env.PORT || 8080;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+console.log('🎮 Starting Custom Trading Card Game Server...');
 
-// Routes
+// ============ MIDDLEWARE ============
+
+// CORS configuration for cross-origin requests
+app.use(cors({
+    origin: ['http://localhost:3000', 'http://localhost:8080'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Body parsing middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// ============ ROUTES ============
+
+// Custom trading card game API routes
 app.use('/api/game', gameRoutes);
 
-// Error handling middleware
+// Root endpoint
+app.get('/', (req: Request, res: Response) => {
+    res.json({
+        message: 'Custom Trading Card Game Backend',
+        status: 'running',
+        timestamp: new Date().toISOString(),
+        version: '1.0.0',
+        endpoints: {
+            health: '/api/game/health',
+            cards: '/api/game/cards (st01Card.json)',
+            createGame: 'POST /api/game/player/startGame',
+            joinGame: 'POST /api/game/player/joinRoom',
+            playCard: 'POST /api/game/player/playerAction',
+            gameData: 'GET /api/game/player/:playerId?gameId=X',
+            images: 'GET /api/game/image/:imagePath'
+        }
+    });
+});
+
+// ============ ERROR HANDLING ============
+
+// Global error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     console.error('🚨 Global error handler caught:', err);
     console.error('🚨 Error stack:', err.stack);
@@ -39,44 +73,70 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 // 404 handler
 app.use((req: Request, res: Response) => {
-    res.status(404).json({ error: 'Route not found' });
+    res.status(404).json({ 
+        error: 'Route not found',
+        timestamp: new Date().toISOString(),
+        availableEndpoints: [
+            'GET /api/game/health',
+            'GET /api/game/cards',
+            'POST /api/game/player/startGame',
+            'POST /api/game/player/joinRoom',
+            'POST /api/game/player/playerAction',
+            'GET /api/game/player/:playerId?gameId=X'
+        ]
+    });
 });
+
+// ============ SERVER STARTUP ============
 
 let server: Server | undefined;
 
-// Start server (DeckManager is already initialized synchronously)
 function startServer(): Server {
     try {
-        console.log('DeckManager already initialized synchronously');
-
-        // Verify DeckManager is properly initialized
-        const initStatus = DeckManager.getInitializationStatus();
-        console.log('DeckManager status:', initStatus);
+        console.log('🎮 Initializing Custom Trading Card Game Backend...');
+        console.log('📋 Card data available: src/data/st01Card.json');
+        console.log('🏗️ GameEnvironment with slot1-slot6 zones ready');
+        console.log('🎯 Ready for custom game logic implementation');
 
         // Start the server
-        server = app.listen(config.port, () => {
-            console.log(`Server is running on port ${config.port}`);
+        server = app.listen(PORT, () => {
+            console.log(`🚀 Custom Trading Card Game Server running on port ${PORT}`);
+            console.log(`🌐 Server URL: http://localhost:${PORT}`);
+            console.log(`🏥 Health check: http://localhost:${PORT}/api/game/health`);
+            console.log(`📊 API status: http://localhost:${PORT}/api/game/status`);
+            console.log('');
+            console.log('🚧 PLACEHOLDER SERVER READY FOR CUSTOM DEVELOPMENT');
+            console.log('');
+            console.log('TODO: Implement your custom trading card game logic:');
+            console.log('- Add card play mechanics (unit/pilot/command/base types)');
+            console.log('- Implement AP/HP systems');
+            console.log('- Add traits and link mechanics');
+            console.log('- Set up zone compatibility (slot1-slot6, base)');
+            console.log('- Add game phase management');
+            console.log('- Implement victory conditions');
+            console.log('');
         });
 
         // Handle server errors
         server.on('error', (error: Error) => {
-            console.error('Server error:', error);
+            console.error('❌ Server error:', error);
             process.exit(1);
         });
 
         return server;
     } catch (error) {
-        console.error('Failed to start server:', error);
+        console.error('❌ Failed to start server:', error);
         process.exit(1);
     }
 }
 
-// Handle process termination
+// ============ GRACEFUL SHUTDOWN ============
+
 process.on('SIGTERM', () => {
     console.log('SIGTERM received. Shutting down gracefully...');
     if (server) {
         server.close(() => {
-            console.log('Server closed');
+            console.log('🛑 Custom Trading Card Game Server closed');
             process.exit(0);
         });
     }
@@ -86,10 +146,14 @@ process.on('SIGINT', () => {
     console.log('SIGINT received. Shutting down gracefully...');
     if (server) {
         server.close(() => {
-            console.log('Server closed');
+            console.log('🛑 Custom Trading Card Game Server closed');
             process.exit(0);
         });
     }
 });
 
+// Start the server
 startServer();
+
+// Export for testing
+export default app;

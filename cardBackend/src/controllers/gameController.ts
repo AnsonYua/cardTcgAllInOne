@@ -1,9 +1,9 @@
 // src/controllers/gameController.ts
+// PLACEHOLDER - Custom Trading Card Game Controller
 
 import { Request, Response } from 'express';
 import { gameLogic, GameLogic } from '../services/GameLogic';
-import { GamePhase, EventType } from '../models/GameEnvironment';
-import DeckManager from '../services/DeckManager';
+import { GamePhase } from '../models/GameEnums';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -26,28 +26,25 @@ export interface ErrorResponse {
     context?: string;
 }
 
-// ============ GAME CONTROLLER CLASS ============
+// ============ CUSTOM TRADING CARD GAME CONTROLLER ============
 
 export class GameController {
     private gameLogic: GameLogic;
-    private deckManager: typeof DeckManager;
 
     constructor() {
         this.gameLogic = gameLogic;
-        this.deckManager = DeckManager; // Singleton instance
-        
-        console.log('🎮 GameController initialized with TypeScript support');
+        console.log('🎮 Custom Trading Card Game Controller initialized');
     }
 
-    // ============ GAME MANAGEMENT ENDPOINTS ============
+    // ============ CORE GAME ENDPOINTS ============
 
     /**
-     * Start a new game
+     * Start a new custom trading card game
      * POST /api/game/start
      */
     async startGame(req: GameRequest, res: Response): Promise<void> {
         try {
-            console.log('🎮 Starting new game for player:', req.body.playerId);
+            console.log('🎮 Starting new custom trading card game for player:', req.body.playerId);
             
             const playerId = req.body.playerId;
             if (!playerId) {
@@ -62,7 +59,6 @@ export class GameController {
             const gameState = await this.gameLogic.createGame(playerId);
             
             if (gameState.success && gameState.gameEnv) {
-                // Extract gameId to root level for API compatibility
                 res.json({
                     success: true,
                     gameId: gameState.gameId,
@@ -78,24 +74,16 @@ export class GameController {
             
         } catch (error) {
             console.error('❌ Error in startGame:', error);
-            console.error('❌ Stack trace:', (error as Error).stack);
-            
-            const errorResponse: ErrorResponse = {
+            res.status(500).json({
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
                 context: 'startGame endpoint'
-            };
-            
-            if (process.env.NODE_ENV === 'development') {
-                errorResponse.stack = (error as Error).stack;
-            }
-            
-            res.status(500).json(errorResponse);
+            });
         }
     }
 
     /**
-     * Join an existing game
+     * Join an existing custom trading card game
      * POST /api/game/join
      */
     async joinRoom(req: GameRequest, res: Response): Promise<void> {
@@ -116,7 +104,6 @@ export class GameController {
             const gameState = await this.gameLogic.joinGame(gameId, playerId);
             
             if (gameState.success && gameState.gameEnv) {
-                // Extract gameId to root level for API compatibility
                 res.json({
                     success: true,
                     gameId: gameState.gameId,
@@ -132,109 +119,11 @@ export class GameController {
             
         } catch (error) {
             console.error('❌ Error in joinRoom:', error);
-            console.error('❌ Stack trace:', (error as Error).stack);
-            console.error('❌ Request body:', req.body);
-            
-            const errorResponse: ErrorResponse = {
+            res.status(500).json({
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
                 context: 'joinRoom endpoint'
-            };
-            
-            if (process.env.NODE_ENV === 'development') {
-                errorResponse.stack = (error as Error).stack;
-            }
-            
-            res.status(500).json(errorResponse);
-        }
-    }
-
-    // ============ PLAYER DATA ENDPOINTS ============
-
-    /**
-     * Get game resource data (gcgdecks.json)
-     * GET /api/game/player/gameResource
-     */
-    async getGameResource(req: Request, res: Response): Promise<void> {
-        try {
-            console.log('📋 Getting game resource data (gcgdecks.json)');
-            
-            // Build path to gcgdecks.json
-            const gcgDecksPath = path.join(__dirname, '../data/gcgdecks.json');
-            
-            // Check if file exists
-            if (!fs.existsSync(gcgDecksPath)) {
-                res.status(404).json({
-                    error: 'Game resource file not found',
-                    timestamp: new Date().toISOString(),
-                    context: 'getGameResource endpoint'
-                });
-                return;
-            }
-            
-            // Read and parse the gcgdecks.json file
-            const gcgDecksContent = await fs.promises.readFile(gcgDecksPath, 'utf8');
-            const gcgDecksData = JSON.parse(gcgDecksContent);
-            
-            console.log('✅ Game resource data loaded successfully');
-            
-            res.json(gcgDecksData);
-            
-        } catch (error) {
-            console.error('❌ Error in getGameResource:', error);
-            console.error('❌ Stack trace:', (error as Error).stack);
-            
-            const errorResponse: ErrorResponse = {
-                error: (error as Error).message,
-                timestamp: new Date().toISOString(),
-                context: 'getGameResource endpoint'
-            };
-            
-            if (process.env.NODE_ENV === 'development') {
-                errorResponse.stack = (error as Error).stack;
-            }
-            
-            res.status(500).json(errorResponse);
-        }
-    }
-
-    /**
-     * Get player decks
-     * GET /api/game/player/:playerId/decks
-     */
-    async getPlayerDecks(req: GameRequest, res: Response): Promise<void> {
-        try {
-            const { playerId } = req.params;
-            
-            if (!playerId) {
-                res.status(400).json({
-                    error: 'playerId is required',
-                    timestamp: new Date().toISOString(),
-                    context: 'getPlayerDecks endpoint'
-                });
-                return;
-            }
-            
-            console.log('🔍 getPlayerDecks called for playerId:', playerId);
-            
-            const decks = await this.deckManager.getPlayerDecks(playerId);
-            res.json(decks);
-            
-        } catch (error) {
-            console.error('❌ Error in getPlayerDecks:', error);
-            console.error('❌ Stack trace:', (error as Error).stack);
-            
-            const errorResponse: ErrorResponse = {
-                error: (error as Error).message,
-                timestamp: new Date().toISOString(),
-                context: 'getPlayerDecks endpoint'
-            };
-            
-            if (process.env.NODE_ENV === 'development') {
-                errorResponse.stack = (error as Error).stack;
-            }
-            
-            res.status(500).json(errorResponse);
+            });
         }
     }
 
@@ -261,7 +150,6 @@ export class GameController {
             const gameState = await this.gameLogic.getPlayerGameState(gameId as string, playerId);
             
             if (gameState.success && gameState.gameEnv) {
-                // Extract gameId to root level for API compatibility
                 res.json({
                     success: true,
                     gameId: gameState.gameId,
@@ -277,87 +165,16 @@ export class GameController {
             
         } catch (error) {
             console.error('❌ Error in getPlayerData:', error);
-            console.error('❌ Stack trace:', (error as Error).stack);
-            
-            const errorResponse: ErrorResponse = {
+            res.status(500).json({
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
                 context: 'getPlayerData endpoint'
-            };
-            
-            if (process.env.NODE_ENV === 'development') {
-                errorResponse.stack = (error as Error).stack;
-            }
-            
-            res.status(500).json(errorResponse);
+            });
         }
     }
 
-    // ============ GAME ACTION ENDPOINTS ============
-
     /**
-     * Start ready phase
-     * POST /api/game/ready
-     */
-    async startReady(req: GameRequest, res: Response): Promise<void> {
-        try {
-            console.log('🎮 Starting ready phase for:', req.body);
-            
-            const { gameId, playerId, isRedraw } = req.body;
-            
-            if (!gameId || !playerId) {
-                res.status(400).json({
-                    error: 'gameId and playerId are required',
-                    timestamp: new Date().toISOString(),
-                    context: 'startReady endpoint'
-                });
-                return;
-            }
-            
-            // Convert isRedraw to boolean following original design
-            const wantRedraw = isRedraw === true || isRedraw === 'true';
-            
-            console.log(`🎯 Processing startReady for player ${playerId}, redraw: ${wantRedraw}`);
-            
-            // Use GameLogic startReady method
-            const result = await gameLogic.startReady(gameId, playerId, wantRedraw);
-            
-            if (result.success && result.gameEnv) {
-                // Extract gameId to root level for API compatibility
-                res.json({
-                    success: true,
-                    gameId: result.gameId,
-                    gameEnv: result.gameEnv
-                });
-            } else {
-                res.status(400).json({
-                    error: result.error || 'Failed to start ready phase',
-                    timestamp: new Date().toISOString(),
-                    context: 'startReady endpoint'
-                });
-            }
-            
-        } catch (error) {
-            console.error('❌ Error in startReady:', error);
-            console.error('❌ Stack trace:', (error as Error).stack);
-            
-            const errorResponse: ErrorResponse = {
-                error: (error as Error).message,
-                timestamp: new Date().toISOString(),
-                context: 'startReady endpoint'
-            };
-            
-            if (process.env.NODE_ENV === 'development') {
-                errorResponse.stack = (error as Error).stack;
-            }
-            
-            res.status(500).json(errorResponse);
-        }
-    }
-
-
-    /**
-     * Process player action
+     * Process player action (play cards)
      * POST /api/game/action
      */
     async playerAction(req: GameRequest, res: Response): Promise<void> {
@@ -375,9 +192,8 @@ export class GameController {
                 return;
             }
             
-            // Use modern TypeScript method for card play actions
+            // Handle PlayCard actions for custom trading card game
             if (action.type === 'PlayCard') {
-                // Require both cardUID and zone - no legacy fallbacks
                 const cardUID = action.cardUID;
                 const zone = action.zone;
                 
@@ -390,6 +206,13 @@ export class GameController {
                     return;
                 }
                 
+                // TODO: Add validation for your custom zone types (slot1-slot6, base)
+                const validZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6', 'base'];
+                if (!validZones.includes(zone)) {
+                    console.log(`🚧 [PLACEHOLDER] Zone validation not fully implemented. Received zone: ${zone}`);
+                    // For now, allow any zone for testing purposes
+                }
+                
                 const result = await this.gameLogic.playCard(
                     gameId, 
                     playerId, 
@@ -399,7 +222,6 @@ export class GameController {
                 );
                 
                 if (result.success && result.gameEnv) {
-                    // Extract gameId to root level for API compatibility
                     res.json({
                         success: true,
                         gameId: result.gameId,
@@ -414,9 +236,10 @@ export class GameController {
                     });
                 }
             } else {
-                // Reject unsupported action types
+                // TODO: Add support for other custom action types
+                console.log(`🚧 [PLACEHOLDER] Action type '${action.type}' not implemented`);
                 res.status(400).json({
-                    error: `Unsupported action type: ${action.type}. Only 'PlayCard' actions are supported through this endpoint.`,
+                    error: `Action type '${action.type}' not implemented. Add support for your custom trading card game actions.`,
                     timestamp: new Date().toISOString(),
                     context: 'playerAction endpoint - unsupported action type'
                 });
@@ -424,360 +247,64 @@ export class GameController {
             
         } catch (error) {
             console.error('❌ Error in playerAction:', error);
-            
-            const errorResponse: ErrorResponse = {
+            res.status(500).json({
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
                 context: 'playerAction endpoint'
-            };
-            
-            if (process.env.NODE_ENV === 'development') {
-                errorResponse.stack = (error as Error).stack;
-            }
-            
-            res.status(500).json(errorResponse);
-        }
-    }
-
-    /**
-     * Process card selection from frontend
-     * POST /api/game/player/selectCard
-     */
-    async selectCard(req: GameRequest, res: Response): Promise<void> {
-        try {
-            console.log('🎯 Processing card selection:', req.body);
-            
-            const { gameId, playerId, selectionId, selectedCardUIds } = req.body;
-            
-            // Use selectedCardUIds (unified UID-based system)
-            const selectedCardIdentifiers = selectedCardUIds;
-            
-            if (!gameId || !playerId || !selectionId || !selectedCardIdentifiers) {
-                res.status(400).json({
-                    error: 'Missing required parameters: gameId, playerId, selectionId, and selectedCardUIds',
-                    timestamp: new Date().toISOString(),
-                    context: 'selectCard endpoint'
-                });
-                return;
-            }
-            
-            // Validate selectedCardIdentifiers is an array
-            if (!Array.isArray(selectedCardIdentifiers)) {
-                res.status(400).json({
-                    error: 'selectedCardUIds must be an array',
-                    timestamp: new Date().toISOString(),
-                    context: 'selectCard endpoint - validation'
-                });
-                return;
-            }
-            
-            console.log(`🎯 Processing selection ${selectionId} for player ${playerId} with cards: ${selectedCardIdentifiers.join(', ')}`);
-            
-            // Process card selection through GameLogic
-            const result = await this.gameLogic.selectCard(gameId, playerId, selectionId, selectedCardIdentifiers);
-            
-            if (result.success && result.gameEnv) {
-                // Extract gameId to root level for API compatibility
-                res.json({
-                    success: true,
-                    gameId: result.gameId,
-                    gameEnv: result.gameEnv
-                });
-            } else {
-                res.status(400).json({
-                    error: result.error || 'Card selection failed',
-                    timestamp: new Date().toISOString(),
-                    context: 'selectCard endpoint'
-                });
-            }
-            
-        } catch (error) {
-            console.error('❌ Error in selectCard:', error);
-            console.error('❌ Stack trace:', (error as Error).stack);
-            
-            const errorResponse: ErrorResponse = {
-                error: (error as Error).message,
-                timestamp: new Date().toISOString(),
-                context: 'selectCard endpoint'
-            };
-            
-            if (process.env.NODE_ENV === 'development') {
-                errorResponse.stack = (error as Error).stack;
-            }
-            
-            res.status(500).json(errorResponse);
-        }
-    }
-
-    // ============ UTILITY METHODS ============
-
-    /**
-     * Map field index to zone type for backward compatibility with field_idx parameter
-     */
-    private mapFieldIndexToZone(fieldIndex?: number): string {
-        const zoneMap: { [key: number]: string } = {
-            1: 'LEFT',
-            2: 'TOP',
-            3: 'RIGHT',
-            4: 'HELP',
-            5: 'SP'
-        };
-        
-        return fieldIndex ? (zoneMap[fieldIndex] || 'LEFT') : 'LEFT';
-    }
-
-    // ============ EVENT MANAGEMENT ENDPOINTS ============
-
-    /**
-     * Acknowledge events endpoint
-     * POST /api/game/player/acknowledgeEvents
-     */
-    async acknowledgeEvents(req: Request, res: Response): Promise<void> {
-        try {
-            const { gameId, eventIds } = req.body;
-            
-            if (!gameId || !eventIds || !Array.isArray(eventIds)) {
-                res.status(400).json({
-                    error: 'Missing required parameters: gameId and eventIds array',
-                    timestamp: new Date().toISOString(),
-                    context: 'acknowledgeEvents endpoint'
-                });
-                return;
-            }
-            
-            console.log(`🔔 Acknowledging ${eventIds.length} events for game ${gameId}`);
-            
-            // Use GameLogic service method for business logic
-            const result = await this.gameLogic.acknowledgeEvents(gameId, eventIds);
-            
-            if (!result.success) {
-                res.status(404).json({
-                    error: result.error || 'Failed to acknowledge events',
-                    timestamp: new Date().toISOString(),
-                    context: 'acknowledgeEvents endpoint'
-                });
-                return;
-            }
-            
-            console.log(`✅ Events acknowledged successfully for game ${gameId}`);
-            
-            res.json({
-                success: true,
-                gameId: result.gameId,
-                acknowledgedEvents: eventIds.length,
-                message: 'Events acknowledged successfully',
-                timestamp: new Date().toISOString()
-            });
-            
-        } catch (error) {
-            console.error('❌ Error acknowledging events:', error);
-            res.status(500).json({
-                error: (error as Error).message,
-                timestamp: new Date().toISOString(),
-                context: 'acknowledgeEvents endpoint'
             });
         }
     }
 
-    // ============ TEST ENDPOINTS ============
+    // ============ CARD DATA ENDPOINTS ============
 
     /**
-     * Get test scenario for testing
-     * GET /api/game/test/getTestScenario?scenarioPath=...
+     * Get custom card data (st01Card.json)
+     * GET /api/game/cards
      */
-    async getTestScenario(req: Request, res: Response): Promise<void> {
+    async getCardData(req: Request, res: Response): Promise<void> {
         try {
-            const { scenarioPath } = req.query;
+            console.log('📋 Getting custom card data (st01Card.json)');
             
-            if (!scenarioPath || typeof scenarioPath !== 'string') {
-                res.status(400).json({
-                    error: 'Missing required parameter: scenarioPath',
-                    timestamp: new Date().toISOString(),
-                    context: 'getTestScenario endpoint'
-                });
-                return;
-            }
-            
-            console.log(`📋 Loading test scenario: ${scenarioPath}`);
-            
-            // Build the full path to the test scenario
-            const scenarioFilePath = path.join(__dirname, '../../../shared/testScenarios/gameStates', scenarioPath + '.json');
+            // Build path to st01Card.json
+            const cardDataPath = path.join(__dirname, '../data/st01Card.json');
             
             // Check if file exists
-            if (!fs.existsSync(scenarioFilePath)) {
+            if (!fs.existsSync(cardDataPath)) {
                 res.status(404).json({
-                    error: `Test scenario not found: ${scenarioPath}`,
+                    error: 'Custom card data file not found (st01Card.json)',
                     timestamp: new Date().toISOString(),
-                    context: 'getTestScenario endpoint'
+                    context: 'getCardData endpoint'
                 });
                 return;
             }
             
-            // Read and parse the scenario file
-            const scenarioContent = await fs.promises.readFile(scenarioFilePath, 'utf8');
-            const scenario = JSON.parse(scenarioContent);
+            // Read and parse the st01Card.json file
+            const cardDataContent = await fs.promises.readFile(cardDataPath, 'utf8');
+            const cardData = JSON.parse(cardDataContent);
             
-            console.log(`✅ Test scenario loaded successfully: ${scenarioPath}`);
+            console.log('✅ Custom card data loaded successfully');
             
-            res.json({
-                success: true,
-                scenarioPath: scenarioPath,
-                scenario: scenario,
-                timestamp: new Date().toISOString()
-            });
+            res.json(cardData);
             
         } catch (error) {
-            console.error('❌ Error in getTestScenario:', error);
+            console.error('❌ Error in getCardData:', error);
             res.status(500).json({
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
-                context: 'getTestScenario endpoint'
+                context: 'getCardData endpoint'
             });
-        }
-    }
-
-    /**
-     * Inject game state for testing
-     * POST /api/game/test/injectGameState
-     */
-    async injectGameState(req: Request, res: Response): Promise<void> {
-        try {
-            const { gameId, gameEnv } = req.body;
-            
-            if (!gameId || !gameEnv) {
-                res.status(400).json({
-                    error: 'Missing required parameters: gameId and gameEnv',
-                    timestamp: new Date().toISOString(),
-                    context: 'injectGameState endpoint'
-                });
-                return;
-            }
-            
-            console.log(`🧪 Injecting game state for testing: ${gameId}`);
-            
-            // Use GameLogic service method for business logic
-            const result = await this.gameLogic.injectGameState(gameId, gameEnv);
-            
-            if (!result.success) {
-                res.status(400).json({
-                    error: result.error || 'Failed to inject game state',
-                    timestamp: new Date().toISOString(),
-                    context: 'injectGameState endpoint'
-                });
-                return;
-            }
-            
-            console.log(`✅ Game state injected successfully: ${gameId}`);
-            
-            res.json({
-                success: true,
-                gameId: result.gameId,
-                message: 'Game state injected successfully',
-                timestamp: new Date().toISOString()
-            });
-            
-        } catch (error) {
-            console.error('❌ Error in injectGameState:', error);
-            res.status(500).json({
-                error: (error as Error).message,
-                timestamp: new Date().toISOString(),
-                context: 'injectGameState endpoint'
-            });
-        }
-    }
-
-    // ============ DECK MANAGEMENT ENDPOINTS ============
-
-    /**
-     * Update deck from file path
-     * POST /api/game/deck/updateFromPath
-     */
-    async updateDeckFromPath(req: GameRequest, res: Response): Promise<void> {
-        try {
-            console.log('🃏 Updating deck from path:', req.body.deckPath);
-            
-            const { deckPath, validateOnly, skipValidation } = req.body;
-            
-            if (!deckPath) {
-                res.status(400).json({
-                    error: 'deckPath is required',
-                    timestamp: new Date().toISOString(),
-                    context: 'updateDeckFromPath endpoint'
-                });
-                return;
-            }
-
-            // Validate path exists
-            if (!fs.existsSync(deckPath)) {
-                res.status(400).json({
-                    error: `Deck file does not exist: ${deckPath}`,
-                    timestamp: new Date().toISOString(),
-                    context: 'updateDeckFromPath endpoint'
-                });
-                return;
-            }
-
-            const options = {
-                validateOnly: Boolean(validateOnly),
-                skipValidation: Boolean(skipValidation),
-                throwOnValidationError: !validateOnly // Only throw errors when actually updating
-            };
-
-            console.log(`🔧 Update options:`, options);
-
-            // Call DeckManager with consolidated function
-            const result = this.deckManager.updateDecksFromPath(deckPath, options);
-            
-            if (validateOnly && result) {
-                // Return validation results
-                res.json({
-                    success: true,
-                    validation: result,
-                    message: `Validation ${result.isValid ? 'passed' : 'failed'} for deck file`,
-                    deckPath,
-                    timestamp: new Date().toISOString()
-                });
-            } else {
-                // Return update success
-                const stats = this.deckManager.getDecksStats();
-                res.json({
-                    success: true,
-                    message: 'Deck updated successfully from path',
-                    deckPath,
-                    stats: {
-                        playersCount: stats.playerDecks.count,
-                        playersLoaded: stats.playerDecks.players.length
-                    },
-                    timestamp: new Date().toISOString()
-                });
-            }
-
-        } catch (error) {
-            console.error('❌ Error in updateDeckFromPath:', error);
-            
-            const errorResponse: ErrorResponse = {
-                error: (error as Error).message,
-                timestamp: new Date().toISOString(),
-                context: 'updateDeckFromPath endpoint'
-            };
-            
-            if (process.env.NODE_ENV === 'development') {
-                errorResponse.stack = (error as Error).stack;
-            }
-            
-            res.status(500).json(errorResponse);
         }
     }
 
     // ============ IMAGE SERVING ENDPOINTS ============
 
     /**
-     * Serve images from data/image folder (supports subfolders)
+     * Serve images from data/image folder
      * GET /api/game/image/*
      */
     async serveImage(req: Request, res: Response): Promise<void> {
         try {
-            // Get the full path from the wildcard route (everything after /image/)
+            // Get the full path from the wildcard route
             const imagePath_requested = req.params[0];
             
             if (!imagePath_requested) {
@@ -792,7 +319,6 @@ export class GameController {
             console.log(`🖼️ Serving image: ${imagePath_requested}`);
             
             // Sanitize the path to prevent directory traversal attacks
-            // Remove any ../ or .\ attempts and normalize path separators
             const sanitizedImagePath = imagePath_requested
                 .replace(/\.\./g, '')  // Remove ..
                 .replace(/[\\]/g, '/') // Normalize path separators
@@ -832,9 +358,6 @@ export class GameController {
                 case '.svg':
                     contentType = 'image/svg+xml';
                     break;
-                default:
-                    contentType = 'application/octet-stream';
-                    break;
             }
             
             // Set appropriate headers for image serving
@@ -859,19 +382,11 @@ export class GameController {
             
         } catch (error) {
             console.error('❌ Error in serveImage:', error);
-            console.error('❌ Stack trace:', (error as Error).stack);
-            
-            const errorResponse: ErrorResponse = {
+            res.status(500).json({
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
                 context: 'serveImage endpoint'
-            };
-            
-            if (process.env.NODE_ENV === 'development') {
-                errorResponse.stack = (error as Error).stack;
-            }
-            
-            res.status(500).json(errorResponse);
+            });
         }
     }
 
@@ -888,8 +403,9 @@ export class GameController {
                 timestamp: new Date().toISOString(),
                 services: {
                     gameLogic: 'available',
-                    deckManager: this.deckManager.isInitialized() ? 'initialized' : 'not initialized'
-                }
+                    customTradingCardGame: 'ready for development'
+                },
+                message: 'Custom Trading Card Game API is ready'
             };
             
             res.json(status);
@@ -907,6 +423,6 @@ export class GameController {
 
 // ============ EXPORT SINGLETON ============
 
-// Create singleton instance for backward compatibility
+// Create singleton instance for your custom trading card game
 export const gameController = new GameController();
 export default gameController;
