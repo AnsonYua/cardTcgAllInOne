@@ -45,7 +45,7 @@ export class GameLogic {
 
     constructor() {
         this.baseDataPath = path.join(__dirname, '../gameData');
-        console.log('🎮 Custom Trading Card Game Logic initialized');
+        console.log('🎮 Custom Trading Card Game Logic initialized with nodemon config');
     }
 
     async createGame(playerId: string): Promise<GameLogicResult> {
@@ -94,22 +94,24 @@ export class GameLogic {
                 };
             }
             
-            // Add second player if not already added
-            if (!gameEnv.playerId_2) {
-                // Player joining and game state updates will be handled by event queue processing
-                
-                // Process JOIN_GAME through centralized action processing
-                const joinAction: PlayerAction = {
-                    type: PlayerActionType.JOIN_GAME,
-                    playerId,
-                    gameId
+            // Process JOIN_GAME through centralized action processing (validation will happen in event queue)
+            const joinAction: PlayerAction = {
+                type: PlayerActionType.JOIN_GAME,
+                playerId,
+                gameId
+            };
+            
+            const actionResult = await this.processAction(gameEnv, joinAction);
+            console.log('🎮 JOIN_GAME processed:', actionResult);
+            
+            if (!actionResult.success) {
+                return {
+                    success: false,
+                    error: actionResult.error || 'Join game failed'
                 };
-                
-                const actionResult = await this.processAction(gameEnv, joinAction);
-                console.log('🎮 JOIN_GAME processed:', actionResult);
-                
-                console.log(`✅ Player ${playerId} joined custom trading card game ${gameId}`);
             }
+            
+            console.log(`✅ Player ${playerId} joined custom trading card game ${gameId}`);
             
             // Save updated game
             await this.saveGameToFile(gameId, gameEnv);
@@ -151,25 +153,6 @@ export class GameLogic {
                 };
             }
             
-            // TODO: Process card play through event queue system
-            // if (gameEnv.eventProcessor) {
-            //     const eventResult = await gameEnv.eventProcessor.processPlayerAction({
-            //         type: 'PLAY_CARD',
-            //         playerId,
-            //         cardId: cardUID,
-            //         cardUid: cardUID, 
-            //         zone,
-            //         isFaceDown: faceDown
-            //     });
-            //     
-            //     if (!eventResult.success) {
-            //         return {
-            //             success: false,
-            //             error: eventResult.error || 'Event processing failed'
-            //         };
-            //     }
-            //     
-            //     console.log(`🎮 Event queue processed card play: ${eventResult.eventsProcessed} events`);
             //     
             //     if (eventResult.needsPlayerInput) {
             //         return {
@@ -402,10 +385,15 @@ export class GameLogic {
             // Create event in GameLogic
             const event = this.createEventFromAction(action);
             if (event) {
-                // Queue the event
-                gameEnv.eventProcessor.getEventQueue().enqueue(event);
-                // Use centralized processPlayerAction
-                return await gameEnv.eventProcessor.processPlayerAction(action);
+                // Use centralized processEvent for direct event processing
+                const result = await gameEnv.eventProcessor.processEvent(event);
+                
+                // Check if there were validation errors in the event queue
+                if (!result.success) {
+                    return { success: false, error: result.error || 'Event validation failed' };
+                }
+                
+                return result;
             }
         }
         

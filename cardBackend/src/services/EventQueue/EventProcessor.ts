@@ -40,29 +40,6 @@ export class EventProcessor {
     
     // ============ MAIN PROCESSING INTERFACE ============
     
-    /**
-     * Process player action - centralized place to handle all player actions
-     * Events should be created in GameLogic and queued before calling this
-     */
-    async processPlayerAction(action: PlayerAction): Promise<ProcessingResult> {
-        try {
-            console.log(`🎮 Processing player action: ${action.type}`);
-            
-            // Process through full TCG event system (events already queued by GameLogic)
-            const result = await this.processFullEventCycle();
-            
-            return result;
-            
-        } catch (error) {
-            console.error('❌ Error processing player action:', error);
-            return {
-                success: false,
-                eventsProcessed: 0,
-                needsPlayerInput: false,
-                error: error instanceof Error ? error.message : 'Unknown error'
-            };
-        }
-    }
     
     /**
      * Process event directly - simplified interface for GameLogic
@@ -76,6 +53,24 @@ export class EventProcessor {
             
             // Process through full TCG event system
             const result = await this.processFullEventCycle();
+            
+            // Check if any error events were generated during processing
+            if (this.gameEnv.gameEvents) {
+                const recentErrors = this.gameEnv.gameEvents.filter(evt => 
+                    evt.type === 'ERROR_OCCURRED' && 
+                    evt.timestamp > (Date.now() - 1000) // Within last second
+                );
+                
+                if (recentErrors.length > 0) {
+                    const latestError = recentErrors[recentErrors.length - 1];
+                    return {
+                        success: false,
+                        eventsProcessed: result.eventsProcessed,
+                        needsPlayerInput: result.needsPlayerInput,
+                        error: latestError.data.errorReason || 'Validation failed'
+                    };
+                }
+            }
             
             return result;
             
@@ -96,7 +91,6 @@ export class EventProcessor {
     private async processFullEventCycle(): Promise<ProcessingResult> {
         // GameEventQueue now handles triggers, state-based actions, and validation internally
         const queueOutput = this.eventQueue.processUntilBlocked(this.gameEnv);
-        
         return {
             success: true,
             eventsProcessed: queueOutput.eventsProcessed,

@@ -77,6 +77,8 @@ export class GameEnvironment {
         this.players = {};
         
         this.pendingCardSelections = {};
+        this.gameEvents = [];
+        this.lastEventId = 0;
     }
 
     // ============ PLAYER MANAGEMENT ============
@@ -213,7 +215,9 @@ export class GameEnvironment {
             ),
             
             zones: this.getZonesData(),
-            pendingCardSelections: this.pendingCardSelections
+            pendingCardSelections: this.pendingCardSelections,
+            gameEvents: this.gameEvents,
+            lastEventId: this.lastEventId
         };
     }
 
@@ -241,6 +245,8 @@ export class GameEnvironment {
         
         
         gameEnv.pendingCardSelections = data.pendingCardSelections || {};
+        gameEnv.gameEvents = data.gameEvents || [];
+        gameEnv.lastEventId = data.lastEventId || 0;
         
         return gameEnv;
     }

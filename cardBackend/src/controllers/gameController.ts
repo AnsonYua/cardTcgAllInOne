@@ -222,16 +222,6 @@ export class GameController {
                     // For now, allow any zone for testing purposes
                 }
                 
-                // TODO: Process card play through event queue system
-                // const gameEnv = await this.gameLogic.loadGameFromFile(gameId);
-                // if (gameEnv?.eventProcessor) {
-                //     const eventResult = await gameEnv.eventProcessor.processPlayerAction({
-                //         type: 'PLAY_CARD',
-                //         playerId,
-                //         cardId: cardUID,
-                //         cardUid: cardUID,
-                //         zone,
-                //         isFaceDown: action.faceDown || false
                 //     });
                 //     
                 //     // Check for triggered effects from card entering play
