@@ -59,6 +59,9 @@ export class GameController {
             const gameState = await this.gameLogic.createGame(playerId);
             
             if (gameState.success && gameState.gameEnv) {
+                // TODO: Initialize event queue system for this game
+                // gameState.gameEnv.initializeEventProcessor();
+                // console.log('🎮 Event queue system initialized for game:', gameState.gameId);
                 res.json({
                     success: true,
                     gameId: gameState.gameId,
@@ -104,6 +107,12 @@ export class GameController {
             const gameState = await this.gameLogic.joinGame(gameId, playerId);
             
             if (gameState.success && gameState.gameEnv) {
+                // TODO: Initialize event queue when second player joins  
+                // if (gameState.gameEnv.playerId_2) {
+                //     gameState.gameEnv.initializeEventProcessor();
+                //     await this.gameLogic.registerCardTriggersForGame(gameState.gameEnv);
+                //     console.log('🎮 Event queue system activated with card triggers for full game:', gameId);
+                // }
                 res.json({
                     success: true,
                     gameId: gameState.gameId,
@@ -212,6 +221,30 @@ export class GameController {
                     console.log(`🚧 [PLACEHOLDER] Zone validation not fully implemented. Received zone: ${zone}`);
                     // For now, allow any zone for testing purposes
                 }
+                
+                // TODO: Process card play through event queue system
+                // const gameEnv = await this.gameLogic.loadGameFromFile(gameId);
+                // if (gameEnv?.eventProcessor) {
+                //     const eventResult = await gameEnv.eventProcessor.processPlayerAction({
+                //         type: 'PLAY_CARD',
+                //         playerId,
+                //         cardId: cardUID,
+                //         cardUid: cardUID,
+                //         zone,
+                //         isFaceDown: action.faceDown || false
+                //     });
+                //     
+                //     // Check for triggered effects from card entering play
+                //     if (eventResult.triggeredEffects?.length > 0) {
+                //         console.log('🎯 Triggered effects detected:', eventResult.triggeredEffects);
+                //         // Process each triggered effect through the trigger engine
+                //         for (const trigger of eventResult.triggeredEffects) {
+                //             await gameEnv.eventProcessor.getTriggerEngine()?.processTrigger(trigger);
+                //         }
+                //     }
+                //     
+                //     console.log('🎮 Event queue processed card play with triggers:', eventResult);
+                // }
                 
                 const result = await this.gameLogic.playCard(
                     gameId, 
@@ -386,6 +419,59 @@ export class GameController {
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
                 context: 'serveImage endpoint'
+            });
+        }
+    }
+
+    // ============ EVENT QUEUE ENDPOINTS ============
+
+    /**
+     * Test event queue functionality
+     * POST /api/game/test-events
+     */
+    async testEventQueue(req: GameRequest, res: Response): Promise<void> {
+        try {
+            const { gameId } = req.body;
+            
+            if (!gameId) {
+                res.status(400).json({
+                    error: 'gameId is required',
+                    timestamp: new Date().toISOString(),
+                    context: 'testEventQueue endpoint'
+                });
+                return;
+            }
+            
+            // TODO: Load game and test event queue
+            // const gameEnv = await this.gameLogic.loadGameFromFile(gameId);
+            // if (!gameEnv) {
+            //     res.status(404).json({ error: 'Game not found' });
+            //     return;
+            // }
+            // 
+            // gameEnv.initializeEventProcessor();
+            // const processor = gameEnv.getEventProcessor();
+            // const queueStatus = processor?.getQueueStatus();
+            // 
+            // res.json({
+            //     success: true,
+            //     gameId,
+            //     eventQueueStatus: queueStatus,
+            //     message: 'Event queue system tested successfully'
+            // });
+            
+            res.json({
+                success: true,
+                gameId,
+                message: 'Event queue test endpoint - implementation needed'
+            });
+            
+        } catch (error) {
+            console.error('❌ Error testing event queue:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'testEventQueue endpoint'
             });
         }
     }

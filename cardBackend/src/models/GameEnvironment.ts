@@ -5,6 +5,7 @@ import { GamePhase, ZoneType, EventType, ActionType } from './GameEnums';
 import { Player, PlayerZones, SlotZone } from './Player';
 import { PlaySequenceManager, PlaySequenceAction } from './PlaySequence';
 import { BaseZoneCard } from './CardSystem';
+import { EventProcessor } from '../services/EventQueue';
 
 // ============ GAME EVENT INTERFACE ============
 
@@ -63,6 +64,9 @@ export class GameEnvironment {
     
     // Incremental effect processing
     public lastProcessedSequence: number;
+    
+    // Event processing system
+    public eventProcessor?: EventProcessor;
 
     constructor() {
         this.phase = GamePhase.WAITING_FOR_PLAYERS;
@@ -108,6 +112,19 @@ export class GameEnvironment {
         if (playerId === this.playerId_1) return this.playerId_2;
         if (playerId === this.playerId_2) return this.playerId_1;
         return null;
+    }
+
+    // ============ EVENT QUEUE METHODS ============
+    
+    public initializeEventProcessor(): void {
+        if (!this.eventProcessor) {
+            this.eventProcessor = new EventProcessor(this);
+            console.log('🎮 Event processor initialized');
+        }
+    }
+    
+    public getEventProcessor(): EventProcessor | null {
+        return this.eventProcessor || null;
     }
 
     // ============ GAME STATE METHODS ============

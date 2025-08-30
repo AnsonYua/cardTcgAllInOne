@@ -8,7 +8,8 @@ import { Request, Response } from 'express';
 
 // Import core models
 import { GameEnvironment } from '../models/GameEnvironment';
-import { GamePhase } from '../models/GameEnums';
+import { GamePhase, ZoneType } from '../models/GameEnums';
+import { EventProcessor, PlayerAction, EventFactory } from './EventQueue/index';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -61,11 +62,21 @@ export class GameLogic {
             const gameId = uuidv4();
             const gameEnv = new GameEnvironment();
             
-            // Initialize basic game state
-            gameEnv.playerId_1 = playerId;
-            gameEnv.phase = GamePhase.WAITING_FOR_PLAYERS;
-            gameEnv.gameStarted = false;
-            gameEnv.playersReady[playerId] = true;
+            // Game state will be initialized by event queue processing
+            
+            // Process START_GAME through event queue like playCard does
+            gameEnv.initializeEventProcessor();
+            if (gameEnv.eventProcessor) {
+                const eventResult = await gameEnv.eventProcessor.processPlayerAction({
+                    type: 'START_GAME',
+                    playerId: playerId,
+                    gameId: gameId,
+                    timestamp: Date.now()
+                });
+                console.log('🎮 START_GAME processed through event queue:', eventResult);
+            } else {
+                console.warn('⚠️ Event processor initialization failed for START_GAME');
+            }
             
             
             // Save game to file system
@@ -125,20 +136,21 @@ export class GameLogic {
             
             // Add second player if not already added
             if (!gameEnv.playerId_2) {
-                gameEnv.playerId_2 = playerId;
+                // Player joining and game state updates will be handled by event queue processing
                 
- 
-                // TODO: Implement your custom card play logic here
-                // - load gcgdecks.json
-                // - assist the deck to both player 
-                // - shuffle the deck
-                // - random pick the first player
-                // - draw 5 hand for each player
-                // - set redraw to false and wait for player to redraw or skips redraw and get ready to star the game
-                
-     
-                // Update phase
-                gameEnv.phase = GamePhase.BOTH_JOINED;
+                // Process JOIN_GAME through event queue like playCard does
+                gameEnv.initializeEventProcessor();
+                if (gameEnv.eventProcessor) {
+                    const eventResult = await gameEnv.eventProcessor.processPlayerAction({
+                        type: 'JOIN_GAME',
+                        playerId: playerId,
+                        gameId: gameId,
+                        timestamp: Date.now()
+                    });
+                    console.log('🎮 JOIN_GAME processed through event queue:', eventResult);
+                } else {
+                    console.warn('⚠️ Event processor initialization failed for JOIN_GAME');
+                }
                 
                 console.log(`✅ Player ${playerId} joined custom trading card game ${gameId}`);
             }
@@ -182,6 +194,39 @@ export class GameLogic {
                     error: 'Game not found'
                 };
             }
+            
+            // TODO: Process card play through event queue system
+            // if (gameEnv.eventProcessor) {
+            //     const eventResult = await gameEnv.eventProcessor.processPlayerAction({
+            //         type: 'PLAY_CARD',
+            //         playerId,
+            //         cardId: cardUID,
+            //         cardUid: cardUID, 
+            //         zone,
+            //         isFaceDown: faceDown
+            //     });
+            //     
+            //     if (!eventResult.success) {
+            //         return {
+            //             success: false,
+            //             error: eventResult.error || 'Event processing failed'
+            //         };
+            //     }
+            //     
+            //     console.log(`🎮 Event queue processed card play: ${eventResult.eventsProcessed} events`);
+            //     
+            //     if (eventResult.needsPlayerInput) {
+            //         return {
+            //             success: true,
+            //             gameId,
+            //             gameEnv,
+            //             requiresCardSelection: true,
+            //             cardSelectionId: eventResult.waitingForChoice
+            //         };
+            //     }
+            // } else {
+            //     console.log('⚠️ Event processor not initialized, using direct placement');
+            // }
            
             console.log('🚧 [PLACEHOLDER] Custom card play logic not implemented');
             console.log('🚧 [PLACEHOLDER] Add your custom card placement and effect processing here');
@@ -292,6 +337,49 @@ export class GameLogic {
         } catch (error) {
             console.error(`❌ Error loading custom trading card game ${gameId}:`, error);
             return null;
+        }
+    }
+
+    // TODO: Add event processors that will be called by the event queue system
+    // These should be registered with the global event queue to handle specific event types
+    
+    /**
+     * Event processor for START_GAME events
+     * This will be called by the event queue when processing START_GAME events
+     */
+    static async handleStartGameEvent(event: any): Promise<void> {
+        try {
+            // TODO: Process START_GAME event
+            // - Load game from file using event.gameId
+            // - Initialize event processor for the specific game
+            // - Register card triggers from st01Card.json
+            // - Set up initial game state for event-driven processing
+            
+            console.log('📝 TODO: handleStartGameEvent - Implementation needed for queue processing');
+            console.log('📋 Event data:', event);
+            
+        } catch (error) {
+            console.error('❌ Error handling START_GAME event:', error);
+        }
+    }
+
+    /**
+     * Event processor for JOIN_GAME events
+     * This will be called by the event queue when processing JOIN_GAME events
+     */
+    static async handleJoinGameEvent(event: any): Promise<void> {
+        try {
+            // TODO: Process JOIN_GAME event
+            // - Load game from file using event.gameId
+            // - Activate event processing for both players
+            // - Initialize trigger engine with card abilities
+            // - Set up event-driven game flow
+            
+            console.log('📝 TODO: handleJoinGameEvent - Implementation needed for queue processing');
+            console.log('📋 Event data:', event);
+            
+        } catch (error) {
+            console.error('❌ Error handling JOIN_GAME event:', error);
         }
     }
 }

@@ -78,7 +78,9 @@
       "Bash(git stash push:*)",
       "Bash(pip3 install:*)",
       "Bash(/usr/bin/timeout 10s npm start)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(./node_modules/.bin/tsc:*)",
+      "Bash(./node_modules/typescript/bin/tsc --noEmit)"
     ],
     "deny": []
   }

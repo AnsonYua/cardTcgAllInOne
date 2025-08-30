@@ -6,7 +6,7 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "start": "node dist/server.js",
-    "dev": "nodemon",
+    "dev": "nodemon server.ts",
     "dev:fast": "nodemon --delay 500ms",
     "test": "jest",
     "test:watch": "jest --watch",
