@@ -288,6 +288,9 @@ export class GameEventQueue {
         console.log(`🔍 Validating event: ${event.type}`);
         
         switch (event.type) {
+            case 'JOIN_GAME':
+                return this.validateJoinGameEvent(event, gameEnv);
+                
             case 'CARD_PLAYED':
                 return this.validateCardPlayedEvent(event, gameEnv);
                 
@@ -313,6 +316,30 @@ export class GameEventQueue {
         // - Check once-per-turn limitations
         
         return { isValid: true }; // Always pass for now
+    }
+    
+    private validateJoinGameEvent(event: GameEvent, gameEnv: GameEnvironment): { isValid: boolean; reason?: string } {
+        console.log(`🔍 Validating JOIN_GAME event`);
+        
+        const { playerId } = event.data;
+        
+        // Check if room is available for joining
+        if (gameEnv.phase !== GamePhase.WAITING_FOR_PLAYERS) {
+            return {
+                isValid: false,
+                reason: 'Room is not available for joining'
+            };
+        }
+        
+        // Check if game is full
+        if (gameEnv.playerId_2 && gameEnv.playerId_2 !== playerId) {
+            return {
+                isValid: false,
+                reason: 'Game is full'
+            };
+        }
+        
+        return { isValid: true };
     }
     
     private createValidationErrorEvent(originalEvent: GameEvent, reason: string): GameEvent {

@@ -1,9 +1,8 @@
 // src/models/GameEnvironment.ts
 // Main GameEnvironment class for custom trading card game
 
-import { GamePhase, ZoneType, EventType, ActionType } from './GameEnums';
+import { GamePhase, ZoneType } from './GameEnums';
 import { Player, PlayerZones, SlotZone } from './Player';
-import { PlaySequenceManager, PlaySequenceAction } from './PlaySequence';
 import { BaseZoneCard } from './CardSystem';
 import { EventProcessor } from '../services/EventQueue';
 
@@ -52,7 +51,6 @@ export class GameEnvironment {
     
     // Object-oriented components
     public players: { [playerId: string]: Player };
-    public playSequenceManager: PlaySequenceManager;
     
     
     // Event system
@@ -62,8 +60,6 @@ export class GameEnvironment {
     // Card selection system
     public pendingCardSelections?: { [selectionId: string]: any };
     
-    // Incremental effect processing
-    public lastProcessedSequence: number;
     
     // Event processing system
     public eventProcessor?: EventProcessor;
@@ -79,10 +75,8 @@ export class GameEnvironment {
         this.playersReady = {};
         
         this.players = {};
-        this.playSequenceManager = new PlaySequenceManager(this);
         
         this.pendingCardSelections = {};
-        this.lastProcessedSequence = 0;
     }
 
     // ============ PLAYER MANAGEMENT ============
@@ -219,10 +213,7 @@ export class GameEnvironment {
             ),
             
             zones: this.getZonesData(),
-            pendingCardSelections: this.pendingCardSelections,
-            lastProcessedSequence: this.lastProcessedSequence,
-            
-            playSequence: this.playSequenceManager.toJSON()
+            pendingCardSelections: this.pendingCardSelections
         };
     }
 
@@ -248,13 +239,8 @@ export class GameEnvironment {
         // Zones are now managed within individual players
         // No separate zones object needed
         
-        // Reconstruct managers
-        if (data.playSequence) {
-            gameEnv.playSequenceManager = PlaySequenceManager.fromJSON(data.playSequence);
-        }
         
         gameEnv.pendingCardSelections = data.pendingCardSelections || {};
-        gameEnv.lastProcessedSequence = data.lastProcessedSequence || 0;
         
         return gameEnv;
     }

@@ -41,17 +41,38 @@ export class EventProcessor {
     // ============ MAIN PROCESSING INTERFACE ============
     
     /**
-     * Process player action and handle resulting events with full TCG system
+     * Process player action - centralized place to handle all player actions
+     * Events should be created in GameLogic and queued before calling this
      */
     async processPlayerAction(action: PlayerAction): Promise<ProcessingResult> {
         try {
             console.log(`🎮 Processing player action: ${action.type}`);
             
-            // Convert player action to initial event
-            const initialEvent = this.createEventFromAction(action);
-            if (initialEvent) {
-                this.eventQueue.enqueue(initialEvent);
-            }
+            // Process through full TCG event system (events already queued by GameLogic)
+            const result = await this.processFullEventCycle();
+            
+            return result;
+            
+        } catch (error) {
+            console.error('❌ Error processing player action:', error);
+            return {
+                success: false,
+                eventsProcessed: 0,
+                needsPlayerInput: false,
+                error: error instanceof Error ? error.message : 'Unknown error'
+            };
+        }
+    }
+    
+    /**
+     * Process event directly - simplified interface for GameLogic
+     */
+    async processEvent(event: GameEvent): Promise<ProcessingResult> {
+        try {
+            console.log(`🎮 Processing event directly: ${event.type}`);
+            
+            // Enqueue the event directly
+            this.eventQueue.enqueue(event);
             
             // Process through full TCG event system
             const result = await this.processFullEventCycle();
@@ -59,7 +80,7 @@ export class EventProcessor {
             return result;
             
         } catch (error) {
-            console.error('❌ Error processing player action:', error);
+            console.error('❌ Error processing event:', error);
             return {
                 success: false,
                 eventsProcessed: 0,
@@ -134,42 +155,6 @@ export class EventProcessor {
         }
     }
     
-    // ============ ACTION CONVERSION ============
-    
-    /**
-     * Convert player action to game event
-     */
-    private createEventFromAction(action: PlayerAction): GameEvent | null {
-        switch (action.type) {
-            case 'PLAY_CARD':
-                return EventFactory.createCardPlayedEvent(
-                    action.cardId || '',
-                    action.cardUid || action.cardId || '',
-                    action.zone || '',
-                    action.playerId,
-                    action.isFaceDown || false
-                );
-                
-            case 'PHASE_ADVANCE':
-                return EventFactory.createPhaseChangeEvent(
-                    this.gameEnv.phase,
-                    action.targetPhase || GamePhase.MAIN_PHASE,
-                    'player_action'
-                );
-                
-            case 'TAP_ENERGY':
-                return EventFactory.createEnergyTappedEvent(
-                    action.cardId || '',
-                    action.cardUid || action.cardId || '',
-                    action.playerId,
-                    action.energyAmount || 1
-                );
-                
-            default:
-                console.warn(`⚠️ Unknown action type: ${action.type}`);
-                return null;
-        }
-    }
     
     // ============ TCG SYSTEM ACCESS ============
     

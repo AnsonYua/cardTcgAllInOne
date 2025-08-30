@@ -54,6 +54,24 @@ export interface PlayerChoiceEvent extends BaseGameEvent {
     };
 }
 
+export interface StartGameEvent extends BaseGameEvent {
+    type: 'START_GAME';
+    data: {
+        playerId: string;
+        gameId: string;
+        timestamp: number;
+    };
+}
+
+export interface JoinGameEvent extends BaseGameEvent {
+    type: 'JOIN_GAME';
+    data: {
+        playerId: string;
+        gameId: string;
+        timestamp: number;
+    };
+}
+
 export interface PowerBoostEvent extends BaseGameEvent {
     type: 'POWER_BOOST';
     data: {
@@ -274,6 +292,8 @@ export type GameEvent =
     | AttackDeclaredEvent
     | DamageDealtEvent
     | StateBasedActionEvent
+    | StartGameEvent
+    | JoinGameEvent
     | BaseGameEvent;
 
 export class EventFactory {
@@ -484,6 +504,32 @@ export class EventFactory {
             playerId,
             timestamp: Date.now(),
             data: { cardId, cardUid, playerId, energyAmount }
+        };
+    }
+    
+    // ============ GAME LIFECYCLE EVENT FACTORIES ============
+    
+    static createStartGameEvent(playerId: string, gameId: string): StartGameEvent {
+        return {
+            id: `start_game_${++this.eventIdCounter}_${Date.now()}`,
+            type: 'START_GAME',
+            status: EventStatus.DECLARED,
+            priority: EventPriority.HIGH,
+            playerId,
+            timestamp: Date.now(),
+            data: { playerId, gameId, timestamp: Date.now() }
+        };
+    }
+    
+    static createJoinGameEvent(playerId: string, gameId: string): JoinGameEvent {
+        return {
+            id: `join_game_${++this.eventIdCounter}_${Date.now()}`,
+            type: 'JOIN_GAME',
+            status: EventStatus.DECLARED,
+            priority: EventPriority.HIGH,
+            playerId,
+            timestamp: Date.now(),
+            data: { playerId, gameId, timestamp: Date.now() }
         };
     }
 }

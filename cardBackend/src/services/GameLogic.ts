@@ -8,8 +8,8 @@ import { Request, Response } from 'express';
 
 // Import core models
 import { GameEnvironment } from '../models/GameEnvironment';
-import { GamePhase, ZoneType } from '../models/GameEnums';
-import { EventProcessor, PlayerAction, EventFactory } from './EventQueue/index';
+import { GamePhase, ZoneType, PlayerActionType } from '../models/GameEnums';
+import { EventProcessor, PlayerAction, EventFactory, GameEvent, EventStatus, EventPriority } from './EventQueue/index';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -48,13 +48,6 @@ export class GameLogic {
         console.log('🎮 Custom Trading Card Game Logic initialized');
     }
 
-    // ============ CORE GAME METHODS ============
-
-    /**
-     * Create a new game
-     * @param playerId - Player ID creating the game
-     * @returns Promise<GameLogicResult>
-     */
     async createGame(playerId: string): Promise<GameLogicResult> {
         try {
             console.log(`🎮 Creating new custom trading card game for player: ${playerId}`);
@@ -62,28 +55,17 @@ export class GameLogic {
             const gameId = uuidv4();
             const gameEnv = new GameEnvironment();
             
-            // Game state will be initialized by event queue processing
+            const startAction: PlayerAction = {
+                type: PlayerActionType.START_GAME,
+                playerId,
+                gameId
+            };
             
-            // Process START_GAME through event queue like playCard does
-            gameEnv.initializeEventProcessor();
-            if (gameEnv.eventProcessor) {
-                const eventResult = await gameEnv.eventProcessor.processPlayerAction({
-                    type: 'START_GAME',
-                    playerId: playerId,
-                    gameId: gameId,
-                    timestamp: Date.now()
-                });
-                console.log('🎮 START_GAME processed through event queue:', eventResult);
-            } else {
-                console.warn('⚠️ Event processor initialization failed for START_GAME');
-            }
-            
-            
+            const actionResult = await this.processAction(gameEnv, startAction);
+            console.log('🎮 START_GAME processed:', actionResult);
             // Save game to file system
             await this.saveGameToFile(gameId, gameEnv);
-            
             console.log(`✅ Custom trading card game created successfully: ${gameId}`);
-            
             return {
                 success: true,
                 gameId: gameId,
@@ -99,12 +81,6 @@ export class GameLogic {
         }
     }
 
-    /**
-     * Join an existing game
-     * @param gameId - Game ID to join
-     * @param playerId - Player ID joining
-     * @returns Promise<GameLogicResult>
-     */
     async joinGame(gameId: string, playerId: string): Promise<GameLogicResult> {
         try {
             console.log(`🎮 Player ${playerId} joining custom trading card game: ${gameId}`);
@@ -118,39 +94,19 @@ export class GameLogic {
                 };
             }
             
-            // Check if room is available
-            if (gameEnv.phase !== GamePhase.WAITING_FOR_PLAYERS) {
-                return {
-                    success: false,
-                    error: 'Room is not available for joining'
-                };
-            }
-            
-            // Check if game is full
-            if (gameEnv.playerId_2 && gameEnv.playerId_2 !== playerId) {
-                return {
-                    success: false,
-                    error: 'Game is full'
-                };
-            }
-            
             // Add second player if not already added
             if (!gameEnv.playerId_2) {
                 // Player joining and game state updates will be handled by event queue processing
                 
-                // Process JOIN_GAME through event queue like playCard does
-                gameEnv.initializeEventProcessor();
-                if (gameEnv.eventProcessor) {
-                    const eventResult = await gameEnv.eventProcessor.processPlayerAction({
-                        type: 'JOIN_GAME',
-                        playerId: playerId,
-                        gameId: gameId,
-                        timestamp: Date.now()
-                    });
-                    console.log('🎮 JOIN_GAME processed through event queue:', eventResult);
-                } else {
-                    console.warn('⚠️ Event processor initialization failed for JOIN_GAME');
-                }
+                // Process JOIN_GAME through centralized action processing
+                const joinAction: PlayerAction = {
+                    type: PlayerActionType.JOIN_GAME,
+                    playerId,
+                    gameId
+                };
+                
+                const actionResult = await this.processAction(gameEnv, joinAction);
+                console.log('🎮 JOIN_GAME processed:', actionResult);
                 
                 console.log(`✅ Player ${playerId} joined custom trading card game ${gameId}`);
             }
@@ -381,6 +337,79 @@ export class GameLogic {
         } catch (error) {
             console.error('❌ Error handling JOIN_GAME event:', error);
         }
+    }
+    
+    // ============ EVENT CREATION HELPERS ============
+    
+    /**
+     * Convert player action to game event - centralized in GameLogic for cleaner flow
+     */
+    private createEventFromAction(action: PlayerAction): GameEvent | null {
+        switch (action.type) {
+            case PlayerActionType.JOIN_GAME:
+            case PlayerActionType.START_GAME:
+                return {
+                    id: PlayerActionType.START_GAME.toLowerCase()+`_${Date.now()}_${Math.random()}`,
+                    type: action.type,
+                    status: EventStatus.DECLARED,
+                    priority: EventPriority.HIGH,
+                    timestamp: Date.now(),
+                    playerId: action.playerId,
+                    data: {
+                        playerId: action.playerId,
+                        gameId: action.gameId
+                    }
+                };
+            case PlayerActionType.PLAY_CARD:
+                return EventFactory.createCardPlayedEvent(
+                    action.cardId || '',
+                    action.cardUid || action.cardId || '',
+                    action.zone || '',
+                    action.playerId,
+                    action.isFaceDown || false
+                );
+                
+            case PlayerActionType.PHASE_ADVANCE:
+                return EventFactory.createPhaseChangeEvent(
+                    GamePhase.WAITING_FOR_PLAYERS, // TODO: Get current phase from gameEnv
+                    action.targetPhase || GamePhase.MAIN_PHASE,
+                    'player_action'
+                );
+                
+            case PlayerActionType.TAP_ENERGY:
+                return EventFactory.createEnergyTappedEvent(
+                    action.cardId || '',
+                    action.cardUid || action.cardId || '',
+                    action.playerId,
+                    action.energyAmount || 1
+                );
+                
+            default:
+                console.warn(`⚠️ Unknown action type: ${action.type}`);
+                return null;
+        }
+    }
+    
+    /**
+     * Process action through event queue - create event then use centralized processor
+     */
+    async processAction(gameEnv: GameEnvironment, action: PlayerAction): Promise<any> {
+        if (!gameEnv.eventProcessor) {
+            gameEnv.initializeEventProcessor();
+        }
+        
+        if (gameEnv.eventProcessor) {
+            // Create event in GameLogic
+            const event = this.createEventFromAction(action);
+            if (event) {
+                // Queue the event
+                gameEnv.eventProcessor.getEventQueue().enqueue(event);
+                // Use centralized processPlayerAction
+                return await gameEnv.eventProcessor.processPlayerAction(action);
+            }
+        }
+        
+        return { success: false, error: 'Event creation failed' };
     }
 }
 
