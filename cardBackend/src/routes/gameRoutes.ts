@@ -75,6 +75,12 @@ router.post('/player/playerAction', gameController.playerAction.bind(gameControl
  */
 router.get('/cards', gameController.getCardData.bind(gameController));
 
+/**
+ * Get game resource data (deck data)
+ * GET /api/game/player/gameResource
+ */
+router.get('/player/gameResource', gameController.getGameResource.bind(gameController));
+
 // ============ IMAGE SERVING ENDPOINTS ============
 
 /**

@@ -2,34 +2,6 @@ import Phaser from 'phaser';
 import { GAME_CONFIG } from '../config/gameConfig.js';
 import PowerOverlay from './PowerOverlay.js';
 
-// Utility function to determine card type and properties from ID
-function getCardInfoFromId(id) {
-  if (!id) return null;
-  
-  if (id.startsWith('c-')) {
-    return {
-      type: 'character',
-      folder: 'character'
-    };
-  } else if (id.startsWith('h-')) {
-    return {
-      type: 'help',
-      folder: 'utilityCard'
-    };
-  } else if (id.startsWith('sp-')) {
-    return {
-      type: 'sp',
-      folder: 'utilityCard'
-    };
-  } else if (id.startsWith('s-')) {
-    return {
-      type: 'leader',
-      folder: 'leader'
-    };
-  }
-  
-  return null;
-}
 
 export default class Card extends Phaser.GameObjects.Container {
   constructor(scene, x, y, cardData, options = {}) {
@@ -42,22 +14,9 @@ export default class Card extends Phaser.GameObjects.Container {
       cardData.id = cardData.id.split('_')[0];
       cardData.name = cardData.name.split('_')[0];
     }
-    // Auto-populate card data from ID if only ID is provided
-    if (cardData && cardData.id && !cardData.type) {
-      const cardInfo = getCardInfoFromId(cardData.id);
-      if (cardInfo) {
-        this.cardData = {
-          ...cardData,
-          type: cardInfo.type,
-          folder: cardInfo.folder,
-          details:cardInfo.cardDetails
-        };
-      } else {
-        this.cardData = cardData;
-      }
-    } else {
-      this.cardData = cardData;
-    }
+    
+    this.cardData = cardData.cardDetails;
+    
     this.options = {
       interactive: true,
       draggable: false,
@@ -123,7 +82,7 @@ export default class Card extends Phaser.GameObjects.Container {
       const cardKey = this.options.usePreview ? 
         `${this.cardData.id}-preview` :  // Use preview version (e.g., "c-1-preview")
         this.cardData.id;                // Use original version (e.g., "c-1")
-      
+      console.log("cardKey ", cardKey)
       console.log(`[Card] Trying to load image with key: ${cardKey}`);
       console.log(`[Card] Card data:`, this.cardData);
       console.log(`[Card] Available textures:`, Object.keys(this.scene.textures.list).filter(key => key.startsWith(this.cardData.id?.substring(0, 2) || '')));

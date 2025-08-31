@@ -203,6 +203,7 @@ export default class CardResourcePreloader extends Phaser.Scene {
       // Load preview image if enabled using GAME_CONFIG helper with timestamp
       if (loadPreviews) {
         const previewKey = `${imageKey}-preview`;
+        console.log("loadKey ", previewKey)
         const previewImageUrl = `${GAME_CONFIG.api.getPreviewImageUrl(imagePath)}?t=${timestamp}`;
         this.load.image(previewKey, previewImageUrl);
         console.log(`[CardResourcePreloader] Queuing: ${previewKey} from ${previewImageUrl}`);

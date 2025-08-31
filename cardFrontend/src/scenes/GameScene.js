@@ -894,10 +894,10 @@ export default class GameScene extends Phaser.Scene {
       let processedCardData = cardData;
 
       processedCardData = {
-          id: cardData.uid,
-          name: cardData.uid,
-          cardType: CardAnimationUtils.getCardTypeFromId(cardData.uid),
-          cardDetails:cardData
+          id: cardData.cardUid,
+          name: cardData.cardUid,
+          cardType: cardData.cardData.cardType,
+          cardDetails:cardData.cardData
         };
       /*
       if (typeof cardData === 'string') {
@@ -978,6 +978,7 @@ export default class GameScene extends Phaser.Scene {
       this.playShuffleDeckAnimation().then(() => {
         console.log('Online mode - shuffle animation completed, selecting leader cards...');
         // Leader card selection removed
+        this.updatePlayerHand();
       });
     }
     

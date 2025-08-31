@@ -364,6 +364,45 @@ export class GameController {
         }
     }
 
+    /**
+     * Get game resource data (deck data for frontend card preloading)
+     * GET /api/game/player/gameResource
+     */
+    async getGameResource(req: Request, res: Response): Promise<void> {
+        try {
+            console.log('📦 Getting game resource data (deck data)');
+            
+            // Build path to gcgdecks.json
+            const deckDataPath = path.join(__dirname, '../data/gcgdecks.json');
+            
+            // Check if file exists
+            if (!fs.existsSync(deckDataPath)) {
+                res.status(404).json({
+                    error: 'Deck data file not found (gcgdecks.json)',
+                    timestamp: new Date().toISOString(),
+                    context: 'getGameResource endpoint'
+                });
+                return;
+            }
+            
+            // Read and parse the gcgdecks.json file
+            const deckDataContent = await fs.promises.readFile(deckDataPath, 'utf8');
+            const deckData = JSON.parse(deckDataContent);
+            
+            console.log('✅ Game resource data loaded successfully');
+            
+            res.json(deckData);
+            
+        } catch (error) {
+            console.error('❌ Error in getGameResource:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'getGameResource endpoint'
+            });
+        }
+    }
+
     // ============ IMAGE SERVING ENDPOINTS ============
 
     /**

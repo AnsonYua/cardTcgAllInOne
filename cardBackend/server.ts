@@ -21,7 +21,7 @@ console.log('🎮 Starting Custom Trading Card Game Server...');
 app.use(cors({
     origin: ['http://localhost:3000', 'http://localhost:8080'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control']
 }));
 
 // Body parsing middleware

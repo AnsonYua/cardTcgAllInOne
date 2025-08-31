@@ -118,7 +118,7 @@ export default class GameStateManager {
     }
     
     const player = this.getPlayer(playerId);
-    return player ? player.deck.handDetails : [];
+    return player ? player.deck.hand : [];
   }
 
   getVictoryPoints(playerId = null) {
