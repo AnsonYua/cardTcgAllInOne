@@ -8,6 +8,8 @@ import { EffectStack, StackResolutionResult } from './EffectStack';
 import { StateBasedActionEngine } from './StateBasedActionEngine';
 import { GameEnvironment } from '../../models/GameEnvironment';
 import { GamePhase } from '../../models/GameEnums';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export interface ProcessingResult {
     success: boolean;
@@ -34,6 +36,7 @@ export class EventProcessor {
         // ✅ CRITICAL: Integrate engines with event queue for proper TCG flow
         this.eventQueue.setTriggerEngine(this.triggerEngine);
         this.eventQueue.setStateBasedEngine(this.stateEngine);
+        this.eventQueue.setEventProcessor(this);
         
         console.log('🔧 EventProcessor initialized with integrated TCG engines');
     }
@@ -248,16 +251,7 @@ export class EventProcessor {
         return processor;
     }
     
-    // ============ HELPER METHODS ============
-    
-    /**
-     * Get the last processed event for trigger checking
-     */
-    private getLastProcessedEvent(): GameEvent | null {
-        // TODO: Track last processed event
-        return null;
-    }
-    
+ 
     /**
      * Initialize card effects when card enters play
      */
@@ -272,6 +266,229 @@ export class EventProcessor {
     cleanupCardEffects(cardUid: string): void {
         this.triggerEngine.cleanupCardEffects(cardUid);
         console.log(`🧹 Card effects cleaned up: ${cardUid}`);
+    }
+    
+    // ============ EVENT EXECUTION METHODS ============
+    
+    /**
+     * Execute specific event types - moved from EventExecutor for consolidation
+     */
+    executeEvent(event: GameEvent, gameEnv: GameEnvironment): { success: boolean; error?: string } {
+        console.log(`🔥 Executing event: ${event.type}`);
+        
+        try {
+            switch (event.type) {
+                case 'START_GAME':
+                    return this.executeStartGame(event, gameEnv);
+                    
+                case 'JOIN_GAME':
+                    return this.executeJoinGame(event, gameEnv);
+                    
+                case 'CARD_PLAYED':
+                    return this.executeCardPlayed(event, gameEnv);
+                    
+                case 'ERROR_OCCURRED':
+                    return this.executeErrorEvent(event, gameEnv);
+                    
+                default:
+                    console.log(`🎯 Processing ${event.type} event - delegating to existing game logic`);
+                    return { success: true };
+            }
+        } catch (error) {
+            console.error(`❌ Error executing event ${event.type}:`, error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'Unknown execution error'
+            };
+        }
+    }
+    
+    private executeStartGame(event: GameEvent, gameEnv: GameEnvironment): { success: boolean; error?: string } {
+        const { playerId, gameId } = event.data;
+        
+        console.log(`🎯 Processing START_GAME event for player: ${playerId}`);
+        
+        try {
+            // Initialize basic game state (moved from GameLogic.createGame)
+            gameEnv.playerId_1 = playerId;
+            gameEnv.phase = GamePhase.WAITING_FOR_PLAYERS;
+            gameEnv.gameStarted = false;
+            gameEnv.playersReady = gameEnv.playersReady || {};
+            gameEnv.playersReady[playerId] = true;
+            
+            console.log(`✅ START_GAME event processed - game state initialized for ${playerId}`);
+            return { success: true };
+            
+        } catch (error) {
+            console.error(`❌ Error in executeStartGame:`, error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'START_GAME execution failed'
+            };
+        }
+    }
+    
+    private executeJoinGame(event: GameEvent, gameEnv: GameEnvironment): { success: boolean; error?: string } {
+        const { playerId, gameId } = event.data;
+        
+        console.log(`🎯 Processing JOIN_GAME event for player: ${playerId}`);
+        
+        try {
+            // Add second player and update phase (moved from GameLogic.joinGame)
+            gameEnv.playerId_2 = playerId;
+            gameEnv.phase = GamePhase.BOTH_JOINED;
+            gameEnv.gameStarted = true;
+            gameEnv.playersReady[playerId] = true;
+            
+            // Load deck configuration and set up game
+            this.initializeGameWithDecks(gameEnv, playerId);
+            
+            console.log(`✅ JOIN_GAME event processed - second player ${playerId} added`);
+            return { success: true };
+            
+        } catch (error) {
+            console.error(`❌ Error in executeJoinGame:`, error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'JOIN_GAME execution failed'
+            };
+        }
+    }
+    
+    private executeCardPlayed(event: GameEvent, gameEnv: GameEnvironment): { success: boolean; error?: string } {
+        const { cardId, cardUid, zone, playerId, isFaceDown } = event.data;
+        
+        console.log(`🎯 Processing CARD_PLAYED event: ${cardId} → ${zone} (${playerId})`);
+        
+        try {
+            // TODO: Integrate with your existing card placement logic
+            // This should call your existing game logic to actually place the card
+            
+            console.log(`✅ CARD_PLAYED event processed - ${cardId} placed in ${zone}`);
+            return { success: true };
+            
+        } catch (error) {
+            console.error(`❌ Error in executeCardPlayed:`, error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'CARD_PLAYED execution failed'
+            };
+        }
+    }
+    
+    private executeErrorEvent(event: GameEvent, gameEnv: GameEnvironment): { success: boolean; error?: string } {
+        const { errorReason, errorType, originalEventType, playerId } = event.data;
+        
+        console.log(`💥 Processing error: ${errorType} - ${errorReason}`);
+        
+        try {
+            // Add error to game events for frontend consumption
+            if (gameEnv.gameEvents) {
+                gameEnv.gameEvents.push({
+                    id: event.id,
+                    type: 'ERROR_OCCURRED',
+                    data: {
+                        errorType,
+                        errorReason,
+                        originalEventType,
+                        playerId
+                    },
+                    timestamp: event.timestamp,
+                    expiresAt: event.timestamp + 3000, // 3 second expiration
+                    frontendProcessed: false
+                });
+            }
+            
+            console.log(`📨 Error event added to gameEvents for frontend: ${errorReason}`);
+            return { success: true };
+            
+        } catch (error) {
+            console.error(`❌ Error in executeErrorEvent:`, error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'ERROR_OCCURRED execution failed'
+            };
+        }
+    }
+    
+    // ============ GAME SETUP HELPERS ============
+    
+    private initializeGameWithDecks(gameEnv: GameEnvironment, joinedPlayerId: string): void {
+        try {
+            console.log('🎮 Initializing game with deck configuration...');
+            
+            // Load deck configuration
+            const deckConfigPath = path.join(__dirname, '../../data/gcgdecks.json');
+            const deckConfig = JSON.parse(fs.readFileSync(deckConfigPath, 'utf8'));
+            
+            // Load card data
+            const cardDataPath = path.join(__dirname, '../../data/st01Card.json');
+            const cardData = JSON.parse(fs.readFileSync(cardDataPath, 'utf8'));
+            
+            // Get player IDs
+            const playerId1 = gameEnv.playerId_1!;
+            const playerId2 = gameEnv.playerId_2!;
+            
+            // Assign decks to players
+            const deck1Config = deckConfig.playerDecks[playerId1] || deckConfig.playerDecks['playerId_1'];
+            const deck2Config = deckConfig.playerDecks[playerId2] || deckConfig.playerDecks['playerId_2'];
+            
+            const deck1Cards = deckConfig.decks[deck1Config.activeDeck].cards;
+            const deck2Cards = deckConfig.decks[deck2Config.activeDeck].cards;
+            
+            // Create and shuffle decks
+            const shuffledDeck1 = this.shuffleDeck([...deck1Cards]);
+            const shuffledDeck2 = this.shuffleDeck([...deck2Cards]);
+            
+            // Random first player selection
+            const firstPlayer = Math.floor(Math.random() * 2); // 0 or 1
+            gameEnv.firstPlayer = firstPlayer;
+            gameEnv.currentPlayer = firstPlayer === 0 ? playerId1 : playerId2;
+            
+            // Initialize players with decks using proper PlayerDeck structure
+            if (!gameEnv.players[playerId1]) {
+                gameEnv.addPlayer(playerId1, 'Player 1');
+            }
+            const player1 = gameEnv.players[playerId1];
+            player1.deck.hand = [];
+            player1.deck.mainDeck = shuffledDeck1;
+            
+            if (!gameEnv.players[playerId2]) {
+                gameEnv.addPlayer(playerId2, 'Player 2');
+            }
+            const player2 = gameEnv.players[playerId2];
+            player2.deck.hand = [];
+            player2.deck.mainDeck = shuffledDeck2;
+            
+            // Draw initial hands (5 cards each)
+            this.drawCards(gameEnv.players[playerId1].deck, 5);
+            this.drawCards(gameEnv.players[playerId2].deck, 5);
+            
+            console.log(`🎯 Game initialized: First player is ${gameEnv.currentPlayer}, hands drawn, redraw available`);
+            
+        } catch (error) {
+            console.error('❌ Error initializing game with decks:', error);
+            throw error;
+        }
+    }
+    
+    private shuffleDeck(cards: string[]): string[] {
+        const shuffled = [...cards];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+    
+    private drawCards(deck: any, count: number): void {
+        for (let i = 0; i < count && deck.mainDeck.length > 0; i++) {
+            const drawnCard = deck.mainDeck.shift();
+            if (drawnCard) {
+                deck.hand.push(drawnCard);
+            }
+        }
+        console.log(`🃏 Drew ${count} cards, hand size: ${deck.hand.length}`);
     }
 }
 

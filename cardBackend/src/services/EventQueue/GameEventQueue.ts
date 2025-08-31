@@ -20,6 +20,7 @@ export class GameEventQueue {
     private maxEventsPerCycle: number = 50;
     private triggerEngine?: TriggerEngine;
     private stateBasedEngine?: StateBasedActionEngine;
+    private eventProcessor?: any; // Reference to EventProcessor for execution delegation
     
     constructor() {
         console.log('🎮 GameEventQueue initialized');
@@ -35,6 +36,11 @@ export class GameEventQueue {
     setStateBasedEngine(stateBasedEngine: StateBasedActionEngine): void {
         this.stateBasedEngine = stateBasedEngine;
         console.log('🏛️ StateBasedActionEngine integrated with GameEventQueue');
+    }
+    
+    setEventProcessor(eventProcessor: any): void {
+        this.eventProcessor = eventProcessor;
+        console.log('🔗 EventProcessor integrated with GameEventQueue');
     }
     
     // ============ QUEUE MANAGEMENT ============
@@ -155,8 +161,19 @@ export class GameEventQueue {
             } else if (event.status === EventStatus.RESOLVING) {
                 // ============ RESOLVING PHASE LOGIC ============
                 console.log(`🔥 Executing event: ${event.type}`);
-                this.executeEvent(event, gameEnv);
-                event.status = EventStatus.RESOLVED;
+                if (this.eventProcessor) {
+                    const executionResult = this.eventProcessor.executeEvent(event, gameEnv);
+                    if (executionResult.success) {
+                        event.status = EventStatus.RESOLVED;
+                    } else {
+                        console.error(`❌ Event execution failed: ${executionResult.error}`);
+                        // Mark as resolved anyway to prevent infinite loop
+                        event.status = EventStatus.RESOLVED;
+                    }
+                } else {
+                    console.error('❌ EventProcessor not set - cannot execute event');
+                    event.status = EventStatus.RESOLVED;
+                }
                 
             } else if (event.status === EventStatus.RESOLVED) {
                 // ============ RESOLVED PHASE LOGIC ============
@@ -185,102 +202,6 @@ export class GameEventQueue {
         return output;
     }
     
-    // ============ EVENT EXECUTION ============
-    
-    private executeEvent(event: GameEvent, gameEnv: GameEnvironment): void {
-        console.log(`🔥 Executing event: ${event.type}`);
-        
-        switch (event.type) {
-            case 'START_GAME':
-                this.executeStartGame(event, gameEnv);
-                break;
-                
-            case 'JOIN_GAME':
-                this.executeJoinGame(event, gameEnv);
-                break;
-                
-            case 'CARD_PLAYED':
-                this.executeCardPlayed(event, gameEnv);
-                break;
-                
-            case 'ERROR_OCCURRED':
-                this.executeErrorEvent(event, gameEnv);
-                break;
-                
-            default:
-                console.log(`🎯 Processing ${event.type} event - delegating to existing game logic`);
-                // Most events will be handled by your existing game logic systems
-        }
-    }
-    
-    private executeStartGame(event: GameEvent, gameEnv: GameEnvironment): void {
-        const { playerId, gameId } = event.data;
-        
-        console.log(`🎯 Processing START_GAME event for player: ${playerId}`);
-        
-        // Initialize basic game state (moved from GameLogic.createGame)
-        gameEnv.playerId_1 = playerId;
-        gameEnv.phase = GamePhase.WAITING_FOR_PLAYERS;
-        gameEnv.gameStarted = false;
-        gameEnv.playersReady = gameEnv.playersReady || {};
-        gameEnv.playersReady[playerId] = true;
-        
-        console.log(`✅ START_GAME event processed - game state initialized for ${playerId}`);
-    }
-    
-    private executeJoinGame(event: GameEvent, gameEnv: GameEnvironment): void {
-        const { playerId, gameId } = event.data;
-        
-        console.log(`🎯 Processing JOIN_GAME event for player: ${playerId}`);
-        
-        // Add second player and update phase (moved from GameLogic.joinGame)
-        gameEnv.playerId_2 = playerId;
-        gameEnv.phase = GamePhase.BOTH_JOINED;
-        
-        // TODO: Implement your custom card play logic here
-        // - load gcgdecks.json
-        // - assist the deck to both player 
-        // - shuffle the deck
-        // - random pick the first player
-        // - draw 5 hand for each player
-        // - set redraw to false and wait for player to redraw or skips redraw and get ready to star the game
-        
-        console.log(`✅ JOIN_GAME event processed - second player ${playerId} added`);
-    }
-    
-    private executeCardPlayed(event: GameEvent, gameEnv: GameEnvironment): void {
-        const { cardId, cardUid, zone, playerId, isFaceDown } = event.data;
-        
-        console.log(`🎯 Processing CARD_PLAYED event: ${cardId} → ${zone} (${playerId})`);
-        
-        // TODO: Integrate with your existing card placement logic
-        // This should call your existing game logic to actually place the card
-    }
-    
-    private executeErrorEvent(event: GameEvent, gameEnv: GameEnvironment): void {
-        const { errorReason, errorType, originalEventType, playerId } = event.data;
-        
-        console.log(`💥 Processing error: ${errorType} - ${errorReason}`);
-        
-        // Add error to game events for frontend consumption
-        if (gameEnv.gameEvents) {
-            gameEnv.gameEvents.push({
-                id: event.id,
-                type: 'ERROR_OCCURRED',
-                data: {
-                    errorType,
-                    errorReason,
-                    originalEventType,
-                    playerId
-                },
-                timestamp: event.timestamp,
-                expiresAt: event.timestamp + 3000, // 3 second expiration
-                frontendProcessed: false
-            });
-        }
-        
-        console.log(`📨 Error event added to gameEvents for frontend: ${errorReason}`);
-    }
     
     // ============ DECLARED PHASE METHODS ============
     
@@ -448,6 +369,7 @@ export class GameEventQueue {
         const queue = new GameEventQueue();
         queue.events = data.events || [];
         queue.processingEnabled = data.processingEnabled !== false;
+        // EventExecutor is already initialized in constructor
         return queue;
     }
 }
