@@ -238,7 +238,10 @@ export default class GameStateManager {
   processGameEvents() {
     const events = this.gameState.gameEnv.gameEvents || [];
     console.log("events "+JSON.stringify(events))
-    const unprocessedEvents = events.filter(event => event.requireFrontendAcknowledgment);
+    const unprocessedEvents = events.filter(event => 
+      event.metadata?.requiresAcknowledgment === true && 
+      event.metadata?.frontendProcessed === false
+    );
     console.log("events filter "+JSON.stringify(unprocessedEvents))
     unprocessedEvents.forEach(event => {
       const handlers = this.eventHandlers.get(event.type) || [];
@@ -260,7 +263,10 @@ export default class GameStateManager {
 
   async acknowledgeEvents(apiManager) {
     const events = this.gameState.gameEnv.gameEvents || [];
-    const unprocessedEvents = events.filter(event => !event.frontendProcessed);
+    const unprocessedEvents = events.filter(event => 
+      event.metadata?.requiresAcknowledgment === true && 
+      event.metadata?.frontendProcessed === false
+    );
     
     if (unprocessedEvents.length > 0 && apiManager) {
       try {
