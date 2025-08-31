@@ -55,6 +55,7 @@ export interface CommandCardData extends BaseCardData {
     cardType: 'command';
 }
 
+
 export interface BaseStructureData extends BaseCardData {
     cardType: 'base';
     rarity?: string;                    // Card rarity
@@ -104,6 +105,10 @@ export interface BaseStructureZoneCard extends BaseZoneCard {
 
 export interface EnergyZoneCard extends BaseZoneCard {
     isExtraEnergy?: boolean;   // For consumable energy - whether used up
+}
+
+export interface ShieldCard extends BaseZoneCard {
+    isShieldCard: true; // Distinctive field for type detection
 }
 
 // ============ ZONE CARD UTILITIES ============
@@ -162,6 +167,13 @@ export function createZoneCard(
                 isExtraEnergy: false
             } as EnergyZoneCard;
             
+        case 'shield':
+            return {
+                ...baseCard,
+                cardData: cardData,
+                isShieldCard: true
+            } as ShieldCard;
+            
         default:
             throw new Error(`Unknown card type: ${(cardData as CardData).cardType}`);
     }
@@ -186,6 +198,10 @@ export function isBaseStructureZoneCard(card: BaseZoneCard): card is BaseStructu
 
 export function isEnergyZoneCard(card: BaseZoneCard): card is EnergyZoneCard {
     return 'isExtraEnergy' in card;
+}
+
+export function isShieldCard(card: BaseZoneCard): card is ShieldCard {
+    return 'isShieldCard' in card && (card as ShieldCard).isShieldCard === true;
 }
 
 export class ZoneCardUtils {

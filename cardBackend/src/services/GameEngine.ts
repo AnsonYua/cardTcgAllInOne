@@ -201,13 +201,15 @@ export class GameEngine {
                 }
             }
             
-            // Mark player as ready and set confirmIsRedraw
+            // Mark player as ready and set confirmIsRedraw to true (they confirmed their choice)
             gameEnv.playersReady[playerId] = true;
             
             const player = gameEnv.players[playerId];
             if (player) {
-                player.confirmIsRedraw = isRedraw || false;
-                console.log(`✅ Player ${playerId} confirmIsRedraw set to: ${player.confirmIsRedraw}`);
+                // Store their actual redraw choice and mark as confirmed
+                player.isRedraw = isRedraw;
+                player.confirmIsRedraw = true; // They confirmed their choice (yes or no)
+                console.log(`✅ Player ${playerId} confirmed their redraw choice: ${isRedraw}, confirmIsRedraw: ${player.confirmIsRedraw}`);
             }
 
             // Note: GAME_START will be triggered automatically by StateBasedActionEngine

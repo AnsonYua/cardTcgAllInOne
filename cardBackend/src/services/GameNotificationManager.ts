@@ -9,10 +9,14 @@ import { GameEnvironment } from '../models/GameEnvironment';
 export interface GameNotificationEvent {
     id: string;
     type: string;
-    data: any;
-    timestamp: number;
-    expiresAt: number;
-    frontendProcessed: boolean;
+    metadata: {
+        timestamp: number;
+        expiresAt: number;
+        requiresAcknowledgment: boolean;
+        frontendProcessed: boolean;
+        priority: 'low' | 'normal' | 'high' | 'critical';
+    };
+    payload: NotificationEventData;
 }
 
 export interface NotificationEventData {
@@ -46,7 +50,12 @@ export class GameNotificationManager {
     /**
      * Add a notification event to gameEnv.gameEvents for frontend consumption
      */
-    addNotificationEvent(type: string, data: NotificationEventData): string {
+    addNotificationEvent(
+        type: string, 
+        payload: NotificationEventData, 
+        requiresAcknowledgment: boolean = false,
+        priority: 'low' | 'normal' | 'high' | 'critical' = 'normal'
+    ): string {
         this.initializeGameEvents();
         
         const eventId = `${type.toLowerCase()}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -55,15 +64,19 @@ export class GameNotificationManager {
         const notificationEvent: GameNotificationEvent = {
             id: eventId,
             type,
-            data,
-            timestamp,
-            expiresAt: timestamp + this.EVENT_EXPIRY_MS,
-            frontendProcessed: false
+            metadata: {
+                timestamp,
+                expiresAt: timestamp + this.EVENT_EXPIRY_MS,
+                requiresAcknowledgment,
+                frontendProcessed: false,
+                priority
+            },
+            payload
         };
         
         this.gameEnv.gameEvents!.push(notificationEvent);
         
-        console.log(`📨 Added notification event: ${type} (${eventId})`);
+        console.log(`📨 Added notification event: ${type} (${eventId}) - Priority: ${priority}, Ack: ${requiresAcknowledgment}`);
         return eventId;
     }
     
@@ -73,14 +86,17 @@ export class GameNotificationManager {
      * Notify frontend about card draw (requires acknowledgment)
      */
     notifyCardDrawn(playerId: string, drawnCardUids: string[], newHandSize: number): string {
-        return this.addNotificationEvent('CARD_DRAWN', {
-            playerId,
-            drawnCards: drawnCardUids,
-            cardsDrawn: drawnCardUids.length,
-            newHandSize,
-            requiresAcknowledgment: true,
-            timestamp: Date.now()
-        });
+        return this.addNotificationEvent(
+            'CARD_DRAWN', 
+            {
+                playerId,
+                drawnCards: drawnCardUids,
+                cardsDrawn: drawnCardUids.length,
+                newHandSize
+            },
+            true, // requiresAcknowledgment
+            'normal' // priority
+        );
     }
     
     
@@ -88,27 +104,35 @@ export class GameNotificationManager {
      * Notify frontend about gameplay beginning
      */
     notifyGameplayBegins(firstPlayerId: string, secondPlayerId: string, currentPhase: string): string {
-        return this.addNotificationEvent('GAMEPLAY_BEGINS', {
-            firstPlayerId,
-            secondPlayerId,
-            currentPhase,
-            currentPlayer: firstPlayerId,
-            resourcesAllocated: true,
-            timestamp: Date.now()
-        });
+        return this.addNotificationEvent(
+            'GAMEPLAY_BEGINS', 
+            {
+                firstPlayerId,
+                secondPlayerId,
+                currentPhase,
+                currentPlayer: firstPlayerId,
+                resourcesAllocated: true
+            },
+            false, // requiresAcknowledgment
+            'high' // priority
+        );
     }
     
     /**
      * Notify frontend about error occurrence
      */
     notifyError(errorType: string, errorReason: string, playerId?: string, originalEventType?: string): string {
-        return this.addNotificationEvent('ERROR_OCCURRED', {
-            errorType,
-            errorReason,
-            playerId,
-            originalEventType,
-            timestamp: Date.now()
-        });
+        return this.addNotificationEvent(
+            'ERROR_OCCURRED', 
+            {
+                errorType,
+                errorReason,
+                playerId,
+                originalEventType
+            },
+            false, // requiresAcknowledgment
+            'critical' // priority
+        );
     }
     
     // ============ EVENT MANAGEMENT ============
@@ -122,8 +146,8 @@ export class GameNotificationManager {
         let acknowledgedCount = 0;
         
         this.gameEnv.gameEvents.forEach(event => {
-            if (eventIds.includes(event.id) && !event.frontendProcessed) {
-                event.frontendProcessed = true;
+            if (eventIds.includes(event.id) && !event.metadata.frontendProcessed) {
+                event.metadata.frontendProcessed = true;
                 acknowledgedCount++;
                 console.log(`✅ Acknowledged event: ${event.type} (${event.id})`);
             }
@@ -144,8 +168,8 @@ export class GameNotificationManager {
         let acknowledgedCount = 0;
         
         this.gameEnv.gameEvents.forEach(event => {
-            if (eventTypes.includes(event.type) && !event.frontendProcessed) {
-                event.frontendProcessed = true;
+            if (eventTypes.includes(event.type) && !event.metadata.frontendProcessed) {
+                event.metadata.frontendProcessed = true;
                 acknowledgedCount++;
                 console.log(`✅ Acknowledged event by type: ${event.type} (${event.id})`);
             }
@@ -167,8 +191,8 @@ export class GameNotificationManager {
         const now = Date.now();
         
         this.gameEnv.gameEvents = this.gameEnv.gameEvents.filter(event => {
-            const isExpired = now > event.expiresAt;
-            const isProcessed = event.frontendProcessed;
+            const isExpired = now > event.metadata.expiresAt;
+            const isProcessed = event.metadata.frontendProcessed;
             
             if (isExpired || isProcessed) {
                 console.log(`🧹 Cleaned up event: ${event.type} (${event.id}) - ${isExpired ? 'expired' : 'processed'}`);
@@ -195,8 +219,8 @@ export class GameNotificationManager {
         this.cleanupProcessedEvents(); // Clean first
         
         return this.gameEnv.gameEvents.filter(event => 
-            !event.frontendProcessed && 
-            (event.data.playerId === playerId || !event.data.playerId) // Include global events
+            !event.metadata.frontendProcessed && 
+            (event.payload.playerId === playerId || !event.payload.playerId) // Include global events
         );
     }
     
@@ -208,7 +232,7 @@ export class GameNotificationManager {
         
         this.cleanupProcessedEvents(); // Clean first
         
-        return this.gameEnv.gameEvents.filter(event => !event.frontendProcessed);
+        return this.gameEnv.gameEvents.filter(event => !event.metadata.frontendProcessed);
     }
     
     // ============ UTILITY METHODS ============
@@ -223,8 +247,8 @@ export class GameNotificationManager {
         
         const now = Date.now();
         const total = this.gameEnv.gameEvents.length;
-        const unprocessed = this.gameEnv.gameEvents.filter(e => !e.frontendProcessed).length;
-        const expired = this.gameEnv.gameEvents.filter(e => now > e.expiresAt).length;
+        const unprocessed = this.gameEnv.gameEvents.filter(e => !e.metadata.frontendProcessed).length;
+        const expired = this.gameEnv.gameEvents.filter(e => now > e.metadata.expiresAt).length;
         
         return { total, unprocessed, expired };
     }
@@ -251,8 +275,8 @@ export class GameNotificationManager {
         this.cleanupProcessedEvents();
         
         return this.gameEnv.gameEvents.some(event => 
-            !event.frontendProcessed && 
-            event.data.requiresAcknowledgment === true
+            !event.metadata.frontendProcessed && 
+            event.metadata.requiresAcknowledgment === true
         );
     }
 }

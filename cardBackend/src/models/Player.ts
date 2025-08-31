@@ -213,6 +213,7 @@ export class Player {
     public name: string;
     public deck: PlayerDeck;
     public confirmIsRedraw: boolean;
+    public isRedraw?: boolean; // Store their actual redraw choice
     public playerPoint: number;
     public isReady: boolean;
     public fieldEffects?: PlayerFieldEffects;
