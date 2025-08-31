@@ -1,11 +1,21 @@
-// src/services/EventQueue/GameEventQueue.ts
-// Main event queue coordinator for trading card game
+// src/services/EventQueue/EventManager.ts
+// Unified event management system - combines queue operations and lifecycle processing
 
-import { GameEvent, EventStatus, EventPriority, BaseGameEvent } from './interfaces/GameEvent';
+import { GameEvent, EventFactory, EventStatus, EventPriority } from './interfaces/GameEvent';
+import { TriggerEngine } from './TriggerEngine';
+import { EffectStack, StackResolutionResult } from './EffectStack';
+import { StateBasedActionEngine } from './StateBasedActionEngine';
 import { GameEnvironment } from '../../models/GameEnvironment';
 import { GamePhase } from '../../models/GameEnums';
-import { TriggerEngine } from './TriggerEngine';
-import { StateBasedActionEngine } from './StateBasedActionEngine';
+import { GameEngine, ExecutionResult } from '../GameEngine';
+
+export interface ProcessingResult {
+    success: boolean;
+    eventsProcessed: number;
+    needsPlayerInput: boolean;
+    waitingForChoice?: string;
+    error?: string;
+}
 
 export interface EventQueueOutput {
     hasEvents: boolean;
@@ -14,33 +24,156 @@ export interface EventQueueOutput {
     waitingForChoice?: string;
 }
 
-export class GameEventQueue {
+export interface PlayerAction {
+    type: string;
+    playerId: string;
+    cardId?: string;
+    cardUid?: string;
+    zone?: string;
+    isFaceDown?: boolean;
+    targetPhase?: GamePhase;
+    [key: string]: any;
+}
+
+export class EventManager {
+    // Queue state
     private events: GameEvent[] = [];
     private processingEnabled: boolean = true;
     private maxEventsPerCycle: number = 50;
-    private triggerEngine?: TriggerEngine;
-    private stateBasedEngine?: StateBasedActionEngine;
-    private eventProcessor?: any; // Reference to EventProcessor for execution delegation
     
-    constructor() {
-        console.log('🎮 GameEventQueue initialized');
+    // TCG Engine integrations
+    private triggerEngine: TriggerEngine;
+    private effectStack: EffectStack;
+    private stateEngine: StateBasedActionEngine;
+    private gameEngine: GameEngine;
+    private gameEnv: GameEnvironment;
+    
+    constructor(gameEnv: GameEnvironment) {
+        this.gameEnv = gameEnv;
+        this.triggerEngine = new TriggerEngine(gameEnv);
+        this.effectStack = new EffectStack(gameEnv);
+        this.stateEngine = new StateBasedActionEngine(gameEnv);
+        this.gameEngine = new GameEngine();
+        
+        // Integration setup
+        this.setupEngineIntegration();
+        
+        console.log('🎮 EventManager initialized with unified event processing');
     }
     
-    // ============ ENGINE INTEGRATION ============
-    
-    setTriggerEngine(triggerEngine: TriggerEngine): void {
-        this.triggerEngine = triggerEngine;
-        console.log('🔗 TriggerEngine integrated with GameEventQueue');
+    private setupEngineIntegration(): void {
+        // Note: TriggerEngine and StateBasedEngine integration methods 
+        // would need to be updated to work directly with EventManager
+        console.log('🔗 TCG engines integrated with unified EventManager');
     }
     
-    setStateBasedEngine(stateBasedEngine: StateBasedActionEngine): void {
-        this.stateBasedEngine = stateBasedEngine;
-        console.log('🏛️ StateBasedActionEngine integrated with GameEventQueue');
+    // ============ MAIN PROCESSING INTERFACE ============
+    
+    /**
+     * Process event directly - unified interface for GameLogic
+     */
+    async processEvent(event: GameEvent): Promise<ProcessingResult> {
+        try {
+            console.log(`🎮 Processing event directly: ${event.type}`);
+            
+            // Enqueue the event directly
+            this.enqueue(event);
+            
+            // Process through full TCG event system
+            const result = await this.processFullEventCycle();
+            
+            // Check if any error events were generated during processing
+            if (this.gameEnv.gameEvents) {
+                const recentErrors = this.gameEnv.gameEvents.filter(evt => 
+                    evt.type === 'ERROR_OCCURRED' && 
+                    evt.timestamp > (Date.now() - 1000) // Within last second
+                );
+                
+                if (recentErrors.length > 0) {
+                    const latestError = recentErrors[recentErrors.length - 1];
+                    return {
+                        success: false,
+                        eventsProcessed: result.eventsProcessed,
+                        needsPlayerInput: result.needsPlayerInput,
+                        error: latestError.data.errorReason || 'Validation failed'
+                    };
+                }
+            }
+            
+            return result;
+            
+        } catch (error) {
+            console.error('❌ Error processing event:', error);
+            return {
+                success: false,
+                eventsProcessed: 0,
+                needsPlayerInput: false,
+                error: error instanceof Error ? error.message : 'Unknown error'
+            };
+        }
     }
     
-    setEventProcessor(eventProcessor: any): void {
-        this.eventProcessor = eventProcessor;
-        console.log('🔗 EventProcessor integrated with GameEventQueue');
+    /**
+     * Unified event processing - handles both queue and processing logic
+     */
+    private async processFullEventCycle(): Promise<ProcessingResult> {
+        const queueOutput = this.processUntilBlocked(this.gameEnv);
+        return {
+            success: true,
+            eventsProcessed: queueOutput.eventsProcessed,
+            needsPlayerInput: queueOutput.needsPlayerInput,
+            waitingForChoice: queueOutput.waitingForChoice
+        };
+    }
+    
+    /**
+     * Handle player choice response
+     */
+    async resolvePlayerChoice(selectionId: string, choices: string[]): Promise<ProcessingResult> {
+        try {
+            console.log(`🎯 Resolving player choice: ${selectionId}`);
+            
+            // Find pending choice event
+            const choiceEvent = this.getCurrentPlayerChoice();
+            if (!choiceEvent || choiceEvent.data.selectionId !== selectionId) {
+                return {
+                    success: false,
+                    eventsProcessed: 0,
+                    needsPlayerInput: false,
+                    error: 'No matching player choice found'
+                };
+            }
+            
+            // Generate choice resolution event
+            const resolveEvent = EventFactory.createChoiceResolvedEvent(
+                selectionId,
+                choices,
+                choiceEvent.data.playerId
+            );
+            
+            // Mark choice event as resolved and add resolution event
+            choiceEvent.status = EventStatus.RESOLVED;
+            this.enqueue(resolveEvent);
+            
+            // Continue processing
+            const output = this.processUntilBlocked(this.gameEnv);
+            
+            return {
+                success: true,
+                eventsProcessed: output.eventsProcessed,
+                needsPlayerInput: output.needsPlayerInput,
+                waitingForChoice: output.waitingForChoice
+            };
+            
+        } catch (error) {
+            console.error('❌ Error resolving player choice:', error);
+            return {
+                success: false,
+                eventsProcessed: 0,
+                needsPlayerInput: false,
+                error: error instanceof Error ? error.message : 'Unknown error'
+            };
+        }
     }
     
     // ============ QUEUE MANAGEMENT ============
@@ -50,7 +183,7 @@ export class GameEventQueue {
         
         this.events.sort((a, b) => {
             if (a.priority !== b.priority) {
-                return b.priority - a.priority; // ✅ FIXED: Higher priority numbers go first
+                return b.priority - a.priority; // Higher priority numbers go first
             }
             return a.timestamp - b.timestamp; // Earlier timestamps go first within same priority
         });
@@ -161,17 +294,13 @@ export class GameEventQueue {
             } else if (event.status === EventStatus.RESOLVING) {
                 // ============ RESOLVING PHASE LOGIC ============
                 console.log(`🔥 Executing event: ${event.type}`);
-                if (this.eventProcessor) {
-                    const executionResult = this.eventProcessor.executeEvent(event, gameEnv);
-                    if (executionResult.success) {
-                        event.status = EventStatus.RESOLVED;
-                    } else {
-                        console.error(`❌ Event execution failed: ${executionResult.error}`);
-                        // Mark as resolved anyway to prevent infinite loop
-                        event.status = EventStatus.RESOLVED;
-                    }
+                const executionResult = this.gameEngine.execute(event, gameEnv);
+                
+                if (executionResult.success) {
+                    event.status = EventStatus.RESOLVED;
                 } else {
-                    console.error('❌ EventProcessor not set - cannot execute event');
+                    console.error(`❌ Event execution failed: ${executionResult.error}`);
+                    // Mark as resolved anyway to prevent infinite loop
                     event.status = EventStatus.RESOLVED;
                 }
                 
@@ -202,8 +331,7 @@ export class GameEventQueue {
         return output;
     }
     
-    
-    // ============ DECLARED PHASE METHODS ============
+    // ============ EVENT VALIDATION ============
     
     private validateEventExecution(event: GameEvent, gameEnv: GameEnvironment): { isValid: boolean; reason?: string } {
         console.log(`🔍 Validating event: ${event.type}`);
@@ -282,11 +410,6 @@ export class GameEventQueue {
     }
     
     private findTriggeredReactions(event: GameEvent, gameEnv: GameEnvironment): GameEvent[] {
-        if (!this.triggerEngine) {
-            console.log('⚠️ TriggerEngine not set - no reactions checked');
-            return [];
-        }
-        
         console.log(`🔍 Checking for triggered reactions to: ${event.type}`);
         return this.triggerEngine.checkTriggeredAbilities(event);
     }
@@ -308,13 +431,8 @@ export class GameEventQueue {
     }
     
     private checkForStateBasedActions(gameEnv: GameEnvironment): GameEvent[] {
-        if (!this.stateBasedEngine) {
-            console.log('⚠️ StateBasedActionEngine not set - no state actions checked');
-            return [];
-        }
-        
         console.log('🏛️ Checking for state-based actions...');
-        const stateActions = this.stateBasedEngine.checkForStateBasedActions();
+        const stateActions = this.stateEngine.checkForStateBasedActions();
         
         // Convert state-based actions to events
         const stateEvents: GameEvent[] = [];
@@ -339,37 +457,125 @@ export class GameEventQueue {
         
         return stateEvents;
     }
-
-    // ============ DEBUGGING AND UTILITIES ============
     
-    getQueueStatus(): { 
-        size: number; 
-        events: Array<{ type: string; status: string; priority: number }>; 
-        needsInput: boolean;
-    } {
+    // ============ TCG SYSTEM ACCESS ============
+    
+    /**
+     * Get comprehensive system status for debugging
+     */
+    getSystemStatus(): any {
         return {
-            size: this.events.length,
-            events: this.events.map(e => ({ 
-                type: e.type, 
-                status: e.status, 
-                priority: e.priority 
-            })),
-            needsInput: this.needsPlayerInput()
+            eventQueue: {
+                size: this.events.length,
+                events: this.events.map(e => ({ 
+                    type: e.type, 
+                    status: e.status, 
+                    priority: e.priority 
+                })),
+                needsInput: this.needsPlayerInput()
+            },
+            effectStack: {
+                size: this.effectStack.size(),
+                isEmpty: this.effectStack.isEmpty(),
+                canAddToStack: this.effectStack.canAddToStack()
+            },
+            triggerEngine: {
+                // TODO: Add trigger engine status
+                initialized: true
+            },
+            stateEngine: {
+                // TODO: Add state engine status  
+                initialized: true
+            }
         };
     }
     
+    /**
+     * Get trigger engine instance
+     */
+    getTriggerEngine(): TriggerEngine {
+        return this.triggerEngine;
+    }
+    
+    /**
+     * Get effect stack instance
+     */
+    getEffectStack(): EffectStack {
+        return this.effectStack;
+    }
+    
+    /**
+     * Get state-based action engine
+     */
+    getStateEngine(): StateBasedActionEngine {
+        return this.stateEngine;
+    }
+    
+    /**
+     * Force process next event (debugging)
+     */
+    processNextEvent(): boolean {
+        if (this.isEmpty()) return false;
+        
+        const output = this.processUntilBlocked(this.gameEnv);
+        return output.eventsProcessed > 0;
+    }
+    
+    // ============ CARD EFFECT MANAGEMENT ============
+    
+    /**
+     * Initialize card effects when card enters play
+     */
+    initializeCardEffects(cardId: string, cardUid: string, playerId: string): void {
+        this.triggerEngine.initializeCardTriggers(cardId, cardUid, playerId);
+        console.log(`🎯 Card effects initialized: ${cardId}`);
+    }
+    
+    /**
+     * Clean up card effects when card leaves play
+     */
+    cleanupCardEffects(cardUid: string): void {
+        this.triggerEngine.cleanupCardEffects(cardUid);
+        console.log(`🧹 Card effects cleaned up: ${cardUid}`);
+    }
+    
+    // ============ SERIALIZATION ============
+    
+    /**
+     * Serialize manager state with all TCG systems
+     */
     toJSON(): any {
         return {
             events: this.events,
-            processingEnabled: this.processingEnabled
+            processingEnabled: this.processingEnabled,
+            triggerEngine: this.triggerEngine.toJSON(),
+            effectStack: this.effectStack.toJSON(),
+            stateEngine: this.stateEngine.toJSON()
         };
     }
     
-    static fromJSON(data: any): GameEventQueue {
-        const queue = new GameEventQueue();
-        queue.events = data.events || [];
-        queue.processingEnabled = data.processingEnabled !== false;
-        // EventExecutor is already initialized in constructor
-        return queue;
+    /**
+     * Restore manager from serialized state with all systems
+     */
+    static fromJSON(data: any, gameEnv: GameEnvironment): EventManager {
+        const manager = new EventManager(gameEnv);
+        
+        manager.events = data.events || [];
+        manager.processingEnabled = data.processingEnabled !== false;
+        
+        if (data.triggerEngine) {
+            manager.triggerEngine = TriggerEngine.fromJSON(data.triggerEngine, gameEnv);
+        }
+        if (data.effectStack) {
+            manager.effectStack = EffectStack.fromJSON(data.effectStack, gameEnv);
+        }
+        if (data.stateEngine) {
+            manager.stateEngine = StateBasedActionEngine.fromJSON(data.stateEngine, gameEnv);
+        }
+        
+        return manager;
     }
 }
+
+// ============ TYPE DEFINITIONS ============
+// PlayerAction now exported at top of file

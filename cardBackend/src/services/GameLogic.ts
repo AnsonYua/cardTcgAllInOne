@@ -9,7 +9,7 @@ import { Request, Response } from 'express';
 // Import core models
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase, ZoneType, PlayerActionType } from '../models/GameEnums';
-import { EventProcessor, PlayerAction, EventFactory, GameEvent, EventStatus, EventPriority } from './EventQueue/index';
+import { EventManager, PlayerAction, EventFactory, GameEvent, EventStatus, EventPriority } from './EventQueue/index';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -377,16 +377,16 @@ export class GameLogic {
      * Process action through event queue - create event then use centralized processor
      */
     async processAction(gameEnv: GameEnvironment, action: PlayerAction): Promise<any> {
-        if (!gameEnv.eventProcessor) {
-            gameEnv.initializeEventProcessor();
+        if (!gameEnv.eventManager) {
+            gameEnv.initializeEventManager();
         }
         
-        if (gameEnv.eventProcessor) {
+        if (gameEnv.eventManager) {
             // Create event in GameLogic
             const event = this.createEventFromAction(action);
             if (event) {
                 // Use centralized processEvent for direct event processing
-                const result = await gameEnv.eventProcessor.processEvent(event);
+                const result = await gameEnv.eventManager.processEvent(event);
                 
                 // Check if there were validation errors in the event queue
                 if (!result.success) {

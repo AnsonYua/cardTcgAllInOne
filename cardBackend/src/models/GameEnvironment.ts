@@ -4,7 +4,7 @@
 import { GamePhase, ZoneType } from './GameEnums';
 import { Player, PlayerZones, SlotZone } from './Player';
 import { BaseZoneCard } from './CardSystem';
-import { EventProcessor } from '../services/EventQueue';
+import { EventManager } from '../services/EventQueue/EventManager';
 
 // ============ GAME EVENT INTERFACE ============
 
@@ -62,7 +62,7 @@ export class GameEnvironment {
     
     
     // Event processing system
-    public eventProcessor?: EventProcessor;
+    public eventManager?: EventManager;
 
     constructor() {
         this.phase = GamePhase.WAITING_FOR_PLAYERS;
@@ -112,15 +112,15 @@ export class GameEnvironment {
 
     // ============ EVENT QUEUE METHODS ============
     
-    public initializeEventProcessor(): void {
-        if (!this.eventProcessor) {
-            this.eventProcessor = new EventProcessor(this);
-            console.log('🎮 Event processor initialized');
+    public initializeEventManager(): void {
+        if (!this.eventManager) {
+            this.eventManager = new EventManager(this);
+            console.log('🎮 Event manager initialized');
         }
     }
     
-    public getEventProcessor(): EventProcessor | null {
-        return this.eventProcessor || null;
+    public getEventManager(): EventManager | null {
+        return this.eventManager || null;
     }
 
     // ============ GAME STATE METHODS ============

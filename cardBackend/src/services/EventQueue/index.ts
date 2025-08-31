@@ -1,8 +1,7 @@
 // src/services/EventQueue/index.ts
 // Complete TCG event queue system exports
 
-export { GameEventQueue, EventQueueOutput } from './GameEventQueue';
-export { EventProcessor, ProcessingResult, PlayerAction } from './EventProcessor';
+export { EventManager, ProcessingResult, PlayerAction } from './EventManager';
 export { 
     TriggerEngine, 
     TriggerCondition, 
