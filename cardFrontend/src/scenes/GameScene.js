@@ -974,11 +974,25 @@ export default class GameScene extends Phaser.Scene {
       this.showRoomStatus('Both players joined - hands dealt!');
       this.displayGameInfo();
       
-      // Play shuffle animation then show redraw dialog
-      this.playShuffleDeckAnimation().then(() => {
-        console.log('Online mode - shuffle animation completed, selecting leader cards...');
-        // Leader card selection removed
-        this.updatePlayerHand();
+      // Load card resources before shuffle animation
+      this.loadCardResources().then(() => {
+        console.log('[GameScene] Card resources loaded, starting shuffle animation');
+        
+        // Play shuffle animation then show redraw dialog
+        this.playShuffleDeckAnimation().then(() => {
+          console.log('Online mode - shuffle animation completed, selecting leader cards...');
+          // Leader card selection removed
+          this.updatePlayerHand();
+        });
+      }).catch((error) => {
+        console.warn('[GameScene] Failed to load card resources, proceeding with fallback:', error);
+        
+        // Continue with shuffle animation even if resource loading fails
+        this.playShuffleDeckAnimation().then(() => {
+          console.log('Online mode - shuffle animation completed (with resource loading fallback), selecting leader cards...');
+          // Leader card selection removed
+          this.updatePlayerHand();
+        });
       });
     }
     
@@ -2607,6 +2621,103 @@ export default class GameScene extends Phaser.Scene {
 
 
 
+
+  async loadCardResources() {
+    try {
+      const apiUrl = GAME_CONFIG.api.getFullUrl(GAME_CONFIG.api.endpoints.gameResource);
+      console.log('[GameScene] Fetching deck data from:', apiUrl);
+      
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: GAME_CONFIG.api.headers,
+        signal: AbortSignal.timeout(GAME_CONFIG.api.timeout)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const deckData = await response.json();
+      console.log('[GameScene] Deck data received:', deckData);
+      
+      // Process deck data to extract unique card images
+      const allCardPaths = new Set();
+      
+      if (deckData.decks) {
+        Object.keys(deckData.decks).forEach(deckKey => {
+          const deck = deckData.decks[deckKey];
+          if (deck.cards && Array.isArray(deck.cards)) {
+            deck.cards.forEach(cardPath => {
+              const imagePath = cardPath.endsWith('.png') ? cardPath : `${cardPath}.png`;
+              allCardPaths.add(imagePath);
+            });
+          }
+        });
+      }
+      
+      const uniqueCardPaths = Array.from(allCardPaths);
+      console.log(`[GameScene] Found ${uniqueCardPaths.length} unique cards to load:`, uniqueCardPaths);
+      
+      // Load images into Phaser texture manager
+      const loadPromises = [];
+      const timestamp = Date.now();
+      
+      uniqueCardPaths.forEach(imagePath => {
+        const imageKey = this.getImageKey(imagePath);
+        
+        // Load full-size image
+        const fullImageUrl = `${GAME_CONFIG.api.getImageUrl(imagePath)}?t=${timestamp}`;
+        const fullPromise = new Promise((resolve, reject) => {
+          this.load.image(imageKey, fullImageUrl);
+          this.load.once(`filecomplete-image-${imageKey}`, () => {
+            console.log(`[GameScene] Loaded: ${imageKey}`);
+            resolve();
+          });
+          this.load.once(`loaderror`, (file) => {
+            if (file.key === imageKey) {
+              console.warn(`[GameScene] Failed to load: ${imageKey}`);
+              reject(new Error(`Failed to load ${imageKey}`));
+            }
+          });
+        });
+        loadPromises.push(fullPromise);
+        
+        // Load preview image
+        const previewKey = `${imageKey}-preview`;
+        const previewImageUrl = `${GAME_CONFIG.api.getPreviewImageUrl(imagePath)}?t=${timestamp}`;
+        const previewPromise = new Promise((resolve, reject) => {
+          this.load.image(previewKey, previewImageUrl);
+          this.load.once(`filecomplete-image-${previewKey}`, () => {
+            console.log(`[GameScene] Loaded preview: ${previewKey}`);
+            resolve();
+          });
+          this.load.once(`loaderror`, (file) => {
+            if (file.key === previewKey) {
+              console.warn(`[GameScene] Failed to load preview: ${previewKey}`);
+              reject(new Error(`Failed to load ${previewKey}`));
+            }
+          });
+        });
+        loadPromises.push(previewPromise);
+      });
+      
+      // Start loading and wait for completion
+      this.load.start();
+      await Promise.allSettled(loadPromises);
+      
+      console.log('[GameScene] Card resource loading complete');
+      
+    } catch (error) {
+      console.error('[GameScene] Error loading card resources:', error);
+      throw error;
+    }
+  }
+  
+  getImageKey(imagePath) {
+    // Extract filename from path and remove extension
+    const filename = imagePath.split('/').pop();
+    return filename.replace(/\.[^/.]+$/, "");
+  }
 
   destroy() {
     // Clean up hover preview resources

@@ -300,9 +300,12 @@ export default class CardResourcePreloader extends Phaser.Scene {
       this.loadingText.destroy();
     }
     
-    // Transition to target scene with scene data
-    console.log(`[CardResourcePreloader] Loading complete, transitioning to: ${this.targetScene}`);
-    this.scene.start(this.targetScene, this.sceneData);
+    // Launch target scene while keeping this scene active to preserve textures
+    console.log(`[CardResourcePreloader] Loading complete, launching: ${this.targetScene}`);
+    this.scene.launch(this.targetScene, this.sceneData);
+    
+    // Stop this scene after target scene starts (preserves textures)
+    this.scene.stop();
   }
 
   // Static method to check if card resources are already loaded
