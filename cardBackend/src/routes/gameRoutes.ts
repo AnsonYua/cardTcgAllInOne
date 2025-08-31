@@ -56,6 +56,12 @@ router.post('/player/joinRoom', gameController.joinRoom.bind(gameController));
 router.post('/player/startReady', gameController.startReady.bind(gameController));
 
 /**
+ * Get game resource data (deck data for frontend card preloading)
+ * GET /api/game/player/gameResource
+ */
+router.get('/player/gameResource', gameController.getGameResource.bind(gameController));
+
+/**
  * Get player game data
  * GET /api/game/player/:playerId?gameId=...
  */
@@ -74,12 +80,6 @@ router.post('/player/playerAction', gameController.playerAction.bind(gameControl
  * GET /api/game/cards
  */
 router.get('/cards', gameController.getCardData.bind(gameController));
-
-/**
- * Get game resource data (deck data)
- * GET /api/game/player/gameResource
- */
-router.get('/player/gameResource', gameController.getGameResource.bind(gameController));
 
 // ============ IMAGE SERVING ENDPOINTS ============
 
