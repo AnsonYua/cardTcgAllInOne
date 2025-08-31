@@ -23,7 +23,7 @@ export default class ShuffleAnimationManager {
     
     // Create player deck cards in initial position
     for (let i = 0; i < numCards; i++) {
-      const card = this.scene.add.image(playerDeckPos.x + (i * 0), playerDeckPos.y - (i * 0), 'card-back');
+      const card = this.scene.add.image(playerDeckPos.x + (i * 0), playerDeckPos.y - (i * 0), GAME_CONFIG.imageKey.cardback);
       const scaleX = GAME_CONFIG.card.width / card.width;
       const scaleY = GAME_CONFIG.card.height / card.height;
       card.setScale(Math.min(scaleX, scaleY) * 0.95);
@@ -33,7 +33,7 @@ export default class ShuffleAnimationManager {
     
     // Create opponent deck cards in initial position
     for (let i = 0; i < numCards; i++) {
-      const card = this.scene.add.image(opponentDeckPos.x + (i * 0), opponentDeckPos.y - (i * 0), 'card-back');
+      const card = this.scene.add.image(opponentDeckPos.x + (i * 0), opponentDeckPos.y - (i * 0), GAME_CONFIG.imageKey.cardback);
       const scaleX = GAME_CONFIG.card.width / card.width;
       const scaleY = GAME_CONFIG.card.height / card.height;
       card.setScale(Math.min(scaleX, scaleY) * 0.95);

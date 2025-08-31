@@ -261,33 +261,12 @@ export default class GameSceneUtils {
       const scaleY = GAME_CONFIG.card.height / card.height;
       const scale = Math.min(scaleX, scaleY) * config.scale;
       card.setScale(scale);
-      
-      // Add rounded corners using mask
-      const cornerRadius = GAME_CONFIG.card.cornerRadius;
-      const cardWidth = card.displayWidth;
-      const cardHeight = card.displayHeight;
-      
-      // Create rounded rectangle mask
-      const maskShape = scene.add.graphics();
-      maskShape.fillStyle(0xffffff);
-      maskShape.fillRoundedRect(
-        cardX - cardWidth/2, 
-        cardY - cardHeight/2, 
-        cardWidth, 
-        cardHeight, 
-        cornerRadius
-      );
-      
-      // Apply mask to card
-      const mask = new Phaser.Display.Masks.GeometryMask(scene, maskShape);
-      card.setMask(mask);
-      
-      // Ensure crisp rendering
+     
       card.setDepth(i);
       card.setOrigin(0.5, 0.5);
       
       // Store mask reference for cleanup if needed
-      card.roundedMask = maskShape;
+      //card.roundedMask = maskShape;
       
       deckCards.push(card);
     }
