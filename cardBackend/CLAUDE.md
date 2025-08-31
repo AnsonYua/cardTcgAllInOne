@@ -33,7 +33,7 @@ npm run run-testcase1
 
 ### Core Game Flow
 The game follows a specific battle flow managed by `mozGamePlay.js`:
-1. **START_REDRAW** - Initial hand management
+1. **REDRAW_PHASE** - Initial hand management and redraw decisions
 2. **DRAW_PHASE** - Card drawing 
 3. **MAIN_PHASE** - Character/card placement
 4. **BATTLE_PHASE** - Power calculation and winner determination
@@ -627,7 +627,7 @@ Having duplicate fields caused confusion and potential sync issues.
 
 **Simplified Structure:**
 - **`phase`** - Single field for current game state
-- **Values**: `WAITING_FOR_PLAYERS`, `BOTH_JOINED`, `READY_PHASE`, `DRAW_PHASE`, `MAIN_PHASE`, `SP_PHASE`, `BATTLE_PHASE`
+- **Values**: `WAITING_FOR_PLAYERS`, `BOTH_JOINED`, `REDRAW_PHASE`, `DRAW_PHASE`, `MAIN_PHASE`, `SP_PHASE`, `BATTLE_PHASE`
 - **No Duplication** - Eliminated redundant field and sync complexity
 
 **Usage Guidelines:**

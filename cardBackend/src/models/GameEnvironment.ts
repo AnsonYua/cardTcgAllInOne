@@ -135,7 +135,7 @@ export class GameEnvironment {
     }
 
     public canStartGame(): boolean {
-        return this.isGameReady() && this.phase === GamePhase.READY_PHASE;
+        return this.isGameReady() && this.phase === GamePhase.REDRAW_PHASE;
     }
 
     // ============ PLAYERS READY MANAGEMENT ============

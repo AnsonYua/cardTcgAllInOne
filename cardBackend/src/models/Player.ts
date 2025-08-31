@@ -212,7 +212,7 @@ export class Player {
     public id: string;
     public name: string;
     public deck: PlayerDeck;
-    public redraw: boolean;
+    public confirmIsRedraw: boolean;
     public playerPoint: number;
     public isReady: boolean;
     public fieldEffects?: PlayerFieldEffects;
@@ -221,7 +221,7 @@ export class Player {
     constructor(id: string, name: string = id) {
         this.id = id;
         this.name = name;
-        this.redraw = false;
+        this.confirmIsRedraw = false;
         this.playerPoint = 0;
         this.isReady = false;
         this.deck = new PlayerDeck();
@@ -813,7 +813,7 @@ export class Player {
             id: this.id,
             name: this.name,
             deck: this.deck.toJSON(),
-            redraw: this.redraw,
+            confirmIsRedraw: this.confirmIsRedraw,
             playerPoint: this.playerPoint,
             isReady: this.isReady,
             zones: this.zones,
@@ -831,7 +831,7 @@ export class Player {
         if (data.deck) {
             player.deck = PlayerDeck.fromJSON(data.deck);
         }
-        player.redraw = data.redraw || false;
+        player.confirmIsRedraw = data.confirmIsRedraw || data.redraw || false;
         player.playerPoint = data.playerPoint || 0;
         player.isReady = data.isReady || false;
         if (data.zones) {

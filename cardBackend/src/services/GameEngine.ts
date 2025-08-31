@@ -156,15 +156,127 @@ export class GameEngine {
         
         console.log(`🎯 Processing START_READY event for player: ${playerId}, isRedraw: ${isRedraw}`);
         
-        try {            
-            // Handle redraw logic
-            if (isRedraw) {
-                //current hand back to deck 
-                //shuffle the deck again 
-                //assign new 5 hand to player 
+        try {           
+            // Initialize playersReady if not exists
+            if (!gameEnv.playersReady) {
+                gameEnv.playersReady = {};
             }
             
-            // mark gameEnv.players[player_id].confirmIsRedraw = true
+            // Handle redraw logic
+            if (isRedraw) {
+                console.log(`🔄 Processing redraw for player ${playerId}`);
+                
+                const player = gameEnv.players[playerId];
+                if (player && player.deck) {
+                    // Put current hand back to deck
+                    const currentHand = [...player.deck._handUids];
+                    player.deck.mainDeck.push(...currentHand);
+                    player.deck._handUids = [];
+                    
+                    console.log(`📤 Returned ${currentHand.length} cards to deck`);
+                    
+                    // Shuffle the deck again
+                    player.deck.mainDeck = this.shuffleDeck(player.deck.mainDeck);
+                    console.log(`🔀 Shuffled deck with ${player.deck.mainDeck.length} cards`);
+                    
+                    // Assign new 5 hand to player
+                    this.drawCards(player.deck, 5);
+                    console.log(`🃏 Drew new hand of ${player.deck._handUids.length} cards`);
+                }
+            }
+            
+            // Mark player as ready and set confirmIsRedraw
+            gameEnv.playersReady[playerId] = true;
+            
+            const player = gameEnv.players[playerId];
+            if (player) {
+                player.confirmIsRedraw = isRedraw || false;
+                console.log(`✅ Player ${playerId} confirmIsRedraw set to: ${player.confirmIsRedraw}`);
+            }
+
+            // Check if both players are ready and confirmed redraw
+            const player1 = gameEnv.players[gameEnv.playerId_1!];
+            const player2 = gameEnv.players[gameEnv.playerId_2!];
+            
+            const bothPlayersReady = gameEnv.playersReady[gameEnv.playerId_1!] && gameEnv.playersReady[gameEnv.playerId_2!];
+            const bothPlayersConfirmed = player1?.confirmIsRedraw !== undefined && player2?.confirmIsRedraw !== undefined;
+            
+            if (bothPlayersReady && bothPlayersConfirmed) {
+                console.log(`🎯 Both players ready and confirmed - allocating starting resources`);
+                
+                // Add 1 resource (as active) to first player
+                const firstPlayerId = gameEnv.firstPlayer === 0 ? gameEnv.playerId_1! : gameEnv.playerId_2!;
+                const secondPlayerId = gameEnv.firstPlayer === 0 ? gameEnv.playerId_2! : gameEnv.playerId_1!;
+                
+                const firstPlayer = gameEnv.players[firstPlayerId];
+                const secondPlayer = gameEnv.players[secondPlayerId];
+                
+                if (firstPlayer) {
+                    // Create basic energy card for first player
+                    const energyCardUid = this.createUniqueCardId('ENERGY_BASE');
+                    const energyCard = {
+                        cardUid: energyCardUid,
+                        cardId: 'ENERGY_BASE',
+                        cardData: {
+                            id: 'ENERGY_BASE',
+                            name: 'Basic Energy',
+                            cardType: 'energy' as const,
+                            color: 'Neutral',
+                            level: 0,
+                            cost: 0,
+                            zone: ['Energy'],
+                            traits: ['Energy'],
+                            link: [],
+                            ap: 0,
+                            hp: 0,
+                            effects: { description: [], rules: [] },
+                            energyType: 'permanent' as const,
+                            energyValue: 1
+                        },
+                        playerId: firstPlayerId,
+                        isRested: false,
+                        isExtraEnergy: false,
+                        energyValue: 1
+                    };
+                    firstPlayer.zones.energyArea.push(energyCard);
+                    console.log(`⚡ Added 1 basic resource to first player ${firstPlayerId}`);
+                }
+                
+                if (secondPlayer) {
+                    // Create extra energy card for second player
+                    const extraEnergyCardUid = this.createUniqueCardId('ENERGY_EXTRA');
+                    const extraEnergyCard = {
+                        cardUid: extraEnergyCardUid,
+                        cardId: 'ENERGY_EXTRA',
+                        cardData: {
+                            id: 'ENERGY_EXTRA',
+                            name: 'Extra Energy',
+                            cardType: 'energy' as const,
+                            color: 'Neutral',
+                            level: 0,
+                            cost: 0,
+                            zone: ['Energy'],
+                            traits: ['Energy'],
+                            link: [],
+                            ap: 0,
+                            hp: 0,
+                            effects: { description: [], rules: [] },
+                            energyType: 'consumable' as const,
+                            energyValue: 1
+                        },
+                        playerId: secondPlayerId,
+                        isRested: false,
+                        isExtraEnergy: true,
+                        energyValue: 1
+                    };
+                    secondPlayer.zones.energyArea.push(extraEnergyCard);
+                    console.log(`⚡ Added 1 extra resource (isExtraEnergy=true) to second player ${secondPlayerId}`);
+                }
+                
+                // Advance to next phase since both players are ready
+                gameEnv.phase = GamePhase.MAIN_PHASE;
+                console.log(`🎮 Both players ready - advanced to MAIN_PHASE`);
+            }
             
             console.log(`✅ START_READY event processed - player ${playerId} marked as ready (redraw: ${isRedraw})`);
             return { success: true };
