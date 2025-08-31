@@ -7,14 +7,14 @@ import {
     UnitZoneCard, 
     PilotZoneCard, 
     CommandZoneCard, 
-    BaseStructureZoneCard,
+    BaseCard,
     EnergyZoneCard,
     CardData,
     createZoneCard,
     isUnitZoneCard,
     isPilotZoneCard,
     isCommandZoneCard,
-    isBaseStructureZoneCard,
+    isBaseCard,
     isEnergyZoneCard
 } from './CardSystem';
 import { GameEngine } from '../services/GameEngine';
@@ -33,7 +33,7 @@ export interface PlayerZones {
     slot4: SlotZone;
     slot5: SlotZone;
     slot6: SlotZone;
-    base: BaseStructureZoneCard[];
+    base: BaseCard[];
     shieldArea: ZoneCard[];    // Any card from deck can be placed as shield
     energyArea: EnergyZoneCard[];  // Energy cards for resource management
     trashArea: ZoneCard[];     // Discarded/destroyed cards
@@ -293,7 +293,7 @@ export class Player {
             }
             
         } else if (normalizedZone === ZoneType.BASE) {
-            this.zones.base.push(zoneCard as BaseStructureZoneCard);
+            this.zones.base.push(zoneCard as BaseCard);
             
         } else if (normalizedZone === ZoneType.SHIELD) {
             // Shield can accept any card type from deck
