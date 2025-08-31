@@ -26,20 +26,20 @@ export interface EffectRule {
 }
 
 export interface BaseCardData {
-    id: string;
-    name: string;
-    cardType: string;
-    color: string;
-    level: number;
-    cost: number;
-    zone: string[];             // Array of zone types this card can be played in
-    traits: string[];           // Array of traits for effect targeting
-    link: string[];             // Array of linked pilots/units
-    ap: number;                 // Attack Power
-    hp: number;                 // Health Points
-    effects: {
-        description: string[];
-        rules: EffectRule[];
+    id?: string;
+    name?: string;
+    cardType?: string;
+    color?: string;
+    level?: number;
+    cost?: number;
+    zone?: string[];             // Array of zone types this card can be played in
+    traits?: string[];           // Array of traits for effect targeting
+    link?: string[];             // Array of linked pilots/units
+    ap?: number;                 // Attack Power
+    hp?: number;                 // Health Points
+    effects?: {
+        description?: string[];
+        rules?: EffectRule[];
     };
 }
 
@@ -64,12 +64,13 @@ export interface BaseStructureData extends BaseCardData {
 
 export interface EnergyCardData extends BaseCardData {
     cardType: 'energy';
-    energyType: 'permanent' | 'consumable';  // Permanent or single-use
-    energyValue: number;                     // Energy amount provided
-    rarity?: string;                         // Card rarity
 }
 
-export type CardData = UnitCardData | PilotCardData | CommandCardData | BaseStructureData | EnergyCardData;
+export interface ShieldCardData extends BaseCardData {
+    cardType: 'shield';
+}
+
+export type CardData = UnitCardData | PilotCardData | CommandCardData | BaseStructureData | EnergyCardData | ShieldCardData;
 
 // ============ ZONE CARD INTERFACES ============
 
@@ -104,11 +105,12 @@ export interface BaseStructureZoneCard extends BaseZoneCard {
 }
 
 export interface EnergyZoneCard extends BaseZoneCard {
+    cardData: EnergyCardData; // Required for energy cards
     isExtraEnergy?: boolean;   // For consumable energy - whether used up
 }
 
 export interface ShieldCard extends BaseZoneCard {
-    isShieldCard: true; // Distinctive field for type detection
+    cardData: ShieldCardData; // Required for shields
 }
 
 // ============ ZONE CARD UTILITIES ============
@@ -163,15 +165,14 @@ export function createZoneCard(
         case 'energy':
             return {
                 ...baseCard,
-                cardData: undefined, // Energy cards don't need cardData
+                cardData: cardData as EnergyCardData,
                 isExtraEnergy: false
             } as EnergyZoneCard;
             
         case 'shield':
             return {
                 ...baseCard,
-                cardData: cardData,
-                isShieldCard: true
+                cardData: cardData as ShieldCardData
             } as ShieldCard;
             
         default:
@@ -197,11 +198,11 @@ export function isBaseStructureZoneCard(card: BaseZoneCard): card is BaseStructu
 }
 
 export function isEnergyZoneCard(card: BaseZoneCard): card is EnergyZoneCard {
-    return 'isExtraEnergy' in card;
+    return card.cardData?.cardType === 'energy';
 }
 
 export function isShieldCard(card: BaseZoneCard): card is ShieldCard {
-    return 'isShieldCard' in card && (card as ShieldCard).isShieldCard === true;
+    return card.cardData?.cardType === 'shield';
 }
 
 export class ZoneCardUtils {

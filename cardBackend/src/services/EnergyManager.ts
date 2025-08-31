@@ -2,7 +2,7 @@
 // Energy card management and resource allocation system
 
 import { GameEnvironment } from '../models/GameEnvironment';
-import { EnergyZoneCard } from '../models/CardSystem';
+import { EnergyCardData, EnergyZoneCard } from '../models/CardSystem';
 
 export class EnergyManager {
     
@@ -24,7 +24,8 @@ export class EnergyManager {
                 placedAt: Date.now(),
                 placedBy: playerId,
                 isRested: false,
-                isExtraEnergy: false
+                isExtraEnergy: false,
+                cardData : this.newEnergyCardData()
             };
 
             player.zones.energyArea.push(basicEnergyCard);
@@ -37,6 +38,11 @@ export class EnergyManager {
         }
     }
 
+    static newEnergyCardData():EnergyCardData{
+        return {
+            cardType: 'energy'
+        }
+    }
     /**
      * Add extra energy card to player (isExtraEnergy=true)
      */
@@ -55,7 +61,8 @@ export class EnergyManager {
                 placedAt: Date.now(),
                 placedBy: playerId,
                 isRested: false,
-                isExtraEnergy: true
+                isExtraEnergy: true,
+                cardData : this.newEnergyCardData()
             };
 
             player.zones.energyArea.push(extraEnergyCard);
