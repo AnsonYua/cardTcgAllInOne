@@ -3,12 +3,13 @@
 
 import { GameEvent, EventFactory } from './interfaces/GameEvent';
 import { GameEnvironment } from '../../models/GameEnvironment';
+import { GamePhase, EventType } from '../../models/GameEnums';
 
 // ============ STATE-BASED ACTION INTERFACES ============
 
 export interface StateBasedAction {
     actionId: string;
-    type: string;
+    type: EventType;
     priority: number;
     description: string;
     affectedCards: string[];
@@ -46,6 +47,7 @@ export class StateBasedActionEngine {
         const actions: StateBasedAction[] = [];
         
         // Check all categories of state-based actions
+        actions.push(...this.checkGameStartConditions());
         actions.push(...this.checkCardDestructionRules());
         actions.push(...this.checkZoneCapacityLimits());
         actions.push(...this.checkHandSizeLimits());
@@ -80,6 +82,50 @@ export class StateBasedActionEngine {
     }
     
     // ============ SPECIFIC STATE CHECKS ============
+    
+    /**
+     * Check for GAME_START conditions (both players ready and confirmed)
+     */
+    private checkGameStartConditions(): StateBasedAction[] {
+        const actions: StateBasedAction[] = [];
+        
+        // Only check if we're in REDRAW_PHASE and haven't started yet
+        if (this.gameEnv.phase !== GamePhase.REDRAW_PHASE) {
+            return actions;
+        }
+        
+        // Ensure both players exist
+        if (!this.gameEnv.playerId_1 || !this.gameEnv.playerId_2) {
+            return actions;
+        }
+        
+        // Check if both players are ready and confirmed
+        const bothPlayersReady = this.gameEnv.playersReady[this.gameEnv.playerId_1] && 
+                                this.gameEnv.playersReady[this.gameEnv.playerId_2];
+        
+        const player1 = this.gameEnv.players[this.gameEnv.playerId_1];
+        const player2 = this.gameEnv.players[this.gameEnv.playerId_2];
+        const bothPlayersConfirmed = player1?.confirmIsRedraw !== undefined && 
+                                    player2?.confirmIsRedraw !== undefined;
+        
+        console.log(`🔍 GAME_START check: bothReady=${bothPlayersReady}, bothConfirmed=${bothPlayersConfirmed}, phase=${this.gameEnv.phase}`);
+        
+        if (bothPlayersReady && bothPlayersConfirmed) {
+            console.log(`🎯 State-based action detected: GAME_START conditions met`);
+            
+            actions.push({
+                actionId: `game_start_${Date.now()}`,
+                type: EventType.GAME_START,
+                priority: 200, // High priority for game flow
+                description: 'Both players ready and confirmed - start game with resource allocation',
+                affectedCards: [],
+                affectedPlayers: [this.gameEnv.playerId_1!, this.gameEnv.playerId_2!],
+                autoExecute: true
+            });
+        }
+        
+        return actions;
+    }
     
     /**
      * Check for cards that should be destroyed due to game rules
@@ -215,20 +261,21 @@ export class StateBasedActionEngine {
         console.log(`🔥 Executing state-based action: ${action.type}`);
         
         switch (action.type) {
-            case 'DESTROY_CARD':
+            case EventType.DESTROY_CARD:
                 events.push(...this.executeCardDestruction(action));
                 break;
                 
-            case 'FORCE_DISCARD':
+            case EventType.FORCE_DISCARD:
                 events.push(...this.executeForceDiscard(action));
                 break;
                 
-            case 'PHASE_ADVANCE':
+            case EventType.PHASE_ADVANCE:
                 events.push(...this.executePhaseAdvance(action));
                 break;
                 
-            case 'ZONE_CORRECTION':
-                events.push(...this.executeZoneCorrection(action));
+            case EventType.GAME_START:
+                // GAME_START actions are handled by GameEngine directly
+                // No additional processing needed here
                 break;
                 
             default:

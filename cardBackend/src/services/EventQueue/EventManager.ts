@@ -6,7 +6,7 @@ import { TriggerEngine } from './TriggerEngine';
 import { EffectStack, StackResolutionResult } from './EffectStack';
 import { StateBasedActionEngine } from './StateBasedActionEngine';
 import { GameEnvironment } from '../../models/GameEnvironment';
-import { GamePhase } from '../../models/GameEnums';
+import { GamePhase, EventType } from '../../models/GameEnums';
 import { GameEngine, ExecutionResult } from '../GameEngine';
 
 export interface ProcessingResult {
@@ -85,7 +85,7 @@ export class EventManager {
             // Check if any error events were generated during processing
             if (this.gameEnv.gameEvents) {
                 const recentErrors = this.gameEnv.gameEvents.filter(evt => 
-                    evt.type === 'ERROR_OCCURRED' && 
+                    evt.type === EventType.ERROR_OCCURRED && 
                     evt.timestamp > (Date.now() - 1000) // Within last second
                 );
                 
@@ -229,13 +229,13 @@ export class EventManager {
     
     needsPlayerInput(): boolean {
         const nextEvent = this.peek();
-        return nextEvent?.type === 'PLAYER_CHOICE_REQUIRED' && 
+        return nextEvent?.type === EventType.PLAYER_CHOICE_REQUIRED && 
                nextEvent?.status === EventStatus.DECLARED;
     }
     
     getCurrentPlayerChoice(): GameEvent | null {
         const nextEvent = this.peek();
-        if (nextEvent?.type === 'PLAYER_CHOICE_REQUIRED' && 
+        if (nextEvent?.type === EventType.PLAYER_CHOICE_REQUIRED && 
             nextEvent?.status === EventStatus.DECLARED) {
             return nextEvent;
         }
@@ -337,16 +337,16 @@ export class EventManager {
         console.log(`🔍 Validating event: ${event.type}`);
         
         switch (event.type) {
-            case 'JOIN_GAME':
+            case EventType.JOIN_GAME:
                 return this.validateJoinGameEvent(event, gameEnv);
                 
-            case 'START_READY':
+            case EventType.START_READY:
                 return this.validateStartReadyEvent(event, gameEnv);
                 
-            case 'CARD_PLAYED':
+            case EventType.CARD_PLAYED:
                 return this.validateCardPlayedEvent(event, gameEnv);
                 
-            case 'PLAYER_CHOICE_REQUIRED':
+            case EventType.PLAYER_CHOICE_REQUIRED:
                 // Always valid - player choices are system-generated
                 return { isValid: true };
                 
@@ -423,7 +423,7 @@ export class EventManager {
     private createValidationErrorEvent(originalEvent: GameEvent, reason: string): GameEvent {
         return {
             id: `error_${Date.now()}_${Math.random()}`,
-            type: 'ERROR_OCCURRED',
+            type: EventType.ERROR_OCCURRED,
             status: EventStatus.DECLARED,
             priority: EventPriority.HIGH, // Errors have high priority
             timestamp: Date.now(),
@@ -432,7 +432,7 @@ export class EventManager {
                 originalEventType: originalEvent.type,
                 originalEventId: originalEvent.id,
                 errorReason: reason,
-                errorType: 'VALIDATION_FAILED',
+                errorType: EventType.VALIDATION_FAILED,
                 playerId: originalEvent.playerId
             }
         };

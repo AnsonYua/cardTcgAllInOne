@@ -8,7 +8,7 @@ import { Request, Response } from 'express';
 
 // Import core models
 import { GameEnvironment } from '../models/GameEnvironment';
-import { GamePhase, ZoneType, PlayerActionType } from '../models/GameEnums';
+import { GamePhase, ZoneType, PlayerActionType, EventType } from '../models/GameEnums';
 import { EventManager, PlayerAction, EventFactory, GameEvent, EventStatus, EventPriority } from './EventQueue/index';
 
 // ============ TYPE DEFINITIONS ============
@@ -404,7 +404,7 @@ export class GameLogic {
             case PlayerActionType.START_READY:
                 return {
                     id: `start_ready_${Date.now()}_${Math.random()}`,
-                    type: 'START_READY',
+                    type: EventType.START_READY,
                     status: EventStatus.DECLARED,
                     priority: EventPriority.NORMAL,
                     timestamp: Date.now(),

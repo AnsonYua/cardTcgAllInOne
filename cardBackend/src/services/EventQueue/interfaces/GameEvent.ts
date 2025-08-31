@@ -1,5 +1,7 @@
 // Event system interfaces for trading card game
 
+import { EventType } from '../../../models/GameEnums';
+
 export enum EventStatus {
     DECLARED = 'DECLARED',
     RESOLVING = 'RESOLVING', 
@@ -15,7 +17,7 @@ export enum EventPriority {
 
 export interface BaseGameEvent {
     id: string;
-    type: string;
+    type: EventType;
     status: EventStatus;
     priority: EventPriority;
     sourceId?: string;
@@ -26,7 +28,7 @@ export interface BaseGameEvent {
 }
 
 export interface CardPlayedEvent extends BaseGameEvent {
-    type: 'CARD_PLAYED';
+    type: EventType.CARD_PLAYED;
     data: {
         cardId: string;
         cardUid: string;
@@ -37,7 +39,7 @@ export interface CardPlayedEvent extends BaseGameEvent {
 }
 
 export interface PhaseChangeEvent extends BaseGameEvent {
-    type: 'PHASE_CHANGE';
+    type: EventType.PHASE_ADVANCE;
     data: {
         fromPhase: string;
         toPhase: string;
@@ -46,7 +48,7 @@ export interface PhaseChangeEvent extends BaseGameEvent {
 }
 
 export interface PlayerChoiceEvent extends BaseGameEvent {
-    type: 'PLAYER_CHOICE';
+    type: EventType.PLAYER_CHOICE_REQUIRED;
     data: {
         selectionId: string;
         choices: string[];
@@ -55,7 +57,7 @@ export interface PlayerChoiceEvent extends BaseGameEvent {
 }
 
 export interface StartGameEvent extends BaseGameEvent {
-    type: 'START_GAME';
+    type: EventType.START_GAME;
     data: {
         playerId: string;
         gameId: string;
@@ -64,7 +66,7 @@ export interface StartGameEvent extends BaseGameEvent {
 }
 
 export interface JoinGameEvent extends BaseGameEvent {
-    type: 'JOIN_GAME';
+    type: EventType.JOIN_GAME;
     data: {
         playerId: string;
         gameId: string;
@@ -73,7 +75,7 @@ export interface JoinGameEvent extends BaseGameEvent {
 }
 
 export interface PowerBoostEvent extends BaseGameEvent {
-    type: 'POWER_BOOST';
+    type: EventType.RESOURCE_GAINED;
     data: {
         cardId: string;
         value: number;
@@ -84,7 +86,7 @@ export interface PowerBoostEvent extends BaseGameEvent {
 // ============ LOGICAL GAME FLOW EVENTS ============
 
 export interface TurnStartEvent extends BaseGameEvent {
-    type: 'TURN_START';
+    type: EventType.TURN_CHANGE;
     data: {
         playerId: string;
         turnNumber: number;
@@ -93,7 +95,7 @@ export interface TurnStartEvent extends BaseGameEvent {
 }
 
 export interface TurnEndEvent extends BaseGameEvent {
-    type: 'TURN_END';
+    type: EventType.TURN_CHANGE;
     data: {
         playerId: string;
         turnNumber: number;
@@ -102,7 +104,7 @@ export interface TurnEndEvent extends BaseGameEvent {
 }
 
 export interface StepBeginEvent extends BaseGameEvent {
-    type: 'STEP_BEGIN';
+    type: EventType.PHASE_ADVANCE;
     data: {
         step: string;
         playerId: string;
@@ -111,7 +113,7 @@ export interface StepBeginEvent extends BaseGameEvent {
 }
 
 export interface StepEndEvent extends BaseGameEvent {
-    type: 'STEP_END';
+    type: EventType.PHASE_ADVANCE;
     data: {
         step: string;
         playerId: string;
@@ -121,7 +123,7 @@ export interface StepEndEvent extends BaseGameEvent {
 // ============ CARD LIFECYCLE EVENTS ============
 
 export interface CardEntersPlayEvent extends BaseGameEvent {
-    type: 'CARD_ENTERS_PLAY';
+    type: EventType.CARD_PLAYED;
     data: {
         cardId: string;
         cardUid: string;
@@ -133,7 +135,7 @@ export interface CardEntersPlayEvent extends BaseGameEvent {
 }
 
 export interface CardLeavesPlayEvent extends BaseGameEvent {
-    type: 'CARD_LEAVES_PLAY';
+    type: EventType.CARD_DESTROYED;
     data: {
         cardId: string;
         cardUid: string;
@@ -145,7 +147,7 @@ export interface CardLeavesPlayEvent extends BaseGameEvent {
 }
 
 export interface CardDestroyedEvent extends BaseGameEvent {
-    type: 'CARD_DESTROYED';
+    type: EventType.CARD_DESTROYED;
     data: {
         cardId: string;
         cardUid: string;
@@ -156,7 +158,7 @@ export interface CardDestroyedEvent extends BaseGameEvent {
 }
 
 export interface CardMovedEvent extends BaseGameEvent {
-    type: 'CARD_MOVED';
+    type: EventType.CARD_DESTROYED;
     data: {
         cardId: string;
         cardUid: string;
@@ -169,7 +171,7 @@ export interface CardMovedEvent extends BaseGameEvent {
 // ============ RESOURCE & ENERGY EVENTS ============
 
 export interface EnergyTappedEvent extends BaseGameEvent {
-    type: 'ENERGY_TAPPED';
+    type: EventType.ENERGY_TAPPED;
     data: {
         cardId: string;
         cardUid: string;
@@ -179,7 +181,7 @@ export interface EnergyTappedEvent extends BaseGameEvent {
 }
 
 export interface EnergyUntappedEvent extends BaseGameEvent {
-    type: 'ENERGY_UNTAPPED';
+    type: EventType.ENERGY_TAPPED;
     data: {
         cardId: string;
         cardUid: string;
@@ -188,7 +190,7 @@ export interface EnergyUntappedEvent extends BaseGameEvent {
 }
 
 export interface CostPaidEvent extends BaseGameEvent {
-    type: 'COST_PAID';
+    type: EventType.RESOURCE_GAINED;
     data: {
         cardId: string;
         cost: number;
@@ -200,7 +202,7 @@ export interface CostPaidEvent extends BaseGameEvent {
 // ============ TRIGGERED ABILITY EVENTS ============
 
 export interface AbilityTriggeredEvent extends BaseGameEvent {
-    type: 'ABILITY_TRIGGERED';
+    type: EventType.CARD_EFFECT_TRIGGERED;
     data: {
         abilityId: string;
         sourceCardId: string;
@@ -213,7 +215,7 @@ export interface AbilityTriggeredEvent extends BaseGameEvent {
 }
 
 export interface AbilityActivatedEvent extends BaseGameEvent {
-    type: 'ABILITY_ACTIVATED';
+    type: EventType.CARD_EFFECT_TRIGGERED;
     data: {
         abilityId: string;
         sourceCardId: string;
@@ -225,7 +227,7 @@ export interface AbilityActivatedEvent extends BaseGameEvent {
 }
 
 export interface AbilityResolvedEvent extends BaseGameEvent {
-    type: 'ABILITY_RESOLVED';
+    type: EventType.CARD_EFFECT_TRIGGERED;
     data: {
         abilityId: string;
         sourceCardId: string;
@@ -237,7 +239,7 @@ export interface AbilityResolvedEvent extends BaseGameEvent {
 // ============ COMBAT EVENTS ============
 
 export interface AttackDeclaredEvent extends BaseGameEvent {
-    type: 'ATTACK_DECLARED';
+    type: EventType.CARD_EFFECT_TRIGGERED;
     data: {
         attackerId: string;
         attackerUid: string;
@@ -248,7 +250,7 @@ export interface AttackDeclaredEvent extends BaseGameEvent {
 }
 
 export interface DamageDealtEvent extends BaseGameEvent {
-    type: 'DAMAGE_DEALT';
+    type: EventType.CARD_EFFECT_TRIGGERED;
     data: {
         sourceId: string;
         targetId: string;
@@ -262,7 +264,7 @@ export interface DamageDealtEvent extends BaseGameEvent {
 // ============ STATE-BASED ACTION EVENTS ============
 
 export interface StateBasedActionEvent extends BaseGameEvent {
-    type: 'STATE_BASED_ACTION';
+    type: EventType.STATE_BASED_ACTION;
     data: {
         action: string;
         affectedCards: string[];

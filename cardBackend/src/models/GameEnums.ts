@@ -35,3 +35,37 @@ export enum PlayerActionType {
     TAP_ENERGY = 'TAP_ENERGY',
     RESOLVE_CHOICE = 'RESOLVE_CHOICE'
 }
+
+export enum EventType {
+    // Core game events
+    START_GAME = PlayerActionType.START_GAME,
+    JOIN_GAME = PlayerActionType.JOIN_GAME,
+    START_READY = PlayerActionType.START_READY,
+    GAME_START = 'GAME_START',
+    
+    // Card events
+    CARD_PLAYED = 'CARD_PLAYED',
+    CARD_DESTROYED = 'CARD_DESTROYED',
+    CARD_EFFECT_TRIGGERED = 'CARD_EFFECT_TRIGGERED',
+    
+    // Player events
+    PLAYER_CHOICE_REQUIRED = 'PLAYER_CHOICE_REQUIRED',
+    PLAYER_CHOICE_RESOLVED = 'PLAYER_CHOICE_RESOLVED',
+    
+    // Phase events
+    PHASE_ADVANCE = 'PHASE_ADVANCE',
+    TURN_CHANGE = 'TURN_CHANGE',
+    
+    // Resource events
+    RESOURCE_GAINED = 'RESOURCE_GAINED',
+    ENERGY_TAPPED = 'ENERGY_TAPPED',
+    
+    // Error events
+    ERROR_OCCURRED = 'ERROR_OCCURRED',
+    VALIDATION_FAILED = 'VALIDATION_FAILED',
+    
+    // State-based events
+    STATE_BASED_ACTION = 'STATE_BASED_ACTION',
+    FORCE_DISCARD = 'FORCE_DISCARD',
+    DESTROY_CARD = 'DESTROY_CARD'
+}
