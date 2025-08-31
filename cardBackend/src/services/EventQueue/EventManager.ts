@@ -340,6 +340,9 @@ export class EventManager {
             case 'JOIN_GAME':
                 return this.validateJoinGameEvent(event, gameEnv);
                 
+            case 'START_READY':
+                return this.validateStartReadyEvent(event, gameEnv);
+                
             case 'CARD_PLAYED':
                 return this.validateCardPlayedEvent(event, gameEnv);
                 
@@ -386,6 +389,32 @@ export class EventManager {
                 isValid: false,
                 reason: 'Game is full'
             };
+        }
+        
+        return { isValid: true };
+    }
+    
+    private validateStartReadyEvent(event: GameEvent, gameEnv: GameEnvironment): { isValid: boolean; reason?: string } {
+        console.log(`🔍 Validating START_READY event`);
+        
+        const { playerId, isRedraw } = event.data;
+        
+        // Basic validation: Check if player exists in game
+        if (playerId !== gameEnv.playerId_1 && playerId !== gameEnv.playerId_2) {
+            return {
+                isValid: false,
+                reason: 'Player not found in game'
+            };
+        }
+        
+        // Validate redraw logic
+        if (isRedraw !== undefined) {
+            console.log(`🔄 START_READY with isRedraw: ${isRedraw} for player ${playerId}`);
+            // TODO: Add custom redraw validation logic here
+            // Examples:
+            // - Check if player is eligible for redraw
+            // - Validate redraw count limits
+            // - Check game phase allows redraw
         }
         
         return { isValid: true };

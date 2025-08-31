@@ -75,6 +75,9 @@ export class GameEngine {
                 case 'JOIN_GAME':
                     return this.executeJoinGame(event, gameEnv);
                     
+                case 'START_READY':
+                    return this.executeStartReady(event, gameEnv);
+                    
                 case 'CARD_PLAYED':
                     return this.executeCardPlayed(event, gameEnv);
                     
@@ -144,6 +147,33 @@ export class GameEngine {
             return { 
                 success: false, 
                 error: error instanceof Error ? error.message : 'JOIN_GAME execution failed'
+            };
+        }
+    }
+    
+    private executeStartReady(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+        const { playerId, gameId, isRedraw } = event.data;
+        
+        console.log(`🎯 Processing START_READY event for player: ${playerId}, isRedraw: ${isRedraw}`);
+        
+        try {            
+            // Handle redraw logic
+            if (isRedraw) {
+                //current hand back to deck 
+                //shuffle the deck again 
+                //assign new 5 hand to player 
+            }
+            
+            // mark gameEnv.players[player_id].confirmIsRedraw = true
+            
+            console.log(`✅ START_READY event processed - player ${playerId} marked as ready (redraw: ${isRedraw})`);
+            return { success: true };
+            
+        } catch (error) {
+            console.error(`❌ Error in executeStartReady:`, error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'START_READY execution failed'
             };
         }
     }

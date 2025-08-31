@@ -31,6 +31,7 @@ export enum ZoneType {
 export enum PlayerActionType {
     START_GAME = 'START_GAME',
     JOIN_GAME = 'JOIN_GAME',
+    START_READY = 'START_READY',
     PLAY_CARD = 'PLAY_CARD',
     PHASE_ADVANCE = 'PHASE_ADVANCE',
     TAP_ENERGY = 'TAP_ENERGY',

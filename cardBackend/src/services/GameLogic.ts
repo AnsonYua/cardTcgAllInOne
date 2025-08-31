@@ -192,6 +192,63 @@ export class GameLogic {
     }
 
     /**
+     * Start ready phase for a player
+     * @param gameId - Game ID
+     * @param playerId - Player ID
+     * @returns Promise<GameLogicResult>
+     */
+    async startReady(gameId: string, playerId: string, isRedraw: boolean = false): Promise<GameLogicResult> {
+        try {
+            console.log(`🎮 Player ${playerId} starting ready phase for game: ${gameId}`);
+            
+            // Load existing game
+            const gameEnv = await this.loadGameFromFile(gameId);
+            if (!gameEnv) {
+                return {
+                    success: false,
+                    error: 'Game not found'
+                };
+            }
+            
+            // Process START_READY through centralized action processing
+            const startReadyAction: PlayerAction = {
+                type: PlayerActionType.START_READY,
+                playerId,
+                gameId,
+                isRedraw
+            };
+            
+            const actionResult = await this.processAction(gameEnv, startReadyAction);
+            console.log('🎮 START_READY processed:', actionResult);
+            
+            if (!actionResult.success) {
+                return {
+                    success: false,
+                    error: actionResult.error || 'Start ready failed'
+                };
+            }
+            
+            // Save updated game
+            await this.saveGameToFile(gameId, gameEnv);
+            
+            console.log(`✅ Player ${playerId} ready phase started for game ${gameId}`);
+            
+            return {
+                success: true,
+                gameId: gameId,
+                gameEnv: gameEnv
+            };
+            
+        } catch (error) {
+            console.error('❌ Error starting ready phase:', error);
+            return {
+                success: false,
+                error: `Failed to start ready: ${error instanceof Error ? error.message : 'Unknown error'}`
+            };
+        }
+    }
+
+    /**
      * Get game state for a player
      * @param gameId - Game ID
      * @param playerId - Player ID
@@ -332,7 +389,7 @@ export class GameLogic {
             case PlayerActionType.JOIN_GAME:
             case PlayerActionType.START_GAME:
                 return {
-                    id: PlayerActionType.START_GAME.toLowerCase()+`_${Date.now()}_${Math.random()}`,
+                    id: action.type.toLowerCase()+`_${Date.now()}_${Math.random()}`,
                     type: action.type,
                     status: EventStatus.DECLARED,
                     priority: EventPriority.HIGH,
@@ -341,6 +398,21 @@ export class GameLogic {
                     data: {
                         playerId: action.playerId,
                         gameId: action.gameId
+                    }
+                };
+            
+            case PlayerActionType.START_READY:
+                return {
+                    id: `start_ready_${Date.now()}_${Math.random()}`,
+                    type: 'START_READY',
+                    status: EventStatus.DECLARED,
+                    priority: EventPriority.NORMAL,
+                    timestamp: Date.now(),
+                    playerId: action.playerId,
+                    data: {
+                        playerId: action.playerId,
+                        gameId: action.gameId,
+                        isRedraw: action.isRedraw || false
                     }
                 };
             case PlayerActionType.PLAY_CARD:

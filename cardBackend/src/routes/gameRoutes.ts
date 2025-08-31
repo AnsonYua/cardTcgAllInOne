@@ -48,6 +48,11 @@ router.post('/player/startGame', gameController.startGame.bind(gameController));
  * POST /api/game/player/joinRoom
  */
 router.post('/player/joinRoom', gameController.joinRoom.bind(gameController));
+/**
+ * Start ready phase for a player
+ * POST /api/game/player/startReady
+ */
+router.post('/player/startReady', gameController.startReady.bind(gameController));
 
 /**
  * Get player game data
@@ -79,18 +84,6 @@ router.get('/image/*', gameController.serveImage.bind(gameController));
 
 // ============ PLACEHOLDER ENDPOINTS FOR FUTURE DEVELOPMENT ============
 
-/**
- * Start ready phase (placeholder)
- * POST /api/game/player/startReady
- */
-router.post('/player/startReady', async (req: Request, res: Response) => {
-    console.log('🚧 [PLACEHOLDER] startReady endpoint not implemented');
-    res.status(501).json({
-        error: 'Ready phase not implemented for custom trading card game',
-        message: 'Add your custom ready/initialization logic here',
-        timestamp: new Date().toISOString()
-    });
-});
 
 /**
  * Select card (placeholder for card selection workflows)

@@ -137,6 +137,51 @@ export class GameController {
     }
 
     /**
+     * Start ready phase for a player
+     * POST /api/game/player/startReady
+     */
+    async startReady(req: GameRequest, res: Response): Promise<void> {
+        try {
+            console.log('🔍 startReady called with body:', req.body);
+            
+            const { gameId, playerId, isRedraw } = req.body;
+            
+            if (!gameId || !playerId) {
+                res.status(400).json({
+                    error: 'gameId and playerId are required',
+                    timestamp: new Date().toISOString(),
+                    context: 'startReady endpoint'
+                });
+                return;
+            }
+            
+            const gameState = await this.gameLogic.startReady(gameId, playerId, isRedraw || false);
+            
+            if (gameState.success && gameState.gameEnv) {
+                res.json({
+                    success: true,
+                    gameId: gameState.gameId,
+                    gameEnv: gameState.gameEnv
+                });
+            } else {
+                res.status(400).json({
+                    error: gameState.error || 'Failed to start ready phase',
+                    timestamp: new Date().toISOString(),
+                    context: 'startReady endpoint'
+                });
+            }
+            
+        } catch (error) {
+            console.error('❌ Error in startReady:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'startReady endpoint'
+            });
+        }
+    }
+
+    /**
      * Get player game data
      * GET /api/game/player/:playerId?gameId=...
      */
