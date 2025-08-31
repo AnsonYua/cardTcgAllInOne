@@ -84,7 +84,7 @@ export class GameEngine {
         try {
             // Add second player and update phase (moved from GameLogic.joinGame)
             gameEnv.playerId_2 = playerId;
-            gameEnv.phase = GamePhase.BOTH_JOINED;
+            gameEnv.phase = GamePhase.REDRAW_PHASE;
             gameEnv.gameStarted = true;
             gameEnv.playersReady[playerId] = true;
             
