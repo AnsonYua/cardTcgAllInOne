@@ -27,9 +27,9 @@ export enum ZoneType {
 }
 
 export enum PlayerActionType {
-    START_GAME = 'START_GAME',
+    CREATE_GAME = 'CREATE_GAME',
     JOIN_GAME = 'JOIN_GAME',
-    START_READY = 'START_READY',
+    CONFIRM_REDRAW = 'CONFIRM_REDRAW',
     PLAY_CARD = 'PLAY_CARD',
     PHASE_ADVANCE = 'PHASE_ADVANCE',
     TAP_ENERGY = 'TAP_ENERGY',
@@ -38,10 +38,10 @@ export enum PlayerActionType {
 
 export enum EventType {
     // Core game events
-    START_GAME = PlayerActionType.START_GAME,
+    CREATE_GAME = PlayerActionType.CREATE_GAME,
     JOIN_GAME = PlayerActionType.JOIN_GAME,
-    START_READY = PlayerActionType.START_READY,
-    GAME_START = 'GAME_START',
+    CONFIRM_REDRAW = PlayerActionType.CONFIRM_REDRAW,
+    GAMEPLAY_BEGINS = 'GAMEPLAY_BEGINS',
     
     // Card events
     CARD_PLAYED = 'CARD_PLAYED',

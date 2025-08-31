@@ -57,7 +57,7 @@ export interface PlayerChoiceEvent extends BaseGameEvent {
 }
 
 export interface StartGameEvent extends BaseGameEvent {
-    type: EventType.START_GAME;
+    type: EventType.CREATE_GAME;
     data: {
         playerId: string;
         gameId: string;
@@ -310,7 +310,7 @@ export class EventFactory {
     ): CardPlayedEvent {
         return {
             id: `event_${++this.eventIdCounter}_${Date.now()}`,
-            type: 'CARD_PLAYED',
+            type: EventType.CARD_PLAYED,
             status: EventStatus.DECLARED,
             priority: EventPriority.NORMAL,
             sourceId: cardId,
@@ -327,7 +327,7 @@ export class EventFactory {
     ): BaseGameEvent {
         return {
             id: `choice_resolved_${++this.eventIdCounter}_${Date.now()}`,
-            type: 'CHOICE_RESOLVED',
+            type: EventType.PLAYER_CHOICE_RESOLVED,
             status: EventStatus.DECLARED,
             priority: EventPriority.IMMEDIATE,
             playerId,
@@ -343,7 +343,7 @@ export class EventFactory {
     ): PhaseChangeEvent {
         return {
             id: `phase_change_${++this.eventIdCounter}_${Date.now()}`,
-            type: 'PHASE_CHANGE',
+            type: EventType.PHASE_ADVANCE,
             status: EventStatus.DECLARED,
             priority: EventPriority.HIGH,
             timestamp: Date.now(),
@@ -358,7 +358,7 @@ export class EventFactory {
     ): PlayerChoiceEvent {
         return {
             id: `player_choice_${++this.eventIdCounter}_${Date.now()}`,
-            type: 'PLAYER_CHOICE',
+            type: EventType.PLAYER_CHOICE_REQUIRED,
             status: EventStatus.DECLARED,
             priority: EventPriority.IMMEDIATE,
             playerId,
@@ -372,7 +372,7 @@ export class EventFactory {
     static createTurnStartEvent(playerId: string, turnNumber: number, phase: string): TurnStartEvent {
         return {
             id: `turn_start_${++this.eventIdCounter}_${Date.now()}`,
-            type: 'TURN_START',
+            type: EventType.TURN_CHANGE,
             status: EventStatus.DECLARED,
             priority: EventPriority.HIGH,
             playerId,
@@ -384,7 +384,7 @@ export class EventFactory {
     static createTurnEndEvent(playerId: string, turnNumber: number, nextPlayerId: string): TurnEndEvent {
         return {
             id: `turn_end_${++this.eventIdCounter}_${Date.now()}`,
-            type: 'TURN_END',
+            type: EventType.TURN_CHANGE,
             status: EventStatus.DECLARED,
             priority: EventPriority.HIGH,
             playerId,
@@ -396,7 +396,7 @@ export class EventFactory {
     static createStepBeginEvent(step: string, playerId: string, allowsResponses: boolean = true): StepBeginEvent {
         return {
             id: `step_begin_${++this.eventIdCounter}_${Date.now()}`,
-            type: 'STEP_BEGIN',
+            type: EventType.PHASE_ADVANCE,
             status: EventStatus.DECLARED,
             priority: EventPriority.HIGH,
             playerId,
@@ -417,7 +417,7 @@ export class EventFactory {
     ): CardEntersPlayEvent {
         return {
             id: `card_enters_${++this.eventIdCounter}_${Date.now()}`,
-            type: 'CARD_ENTERS_PLAY',
+            type: EventType.CARD_PLAYED,
             status: EventStatus.DECLARED,
             priority: EventPriority.NORMAL,
             sourceId: cardId,
@@ -436,7 +436,7 @@ export class EventFactory {
     ): CardDestroyedEvent {
         return {
             id: `card_destroyed_${++this.eventIdCounter}_${Date.now()}`,
-            type: 'CARD_DESTROYED',
+            type: EventType.CARD_DESTROYED,
             status: EventStatus.DECLARED,
             priority: EventPriority.HIGH,
             sourceId: cardId,
@@ -459,7 +459,7 @@ export class EventFactory {
     ): AbilityTriggeredEvent {
         return {
             id: `ability_triggered_${++this.eventIdCounter}_${Date.now()}`,
-            type: 'ABILITY_TRIGGERED',
+            type: EventType.CARD_EFFECT_TRIGGERED,
             status: EventStatus.DECLARED,
             priority: EventPriority.HIGH,
             sourceId: sourceCardId,
@@ -479,7 +479,7 @@ export class EventFactory {
     ): AbilityActivatedEvent {
         return {
             id: `ability_activated_${++this.eventIdCounter}_${Date.now()}`,
-            type: 'ABILITY_ACTIVATED',
+            type: EventType.CARD_EFFECT_TRIGGERED,
             status: EventStatus.DECLARED,
             priority: EventPriority.NORMAL,
             sourceId: sourceCardId,
@@ -499,7 +499,7 @@ export class EventFactory {
     ): EnergyTappedEvent {
         return {
             id: `energy_tapped_${++this.eventIdCounter}_${Date.now()}`,
-            type: 'ENERGY_TAPPED',
+            type: EventType.ENERGY_TAPPED,
             status: EventStatus.DECLARED,
             priority: EventPriority.NORMAL,
             sourceId: cardId,
@@ -514,7 +514,7 @@ export class EventFactory {
     static createStartGameEvent(playerId: string, gameId: string): StartGameEvent {
         return {
             id: `start_game_${++this.eventIdCounter}_${Date.now()}`,
-            type: 'START_GAME',
+            type: EventType.CREATE_GAME,
             status: EventStatus.DECLARED,
             priority: EventPriority.HIGH,
             playerId,
@@ -526,7 +526,7 @@ export class EventFactory {
     static createJoinGameEvent(playerId: string, gameId: string): JoinGameEvent {
         return {
             id: `join_game_${++this.eventIdCounter}_${Date.now()}`,
-            type: 'JOIN_GAME',
+            type: EventType.JOIN_GAME,
             status: EventStatus.DECLARED,
             priority: EventPriority.HIGH,
             playerId,

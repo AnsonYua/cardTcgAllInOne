@@ -84,7 +84,7 @@ export class StateBasedActionEngine {
     // ============ SPECIFIC STATE CHECKS ============
     
     /**
-     * Check for GAME_START conditions (both players ready and confirmed)
+     * Check for GAMEPLAY_BEGINS conditions (both players ready and confirmed)
      */
     private checkGameStartConditions(): StateBasedAction[] {
         const actions: StateBasedAction[] = [];
@@ -105,17 +105,17 @@ export class StateBasedActionEngine {
         
         const player1 = this.gameEnv.players[this.gameEnv.playerId_1];
         const player2 = this.gameEnv.players[this.gameEnv.playerId_2];
-        const bothPlayersConfirmed = player1?.confirmIsRedraw !== undefined && 
-                                    player2?.confirmIsRedraw !== undefined;
+        const bothPlayersConfirmed = player1?.confirmIsRedraw == true && 
+                                    player2?.confirmIsRedraw == true;
         
-        console.log(`🔍 GAME_START check: bothReady=${bothPlayersReady}, bothConfirmed=${bothPlayersConfirmed}, phase=${this.gameEnv.phase}`);
+        console.log(`🔍 GAMEPLAY_BEGINS check: bothReady=${bothPlayersReady}, bothConfirmed=${bothPlayersConfirmed}, phase=${this.gameEnv.phase}`);
         
         if (bothPlayersReady && bothPlayersConfirmed) {
-            console.log(`🎯 State-based action detected: GAME_START conditions met`);
+            console.log(`🎯 State-based action detected: GAMEPLAY_BEGINS conditions met`);
             
             actions.push({
                 actionId: `game_start_${Date.now()}`,
-                type: EventType.GAME_START,
+                type: EventType.GAMEPLAY_BEGINS,
                 priority: 200, // High priority for game flow
                 description: 'Both players ready and confirmed - start game with resource allocation',
                 affectedCards: [],
@@ -273,8 +273,8 @@ export class StateBasedActionEngine {
                 events.push(...this.executePhaseAdvance(action));
                 break;
                 
-            case EventType.GAME_START:
-                // GAME_START actions are handled by GameEngine directly
+            case EventType.GAMEPLAY_BEGINS:
+                // GAMEPLAY_BEGINS actions are handled by GameEngine directly
                 // No additional processing needed here
                 break;
                 

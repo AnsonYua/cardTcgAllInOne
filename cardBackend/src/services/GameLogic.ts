@@ -56,13 +56,13 @@ export class GameLogic {
             const gameEnv = new GameEnvironment();
             
             const startAction: PlayerAction = {
-                type: PlayerActionType.START_GAME,
+                type: PlayerActionType.CREATE_GAME,
                 playerId,
                 gameId
             };
             
             const actionResult = await this.processAction(gameEnv, startAction);
-            console.log('🎮 START_GAME processed:', actionResult);
+            console.log('🎮 CREATE_GAME processed:', actionResult);
             // Save game to file system
             await this.saveGameToFile(gameId, gameEnv);
             console.log(`✅ Custom trading card game created successfully: ${gameId}`);
@@ -210,16 +210,16 @@ export class GameLogic {
                 };
             }
             
-            // Process START_READY through centralized action processing
+            // Process CONFIRM_REDRAW through centralized action processing
             const startReadyAction: PlayerAction = {
-                type: PlayerActionType.START_READY,
+                type: PlayerActionType.CONFIRM_REDRAW,
                 playerId,
                 gameId,
                 isRedraw
             };
             
             const actionResult = await this.processAction(gameEnv, startReadyAction);
-            console.log('🎮 START_READY processed:', actionResult);
+            console.log('🎮 CONFIRM_REDRAW processed:', actionResult);
             
             if (!actionResult.success) {
                 return {
@@ -340,12 +340,12 @@ export class GameLogic {
     // These should be registered with the global event queue to handle specific event types
     
     /**
-     * Event processor for START_GAME events
-     * This will be called by the event queue when processing START_GAME events
+     * Event processor for CREATE_GAME events
+     * This will be called by the event queue when processing CREATE_GAME events
      */
     static async handleStartGameEvent(event: any): Promise<void> {
         try {
-            // TODO: Process START_GAME event
+            // TODO: Process CREATE_GAME event
             // - Load game from file using event.gameId
             // - Initialize event processor for the specific game
             // - Register card triggers from st01Card.json
@@ -355,7 +355,7 @@ export class GameLogic {
             console.log('📋 Event data:', event);
             
         } catch (error) {
-            console.error('❌ Error handling START_GAME event:', error);
+            console.error('❌ Error handling CREATE_GAME event:', error);
         }
     }
 
@@ -386,11 +386,10 @@ export class GameLogic {
      */
     private createEventFromAction(action: PlayerAction): GameEvent | null {
         switch (action.type) {
-            case PlayerActionType.JOIN_GAME:
-            case PlayerActionType.START_GAME:
+            case PlayerActionType.CREATE_GAME:
                 return {
                     id: action.type.toLowerCase()+`_${Date.now()}_${Math.random()}`,
-                    type: action.type,
+                    type: EventType.CREATE_GAME,
                     status: EventStatus.DECLARED,
                     priority: EventPriority.HIGH,
                     timestamp: Date.now(),
@@ -401,10 +400,24 @@ export class GameLogic {
                     }
                 };
             
-            case PlayerActionType.START_READY:
+            case PlayerActionType.JOIN_GAME:
+                return {
+                    id: action.type.toLowerCase()+`_${Date.now()}_${Math.random()}`,
+                    type: EventType.JOIN_GAME,
+                    status: EventStatus.DECLARED,
+                    priority: EventPriority.HIGH,
+                    timestamp: Date.now(),
+                    playerId: action.playerId,
+                    data: {
+                        playerId: action.playerId,
+                        gameId: action.gameId
+                    }
+                };
+            
+            case PlayerActionType.CONFIRM_REDRAW:
                 return {
                     id: `start_ready_${Date.now()}_${Math.random()}`,
-                    type: EventType.START_READY,
+                    type: EventType.CONFIRM_REDRAW,
                     status: EventStatus.DECLARED,
                     priority: EventPriority.NORMAL,
                     timestamp: Date.now(),

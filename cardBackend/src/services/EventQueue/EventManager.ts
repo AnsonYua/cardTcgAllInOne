@@ -340,7 +340,7 @@ export class EventManager {
             case EventType.JOIN_GAME:
                 return this.validateJoinGameEvent(event, gameEnv);
                 
-            case EventType.START_READY:
+            case EventType.CONFIRM_REDRAW:
                 return this.validateStartReadyEvent(event, gameEnv);
                 
             case EventType.CARD_PLAYED:
@@ -395,7 +395,7 @@ export class EventManager {
     }
     
     private validateStartReadyEvent(event: GameEvent, gameEnv: GameEnvironment): { isValid: boolean; reason?: string } {
-        console.log(`🔍 Validating START_READY event`);
+        console.log(`🔍 Validating CONFIRM_REDRAW event`);
         
         const { playerId, isRedraw } = event.data;
         
@@ -409,7 +409,7 @@ export class EventManager {
         
         // Validate redraw logic
         if (isRedraw !== undefined) {
-            console.log(`🔄 START_READY with isRedraw: ${isRedraw} for player ${playerId}`);
+            console.log(`🔄 CONFIRM_REDRAW with isRedraw: ${isRedraw} for player ${playerId}`);
             // TODO: Add custom redraw validation logic here
             // Examples:
             // - Check if player is eligible for redraw
