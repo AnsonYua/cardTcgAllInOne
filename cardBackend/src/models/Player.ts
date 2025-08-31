@@ -3,7 +3,7 @@
 
 import { ZoneType } from './GameEnums';
 import { 
-    BaseZoneCard, 
+    ZoneCard, 
     UnitZoneCard, 
     PilotZoneCard, 
     CommandZoneCard, 
@@ -34,9 +34,9 @@ export interface PlayerZones {
     slot5: SlotZone;
     slot6: SlotZone;
     base: BaseStructureZoneCard[];
-    shieldArea: BaseZoneCard[];    // Any card from deck can be placed as shield
+    shieldArea: ZoneCard[];    // Any card from deck can be placed as shield
     energyArea: EnergyZoneCard[];  // Energy cards for resource management
-    trashArea: BaseZoneCard[];     // Discarded/destroyed cards
+    trashArea: ZoneCard[];     // Discarded/destroyed cards
 }
 
 // ============ ZONE UTILITY FUNCTIONS ============
@@ -61,9 +61,9 @@ export const isTrashZone = (zone: ZoneType): zone is ZoneType.TRASH => {
     return zone === ZoneType.TRASH;
 };
 
-export type ZoneContent = BaseZoneCard[] | undefined;
+export type ZoneContent = ZoneCard[] | undefined;
 
-export const isZoneCardArray = (content: ZoneContent): content is BaseZoneCard[] => {
+export const isZoneCardArray = (content: ZoneContent): content is ZoneCard[] => {
     return Array.isArray(content) && (content.length === 0 || 'cardUid' in content[0]);
 };
 
@@ -344,14 +344,14 @@ export class Player {
         
         const targetZone = this.zones[zone];
         if (Array.isArray(targetZone) && targetZone.length > 0) {
-            const zoneCard = targetZone[0] as BaseZoneCard;
+            const zoneCard = targetZone[0] as ZoneCard;
             return zoneCard.cardUid || null;
         }
         
         return null;
     }
     
-    public getCardObjectInZone(zone: ZoneType, cardType: 'unit' | 'pilot' = 'unit'): BaseZoneCard | null {
+    public getCardObjectInZone(zone: ZoneType, cardType: 'unit' | 'pilot' = 'unit'): ZoneCard | null {
         if (isSlotZone(zone)) {
             const slotKey = zone as keyof Pick<PlayerZones, 'slot1'|'slot2'|'slot3'|'slot4'|'slot5'|'slot6'>;
             const slotZone = this.zones[slotKey] as SlotZone;
@@ -373,7 +373,7 @@ export class Player {
         
         const targetZone = this.zones[zone];
         if (Array.isArray(targetZone) && targetZone.length > 0) {
-            return targetZone[0] as BaseZoneCard;
+            return targetZone[0] as ZoneCard;
         }
         
         return null;
@@ -490,7 +490,7 @@ export class Player {
 
     // ============ SHIELD ZONE METHODS ============
 
-    public getShieldCards(): BaseZoneCard[] {
+    public getShieldCards(): ZoneCard[] {
         return this.zones.shieldArea;
     }
 
@@ -653,7 +653,7 @@ export class Player {
 
     // ============ TRASH AREA METHODS ============
 
-    public getTrashCards(): BaseZoneCard[] {
+    public getTrashCards(): ZoneCard[] {
         return this.zones.trashArea;
     }
 

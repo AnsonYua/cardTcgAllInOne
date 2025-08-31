@@ -5,6 +5,8 @@ import { GameEvent } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase, EventType } from '../models/GameEnums';
 import { EnergyManager } from './EnergyManager';
+import { ShieldCardManager } from './ShieldCardManager';
+import { BaseCardManager } from './BaseCardManager';
 import { GameNotificationManager } from './GameNotificationManager';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -360,7 +362,15 @@ export class GameEngine {
             // Allocate starting resources using EnergyManager
             EnergyManager.addExtraEnergy(gameEnv, secondPlayerId);
             EnergyManager.addBasicEnergy(gameEnv, firstPlayerId);
+
+            // Create shield cards for both players using ShieldCardManager
+            ShieldCardManager.createShieldCardsFromDeck(gameEnv, firstPlayerId);
+            ShieldCardManager.createShieldCardsFromDeck(gameEnv, secondPlayerId);
             
+            // Create base cards for both players using BaseCardManager
+            BaseCardManager.createBaseCardsFromDeck(gameEnv, firstPlayerId);
+            BaseCardManager.createBaseCardsFromDeck(gameEnv, secondPlayerId);
+
             // Set currentPlayer to firstPlayer
             gameEnv.currentPlayer = firstPlayerId;
             console.log(`🎯 Set current player to first player: ${firstPlayerId}`);

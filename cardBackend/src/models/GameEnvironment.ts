@@ -3,7 +3,7 @@
 
 import { GamePhase, ZoneType } from './GameEnums';
 import { Player, PlayerZones, SlotZone } from './Player';
-import { BaseZoneCard } from './CardSystem';
+import { ZoneCard } from './CardSystem';
 import { EventManager } from '../services/EventQueue/EventManager';
 
 // ============ GAME EVENT INTERFACE ============

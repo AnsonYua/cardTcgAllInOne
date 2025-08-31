@@ -25,7 +25,7 @@ export interface EffectRule {
     };
 }
 
-export interface BaseCardData {
+export interface BasicCardData {
     id?: string;
     name?: string;
     cardType?: string;
@@ -43,38 +43,36 @@ export interface BaseCardData {
     };
 }
 
-export interface UnitCardData extends BaseCardData {
+export interface UnitCardData extends BasicCardData {
     cardType: 'unit';
 }
 
-export interface PilotCardData extends BaseCardData {
+export interface PilotCardData extends BasicCardData {
     cardType: 'pilot';
 }
 
-export interface CommandCardData extends BaseCardData {
+export interface CommandCardData extends BasicCardData {
     cardType: 'command';
 }
 
 
-export interface BaseStructureData extends BaseCardData {
+export interface BaseCardData extends BasicCardData {
     cardType: 'base';
-    rarity?: string;                    // Card rarity
-    zoneCompatibility?: any;            // Zone compatibility rules
 }
 
-export interface EnergyCardData extends BaseCardData {
+export interface EnergyCardData extends BasicCardData {
     cardType: 'energy';
 }
 
-export interface ShieldCardData extends BaseCardData {
+export interface ShieldCardData extends BasicCardData {
     cardType: 'shield';
 }
 
-export type CardData = UnitCardData | PilotCardData | CommandCardData | BaseStructureData | EnergyCardData | ShieldCardData;
+export type CardData = UnitCardData | PilotCardData | CommandCardData | BaseCardData | EnergyCardData | ShieldCardData;
 
 // ============ ZONE CARD INTERFACES ============
 
-export interface BaseZoneCard {
+export interface ZoneCard {
     cardUid: string;            // Unique game instance ID
     cardId: string;             // Base card ID
     cardData?: CardData;        // Complete card data from JSON (optional for energy cards)
@@ -83,33 +81,38 @@ export interface BaseZoneCard {
     isRested?: boolean;         // Whether the card is rested/tapped (common field)
 }
 
-export interface UnitZoneCard extends BaseZoneCard {
+export interface UnitZoneCard extends ZoneCard {
     cardData: UnitCardData;  // Required for units
     currentAP?: number;      // Current Attack Power after modifiers
     currentHP?: number;      // Current Health Points after damage
+    originalHP?: number;
+    originalAP?: number;
     isFirstPlay?: boolean;   // Whether this is the unit's first turn on field
     damageReceived?: number; // Cumulative damage taken this turn
 }
 
-export interface PilotZoneCard extends BaseZoneCard {
+export interface PilotZoneCard extends ZoneCard {
     cardData: PilotCardData;
 }
 
-export interface CommandZoneCard extends BaseZoneCard {
+export interface CommandZoneCard extends ZoneCard {
     cardData: CommandCardData;  // Required for commands
     isActivated?: boolean;      // Whether the command has been activated
 }
 
-export interface BaseStructureZoneCard extends BaseZoneCard {
-    cardData: BaseStructureData;  // Required for base structures
+export interface BaseCard extends ZoneCard {
+    cardData: BaseCardData;  // Required for base structures
+    currentHP?: number; 
+    originalHP?: number;
+    damageReceived?:number;
 }
 
-export interface EnergyZoneCard extends BaseZoneCard {
+export interface EnergyZoneCard extends ZoneCard {
     cardData: EnergyCardData; // Required for energy cards
     isExtraEnergy?: boolean;   // For consumable energy - whether used up
 }
 
-export interface ShieldCard extends BaseZoneCard {
+export interface ShieldCard extends ZoneCard {
     cardData: ShieldCardData; // Required for shields
 }
 
@@ -120,8 +123,8 @@ export function createZoneCard(
     cardId: string,
     cardData: CardData,
     placedBy: string = ''
-): BaseZoneCard {
-    const baseCard: BaseZoneCard = {
+): ZoneCard {
+    const baseCard: ZoneCard = {
         cardUid,
         cardId,
         cardData,
@@ -158,9 +161,9 @@ export function createZoneCard(
         case 'base':
             return {
                 ...baseCard,
-                cardData: cardData as BaseStructureData,
+                cardData: cardData as BaseCardData,
                 isRested: false
-            } as BaseStructureZoneCard;
+            } as BaseCard;
             
         case 'energy':
             return {
@@ -181,64 +184,64 @@ export function createZoneCard(
 }
 
 // Type guard functions
-export function isUnitZoneCard(card: BaseZoneCard): card is UnitZoneCard {
+export function isUnitZoneCard(card: ZoneCard): card is UnitZoneCard {
     return card.cardData?.cardType === 'unit';
 }
 
-export function isPilotZoneCard(card: BaseZoneCard): card is PilotZoneCard {
+export function isPilotZoneCard(card: ZoneCard): card is PilotZoneCard {
     return card.cardData?.cardType === 'pilot';
 }
 
-export function isCommandZoneCard(card: BaseZoneCard): card is CommandZoneCard {
+export function isCommandZoneCard(card: ZoneCard): card is CommandZoneCard {
     return card.cardData?.cardType === 'command';
 }
 
-export function isBaseStructureZoneCard(card: BaseZoneCard): card is BaseStructureZoneCard {
+export function isBaseCard(card: ZoneCard): card is BaseCard {
     return card.cardData?.cardType === 'base';
 }
 
-export function isEnergyZoneCard(card: BaseZoneCard): card is EnergyZoneCard {
+export function isEnergyZoneCard(card: ZoneCard): card is EnergyZoneCard {
     return card.cardData?.cardType === 'energy';
 }
 
-export function isShieldCard(card: BaseZoneCard): card is ShieldCard {
+export function isShieldCard(card: ZoneCard): card is ShieldCard {
     return card.cardData?.cardType === 'shield';
 }
 
 export class ZoneCardUtils {
-    static getCardColor(card: BaseZoneCard): string {
+    static getCardColor(card: ZoneCard): string {
         return card.cardData?.color || 'Unknown';
     }
 
-    static getEffectiveTraits(card: BaseZoneCard): string[] {
+    static getEffectiveTraits(card: ZoneCard): string[] {
         return card.cardData?.traits || [];
     }
 
-    static getLinkedCards(card: BaseZoneCard): string[] {
+    static getLinkedCards(card: ZoneCard): string[] {
         return card.cardData?.link || [];
     }
 
-    static getValidZones(card: BaseZoneCard): string[] {
+    static getValidZones(card: ZoneCard): string[] {
         return card.cardData?.zone || [];
     }
 
-    static canBePlacedInZone(card: BaseZoneCard, targetZone: string): boolean {
+    static canBePlacedInZone(card: ZoneCard, targetZone: string): boolean {
         const validZones = card.cardData?.zone || [];
         return validZones.includes(targetZone) || validZones.includes('Any');
     }
 
-    static canTriggerEffects(card: BaseZoneCard): boolean {
+    static canTriggerEffects(card: ZoneCard): boolean {
         return (card.cardData?.effects?.rules?.length || 0) > 0;
     }
 
-    static getCurrentAP(card: BaseZoneCard): number {
+    static getCurrentAP(card: ZoneCard): number {
         if (isUnitZoneCard(card)) {
             return card.currentAP || card.cardData?.ap || 0;
         }
         return card.cardData?.ap || 0;
     }
 
-    static getCurrentHP(card: BaseZoneCard): number {
+    static getCurrentHP(card: ZoneCard): number {
         if (isUnitZoneCard(card)) {
             return card.currentHP || card.cardData?.hp || 0;
         }
@@ -248,15 +251,15 @@ export class ZoneCardUtils {
     // Note: Pilot-unit pairing now handled implicitly through SlotZone structure
     // No longer need explicit pairing references
 
-    static isRested(card: BaseZoneCard): boolean {
+    static isRested(card: ZoneCard): boolean {
         return card.isRested || false;
     }
 
-    static getDisplayName(card: BaseZoneCard): string {
+    static getDisplayName(card: ZoneCard): string {
         return card.cardData?.name || card.cardId;
     }
 
-    static getActiveEffects(card: BaseZoneCard): EffectRule[] {
+    static getActiveEffects(card: ZoneCard): EffectRule[] {
         return card.cardData?.effects?.rules || [];
     }
 }
