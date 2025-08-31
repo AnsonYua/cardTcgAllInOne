@@ -395,7 +395,7 @@ export default class GameScene extends Phaser.Scene {
           testLeaderButtonText.setScale(1);
         });
         
-        this.time.delayedCall(50, () => this.selectLeaderCard());
+        // Leader card removed in new system
       });
 
     // Test Opponent Leader button
@@ -422,7 +422,7 @@ export default class GameScene extends Phaser.Scene {
         testOpponentLeaderButtonText.setScale(1);
       });
       
-      this.time.delayedCall(50, () => this.selectLeaderCard('opponent'));
+      // Leader card removed in new system
     });
 
   
@@ -796,11 +796,11 @@ export default class GameScene extends Phaser.Scene {
   }
 
   updateGameState() {
-    this.updatePlayerHand();
-    this.updateLeaderCardsFromBackend();
-    this.updateZones();
+    //this.updatePlayerHand();
+    //this.updateLeaderCardsFromBackend();
+    //this.updateZones();
     this.updateUI();
-    this.checkForPendingCardSelections();
+    //this.checkForPendingCardSelections();
   }
 
   checkForPendingCardSelections() {
@@ -957,12 +957,10 @@ export default class GameScene extends Phaser.Scene {
         // Show hand area and update game state after shuffle animation completes
         this.showHandArea();
         if(this.shuffleAnimationManager?.playerLeaderCards.length === 0){
-          this.shuffleAnimationManager?.selectLeaderCard('player');
-          this.selectLeaderCard('player');
+          // Leader card selection removed
         }
         if(this.shuffleAnimationManager?.opponentLeaderCards.length === 0){
-          this.shuffleAnimationManager?.selectLeaderCard('opponent');
-          this.selectLeaderCard('opponent');
+          // Leader card selection removed
         }
       }
     }
@@ -979,8 +977,7 @@ export default class GameScene extends Phaser.Scene {
       // Play shuffle animation then show redraw dialog
       this.playShuffleDeckAnimation().then(() => {
         console.log('Online mode - shuffle animation completed, selecting leader cards...');
-        this.selectLeaderCard('player');
-        this.selectLeaderCard('opponent');
+        // Leader card selection removed
       });
     }
     
@@ -1611,131 +1608,8 @@ export default class GameScene extends Phaser.Scene {
     console.log(`Created leader deck display for ${owner} with card:`, topCard.id);
   }
 
-  selectLeaderCard(playerType = 'player') {
-    console.log(`selectLeaderCard called for ${playerType}`);
-    
-    const zones = playerType === 'player' ? this.playerZones : this.opponentZones;
-    const leaderDeckZone = zones.leaderDeck;
-    const leaderZone = zones.leader;
-    
-    if (!leaderDeckZone || !leaderZone) {
-      console.log(`${playerType} leader zones not found`);
-      return;
-    }
-
-    const leaderCardsArray = playerType === 'player' ? 
-      this.shuffleAnimationManager?.playerLeaderCards : 
-      this.shuffleAnimationManager?.opponentLeaderCards;
-
-    console.log("leaderCardsArraya",this.shuffleAnimationManager?.playerLeaderCards);
 
 
-    const leaderDeckSource = playerType === 'player' ? this.playerLeaderCards : this.opponentLeaderCards;
-    console.log('leaderDeckSource:', this.shuffleAnimationManager);
-
-    if (!this.shuffleAnimationManager || !leaderCardsArray || leaderCardsArray.length === 0) {
-      console.log(`No ${playerType} leader cards available in deck`);
-      return;
-    }
-
-    // Atomically get and remove the top card from both the visual and data arrays
-    console.log('leaderCardsArray:', JSON.stringify(leaderCardsArray));
-    console.log('leaderCardsArray:2', JSON.stringify(leaderDeckSource));
-
-    const topCard = leaderCardsArray.shift();
-    const cardData = leaderDeckSource.shift();
-
-    if (!topCard || !cardData) {
-      console.error(`Mismatch between visual and data arrays for ${playerType} leader deck.`);
-      return;
-    }
-    /*
-    const crtPlayer = this.gameStateManager.getPlayer().id;
-    const leaderCard = this.gameStateManager.getGameState().gameEnv.zones[crtPlayer].leader[0];
-    const leaderCardData = {
-      id: leaderCard.id,
-      name: leaderCard.id,
-      type: leaderCard.type,
-      cardType: leaderCard.type,
-    }*/
-    const leaderCardData = this.gameStateManager.getPlayerLeader(playerType === 'opponent');
-    this.tweens.add({
-      targets: topCard,
-      x: leaderZone.x,
-      y: leaderZone.y,
-      rotation: 0,
-      duration: 300,
-      ease: 'Power2.easeInOut',
-      onComplete: () => this.handleLeaderCardPlacement(topCard, leaderCardData, leaderZone, playerType)
-    });
-  }
-
-  handleLeaderCardPlacement(topCard, cardData, leaderZone, playerType) {
-    // Clean up the animated card
-    topCard.destroy();
-    if (topCard.borderGraphics) {
-      topCard.borderGraphics.destroy();
-    }
-
-    // Remove existing leader card if present
-    if (leaderZone.card) {
-      leaderZone.card.destroy();
-    }
-    console.log("leader card cardData", cardData);
-    // Create the final leader card
-    const leaderCard = new Card(this, leaderZone.x, leaderZone.y, cardData, {
-      interactive: true,
-      draggable: false,
-      scale: 0.9,
-      gameStateManager: this.gameStateManager,
-      usePreview: true,
-      disableHighlight: true  // Disable selection highlight for leader cards
-    });
-
-    // Add hover events
-    leaderCard.on('pointerover', () => this.showCardPreview(cardData));
-    leaderCard.on('pointerout', () => this.hideCardPreview());
-
-    // Place the card in the zone
-    leaderZone.card = leaderCard;
-    leaderCard.setDepth(1001);
-    
-    if (leaderZone.placeholder) {
-      leaderZone.placeholder.setVisible(false);
-    }
-
-    console.log(`${playerType} leader card ${cardData.name} placed in leader position`);
-
-    // Reposition remaining cards in the deck
-    this.repositionLeaderDeckCards(playerType);
-    
-    // Handle leader card placement completion
-    this.handleLeaderCardPlacementComplete();
-  }
-
-  handleLeaderCardPlacementComplete() {
-    if (!this.leaderCardsPlaced) {
-      this.leaderCardsPlaced = 0;
-    }
-    this.leaderCardsPlaced++;
-    
-    if (this.leaderCardsPlaced === 2) {
-      console.log('Both leader cards placed, starting highlight animations');
-      
-      this.playerHand.forEach(card => card.setDepth(1001));
-      if (this.handContainer) {
-        this.handContainer.setDepth(1001);
-      }
-      
-      this.time.delayedCall(50, () => {
-        if(this.gameStateManager.getGameState().gameEnv.phase === 'REDRAW_PHASE'){
-          this.highlightHandCards();
-          this.highlightLeaderCards();
-          this.showRedrawDialog();
-        }
-      });
-    }
-  }
 
   repositionLeaderDeckCards(playerType = 'player') {
     // Get the appropriate arrays and zones based on player type
@@ -2067,7 +1941,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   showRedrawDialog() {
-    // Note: Hand cards and leader cards are already highlighted after selectLeaderCard completes
+    // Note: Hand cards are highlighted
     
     // Create modal-like dialog
     const { width, height } = this.cameras.main;
