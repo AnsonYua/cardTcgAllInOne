@@ -169,7 +169,7 @@ export class Player {
     public id: string;
     public name: string;
     public deck: PlayerDeck;
-    public redraw: number;
+    public redraw: boolean;
     public playerPoint: number;
     public isReady: boolean;
     public fieldEffects?: PlayerFieldEffects;
@@ -178,7 +178,7 @@ export class Player {
     constructor(id: string, name: string = id) {
         this.id = id;
         this.name = name;
-        this.redraw = 0;
+        this.redraw = false;
         this.playerPoint = 0;
         this.isReady = false;
         this.deck = new PlayerDeck();
@@ -788,7 +788,7 @@ export class Player {
         if (data.deck) {
             player.deck = PlayerDeck.fromJSON(data.deck);
         }
-        player.redraw = data.redraw || 0;
+        player.redraw = data.redraw || false;
         player.playerPoint = data.playerPoint || 0;
         player.isReady = data.isReady || false;
         if (data.zones) {
