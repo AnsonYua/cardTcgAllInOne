@@ -6,6 +6,7 @@ import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase } from '../models/GameEnums';
 import * as fs from 'fs';
 import * as path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface ExecutionResult {
     success: boolean;
@@ -13,8 +14,52 @@ export interface ExecutionResult {
 }
 
 export class GameEngine {
+    private static cardDatabase: any = null;
+    
     constructor() {
         console.log('🎯 GameEngine initialized');
+        this.loadCardDatabase();
+    }
+    
+    /**
+     * Load card database into global storage for efficient access
+     */
+    private loadCardDatabase(): void {
+        if (!GameEngine.cardDatabase) {
+            try {
+                const cardDataPath = path.join(__dirname, '../data/st01Card.json');
+                const cardFileData = JSON.parse(fs.readFileSync(cardDataPath, 'utf8'));
+                // Extract cards from nested structure
+                GameEngine.cardDatabase = cardFileData.cards || cardFileData;
+                console.log('📚 Card database loaded into global storage');
+            } catch (error) {
+                console.error('❌ Failed to load card database:', error);
+                GameEngine.cardDatabase = {};
+            }
+        }
+    }
+    
+    /**
+     * Get card details from global card database
+     */
+    public static getCardDetails(cardId: string): any {
+        if (!GameEngine.cardDatabase) {
+            console.warn('⚠️ Card database not loaded');
+            return null;
+        }
+        return GameEngine.cardDatabase[cardId] || null;
+    }
+    
+    /**
+     * Create unique card instance with UUID
+     */
+    private createUniqueCardId(originalCardId: string): string {
+        let cleanCardId = originalCardId;
+        if(originalCardId.split("/").length > 1){
+            cleanCardId = originalCardId.split("/")[1];
+        }
+        // Add UUID to make each card instance unique
+        return `${cleanCardId}_${uuidv4()}`;
     }
     
     // ============ MAIN EXECUTION INTERFACE ============
@@ -169,9 +214,8 @@ export class GameEngine {
             const deckConfigPath = path.join(__dirname, '../data/gcgdecks.json');
             const deckConfig = JSON.parse(fs.readFileSync(deckConfigPath, 'utf8'));
             
-            // Load card data
-            const cardDataPath = path.join(__dirname, '../data/st01Card.json');
-            const cardData = JSON.parse(fs.readFileSync(cardDataPath, 'utf8'));
+            // Card data is now available via global cardDatabase
+            // No need to reload - already loaded in constructor
             
             // Get player IDs
             const playerId1 = gameEnv.playerId_1!;
@@ -184,9 +228,16 @@ export class GameEngine {
             const deck1Cards = deckConfig.decks[deck1Config.activeDeck].cards;
             const deck2Cards = deckConfig.decks[deck2Config.activeDeck].cards;
             
-            // Create and shuffle decks
-            const shuffledDeck1 = this.shuffleDeck([...deck1Cards]);
-            const shuffledDeck2 = this.shuffleDeck([...deck2Cards]);
+            // Transform card IDs to unique instances with UUIDs
+            const uniqueDeck1Cards = deck1Cards.map((cardId: string) => this.createUniqueCardId(cardId));
+            const uniqueDeck2Cards = deck2Cards.map((cardId: string) => this.createUniqueCardId(cardId));
+            
+            // Create and shuffle decks with unique card instances
+            const shuffledDeck1 = this.shuffleDeck([...uniqueDeck1Cards]);
+            const shuffledDeck2 = this.shuffleDeck([...uniqueDeck2Cards]);
+            
+            console.log(`🎲 Generated ${uniqueDeck1Cards.length} unique cards for player 1`);
+            console.log(`🎲 Generated ${uniqueDeck2Cards.length} unique cards for player 2`);
             
             // Random first player selection
             const firstPlayer = Math.floor(Math.random() * 2); // 0 or 1
@@ -198,14 +249,14 @@ export class GameEngine {
                 gameEnv.addPlayer(playerId1, 'Player 1');
             }
             const player1 = gameEnv.players[playerId1];
-            player1.deck.hand = [];
+            player1.deck._handUids = [];
             player1.deck.mainDeck = shuffledDeck1;
             
             if (!gameEnv.players[playerId2]) {
                 gameEnv.addPlayer(playerId2, 'Player 2');
             }
             const player2 = gameEnv.players[playerId2];
-            player2.deck.hand = [];
+            player2.deck._handUids = [];
             player2.deck.mainDeck = shuffledDeck2;
             
             // Draw initial hands (5 cards each)
@@ -233,9 +284,9 @@ export class GameEngine {
         for (let i = 0; i < count && deck.mainDeck.length > 0; i++) {
             const drawnCard = deck.mainDeck.shift();
             if (drawnCard) {
-                deck.hand.push(drawnCard);
+                deck._handUids.push(drawnCard);
             }
         }
-        console.log(`🃏 Drew ${count} cards, hand size: ${deck.hand.length}`);
+        console.log(`🃏 Drew ${count} cards, hand size: ${deck._handUids.length}`);
     }
 }

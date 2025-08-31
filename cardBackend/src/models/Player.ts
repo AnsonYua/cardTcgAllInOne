@@ -17,6 +17,7 @@ import {
     isBaseStructureZoneCard,
     isEnergyZoneCard
 } from './CardSystem';
+import { GameEngine } from '../services/GameEngine';
 
 // ============ ZONE INTERFACES ============
 
@@ -115,21 +116,59 @@ export interface PlayerFieldEffects {
 // ============ PLACEHOLDER DECK CLASS ============
 // This is a simplified placeholder - implement proper deck management for your custom game
 
+export interface HandCard {
+    cardUid: string;
+    cardId: string;
+    cardData: any;
+}
+
 export class PlayerDeck {
-    public hand: string[] = [];
+    public _handUids: string[] = [];
     public mainDeck: string[] = [];
 
     constructor(data: any = {}) {
-        this.hand = data.hand || [];
+        this._handUids = data.hand || [];
         this.mainDeck = data.mainDeck || [];
+    }
+    
+    /**
+     * Get hand as array of card objects with details from global card database
+     */
+    get hand(): HandCard[] {
+        return this._handUids.map(cardUid => {
+            const cardId = cardUid.split('_')[0];
+            const cardData = GameEngine.getCardDetails(cardId);
+            
+            return {
+                cardUid,
+                cardId,
+                cardData: cardData || {
+                    id: cardId,
+                    name: `Unknown Card ${cardId}`,
+                    cardType: 'unknown',
+                    power: 0
+                }
+            };
+        });
+    }
+    
+    /**
+     * Get raw hand UIDs for internal operations
+     */
+    get handUids(): string[] {
+        return this._handUids;
     }
 
     drawCard(): string | null {
-        return this.mainDeck.pop() || null;
+        const cardUid = this.mainDeck.pop() || null;
+        if (cardUid) {
+            this._handUids.push(cardUid);
+        }
+        return cardUid;
     }
 
     getHandSize(): number {
-        return this.hand.length;
+        return this._handUids.length;
     }
 
     getDeckSize(): number {
@@ -137,10 +176,10 @@ export class PlayerDeck {
     }
 
 
-    playCardFromHand(cardId: string, zone: string): boolean {
-        const cardIndex = this.hand.indexOf(cardId);
+    playCardFromHand(cardUid: string, zone: string): boolean {
+        const cardIndex = this._handUids.indexOf(cardUid);
         if (cardIndex >= 0) {
-            this.hand.splice(cardIndex, 1);
+            this._handUids.splice(cardIndex, 1);
             return true;
         }
         return false;
@@ -153,13 +192,17 @@ export class PlayerDeck {
 
     toJSON(): any {
         return {
-            hand: this.hand,
+            hand: this.hand, // Use getter to include card details
+            handUids: this._handUids, // Keep UIDs for internal operations
             mainDeck: this.mainDeck,
         };
     }
 
     static fromJSON(data: any): PlayerDeck {
-        return new PlayerDeck(data);
+        const deck = new PlayerDeck();
+        deck._handUids = data.handUids || data.hand || [];
+        deck.mainDeck = data.mainDeck || [];
+        return deck;
     }
 }
 
