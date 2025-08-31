@@ -3,6 +3,7 @@
 
 import express, { Request, Response, NextFunction } from 'express';
 import { gameController, GameController } from '../controllers/gameController';
+import { gameLogic } from '../services/GameLogic';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -99,16 +100,70 @@ router.post('/player/selectCard', async (req: Request, res: Response) => {
 });
 
 /**
- * Acknowledge events (placeholder)
+ * Acknowledge events
  * POST /api/game/player/acknowledgeEvents
  */
 router.post('/player/acknowledgeEvents', async (req: Request, res: Response) => {
-    console.log('🚧 [PLACEHOLDER] acknowledgeEvents endpoint not implemented');
-    res.status(501).json({
-        error: 'Event acknowledgment not implemented for custom trading card game',
-        message: 'Add your custom event system here if needed',
-        timestamp: new Date().toISOString()
-    });
+    try {
+        const { gameId, playerId, eventIds, eventTypes } = req.body;
+        
+        console.log(`📨 acknowledgeEvents: gameId=${gameId}, playerId=${playerId}`);
+        
+        if (!gameId) {
+            return res.status(400).json({
+                error: 'gameId is required',
+                timestamp: new Date().toISOString()
+            });
+        }
+        
+        // Load game state
+        const gameEnv = await gameLogic.loadGameFromFile(gameId);
+        if (!gameEnv) {
+            return res.status(404).json({
+                error: 'Game not found',
+                gameId,
+                timestamp: new Date().toISOString()
+            });
+        }
+        
+        // Create notification manager and acknowledge events
+        const { GameNotificationManager } = require('../services/GameNotificationManager');
+        const notificationManager = new GameNotificationManager(gameEnv);
+        
+        let acknowledgedCount = 0;
+        
+        if (eventIds && Array.isArray(eventIds)) {
+            acknowledgedCount = notificationManager.acknowledgeEvents(eventIds);
+            console.log(`✅ Acknowledged ${acknowledgedCount} events by ID`);
+        } else if (eventTypes && Array.isArray(eventTypes)) {
+            acknowledgedCount = notificationManager.acknowledgeEventsByType(eventTypes);
+            console.log(`✅ Acknowledged ${acknowledgedCount} events by type`);
+        } else {
+            return res.status(400).json({
+                error: 'Either eventIds or eventTypes array is required',
+                timestamp: new Date().toISOString()
+            });
+        }
+        
+        // Save updated game state
+        await gameLogic.saveGameToFile(gameId, gameEnv);
+        
+        res.json({
+            success: true,
+            acknowledgedCount,
+            remainingEvents: notificationManager.getAllUnprocessedEvents().length,
+            stats: notificationManager.getEventStats(),
+            timestamp: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error('❌ Error in acknowledgeEvents:', error);
+        res.status(500).json({
+            error: 'Internal server error during event acknowledgment',
+            details: error instanceof Error ? error.message : 'Unknown error',
+            timestamp: new Date().toISOString()
+        });
+    }
 });
 
 /**

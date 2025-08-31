@@ -178,13 +178,6 @@ export class GameEnvironment {
         return true;
     }
 
-    public getZonesData(): { [playerId: string]: PlayerZones } {
-        const zonesData: { [playerId: string]: PlayerZones } = {};
-        Object.keys(this.players).forEach(playerId => {
-            zonesData[playerId] = this.players[playerId].zones;
-        });
-        return zonesData;
-    }
 
     public playCard(playerId: string, cardUid: string, zone: ZoneType): boolean {
         const player = this.getPlayer(playerId);
@@ -214,7 +207,6 @@ export class GameEnvironment {
                 Object.entries(this.players).map(([id, player]) => [id, player.toJSON()])
             ),
             
-            zones: this.getZonesData(),
             pendingCardSelections: this.pendingCardSelections,
             gameEvents: this.gameEvents,
             lastEventId: this.lastEventId

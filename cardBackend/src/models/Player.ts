@@ -273,6 +273,7 @@ export class Player {
             };
         }
         
+        // Use createZoneCard for all card types now
         const zoneCard = createZoneCard(cardUid, cardId, resolvedCardData, this.id);
         
         if (isSlotZone(normalizedZone)) {
@@ -280,14 +281,14 @@ export class Player {
             const slotKey = normalizedZone as keyof Pick<PlayerZones, 'slot1'|'slot2'|'slot3'|'slot4'|'slot5'|'slot6'>;
             const slotZone = this.zones[slotKey] as SlotZone;
             
-            if (zoneCard.cardData.cardType === 'unit') {
+            if (zoneCard.cardData?.cardType === 'unit') {
                 slotZone.unit = zoneCard as UnitZoneCard;
                 console.log(`✅ Set unit in ${zone}: ${cardUid}`);
-            } else if (zoneCard.cardData.cardType === 'pilot') {
+            } else if (zoneCard.cardData?.cardType === 'pilot') {
                 slotZone.pilot = zoneCard as PilotZoneCard;
                 console.log(`✅ Set pilot in ${zone}: ${cardUid}`);
             } else {
-                console.warn(`⚠️ Invalid card type ${zoneCard.cardData.cardType} for slot zone ${zone}`);
+                console.warn(`⚠️ Invalid card type ${zoneCard.cardData?.cardType} for slot zone ${zone}`);
             }
             
         } else if (normalizedZone === ZoneType.BASE) {
@@ -309,7 +310,7 @@ export class Player {
             console.log(`🗑️ Set card in trash area: ${cardUid}`);
             
         } else {
-            console.warn(`⚠️ Unknown zone placement for card type ${zoneCard.cardData.cardType} in zone ${normalizedZone}`);
+            console.warn(`⚠️ Unknown zone placement for card type ${zoneCard.cardData?.cardType} in zone ${normalizedZone}`);
         }
         
         console.log(`✅ Set card in zone: ${cardUid} (${cardId}) → ${zone} for player ${this.id}`);
@@ -607,13 +608,13 @@ export class Player {
     public getAvailableEnergy(): number {
         return this.zones.energyArea
             .filter(card => !card.isRested && !card.isExtraEnergy)
-            .reduce((total, card) => total + (card.energyValue || 0), 0);
+            .length; // Each energy card provides 1 energy
     }
 
     public getTotalEnergyValue(): number {
         return this.zones.energyArea
             .filter(card => !card.isExtraEnergy)
-            .reduce((total, card) => total + (card.energyValue || 0), 0);
+            .length; // Each energy card provides 1 energy
     }
 
     public tapEnergy(cardUid: string): boolean {
@@ -629,16 +630,10 @@ export class Player {
         const energyCard = this.zones.energyArea.find(card => card.cardUid === cardUid);
         if (!energyCard || energyCard.isExtraEnergy) return false;
         
-        if (energyCard.cardData.energyType === 'consumable') {
-            energyCard.isExtraEnergy = true;
-            console.log(`💥 Consumable energy ${cardUid} consumed and removed`);
-            return true;
-        } else {
-            // Permanent energy just gets tapped
-            energyCard.isRested = true;
-            console.log(`⚡ Permanent energy ${cardUid} tapped`);
-            return true;
-        }
+        // All energy cards are consumable in the simplified system
+        energyCard.isExtraEnergy = true;
+        console.log(`💥 Consumable energy ${cardUid} consumed and removed`);
+        return true;
     }
 
     public untapAllEnergy(): void {

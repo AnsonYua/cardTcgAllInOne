@@ -293,7 +293,7 @@ export class GameLogic {
      * @param gameEnv - Game environment to save
      * @returns Promise<void>
      */
-    private async saveGameToFile(gameId: string, gameEnv: GameEnvironment): Promise<void> {
+    public async saveGameToFile(gameId: string, gameEnv: GameEnvironment): Promise<void> {
         const filePath = path.join(this.baseDataPath, `${gameId}.json`);
         const gameData = gameEnv.toJSON();
         
@@ -310,7 +310,7 @@ export class GameLogic {
      * @param gameId - Game ID
      * @returns Promise<GameEnvironment | null>
      */
-    private async loadGameFromFile(gameId: string): Promise<GameEnvironment | null> {
+    public async loadGameFromFile(gameId: string): Promise<GameEnvironment | null> {
         try {
             const filePath = path.join(this.baseDataPath, `${gameId}.json`);
             

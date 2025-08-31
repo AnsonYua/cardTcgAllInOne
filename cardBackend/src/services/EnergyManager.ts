@@ -2,7 +2,7 @@
 // Energy card management and resource allocation system
 
 import { GameEnvironment } from '../models/GameEnvironment';
-import { EnergyZoneCard, EnergyCardData, createZoneCard } from '../models/CardSystem';
+import { EnergyZoneCard } from '../models/CardSystem';
 
 export class EnergyManager {
     
@@ -17,25 +17,15 @@ export class EnergyManager {
                 return false;
             }
 
-            const basicEnergyData: EnergyCardData = {
-                id: 'energy_basic',
-                name: 'Basic Energy',
-                cardType: 'energy' as const,
-                color: 'neutral',
-                level: 1,
-                cost: 0,
-                zone: ['energy'],
-                traits: [],
-                link: [],
-                ap: 0,
-                hp: 0,
-                effects: { description: [], rules: [] },
-                energyType: 'permanent' as const,
-                energyValue: 1
-            };
-
             const cardUid = `energy_basic_${Date.now()}_${Math.random()}`;
-            const basicEnergyCard = createZoneCard(cardUid, 'energy_basic', basicEnergyData, playerId) as EnergyZoneCard;
+            const basicEnergyCard: EnergyZoneCard = {
+                cardUid,
+                cardId: 'energy_basic',
+                placedAt: Date.now(),
+                placedBy: playerId,
+                isRested: false,
+                isExtraEnergy: false
+            };
 
             player.zones.energyArea.push(basicEnergyCard);
             console.log(`⚡ Added basic energy to player ${playerId}`);
@@ -58,26 +48,15 @@ export class EnergyManager {
                 return false;
             }
 
-            const extraEnergyData: EnergyCardData = {
-                id: 'energy_extra',
-                name: 'Extra Energy',
-                cardType: 'energy' as const,
-                color: 'neutral',
-                level: 1,
-                cost: 0,
-                zone: ['energy'],
-                traits: [],
-                link: [],
-                ap: 0,
-                hp: 0,
-                effects: { description: [], rules: [] },
-                energyType: 'permanent' as const,
-                energyValue: 1
-            };
-
             const cardUid = `energy_extra_${Date.now()}_${Math.random()}`;
-            const extraEnergyCard = createZoneCard(cardUid, 'energy_extra', extraEnergyData, playerId) as EnergyZoneCard;
-            extraEnergyCard.isExtraEnergy = true;
+            const extraEnergyCard: EnergyZoneCard = {
+                cardUid,
+                cardId: 'energy_extra',
+                placedAt: Date.now(),
+                placedBy: playerId,
+                isRested: false,
+                isExtraEnergy: true
+            };
 
             player.zones.energyArea.push(extraEnergyCard);
             console.log(`⚡ Added extra energy to player ${playerId}`);
@@ -100,7 +79,7 @@ export class EnergyManager {
             }
 
             return player.zones.energyArea.reduce((total, energyCard) => {
-                return total + (energyCard.isRested ? 0 : (energyCard.energyValue || energyCard.cardData.energyValue));
+                return total + (energyCard.isRested ? 0 : 1); // Each energy card provides 1 energy
             }, 0);
         } catch (error) {
             console.error(`❌ Error calculating total energy for ${playerId}:`, error);
@@ -120,7 +99,7 @@ export class EnergyManager {
 
             return player.zones.energyArea
                 .filter(energyCard => !energyCard.isRested)
-                .reduce((total, energyCard) => total + (energyCard.energyValue || energyCard.cardData.energyValue), 0);
+                .length; // Each untapped energy card provides 1 energy
         } catch (error) {
             console.error(`❌ Error calculating available energy for ${playerId}:`, error);
             return 0;
@@ -146,13 +125,9 @@ export class EnergyManager {
             let remainingCost = cost;
             for (const energyCard of player.zones.energyArea) {
                 if (!energyCard.isRested && remainingCost > 0) {
-                    const energyValue = energyCard.energyValue || energyCard.cardData.energyValue;
-                    const energyToTap = Math.min(energyValue, remainingCost);
-                    if (energyToTap > 0) {
-                        energyCard.isRested = true;
-                        remainingCost -= energyToTap;
-                        console.log(`⚡ Tapped ${energyToTap} energy from ${energyCard.cardId}`);
-                    }
+                    energyCard.isRested = true;
+                    remainingCost -= 1; // Each energy card provides 1 energy
+                    console.log(`⚡ Tapped 1 energy from ${energyCard.cardId}`);
                 }
             }
 

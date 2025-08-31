@@ -5,6 +5,7 @@ import { GameEvent } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase, EventType } from '../models/GameEnums';
 import { EnergyManager } from './EnergyManager';
+import { GameNotificationManager } from './GameNotificationManager';
 import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,10 +17,21 @@ export interface ExecutionResult {
 
 export class GameEngine {
     private static cardDatabase: any = null;
+    private notificationManager: GameNotificationManager | null = null;
     
     constructor() {
         console.log('🎯 GameEngine initialized');
         this.loadCardDatabase();
+    }
+    
+    /**
+     * Get or create notification manager for this game
+     */
+    private getNotificationManager(gameEnv: GameEnvironment): GameNotificationManager {
+        if (!this.notificationManager) {
+            this.notificationManager = new GameNotificationManager(gameEnv);
+        }
+        return this.notificationManager;
     }
     
     /**
@@ -240,24 +252,11 @@ export class GameEngine {
         console.log(`💥 Processing error: ${errorType} - ${errorReason}`);
         
         try {
-            // Add error to game events for frontend consumption
-            if (gameEnv.gameEvents) {
-                gameEnv.gameEvents.push({
-                    id: event.id,
-                    type: EventType.ERROR_OCCURRED,
-                    data: {
-                        errorType,
-                        errorReason,
-                        originalEventType,
-                        playerId
-                    },
-                    timestamp: event.timestamp,
-                    expiresAt: event.timestamp + 3000, // 3 second expiration
-                    frontendProcessed: false
-                });
-            }
+            // Add error event using GameNotificationManager
+            const notificationManager = this.getNotificationManager(gameEnv);
+            notificationManager.notifyError(errorType, errorReason, playerId, originalEventType);
             
-            console.log(`📨 Error event added to gameEvents for frontend: ${errorReason}`);
+            console.log(`📨 Error event added via GameNotificationManager: ${errorReason}`);
             return { success: true };
             
         } catch (error) {
@@ -354,16 +353,41 @@ export class GameEngine {
             // Determine first and second players based on gameEnv.firstPlayer
             const firstPlayerId = gameEnv.firstPlayer === 0 ? gameEnv.playerId_1! : gameEnv.playerId_2!;
             const secondPlayerId = gameEnv.firstPlayer === 0 ? gameEnv.playerId_2! : gameEnv.playerId_1!;
+           
             
             // Allocate starting resources using EnergyManager
-            EnergyManager.addBasicEnergy(gameEnv, firstPlayerId);
             EnergyManager.addExtraEnergy(gameEnv, secondPlayerId);
+            EnergyManager.addBasicEnergy(gameEnv, firstPlayerId);
             
-            // Advance to MAIN_PHASE
-            gameEnv.phase = GamePhase.MAIN_PHASE;
-            console.log(`📋 Advanced to MAIN_PHASE - game started`);
+            // Set currentPlayer to firstPlayer
+            gameEnv.currentPlayer = firstPlayerId;
+            console.log(`🎯 Set current player to first player: ${firstPlayerId}`);
             
-            console.log(`✅ GAMEPLAY_BEGINS event processed - resources allocated and phase advanced`);
+            // Advance to DRAW_PHASE (for firstPlayer)
+            gameEnv.phase = GamePhase.DRAW_PHASE;
+            console.log(`📋 Advanced to DRAW_PHASE for first player turn`);
+            
+            // Draw 1 card from deck to first player hand
+            const firstPlayer = gameEnv.players[firstPlayerId];
+            if (firstPlayer && firstPlayer.deck) {
+                this.drawCards(firstPlayer.deck, 1);
+                console.log(`🃏 Drew 1 card for first player ${firstPlayerId}`);
+            }
+            
+            // Create game events using GameNotificationManager
+            const notificationManager = this.getNotificationManager(gameEnv);
+            
+            // Notify about card drawn (requires acknowledgment)
+            const drawnCards = firstPlayer?.deck.handUids.slice(-1) || []; // Get last drawn card UID
+            notificationManager.notifyCardDrawn(
+                firstPlayerId,
+                drawnCards,
+                firstPlayer?.deck.getHandSize() || 0
+            );
+            
+            console.log(`📨 Created GAMEPLAY_BEGINS and DRAW_PHASE_COMPLETE events via GameNotificationManager`);
+            
+            console.log(`✅ GAMEPLAY_BEGINS event processed - resources allocated, first player set, card drawn, events created`);
             return { success: true };
             
         } catch (error) {

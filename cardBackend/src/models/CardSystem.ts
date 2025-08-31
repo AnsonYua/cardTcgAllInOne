@@ -75,17 +75,17 @@ export type CardData = UnitCardData | PilotCardData | CommandCardData | BaseStru
 export interface BaseZoneCard {
     cardUid: string;            // Unique game instance ID
     cardId: string;             // Base card ID
-    cardData: CardData;         // Complete card data from JSON
+    cardData?: CardData;        // Complete card data from JSON (optional for energy cards)
     placedAt?: number;          // Timestamp when placed
     placedBy?: string;          // Player ID who placed card
+    isRested?: boolean;         // Whether the card is rested/tapped (common field)
 }
 
 export interface UnitZoneCard extends BaseZoneCard {
-    cardData: UnitCardData;
-    currentAP?: number;     // Current Attack Power after modifiers
-    currentHP?: number;     // Current Health Points after damage
-    isRested?: boolean;     // Whether the unit is rested (tapped)
-    isFirstPlay?: boolean;  // Whether this is the unit's first turn on field
+    cardData: UnitCardData;  // Required for units
+    currentAP?: number;      // Current Attack Power after modifiers
+    currentHP?: number;      // Current Health Points after damage
+    isFirstPlay?: boolean;   // Whether this is the unit's first turn on field
     damageReceived?: number; // Cumulative damage taken this turn
 }
 
@@ -94,20 +94,16 @@ export interface PilotZoneCard extends BaseZoneCard {
 }
 
 export interface CommandZoneCard extends BaseZoneCard {
-    cardData: CommandCardData;
-    isActivated?: boolean;  // Whether the command has been activated
+    cardData: CommandCardData;  // Required for commands
+    isActivated?: boolean;      // Whether the command has been activated
 }
 
 export interface BaseStructureZoneCard extends BaseZoneCard {
-    cardData: BaseStructureData;
-    isRested?: boolean;     // Whether the base is rested (tapped)
+    cardData: BaseStructureData;  // Required for base structures
 }
 
 export interface EnergyZoneCard extends BaseZoneCard {
-    cardData: EnergyCardData;
-    isRested?: boolean;        // Whether energy is tapped/exhausted
     isExtraEnergy?: boolean;   // For consumable energy - whether used up
-    energyValue?: number;      // Current energy value (may be modified)
 }
 
 // ============ ZONE CARD UTILITIES ============
@@ -123,7 +119,8 @@ export function createZoneCard(
         cardId,
         cardData,
         placedAt: Date.now(),
-        placedBy
+        placedBy,
+        isRested: false
     };
 
     switch ((cardData as CardData).cardType) {
@@ -161,10 +158,8 @@ export function createZoneCard(
         case 'energy':
             return {
                 ...baseCard,
-                cardData: cardData as EnergyCardData,
-                isRested: false,
-                isExtraEnergy: false,
-                energyValue: (cardData as EnergyCardData).energyValue
+                cardData: undefined, // Energy cards don't need cardData
+                isExtraEnergy: false
             } as EnergyZoneCard;
             
         default:
@@ -174,81 +169,78 @@ export function createZoneCard(
 
 // Type guard functions
 export function isUnitZoneCard(card: BaseZoneCard): card is UnitZoneCard {
-    return card.cardData.cardType === 'unit';
+    return card.cardData?.cardType === 'unit';
 }
 
 export function isPilotZoneCard(card: BaseZoneCard): card is PilotZoneCard {
-    return card.cardData.cardType === 'pilot';
+    return card.cardData?.cardType === 'pilot';
 }
 
 export function isCommandZoneCard(card: BaseZoneCard): card is CommandZoneCard {
-    return card.cardData.cardType === 'command';
+    return card.cardData?.cardType === 'command';
 }
 
 export function isBaseStructureZoneCard(card: BaseZoneCard): card is BaseStructureZoneCard {
-    return card.cardData.cardType === 'base';
+    return card.cardData?.cardType === 'base';
 }
 
 export function isEnergyZoneCard(card: BaseZoneCard): card is EnergyZoneCard {
-    return card.cardData.cardType === 'energy';
+    return 'isExtraEnergy' in card;
 }
 
 export class ZoneCardUtils {
     static getCardColor(card: BaseZoneCard): string {
-        return card.cardData.color;
+        return card.cardData?.color || 'Unknown';
     }
 
     static getEffectiveTraits(card: BaseZoneCard): string[] {
-        return card.cardData.traits || [];
+        return card.cardData?.traits || [];
     }
 
     static getLinkedCards(card: BaseZoneCard): string[] {
-        return card.cardData.link || [];
+        return card.cardData?.link || [];
     }
 
     static getValidZones(card: BaseZoneCard): string[] {
-        return card.cardData.zone || [];
+        return card.cardData?.zone || [];
     }
 
     static canBePlacedInZone(card: BaseZoneCard, targetZone: string): boolean {
-        const validZones = card.cardData.zone || [];
+        const validZones = card.cardData?.zone || [];
         return validZones.includes(targetZone) || validZones.includes('Any');
     }
 
     static canTriggerEffects(card: BaseZoneCard): boolean {
-        return card.cardData.effects?.rules?.length > 0;
+        return (card.cardData?.effects?.rules?.length || 0) > 0;
     }
 
     static getCurrentAP(card: BaseZoneCard): number {
         if (isUnitZoneCard(card)) {
-            return card.currentAP || card.cardData.ap;
+            return card.currentAP || card.cardData?.ap || 0;
         }
-        return card.cardData.ap;
+        return card.cardData?.ap || 0;
     }
 
     static getCurrentHP(card: BaseZoneCard): number {
         if (isUnitZoneCard(card)) {
-            return card.currentHP || card.cardData.hp;
+            return card.currentHP || card.cardData?.hp || 0;
         }
-        return card.cardData.hp;
+        return card.cardData?.hp || 0;
     }
 
     // Note: Pilot-unit pairing now handled implicitly through SlotZone structure
     // No longer need explicit pairing references
 
     static isRested(card: BaseZoneCard): boolean {
-        if (isUnitZoneCard(card) || isBaseStructureZoneCard(card)) {
-            return card.isRested || false;
-        }
-        return false;
+        return card.isRested || false;
     }
 
     static getDisplayName(card: BaseZoneCard): string {
-        return card.cardData.name;
+        return card.cardData?.name || card.cardId;
     }
 
     static getActiveEffects(card: BaseZoneCard): EffectRule[] {
-        return card.cardData.effects?.rules || [];
+        return card.cardData?.effects?.rules || [];
     }
 }
 

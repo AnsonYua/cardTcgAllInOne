@@ -1,0 +1,258 @@
+// src/services/GameNotificationManager.ts
+// Frontend notification event management for gameEnv.gameEvents
+// NOTE: This is separate from EventQueue system - handles frontend polling notifications
+
+import { GameEnvironment } from '../models/GameEnvironment';
+
+// ============ NOTIFICATION EVENT INTERFACES ============
+
+export interface GameNotificationEvent {
+    id: string;
+    type: string;
+    data: any;
+    timestamp: number;
+    expiresAt: number;
+    frontendProcessed: boolean;
+}
+
+export interface NotificationEventData {
+    playerId?: string;
+    gameId?: string;
+    [key: string]: any;
+}
+
+// ============ GAME NOTIFICATION MANAGER ============
+
+export class GameNotificationManager {
+    private gameEnv: GameEnvironment;
+    private readonly EVENT_EXPIRY_MS = 3000; // 3 seconds
+    
+    constructor(gameEnv: GameEnvironment) {
+        this.gameEnv = gameEnv;
+        this.initializeGameEvents();
+    }
+    
+    // ============ INITIALIZATION ============
+    
+    private initializeGameEvents(): void {
+        if (!this.gameEnv.gameEvents) {
+            this.gameEnv.gameEvents = [];
+            console.log('📨 GameNotificationManager: Initialized gameEvents array');
+        }
+    }
+    
+    // ============ EVENT CREATION ============
+    
+    /**
+     * Add a notification event to gameEnv.gameEvents for frontend consumption
+     */
+    addNotificationEvent(type: string, data: NotificationEventData): string {
+        this.initializeGameEvents();
+        
+        const eventId = `${type.toLowerCase()}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const timestamp = Date.now();
+        
+        const notificationEvent: GameNotificationEvent = {
+            id: eventId,
+            type,
+            data,
+            timestamp,
+            expiresAt: timestamp + this.EVENT_EXPIRY_MS,
+            frontendProcessed: false
+        };
+        
+        this.gameEnv.gameEvents!.push(notificationEvent);
+        
+        console.log(`📨 Added notification event: ${type} (${eventId})`);
+        return eventId;
+    }
+    
+ 
+    
+    /**
+     * Notify frontend about card draw (requires acknowledgment)
+     */
+    notifyCardDrawn(playerId: string, drawnCardUids: string[], newHandSize: number): string {
+        return this.addNotificationEvent('CARD_DRAWN', {
+            playerId,
+            drawnCards: drawnCardUids,
+            cardsDrawn: drawnCardUids.length,
+            newHandSize,
+            requiresAcknowledgment: true,
+            timestamp: Date.now()
+        });
+    }
+    
+    
+    /**
+     * Notify frontend about gameplay beginning
+     */
+    notifyGameplayBegins(firstPlayerId: string, secondPlayerId: string, currentPhase: string): string {
+        return this.addNotificationEvent('GAMEPLAY_BEGINS', {
+            firstPlayerId,
+            secondPlayerId,
+            currentPhase,
+            currentPlayer: firstPlayerId,
+            resourcesAllocated: true,
+            timestamp: Date.now()
+        });
+    }
+    
+    /**
+     * Notify frontend about error occurrence
+     */
+    notifyError(errorType: string, errorReason: string, playerId?: string, originalEventType?: string): string {
+        return this.addNotificationEvent('ERROR_OCCURRED', {
+            errorType,
+            errorReason,
+            playerId,
+            originalEventType,
+            timestamp: Date.now()
+        });
+    }
+    
+    // ============ EVENT MANAGEMENT ============
+    
+    /**
+     * Mark specific events as processed by frontend
+     */
+    acknowledgeEvents(eventIds: string[]): number {
+        if (!this.gameEnv.gameEvents) return 0;
+        
+        let acknowledgedCount = 0;
+        
+        this.gameEnv.gameEvents.forEach(event => {
+            if (eventIds.includes(event.id) && !event.frontendProcessed) {
+                event.frontendProcessed = true;
+                acknowledgedCount++;
+                console.log(`✅ Acknowledged event: ${event.type} (${event.id})`);
+            }
+        });
+        
+        // Clean up acknowledged events immediately
+        this.cleanupProcessedEvents();
+        
+        return acknowledgedCount;
+    }
+    
+    /**
+     * Mark events by type as processed
+     */
+    acknowledgeEventsByType(eventTypes: string[]): number {
+        if (!this.gameEnv.gameEvents) return 0;
+        
+        let acknowledgedCount = 0;
+        
+        this.gameEnv.gameEvents.forEach(event => {
+            if (eventTypes.includes(event.type) && !event.frontendProcessed) {
+                event.frontendProcessed = true;
+                acknowledgedCount++;
+                console.log(`✅ Acknowledged event by type: ${event.type} (${event.id})`);
+            }
+        });
+        
+        // Clean up acknowledged events immediately
+        this.cleanupProcessedEvents();
+        
+        return acknowledgedCount;
+    }
+    
+    /**
+     * Clean up expired and processed events
+     */
+    cleanupProcessedEvents(): number {
+        if (!this.gameEnv.gameEvents) return 0;
+        
+        const initialCount = this.gameEnv.gameEvents.length;
+        const now = Date.now();
+        
+        this.gameEnv.gameEvents = this.gameEnv.gameEvents.filter(event => {
+            const isExpired = now > event.expiresAt;
+            const isProcessed = event.frontendProcessed;
+            
+            if (isExpired || isProcessed) {
+                console.log(`🧹 Cleaned up event: ${event.type} (${event.id}) - ${isExpired ? 'expired' : 'processed'}`);
+                return false;
+            }
+            return true;
+        });
+        
+        const cleanedCount = initialCount - this.gameEnv.gameEvents.length;
+        
+        if (cleanedCount > 0) {
+            console.log(`🧹 Cleaned up ${cleanedCount} events, ${this.gameEnv.gameEvents.length} remaining`);
+        }
+        
+        return cleanedCount;
+    }
+    
+    /**
+     * Get all unprocessed events for a specific player
+     */
+    getUnprocessedEventsForPlayer(playerId: string): GameNotificationEvent[] {
+        if (!this.gameEnv.gameEvents) return [];
+        
+        this.cleanupProcessedEvents(); // Clean first
+        
+        return this.gameEnv.gameEvents.filter(event => 
+            !event.frontendProcessed && 
+            (event.data.playerId === playerId || !event.data.playerId) // Include global events
+        );
+    }
+    
+    /**
+     * Get all unprocessed events (for debugging)
+     */
+    getAllUnprocessedEvents(): GameNotificationEvent[] {
+        if (!this.gameEnv.gameEvents) return [];
+        
+        this.cleanupProcessedEvents(); // Clean first
+        
+        return this.gameEnv.gameEvents.filter(event => !event.frontendProcessed);
+    }
+    
+    // ============ UTILITY METHODS ============
+    
+    /**
+     * Get event statistics
+     */
+    getEventStats(): { total: number; unprocessed: number; expired: number } {
+        if (!this.gameEnv.gameEvents) {
+            return { total: 0, unprocessed: 0, expired: 0 };
+        }
+        
+        const now = Date.now();
+        const total = this.gameEnv.gameEvents.length;
+        const unprocessed = this.gameEnv.gameEvents.filter(e => !e.frontendProcessed).length;
+        const expired = this.gameEnv.gameEvents.filter(e => now > e.expiresAt).length;
+        
+        return { total, unprocessed, expired };
+    }
+    
+    /**
+     * Force cleanup all events (for testing)
+     */
+    clearAllEvents(): number {
+        if (!this.gameEnv.gameEvents) return 0;
+        
+        const count = this.gameEnv.gameEvents.length;
+        this.gameEnv.gameEvents = [];
+        
+        console.log(`🧹 Force cleared ${count} events`);
+        return count;
+    }
+    
+    /**
+     * Check if there are pending events that require acknowledgment
+     */
+    hasPendingAcknowledgments(): boolean {
+        if (!this.gameEnv.gameEvents) return false;
+        
+        this.cleanupProcessedEvents();
+        
+        return this.gameEnv.gameEvents.some(event => 
+            !event.frontendProcessed && 
+            event.data.requiresAcknowledgment === true
+        );
+    }
+}
