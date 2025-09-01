@@ -933,6 +933,16 @@ export default class GameScene extends Phaser.Scene {
     console.log('card data : opponent', opponent);
     const opponentData = this.gameStateManager.getPlayer(opponent);
     
+
+
+    const unprocessedEvent = this.gameStateManager.getUnprocessGameEvents();
+    if(unprocessedEvent.length>0) {
+      //write a queue logic , the unprocessevent should handle one by one
+      console.log("unprocess Event ", JSON.stringify(unprocessedEvent))
+      return
+    }
+
+
     // Debug: Log current phase and animation state
     console.log('Online mode - phase:', gameState.gameEnv.phase, 'shuffleAnimationPlayed:', this.shuffleAnimationPlayed);
     
@@ -950,7 +960,6 @@ export default class GameScene extends Phaser.Scene {
         }
       }
     }
-
 
     // Check for READY_PHASE and trigger shuffle animation
     if (gameState.gameEnv.phase === 'REDRAW_PHASE' && !this.shuffleAnimationPlayed) {

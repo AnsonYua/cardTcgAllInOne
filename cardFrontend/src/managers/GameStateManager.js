@@ -235,6 +235,17 @@ export default class GameStateManager {
     }
   }
 
+  getUnprocessGameEvents(){
+    const events = this.gameState.gameEnv.gameEvents || [];
+    console.log("events "+JSON.stringify(events))
+    const unprocessedEvents = events.filter(event => 
+      event.metadata?.requiresAcknowledgment === true && 
+      event.metadata?.frontendProcessed === false
+    );
+    return unprocessedEvents
+  }
+
+
   processGameEvents() {
     const events = this.gameState.gameEnv.gameEvents || [];
     console.log("events "+JSON.stringify(events))
