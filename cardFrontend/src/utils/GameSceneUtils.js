@@ -168,6 +168,8 @@ export default class GameSceneUtils {
       label.setY(label.y - 20);
     } else if (type === 'cardPreview') {
       placeholder.setScale(3);
+      placeholder.setScale(0);
+
       label.setAlpha(0);
     } else {
       label.setAlpha(1);

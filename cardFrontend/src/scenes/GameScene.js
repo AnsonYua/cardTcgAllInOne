@@ -23,6 +23,7 @@ export default class GameScene extends Phaser.Scene {
     this.zoneHighlights = [];
     this.isTestMode = false;
     this.currentPendingSelectionId = null; // Track current pending selection to avoid duplicates
+    this.firstShuffleAnimationComplete = false;
   }
 
   init(data) {
@@ -105,7 +106,7 @@ export default class GameScene extends Phaser.Scene {
       functionalArea: {
         cardPreview: {
           x: width * 0.5 + 730,
-          y: startY + 100+ cardHeight
+          y: startY + 200+ cardHeight
         },
       },
       // Opponent zones (top area)
@@ -757,7 +758,7 @@ export default class GameScene extends Phaser.Scene {
     this.events.on('card-hover', (card) => {
       // Only show preview for hand cards (not dragging)
       if (!this.draggedCard && this.playerHand.includes(card)) {
-        this.showCardPreview(card.getCardData());
+        this.showCardPreview(card.getCardFullData());
       }
     });
     
@@ -892,22 +893,6 @@ export default class GameScene extends Phaser.Scene {
     // Create cards
     hand.forEach((cardData, index) => {
       let processedCardData = cardData;
-
-      processedCardData = {
-          id: cardData.cardUid,
-          name: cardData.cardUid,
-          cardType: cardData.cardData.cardType,
-          cardDetails:cardData.cardData
-        };
-      /*
-      if (typeof cardData === 'string') {
-        processedCardData = {
-          id: cardData,
-          name: cardData,
-          cardType: this.getCardTypeFromId(cardData)
-        };
-      }*/
-      
       const x = startX + (index * cardSpacing);
       const card = new Card(this, x, 0, processedCardData, {
         interactive: true,
@@ -923,6 +908,7 @@ export default class GameScene extends Phaser.Scene {
 
     });
   }
+
   apiZoneCardDataToCardObject(cardData){
     return {
       id: cardData.id,
@@ -978,12 +964,14 @@ export default class GameScene extends Phaser.Scene {
       this.loadCardResources().then(() => {
         console.log('[GameScene] Card resources loaded, starting shuffle animation');
         
-        // Play shuffle animation then show redraw dialog
-        this.playShuffleDeckAnimation().then(() => {
-          console.log('Online mode - shuffle animation completed, selecting leader cards...');
-          // Leader card selection removed
-          this.updatePlayerHand();
-        });
+        if(this.firstShuffleAnimationComplete == false){
+          this.playShuffleDeckAnimation().then(() => {
+            console.log('Online mode - shuffle animation completed, selecting leader cards...');
+            this.firstShuffleAnimationComplete = true
+            this.updatePlayerHand();
+            this.showRedrawDialog();
+          });
+        }
       }).catch((error) => {
         console.warn('[GameScene] Failed to load card resources, proceeding with fallback:', error);
         
@@ -996,9 +984,14 @@ export default class GameScene extends Phaser.Scene {
       });
     }
     
+    if (this.gameStateManager.getPlayer().confirmIsRedraw &&
+        this.firstShuffleAnimationComplete){
+        this.updatePlayerHand();
+    }
+    
     // Check for DRAW_PHASE and trigger draw animation
     /*
-    if (gameState.gameEnv.phase === 'DRAW_PHASE' && !this.drawPhaseAnimationPlayed) {
+    if (gameState.gameEnv.phase === 'DRAW_PHASE' ) {
       const currentPlayer = gameState.gameEnv.currentPlayer;
       const currentPlayerId = this.gameStateManager.getCurrentPlayerId();
       

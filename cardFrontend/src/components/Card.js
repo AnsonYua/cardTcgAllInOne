@@ -4,18 +4,16 @@ import PowerOverlay from './PowerOverlay.js';
 
 
 export default class Card extends Phaser.GameObjects.Container {
-  constructor(scene, x, y, cardData, options = {}) {
+  constructor(scene, x, y, _cardData, options = {}) {
     super(scene, x, y);
     
     // Store reference to GameStateManager for computed values
     this.gameStateManager = options.gameStateManager || null;
-    console.log('Card constructor - cardData:', JSON.stringify(cardData));
-    if (cardData && cardData.id && cardData.name) {
-      cardData.id = cardData.id.split('_')[0];
-      cardData.name = cardData.name.split('_')[0];
-    }
-    
-    this.cardData = cardData.cardDetails;
+    console.log('Card constructor - cardData:', JSON.stringify(_cardData));
+
+    this.fullCardData = _cardData;
+    this.cardData = _cardData.cardData;
+
     
     this.options = {
       interactive: true,
@@ -56,7 +54,7 @@ export default class Card extends Phaser.GameObjects.Container {
   create() {
     if (this.options.faceDown) {
       // Show card back when face down
-      this.cardImage = this.scene.add.image(0, 0, 'card-back');
+      this.cardImage = this.scene.add.image(0, 0, GAME_CONFIG.imageKey.cardback);
       this.add(this.cardImage);
     } else {
       // Check if we have a valid card ID
@@ -136,16 +134,6 @@ export default class Card extends Phaser.GameObjects.Container {
   }
 
   createCardContent() {
-    // Card name
-    this.cardName = this.scene.add.text(0, -70, this.cardData.name || 'Unknown Card', {
-      fontSize: '12px',
-      fontFamily: 'Arial',
-      fill: '#000000',
-      align: 'center',
-      wordWrap: { width: 100 }
-    });
-    this.cardName.setOrigin(0.5);
-    this.add(this.cardName);
 
     // Power value for character cards (using computed power from effect system)
     if (this.cardData.type === 'character' && this.cardData.power !== undefined) {
@@ -564,6 +552,10 @@ export default class Card extends Phaser.GameObjects.Container {
 
   getCardData() {
     return this.cardData;
+  }
+
+  getCardFullData(){
+    return this.fullCardData
   }
 
   isFaceDown() {
