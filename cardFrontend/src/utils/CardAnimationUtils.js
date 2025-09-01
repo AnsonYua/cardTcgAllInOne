@@ -143,25 +143,51 @@ export default class CardAnimationUtils {
   }
 
   /**
-   * Animate card draw from deck to hand (promise-based)
+   * Animate card draw from deck to hand (event-driven, promise-based)
    * @param {Phaser.Scene} scene - The Phaser scene instance
+   * @param {Object} event - CARD_DRAWN event with payload
+   * @returns {Promise} - Promise that resolves when all animations complete
+   */
+  static async playDrawCardAnimation(scene, event) {
+    const { drawnCards, newHandSize } = event.payload;
+    
+    console.log(`[CardAnimationUtils] Drawing ${drawnCards.length} cards:`, drawnCards);
+    
+    // Handle multiple cards sequentially
+    for (let i = 0; i < drawnCards.length; i++) {
+      const cardUid = drawnCards[i];
+      const cardData = scene.gameStateManager.getCardDataByUid(cardUid);
+      
+      if (!cardData) {
+        console.warn(`[CardAnimationUtils] Card data not found for UID: ${cardUid}`);
+        continue;
+      }
+      
+      await this.animateCardDraw(scene, {
+        cardUid,
+        cardData,
+        targetHandSize: newHandSize,
+        cardIndex: newHandSize - drawnCards.length + i
+      });
+    }
+  }
+
+  /**
+   * Animate a specific card draw with UID tracking
+   * @param {Phaser.Scene} scene - The Phaser scene instance
+   * @param {Object} options - Animation options
    * @returns {Promise} - Promise that resolves when animation completes
    */
-  static playDrawCardAnimation(scene) {
-    // Get the current hand from game state (the new card should be the last one)
-    const currentHand = scene.gameStateManager.getPlayerHand();
-    const lastCard = currentHand[currentHand.length - 1];
+  static async animateCardDraw(scene, options) {
+    const { cardUid, cardData, targetHandSize, cardIndex } = options;
     
-    // Handle both string and object formats for card data
-    const newCardData = lastCard
+    console.log(`[CardAnimationUtils] Animating card ${cardUid} to position ${cardIndex}`);
     
-    const totalCards = scene.playerHand.length + 1; // Including this new card
-    
-    // Use unified animation with promise-based completion
     return this.animateCardToHandUnified(scene, {
-      card: newCardData,
-      targetHandLength: totalCards,
-      cardIndex: scene.playerHand.length, // Position at end (rightmost)
+      card: cardData,
+      cardUid,  // Track specific UID for debugging
+      targetHandLength: targetHandSize,
+      cardIndex,
       isPromise: true
     });
   }

@@ -775,6 +775,93 @@ export default class GameStateManager {
   }
   
   /**
+   * Get card data by UID from player hand
+   * @param {string} cardUid - Card UID (e.g., "ST01-012_64e905b3-af0b-4454-9ab2-9f4953bf7c80")
+   * @returns {Object|null} Card data or null if not found
+   */
+  getCardDataByUid(cardUid) {
+    if (!cardUid) return null;
+    
+    // Extract card ID from UID (everything before first underscore)
+    const cardId = cardUid.split('_')[0];
+    
+    // Find card in current player's hand
+    const currentHand = this.getPlayerHand();
+    if (!currentHand || !Array.isArray(currentHand)) {
+      console.warn(`[GameStateManager] Invalid hand data when looking for UID: ${cardUid}`);
+      return null;
+    }
+    
+    // Look for card in hand by UID or card ID
+    for (const handCard of currentHand) {
+      // Handle different hand card formats
+      if (typeof handCard === 'string') {
+        // String format: check if UID matches
+        if (handCard === cardUid) {
+          return {
+            cardUid: cardUid,
+            cardData: this.findCardDataById(cardId)
+          };
+        }
+      } else if (handCard && handCard.cardUid) {
+        // Object format: check UID
+        if (handCard.cardUid === cardUid) {
+          return handCard;
+        }
+      } else if (handCard && handCard.id) {
+        // Legacy format: check card ID
+        if (handCard.id === cardId) {
+          return {
+            cardUid: cardUid,
+            cardData: handCard
+          };
+        }
+      }
+    }
+    
+    // Fallback: create card data from ID lookup
+    const cardData = this.findCardDataById(cardId);
+    if (cardData) {
+      return {
+        cardUid: cardUid,
+        cardData: cardData
+      };
+    }
+    
+    console.warn(`[GameStateManager] Card not found for UID: ${cardUid}, ID: ${cardId}`);
+    return null;
+  }
+  
+  /**
+   * Find card data by card ID in game data
+   * @param {string} cardId - Card ID (e.g., "ST01-012")
+   * @returns {Object|null} Card data or null if not found
+   */
+  findCardDataById(cardId) {
+    // This would typically look up card data from loaded game data
+    // For now, return a minimal structure
+    return {
+      id: cardId,
+      type: this.getCardTypeFromId(cardId),
+      power: 0, // Will be loaded from actual card data
+      name: cardId
+    };
+  }
+  
+  /**
+   * Get card type from card ID prefix
+   * @param {string} cardId - Card ID
+   * @returns {string} Card type
+   */
+  getCardTypeFromId(cardId) {
+    if (cardId.startsWith('c-') || cardId.startsWith('ST01-') || cardId.startsWith('EX')) return 'character';
+    if (cardId.startsWith('h-')) return 'help';
+    if (cardId.startsWith('sp-')) return 'sp';
+    if (cardId.startsWith('s-')) return 'leader';
+    return 'character'; // Default to character for numbered cards
+  }
+  
+  /**
    * Process unprocessed events using queue logic
    * @param {Function} eventHandlerCallback - Callback to handle individual events
    */

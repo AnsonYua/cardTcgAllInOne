@@ -2698,7 +2698,7 @@ export default class GameScene extends Phaser.Scene {
     switch (event.type) {
       case 'CARD_DRAWN':
         console.log("card drawn event")
-        await CardAnimationUtils.playDrawCardAnimation(this);
+        await CardAnimationUtils.playDrawCardAnimation(this, event);
         break;
 
       case 'CARD_PLAYED':
