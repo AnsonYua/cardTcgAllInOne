@@ -111,15 +111,6 @@ export default class GameStateManager {
     return player ? player.deck.hand : [];
   }
 
-  getPlayerHandDetails(playerId = null) {
-    const currentPlayerId = this.getCurrentPlayerId();
-    if(playerId == null) {
-      playerId = currentPlayerId;
-    }
-    
-    const player = this.getPlayer(playerId);
-    return player ? player.deck.hand : [];
-  }
 
   getVictoryPoints(playerId = null) {
     const id = playerId || this.gameState.playerId;
@@ -240,12 +231,13 @@ export default class GameStateManager {
     console.log("events "+JSON.stringify(events))
     const unprocessedEvents = events.filter(event => 
       event.metadata?.requiresAcknowledgment === true && 
-      event.metadata?.frontendProcessed === false
+      event.metadata?.frontendProcessed === false &&
+      event.payload?.playerId === this.gameState.playerId
     );
     return unprocessedEvents
   }
 
-
+   /*
   processGameEvents() {
     const events = this.gameState.gameEnv.gameEvents || [];
     console.log("events "+JSON.stringify(events))
@@ -265,12 +257,12 @@ export default class GameStateManager {
     } else {
       return false;
     }
-    /*
+ 
     if (events.length > 0) {
       this.acknowledgeEvents(this.apiManager);
-    }*/
+    }
   }
-  
+  */
 
   async acknowledgeEvents(apiManager) {
     const events = this.gameState.gameEnv.gameEvents || [];
@@ -298,7 +290,6 @@ export default class GameStateManager {
         if (this.gameState.gameId && this.gameState.playerId) {
           const playerData = await apiManager.getPlayer(this.gameState.playerId, this.gameState.gameId);
           this.updateGameEnv(playerData.gameEnv);
-          this.processGameEvents();
         }
       } catch (error) {
         console.error('Polling error:', error);
@@ -781,5 +772,76 @@ export default class GameStateManager {
    */
   getCurrentScenario() {
     return this.currentScenario;
+  }
+  
+  /**
+   * Process unprocessed events using queue logic
+   * @param {Function} eventHandlerCallback - Callback to handle individual events
+   */
+  processEventQueue(eventHandlerCallback) {
+    // Initialize event queue if not exists
+    if (!this.eventQueue) {
+      this.eventQueue = [];
+      this.isProcessingEvent = false;
+    }
+    
+    const unprocessedEvents = this.getUnprocessGameEvents();
+    
+    // Add new events to queue
+    unprocessedEvents.forEach(event => {
+      if (!this.eventQueue.find(queuedEvent => queuedEvent.id === event.id)) {
+        this.eventQueue.push(event);
+        console.log(`[GameStateManager] Added event to queue: ${event.type} (${event.id})`);
+      }
+    });
+    
+    // Start processing if not already processing
+    if (!this.isProcessingEvent && this.eventQueue.length > 0) {
+      this.processNextEvent(eventHandlerCallback);
+    }
+  }
+  
+  async processNextEvent(eventHandlerCallback) {
+    if (this.eventQueue.length === 0) {
+      this.isProcessingEvent = false;
+      console.log('[GameStateManager] Event queue empty, processing complete');
+      return;
+    }
+    
+    this.isProcessingEvent = true;
+    const event = this.eventQueue.shift();
+    
+    console.log(`[GameStateManager] Processing event: ${event.type} (${event.id})`);
+    
+    try {
+      // Call the provided event handler callback
+      if (eventHandlerCallback) {
+        await eventHandlerCallback(event);
+      }
+      
+      // Mark event as processed
+      await this.acknowledgeEvents([event.id]);
+      console.log(`[GameStateManager] Event ${event.type} processed and acknowledged`);
+      
+    } catch (error) {
+      console.error(`[GameStateManager] Error processing event ${event.type}:`, error);
+    }
+    
+    // Process next event after short delay
+    setTimeout(() => {
+      this.processNextEvent(eventHandlerCallback);
+    }, 100);
+  }
+  
+  /**
+   * Get event queue status for debugging
+   * @returns {Object} Queue status information
+   */
+  getEventQueueStatus() {
+    return {
+      queueLength: this.eventQueue ? this.eventQueue.length : 0,
+      isProcessing: this.isProcessingEvent || false,
+      nextEventType: this.eventQueue && this.eventQueue.length > 0 ? this.eventQueue[0].type : null
+    };
   }
 }

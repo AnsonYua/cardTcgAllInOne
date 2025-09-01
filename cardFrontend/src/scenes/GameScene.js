@@ -33,8 +33,7 @@ export default class GameScene extends Phaser.Scene {
     this.isManualPollingMode = data.isManualPollingMode || false;
     this.gameMode = data.gameMode || 'host';  // 'host' or 'join' mode
     this.shuffleAnimationPlayed = false; // Track if shuffle animation has been played
-    this.drawPhaseAnimationPlayed = false; // Track if draw phase animation has been played
-    
+ 
     console.log('GameScene initialized with mode:', this.gameMode);
     console.log('Manual polling mode:', this.isManualPollingMode);
   }
@@ -869,7 +868,7 @@ export default class GameScene extends Phaser.Scene {
 
   updatePlayerHand() {
     // Get hand from game state manager
-    const handDetails =  this.gameStateManager.getPlayerHandDetails()
+    const handDetails =  this.gameStateManager.getPlayerHand()
     console.log('updatePlayerHand - hand data:', JSON.stringify(handDetails));
     this.updatePlayerHandWithCards(handDetails);
   }
@@ -936,10 +935,10 @@ export default class GameScene extends Phaser.Scene {
 
 
     const unprocessedEvent = this.gameStateManager.getUnprocessGameEvents();
-    if(unprocessedEvent.length>0) {
-      //write a queue logic , the unprocessevent should handle one by one
-      console.log("unprocess Event ", JSON.stringify(unprocessedEvent))
-      return
+    if(unprocessedEvent.length > 0) {
+      // Process events one by one using GameStateManager queue logic
+      this.gameStateManager.processEventQueue((event) => this.handleSingleEvent(event));
+      return;
     }
 
 
@@ -1005,7 +1004,6 @@ export default class GameScene extends Phaser.Scene {
       const currentPlayerId = this.gameStateManager.getCurrentPlayerId();
       
       if (currentPlayer === currentPlayerId) {
-        this.drawPhaseAnimationPlayed = true;
         
         // Hide the new card temporarily (don't update hand UI yet)
         const currentHand = this.gameStateManager.getPlayerHand();
@@ -2720,6 +2718,90 @@ export default class GameScene extends Phaser.Scene {
     const filename = imagePath.split('/').pop();
     return filename.replace(/\.[^/.]+$/, "");
   }
+  
+  async handleSingleEvent(event) {
+    console.log("handlesingle event ", JSON.stringify(event))
+    switch (event.type) {
+      case 'CARD_DRAWN':
+        console.log("card drawn event")
+        CardAnimationUtils.playDrawCardAnimation(this,() => {
+         
+        });
+        /*
+
+            
+            // Hide the new card temporarily (don't update hand UI yet)
+            const currentHand = this.gameStateManager.getPlayerHand();
+            const handWithoutNewCard = currentHand.slice(0, -1); // Remove the last card for animation
+            
+            // Temporarily update the displayed hand to not show the new card
+            this.updatePlayerHandWithCards(handWithoutNewCard);
+            this.playDrawCardAnimation(() => {
+              // Show acknowledgment UI after animation completes
+              this.showDrawPhaseAcknowledgment({
+                playerId: currentPlayerId,
+                cardCount: 1,
+                newHandSize: currentHand.length
+              });
+            });
+        */
+        break;
+
+      case 'CARD_PLAYED':
+        this.handleCardPlayedEvent(event);
+        break;
+        
+      case 'PHASE_CHANGE':
+        this.handlePhaseChangeEvent(event);
+        break;
+        
+      case 'TURN_SWITCH':
+        this.handleTurnSwitchEvent(event);
+        break;
+        
+      case 'BATTLE_CALCULATED':
+        this.handleBattleCalculatedEvent(event);
+        break;
+        
+      case 'ERROR_OCCURRED':
+        this.handleErrorEvent(event);
+        break;
+        
+      default:
+        console.log(`[GameScene] Unhandled event type: ${event.type}`, event);
+    }
+  }
+  
+  handleCardPlayedEvent(event) {
+    console.log('[GameScene] Handling CARD_PLAYED event:', event.data);
+    // Update UI based on card played
+    this.updateGameState();
+  }
+  
+  handlePhaseChangeEvent(event) {
+    console.log('[GameScene] Handling PHASE_CHANGE event:', event.data);
+    // Update phase display
+    this.updateGameState();
+  }
+  
+  handleTurnSwitchEvent(event) {
+    console.log('[GameScene] Handling TURN_SWITCH event:', event.data);
+    // Update turn indicators
+    this.updateGameState();
+  }
+  
+  handleBattleCalculatedEvent(event) {
+    console.log('[GameScene] Handling BATTLE_CALCULATED event:', event.data);
+    // Trigger battle result animation
+    this.updateGameState();
+  }
+  
+  handleErrorEvent(event) {
+    console.error('[GameScene] Handling ERROR event:', event.data);
+    // Show error message to user
+    this.showRoomStatus(`Error: ${event.data.message || 'Unknown error occurred'}`, 3000);
+  }
+  
 
   destroy() {
     // Clean up hover preview resources

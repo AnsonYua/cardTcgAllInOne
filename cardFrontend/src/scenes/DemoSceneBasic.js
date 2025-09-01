@@ -60,12 +60,6 @@ export default class DemoSceneBasic extends GameScene {
         console.log('Polling response received:', response);
         this.gameStateManager.updateGameEnv(response.gameEnv);
         
-        // Process any events
-        /*
-        const allEventsProcessed = this.gameStateManager.processGameEvents();
-        if(!allEventsProcessed) {
-          this.updateGameState();
-        }*/
         this.updateGameState();
         
         console.log('Manual polling completed successfully');

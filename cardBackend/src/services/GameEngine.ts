@@ -308,7 +308,8 @@ export class GameEngine {
             console.log(`🎲 Generated ${uniqueDeck2Cards.length} unique cards for player 2`);
             
             // Random first player selection
-            const firstPlayer = Math.floor(Math.random() * 2); // 0 or 1
+            //const firstPlayer = Math.floor(Math.random() * 2); // 0 or 1
+            const firstPlayer = 0
             gameEnv.firstPlayer = firstPlayer;
             gameEnv.currentPlayer = firstPlayer === 0 ? playerId1 : playerId2;
             
