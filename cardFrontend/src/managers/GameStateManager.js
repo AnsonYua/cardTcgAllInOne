@@ -816,7 +816,9 @@ export default class GameStateManager {
     try {
       // Call the provided event handler callback
       if (eventHandlerCallback) {
+        console.log("start event --- start")
         await eventHandlerCallback(event);
+        console.log("start event --- finish")
       }
       
       // Mark event as processed

@@ -694,10 +694,6 @@ export default class GameScene extends Phaser.Scene {
     // Game state event handlers
     if (this.gameStateManager) {
       
-      // Draw phase events
-      this.gameStateManager.addEventListener('DRAW_PHASE_COMPLETE', (event) => {
-        this.handleDrawPhaseComplete(event);
-      });
       
       // Card movement events
       this.gameStateManager.addEventListener('CARD_MOVED_TO_HAND', (event) => {
@@ -2398,28 +2394,6 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  handleDrawPhaseComplete(event) {
-    console.log('Processing draw phase complete event:', event);
-    
-    // Update phase indicator  
-    this.updatePhaseIndicator('DRAW_PHASE');
-    
-    // Check if this is the current player's draw event
-    const currentPlayerId = this.gameStateManager.getCurrentPlayerId();
-    
-    if (event.data.playerId === currentPlayerId) {
-      // Play draw card animation for current player
-      console.log("here ddd ");
-      CardAnimationUtils.playDrawCardAnimation(this, () => {
-        // Show acknowledgment UI after animation completes
-        this.showDrawPhaseAcknowledgment(event.data);
-      });
-    } else {
-      // Show notification that opponent drew a card
-      this.showRoomStatus(`Opponent drew a card (${event.data.newHandSize} cards in hand)`);
-    }
-  }
-
   handlePhaseChange(event) {
     console.log('Processing phase change event:', event);
     
@@ -2724,27 +2698,7 @@ export default class GameScene extends Phaser.Scene {
     switch (event.type) {
       case 'CARD_DRAWN':
         console.log("card drawn event")
-        CardAnimationUtils.playDrawCardAnimation(this,() => {
-         
-        });
-        /*
-
-            
-            // Hide the new card temporarily (don't update hand UI yet)
-            const currentHand = this.gameStateManager.getPlayerHand();
-            const handWithoutNewCard = currentHand.slice(0, -1); // Remove the last card for animation
-            
-            // Temporarily update the displayed hand to not show the new card
-            this.updatePlayerHandWithCards(handWithoutNewCard);
-            this.playDrawCardAnimation(() => {
-              // Show acknowledgment UI after animation completes
-              this.showDrawPhaseAcknowledgment({
-                playerId: currentPlayerId,
-                cardCount: 1,
-                newHandSize: currentHand.length
-              });
-            });
-        */
+        await CardAnimationUtils.playDrawCardAnimation(this);
         break;
 
       case 'CARD_PLAYED':

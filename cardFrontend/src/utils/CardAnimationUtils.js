@@ -27,7 +27,7 @@ export default class CardAnimationUtils {
    */
   static animateCardToHandUnified(scene, options) {
     const { 
-      cardId, 
+      card, 
       targetHandLength, 
       cardIndex = targetHandLength - 1, 
       onComplete, 
@@ -35,23 +35,15 @@ export default class CardAnimationUtils {
     } = options;
 
     const executeAnimation = (resolve) => {
-      console.log(`Animating card ${cardId} to hand at position ${cardIndex}`);
-      
+    
       // Process card data consistently
-      let processedCardData = cardId;
-      if (typeof cardId === 'string') {
-        processedCardData = {
-          id: cardId.split('_')[0], // Remove UID suffix if present
-          name: cardId,
-          cardType: this.getCardTypeFromId(cardId.split('_')[0])
-        };
-      }
+      let processedCardData = card;
       
       // Get deck position for animation start
       const playerDeckPosition = this.getPlayerDeckPosition(scene);
       
       // Create temporary card at deck position
-      const tempCard = scene.add.image(playerDeckPosition.x, playerDeckPosition.y, 'card-back');
+      const tempCard = scene.add.image(playerDeckPosition.x, playerDeckPosition.y, GAME_CONFIG.imageKey.cardback);
       
       // Set proper scale matching hand cards
       const scaleX = GAME_CONFIG.card.width / tempCard.width;
@@ -87,12 +79,13 @@ export default class CardAnimationUtils {
             duration: 150,
             ease: 'Power2.easeIn',
             onComplete: () => {
+              console.log("update card info ", JSON.stringify(processedCardData))
               // Change to actual card texture
-              const cardKey = `${processedCardData.id}-preview`;
+              const cardKey = `${processedCardData.cardData.id}-preview`;
               if (scene.textures.exists(cardKey)) {
                 tempCard.setTexture(cardKey);
               } else {
-                const fallbackKey = processedCardData.id;
+                const fallbackKey = processedCardData.cardData.id;
                 if (scene.textures.exists(fallbackKey)) {
                   tempCard.setTexture(fallbackKey);
                 }
@@ -131,8 +124,6 @@ export default class CardAnimationUtils {
                   // Cleanup and completion
                   scene.time.delayedCall(200, () => {
                     tempCard.destroy();
-                    console.log(`Animation complete for card ${cardId}`);
-                    
                     if (onComplete) onComplete();
                     if (resolve) resolve();
                   });
@@ -152,31 +143,26 @@ export default class CardAnimationUtils {
   }
 
   /**
-   * Animate card draw from deck to hand (callback-based)
+   * Animate card draw from deck to hand (promise-based)
    * @param {Phaser.Scene} scene - The Phaser scene instance
-   * @param {Function} onComplete - Completion callback
+   * @returns {Promise} - Promise that resolves when animation completes
    */
-  static playDrawCardAnimation(scene, onComplete) {
+  static playDrawCardAnimation(scene) {
     // Get the current hand from game state (the new card should be the last one)
     const currentHand = scene.gameStateManager.getPlayerHand();
-    const newCardData = currentHand[currentHand.length - 1].split("_")[0];
+    const lastCard = currentHand[currentHand.length - 1];
+    
+    // Handle both string and object formats for card data
+    const newCardData = lastCard
+    
     const totalCards = scene.playerHand.length + 1; // Including this new card
     
-    // Use unified animation with callback-based completion
-    this.animateCardToHandUnified(scene, {
-      cardId: newCardData,
+    // Use unified animation with promise-based completion
+    return this.animateCardToHandUnified(scene, {
+      card: newCardData,
       targetHandLength: totalCards,
       cardIndex: scene.playerHand.length, // Position at end (rightmost)
-      onComplete: () => {
-        // Update the UI to show the new card in hand
-        scene.updateGameState();
-        
-        // Call the original completion callback
-        if (onComplete) {
-          onComplete();
-        }
-      },
-      isPromise: false
+      isPromise: true
     });
   }
 
@@ -192,7 +178,7 @@ export default class CardAnimationUtils {
     const currentTargetLength = scene.initialHandSize + cardIndex + 1;
     
     return this.animateCardToHandUnified(scene, {
-      cardId,
+      card: cardId,
       targetHandLength: currentTargetLength,
       cardIndex: scene.initialHandSize + cardIndex,
       isPromise: true
