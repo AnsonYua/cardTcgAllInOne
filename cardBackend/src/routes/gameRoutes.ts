@@ -114,7 +114,6 @@ router.post('/player/acknowledgeEvents', async (req: Request, res: Response) => 
         const { gameId, playerId, eventIds, eventTypes } = req.body;
         
         console.log(`📨 acknowledgeEvents: gameId=${gameId}, playerId=${playerId}`);
-        
         if (!gameId) {
             return res.status(400).json({
                 error: 'gameId is required',
@@ -131,6 +130,7 @@ router.post('/player/acknowledgeEvents', async (req: Request, res: Response) => 
                 timestamp: new Date().toISOString()
             });
         }
+        console.log("AcknowledgeEvents 22",JSON.stringify(gameEnv?.gameEvents))
         
         // Create notification manager and acknowledge events
         const { GameNotificationManager } = require('../services/GameNotificationManager');
@@ -150,6 +150,8 @@ router.post('/player/acknowledgeEvents', async (req: Request, res: Response) => 
                 timestamp: new Date().toISOString()
             });
         }
+
+        console.log("AcknowledgeEvents 2211x",JSON.stringify(gameEnv?.gameEvents))
         
         // Save updated game state
         await gameLogic.saveGameToFile(gameId, gameEnv);

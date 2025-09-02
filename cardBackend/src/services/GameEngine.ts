@@ -214,6 +214,13 @@ export class GameEngine {
                 console.log(`✅ Player ${playerId} confirmed their redraw choice: ${isRedraw}, confirmIsRedraw: ${player.confirmIsRedraw}`);
             }
 
+            const notificationManager = this.getNotificationManager(gameEnv);
+            
+            if(gameEnv.players[playerId].isRedraw){
+                notificationManager.notifyRedrawEvent(
+                    playerId
+                )
+            }
             // Note: GAME_START will be triggered automatically by StateBasedActionEngine
             // when it detects both players are ready and confirmed
             
@@ -390,17 +397,6 @@ export class GameEngine {
             // Create game events using GameNotificationManager
             const notificationManager = this.getNotificationManager(gameEnv);
             
-            if(gameEnv.players[firstPlayerId].isRedraw){
-                notificationManager.notifyRedrawEvent(
-                    firstPlayerId
-                )
-            }
-            if(gameEnv.players[secondPlayerId].isRedraw){
-                notificationManager.notifyRedrawEvent(
-                    secondPlayerId
-                )
-            }
-
             // Notify about card drawn (requires acknowledgment)
             const drawnCards = firstPlayer?.deck.handUids.slice(-2) || []; // Get last drawn card UID
             notificationManager.notifyCardDrawn(

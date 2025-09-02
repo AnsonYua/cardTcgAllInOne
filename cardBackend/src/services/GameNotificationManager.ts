@@ -229,14 +229,11 @@ export class GameNotificationManager {
         if (!this.gameEnv.gameEvents || !eventIds.length) return 0;
         
         const initialCount = this.gameEnv.gameEvents.length;
-        const now = Date.now();
         
         this.gameEnv.gameEvents = this.gameEnv.gameEvents.filter(event => {
-            const isExpired = now > event.metadata.expiresAt;
             const isSpecificAcknowledged = eventIds.includes(event.id) && event.metadata.frontendProcessed;
             
-            if (isExpired || isSpecificAcknowledged) {
-                console.log(`🧹 Cleaned up specific event: ${event.type} (${event.id}) - ${isExpired ? 'expired' : 'acknowledged'}`);
+            if (isSpecificAcknowledged) {
                 return false;
             }
             return true;
