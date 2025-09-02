@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GAME_CONFIG } from '../config/gameConfig.js';
 import Card from '../components/Card.js';
 import ShuffleAnimationManager from '../components/ShuffleAnimationManager.js';
+import BaseAndShieldAreaManager from '../components/BaseAndShieldAreaManager.js';
 import GameSceneUtils from '../utils/GameSceneUtils.js';
 import { ZoneMapping } from '../utils/ZoneMapping.js';
 import CardAnimationUtils from '../utils/CardAnimationUtils.js';
@@ -24,6 +25,9 @@ export default class GameScene extends Phaser.Scene {
     this.isTestMode = false;
     this.currentPendingSelectionId = null; // Track current pending selection to avoid duplicates
     this.firstShuffleAnimationComplete = false;
+
+    this.baseAndShieldManager = null;
+    this.opponentBase = null
   }
 
   init(data) {
@@ -33,6 +37,9 @@ export default class GameScene extends Phaser.Scene {
     this.isManualPollingMode = data.isManualPollingMode || false;
     this.gameMode = data.gameMode || 'host';  // 'host' or 'join' mode
     this.shuffleAnimationPlayed = false; // Track if shuffle animation has been played
+    
+    // Initialize managers
+    this.baseAndShieldManager = new BaseAndShieldAreaManager(this, this.gameStateManager);
  
     console.log('GameScene initialized with mode:', this.gameMode);
     console.log('Manual polling mode:', this.isManualPollingMode);
@@ -803,6 +810,7 @@ export default class GameScene extends Phaser.Scene {
     const opponentData = this.gameStateManager.getPlayer(opponent);
     
 
+    this.baseAndShieldManager.updateAll();
 
     const unprocessedEvent = this.gameStateManager.getUnprocessGameEvents();
     if(unprocessedEvent.length > 0) {
@@ -816,7 +824,6 @@ export default class GameScene extends Phaser.Scene {
       );
       return;
     }
-
 
     // Debug: Log current phase and animation state
     console.log('Online mode - phase:', gameState.gameEnv.phase, 'shuffleAnimationPlayed:', this.shuffleAnimationPlayed);
@@ -1498,61 +1505,6 @@ export default class GameScene extends Phaser.Scene {
   }
 
 
-
-
-  repositionLeaderDeckCards(playerType = 'player') {
-    // Get the appropriate arrays and zones based on player type
-    const leaderCardsArray = playerType === 'player' ? 
-      this.shuffleAnimationManager?.playerLeaderCards : 
-      this.shuffleAnimationManager?.opponentLeaderCards;
-    
-    const zones = playerType === 'player' ? this.playerZones : this.opponentZones;
-    const leaderDeckZone = zones.leaderDeck;
-
-    if (!this.shuffleAnimationManager || !leaderCardsArray || !leaderDeckZone) {
-      return;
-    }
-
-    // Get the target position for the top card (same as original leaderDeck position)
-    const targetX = leaderDeckZone.x;
-    const targetY = leaderDeckZone.y;
-
-    // Animate remaining cards to their new positions
-    leaderCardsArray.forEach((card, index) => {
-      // Calculate the new position based on the stacking offset
-      const newX = targetX;
-      
-      // For opponent, stack cards ABOVE the leader deck position (negative offset)
-      // For player, stack cards BELOW the leader deck position (positive offset)
-      const offsetDirection = playerType === 'opponent' ? -1 : 1;
-      const newY = targetY + (offsetDirection * index * 30);
-
-      // Animate card to new position
-      this.tweens.add({
-        targets: card,
-        x: newX,
-        y: newY,
-        duration: 150,
-        ease: 'Power2.easeOut'
-      });
-
-      // Also animate the border graphics if they exist
-      if (card.borderGraphics) {
-        this.tweens.add({
-          targets: card.borderGraphics,
-          x: newX,
-          y: newY,
-          duration: 150,
-          ease: 'Power2.easeOut'
-        });
-      }
-
-      // Update depth to maintain proper stacking order
-      card.setDepth(1000 + leaderCardsArray.length - index);
-    });
-  }
-
-
   addCardsToPlayerHand(cardsToAdd) {
     // Get current game state to update
     const gameState = this.gameStateManager.getGameState();
@@ -2228,6 +2180,12 @@ export default class GameScene extends Phaser.Scene {
     // Stop polling when scene is destroyed
     if (this.gameStateManager) {
       this.gameStateManager.stopPolling();
+    }
+    
+    // Clean up base and shield area manager
+    if (this.baseAndShieldManager) {
+      this.baseAndShieldManager.destroy();
+      this.baseAndShieldManager = null;
     }
     
     // Clean up any existing card selection dialog

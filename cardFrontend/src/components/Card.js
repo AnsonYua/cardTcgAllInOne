@@ -58,9 +58,10 @@ export default class Card extends Phaser.GameObjects.Container {
       this.add(this.cardImage);
     } else {
       // Check if we have a valid card ID
-      if (!this.cardData || !this.cardData.id) {
+      if(this.cardData.cardType == "shield"){
+
+      }else if (!this.cardData || !this.cardData.id) {
         console.error(`[Card] Invalid card data - missing ID:`, this.cardData);
-        // Create placeholder with error message
         this.cardImage = this.scene.add.image(0, 0, 'card-back');
         this.cardImage.setTint(0xff0000); // Red tint
         
@@ -77,9 +78,14 @@ export default class Card extends Phaser.GameObjects.Container {
       }
       
       // Show actual card image when face up
-      const cardKey = this.options.usePreview ? 
+      let cardKey = this.options.usePreview ? 
         `${this.cardData.id}-preview` :  // Use preview version (e.g., "c-1-preview")
         this.cardData.id;                // Use original version (e.g., "c-1")
+      
+      if(this.cardData.cardType == "shield"){
+        cardKey = `${GAME_CONFIG.imageKey.cardback}-preview`
+      }
+      
       console.log("cardKey ", cardKey)
       console.log(`[Card] Trying to load image with key: ${cardKey}`);
       console.log(`[Card] Card data:`, this.cardData);

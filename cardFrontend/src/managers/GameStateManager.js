@@ -125,6 +125,30 @@ export default class GameStateManager {
     return this.gameState.gameEnv.round;
   }
 
+  getMyShieldAreaCard(playerId = null){
+    const currentPlayerId = this.getCurrentPlayerId();
+    if(playerId == null) {
+      playerId = currentPlayerId;
+    }
+    return this.gameState.gameEnv.players[playerId].zones.shieldArea || []
+  }
+  getOpponentShieldAreaCard(){
+    const opponentId = this.getOpponent();
+    return this.getMyShieldAreaCard(opponentId)
+  }
+
+  getMyBaseAreaCard(playerId = null){
+    const currentPlayerId = this.getCurrentPlayerId();
+    if(playerId == null) {
+      playerId = currentPlayerId;
+    }
+    return this.gameState.gameEnv.players[playerId].zones.base || []
+  }
+  getOpponentBaseAreaCard(){
+    const opponentId = this.getOpponent();
+    return this.getMyBaseAreaCard(opponentId)
+  }
+
   // Field Effects Methods
   getPlayerFieldEffects(playerId = null) {
     const id = playerId;
@@ -236,33 +260,6 @@ export default class GameStateManager {
     );
     return unprocessedEvents
   }
-
-   /*
-  processGameEvents() {
-    const events = this.gameState.gameEnv.gameEvents || [];
-    console.log("events "+JSON.stringify(events))
-    const unprocessedEvents = events.filter(event => 
-      event.metadata?.requiresAcknowledgment === true && 
-      event.metadata?.frontendProcessed === false
-    );
-    console.log("events filter "+JSON.stringify(unprocessedEvents))
-    unprocessedEvents.forEach(event => {
-      const handlers = this.eventHandlers.get(event.type) || [];
-      console.log('Processing event:', event.type);
-      handlers.forEach(handler => handler(event));
-    });
-
-    if(unprocessedEvents.length > 0) {
-      return true;
-    } else {
-      return false;
-    }
- 
-    if (events.length > 0) {
-      this.acknowledgeEvents(this.apiManager);
-    }
-  }
-  */
 
   async acknowledgeEvents(eventIds) {
     if (eventIds && eventIds.length > 0 && this.apiManager) {
