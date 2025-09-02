@@ -134,7 +134,7 @@ export default class GameScene extends Phaser.Scene {
         leaderDeck: { x: width * 0.5 + 430 , y: startY + 100+ cardHeight+10+15},
         base:{ x: width * 0.5 + 430 , y: startY + 130 + cardHeight+10+15},
         // New row with 10 columns above existing zones (opponent is flipped)
-        row2: this.generateOpponentRow2Slots(playerStartX, width, startY, cardHeight)
+        row2: this.generateOpponentRow2Slots(playerStartX, width, startY-100, cardHeight)
       },
       // Player zones (bottom area)
     
@@ -158,7 +158,7 @@ export default class GameScene extends Phaser.Scene {
         base: { x: width * 0.5 - 550 , 
                       y: startY + 70+ cardHeight + 10+ 15 +cardHeight + 70 + 50},
         // New row with 10 columns below existing zones
-        row2: this.generateRow2Slots(playerStartX, width, startY, cardHeight)
+        row2: this.generateRow2Slots(playerStartX, width, startY+100, cardHeight)
       },
       // Battle area (center)
       //battle: { x: width * 0.5, y: height * 0.45 },
@@ -171,13 +171,13 @@ export default class GameScene extends Phaser.Scene {
 
   generateRow2Slots(playerStartX, width, startY, cardHeight) {
     const slots = [];
-    const slotCount = 10;
-    const slotSpacing = 120; // Space between each slot
+    const slotCount = 12;
+    const slotSpacing = 70; // Space between each slot
     const rowY = startY + 100 + cardHeight + 10 + 15 + cardHeight + 70 + 80; // Below existing zones
     
     // Calculate starting X to center the 10 slots
     const totalWidth = (slotCount - 1) * slotSpacing;
-    const startX = (width * 0.5) - (totalWidth / 2);
+    const startX = (width * 0.5) - (totalWidth / 2)-10;
     
     // Generate 10 slot positions
     for (let i = 0; i < slotCount; i++) {
@@ -193,13 +193,13 @@ export default class GameScene extends Phaser.Scene {
 
   generateOpponentRow2Slots(playerStartX, width, startY, cardHeight) {
     const slots = [];
-    const slotCount = 10;
-    const slotSpacing = 120; // Space between each slot
+    const slotCount = 12;
+    const slotSpacing = 70; // Space between each slot
     const rowY = startY + 100 + cardHeight + 10 + 15 - 80; // Above existing opponent zones
     
     // Calculate starting X to center the 10 slots
     const totalWidth = (slotCount - 1) * slotSpacing;
-    const startX = (width * 0.5) - (totalWidth / 2);
+    const startX = (width * 0.5) - (totalWidth / 2)-80;
     
     // Generate 10 slot positions
     for (let i = 0; i < slotCount; i++) {
@@ -222,15 +222,29 @@ export default class GameScene extends Phaser.Scene {
     console.log('Opponent entries:', opponentEntries);
     opponentEntries.forEach(([zoneType, position]) => {
       console.log('Processing zone:', zoneType);
-      const zone = GameSceneUtils.createZone(this, position.x, position.y, zoneType, false);
-      this.opponentZones[zoneType] = zone;
+      if (zoneType === 'row2') {
+        // Create row2 slots as an array of zones
+        this.opponentZones[zoneType] = position.map((slot, index) => {
+          return GameSceneUtils.createZone(this, slot.x, slot.y, `row2_${index}`, false);
+        });
+      } else {
+        const zone = GameSceneUtils.createZone(this, position.x, position.y, zoneType, false);
+        this.opponentZones[zoneType] = zone;
+      }
     });
     
     // Create player zones
     this.playerZones = {};
     Object.entries(this.layout.player).forEach(([zoneType, position]) => {
-      const zone = GameSceneUtils.createZone(this, position.x, position.y, zoneType, true);
-      this.playerZones[zoneType] = zone;
+      if (zoneType === 'row2') {
+        // Create row2 slots as an array of zones
+        this.playerZones[zoneType] = position.map((slot, index) => {
+          return GameSceneUtils.createZone(this, slot.x, slot.y, `row2_${index}`, true);
+        });
+      } else {
+        const zone = GameSceneUtils.createZone(this, position.x, position.y, zoneType, true);
+        this.playerZones[zoneType] = zone;
+      }
     });
 
     Object.entries(this.layout.functionalArea).forEach(([zoneType, position]) => {

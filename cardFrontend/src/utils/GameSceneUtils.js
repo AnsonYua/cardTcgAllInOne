@@ -174,6 +174,9 @@ export default class GameSceneUtils {
     } else if (type==='base'){
       label.setAlpha(0);
       placeholder.setAlpha(0);
+    } else if (type.includes("row")){
+      label.setAlpha(0);
+      placeholder.setScale(0.55);
     } else {
       label.setAlpha(1);
     }
