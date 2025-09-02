@@ -77,23 +77,40 @@ export default class BaseAndShieldAreaManager {
 
   updatePlayerBase() {
     const baseData = this.gameStateManager.getMyBaseAreaCard();
-    const zones = this.scene.playerZones;
-    this.updateBaseArea('player', baseData, zones.base, this.playerBaseCards);
+    this.updateBaseArea('player', baseData, this.playerBaseCards, this.playerShieldCards);
   }
 
   updateOpponentBase() {
     const baseData = this.gameStateManager.getOpponentBaseAreaCard();
-    const zones = this.scene.opponentZones;
-    this.updateBaseArea('opponent', baseData, zones.base, this.opponentBaseCards);
+    this.updateBaseArea('opponent', baseData, this.opponentBaseCards, this.opponentShieldCards);
   }
 
-  updateBaseArea(playerType, baseData, baseZone, cardArray) {
+  updateBaseArea(playerType, baseData, cardArray, shieldCardArray) {
     cardArray.forEach(card => card.destroy());
     cardArray.length = 0;
     console.log("data base "+JSON.stringify(baseData))
     if(baseData && baseData.length>0){
       console.log("data base111 "+JSON.stringify(baseData[0]))
-      const card = this.createBaseCard(baseData[0], baseZone.x, baseZone.y , 0);
+      
+      // Position base card on top of shield card[0] if it exists
+      let x, y;
+      if (shieldCardArray.length > 0) {
+        // Use first shield card position
+        x = shieldCardArray[0].x;
+        y = shieldCardArray[0].y;
+        if(playerType ==='player'){
+          y = y - 80
+        }else{
+          y = y + 80
+        }
+      } else {
+        // Fallback to deck position if no shield cards
+        const deckZone = playerType === 'player' ? this.scene.playerZones.leaderDeck : this.scene.opponentZones.leaderDeck;
+        x = deckZone.x;
+        y = deckZone.y;
+      }
+      
+      const card = this.createBaseCard(baseData[0], x, y, 0);
       cardArray.push(card);
     }
   }
@@ -107,7 +124,7 @@ export default class BaseAndShieldAreaManager {
       usePreview: true
     });
     
-    card.setDepth(2000); // Lower depth than shields
+    card.setDepth(1100); // Higher depth than shields (1000) to appear on top
     
     // Add hover preview functionality
     card.on('pointerover', () => {
