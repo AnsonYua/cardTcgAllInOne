@@ -132,7 +132,9 @@ export default class GameScene extends Phaser.Scene {
         deck: { x: width * 0.5 - 500, 
                 y: startY + 100+ cardHeight+10+15},
         leaderDeck: { x: width * 0.5 + 430 , y: startY + 100+ cardHeight+10+15},
-        base:{ x: width * 0.5 + 430 , y: startY + 130 + cardHeight+10+15}
+        base:{ x: width * 0.5 + 430 , y: startY + 130 + cardHeight+10+15},
+        // New row with 10 columns above existing zones (opponent is flipped)
+        row2: this.generateOpponentRow2Slots(playerStartX, width, startY, cardHeight)
       },
       // Player zones (bottom area)
     
@@ -155,6 +157,8 @@ export default class GameScene extends Phaser.Scene {
                       y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 + 50},
         base: { x: width * 0.5 - 550 , 
                       y: startY + 70+ cardHeight + 10+ 15 +cardHeight + 70 + 50},
+        // New row with 10 columns below existing zones
+        row2: this.generateRow2Slots(playerStartX, width, startY, cardHeight)
       },
       // Battle area (center)
       //battle: { x: width * 0.5, y: height * 0.45 },
@@ -163,6 +167,50 @@ export default class GameScene extends Phaser.Scene {
     };
     
     this.createZones();
+  }
+
+  generateRow2Slots(playerStartX, width, startY, cardHeight) {
+    const slots = [];
+    const slotCount = 10;
+    const slotSpacing = 120; // Space between each slot
+    const rowY = startY + 100 + cardHeight + 10 + 15 + cardHeight + 70 + 80; // Below existing zones
+    
+    // Calculate starting X to center the 10 slots
+    const totalWidth = (slotCount - 1) * slotSpacing;
+    const startX = (width * 0.5) - (totalWidth / 2);
+    
+    // Generate 10 slot positions
+    for (let i = 0; i < slotCount; i++) {
+      slots.push({
+        x: startX + (i * slotSpacing),
+        y: rowY,
+        index: i
+      });
+    }
+    
+    return slots;
+  }
+
+  generateOpponentRow2Slots(playerStartX, width, startY, cardHeight) {
+    const slots = [];
+    const slotCount = 10;
+    const slotSpacing = 120; // Space between each slot
+    const rowY = startY + 100 + cardHeight + 10 + 15 - 80; // Above existing opponent zones
+    
+    // Calculate starting X to center the 10 slots
+    const totalWidth = (slotCount - 1) * slotSpacing;
+    const startX = (width * 0.5) - (totalWidth / 2);
+    
+    // Generate 10 slot positions
+    for (let i = 0; i < slotCount; i++) {
+      slots.push({
+        x: startX + (i * slotSpacing),
+        y: rowY,
+        index: i
+      });
+    }
+    
+    return slots;
   }
 
   createZones() {
@@ -448,7 +496,7 @@ export default class GameScene extends Phaser.Scene {
       align: 'center'
     }).setOrigin(0.5);
     */
-    this.handContainer = this.add.container(width / 2, height - 120);
+    this.handContainer = this.add.container(width / 2-50, height - 120);
   }
 
   setupEventListeners() {
