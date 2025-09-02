@@ -201,6 +201,33 @@ router.put('/player/:playerId/score', async (req: Request, res: Response) => {
 // ============ DEVELOPMENT/TESTING ENDPOINTS ============
 
 /**
+ * Get test scenario data
+ * GET /api/game/test/getTestScenario?scenarioPath=simple_test
+ */
+router.get('/test/getTestScenario', gameController.getTestScenario.bind(gameController));
+
+/**
+ * Inject game state for testing
+ * POST /api/game/test/injectGameState
+ */
+router.post('/test/injectGameState', 
+    // Environment check middleware
+    (req: Request, res: Response, next: NextFunction) => {
+        // Allow in development for now, restrict in production
+        if (process.env.NODE_ENV === 'production') {
+            res.status(403).json({ 
+                error: 'This endpoint is only available in test/development environment',
+                timestamp: new Date().toISOString()
+            });
+            return;
+        }
+        next();
+    },
+    // Main handler - use controller method
+    gameController.injectGameState.bind(gameController)
+);
+
+/**
  * Set test case (development only)
  * POST /api/game/test/setCase
  */

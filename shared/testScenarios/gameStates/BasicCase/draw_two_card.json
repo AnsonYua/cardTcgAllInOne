@@ -1,0 +1,1268 @@
+{
+  "description": "sample_play_card",
+  "gameId": "sample_play_card",
+  "testType": "charcterPlayCard",
+  "category": "",
+  "tags": [
+    "PlayCard"
+  ],
+  "initialGameEnv":   {
+
+        "phase": "DRAW_PHASE",
+        "playerId_1": "playerId_1",
+        "playerId_2": "playerId_2",
+        "gameStarted": true,
+        "firstPlayer": 0,
+        "currentPlayer": "playerId_1",
+        "currentTurn": 0,
+        "playersReady": {
+            "playerId_1": true,
+            "playerId_2": true
+        },
+        "players": {
+            "playerId_1": {
+                "id": "playerId_1",
+                "name": "Player 1",
+                "deck": {
+                    "hand": [
+                        {
+                            "cardUid": "ST01-002_9896132a-4411-4760-ac2e-85328ee090a5",
+                            "cardId": "ST01-002",
+                            "cardData": {
+                                "id": "ST01-002",
+                                "name": "Gundam(MA Form)",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 5,
+                                "cost": 3,
+                                "zone": [
+                                    "Space"
+                                ],
+                                "traits": [
+                                    "Earth Federation",
+                                    "White Base Team"
+                                ],
+                                "link": [
+                                    "Amuro Ray"
+                                ],
+                                "ap": 4,
+                                "hp": 3,
+                                "effects": {
+                                    "description": [
+                                        "【When Paired･(White Base Team) pilot】Draw 1."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "paired_white_base_draw",
+                                            "type": "triggered",
+                                            "trigger": "PAIRING_COMPLETE",
+                                            "conditions": [
+                                                {
+                                                    "type": "traitMatch",
+                                                    "target": "pilot",
+                                                    "traits": [
+                                                        "White Base Team"
+                                                    ]
+                                                }
+                                            ],
+                                            "target": {
+                                                "type": "player",
+                                                "scope": "self"
+                                            },
+                                            "effect": {
+                                                "action": "draw",
+                                                "parameters": {
+                                                    "amount": 1
+                                                },
+                                                "duration": "instant"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-004_9c15191b-53bd-4da7-9722-f7d566376b22",
+                            "cardId": "ST01-004",
+                            "cardData": {
+                                "id": "ST01-004",
+                                "name": "Guntank",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 3,
+                                "cost": 2,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Federation",
+                                    "White Base Team"
+                                ],
+                                "link": [
+                                    "Hayato Kobayashi"
+                                ],
+                                "ap": 2,
+                                "hp": 3,
+                                "effects": {
+                                    "description": [
+                                        "【Deploy】Choose 1 enemy Unit with 2 or less HP. Rest it."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "deploy_rest_low_hp",
+                                            "type": "triggered",
+                                            "trigger": "ENTERS_PLAY",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "filters": {
+                                                    "hp": "<=2"
+                                                },
+                                                "count": 1
+                                            },
+                                            "effect": {
+                                                "action": "rest",
+                                                "duration": "permanent"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-001_685e9da4-2b60-4b5d-9262-bbcfa196c78d",
+                            "cardId": "ST01-001",
+                            "cardData": {
+                                "id": "ST01-001",
+                                "name": "Gundam",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 4,
+                                "cost": 3,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Federation",
+                                    "White Base Team"
+                                ],
+                                "link": [
+                                    "Amuro Ray"
+                                ],
+                                "ap": 3,
+                                "hp": 4,
+                                "effects": {
+                                    "description": [
+                                        "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)",
+                                        "【During Pair】During your turn, all your Units get AP+1."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "repair_2",
+                                            "type": "keyword",
+                                            "trigger": "END_OF_TURN",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self"
+                                            },
+                                            "effect": {
+                                                "action": "heal",
+                                                "parameters": {
+                                                    "amount": 2
+                                                },
+                                                "duration": "instant"
+                                            }
+                                        },
+                                        {
+                                            "effectId": "pair_ap_boost_all",
+                                            "type": "static",
+                                            "trigger": "continuous",
+                                            "conditions": [
+                                                "isPaired"
+                                            ],
+                                            "timing": [
+                                                "YOUR_TURN"
+                                            ],
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self_all",
+                                                "filters": {
+                                                    "controller": "self"
+                                                }
+                                            },
+                                            "effect": {
+                                                "action": "modifyAP",
+                                                "parameters": {
+                                                    "modifier": "+1"
+                                                },
+                                                "duration": "while_paired"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-012_4aae4828-afc2-415a-8b44-3b1099003a1a",
+                            "cardId": "ST01-012",
+                            "cardData": {
+                                "id": "ST01-012",
+                                "name": "Thoroughly Damaged",
+                                "cardType": "command",
+                                "color": "Blue",
+                                "level": 2,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [
+                                    "Earth Federation",
+                                    "White Base Team"
+                                ],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 1,
+                                "effects": {
+                                    "description": [
+                                        "【Main】Choose 1 rested enemy Unit. Deal 1 damage to it.",
+                                        "【Pilot】[Hayato Kobayashi]"
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "main_damage_rested",
+                                            "type": "activated",
+                                            "timing": [
+                                                "MAIN_PHASE"
+                                            ],
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "filters": {
+                                                    "status": "rested"
+                                                },
+                                                "count": 1
+                                            },
+                                            "effect": {
+                                                "action": "damage",
+                                                "parameters": {
+                                                    "amount": 1
+                                                },
+                                                "duration": "instant"
+                                            }
+                                        },
+                                        {
+                                            "effectId": "pilot_designation",
+                                            "type": "special",
+                                            "trigger": "continuous",
+                                            "target": {
+                                                "type": "pilot",
+                                                "scope": "any"
+                                            },
+                                            "effect": {
+                                                "action": "designate_pilot",
+                                                "parameters": {
+                                                    "pilotName": "Hayato Kobayashi"
+                                                },
+                                                "duration": "permanent"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-016_16090253-9786-46d7-b560-26d8b4f10bfd",
+                            "cardId": "ST01-016",
+                            "cardData": {
+                                "id": "ST01-016",
+                                "name": "Asticassia School of Technology, Earth House",
+                                "cardType": "base",
+                                "color": "White",
+                                "level": 2,
+                                "cost": 1,
+                                "zone": [
+                                    "Space"
+                                ],
+                                "traits": [
+                                    "Academy",
+                                    "Stronghold"
+                                ],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 5,
+                                "effects": {
+                                    "description": [
+                                        "【Burst】Deploy this card.",
+                                        "【Deploy】Add 1 of your Shields to your hand.",
+                                        "【Activate･Main】Rest this Base：All friendly Link Units get AP+1 during this turn."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_deploy",
+                                            "type": "triggered",
+                                            "trigger": "BURST_CONDITION",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self"
+                                            },
+                                            "effect": {
+                                                "action": "deploy",
+                                                "duration": "instant"
+                                            }
+                                        },
+                                        {
+                                            "effectId": "deploy_shield_to_hand",
+                                            "type": "triggered",
+                                            "trigger": "ENTERS_PLAY",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self_shield"
+                                            },
+                                            "effect": {
+                                                "action": "addToHand",
+                                                "parameters": {
+                                                    "count": 1,
+                                                    "from": "shield"
+                                                },
+                                                "duration": "instant"
+                                            }
+                                        },
+                                        {
+                                            "effectId": "activate_boost_link_units",
+                                            "type": "activated",
+                                            "timing": [
+                                                "MAIN_PHASE"
+                                            ],
+                                            "cost": {
+                                                "tap": "self"
+                                            },
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self_all",
+                                                "filters": {
+                                                    "linkStatus": "linked"
+                                                }
+                                            },
+                                            "effect": {
+                                                "action": "modifyAP",
+                                                "parameters": {
+                                                    "modifier": "+1"
+                                                },
+                                                "duration": "turn"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-003_1211cccf-1325-4272-a169-a9ce5d673014",
+                            "cardId": "ST01-003",
+                            "cardData": {
+                                "id": "ST01-003",
+                                "name": "Guncannon",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 3,
+                                "cost": 2,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Federation",
+                                    "White Base Team"
+                                ],
+                                "link": [
+                                    "Kai Shiden"
+                                ],
+                                "ap": 2,
+                                "hp": 4,
+                                "effects": {
+                                    "description": [],
+                                    "rules": []
+                                }
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-001_2ba611b8-de4b-4f20-9a92-13df6bb1d49e",
+                            "cardId": "ST01-001",
+                            "cardData": {
+                                "id": "ST01-001",
+                                "name": "Gundam",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 4,
+                                "cost": 3,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Federation",
+                                    "White Base Team"
+                                ],
+                                "link": [
+                                    "Amuro Ray"
+                                ],
+                                "ap": 3,
+                                "hp": 4,
+                                "effects": {
+                                    "description": [
+                                        "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)",
+                                        "【During Pair】During your turn, all your Units get AP+1."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "repair_2",
+                                            "type": "keyword",
+                                            "trigger": "END_OF_TURN",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self"
+                                            },
+                                            "effect": {
+                                                "action": "heal",
+                                                "parameters": {
+                                                    "amount": 2
+                                                },
+                                                "duration": "instant"
+                                            }
+                                        },
+                                        {
+                                            "effectId": "pair_ap_boost_all",
+                                            "type": "static",
+                                            "trigger": "continuous",
+                                            "conditions": [
+                                                "isPaired"
+                                            ],
+                                            "timing": [
+                                                "YOUR_TURN"
+                                            ],
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self_all",
+                                                "filters": {
+                                                    "controller": "self"
+                                                }
+                                            },
+                                            "effect": {
+                                                "action": "modifyAP",
+                                                "parameters": {
+                                                    "modifier": "+1"
+                                                },
+                                                "duration": "while_paired"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "handUids": [
+                        "ST01-002_9896132a-4411-4760-ac2e-85328ee090a5",
+                        "ST01-004_9c15191b-53bd-4da7-9722-f7d566376b22",
+                        "ST01-001_685e9da4-2b60-4b5d-9262-bbcfa196c78d",
+                        "ST01-012_4aae4828-afc2-415a-8b44-3b1099003a1a",
+                        "ST01-016_16090253-9786-46d7-b560-26d8b4f10bfd",
+                        "ST01-003_1211cccf-1325-4272-a169-a9ce5d673014",
+                        "ST01-001_2ba611b8-de4b-4f20-9a92-13df6bb1d49e"
+                    ],
+                    "mainDeck": [
+                        "ST01-009_be307217-1af3-4872-9306-cf32d14b8f29",
+                        "ST01-013_9748b4ef-8a97-4302-872d-679ae8dae41c",
+                        "ST01-010_5a099acd-12f4-4d63-a30c-541380b45578",
+                        "ST01-012_9f72f3ca-859f-4ec1-b26b-a2a727d6a617",
+                        "ST01-003_db97c076-aa28-45a9-acd9-d1be4ce73772",
+                        "ST01-011_de629af3-89cd-4a85-a95b-dab43e6353fb",
+                        "ST01-011_396b9e55-5078-481f-943d-85c555c7f093",
+                        "ST01-007_6ab06640-d19a-47a5-9102-e28e5d424429",
+                        "ST01-011_f4394c8b-88ed-486d-a788-eb209565054a",
+                        "ST01-007_c8021375-0dc0-4d52-b07a-017c1688de22",
+                        "ST01-004_3fab34ef-e905-4b20-82a8-5d9abd198a3c",
+                        "ST01-014_e195b39c-71d0-4025-bd99-f9df64c56f5c",
+                        "ST01-010_5c8e4cc5-8a64-45d8-96b9-25d8f67b40e3",
+                        "ST01-009_590b7e91-dc7e-4a6b-87c3-3fa6bb2e93bd",
+                        "ST01-009_d954c685-d452-4df5-9bd6-17dbf0b81a87",
+                        "ST01-006_1d94e27b-9a75-44fe-ae4e-64d6878f0678",
+                        "ST01-016_38dbaf72-f119-4e68-bf09-0e64b784cbe2",
+                        "ST01-005_554d4aa4-5cdd-411f-b1d4-a5ac254497b0",
+                        "ST01-008_88649ff8-3f7f-4aef-9feb-32a1b3a5fa9d",
+                        "ST01-013_05877afe-b63c-4caa-8c5c-690a9dc122e8",
+                        "ST01-015_64882e5b-0ae9-444a-942f-0065866cb8b8",
+                        "ST01-008_00fac23c-daba-42d6-b714-d1276f621368",
+                        "ST01-013_3650e61e-09bd-4055-88fe-719307506f0c",
+                        "ST01-004_dc66b731-c62f-4868-8258-cbe329c643a0",
+                        "ST01-014_27401e45-f5e4-493d-bcc7-93f35b878c79",
+                        "ST01-015_0dcbebf0-b4a9-4033-9ece-cf7ba6fc895d",
+                        "ST01-011_d11e4cbb-123b-49da-9271-f44b01ee2a97",
+                        "ST01-010_09e3e334-ee0b-4ee8-b3e3-b1aa8c3a0939",
+                        "ST01-005_1e32331d-5b2c-469b-9445-3a500418b533",
+                        "ST01-003_e9e23cc3-9771-467e-853d-231576dddf5d",
+                        "ST01-006_cbcf0c03-19f2-4388-8ae8-062bb83af35c",
+                        "ST01-010_75335a3e-e76e-4123-934e-fb62075dcd62",
+                        "ST01-016_3455f8ea-fcc3-4451-b00d-d0c94a622e65",
+                        "ST01-007_c5a40351-0798-4d2c-84db-d09684d117e2",
+                        "ST01-002_51e978a9-87af-4d92-938b-4a7c8456e47c",
+                        "ST01-012_6bbc1e1d-e93b-47bb-9d4d-3e1252a7345a",
+                        "ST01-009_0eb62f30-4cdc-4243-baf6-b9fd6cae3f93"
+                    ]
+                },
+                "confirmIsRedraw": true,
+                "playerPoint": 0,
+                "isReady": false,
+                "zones": {
+                    "slot1": {},
+                    "slot2": {},
+                    "slot3": {},
+                    "slot4": {},
+                    "slot5": {},
+                    "slot6": {},
+                    "base": [
+                        {
+                            "cardUid": "base_default",
+                            "cardId": "base_default",
+                            "placedAt": 1756741545438,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "cardData": {
+                                "cardType": "base"
+                            },
+                            "currentHP": 3,
+                            "originalHP": 3,
+                            "damageReceived": 0
+                        }
+                    ],
+                    "shieldArea": [
+                        {
+                            "cardUid": "ST01-015_fb578ca1-2f25-4c8c-b57a-e58faf854111",
+                            "cardId": "ST01-015",
+                            "placedAt": 1756741545437,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "cardData": {
+                                "cardType": "shield"
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-005_2719281a-1696-4d04-a56a-8bc8141be209",
+                            "cardId": "ST01-005",
+                            "placedAt": 1756741545437,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "cardData": {
+                                "cardType": "shield"
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-007_58c395b8-eaf0-4603-a46b-f1c55dbcbb8f",
+                            "cardId": "ST01-007",
+                            "placedAt": 1756741545437,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "cardData": {
+                                "cardType": "shield"
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-005_06534563-3373-4479-b9b7-656e8dbd6d67",
+                            "cardId": "ST01-005",
+                            "placedAt": 1756741545437,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "cardData": {
+                                "cardType": "shield"
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-008_241f4823-07ff-4d16-b7d2-46afe27b9b0b",
+                            "cardId": "ST01-008",
+                            "placedAt": 1756741545437,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "cardData": {
+                                "cardType": "shield"
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-008_75fb1469-e309-425c-bb06-de2629f31b75",
+                            "cardId": "ST01-008",
+                            "placedAt": 1756741545437,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "cardData": {
+                                "cardType": "shield"
+                            }
+                        }
+                    ],
+                    "energyArea": [
+                        {
+                            "cardUid": "energy_basic_1756741545437_0.7170814931202547",
+                            "cardId": "energy_basic",
+                            "placedAt": 1756741545437,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isExtraEnergy": false,
+                            "cardData": {
+                                "cardType": "energy"
+                            }
+                        }
+                    ],
+                    "trashArea": []
+                }
+            },
+            "playerId_2": {
+                "id": "playerId_2",
+                "name": "Player 2",
+                "deck": {
+                    "hand": [
+                        {
+                            "cardUid": "ST01-005_c70381b3-0192-4150-9035-f44f1f8a94b1",
+                            "cardId": "ST01-005",
+                            "cardData": {
+                                "id": "ST01-005",
+                                "name": "GM",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 2,
+                                "cost": 1,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Federation"
+                                ],
+                                "link": [],
+                                "ap": 2,
+                                "hp": 2,
+                                "effects": {
+                                    "description": [],
+                                    "rules": []
+                                }
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-013_85ff0b8d-6046-4a72-8dfc-d05a4e7dcc0d",
+                            "cardId": "ST01-013",
+                            "cardData": {
+                                "id": "ST01-013",
+                                "name": "Kai's Resolve",
+                                "cardType": "command",
+                                "color": "Blue",
+                                "level": 3,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [
+                                    "Earth Federation",
+                                    "White Base Team"
+                                ],
+                                "link": [],
+                                "ap": 1,
+                                "hp": 0,
+                                "effects": {
+                                    "description": [
+                                        "【Main】Choose 1 friendly Unit. It recovers 3 HP.",
+                                        "【Pilot】[Kai Shiden]"
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "main_heal_friendly",
+                                            "type": "activated",
+                                            "timing": [
+                                                "MAIN_PHASE"
+                                            ],
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self",
+                                                "count": 1
+                                            },
+                                            "effect": {
+                                                "action": "heal",
+                                                "parameters": {
+                                                    "amount": 3
+                                                },
+                                                "duration": "instant"
+                                            }
+                                        },
+                                        {
+                                            "effectId": "pilot_designation",
+                                            "type": "special",
+                                            "trigger": "continuous",
+                                            "target": {
+                                                "type": "pilot",
+                                                "scope": "any"
+                                            },
+                                            "effect": {
+                                                "action": "designate_pilot",
+                                                "parameters": {
+                                                    "pilotName": "Kai Shiden"
+                                                },
+                                                "duration": "permanent"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-007_1499fe0f-c118-483b-94a9-ddeca3b3c2d3",
+                            "cardId": "ST01-007",
+                            "cardData": {
+                                "id": "ST01-007",
+                                "name": "Gundam Aerial (Bit on Form)",
+                                "cardType": "unit",
+                                "color": "White",
+                                "level": 4,
+                                "cost": 2,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Academy"
+                                ],
+                                "link": [
+                                    "Suletta Mercury"
+                                ],
+                                "ap": 3,
+                                "hp": 4,
+                                "effects": {
+                                    "description": [],
+                                    "rules": []
+                                }
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-003_601863de-bc06-4fed-87fa-fb14d25138cb",
+                            "cardId": "ST01-003",
+                            "cardData": {
+                                "id": "ST01-003",
+                                "name": "Guncannon",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 3,
+                                "cost": 2,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Federation",
+                                    "White Base Team"
+                                ],
+                                "link": [
+                                    "Kai Shiden"
+                                ],
+                                "ap": 2,
+                                "hp": 4,
+                                "effects": {
+                                    "description": [],
+                                    "rules": []
+                                }
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-001_be37dbcc-2969-4eda-a0af-998d1c59c9d6",
+                            "cardId": "ST01-001",
+                            "cardData": {
+                                "id": "ST01-001",
+                                "name": "Gundam",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 4,
+                                "cost": 3,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Federation",
+                                    "White Base Team"
+                                ],
+                                "link": [
+                                    "Amuro Ray"
+                                ],
+                                "ap": 3,
+                                "hp": 4,
+                                "effects": {
+                                    "description": [
+                                        "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)",
+                                        "【During Pair】During your turn, all your Units get AP+1."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "repair_2",
+                                            "type": "keyword",
+                                            "trigger": "END_OF_TURN",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self"
+                                            },
+                                            "effect": {
+                                                "action": "heal",
+                                                "parameters": {
+                                                    "amount": 2
+                                                },
+                                                "duration": "instant"
+                                            }
+                                        },
+                                        {
+                                            "effectId": "pair_ap_boost_all",
+                                            "type": "static",
+                                            "trigger": "continuous",
+                                            "conditions": [
+                                                "isPaired"
+                                            ],
+                                            "timing": [
+                                                "YOUR_TURN"
+                                            ],
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self_all",
+                                                "filters": {
+                                                    "controller": "self"
+                                                }
+                                            },
+                                            "effect": {
+                                                "action": "modifyAP",
+                                                "parameters": {
+                                                    "modifier": "+1"
+                                                },
+                                                "duration": "while_paired"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "handUids": [
+                        "ST01-005_c70381b3-0192-4150-9035-f44f1f8a94b1",
+                        "ST01-013_85ff0b8d-6046-4a72-8dfc-d05a4e7dcc0d",
+                        "ST01-007_1499fe0f-c118-483b-94a9-ddeca3b3c2d3",
+                        "ST01-003_601863de-bc06-4fed-87fa-fb14d25138cb",
+                        "ST01-001_be37dbcc-2969-4eda-a0af-998d1c59c9d6"
+                    ],
+                    "mainDeck": [
+                        "ST01-012_7cd0b811-9bf6-4a1a-b6ea-41bf69b5e543",
+                        "ST01-008_edf9ddd8-e763-4566-9c20-18fbd2230e24",
+                        "ST01-007_534f733e-a3bb-482c-b904-2d02f41becee",
+                        "ST01-008_218b3b03-ebb8-4725-b239-3c4a34b367fd",
+                        "ST01-010_1a80cb77-bb24-4603-9f42-850c16f57308",
+                        "ST01-013_d265db5f-094a-4ce2-ba34-17f9e1fdee1c",
+                        "ST01-001_046d9af8-8be7-4afc-94bf-207dc20770ed",
+                        "ST01-012_47c233a8-22ed-46b3-9be1-f1c6f7277e66",
+                        "ST01-008_52418a86-022c-48c8-9139-b10633fd06de",
+                        "ST01-009_68372f38-ffdc-4792-b191-b232aea104f4",
+                        "ST01-006_3b41cc84-db97-4e1a-9d15-fc4eb7423d8c",
+                        "ST01-016_f5be512a-87b1-486f-b2f2-a4edaa89ba9a",
+                        "ST01-014_bb00a98b-62d3-42bc-be42-af12776b1106",
+                        "ST01-011_19ad8351-2a97-4732-990e-f2f487704675",
+                        "ST01-008_4254c7e1-0934-423d-904b-542bd46928de",
+                        "ST01-002_40bde173-72df-47e1-9bb4-edc10e45f7eb",
+                        "ST01-009_3595f854-416c-4c4b-af51-26d6944523dc",
+                        "ST01-010_32957eb3-87b9-4b16-b544-216c588caf04",
+                        "ST01-009_50da51f5-448b-4e30-a53e-17cd7c67dd7e",
+                        "ST01-004_f31c996d-0f86-4bb0-8633-ec325b898c87",
+                        "ST01-016_a3989269-e70d-4c43-8b79-f296d7e96c9c",
+                        "ST01-010_0ab90644-7eeb-413f-ab94-1949227d69e6",
+                        "ST01-014_760dd6dd-ea74-4621-bc80-26c7c62fcf2a",
+                        "ST01-005_4d7371a6-6f25-4ec5-87eb-c8f438e83aca",
+                        "ST01-010_75ebe9b1-c468-46b3-9d49-f5779c007132",
+                        "ST01-004_50a735a0-000e-4b11-a777-d33958a4beb4",
+                        "ST01-011_126eebb3-ef00-4668-87d8-950dbaa93373",
+                        "ST01-015_086e1b66-1eb5-4c64-ab0f-1354073631f7",
+                        "ST01-005_60849af3-a1a5-4fad-bba2-97d0725c53a9",
+                        "ST01-005_86795e80-8303-4df8-8563-d792ef2186cf",
+                        "ST01-013_bcc0b2cc-299d-4969-b603-1643c6d808ba",
+                        "ST01-011_043bb74f-35d6-4a4d-9760-4311d4c47aa7",
+                        "ST01-012_a8ae0329-8fd8-4656-bd51-c045bc128326",
+                        "ST01-007_58b52e17-a977-49a0-9e26-11f78a758214",
+                        "ST01-011_ce6acb14-880c-4c76-beba-8ff9369f95d1",
+                        "ST01-007_f9802ccf-d9f0-4a9e-a7fb-22e30f330c63",
+                        "ST01-015_0908fa82-6853-4387-ada9-5796b33dfb9c",
+                        "ST01-006_9c928862-6efa-4182-8190-27e4f023f64c",
+                        "ST01-004_5a4b9cd4-11e7-4dc5-b0a4-dd46791e48b7"
+                    ]
+                },
+                "confirmIsRedraw": true,
+                "playerPoint": 0,
+                "isReady": false,
+                "zones": {
+                    "slot1": {},
+                    "slot2": {},
+                    "slot3": {},
+                    "slot4": {},
+                    "slot5": {},
+                    "slot6": {},
+                    "base": [
+                        {
+                            "cardUid": "base_default",
+                            "cardId": "base_default",
+                            "placedAt": 1756741545438,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "cardData": {
+                                "cardType": "base"
+                            },
+                            "currentHP": 3,
+                            "originalHP": 3,
+                            "damageReceived": 0
+                        }
+                    ],
+                    "shieldArea": [
+                        {
+                            "cardUid": "ST01-009_cdde835d-10ed-4457-842e-f8bbcbd4c12d",
+                            "cardId": "ST01-009",
+                            "placedAt": 1756741545437,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "cardData": {
+                                "cardType": "shield"
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-015_12e9ff0b-8d05-4adb-a65e-5ac3e7b037e6",
+                            "cardId": "ST01-015",
+                            "placedAt": 1756741545438,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "cardData": {
+                                "cardType": "shield"
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-003_b36cdc70-ce8b-49b5-8add-c01635b16d2f",
+                            "cardId": "ST01-003",
+                            "placedAt": 1756741545438,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "cardData": {
+                                "cardType": "shield"
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-016_bc1e700e-14f1-4ded-92b0-caff0c0b42f6",
+                            "cardId": "ST01-016",
+                            "placedAt": 1756741545438,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "cardData": {
+                                "cardType": "shield"
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-002_718f70c6-cdad-4d53-90f6-d5a6ecf3cf10",
+                            "cardId": "ST01-002",
+                            "placedAt": 1756741545438,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "cardData": {
+                                "cardType": "shield"
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-003_9cc70b41-4e12-42ab-94a9-ae3702ac4d65",
+                            "cardId": "ST01-003",
+                            "placedAt": 1756741545438,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "cardData": {
+                                "cardType": "shield"
+                            }
+                        }
+                    ],
+                    "energyArea": [
+                        {
+                            "cardUid": "energy_extra_1756741545437_0.03943835103452242",
+                            "cardId": "energy_extra",
+                            "placedAt": 1756741545437,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "isExtraEnergy": true,
+                            "cardData": {
+                                "cardType": "energy"
+                            }
+                        }
+                    ],
+                    "trashArea": []
+                }
+            }
+        },
+        "pendingCardSelections": {},
+        "gameEvents": [
+            {
+                "id": "card_drawn_1756741545438_2547nw7xc",
+                "type": "CARD_DRAWN",
+                "metadata": {
+                    "timestamp": 1756741545438,
+                    "expiresAt": 1756741548438,
+                    "requiresAcknowledgment": true,
+                    "frontendProcessed": false,
+                    "priority": "normal"
+                },
+                "payload": {
+                    "playerId": "playerId_1",
+                    "drawnCards": [
+                        "ST01-003_1211cccf-1325-4272-a169-a9ce5d673014",
+                        "ST01-001_2ba611b8-de4b-4f20-9a92-13df6bb1d49e"
+                    ],
+                    "cardsDrawn": 2,
+                    "newHandSize": 7
+                }
+            }
+        ],
+        "lastEventId": 0
+  },
+  "playerActions": [
+    {
+      "step": 1,
+      "playerId": "playerId_2",
+      "description": "Player 2 selects c-1 with h-2's setPower effect",
+      "action": {
+        "actionType": "SelectCard",
+        "selectionId": "playerId_2_setPower_1753090836037",
+        "cardIds": [
+          "c-1"
+        ]
+      },
+      "expectedResult": {
+        "success": true,
+        "message": "Card selection completed successfully"
+      }
+    }
+  ],
+  "expectedStateChanges": {
+    "players.playerId_1.fieldEffects.activeEffects.length": 4,
+    "zones.playerId_1.left.0.valueOnField": 0,
+    "players.playerId_1.fieldEffects.calculatedPowers.c-1": 0,
+    "playSequence.plays.length": 5,
+    "players.playerId_1.playerPoint": 0
+  },
+  "validationPoints": [
+    {
+      "cardId": "c-1",
+      "zone": "left",
+      "playerId": "playerId_1",
+      "description": "c-1 power should be set to 0 by h-2's setPower effect",
+      "expectedPower": 0,
+      "powerSource": "h-2 setPower effect overrides all other effects including leader boost (+45) and character boost (+10)"
+    }
+  ],
+  "activeEffectsValidation": {
+    "playerId_1": {
+      "requiredEffects": [
+        {
+          "source": "s-1",
+          "type": "powerBoost",
+          "target": {
+            "scope": "SELF",
+            "gameTypes": [
+              "右翼",
+              "愛國者"
+            ]
+          },
+          "value": 45,
+          "description": "Trump leader power boost for 右翼/愛國者 cards"
+        },
+        {
+          "source": "s-1",
+          "type": "setPower",
+          "target": {
+            "scope": "SELF",
+            "gameTypes": [
+              "經濟"
+            ]
+          },
+          "value": 0,
+          "description": "Trump vs Powell conditional economic card nerf"
+        },
+        {
+          "source": "c-1",
+          "type": "powerBoost",
+          "target": {
+            "scope": "SELF",
+            "traits": [
+              "特朗普家族"
+            ]
+          },
+          "value": 10,
+          "description": "c-1 character effect boosting Trump family cards"
+        },
+        {
+          "source": "h-2",
+          "type": "setPower",
+          "target": {
+            "scope": "OPPONENT",
+            "specificCards": [
+              "c-1"
+            ]
+          },
+          "value": 0,
+          "description": "h-2's MAGA effect setting c-1 power to 0 (NEW - should be added)"
+        }
+      ],
+      "totalEffectsCount": 4
+    }
+  },
+  "playSequenceValidation": {
+    "expectedPlays": 5,
+    "newPlayValidation": {
+      "type": "APPLY_SET_POWER",
+      "playerId": "playerId_2",
+      "targetPlayerId": "playerId_1",
+      "sourceCard": "h-2",
+      "selectedCardIds": [
+        "c-1"
+      ],
+      "powerValue": 0,
+      "description": "setPower effect recorded in play sequence for replay consistency"
+    }
+  },
+  "cardDefinitions": {
+    "c-1": {
+      "id": "c-1",
+      "name": "總統特朗普",
+      "cardType": "character",
+      "gameType": "愛國者",
+      "power": 100,
+      "traits": [
+        "特朗普家族"
+      ],
+      "rarity": "legendary"
+    },
+    "h-2": {
+      "id": "h-2",
+      "name": "Make America Great Again",
+      "cardType": "help",
+      "effects": {
+        "description": "選擇對方一張角色卡，原能力值 變成 0",
+        "rules": [
+          {
+            "id": "maga_nerf",
+            "type": "triggered",
+            "trigger": {
+              "event": "onPlay",
+              "conditions": []
+            },
+            "target": {
+              "owner": "opponent",
+              "zones": [
+                "top",
+                "left",
+                "right"
+              ],
+              "requiresSelection": true,
+              "selectCount": 1,
+              "filters": []
+            },
+            "effect": {
+              "type": "setPower",
+              "value": 0
+            }
+          }
+        ]
+      }
+    },
+    "s-1": {
+      "id": "s-1",
+      "name": "特朗普",
+      "cardType": "leader",
+      "gameType": "右翼",
+      "initialPoint": 110,
+      "level": 7,
+      "rarity": "legendary",
+      "zoneCompatibility": {
+        "top": [
+          "右翼",
+          "自由",
+          "經濟"
+        ],
+        "left": [
+          "右翼",
+          "自由",
+          "愛國者"
+        ],
+        "right": [
+          "右翼",
+          "愛國者",
+          "經濟"
+        ]
+      }
+    },
+    "s-2": {
+      "id": "s-2",
+      "name": "拜登",
+      "cardType": "leader",
+      "gameType": "左翼",
+      "initialPoint": 100,
+      "level": 7,
+      "rarity": "legendary",
+      "zoneCompatibility": {
+        "top": [
+          "左翼",
+          "自由",
+          "經濟",
+          "右翼",
+          "愛國者"
+        ],
+        "left": [
+          "左翼",
+          "自由",
+          "經濟",
+          "右翼",
+          "愛國者"
+        ],
+        "right": [
+          "左翼",
+          "自由",
+          "經濟",
+          "右翼",
+          "愛國者"
+        ]
+      }
+    }
+  },
+  "testNotes": {
+    "purpose": "Validate h-2 Make America Great Again setPower effect with fixed implementation",
+    "basedOnRealGameState": "Created from actual user game environment with pending card selection",
+    "keyValidations": [
+      "Card selection workflow completion",
+      "setPower effect properly recorded in activeEffects",
+      "setPower effect added to playSequence for replay consistency",
+      "Power display synchronization (valueOnField = 0)",
+      "Effect overrides multiple existing power modifiers",
+      "Cross-player effect targeting with specificCards",
+      "Turn progression after card selection"
+    ],
+    "powerCalculationFlow": {
+      "before": {
+        "basePower": 100,
+        "trumpLeaderBoost": 45,
+        "characterBoost": 10,
+        "total": 155,
+        "note": "c-1 benefits from both leader and character power boosts"
+      },
+      "after": {
+        "setPowerEffect": 0,
+        "note": "setPower effect overrides ALL other modifiers (priority)",
+        "total": 0
+      }
+    },
+    "architecturalFixes": {
+      "playSequenceIntegration": "setPower effects now recorded as APPLY_SET_POWER actions",
+      "effectSimulatorSupport": "Added APPLY_SET_POWER case to executePlayUnified method",
+      "replayConsistency": "Effects survive simulateCardPlaySequence calls",
+      "displaySynchronization": "valueOnField updated to match calculated power"
+    },
+    "testCoverage": {
+      "cardSelectionWorkflow": "Complete selection from trigger to completion",
+      "effectPersistence": "Effects survive turn switching and replay",
+      "crossPlayerEffects": "Effect stored in target player's activeEffects",
+      "prioritySystem": "setPower overrides powerBoost effects",
+      "gameStateIntegrity": "All game state properly updated post-selection"
+    },
+    "realWorldScenario": "Based on user's actual game where c-1 power wasn't updating to 0 after h-2 selection"
+  }
+}

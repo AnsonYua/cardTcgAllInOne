@@ -579,6 +579,117 @@ export class GameController {
             });
         }
     }
+    
+    // ============ TEST ENDPOINTS ============
+
+    /**
+     * Get test scenario for testing
+     * GET /api/game/test/getTestScenario?scenarioPath=...
+     */
+    async getTestScenario(req: Request, res: Response): Promise<void> {
+        try {
+            const { scenarioPath } = req.query;
+            
+            if (!scenarioPath || typeof scenarioPath !== 'string') {
+                res.status(400).json({
+                    error: 'Missing required parameter: scenarioPath',
+                    timestamp: new Date().toISOString(),
+                    context: 'getTestScenario endpoint'
+                });
+                return;
+            }
+            
+            console.log(`📋 Loading test scenario: ${scenarioPath}`);
+            
+            // Build the full path to the test scenario
+            const scenarioFilePath = path.join(__dirname, '../../../shared/testScenarios/gameStates', scenarioPath + '.json');
+            
+            // Check if file exists
+            if (!fs.existsSync(scenarioFilePath)) {
+                res.status(404).json({
+                    error: `Test scenario not found: ${scenarioPath}`,
+                    timestamp: new Date().toISOString(),
+                    context: 'getTestScenario endpoint'
+                });
+                return;
+            }
+            
+            // Read and parse the scenario file
+            const scenarioContent = await fs.promises.readFile(scenarioFilePath, 'utf8');
+            const scenario = JSON.parse(scenarioContent);
+            
+            console.log(`✅ Test scenario loaded successfully: ${scenarioPath}`);
+            
+            res.json({
+                success: true,
+                scenarioPath: scenarioPath,
+                scenario: scenario,
+                timestamp: new Date().toISOString()
+            });
+            
+        } catch (error) {
+            console.error('❌ Error in getTestScenario:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'getTestScenario endpoint'
+            });
+        }
+    }
+
+
+    /**
+     * Inject game state for testing
+     * POST /api/game/test/injectGameState
+     */
+    async injectGameState(req: Request, res: Response): Promise<void> {
+        try {
+            const { gameId, gameEnv } = req.body;
+            
+            if (!gameId || !gameEnv) {
+                res.status(400).json({
+                    error: 'Missing required parameters: gameId and gameEnv',
+                    timestamp: new Date().toISOString(),
+                    context: 'injectGameState endpoint'
+                });
+                return;
+            }
+            
+            console.log(`🧪 Injecting game state for testing: ${gameId}`);
+            
+            // Use GameLogic service method for business logic
+            const result = await this.gameLogic.injectGameState(gameId, gameEnv);
+            
+            if (!result.success) {
+                res.status(400).json({
+                    error: result.error || 'Failed to inject game state',
+                    timestamp: new Date().toISOString(),
+                    context: 'injectGameState endpoint'
+                });
+                return;
+            }
+            
+            console.log(`✅ Game state injected successfully: ${gameId}`);
+            
+            res.json({
+                success: true,
+                gameId: result.gameId,
+                message: 'Game state injected successfully',
+                timestamp: new Date().toISOString()
+            });
+            
+        } catch (error) {
+            console.error('❌ Error in injectGameState:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'injectGameState endpoint'
+            });
+        }
+    }
+
+
+
 }
 
 // ============ EXPORT SINGLETON ============

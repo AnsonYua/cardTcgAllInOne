@@ -933,7 +933,13 @@ export default class GameScene extends Phaser.Scene {
     const unprocessedEvent = this.gameStateManager.getUnprocessGameEvents();
     if(unprocessedEvent.length > 0) {
       // Process events one by one using GameStateManager queue logic
-      this.gameStateManager.processEventQueue((event) => this.handleSingleEvent(event));
+      this.gameStateManager.processEventQueue(
+        (event) => this.handleSingleEvent(event),
+        () => {
+          console.log('[GameScene] All events processed, continuing with game flow');
+          this.updateUI();
+        }
+      );
       return;
     }
 
@@ -2700,7 +2706,8 @@ export default class GameScene extends Phaser.Scene {
         console.log("card drawn event")
         await CardAnimationUtils.playDrawCardAnimation(this, event);
         break;
-
+      
+      /*
       case 'CARD_PLAYED':
         this.handleCardPlayedEvent(event);
         break;
@@ -2720,7 +2727,7 @@ export default class GameScene extends Phaser.Scene {
       case 'ERROR_OCCURRED':
         this.handleErrorEvent(event);
         break;
-        
+      */
       default:
         console.log(`[GameScene] Unhandled event type: ${event.type}`, event);
     }

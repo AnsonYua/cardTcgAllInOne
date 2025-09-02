@@ -484,6 +484,263 @@ export class GameLogic {
         
         return { success: false, error: 'Event creation failed' };
     }
+    
+    /**
+     * Get test scenario data for frontend testing
+     * @param req - Request object with scenarioPath query parameter
+     * @returns GameEnvironment data for the specified test scenario
+     */
+    async getTestScenario(req: any): Promise<any> {
+        const scenarioPath = req.query?.scenarioPath;
+        
+        if (!scenarioPath) {
+            throw new Error('scenarioPath query parameter is required');
+        }
+        
+        // Handle hardcoded simple_test scenario
+        if (scenarioPath === 'simple_test' || scenarioPath === 'simple_test.json') {
+            return this.getSimpleTestGameEnv();
+        }
+        
+        // Handle file-based scenarios
+        const fs = require('fs').promises;
+        const path = require('path');
+        
+        try {
+            // Add .json extension if not present
+            const filename = scenarioPath.endsWith('.json') ? scenarioPath : `${scenarioPath}.json`;
+            const scenarioFilePath = path.join(__dirname, '../gameData', filename);
+            
+            const scenarioContent = await fs.readFile(scenarioFilePath, 'utf8');
+            const scenario = JSON.parse(scenarioContent);
+            
+            // Return gameEnv directly (not wrapped in scenario object)
+            if (scenario.initialGameEnv) {
+                return scenario.initialGameEnv;
+            } else if (scenario.gameEnv) {
+                return scenario.gameEnv;
+            } else {
+                // Backward compatibility - return the whole object if it looks like gameEnv
+                if (scenario.phase && scenario.players && scenario.zones) {
+                    return scenario;
+                }
+                throw new Error('Scenario file does not contain valid gameEnv data');
+            }
+            
+        } catch (error) {
+            if ((error as any).code === 'ENOENT') {
+                throw new Error(`Scenario not found: ${scenarioPath}`);
+            }
+            throw error;
+        }
+    }
+    
+    /**
+     * Get hardcoded simple test game environment
+     * @returns Complete gameEnv for simple_test scenario
+     */
+    getSimpleTestGameEnv(): any {
+        return {
+            phase: 'MAIN_PHASE',
+            round: 1,
+            gameStarted: true,
+            currentPlayer: 'playerId_1',
+            currentTurn: 1,
+            firstPlayer: 0,
+            players: {
+                playerId_1: {
+                    id: 'playerId_1',
+                    name: 'Player 1',
+                    deck: {
+                        hand: ['c-1', 'h-1', 'c-2', 'c-3', 'c-4'],
+                        mainDeck: ['c-5', 'c-6', 'c-7', 'c-8', 'c-9', 'c-10'],
+                        leader: ['s-1', 's-2', 's-3', 's-4'],
+                        currentLeaderIdx: 0
+                    },
+                    isReady: true,
+                    redraw: 1,
+                    playerPoint: 0,
+                    fieldEffects: {
+                        zoneRestrictions: {
+                            TOP: ['右翼', '自由', '經濟'],
+                            LEFT: ['右翼', '自由', '愛國者'],
+                            RIGHT: ['右翼', '愛國者', '經濟'],
+                            HELP: 'ALL',
+                            SP: 'ALL'
+                        },
+                        activeEffects: [
+                            {
+                                effectId: 's-1_trump_rightWing_patriot_boost',
+                                source: 's-1',
+                                type: 'powerBoost',
+                                target: { scope: 'SELF', gameTypes: ['右翼', '愛國者'] },
+                                value: 45
+                            }
+                        ],
+                        disabledCards: [],
+                        victoryPointModifiers: 0
+                    }
+                },
+                playerId_2: {
+                    id: 'playerId_2',
+                    name: 'Player 2',
+                    deck: {
+                        hand: ['h-2', 'c-17', 'c-18', 'c-19', 'c-20'],
+                        mainDeck: ['c-21', 'c-22', 'c-23', 'c-24', 'c-25'],
+                        leader: ['s-2', 's-3', 's-4', 's-5'],
+                        currentLeaderIdx: 0
+                    },
+                    isReady: true,
+                    redraw: 1,
+                    playerPoint: 0,
+                    fieldEffects: {
+                        zoneRestrictions: {
+                            TOP: ['左翼', '自由', '經濟', '右翼', '愛國者'],
+                            LEFT: ['左翼', '自由', '經濟', '右翼', '愛國者'],
+                            RIGHT: ['左翼', '自由', '經濟', '右翼', '愛國者'],
+                            HELP: 'ALL',
+                            SP: 'ALL'
+                        },
+                        activeEffects: [
+                            {
+                                effectId: 's-2_biden_all_boost',
+                                source: 's-2',
+                                type: 'powerBoost',
+                                target: { scope: 'SELF', gameTypes: 'ALL' },
+                                value: 40
+                            }
+                        ],
+                        disabledCards: [],
+                        victoryPointModifiers: 0
+                    }
+                }
+            },
+            zones: {
+                playerId_1: {
+                    leader: {
+                        id: 's-1',
+                        name: '特朗普',
+                        zoneCompatibility: {
+                            top: ['右翼', '自由', '經濟'],
+                            left: ['右翼', '自由', '愛國者'],
+                            right: ['右翼', '愛國者', '經濟']
+                        },
+                        effects: {
+                            rules: [
+                                {
+                                    id: 'trump_rightWing_patriot_boost',
+                                    effect: { type: 'powerBoost', value: 45 }
+                                },
+                                {
+                                    id: 'trump_vs_powell_economy_nerf',
+                                    effect: { type: 'conditional' }
+                                }
+                            ]
+                        }
+                    },
+                    top: [],
+                    left: [],
+                    right: [],
+                    help: [],
+                    sp: []
+                },
+                playerId_2: {
+                    leader: {
+                        id: 's-2',
+                        name: '拜登',
+                        zoneCompatibility: {
+                            top: ['左翼', '自由', '經濟', '右翼', '愛國者'],
+                            left: ['左翼', '自由', '經濟', '右翼', '愛國者'],
+                            right: ['左翼', '自由', '經濟', '右翼', '愛國者']
+                        },
+                        effects: {
+                            rules: [
+                                {
+                                    id: 'biden_all_boost',
+                                    effect: { type: 'powerBoost', value: 40 }
+                                }
+                            ]
+                        }
+                    },
+                    top: [],
+                    left: [],
+                    right: [],
+                    help: [],
+                    sp: []
+                }
+            },
+            gameEvents: [],
+            lastEventId: 0,
+            pendingCardSelections: {},
+            playSequence: {
+                globalSequence: 2,
+                plays: [
+                    {
+                        sequenceId: 1,
+                        playerId: 'playerId_1',
+                        cardUid: 's-1',
+                        action: 'PLAY_LEADER',
+                        zone: 'leader'
+                    },
+                    {
+                        sequenceId: 2,
+                        playerId: 'playerId_2',
+                        cardUid: 's-2',
+                        action: 'PLAY_LEADER',
+                        zone: 'leader'
+                    }
+                ]
+            }
+        };
+    }
+
+
+
+    /**
+     * Inject a complete game state for testing purposes
+     * @param gameId - Game ID to inject state into
+     * @param gameEnv - Complete game environment to inject
+     * @returns Promise<GameLogicResult>
+     */
+    async injectGameState(gameId: string, gameEnv: any): Promise<GameLogicResult> {
+        try {
+            console.log(`🧪 Injecting game state for testing: ${gameId}`);
+            
+            if (!gameEnv) {
+                return {
+                    success: false,
+                    error: 'No game environment provided for injection'
+                };
+            }
+            
+            // Convert plain object to GameEnvironment instance if needed
+            let gameEnvironment: GameEnvironment;
+            if (gameEnv instanceof GameEnvironment) {
+                gameEnvironment = gameEnv;
+            } else {
+                // Create GameEnvironment from JSON data
+                gameEnvironment = GameEnvironment.fromJSON(gameEnv);
+            }
+            
+            // Save the injected game state
+            await this.saveGameToFile(gameId, gameEnvironment);
+            
+            console.log(`✅ Game state injected successfully: ${gameId}`);
+            
+            return {
+                success: true,
+                gameId: gameId,
+                gameEnv: gameEnvironment
+            };
+            
+        } catch (error) {
+            console.error('❌ Error injecting game state:', error);
+            return {
+                success: false,
+                error: `Failed to inject game state: ${error instanceof Error ? error.message : 'Unknown error'}`
+            };
+        }
+    }
 }
 
 // ============ EXPORT SINGLETON ============

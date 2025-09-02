@@ -864,8 +864,9 @@ export default class GameStateManager {
   /**
    * Process unprocessed events using queue logic
    * @param {Function} eventHandlerCallback - Callback to handle individual events
+   * @param {Function} processedAllEventsCallback - Callback when all events processed
    */
-  processEventQueue(eventHandlerCallback) {
+  processEventQueue(eventHandlerCallback, processedAllEventsCallback) {
     // Initialize event queue if not exists
     if (!this.eventQueue) {
       this.eventQueue = [];
@@ -884,14 +885,24 @@ export default class GameStateManager {
     
     // Start processing if not already processing
     if (!this.isProcessingEvent && this.eventQueue.length > 0) {
-      this.processNextEvent(eventHandlerCallback);
+      this.processNextEvent(eventHandlerCallback, processedAllEventsCallback);
+    } else if (this.eventQueue.length === 0 && processedAllEventsCallback) {
+      // If queue is empty and we have a completion callback, call it
+      setTimeout(() => {
+        processedAllEventsCallback();
+      }, 50);
     }
   }
   
-  async processNextEvent(eventHandlerCallback) {
+  async processNextEvent(eventHandlerCallback, processedAllEventsCallback) {
     if (this.eventQueue.length === 0) {
       this.isProcessingEvent = false;
       console.log('[GameStateManager] Event queue empty, processing complete');
+      
+      // Call the completion callback if provided
+      if (processedAllEventsCallback) {
+        processedAllEventsCallback();
+      }
       return;
     }
     
@@ -918,7 +929,7 @@ export default class GameStateManager {
     
     // Process next event after short delay
     setTimeout(() => {
-      this.processNextEvent(eventHandlerCallback);
+      this.processNextEvent(eventHandlerCallback, processedAllEventsCallback);
     }, 100);
   }
   

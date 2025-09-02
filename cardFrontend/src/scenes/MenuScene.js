@@ -292,7 +292,7 @@ export default class MenuScene extends Phaser.Scene {
           apiManager: this.apiManager,
           isManualPollingMode: true,  // Demo mode uses manual polling
           //scenarioPath: 'CharacterCase/sample_play_card_all',
-          scenarioPath: 'CharacterCase/c_9_play_and_draw_hand',
+          scenarioPath : 'BasicCase/draw_two_card',
           inGamePlayerId: 'playerId_1',
           gameId: gameId,
           gameMode: 'host'  // Host mode

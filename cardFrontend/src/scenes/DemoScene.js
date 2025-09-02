@@ -13,7 +13,6 @@ export default class DemoScene extends DemoSceneBasic {
     
     // Default values - will be overridden by init() method
     this.inGamePlayerId = "playerId_1";
-    this.scenarioPath = 'CharacterCase/c_9_play_and_draw_hand';
     this.gameId = null;
     this.gameMode = 'host';
   }
@@ -138,6 +137,14 @@ export default class DemoScene extends DemoSceneBasic {
           }
         },
         {
+          text: 'SetGameEnv',
+          onClick: () => this.setEnvironment(),
+          options: { 
+            enableHover: true,
+            fontSize: '12px'
+          }
+        },
+        {
           text: 'Acknowledge Draw',
           onClick: () => this.opponentAcknowledgeDraw(),
           options: { 
@@ -240,6 +247,14 @@ export default class DemoScene extends DemoSceneBasic {
           }
         },
         {
+          text: 'SetGameEnv',
+          onClick: () => this.setEnvironment(),
+          options: { 
+            enableHover: true,
+            fontSize: '12px'
+          }
+        },
+        {
           text: 'Acknowledge Draw',
           onClick: () => this.opponentAcknowledgeDraw(),
           options: { 
@@ -268,6 +283,11 @@ export default class DemoScene extends DemoSceneBasic {
     const _scenarioPath = this.scenarioPath;
     await super.simulateSetScenario(_scenarioPath);
   }
+
+  async setEnvironment() {
+  
+  }
+
 
   async opponentAcknowledgeDraw() {
     try {
