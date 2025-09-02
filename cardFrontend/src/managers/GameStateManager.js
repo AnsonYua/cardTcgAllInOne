@@ -264,17 +264,13 @@ export default class GameStateManager {
   }
   */
 
-  async acknowledgeEvents(apiManager) {
-    const events = this.gameState.gameEnv.gameEvents || [];
-    const unprocessedEvents = events.filter(event => !event.frontendProcessed);
-    
-    if (unprocessedEvents.length > 0 && apiManager) {
+  async acknowledgeEvents(eventIds) {
+    if (eventIds && eventIds.length > 0 && this.apiManager) {
       try {
-        const eventIds = unprocessedEvents.map(e => e.id);
-        await apiManager.acknowledgeEvents(this.gameState.gameId, eventIds);
-        console.log(`Acknowledged ${eventIds.length} events`);
+        await this.apiManager.acknowledgeEvents(this.gameState.gameId, eventIds);
+        console.log(`Acknowledged ${eventIds.length} specific events`);
       } catch (error) {
-        console.error('Failed to acknowledge events:', error);
+        console.error('Failed to acknowledge specific events:', error);
       }
     }
   }
