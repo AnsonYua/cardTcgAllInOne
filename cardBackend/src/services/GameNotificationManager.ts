@@ -176,7 +176,7 @@ export class GameNotificationManager {
         });
         
         // Clean up acknowledged events immediately
-        this.cleanupProcessedEvents();
+        // this.cleanupProcessedEvents();
         
         return acknowledgedCount;
     }

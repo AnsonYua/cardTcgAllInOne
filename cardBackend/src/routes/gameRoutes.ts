@@ -159,6 +159,7 @@ router.post('/player/acknowledgeEvents', async (req: Request, res: Response) => 
             acknowledgedCount,
             remainingEvents: notificationManager.getAllUnprocessedEvents().length,
             stats: notificationManager.getEventStats(),
+            gameEvents: gameEnv.gameEvents || [],
             timestamp: new Date().toISOString()
         });
         

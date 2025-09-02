@@ -267,8 +267,14 @@ export default class GameStateManager {
   async acknowledgeEvents(eventIds) {
     if (eventIds && eventIds.length > 0 && this.apiManager) {
       try {
-        await this.apiManager.acknowledgeEvents(this.gameState.gameId, eventIds);
+        const response = await this.apiManager.acknowledgeEvents(this.gameState.gameId, eventIds);
         console.log(`Acknowledged ${eventIds.length} specific events`);
+        
+        // Update local gameEvents with response from backend
+        if (response && response.gameEvents) {
+          this.gameState.gameEnv.gameEvents = response.gameEvents;
+          console.log(`[GameStateManager] Updated local gameEvents from backend response`);
+        }
       } catch (error) {
         console.error('Failed to acknowledge specific events:', error);
       }
