@@ -59,7 +59,8 @@ export default class Card extends Phaser.GameObjects.Container {
     } else {
       // Check if we have a valid card ID
       if(this.cardData.cardType == "shield" ||
-        this.cardData.cardType == "base" 
+        this.cardData.cardType == "base" ||
+        this.cardData.cardType == "energy"
        ){
 
       }else if (!this.cardData || !this.cardData.id) {
@@ -87,10 +88,18 @@ export default class Card extends Phaser.GameObjects.Container {
       if(this.cardData.cardType == "shield"){
         cardKey = `${GAME_CONFIG.imageKey.cardback}-preview`
       }else if(this.cardData.cardType == "base" && this.fullCardData.cardUid == "base_default"){
-        cardKey = `${GAME_CONFIG.imageKey.exBase}-preview`
         cardKey = this.options.usePreview ? 
         `${GAME_CONFIG.imageKey.exBase}-preview` :  // Use preview version (e.g., "c-1-preview")
         GAME_CONFIG.imageKey.exBase;     
+      }else if (this.cardData.cardType == "energy"){
+        cardKey = this.options.usePreview ? 
+        `${GAME_CONFIG.imageKey.extraResource}-preview` :  // Use preview version (e.g., "c-1-preview")
+        GAME_CONFIG.imageKey.extraResource  ;  
+        if (!this.fullCardData.isExtraEnergy){
+          cardKey = this.options.usePreview ? 
+          `${GAME_CONFIG.imageKey.resource}-preview` :  // Use preview version (e.g., "c-1-preview")
+          GAME_CONFIG.imageKey.resource;  
+        }  
       }
       
       console.log("cardKey ", cardKey)

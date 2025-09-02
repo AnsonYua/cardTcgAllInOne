@@ -3,6 +3,7 @@ import { GAME_CONFIG } from '../config/gameConfig.js';
 import Card from '../components/Card.js';
 import ShuffleAnimationManager from '../components/ShuffleAnimationManager.js';
 import BaseAndShieldAreaManager from '../components/BaseAndShieldAreaManager.js';
+import EnergyAreaManager from '../components/EnergyAreaManager.js';
 import GameSceneUtils from '../utils/GameSceneUtils.js';
 import { ZoneMapping } from '../utils/ZoneMapping.js';
 import CardAnimationUtils from '../utils/CardAnimationUtils.js';
@@ -27,6 +28,7 @@ export default class GameScene extends Phaser.Scene {
     this.firstShuffleAnimationComplete = false;
 
     this.baseAndShieldManager = null;
+    this.energyAreaManager = null;
     this.opponentBase = null
   }
 
@@ -40,6 +42,7 @@ export default class GameScene extends Phaser.Scene {
     
     // Initialize managers
     this.baseAndShieldManager = new BaseAndShieldAreaManager(this, this.gameStateManager);
+    this.energyAreaManager = new EnergyAreaManager(this, this.gameStateManager);
  
     console.log('GameScene initialized with mode:', this.gameMode);
     console.log('Manual polling mode:', this.isManualPollingMode);
@@ -759,6 +762,7 @@ export default class GameScene extends Phaser.Scene {
     
 
     this.baseAndShieldManager.updateAll();
+    this.energyAreaManager.updateEnergyAreas();
 
     const unprocessedEvent = this.gameStateManager.getUnprocessGameEvents();
     if(unprocessedEvent.length > 0) {
@@ -2134,6 +2138,12 @@ export default class GameScene extends Phaser.Scene {
     if (this.baseAndShieldManager) {
       this.baseAndShieldManager.destroy();
       this.baseAndShieldManager = null;
+    }
+
+    // Clean up energy area manager
+    if (this.energyAreaManager) {
+      this.energyAreaManager.destroy();
+      this.energyAreaManager = null;
     }
     
     // Clean up any existing card selection dialog

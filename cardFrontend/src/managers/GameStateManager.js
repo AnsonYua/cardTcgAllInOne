@@ -149,6 +149,18 @@ export default class GameStateManager {
     return this.getMyBaseAreaCard(opponentId)
   }
 
+  getMyEnergyAreaCard(playerId = null){
+    const currentPlayerId = this.getCurrentPlayerId();
+    if(playerId == null) {
+      playerId = currentPlayerId;
+    }
+    return this.gameState.gameEnv.players[playerId].zones.energyArea || []
+  }
+  getOpponentEnergyAreaCard(){
+    const opponentId = this.getOpponent();
+    return this.getMyEnergyAreaCard(opponentId)
+  }
+
   // Field Effects Methods
   getPlayerFieldEffects(playerId = null) {
     const id = playerId;
