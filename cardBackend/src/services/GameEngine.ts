@@ -390,7 +390,7 @@ export class GameEngine {
             // Draw 1 card from deck to first player hand
             const firstPlayer = gameEnv.players[firstPlayerId];
             if (firstPlayer && firstPlayer.deck) {
-                this.drawCards(firstPlayer.deck, 2);
+                this.drawCards(firstPlayer.deck, 1);
                 console.log(`🃏 Drew 1 card for first player ${firstPlayerId}`);
             }
             
@@ -398,7 +398,7 @@ export class GameEngine {
             const notificationManager = this.getNotificationManager(gameEnv);
             
             // Notify about card drawn (requires acknowledgment)
-            const drawnCards = firstPlayer?.deck.handUids.slice(-2) || []; // Get last drawn card UID
+            const drawnCards = firstPlayer?.deck.handUids.slice(-1) || []; // Get last drawn card UID
             notificationManager.notifyCardDrawn(
                 firstPlayerId,
                 drawnCards,

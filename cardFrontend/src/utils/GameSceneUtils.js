@@ -164,13 +164,16 @@ export default class GameSceneUtils {
     // Zone-specific styling
     if (type === 'leaderDeck') {
       placeholder.setRotation(Math.PI / 2);
-      label.setAlpha(1);
+      label.setAlpha(0);
+      placeholder.setAlpha(0);
       label.setY(label.y - 20);
     } else if (type === 'cardPreview') {
       placeholder.setScale(3);
       placeholder.setScale(0);
-
       label.setAlpha(0);
+    } else if (type==='base'){
+      label.setAlpha(0);
+      placeholder.setAlpha(0);
     } else {
       label.setAlpha(1);
     }

@@ -132,7 +132,7 @@ export default class GameScene extends Phaser.Scene {
         deck: { x: width * 0.5 - 500, 
                 y: startY + 100+ cardHeight+10+15},
         leaderDeck: { x: width * 0.5 + 430 , y: startY + 100+ cardHeight+10+15},
-        
+        base:{ x: width * 0.5 + 430 , y: startY + 130 + cardHeight+10+15}
       },
       // Player zones (bottom area)
     
@@ -152,7 +152,9 @@ export default class GameScene extends Phaser.Scene {
         deck: { x: width * 0.5 + 420 , 
                 y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70},
         leaderDeck: { x: width * 0.5 - 550 , 
-                      y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 + 50}
+                      y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 + 50},
+        base: { x: width * 0.5 - 550 , 
+                      y: startY + 70+ cardHeight + 10+ 15 +cardHeight + 70 + 50},
       },
       // Battle area (center)
       //battle: { x: width * 0.5, y: height * 0.45 },
@@ -373,122 +375,6 @@ export default class GameScene extends Phaser.Scene {
       this.time.delayedCall(50, () => this.endTurn());
     });
     
-
-    /*
-
-    // button for testing
-      this.testLeaderButton = this.add.image( 0+130, height - 120, 'button');
-      this.testLeaderButton.setScale(0.8);
-      this.testLeaderButton.setInteractive();
-      
-      const testLeaderButtonText = this.add.text( 0+130, height - 120, 'Test Leader', {
-        fontSize: '14px',
-        fontFamily: 'Arial',
-        fill: '#ffffff'
-      });
-      testLeaderButtonText.setOrigin(0.5);
-      
-      this.testLeaderButton.on('pointerdown', () => {
-        // Click visual effect
-        this.testLeaderButton.setTint(0x888888);
-        this.testLeaderButton.setScale(0.76);
-        testLeaderButtonText.setScale(0.95);
-        
-        this.time.delayedCall(100, () => {
-          this.testLeaderButton.clearTint();
-          this.testLeaderButton.setScale(0.8);
-          testLeaderButtonText.setScale(1);
-        });
-        
-        // Leader card removed in new system
-      });
-
-    // Test Opponent Leader button
-    this.testOpponentLeaderButton = this.add.image(0+130, height - 180, 'button');
-    this.testOpponentLeaderButton.setScale(0.8);
-    this.testOpponentLeaderButton.setInteractive();
-    
-    const testOpponentLeaderButtonText = this.add.text(0+130, height - 180, 'Test Opp Leader', {
-      fontSize: '12px',
-      fontFamily: 'Arial',
-      fill: '#ffffff'
-    });
-    testOpponentLeaderButtonText.setOrigin(0.5);
-    
-    this.testOpponentLeaderButton.on('pointerdown', () => {
-      // Click visual effect
-      this.testOpponentLeaderButton.setTint(0x888888);
-      this.testOpponentLeaderButton.setScale(0.76);
-      testOpponentLeaderButtonText.setScale(0.95);
-      
-      this.time.delayedCall(100, () => {
-        this.testOpponentLeaderButton.clearTint();
-        this.testOpponentLeaderButton.setScale(0.8);
-        testOpponentLeaderButtonText.setScale(1);
-      });
-      
-      // Leader card removed in new system
-    });
-
-  
-    // Test buttons (only show in manual polling mode)
-    if (this.isManualPollingMode) {
-      
-      // Simulate Player 2 Redraw button
-      this.testPlayer2RedrawButton = this.add.image(0+130, height - 420, 'button');
-      this.testPlayer2RedrawButton.setScale(0.8);
-      this.testPlayer2RedrawButton.setInteractive();
-      
-      const testPlayer2RedrawButtonText = this.add.text(0+130, height - 420, 'P2 Redraw', {
-        fontSize: '12px',
-        fontFamily: 'Arial',
-        fill: '#ffffff'
-      });
-      testPlayer2RedrawButtonText.setOrigin(0.5);
-      
-      this.testPlayer2RedrawButton.on('pointerdown', () => {
-        // Click visual effect
-        this.testPlayer2RedrawButton.setTint(0x888888);
-        this.testPlayer2RedrawButton.setScale(0.76);
-        testPlayer2RedrawButtonText.setScale(0.95);
-        
-        this.time.delayedCall(100, () => {
-          this.testPlayer2RedrawButton.clearTint();
-          this.testPlayer2RedrawButton.setScale(0.8);
-          testPlayer2RedrawButtonText.setScale(1);
-        });
-        
-        this.time.delayedCall(50, () => this.simulatePlayer2Redraw());
-      });
-
-
-      // Simulate Player 2 Redraw button
-      this.testScenarioButton = this.add.image(0+130, height - 480, 'button');
-      this.testScenarioButton.setScale(0.8);
-      this.testScenarioButton.setInteractive();
-      
-      const testScenarioButtonText = this.add.text(0+130, height - 480, 'Set Scenario', {
-        fontSize: '12px',
-        fontFamily: 'Arial',
-        fill: '#ffffff'
-      });
-      testScenarioButtonText.setOrigin(0.5);
-      this.testScenarioButton.on('pointerdown', () => {
-        // Click visual effect
-        this.testScenarioButton.setTint(0x888888);
-        this.testScenarioButton.setScale(0.76);
-        testScenarioButtonText.setScale(0.95);
-        
-        this.time.delayedCall(100, () => {
-          this.testScenarioButton.clearTint();
-          this.testScenarioButton.setScale(0.8);
-          testScenarioButtonText.setScale(1);
-        });
-        this.time.delayedCall(50, () => this.simulateSetScenario());
-      });
-
-
-    }*/
 
   }
 

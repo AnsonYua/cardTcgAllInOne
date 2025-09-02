@@ -58,7 +58,9 @@ export default class Card extends Phaser.GameObjects.Container {
       this.add(this.cardImage);
     } else {
       // Check if we have a valid card ID
-      if(this.cardData.cardType == "shield"){
+      if(this.cardData.cardType == "shield" ||
+        this.cardData.cardType == "base" 
+       ){
 
       }else if (!this.cardData || !this.cardData.id) {
         console.error(`[Card] Invalid card data - missing ID:`, this.cardData);
@@ -84,6 +86,11 @@ export default class Card extends Phaser.GameObjects.Container {
       
       if(this.cardData.cardType == "shield"){
         cardKey = `${GAME_CONFIG.imageKey.cardback}-preview`
+      }else if(this.cardData.cardType == "base" && this.fullCardData.cardUid == "base_default"){
+        cardKey = `${GAME_CONFIG.imageKey.exBase}-preview`
+        cardKey = this.options.usePreview ? 
+        `${GAME_CONFIG.imageKey.exBase}-preview` :  // Use preview version (e.g., "c-1-preview")
+        GAME_CONFIG.imageKey.exBase;     
       }
       
       console.log("cardKey ", cardKey)

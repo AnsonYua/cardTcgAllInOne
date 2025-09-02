@@ -64,6 +64,7 @@ export default class BaseAndShieldAreaManager {
     card.rotation = Math.PI / 2;
     card.setDepth(1000 - index);
     
+    
     return card;
   }
 
@@ -87,18 +88,13 @@ export default class BaseAndShieldAreaManager {
   }
 
   updateBaseArea(playerType, baseData, baseZone, cardArray) {
-    if (baseData.length !== cardArray.length) {
-      // Clear existing cards
-      cardArray.forEach(card => card.destroy());
-      cardArray.length = 0;
-
-      // Create new cards
-      baseData.forEach((cardData, i) => {
-        console.log(`${playerType} base card information:`, JSON.stringify(cardData));
-        
-        const card = this.createBaseCard(cardData, baseZone.x, baseZone.y + (15 * i), i);
-        cardArray.push(card);
-      });
+    cardArray.forEach(card => card.destroy());
+    cardArray.length = 0;
+    console.log("data base "+JSON.stringify(baseData))
+    if(baseData && baseData.length>0){
+      console.log("data base111 "+JSON.stringify(baseData[0]))
+      const card = this.createBaseCard(baseData[0], baseZone.x, baseZone.y , 0);
+      cardArray.push(card);
     }
   }
 
@@ -106,12 +102,25 @@ export default class BaseAndShieldAreaManager {
     const card = new Card(this.scene, x, y, cardData, {
       interactive: true,
       draggable: false,
-      scale: 0.8,
+      scale:0.9,
       gameStateManager: this.gameStateManager,
       usePreview: true
     });
     
-    card.setDepth(900 - index); // Lower depth than shields
+    card.setDepth(2000); // Lower depth than shields
+    
+    // Add hover preview functionality
+    card.on('pointerover', () => {
+      if (this.scene.showCardPreview) {
+        this.scene.showCardPreview(cardData);
+      }
+    });
+    
+    card.on('pointerout', () => {
+      if (this.scene.hideCardPreview) {
+        this.scene.hideCardPreview();
+      }
+    });
     
     return card;
   }
