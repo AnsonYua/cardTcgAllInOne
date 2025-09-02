@@ -263,9 +263,7 @@ export default class GameScene extends Phaser.Scene {
     
     // Game info display (first player and opponent hand)
     this.createGameInfoDisplay();
-    
-    // Victory point labels
-    this.createVictoryPointLabels();
+
     
     // Action buttons
     this.createActionButtons();
@@ -539,136 +537,6 @@ export default class GameScene extends Phaser.Scene {
     // Keeping empty method to avoid errors if called elsewhere
   }
 
-  createVictoryPointLabels() {
-    const { width } = this.cameras.main;
-    
-    // Calculate positions based on leader deck positions
-    const playerLeaderDeckPos = this.layout.player.leaderDeck;
-    const opponentLeaderDeckPos = this.layout.opponent.leaderDeck;
-    
-    // Victory point labels positioned relative to leader decks
-    const playerLabelOffsetY = 200; // Distance below player's leader deck
-    const opponentLabelOffsetY = -150; // Distance above opponent's leader deck (moved higher to avoid card stack)
-    
-    // Player victory point label (below leader deck in bottom area)
-    this.playerVictoryPointLabel = this.add.text(
-      playerLeaderDeckPos.x, 
-      playerLeaderDeckPos.y + playerLabelOffsetY, 
-      'Victory Points: 0', 
-      {
-        fontSize: '18px',
-        fontFamily: 'Arial Bold',
-        fill: '#FFD700',
-        align: 'center',
-        stroke: '#000000',
-        strokeThickness: 2
-      }
-    );
-    this.playerVictoryPointLabel.setOrigin(0.5);
-    
-    // Opponent victory point label (above leader deck in top area)
-    this.opponentVictoryPointLabel = this.add.text(
-      opponentLeaderDeckPos.x, 
-      opponentLeaderDeckPos.y + opponentLabelOffsetY, 
-      'Victory Points: 0', 
-      {
-        fontSize: '18px',
-        fontFamily: 'Arial Bold',
-        fill: '#FFD700',
-        align: 'center',
-        stroke: '#000000',
-        strokeThickness: 2
-      }
-    );
-    this.opponentVictoryPointLabel.setOrigin(0.5);
-    
-    // Add player name labels above victory points
-    this.playerNameLabel = this.add.text(
-      playerLeaderDeckPos.x, 
-      playerLeaderDeckPos.y + playerLabelOffsetY - 30, 
-      'Player', 
-      {
-        fontSize: '16px',
-        fontFamily: 'Arial',
-        fill: '#FFFFFF',
-        align: 'center'
-      }
-    );
-    this.playerNameLabel.setOrigin(0.5);
-    
-    // Opponent name label above victory points (further above leader deck)
-    this.opponentNameLabel = this.add.text(
-      opponentLeaderDeckPos.x, 
-      opponentLeaderDeckPos.y + opponentLabelOffsetY - 30, 
-      'Opponent', 
-      {
-        fontSize: '16px',
-        fontFamily: 'Arial',
-        fill: '#FFFFFF',
-        align: 'center'
-      }
-    );
-    this.opponentNameLabel.setOrigin(0.5);
-    
-    console.log('Victory point labels created at:');
-    console.log(`Player: (${playerLeaderDeckPos.x}, ${playerLeaderDeckPos.y + playerLabelOffsetY})`);
-    console.log(`Opponent: (${opponentLeaderDeckPos.x}, ${opponentLeaderDeckPos.y + opponentLabelOffsetY})`);
-  }
-
-  updateVictoryPointLabels() {
-    if (!this.playerVictoryPointLabel || !this.opponentVictoryPointLabel) {
-      return; // Labels not created yet
-    }
-    
-    // Get current player power from game state
-    const gameState = this.gameStateManager.getGameState();
-    const opponent = this.gameStateManager.getOpponent();
-    
-    // Access player power from gameEnv.players[].playerPoint
-    const playerPower = gameState.gameEnv.players?.[gameState.playerId]?.playerPoint || 0;
-    const opponentPower = gameState.gameEnv.players?.[opponent]?.playerPoint || 0;
-    
-    // Debug logging to verify data mapping
-    console.log('Player Power Debug Info:');
-    console.log('  Player ID:', gameState.playerId);
-    console.log('  Opponent ID:', opponent);
-    console.log('  Player Power:', playerPower);
-    console.log('  Opponent Power:', opponentPower);
-    console.log('  Players Data:', gameState.gameEnv.players);
-    
-    // Update player label to show power
-    this.playerVictoryPointLabel.setText(`Player Power: ${playerPower}`);
-    
-    // Update opponent label to show power  
-    this.opponentVictoryPointLabel.setText(`Opponent Power: ${opponentPower}`);
-    
-    // Update player names if available
-    if (gameState.playerName) {
-      this.playerNameLabel.setText(gameState.playerName);
-    }
-    
-    // Try to get opponent name from game state
-    const opponentData = this.gameStateManager.getPlayer(opponent);
-    if (opponentData && opponentData.name) {
-      this.opponentNameLabel.setText(opponentData.name);
-    }
-    
-    // Add visual feedback for victory point changes
-    if (playerPower >= 50) {
-      this.playerVictoryPointLabel.setFill('#00FF00'); // Green for winner
-      this.playerVictoryPointLabel.setFontSize('22px');
-    } else if (playerPower > 0) {
-      this.playerVictoryPointLabel.setFill('#FFD700'); // Gold for progress
-    }
-    
-    if (opponentPower >= 50) {
-      this.opponentVictoryPointLabel.setFill('#00FF00'); // Green for winner
-      this.opponentVictoryPointLabel.setFontSize('22px');
-    } else if (opponentPower > 0) {
-      this.opponentVictoryPointLabel.setFill('#FFD700'); // Gold for progress
-    }
-  }
-
   createHandArea() {
     const { width, height } = this.cameras.main;
     
@@ -862,6 +730,12 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
+  updateCurrentPlayerHand(){
+    const handDetails =  this.gameStateManager.getPlayerHand()
+    const newHand = handDetails.slice(0, Math.min(handDetails.length, this.playerHand.length));
+    console.log("new hand  "+JSON.stringify(newHand))
+    this.updatePlayerHandWithCards(newHand)
+  }
   updatePlayerHand() {
     // Get hand from game state manager
     const handDetails =  this.gameStateManager.getPlayerHand()
@@ -1049,8 +923,6 @@ export default class GameScene extends Phaser.Scene {
     this.opponentVPText.setText(`VP: ${this.gameStateManager.getVictoryPoints(opponent)}`);
     this.opponentHandText.setText(`Hand: ${opponentData && opponentData.deck.hand ? opponentData.deck.hand.length : 0}`);
     
-    // Update victory point labels below leader decks
-    this.updateVictoryPointLabels();
     
     // Update opponent hand count display
     if (this.opponentHandCountText) {
@@ -2705,6 +2577,9 @@ export default class GameScene extends Phaser.Scene {
       case 'CARD_DRAWN':
         console.log("card drawn event")
         await CardAnimationUtils.playDrawCardAnimation(this, event);
+        break;
+      case 'PLAYER_REDRAW':
+        this.updateCurrentPlayerHand()
         break;
       
       /*

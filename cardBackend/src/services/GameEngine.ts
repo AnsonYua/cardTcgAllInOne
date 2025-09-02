@@ -390,6 +390,17 @@ export class GameEngine {
             // Create game events using GameNotificationManager
             const notificationManager = this.getNotificationManager(gameEnv);
             
+            if(gameEnv.players[firstPlayerId].isRedraw){
+                notificationManager.notifyRedrawEvent(
+                    firstPlayerId
+                )
+            }
+            if(gameEnv.players[secondPlayerId].isRedraw){
+                notificationManager.notifyRedrawEvent(
+                    secondPlayerId
+                )
+            }
+
             // Notify about card drawn (requires acknowledgment)
             const drawnCards = firstPlayer?.deck.handUids.slice(-2) || []; // Get last drawn card UID
             notificationManager.notifyCardDrawn(

@@ -80,7 +80,19 @@ export class GameNotificationManager {
         return eventId;
     }
     
- 
+     /**
+     * Notify frontend about card draw (requires acknowledgment)
+     */
+    notifyRedrawEvent(playerId: string): string {
+        return this.addNotificationEvent(
+            'PLAYER_REDRAW', 
+            {
+                playerId
+            },
+            true, // requiresAcknowledgment
+            'normal' // priority
+        );
+    }
     
     /**
      * Notify frontend about card draw (requires acknowledgment)
@@ -153,8 +165,8 @@ export class GameNotificationManager {
             }
         });
         
-        // Clean up acknowledged events immediately
-        this.cleanupProcessedEvents();
+        // Clean up only the acknowledged events immediately
+        this.cleanupSpecificEvents(eventIds);
         
         return acknowledgedCount;
     }
@@ -205,6 +217,35 @@ export class GameNotificationManager {
         
         if (cleanedCount > 0) {
             console.log(`🧹 Cleaned up ${cleanedCount} events, ${this.gameEnv.gameEvents.length} remaining`);
+        }
+        
+        return cleanedCount;
+    }
+    
+    /**
+     * Clean up only specific acknowledged events
+     */
+    cleanupSpecificEvents(eventIds: string[]): number {
+        if (!this.gameEnv.gameEvents || !eventIds.length) return 0;
+        
+        const initialCount = this.gameEnv.gameEvents.length;
+        const now = Date.now();
+        
+        this.gameEnv.gameEvents = this.gameEnv.gameEvents.filter(event => {
+            const isExpired = now > event.metadata.expiresAt;
+            const isSpecificAcknowledged = eventIds.includes(event.id) && event.metadata.frontendProcessed;
+            
+            if (isExpired || isSpecificAcknowledged) {
+                console.log(`🧹 Cleaned up specific event: ${event.type} (${event.id}) - ${isExpired ? 'expired' : 'acknowledged'}`);
+                return false;
+            }
+            return true;
+        });
+        
+        const cleanedCount = initialCount - this.gameEnv.gameEvents.length;
+        
+        if (cleanedCount > 0) {
+            console.log(`🧹 Cleaned up ${cleanedCount} specific events, ${this.gameEnv.gameEvents.length} remaining`);
         }
         
         return cleanedCount;

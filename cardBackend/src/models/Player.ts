@@ -810,6 +810,7 @@ export class Player {
             name: this.name,
             deck: this.deck.toJSON(),
             confirmIsRedraw: this.confirmIsRedraw,
+            isRedraw: this.isRedraw,
             playerPoint: this.playerPoint,
             isReady: this.isReady,
             zones: this.zones,
@@ -828,6 +829,7 @@ export class Player {
             player.deck = PlayerDeck.fromJSON(data.deck);
         }
         player.confirmIsRedraw = data.confirmIsRedraw || data.redraw || false;
+        player.isRedraw = data.isRedraw;
         player.playerPoint = data.playerPoint || 0;
         player.isReady = data.isReady || false;
         if (data.zones) {
