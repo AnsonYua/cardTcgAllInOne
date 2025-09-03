@@ -30,6 +30,8 @@ export default class GameScene extends Phaser.Scene {
     this.baseAndShieldManager = null;
     this.energyAreaManager = null;
     this.opponentBase = null
+
+    this.isSetScenoria = false;
   }
 
   init(data) {
@@ -774,6 +776,12 @@ export default class GameScene extends Phaser.Scene {
 
     this.baseAndShieldManager.updateAll();
     this.energyAreaManager.updateEnergyAreas();
+    
+    if(this.isSetScenoria){
+      this.isSetScenoria = false;
+      this.updatePlayerHand();
+    }
+
 
     const unprocessedEvent = this.gameStateManager.getUnprocessGameEvents();
     if(unprocessedEvent.length > 0) {

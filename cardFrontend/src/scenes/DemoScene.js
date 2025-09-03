@@ -279,7 +279,7 @@ export default class DemoScene extends DemoSceneBasic {
 
   // Override simulateSetScenario for demo-specific functionality
   async simulateSetScenario() {
-    //const scenarioPath = 'CharacterCase/character_c-1_trump_family_boost_dynamic';
+    this.isSetScenoria = true
     const _scenarioPath = this.scenarioPath;
     await super.simulateSetScenario(_scenarioPath);
   }
