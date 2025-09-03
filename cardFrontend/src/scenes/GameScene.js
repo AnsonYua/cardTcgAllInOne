@@ -2469,7 +2469,7 @@ export default class GameScene extends Phaser.Scene {
     const buttonWidth = 80;
     const buttonHeight = 35;
     const buttonSpacing = 90;
-    const startX = -(buttonConfigs.length - 1) * buttonSpacing / 2;
+    const startX = -(buttonConfigs.length - 1) * buttonSpacing / 2 -50;
     
     buttonConfigs.forEach((config, index) => {
       const x = startX + index * buttonSpacing;
