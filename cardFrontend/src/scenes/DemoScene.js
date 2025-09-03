@@ -281,7 +281,9 @@ export default class DemoScene extends DemoSceneBasic {
   async simulateSetScenario() {
     this.isSetScenoria = true
     const _scenarioPath = this.scenarioPath;
-    await super.simulateSetScenario(_scenarioPath);
+    this.loadCardResources().then(() => {
+        super.simulateSetScenario(_scenarioPath);
+    })
   }
 
   async setEnvironment() {
