@@ -246,7 +246,7 @@ Comprehensive real-time game state tracking for frontend integration:
 ### ⚠️ CRITICAL: Event Acknowledgment Pattern for Phase Transitions
 **Every card play triggers turn switch → DRAW_PHASE → requires acknowledgment → MAIN_PHASE**
 
-**The Problem:** When a player plays a card, the game automatically switches to the next player in DRAW_PHASE. The phase will remain DRAW_PHASE until the `DRAW_PHASE_COMPLETE` event is acknowledged.
+**The Problem:** When a player plays a card, the game automatically switches to the next player in DRAW_PHASE. The phase will remain DRAW_PHASE until the `CARD_DRAWN` event is acknowledged.
 
 **The Solution:** Always include acknowledgment steps in test scenarios and frontend flows:
 
@@ -256,7 +256,7 @@ await testHelper.executePlayerAction('playerId_1', gameId, {
     type: 'PlayCard', card_idx: 0, field_idx: 1
 });
 
-// 2. MANDATORY: Acknowledge draw event to proceed to MAIN_PHASE
+// 2. MANDATORY: Acknowledge card draw event to proceed to MAIN_PHASE
 await testHelper.acknowledgeEvents(gameId, eventIds);
 
 // 3. Now player 2 can proceed with MAIN_PHASE actions
@@ -264,7 +264,7 @@ await testHelper.acknowledgeEvents(gameId, eventIds);
 
 **Test Scenario Pattern:**
 - Step N: Player plays card → phase becomes DRAW_PHASE
-- Step N.5: Acknowledge DRAW_PHASE_COMPLETE → phase becomes MAIN_PHASE  
+- Step N.5: Acknowledge CARD_DRAWN → phase becomes MAIN_PHASE  
 - Step N+1: Next player can proceed with actions
 
 **Backend API:**

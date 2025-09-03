@@ -48,6 +48,7 @@ export class StateBasedActionEngine {
         
         // Check all categories of state-based actions
         actions.push(...this.checkGameStartConditions());
+        actions.push(...this.checkDrawPhaseToMainPhase());
         actions.push(...this.checkZoneCapacityLimits());
         actions.push(...this.checkHandSizeLimits());
         actions.push(...this.checkResourceLimits());
@@ -126,6 +127,51 @@ export class StateBasedActionEngine {
         return actions;
     }
     
+    /**
+     * Check for DRAW_PHASE to MAIN_PHASE transition
+     */
+    private checkDrawPhaseToMainPhase(): StateBasedAction[] {
+        const actions: StateBasedAction[] = [];
+        
+        // Only check if we're in DRAW_PHASE
+        if (this.gameEnv.phase !== GamePhase.DRAW_PHASE) {
+            return actions;
+        }
+        
+        // Check if there are no unacknowledged card draw events in the game events
+        const gameEvents = this.gameEnv.gameEvents || [];
+        const hasUnacknowledgedCardDrawEvent = gameEvents.some(event => 
+            event.type === 'CARD_DRAWN' &&
+            event.metadata?.frontendProcessed === false
+        );
+        
+        console.log(`🔍 DRAW_PHASE check: phase=${this.gameEnv.phase}, hasUnacknowledgedCardDrawEvent=${hasUnacknowledgedCardDrawEvent}`);
+        
+        if (!hasUnacknowledgedCardDrawEvent) {
+            // Also check that we haven't already processed a draw_to_main action recently
+            const recentDrawToMainAction = gameEvents.some(event =>
+                event.type === 'PHASE_CHANGE' && 
+                event.data?.reason?.includes('Auto-advance') &&
+                event.timestamp > (Date.now() - 5000) // Within last 5 seconds
+            );
+            
+            if (!recentDrawToMainAction) {
+                console.log(`🎯 State-based action detected: DRAW_PHASE to MAIN_PHASE transition needed`);
+                
+                actions.push({
+                    actionId: `draw_to_main_${Date.now()}`,
+                    type: EventType.PHASE_ADVANCE,
+                    priority: 180, // High priority for phase transitions
+                    description: 'Auto-advance from DRAW_PHASE to MAIN_PHASE (no draw events pending)',
+                    affectedCards: [],
+                    affectedPlayers: [this.gameEnv.currentPlayer || ''],
+                    autoExecute: true
+                });
+            }
+        }
+        
+        return actions;
+    }
     
     /**
      * Check zone capacity limits
@@ -261,8 +307,38 @@ export class StateBasedActionEngine {
     private executePhaseAdvance(action: StateBasedAction): GameEvent[] {
         const events: GameEvent[] = [];
         
-        // TODO: Integrate with your phase system
         console.log(`📋 State-based phase advance: ${action.description}`);
+        
+        // Handle DRAW_PHASE to MAIN_PHASE transition
+        if (action.actionId.startsWith('draw_to_main_') && this.gameEnv.phase === GamePhase.DRAW_PHASE) {
+            console.log(`🔄 Auto-advancing from DRAW_PHASE to MAIN_PHASE`);
+            
+            // Change phase directly in the gameEnv
+            this.gameEnv.phase = GamePhase.MAIN_PHASE;
+            
+            // Generate phase change event for frontend notification
+            const phaseChangeEvent = {
+                id: `phase_change_${Date.now()}_${Math.random()}`,
+                type: 'PHASE_CHANGE',
+                data: {
+                    fromPhase: 'DRAW_PHASE',
+                    toPhase: 'MAIN_PHASE',
+                    reason: 'Auto-advance: No card draw events pending',
+                    playerId: this.gameEnv.currentPlayer
+                },
+                timestamp: Date.now(),
+                expiresAt: Date.now() + 3000,
+                frontendProcessed: false
+            };
+            
+            // Add to game events for frontend notification
+            if (!this.gameEnv.gameEvents) {
+                this.gameEnv.gameEvents = [];
+            }
+            this.gameEnv.gameEvents.push(phaseChangeEvent);
+            
+            console.log(`✅ Phase advanced to MAIN_PHASE via state-based action`);
+        }
         
         return events;
     }

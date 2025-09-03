@@ -105,6 +105,9 @@ export class GameEngine {
                 case EventType.ACKNOWLEDGE_EVENTS:
                     return this.executeAcknowledgeEvents(event, gameEnv);
                     
+                case EventType.PHASE_ADVANCE:
+                    return this.executePhaseAdvance(event, gameEnv);
+                    
                 default:
                     console.log(`🎯 Processing ${event.type} event - delegating to existing game logic`);
                     return { success: true };
@@ -304,6 +307,47 @@ export class GameEngine {
         }
     }
     
+    private executePhaseAdvance(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+        const { actionId, description, affectedPlayers } = event.data;
+        
+        console.log(`🎯 Processing PHASE_ADVANCE event: ${description}`);
+        
+        try {
+            // Handle specific phase advance actions
+            if (actionId && actionId.startsWith('draw_to_main_')) {
+                console.log(`🔄 Auto-advancing from DRAW_PHASE to MAIN_PHASE`);
+                
+                // Change phase directly
+                gameEnv.phase = GamePhase.MAIN_PHASE;
+                
+                // Create phase change event for frontend notification
+                const notificationManager = this.getNotificationManager(gameEnv);
+                notificationManager.addNotificationEvent(
+                    'PHASE_CHANGE',
+                    {
+                        fromPhase: 'DRAW_PHASE',
+                        toPhase: 'MAIN_PHASE', 
+                        reason: 'Auto-advance: No unacknowledged card draw events',
+                        playerId: gameEnv.currentPlayer || ''
+                    },
+                    false, // requiresAcknowledgment
+                    'high' // priority
+                );
+                
+                console.log(`✅ Phase successfully advanced to MAIN_PHASE`);
+            }
+            
+            return { success: true };
+            
+        } catch (error) {
+            console.error(`❌ Error in executePhaseAdvance:`, error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'PHASE_ADVANCE execution failed'
+            };
+        }
+    }
+    
     // ============ GAME SETUP HELPERS ============
     
     private initializeGameWithDecks(gameEnv: GameEnvironment, joinedPlayerId: string): void {
@@ -430,7 +474,7 @@ export class GameEngine {
                 firstPlayer?.deck.getHandSize() || 0
             );
             
-            console.log(`📨 Created GAMEPLAY_BEGINS and DRAW_PHASE_COMPLETE events via GameNotificationManager`);
+            console.log(`📨 Created GAMEPLAY_BEGINS and CARD_DRAWN events via GameNotificationManager`);
             
             console.log(`✅ GAMEPLAY_BEGINS event processed - resources allocated, first player set, card drawn, events created`);
             return { success: true };

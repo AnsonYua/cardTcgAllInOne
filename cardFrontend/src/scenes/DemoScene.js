@@ -302,11 +302,11 @@ export default class DemoScene extends DemoSceneBasic {
       const allEvents = gameState.gameEnv.gameEvents || [];
       console.log('All events:', allEvents);
       
-      // Filter for DRAW_PHASE_COMPLETE events that haven't been processed
+      // Filter for CARD_DRAWN events that haven't been processed
       const drawEvents = allEvents.filter(event => 
-        event.type === 'DRAW_PHASE_COMPLETE' && 
-        !event.frontendProcessed && 
-        event.requireFrontendAcknowledgment
+        event.type === 'CARD_DRAWN' && 
+        !event.metadata.frontendProcessed && 
+        event.metadata.requiresAcknowledgment
       );
       
       if (drawEvents.length === 0) {

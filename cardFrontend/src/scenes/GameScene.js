@@ -832,30 +832,6 @@ export default class GameScene extends Phaser.Scene {
         this.updatePlayerHand();
     }
     
-    // Check for DRAW_PHASE and trigger draw animation
-    /*
-    if (gameState.gameEnv.phase === 'DRAW_PHASE' ) {
-      const currentPlayer = gameState.gameEnv.currentPlayer;
-      const currentPlayerId = this.gameStateManager.getCurrentPlayerId();
-      
-      if (currentPlayer === currentPlayerId) {
-        
-        // Hide the new card temporarily (don't update hand UI yet)
-        const currentHand = this.gameStateManager.getPlayerHand();
-        const handWithoutNewCard = currentHand.slice(0, -1); // Remove the last card for animation
-        
-        // Temporarily update the displayed hand to not show the new card
-        this.updatePlayerHandWithCards(handWithoutNewCard);
-        this.playDrawCardAnimation(() => {
-          // Show acknowledgment UI after animation completes
-          this.showDrawPhaseAcknowledgment({
-            playerId: currentPlayerId,
-            cardCount: 1,
-            newHandSize: currentHand.length
-          });
-        });
-      }
-    }*/
  
     
     // Debug logging for troubleshooting
@@ -2228,107 +2204,6 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  showDrawPhaseAcknowledgment(drawData) {
-    // Create acknowledgment UI overlay
-    const width = this.scale.width;
-    const height = this.scale.height;
-    
-    // Create semi-transparent overlay
-    const overlay = this.add.rectangle(width/2, height/2, width, height, 0x000000, 0.5);
-    overlay.setDepth(1000);
-    
-    // Create acknowledgment panel
-    const panel = this.add.rectangle(width/2, height/2, 400, 200, 0x1a1a1a, 0.9);
-    panel.setDepth(1001);
-    panel.setStrokeStyle(2, 0x4a90e2);
-    
-    // Add text
-    const titleText = this.add.text(width/2, height/2 - 40, 'DRAW PHASE', {
-      fontSize: '24px',
-      fill: '#4a90e2',
-      fontFamily: 'Arial'
-    });
-    titleText.setOrigin(0.5);
-    titleText.setDepth(1002);
-    
-    const messageText = this.add.text(width/2, height/2 - 10, `You drew 1 card`, {
-      fontSize: '16px',
-      fill: '#ffffff',
-      fontFamily: 'Arial'
-    });
-    messageText.setOrigin(0.5);
-    messageText.setDepth(1002);
-    
-    const handSizeText = this.add.text(width/2, height/2 + 15, `Hand size: ${drawData.newHandSize}`, {
-      fontSize: '14px',
-      fill: '#cccccc',
-      fontFamily: 'Arial'
-    });
-    handSizeText.setOrigin(0.5);
-    handSizeText.setDepth(1002);
-    
-    // Add acknowledge button
-    const button = this.add.rectangle(width/2, height/2 + 50, 120, 40, 0x4a90e2, 0.8);
-    button.setDepth(1002);
-    button.setStrokeStyle(1, 0x6ba3f5);
-    button.setInteractive();
-    
-    const buttonText = this.add.text(width/2, height/2 + 50, 'Continue', {
-      fontSize: '16px',
-      fill: '#ffffff',
-      fontFamily: 'Arial'
-    });
-    buttonText.setOrigin(0.5);
-    buttonText.setDepth(1003);
-    
-    // Handle button click
-    button.on('pointerdown', () => {
-      // Acknowledge the draw phase event
-      this.acknowledgeDrawPhaseEvent();
-      
-      // Clean up UI
-      overlay.destroy();
-      panel.destroy();
-      titleText.destroy();
-      messageText.destroy();
-      handSizeText.destroy();
-      button.destroy();
-      buttonText.destroy();
-    });
-    
-    // Button hover effects
-    button.on('pointerover', () => {
-      button.setFillStyle(0x6ba3f5, 0.9);
-    });
-    
-    button.on('pointerout', () => {
-      button.setFillStyle(0x4a90e2, 0.8);
-    });
-  }
-
-  async acknowledgeDrawPhaseEvent() {
-    if (!this.apiManager) {
-      console.log('No API manager available - skipping acknowledgment');
-      return;
-    }
-    
-    try {
-      // Get all unprocessed DRAW_PHASE_COMPLETE events
-      const events = this.gameStateManager.getGameState().gameEnv.gameEvents || [];
-      const drawPhaseEvents = events.filter(event => 
-        event.type === 'DRAW_PHASE_COMPLETE' && !event.frontendProcessed
-      );
-      
-      if (drawPhaseEvents.length > 0) {
-        const eventIds = drawPhaseEvents.map(e => e.id);
-        await this.apiManager.acknowledgeEvents(this.gameStateManager.getGameState().gameId, eventIds);
-        console.log(`Acknowledged ${eventIds.length} draw phase events`);
-      }
-    } catch (error) {
-      console.error('Failed to acknowledge draw phase events:', error);
-      this.showRoomStatus('Failed to acknowledge draw phase: ' + error.message);
-    }
-  }
 
   shouldShowTurnInfo(phase) {
     // Only show turn info for phases where turns matter
