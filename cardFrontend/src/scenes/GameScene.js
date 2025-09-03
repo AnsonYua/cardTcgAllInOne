@@ -514,6 +514,9 @@ export default class GameScene extends Phaser.Scene {
     }).setOrigin(0.5);
     */
     this.handContainer = this.add.container(width / 2-50, height - 120);
+    
+    // Create action button row above hand area
+    this.createActionButtonRow();
   }
 
   setupEventListeners() {
@@ -553,6 +556,9 @@ export default class GameScene extends Phaser.Scene {
       card.select();
       this.selectedCard = card;
       
+      // Show action button row when card is selected
+      this.showActionButtons();
+      
       // Show zone highlights for valid placement options
       this.showZoneHighlights(card);
     });
@@ -562,6 +568,9 @@ export default class GameScene extends Phaser.Scene {
       if (this.selectedCard === card) {
         this.selectedCard = null;
         this.clearZoneHighlights();
+        
+        // Hide action button row when card is deselected
+        this.hideActionButtons();
       }
     });
     
@@ -613,6 +622,8 @@ export default class GameScene extends Phaser.Scene {
       // Only deselect if clicking on background (not on a card or zone)
       if (currentlyOver.length === 0 && this.selectedCard) {
         this.deselectAllHandCards();
+        // Hide action buttons when clicking background
+        this.hideActionButtons();
       }
     });
   }
@@ -936,6 +947,8 @@ export default class GameScene extends Phaser.Scene {
         if (this.selectedCard === card) {
           this.selectedCard = null;
           this.clearZoneHighlights();
+          // Hide action buttons when card is placed
+          this.hideActionButtons();
         }
         
         console.log(`Successfully played card ${card.getCardData().id} to ${zoneType}`);
@@ -1157,6 +1170,8 @@ export default class GameScene extends Phaser.Scene {
       // Clear selection and zone highlights
       this.selectedCard = null;
       this.clearZoneHighlights();
+      // Hide action buttons when card is placed
+      this.hideActionButtons();
 
       // Reorganize remaining hand cards
       this.reorganizeHand();
@@ -1192,6 +1207,8 @@ export default class GameScene extends Phaser.Scene {
     });
     this.selectedCard = null;
     this.clearZoneHighlights();
+    // Hide action buttons when all cards deselected
+    this.hideActionButtons();
   }
 
   reorganizeHand() {
@@ -2430,7 +2447,181 @@ export default class GameScene extends Phaser.Scene {
   }
   
 
+  createActionButtonRow() {
+    const width = this.scale.width;
+    const height = this.scale.height;
+    
+    // Create container for action buttons, positioned above hand area
+    this.actionButtonContainer = this.add.container(width / 2, height - 250);
+    this.actionButtonContainer.setDepth(500);
+    this.actionButtonContainer.setVisible(false); // Hidden by default
+    
+    // Button configurations
+    const buttonConfigs = [
+      { text: 'Play', action: 'play', color: 0x4a90e2 },
+      { text: 'Face Down', action: 'facedown', color: 0x7b68ee },
+      { text: 'Inspect', action: 'inspect', color: 0x50c878 },
+      { text: 'Return', action: 'return', color: 0xffa500 },
+      { text: 'Cancel', action: 'cancel', color: 0xe74c3c }
+    ];
+    
+    this.actionButtons = [];
+    const buttonWidth = 80;
+    const buttonHeight = 35;
+    const buttonSpacing = 90;
+    const startX = -(buttonConfigs.length - 1) * buttonSpacing / 2;
+    
+    buttonConfigs.forEach((config, index) => {
+      const x = startX + index * buttonSpacing;
+      const y = 0;
+      
+      // Create button background
+      const button = this.add.rectangle(x, y, buttonWidth, buttonHeight, config.color, 0.8);
+      button.setStrokeStyle(2, 0xffffff, 0.6);
+      button.setInteractive();
+      
+      // Create button text
+      const buttonText = this.add.text(x, y, config.text, {
+        fontSize: '14px',
+        fill: '#ffffff',
+        fontFamily: 'Arial Bold'
+      });
+      buttonText.setOrigin(0.5);
+      
+      // Store button data
+      const buttonData = {
+        background: button,
+        text: buttonText,
+        action: config.action,
+        config: config
+      };
+      
+      // Add hover effects
+      button.on('pointerover', () => {
+        button.setFillStyle(config.color, 1.0);
+        button.setStrokeStyle(2, 0xffffff, 1.0);
+      });
+      
+      button.on('pointerout', () => {
+        button.setFillStyle(config.color, 0.8);
+        button.setStrokeStyle(2, 0xffffff, 0.6);
+      });
+      
+      // Add click handler
+      button.on('pointerdown', () => {
+        this.handleActionButtonClick(config.action);
+      });
+      
+      // Add to container and store reference
+      this.actionButtonContainer.add([button, buttonText]);
+      this.actionButtons.push(buttonData);
+    });
+    
+    console.log('Action button row created with 5 buttons');
+  }
+  
+  showActionButtons() {
+    if (this.actionButtonContainer) {
+      this.actionButtonContainer.setVisible(true);
+      console.log('Action buttons shown');
+    }
+  }
+  
+  hideActionButtons() {
+    if (this.actionButtonContainer) {
+      this.actionButtonContainer.setVisible(false);
+      console.log('Action buttons hidden');
+    }
+  }
+  
+  handleActionButtonClick(action) {
+    const selectedCard = this.gameStateManager.getSelectedCard();
+    
+    console.log(`Action button clicked: ${action}`, selectedCard);
+    
+    switch (action) {
+      case 'play':
+        this.handlePlayCardAction(selectedCard);
+        break;
+      case 'facedown':
+        this.handleFaceDownAction(selectedCard);
+        break;
+      case 'inspect':
+        this.handleInspectAction(selectedCard);
+        break;
+      case 'return':
+        this.handleReturnAction(selectedCard);
+        break;
+      case 'cancel':
+        this.handleCancelAction();
+        break;
+      default:
+        console.log(`Unknown action: ${action}`);
+    }
+  }
+  
+  handlePlayCardAction(selectedCard) {
+    if (!selectedCard) {
+      console.log('No card selected for play action');
+      return;
+    }
+    
+    // Implementation for playing card normally
+    console.log('Playing card normally:', selectedCard.cardId);
+    this.hideActionButtons();
+    // Add zone highlighting or card placement logic here
+  }
+  
+  handleFaceDownAction(selectedCard) {
+    if (!selectedCard) {
+      console.log('No card selected for face down action');
+      return;
+    }
+    
+    // Implementation for playing card face down
+    console.log('Playing card face down:', selectedCard.cardId);
+    this.hideActionButtons();
+    // Add face down placement logic here
+  }
+  
+  handleInspectAction(selectedCard) {
+    if (!selectedCard) {
+      console.log('No card selected for inspect action');
+      return;
+    }
+    
+    // Implementation for inspecting card details
+    console.log('Inspecting card:', selectedCard.cardId);
+    // Keep buttons visible for inspect action
+    // Add card detail view logic here
+  }
+  
+  handleReturnAction(selectedCard) {
+    if (!selectedCard) {
+      console.log('No card selected for return action');
+      return;
+    }
+    
+    // Implementation for returning card to original position
+    console.log('Returning card to original position:', selectedCard.cardId);
+    this.gameStateManager.clearSelectedCard();
+    this.hideActionButtons();
+    // Add return logic here
+  }
+  
+  handleCancelAction() {
+    // Implementation for canceling selection
+    console.log('Canceling card selection');
+    this.gameStateManager.clearSelectedCard();
+    this.hideActionButtons();
+  }
+
   destroy() {
+    // Clean up action button container
+    if (this.actionButtonContainer) {
+      this.actionButtonContainer.destroy();
+    }
+    
     // Clean up hover preview resources
     this.hideCardPreview();
     
