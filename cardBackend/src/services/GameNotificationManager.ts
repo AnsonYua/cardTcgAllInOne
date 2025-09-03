@@ -171,27 +171,6 @@ export class GameNotificationManager {
         return acknowledgedCount;
     }
     
-    /**
-     * Mark events by type as processed
-     */
-    acknowledgeEventsByType(eventTypes: string[]): number {
-        if (!this.gameEnv.gameEvents) return 0;
-        
-        let acknowledgedCount = 0;
-        
-        this.gameEnv.gameEvents.forEach(event => {
-            if (eventTypes.includes(event.type) && !event.metadata.frontendProcessed) {
-                event.metadata.frontendProcessed = true;
-                acknowledgedCount++;
-                console.log(`✅ Acknowledged event by type: ${event.type} (${event.id})`);
-            }
-        });
-        
-        // Clean up acknowledged events immediately
-        // this.cleanupProcessedEvents();
-        
-        return acknowledgedCount;
-    }
     
     /**
      * Clean up expired and processed events

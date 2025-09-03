@@ -134,39 +134,8 @@ export interface CardEntersPlayEvent extends BaseGameEvent {
     };
 }
 
-export interface CardLeavesPlayEvent extends BaseGameEvent {
-    type: EventType.CARD_DESTROYED;
-    data: {
-        cardId: string;
-        cardUid: string;
-        fromZone: string;
-        toZone: string;
-        playerId: string;
-        reason: string;
-    };
-}
 
-export interface CardDestroyedEvent extends BaseGameEvent {
-    type: EventType.CARD_DESTROYED;
-    data: {
-        cardId: string;
-        cardUid: string;
-        zone: string;
-        playerId: string;
-        destroyedBy?: string;
-    };
-}
 
-export interface CardMovedEvent extends BaseGameEvent {
-    type: EventType.CARD_DESTROYED;
-    data: {
-        cardId: string;
-        cardUid: string;
-        fromZone: string;
-        toZone: string;
-        playerId: string;
-    };
-}
 
 // ============ RESOURCE & ENERGY EVENTS ============
 
@@ -282,9 +251,6 @@ export type GameEvent =
     | StepBeginEvent
     | StepEndEvent
     | CardEntersPlayEvent
-    | CardLeavesPlayEvent
-    | CardDestroyedEvent
-    | CardMovedEvent
     | EnergyTappedEvent
     | EnergyUntappedEvent
     | CostPaidEvent
@@ -427,24 +393,6 @@ export class EventFactory {
         };
     }
     
-    static createCardDestroyedEvent(
-        cardId: string,
-        cardUid: string,
-        zone: string,
-        playerId: string,
-        destroyedBy?: string
-    ): CardDestroyedEvent {
-        return {
-            id: `card_destroyed_${++this.eventIdCounter}_${Date.now()}`,
-            type: EventType.CARD_DESTROYED,
-            status: EventStatus.DECLARED,
-            priority: EventPriority.HIGH,
-            sourceId: cardId,
-            playerId,
-            timestamp: Date.now(),
-            data: { cardId, cardUid, zone, playerId, destroyedBy }
-        };
-    }
     
     // ============ ABILITY EVENT FACTORIES ============
     

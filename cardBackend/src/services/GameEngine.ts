@@ -102,6 +102,9 @@ export class GameEngine {
                 case EventType.ERROR_OCCURRED:
                     return this.executeErrorEvent(event, gameEnv);
                     
+                case EventType.ACKNOWLEDGE_EVENTS:
+                    return this.executeAcknowledgeEvents(event, gameEnv);
+                    
                 default:
                     console.log(`🎯 Processing ${event.type} event - delegating to existing game logic`);
                     return { success: true };
@@ -275,6 +278,28 @@ export class GameEngine {
             return { 
                 success: false, 
                 error: error instanceof Error ? error.message : 'ERROR_OCCURRED execution failed'
+            };
+        }
+    }
+    
+    private executeAcknowledgeEvents(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+        const { eventIds, playerId } = event.data;
+        
+        console.log(`🎯 Processing ACKNOWLEDGE_EVENTS for ${eventIds.length} events`);
+        
+        try {
+            // Create notification manager and acknowledge events
+            const notificationManager = this.getNotificationManager(gameEnv);
+            const acknowledgedCount = notificationManager.acknowledgeEvents(eventIds);
+            
+            console.log(`✅ ACKNOWLEDGE_EVENTS processed - ${acknowledgedCount} events acknowledged`);
+            return { success: true };
+            
+        } catch (error) {
+            console.error(`❌ Error in executeAcknowledgeEvents:`, error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'ACKNOWLEDGE_EVENTS execution failed'
             };
         }
     }

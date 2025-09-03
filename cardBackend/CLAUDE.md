@@ -257,7 +257,7 @@ await testHelper.executePlayerAction('playerId_1', gameId, {
 });
 
 // 2. MANDATORY: Acknowledge draw event to proceed to MAIN_PHASE
-await testHelper.acknowledgeEventsByType(gameId, 'playerId_2', ['DRAW_PHASE_COMPLETE']);
+await testHelper.acknowledgeEvents(gameId, eventIds);
 
 // 3. Now player 2 can proceed with MAIN_PHASE actions
 ```
@@ -269,7 +269,7 @@ await testHelper.acknowledgeEventsByType(gameId, 'playerId_2', ['DRAW_PHASE_COMP
 
 **Backend API:**
 - `POST /player/acknowledgeEvents` - Acknowledge specific event IDs
-- `testHelper.acknowledgeEventsByType(gameId, playerId, eventTypes)` - Helper for tests
+- `testHelper.acknowledgeEvents(gameId, eventIds)` - Helper for tests
 
 ### Event Categories
 **Setup Events:**

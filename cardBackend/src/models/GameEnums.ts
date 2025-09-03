@@ -45,7 +45,6 @@ export enum EventType {
     
     // Card events
     CARD_PLAYED = 'CARD_PLAYED',
-    CARD_DESTROYED = 'CARD_DESTROYED',
     CARD_EFFECT_TRIGGERED = 'CARD_EFFECT_TRIGGERED',
     
     // Player events
@@ -67,5 +66,7 @@ export enum EventType {
     // State-based events
     STATE_BASED_ACTION = 'STATE_BASED_ACTION',
     FORCE_DISCARD = 'FORCE_DISCARD',
-    DESTROY_CARD = 'DESTROY_CARD'
+    
+    // Event management events
+    ACKNOWLEDGE_EVENTS = 'ACKNOWLEDGE_EVENTS'
 }

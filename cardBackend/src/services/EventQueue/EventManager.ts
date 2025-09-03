@@ -550,6 +550,29 @@ export class EventManager {
         return output.eventsProcessed > 0;
     }
     
+    // ============ EVENT-DRIVEN ACKNOWLEDGMENT ============
+    
+    /**
+     * Create acknowledgment event and queue it for processing
+     */
+    createAcknowledgmentEvent(eventIds: string[], playerId: string): void {
+        const acknowledgmentEvent: GameEvent = {
+            id: `ack_${Date.now()}_${Math.random()}`,
+            type: EventType.ACKNOWLEDGE_EVENTS,
+            status: EventStatus.DECLARED,
+            priority: EventPriority.HIGH,
+            timestamp: Date.now(),
+            playerId: playerId,
+            data: {
+                eventIds: eventIds,
+                playerId: playerId
+            }
+        };
+        
+        console.log(`📨 Creating ACKNOWLEDGE_EVENTS event for ${eventIds.length} events`);
+        this.enqueue(acknowledgmentEvent);
+    }
+
     // ============ CARD EFFECT MANAGEMENT ============
     
     /**

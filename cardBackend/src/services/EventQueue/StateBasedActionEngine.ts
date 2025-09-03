@@ -48,7 +48,6 @@ export class StateBasedActionEngine {
         
         // Check all categories of state-based actions
         actions.push(...this.checkGameStartConditions());
-        actions.push(...this.checkCardDestructionRules());
         actions.push(...this.checkZoneCapacityLimits());
         actions.push(...this.checkHandSizeLimits());
         actions.push(...this.checkResourceLimits());
@@ -127,38 +126,6 @@ export class StateBasedActionEngine {
         return actions;
     }
     
-    /**
-     * Check for cards that should be destroyed due to game rules
-     */
-    private checkCardDestructionRules(): StateBasedAction[] {
-        const actions: StateBasedAction[] = [];
-        
-        // TODO: Integrate with your card power/health system
-        // Check for units with 0 or negative power/health
-        Object.values(this.gameEnv.players).forEach(player => {
-            // Example checks:
-            // - Units with 0 power
-            // - Units with lethal damage
-            // - Cards in illegal states
-            
-            console.log(`🔍 Checking card destruction rules for player: ${player.id}`);
-            
-            // Example state-based action
-            // if (card.currentPower <= 0) {
-            //     actions.push({
-            //         actionId: `destroy_${card.uid}`,
-            //         type: 'DESTROY_CARD',
-            //         priority: 100,
-            //         description: `Destroy ${card.name} (0 power)`,
-            //         affectedCards: [card.uid],
-            //         affectedPlayers: [player.id],
-            //         autoExecute: true
-            //     });
-            // }
-        });
-        
-        return actions;
-    }
     
     /**
      * Check zone capacity limits
@@ -261,10 +228,6 @@ export class StateBasedActionEngine {
         console.log(`🔥 Executing state-based action: ${action.type}`);
         
         switch (action.type) {
-            case EventType.DESTROY_CARD:
-                events.push(...this.executeCardDestruction(action));
-                break;
-                
             case EventType.FORCE_DISCARD:
                 events.push(...this.executeForceDiscard(action));
                 break;
@@ -285,22 +248,6 @@ export class StateBasedActionEngine {
         return events;
     }
     
-    private executeCardDestruction(action: StateBasedAction): GameEvent[] {
-        const events: GameEvent[] = [];
-        
-        // TODO: Integrate with your card destruction system
-        action.affectedCards.forEach(cardUid => {
-            console.log(`💥 State-based destruction: ${cardUid}`);
-            
-            // Generate card destruction event
-            // const destroyEvent = EventFactory.createCardDestroyedEvent(
-            //     cardId, cardUid, zone, playerId, 'state_based_action'
-            // );
-            // events.push(destroyEvent);
-        });
-        
-        return events;
-    }
     
     private executeForceDiscard(action: StateBasedAction): GameEvent[] {
         const events: GameEvent[] = [];
