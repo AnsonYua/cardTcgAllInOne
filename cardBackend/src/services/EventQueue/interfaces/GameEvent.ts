@@ -112,6 +112,15 @@ export interface StepBeginEvent extends BaseGameEvent {
     };
 }
 
+export interface NextPlayerTurnEvent extends BaseGameEvent {
+    type: EventType.NEXT_PLAYER_TURN;
+    data: {
+        currentPlayer: string;
+        nextPlayer: string;
+        currentTurn: number;
+    };
+}
+
 export interface StepEndEvent extends BaseGameEvent {
     type: EventType.PHASE_ADVANCE;
     data: {
@@ -291,7 +300,8 @@ export type GameEvent =
     | AcknowledgeEventsEvent
     | StartGameEvent
     | JoinGameEvent
-    | BaseGameEvent;
+    | BaseGameEvent
+    | NextPlayerTurnEvent;
 
 export class EventFactory {
     private static eventIdCounter = 0;

@@ -6,13 +6,14 @@
   "tags": [
     "PlayCard"
   ],
-  "initialGameEnv": {"phase": "MAIN_PHASE",
+  "initialGameEnv": {
+        "phase": "MAIN_PHASE",
         "playerId_1": "playerId_1",
         "playerId_2": "playerId_2",
         "gameStarted": true,
         "firstPlayer": 0,
         "currentPlayer": "playerId_1",
-        "currentTurn": 0,
+        "currentTurn": 6,
         "playersReady": {
             "playerId_1": true,
             "playerId_2": true
@@ -396,6 +397,119 @@
                                     ]
                                 }
                             }
+                        },
+                        {
+                            "cardUid": "ST01-014_d9bbecac-0983-4963-a3e4-f361c749c374",
+                            "cardId": "ST01-014",
+                            "cardData": {
+                                "id": "ST01-014",
+                                "name": "Unforeseen Incident",
+                                "cardType": "command",
+                                "color": "White",
+                                "level": 3,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 0,
+                                "effects": {
+                                    "description": [
+                                        "【Burst】Activate this card's 【Main】.",
+                                        "【Main】/【Action】Choose 1 enemy Unit. It gets AP-3 during this turn."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_activate_main",
+                                            "type": "triggered",
+                                            "trigger": "BURST_CONDITION",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self"
+                                            },
+                                            "effect": {
+                                                "action": "activate_ability",
+                                                "parameters": {
+                                                    "abilityType": "main"
+                                                },
+                                                "duration": "instant"
+                                            }
+                                        },
+                                        {
+                                            "effectId": "main_action_ap_reduction",
+                                            "type": "activated",
+                                            "timing": [
+                                                "MAIN_PHASE",
+                                                "ANY_TIME"
+                                            ],
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "count": 1
+                                            },
+                                            "effect": {
+                                                "action": "modifyAP",
+                                                "parameters": {
+                                                    "modifier": "-3"
+                                                },
+                                                "duration": "turn"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-005_97acf20b-0b89-4ce3-b512-fb447e68bf40",
+                            "cardId": "ST01-005",
+                            "cardData": {
+                                "id": "ST01-005",
+                                "name": "GM",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 2,
+                                "cost": 1,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Federation"
+                                ],
+                                "link": [],
+                                "ap": 2,
+                                "hp": 2,
+                                "effects": {
+                                    "description": [],
+                                    "rules": []
+                                }
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-005_451ce2ec-70ae-4f8e-a315-46f39497303e",
+                            "cardId": "ST01-005",
+                            "cardData": {
+                                "id": "ST01-005",
+                                "name": "GM",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 2,
+                                "cost": 1,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Federation"
+                                ],
+                                "link": [],
+                                "ap": 2,
+                                "hp": 2,
+                                "effects": {
+                                    "description": [],
+                                    "rules": []
+                                }
+                            }
                         }
                     ],
                     "handUids": [
@@ -404,12 +518,12 @@
                         "ST01-016_d918cf59-d6fb-4cae-b2e6-6672ced70003",
                         "ST01-005_0f198b2e-e6c9-4d7a-aa19-d57866e55e69",
                         "ST01-005_847bfdd1-2175-4e8e-bfa4-baffa9ed13cd",
-                        "ST01-013_220b27a4-a654-44f0-9a7c-1068482ba1a6"
-                    ],
-                    "mainDeck": [
+                        "ST01-013_220b27a4-a654-44f0-9a7c-1068482ba1a6",
                         "ST01-014_d9bbecac-0983-4963-a3e4-f361c749c374",
                         "ST01-005_97acf20b-0b89-4ce3-b512-fb447e68bf40",
-                        "ST01-005_451ce2ec-70ae-4f8e-a315-46f39497303e",
+                        "ST01-005_451ce2ec-70ae-4f8e-a315-46f39497303e"
+                    ],
+                    "mainDeck": [
                         "ST01-008_a94977ab-f673-4f82-9330-99bd38f312a0",
                         "ST01-009_de9ed7df-e562-4575-8022-3d7ea62a8d08",
                         "ST01-008_5b7d4dca-41b2-44c8-9c30-ab9fa0b4ac22",
@@ -540,6 +654,39 @@
                             "cardUid": "energy_basic_1756880162160_0.08884502315630471",
                             "cardId": "energy_basic",
                             "placedAt": 1756880162160,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isExtraEnergy": false,
+                            "cardData": {
+                                "cardType": "energy"
+                            }
+                        },
+                        {
+                            "cardUid": "energy_basic_1756907208523_0.2118060877688428",
+                            "cardId": "energy_basic",
+                            "placedAt": 1756907208523,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isExtraEnergy": false,
+                            "cardData": {
+                                "cardType": "energy"
+                            }
+                        },
+                        {
+                            "cardUid": "energy_basic_1756907363942_0.3872870049252628",
+                            "cardId": "energy_basic",
+                            "placedAt": 1756907363942,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isExtraEnergy": false,
+                            "cardData": {
+                                "cardType": "energy"
+                            }
+                        },
+                        {
+                            "cardUid": "energy_basic_1756907532581_0.4138990018420503",
+                            "cardId": "energy_basic",
+                            "placedAt": 1756907532581,
                             "placedBy": "playerId_1",
                             "isRested": false,
                             "isExtraEnergy": false,
@@ -787,6 +934,122 @@
                                     ]
                                 }
                             }
+                        },
+                        {
+                            "cardUid": "ST01-005_2d5c2e4c-ecf0-4c30-aec9-6c3c4b69719f",
+                            "cardId": "ST01-005",
+                            "cardData": {
+                                "id": "ST01-005",
+                                "name": "GM",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 2,
+                                "cost": 1,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Federation"
+                                ],
+                                "link": [],
+                                "ap": 2,
+                                "hp": 2,
+                                "effects": {
+                                    "description": [],
+                                    "rules": []
+                                }
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-014_27ccf5d7-b5ad-4d56-bb6a-08a4426689b6",
+                            "cardId": "ST01-014",
+                            "cardData": {
+                                "id": "ST01-014",
+                                "name": "Unforeseen Incident",
+                                "cardType": "command",
+                                "color": "White",
+                                "level": 3,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 0,
+                                "effects": {
+                                    "description": [
+                                        "【Burst】Activate this card's 【Main】.",
+                                        "【Main】/【Action】Choose 1 enemy Unit. It gets AP-3 during this turn."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_activate_main",
+                                            "type": "triggered",
+                                            "trigger": "BURST_CONDITION",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self"
+                                            },
+                                            "effect": {
+                                                "action": "activate_ability",
+                                                "parameters": {
+                                                    "abilityType": "main"
+                                                },
+                                                "duration": "instant"
+                                            }
+                                        },
+                                        {
+                                            "effectId": "main_action_ap_reduction",
+                                            "type": "activated",
+                                            "timing": [
+                                                "MAIN_PHASE",
+                                                "ANY_TIME"
+                                            ],
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "count": 1
+                                            },
+                                            "effect": {
+                                                "action": "modifyAP",
+                                                "parameters": {
+                                                    "modifier": "-3"
+                                                },
+                                                "duration": "turn"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "cardUid": "ST01-003_ef184c8f-8dcc-4635-bf8e-379bd70f4eab",
+                            "cardId": "ST01-003",
+                            "cardData": {
+                                "id": "ST01-003",
+                                "name": "Guncannon",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 3,
+                                "cost": 2,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Federation",
+                                    "White Base Team"
+                                ],
+                                "link": [
+                                    "Kai Shiden"
+                                ],
+                                "ap": 2,
+                                "hp": 4,
+                                "effects": {
+                                    "description": [],
+                                    "rules": []
+                                }
+                            }
                         }
                     ],
                     "handUids": [
@@ -794,12 +1057,12 @@
                         "ST01-010_36b0fc24-6de0-4518-bcae-78444ad87281",
                         "ST01-005_8c99645a-6030-45a5-9d3d-a1a849582f9a",
                         "ST01-003_d359e65b-a1f1-4a9b-87bf-3086e87c96b3",
-                        "ST01-010_178b9eae-d5b2-4be4-bb19-62e44612e488"
-                    ],
-                    "mainDeck": [
+                        "ST01-010_178b9eae-d5b2-4be4-bb19-62e44612e488",
                         "ST01-005_2d5c2e4c-ecf0-4c30-aec9-6c3c4b69719f",
                         "ST01-014_27ccf5d7-b5ad-4d56-bb6a-08a4426689b6",
-                        "ST01-003_ef184c8f-8dcc-4635-bf8e-379bd70f4eab",
+                        "ST01-003_ef184c8f-8dcc-4635-bf8e-379bd70f4eab"
+                    ],
+                    "mainDeck": [
                         "ST01-002_9e0d738b-3ba9-49f1-9506-121e755a2434",
                         "ST01-004_3f62e889-93c7-4d86-92b7-85e00c51db6f",
                         "ST01-016_aa5ea3de-1e4d-4b78-a45c-620bf6661f96",
@@ -937,6 +1200,39 @@
                             "cardData": {
                                 "cardType": "energy"
                             }
+                        },
+                        {
+                            "cardUid": "energy_basic_1756907180647_0.15005602770166493",
+                            "cardId": "energy_basic",
+                            "placedAt": 1756907180647,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "isExtraEnergy": false,
+                            "cardData": {
+                                "cardType": "energy"
+                            }
+                        },
+                        {
+                            "cardUid": "energy_basic_1756907356878_0.23082450649123576",
+                            "cardId": "energy_basic",
+                            "placedAt": 1756907356878,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "isExtraEnergy": false,
+                            "cardData": {
+                                "cardType": "energy"
+                            }
+                        },
+                        {
+                            "cardUid": "energy_basic_1756907522980_0.549661003044605",
+                            "cardId": "energy_basic",
+                            "placedAt": 1756907522980,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "isExtraEnergy": false,
+                            "cardData": {
+                                "cardType": "energy"
+                            }
                         }
                     ],
                     "trashArea": []
@@ -999,6 +1295,108 @@
                 "metadata": {
                     "timestamp": 1756880164211,
                     "expiresAt": 1756880167211,
+                    "requiresAcknowledgment": false,
+                    "frontendProcessed": false,
+                    "priority": "high"
+                },
+                "payload": {
+                    "fromPhase": "DRAW_PHASE",
+                    "toPhase": "MAIN_PHASE",
+                    "reason": "Auto-advance: No unacknowledged card draw events",
+                    "playerId": "playerId_1"
+                }
+            },
+            {
+                "id": "phase_change_1756907184573_j0f7pw7d6",
+                "type": "PHASE_CHANGE",
+                "metadata": {
+                    "timestamp": 1756907184573,
+                    "expiresAt": 1756907187573,
+                    "requiresAcknowledgment": false,
+                    "frontendProcessed": false,
+                    "priority": "high"
+                },
+                "payload": {
+                    "fromPhase": "DRAW_PHASE",
+                    "toPhase": "MAIN_PHASE",
+                    "reason": "Auto-advance: No unacknowledged card draw events",
+                    "playerId": "playerId_2"
+                }
+            },
+            {
+                "id": "phase_change_1756907209563_a0fqpid8v",
+                "type": "PHASE_CHANGE",
+                "metadata": {
+                    "timestamp": 1756907209563,
+                    "expiresAt": 1756907212563,
+                    "requiresAcknowledgment": false,
+                    "frontendProcessed": false,
+                    "priority": "high"
+                },
+                "payload": {
+                    "fromPhase": "DRAW_PHASE",
+                    "toPhase": "MAIN_PHASE",
+                    "reason": "Auto-advance: No unacknowledged card draw events",
+                    "playerId": "playerId_1"
+                }
+            },
+            {
+                "id": "phase_change_1756907361601_bushpqkg6",
+                "type": "PHASE_CHANGE",
+                "metadata": {
+                    "timestamp": 1756907361601,
+                    "expiresAt": 1756907364601,
+                    "requiresAcknowledgment": false,
+                    "frontendProcessed": false,
+                    "priority": "high"
+                },
+                "payload": {
+                    "fromPhase": "DRAW_PHASE",
+                    "toPhase": "MAIN_PHASE",
+                    "reason": "Auto-advance: No unacknowledged card draw events",
+                    "playerId": "playerId_2"
+                }
+            },
+            {
+                "id": "phase_change_1756907364974_7c9wygh6q",
+                "type": "PHASE_CHANGE",
+                "metadata": {
+                    "timestamp": 1756907364974,
+                    "expiresAt": 1756907367974,
+                    "requiresAcknowledgment": false,
+                    "frontendProcessed": false,
+                    "priority": "high"
+                },
+                "payload": {
+                    "fromPhase": "DRAW_PHASE",
+                    "toPhase": "MAIN_PHASE",
+                    "reason": "Auto-advance: No unacknowledged card draw events",
+                    "playerId": "playerId_1"
+                }
+            },
+            {
+                "id": "phase_change_1756907527266_5spnewgcq",
+                "type": "PHASE_CHANGE",
+                "metadata": {
+                    "timestamp": 1756907527266,
+                    "expiresAt": 1756907530266,
+                    "requiresAcknowledgment": false,
+                    "frontendProcessed": false,
+                    "priority": "high"
+                },
+                "payload": {
+                    "fromPhase": "DRAW_PHASE",
+                    "toPhase": "MAIN_PHASE",
+                    "reason": "Auto-advance: No unacknowledged card draw events",
+                    "playerId": "playerId_2"
+                }
+            },
+            {
+                "id": "phase_change_1756907533614_e4xaasv73",
+                "type": "PHASE_CHANGE",
+                "metadata": {
+                    "timestamp": 1756907533614,
+                    "expiresAt": 1756907536614,
                     "requiresAcknowledgment": false,
                     "frontendProcessed": false,
                     "priority": "high"

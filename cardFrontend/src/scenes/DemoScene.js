@@ -151,6 +151,14 @@ export default class DemoScene extends DemoSceneBasic {
             enableHover: true,
             fontSize: '12px'
           }
+        },
+        {
+          text: 'Opponent End Turn',
+          onClick: () => this.opponentEndTurn(),
+          options: { 
+            enableHover: true,
+            fontSize: '12px'
+          }
         }
       ];
 
@@ -261,6 +269,14 @@ export default class DemoScene extends DemoSceneBasic {
             enableHover: true,
             fontSize: '12px'
           }
+        },
+        {
+          text: 'Opponent End Turn',
+          onClick: () => this.opponentEndTurn(),
+          options: { 
+            enableHover: true,
+            fontSize: '12px'
+          }
         }
       ];
       // Create test buttons using UIHelper - creates them in a vertical column
@@ -290,13 +306,32 @@ export default class DemoScene extends DemoSceneBasic {
   
   }
 
+  async opponentEndTurn(){
+    const opponentPlayerId = this.gameStateManager.getOpponent();
+    const gameState = this.gameStateManager.getGameState();
+    const gameId = gameState.gameId;
+    const response = await this.apiManager.endTurn(gameId, opponentPlayerId);
+    
+    if (response && response.success) {
+      console.log('Turn ended successfully:', response);
+      this.showRoomStatus('Turn ended successfully');
+      
+      // Update game state if returned in response
+      if (response.gameEnv) {
+        this.gameStateManager.updateGameEnv(response.gameEnv);
+        this.updateGameState();
+      }
+    } else {
+      throw new Error(response?.error || 'Failed to end turn');
+    }
+  }
 
   async opponentAcknowledgeDraw() {
     try {
       const gameState = this.gameStateManager.getGameState();
       const gameId = gameState.gameId;
       const playerId = gameState.playerId;
-      
+      const opponentPlayerId = this.gameStateManager.getOpponent();
       if (!gameId) {
         throw new Error('No gameId found. Make sure a game is active.');
       }
@@ -325,9 +360,8 @@ export default class DemoScene extends DemoSceneBasic {
       // Extract event IDs
       const eventIds = drawEvents.map(event => event.id);
       console.log('Found draw events to acknowledge:', eventIds);
-      
       // Call the acknowledgeEvents API
-      const response = await this.apiManager.acknowledgeEvents(gameId, playerId, eventIds);
+      const response = await this.apiManager.acknowledgeEvents(gameId, opponentPlayerId, eventIds);
       
       console.log('Acknowledge events response:', response);
       this.showRoomStatus(`Successfully acknowledged ${eventIds.length} draw event(s): ${eventIds.join(', ')}`);

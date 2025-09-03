@@ -1232,14 +1232,44 @@ export default class GameScene extends Phaser.Scene {
     });
   }
 
-  endTurn() {
+  async endTurn() {
     if (!this.gameStateManager.isCurrentPlayer()) {
       console.log('Not your turn');
+      this.showRoomStatus('Not your turn to end turn');
       return;
     }
     
-    console.log('Ending turn...');
-    // This would normally make an API call to end the turn
+    try {
+      const gameState = this.gameStateManager.getGameState();
+      const gameId = gameState.gameId;
+      const playerId = gameState.playerId;
+      
+      if (!gameId || !playerId) {
+        throw new Error('Missing gameId or playerId');
+      }
+      
+      console.log(`Ending turn for player: ${playerId}`);
+      this.showRoomStatus('Ending turn...');
+      
+      const response = await this.apiManager.endTurn(gameId, playerId);
+      
+      if (response && response.success) {
+        console.log('Turn ended successfully:', response);
+        this.showRoomStatus('Turn ended successfully');
+        
+        // Update game state if returned in response
+        if (response.gameEnv) {
+          this.gameStateManager.updateGameEnv(response.gameEnv);
+          this.updateGameState();
+        }
+      } else {
+        throw new Error(response?.error || 'Failed to end turn');
+      }
+      
+    } catch (error) {
+      console.error('Error ending turn:', error);
+      this.showRoomStatus(`Failed to end turn: ${error.message}`);
+    }
   }
 
   openMenu() {

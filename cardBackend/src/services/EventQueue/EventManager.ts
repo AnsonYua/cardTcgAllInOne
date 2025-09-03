@@ -312,6 +312,7 @@ export class EventManager {
                 const stateActions = this.checkForStateBasedActions(gameEnv);
                 stateActions.forEach(stateEvent => {
                     console.log(`🏛️ Adding state-based action: ${stateEvent.type}`);
+                    console.log("event :----", JSON.stringify(stateEvent))
                     this.enqueue(stateEvent);
                 });
                 
@@ -480,6 +481,11 @@ export class EventManager {
                         affectedPlayers: action.affectedPlayers
                     }
                 };
+                if (action.type == EventType.NEXT_PLAYER_TURN){
+                    stateEvent.data.currentPlayer = action.data.currentPlayer;
+                    stateEvent.data.nextPlayer = action.data.nextPlayer;
+                    stateEvent.data.currentTurn = action.data.currentTurn;
+                }
                 stateEvents.push(stateEvent);
             }
         });

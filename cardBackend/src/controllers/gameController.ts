@@ -229,88 +229,39 @@ export class GameController {
     }
 
     /**
-     * Process player action (play cards)
-     * POST /api/game/action
+     * Process player action with card auto-discovery from zones
+     * POST /api/game/player/playerAction
+     * Body: { gameId, playerId, cardUID }
      */
     async playerAction(req: GameRequest, res: Response): Promise<void> {
         try {
             console.log('🎮 Processing player action:', req.body);
             
-            const { gameId, playerId, action } = req.body;
+            const { gameId, playerId, cardUID } = req.body;
             
-            if (!gameId || !playerId || !action) {
+            if (!gameId || !playerId || !cardUID) {
                 res.status(400).json({
-                    error: 'gameId, playerId, and action are required',
+                    error: 'gameId, playerId, and cardUID are required',
                     timestamp: new Date().toISOString(),
                     context: 'playerAction endpoint'
                 });
                 return;
             }
             
-            // Handle PlayCard actions for custom trading card game
-            if (action.type === 'PlayCard') {
-                const cardUID = action.cardUID;
-                const zone = action.zone;
-                
-                if (!cardUID || !zone) {
-                    res.status(400).json({
-                        error: 'Both cardUID and zone are required for PlayCard action',
-                        timestamp: new Date().toISOString(),
-                        context: 'playerAction endpoint - PlayCard validation'
-                    });
-                    return;
-                }
-                
-                // TODO: Add validation for your custom zone types (slot1-slot6, base)
-                const validZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6', 'base'];
-                if (!validZones.includes(zone)) {
-                    console.log(`🚧 [PLACEHOLDER] Zone validation not fully implemented. Received zone: ${zone}`);
-                    // For now, allow any zone for testing purposes
-                }
-                
-                //     });
-                //     
-                //     // Check for triggered effects from card entering play
-                //     if (eventResult.triggeredEffects?.length > 0) {
-                //         console.log('🎯 Triggered effects detected:', eventResult.triggeredEffects);
-                //         // Process each triggered effect through the trigger engine
-                //         for (const trigger of eventResult.triggeredEffects) {
-                //             await gameEnv.eventProcessor.getTriggerEngine()?.processTrigger(trigger);
-                //         }
-                //     }
-                //     
-                //     console.log('🎮 Event queue processed card play with triggers:', eventResult);
-                // }
-                
-                const result = await this.gameLogic.playCard(
-                    gameId, 
-                    playerId, 
-                    cardUID,
-                    zone,
-                    action.faceDown || false
-                );
-                
-                if (result.success && result.gameEnv) {
-                    res.json({
-                        success: true,
-                        gameId: result.gameId,
-                        gameEnv: result.gameEnv,
-                        requiresCardSelection: result.requiresCardSelection
-                    });
-                } else {
-                    res.status(400).json({
-                        error: result.error,
-                        timestamp: new Date().toISOString(),
-                        context: 'playerAction endpoint'
-                    });
-                }
+            // Use new unified playerAction method with auto-find
+            const result = await this.gameLogic.playerAction(gameId, playerId, cardUID);
+            
+            if (result.success && result.gameEnv) {
+                res.json({
+                    success: true,
+                    gameId: result.gameId,
+                    gameEnv: result.gameEnv
+                });
             } else {
-                // TODO: Add support for other custom action types
-                console.log(`🚧 [PLACEHOLDER] Action type '${action.type}' not implemented`);
                 res.status(400).json({
-                    error: `Action type '${action.type}' not implemented. Add support for your custom trading card game actions.`,
+                    error: result.error,
                     timestamp: new Date().toISOString(),
-                    context: 'playerAction endpoint - unsupported action type'
+                    context: 'playerAction endpoint'
                 });
             }
             

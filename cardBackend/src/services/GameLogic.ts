@@ -465,6 +465,21 @@ export class GameLogic {
                     action.eventIds || []
                 );
                 
+            case PlayerActionType.PLAYER_ACTION:
+                return {
+                    id: `player_action_${Date.now()}_${Math.random()}`,
+                    type: EventType.PLAYER_ACTION,
+                    status: EventStatus.DECLARED,
+                    priority: EventPriority.NORMAL,
+                    timestamp: Date.now(),
+                    playerId: action.playerId,
+                    data: {
+                        playerId: action.playerId,
+                        gameId: action.gameId,
+                        cardUID: action.cardUID
+                    }
+                };
+                
             default:
                 console.warn(`⚠️ Unknown action type: ${action.type}`);
                 return null;
@@ -751,6 +766,70 @@ export class GameLogic {
             return {
                 success: false,
                 error: `Failed to inject game state: ${error instanceof Error ? error.message : 'Unknown error'}`
+            };
+        }
+    }
+
+    /**
+     * Process player action with card auto-discovery from zones
+     * @param gameId - Game ID
+     * @param playerId - Player ID  
+     * @param cardUID - Card UID to find and act upon
+     * @returns Promise<GameLogicResult>
+     */
+    async playerAction(gameId: string, playerId: string, cardUID: string): Promise<GameLogicResult> {
+        try {
+            console.log(`🎯 playerAction: gameId=${gameId}, playerId=${playerId}, cardUID=${cardUID}`);
+            
+            // Validate inputs
+            if (!gameId || !playerId || !cardUID) {
+                return {
+                    success: false,
+                    error: 'gameId, playerId, and cardUID are required'
+                };
+            }
+            
+            // Load game state
+            const gameEnv = await this.loadGameFromFile(gameId);
+            if (!gameEnv) {
+                return {
+                    success: false,
+                    error: 'Game not found'
+                };
+            }
+            
+            // Create and process PLAYER_ACTION event
+            const playerActionEvent: PlayerAction = {
+                type: PlayerActionType.PLAYER_ACTION,
+                playerId,
+                gameId,
+                cardUID
+            };
+            
+            const actionResult = await this.processAction(gameEnv, playerActionEvent);
+            console.log('🎮 PLAYER_ACTION processed:', actionResult);
+            
+            if (!actionResult.success) {
+                return {
+                    success: false,
+                    error: actionResult.error || 'Failed to process player action'
+                };
+            }
+            
+            // Save updated game state
+            await this.saveGameToFile(gameId, gameEnv);
+            
+            return {
+                success: true,
+                gameId,
+                gameEnv
+            };
+            
+        } catch (error) {
+            console.error(`❌ Error in playerAction:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'playerAction failed'
             };
         }
     }

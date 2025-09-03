@@ -15,6 +15,7 @@ export interface StateBasedAction {
     affectedCards: string[];
     affectedPlayers: string[];
     autoExecute: boolean;
+    data?: any;
 }
 
 export interface GameStateViolation {
@@ -49,6 +50,7 @@ export class StateBasedActionEngine {
         // Check all categories of state-based actions
         actions.push(...this.checkGameStartConditions());
         actions.push(...this.checkDrawPhaseToMainPhase());
+        actions.push(...this.checkEndPhaseToNextPlayer());
         actions.push(...this.checkZoneCapacityLimits());
         actions.push(...this.checkHandSizeLimits());
         actions.push(...this.checkResourceLimits());
@@ -65,21 +67,6 @@ export class StateBasedActionEngine {
         return actions;
     }
     
-    /**
-     * Execute state-based actions and return generated events
-     */
-    executeStateBasedActions(actions: StateBasedAction[]): GameEvent[] {
-        const generatedEvents: GameEvent[] = [];
-        
-        for (const action of actions) {
-            if (action.autoExecute) {
-                const events = this.executeStateBasedAction(action);
-                generatedEvents.push(...events);
-            }
-        }
-        
-        return generatedEvents;
-    }
     
     // ============ SPECIFIC STATE CHECKS ============
     
@@ -166,6 +153,44 @@ export class StateBasedActionEngine {
                     affectedCards: [],
                     affectedPlayers: [this.gameEnv.currentPlayer || ''],
                     autoExecute: true
+                });
+            }
+        }
+        
+        return actions;
+    }
+    
+    /**
+     * Check END_PHASE to next player transition
+     */
+    private checkEndPhaseToNextPlayer(): StateBasedAction[] {
+        const actions: StateBasedAction[] = [];
+        
+        // Check if we're in END_PHASE and need to transition to next player
+        if (this.gameEnv.phase === GamePhase.END_PHASE) {
+            console.log(`🔄 END_PHASE detected - checking for next player transition`);
+            
+            // Calculate next player
+            const nextPlayerId = this.gameEnv.currentPlayer === this.gameEnv.playerId_1 
+                ? this.gameEnv.playerId_2 
+                : this.gameEnv.playerId_1;
+            
+            if (nextPlayerId) {
+                console.log(`🎯 State-based action detected: END_PHASE to next player transition (${this.gameEnv.currentPlayer} → ${nextPlayerId})`);
+                
+                actions.push({
+                    actionId: `end_phase_next_player_${Date.now()}`,
+                    type: EventType.NEXT_PLAYER_TURN,
+                    priority: 10,
+                    affectedPlayers: [this.gameEnv.currentPlayer || '', nextPlayerId],
+                    affectedCards: [],
+                    description: `Transition from END_PHASE to next player: ${nextPlayerId}`,
+                    autoExecute: true,
+                    data: {
+                        currentPlayer: this.gameEnv.currentPlayer,
+                        nextPlayer: nextPlayerId,
+                        currentTurn: this.gameEnv.currentTurn
+                    }
                 });
             }
         }
@@ -263,94 +288,6 @@ export class StateBasedActionEngine {
         return actions;
     }
     
-    // ============ ACTION EXECUTION ============
-    
-    /**
-     * Execute a specific state-based action
-     */
-    private executeStateBasedAction(action: StateBasedAction): GameEvent[] {
-        const events: GameEvent[] = [];
-        
-        console.log(`🔥 Executing state-based action: ${action.type}`);
-        
-        switch (action.type) {
-            case EventType.FORCE_DISCARD:
-                events.push(...this.executeForceDiscard(action));
-                break;
-                
-            case EventType.PHASE_ADVANCE:
-                events.push(...this.executePhaseAdvance(action));
-                break;
-                
-            case EventType.GAMEPLAY_BEGINS:
-                // GAMEPLAY_BEGINS actions are handled by GameEngine directly
-                // No additional processing needed here
-                break;
-                
-            default:
-                console.warn(`⚠️ Unknown state-based action: ${action.type}`);
-        }
-        
-        return events;
-    }
-    
-    
-    private executeForceDiscard(action: StateBasedAction): GameEvent[] {
-        const events: GameEvent[] = [];
-        
-        // TODO: Integrate with your discard system
-        console.log(`🗑️ State-based discard for players: ${action.affectedPlayers.join(', ')}`);
-        
-        return events;
-    }
-    
-    private executePhaseAdvance(action: StateBasedAction): GameEvent[] {
-        const events: GameEvent[] = [];
-        
-        console.log(`📋 State-based phase advance: ${action.description}`);
-        
-        // Handle DRAW_PHASE to MAIN_PHASE transition
-        if (action.actionId.startsWith('draw_to_main_') && this.gameEnv.phase === GamePhase.DRAW_PHASE) {
-            console.log(`🔄 Auto-advancing from DRAW_PHASE to MAIN_PHASE`);
-            
-            // Change phase directly in the gameEnv
-            this.gameEnv.phase = GamePhase.MAIN_PHASE;
-            
-            // Generate phase change event for frontend notification
-            const phaseChangeEvent = {
-                id: `phase_change_${Date.now()}_${Math.random()}`,
-                type: 'PHASE_CHANGE',
-                data: {
-                    fromPhase: 'DRAW_PHASE',
-                    toPhase: 'MAIN_PHASE',
-                    reason: 'Auto-advance: No card draw events pending',
-                    playerId: this.gameEnv.currentPlayer
-                },
-                timestamp: Date.now(),
-                expiresAt: Date.now() + 3000,
-                frontendProcessed: false
-            };
-            
-            // Add to game events for frontend notification
-            if (!this.gameEnv.gameEvents) {
-                this.gameEnv.gameEvents = [];
-            }
-            this.gameEnv.gameEvents.push(phaseChangeEvent);
-            
-            console.log(`✅ Phase advanced to MAIN_PHASE via state-based action`);
-        }
-        
-        return events;
-    }
-    
-    private executeZoneCorrection(action: StateBasedAction): GameEvent[] {
-        const events: GameEvent[] = [];
-        
-        // TODO: Integrate with your zone management system
-        console.log(`🔧 State-based zone correction: ${action.description}`);
-        
-        return events;
-    }
     
     // ============ GAME STATE VALIDATION ============
     

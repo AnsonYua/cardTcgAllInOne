@@ -114,6 +114,12 @@ export class GameEngine {
                 case EventType.CARDS_UNREST:
                     return this.executeCardsUnrest(event, gameEnv);
                     
+                case EventType.NEXT_PLAYER_TURN:
+                    return this.executeNextPlayerTurn(event, gameEnv);
+                    
+                case EventType.PLAYER_ACTION:
+                    return this.executePlayerAction(event, gameEnv);
+                    
                 default:
                     console.log(`🎯 Processing ${event.type} event - delegating to existing game logic`);
                     return { success: true };
@@ -520,32 +526,10 @@ export class GameEngine {
                 };
             }
             
-            // Validate current turn number matches
-            if (gameEnv.currentTurn !== currentTurnNumber) {
-                return { 
-                    success: false, 
-                    error: `Turn number mismatch. Expected: ${gameEnv.currentTurn}, got: ${currentTurnNumber}` 
-                };
-            }
+            // Simply set phase to END_TURN - let state-based actions handle the transition
+            gameEnv.phase = GamePhase.END_PHASE;
+            console.log(`🏁 Phase set to END_PHASE - state-based actions will handle next player transition`);
             
-            // Calculate next player with null checks
-            const nextPlayerId = gameEnv.currentPlayer === gameEnv.playerId_1 
-                ? gameEnv.playerId_2 
-                : gameEnv.playerId_1;
-            
-            if (!nextPlayerId) {
-                return { 
-                    success: false, 
-                    error: 'Cannot determine next player - game not properly initialized' 
-                };
-            }
-            
-            console.log(`🔄 End turn: ${playerId} → ${nextPlayerId}`);
-            
-            // Queue the end turn event sequence using the game's EventManager
-            this.queueEndTurnSequence(gameEnv, playerId, nextPlayerId, currentTurnNumber, gameEnv.eventManager);
-            
-            console.log(`✅ END_TURN event processed - queued follow-up events`);
             return { success: true };
             
         } catch (error) {
@@ -623,6 +607,120 @@ export class GameEngine {
             return { 
                 success: false, 
                 error: error instanceof Error ? error.message : 'CARDS_UNREST execution failed'
+            };
+        }
+    }
+    
+    private executeNextPlayerTurn(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+        const { currentPlayer, nextPlayer, currentTurn } = event.data;
+        console.log("current event in nextplayer 111", JSON.stringify(event))
+        console.log(`🔄 Processing NEXT_PLAYER_TURN event: ${currentPlayer} → ${nextPlayer}, turn: ${currentTurn} → ${currentTurn + 1}`);
+        
+        try {
+            // Update game state for next player
+            gameEnv.currentPlayer = nextPlayer;
+            gameEnv.currentTurn = currentTurn + 1;
+            gameEnv.phase = GamePhase.DRAW_PHASE;
+            
+            // Unrest current player's cards (via EnergyManager)
+            const unrestResult = EnergyManager.untapAllEnergy(gameEnv, nextPlayer);
+            
+            // Add 1 more energy to current player
+            const addEnergyResult = EnergyManager.addBasicEnergy(gameEnv, nextPlayer);
+            
+            console.log(`✅ Next player turn: ${currentPlayer} → ${nextPlayer}, turn: ${currentTurn} → ${currentTurn + 1}`);
+            console.log(`✅ Energy untapped: ${unrestResult} and energy added: ${addEnergyResult}`);
+                        // Draw 1 card from deck to first player hand
+            const firstPlayer = gameEnv.players[nextPlayer];
+            if (firstPlayer && firstPlayer.deck) {
+                this.drawCards(firstPlayer.deck, 1);
+                console.log(`🃏 Drew 1 card for first player ${nextPlayer}`);
+            }
+            
+            // Create game events using GameNotificationManager
+            const notificationManager = this.getNotificationManager(gameEnv);
+            
+            // Notify about card drawn (requires acknowledgment)
+            const drawnCards = firstPlayer?.deck.handUids.slice(-1) || []; // Get last drawn card UID
+            notificationManager.notifyCardDrawn(
+                nextPlayer,
+                drawnCards,
+                firstPlayer?.deck.getHandSize() || 0
+            );
+            return { success: true };
+            
+        } catch (error) {
+            console.error(`❌ Error in executeNextPlayerTurn:`, error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'NEXT_PLAYER_TURN execution failed'
+            };
+        }
+    }
+    
+    private executePlayerAction(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+        const { playerId, cardUID } = event.data;
+        
+        console.log(`🎯 Processing PLAYER_ACTION event for player: ${playerId}, cardUID: ${cardUID}`);
+        
+        try {
+            // Validate it's the player's turn
+            if (gameEnv.currentPlayer !== playerId) {
+                return {
+                    success: false,
+                    error: `Not your turn. Current player: ${gameEnv.currentPlayer}`
+                };
+            }
+            
+            // Auto-find card from slot1-slot6 zones
+            const playerZones = gameEnv.zones[playerId];
+            if (!playerZones) {
+                return {
+                    success: false,
+                    error: `Player ${playerId} zones not found`
+                };
+            }
+            
+            let foundCard = null;
+            let foundZone = null;
+            let foundIndex = -1;
+            
+            const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'];
+            
+            for (const zone of slotZones) {
+                const zoneCards = playerZones[zone];
+                if (zoneCards && Array.isArray(zoneCards)) {
+                    const cardIndex = zoneCards.findIndex(card => card.cardUid === cardUID);
+                    if (cardIndex !== -1) {
+                        foundCard = zoneCards[cardIndex];
+                        foundZone = zone;
+                        foundIndex = cardIndex;
+                        break;
+                    }
+                }
+            }
+            
+            if (!foundCard || !foundZone) {
+                return {
+                    success: false,
+                    error: `Card ${cardUID} not found in player ${playerId} zones (slot1-slot6)`
+                };
+            }
+            
+            console.log(`✅ Found card ${cardUID} in ${foundZone} at index ${foundIndex}`);
+            
+            // TODO: Add card action logic here
+            // This could be tapping, activating abilities, etc.
+            // For now just log the action
+            console.log(`🎮 Executing action on card: ${foundCard.cardId} in ${foundZone}`);
+            
+            return { success: true };
+            
+        } catch (error) {
+            console.error(`❌ Error in executePlayerAction:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'PLAYER_ACTION execution failed'
             };
         }
     }

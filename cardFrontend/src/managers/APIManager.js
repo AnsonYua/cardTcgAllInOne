@@ -119,9 +119,17 @@ export default class APIManager {
   }
 
   async acknowledgeEvents(gameId, playerId, eventIds) {
+    console.log("das ",JSON.stringify({ gameId, playerId, eventIds }))
     return this.request('/player/acknowledgeEvents', {
       method: 'POST',
       body: JSON.stringify({ gameId, playerId, eventIds })
+    });
+  }
+
+  async endTurn(gameId, playerId) {
+    return this.request('/player/endTurn', {
+      method: 'POST',
+      body: JSON.stringify({ gameId, playerId })
     });
   }
 
