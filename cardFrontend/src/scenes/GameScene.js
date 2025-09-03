@@ -4,6 +4,7 @@ import Card from '../components/Card.js';
 import ShuffleAnimationManager from '../components/ShuffleAnimationManager.js';
 import BaseAndShieldAreaManager from '../components/BaseAndShieldAreaManager.js';
 import EnergyAreaManager from '../components/EnergyAreaManager.js';
+import SlotAreaManager from '../components/SlotAreaManager.js';
 import GameSceneUtils from '../utils/GameSceneUtils.js';
 import { ZoneMapping } from '../utils/ZoneMapping.js';
 import CardAnimationUtils from '../utils/CardAnimationUtils.js';
@@ -29,6 +30,7 @@ export default class GameScene extends Phaser.Scene {
 
     this.baseAndShieldManager = null;
     this.energyAreaManager = null;
+    this.slotAreaManager = null;
     this.opponentBase = null
 
     this.isSetScenoria = false;
@@ -45,6 +47,7 @@ export default class GameScene extends Phaser.Scene {
     // Initialize managers
     this.baseAndShieldManager = new BaseAndShieldAreaManager(this, this.gameStateManager);
     this.energyAreaManager = new EnergyAreaManager(this, this.gameStateManager);
+    this.slotAreaManager = new SlotAreaManager(this, this.gameStateManager);
  
     console.log('GameScene initialized with mode:', this.gameMode);
     console.log('Manual polling mode:', this.isManualPollingMode);
@@ -122,19 +125,19 @@ export default class GameScene extends Phaser.Scene {
       },
       // Opponent zones (top area)
       opponent: {
-        top: { x: playerStartX + width * 0.5 - 320, 
+        "slot1": { x: playerStartX + width * 0.5 - 320, 
                y:  startY + 100+ cardHeight + 10+ 15},
-        left: { x: playerStartX + width * 0.5-200 + 10, 
+        "slot2": { x: playerStartX + width * 0.5-200 + 10, 
                 y:  startY + 100+ cardHeight + 10+ 15},
-        right: { x: playerStartX + width * 0.5 -80 + 20, 
+        "slot3": { x: playerStartX + width * 0.5 -80 + 20, 
                  y:  startY + 100+ cardHeight + 10+ 15},
-        help: { x:playerStartX + width * 0.5 + 40 + 30, 
+        "slot4": { x:playerStartX + width * 0.5 + 40 + 30, 
                 y:  startY + 100+ cardHeight + 10+ 15},
-        sp: { x: playerStartX + width * 0.5+160 + 40, 
+        "slot5": { x: playerStartX + width * 0.5+160 + 40, 
               y:  startY + 100+ cardHeight + 10+ 15},
-        leader: {  x: playerStartX + width * 0.5 +280 + 50, 
+        "slot6": {  x: playerStartX + width * 0.5 +280 + 50, 
                   y:  startY + 100+ cardHeight + 10+ 15},
-        deck: { x: width * 0.5 - 500, 
+        "deck": { x: width * 0.5 - 500, 
                 y: startY + 100+ cardHeight+10+15},
         leaderDeck: { x: width * 0.5 + 430 , y: startY + 100+ cardHeight+10+15},
         base:{ x: width * 0.5 + 430 , y: startY + 130 + cardHeight+10+15},
@@ -144,17 +147,17 @@ export default class GameScene extends Phaser.Scene {
       // Player zones (bottom area)
     
       player: {
-        sp: { x: playerStartX + width * 0.5 - 320, 
+        "slot1": { x: playerStartX + width * 0.5 - 320, 
               y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 },
-        help:{ x: playerStartX + width * 0.5-200 + 10, 
+        "slot2":{ x: playerStartX + width * 0.5-200 + 10, 
                y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70},
-        top: { x: playerStartX + width * 0.5 -80 + 20, 
+        "slot3": { x: playerStartX + width * 0.5 -80 + 20, 
                y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70},
-        leader: { x: playerStartX + width * 0.5 + 40 + 30, 
+        "slot4": { x: playerStartX + width * 0.5 + 40 + 30, 
                   y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 },
-        left: { x: playerStartX + width * 0.5+160 + 40, 
+        "slot5": { x: playerStartX + width * 0.5+160 + 40, 
            y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70},
-        right: { x: playerStartX + width * 0.5 +280 + 50,
+        "slot6": { x: playerStartX + width * 0.5 +280 + 50,
            y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 },
         deck: { x: width * 0.5 + 420 , 
                 y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70},
@@ -557,18 +560,19 @@ export default class GameScene extends Phaser.Scene {
       console.log(`Selecting card ${card.cardData?.id}`);
       card.select();
       this.selectedCard = card;
+      // Sync with GameStateManager
+      this.gameStateManager.setSelectedCard(card);
       
       // Show action button row when card is selected
       this.showActionButtons();
       
-      // Show zone highlights for valid placement options
-      this.showZoneHighlights(card);
     });
 
     this.events.on('card-deselect', (card) => {
       // Handle card deselection - clear selected card and zone highlights
       if (this.selectedCard === card) {
         this.selectedCard = null;
+        this.gameStateManager.setSelectedCard(null);
         this.clearZoneHighlights();
         
         // Hide action button row when card is deselected
@@ -776,6 +780,7 @@ export default class GameScene extends Phaser.Scene {
 
     this.baseAndShieldManager.updateAll();
     this.energyAreaManager.updateEnergyAreas();
+    this.slotAreaManager.updateSlotAreas();
     
     if(this.isSetScenoria){
       this.isSetScenoria = false;
@@ -954,6 +959,7 @@ export default class GameScene extends Phaser.Scene {
         // Deselect the card
         if (this.selectedCard === card) {
           this.selectedCard = null;
+          this.gameStateManager.setSelectedCard(null);
           this.clearZoneHighlights();
           // Hide action buttons when card is placed
           this.hideActionButtons();
@@ -981,23 +987,23 @@ export default class GameScene extends Phaser.Scene {
     // Send API call to backend if API manager available
     if (this.apiManager) {
       try {
-        // Convert frontend card placement to backend action format
-        const action = this.createBackendAction(cardData, zoneType);
+        // Get the cardUID from the hand for the new simplified API
+        const cardUID = this.getCardUIDFromHand(cardData);
         
-        if (!action) {
-          this.showErrorMessage('Failed to create valid action for backend.');
+        if (!cardUID) {
+          this.showErrorMessage('Card not found in hand.');
           return false;
         }
         
-        console.log('Sending card play action to backend:', action);
+        console.log('Sending card play to backend:', { cardUID, zone: zoneType });
         
-        const response = await this.apiManager.playerAction(
+        const response = await this.apiManager.playCard(
           gameState.playerId, 
           gameState.gameId, 
-          action
+          cardUID
         );
         
-        console.log('Card play action response:', response);
+        console.log('Card play response:', response);
         
         // The backend will update the game state, which will be received via polling
         // No need to update local state here as it will come from the server
@@ -1026,7 +1032,7 @@ export default class GameScene extends Phaser.Scene {
     return true;
   }
 
-  createBackendAction(cardData, zoneType) {
+  getCardUIDFromHand(cardData) {
     // Get the current hand from game state to find card UID
     const hand = this.gameStateManager.getPlayerHand();
     
@@ -1046,6 +1052,17 @@ export default class GameScene extends Phaser.Scene {
       console.error(`Card ${cardData.id} not found in player hand`);
       console.log('Available hand cards (UIDs):', hand);
       console.log('Looking for base card ID:', cardData.id);
+      return null;
+    }
+    
+    return cardUID;
+  }
+
+  createBackendAction(cardData, zoneType) {
+    // Get the cardUID using helper method
+    const cardUID = this.getCardUIDFromHand(cardData);
+    
+    if (!cardUID) {
       return null;
     }
     
@@ -1177,6 +1194,7 @@ export default class GameScene extends Phaser.Scene {
 
       // Clear selection and zone highlights
       this.selectedCard = null;
+      this.gameStateManager.setSelectedCard(null);
       this.clearZoneHighlights();
       // Hide action buttons when card is placed
       this.hideActionButtons();
@@ -1214,6 +1232,7 @@ export default class GameScene extends Phaser.Scene {
       }
     });
     this.selectedCard = null;
+    this.gameStateManager.setSelectedCard(null);
     this.clearZoneHighlights();
     // Hide action buttons when all cards deselected
     this.hideActionButtons();
@@ -2176,6 +2195,12 @@ export default class GameScene extends Phaser.Scene {
       this.energyAreaManager.destroy();
       this.energyAreaManager = null;
     }
+
+    // Clean up slot area manager
+    if (this.slotAreaManager) {
+      this.slotAreaManager.destroy();
+      this.slotAreaManager = null;
+    }
     
     // Clean up any existing card selection dialog
     if (this.currentCardSelectionDialog) {
@@ -2573,7 +2598,7 @@ export default class GameScene extends Phaser.Scene {
   }
   
   handleActionButtonClick(action) {
-    const selectedCard = this.gameStateManager.getSelectedCard();
+    const selectedCard = this.selectedCard || this.gameStateManager.getSelectedCard();
     
     console.log(`Action button clicked: ${action}`, selectedCard);
     
@@ -2598,16 +2623,63 @@ export default class GameScene extends Phaser.Scene {
     }
   }
   
-  handlePlayCardAction(selectedCard) {
+  async handlePlayCardAction(selectedCard) {
     if (!selectedCard) {
       console.log('No card selected for play action');
       return;
     }
     
-    // Implementation for playing card normally
-    console.log('Playing card normally:', selectedCard.cardId);
+    console.log('Playing card normally:', selectedCard.fullCardData.cardUid);
     this.hideActionButtons();
-    // Add zone highlighting or card placement logic here
+    
+    try {
+      // Get cardUID from the selected card
+      const cardUID = selectedCard.fullCardData.cardUid;
+      
+      if (!cardUID) {
+        this.showErrorMessage('Card not found in hand.');
+        return;
+      }
+      
+      const gameState = this.gameStateManager.getGameState();
+      
+      // Set loading state
+      this.setUILoadingState(true);
+      
+      // Call backend API - it will automatically find first empty unit slot
+      console.log('Calling backend playCard API with cardUID:', cardUID);
+      
+      if (this.apiManager) {
+        const response = await this.apiManager.playCard(
+          gameState.playerId,
+          gameState.gameId,
+          cardUID
+        );
+        
+        console.log('Play card response:', response);
+        
+        if (response && response.success) {
+          console.log('✅ Card played successfully - backend will update game state via polling');
+          
+          this.clearZoneHighlights();
+          
+        } else {
+          console.error('❌ Failed to play card:', response?.error);
+          this.showErrorMessage(response?.error || 'Failed to play card');
+        }
+      } else {
+        // Demo mode - show that this would place the card
+        console.log('Demo mode: Would call backend API to play card');
+        this.showErrorMessage('Demo mode - Backend API not available');
+      }
+      
+    } catch (error) {
+      console.error('Error playing card:', error);
+      this.showErrorMessage('Failed to play card. Please try again.');
+    } finally {
+      // Clear loading state
+      this.setUILoadingState(false);
+    }
   }
   
   handleFaceDownAction(selectedCard) {

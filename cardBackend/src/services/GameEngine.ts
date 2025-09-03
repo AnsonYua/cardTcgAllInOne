@@ -672,47 +672,78 @@ export class GameEngine {
                 };
             }
             
-            // Auto-find card from slot1-slot6 zones
-            const playerZones = gameEnv.zones[playerId];
-            if (!playerZones) {
+            // Find card in player's hand
+            const player = gameEnv.players[playerId];
+            if (!player || !player.zones || !player.deck?.hand) {
                 return {
                     success: false,
-                    error: `Player ${playerId} zones not found`
+                    error: `Player ${playerId} or hand not found`
                 };
             }
             
-            let foundCard = null;
-            let foundZone = null;
-            let foundIndex = -1;
+            // Find card in hand
+            const handCardIndex = player.deck.hand.findIndex(handCard => handCard.cardUid === cardUID);
+            if (handCardIndex === -1) {
+                return {
+                    success: false,
+                    error: `Card ${cardUID} not found in player ${playerId} hand`
+                };
+            }
             
-            const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'];
+            // TODO: Check if card is unit type (placeholder for now)
+            const handCard = player.deck.hand[handCardIndex];
+            const cardId = handCard.cardId;
+            console.log(`🎯 Card ${cardUID} found in hand as cardId: ${cardId}`);
+            
+            // TODO: Validate card type is unit (placeholder)
+            console.log(`🚧 [PLACEHOLDER] Card type validation - assuming unit type`);
+            
+            const playerZones = player.zones;
+            const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'] as const;
+            
+            // Find first empty UNIT slot only
+            let targetZone = null;
             
             for (const zone of slotZones) {
-                const zoneCards = playerZones[zone];
-                if (zoneCards && Array.isArray(zoneCards)) {
-                    const cardIndex = zoneCards.findIndex(card => card.cardUid === cardUID);
-                    if (cardIndex !== -1) {
-                        foundCard = zoneCards[cardIndex];
-                        foundZone = zone;
-                        foundIndex = cardIndex;
-                        break;
-                    }
+                const slotZone = playerZones[zone];
+                if (slotZone && !slotZone.unit) {
+                    targetZone = zone;
+                    break;
                 }
             }
             
-            if (!foundCard || !foundZone) {
+            if (!targetZone) {
                 return {
                     success: false,
-                    error: `Card ${cardUID} not found in player ${playerId} zones (slot1-slot6)`
+                    error: `No empty unit slots available in zones slot1-slot6`
                 };
             }
             
-            console.log(`✅ Found card ${cardUID} in ${foundZone} at index ${foundIndex}`);
+            console.log(`✅ Found empty unit slot in ${targetZone} for card ${cardUID}`);
             
-            // TODO: Add card action logic here
-            // This could be tapping, activating abilities, etc.
-            // For now just log the action
-            console.log(`🎮 Executing action on card: ${foundCard.cardId} in ${foundZone}`);
+            // Remove card from hand
+            player.deck.hand.splice(handCardIndex, 1);
+            console.log(`🎮 Removed card ${cardUID} from hand`);
+            
+            // Create unit card for slot placement
+            const unitCard = {
+                cardUid: cardUID,
+                cardId: cardId,
+                placedAt: Date.now(),
+                placedBy: playerId,
+                isRested: false,
+                cardData: {
+                    // TODO: Load actual card data from card database
+                    cardType: 'unit' as const // Fix TypeScript literal type
+                }
+            };
+            
+            // Place unit in target slot
+            playerZones[targetZone].unit = unitCard;
+            console.log(`🎮 Placed unit card ${cardUID} in ${targetZone}`);
+            
+            // TODO: Add effect processing and type compatibility validation
+            console.log(`🚧 [PLACEHOLDER] Card effects and compatibility validation needed`);
             
             return { success: true };
             

@@ -103,24 +103,6 @@ export default class GameSceneUtils {
   }
 
   /**
-   * Gets the field index from a zone type
-   * @param {string} zoneType - The zone type
-   * @returns {number} - The field index
-   */
-  static getFieldIndexFromZone(zoneType) {
-    // Backend field indices: 0=top, 1=left, 2=right, 3=help, 4=sp
-    const zoneToFieldMap = {
-      'top': 0,
-      'left': 1, 
-      'right': 2,
-      'help': 3,
-      'sp': 4
-    };
-    
-    return zoneToFieldMap[zoneType] !== undefined ? zoneToFieldMap[zoneType] : -1;
-  }
-
-  /**
    * Creates a fully functional zone with Phaser objects
    * Consolidates zone creation logic from GameScene and ZoneManager
    * @param {Phaser.Scene} scene - The Phaser scene
@@ -180,6 +162,7 @@ export default class GameSceneUtils {
       placeholder.setAlpha(0);
     } else {
       label.setAlpha(1);
+      placeholder.setAlpha(1);
     }
     
     // Zone interaction (only for player zones)

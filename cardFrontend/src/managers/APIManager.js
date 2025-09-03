@@ -78,6 +78,18 @@ export default class APIManager {
     });
   }
 
+  // NEW: Simplified player action API for direct card placement
+  async playCard(playerId, gameId, cardUID) {
+    return this.request('/player/playerAction', {
+      method: 'POST',
+      body: JSON.stringify({
+        playerId,
+        gameId,
+        cardUID
+      })
+    });
+  }
+
   async selectCard(selectionId, selectedCardIdentifiers, playerId, gameId) {
     return this.request('/player/selectCard', {
       method: 'POST',

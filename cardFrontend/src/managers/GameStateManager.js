@@ -64,6 +64,14 @@ export default class GameStateManager {
     this.gameState.uiState = { ...this.gameState.uiState, ...uiState };
   }
 
+  getSelectedCard() {
+    return this.gameState.uiState.selectedCard;
+  }
+
+  setSelectedCard(card) {
+    this.updateUIState({ selectedCard: card });
+  }
+
 
   getGameState() {
     return this.gameState;
