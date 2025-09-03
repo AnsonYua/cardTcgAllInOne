@@ -429,14 +429,6 @@ export class GameLogic {
                         isRedraw: action.isRedraw || false
                     }
                 };
-            case PlayerActionType.PLAY_CARD:
-                return EventFactory.createCardPlayedEvent(
-                    action.cardId || '',
-                    action.cardUid || action.cardId || '',
-                    action.zone || '',
-                    action.playerId,
-                    action.isFaceDown || false
-                );
                 
             case PlayerActionType.PHASE_ADVANCE:
                 return EventFactory.createPhaseChangeEvent(

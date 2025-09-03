@@ -30,7 +30,6 @@ export enum PlayerActionType {
     CREATE_GAME = 'CREATE_GAME',
     JOIN_GAME = 'JOIN_GAME',
     CONFIRM_REDRAW = 'CONFIRM_REDRAW',
-    PLAY_CARD = 'PLAY_CARD',
     PHASE_ADVANCE = 'PHASE_ADVANCE',
     TAP_ENERGY = 'TAP_ENERGY',
     RESOLVE_CHOICE = 'RESOLVE_CHOICE',
@@ -47,7 +46,6 @@ export enum EventType {
     GAMEPLAY_BEGINS = 'GAMEPLAY_BEGINS',
     
     // Card events
-    CARD_PLAYED = 'CARD_PLAYED',
     CARD_EFFECT_TRIGGERED = 'CARD_EFFECT_TRIGGERED',
     
     // Player events

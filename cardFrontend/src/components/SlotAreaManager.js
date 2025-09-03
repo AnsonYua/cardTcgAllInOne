@@ -51,6 +51,10 @@ export default class SlotAreaManager {
     
     // Get slot position from scene zones
     const slotPosition = zones[slotName];
+
+    console.log("playerZones 1111",JSON.stringify(slotData))
+    console.log("playerZones 1111222",JSON.stringify(slotData))
+
     if (!slotPosition) {
       console.warn(`Slot position not found for ${playerType} ${slotName}`);
       return;

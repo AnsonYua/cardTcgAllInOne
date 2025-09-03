@@ -27,16 +27,6 @@ export interface BaseGameEvent {
     reactionsPolled?: boolean;
 }
 
-export interface CardPlayedEvent extends BaseGameEvent {
-    type: EventType.CARD_PLAYED;
-    data: {
-        cardId: string;
-        cardUid: string;
-        zone: string;
-        isFaceDown: boolean;
-        playerId: string;
-    };
-}
 
 export interface PhaseChangeEvent extends BaseGameEvent {
     type: EventType.PHASE_ADVANCE;
@@ -277,7 +267,6 @@ export interface AcknowledgeEventsEvent extends BaseGameEvent {
 }
 
 export type GameEvent = 
-    | CardPlayedEvent 
     | PhaseChangeEvent 
     | PlayerChoiceEvent 
     | PowerBoostEvent
@@ -306,24 +295,6 @@ export type GameEvent =
 export class EventFactory {
     private static eventIdCounter = 0;
     
-    static createCardPlayedEvent(
-        cardId: string, 
-        cardUid: string, 
-        zone: string, 
-        playerId: string, 
-        isFaceDown: boolean = false
-    ): CardPlayedEvent {
-        return {
-            id: `event_${++this.eventIdCounter}_${Date.now()}`,
-            type: EventType.CARD_PLAYED,
-            status: EventStatus.DECLARED,
-            priority: EventPriority.NORMAL,
-            sourceId: cardId,
-            playerId,
-            timestamp: Date.now(),
-            data: { cardId, cardUid, zone, isFaceDown, playerId }
-        };
-    }
     
     static createChoiceResolvedEvent(
         selectionId: string,

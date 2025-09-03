@@ -344,9 +344,6 @@ export class EventManager {
             case EventType.CONFIRM_REDRAW:
                 return this.validateStartReadyEvent(event, gameEnv);
                 
-            case EventType.CARD_PLAYED:
-                return this.validateCardPlayedEvent(event, gameEnv);
-                
             case EventType.PLAYER_CHOICE_REQUIRED:
                 // Always valid - player choices are system-generated
                 return { isValid: true };
@@ -357,19 +354,6 @@ export class EventManager {
         }
     }
     
-    private validateCardPlayedEvent(event: GameEvent, gameEnv: GameEnvironment): { isValid: boolean; reason?: string } {
-        // Placeholder validation for new TCG - implement your specific rules
-        console.log(`🔍 Validating card play event (placeholder for new TCG)`);
-        
-        // TODO: Replace with your TCG-specific validation:
-        // - Check if card can be played in current phase
-        // - Validate zone compatibility 
-        // - Check resource costs (AP/energy)
-        // - Verify targeting restrictions
-        // - Check once-per-turn limitations
-        
-        return { isValid: true }; // Always pass for now
-    }
     
     private validateJoinGameEvent(event: GameEvent, gameEnv: GameEnvironment): { isValid: boolean; reason?: string } {
         console.log(`🔍 Validating JOIN_GAME event`);

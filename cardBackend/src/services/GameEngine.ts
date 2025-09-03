@@ -96,9 +96,6 @@ export class GameEngine {
                 case EventType.GAMEPLAY_BEGINS:
                     return this.executeGameStart(event, gameEnv);
                     
-                case EventType.CARD_PLAYED:
-                    return this.executeCardPlayed(event, gameEnv);
-                    
                 case EventType.ERROR_OCCURRED:
                     return this.executeErrorEvent(event, gameEnv);
                     
@@ -254,26 +251,6 @@ export class GameEngine {
         }
     }
     
-    private executeCardPlayed(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
-        const { cardId, cardUid, zone, playerId, isFaceDown } = event.data;
-        
-        console.log(`🎯 Processing CARD_PLAYED event: ${cardId} → ${zone} (${playerId})`);
-        
-        try {
-            // TODO: Integrate with your existing card placement logic
-            // This should call your existing game logic to actually place the card
-            
-            console.log(`✅ CARD_PLAYED event processed - ${cardId} placed in ${zone}`);
-            return { success: true };
-            
-        } catch (error) {
-            console.error(`❌ Error in executeCardPlayed:`, error);
-            return { 
-                success: false, 
-                error: error instanceof Error ? error.message : 'CARD_PLAYED execution failed'
-            };
-        }
-    }
     
     private executeErrorEvent(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
         const { errorReason, errorType, originalEventType, playerId } = event.data;
