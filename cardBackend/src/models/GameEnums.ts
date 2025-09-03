@@ -46,6 +46,7 @@ export enum EventType {
     GAMEPLAY_BEGINS = 'GAMEPLAY_BEGINS',
     
     // Card events
+    CARD_ENTERS_PLAY = 'CARD_ENTERS_PLAY',
     CARD_EFFECT_TRIGGERED = 'CARD_EFFECT_TRIGGERED',
     
     // Player events

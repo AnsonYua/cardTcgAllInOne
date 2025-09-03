@@ -2660,7 +2660,9 @@ export default class GameScene extends Phaser.Scene {
         
         if (response && response.success) {
           console.log('✅ Card played successfully - backend will update game state via polling');
-          
+          this.gameStateManager.updateGameEnv(response.gameEnv);
+          this.updateGameState();
+          this.updatePlayerHand();
           this.clearZoneHighlights();
           
         } else {

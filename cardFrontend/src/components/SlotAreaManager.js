@@ -85,17 +85,7 @@ export default class SlotAreaManager {
   createSlotCard(unitData, x, y, slotName) {
     try {
       // Create card using the existing Card component
-      const cardData = {
-        id: unitData.cardId,
-        cardUid: unitData.cardUid,
-        name: unitData.cardId, // Use cardId as name for now
-        type: 'unit',
-        cardType: unitData.cardData?.cardType || 'unit',
-        power: unitData.cardData?.power || 0,
-        isRested: unitData.isRested || false,
-        placedAt: unitData.placedAt,
-        placedBy: unitData.placedBy
-      };
+      const cardData = unitData
 
       const card = new Card(this.scene, x, y, cardData);
       
@@ -103,7 +93,7 @@ export default class SlotAreaManager {
       card.setInteractive(false);
       
       // Show face-up
-      card.setFaceUp(true);
+      //card.setFaceUp(true);
       
       // Set depth for proper layering
       card.setDepth(200);

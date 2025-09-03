@@ -122,7 +122,7 @@ export interface StepEndEvent extends BaseGameEvent {
 // ============ CARD LIFECYCLE EVENTS ============
 
 export interface CardEntersPlayEvent extends BaseGameEvent {
-    type: EventType.CARD_PLAYED;
+    type: EventType.CARD_ENTERS_PLAY;
     data: {
         cardId: string;
         cardUid: string;
@@ -393,7 +393,7 @@ export class EventFactory {
     ): CardEntersPlayEvent {
         return {
             id: `card_enters_${++this.eventIdCounter}_${Date.now()}`,
-            type: EventType.CARD_PLAYED,
+            type: EventType.CARD_ENTERS_PLAY,
             status: EventStatus.DECLARED,
             priority: EventPriority.NORMAL,
             sourceId: cardId,

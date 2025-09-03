@@ -24,7 +24,7 @@ export {
 export { 
     GameEvent, 
     BaseGameEvent,
-    CardPlayedEvent,
+    CardEntersPlayEvent,
     PhaseChangeEvent,
     PlayerChoiceEvent,
     PowerBoostEvent,
@@ -32,7 +32,6 @@ export {
     TurnEndEvent,
     StepBeginEvent,
     StepEndEvent,
-    CardEntersPlayEvent,
     EnergyTappedEvent,
     EnergyUntappedEvent,
     CostPaidEvent,

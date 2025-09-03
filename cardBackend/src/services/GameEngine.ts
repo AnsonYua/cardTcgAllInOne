@@ -658,19 +658,18 @@ export class GameEngine {
                 };
             }
             
-            // Find card in hand
-            const handCardIndex = player.deck.hand.findIndex(handCard => handCard.cardUid === cardUID);
-            if (handCardIndex === -1) {
+            // Find card in handUids array
+            const handUidIndex = player.deck.handUids.findIndex(uid => uid === cardUID);
+            if (handUidIndex === -1) {
                 return {
                     success: false,
-                    error: `Card ${cardUID} not found in player ${playerId} hand`
+                    error: `Card ${cardUID} not found in player ${playerId} handUids`
                 };
             }
             
-            // TODO: Check if card is unit type (placeholder for now)
-            const handCard = player.deck.hand[handCardIndex];
-            const cardId = handCard.cardId;
-            console.log(`🎯 Card ${cardUID} found in hand as cardId: ${cardId}`);
+            // Extract cardId from cardUID 
+            const cardId = cardUID.split('_')[0];
+            console.log(`🎯 Card ${cardUID} found in handUids as cardId: ${cardId}`);
             
             // TODO: Validate card type is unit (placeholder)
             console.log(`🚧 [PLACEHOLDER] Card type validation - assuming unit type`);
@@ -698,21 +697,27 @@ export class GameEngine {
             
             console.log(`✅ Found empty unit slot in ${targetZone} for card ${cardUID}`);
             
-            // Remove card from hand
-            player.deck.hand.splice(handCardIndex, 1);
-            console.log(`🎮 Removed card ${cardUID} from hand`);
+            // Remove card from handUids array only (hand is generated from handUids)
+            player.deck.handUids.splice(handUidIndex, 1);
+            console.log(`🎮 Removed card ${cardUID} from handUids`);
             
-            // Create unit card for slot placement
+            // Load full card data from card database
+            const fullCardData = GameEngine.getCardDetails(cardId);
+            if (!fullCardData) {
+                return {
+                    success: false,
+                    error: `Card data not found for ${cardId} in card database`
+                };
+            }
+
+            // Create unit card for slot placement with full card data
             const unitCard = {
                 cardUid: cardUID,
                 cardId: cardId,
                 placedAt: Date.now(),
                 placedBy: playerId,
                 isRested: false,
-                cardData: {
-                    // TODO: Load actual card data from card database
-                    cardType: 'unit' as const // Fix TypeScript literal type
-                }
+                cardData: fullCardData // Use full card data from database
             };
             
             // Place unit in target slot
