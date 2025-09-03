@@ -307,7 +307,7 @@ export default class CardAnimationUtils {
     try {
       if (scene.cardMoveQueue.length > 0) {
         const eventIds = scene.cardMoveQueue.map(moveData => moveData.event.id);
-        await scene.apiManager.acknowledgeEvents(scene.gameStateManager.getGameState().gameId, eventIds);
+        await scene.apiManager.acknowledgeEvents(scene.gameStateManager.getGameState().gameId, scene.gameStateManager.getGameState().playerId, eventIds);
         console.log(`Acknowledged ${eventIds.length} CARD_MOVED_TO_HAND events`);
       }
     } catch (error) {

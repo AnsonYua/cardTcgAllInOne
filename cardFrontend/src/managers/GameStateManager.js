@@ -276,7 +276,7 @@ export default class GameStateManager {
   async acknowledgeEvents(eventIds) {
     if (eventIds && eventIds.length > 0 && this.apiManager) {
       try {
-        const response = await this.apiManager.acknowledgeEvents(this.gameState.gameId, eventIds);
+        const response = await this.apiManager.acknowledgeEvents(this.gameState.gameId, this.gameState.playerId, eventIds);
         console.log(`Acknowledged ${eventIds.length} specific events`);
         
         // Update local gameEvents with response from backend

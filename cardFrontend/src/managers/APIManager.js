@@ -118,10 +118,10 @@ export default class APIManager {
     this.currentGameState = gameState;
   }
 
-  async acknowledgeEvents(gameId, eventIds) {
+  async acknowledgeEvents(gameId, playerId, eventIds) {
     return this.request('/player/acknowledgeEvents', {
       method: 'POST',
-      body: JSON.stringify({ gameId, eventIds })
+      body: JSON.stringify({ gameId, playerId, eventIds })
     });
   }
 

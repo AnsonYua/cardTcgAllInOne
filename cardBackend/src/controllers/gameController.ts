@@ -3,7 +3,8 @@
 
 import { Request, Response } from 'express';
 import { gameLogic, GameLogic } from '../services/GameLogic';
-import { GamePhase } from '../models/GameEnums';
+import { GamePhase, PlayerActionType } from '../models/GameEnums';
+import { PlayerAction } from '../services/EventQueue/EventManager';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -319,6 +320,90 @@ export class GameController {
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
                 context: 'playerAction endpoint'
+            });
+        }
+    }
+
+    /**
+     * End current player's turn and advance game state
+     * POST /api/game/player/endTurn
+     */
+    async endTurn(req: GameRequest, res: Response): Promise<void> {
+        try {
+            console.log('🏁 endTurn called with body:', req.body);
+            
+            const { gameId, playerId } = req.body;
+            
+            if (!gameId || !playerId) {
+                res.status(400).json({
+                    error: 'gameId and playerId are required',
+                    timestamp: new Date().toISOString(),
+                    context: 'endTurn endpoint'
+                });
+                return;
+            }
+            
+            // Load game state
+            const gameEnv = await this.gameLogic.loadGameFromFile(gameId);
+            if (!gameEnv) {
+                res.status(404).json({
+                    error: 'Game not found',
+                    gameId,
+                    timestamp: new Date().toISOString(),
+                    context: 'endTurn endpoint'
+                });
+                return;
+            }
+            
+            // Validate it's the player's turn
+            if (gameEnv.currentPlayer !== playerId) {
+                res.status(400).json({
+                    error: `Not your turn. Current player is: ${gameEnv.currentPlayer}`,
+                    timestamp: new Date().toISOString(),
+                    context: 'endTurn endpoint'
+                });
+                return;
+            }
+            
+            console.log(`🎯 Processing end turn for player: ${playerId}, current turn: ${gameEnv.currentTurn}`);
+            
+            // Process END_TURN through centralized action processing
+            const endTurnAction: PlayerAction = {
+                type: PlayerActionType.END_TURN,
+                playerId,
+                gameId,
+                currentTurn: gameEnv.currentTurn
+            };
+            
+            const actionResult = await this.gameLogic.processAction(gameEnv, endTurnAction);
+            console.log('🎮 END_TURN processed:', actionResult);
+            
+            if (!actionResult.success) {
+                res.status(400).json({
+                    error: actionResult.error || 'Failed to end turn',
+                    timestamp: new Date().toISOString(),
+                    context: 'endTurn endpoint'
+                });
+                return;
+            }
+            
+            // Save updated game state
+            await this.gameLogic.saveGameToFile(gameId, gameEnv);
+            
+            console.log(`✅ End turn processed successfully for ${playerId}`);
+            res.json({
+                success: true,
+                gameEnv: gameEnv,
+                message: `Turn ended for ${playerId}`,
+                timestamp: new Date().toISOString()
+            });
+            
+        } catch (error) {
+            console.error('❌ Error in endTurn:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'endTurn endpoint'
             });
         }
     }

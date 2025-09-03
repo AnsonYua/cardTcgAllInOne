@@ -19,6 +19,7 @@ export interface GameLogicResult {
     gameEnv?: GameEnvironment;
     error?: string;
     requiresCardSelection?: boolean;
+    acknowledgedCount?: number;
 }
 
 export interface CardPlayResult {
@@ -452,6 +453,18 @@ export class GameLogic {
                     action.energyAmount || 1
                 );
                 
+            case PlayerActionType.END_TURN:
+                return EventFactory.createEndTurnEvent(
+                    action.playerId,
+                    action.currentTurn || 0
+                );
+                
+            case PlayerActionType.ACKNOWLEDGE_EVENTS:
+                return EventFactory.createAcknowledgeEventsEvent(
+                    action.playerId,
+                    action.eventIds || []
+                );
+                
             default:
                 console.warn(`⚠️ Unknown action type: ${action.type}`);
                 return null;
@@ -738,6 +751,81 @@ export class GameLogic {
             return {
                 success: false,
                 error: `Failed to inject game state: ${error instanceof Error ? error.message : 'Unknown error'}`
+            };
+        }
+    }
+
+    /**
+     * Acknowledge events for a player
+     * @param gameId - Game ID
+     * @param playerId - Player ID
+     * @param eventIds - Array of event IDs to acknowledge
+     * @returns Promise<GameLogicResult>
+     */
+    async acknowledgeEvents(gameId: string, playerId: string, eventIds: string[]): Promise<GameLogicResult> {
+        try {
+            console.log(`📨 acknowledgeEvents: gameId=${gameId}, playerId=${playerId}`);
+            
+            // Validate inputs
+            if (!gameId || !playerId) {
+                return {
+                    success: false,
+                    error: 'gameId and playerId are required'
+                };
+            }
+            
+            if (!eventIds || !Array.isArray(eventIds)) {
+                return {
+                    success: false,
+                    error: 'eventIds array is required'
+                };
+            }
+            
+            // Load game state
+            const gameEnv = await this.loadGameFromFile(gameId);
+            if (!gameEnv) {
+                return {
+                    success: false,
+                    error: 'Game not found'
+                };
+            }
+            
+            console.log("AcknowledgeEvents before processing:", JSON.stringify(gameEnv?.gameEvents));
+            
+            // Process ACKNOWLEDGE_EVENTS through centralized action processing
+            const acknowledgeAction: PlayerAction = {
+                type: PlayerActionType.ACKNOWLEDGE_EVENTS,
+                playerId,
+                gameId,
+                eventIds
+            };
+            
+            const actionResult = await this.processAction(gameEnv, acknowledgeAction);
+            console.log('🎮 ACKNOWLEDGE_EVENTS processed:', actionResult);
+            
+            if (!actionResult.success) {
+                return {
+                    success: false,
+                    error: actionResult.error || 'Failed to acknowledge events'
+                };
+            }
+            
+            // Save updated game state
+            await this.saveGameToFile(gameId, gameEnv);
+            
+            console.log("AcknowledgeEvents after processing:", JSON.stringify(gameEnv?.gameEvents));
+            
+            return {
+                success: true,
+                acknowledgedCount: eventIds.length,
+                gameEnv: gameEnv
+            };
+            
+        } catch (error) {
+            console.error('❌ Error in acknowledgeEvents:', error);
+            return {
+                success: false,
+                error: `Failed to acknowledge events: ${error instanceof Error ? error.message : 'Unknown error'}`
             };
         }
     }

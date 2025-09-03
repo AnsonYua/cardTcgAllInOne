@@ -295,9 +295,14 @@ export default class DemoScene extends DemoSceneBasic {
     try {
       const gameState = this.gameStateManager.getGameState();
       const gameId = gameState.gameId;
+      const playerId = gameState.playerId;
       
       if (!gameId) {
         throw new Error('No gameId found. Make sure a game is active.');
+      }
+      
+      if (!playerId) {
+        throw new Error('No playerId found. Make sure a player is assigned.');
       }
       
       // Get all current game events
@@ -322,7 +327,7 @@ export default class DemoScene extends DemoSceneBasic {
       console.log('Found draw events to acknowledge:', eventIds);
       
       // Call the acknowledgeEvents API
-      const response = await this.apiManager.acknowledgeEvents(gameId, eventIds);
+      const response = await this.apiManager.acknowledgeEvents(gameId, playerId, eventIds);
       
       console.log('Acknowledge events response:', response);
       this.showRoomStatus(`Successfully acknowledged ${eventIds.length} draw event(s): ${eventIds.join(', ')}`);

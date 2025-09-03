@@ -4,9 +4,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { gameController, GameController } from '../controllers/gameController';
 import { gameLogic } from '../services/GameLogic';
-import { EventManager } from '../services/EventQueue/EventManager';
-import { EventType } from '../models/GameEnums';
-import { EventStatus, EventPriority } from '../services/EventQueue/interfaces/GameEvent';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -76,6 +73,12 @@ router.get('/player/:playerId', gameController.getPlayerData.bind(gameController
  */
 router.post('/player/playerAction', gameController.playerAction.bind(gameController));
 
+/**
+ * End current player's turn and advance game state
+ * POST /api/game/player/endTurn
+ */
+router.post('/player/endTurn', gameController.endTurn.bind(gameController));
+
 // ============ CUSTOM CARD DATA ENDPOINTS ============
 
 /**
@@ -116,65 +119,19 @@ router.post('/player/acknowledgeEvents', async (req: Request, res: Response) => 
     try {
         const { gameId, playerId, eventIds } = req.body;
         
-        console.log(`📨 acknowledgeEvents: gameId=${gameId}, playerId=${playerId}`);
-        if (!gameId) {
+        const result = await gameLogic.acknowledgeEvents(gameId, playerId, eventIds);
+        
+        if (!result.success) {
             return res.status(400).json({
-                error: 'gameId is required',
+                error: result.error,
                 timestamp: new Date().toISOString()
             });
         }
-        
-        // Load game state
-        const gameEnv = await gameLogic.loadGameFromFile(gameId);
-        if (!gameEnv) {
-            return res.status(404).json({
-                error: 'Game not found',
-                gameId,
-                timestamp: new Date().toISOString()
-            });
-        }
-        console.log("AcknowledgeEvents 22",JSON.stringify(gameEnv?.gameEvents))
-        
-        // Event-driven approach: Create ACKNOWLEDGE_EVENTS event and queue it
-        if (!eventIds || !Array.isArray(eventIds)) {
-            return res.status(400).json({
-                error: 'eventIds array is required',
-                timestamp: new Date().toISOString()
-            });
-        }
-        
-        // Create EventManager and queue acknowledgment event
-        const eventManager = new EventManager(gameEnv);
-        eventManager.createAcknowledgmentEvent(eventIds, playerId);
-        
-        // Process the event queue to handle acknowledgment
-        const result = await eventManager.processEvent({
-            id: `process_ack_${Date.now()}`,
-            type: EventType.ACKNOWLEDGE_EVENTS,
-            status: EventStatus.DECLARED,
-            priority: EventPriority.HIGH,
-            timestamp: Date.now(),
-            playerId: playerId,
-            data: {
-                eventIds: eventIds,
-                playerId: playerId
-            }
-        });
-        
-        console.log("AcknowledgeEvents processed via queue:",JSON.stringify(gameEnv?.gameEvents))
-        
-        // Save updated game state
-        await gameLogic.saveGameToFile(gameId, gameEnv);
-        
-        // Get stats from GameNotificationManager for response
-        const notificationManager = new (require('../services/GameNotificationManager').GameNotificationManager)(gameEnv);
         
         res.json({
-            success: result.success,
-            acknowledgedCount: eventIds.length, // Assume all processed if successful
-            remainingEvents: notificationManager.getAllUnprocessedEvents().length,
-            stats: notificationManager.getEventStats(),
-            gameEvents: gameEnv.gameEvents || [],
+            success: true,
+            acknowledgedCount: result.acknowledgedCount,
+            gameEvents: result.gameEnv?.gameEvents || [],
             timestamp: new Date().toISOString()
         });
         

@@ -33,7 +33,9 @@ export enum PlayerActionType {
     PLAY_CARD = 'PLAY_CARD',
     PHASE_ADVANCE = 'PHASE_ADVANCE',
     TAP_ENERGY = 'TAP_ENERGY',
-    RESOLVE_CHOICE = 'RESOLVE_CHOICE'
+    RESOLVE_CHOICE = 'RESOLVE_CHOICE',
+    END_TURN = 'END_TURN',
+    ACKNOWLEDGE_EVENTS = 'ACKNOWLEDGE_EVENTS'
 }
 
 export enum EventType {
@@ -66,6 +68,10 @@ export enum EventType {
     // State-based events
     STATE_BASED_ACTION = 'STATE_BASED_ACTION',
     FORCE_DISCARD = 'FORCE_DISCARD',
+    
+    // Turn management events
+    END_TURN = 'END_TURN',
+    CARDS_UNREST = 'CARDS_UNREST',
     
     // Event management events
     ACKNOWLEDGE_EVENTS = 'ACKNOWLEDGE_EVENTS'

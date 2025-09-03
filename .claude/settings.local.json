@@ -82,7 +82,9 @@
       "Bash(./node_modules/.bin/tsc:*)",
       "Bash(./node_modules/typescript/bin/tsc --noEmit)",
       "Bash(./node_modules/typescript/bin/tsc src/services/EnergyManager.ts --outDir dist --target es2020 --module commonjs --esModuleInterop true --moduleResolution node)",
-      "Bash(./node_modules/typescript/bin/tsc:*)"
+      "Bash(./node_modules/typescript/bin/tsc:*)",
+      "Bash(GAME_ID=\"203a48da-9520-4c12-9fbd-e02bed8fd643\")",
+      "Bash(GAME_ID=\"98ba2231-1abf-4ce3-86d7-161a01da8e13\")"
     ],
     "deny": []
   }

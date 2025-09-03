@@ -241,6 +241,32 @@ export interface StateBasedActionEvent extends BaseGameEvent {
     };
 }
 
+export interface EndTurnEvent extends BaseGameEvent {
+    type: EventType.END_TURN;
+    data: {
+        playerId: string;
+        currentTurnNumber: number;
+        timestamp: number;
+    };
+}
+
+export interface CardsUnrestEvent extends BaseGameEvent {
+    type: EventType.CARDS_UNREST;
+    data: {
+        playerId: string;
+        affectedCards: string[];
+        cardTypes: string[];
+    };
+}
+
+export interface AcknowledgeEventsEvent extends BaseGameEvent {
+    type: EventType.ACKNOWLEDGE_EVENTS;
+    data: {
+        playerId: string;
+        eventIds: string[];
+    };
+}
+
 export type GameEvent = 
     | CardPlayedEvent 
     | PhaseChangeEvent 
@@ -260,6 +286,9 @@ export type GameEvent =
     | AttackDeclaredEvent
     | DamageDealtEvent
     | StateBasedActionEvent
+    | EndTurnEvent
+    | CardsUnrestEvent
+    | AcknowledgeEventsEvent
     | StartGameEvent
     | JoinGameEvent
     | BaseGameEvent;
@@ -480,6 +509,42 @@ export class EventFactory {
             playerId,
             timestamp: Date.now(),
             data: { playerId, gameId, timestamp: Date.now() }
+        };
+    }
+    
+    static createEndTurnEvent(playerId: string, currentTurnNumber: number): EndTurnEvent {
+        return {
+            id: `end_turn_${++this.eventIdCounter}_${Date.now()}`,
+            type: EventType.END_TURN,
+            status: EventStatus.DECLARED,
+            priority: EventPriority.HIGH,
+            playerId,
+            timestamp: Date.now(),
+            data: { playerId, currentTurnNumber, timestamp: Date.now() }
+        };
+    }
+    
+    static createCardsUnrestEvent(playerId: string, affectedCards: string[]): CardsUnrestEvent {
+        return {
+            id: `cards_unrest_${++this.eventIdCounter}_${Date.now()}`,
+            type: EventType.CARDS_UNREST,
+            status: EventStatus.DECLARED,
+            priority: EventPriority.NORMAL,
+            playerId,
+            timestamp: Date.now(),
+            data: { playerId, affectedCards, cardTypes: ['energy', 'unit', 'base'] }
+        };
+    }
+    
+    static createAcknowledgeEventsEvent(playerId: string, eventIds: string[]): AcknowledgeEventsEvent {
+        return {
+            id: `acknowledge_events_${++this.eventIdCounter}_${Date.now()}`,
+            type: EventType.ACKNOWLEDGE_EVENTS,
+            status: EventStatus.DECLARED,
+            priority: EventPriority.NORMAL,
+            playerId,
+            timestamp: Date.now(),
+            data: { playerId, eventIds }
         };
     }
 }
