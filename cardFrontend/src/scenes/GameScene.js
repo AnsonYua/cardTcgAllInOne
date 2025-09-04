@@ -9,6 +9,7 @@ import GameSceneUtils from '../utils/GameSceneUtils.js';
 import { ZoneMapping } from '../utils/ZoneMapping.js';
 import CardAnimationUtils from '../utils/CardAnimationUtils.js';
 import CardActionHandler from '../handlers/CardActionHandler.js';
+import ActionButtonManager from '../systems/ActionButtonManager.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor(config = { key: 'GameScene' }) {
@@ -18,7 +19,6 @@ export default class GameScene extends Phaser.Scene {
     this.playerHand = [];
     this.playerZones = {};
     this.opponentZones = {};
-    this.selectedCard = null;
     this.draggedCard = null;
     this.shuffleAnimationManager = null;
     this.cardPreviewZone = null;
@@ -50,6 +50,7 @@ export default class GameScene extends Phaser.Scene {
     this.energyAreaManager = new EnergyAreaManager(this, this.gameStateManager);
     this.slotAreaManager = new SlotAreaManager(this, this.gameStateManager);
     this.cardActionHandler = new CardActionHandler(this, this.gameStateManager, this.apiManager);
+    this.actionButtonManager = new ActionButtonManager(this);
  
     console.log('GameScene initialized with mode:', this.gameMode);
     console.log('Manual polling mode:', this.isManualPollingMode);
@@ -511,19 +512,11 @@ export default class GameScene extends Phaser.Scene {
     //fillRoundedRect(x, y, width, height, [radius])
     handBg.fillRoundedRect(50, height - 220, width - 100, 170, 10);
     
-    // Hand label
-    /*
-    this.add.text(width / 2, height - 210, 'YOUR HAND', {
-      fontSize: '14px',
-      fontFamily: 'Arial Bold',
-      fill: '#ffffff',
-      align: 'center'
-    }).setOrigin(0.5);
-    */
     this.handContainer = this.add.container(width / 2-50, height - 120);
     
     // Create action button row above hand area
-    this.createActionButtonRow();
+    // Initialize dynamic action button system
+    this.actionButtonManager.initialize();
   }
 
   setupEventListeners() {
@@ -561,24 +554,21 @@ export default class GameScene extends Phaser.Scene {
       // Now select the clicked card
       console.log(`Selecting card ${card.cardData?.id}`);
       card.select();
-      this.selectedCard = card;
-      // Sync with GameStateManager
       this.gameStateManager.setSelectedCard(card);
       
-      // Show action button row when card is selected
-      this.showActionButtons();
+      // Show dynamic action buttons based on card type and effects
+      this.showDynamicActionsForCard(card);
       
     });
 
     this.events.on('card-deselect', (card) => {
       // Handle card deselection - clear selected card and zone highlights
-      if (this.selectedCard === card) {
-        this.selectedCard = null;
+      if (this.gameStateManager.getSelectedCard() === card) {
         this.gameStateManager.setSelectedCard(null);
         this.clearZoneHighlights();
         
-        // Hide action button row when card is deselected
-        this.hideActionButtons();
+        // Hide dynamic action buttons when card is deselected  
+        this.hideDynamicActionButtons();
       }
     });
     
@@ -628,10 +618,10 @@ export default class GameScene extends Phaser.Scene {
     // Add background click handler for deselecting cards
     this.input.on('pointerdown', (pointer, currentlyOver) => {
       // Only deselect if clicking on background (not on a card or zone)
-      if (currentlyOver.length === 0 && this.selectedCard) {
+      if (currentlyOver.length === 0 && this.gameStateManager.getSelectedCard()) {
         this.deselectAllHandCards();
         // Hide action buttons when clicking background
-        this.hideActionButtons();
+        this.hideDynamicActionButtons();
       }
     });
   }
@@ -959,12 +949,11 @@ export default class GameScene extends Phaser.Scene {
         }
         
         // Deselect the card
-        if (this.selectedCard === card) {
-          this.selectedCard = null;
+        if (this.gameStateManager.getSelectedCard() === card) {
           this.gameStateManager.setSelectedCard(null);
           this.clearZoneHighlights();
           // Hide action buttons when card is placed
-          this.hideActionButtons();
+          this.hideDynamicActionButtons();
         }
         
         console.log(`Successfully played card ${card.getCardData().id} to ${zoneType}`);
@@ -1093,7 +1082,7 @@ export default class GameScene extends Phaser.Scene {
 
   handleZoneClick(zoneType, x, y) {
     // Check if we have a selected card and it's currently our turn
-    if (!this.selectedCard) {
+    if (!this.gameStateManager.getSelectedCard()) {
       console.log('No card selected');
       return;
     }
@@ -1114,11 +1103,12 @@ export default class GameScene extends Phaser.Scene {
     }
 
     // Check if the selected card can be placed in this zone
-    if (!this.canDropCardInZone(this.selectedCard, zoneType)) {
-      const cardData = this.selectedCard.getCardData();
+    const selectedCard = this.gameStateManager.getSelectedCard();
+    if (!this.canDropCardInZone(selectedCard, zoneType)) {
+      const cardData = selectedCard.getCardData();
       
       // Check if it's a basic type compatibility issue
-      if (!this.selectedCard.canPlayInZone(zoneType)) {
+      if (!selectedCard.canPlayInZone(zoneType)) {
         console.log(`Card type ${cardData.type} cannot be placed in ${zoneType} zone`);
         this.showZoneRestrictionMessage(`${cardData.type.toUpperCase()} cards cannot be placed in ${zoneType.toUpperCase()} zone`);
       } else {
@@ -1139,9 +1129,8 @@ export default class GameScene extends Phaser.Scene {
   }
 
   async placeSelectedCardInZone(zoneType, x, y) {
-    if (!this.selectedCard) return;
-
-    const card = this.selectedCard;
+    const card = this.gameStateManager.getSelectedCard();
+    if (!card) return;
     const cardData = card.getCardData();
 
     // Show loading state
@@ -1195,7 +1184,6 @@ export default class GameScene extends Phaser.Scene {
       }
 
       // Clear selection and zone highlights
-      this.selectedCard = null;
       this.gameStateManager.setSelectedCard(null);
       this.clearZoneHighlights();
       // Hide action buttons when card is placed
@@ -1233,7 +1221,6 @@ export default class GameScene extends Phaser.Scene {
         handCard.deselectSilently();
       }
     });
-    this.selectedCard = null;
     this.gameStateManager.setSelectedCard(null);
     this.clearZoneHighlights();
     // Hide action buttons when all cards deselected
@@ -2203,6 +2190,25 @@ export default class GameScene extends Phaser.Scene {
       this.slotAreaManager.destroy();
       this.slotAreaManager = null;
     }
+
+    // Clean up action button manager
+    if (this.actionButtonManager) {
+      this.actionButtonManager.destroy();
+      this.actionButtonManager = null;
+    }
+
+    // Clean up hover preview resources
+    this.hideCardPreview();
+    
+    // Clean up card move animation queue
+    if (this.cardMoveQueue) {
+      this.cardMoveQueue = [];
+    }
+    this.processingCardMoves = false;
+    
+    // Reset initial size tracking
+    this.initialQueueSize = null;
+    this.initialHandSize = null;
     
     // Clean up any existing card selection dialog
     if (this.currentCardSelectionDialog) {
@@ -2512,223 +2518,68 @@ export default class GameScene extends Phaser.Scene {
   }
   
 
-  createActionButtonRow() {
-    const width = this.scale.width;
-    const height = this.scale.height;
-    
-    // Create container for action buttons, positioned above hand area
-    this.actionButtonContainer = this.add.container(width / 2, height - 250);
-    this.actionButtonContainer.setDepth(500);
-    this.actionButtonContainer.setVisible(false); // Hidden by default
-    
-    // Button configurations
-    const buttonConfigs = [
-      { text: 'Play', action: 'play', color: 0x4a90e2 },
-      { text: 'Face Down', action: 'facedown', color: 0x7b68ee },
-      { text: 'Inspect', action: 'inspect', color: 0x50c878 },
-      { text: 'Return', action: 'return', color: 0xffa500 },
-      { text: 'Cancel', action: 'cancel', color: 0xe74c3c }
-    ];
-    
-    this.actionButtons = [];
-    const buttonWidth = 80;
-    const buttonHeight = 35;
-    const buttonSpacing = 90;
-    const startX = -(buttonConfigs.length - 1) * buttonSpacing / 2 -50;
-    
-    buttonConfigs.forEach((config, index) => {
-      const x = startX + index * buttonSpacing;
-      const y = 0;
-      
-      // Create button background
-      const button = this.add.rectangle(x, y, buttonWidth, buttonHeight, config.color, 0.8);
-      button.setStrokeStyle(2, 0xffffff, 0.6);
-      button.setInteractive();
-      
-      // Create button text
-      const buttonText = this.add.text(x, y, config.text, {
-        fontSize: '14px',
-        fill: '#ffffff',
-        fontFamily: 'Arial Bold'
-      });
-      buttonText.setOrigin(0.5);
-      
-      // Store button data
-      const buttonData = {
-        background: button,
-        text: buttonText,
-        action: config.action,
-        config: config
-      };
-      
-      // Add hover effects
-      button.on('pointerover', () => {
-        button.setFillStyle(config.color, 1.0);
-        button.setStrokeStyle(2, 0xffffff, 1.0);
-      });
-      
-      button.on('pointerout', () => {
-        button.setFillStyle(config.color, 0.8);
-        button.setStrokeStyle(2, 0xffffff, 0.6);
-      });
-      
-      // Add click handler
-      button.on('pointerdown', () => {
-        this.handleActionButtonClick(config.action);
-      });
-      
-      // Add to container and store reference
-      this.actionButtonContainer.add([button, buttonText]);
-      this.actionButtons.push(buttonData);
-    });
-    
-    console.log('Action button row created with 5 buttons');
-  }
+  // Old static action button method removed - now using dynamic ActionButtonManager
   
-  showActionButtons() {
-    if (this.actionButtonContainer) {
-      this.actionButtonContainer.setVisible(true);
-      console.log('Action buttons shown');
-    }
-  }
-  
-  hideActionButtons() {
-    if (this.actionButtonContainer) {
-      this.actionButtonContainer.setVisible(false);
-      console.log('Action buttons hidden');
-    }
-  }
-  
-  handleActionButtonClick(action) {
-    const selectedCard = this.selectedCard || this.gameStateManager.getSelectedCard();
-    this.cardActionHandler.handleAction(action, selectedCard);
-  }
-  
-  async handlePlayCardAction(selectedCard) {
+  /**
+   * Show dynamic actions for selected card
+   */
+  showDynamicActionsForCard(selectedCard) {
     if (!selectedCard) {
-      console.log('No card selected for play action');
+      this.hideDynamicActionButtons();
       return;
     }
-    
-    console.log('Playing card normally:', selectedCard.fullCardData.cardUid);
-    this.hideActionButtons();
-    
-    try {
-      // Get cardUID from the selected card
-      const cardUID = selectedCard.fullCardData.cardUid;
-      
-      if (!cardUID) {
-        this.showErrorMessage('Card not found in hand.');
-        return;
-      }
-      
-      const gameState = this.gameStateManager.getGameState();
-      
-      // Set loading state
-      this.setUILoadingState(true);
-      
-      // Call backend API - it will automatically find first empty unit slot
-      console.log('Calling backend playCard API with cardUID:', cardUID);
-      
-      if (this.apiManager) {
-        const response = await this.apiManager.playCard(
-          gameState.playerId,
-          gameState.gameId,
-          cardUID
-        );
-        
-        console.log('Play card response:', response);
-        
-        if (response && response.success) {
-          console.log('✅ Card played successfully - backend will update game state via polling');
-          this.gameStateManager.updateGameEnv(response.gameEnv);
-          this.updateGameState();
-          this.updatePlayerHand();
-          this.clearZoneHighlights();
-          
-        } else {
-          console.error('❌ Failed to play card:', response?.error);
-          this.showErrorMessage(response?.error || 'Failed to play card');
-        }
-      } else {
-        // Demo mode - show that this would place the card
-        console.log('Demo mode: Would call backend API to play card');
-        this.showErrorMessage('Demo mode - Backend API not available');
-      }
-      
-    } catch (error) {
-      console.error('Error playing card:', error);
-      this.showErrorMessage('Failed to play card. Please try again.');
-    } finally {
-      // Clear loading state
-      this.setUILoadingState(false);
-    }
+
+    // Build game context for action validation
+    const gameState = this.gameStateManager.getGameState();
+    const gameContext = {
+      phase: gameState.gameEnv?.phase || 'MAIN_PHASE',
+      hasAvailableUnits: this.hasAvailableUnitsForPilot(),
+      baseZoneAvailable: this.isBaseZoneAvailable(),
+      canPlayNormally: this.canPlayCardNormally(selectedCard)
+    };
+
+    // Show dynamic actions based on card type and context
+    this.actionButtonManager.showActionsForCard(selectedCard, gameContext);
   }
   
-  handleFaceDownAction(selectedCard) {
-    if (!selectedCard) {
-      console.log('No card selected for face down action');
-      return;
-    }
-    
-    // Implementation for playing card face down
-    console.log('Playing card face down:', selectedCard.cardId);
-    this.hideActionButtons();
-    // Add face down placement logic here
-  }
-  
-  handleInspectAction(selectedCard) {
-    if (!selectedCard) {
-      console.log('No card selected for inspect action');
-      return;
-    }
-    
-    // Implementation for inspecting card details
-    console.log('Inspecting card:', selectedCard.cardId);
-    // Keep buttons visible for inspect action
-    // Add card detail view logic here
-  }
-  
-  handleReturnAction(selectedCard) {
-    if (!selectedCard) {
-      console.log('No card selected for return action');
-      return;
-    }
-    
-    // Implementation for returning card to original position
-    console.log('Returning card to original position:', selectedCard.cardId);
-    this.gameStateManager.clearSelectedCard();
-    this.hideActionButtons();
-    // Add return logic here
-  }
-  
-  handleCancelAction() {
-    // Implementation for canceling selection
-    console.log('Canceling card selection');
-    this.gameStateManager.clearSelectedCard();
-    this.hideActionButtons();
+  /**
+   * Hide dynamic action buttons
+   */
+  hideDynamicActionButtons() {
+    this.actionButtonManager.hide();
   }
 
-  destroy() {
-    // Clean up action button container
-    if (this.actionButtonContainer) {
-      this.actionButtonContainer.destroy();
-    }
-    
-    // Clean up hover preview resources
-    this.hideCardPreview();
-    
-    // Clean up card move animation queue
-    if (this.cardMoveQueue) {
-      this.cardMoveQueue = [];
-    }
-    this.processingCardMoves = false;
-    
-    // Reset initial size tracking
-    this.initialQueueSize = null;
-    this.initialHandSize = null;
-    
-    super.destroy();
+  /**
+   * Helper: Check if there are units available for pilot attachment
+   */
+  hasAvailableUnitsForPilot() {
+    // TODO: Check player zones for available units
+    return true; // Placeholder
   }
+
+  /**
+   * Helper: Check if base zone is available
+   */
+  isBaseZoneAvailable() {
+    // TODO: Check if base zone can accept cards
+    return true; // Placeholder
+  }
+
+  /**
+   * Helper: Check if card can be played normally in current context
+   */
+  canPlayCardNormally(selectedCard) {
+    // TODO: Check phase restrictions, zone availability, etc.
+    return true; // Placeholder
+  }
+  
+  handleActionButtonClick(action, effectData = null) {
+    const selectedCard = this.gameStateManager.getSelectedCard();
+    this.cardActionHandler.handleAction(action, selectedCard, effectData);
+  }
+  
+  // Card action methods moved to CardActionHandler class
+
+  // Duplicate destroy method removed - merged into main destroy method above
 
 }

@@ -11,8 +11,8 @@ export default class CardActionHandler {
     /**
      * Main action dispatcher - routes to specific action handlers
      */
-    handleAction(action, selectedCard) {
-        console.log(`Action button clicked: ${action}`, selectedCard);
+    handleAction(action, selectedCard, effectData = null) {
+        console.log(`Action button clicked: ${action}`, selectedCard, effectData);
         
         switch (action) {
             case 'play':
@@ -29,6 +29,18 @@ export default class CardActionHandler {
                 break;
             case 'cancel':
                 this.handleCancelAction();
+                break;
+            case 'activate-effect':
+                this.handleActivateEffectAction(selectedCard, effectData);
+                break;
+            case 'attach-to-unit':
+                this.handleAttachToUnitAction(selectedCard);
+                break;
+            case 'deploy-base':
+                this.handleDeployBaseAction(selectedCard);
+                break;
+            case 'pilot-link':
+                this.handlePilotLinkAction(selectedCard, effectData);
                 break;
             default:
                 console.log(`Unknown action: ${action}`);
@@ -154,6 +166,74 @@ export default class CardActionHandler {
         console.log('Canceling card selection');
         this.gameStateManager.clearSelectedCard();
         this.gameScene.hideActionButtons();
+    }
+
+    /**
+     * Handle activated effect action for command cards
+     */
+    handleActivateEffectAction(selectedCard, effectData) {
+        if (!this.validateSelectedCard(selectedCard, 'activate effect')) {
+            return;
+        }
+        
+        if (!effectData) {
+            console.log('No effect data provided for activate effect action');
+            return;
+        }
+
+        console.log('Activating card effect:', effectData);
+        this.gameScene.hideActionButtons();
+        
+        // TODO: Implement effect activation logic
+        console.log('🚧 [PLACEHOLDER] Effect activation logic needed');
+        console.log('Effect details:', effectData);
+    }
+
+    /**
+     * Handle pilot attachment to unit action
+     */
+    handleAttachToUnitAction(selectedCard) {
+        if (!this.validateSelectedCard(selectedCard, 'attach to unit')) {
+            return;
+        }
+        
+        console.log('Attaching pilot to unit:', selectedCard.cardId);
+        this.gameScene.hideActionButtons();
+        
+        // TODO: Implement pilot attachment UI flow
+        // Should show unit selection interface
+        console.log('🚧 [PLACEHOLDER] Pilot attachment unit selection needed');
+    }
+
+    /**
+     * Handle base deployment action
+     */
+    handleDeployBaseAction(selectedCard) {
+        if (!this.validateSelectedCard(selectedCard, 'deploy base')) {
+            return;
+        }
+        
+        console.log('Deploying base card:', selectedCard.cardId);
+        this.gameScene.hideActionButtons();
+        
+        // TODO: Implement base deployment logic
+        console.log('🚧 [PLACEHOLDER] Base deployment logic needed');
+    }
+
+    /**
+     * Handle pilot linking action for special pilot effects
+     */
+    handlePilotLinkAction(selectedCard, effectData) {
+        if (!this.validateSelectedCard(selectedCard, 'pilot link')) {
+            return;
+        }
+        
+        console.log('Activating pilot link effect:', selectedCard.cardId);
+        this.gameScene.hideActionButtons();
+        
+        // TODO: Implement pilot linking logic
+        console.log('🚧 [PLACEHOLDER] Pilot linking effect needed');
+        console.log('Link effect data:', effectData);
     }
 
     /**
