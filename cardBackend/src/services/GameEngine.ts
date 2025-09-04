@@ -8,6 +8,7 @@ import { EnergyManager } from './EnergyManager';
 import { ShieldCardManager } from './ShieldCardManager';
 import { BaseCardManager } from './BaseCardManager';
 import { GameNotificationManager } from './GameNotificationManager';
+import { PlayerCardManager } from './PlayerCardManager';
 import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -649,80 +650,47 @@ export class GameEngine {
                 };
             }
             
-            // Find card in player's hand
+            // Find player
             const player = gameEnv.players[playerId];
-            if (!player || !player.zones || !player.deck?.hand) {
+            if (!player || !player.zones) {
                 return {
                     success: false,
-                    error: `Player ${playerId} or hand not found`
+                    error: `Player ${playerId} or zones not found`
                 };
             }
             
-            // Find card in handUids array
-            const handUidIndex = player.deck.handUids.findIndex(uid => uid === cardUID);
-            if (handUidIndex === -1) {
+            // Validate card is in hand and remove it
+            if (!PlayerCardManager.validateCardInHand(gameEnv, playerId, cardUID)) {
                 return {
                     success: false,
-                    error: `Card ${cardUID} not found in player ${playerId} handUids`
-                };
-            }
-            
-            // Extract cardId from cardUID 
-            const cardId = cardUID.split('_')[0];
-            console.log(`🎯 Card ${cardUID} found in handUids as cardId: ${cardId}`);
-            
-            // TODO: Validate card type is unit (placeholder)
-            console.log(`🚧 [PLACEHOLDER] Card type validation - assuming unit type`);
-            
-            const playerZones = player.zones;
-            const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'] as const;
-            
-            // Find first empty UNIT slot only
-            let targetZone = null;
-            
-            for (const zone of slotZones) {
-                const slotZone = playerZones[zone];
-                if (slotZone && !slotZone.unit) {
-                    targetZone = zone;
-                    break;
-                }
-            }
-            
-            if (!targetZone) {
-                return {
-                    success: false,
-                    error: `No empty unit slots available in zones slot1-slot6`
-                };
-            }
-            
-            console.log(`✅ Found empty unit slot in ${targetZone} for card ${cardUID}`);
-            
-            // Remove card from handUids array only (hand is generated from handUids)
-            player.deck.handUids.splice(handUidIndex, 1);
-            console.log(`🎮 Removed card ${cardUID} from handUids`);
-            
-            // Load full card data from card database
-            const fullCardData = GameEngine.getCardDetails(cardId);
-            if (!fullCardData) {
-                return {
-                    success: false,
-                    error: `Card data not found for ${cardId} in card database`
+                    error: `Card ${cardUID} not found in player ${playerId} hand`
                 };
             }
 
-            // Create unit card for slot placement with full card data
-            const unitCard = {
-                cardUid: cardUID,
-                cardId: cardId,
-                placedAt: Date.now(),
-                placedBy: playerId,
-                isRested: false,
-                cardData: fullCardData // Use full card data from database
+            if (!PlayerCardManager.removeCardFromHand(gameEnv, playerId, cardUID)) {
+                return {
+                    success: false,
+                    error: `Failed to remove card ${cardUID} from player ${playerId} hand`
+                };
+            }
+
+            // Place card using PlayerCardManager
+            const placementOptions = {
+                targetUnit: event.data.targetUnit,
+                faceDown: event.data.faceDown
             };
-            
-            // Place unit in target slot
-            playerZones[targetZone].unit = unitCard;
-            console.log(`🎮 Placed unit card ${cardUID} in ${targetZone}`);
+
+            const placementResult = PlayerCardManager.placeCard(gameEnv, playerId, cardUID, placementOptions);
+            if (!placementResult.success) {
+                // Return card to hand if placement failed
+                player.deck.handUids.push(cardUID);
+                return {
+                    success: false,
+                    error: placementResult.error
+                };
+            }
+
+            console.log(`✅ Card ${cardUID} successfully placed in ${placementResult.placedZone}`);
             
             // TODO: Add effect processing and type compatibility validation
             console.log(`🚧 [PLACEHOLDER] Card effects and compatibility validation needed`);

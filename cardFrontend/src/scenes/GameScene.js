@@ -8,6 +8,7 @@ import SlotAreaManager from '../components/SlotAreaManager.js';
 import GameSceneUtils from '../utils/GameSceneUtils.js';
 import { ZoneMapping } from '../utils/ZoneMapping.js';
 import CardAnimationUtils from '../utils/CardAnimationUtils.js';
+import CardActionHandler from '../handlers/CardActionHandler.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor(config = { key: 'GameScene' }) {
@@ -48,6 +49,7 @@ export default class GameScene extends Phaser.Scene {
     this.baseAndShieldManager = new BaseAndShieldAreaManager(this, this.gameStateManager);
     this.energyAreaManager = new EnergyAreaManager(this, this.gameStateManager);
     this.slotAreaManager = new SlotAreaManager(this, this.gameStateManager);
+    this.cardActionHandler = new CardActionHandler(this, this.gameStateManager, this.apiManager);
  
     console.log('GameScene initialized with mode:', this.gameMode);
     console.log('Manual polling mode:', this.isManualPollingMode);
@@ -2599,28 +2601,7 @@ export default class GameScene extends Phaser.Scene {
   
   handleActionButtonClick(action) {
     const selectedCard = this.selectedCard || this.gameStateManager.getSelectedCard();
-    
-    console.log(`Action button clicked: ${action}`, selectedCard);
-    
-    switch (action) {
-      case 'play':
-        this.handlePlayCardAction(selectedCard);
-        break;
-      case 'facedown':
-        this.handleFaceDownAction(selectedCard);
-        break;
-      case 'inspect':
-        this.handleInspectAction(selectedCard);
-        break;
-      case 'return':
-        this.handleReturnAction(selectedCard);
-        break;
-      case 'cancel':
-        this.handleCancelAction();
-        break;
-      default:
-        console.log(`Unknown action: ${action}`);
-    }
+    this.cardActionHandler.handleAction(action, selectedCard);
   }
   
   async handlePlayCardAction(selectedCard) {

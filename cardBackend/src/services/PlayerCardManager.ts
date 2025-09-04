@@ -1,0 +1,264 @@
+// src/services/PlayerCardManager.ts
+// Player card placement and management system
+
+import { GameEnvironment } from '../models/GameEnvironment';
+import { GameEngine } from './GameEngine';
+
+export interface CardPlacementResult {
+    success: boolean;
+    error?: string;
+    placedZone?: string;
+}
+
+export interface CardPlacementOptions {
+    targetUnit?: string;
+    faceDown?: boolean;
+    [key: string]: any;
+}
+
+export class PlayerCardManager {
+    
+    /**
+     * Main card placement interface - handles all card types
+     */
+    static placeCard(
+        gameEnv: GameEnvironment, 
+        playerId: string, 
+        cardUID: string, 
+        options: CardPlacementOptions = {}
+    ): CardPlacementResult {
+        try {
+            const player = gameEnv.players[playerId];
+            if (!player || !player.zones) {
+                return {
+                    success: false,
+                    error: `Player ${playerId} or zones not found`
+                };
+            }
+
+            // Extract cardId from cardUID
+            const cardId = cardUID.split('_')[0];
+            
+            // Load full card data from card database
+            const fullCardData = GameEngine.getCardDetails(cardId);
+            if (!fullCardData) {
+                return {
+                    success: false,
+                    error: `Card data not found for ${cardId} in card database`
+                };
+            }
+
+            // Route to specific card type handler
+            const cardType = fullCardData.cardType;
+            console.log(`🎯 Placing card ${cardId} type: ${cardType}`);
+
+            switch (cardType) {
+                case 'unit':
+                    return this.placeUnitCard(player.zones, fullCardData, cardUID, playerId);
+                    
+                case 'pilot':
+                    return this.placePilotCard(player.zones, fullCardData, cardUID, playerId, options.targetUnit);
+                    
+                case 'command':
+                    return this.placeCommandCard(player.zones, fullCardData, cardUID, playerId);
+                    
+                case 'base':
+                    return this.placeBaseCard(player.zones, fullCardData, cardUID, playerId);
+                    
+                default:
+                    return {
+                        success: false,
+                        error: `Unknown card type '${cardType}' for card ${cardUID}`
+                    };
+            }
+
+        } catch (error) {
+            console.error(`❌ Error in placeCard:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Card placement failed'
+            };
+        }
+    }
+
+    /**
+     * Place unit card in first empty slot
+     */
+    private static placeUnitCard(
+        playerZones: any, 
+        cardData: any, 
+        cardUID: string, 
+        playerId: string
+    ): CardPlacementResult {
+        // Find first empty unit slot
+        const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'] as const;
+        let targetZone = null;
+        
+        for (const zone of slotZones) {
+            const slotZone = playerZones[zone];
+            if (slotZone && !slotZone.unit) {
+                targetZone = zone;
+                break;
+            }
+        }
+        
+        if (!targetZone) {
+            return {
+                success: false,
+                error: `No empty unit slots available in zones slot1-slot6`
+            };
+        }
+
+        // Create unit card for slot placement
+        const unitCard = {
+            cardUid: cardUID,
+            cardId: cardData.id,
+            placedAt: Date.now(),
+            placedBy: playerId,
+            isRested: false,
+            cardData: cardData
+        };
+        
+        // Place unit in target slot
+        playerZones[targetZone].unit = unitCard;
+        console.log(`🎮 Placed unit card ${cardUID} in ${targetZone}`);
+        
+        return {
+            success: true,
+            placedZone: targetZone
+        };
+    }
+
+    /**
+     * Place pilot card on target unit
+     */
+    private static placePilotCard(
+        playerZones: any, 
+        cardData: any, 
+        cardUID: string, 
+        playerId: string,
+        targetUnit?: string
+    ): CardPlacementResult {
+        if (!targetUnit) {
+            return {
+                success: false,
+                error: `Pilot card ${cardUID} requires targetUnit parameter`
+            };
+        }
+
+        // Search for the target unit in slots
+        const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'] as const;
+        let targetZone = null;
+        
+        for (const zone of slotZones) {
+            const slotZone = playerZones[zone];
+            if (slotZone?.unit?.cardUid === targetUnit || slotZone?.unit?.cardId === targetUnit) {
+                targetZone = zone;
+                break;
+            }
+        }
+        
+        if (!targetZone) {
+            return {
+                success: false,
+                error: `Target unit ${targetUnit} not found in slots for pilot ${cardUID}`
+            };
+        }
+
+        // Create pilot card and attach to unit
+        const pilotCard = {
+            cardUid: cardUID,
+            cardId: cardData.id,
+            placedAt: Date.now(),
+            placedBy: playerId,
+            isRested: false,
+            cardData: cardData
+        };
+        
+        // Place pilot in target slot with unit
+        playerZones[targetZone].pilot = pilotCard;
+        console.log(`🎮 Placed pilot card ${cardUID} with unit in ${targetZone}`);
+        
+        return {
+            success: true,
+            placedZone: targetZone
+        };
+    }
+
+    /**
+     * Place command card - placeholder implementation
+     */
+    private static placeCommandCard(
+        playerZones: any, 
+        cardData: any, 
+        cardUID: string, 
+        playerId: string
+    ): CardPlacementResult {
+        console.log(`🚧 [PLACEHOLDER] Command card placement for ${cardUID} - not yet implemented`);
+        // TODO: Implement command card placement logic
+        // Command cards might go to a specific command zone or have special rules
+        
+        return {
+            success: false,
+            error: `Command card placement not yet implemented for ${cardUID}`
+        };
+    }
+
+    /**
+     * Place base card - placeholder implementation  
+     */
+    private static placeBaseCard(
+        playerZones: any, 
+        cardData: any, 
+        cardUID: string, 
+        playerId: string
+    ): CardPlacementResult {
+        console.log(`🚧 [PLACEHOLDER] Base card placement for ${cardUID} - not yet implemented`);
+        // TODO: Implement base card placement logic
+        // Base cards might go to base zone or have special placement rules
+        
+        return {
+            success: false,
+            error: `Base card placement not yet implemented for ${cardUID}`
+        };
+    }
+
+    /**
+     * Remove card from player hand (handUids only)
+     */
+    static removeCardFromHand(gameEnv: GameEnvironment, playerId: string, cardUID: string): boolean {
+        try {
+            const player = gameEnv.players[playerId];
+            if (!player?.deck?.handUids) {
+                return false;
+            }
+
+            const handUidIndex = player.deck.handUids.findIndex(uid => uid === cardUID);
+            if (handUidIndex === -1) {
+                return false;
+            }
+
+            // Remove card from handUids array only (hand is generated from handUids)
+            player.deck.handUids.splice(handUidIndex, 1);
+            console.log(`🎮 Removed card ${cardUID} from handUids`);
+            
+            return true;
+
+        } catch (error) {
+            console.error(`❌ Error removing card from hand:`, error);
+            return false;
+        }
+    }
+
+    /**
+     * Validate card is in player hand
+     */
+    static validateCardInHand(gameEnv: GameEnvironment, playerId: string, cardUID: string): boolean {
+        const player = gameEnv.players[playerId];
+        if (!player?.deck?.handUids) {
+            return false;
+        }
+
+        return player.deck.handUids.includes(cardUID);
+    }
+}
