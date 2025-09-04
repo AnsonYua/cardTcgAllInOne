@@ -389,7 +389,9 @@
                                             "effect": {
                                                 "action": "designate_pilot",
                                                 "parameters": {
-                                                    "pilotName": "Kai Shiden"
+                                                    "pilotName": "Kai Shiden",
+                                                    "AP":1,
+                                                    "HP":0
                                                 },
                                                 "duration": "permanent"
                                             }

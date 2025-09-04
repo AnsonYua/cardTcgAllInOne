@@ -261,7 +261,9 @@
                                             "effect": {
                                                 "action": "designate_pilot",
                                                 "parameters": {
-                                                    "pilotName": "Hayato Kobayashi"
+                                                    "pilotName": "Hayato Kobayashi",
+                                                    "AP":1,
+                                                    "HP":0
                                                 },
                                                 "duration": "permanent"
                                             }
@@ -696,7 +698,9 @@
                                             "effect": {
                                                 "action": "designate_pilot",
                                                 "parameters": {
-                                                    "pilotName": "Kai Shiden"
+                                                    "pilotName": "Kai Shiden",
+                                                    "AP":0,
+                                                    "HP":1
                                                 },
                                                 "duration": "permanent"
                                             }

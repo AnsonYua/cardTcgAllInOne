@@ -157,7 +157,7 @@ export default class CardActionHandler {
         
         // Implementation for returning card to original position
         console.log('Returning card to original position:', selectedCard.cardId);
-        this.gameStateManager.clearSelectedCard();
+        this.gameStateManager.setSelectedCard(null);
         this.gameScene.actionButtonManager.hide();
         
         // TODO: Add return logic here
@@ -170,7 +170,18 @@ export default class CardActionHandler {
     handleCancelAction() {
         // Implementation for canceling selection
         console.log('Canceling card selection');
-        this.gameStateManager.clearSelectedCard();
+        
+        // Get currently selected card to deselect it visually
+        const selectedCard = this.gameStateManager.getSelectedCard();
+        if (selectedCard) {
+            selectedCard.deselect();
+        }
+        
+        // Clear selection from state manager
+        this.gameStateManager.setSelectedCard(null);
+        
+        // Clear zone highlights and hide buttons
+        this.clearZoneHighlights();
         this.gameScene.actionButtonManager.hide();
     }
 

@@ -58,9 +58,9 @@ export default class ActionButtonManager {
             return;
         }
 
-        const buttonWidth = 120;
-        const buttonHeight = 50;
-        const buttonSpacing = 130;
+        const buttonWidth = 150;
+        const buttonHeight = 40;
+        const buttonSpacing = 160;
         const startX = -(actions.length - 1) * buttonSpacing / 2 - 50;
         
         this.actionButtons = [];
@@ -69,26 +69,27 @@ export default class ActionButtonManager {
             const x = startX + index * buttonSpacing;
             const y = 0;
             
-            // Create button background with special styling for primary actions
-            const buttonColor = actionConfig.primary ? 
-                this.brightenColor(actionConfig.color, 0.2) : actionConfig.color;
+            // Use standardized blue background for all buttons
+            const buttonColor = 0x1A37B8; // Standard blue color
+            const strokeColor = 0xffffff; // White stroke
                 
-            const button = this.gameScene.add.rectangle(x, y, buttonWidth, buttonHeight, buttonColor, 0.8);
-            button.setStrokeStyle(actionConfig.primary ? 3 : 2, 0xffffff, actionConfig.primary ? 0.9 : 0.6);
+            const button = this.gameScene.add.rectangle(x, y, buttonWidth, buttonHeight, buttonColor, 0.9);
+            button.setStrokeStyle(actionConfig.primary ? 3 : 2, strokeColor, 1.0);
             button.setInteractive();
             
-            // Create button text with wrapping and larger font
+            // Create button text with bold styling and high contrast
             const buttonText = this.gameScene.add.text(x, y, actionConfig.text, {
                 fontSize: actionConfig.primary ? '16px' : '14px',
                 fill: '#ffffff',
-                fontFamily: actionConfig.primary ? 'Arial Bold' : 'Arial',
+                fontFamily: 'Arial Bold',
+                fontStyle: 'bold',
                 align: 'center',
                 wordWrap: { 
                     width: buttonWidth - 10, 
                     useAdvancedWrap: true 
                 },
                 stroke: '#000000',
-                strokeThickness: 1
+                strokeThickness: 2
             });
             buttonText.setOrigin(0.5);
             
@@ -101,15 +102,15 @@ export default class ActionButtonManager {
                 effectData: actionConfig.effectData || null
             };
             
-            // Add hover effects
+            // Add hover effects with consistent blue styling
             button.on('pointerover', () => {
-                button.setFillStyle(buttonColor, 1.0);
-                button.setStrokeStyle(actionConfig.primary ? 3 : 2, 0xffffff, 1.0);
+                button.setFillStyle(0x5ba0f5, 1.0); // Lighter blue on hover
+                button.setStrokeStyle(actionConfig.primary ? 3 : 2, strokeColor, 1.0);
             });
             
             button.on('pointerout', () => {
-                button.setFillStyle(buttonColor, 0.8);
-                button.setStrokeStyle(actionConfig.primary ? 3 : 2, 0xffffff, actionConfig.primary ? 0.9 : 0.6);
+                button.setFillStyle(buttonColor, 0.9); // Back to standard blue
+                button.setStrokeStyle(actionConfig.primary ? 3 : 2, strokeColor, 1.0);
             });
             
             // Add click handler with effect data
