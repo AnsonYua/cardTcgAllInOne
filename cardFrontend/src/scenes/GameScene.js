@@ -520,21 +520,6 @@ export default class GameScene extends Phaser.Scene {
   }
 
   setupEventListeners() {
-    // Game state event handlers
-    if (this.gameStateManager) {
-      
-      
-      // Card movement events
-      this.gameStateManager.addEventListener('CARD_MOVED_TO_HAND', (event) => {
-        this.handleCardMovedToHand(event);
-      });
-      
-      /*
-      this.gameStateManager.addEventListener('PHASE_CHANGE', (event) => {
-        console.log('Phase change event received:', event);
-        this.handlePhaseChange(event);
-      });*/
-    }
     
     // Card interaction events
     this.events.on('card-select', (card) => {
@@ -953,7 +938,7 @@ export default class GameScene extends Phaser.Scene {
           this.gameStateManager.setSelectedCard(null);
           this.clearZoneHighlights();
           // Hide action buttons when card is placed
-          this.hideDynamicActionButtons();
+          this.actionButtonManager.hide();
         }
         
         console.log(`Successfully played card ${card.getCardData().id} to ${zoneType}`);
@@ -2200,15 +2185,6 @@ export default class GameScene extends Phaser.Scene {
     // Clean up hover preview resources
     this.hideCardPreview();
     
-    // Clean up card move animation queue
-    if (this.cardMoveQueue) {
-      this.cardMoveQueue = [];
-    }
-    this.processingCardMoves = false;
-    
-    // Reset initial size tracking
-    this.initialQueueSize = null;
-    this.initialHandSize = null;
     
     // Clean up any existing card selection dialog
     if (this.currentCardSelectionDialog) {
@@ -2262,35 +2238,6 @@ export default class GameScene extends Phaser.Scene {
     this.showRoomStatus(event.data.message || `Phase changed to ${event.data.phase}`);
   }
 
-  handleCardMovedToHand(event) {
-    const { playerId, cardId, source } = event.data;
-    console.log(`Processing CARD_MOVED_TO_HAND event: ${cardId} for player ${playerId} from ${source}`);
-    
-    // Only process for current player
-    if (playerId !== this.gameStateManager.getCurrentPlayerId()) {
-      console.log(`Card moved to opponent hand: ${cardId}`);
-      return;
-    }
-    
-    // Initialize animation queue if needed
-    if (!this.cardMoveQueue) {
-      this.cardMoveQueue = [];
-    }
-    
-    // Add to animation queue for sequential processing
-    this.cardMoveQueue.push({
-      cardId,
-      source,
-      event
-    });
-    
-    console.log(`Added card ${cardId} to move queue. Queue length: ${this.cardMoveQueue.length}`);
-    
-    // Start processing queue if not already running
-    if (!this.processingCardMoves) {
-      CardAnimationUtils.processCardMoveQueue(this);
-    }
-  }
 
 
   shouldShowTurnInfo(phase) {

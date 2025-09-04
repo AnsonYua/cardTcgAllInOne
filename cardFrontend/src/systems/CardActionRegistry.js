@@ -10,15 +10,15 @@ export default class CardActionRegistry {
             return this.getDefaultActions();
         }
 
-        const cardData = card.fullCardData.cardData || card.fullCardData;
-        const cardType = cardData.cardType || 'unit';
+        const cardData = card.fullCardData.cardData;
+        const cardType = cardData.cardType ;
         const effects = cardData.effects || {};
         const currentPhase = gameContext.phase || 'MAIN_PHASE';
-        
+        console.log("getAvailable Action ", JSON.stringify(cardData))
         console.log(`🎯 Getting actions for ${cardType} card in ${currentPhase}`);
         
         // Base actions for card type
-        let actions = this.getBaseActionsForType(cardType);
+        let actions = this.getBaseActionsForType(cardType, cardData);
         
         // Add effect-based actions
         actions = this.addEffectBasedActions(actions, effects, currentPhase);
@@ -33,26 +33,20 @@ export default class CardActionRegistry {
     /**
      * Get base actions for each card type
      */
-    static getBaseActionsForType(cardType) {
+    static getBaseActionsForType(cardType, cardData = null) {
         const actionMap = {
             'unit': [
-                { action: 'play', text: 'Play Unit', color: 0x4a90e2, primary: true },
-                { action: 'facedown', text: 'Face Down', color: 0x7b68ee },
-                { action: 'inspect', text: 'Inspect', color: 0x50c878 },
-                { action: 'return', text: 'Return', color: 0xffa500 },
-                { action: 'cancel', text: 'Cancel', color: 0xe74c3c }
+                { action: 'play', text: '打出Unit', color: 0x4a90e2, primary: true },
+                { action: 'cancel', text: '取消', color: 0xe74c3c }
             ],
             
             'pilot': [
-                { action: 'attach-to-unit', text: 'Attach to Unit', color: 0x9b59b6, primary: true },
-                { action: 'facedown', text: 'Face Down', color: 0x7b68ee },
-                { action: 'inspect', text: 'Inspect', color: 0x50c878 },
-                { action: 'return', text: 'Return', color: 0xffa500 },
-                { action: 'cancel', text: 'Cancel', color: 0xe74c3c }
+                { action: 'playPilot', text: '打出Pilot', color: 0x9b59b6, primary: true },
+                { action: 'cancel', text: '取消', color: 0xe74c3c }
             ],
             
             'command': [
-                { action: 'play', text: 'Play Command', color: 0xf39c12, primary: true },
+                { action: 'playCommand', text: 'Play Command', color: 0xf39c12, primary: true },
                 { action: 'facedown', text: 'Face Down', color: 0x7b68ee },
                 { action: 'inspect', text: 'Inspect', color: 0x50c878 },
                 { action: 'return', text: 'Return', color: 0xffa500 },
@@ -65,8 +59,25 @@ export default class CardActionRegistry {
                 { action: 'inspect', text: 'Inspect', color: 0x50c878 },
                 { action: 'return', text: 'Return', color: 0xffa500 },
                 { action: 'cancel', text: 'Cancel', color: 0xe74c3c }
+            ],
+
+            'commandAndUnit':[
+                { action: 'playCommand', text: '打出[Command]', color: 0x9b59b6, primary: true },
+                { action: 'playPilot', text: '打出[Pilot]', color: 0xffa500, primary: true },
+                { action: 'cancel', text: '取消', color: 0xe74c3c }
             ]
         };
+        
+        // Special logic for command cards with pilot designation
+        if (cardType === 'command' && cardData) {
+            const hasDesignatePilot = cardData.effects?.rules?.some(rule => 
+                rule.effect?.action === 'designate_pilot'
+            );
+            
+            if (hasDesignatePilot) {
+                return actionMap['commandAndUnit'];
+            }
+        }
         
         return actionMap[cardType] || this.getDefaultActions();
     }

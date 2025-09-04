@@ -58,9 +58,9 @@ export default class ActionButtonManager {
             return;
         }
 
-        const buttonWidth = 80;
-        const buttonHeight = 35;
-        const buttonSpacing = 90;
+        const buttonWidth = 120;
+        const buttonHeight = 50;
+        const buttonSpacing = 130;
         const startX = -(actions.length - 1) * buttonSpacing / 2 - 50;
         
         this.actionButtons = [];
@@ -77,11 +77,18 @@ export default class ActionButtonManager {
             button.setStrokeStyle(actionConfig.primary ? 3 : 2, 0xffffff, actionConfig.primary ? 0.9 : 0.6);
             button.setInteractive();
             
-            // Create button text
+            // Create button text with wrapping and larger font
             const buttonText = this.gameScene.add.text(x, y, actionConfig.text, {
-                fontSize: actionConfig.primary ? '13px' : '12px',
+                fontSize: actionConfig.primary ? '16px' : '14px',
                 fill: '#ffffff',
-                fontFamily: actionConfig.primary ? 'Arial Bold' : 'Arial'
+                fontFamily: actionConfig.primary ? 'Arial Bold' : 'Arial',
+                align: 'center',
+                wordWrap: { 
+                    width: buttonWidth - 10, 
+                    useAdvancedWrap: true 
+                },
+                stroke: '#000000',
+                strokeThickness: 1
             });
             buttonText.setOrigin(0.5);
             

@@ -42,6 +42,12 @@ export default class CardActionHandler {
             case 'pilot-link':
                 this.handlePilotLinkAction(selectedCard, effectData);
                 break;
+            case 'playCommand':
+                this.handlePlayCommandAction(selectedCard);
+                break;
+            case 'playPilot':
+                this.handlePlayPilotAction(selectedCard);
+                break;
             default:
                 console.log(`Unknown action: ${action}`);
         }
@@ -56,7 +62,7 @@ export default class CardActionHandler {
         }
         
         console.log('Playing card normally:', selectedCard.fullCardData.cardUid);
-        this.gameScene.hideActionButtons();
+        this.gameScene.actionButtonManager.hide();
         
         try {
             // Get cardUID from the selected card
@@ -119,7 +125,7 @@ export default class CardActionHandler {
         
         // Implementation for playing card face down
         console.log('Playing card face down:', selectedCard.cardId);
-        this.gameScene.hideActionButtons();
+        this.gameScene.actionButtonManager.hide();
         
         // TODO: Add face down placement logic here
         console.log('🚧 [PLACEHOLDER] Face down placement logic needed');
@@ -152,7 +158,7 @@ export default class CardActionHandler {
         // Implementation for returning card to original position
         console.log('Returning card to original position:', selectedCard.cardId);
         this.gameStateManager.clearSelectedCard();
-        this.gameScene.hideActionButtons();
+        this.gameScene.actionButtonManager.hide();
         
         // TODO: Add return logic here
         console.log('🚧 [PLACEHOLDER] Return card logic needed');
@@ -165,7 +171,7 @@ export default class CardActionHandler {
         // Implementation for canceling selection
         console.log('Canceling card selection');
         this.gameStateManager.clearSelectedCard();
-        this.gameScene.hideActionButtons();
+        this.gameScene.actionButtonManager.hide();
     }
 
     /**
@@ -182,7 +188,7 @@ export default class CardActionHandler {
         }
 
         console.log('Activating card effect:', effectData);
-        this.gameScene.hideActionButtons();
+        this.gameScene.actionButtonManager.hide();
         
         // TODO: Implement effect activation logic
         console.log('🚧 [PLACEHOLDER] Effect activation logic needed');
@@ -198,7 +204,7 @@ export default class CardActionHandler {
         }
         
         console.log('Attaching pilot to unit:', selectedCard.cardId);
-        this.gameScene.hideActionButtons();
+        this.gameScene.actionButtonManager.hide();
         
         // TODO: Implement pilot attachment UI flow
         // Should show unit selection interface
@@ -214,7 +220,7 @@ export default class CardActionHandler {
         }
         
         console.log('Deploying base card:', selectedCard.cardId);
-        this.gameScene.hideActionButtons();
+        this.gameScene.actionButtonManager.hide();
         
         // TODO: Implement base deployment logic
         console.log('🚧 [PLACEHOLDER] Base deployment logic needed');
@@ -229,7 +235,7 @@ export default class CardActionHandler {
         }
         
         console.log('Activating pilot link effect:', selectedCard.cardId);
-        this.gameScene.hideActionButtons();
+        this.gameScene.actionButtonManager.hide();
         
         // TODO: Implement pilot linking logic
         console.log('🚧 [PLACEHOLDER] Pilot linking effect needed');
@@ -356,5 +362,119 @@ export default class CardActionHandler {
 
     clearZoneHighlights() {
         this.gameScene.clearZoneHighlights();
+    }
+
+    /**
+     * Handle play command action for dual-purpose command cards
+     */
+    async handlePlayCommandAction(selectedCard) {
+        if (!this.validateSelectedCard(selectedCard, 'play command action')) {
+            return;
+        }
+        
+        console.log('Playing command card as Command:', selectedCard.fullCardData.cardData.id);
+        this.gameScene.actionButtonManager.hide();
+        
+        try {
+            const cardUID = selectedCard.fullCardData.cardUid;
+            
+            if (!cardUID) {
+                this.showErrorMessage('Card not found in hand.');
+                return;
+            }
+            
+            const gameState = this.gameStateManager.getGameState();
+            this.setUILoadingState(true);
+            
+            console.log('Calling backend playCard API as Command with cardUID:', cardUID);
+            
+            if (this.apiManager) {
+                const response = await this.apiManager.playCard(
+                    gameState.playerId,
+                    gameState.gameId,
+                    cardUID,
+                    { playAs: 'command' }
+                );
+                
+                console.log('Play command response:', response);
+                
+                if (response && response.success) {
+                    console.log('✅ Command card played successfully');
+                    this.gameStateManager.updateGameEnv(response.gameEnv);
+                    this.updateGameState();
+                    this.updatePlayerHand();
+                    this.clearZoneHighlights();
+                } else {
+                    console.error('❌ Failed to play command card:', response?.error);
+                    this.showErrorMessage(response?.error || 'Failed to play command card');
+                }
+            } else {
+                console.log('Demo mode: Would call backend API to play command card');
+                this.showErrorMessage('Demo mode - Backend API not available');
+            }
+            
+        } catch (error) {
+            console.error('Error playing command card:', error);
+            this.showErrorMessage('Failed to play command card. Please try again.');
+        } finally {
+            this.setUILoadingState(false);
+        }
+    }
+
+    /**
+     * Handle play pilot action for dual-purpose command cards
+     */
+    async handlePlayPilotAction(selectedCard) {
+        if (!this.validateSelectedCard(selectedCard, 'play pilot action')) {
+            return;
+        }
+        
+        console.log('Playing command card as Pilot:', selectedCard.fullCardData.cardData.id);
+        this.gameScene.actionButtonManager.hide();
+        
+        try {
+            const cardUID = selectedCard.fullCardData.cardUid;
+            
+            if (!cardUID) {
+                this.showErrorMessage('Card not found in hand.');
+                return;
+            }
+            
+            const gameState = this.gameStateManager.getGameState();
+            this.setUILoadingState(true);
+            
+            console.log('Calling backend playCard API as Pilot with cardUID:', cardUID);
+            
+            if (this.apiManager) {
+                const response = await this.apiManager.playCard(
+                    gameState.playerId,
+                    gameState.gameId,
+                    cardUID,
+                    { playAs: 'pilot' }
+                );
+                
+                console.log('Play pilot response:', response);
+                
+                if (response && response.success) {
+                    console.log('✅ Pilot card played successfully');
+                    this.gameStateManager.updateGameEnv(response.gameEnv);
+                    this.updateGameState();
+                    this.updatePlayerHand();
+                    this.clearZoneHighlights();
+                } else {
+                    console.error('❌ Failed to play pilot card:', response?.error);
+                    this.showErrorMessage(response?.error || 'Failed to play pilot card');
+                }
+            } else {
+                console.log('Demo mode: Would call backend API to play pilot card');
+                this.showErrorMessage('Demo mode - Backend API not available');
+            }
+            
+        } catch (error) {
+            console.error('Error playing pilot card:', error);
+            this.showErrorMessage('Failed to play pilot card. Please try again.');
+        } finally {
+            this.setUILoadingState(false);
+        }
     }
 }
