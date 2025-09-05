@@ -6,10 +6,6 @@ export default class CardActionRegistry {
      * Get available actions for a card based on its type and effects
      */
     static getAvailableActions(card, gameContext = {}) {
-        if (!card || !card.fullCardData) {
-            return this.getDefaultActions();
-        }
-
         const cardData = card.fullCardData.cardData;
         const cardType = cardData.cardType ;
         const effects = cardData.effects || {};
@@ -21,10 +17,10 @@ export default class CardActionRegistry {
         let actions = this.getBaseActionsForType(cardType, cardData);
         
         // Add effect-based actions
-        actions = this.addEffectBasedActions(actions, effects, currentPhase);
+        // actions = this.addEffectBasedActions(actions, effects, currentPhase);
         
         // Apply context restrictions
-        actions = this.applyContextRestrictions(actions, cardData, gameContext);
+        // actions = this.applyContextRestrictions(actions, cardData, gameContext);
         
         console.log(`📋 Available actions for ${cardData.id}:`, actions.map(a => a.action));
         return actions;
@@ -36,35 +32,29 @@ export default class CardActionRegistry {
     static getBaseActionsForType(cardType, cardData = null) {
         const actionMap = {
             'unit': [
-                { action: 'play', text: '打出Unit', color: 0x4a90e2, primary: true },
-                { action: 'cancel', text: '取消', color: 0xe74c3c }
+                { action: 'playUnit', text: '打出[Unit]', primary: true },
+                { action: 'cancel', text: '取消' }
             ],
             
             'pilot': [
-                { action: 'playPilot', text: '打出Pilot', color: 0x9b59b6, primary: true },
-                { action: 'cancel', text: '取消', color: 0xe74c3c }
+                { action: 'playPilot', text: '打出[Pilot]', primary: true },
+                { action: 'cancel', text: '取消' }
             ],
             
             'command': [
-                { action: 'playCommand', text: 'Play Command', color: 0xf39c12, primary: true },
-                { action: 'facedown', text: 'Face Down', color: 0x7b68ee },
-                { action: 'inspect', text: 'Inspect', color: 0x50c878 },
-                { action: 'return', text: 'Return', color: 0xffa500 },
-                { action: 'cancel', text: 'Cancel', color: 0xe74c3c }
+                { action: 'playCommand', text: '打出[Command]', primary: true },
+                { action: 'cancel', text: '取消' }
             ],
             
             'base': [
-                { action: 'deploy-base', text: 'Deploy Base', color: 0x2ecc71, primary: true },
-                { action: 'facedown', text: 'Face Down', color: 0x7b68ee },
-                { action: 'inspect', text: 'Inspect', color: 0x50c878 },
-                { action: 'return', text: 'Return', color: 0xffa500 },
-                { action: 'cancel', text: 'Cancel', color: 0xe74c3c }
+                { action: 'playBase', text: '打出[Base]', primary: true },
+                { action: 'cancel', text: '取消' }
             ],
 
             'commandAndUnit':[
-                { action: 'playCommand', text: '打出[Command]', color: 0x9b59b6, primary: true },
-                { action: 'playPilot', text: '打出[Pilot]', color: 0xffa500, primary: true },
-                { action: 'cancel', text: '取消', color: 0xe74c3c }
+                { action: 'playCommand', text: '打出[Command]', primary: true },
+                { action: 'playPilot', text: '打出[Pilot]', primary: true },
+                { action: 'cancel', text: '取消' }
             ]
         };
         

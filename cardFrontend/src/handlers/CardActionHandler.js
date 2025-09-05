@@ -13,40 +13,22 @@ export default class CardActionHandler {
      */
     handleAction(action, selectedCard, effectData = null) {
         console.log(`Action button clicked: ${action}`, selectedCard, effectData);
-        
+
         switch (action) {
-            case 'play':
-                this.handlePlayAction(selectedCard);
-                break;
-            case 'facedown':
-                this.handleFaceDownAction(selectedCard);
-                break;
-            case 'inspect':
-                this.handleInspectAction(selectedCard);
-                break;
-            case 'return':
-                this.handleReturnAction(selectedCard);
-                break;
             case 'cancel':
                 this.handleCancelAction();
                 break;
-            case 'activate-effect':
-                this.handleActivateEffectAction(selectedCard, effectData);
-                break;
-            case 'attach-to-unit':
-                this.handleAttachToUnitAction(selectedCard);
-                break;
-            case 'deploy-base':
-                this.handleDeployBaseAction(selectedCard);
-                break;
-            case 'pilot-link':
-                this.handlePilotLinkAction(selectedCard, effectData);
+            case 'playUnit':
+                this.handlePlayAction(selectedCard);
                 break;
             case 'playCommand':
                 this.handlePlayCommandAction(selectedCard);
                 break;
             case 'playPilot':
                 this.handlePlayPilotAction(selectedCard);
+                break;
+            case 'playBase':
+                this.handleDeployBaseAction(selectedCard);
                 break;
             default:
                 console.log(`Unknown action: ${action}`);
@@ -115,54 +97,8 @@ export default class CardActionHandler {
         }
     }
 
-    /**
-     * Handle face-down card play action
-     */
-    handleFaceDownAction(selectedCard) {
-        if (!this.validateSelectedCard(selectedCard, 'face down action')) {
-            return;
-        }
-        
-        // Implementation for playing card face down
-        console.log('Playing card face down:', selectedCard.cardId);
-        this.gameScene.actionButtonManager.hide();
-        
-        // TODO: Add face down placement logic here
-        console.log('🚧 [PLACEHOLDER] Face down placement logic needed');
-    }
 
-    /**
-     * Handle card inspection action
-     */
-    handleInspectAction(selectedCard) {
-        if (!this.validateSelectedCard(selectedCard, 'inspect action')) {
-            return;
-        }
-        
-        // Implementation for inspecting card details
-        console.log('Inspecting card:', selectedCard.cardId);
-        // Keep buttons visible for inspect action
-        
-        // TODO: Add card detail view logic here
-        console.log('🚧 [PLACEHOLDER] Card detail view logic needed');
-    }
 
-    /**
-     * Handle return card to hand action
-     */
-    handleReturnAction(selectedCard) {
-        if (!this.validateSelectedCard(selectedCard, 'return action')) {
-            return;
-        }
-        
-        // Implementation for returning card to original position
-        console.log('Returning card to original position:', selectedCard.cardId);
-        this.gameStateManager.setSelectedCard(null);
-        this.gameScene.actionButtonManager.hide();
-        
-        // TODO: Add return logic here
-        console.log('🚧 [PLACEHOLDER] Return card logic needed');
-    }
 
     /**
      * Handle cancel selection action
@@ -185,42 +121,7 @@ export default class CardActionHandler {
         this.gameScene.actionButtonManager.hide();
     }
 
-    /**
-     * Handle activated effect action for command cards
-     */
-    handleActivateEffectAction(selectedCard, effectData) {
-        if (!this.validateSelectedCard(selectedCard, 'activate effect')) {
-            return;
-        }
-        
-        if (!effectData) {
-            console.log('No effect data provided for activate effect action');
-            return;
-        }
 
-        console.log('Activating card effect:', effectData);
-        this.gameScene.actionButtonManager.hide();
-        
-        // TODO: Implement effect activation logic
-        console.log('🚧 [PLACEHOLDER] Effect activation logic needed');
-        console.log('Effect details:', effectData);
-    }
-
-    /**
-     * Handle pilot attachment to unit action
-     */
-    handleAttachToUnitAction(selectedCard) {
-        if (!this.validateSelectedCard(selectedCard, 'attach to unit')) {
-            return;
-        }
-        
-        console.log('Attaching pilot to unit:', selectedCard.cardId);
-        this.gameScene.actionButtonManager.hide();
-        
-        // TODO: Implement pilot attachment UI flow
-        // Should show unit selection interface
-        console.log('🚧 [PLACEHOLDER] Pilot attachment unit selection needed');
-    }
 
     /**
      * Handle base deployment action
@@ -237,21 +138,6 @@ export default class CardActionHandler {
         console.log('🚧 [PLACEHOLDER] Base deployment logic needed');
     }
 
-    /**
-     * Handle pilot linking action for special pilot effects
-     */
-    handlePilotLinkAction(selectedCard, effectData) {
-        if (!this.validateSelectedCard(selectedCard, 'pilot link')) {
-            return;
-        }
-        
-        console.log('Activating pilot link effect:', selectedCard.cardId);
-        this.gameScene.actionButtonManager.hide();
-        
-        // TODO: Implement pilot linking logic
-        console.log('🚧 [PLACEHOLDER] Pilot linking effect needed');
-        console.log('Link effect data:', effectData);
-    }
 
     /**
      * Validate that a card is selected and show error if not
