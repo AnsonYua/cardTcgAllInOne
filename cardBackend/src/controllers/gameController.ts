@@ -230,10 +230,10 @@ export class GameController {
 
     /**
      * Process player action with card auto-discovery from zones
-     * POST /api/game/player/playerAction
+     * POST /api/game/player/playCard
      * Body: { gameId, playerId, cardUID } or { gameId, playerId, action }
      */
-    async playerAction(req: GameRequest, res: Response): Promise<void> {
+    async playCard(req: GameRequest, res: Response): Promise<void> {
         try {
             console.log('🎮 Processing player action:', req.body);
             
@@ -243,7 +243,7 @@ export class GameController {
                 res.status(400).json({
                     error: 'gameId and playerId are required',
                     timestamp: new Date().toISOString(),
-                    context: 'playerAction endpoint'
+                    context: 'playCard endpoint'
                 });
                 return;
             }
@@ -263,7 +263,7 @@ export class GameController {
                         res.status(400).json({
                             error: `Invalid playAs value: ${playAs}. Must be one of: ${validPlayAsValues.join(', ')}`,
                             timestamp: new Date().toISOString(),
-                            context: 'playerAction endpoint - playAs validation'
+                            context: 'playCard endpoint - playAs validation'
                         });
                         return;
                     }
@@ -281,7 +281,7 @@ export class GameController {
                     console.log('📋 Action data prepared for future event manager integration:', playerActionData);
                     
                     // Use existing GameLogic method (3 parameters only)
-                    const result = await this.gameLogic.playerAction(gameId, playerId, cardUID);
+                    const result = await this.gameLogic.playCard(gameId, playerId, cardUID);
                     
                     if (result.success && result.gameEnv) {
                         res.json({
@@ -293,7 +293,7 @@ export class GameController {
                         res.status(400).json({
                             error: result.error,
                             timestamp: new Date().toISOString(),
-                            context: 'playerAction endpoint'
+                            context: 'playCard endpoint'
                         });
                     }
                     return;
@@ -309,7 +309,7 @@ export class GameController {
                         error: `PlayCard action missing required fields: ${missingFields.join(', ')}`,
                         message: 'PlayCard action requires both cardUID and playAs parameters',
                         timestamp: new Date().toISOString(),
-                        context: 'playerAction endpoint - PlayCard validation'
+                        context: 'playCard endpoint - PlayCard validation'
                     });
                     return;
                 }
@@ -319,7 +319,7 @@ export class GameController {
                     error: 'Structured action type not yet implemented: ' + action.type,
                     message: 'Currently supports PlayCard actions. Other action types coming soon.',
                     timestamp: new Date().toISOString(),
-                    context: 'playerAction endpoint'
+                    context: 'playCard endpoint'
                 });
                 return;
             }
@@ -328,15 +328,15 @@ export class GameController {
             res.status(400).json({
                 error: 'Action parameter is required',
                 timestamp: new Date().toISOString(),
-                context: 'playerAction endpoint'
+                context: 'playCard endpoint'
             });
             
         } catch (error) {
-            console.error('❌ Error in playerAction:', error);
+            console.error('❌ Error in playCard:', error);
             res.status(500).json({
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
-                context: 'playerAction endpoint'
+                context: 'playCard endpoint'
             });
         }
     }

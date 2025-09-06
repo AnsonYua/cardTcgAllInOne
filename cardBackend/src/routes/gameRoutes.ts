@@ -69,9 +69,9 @@ router.get('/player/:playerId', gameController.getPlayerData.bind(gameController
 
 /**
  * Process player action (play cards)
- * POST /api/game/player/playerAction
+ * POST /api/game/player/playCard
  */
-router.post('/player/playerAction', gameController.playerAction.bind(gameController));
+router.post('/player/playCard', gameController.playCard.bind(gameController));
 
 /**
  * End current player's turn and advance game state

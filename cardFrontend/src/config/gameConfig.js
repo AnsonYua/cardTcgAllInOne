@@ -14,7 +14,7 @@ export const GAME_CONFIG = {
       gameResource: '/player/gameResource',
       createGame: '/player/startGame',
       joinRoom: '/player/joinRoom',
-      playerAction: '/player/playerAction',
+      playCard: '/player/playCard',
       selectCard: '/player/selectCard',
       acknowledgeEvents: '/player/acknowledgeEvents',
       nextRound: '/player/nextRound',

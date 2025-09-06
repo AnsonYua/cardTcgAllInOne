@@ -115,7 +115,7 @@ gameState = {
 - `POST /player/startReady` - Mark player ready
 
 **Gameplay Actions:**
-- `POST /player/playerAction` - Send player actions
+- `POST /player/playCard` - Send player actions
 - `POST /player/selectCard` - Card selection
 - `POST /player/acknowledgeEvents` - Mark events processed
 - `GET /player/:playerId` - Get player data and events

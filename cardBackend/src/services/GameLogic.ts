@@ -133,7 +133,7 @@ export class GameLogic {
     }
 
     /**
-     * Play a card in your custom trading card game
+     * Play a card in your custom trading card game (Legacy zone-based method)
      * @param gameId - Game ID
      * @param playerId - Player ID
      * @param cardUID - Card UID to play
@@ -141,7 +141,7 @@ export class GameLogic {
      * @param faceDown - Whether to play face down
      * @returns Promise<PlayerActionResult>
      */
-    async playCard(gameId: string, playerId: string, cardUID: string, zone: string, faceDown: boolean = false): Promise<PlayerActionResult> {
+    async playCardLegacy(gameId: string, playerId: string, cardUID: string, zone: string, faceDown: boolean = false): Promise<PlayerActionResult> {
         try {
             console.log(`🎮 Playing custom trading card ${cardUID} in ${zone} for player ${playerId}`);
             
@@ -771,9 +771,9 @@ export class GameLogic {
      * @param playAs - How the card should be played (unit/command/pilot/base)
      * @returns Promise<GameLogicResult>
      */
-    async playerAction(gameId: string, playerId: string, cardUID: string, playAs?: string): Promise<GameLogicResult> {
+    async playCard(gameId: string, playerId: string, cardUID: string, playAs?: string): Promise<GameLogicResult> {
         try {
-            console.log(`🎯 playerAction: gameId=${gameId}, playerId=${playerId}, cardUID=${cardUID}, playAs=${playAs || 'default'}`);
+            console.log(`🎯 playCard: gameId=${gameId}, playerId=${playerId}, cardUID=${cardUID}, playAs=${playAs || 'default'}`);
             
             // Validate inputs
             if (!gameId || !playerId || !cardUID) {
@@ -821,10 +821,10 @@ export class GameLogic {
             };
             
         } catch (error) {
-            console.error(`❌ Error in playerAction:`, error);
+            console.error(`❌ Error in playCard:`, error);
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'playerAction failed'
+                error: error instanceof Error ? error.message : 'playCard failed'
             };
         }
     }

@@ -67,8 +67,8 @@ export default class APIManager {
   }
 
   // Gameplay Actions - Structured action API
-  async playerAction(playerId, gameId, action) {
-    return this.request('/player/playerAction', {
+  async playCard(playerId, gameId, action) {
+    return this.request('/player/playCard', {
       method: 'POST',
       body: JSON.stringify({
         playerId,
@@ -79,7 +79,7 @@ export default class APIManager {
   }
 
   // Legacy: Simplified player action API - now converts to structured action
-  async playCard(playerId, gameId, cardUID) {
+  async playCardLegacy(playerId, gameId, cardUID) {
     // Convert legacy playCard to structured action
     const action = {
       type: 'PlayCard',
@@ -87,7 +87,7 @@ export default class APIManager {
       playAs: 'unit'  // Default to unit for legacy calls
     };
     
-    return this.playerAction(playerId, gameId, action);
+    return this.playCard(playerId, gameId, action);
   }
 
   async selectCard(selectionId, selectedCardIdentifiers, playerId, gameId) {
@@ -102,7 +102,7 @@ export default class APIManager {
     });
   }
 
-  // Card Selection - New unified approach using playerAction endpoint
+  // Card Selection - New unified approach using playCard endpoint
   async submitCardSelection(selectionId, selectedCardIdentifiers) {
     // Get current player and game info from game state
     const gameState = this.getGameState();
@@ -116,7 +116,7 @@ export default class APIManager {
       selectedCardUIds: selectedCardIdentifiers
     };
 
-    return this.playerAction(gameState.playerId, gameState.gameId, action);
+    return this.playCard(gameState.playerId, gameState.gameId, action);
   }
 
   // Helper method to get current game state (should be set by GameStateManager)

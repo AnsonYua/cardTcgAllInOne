@@ -45,7 +45,7 @@ app.get('/', (req: Request, res: Response) => {
             cards: '/api/game/cards (st01Card.json)',
             createGame: 'POST /api/game/player/startGame',
             joinGame: 'POST /api/game/player/joinRoom',
-            playCard: 'POST /api/game/player/playerAction',
+            playCard: 'POST /api/game/player/playCard',
             gameData: 'GET /api/game/player/:playerId?gameId=X',
             images: 'GET /api/game/image/:imagePath'
         }
@@ -81,7 +81,7 @@ app.use((req: Request, res: Response) => {
             'GET /api/game/cards',
             'POST /api/game/player/startGame',
             'POST /api/game/player/joinRoom',
-            'POST /api/game/player/playerAction',
+            'POST /api/game/player/playCard',
             'GET /api/game/player/:playerId?gameId=X'
         ]
     });

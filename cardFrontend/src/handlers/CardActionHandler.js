@@ -70,16 +70,16 @@ export default class CardActionHandler {
                 playAs: playAs
             };
             
-            console.log(`Calling backend playerAction API to play card as ${playAs}:`, action);
+            console.log(`Calling backend playCard API to play card as ${playAs}:`, action);
             
             if (this.apiManager) {
-                const response = await this.apiManager.playerAction(
+                const response = await this.apiManager.playCard(
                     gameState.playerId,
                     gameState.gameId,
                     action
                 );
                 
-                console.log('PlayerAction response:', response);
+                console.log('PlayCard response:', response);
                 
                 if (response && response.success) {
                     console.log(`✅ ${playAs.charAt(0).toUpperCase() + playAs.slice(1)} card played successfully`);
@@ -92,7 +92,7 @@ export default class CardActionHandler {
                     this.showErrorMessage(response?.error || `Failed to play ${playAs} card`);
                 }
             } else {
-                console.log('Demo mode: Would call backend playerAction API');
+                console.log('Demo mode: Would call backend playCard API');
                 this.showErrorMessage('Demo mode - Backend API not available');
             }
             
