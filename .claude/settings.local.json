@@ -84,7 +84,12 @@
       "Bash(./node_modules/typescript/bin/tsc src/services/EnergyManager.ts --outDir dist --target es2020 --module commonjs --esModuleInterop true --moduleResolution node)",
       "Bash(./node_modules/typescript/bin/tsc:*)",
       "Bash(GAME_ID=\"203a48da-9520-4c12-9fbd-e02bed8fd643\")",
-      "Bash(GAME_ID=\"98ba2231-1abf-4ce3-86d7-161a01da8e13\")"
+      "Bash(GAME_ID=\"98ba2231-1abf-4ce3-86d7-161a01da8e13\")",
+      "Bash(GAME_ID=\"81b4bb1f-17a5-4bae-8591-547934bfbefe\")",
+      "Bash(GAME_ID=\"992398f2-e662-48cc-a66f-9a687f99125a\")",
+      "Bash(GAME_ID=\"ebb6d996-700f-4650-a582-892d09a7ba37\")",
+      "Bash(GAME_ID=\"97561fec-98f7-4c85-8225-031322ae2371\")",
+      "Bash(GAME_ID=\"09cc7237-a9e3-46f8-9fbf-59259251a0f0\")"
     ],
     "deny": []
   }

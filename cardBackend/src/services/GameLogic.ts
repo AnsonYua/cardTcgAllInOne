@@ -442,10 +442,10 @@ export class GameLogic {
                     action.eventIds || []
                 );
                 
-            case PlayerActionType.PLAYER_ACTION:
+            case PlayerActionType.PLAY_CARD:
                 return {
-                    id: `player_action_${Date.now()}_${Math.random()}`,
-                    type: EventType.PLAYER_ACTION,
+                    id: `play_card_${Date.now()}_${Math.random()}`,
+                    type: EventType.PLAY_CARD,
                     status: EventStatus.DECLARED,
                     priority: EventPriority.NORMAL,
                     timestamp: Date.now(),
@@ -777,17 +777,17 @@ export class GameLogic {
                 };
             }
             
-            // Create and process PLAYER_ACTION event
-            const playerActionEvent: PlayerAction = {
-                type: PlayerActionType.PLAYER_ACTION,
+            // Create and process PLAY_CARD event
+            const playCardEvent: PlayerAction = {
+                type: PlayerActionType.PLAY_CARD,
                 playerId,
                 gameId,
                 cardUID,
                 playAs
             };
             
-            const actionResult = await this.processAction(gameEnv, playerActionEvent);
-            console.log('🎮 PLAYER_ACTION processed:', actionResult);
+            const actionResult = await this.processAction(gameEnv, playCardEvent);
+            console.log('🎮 PLAY_CARD processed:', actionResult);
             
             if (!actionResult.success) {
                 return {

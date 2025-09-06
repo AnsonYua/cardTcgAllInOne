@@ -231,15 +231,6 @@ export interface EndTurnEvent extends BaseGameEvent {
     };
 }
 
-export interface CardsUnrestEvent extends BaseGameEvent {
-    type: EventType.CARDS_UNREST;
-    data: {
-        playerId: string;
-        affectedCards: string[];
-        cardTypes: string[];
-    };
-}
-
 export interface AcknowledgeEventsEvent extends BaseGameEvent {
     type: EventType.ACKNOWLEDGE_EVENTS;
     data: {
@@ -265,7 +256,6 @@ export type GameEvent =
     | DamageDealtEvent
     | StateBasedActionEvent
     | EndTurnEvent
-    | CardsUnrestEvent
     | AcknowledgeEventsEvent
     | StartGameEvent
     | JoinGameEvent
@@ -464,18 +454,6 @@ export class EventFactory {
             playerId,
             timestamp: Date.now(),
             data: { playerId, currentTurnNumber, timestamp: Date.now() }
-        };
-    }
-    
-    static createCardsUnrestEvent(playerId: string, affectedCards: string[]): CardsUnrestEvent {
-        return {
-            id: `cards_unrest_${++this.eventIdCounter}_${Date.now()}`,
-            type: EventType.CARDS_UNREST,
-            status: EventStatus.DECLARED,
-            priority: EventPriority.NORMAL,
-            playerId,
-            timestamp: Date.now(),
-            data: { playerId, affectedCards, cardTypes: ['energy', 'unit', 'base'] }
         };
     }
     

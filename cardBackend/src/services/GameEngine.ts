@@ -109,14 +109,11 @@ export class GameEngine {
                 case EventType.END_TURN:
                     return this.executeEndTurn(event, gameEnv);
                     
-                case EventType.CARDS_UNREST:
-                    return this.executeCardsUnrest(event, gameEnv);
-                    
                 case EventType.NEXT_PLAYER_TURN:
                     return this.executeNextPlayerTurn(event, gameEnv);
                     
-                case EventType.PLAYER_ACTION:
-                    return this.executePlayerAction(event, gameEnv);
+                case EventType.PLAY_CARD:
+                    return this.executePlayCard(event, gameEnv);
                     
                 default:
                     console.log(`🎯 Processing ${event.type} event - delegating to existing game logic`);
@@ -519,76 +516,6 @@ export class GameEngine {
         }
     }
     
-    private executeCardsUnrest(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
-        const { playerId } = event.data;
-        
-        console.log(`♻️ Processing CARDS_UNREST event for player: ${playerId}`);
-        
-        try {
-            const player = gameEnv.players[playerId];
-            if (!player) {
-                return { success: false, error: 'Player not found' };
-            }
-            
-            const affectedCards: string[] = [];
-            
-            // Unrest all energy cards
-            if (player.zones?.energyArea) {
-                player.zones.energyArea.forEach(energyCard => {
-                    if (energyCard.isRested) {
-                        energyCard.isRested = false;
-                        affectedCards.push(energyCard.cardUid);
-                    }
-                });
-            }
-            
-            // Unrest all unit cards in slots
-            const slotZones = [player.zones.slot1, player.zones.slot2, player.zones.slot3, 
-                              player.zones.slot4, player.zones.slot5, player.zones.slot6];
-            
-            slotZones.forEach(slot => {
-                if (slot?.unit?.isRested) {
-                    slot.unit.isRested = false;
-                    affectedCards.push(slot.unit.cardUid);
-                }
-            });
-            
-            // Unrest base cards (if they have rested status)
-            if (player.zones?.base) {
-                player.zones.base.forEach(baseCard => {
-                    if (baseCard.isRested) {
-                        baseCard.isRested = false;
-                        affectedCards.push(baseCard.cardUid);
-                    }
-                });
-            }
-            
-            console.log(`♻️ Unrested ${affectedCards.length} cards for player ${playerId}`);
-            
-            // Create notification event
-            const notificationManager = this.getNotificationManager(gameEnv);
-            notificationManager.addNotificationEvent(
-                'CARDS_UNRESTED',
-                {
-                    playerId: playerId,
-                    affectedCards: affectedCards,
-                    cardCount: affectedCards.length
-                },
-                false, // requiresAcknowledgment
-                'normal' // priority
-            );
-            
-            return { success: true };
-            
-        } catch (error) {
-            console.error(`❌ Error in executeCardsUnrest:`, error);
-            return { 
-                success: false, 
-                error: error instanceof Error ? error.message : 'CARDS_UNREST execution failed'
-            };
-        }
-    }
-    
     private executeNextPlayerTurn(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
         const { currentPlayer, nextPlayer, currentTurn } = event.data;
         console.log("current event in nextplayer 111", JSON.stringify(event))
@@ -636,10 +563,10 @@ export class GameEngine {
         }
     }
     
-    private executePlayerAction(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
-        const { playerId, cardUID } = event.data;
+    private executePlayCard(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+        const { playerId, gameId, cardUID, playAs } = event.data;
         
-        console.log(`🎯 Processing PLAYER_ACTION event for player: ${playerId}, cardUID: ${cardUID}`);
+        console.log(`🎯 Processing PLAY_CARD event for player: ${playerId}, cardUID: ${cardUID}, playAs: ${playAs}`);
         
         try {
             // Validate it's the player's turn
@@ -674,13 +601,8 @@ export class GameEngine {
                 };
             }
 
-            // Place card using PlayerCardManager
-            const placementOptions = {
-                targetUnit: event.data.targetUnit,
-                faceDown: event.data.faceDown
-            };
-
-            const placementResult = PlayerCardManager.placeCard(gameEnv, playerId, cardUID, placementOptions);
+            // Place card using PlayerCardManager with empty options (card type determined from database)
+            const placementResult = PlayerCardManager.placeCard(gameEnv, playerId, cardUID, {});
             if (!placementResult.success) {
                 // Return card to hand if placement failed
                 player.deck.handUids.push(cardUID);
@@ -690,7 +612,7 @@ export class GameEngine {
                 };
             }
 
-            console.log(`✅ Card ${cardUID} successfully placed in ${placementResult.placedZone}`);
+            console.log(`✅ Card ${cardUID} successfully placed in ${placementResult.placedZone} as ${playAs}`);
             
             // TODO: Add effect processing and type compatibility validation
             console.log(`🚧 [PLACEHOLDER] Card effects and compatibility validation needed`);
@@ -698,59 +620,12 @@ export class GameEngine {
             return { success: true };
             
         } catch (error) {
-            console.error(`❌ Error in executePlayerAction:`, error);
+            console.error(`❌ Error in executePlayCard:`, error);
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'PLAYER_ACTION execution failed'
+                error: error instanceof Error ? error.message : 'PLAY_CARD execution failed'
             };
         }
     }
     
-    private queueEndTurnSequence(gameEnv: GameEnvironment, currentPlayerId: string, nextPlayerId: string, currentTurnNumber: number, currentEventManager: any): void {
-        console.log(`📋 Queueing end turn sequence: ${currentPlayerId} → ${nextPlayerId}`);
-        
-        // Use the current EventManager that's processing this event
-        const validEventManager = currentEventManager;
-        
-        // Import EventFactory
-        const { EventFactory } = require('./EventQueue/interfaces/GameEvent');
-        
-        // 1. Turn Change Event
-        const turnChangeEvent = EventFactory.createTurnStartEvent(
-            nextPlayerId, 
-            currentTurnNumber + 1, 
-            GamePhase.DRAW_PHASE
-        );
-        validEventManager.enqueue(turnChangeEvent);
-        
-        // 2. Cards Unrest Event (for new current player)
-        const cardsUnrestEvent = EventFactory.createCardsUnrestEvent(nextPlayerId, []);
-        validEventManager.enqueue(cardsUnrestEvent);
-        
-        // 3. Energy Gained Event (add 1 energy to new current player)
-        const energyGainedEvent = {
-            id: `energy_gain_${Date.now()}_${Math.random()}`,
-            type: EventType.RESOURCE_GAINED,
-            status: 'DECLARED' as any,
-            priority: 2, // EventPriority.NORMAL
-            timestamp: Date.now(),
-            playerId: nextPlayerId,
-            data: {
-                playerId: nextPlayerId,
-                resourceType: 'energy',
-                amount: 1
-            }
-        };
-        validEventManager.enqueue(energyGainedEvent);
-        
-        // 4. Phase Advance Event (move to DRAW_PHASE)
-        const phaseAdvanceEvent = EventFactory.createPhaseChangeEvent(
-            gameEnv.phase,
-            GamePhase.DRAW_PHASE,
-            'Turn advance - end turn sequence'
-        );
-        validEventManager.enqueue(phaseAdvanceEvent);
-        
-        console.log(`✅ Queued 4 end turn events for processing`);
-    }
 }

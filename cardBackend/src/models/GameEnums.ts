@@ -40,7 +40,7 @@ export enum PlayerActionType {
     RESOLVE_CHOICE = 'RESOLVE_CHOICE',
     END_TURN = 'END_TURN',
     ACKNOWLEDGE_EVENTS = 'ACKNOWLEDGE_EVENTS',
-    PLAYER_ACTION = 'PLAYER_ACTION'
+    PLAY_CARD = 'PLAY_CARD'
 }
 
 export enum EventType {
@@ -75,11 +75,10 @@ export enum EventType {
     
     // Turn management events
     END_TURN = 'END_TURN',
-    CARDS_UNREST = 'CARDS_UNREST',
     NEXT_PLAYER_TURN = 'NEXT_PLAYER_TURN',
     
     // Player action events
-    PLAYER_ACTION = PlayerActionType.PLAYER_ACTION,
+    PLAY_CARD = PlayerActionType.PLAY_CARD,
     
     // Event management events
     ACKNOWLEDGE_EVENTS = 'ACKNOWLEDGE_EVENTS'

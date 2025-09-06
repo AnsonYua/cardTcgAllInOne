@@ -12,7 +12,6 @@ export interface CardPlacementResult {
 
 export interface CardPlacementOptions {
     targetUnit?: string;
-    faceDown?: boolean;
     [key: string]: any;
 }
 
