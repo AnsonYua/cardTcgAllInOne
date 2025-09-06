@@ -91,7 +91,7 @@ export default class SlotAreaManager {
     if (pilotData) {
       // Slot has pilot - create or update card (positioned 25px below unit)
       const pilotY = slotPosition.y + 25; // Position pilot 25px below unit
-      
+      console.log("pilotData ", JSON.stringify(pilotData))
       if (!slotCards.pilot) {
         console.log(`Creating ${playerType} ${slotName} pilot card:`, pilotData.cardId);
         const card = this.createSlotCard(pilotData, slotPosition.x, pilotY, slotName, 'pilot');
@@ -115,11 +115,19 @@ export default class SlotAreaManager {
       // Create card using the existing Card component
       const card = new Card(this.scene, x, y, cardData);
       
-      // Set card as non-interactive (it's placed in zone)
-      card.setInteractive(false);
+      // CRITICAL: Set card as interactive to enable hover events
+      card.setInteractive(true);
       
-      // Show face-up
-      //card.setFaceUp(true);
+      // CRITICAL: Set zone placement properties for hover detection
+      card.isInZone = true;  // Mark card as placed in zone (enables zone-card-hover events)
+      card.zonePlacement = {
+        isPlayerZone: true,  // Assuming these are player slots
+        zoneType: slotName,  // slot1, slot2, etc.
+        isPlaced: true
+      };
+      
+      // Add card type information for identification
+      card.cardTypeInSlot = cardType;
       
       // Set appropriate depth for layering (pilots above units)
       if (cardType === 'pilot') {
@@ -133,10 +141,9 @@ export default class SlotAreaManager {
         card.setRested(true);
       }
       
-      // Add card type information for identification
-      card.cardTypeInSlot = cardType;
-      
+      // Card creation successful
       console.log(`✅ Created ${cardType} slot card for ${slotName}:`, cardData.cardId || cardData.id);
+      
       return card;
       
     } catch (error) {

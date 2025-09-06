@@ -24,6 +24,7 @@ export default class GameScene extends Phaser.Scene {
     this.shuffleAnimationManager = null;
     this.cardPreviewZone = null;
     this.previewCard = null;
+    this.previewPilotCard = null;
     this.zoneHighlights = [];
     this.isTestMode = false;
     this.firstShuffleAnimationComplete = false;
@@ -582,13 +583,26 @@ export default class GameScene extends Phaser.Scene {
       }
     });
     
-    // Zone card hover events - use the same simple preview system as hand cards
+    // Zone card hover events - enhanced for unit+pilot dual preview
     this.events.on('zone-card-hover', (card) => {
-      // Show preview for zone cards (same as hand cards)
+      console.log('[zone-card-hover] Event triggered for card:', {
+        cardId: card.cardData?.id,
+        cardType: card.cardData?.cardType,
+        cardTypeInSlot: card.cardTypeInSlot,
+        isInZone: card.isInZone,
+        zonePlacement: card.zonePlacement,
+        x: card.x,
+        y: card.y
+      });
+      
       if (!this.draggedCard && card.isInZone) {
-        // Don't show preview for face-down cards (unless debugging)
         if (!card.isFaceDown() || this.isTestMode) {
-          this.showCardPreview(card.getCardData());
+          try {
+            this.showSlotCardPreview(card);
+          } catch (error) {
+            console.error('[zone-card-hover] Error in showSlotCardPreview, using fallback:', error);
+            this.showCardPreview(card.getCardData());
+          }
         }
       }
     });
@@ -596,7 +610,7 @@ export default class GameScene extends Phaser.Scene {
     this.events.on('zone-card-unhover', (card) => {
       // Hide preview for zone cards (same as hand cards)
       if (!this.draggedCard && card.isInZone) {
-        this.hideCardPreview();
+        this.hideSlotCardPreview();
       }
     });
 
@@ -1300,6 +1314,158 @@ export default class GameScene extends Phaser.Scene {
       this.previewCard = null;
     }
   }
+
+  /**
+   * Show enhanced preview for slot cards - displays both unit and pilot if present
+   * @param {Card} hoveredCard - The card being hovered over
+   */
+  showSlotCardPreview(hoveredCard) {
+    // First, hide any existing preview
+    this.hideSlotCardPreview();
+    
+    if (!this.cardPreviewZone || !hoveredCard) {
+      console.warn('[showSlotCardPreview] Missing cardPreviewZone or hoveredCard');
+      return;
+    }
+
+    console.log('[showSlotCardPreview] Hovering over card:', hoveredCard.cardData?.id, 'cardTypeInSlot:', hoveredCard.cardTypeInSlot, 'isInZone:', hoveredCard.isInZone);
+
+    // Check if SlotAreaManager exists
+    if (!this.slotAreaManager) {
+      console.warn('[showSlotCardPreview] SlotAreaManager not available, using fallback preview');
+      this.showCardPreview(hoveredCard.getCardData());
+      return;
+    }
+
+    // Determine if this is a slot card and which slot/player it belongs to
+    const slotInfo = this.getSlotInfoFromCard(hoveredCard);
+    console.log('[showSlotCardPreview] Slot info:', slotInfo);
+    
+    if (!slotInfo) {
+      // Not a slot card or couldn't detect slot, use regular preview
+      console.log('[showSlotCardPreview] No slot info found, using fallback preview');
+      this.showCardPreview(hoveredCard.cardData);  // Direct access - no conversion
+      return;
+    }
+
+    // Get both unit and pilot cards from the slot
+    const slotCards = this.slotAreaManager.getSlotCards(slotInfo.playerType, slotInfo.slotName);
+    console.log('[showSlotCardPreview] Slot cards:', slotInfo.slotName, slotCards);
+    
+    if (slotCards.unit && slotCards.pilot) {
+      // Dual preview: show both unit and pilot
+      console.log('[showSlotCardPreview] Showing dual preview');
+      this.showDualCardPreview(slotCards.unit, slotCards.pilot);
+    } else if (slotCards.unit || slotCards.pilot) {
+      // Single card in slot
+      const singleCard = slotCards.unit || slotCards.pilot;
+      console.log('[showSlotCardPreview] Showing single card preview for:', singleCard.cardData?.id);
+      this.showCardPreview(singleCard.cardData);  // Direct access - no conversion
+    } else {
+      console.warn('[showSlotCardPreview] No cards found in slot, using fallback');
+      this.showCardPreview(hoveredCard.cardData);  // Direct access - no conversion
+    }
+  }
+
+  /**
+   * Show dual card preview with unit on top and pilot 25px below
+   * @param {Card} unitCard - The unit card
+   * @param {Card} pilotCard - The pilot card  
+   */
+  showDualCardPreview(unitCard, pilotCard) {
+    if (!this.cardPreviewZone) return;
+    
+    // Create unit preview (on top) - Direct card data access
+    this.previewCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y, unitCard.cardData, {
+      interactive: false,
+      draggable: false,
+      scale: 3.5,
+      gameStateManager: this.gameStateManager,
+      usePreview: false
+    });
+    this.previewCard.setDepth(2000);
+    
+    // Create pilot preview (25px below unit) - Direct card data access  
+    this.previewPilotCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y + 70, pilotCard.cardData, {
+      interactive: false,
+      draggable: false,
+      scale: 3.5,
+      gameStateManager: this.gameStateManager,
+      usePreview: false
+    });
+    this.previewPilotCard.setDepth(1999); // Slightly behind unit
+    
+    console.log('Showing dual preview:', unitCard.cardData?.id, '+', pilotCard.cardData?.id);
+  }
+
+  /**
+   * Hide slot card preview (includes dual preview)
+   */
+  hideSlotCardPreview() {
+    // Hide main preview card
+    if (this.previewCard) {
+      this.previewCard.destroy();
+      this.previewCard = null;
+    }
+    
+    // Hide pilot preview card
+    if (this.previewPilotCard) {
+      this.previewPilotCard.destroy();
+      this.previewPilotCard = null;
+    }
+  }
+
+  /**
+   * Determine slot information from a hovered card
+   * @param {Card} card - The card being hovered
+   * @returns {Object|null} Slot info with playerType and slotName, or null if not a slot card
+   */
+  getSlotInfoFromCard(card) {
+    console.log('[getSlotInfoFromCard] Analyzing card:', card.cardData?.id, 'cardTypeInSlot:', card.cardTypeInSlot);
+    
+    // First approach: Check if this card has slot-specific properties
+    // This might not always be set, so we'll also try direct slot scanning
+    
+    if (!this.slotAreaManager) {
+      console.warn('[getSlotInfoFromCard] SlotAreaManager not available');
+      return null;
+    }
+    
+    // Check player slots by scanning all slots
+    for (let i = 1; i <= 6; i++) {
+      const slotName = `slot${i}`;
+      const slotCards = this.slotAreaManager.getSlotCards('player', slotName);
+      console.log(`[getSlotInfoFromCard] Checking player ${slotName}:`, slotCards);
+      
+      if (slotCards.unit === card) {
+        console.log(`[getSlotInfoFromCard] Found as unit in player ${slotName}`);
+        return { playerType: 'player', slotName };
+      }
+      if (slotCards.pilot === card) {
+        console.log(`[getSlotInfoFromCard] Found as pilot in player ${slotName}`);
+        return { playerType: 'player', slotName };
+      }
+    }
+    
+    // Check opponent slots
+    for (let i = 1; i <= 6; i++) {
+      const slotName = `slot${i}`;
+      const slotCards = this.slotAreaManager.getSlotCards('opponent', slotName);
+      console.log(`[getSlotInfoFromCard] Checking opponent ${slotName}:`, slotCards);
+      
+      if (slotCards.unit === card) {
+        console.log(`[getSlotInfoFromCard] Found as unit in opponent ${slotName}`);
+        return { playerType: 'opponent', slotName };
+      }
+      if (slotCards.pilot === card) {
+        console.log(`[getSlotInfoFromCard] Found as pilot in opponent ${slotName}`);
+        return { playerType: 'opponent', slotName };
+      }
+    }
+    
+    console.log('[getSlotInfoFromCard] Card not found in any slot');
+    return null;
+  }
   
 
 
@@ -1928,6 +2094,7 @@ export default class GameScene extends Phaser.Scene {
 
     // Clean up hover preview resources
     this.hideCardPreview();
+    this.hideSlotCardPreview();
     
     
     // Clean up all dialogs using DialogManager

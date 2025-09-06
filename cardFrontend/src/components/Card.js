@@ -11,8 +11,16 @@ export default class Card extends Phaser.GameObjects.Container {
     this.gameStateManager = options.gameStateManager || null;
     console.log('Card constructor - cardData:', JSON.stringify(_cardData));
 
-    this.fullCardData = _cardData;
-    this.cardData = _cardData.cardData;
+    // Handle both nested and flat card data structures
+    if (_cardData && _cardData.cardData) {
+      // Nested structure: { cardData: {...}, other properties... }
+      this.fullCardData = _cardData;
+      this.cardData = _cardData.cardData;
+    } else {
+      // Flat structure: { id, cardType, power, ... }
+      this.fullCardData = { cardData: _cardData };
+      this.cardData = _cardData;
+    }
 
     
     this.options = {
@@ -242,7 +250,7 @@ export default class Card extends Phaser.GameObjects.Container {
         
         // Emit different events based on whether card is in zone or in hand
         if (this.isInZone) {
-          this.scene.events.emit('zone-card-hover', this, pointer.worldX, pointer.worldY);
+          this.scene.events.emit('zone-card-hover', this);
         } else {
           this.scene.events.emit('card-hover', this);
         }
