@@ -47,11 +47,8 @@ export class PlayerCardManager {
                 };
             }
 
-            // Route to specific card type handler - pass eventData directly
-            const cardType = fullCardData.cardType;
-            console.log(`🎯 Placing card ${cardId} type: ${cardType}`);
-
-            switch (cardType) {
+        
+            switch (playAs) {
                 case 'unit':
                     return this.placeUnitCard(player.zones, fullCardData, cardUID, playerId);
                     
@@ -67,7 +64,7 @@ export class PlayerCardManager {
                 default:
                     return {
                         success: false,
-                        error: `Unknown card type '${cardType}' for card ${cardUID}`
+                        error: `cannot play as ${playAs} for card ${cardUID}`
                     };
             }
 
@@ -214,7 +211,7 @@ export class PlayerCardManager {
         
         for (const zone of slotZones) {
             const slotZone = playerZones[zone];
-            if (slotZone?.unit?.cardUid === targetUnit || slotZone?.unit?.cardId === targetUnit) {
+            if (slotZone?.unit?.cardUid === targetUnit) {
                 targetZone = zone;
                 break;
             }

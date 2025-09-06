@@ -280,7 +280,11 @@ export default class CardActionHandler {
         for (let i = 1; i <= 6; i++) {
             const slotName = `slot${i}`;
             const slot = playerData.zones[slotName];
-            if (slot && slot.unit && !slot.pilot) { // Check that unit exists AND no pilot is attached
+            // Also check frontend slot manager to be extra sure pilot status is consistent
+            const hasUnitInSlot = this.gameScene.slotAreaManager.hasUnitInSlot('player', slotName);
+            const hasPilotInSlot = this.gameScene.slotAreaManager.hasPilotInSlot('player', slotName);
+            
+            if (slot && slot.unit && !slot.pilot && hasUnitInSlot && !hasPilotInSlot) {
                 // Use the unit directly with minimal metadata additions
                 const unit = slot.unit;
                 unit.slot = slotName; // Add slot info directly to existing unit object

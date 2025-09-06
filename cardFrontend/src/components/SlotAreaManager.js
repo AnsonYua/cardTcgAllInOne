@@ -5,14 +5,14 @@ export default class SlotAreaManager {
     this.scene = scene;
     this.gameStateManager = gameStateManager;
     
-    // Slot area cards for both players
-    this.playerSlotCards = {};  // slot1-slot6
-    this.opponentSlotCards = {}; // slot1-slot6
+    // Slot area cards for both players - now supports unit and pilot cards
+    this.playerSlotCards = {};  // slot1-slot6 -> { unit: Card, pilot: Card }
+    this.opponentSlotCards = {}; // slot1-slot6 -> { unit: Card, pilot: Card }
     
-    // Initialize empty slot objects
+    // Initialize empty slot objects with unit and pilot structure
     ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'].forEach(slot => {
-      this.playerSlotCards[slot] = null;
-      this.opponentSlotCards[slot] = null;
+      this.playerSlotCards[slot] = { unit: null, pilot: null };
+      this.opponentSlotCards[slot] = { unit: null, pilot: null };
     });
   }
 
@@ -52,41 +52,67 @@ export default class SlotAreaManager {
     // Get slot position from scene zones
     const slotPosition = zones[slotName];
 
-    console.log("playerZones 1111",JSON.stringify(slotData))
-    console.log("playerZones 1111222",JSON.stringify(slotData))
+    console.log(`Updating ${playerType} ${slotName} slot:`, JSON.stringify(slotData));
 
     if (!slotPosition) {
       console.warn(`Slot position not found for ${playerType} ${slotName}`);
       return;
     }
 
-    // Check if slot has unit data
-    if (slotData && slotData.unit) {
+    // Update unit card
+    this.updateUnitCard(cardArray[slotName], slotData?.unit, slotPosition, playerType, slotName);
+    
+    // Update pilot card (positioned 25px below unit)
+    this.updatePilotCard(cardArray[slotName], slotData?.pilot, slotPosition, playerType, slotName);
+  }
+
+  updateUnitCard(slotCards, unitData, slotPosition, playerType, slotName) {
+    if (unitData) {
       // Slot has unit - create or update card
-      if (!cardArray[slotName]) {
-        console.log(`Creating ${playerType} ${slotName} unit card:`, slotData.unit.cardId);
-        const card = this.createSlotCard(slotData.unit, slotPosition.x, slotPosition.y, slotName);
-        cardArray[slotName] = card;
+      if (!slotCards.unit) {
+        console.log(`Creating ${playerType} ${slotName} unit card:`, unitData.cardId);
+        const card = this.createSlotCard(unitData, slotPosition.x, slotPosition.y, slotName, 'unit');
+        slotCards.unit = card;
       } else {
         console.log(`Updating existing ${playerType} ${slotName} unit card`);
-        // Update existing card if needed (handle card changes)
-        this.updateExistingSlotCard(cardArray[slotName], slotData.unit);
+        this.updateExistingSlotCard(slotCards.unit, unitData);
       }
     } else {
-      // Slot is empty - remove card if exists
-      if (cardArray[slotName]) {
+      // No unit - remove card if exists
+      if (slotCards.unit) {
         console.log(`Removing ${playerType} ${slotName} unit card - slot now empty`);
-        cardArray[slotName].destroy();
-        cardArray[slotName] = null;
+        slotCards.unit.destroy();
+        slotCards.unit = null;
       }
     }
   }
 
-  createSlotCard(unitData, x, y, slotName) {
+  updatePilotCard(slotCards, pilotData, slotPosition, playerType, slotName) {
+    if (pilotData) {
+      // Slot has pilot - create or update card (positioned 25px below unit)
+      const pilotY = slotPosition.y + 25; // Position pilot 25px below unit
+      
+      if (!slotCards.pilot) {
+        console.log(`Creating ${playerType} ${slotName} pilot card:`, pilotData.cardId);
+        const card = this.createSlotCard(pilotData, slotPosition.x, pilotY, slotName, 'pilot');
+        slotCards.pilot = card;
+      } else {
+        console.log(`Updating existing ${playerType} ${slotName} pilot card`);
+        this.updateExistingSlotCard(slotCards.pilot, pilotData);
+      }
+    } else {
+      // No pilot - remove card if exists
+      if (slotCards.pilot) {
+        console.log(`Removing ${playerType} ${slotName} pilot card - no pilot data`);
+        slotCards.pilot.destroy();
+        slotCards.pilot = null;
+      }
+    }
+  }
+
+  createSlotCard(cardData, x, y, slotName, cardType = 'unit') {
     try {
       // Create card using the existing Card component
-      const cardData = unitData
-
       const card = new Card(this.scene, x, y, cardData);
       
       // Set card as non-interactive (it's placed in zone)
@@ -95,27 +121,34 @@ export default class SlotAreaManager {
       // Show face-up
       //card.setFaceUp(true);
       
-      // Set depth for proper layering
-      card.setDepth(200);
+      // Set appropriate depth for layering (pilots above units)
+      if (cardType === 'pilot') {
+        card.setDepth(200); // Pilots render above units
+      } else {
+        card.setDepth(210); // Units at base depth
+      }
       
       // Add rested visual state if needed
-      if (unitData.isRested) {
+      if (cardData.isRested) {
         card.setRested(true);
       }
       
-      console.log(`✅ Created slot card for ${slotName}:`, cardData.id);
+      // Add card type information for identification
+      card.cardTypeInSlot = cardType;
+      
+      console.log(`✅ Created ${cardType} slot card for ${slotName}:`, cardData.cardId || cardData.id);
       return card;
       
     } catch (error) {
-      console.error(`Failed to create slot card for ${slotName}:`, error);
+      console.error(`Failed to create ${cardType} slot card for ${slotName}:`, error);
       return null;
     }
   }
 
-  updateExistingSlotCard(card, unitData) {
+  updateExistingSlotCard(card, cardData) {
     // Update rested state
     if (card.setRested) {
-      card.setRested(unitData.isRested || false);
+      card.setRested(cardData.isRested || false);
     }
     
     // Update any other dynamic properties as needed
@@ -124,21 +157,49 @@ export default class SlotAreaManager {
 
   // ============ UTILITY METHODS ============
 
-  getSlotCard(playerType, slotName) {
+  getSlotCard(playerType, slotName, cardType = 'unit') {
     const cardArray = playerType === 'player' ? this.playerSlotCards : this.opponentSlotCards;
-    return cardArray[slotName];
+    return cardArray[slotName] ? cardArray[slotName][cardType] : null;
   }
 
-  hasCardInSlot(playerType, slotName) {
-    return this.getSlotCard(playerType, slotName) !== null;
+  getSlotCards(playerType, slotName) {
+    const cardArray = playerType === 'player' ? this.playerSlotCards : this.opponentSlotCards;
+    return cardArray[slotName] || { unit: null, pilot: null };
+  }
+
+  hasCardInSlot(playerType, slotName, cardType = null) {
+    const slotCards = this.getSlotCards(playerType, slotName);
+    if (cardType) {
+      return slotCards[cardType] !== null;
+    }
+    // Return true if slot has any card (unit or pilot)
+    return slotCards.unit !== null || slotCards.pilot !== null;
+  }
+
+  hasUnitInSlot(playerType, slotName) {
+    return this.hasCardInSlot(playerType, slotName, 'unit');
+  }
+
+  hasPilotInSlot(playerType, slotName) {
+    return this.hasCardInSlot(playerType, slotName, 'pilot');
   }
 
   getAllPlayerSlotCards() {
-    return Object.values(this.playerSlotCards).filter(card => card !== null);
+    const allCards = [];
+    Object.values(this.playerSlotCards).forEach(slotCards => {
+      if (slotCards.unit) allCards.push(slotCards.unit);
+      if (slotCards.pilot) allCards.push(slotCards.pilot);
+    });
+    return allCards;
   }
 
   getAllOpponentSlotCards() {
-    return Object.values(this.opponentSlotCards).filter(card => card !== null);
+    const allCards = [];
+    Object.values(this.opponentSlotCards).forEach(slotCards => {
+      if (slotCards.unit) allCards.push(slotCards.unit);
+      if (slotCards.pilot) allCards.push(slotCards.pilot);
+    });
+    return allCards;
   }
 
   getAllSlotCards() {
@@ -148,13 +209,15 @@ export default class SlotAreaManager {
   // ============ CLEANUP ============
 
   destroy() {
-    // Destroy all slot cards
-    Object.values(this.playerSlotCards).forEach(card => {
-      if (card) card.destroy();
+    // Destroy all slot cards (both unit and pilot)
+    Object.values(this.playerSlotCards).forEach(slotCards => {
+      if (slotCards.unit) slotCards.unit.destroy();
+      if (slotCards.pilot) slotCards.pilot.destroy();
     });
     
-    Object.values(this.opponentSlotCards).forEach(card => {
-      if (card) card.destroy();
+    Object.values(this.opponentSlotCards).forEach(slotCards => {
+      if (slotCards.unit) slotCards.unit.destroy();
+      if (slotCards.pilot) slotCards.pilot.destroy();
     });
     
     // Clear references

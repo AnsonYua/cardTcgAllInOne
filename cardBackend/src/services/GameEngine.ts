@@ -613,11 +613,6 @@ export class GameEngine {
                 };
             }
 
-            console.log(`✅ Card ${eventData.cardUID} successfully placed in ${placementResult.placedZone} as ${eventData.playAs}`);
-            
-            // TODO: Add effect processing and type compatibility validation
-            console.log(`🚧 [PLACEHOLDER] Card effects and compatibility validation needed`);
-            
             return { success: true };
             
         } catch (error) {
