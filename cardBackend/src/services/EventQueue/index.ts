@@ -32,8 +32,6 @@ export {
     TurnEndEvent,
     StepBeginEvent,
     StepEndEvent,
-    EnergyTappedEvent,
-    EnergyUntappedEvent,
     CostPaidEvent,
     AbilityTriggeredEvent,
     AbilityActivatedEvent,

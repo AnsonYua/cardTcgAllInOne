@@ -37,8 +37,6 @@ export enum PlayerActionType {
     CREATE_GAME = 'CREATE_GAME',
     JOIN_GAME = 'JOIN_GAME',
     CONFIRM_REDRAW = 'CONFIRM_REDRAW',
-    PHASE_ADVANCE = 'PHASE_ADVANCE',
-    TAP_ENERGY = 'TAP_ENERGY',
     RESOLVE_CHOICE = 'RESOLVE_CHOICE',
     END_TURN = 'END_TURN',
     ACKNOWLEDGE_EVENTS = 'ACKNOWLEDGE_EVENTS',
@@ -66,7 +64,6 @@ export enum EventType {
     
     // Resource events
     RESOURCE_GAINED = 'RESOURCE_GAINED',
-    ENERGY_TAPPED = 'ENERGY_TAPPED',
     
     // Error events
     ERROR_OCCURRED = 'ERROR_OCCURRED',

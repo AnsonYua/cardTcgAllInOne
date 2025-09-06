@@ -138,24 +138,6 @@ export interface CardEntersPlayEvent extends BaseGameEvent {
 
 // ============ RESOURCE & ENERGY EVENTS ============
 
-export interface EnergyTappedEvent extends BaseGameEvent {
-    type: EventType.ENERGY_TAPPED;
-    data: {
-        cardId: string;
-        cardUid: string;
-        playerId: string;
-        energyAmount: number;
-    };
-}
-
-export interface EnergyUntappedEvent extends BaseGameEvent {
-    type: EventType.ENERGY_TAPPED;
-    data: {
-        cardId: string;
-        cardUid: string;
-        playerId: string;
-    };
-}
 
 export interface CostPaidEvent extends BaseGameEvent {
     type: EventType.RESOURCE_GAINED;
@@ -275,8 +257,6 @@ export type GameEvent =
     | StepBeginEvent
     | StepEndEvent
     | CardEntersPlayEvent
-    | EnergyTappedEvent
-    | EnergyUntappedEvent
     | CostPaidEvent
     | AbilityTriggeredEvent
     | AbilityActivatedEvent
@@ -448,24 +428,6 @@ export class EventFactory {
     }
     
     // ============ RESOURCE EVENT FACTORIES ============
-    
-    static createEnergyTappedEvent(
-        cardId: string,
-        cardUid: string,
-        playerId: string,
-        energyAmount: number
-    ): EnergyTappedEvent {
-        return {
-            id: `energy_tapped_${++this.eventIdCounter}_${Date.now()}`,
-            type: EventType.ENERGY_TAPPED,
-            status: EventStatus.DECLARED,
-            priority: EventPriority.NORMAL,
-            sourceId: cardId,
-            playerId,
-            timestamp: Date.now(),
-            data: { cardId, cardUid, playerId, energyAmount }
-        };
-    }
     
     // ============ GAME LIFECYCLE EVENT FACTORIES ============
     

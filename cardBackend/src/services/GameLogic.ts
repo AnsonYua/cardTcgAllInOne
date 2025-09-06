@@ -430,21 +430,6 @@ export class GameLogic {
                     }
                 };
                 
-            case PlayerActionType.PHASE_ADVANCE:
-                return EventFactory.createPhaseChangeEvent(
-                    GamePhase.WAITING_FOR_PLAYERS, // TODO: Get current phase from gameEnv
-                    action.targetPhase || GamePhase.MAIN_PHASE,
-                    'player_action'
-                );
-                
-            case PlayerActionType.TAP_ENERGY:
-                return EventFactory.createEnergyTappedEvent(
-                    action.cardId || '',
-                    action.cardUid || action.cardId || '',
-                    action.playerId,
-                    action.energyAmount || 1
-                );
-                
             case PlayerActionType.END_TURN:
                 return EventFactory.createEndTurnEvent(
                     action.playerId,
