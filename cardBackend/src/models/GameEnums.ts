@@ -26,6 +26,13 @@ export enum ZoneType {
     TRASH = 'trash'
 }
 
+export enum CardPlayType {
+    UNIT = 'unit',
+    COMMAND = 'command',
+    PILOT = 'pilot',
+    BASE = 'base'
+}
+
 export enum PlayerActionType {
     CREATE_GAME = 'CREATE_GAME',
     JOIN_GAME = 'JOIN_GAME',

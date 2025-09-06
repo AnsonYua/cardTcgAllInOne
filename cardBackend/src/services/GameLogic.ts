@@ -468,7 +468,8 @@ export class GameLogic {
                     data: {
                         playerId: action.playerId,
                         gameId: action.gameId,
-                        cardUID: action.cardUID
+                        cardUID: action.cardUID,
+                        playAs: action.playAs
                     }
                 };
                 
@@ -767,11 +768,12 @@ export class GameLogic {
      * @param gameId - Game ID
      * @param playerId - Player ID  
      * @param cardUID - Card UID to find and act upon
+     * @param playAs - How the card should be played (unit/command/pilot/base)
      * @returns Promise<GameLogicResult>
      */
-    async playerAction(gameId: string, playerId: string, cardUID: string): Promise<GameLogicResult> {
+    async playerAction(gameId: string, playerId: string, cardUID: string, playAs?: string): Promise<GameLogicResult> {
         try {
-            console.log(`🎯 playerAction: gameId=${gameId}, playerId=${playerId}, cardUID=${cardUID}`);
+            console.log(`🎯 playerAction: gameId=${gameId}, playerId=${playerId}, cardUID=${cardUID}, playAs=${playAs || 'default'}`);
             
             // Validate inputs
             if (!gameId || !playerId || !cardUID) {
@@ -795,7 +797,8 @@ export class GameLogic {
                 type: PlayerActionType.PLAYER_ACTION,
                 playerId,
                 gameId,
-                cardUID
+                cardUID,
+                playAs
             };
             
             const actionResult = await this.processAction(gameEnv, playerActionEvent);

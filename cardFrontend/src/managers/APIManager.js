@@ -66,7 +66,7 @@ export default class APIManager {
     });
   }
 
-  // Gameplay Actions
+  // Gameplay Actions - Structured action API
   async playerAction(playerId, gameId, action) {
     return this.request('/player/playerAction', {
       method: 'POST',
@@ -78,16 +78,16 @@ export default class APIManager {
     });
   }
 
-  // NEW: Simplified player action API for direct card placement
+  // Legacy: Simplified player action API - now converts to structured action
   async playCard(playerId, gameId, cardUID) {
-    return this.request('/player/playerAction', {
-      method: 'POST',
-      body: JSON.stringify({
-        playerId,
-        gameId,
-        cardUID
-      })
-    });
+    // Convert legacy playCard to structured action
+    const action = {
+      type: 'PlayCard',
+      cardUID: cardUID,
+      playAs: 'unit'  // Default to unit for legacy calls
+    };
+    
+    return this.playerAction(playerId, gameId, action);
   }
 
   async selectCard(selectionId, selectedCardIdentifiers, playerId, gameId) {

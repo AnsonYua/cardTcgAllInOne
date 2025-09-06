@@ -3,7 +3,7 @@
 
 import { Request, Response } from 'express';
 import { gameLogic, GameLogic } from '../services/GameLogic';
-import { GamePhase, PlayerActionType } from '../models/GameEnums';
+import { GamePhase, PlayerActionType, CardPlayType } from '../models/GameEnums';
 import { PlayerAction } from '../services/EventQueue/EventManager';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -231,39 +231,105 @@ export class GameController {
     /**
      * Process player action with card auto-discovery from zones
      * POST /api/game/player/playerAction
-     * Body: { gameId, playerId, cardUID }
+     * Body: { gameId, playerId, cardUID } or { gameId, playerId, action }
      */
     async playerAction(req: GameRequest, res: Response): Promise<void> {
         try {
             console.log('🎮 Processing player action:', req.body);
             
-            const { gameId, playerId, cardUID } = req.body;
+            const { gameId, playerId, cardUID, action } = req.body;
             
-            if (!gameId || !playerId || !cardUID) {
+            if (!gameId || !playerId) {
                 res.status(400).json({
-                    error: 'gameId, playerId, and cardUID are required',
+                    error: 'gameId and playerId are required',
                     timestamp: new Date().toISOString(),
                     context: 'playerAction endpoint'
                 });
                 return;
             }
             
-            // Use new unified playerAction method with auto-find
-            const result = await this.gameLogic.playerAction(gameId, playerId, cardUID);
-            
-            if (result.success && result.gameEnv) {
-                res.json({
-                    success: true,
-                    gameId: result.gameId,
-                    gameEnv: result.gameEnv
-                });
-            } else {
-                res.status(400).json({
-                    error: result.error,
+            // Handle structured actions only  
+            if (action) {
+                console.log('🎯 Processing structured action:', action);
+                
+                // Handle PlayCard actions with playAs specification
+                if (action.type === 'PlayCard' && action.cardUID && action.playAs) {
+                    const cardUID = action.cardUID;
+                    const playAs = action.playAs;
+                    
+                    // Validate playAs value using enum
+                    const validPlayAsValues = Object.values(CardPlayType);
+                    if (!validPlayAsValues.includes(playAs as CardPlayType)) {
+                        res.status(400).json({
+                            error: `Invalid playAs value: ${playAs}. Must be one of: ${validPlayAsValues.join(', ')}`,
+                            timestamp: new Date().toISOString(),
+                            context: 'playerAction endpoint - playAs validation'
+                        });
+                        return;
+                    }
+                    
+                    console.log(`🎯 Playing card ${cardUID} as ${playAs}`);
+                    
+                    // Create PlayerAction for event manager with action details
+                    const playerActionData = {
+                        type: 'PlayCard',
+                        cardUID: cardUID,
+                        playAs: playAs
+                    };
+                    
+                    // TODO: Pass action details to GameLogic for event generation in future enhancement
+                    console.log('📋 Action data prepared for future event manager integration:', playerActionData);
+                    
+                    // Use existing GameLogic method (3 parameters only)
+                    const result = await this.gameLogic.playerAction(gameId, playerId, cardUID);
+                    
+                    if (result.success && result.gameEnv) {
+                        res.json({
+                            success: true,
+                            gameId: result.gameId,
+                            gameEnv: result.gameEnv
+                        });
+                    } else {
+                        res.status(400).json({
+                            error: result.error,
+                            timestamp: new Date().toISOString(),
+                            context: 'playerAction endpoint'
+                        });
+                    }
+                    return;
+                }
+                
+                // Handle missing required fields for PlayCard action
+                if (action.type === 'PlayCard') {
+                    const missingFields = [];
+                    if (!action.cardUID) missingFields.push('cardUID');
+                    if (!action.playAs) missingFields.push('playAs');
+                    
+                    res.status(400).json({
+                        error: `PlayCard action missing required fields: ${missingFields.join(', ')}`,
+                        message: 'PlayCard action requires both cardUID and playAs parameters',
+                        timestamp: new Date().toISOString(),
+                        context: 'playerAction endpoint - PlayCard validation'
+                    });
+                    return;
+                }
+                
+                // Handle other structured actions (card selection, effects, etc.)
+                res.status(501).json({
+                    error: 'Structured action type not yet implemented: ' + action.type,
+                    message: 'Currently supports PlayCard actions. Other action types coming soon.',
                     timestamp: new Date().toISOString(),
                     context: 'playerAction endpoint'
                 });
+                return;
             }
+            
+            // No action provided
+            res.status(400).json({
+                error: 'Action parameter is required',
+                timestamp: new Date().toISOString(),
+                context: 'playerAction endpoint'
+            });
             
         } catch (error) {
             console.error('❌ Error in playerAction:', error);

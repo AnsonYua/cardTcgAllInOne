@@ -19,16 +19,16 @@ export default class CardActionHandler {
                 this.handleCancelAction();
                 break;
             case 'playUnit':
-                this.handlePlayAction(selectedCard);
+                this.handlePlayCardAction(selectedCard, 'unit');
                 break;
             case 'playCommand':
-                this.handlePlayCommandAction(selectedCard);
+                this.handlePlayCardAction(selectedCard, 'command');
                 break;
             case 'playPilot':
-                this.handlePlayPilotAction(selectedCard);
+                this.handlePlayCardAction(selectedCard, 'pilot');
                 break;
             case 'playBase':
-                this.handleDeployBaseAction(selectedCard);
+                this.handlePlayCardAction(selectedCard, 'base');
                 break;
             default:
                 console.log(`Unknown action: ${action}`);
@@ -36,18 +36,23 @@ export default class CardActionHandler {
     }
 
     /**
-     * Handle normal card play action
+     * Unified method to handle all card play actions
+     * Consolidates handlePlayAction, handlePlayCommandAction, handlePlayPilotAction, and handleDeployBaseAction
+     * 
+     * @param {Object} selectedCard - The selected card object
+     * @param {string} playAs - How to play the card ('unit', 'command', 'pilot', 'base')
      */
-    async handlePlayAction(selectedCard) {
-        if (!this.validateSelectedCard(selectedCard, 'play action')) {
+    async handlePlayCardAction(selectedCard, playAs) {
+        const actionName = `${playAs} play`;
+        
+        if (!this.validateSelectedCard(selectedCard, actionName)) {
             return;
         }
         
-        console.log('Playing card normally:', selectedCard.fullCardData.cardUid);
+        console.log(`Playing card as ${playAs.charAt(0).toUpperCase() + playAs.slice(1)}:`, selectedCard.fullCardData.cardUid);
         this.gameScene.actionButtonManager.hide();
         
         try {
-            // Get cardUID from the selected card
             const cardUID = selectedCard.fullCardData.cardUid;
             
             if (!cardUID) {
@@ -56,48 +61,48 @@ export default class CardActionHandler {
             }
             
             const gameState = this.gameStateManager.getGameState();
-            
-            // Set loading state
             this.setUILoadingState(true);
             
-            // Call backend API - it will automatically find first empty unit slot
-            console.log('Calling backend playCard API with cardUID:', cardUID);
+            // Create structured action with playAs specification
+            const action = {
+                type: 'PlayCard',
+                cardUID: cardUID,
+                playAs: playAs
+            };
+            
+            console.log(`Calling backend playerAction API to play card as ${playAs}:`, action);
             
             if (this.apiManager) {
-                const response = await this.apiManager.playCard(
+                const response = await this.apiManager.playerAction(
                     gameState.playerId,
                     gameState.gameId,
-                    cardUID
+                    action
                 );
                 
-                console.log('Play card response:', response);
+                console.log('PlayerAction response:', response);
                 
                 if (response && response.success) {
-                    console.log('✅ Card played successfully - backend will update game state via polling');
+                    console.log(`✅ ${playAs.charAt(0).toUpperCase() + playAs.slice(1)} card played successfully`);
                     this.gameStateManager.updateGameEnv(response.gameEnv);
                     this.updateGameState();
                     this.updatePlayerHand();
                     this.clearZoneHighlights();
                 } else {
-                    console.error('❌ Failed to play card:', response?.error);
-                    this.showErrorMessage(response?.error || 'Failed to play card');
+                    console.error(`❌ Failed to play ${playAs} card:`, response?.error);
+                    this.showErrorMessage(response?.error || `Failed to play ${playAs} card`);
                 }
             } else {
-                // Demo mode - show that this would place the card
-                console.log('Demo mode: Would call backend API to play card');
+                console.log('Demo mode: Would call backend playerAction API');
                 this.showErrorMessage('Demo mode - Backend API not available');
             }
             
         } catch (error) {
-            console.error('Error playing card:', error);
-            this.showErrorMessage('Failed to play card. Please try again.');
+            console.error(`Error playing ${playAs} card:`, error);
+            this.showErrorMessage(`Failed to play ${playAs} card. Please try again.`);
         } finally {
-            // Clear loading state
             this.setUILoadingState(false);
         }
     }
-
-
 
 
     /**
@@ -119,23 +124,6 @@ export default class CardActionHandler {
         // Clear zone highlights and hide buttons
         this.clearZoneHighlights();
         this.gameScene.actionButtonManager.hide();
-    }
-
-
-
-    /**
-     * Handle base deployment action
-     */
-    handleDeployBaseAction(selectedCard) {
-        if (!this.validateSelectedCard(selectedCard, 'deploy base')) {
-            return;
-        }
-        
-        console.log('Deploying base card:', selectedCard.cardId);
-        this.gameScene.actionButtonManager.hide();
-        
-        // TODO: Implement base deployment logic
-        console.log('🚧 [PLACEHOLDER] Base deployment logic needed');
     }
 
 
@@ -261,117 +249,4 @@ export default class CardActionHandler {
         this.gameScene.clearZoneHighlights();
     }
 
-    /**
-     * Handle play command action for dual-purpose command cards
-     */
-    async handlePlayCommandAction(selectedCard) {
-        if (!this.validateSelectedCard(selectedCard, 'play command action')) {
-            return;
-        }
-        
-        console.log('Playing command card as Command:', selectedCard.fullCardData.cardData.id);
-        this.gameScene.actionButtonManager.hide();
-        
-        try {
-            const cardUID = selectedCard.fullCardData.cardUid;
-            
-            if (!cardUID) {
-                this.showErrorMessage('Card not found in hand.');
-                return;
-            }
-            
-            const gameState = this.gameStateManager.getGameState();
-            this.setUILoadingState(true);
-            
-            console.log('Calling backend playCard API as Command with cardUID:', cardUID);
-            
-            if (this.apiManager) {
-                const response = await this.apiManager.playCard(
-                    gameState.playerId,
-                    gameState.gameId,
-                    cardUID,
-                    { playAs: 'command' }
-                );
-                
-                console.log('Play command response:', response);
-                
-                if (response && response.success) {
-                    console.log('✅ Command card played successfully');
-                    this.gameStateManager.updateGameEnv(response.gameEnv);
-                    this.updateGameState();
-                    this.updatePlayerHand();
-                    this.clearZoneHighlights();
-                } else {
-                    console.error('❌ Failed to play command card:', response?.error);
-                    this.showErrorMessage(response?.error || 'Failed to play command card');
-                }
-            } else {
-                console.log('Demo mode: Would call backend API to play command card');
-                this.showErrorMessage('Demo mode - Backend API not available');
-            }
-            
-        } catch (error) {
-            console.error('Error playing command card:', error);
-            this.showErrorMessage('Failed to play command card. Please try again.');
-        } finally {
-            this.setUILoadingState(false);
-        }
-    }
-
-    /**
-     * Handle play pilot action for dual-purpose command cards
-     */
-    async handlePlayPilotAction(selectedCard) {
-        if (!this.validateSelectedCard(selectedCard, 'play pilot action')) {
-            return;
-        }
-        
-        console.log('Playing command card as Pilot:', selectedCard.fullCardData.cardData.id);
-        this.gameScene.actionButtonManager.hide();
-        
-        try {
-            const cardUID = selectedCard.fullCardData.cardUid;
-            
-            if (!cardUID) {
-                this.showErrorMessage('Card not found in hand.');
-                return;
-            }
-            
-            const gameState = this.gameStateManager.getGameState();
-            this.setUILoadingState(true);
-            
-            console.log('Calling backend playCard API as Pilot with cardUID:', cardUID);
-            
-            if (this.apiManager) {
-                const response = await this.apiManager.playCard(
-                    gameState.playerId,
-                    gameState.gameId,
-                    cardUID,
-                    { playAs: 'pilot' }
-                );
-                
-                console.log('Play pilot response:', response);
-                
-                if (response && response.success) {
-                    console.log('✅ Pilot card played successfully');
-                    this.gameStateManager.updateGameEnv(response.gameEnv);
-                    this.updateGameState();
-                    this.updatePlayerHand();
-                    this.clearZoneHighlights();
-                } else {
-                    console.error('❌ Failed to play pilot card:', response?.error);
-                    this.showErrorMessage(response?.error || 'Failed to play pilot card');
-                }
-            } else {
-                console.log('Demo mode: Would call backend API to play pilot card');
-                this.showErrorMessage('Demo mode - Backend API not available');
-            }
-            
-        } catch (error) {
-            console.error('Error playing pilot card:', error);
-            this.showErrorMessage('Failed to play pilot card. Please try again.');
-        } finally {
-            this.setUILoadingState(false);
-        }
-    }
 }
