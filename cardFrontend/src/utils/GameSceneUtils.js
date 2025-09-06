@@ -328,20 +328,46 @@ export default class GameSceneUtils {
   }
 
   static convertCardSelectionToCardDataObject(card){
+    // Handle case where card or cardId might be undefined
+    if (!card || !card.cardId) {
+      console.warn('convertCardSelectionToCardDataObject: Invalid card data', card);
+      return {
+        id: 'unknown',
+        name: 'Unknown Card',
+        cardType: 'character',
+        type: 'character',
+        power: 0,
+        zone: [],
+        traits: [],
+        description: 'Card data unavailable'
+      };
+    }
 
     var cardType = "character"
-    if(card.cardId.startsWith("c-")){
+    if(card.cardId.startsWith("c-") || card.cardId.startsWith("ST01-")){
       cardType = "character"
     }else if(card.cardId.startsWith("h-")){
       cardType = "utilityCard"
     }else if(card.cardId.startsWith("s-")){
       cardType = "leader"
+    }else if(card.cardId.startsWith("R-")){
+      cardType = "energy"
+    }else if(card.cardId.startsWith("EXR-")){
+      cardType = "energy"  
+    }else if(card.cardId.startsWith("EXB-")){
+      cardType = "base"
     }
+    
     return {
       id: card.cardId,
-      name: card.cardId,
+      name: card.name || card.cardId,
       cardType: cardType,
-      type:cardType,
+      type: cardType,
+      power: card.power || 0,
+      zone: card.zone || [],
+      traits: card.traits || [],
+      description: card.description || '',
+      cardUid: card.cardUid || card.cardId
     }
   }
   /**
@@ -350,593 +376,714 @@ export default class GameSceneUtils {
    * @param {Object} selection - The selection data with eligibleCards
    * @param {Object} scene - The GameScene instance
    * @param {Function} onConfirm - Callback when OK button is clicked
-   * @returns {Array} Array of dialog elements for cleanup
+   * @returns {Object} Dialog interface with elements and cleanup function
    */
   static createCardSelectionDialog(selectionId, selection, scene, onConfirm) {
+    const dialogConfig = this._createDialogConfig(scene, selection);
+    const paginationState = {
+      maxCardsPerPage: 4,
+      totalPages: Math.ceil(selection.eligibleCards.length / 4),
+      currentPage: 0
+    };
+    
+    const selectionState = {
+      maxSelections: selection.selectCount || 1,
+      selectedCards: [],
+      selectedCardHighlights: [],
+      selectedCard: null,
+      selectedCardHighlight: null
+    };
+    
+    const dialogElements = {
+      overlay: null,
+      dialogBg: null,
+      titleSection: {},
+      cardSection: {},
+      buttonSection: {},
+      cardListElements: [],
+      paginationElements: {}
+    };
+    
+    // Create main dialog structure
+    this._createDialogBackground(scene, dialogConfig, dialogElements);
+    this._createTitleSection(scene, dialogConfig, dialogElements);
+    this._createCardSectionBackground(scene, dialogConfig, dialogElements);
+    
+    // Card display configuration
+    const cardDisplayConfig = {
+      cardDisplayWidth: 160,
+      cardDisplayHeight: 220,
+      cardSpacing: 25
+    };
+    
+    // Create pagination controls if needed
+    if (paginationState.totalPages > 1) {
+      this._createPaginationControls(scene, dialogConfig, paginationState, dialogElements);
+    }
+    
+    // Create card update and selection management
+    const cardManager = this._createCardManager(
+      scene, selection, dialogConfig, paginationState, selectionState, 
+      cardDisplayConfig, dialogElements
+    );
+    
+    // Create button section
+    const buttonSection = this._createButtonSection(
+      scene, selectionId, selection, dialogConfig, selectionState, 
+      dialogElements, cardManager.updateOKButtonState, onConfirm
+    );
+    
+    // Initial card display
+    cardManager.updateCardDisplay();
+    
+    // Return cleanup function and initial elements for external cleanup
+    const dialogInterface = {
+      elements: this._getAllDialogElements(dialogElements),
+      cleanup: () => this._cleanupDialog(scene, dialogElements)
+    };
+    
+    return dialogInterface;
+  }
+
+  /**
+   * Creates dialog configuration object
+   * @private
+   */
+  static _createDialogConfig(scene, selection) {
     const { width, height } = scene.cameras.main;
-    const eligibleCards = selection.eligibleCards;
-    const description = selection.effect ? 
-      `Select ${selection.selectCount} opponent character card(s) to ${selection.effect.type} ${selection.effect.value !== undefined ? 'to ' + selection.effect.value : ''}` :
-      `Select ${selection.selectCount} card(s)`;
     
-    // Dialog dimensions - compact size for better proportions
-    const dialogWidth = Math.min(900, width * 0.85); // Compact width for 4 cards + navigation
-    const dialogHeight = 450; // Reduced height for more compact appearance
-    const dialogX = width / 2;
-    const dialogY = height / 2;
+    // Handle different dialog types with specific descriptions
+    let description;
+    if (selection.dialogType === 'SELECT_UNIT_FOR_PILOT') {
+      description = selection.description || 'Choose which unit this pilot card should attach to';
+    } else if (selection.effect) {
+      description = `Select ${selection.selectCount} opponent character card(s) to ${selection.effect.type} ${selection.effect.value !== undefined ? 'to ' + selection.effect.value : ''}`;
+    } else {
+      description = selection.description || `Select ${selection.selectCount} card(s)`;
+    }
     
-    // Pagination settings - ensure at least 4 cards per page
-    const maxCardsPerPage = 4;
-    const totalPages = Math.ceil(eligibleCards.length / maxCardsPerPage);
-    let currentPage = 0;
+    // Dynamic title based on dialog type
+    let dialogTitle = 'Card Selection Required';
+    if (selection.dialogType === 'SELECT_UNIT_FOR_PILOT') {
+      dialogTitle = selection.title || 'Select Unit to Pilot';
+    } else if (selection.title) {
+      dialogTitle = selection.title;
+    }
     
-    // Section heights - more compact proportions
-    const titleSectionHeight = 100;
-    const buttonSectionHeight = 70;
-    const cardSectionHeight = dialogHeight - titleSectionHeight - buttonSectionHeight;
-    
+    return {
+      width: Math.min(900, width * 0.85),
+      height: 450,
+      centerX: width / 2,
+      centerY: height / 2,
+      screenWidth: width,
+      screenHeight: height,
+      title: dialogTitle,
+      description: description,
+      titleSectionHeight: 100,
+      buttonSectionHeight: 70,
+      get cardSectionHeight() { return this.height - this.titleSectionHeight - this.buttonSectionHeight; }
+    };
+  }
+
+  /**
+   * Creates the main dialog background and overlay
+   * @private
+   */
+  static _createDialogBackground(scene, config, dialogElements) {
     // Semi-transparent background covering the whole screen
-    const overlay = scene.add.graphics();
-    overlay.fillStyle(0x000000, 0.75);
-    overlay.fillRect(0, 0, width, height);
-    overlay.setDepth(1500);
+    dialogElements.overlay = scene.add.graphics();
+    dialogElements.overlay.fillStyle(0x000000, 0.75);
+    dialogElements.overlay.fillRect(0, 0, config.screenWidth, config.screenHeight);
+    dialogElements.overlay.setDepth(1500);
     
     // Main dialog background
-    const dialogBg = scene.add.graphics();
-    dialogBg.fillStyle(0x2a2a2a);
-    dialogBg.fillRoundedRect(dialogX - dialogWidth/2, dialogY - dialogHeight/2, dialogWidth, dialogHeight, 15);
-    dialogBg.lineStyle(3, 0x4a4a4a);
-    dialogBg.strokeRoundedRect(dialogX - dialogWidth/2, dialogY - dialogHeight/2, dialogWidth, dialogHeight, 15);
-    dialogBg.setDepth(1501);
-    
-    // ===============================
-    // SECTION 1: TITLE SECTION (TOP)
-    // ===============================
-    const titleSectionY = dialogY - dialogHeight/2 + titleSectionHeight/2;
+    dialogElements.dialogBg = scene.add.graphics();
+    dialogElements.dialogBg.fillStyle(0x2a2a2a);
+    dialogElements.dialogBg.fillRoundedRect(config.centerX - config.width/2, config.centerY - config.height/2, config.width, config.height, 15);
+    dialogElements.dialogBg.lineStyle(3, 0x4a4a4a);
+    dialogElements.dialogBg.strokeRoundedRect(config.centerX - config.width/2, config.centerY - config.height/2, config.width, config.height, 15);
+    dialogElements.dialogBg.setDepth(1501);
+  }
+
+  /**
+   * Creates the title section of the dialog
+   * @private
+   */
+  static _createTitleSection(scene, config, dialogElements) {
+    const titleSectionY = config.centerY - config.height/2 + config.titleSectionHeight/2;
     
     // Title section background
-    const titleBg = scene.add.graphics();
-    titleBg.fillStyle(0x3a3a3a, 0.8);
-    titleBg.fillRoundedRect(dialogX - dialogWidth/2 + 10, dialogY - dialogHeight/2 + 10, dialogWidth - 20, titleSectionHeight - 20, 10);
-    titleBg.setDepth(1502);
+    dialogElements.titleSection.background = scene.add.graphics();
+    dialogElements.titleSection.background.fillStyle(0x3a3a3a, 0.8);
+    dialogElements.titleSection.background.fillRoundedRect(config.centerX - config.width/2 + 10, config.centerY - config.height/2 + 10, config.width - 20, config.titleSectionHeight - 20, 10);
+    dialogElements.titleSection.background.setDepth(1502);
     
     // Main title
-    const titleText = scene.add.text(dialogX, titleSectionY - 25, 'Card Selection Required', {
+    dialogElements.titleSection.titleText = scene.add.text(config.centerX, titleSectionY - 25, config.title, {
       fontSize: '24px',
       fontFamily: 'Arial Bold',
       fill: '#ffffff',
       align: 'center'
     });
-    titleText.setOrigin(0.5);
-    titleText.setDepth(1503);
+    dialogElements.titleSection.titleText.setOrigin(0.5);
+    dialogElements.titleSection.titleText.setDepth(1503);
     
     // Description text
-    const descText = scene.add.text(dialogX, titleSectionY + 15, description, {
+    dialogElements.titleSection.descText = scene.add.text(config.centerX, titleSectionY + 15, config.description, {
       fontSize: '16px',
       fontFamily: 'Arial',
       fill: '#ffd700',
       align: 'center',
-      wordWrap: { width: dialogWidth - 40 }
+      wordWrap: { width: config.width - 40 }
     });
-    descText.setOrigin(0.5);
-    descText.setDepth(1503);
-    
-    // ==========================================
-    // SECTION 2: CARD SELECTION SECTION (MIDDLE)
-    // ==========================================
-    const cardSectionY = titleSectionY + titleSectionHeight/2 + cardSectionHeight/2;
+    dialogElements.titleSection.descText.setOrigin(0.5);
+    dialogElements.titleSection.descText.setDepth(1503);
+  }
+
+  /**
+   * Creates the card section background and label
+   * @private
+   */
+  static _createCardSectionBackground(scene, config, dialogElements) {
+    const cardSectionY = config.centerY - config.height/2 + config.titleSectionHeight + config.cardSectionHeight/2;
     
     // Card section background
-    const cardBg = scene.add.graphics();
-    cardBg.fillStyle(0x1a1a1a, 0.9);
-    cardBg.fillRoundedRect(dialogX - dialogWidth/2 + 10, cardSectionY - cardSectionHeight/2 + 10, dialogWidth - 20, cardSectionHeight - 20, 10);
-    cardBg.lineStyle(1, 0x555555);
-    cardBg.strokeRoundedRect(dialogX - dialogWidth/2 + 10, cardSectionY - cardSectionHeight/2 + 10, dialogWidth - 20, cardSectionHeight - 20, 10);
-    cardBg.setDepth(1502);
+    dialogElements.cardSection.background = scene.add.graphics();
+    dialogElements.cardSection.background.fillStyle(0x1a1a1a, 0.9);
+    dialogElements.cardSection.background.fillRoundedRect(config.centerX - config.width/2 + 10, cardSectionY - config.cardSectionHeight/2 + 10, config.width - 20, config.cardSectionHeight - 20, 10);
+    dialogElements.cardSection.background.lineStyle(1, 0x555555);
+    dialogElements.cardSection.background.strokeRoundedRect(config.centerX - config.width/2 + 10, cardSectionY - config.cardSectionHeight/2 + 10, config.width - 20, config.cardSectionHeight - 20, 10);
+    dialogElements.cardSection.background.setDepth(1502);
     
     // Card selection label
-    const cardLabelText = scene.add.text(dialogX, cardSectionY - cardSectionHeight/2 + 30, 'Select a card:', {
+    dialogElements.cardSection.labelText = scene.add.text(config.centerX, cardSectionY - config.cardSectionHeight/2 + 30, 'Select a card:', {
       fontSize: '18px',
       fontFamily: 'Arial Bold',
       fill: '#cccccc',
       align: 'center'
     });
-    cardLabelText.setOrigin(0.5);
-    cardLabelText.setDepth(1503);
+    dialogElements.cardSection.labelText.setOrigin(0.5);
+    dialogElements.cardSection.labelText.setDepth(1503);
     
-    // Cards arranged horizontally with pagination support
-    const cardListElements = [];
-    const cardDisplayWidth = 160; // Slightly smaller cards for compact dialog
-    const cardDisplayHeight = 220; // Proportionally smaller height
-    const cardSpacing = 25; // Reduced spacing for compact layout;
+    dialogElements.cardSection.centerY = cardSectionY;
+  }
+
+  /**
+   * Extracts card image and display information from direct card objects
+   * @private
+   */
+  static _extractCardDisplayInfo(card) {
+    let cardImageId, displayCardId;
     
-    // Selection state management (supports both single and multiple selection)
-    const maxSelections = selection.selectCount || 1;
-    let selectedCards = [];
-    let selectedCardHighlights = [];
+    // Direct card object (unit from zones)
+    if (card.cardData && card.cardData.id) {
+      cardImageId = card.cardData.id;
+      displayCardId = card.cardUid || card.cardId;
+    } else if (card.cardData && card.cardData.cardId) {
+      cardImageId = card.cardData.cardId;
+      displayCardId = card.cardUid || card.cardId;
+    } else if (card.cardId) {
+      // Fallback for simple card objects
+      cardImageId = card.cardId;
+      displayCardId = card.cardId;
+    } else if (card.id) {
+      // Direct card data format
+      cardImageId = card.id;
+      displayCardId = card.id;
+    } else {
+      console.warn('Unknown card data structure:', card);
+      cardImageId = 'unknown';
+      displayCardId = 'unknown';
+    }
     
-    // Legacy single selection compatibility
-    let selectedCard = null;
-    let selectedCardHighlight = null;
-    
-    // Navigation arrows and pagination elements
-    let leftArrow = null;
-    let rightArrow = null;
-    let pageInfoText = null;
-    
-    // Function to create/update card display for current page with animation
-    const updateCardDisplay = (animateDirection = null) => {
-      // Clear selections when changing pages
-      selectedCard = null;
-      selectedCards.length = 0;
-      if (selectedCardHighlight) {
-        selectedCardHighlight.destroy();
-        selectedCardHighlight = null;
-      }
-      selectedCardHighlights.forEach(highlight => {
-        if (highlight) highlight.destroy();
-      });
-      selectedCardHighlights.length = 0;
-      // Update OK button state will be called after the button is created
-      
-      // Fade out existing cards first if animating
-      if (animateDirection && cardListElements.length > 0) {
-        const fadeOutPromises = cardListElements.map(element => {
-          if (element && element.setAlpha) {
-            return new Promise(resolve => {
-              scene.tweens.add({
-                targets: element,
-                alpha: 0,
-                x: animateDirection === 'left' ? element.x + 50 : element.x - 50,
-                duration: 200,
-                ease: 'Power2.easeIn',
-                onComplete: () => {
-                  if (element && element.destroy) {
-                    element.destroy();
-                  }
-                  resolve();
-                }
-              });
-            });
-          } else {
-            if (element && element.destroy) {
-              element.destroy();
-            }
-            return Promise.resolve();
-          }
-        });
-        
-        // Wait for fade out to complete before creating new cards
-        Promise.all(fadeOutPromises).then(() => {
-          cardListElements.length = 0;
-          createAndAnimateCards(animateDirection);
-        });
-      } else {
-        // No animation, clear immediately
-        cardListElements.forEach(element => {
-          if (element && element.destroy) {
-            element.destroy();
-          }
-        });
-        cardListElements.length = 0;
-        createAndAnimateCards(null);
-      }
-    };
-    
-    // Function to create and animate in new cards
-    const createAndAnimateCards = (animateDirection) => {
-      // Get cards for current page
-      const startIndex = currentPage * maxCardsPerPage;
-      const endIndex = Math.min(startIndex + maxCardsPerPage, eligibleCards.length);
-      const currentPageCards = eligibleCards.slice(startIndex, endIndex);
-      
-      // Calculate layout for current page cards
-      const totalCardsWidth = (currentPageCards.length * cardDisplayWidth) + ((currentPageCards.length - 1) * cardSpacing);
-      const cardsStartX = dialogX - totalCardsWidth / 2;
-      const cardsY = cardSectionY + 10;
-      
-      // Create cards for current page
-      currentPageCards.forEach((card, index) => {
-        const cardX = cardsStartX + (index * (cardDisplayWidth + cardSpacing)) + cardDisplayWidth / 2;
-        
-        // Card container background
-        const cardContainer = scene.add.graphics();
-        cardContainer.fillStyle(0x333333);
-        cardContainer.fillRoundedRect(cardX - cardDisplayWidth/2, cardsY - cardDisplayHeight/2, cardDisplayWidth, cardDisplayHeight, 8);
-        cardContainer.lineStyle(2, 0x666666);
-        cardContainer.strokeRoundedRect(cardX - cardDisplayWidth/2, cardsY - cardDisplayHeight/2, cardDisplayWidth, cardDisplayHeight, 8);
-        cardContainer.setDepth(1503);
-        cardListElements.push(cardContainer);
-        
-        // Use preview image key instead of cardId for image display
-        const previewImageKey = `${card.cardId}_preview`;
-        let cardImage;
-        
-        if (scene.textures.exists(previewImageKey)) {
-          // Use preview image and scale to fill the entire container
-          cardImage = scene.add.image(cardX, cardsY, previewImageKey);
-          const maxScale = Math.min((cardDisplayWidth - 16) / cardImage.width, (cardDisplayHeight - 16) / cardImage.height);
-          cardImage.setScale(maxScale);
-          cardImage.setDepth(1504);
-          cardListElements.push(cardImage);
-        } else if (scene.textures.exists(card.cardId)) {
-          // Fallback to regular card image
-          cardImage = scene.add.image(cardX, cardsY, card.cardId);
-          const maxScale = Math.min((cardDisplayWidth - 16) / cardImage.width, (cardDisplayHeight - 16) / cardImage.height);
-          cardImage.setScale(maxScale);
-          cardImage.setDepth(1504);
-          cardListElements.push(cardImage);
-        } else {
-          // Fallback placeholder using the full container size
-          const placeholder = scene.add.graphics();
-          placeholder.fillStyle(0x666666);
-          placeholder.fillRoundedRect(cardX - cardDisplayWidth/2 + 8, cardsY - cardDisplayHeight/2 + 8, cardDisplayWidth - 16, cardDisplayHeight - 16, 8);
-          placeholder.lineStyle(2, 0xffffff);
-          placeholder.strokeRoundedRect(cardX - cardDisplayWidth/2 + 8, cardsY - cardDisplayHeight/2 + 8, cardDisplayWidth - 16, cardDisplayHeight - 16, 8);
-          placeholder.setDepth(1504);
-          cardListElements.push(placeholder);
-          
-          // Card ID on placeholder
-          const idText = scene.add.text(cardX, cardsY, card.cardId, {
-            fontSize: '14px',
-            fontFamily: 'Arial',
-            fill: '#ffffff',
-            align: 'center'
-          });
-          idText.setOrigin(0.5);
-          idText.setDepth(1505);
-          cardListElements.push(idText);
-          cardImage = placeholder; // Use placeholder for hover events
-        }
-        
-        // Make the card interactive for hover events
-        if (cardImage && cardImage.setInteractive) {
-          cardImage.setInteractive();
-          
-          // Create card data object for preview
-          const cardDataObject = {
-            cardId: card.cardId,
-            cardUid: card.cardUid, // Include UID if available
-            name: card.name,
-            power: card.power,
-            zone: card.zone,
-            traits: card.traits || [],
-            description: card.description || ''
-          };
-          
-          // Add hover events
-          cardImage.on('pointerover', () => {
-            scene.game.canvas.style.cursor = 'pointer';
-            scene.showCardPreview(GameSceneUtils.convertCardSelectionToCardDataObject(cardDataObject));
-          });
-          
-          cardImage.on('pointerout', () => {
-            scene.game.canvas.style.cursor = 'default';
-            scene.hideCardPreview();
-          });
-          
-          // Add click handler for card selection
-          cardImage.on('pointerdown', () => {
-            selectCard(card, cardX, cardsY);
-          });
-        }
-        
-        // Animate the card in if direction is specified
-        if (animateDirection && cardImage) {
-          // Set initial position and alpha for animation
-          const startX = animateDirection === 'left' ? cardX - 50 : cardX + 50;
-          cardImage.setPosition(startX, cardsY);
-          cardImage.setAlpha(0);
-          
-          // Animate to final position
-          scene.tweens.add({
-            targets: cardImage,
-            x: cardX,
-            alpha: 1,
-            duration: 300,
-            delay: index * 50, // Stagger animation for each card
-            ease: 'Power2.easeOut'
-          });
-        }
-        
-        // Also animate container if it exists
-        if (animateDirection && cardContainer) {
-          const startX = animateDirection === 'left' ? cardX - 50 : cardX + 50;
-          cardContainer.x = startX - cardX; // Offset from original position
-          cardContainer.alpha = 0;
-          
-          scene.tweens.add({
-            targets: cardContainer,
-            x: 0,
-            alpha: 1,
-            duration: 300,
-            delay: index * 50,
-            ease: 'Power2.easeOut'
-          });
-        }
-      });
-      
-      // Update pagination controls visibility
-      if (leftArrow) {
-        leftArrow.setVisible(currentPage > 0);
-        leftArrow.setAlpha(currentPage > 0 ? 1.0 : 0.3);
-      }
-      if (rightArrow) {
-        rightArrow.setVisible(currentPage < totalPages - 1);
-        rightArrow.setAlpha(currentPage < totalPages - 1 ? 1.0 : 0.3);
-      }
-      if (pageInfoText) {
-        pageInfoText.setText(`Page ${currentPage + 1} of ${totalPages}`);
-      }
-    };
-    
-    // Create pagination controls if needed
-    if (totalPages > 1) {
-      // Left arrow
-      leftArrow = scene.add.graphics();
-      leftArrow.fillStyle(0x888888);
-      leftArrow.fillTriangle(
-        dialogX - dialogWidth/2 + 40, cardSectionY,
-        dialogX - dialogWidth/2 + 65, cardSectionY - 15,
-        dialogX - dialogWidth/2 + 65, cardSectionY + 15
-      );
-      leftArrow.setDepth(1504);
-      leftArrow.setInteractive(new Phaser.Geom.Rectangle(
-        dialogX - dialogWidth/2 + 30, cardSectionY - 20, 45, 40
-      ), Phaser.Geom.Rectangle.Contains);
-      
-      leftArrow.on('pointerdown', () => {
-        if (currentPage > 0) {
-          currentPage--;
-          updateCardDisplay('left'); // Animate from left
-        }
-      });
-      
-      leftArrow.on('pointerover', () => {
-        if (currentPage > 0) {
-          scene.game.canvas.style.cursor = 'pointer';
-        }
-      });
-      
-      leftArrow.on('pointerout', () => {
-        scene.game.canvas.style.cursor = 'default';
-      });
-      
-      // Right arrow
-      rightArrow = scene.add.graphics();
-      rightArrow.fillStyle(0x888888);
-      rightArrow.fillTriangle(
-        dialogX + dialogWidth/2 - 40, cardSectionY,
-        dialogX + dialogWidth/2 - 65, cardSectionY - 15,
-        dialogX + dialogWidth/2 - 65, cardSectionY + 15
-      );
-      rightArrow.setDepth(1504);
-      rightArrow.setInteractive(new Phaser.Geom.Rectangle(
-        dialogX + dialogWidth/2 - 75, cardSectionY - 20, 45, 40
-      ), Phaser.Geom.Rectangle.Contains);
-      
-      rightArrow.on('pointerdown', () => {
-        if (currentPage < totalPages - 1) {
-          currentPage++;
-          updateCardDisplay('right'); // Animate from right
-        }
-      });
-      
-      rightArrow.on('pointerover', () => {
-        if (currentPage < totalPages - 1) {
-          scene.game.canvas.style.cursor = 'pointer';
-        }
-      });
-      
-      rightArrow.on('pointerout', () => {
-        scene.game.canvas.style.cursor = 'default';
-      });
-      
-      // Page info text
-      pageInfoText = scene.add.text(dialogX, cardSectionY + cardSectionHeight/2 - 30, `Page ${currentPage + 1} of ${totalPages}`, {
+    return { cardImageId, displayCardId };
+  }
+
+
+  /**
+   * Creates pagination controls for card navigation
+   * @private
+   */
+  static _createPaginationControls(scene, config, paginationState, dialogElements) {
+    // Left arrow
+    dialogElements.paginationElements.leftArrow = scene.add.graphics();
+    dialogElements.paginationElements.leftArrow.fillStyle(0x888888);
+    dialogElements.paginationElements.leftArrow.fillTriangle(
+      config.centerX - config.width/2 + 40, dialogElements.cardSection.centerY,
+      config.centerX - config.width/2 + 65, dialogElements.cardSection.centerY - 15,
+      config.centerX - config.width/2 + 65, dialogElements.cardSection.centerY + 15
+    );
+    dialogElements.paginationElements.leftArrow.setDepth(1504);
+    dialogElements.paginationElements.leftArrow.setInteractive(new Phaser.Geom.Rectangle(
+      config.centerX - config.width/2 + 30, dialogElements.cardSection.centerY - 20, 45, 40
+    ), Phaser.Geom.Rectangle.Contains);
+
+    // Right arrow
+    dialogElements.paginationElements.rightArrow = scene.add.graphics();
+    dialogElements.paginationElements.rightArrow.fillStyle(0x888888);
+    dialogElements.paginationElements.rightArrow.fillTriangle(
+      config.centerX + config.width/2 - 40, dialogElements.cardSection.centerY,
+      config.centerX + config.width/2 - 65, dialogElements.cardSection.centerY - 15,
+      config.centerX + config.width/2 - 65, dialogElements.cardSection.centerY + 15
+    );
+    dialogElements.paginationElements.rightArrow.setDepth(1504);
+    dialogElements.paginationElements.rightArrow.setInteractive(new Phaser.Geom.Rectangle(
+      config.centerX + config.width/2 - 75, dialogElements.cardSection.centerY - 20, 45, 40
+    ), Phaser.Geom.Rectangle.Contains);
+
+    // Page info text
+    dialogElements.paginationElements.pageInfoText = scene.add.text(
+      config.centerX, 
+      dialogElements.cardSection.centerY + config.cardSectionHeight/2 - 30, 
+      `Page ${paginationState.currentPage + 1} of ${paginationState.totalPages}`, 
+      {
         fontSize: '14px',
         fontFamily: 'Arial',
         fill: '#cccccc',
         align: 'center'
+      }
+    );
+    dialogElements.paginationElements.pageInfoText.setOrigin(0.5);
+    dialogElements.paginationElements.pageInfoText.setDepth(1504);
+  }
+
+  /**
+   * Creates card management system with update and selection logic
+   * @private
+   */
+  static _createCardManager(scene, selection, config, paginationState, selectionState, cardDisplayConfig, dialogElements) {
+    const eligibleCards = selection.eligibleCards;
+    
+    // Function to clear selections when changing pages
+    const clearSelections = () => {
+      selectionState.selectedCard = null;
+      selectionState.selectedCards.length = 0;
+      if (selectionState.selectedCardHighlight) {
+        selectionState.selectedCardHighlight.destroy();
+        selectionState.selectedCardHighlight = null;
+      }
+      selectionState.selectedCardHighlights.forEach(highlight => {
+        if (highlight) highlight.destroy();
       });
-      pageInfoText.setOrigin(0.5);
-      pageInfoText.setDepth(1504);
+      selectionState.selectedCardHighlights.length = 0;
+    };
+    
+    // Function to create cards for current page
+    const createCardsForCurrentPage = (animateDirection) => {
+      const startIndex = paginationState.currentPage * paginationState.maxCardsPerPage;
+      const endIndex = Math.min(startIndex + paginationState.maxCardsPerPage, eligibleCards.length);
+      const currentPageCards = eligibleCards.slice(startIndex, endIndex);
+      
+      // Calculate layout
+      const totalCardsWidth = (currentPageCards.length * cardDisplayConfig.cardDisplayWidth) + 
+                             ((currentPageCards.length - 1) * cardDisplayConfig.cardSpacing);
+      const cardsStartX = config.centerX - totalCardsWidth / 2;
+      const cardsY = dialogElements.cardSection.centerY + 10;
+      
+      // Create cards
+      currentPageCards.forEach((card, index) => {
+        this._createSingleCardDisplay(
+          scene, card, index, cardsStartX, cardsY, 
+          cardDisplayConfig, dialogElements, selectionState, animateDirection
+        );
+      });
+      
+      // Update pagination controls visibility
+      this._updatePaginationVisibility(paginationState, dialogElements);
+    };
+    
+    // Main update function
+    const updateCardDisplay = (animateDirection = null) => {
+      clearSelections();
+      
+      if (animateDirection && dialogElements.cardListElements.length > 0) {
+        this._animateCardsOut(scene, dialogElements.cardListElements, animateDirection)
+          .then(() => {
+            dialogElements.cardListElements.length = 0;
+            createCardsForCurrentPage(animateDirection);
+          });
+      } else {
+        this._cleanupCardElements(dialogElements.cardListElements);
+        dialogElements.cardListElements.length = 0;
+        createCardsForCurrentPage(null);
+      }
+    };
+    
+    // Selection logic
+    const selectCard = (card, cardX, cardsY) => {
+      this._handleCardSelection(card, cardX, cardsY, selectionState, cardDisplayConfig, dialogElements);
+      updateOKButtonState(); // Update button state after selection change
+    };
+    
+    // OK button state update
+    const updateOKButtonState = () => {
+      this._updateOKButtonState(selectionState, dialogElements);
+    };
+    
+    // Set up pagination event handlers
+    if (dialogElements.paginationElements.leftArrow) {
+      this._setupPaginationEvents(scene, paginationState, dialogElements, updateCardDisplay);
     }
     
-    // Initial card display (no animation)
-    updateCardDisplay();
-    
-    // ===================================
-    // SECTION 3: BUTTON SECTION (BOTTOM)
-    // ===================================
-    const buttonSectionY = cardSectionY + cardSectionHeight/2 + buttonSectionHeight/2;
+    return { updateCardDisplay, selectCard, updateOKButtonState };
+  }
+
+  /**
+   * Creates button section with OK button and handlers
+   * @private
+   */
+  static _createButtonSection(scene, selectionId, selection, config, selectionState, dialogElements, updateOKButtonState, onConfirm) {
+    const buttonSectionY = config.centerY + config.height/2 - config.buttonSectionHeight/2;
     
     // Button section background
-    const buttonBg = scene.add.graphics();
-    buttonBg.fillStyle(0x3a3a3a, 0.8);
-    buttonBg.fillRoundedRect(dialogX - dialogWidth/2 + 10, buttonSectionY - buttonSectionHeight/2 + 10, dialogWidth - 20, buttonSectionHeight - 20, 10);
-    buttonBg.setDepth(1502);
+    dialogElements.buttonSection.background = scene.add.graphics();
+    dialogElements.buttonSection.background.fillStyle(0x3a3a3a, 0.8);
+    dialogElements.buttonSection.background.fillRoundedRect(
+      config.centerX - config.width/2 + 10, 
+      buttonSectionY - config.buttonSectionHeight/2 + 10, 
+      config.width - 20, 
+      config.buttonSectionHeight - 20, 
+      10
+    );
+    dialogElements.buttonSection.background.setDepth(1502);
     
-    // Helper function to toggle card selection (supports both single and multiple)
-    const selectCard = (card, cardX, cardsY) => {
-      if (maxSelections === 1) {
-        // Single selection mode (legacy compatibility)
-        if (selectedCardHighlight) {
-          selectedCardHighlight.destroy();
-          selectedCardHighlight = null;
-        }
-        
-        selectedCard = card;
-        selectedCards = [card];
-        
-        // Create selection highlight
-        selectedCardHighlight = scene.add.graphics();
-        selectedCardHighlight.lineStyle(4, 0x00ff00);
-        selectedCardHighlight.strokeRoundedRect(
-          cardX - cardDisplayWidth/2 - 2, 
-          cardsY - cardDisplayHeight/2 - 2, 
-          cardDisplayWidth + 4, 
-          cardDisplayHeight + 4, 
-          10
-        );
-        selectedCardHighlight.setDepth(1506);
-        selectedCardHighlights = [selectedCardHighlight];
-        cardListElements.push(selectedCardHighlight);
-        
-        console.log('Card selected (single):', card.cardId);
-      } else {
-        // Multiple selection mode
-        const index = selectedCards.findIndex(c => c.cardId === card.cardId);
-        
-        if (index > -1) {
-          // Deselect card
-          selectedCards.splice(index, 1);
-          const highlight = selectedCardHighlights.splice(index, 1)[0];
-          if (highlight) {
-            highlight.destroy();
-            const elementIndex = cardListElements.indexOf(highlight);
-            if (elementIndex > -1) {
-              cardListElements.splice(elementIndex, 1);
-            }
-          }
-          console.log('Card deselected:', card.cardId);
-        } else {
-          // Select card (if under limit)
-          if (selectedCards.length < maxSelections) {
-            selectedCards.push(card);
-            
-            // Create selection highlight
-            const highlight = scene.add.graphics();
-            highlight.lineStyle(4, 0x00ff00);
-            highlight.strokeRoundedRect(
-              cardX - cardDisplayWidth/2 - 2, 
-              cardsY - cardDisplayHeight/2 - 2, 
-              cardDisplayWidth + 4, 
-              cardDisplayHeight + 4, 
-              10
-            );
-            highlight.setDepth(1506);
-            selectedCardHighlights.push(highlight);
-            cardListElements.push(highlight);
-            
-            console.log('Card selected:', card.cardId, `(${selectedCards.length}/${maxSelections})`);
-          } else {
-            console.log('Maximum selections reached:', maxSelections);
-          }
-        }
-        
-        // Update legacy compatibility
-        selectedCard = selectedCards.length > 0 ? selectedCards[0] : null;
-        selectedCardHighlight = selectedCardHighlights.length > 0 ? selectedCardHighlights[0] : null;
-      }
-      
-      // Update OK button state
-      updateOKButtonState();
-    };
+    // OK button
+    dialogElements.buttonSection.okButton = scene.add.image(config.centerX, buttonSectionY, 'button');
+    dialogElements.buttonSection.okButton.setScale(1.0);
+    dialogElements.buttonSection.okButton.setInteractive();
+    dialogElements.buttonSection.okButton.setTint(0x888888);
+    dialogElements.buttonSection.okButton.setDepth(1503);
     
-    // Function to update OK button visual state (supports multiple selection)
-    const updateOKButtonState = () => {
-      if (selectedCards.length >= 1) {
-        okButton.setTint(0x4CAF50); // Green when enabled
-        if (maxSelections > 1) {
-          okText.setText(`CONFIRM SELECTION (${selectedCards.length}/${maxSelections})`);
-        } else {
-          okText.setText('CONFIRM SELECTION');
-        }
-      } else {
-        okButton.setTint(0x888888); // Gray when disabled
-        if (maxSelections > 1) {
-          okText.setText(`SELECT ${maxSelections} CARDS`);
-        } else {
-          okText.setText('SELECT A CARD');
-        }
-      }
-    };
-    
-    // OK button (larger and more prominent)
-    const okButton = scene.add.image(dialogX, buttonSectionY, 'button');
-    okButton.setScale(1.0);
-    okButton.setInteractive();
-    okButton.setTint(0x888888); // Start disabled (gray)
-    okButton.setDepth(1503);
-    
-    const okText = scene.add.text(dialogX, buttonSectionY, 'SELECT A CARD', {
+    dialogElements.buttonSection.okText = scene.add.text(config.centerX, buttonSectionY, 'SELECT A CARD', {
       fontSize: '18px',
       fontFamily: 'Arial Bold',
       fill: '#ffffff'
     });
-    okText.setOrigin(0.5);
-    okText.setDepth(1504);
+    dialogElements.buttonSection.okText.setOrigin(0.5);
+    dialogElements.buttonSection.okText.setDepth(1504);
     
-    // Button hover effect
+    // Button events
+    this._setupOKButtonEvents(scene, selectionId, selection, selectionState, dialogElements, onConfirm);
+    
+    // Initial button state
+    updateOKButtonState();
+    
+    return dialogElements.buttonSection;
+  }
+
+  /**
+   * Gets all dialog elements for cleanup
+   * @private
+   */
+  static _getAllDialogElements(dialogElements) {
+    const elements = [
+      dialogElements.overlay,
+      dialogElements.dialogBg,
+      dialogElements.titleSection.background,
+      dialogElements.titleSection.titleText,
+      dialogElements.titleSection.descText,
+      dialogElements.cardSection.background,
+      dialogElements.cardSection.labelText,
+      dialogElements.buttonSection.background,
+      dialogElements.buttonSection.okButton,
+      dialogElements.buttonSection.okText
+    ].filter(el => el);
+    
+    // Add all current card elements
+    dialogElements.cardListElements.forEach(element => {
+      if (element && !element.destroyed) {
+        elements.push(element);
+      }
+    });
+    
+    // Add pagination elements if they exist
+    Object.values(dialogElements.paginationElements).forEach(element => {
+      if (element && !element.destroyed) {
+        elements.push(element);
+      }
+    });
+    
+    return elements;
+  }
+
+  /**
+   * Cleanup function for dialog
+   * @private
+   */
+  static _cleanupDialog(scene, dialogElements) {
+    // Stop any running tweens
+    scene.tweens.killTweensOf(dialogElements.cardListElements);
+    Object.values(dialogElements.paginationElements).forEach(element => {
+      if (element) scene.tweens.killTweensOf(element);
+    });
+    
+    // Get all elements and destroy them
+    const allElements = this._getAllDialogElements(dialogElements);
+    allElements.forEach(element => {
+      if (element && !element.destroyed) {
+        element.destroy();
+      }
+    });
+    
+    // Clear arrays
+    dialogElements.cardListElements.length = 0;
+  }
+
+  /**
+   * Creates a single card display element
+   * @private
+   */
+  static _createSingleCardDisplay(scene, card, index, cardsStartX, cardsY, cardDisplayConfig, dialogElements, selectionState, animateDirection) {
+    const cardX = cardsStartX + (index * (cardDisplayConfig.cardDisplayWidth + cardDisplayConfig.cardSpacing)) + cardDisplayConfig.cardDisplayWidth / 2;
+    
+    // Card container background
+    const cardContainer = scene.add.graphics();
+    cardContainer.fillStyle(0x333333);
+    cardContainer.fillRoundedRect(cardX - cardDisplayConfig.cardDisplayWidth/2, cardsY - cardDisplayConfig.cardDisplayHeight/2, cardDisplayConfig.cardDisplayWidth, cardDisplayConfig.cardDisplayHeight, 8);
+    cardContainer.lineStyle(2, 0x666666);
+    cardContainer.strokeRoundedRect(cardX - cardDisplayConfig.cardDisplayWidth/2, cardsY - cardDisplayConfig.cardDisplayHeight/2, cardDisplayConfig.cardDisplayWidth, cardDisplayConfig.cardDisplayHeight, 8);
+    cardContainer.setDepth(1503);
+    dialogElements.cardListElements.push(cardContainer);
+    
+    // Extract card display info and create card image
+    const { cardImageId, displayCardId } = this._extractCardDisplayInfo(card);
+    const cardImage = this._createCardImage(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig);
+    if (cardImage) {
+      dialogElements.cardListElements.push(cardImage);
+      this._setupCardInteraction(scene, card, cardImage, displayCardId, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements);
+    }
+    
+    // Animate card in if direction is specified
+    if (animateDirection && cardImage) {
+      this._animateCardIn(scene, cardImage, cardContainer, cardX, cardsY, animateDirection, index);
+    }
+  }
+
+  /**
+   * Creates card image with fallback handling
+   * @private
+   */
+  static _createCardImage(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig) {
+    const previewImageKey = `${cardImageId}_preview`;
+    
+    if (scene.textures.exists(previewImageKey)) {
+      const cardImage = scene.add.image(cardX, cardsY, previewImageKey);
+      const maxScale = Math.min((cardDisplayConfig.cardDisplayWidth - 16) / cardImage.width, (cardDisplayConfig.cardDisplayHeight - 16) / cardImage.height);
+      cardImage.setScale(maxScale);
+      cardImage.setDepth(1504);
+      return cardImage;
+    } else if (scene.textures.exists(cardImageId)) {
+      const cardImage = scene.add.image(cardX, cardsY, cardImageId);
+      const maxScale = Math.min((cardDisplayConfig.cardDisplayWidth - 16) / cardImage.width, (cardDisplayConfig.cardDisplayHeight - 16) / cardImage.height);
+      cardImage.setScale(maxScale);
+      cardImage.setDepth(1504);
+      return cardImage;
+    } else {
+      // Fallback placeholder
+      const placeholder = scene.add.graphics();
+      placeholder.fillStyle(0x666666);
+      placeholder.fillRoundedRect(cardX - cardDisplayConfig.cardDisplayWidth/2 + 8, cardsY - cardDisplayConfig.cardDisplayHeight/2 + 8, cardDisplayConfig.cardDisplayWidth - 16, cardDisplayConfig.cardDisplayHeight - 16, 8);
+      placeholder.lineStyle(2, 0xffffff);
+      placeholder.strokeRoundedRect(cardX - cardDisplayConfig.cardDisplayWidth/2 + 8, cardsY - cardDisplayConfig.cardDisplayHeight/2 + 8, cardDisplayConfig.cardDisplayWidth - 16, cardDisplayConfig.cardDisplayHeight - 16, 8);
+      placeholder.setDepth(1504);
+      return placeholder;
+    }
+  }
+
+  /**
+   * Prepares card data for preview - uses card data directly without conversion
+   * @private
+   */
+  static _prepareCardDataForPreview(card) {
+    // Direct unit object from zones (has cardData property)
+    if (card.cardData) {
+      return {
+        cardData: card.cardData,
+        cardUid: card.cardUid,
+        slot: card.slot
+      };
+    }
+    
+    // Direct card data object (card data is at root level)
+    if (card.id || card.cardId) {
+      return {
+        cardData: card,
+        cardUid: card.cardUid || card.cardId || card.id
+      };
+    }
+    
+    // Fallback for unknown structures
+    console.warn('Unknown card data structure in preview:', card);
+    return {
+      cardData: {
+        id: 'unknown',
+        name: 'Unknown Card',
+        cardType: 'character',
+        type: 'character'
+      },
+      cardUid: 'unknown'
+    };
+  }
+
+  /**
+   * Sets up card interaction events
+   * @private
+   */
+  static _setupCardInteraction(scene, card, cardImage, displayCardId, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements) {
+    if (cardImage && cardImage.setInteractive) {
+      cardImage.setInteractive();
+      
+      cardImage.on('pointerover', () => {
+        scene.game.canvas.style.cursor = 'pointer';
+        
+        // Use card data directly - no conversion needed
+        const previewData = this._prepareCardDataForPreview(card);
+        scene.showCardPreview(previewData);
+      });
+      
+      cardImage.on('pointerout', () => {
+        scene.game.canvas.style.cursor = 'default';
+        scene.hideCardPreview();
+      });
+      
+      cardImage.on('pointerdown', () => {
+        this._handleCardSelection(card, cardX, cardsY, selectionState, cardDisplayConfig, dialogElements);
+      });
+    }
+  }
+
+  /**
+   * Handles card selection logic
+   * @private
+   */
+  static _handleCardSelection(card, cardX, cardsY, selectionState, cardDisplayConfig, dialogElements) {
+    if (selectionState.maxSelections === 1) {
+      // Single selection mode with toggle support
+      const isCurrentlySelected = selectionState.selectedCard && selectionState.selectedCard.cardId === card.cardId;
+      
+      if (isCurrentlySelected) {
+        // Deselect the currently selected card
+        if (selectionState.selectedCardHighlight) {
+          selectionState.selectedCardHighlight.destroy();
+          selectionState.selectedCardHighlight = null;
+        }
+        selectionState.selectedCard = null;
+        selectionState.selectedCards = [];
+        selectionState.selectedCardHighlights = [];
+        console.log('Card deselected (single):', card.cardId);
+      } else {
+        // Select the new card (clear previous selection first)
+        if (selectionState.selectedCardHighlight) {
+          selectionState.selectedCardHighlight.destroy();
+          selectionState.selectedCardHighlight = null;
+        }
+        
+        selectionState.selectedCard = card;
+        selectionState.selectedCards = [card];
+        
+        // Create selection highlight
+        selectionState.selectedCardHighlight = this._createSelectionHighlight(cardX, cardsY, cardDisplayConfig, dialogElements);
+        selectionState.selectedCardHighlights = [selectionState.selectedCardHighlight];
+        console.log('Card selected (single):', card.cardId);
+      }
+    } else {
+      // Multiple selection mode
+      const index = selectionState.selectedCards.findIndex(c => c.cardId === card.cardId);
+      
+      if (index > -1) {
+        // Deselect card
+        selectionState.selectedCards.splice(index, 1);
+        const highlight = selectionState.selectedCardHighlights.splice(index, 1)[0];
+        if (highlight) {
+          highlight.destroy();
+          const elementIndex = dialogElements.cardListElements.indexOf(highlight);
+          if (elementIndex > -1) {
+            dialogElements.cardListElements.splice(elementIndex, 1);
+          }
+        }
+      } else {
+        // Select card (if under limit)
+        if (selectionState.selectedCards.length < selectionState.maxSelections) {
+          selectionState.selectedCards.push(card);
+          const highlight = this._createSelectionHighlight(cardX, cardsY, cardDisplayConfig, dialogElements);
+          selectionState.selectedCardHighlights.push(highlight);
+        }
+      }
+      
+      // Update legacy compatibility
+      selectionState.selectedCard = selectionState.selectedCards.length > 0 ? selectionState.selectedCards[0] : null;
+      selectionState.selectedCardHighlight = selectionState.selectedCardHighlights.length > 0 ? selectionState.selectedCardHighlights[0] : null;
+    }
+  }
+
+  /**
+   * Creates selection highlight for a card
+   * @private
+   */
+  static _createSelectionHighlight(cardX, cardsY, cardDisplayConfig, dialogElements) {
+    const highlight = dialogElements.cardSection.background.scene.add.graphics();
+    highlight.lineStyle(4, 0x00ff00);
+    highlight.strokeRoundedRect(
+      cardX - cardDisplayConfig.cardDisplayWidth/2 - 2, 
+      cardsY - cardDisplayConfig.cardDisplayHeight/2 - 2, 
+      cardDisplayConfig.cardDisplayWidth + 4, 
+      cardDisplayConfig.cardDisplayHeight + 4, 
+      10
+    );
+    highlight.setDepth(1506);
+    dialogElements.cardListElements.push(highlight);
+    return highlight;
+  }
+
+  /**
+   * Updates OK button state based on selection
+   * @private
+   */
+  static _updateOKButtonState(selectionState, dialogElements) {
+    const okButton = dialogElements.buttonSection.okButton;
+    const okText = dialogElements.buttonSection.okText;
+    
+    if (selectionState.selectedCards.length >= 1) {
+      okButton.setTint(0x4CAF50);
+      if (selectionState.maxSelections > 1) {
+        okText.setText(`CONFIRM SELECTION (${selectionState.selectedCards.length}/${selectionState.maxSelections})`);
+      } else {
+        okText.setText('CONFIRM SELECTION');
+      }
+    } else {
+      okButton.setTint(0x888888);
+      if (selectionState.maxSelections > 1) {
+        okText.setText(`SELECT ${selectionState.maxSelections} CARDS`);
+      } else {
+        okText.setText('SELECT A CARD');
+      }
+    }
+  }
+
+  /**
+   * Sets up OK button event handlers
+   * @private
+   */
+  static _setupOKButtonEvents(scene, selectionId, selection, selectionState, dialogElements, onConfirm) {
+    const okButton = dialogElements.buttonSection.okButton;
+    
     okButton.on('pointerover', () => {
-      if (selectedCards.length >= 1) {
+      if (selectionState.selectedCards.length >= 1) {
         okButton.setTint(0x66BB6A);
         scene.input.setDefaultCursor('pointer');
       }
     });
+    
     okButton.on('pointerout', () => {
-      updateOKButtonState(); // Restore proper state
+      this._updateOKButtonState(selectionState, dialogElements);
       scene.input.setDefaultCursor('default');
     });
     
-    // Function to get all current dialog elements for cleanup
-    const getAllDialogElements = () => {
-      const elements = [
-        overlay, dialogBg, titleBg, titleText, descText,
-        cardBg, cardLabelText, 
-        buttonBg, okButton, okText
-      ];
-      
-      // Add all current card elements
-      cardListElements.forEach(element => {
-        if (element && !element.destroyed) {
-          elements.push(element);
-        }
-      });
-      
-      // Add pagination elements if they exist
-      if (leftArrow && !leftArrow.destroyed) elements.push(leftArrow);
-      if (rightArrow && !rightArrow.destroyed) elements.push(rightArrow);
-      if (pageInfoText && !pageInfoText.destroyed) elements.push(pageInfoText);
-      
-      return elements;
-    };
-    
-    // Store cleanup function for external access
-    const cleanupDialog = () => {
-      // Stop any running tweens first
-      scene.tweens.killTweensOf(cardListElements);
-      if (leftArrow) scene.tweens.killTweensOf(leftArrow);
-      if (rightArrow) scene.tweens.killTweensOf(rightArrow);
-      
-      // Get all elements and destroy them
-      const allElements = getAllDialogElements();
-      allElements.forEach(element => {
-        if (element && !element.destroyed) {
-          element.destroy();
-        }
-      });
-      
-      // Clear the card elements array
-      cardListElements.length = 0;
-    };
-    
-    // OK button handler
     okButton.on('pointerdown', async () => {
-      console.log('Card selection confirmed');
-      
-      // Check if cards are selected
-      if (selectedCards.length >= 1) {
-        console.log(`Confirming selection of ${selectedCards.length} card(s):`, selectedCards.map(c => c.cardId));
-        
+      if (selectionState.selectedCards.length >= 1) {
         try {
-          // Call backend API to submit card selection using correct selectCard endpoint
           const gameState = scene.gameStateManager.getGameState();
-          
-          // Extract UIDs if available, fallback to cardId for backward compatibility
-          const cardIdentifiers = selectedCards.map(card => card.cardUid || card.cardId);
-          console.log('Sending card identifiers:', cardIdentifiers);
+          const cardIdentifiers = selectionState.selectedCards.map(card => card.cardUid || card.cardId);
           
           const response = await scene.apiManager.selectCard(
             selectionId, 
@@ -946,37 +1093,158 @@ export default class GameSceneUtils {
           );
           
           if (response.success) {
-            console.log('Card selection submitted successfully');
-            // Use cleanup function instead of passing elements
-            cleanupDialog();
-            // Call original confirmation for any additional frontend logic
-            onConfirm(selectionId, selectedCards.length === 1 ? selectedCards[0] : selectedCards, []);
+            this._cleanupDialog(scene, dialogElements);
+            onConfirm(selectionId, selectionState.selectedCards.length === 1 ? selectionState.selectedCards[0] : selectionState.selectedCards, []);
           } else {
             console.error('Card selection submission failed:', response.error);
-            // Show error feedback but keep dialog open
-            // TODO: Add visual error feedback
           }
         } catch (error) {
           console.error('Error submitting card selection:', error);
-          // Show error feedback but keep dialog open
-          // TODO: Add visual error feedback
         }
-      } else {
-        console.log('No card selected - cannot confirm');
-        // Could add visual feedback here (shake button, show message, etc.)
+      }
+    });
+  }
+
+  /**
+   * Updates pagination control visibility
+   * @private
+   */
+  static _updatePaginationVisibility(paginationState, dialogElements) {
+    if (dialogElements.paginationElements.leftArrow) {
+      dialogElements.paginationElements.leftArrow.setVisible(paginationState.currentPage > 0);
+      dialogElements.paginationElements.leftArrow.setAlpha(paginationState.currentPage > 0 ? 1.0 : 0.3);
+    }
+    if (dialogElements.paginationElements.rightArrow) {
+      dialogElements.paginationElements.rightArrow.setVisible(paginationState.currentPage < paginationState.totalPages - 1);
+      dialogElements.paginationElements.rightArrow.setAlpha(paginationState.currentPage < paginationState.totalPages - 1 ? 1.0 : 0.3);
+    }
+    if (dialogElements.paginationElements.pageInfoText) {
+      dialogElements.paginationElements.pageInfoText.setText(`Page ${paginationState.currentPage + 1} of ${paginationState.totalPages}`);
+    }
+  }
+
+  /**
+   * Sets up pagination event handlers
+   * @private
+   */
+  static _setupPaginationEvents(scene, paginationState, dialogElements, updateCardDisplay) {
+    const leftArrow = dialogElements.paginationElements.leftArrow;
+    const rightArrow = dialogElements.paginationElements.rightArrow;
+    
+    leftArrow.on('pointerdown', () => {
+      if (paginationState.currentPage > 0) {
+        paginationState.currentPage--;
+        updateCardDisplay('left');
       }
     });
     
-    // Initialize button state
-    updateOKButtonState();
+    leftArrow.on('pointerover', () => {
+      if (paginationState.currentPage > 0) {
+        scene.game.canvas.style.cursor = 'pointer';
+      }
+    });
     
-    // Return cleanup function and initial elements for external cleanup if needed
-    const dialogInterface = {
-      elements: getAllDialogElements(),
-      cleanup: cleanupDialog
-    };
+    leftArrow.on('pointerout', () => {
+      scene.game.canvas.style.cursor = 'default';
+    });
     
-    return dialogInterface;
+    rightArrow.on('pointerdown', () => {
+      if (paginationState.currentPage < paginationState.totalPages - 1) {
+        paginationState.currentPage++;
+        updateCardDisplay('right');
+      }
+    });
+    
+    rightArrow.on('pointerover', () => {
+      if (paginationState.currentPage < paginationState.totalPages - 1) {
+        scene.game.canvas.style.cursor = 'pointer';
+      }
+    });
+    
+    rightArrow.on('pointerout', () => {
+      scene.game.canvas.style.cursor = 'default';
+    });
+  }
+
+  /**
+   * Animates cards out with fade effect
+   * @private
+   */
+  static _animateCardsOut(scene, cardElements, animateDirection) {
+    const fadeOutPromises = cardElements.map(element => {
+      if (element && element.setAlpha) {
+        return new Promise(resolve => {
+          scene.tweens.add({
+            targets: element,
+            alpha: 0,
+            x: animateDirection === 'left' ? element.x + 50 : element.x - 50,
+            duration: 200,
+            ease: 'Power2.easeIn',
+            onComplete: () => {
+              if (element && element.destroy) {
+                element.destroy();
+              }
+              resolve();
+            }
+          });
+        });
+      } else {
+        if (element && element.destroy) {
+          element.destroy();
+        }
+        return Promise.resolve();
+      }
+    });
+    
+    return Promise.all(fadeOutPromises);
+  }
+
+  /**
+   * Animates card in with slide effect
+   * @private
+   */
+  static _animateCardIn(scene, cardImage, cardContainer, cardX, cardsY, animateDirection, index) {
+    if (cardImage) {
+      const startX = animateDirection === 'left' ? cardX - 50 : cardX + 50;
+      cardImage.setPosition(startX, cardsY);
+      cardImage.setAlpha(0);
+      
+      scene.tweens.add({
+        targets: cardImage,
+        x: cardX,
+        alpha: 1,
+        duration: 300,
+        delay: index * 50,
+        ease: 'Power2.easeOut'
+      });
+    }
+    
+    if (cardContainer) {
+      const startX = animateDirection === 'left' ? cardX - 50 : cardX + 50;
+      cardContainer.x = startX - cardX;
+      cardContainer.alpha = 0;
+      
+      scene.tweens.add({
+        targets: cardContainer,
+        x: 0,
+        alpha: 1,
+        duration: 300,
+        delay: index * 50,
+        ease: 'Power2.easeOut'
+      });
+    }
+  }
+
+  /**
+   * Cleanup card elements array
+   * @private
+   */
+  static _cleanupCardElements(cardElements) {
+    cardElements.forEach(element => {
+      if (element && element.destroy) {
+        element.destroy();
+      }
+    });
   }
 
   /**

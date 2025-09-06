@@ -274,22 +274,20 @@ export default class CardActionHandler {
             return;
         }
         
-        // Find all units in slots (slot1-slot6)
-        const availableUnits = [];
+        // Find all units in slots (slot1-slot6) - use units directly without conversion
+        const eligibleCards = [];
         for (let i = 1; i <= 6; i++) {
             const slotName = `slot${i}`;
             const slot = playerData.zones[slotName];
             if (slot && slot.unit) {
-                availableUnits.push({
-                    cardUid: slot.unit.cardUid, // This will be used as eligibleCards cardId
-                    cardData: slot.unit.cardData,
-                    slot: slotName,
-                    unit: slot.unit
-                });
+                // Use the unit directly with minimal metadata additions
+                const unit = slot.unit;
+                unit.slot = slotName; // Add slot info directly to existing unit object
+                eligibleCards.push(unit);
             }
         }
         
-        if (availableUnits.length === 0) {
+        if (eligibleCards.length === 0) {
             this.showErrorMessage('No units available to pilot. Place unit cards first.');
             return;
         }
@@ -297,28 +295,20 @@ export default class CardActionHandler {
         // Create a unique selection ID
         const selectionId = `pilot_target_${Date.now()}`;
         
-        // Format units for the existing card selection system
-        const eligibleCards = availableUnits.map(unit => ({
-            cardId: unit.cardUid, // Use cardUid as identifier
-            cardData: unit.cardData,
-            slot: unit.slot // Additional metadata
-        }));
-        
         // Create selection data compatible with existing system
         const selectionData = {
             playerId: playerId,
             eligibleCards: eligibleCards,
+            dialogType:"SELECT_UNIT_FOR_PILOT",
             selectCount: 1,
             title: 'Select Unit to Pilot',
             description: 'Choose which unit this pilot card should attach to',
             callback: (selectedCards) => {
                 console.log('Unit selected for piloting:', selectedCards);
                 if (selectedCards && selectedCards.length > 0) {
-                    const selectedUnitCardId = selectedCards[0].cardId;
-                    const selectedUnit = availableUnits.find(unit => unit.cardUid === selectedUnitCardId);
-                    if (selectedUnit) {
-                        this.executePilotCardPlay(selectedCard, selectedUnit);
-                    }
+                    const selectedUnit = selectedCards[0];
+                    // selectedUnit is now the direct unit object, no need to find it
+                    this.executePilotCardPlay(selectedCard, selectedUnit);
                 }
             },
             onCancel: () => {
