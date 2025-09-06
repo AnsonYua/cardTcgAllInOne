@@ -132,65 +132,7 @@ export class GameLogic {
         }
     }
 
-    /**
-     * Play a card in your custom trading card game (Legacy zone-based method)
-     * @param gameId - Game ID
-     * @param playerId - Player ID
-     * @param cardUID - Card UID to play
-     * @param zone - Zone to place card (slot1-slot6, base)
-     * @param faceDown - Whether to play face down
-     * @returns Promise<PlayerActionResult>
-     */
-    async playCardLegacy(gameId: string, playerId: string, cardUID: string, zone: string, faceDown: boolean = false): Promise<PlayerActionResult> {
-        try {
-            console.log(`🎮 Playing custom trading card ${cardUID} in ${zone} for player ${playerId}`);
-            
-            // Load game environment
-            const gameEnv = await this.loadGameFromFile(gameId);
-            if (!gameEnv) {
-                return {
-                    success: false,
-                    error: 'Game not found'
-                };
-            }
-            
-            //     
-            //     if (eventResult.needsPlayerInput) {
-            //         return {
-            //             success: true,
-            //             gameId,
-            //             gameEnv,
-            //             requiresCardSelection: true,
-            //             cardSelectionId: eventResult.waitingForChoice
-            //         };
-            //     }
-            // } else {
-            //     console.log('⚠️ Event processor not initialized, using direct placement');
-            // }
-           
-            console.log('🚧 [PLACEHOLDER] Custom card play logic not implemented');
-            console.log('🚧 [PLACEHOLDER] Add your custom card placement and effect processing here');
-            
-            // Save updated game state
-            await this.saveGameToFile(gameId, gameEnv);
-            
-            console.log(`✅ Custom trading card ${cardUID} played successfully`);
-            
-            return {
-                success: true,
-                gameId: gameId,
-                gameEnv: gameEnv,
-                requiresCardSelection: false
-            };
-            
-        } catch (error) {
-            console.error('❌ Error playing card:', error);
-            return {
-                success: false,
-                error: `Failed to play card: ${error instanceof Error ? error.message : 'Unknown error'}`
-            };
-        }
-    }
+  
 
     /**
      * Start ready phase for a player
@@ -745,6 +687,72 @@ export class GameLogic {
             return {
                 success: false,
                 error: `Failed to inject game state: ${error instanceof Error ? error.message : 'Unknown error'}`
+            };
+        }
+    }
+
+    /**
+     * Streamlined card play method - passes action directly to minimize conversions
+     * @param gameId - Game ID
+     * @param playerId - Player ID
+     * @param action - Complete action object from API
+     * @returns Promise<GameLogicResult>
+     */
+    async playCardWithAction(gameId: string, playerId: string, action: any): Promise<GameLogicResult> {
+        try {
+            console.log(`🎯 playCardWithAction: gameId=${gameId}, playerId=${playerId}`, action);
+            
+            // Validate inputs
+            if (!gameId || !playerId || !action?.cardUID) {
+                return {
+                    success: false,
+                    error: 'gameId, playerId, and action.cardUID are required'
+                };
+            }
+            
+            // Load game state
+            const gameEnv = await this.loadGameFromFile(gameId);
+            if (!gameEnv) {
+                return {
+                    success: false,
+                    error: 'Game not found'
+                };
+            }
+            
+            // Create PlayerAction directly from API action - minimal conversion
+            const playCardEvent: PlayerAction = {
+                type: PlayerActionType.PLAY_CARD,
+                playerId,
+                gameId,
+                cardUID: action.cardUID,
+                playAs: action.playAs,
+                targetUnit: action.targetUnit
+            };
+            
+            const actionResult = await this.processAction(gameEnv, playCardEvent);
+            console.log('🎮 PLAY_CARD processed:', actionResult);
+            
+            if (!actionResult.success) {
+                return {
+                    success: false,
+                    error: actionResult.error || 'Failed to process player action'
+                };
+            }
+            
+            // Save updated game state
+            await this.saveGameToFile(gameId, gameEnv);
+            
+            return {
+                success: true,
+                gameId,
+                gameEnv
+            };
+            
+        } catch (error) {
+            console.error('❌ Error in playCardWithAction:', error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Failed to play card'
             };
         }
     }

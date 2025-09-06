@@ -564,13 +564,14 @@ export class GameEngine {
     }
     
     private executePlayCard(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
-        const { playerId, gameId, cardUID, playAs, targetUnit } = event.data;
+        // Pass event data directly to minimize conversions
+        const eventData = event.data;
         
-        console.log(`🎯 Processing PLAY_CARD event for player: ${playerId}, cardUID: ${cardUID}, playAs: ${playAs}, targetUnit: ${targetUnit || 'none'}`);
+        console.log(`🎯 Processing PLAY_CARD event for player: ${eventData.playerId}, cardUID: ${eventData.cardUID}, playAs: ${eventData.playAs}, targetUnit: ${eventData.targetUnit || 'none'}`);
         
         try {
             // Validate it's the player's turn
-            if (gameEnv.currentPlayer !== playerId) {
+            if (gameEnv.currentPlayer !== eventData.playerId) {
                 return {
                     success: false,
                     error: `Not your turn. Current player: ${gameEnv.currentPlayer}`
@@ -578,42 +579,41 @@ export class GameEngine {
             }
             
             // Find player
-            const player = gameEnv.players[playerId];
+            const player = gameEnv.players[eventData.playerId];
             if (!player || !player.zones) {
                 return {
                     success: false,
-                    error: `Player ${playerId} or zones not found`
+                    error: `Player ${eventData.playerId} or zones not found`
                 };
             }
             
             // Validate card is in hand and remove it
-            if (!PlayerCardManager.validateCardInHand(gameEnv, playerId, cardUID)) {
+            if (!PlayerCardManager.validateCardInHand(gameEnv, eventData.playerId, eventData.cardUID)) {
                 return {
                     success: false,
-                    error: `Card ${cardUID} not found in player ${playerId} hand`
+                    error: `Card ${eventData.cardUID} not found in player ${eventData.playerId} hand`
                 };
             }
 
-            if (!PlayerCardManager.removeCardFromHand(gameEnv, playerId, cardUID)) {
+            if (!PlayerCardManager.removeCardFromHand(gameEnv, eventData.playerId, eventData.cardUID)) {
                 return {
                     success: false,
-                    error: `Failed to remove card ${cardUID} from player ${playerId} hand`
+                    error: `Failed to remove card ${eventData.cardUID} from player ${eventData.playerId} hand`
                 };
             }
 
-            // Place card using PlayerCardManager with targetUnit if provided
-            const placementOptions = targetUnit ? { targetUnit } : {};
-            const placementResult = PlayerCardManager.placeCard(gameEnv, playerId, cardUID, placementOptions);
+            // Pass event data directly - no intermediate object creation
+            const placementResult = PlayerCardManager.placeCardWithEventData(gameEnv, eventData);
             if (!placementResult.success) {
                 // Return card to hand if placement failed
-                player.deck.handUids.push(cardUID);
+                player.deck.handUids.push(eventData.cardUID);
                 return {
                     success: false,
                     error: placementResult.error
                 };
             }
 
-            console.log(`✅ Card ${cardUID} successfully placed in ${placementResult.placedZone} as ${playAs}`);
+            console.log(`✅ Card ${eventData.cardUID} successfully placed in ${placementResult.placedZone} as ${eventData.playAs}`);
             
             // TODO: Add effect processing and type compatibility validation
             console.log(`🚧 [PLACEHOLDER] Card effects and compatibility validation needed`);

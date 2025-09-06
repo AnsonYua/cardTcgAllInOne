@@ -18,6 +18,69 @@ export interface CardPlacementOptions {
 export class PlayerCardManager {
     
     /**
+     * Streamlined card placement - accepts event data directly to minimize conversions
+     */
+    static placeCardWithEventData(
+        gameEnv: GameEnvironment, 
+        eventData: any
+    ): CardPlacementResult {
+        try {
+            const { playerId, cardUID, playAs, targetUnit } = eventData;
+            
+            const player = gameEnv.players[playerId];
+            if (!player || !player.zones) {
+                return {
+                    success: false,
+                    error: `Player ${playerId} or zones not found`
+                };
+            }
+
+            // Extract cardId from cardUID
+            const cardId = cardUID.split('_')[0];
+            
+            // Load full card data from card database
+            const fullCardData = GameEngine.getCardDetails(cardId);
+            if (!fullCardData) {
+                return {
+                    success: false,
+                    error: `Card data not found for ${cardId} in card database`
+                };
+            }
+
+            // Route to specific card type handler - pass eventData directly
+            const cardType = fullCardData.cardType;
+            console.log(`🎯 Placing card ${cardId} type: ${cardType}`);
+
+            switch (cardType) {
+                case 'unit':
+                    return this.placeUnitCard(player.zones, fullCardData, cardUID, playerId);
+                    
+                case 'pilot':
+                    return this.placePilotCard(player.zones, fullCardData, cardUID, playerId, targetUnit);
+                    
+                case 'command':
+                    return this.placeCommandCard(player.zones, fullCardData, cardUID, playerId);
+                    
+                case 'base':
+                    return this.placeBaseCard(player.zones, fullCardData, cardUID, playerId);
+                    
+                default:
+                    return {
+                        success: false,
+                        error: `Unknown card type '${cardType}' for card ${cardUID}`
+                    };
+            }
+
+        } catch (error) {
+            console.error(`❌ Error in placeCardWithEventData:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Card placement failed'
+            };
+        }
+    }
+    
+    /**
      * Main card placement interface - handles all card types
      */
     static placeCard(

@@ -269,20 +269,21 @@ export class GameController {
                         return;
                     }
                     
+                    // Validate targetUnit requirement for pilot cards
+                    if (playAs === CardPlayType.PILOT && !targetUnit) {
+                        res.status(400).json({
+                            error: 'targetUnit is required when playing a card as pilot',
+                            message: 'Pilot cards must specify which unit they are being attached to via the targetUnit parameter',
+                            timestamp: new Date().toISOString(),
+                            context: 'playCard endpoint - pilot targetUnit validation'
+                        });
+                        return;
+                    }
+                    
                     console.log(`🎯 Playing card ${cardUID} as ${playAs}${targetUnit ? ` targeting ${targetUnit}` : ''}`);
                     
-                    // Create PlayerAction for event manager with action details
-                    const playerActionData = {
-                        type: 'PlayCard',
-                        cardUID: cardUID,
-                        playAs: playAs,
-                        targetUnit: targetUnit
-                    };
-                    
-                    console.log('📋 Action data prepared:', playerActionData);
-                    
-                    // Use GameLogic method with targetUnit parameter
-                    const result = await this.gameLogic.playCard(gameId, playerId, cardUID, playAs, targetUnit);
+                    // Pass action object directly to avoid parameter unpacking/repacking
+                    const result = await this.gameLogic.playCardWithAction(gameId, playerId, action);
                     
                     if (result.success && result.gameEnv) {
                         res.json({
