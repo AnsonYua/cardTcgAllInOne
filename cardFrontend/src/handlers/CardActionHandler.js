@@ -275,11 +275,12 @@ export default class CardActionHandler {
         }
         
         // Find all units in slots (slot1-slot6) - use units directly without conversion
+        // Only include units that don't already have pilots attached
         const eligibleCards = [];
         for (let i = 1; i <= 6; i++) {
             const slotName = `slot${i}`;
             const slot = playerData.zones[slotName];
-            if (slot && slot.unit) {
+            if (slot && slot.unit && !slot.pilot) { // Check that unit exists AND no pilot is attached
                 // Use the unit directly with minimal metadata additions
                 const unit = slot.unit;
                 unit.slot = slotName; // Add slot info directly to existing unit object
@@ -303,8 +304,8 @@ export default class CardActionHandler {
             selectCount: 1,
             title: 'Select Unit to Pilot',
             description: 'Choose which unit this pilot card should attach to',
-            callback: (selectedCards) => {
-                console.log('Unit selected for piloting:', selectedCards);
+            callback: (selectionId, selectedCards) => {
+                console.log('CardActionHandler: Unit selected for piloting:', selectionId, selectedCards);
                 if (selectedCards && selectedCards.length > 0) {
                     const selectedUnit = selectedCards[0];
                     // selectedUnit is now the direct unit object, no need to find it

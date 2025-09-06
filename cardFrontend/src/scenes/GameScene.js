@@ -1830,11 +1830,17 @@ export default class GameScene extends Phaser.Scene {
   showCardSelectionDialog(selectionId, selection) {
     console.log('GameScene: Delegating card selection dialog to DialogManager:', selectionId, selection);
     
+    // Use the callback provided by the caller (e.g., CardActionHandler) if available,
+    // otherwise fall back to the generic handler
+    const callback = selection.callback || ((selectedCards) => {
+      this.handleCardSelectionChoice(selectionId, selectedCards);
+    });
+    
     // Use DialogManager to handle the dialog
     return this.dialogManager.showCardSelectionDialog(
       selectionId, 
       selection, 
-      (selectedId, selectedCards) => this.handleCardSelectionChoice(selectedId, selectedCards)
+      callback
     );
   }
 
@@ -2422,7 +2428,6 @@ export default class GameScene extends Phaser.Scene {
     const gameState = this.gameStateManager.getGameState();
     const gameContext = {
       phase: gameState.gameEnv?.phase || 'MAIN_PHASE',
-      hasAvailableUnits: this.hasAvailableUnitsForPilot(),
       baseZoneAvailable: this.isBaseZoneAvailable(),
       canPlayNormally: this.canPlayCardNormally(selectedCard)
     };
@@ -2438,13 +2443,6 @@ export default class GameScene extends Phaser.Scene {
     this.actionButtonManager.hide();
   }
 
-  /**
-   * Helper: Check if there are units available for pilot attachment
-   */
-  hasAvailableUnitsForPilot() {
-    // TODO: Check player zones for available units
-    return true; // Placeholder
-  }
 
   /**
    * Helper: Check if base zone is available

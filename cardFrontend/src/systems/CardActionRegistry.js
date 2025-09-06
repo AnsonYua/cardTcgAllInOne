@@ -132,8 +132,8 @@ export default class CardActionRegistry {
                            action.effectData.timing.includes(gameContext.phase);
                            
                 case 'attach-to-unit':
-                    // Check if there are units available to attach to
-                    return gameContext.hasAvailableUnits !== false; // Default to true
+                    // Always show pilot action - CardActionHandler will handle validation
+                    return true;
                     
                 case 'deploy-base':
                     // Check if base zone is available
