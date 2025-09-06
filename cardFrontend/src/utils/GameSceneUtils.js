@@ -380,6 +380,11 @@ export default class GameSceneUtils {
    */
   static createCardSelectionDialog(selectionId, selection, scene, onConfirm) {
     const dialogConfig = this._createDialogConfig(scene, selection);
+    
+    // Support for future multi-section dialogs (currently single section)
+    const numberOfSections = selection.numberOfSections || 1;
+    console.log(`Creating card selection dialog with ${numberOfSections} section(s)`);
+    
     const paginationState = {
       maxCardsPerPage: 4,
       totalPages: Math.ceil(selection.eligibleCards.length / 4),
@@ -391,7 +396,8 @@ export default class GameSceneUtils {
       selectedCards: [],
       selectedCardHighlights: [],
       selectedCard: null,
-      selectedCardHighlight: null
+      selectedCardHighlight: null,
+      numberOfSections: numberOfSections  // Store for future multi-section support
     };
     
     const dialogElements = {
@@ -1079,28 +1085,13 @@ export default class GameSceneUtils {
       scene.input.setDefaultCursor('default');
     });
     
-    okButton.on('pointerdown', async () => {
+    okButton.on('pointerdown', () => {
       if (selectionState.selectedCards.length >= 1) {
-        try {
-          const gameState = scene.gameStateManager.getGameState();
-          const cardIdentifiers = selectionState.selectedCards.map(card => card.cardUid || card.cardId);
-          
-          const response = await scene.apiManager.selectCard(
-            selectionId, 
-            cardIdentifiers,
-            gameState.playerId,
-            gameState.gameId
-          );
-          
-          if (response.success) {
-            this._cleanupDialog(scene, dialogElements);
-            onConfirm(selectionId, selectionState.selectedCards.length === 1 ? selectionState.selectedCards[0] : selectionState.selectedCards, []);
-          } else {
-            console.error('Card selection submission failed:', response.error);
-          }
-        } catch (error) {
-          console.error('Error submitting card selection:', error);
-        }
+        // Clean up the dialog UI
+        this._cleanupDialog(scene, dialogElements);
+        
+        // Always return an array for consistency - supports future multi-section scenarios
+        onConfirm(selectionId, selectionState.selectedCards, []);
       }
     });
   }

@@ -24,10 +24,8 @@ export default class GameScene extends Phaser.Scene {
     this.shuffleAnimationManager = null;
     this.cardPreviewZone = null;
     this.previewCard = null;
-    this.leaderCards = [];
     this.zoneHighlights = [];
     this.isTestMode = false;
-    this.currentPendingSelectionId = null; // Track current pending selection to avoid duplicates
     this.firstShuffleAnimationComplete = false;
 
     this.baseAndShieldManager = null;
@@ -84,7 +82,6 @@ export default class GameScene extends Phaser.Scene {
     // Demo mode uses real backend calls with test buttons, not mock data
     
     // Load leader cards data
-    await this.loadLeaderCardsData();
     
     // Hide hand area during shuffling
     this.hideHandArea();
@@ -616,73 +613,25 @@ export default class GameScene extends Phaser.Scene {
 
   updateGameState() {
     //this.updatePlayerHand();
-    //this.updateLeaderCardsFromBackend();
     //this.updateZones();
     this.updateUI();
-    //this.checkForPendingCardSelections();
   }
 
-  checkForPendingCardSelections() {
-    const gameState = this.gameStateManager.getGameState();
-    const { pendingCardSelections } = gameState.gameEnv;
+  showCardSelectionDialog(selectionId, selection) {
+    console.log('GameScene: Delegating card selection dialog to DialogManager:', selectionId, selection);
     
-    if (!pendingCardSelections) {
-      // Clear tracking when no pending selections
-      this.currentPendingSelectionId = null;
+    // All callers must provide their own callback - no fallback needed
+    if (!selection.callback) {
+      console.error('Card selection requires a callback function');
       return;
     }
     
-    // Check if there's a pending selection for the current player
-    const selectionIds = Object.keys(pendingCardSelections);
-    for (const selectionId of selectionIds) {
-      const selection = pendingCardSelections[selectionId];
-      if (selection.playerId === this.inGamePlayerId && selection.eligibleCards && selection.eligibleCards.length > 0) {
-        // Only show dialog if it's a new selection ID (avoid duplicates)
-        if (this.currentPendingSelectionId !== selectionId) {
-          console.log('New pending card selection detected for current player:', selectionId, selection);
-          this.currentPendingSelectionId = selectionId;
-          this.showCardSelectionDialog(selectionId, selection);
-        }
-        break; // Only handle one selection at a time
-      }
-    }
-  }
-
-  updateLeaderCardsFromBackend() {
-    // Extract leader cards from backend response
-    if (this.gameStateManager) {
-      const gameState = this.gameStateManager.getGameState();
-      const player = this.gameStateManager.getPlayer();
-      const opponent = this.gameStateManager.getOpponent();
-      const opponentData = this.gameStateManager.getPlayer(opponent);
-      
-      if (player && player.deck && player.deck.leader) {
-        console.log('Updating player leader cards from backend:', player.deck.leader);
-        
-        // Convert leader card IDs to card objects
-        this.leaderCards = player.deck.leader.map(cardId => ({
-          id: cardId,
-          name: cardId,
-          cardType: 'leader',
-          type: 'leader'
-        }));
-        
-        // Set up both player and opponent leader cards for the shuffle animation
-        this.playerLeaderCards = [...this.leaderCards];
-        
-        if (opponentData && opponentData.deck && opponentData.deck.leader) {
-          console.log('Updating opponent leader cards from backend:', opponentData.deck.leader);
-          this.opponentLeaderCards = opponentData.deck.leader.map(cardId => ({
-            id: cardId,
-            name: cardId,
-            cardType: 'leader',
-            type: 'leader'
-          }));
-        }
-        
-        console.log('Leader cards updated - player:', this.playerLeaderCards.length, 'opponent:', this.opponentLeaderCards?.length || 0);
-      }
-    }
+    // Use DialogManager to handle the dialog
+    return this.dialogManager.showCardSelectionDialog(
+      selectionId, 
+      selection, 
+      selection.callback
+    );
   }
 
   updateCurrentPlayerHand(){
@@ -790,12 +739,6 @@ export default class GameScene extends Phaser.Scene {
         this.showDeckStacks();
         // Show hand area and update game state after shuffle animation completes
         this.showHandArea();
-        if(this.shuffleAnimationManager?.playerLeaderCards.length === 0){
-          // Leader card selection removed
-        }
-        if(this.shuffleAnimationManager?.opponentLeaderCards.length === 0){
-          // Leader card selection removed
-        }
       }
     }
 
@@ -1359,129 +1302,9 @@ export default class GameScene extends Phaser.Scene {
   }
   
 
-  async loadLeaderCardsData() {
-    try {
-      console.log('Loading leader cards data...');
-      
-      // Try to get leader cards from game state first
-      if (this.gameStateManager) {
-        const gameState = this.gameStateManager.getGameState();
-        const player = this.gameStateManager.getPlayer();
-        
-        // Check if player has leader cards in deck
-        if (player && player.deck && player.deck.leader) {
-          console.log('Loading leader cards from API game state:', player.deck.leader);
-          
-          // Convert leader card IDs to card objects (need to load from backend card database)
-          const baseLeaderCards = await this.convertCardIdsToObjects(player.deck.leader, 'leader');
-          
-          // Create separate shuffled decks for player and opponent
-          this.playerLeaderCards = [...baseLeaderCards];  // Copy for player
-          this.opponentLeaderCards = [...baseLeaderCards]; // Copy for opponent
-          
-          // Shuffle both decks separately
-          this.shuffleArray(this.playerLeaderCards);
-          this.shuffleArray(this.opponentLeaderCards);
-          
-          console.log('Player leader cards shuffled:', this.playerLeaderCards);
-          console.log('Opponent leader cards shuffled:', this.opponentLeaderCards);
-          
-          // Keep this.leaderCards for backwards compatibility (use player's deck)
-          this.leaderCards = this.playerLeaderCards;
-          return;
-        }
-      }
-      
-      // Fallback to static file for demo mode
-      console.log('Loading leader cards from static file (demo mode)...');
-      const response = await fetch('/leaderCards.json');
-      const mockData = await response.json();
-      
-      if (mockData.success) {
-        console.log('Leader cards data loaded from file:', mockData.data);
-        const baseLeaderCards = mockData.data.leaderCards;
-        
-        // Create separate shuffled decks for player and opponent
-        this.playerLeaderCards = [...baseLeaderCards];  // Copy for player
-        this.opponentLeaderCards = [...baseLeaderCards]; // Copy for opponent
-        
-        // Shuffle both decks separately
-        this.shuffleArray(this.playerLeaderCards);
-        this.shuffleArray(this.opponentLeaderCards);
-        
-        console.log('Player leader cards shuffled (demo):', this.playerLeaderCards);
-        console.log('Opponent leader cards shuffled (demo):', this.opponentLeaderCards);
-        
-        // Keep this.leaderCards for backwards compatibility (use player's deck)
-        this.leaderCards = this.playerLeaderCards;
-      } else {
-        console.error('Failed to load leader cards data');
-      }
-    } catch (error) {
-      console.error('Error loading leader cards data:', error);
-    }
-  }
 
-  async convertCardIdsToObjects(cardIds, cardType) {
-    // For now, create basic card objects from IDs
-    // In the future, this could fetch from backend card database
-    return cardIds.map(cardId => ({
-      id: cardId,
-      name: cardId, // Use ID as name for now
-      type: cardType || CardAnimationUtils.getCardTypeFromId(cardId),
-      power: cardType === 'character' ? Math.floor(Math.random() * 5) + 1 : undefined // Mock power for characters
-    }));
-  }
 
-  shuffleArray(array) {
-    // Fisher-Yates shuffle algorithm
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-  }
 
-  updateLeaderDecks() {
-    // Update player leader deck
-    const playerLeaderZone = this.playerZones.leaderDeck;
-    if (playerLeaderZone && this.leaderCards.length > 0) {
-      this.createLeaderDeckDisplay(playerLeaderZone, 'player');
-    }
-    
-    // Update opponent leader deck
-    const opponentLeaderZone = this.opponentZones.leaderDeck;
-    if (opponentLeaderZone && this.leaderCards.length > 0) {
-      this.createLeaderDeckDisplay(opponentLeaderZone, 'opponent');
-    }
-  }
-
-  createLeaderDeckDisplay(zone, owner) {
-    // Clear existing placeholder
-    if (zone.placeholder) {
-      zone.placeholder.destroy();
-    }
-    
-    // Create a stack of leader cards (showing top card)
-    const topCard = this.leaderCards[0]; // Show the first leader card on top
-    const card = new Card(this, zone.x, zone.y, topCard, {
-      interactive: true,
-      draggable: false,
-      scale: 0.9,
-      gameStateManager: this.gameStateManager,
-      usePreview: true, // Use preview images for leader deck display
-      disableHighlight: true  // Disable selection highlight for leader deck cards
-    });
-    
-    // Rotate the card 90 degrees to match the original leaderDeck orientation
-    card.setRotation(Math.PI / 2);
-    
-    // Store the card in the zone
-    zone.card = card;
-    zone.placeholder = card; // Update placeholder reference
-    
-    console.log(`Created leader deck display for ${owner} with card:`, topCard.id);
-  }
 
 
   addCardsToPlayerHand(cardsToAdd) {
@@ -1827,39 +1650,7 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  showCardSelectionDialog(selectionId, selection) {
-    console.log('GameScene: Delegating card selection dialog to DialogManager:', selectionId, selection);
-    
-    // Use the callback provided by the caller (e.g., CardActionHandler) if available,
-    // otherwise fall back to the generic handler
-    const callback = selection.callback || ((selectedCards) => {
-      this.handleCardSelectionChoice(selectionId, selectedCards);
-    });
-    
-    // Use DialogManager to handle the dialog
-    return this.dialogManager.showCardSelectionDialog(
-      selectionId, 
-      selection, 
-      callback
-    );
-  }
 
-  handleCardSelectionChoice(selectionId, selectedCards) {
-    console.log('GameScene: Handling card selection choice:', selectionId, selectedCards);
-    
-    // Clear pending selection tracking
-    this.currentPendingSelectionId = null;
-    
-    // API call is handled by GameSceneUtils button handler to avoid duplicate calls
-    // This method only handles UI updates after successful selection
-    const cardCount = Array.isArray(selectedCards) ? selectedCards.length : 1;
-    const cardNames = Array.isArray(selectedCards) ? 
-      selectedCards.map(c => c.name || c.cardId).join(', ') : 
-      (selectedCards.name || selectedCards.cardId);
-    
-    console.log(`GameScene: Card selection completed for: ${cardCount} card(s)`);
-    this.showRoomStatus(`Card selection sent (${cardNames}). Polling for game updates...`);
-  }
 
   highlightHandCards() {
     // Add a pulsing effect to all hand cards (no tint overlay)
@@ -2144,7 +1935,6 @@ export default class GameScene extends Phaser.Scene {
       this.dialogManager.destroy();
       this.dialogManager = null;
     }
-    this.currentPendingSelectionId = null;
     
     // Call parent destroy
     super.destroy();

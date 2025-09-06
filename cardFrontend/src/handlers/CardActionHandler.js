@@ -289,7 +289,7 @@ export default class CardActionHandler {
         }
         
         if (eligibleCards.length === 0) {
-            this.showErrorMessage('No units available to pilot. Place unit cards first.');
+            this.showErrorMessage('No units available to pilot. Units either need to be placed first or already have pilots attached.');
             return;
         }
         
@@ -302,12 +302,15 @@ export default class CardActionHandler {
             eligibleCards: eligibleCards,
             dialogType:"SELECT_UNIT_FOR_PILOT",
             selectCount: 1,
+            numberOfSections: 1,  // Single section for pilot selection
             title: 'Select Unit to Pilot',
             description: 'Choose which unit this pilot card should attach to',
             callback: (selectionId, selectedCards) => {
                 console.log('CardActionHandler: Unit selected for piloting:', selectionId, selectedCards);
-                if (selectedCards && selectedCards.length > 0) {
-                    const selectedUnit = selectedCards[0];
+                // Ensure selectedCards is always an array
+                const cardsArray = Array.isArray(selectedCards) ? selectedCards : [selectedCards];
+                if (cardsArray && cardsArray.length > 0) {
+                    const selectedUnit = cardsArray[0];
                     // selectedUnit is now the direct unit object, no need to find it
                     this.executePilotCardPlay(selectedCard, selectedUnit);
                 }
@@ -336,7 +339,7 @@ export default class CardActionHandler {
         try {
             const cardUID = selectedCard.fullCardData.cardUid;
             const targetUnit = selectedUnit.cardUid; // Use the unit's cardUid as targetUnit
-            
+            console.log("call api for piliot", selectedCard , " ",selectedUnit)
             if (!cardUID) {
                 this.showErrorMessage('Card not found in hand.');
                 return;
