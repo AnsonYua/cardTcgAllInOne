@@ -1352,10 +1352,26 @@ export default class GameScene extends Phaser.Scene {
     const slotCards = this.slotAreaManager.getSlotCards(slotInfo.playerType, slotInfo.slotName);
     console.log('[showSlotCardPreview] Slot cards:', slotInfo.slotName, slotCards);
     
+    // Determine which card is being hovered over
+    const isHoveringUnit = slotCards.unit === hoveredCard;
+    const isHoveringPilot = slotCards.pilot === hoveredCard;
+    
+    console.log('[showSlotCardPreview] Hover detection:', { isHoveringUnit, isHoveringPilot });
+    
     if (slotCards.unit && slotCards.pilot) {
-      // Dual preview: show both unit and pilot
-      console.log('[showSlotCardPreview] Showing dual preview');
-      this.showDualCardPreview(slotCards.unit, slotCards.pilot);
+      if (isHoveringUnit) {
+        // Hovering over unit card - show dual preview (unit + pilot)
+        console.log('[showSlotCardPreview] Hovering over unit - showing dual preview');
+        this.showDualCardPreview(slotCards.unit, slotCards.pilot);
+      } else if (isHoveringPilot) {
+        // Hovering over pilot card - show only pilot
+        console.log('[showSlotCardPreview] Hovering over pilot - showing pilot only');
+        this.showCardPreview(slotCards.pilot.cardData);  // Direct access - no conversion
+      } else {
+        // Fallback if detection failed
+        console.warn('[showSlotCardPreview] Could not determine hovered card type, using fallback');
+        this.showCardPreview(hoveredCard.cardData);
+      }
     } else if (slotCards.unit || slotCards.pilot) {
       // Single card in slot
       const singleCard = slotCards.unit || slotCards.pilot;
