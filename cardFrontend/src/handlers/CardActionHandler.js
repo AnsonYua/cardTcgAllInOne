@@ -1,6 +1,7 @@
 // CardActionHandler.js
 // Dedicated handler for all card action buttons and related functionality
 
+
 export default class CardActionHandler {
     constructor(gameScene, gameStateManager, apiManager) {
         this.gameScene = gameScene;
@@ -51,6 +52,12 @@ export default class CardActionHandler {
         
         console.log(`Playing card as ${playAs.charAt(0).toUpperCase() + playAs.slice(1)}:`, selectedCard.fullCardData.cardUid);
         this.gameScene.actionButtonManager.hide();
+        
+        // Special handling for pilot cards - show unit selection dialog
+        if (playAs === 'pilot') {
+            this.handlePilotCardSelection(selectedCard);
+            return;
+        }
         
         try {
             const cardUID = selectedCard.fullCardData.cardUid;
@@ -247,6 +254,146 @@ export default class CardActionHandler {
 
     clearZoneHighlights() {
         this.gameScene.clearZoneHighlights();
+    }
+
+    /**
+     * Handle pilot card selection by showing unit selection dialog
+     * @param {Object} selectedCard - The pilot card to be played
+     */
+    handlePilotCardSelection(selectedCard) {
+        console.log('Handling pilot card selection:', selectedCard);
+        
+        // Get current game state
+        const gameState = this.gameStateManager.getGameState();
+        const playerId = gameState.playerId;
+        
+        // Get player's zones to find available units
+        const playerData = gameState.gameEnv?.players?.[playerId];
+        if (!playerData || !playerData.zones) {
+            this.showErrorMessage('Unable to access player zones');
+            return;
+        }
+        
+        // Find all units in slots (slot1-slot6)
+        const availableUnits = [];
+        for (let i = 1; i <= 6; i++) {
+            const slotName = `slot${i}`;
+            const slot = playerData.zones[slotName];
+            if (slot && slot.unit) {
+                availableUnits.push({
+                    cardUid: slot.unit.cardUid, // This will be used as eligibleCards cardId
+                    cardData: slot.unit.cardData,
+                    slot: slotName,
+                    unit: slot.unit
+                });
+            }
+        }
+        
+        if (availableUnits.length === 0) {
+            this.showErrorMessage('No units available to pilot. Place unit cards first.');
+            return;
+        }
+        
+        // Create a unique selection ID
+        const selectionId = `pilot_target_${Date.now()}`;
+        
+        // Format units for the existing card selection system
+        const eligibleCards = availableUnits.map(unit => ({
+            cardId: unit.cardUid, // Use cardUid as identifier
+            cardData: unit.cardData,
+            slot: unit.slot // Additional metadata
+        }));
+        
+        // Create selection data compatible with existing system
+        const selectionData = {
+            playerId: playerId,
+            eligibleCards: eligibleCards,
+            selectCount: 1,
+            title: 'Select Unit to Pilot',
+            description: 'Choose which unit this pilot card should attach to',
+            callback: (selectedCards) => {
+                console.log('Unit selected for piloting:', selectedCards);
+                if (selectedCards && selectedCards.length > 0) {
+                    const selectedUnitCardId = selectedCards[0].cardId;
+                    const selectedUnit = availableUnits.find(unit => unit.cardUid === selectedUnitCardId);
+                    if (selectedUnit) {
+                        this.executePilotCardPlay(selectedCard, selectedUnit);
+                    }
+                }
+            },
+            onCancel: () => {
+                console.log('Pilot card selection cancelled');
+                // The existing dialog system will handle cleanup
+            }
+        };
+        
+        // Use the existing showCardSelectionDialog method
+        if (this.gameScene.showCardSelectionDialog) {
+            this.gameScene.showCardSelectionDialog(selectionId, selectionData);
+        } else {
+            console.error('showCardSelectionDialog method not available');
+            this.showErrorMessage('Card selection dialog not available');
+        }
+    }
+
+    /**
+     * Execute pilot card play with selected target unit
+     * @param {Object} selectedCard - The pilot card to be played
+     * @param {Object} selectedUnit - The unit to attach the pilot to
+     */
+    async executePilotCardPlay(selectedCard, selectedUnit) {
+        try {
+            const cardUID = selectedCard.fullCardData.cardUid;
+            const targetUnit = selectedUnit.cardUid; // Use the unit's cardUid as targetUnit
+            
+            if (!cardUID) {
+                this.showErrorMessage('Card not found in hand.');
+                return;
+            }
+            
+            const gameState = this.gameStateManager.getGameState();
+            this.setUILoadingState(true);
+            
+            // Create structured action with playAs and targetUnit
+            const action = {
+                type: 'PlayCard',
+                cardUID: cardUID,
+                playAs: 'pilot',
+                targetUnit: targetUnit
+            };
+            
+            console.log(`Calling backend playCard API to play pilot card:`, action);
+            
+            if (this.apiManager) {
+                const response = await this.apiManager.playCard(
+                    gameState.playerId,
+                    gameState.gameId,
+                    action
+                );
+                
+                console.log('PlayCard response:', response);
+                
+                if (response && response.success) {
+                    console.log(`✅ Pilot card played successfully on unit ${selectedUnit.cardId}`);
+                    this.gameStateManager.updateGameEnv(response.gameEnv);
+                    this.updateGameState();
+                    this.updatePlayerHand();
+                    this.clearZoneHighlights();
+                } else {
+                    console.error(`❌ Failed to play pilot card:`, response?.error);
+                    this.showErrorMessage(response?.error || `Failed to play pilot card`);
+                }
+            } else {
+                console.log('Demo mode: Would call backend playCard API with pilot target');
+                this.showErrorMessage('Demo mode - Backend API not available');
+            }
+            
+        } catch (error) {
+            console.error(`Error playing pilot card:`, error);
+            this.showErrorMessage(`Failed to play pilot card. Please try again.`);
+        } finally {
+            this.setUILoadingState(false);
+        }
     }
 
 }

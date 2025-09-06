@@ -256,6 +256,7 @@ export class GameController {
                 if (action.type === 'PlayCard' && action.cardUID && action.playAs) {
                     const cardUID = action.cardUID;
                     const playAs = action.playAs;
+                    const targetUnit = action.targetUnit; // Extract targetUnit if provided
                     
                     // Validate playAs value using enum
                     const validPlayAsValues = Object.values(CardPlayType);
@@ -268,20 +269,20 @@ export class GameController {
                         return;
                     }
                     
-                    console.log(`🎯 Playing card ${cardUID} as ${playAs}`);
+                    console.log(`🎯 Playing card ${cardUID} as ${playAs}${targetUnit ? ` targeting ${targetUnit}` : ''}`);
                     
                     // Create PlayerAction for event manager with action details
                     const playerActionData = {
                         type: 'PlayCard',
                         cardUID: cardUID,
-                        playAs: playAs
+                        playAs: playAs,
+                        targetUnit: targetUnit
                     };
                     
-                    // TODO: Pass action details to GameLogic for event generation in future enhancement
-                    console.log('📋 Action data prepared for future event manager integration:', playerActionData);
+                    console.log('📋 Action data prepared:', playerActionData);
                     
-                    // Use existing GameLogic method (3 parameters only)
-                    const result = await this.gameLogic.playCard(gameId, playerId, cardUID);
+                    // Use GameLogic method with targetUnit parameter
+                    const result = await this.gameLogic.playCard(gameId, playerId, cardUID, playAs, targetUnit);
                     
                     if (result.success && result.gameEnv) {
                         res.json({

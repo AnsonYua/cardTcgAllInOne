@@ -10,6 +10,7 @@ import { ZoneMapping } from '../utils/ZoneMapping.js';
 import CardAnimationUtils from '../utils/CardAnimationUtils.js';
 import CardActionHandler from '../handlers/CardActionHandler.js';
 import ActionButtonManager from '../systems/ActionButtonManager.js';
+import DialogManager from '../managers/DialogManager.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor(config = { key: 'GameScene' }) {
@@ -32,7 +33,8 @@ export default class GameScene extends Phaser.Scene {
     this.baseAndShieldManager = null;
     this.energyAreaManager = null;
     this.slotAreaManager = null;
-    this.opponentBase = null
+    this.opponentBase = null;
+    this.dialogManager = null;
 
     this.isSetScenoria = false;
   }
@@ -51,6 +53,7 @@ export default class GameScene extends Phaser.Scene {
     this.slotAreaManager = new SlotAreaManager(this, this.gameStateManager);
     this.cardActionHandler = new CardActionHandler(this, this.gameStateManager, this.apiManager);
     this.actionButtonManager = new ActionButtonManager(this);
+    this.dialogManager = new DialogManager(this);
  
     console.log('GameScene initialized with mode:', this.gameMode);
     console.log('Manual polling mode:', this.isManualPollingMode);
@@ -1758,17 +1761,30 @@ export default class GameScene extends Phaser.Scene {
   }
 
   showRedrawDialog() {
-    // Note: Hand cards are highlighted
+    console.log('GameScene: Showing redraw dialog via DialogManager');
     
-    // Create modal-like dialog
-    const { width, height } = this.cameras.main;
+    // Handle special depth requirements for redraw dialog (bring cards to front)
+    this.setCardsAboveOverlay();
     
-    // Semi-transparent background covering the whole screen
-    const overlay = this.add.graphics();
-    overlay.fillStyle(0x000000, 0.7);
-    overlay.fillRect(0, 0, width, height);
-    overlay.setDepth(1000); // Put overlay above most elements
-    
+    // Use DialogManager for consistent dialog handling
+    return this.dialogManager.showConfirmationDialog(
+      {
+        title: 'Redraw Hand',
+        message: 'Do you want to redraw your hand?',
+        confirmText: 'Yes',
+        cancelText: 'No',
+        width: 400,
+        height: 200
+      },
+      () => this.handleRedrawChoice(true),  // onConfirm
+      () => this.handleRedrawChoice(false)  // onCancel
+    );
+  }
+
+  /**
+   * Set cards above overlay for redraw dialog visibility
+   */
+  setCardsAboveOverlay() {
     // Bring hand cards to front (above the overlay)
     this.playerHand.forEach(card => {
       card.setDepth(1001); // Hand cards above overlay
@@ -1809,102 +1825,33 @@ export default class GameScene extends Phaser.Scene {
     } else {
       console.log('DEBUG: Opponent leader deck card NOT found');
     }
-    
-    // Dialog box
-    const dialogBg = this.add.graphics();
-    dialogBg.fillStyle(0x333333);
-    dialogBg.fillRoundedRect(width/2 - 200, height/2 - 100, 400, 200, 10);
-    dialogBg.lineStyle(2, 0x666666);
-    dialogBg.strokeRoundedRect(width/2 - 200, height/2 - 100, 400, 200, 10);
-    dialogBg.setDepth(1002); // Dialog above overlay and hand cards
-    
-    // Dialog text
-    const dialogText = this.add.text(width/2, height/2 - 50, 'Do you want to redraw your hand?', {
-      fontSize: '18px',
-      fontFamily: 'Arial',
-      fill: '#ffffff',
-      align: 'center'
-    });
-    dialogText.setOrigin(0.5);
-    dialogText.setDepth(1002);
-    
-    // Yes button
-    const yesButton = this.add.image(width/2 - 80, height/2 + 30, 'button');
-    yesButton.setScale(0.8);
-    yesButton.setInteractive();
-    yesButton.setTint(0x4CAF50);
-    yesButton.setDepth(1002);
-    
-    const yesText = this.add.text(width/2 - 80, height/2 + 30, 'Yes', {
-      fontSize: '16px',
-      fontFamily: 'Arial',
-      fill: '#ffffff'
-    });
-    yesText.setOrigin(0.5);
-    yesText.setDepth(1002);
-    
-    // No button
-    const noButton = this.add.image(width/2 + 80, height/2 + 30, 'button');
-    noButton.setScale(0.8);
-    noButton.setInteractive();
-    noButton.setTint(0xF44336);
-    noButton.setDepth(1002);
-    
-    const noText = this.add.text(width/2 + 80, height/2 + 30, 'No', {
-      fontSize: '16px',
-      fontFamily: 'Arial',
-      fill: '#ffffff'
-    });
-    noText.setOrigin(0.5);
-    noText.setDepth(1002);
-    
-    // Button handlers
-    yesButton.on('pointerdown', () => this.handleRedrawChoice(true, [overlay, dialogBg, dialogText, yesButton, yesText, noButton, noText]));
-    noButton.on('pointerdown', () => this.handleRedrawChoice(false, [overlay, dialogBg, dialogText, yesButton, yesText, noButton, noText]));
   }
 
   showCardSelectionDialog(selectionId, selection) {
-    console.log('Showing card selection dialog:', selectionId, selection);
+    console.log('GameScene: Delegating card selection dialog to DialogManager:', selectionId, selection);
     
-    // Clean up any existing card selection dialog
-    if (this.currentCardSelectionDialog) {
-      // Use cleanup function if available, otherwise fallback to element array
-      if (this.currentCardSelectionDialog.cleanup) {
-        this.currentCardSelectionDialog.cleanup();
-      } else if (Array.isArray(this.currentCardSelectionDialog)) {
-        this.currentCardSelectionDialog.forEach(element => element.destroy());
-      }
-      this.currentCardSelectionDialog = null;
-    }
-    
-    // Create dialog using GameSceneUtils (UI separation)
-    const dialogInterface = GameSceneUtils.createCardSelectionDialog(
+    // Use DialogManager to handle the dialog
+    return this.dialogManager.showCardSelectionDialog(
       selectionId, 
       selection, 
-      this, 
-      (selectedId, selectedCard, elements) => this.handleCardSelectionChoice(selectedId, selectedCard, elements)
+      (selectedId, selectedCards) => this.handleCardSelectionChoice(selectedId, selectedCards)
     );
-    
-    // Store dialog interface for potential cleanup
-    this.currentCardSelectionDialog = dialogInterface;
   }
 
-  handleCardSelectionChoice(selectionId, selectedCards, dialogElements) {
-    console.log('Handling card selection choice:', selectionId, selectedCards);
+  handleCardSelectionChoice(selectionId, selectedCards) {
+    console.log('GameScene: Handling card selection choice:', selectionId, selectedCards);
     
-    // Dialog elements are already cleaned up by the cleanup function in the button handler
-    // Just clear references and update UI
-    this.currentCardSelectionDialog = null;
+    // Clear pending selection tracking
     this.currentPendingSelectionId = null;
     
-    // API call is now handled by GameSceneUtils button handler to avoid duplicate calls
-    // This method only handles cleanup and UI updates after successful selection
+    // API call is handled by GameSceneUtils button handler to avoid duplicate calls
+    // This method only handles UI updates after successful selection
     const cardCount = Array.isArray(selectedCards) ? selectedCards.length : 1;
     const cardNames = Array.isArray(selectedCards) ? 
       selectedCards.map(c => c.name || c.cardId).join(', ') : 
       (selectedCards.name || selectedCards.cardId);
     
-    console.log(`Card selection UI cleanup completed for: ${cardCount} card(s)`);
+    console.log(`GameScene: Card selection completed for: ${cardCount} card(s)`);
     this.showRoomStatus(`Card selection sent (${cardNames}). Polling for game updates...`);
   }
 
@@ -2014,9 +1961,9 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  async handleRedrawChoice(wantRedraw, dialogElements) {
-    // Remove dialog elements
-    dialogElements.forEach(element => element.destroy());
+  async handleRedrawChoice(wantRedraw) {
+    // DialogManager handles dialog cleanup automatically
+    console.log('GameScene: Handling redraw choice:', wantRedraw);
     
     // Remove hand card highlighting
     this.removeHandCardHighlight();
@@ -2186,15 +2133,10 @@ export default class GameScene extends Phaser.Scene {
     this.hideCardPreview();
     
     
-    // Clean up any existing card selection dialog
-    if (this.currentCardSelectionDialog) {
-      // Use cleanup function if available, otherwise fallback to element array
-      if (this.currentCardSelectionDialog.cleanup) {
-        this.currentCardSelectionDialog.cleanup();
-      } else if (Array.isArray(this.currentCardSelectionDialog)) {
-        this.currentCardSelectionDialog.forEach(element => element.destroy());
-      }
-      this.currentCardSelectionDialog = null;
+    // Clean up all dialogs using DialogManager
+    if (this.dialogManager) {
+      this.dialogManager.destroy();
+      this.dialogManager = null;
     }
     this.currentPendingSelectionId = null;
     

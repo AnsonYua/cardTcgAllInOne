@@ -564,9 +564,9 @@ export class GameEngine {
     }
     
     private executePlayCard(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
-        const { playerId, gameId, cardUID, playAs } = event.data;
+        const { playerId, gameId, cardUID, playAs, targetUnit } = event.data;
         
-        console.log(`🎯 Processing PLAY_CARD event for player: ${playerId}, cardUID: ${cardUID}, playAs: ${playAs}`);
+        console.log(`🎯 Processing PLAY_CARD event for player: ${playerId}, cardUID: ${cardUID}, playAs: ${playAs}, targetUnit: ${targetUnit || 'none'}`);
         
         try {
             // Validate it's the player's turn
@@ -601,8 +601,9 @@ export class GameEngine {
                 };
             }
 
-            // Place card using PlayerCardManager with empty options (card type determined from database)
-            const placementResult = PlayerCardManager.placeCard(gameEnv, playerId, cardUID, {});
+            // Place card using PlayerCardManager with targetUnit if provided
+            const placementOptions = targetUnit ? { targetUnit } : {};
+            const placementResult = PlayerCardManager.placeCard(gameEnv, playerId, cardUID, placementOptions);
             if (!placementResult.success) {
                 // Return card to hand if placement failed
                 player.deck.handUids.push(cardUID);
