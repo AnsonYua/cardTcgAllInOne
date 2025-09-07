@@ -68,11 +68,9 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
       ...options
     };
     
-    // State tracking for dual labels
-    this.currentAP = 0;
-    this.baseAP = 0;
-    this.currentHP = 0;
-    this.baseHP = 0;
+    // State tracking for dual labels (simplified)
+    this.ap = 0;
+    this.hp = 0;
     this.isVisible = false;
     
     this.create();
@@ -172,45 +170,51 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
   
   /**
    * Update both AP and HP values displayed
-   * @param {number} currentAP - Current attack power value
-   * @param {number} baseAP - Original base attack power
-   * @param {number} currentHP - Current health points value  
-   * @param {number} baseHP - Original base health points
-   * @param {boolean} animate - Whether to animate the change
+   * @param {number} ap - Attack power value
+   * @param {number} hp - Health points value
    */
-  updateStats(currentAP, baseAP, currentHP, baseHP, animate = false) {
+  updateStats(ap, hp) {
     // Update state
-    this.currentAP = currentAP;
-    this.baseAP = baseAP;
-    this.currentHP = currentHP;
-    this.baseHP = baseHP;
+    this.ap = ap;
+    this.hp = hp;
     
     // Update text displays
-    this.apText.setText(currentAP.toString());
-    this.hpText.setText(currentHP.toString());
+    this.apText.setText(ap.toString());
+    this.hpText.setText(hp.toString());
     
-    // Update styling for both labels
+    // Update styling for both labels (simplified - always base styling)
     this.updateStyling();
     
     // Show overlay if not visible and either stat > 0
-    if (!this.isVisible && (currentAP > 0 || currentHP > 0)) {
+    if (!this.isVisible && (ap > 0 || hp > 0)) {
       this.show();
     }
     // Hide overlay if both stats are 0 or less
-    else if (this.isVisible && currentAP <= 0 && currentHP <= 0) {
+    else if (this.isVisible && ap <= 0 && hp <= 0) {
       this.hide();
     }
   }
   
   /**
-   * Legacy method for backward compatibility - uses currentPower as AP, sets HP to 0
-   * @param {number} currentPower - Current power value (treated as AP)
-   * @param {number} basePower - Original base power (treated as base AP)
-   * @param {boolean} animate - Whether to animate the change
+   * Update AP (Attack Power) value and styling
+   * @param {number} ap - AP value
    */
-  updatePower(currentPower, basePower, animate = false) {
-    console.log('[PowerOverlay] Legacy updatePower called, consider using updateStats instead');
-    this.updateStats(currentPower, basePower, 0, 0, false);
+  updateAP(ap) {
+    this.ap = ap;
+    this.apText.setText(ap.toString());
+    this.updateAPStyling();
+    console.log(`[PowerOverlay] AP updated: ${ap}`);
+  }
+
+  /**
+   * Update HP (Health Points) value and styling
+   * @param {number} hp - HP value
+   */
+  updateHP(hp) {
+    this.hp = hp;
+    this.hpText.setText(hp.toString());
+    this.updateHPStyling();
+    console.log(`[PowerOverlay] HP updated: ${hp}`);
   }
   
   /**
@@ -222,14 +226,16 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
   }
   
   /**
-   * Update AP label styling based on current AP state
+   * Update AP label styling (simplified - always use base styling)
    */
   updateAPStyling() {
-    const apState = this.getStatState(this.currentAP, this.baseAP);
-    const colorScheme = this.config.apColors[apState];
+    const colorScheme = this.config.apColors.base; // Always use base colors
     
-    // Update AP text color
-    this.apText.setFill(colorScheme.text);
+    // FORCE CONSISTENT TEXT PROPERTIES
+    this.apText.setFill('#FFFFFF'); // Always white text
+    this.apText.setAlpha(1.0); // Force full opacity
+    this.apText.setTint(0xFFFFFF); // Force white tint
+    this.apText.setBlendMode(Phaser.BlendModes.NORMAL); // Force normal blend
     // Clear existing background
     this.apBackground.clear();
     
@@ -264,14 +270,16 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
   }
   
   /**
-   * Update HP label styling based on current HP state
+   * Update HP label styling (simplified - always use base styling)
    */
   updateHPStyling() {
-    const hpState = this.getStatState(this.currentHP, this.baseHP);
-    const colorScheme = this.config.hpColors[hpState];
+    const colorScheme = this.config.hpColors.base; // Always use base colors
     
-    // Update HP text color
-    this.hpText.setFill(colorScheme.text);
+    // FORCE CONSISTENT TEXT PROPERTIES (identical to AP)
+    this.hpText.setFill('#FFFFFF'); // Always white text
+    this.hpText.setAlpha(1.0); // Force full opacity
+    this.hpText.setTint(0xFFFFFF); // Force white tint
+    this.hpText.setBlendMode(Phaser.BlendModes.NORMAL); // Force normal blend
     
     // Clear existing background
     this.hpBackground.clear();
@@ -306,23 +314,7 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     }
   }
   
-  /**
-   * Determine the current stat state for styling
-   * @param {number} currentValue - Current stat value
-   * @param {number} baseValue - Base stat value
-   * @returns {string} Stat state: 'base', 'boosted', 'reduced', or 'disabled'
-   */
-  getStatState(currentValue, baseValue) {
-    if (currentValue <= 0) {
-      return 'disabled';
-    } else if (currentValue > baseValue) {
-      return 'boosted';
-    } else if (currentValue < baseValue) {
-      return 'reduced';
-    } else {
-      return 'base';
-    }
-  }
+  // getStatState method removed - no longer needed with simplified ap/hp system
   
   /**
    * Show the power overlay instantly
@@ -370,12 +362,9 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
   setShowBackground(showBackground) {
     this.config.showBackground = showBackground;
     
-    // Update text styling based on background visibility
-    // Get current state-appropriate colors
-    const apState = this.getStatState(this.currentAP, this.baseAP);
-    const hpState = this.getStatState(this.currentHP, this.baseHP);
-    const apColorScheme = this.config.apColors[apState];
-    const hpColorScheme = this.config.hpColors[hpState];
+    // Update text styling based on background visibility (simplified - always use base colors)
+    const apColorScheme = this.config.apColors.base;
+    const hpColorScheme = this.config.hpColors.base;
     
     if (!showBackground) {
       // Add text stroke for better visibility without background

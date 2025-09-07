@@ -137,11 +137,6 @@ export default class Card extends Phaser.GameObjects.Container {
       }
       this.add(this.cardImage);
       
-      // Card images already contain all the necessary information
-      // Text overlays are not needed when using actual card artwork
-      // if (this.cardData) {
-      //   this.createCardContent();
-      // }
     }
     
     // Scale card image to match game config dimensions with better filtering
@@ -160,57 +155,6 @@ export default class Card extends Phaser.GameObjects.Container {
     // Create power overlay for character cards (initially hidden)
     this.createPowerOverlay();
     
-    this.updateVisualState();
-  }
-
-  createCardContent() {
-
-    // Power value for character cards (using computed power from effect system)
-    if (this.cardData.type === 'character' && this.cardData.power !== undefined) {
-      const displayPower = this.getDisplayPower();
-      this.powerText = this.scene.add.text(45, -45, displayPower.toString(), {
-        fontSize: '20px',
-        fontFamily: 'Arial Bold',
-        fill: '#ffffff',
-        stroke: '#000000',
-        strokeThickness: 2
-      });
-      this.powerText.setOrigin(0.5);
-      this.add(this.powerText);
-    }
-
-    // Card type indicator
-    const typeColor = GAME_CONFIG.colors[this.cardData.type] || 0xffffff;
-    this.typeIndicator = this.scene.add.circle(-45, -60, 8, typeColor);
-    this.add(this.typeIndicator);
-
-    // Zone compatibility icons for character cards
-    if (this.cardData.type === 'character' && this.cardData.zones) {
-      this.createZoneIcons();
-    }
-
-    // Effect text for non-character cards
-    if (this.cardData.type !== 'character' && this.cardData.effect) {
-      this.effectText = this.scene.add.text(0, 20, this.cardData.effect, {
-        fontSize: '10px',
-        fontFamily: 'Arial',
-        fill: '#333333',
-        align: 'center',
-        wordWrap: { width: 90 }
-      });
-      this.effectText.setOrigin(0.5);
-      this.add(this.effectText);
-    }
-
-    // Card ID (for debugging/development)
-    this.cardId = this.scene.add.text(0, 70, this.cardData.id, {
-      fontSize: '8px',
-      fontFamily: 'Arial',
-      fill: '#666666',
-      align: 'center'
-    });
-    this.cardId.setOrigin(0.5);
-    this.add(this.cardId);
   }
 
   createZoneIcons() {
@@ -393,6 +337,71 @@ export default class Card extends Phaser.GameObjects.Container {
     this.scene.events.emit('card-face-toggle', this);
   }
 
+  recreate() {
+    // Clear existing content
+    this.removeAll(true);
+    
+    // Clear references to destroyed objects
+    this.selectionHighlight = null;
+    this.disabledOverlay = null;
+    this.cardImage = null;
+    this.powerOverlay = null;
+    
+    // Recreate card
+    this.create();
+
+  }
+
+  returnToOriginalPosition(duration = 300) {
+    this.scene.tweens.add({
+      targets: this,
+      x: this.originalPosition.x,
+      y: this.originalPosition.y,
+      duration: duration,
+      ease: 'Power2'
+    });
+  }
+
+  moveToPosition(x, y, duration = 300, removeFromContainer = true) {
+    this.originalPosition = { x, y };
+    
+    if (removeFromContainer) {
+      // Get the current world position of the card
+      const worldPos = this.getWorldTransformMatrix();
+      const currentWorldX = worldPos.tx;
+      const currentWorldY = worldPos.ty;
+      
+      // Remove the card from its current parent container (if any)
+      if (this.parentContainer) {
+        this.parentContainer.remove(this);
+      }
+      
+      // Set the card's position to its current world position
+      this.setPosition(currentWorldX, currentWorldY);
+      
+      // Add the card directly to the scene
+      this.scene.add.existing(this);
+      
+      // Now animate to the target position
+      this.scene.tweens.add({
+        targets: this,
+        x: x,
+        y: y,
+        duration: duration,
+        ease: 'Power2'
+      });
+    } else {
+      // Card stays in its container, just animate to new relative position
+      this.scene.tweens.add({
+        targets: this,
+        x: x,
+        y: y,
+        duration: duration,
+        ease: 'Power2'
+      });
+    }
+  }
+
   updateVisualState() {
     console.log(`Card ${this.cardData?.id} updateVisualState - isSelected: ${this.isSelected}, visible: ${this.visible}, active: ${this.active}`);
     
@@ -408,12 +417,7 @@ export default class Card extends Phaser.GameObjects.Container {
       return;
     }
     
-    // Update power text if it exists (for character cards)
-    if (this.powerText && this.cardData.type === 'character') {
-      const displayPower = this.getDisplayPower();
-      this.powerText.setText(displayPower.toString());
-    }
-    
+
     // Update power overlay for character cards
     this.updatePowerOverlay();
     
@@ -494,74 +498,6 @@ export default class Card extends Phaser.GameObjects.Container {
     }
   }
 
-  recreate() {
-    // Clear existing content
-    this.removeAll(true);
-    
-    // Clear references to destroyed objects
-    this.selectionHighlight = null;
-    this.disabledOverlay = null;
-    this.cardImage = null;
-    this.powerText = null;
-    this.powerOverlay = null;
-    
-    // Recreate card
-    this.create();
-    
-    // Restore visual state (selection highlight if needed)
-    this.updateVisualState();
-  }
-
-  returnToOriginalPosition(duration = 300) {
-    this.scene.tweens.add({
-      targets: this,
-      x: this.originalPosition.x,
-      y: this.originalPosition.y,
-      duration: duration,
-      ease: 'Power2'
-    });
-  }
-
-  moveToPosition(x, y, duration = 300, removeFromContainer = true) {
-    this.originalPosition = { x, y };
-    
-    if (removeFromContainer) {
-      // Get the current world position of the card
-      const worldPos = this.getWorldTransformMatrix();
-      const currentWorldX = worldPos.tx;
-      const currentWorldY = worldPos.ty;
-      
-      // Remove the card from its current parent container (if any)
-      if (this.parentContainer) {
-        this.parentContainer.remove(this);
-      }
-      
-      // Set the card's position to its current world position
-      this.setPosition(currentWorldX, currentWorldY);
-      
-      // Add the card directly to the scene
-      this.scene.add.existing(this);
-      
-      // Now animate to the target position
-      this.scene.tweens.add({
-        targets: this,
-        x: x,
-        y: y,
-        duration: duration,
-        ease: 'Power2'
-      });
-    } else {
-      // Card stays in its container, just animate to new relative position
-      this.scene.tweens.add({
-        targets: this,
-        x: x,
-        y: y,
-        duration: duration,
-        ease: 'Power2'
-      });
-    }
-  }
-
   canPlayInZone(zoneType) {
     if (this.cardData.type === 'character') {
       // Default character zone compatibility - can be placed in top, left, or right
@@ -634,17 +570,66 @@ export default class Card extends Phaser.GameObjects.Container {
   }
   
   /**
-   * Create power overlay component for character cards
-   * Only creates overlay for character type cards
+   * Check if a command card has pilot_designation effect (making it function as a pilot)
+   */
+  hasCommandPilotDesignation() {
+    if (!this.cardData || this.cardData.cardType !== 'command') {
+      return false;
+    }
+    
+    // Check if the command card has pilot_designation effect in its rules
+    return this.cardData.effects?.rules?.some(rule => rule.effectId === 'pilot_designation') || false;
+  }
+
+  /**
+   * Extract AP and HP values from card data based on card type
+   * @returns {{ap: number, hp: number}} AP and HP values
+   */
+  getAPandHPFromCardData() {
+    if (!this.cardData) {
+      return { ap: 0, hp: 0 };
+    }
+
+    // For regular cards (unit, pilot, base), get AP/HP directly from card properties
+    if (this.cardData.cardType === 'unit' || 
+        this.cardData.cardType === 'pilot' || 
+        this.cardData.cardType === 'base') {
+      return {
+        ap: this.cardData.ap || 0,
+        hp: this.cardData.hp || 0
+      };
+    }
+
+    // For command cards with pilot_designation effect, extract AP/HP from effect parameters
+    if (this.cardData.cardType === 'command' && this.hasCommandPilotDesignation()) {
+      const pilotEffect = this.cardData.effects?.rules?.find(rule => rule.effectId === 'pilot_designation');
+      if (pilotEffect && pilotEffect.effect?.parameters) {
+        return {
+          ap: pilotEffect.effect.parameters.AP || 0,
+          hp: pilotEffect.effect.parameters.HP || 0
+        };
+      }
+    }
+
+    // Default fallback
+    return { ap: 0, hp: 0 };
+  }
+
+  /**
+   * Create power overlay component for cards with AP/HP values
+   * Only creates overlay for cards that have meaningful power values
    */
   createPowerOverlay() {
-    // Only create power overlay for character cards
     console.log("overlay data ",JSON.stringify(this.cardData))
-    if (this.cardData && this.cardData.cardType === 'unit' ||
-        this.cardData.cardType === 'command' ||
-        this.cardData.cardType === 'pilot'|| 
-        this.cardData.cardType === 'base'
-       ) {
+    
+    const shouldShowPowerOverlay = this.cardData && (
+      this.cardData.cardType === 'unit' ||
+      this.cardData.cardType === 'pilot' || 
+      this.cardData.cardType === 'base' ||
+      (this.cardData.cardType === 'command' && this.hasCommandPilotDesignation())
+    );
+    
+    if (shouldShowPowerOverlay) {
       if (this.powerOverlay) {
         this.powerOverlay.destroy();
       }
@@ -657,35 +642,40 @@ export default class Card extends Phaser.GameObjects.Container {
       });
       this.add(this.powerOverlay);
       
-      // Set proper depth for overlay
-      //this.powerOverlay.setDepth(2500);
+      // Extract AP and HP values from card data
+      const { ap, hp } = this.getAPandHPFromCardData();
+      console.log("update ap and hp card", JSON.stringify(this.cardData))
+      console.log("update ap and hp ", ap , " ", hp)
+      this.powerOverlay.updateAP(ap);
+      this.powerOverlay.updateHP(hp);
+      // Update PowerOverlay with the extracted AP and HP values (simplified API)
+      //this.powerOverlay.updateStats(ap, hp);
+      
+      console.log(`[Card] PowerOverlay initialized with AP: ${ap}, HP: ${hp} for card: ${this.cardData?.id || 'unknown'}`);
       
       // Initially hidden until placed in character zone
       this.powerOverlay.setVisible(true);
- 
+      //this.updatePowerOverlay();
     }
   }
   
   
   /**
-   * Update power overlay with current AP and HP values
-   * @param {boolean} animate - Whether to animate changes
+   * Update power overlay with current AP and HP values (simplified)
    */
-  updatePowerOverlay(animate = true) {
-    if (!this.powerOverlay || (this.cardData?.cardType !== 'unit' && this.cardData?.cardType !== 'command')) {
-      console.log('[Card] updatePowerOverlay skipped - no overlay or not unit/command:', this.cardData?.id, 'type:', this.cardData?.cardType);
+  updatePowerOverlay() {
+    // Check if PowerOverlay exists and card should show overlay
+    const shouldShowPowerOverlay = this.powerOverlay && this.cardData && (
+      this.cardData.cardType === 'unit' ||
+      this.cardData.cardType === 'pilot' || 
+      this.cardData.cardType === 'base' ||
+      (this.cardData.cardType === 'command' && this.hasCommandPilotDesignation())
+    );
+
+    if (!shouldShowPowerOverlay) {
+      console.log('[Card] updatePowerOverlay skipped - no overlay or not supported type:', this.cardData?.id, 'type:', this.cardData?.cardType);
       return;
     }
-    
-    // Get current and base values for both AP and HP
-    const currentAP = this.getDisplayPower(); // Use existing power as AP
-    const baseAP = this.cardData.power || 0;
-    
-    // Get HP values - check for hp property, fallback to power, or default to base value
-    const currentHP = this.cardData.currentHp || this.cardData.hp || this.cardData.power || 0;
-    const baseHP = this.cardData.baseHp || this.cardData.hp || this.cardData.power || 0;
-    
-    console.log('[Card] updatePowerOverlay for', this.cardData.id, '- AP:', currentAP, '/', baseAP, '- HP:', currentHP, '/', baseHP);
     
     // Hide overlay for face-down cards
     if (this.options.faceDown) {
@@ -693,16 +683,16 @@ export default class Card extends Phaser.GameObjects.Container {
       return;
     }
     
-    // Update using new dual stats method
-    if (this.powerOverlay.updateStats) {
-      this.powerOverlay.updateStats(currentAP, baseAP, currentHP, baseHP);
-    } else if (this.powerOverlay.updatePower) {
-      // Fallback to legacy method if new method not available
-      console.log('[Card] Using legacy updatePower method, consider updating PowerOverlay');
-      this.powerOverlay.updatePower(currentAP, baseAP);
-    } else {
-      console.warn('[Card] PowerOverlay missing update methods');
-    }
+    // Extract AP and HP values from card data using our unified method
+    const { ap, hp } = this.getAPandHPFromCardData();
+    
+    console.log('[Card] updatePowerOverlay for', this.cardData.id, '- AP:', ap, '- HP:', hp);
+    
+    // Update using simplified API
+    this.powerOverlay.updateStats(ap, hp);
+    
+    // Make sure overlay is visible
+    this.powerOverlay.setVisible(true);
   }
   
   /**
