@@ -184,111 +184,161 @@ export default class Card extends Phaser.GameObjects.Container {
     this.setSize(120, 180);
     this.setInteractive();
 
-    // Hover effects with zone-specific preview support
-    this.on('pointerover', (pointer, localX, localY, event) => {
-      if (!this.isDragging) {
-        // Set cursor based on interaction state
-        if (this.isInteractionDisabled) {
-          this.scene.game.canvas.style.cursor = 'default';
-        } else {
-          this.scene.game.canvas.style.cursor = 'pointer';
-        }
-        
-        // Emit different events based on whether card is in zone or in hand
-        if (this.isInZone) {
-          this.scene.events.emit('zone-card-hover', this);
-        } else {
-          this.scene.events.emit('card-hover', this);
-        }
-        
-        // NO ANIMATION - just cursor change and event emission
-      }
-    });
-
-    this.on('pointerout', () => {
-      if (!this.isDragging) {
-        this.scene.game.canvas.style.cursor = 'default';
-        
-        // Emit different events based on whether card is in zone or in hand
-        if (this.isInZone) {
-          this.scene.events.emit('zone-card-unhover', this);
-        } else {
-          this.scene.events.emit('card-unhover', this);
-        }
-        
-        // NO ANIMATION - just cursor change and event emission
-      }
-    });
-
-    // Click/tap interaction
-    this.on('pointerdown', (pointer, localX, localY, event) => {
-      if(this.options.handleOutside){
-        return
-      }
-
-      if (pointer.rightButtonDown()) {
-        // Right click for face-down toggle - TEMPORARILY DISABLED
-        console.log(`Right click on card ${this.cardData?.id} - face-down toggle disabled`);
-        event.stopPropagation();
-      } else {
-        // Left click for selection/deselection
-        console.log(`Card ${this.cardData?.id} clicked - isSelected: ${this.isSelected}, visible: ${this.visible}, active: ${this.active}`);
-        
-        // Check if card is still valid before processing click
-        if (!this.visible || !this.active) {
-          console.error(`Card ${this.cardData?.id} - cannot process click, card is not visible or active`);
-          return;
-        }
-        
-        // Skip interaction if card is disabled (placed in zone)
-        if (this.isInteractionDisabled) {
-          console.log(`Card ${this.cardData?.id} clicked but interaction is disabled - no selection`);
-          return;
-        }
-        
-        // Skip selection logic if highlight is disabled (e.g., for leader cards)
-        if (this.options.disableHighlight) {
-          console.log(`Card ${this.cardData?.id} clicked but highlight disabled - no selection`);
-          return;
-        }
-        
-        // SAFER SELECTION LOGIC
-        try {
-          if (this.isSelected) {
-            // If already selected, deselect it
-            console.log(`Deselecting card ${this.cardData?.id}`);
-            this.deselect();
-            this.scene.events.emit('card-deselect', this);
-          } else {
-            // If not selected, emit selection event (GameScene will handle the actual selection)
-            console.log(`Emitting card-select for card ${this.cardData?.id}`);
-            this.scene.events.emit('card-select', this);
-          }
-        } catch (error) {
-          console.error(`Error in selection logic for card ${this.cardData?.id}:`, error);
-        }
-        
-        if (this.options.draggable && !this.isSelected) {
-          this.startDrag(pointer);
-        }
-      }
-    });
-
-    // Drag functionality
+    // Set up all interaction event handlers
+    this.on('pointerover', this.handlePointerOver, this);
+    this.on('pointerout', this.handlePointerOut, this);
+    this.on('pointerdown', this.handlePointerDown, this);
+    
+    // Set up drag event handlers if draggable
     if (this.options.draggable) {
-      this.scene.input.on('pointermove', (pointer) => {
-        if (this.isDragging) {
-          this.x = pointer.x;
-          this.y = pointer.y;
-          this.scene.events.emit('card-drag', this, pointer);
-        }
-      });
+      this.on('pointermove', this.handlePointerMove, this);
+      this.on('pointerup', this.handlePointerUp, this);
+    }
+  }
 
-      this.scene.input.on('pointerup', (pointer) => {
-        if (this.isDragging) {
-          this.stopDrag(pointer);
-        }
-      });
+  /**
+   * Consolidated interaction state checker
+   * @returns {Object} Current interaction state
+   */
+  getInteractionState() {
+    return {
+      canInteract: this.visible && this.active && !this.isInteractionDisabled,
+      canSelect: !this.options.disableHighlight && !this.options.handleOutside,
+      canDrag: this.options.draggable && !this.isDragging,
+      isDragging: this.isDragging,
+      isInZone: this.isInZone
+    };
+  }
+
+  /**
+   * Centralized cursor management
+   * @param {string} cursorType - Type of cursor to set
+   */
+  setCursor(cursorType = 'default') {
+    if (this.scene && this.scene.game && this.scene.game.canvas) {
+      const state = this.getInteractionState();
+      if (state.canInteract && cursorType === 'pointer') {
+        this.scene.game.canvas.style.cursor = 'pointer';
+      } else {
+        this.scene.game.canvas.style.cursor = 'default';
+      }
+    }
+  }
+
+  /**
+   * Consolidated event emission based on card location
+   * @param {string} action - Action type (hover, unhover, select, deselect)
+   */
+  emitLocationAwareEvent(action) {
+    const eventPrefix = this.isInZone ? 'zone-card' : 'card';
+    this.scene.events.emit(`${eventPrefix}-${action}`, this);
+  }
+
+  /**
+   * Handle pointer over events
+   */
+  handlePointerOver(pointer, localX, localY, event) {
+    if (this.isDragging) return;
+    
+    this.setCursor('pointer');
+    this.emitLocationAwareEvent('hover');
+  }
+
+  /**
+   * Handle pointer out events
+   */
+  handlePointerOut() {
+    if (this.isDragging) return;
+    
+    this.setCursor('default');
+    this.emitLocationAwareEvent('unhover');
+  }
+
+  /**
+   * Handle pointer down events
+   */
+  handlePointerDown(pointer, localX, localY, event) {
+    const state = this.getInteractionState();
+    console.log("card clicked here ", this.options.handleOutside)
+    // Early return if card should not handle interaction
+    if (this.options.handleOutside) return;
+    if (pointer.rightButtonDown()) {
+      this.handleRightClick(event);
+    } else {
+      this.handleLeftClick(pointer, state);
+    }
+  }
+
+  /**
+   * Handle right click events
+   */
+  handleRightClick(event) {
+    console.log(`Right click on card ${this.cardData?.id} - face-down toggle disabled`);
+    event.stopPropagation();
+  }
+
+  /**
+   * Handle left click events
+   */
+  handleLeftClick(pointer, state) {
+    console.log(`Card ${this.cardData?.id} clicked - state:`, {
+      isSelected: this.isSelected,
+      canInteract: state.canInteract,
+      canSelect: state.canSelect
+    });
+    
+    // Validate card state
+    if (!state.canInteract) {
+      console.log(`Card ${this.cardData?.id} interaction blocked - disabled or invalid state`);
+      return;
+    }
+    
+    // Handle selection logic
+    if (state.canSelect) {
+      this.handleSelectionToggle();
+    }
+    
+    // Handle drag initiation
+    if (state.canDrag && !this.isSelected) {
+      this.startDrag(pointer);
+    }
+  }
+
+  /**
+   * Handle selection toggle logic
+   */
+  handleSelectionToggle() {
+    try {
+      if (this.isSelected) {
+        console.log(`Deselecting card ${this.cardData?.id}`);
+        this.deselect();
+        this.emitLocationAwareEvent('deselect');
+      } else {
+        console.log(`Selecting card ${this.cardData?.id}`);
+        this.emitLocationAwareEvent('select');
+      }
+    } catch (error) {
+      console.error(`Error in selection toggle for card ${this.cardData?.id}:`, error);
+    }
+  }
+
+  /**
+   * Handle pointer move events for dragging
+   */
+  handlePointerMove(pointer) {
+    if (this.isDragging) {
+      this.x = pointer.x;
+      this.y = pointer.y;
+      this.scene.events.emit('card-drag', this, pointer);
+    }
+  }
+
+  /**
+   * Handle pointer up events for drag end
+   */
+  handlePointerUp(pointer) {
+    if (this.isDragging) {
+      this.stopDrag(pointer);
     }
   }
 
