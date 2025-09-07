@@ -3,7 +3,6 @@
 
 import { GameEnvironment } from '../models/GameEnvironment';
 import { BaseCard } from '../models/CardSystem';
-import { ZoneType } from '../models/GameEnums';
 
 export class BaseCardManager {
     
@@ -25,7 +24,9 @@ export class BaseCardManager {
                 placedBy: playerId,
                 isRested: false,
                 cardData: {
-                    cardType: 'base'
+                    cardType: 'base',
+                    ap:0,
+                    hp:3
                 },
                 currentHP: 0, // Default starting HP
                 originalHP: 3, // Default original HP

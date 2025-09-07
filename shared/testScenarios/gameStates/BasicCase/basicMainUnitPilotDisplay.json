@@ -592,7 +592,9 @@
                             "placedBy": "playerId_1",
                             "isRested": false,
                             "cardData": {
-                                "cardType": "base"
+                                "cardType": "base",
+                                "ap": 0,
+                                "hp": 3
                             },
                             "currentHP": 3,
                             "originalHP": 3,
@@ -1132,7 +1134,9 @@
                             "placedBy": "playerId_2",
                             "isRested": false,
                             "cardData": {
-                                "cardType": "base"
+                                "cardType": "base",
+                                "ap": 0,
+                                "hp": 3
                             },
                             "currentHP": 3,
                             "originalHP": 3,

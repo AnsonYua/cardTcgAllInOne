@@ -6,7 +6,7 @@
   "tags": [
     "PlayCard"
   ],
-  "initialGameEnv":  {
+  "initialGameEnv": {
         "phase": "MAIN_PHASE",
         "playerId_1": "playerId_1",
         "playerId_2": "playerId_2",
@@ -592,7 +592,9 @@
                             "placedBy": "playerId_1",
                             "isRested": false,
                             "cardData": {
-                                "cardType": "base"
+                                "cardType": "base",
+                                "ap": 0,
+                                "hp": 3
                             },
                             "currentHP": 3,
                             "originalHP": 3,
@@ -834,32 +836,6 @@
                             }
                         },
                         {
-                            "cardUid": "ST01-005_8c99645a-6030-45a5-9d3d-a1a849582f9a",
-                            "cardId": "ST01-005",
-                            "cardData": {
-                                "id": "ST01-005",
-                                "name": "GM",
-                                "cardType": "unit",
-                                "color": "Blue",
-                                "level": 2,
-                                "cost": 1,
-                                "zone": [
-                                    "Space",
-                                    "Earth"
-                                ],
-                                "traits": [
-                                    "Earth Federation"
-                                ],
-                                "link": [],
-                                "ap": 2,
-                                "hp": 2,
-                                "effects": {
-                                    "description": [],
-                                    "rules": []
-                                }
-                            }
-                        },
-                        {
                             "cardUid": "ST01-003_d359e65b-a1f1-4a9b-87bf-3086e87c96b3",
                             "cardId": "ST01-003",
                             "cardData": {
@@ -885,65 +861,6 @@
                                 "effects": {
                                     "description": [],
                                     "rules": []
-                                }
-                            }
-                        },
-                        {
-                            "cardUid": "ST01-010_178b9eae-d5b2-4be4-bb19-62e44612e488",
-                            "cardId": "ST01-010",
-                            "cardData": {
-                                "id": "ST01-010",
-                                "name": "Amuro Ray",
-                                "cardType": "pilot",
-                                "color": "Blue",
-                                "level": 4,
-                                "cost": 1,
-                                "zone": [],
-                                "traits": [
-                                    "Earth Federation",
-                                    "White Base Team",
-                                    "Newtype"
-                                ],
-                                "link": [],
-                                "ap": 2,
-                                "hp": 1,
-                                "effects": {
-                                    "description": [
-                                        "【Burst】Add this card to your hand.",
-                                        "【When Paired】Choose 1 enemy Unit with 5 or less HP. Rest it."
-                                    ],
-                                    "rules": [
-                                        {
-                                            "effectId": "burst_add_to_hand",
-                                            "type": "triggered",
-                                            "trigger": "BURST_CONDITION",
-                                            "target": {
-                                                "type": "card",
-                                                "scope": "self"
-                                            },
-                                            "effect": {
-                                                "action": "addToHand",
-                                                "duration": "instant"
-                                            }
-                                        },
-                                        {
-                                            "effectId": "paired_rest_medium_hp",
-                                            "type": "triggered",
-                                            "trigger": "PAIRING_COMPLETE",
-                                            "target": {
-                                                "type": "unit",
-                                                "scope": "opponent",
-                                                "filters": {
-                                                    "hp": "<=5"
-                                                },
-                                                "count": 1
-                                            },
-                                            "effect": {
-                                                "action": "rest",
-                                                "duration": "permanent"
-                                            }
-                                        }
-                                    ]
                                 }
                             }
                         },
@@ -1033,10 +950,96 @@
                                     ]
                                 }
                             }
-                        },
-                        {
+                        }
+                    ],
+                    "handUids": [
+                        "ST01-011_0897a064-31b5-4ddf-b927-f2161140837b",
+                        "ST01-010_36b0fc24-6de0-4518-bcae-78444ad87281",
+                        "ST01-003_d359e65b-a1f1-4a9b-87bf-3086e87c96b3",
+                        "ST01-005_2d5c2e4c-ecf0-4c30-aec9-6c3c4b69719f",
+                        "ST01-014_27ccf5d7-b5ad-4d56-bb6a-08a4426689b6"
+                    ],
+                    "mainDeck": [
+                        "ST01-004_3f62e889-93c7-4d86-92b7-85e00c51db6f",
+                        "ST01-016_aa5ea3de-1e4d-4b78-a45c-620bf6661f96",
+                        "ST01-007_e62f356d-a599-4867-b40e-81714e2285ef",
+                        "ST01-007_74ff499f-c8ee-418f-9bec-a07c685b4c22",
+                        "ST01-002_52096b1a-9468-424d-a0ca-62834474eb9c",
+                        "ST01-006_460e70ca-76f4-48f2-b804-c0cc41b2da22",
+                        "ST01-014_12ea9e6c-c787-41af-bb64-049b5ec536fb",
+                        "ST01-015_c47a2719-d00d-4a24-adb1-e11ce076ff45",
+                        "ST01-008_d35d010a-16f4-4e7a-97ac-59e8728034ce",
+                        "ST01-016_e2a42b61-96b8-4913-92a5-ce7f6da4bf50",
+                        "ST01-016_82b74461-dedd-4c8d-b46c-f1cc6825a1b6",
+                        "ST01-005_f560861d-9252-41b4-bb08-387231ec5726",
+                        "ST01-008_f37fed7d-7ef5-46f6-b8b3-49a743cf7a02",
+                        "ST01-011_3b8f8a4b-50ec-49d8-84c3-461d029edb57",
+                        "ST01-012_6b376df7-3140-4dd0-bff9-ca78e69fa9cf",
+                        "ST01-013_b4922faa-23c7-425c-aa12-a3a1fe1bff02",
+                        "ST01-008_132dadce-da95-4b68-b711-326eb6f93322",
+                        "ST01-005_a1abc3ac-833e-437a-b359-aaef23e63cca",
+                        "ST01-004_43f6f036-0cd0-447a-9202-3f7301ad63f7",
+                        "ST01-001_392c5d6d-ec6c-4ac1-a1d1-df9111beb40b",
+                        "ST01-008_e2d6adb7-d139-40cc-868d-33ff27627562",
+                        "ST01-004_b97782e6-e12b-45d4-97f0-061deb8abd9c",
+                        "ST01-009_c484c268-37a1-45b5-bc5f-ae47c840dfe3",
+                        "ST01-011_0fbd373f-bc58-4419-a6f5-f21423c2ebb2",
+                        "ST01-007_123d9bc6-8f5a-49a7-a191-60fa56fe9c4a",
+                        "ST01-012_2dfcb65a-d147-430b-aead-352baf608378",
+                        "ST01-013_f7f2e347-f9d6-4f9e-8a53-0f52d47f26e5",
+                        "ST01-015_f48378b8-5464-4b82-9979-c206252e9c0f",
+                        "ST01-010_f6cd9167-bbba-4ad3-918c-2a20bb38d560",
+                        "ST01-012_15ffcecd-b9d7-4c9c-af05-13fd9f1bb1bf",
+                        "ST01-009_6465e116-fdcf-441f-a4f6-c1a4ad389be9",
+                        "ST01-007_7b4943bf-094c-431e-a4dc-905d94852a6c",
+                        "ST01-003_91270948-43ef-41d1-ac9d-b16422fc4dc2",
+                        "ST01-001_1753d185-f652-4a68-b025-153c3e037d90",
+                        "ST01-009_7d165399-e76c-4110-8769-ab5a684304af"
+                    ]
+                },
+                "confirmIsRedraw": true,
+                "isRedraw": true,
+                "playerPoint": 0,
+                "isReady": false,
+                "zones": {
+                    "slot1": {
+                        "unit": {
+                            "cardUid": "ST01-005_8c99645a-6030-45a5-9d3d-a1a849582f9a",
+                            "cardId": "ST01-005",
+                            "placedAt": 1757264693697,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "cardData": {
+                                "id": "ST01-005",
+                                "name": "GM",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 2,
+                                "cost": 1,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Federation"
+                                ],
+                                "link": [],
+                                "ap": 2,
+                                "hp": 2,
+                                "effects": {
+                                    "description": [],
+                                    "rules": []
+                                }
+                            }
+                        }
+                    },
+                    "slot2": {
+                        "unit": {
                             "cardUid": "ST01-003_ef184c8f-8dcc-4635-bf8e-379bd70f4eab",
                             "cardId": "ST01-003",
+                            "placedAt": 1757264695108,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
                             "cardData": {
                                 "id": "ST01-003",
                                 "name": "Guncannon",
@@ -1062,10 +1065,15 @@
                                     "rules": []
                                 }
                             }
-                        },
-                        {
+                        }
+                    },
+                    "slot3": {
+                        "unit": {
                             "cardUid": "ST01-002_9e0d738b-3ba9-49f1-9506-121e755a2434",
                             "cardId": "ST01-002",
+                            "placedAt": 1757264696479,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
                             "cardData": {
                                 "id": "ST01-002",
                                 "name": "Gundam(MA Form)",
@@ -1118,65 +1126,70 @@
                                     ]
                                 }
                             }
+                        },
+                        "pilot": {
+                            "cardUid": "ST01-010_178b9eae-d5b2-4be4-bb19-62e44612e488",
+                            "cardId": "ST01-010",
+                            "placedAt": 1757264699264,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "cardData": {
+                                "id": "ST01-010",
+                                "name": "Amuro Ray",
+                                "cardType": "pilot",
+                                "color": "Blue",
+                                "level": 4,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [
+                                    "Earth Federation",
+                                    "White Base Team",
+                                    "Newtype"
+                                ],
+                                "link": [],
+                                "ap": 2,
+                                "hp": 1,
+                                "effects": {
+                                    "description": [
+                                        "【Burst】Add this card to your hand.",
+                                        "【When Paired】Choose 1 enemy Unit with 5 or less HP. Rest it."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_add_to_hand",
+                                            "type": "triggered",
+                                            "trigger": "BURST_CONDITION",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self"
+                                            },
+                                            "effect": {
+                                                "action": "addToHand",
+                                                "duration": "instant"
+                                            }
+                                        },
+                                        {
+                                            "effectId": "paired_rest_medium_hp",
+                                            "type": "triggered",
+                                            "trigger": "PAIRING_COMPLETE",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "filters": {
+                                                    "hp": "<=5"
+                                                },
+                                                "count": 1
+                                            },
+                                            "effect": {
+                                                "action": "rest",
+                                                "duration": "permanent"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
                         }
-                    ],
-                    "handUids": [
-                        "ST01-011_0897a064-31b5-4ddf-b927-f2161140837b",
-                        "ST01-010_36b0fc24-6de0-4518-bcae-78444ad87281",
-                        "ST01-005_8c99645a-6030-45a5-9d3d-a1a849582f9a",
-                        "ST01-003_d359e65b-a1f1-4a9b-87bf-3086e87c96b3",
-                        "ST01-010_178b9eae-d5b2-4be4-bb19-62e44612e488",
-                        "ST01-005_2d5c2e4c-ecf0-4c30-aec9-6c3c4b69719f",
-                        "ST01-014_27ccf5d7-b5ad-4d56-bb6a-08a4426689b6",
-                        "ST01-003_ef184c8f-8dcc-4635-bf8e-379bd70f4eab",
-                        "ST01-002_9e0d738b-3ba9-49f1-9506-121e755a2434"
-                    ],
-                    "mainDeck": [
-                        "ST01-004_3f62e889-93c7-4d86-92b7-85e00c51db6f",
-                        "ST01-016_aa5ea3de-1e4d-4b78-a45c-620bf6661f96",
-                        "ST01-007_e62f356d-a599-4867-b40e-81714e2285ef",
-                        "ST01-007_74ff499f-c8ee-418f-9bec-a07c685b4c22",
-                        "ST01-002_52096b1a-9468-424d-a0ca-62834474eb9c",
-                        "ST01-006_460e70ca-76f4-48f2-b804-c0cc41b2da22",
-                        "ST01-014_12ea9e6c-c787-41af-bb64-049b5ec536fb",
-                        "ST01-015_c47a2719-d00d-4a24-adb1-e11ce076ff45",
-                        "ST01-008_d35d010a-16f4-4e7a-97ac-59e8728034ce",
-                        "ST01-016_e2a42b61-96b8-4913-92a5-ce7f6da4bf50",
-                        "ST01-016_82b74461-dedd-4c8d-b46c-f1cc6825a1b6",
-                        "ST01-005_f560861d-9252-41b4-bb08-387231ec5726",
-                        "ST01-008_f37fed7d-7ef5-46f6-b8b3-49a743cf7a02",
-                        "ST01-011_3b8f8a4b-50ec-49d8-84c3-461d029edb57",
-                        "ST01-012_6b376df7-3140-4dd0-bff9-ca78e69fa9cf",
-                        "ST01-013_b4922faa-23c7-425c-aa12-a3a1fe1bff02",
-                        "ST01-008_132dadce-da95-4b68-b711-326eb6f93322",
-                        "ST01-005_a1abc3ac-833e-437a-b359-aaef23e63cca",
-                        "ST01-004_43f6f036-0cd0-447a-9202-3f7301ad63f7",
-                        "ST01-001_392c5d6d-ec6c-4ac1-a1d1-df9111beb40b",
-                        "ST01-008_e2d6adb7-d139-40cc-868d-33ff27627562",
-                        "ST01-004_b97782e6-e12b-45d4-97f0-061deb8abd9c",
-                        "ST01-009_c484c268-37a1-45b5-bc5f-ae47c840dfe3",
-                        "ST01-011_0fbd373f-bc58-4419-a6f5-f21423c2ebb2",
-                        "ST01-007_123d9bc6-8f5a-49a7-a191-60fa56fe9c4a",
-                        "ST01-012_2dfcb65a-d147-430b-aead-352baf608378",
-                        "ST01-013_f7f2e347-f9d6-4f9e-8a53-0f52d47f26e5",
-                        "ST01-015_f48378b8-5464-4b82-9979-c206252e9c0f",
-                        "ST01-010_f6cd9167-bbba-4ad3-918c-2a20bb38d560",
-                        "ST01-012_15ffcecd-b9d7-4c9c-af05-13fd9f1bb1bf",
-                        "ST01-009_6465e116-fdcf-441f-a4f6-c1a4ad389be9",
-                        "ST01-007_7b4943bf-094c-431e-a4dc-905d94852a6c",
-                        "ST01-003_91270948-43ef-41d1-ac9d-b16422fc4dc2",
-                        "ST01-001_1753d185-f652-4a68-b025-153c3e037d90",
-                        "ST01-009_7d165399-e76c-4110-8769-ab5a684304af"
-                    ]
-                },
-                "confirmIsRedraw": true,
-                "isRedraw": true,
-                "playerPoint": 0,
-                "isReady": false,
-                "zones": {
-                    "slot1": {},
-                    "slot2": {},
-                    "slot3": {},
+                    },
                     "slot4": {},
                     "slot5": {},
                     "slot6": {},
@@ -1188,7 +1201,9 @@
                             "placedBy": "playerId_2",
                             "isRested": false,
                             "cardData": {
-                                "cardType": "base"
+                                "cardType": "base",
+                                "ap": 0,
+                                "hp": 3
                             },
                             "currentHP": 3,
                             "originalHP": 3,
@@ -1335,20 +1350,6 @@
                     "errorReason": "Player not found in game",
                     "playerId": "playerId_2",
                     "originalEventType": "CONFIRM_REDRAW"
-                }
-            },
-            {
-                "id": "player_redraw_1756880152461_wwdbqjssc",
-                "type": "PLAYER_REDRAW",
-                "metadata": {
-                    "timestamp": 1756880152462,
-                    "expiresAt": 1756880155462,
-                    "requiresAcknowledgment": true,
-                    "frontendProcessed": false,
-                    "priority": "normal"
-                },
-                "payload": {
-                    "playerId": "playerId_2"
                 }
             },
             {
