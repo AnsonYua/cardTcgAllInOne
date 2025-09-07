@@ -127,20 +127,20 @@ export default class GameScene extends Phaser.Scene {
           y: startY + 200+ cardHeight
         },
       },
-      // Opponent zones (top area)
+      // Opponent zones (top area) - REVERSED: slot1 displays at rightmost position
       opponent: {
-        "slot1": { x: playerStartX + width * 0.5 - 320, 
-               y:  startY + 100+ cardHeight + 10+ 15},
-        "slot2": { x: playerStartX + width * 0.5-200 + 10, 
-                y:  startY + 100+ cardHeight + 10+ 15},
-        "slot3": { x: playerStartX + width * 0.5 -80 + 20, 
-                 y:  startY + 100+ cardHeight + 10+ 15},
-        "slot4": { x:playerStartX + width * 0.5 + 40 + 30, 
-                y:  startY + 100+ cardHeight + 10+ 15},
-        "slot5": { x: playerStartX + width * 0.5+160 + 40, 
-              y:  startY + 100+ cardHeight + 10+ 15},
-        "slot6": {  x: playerStartX + width * 0.5 +280 + 50, 
-                  y:  startY + 100+ cardHeight + 10+ 15},
+        "slot1": { x: playerStartX + width * 0.5 +280 + 50,   // Previously slot6 position
+                   y: startY + 100+ cardHeight + 10+ 15},
+        "slot2": { x: playerStartX + width * 0.5+160 + 40,    // Previously slot5 position
+                   y: startY + 100+ cardHeight + 10+ 15},
+        "slot3": { x: playerStartX + width * 0.5 + 40 + 30,   // Previously slot4 position
+                   y: startY + 100+ cardHeight + 10+ 15},
+        "slot4": { x: playerStartX + width * 0.5 -80 + 20,    // Previously slot3 position
+                   y: startY + 100+ cardHeight + 10+ 15},
+        "slot5": { x: playerStartX + width * 0.5-200 + 10,    // Previously slot2 position
+                   y: startY + 100+ cardHeight + 10+ 15},
+        "slot6": { x: playerStartX + width * 0.5 - 320,       // Previously slot1 position
+                   y: startY + 100+ cardHeight + 10+ 15},
         "deck": { x: width * 0.5 - 500, 
                 y: startY + 100+ cardHeight+10+15},
         leaderDeck: { x: width * 0.5 + 430 , y: startY + 100+ cardHeight+10+15},
@@ -209,14 +209,14 @@ export default class GameScene extends Phaser.Scene {
     const slotSpacing = 70; // Space between each slot
     const rowY = startY + 100 + cardHeight + 10 + 15 - 80; // Above existing opponent zones
     
-    // Calculate starting X to center the 10 slots
+    // Calculate starting X to center the 12 slots
     const totalWidth = (slotCount - 1) * slotSpacing;
     const startX = (width * 0.5) - (totalWidth / 2)-80;
     
-    // Generate 10 slot positions
+    // Generate 12 slot positions - REVERSED for opponent (right to left display)
     for (let i = 0; i < slotCount; i++) {
       slots.push({
-        x: startX + (i * slotSpacing),
+        x: startX + ((slotCount - 1 - i) * slotSpacing), // Reverse the X position calculation
         y: rowY,
         index: i
       });

@@ -161,8 +161,8 @@ export default class GameSceneUtils {
       placeholder.setScale(0.55);
       placeholder.setAlpha(0);
     } else {
-      label.setAlpha(1);
-      placeholder.setAlpha(1);
+      label.setAlpha(0);
+      placeholder.setAlpha(0);
     }
     
     // Zone interaction (only for player zones)
