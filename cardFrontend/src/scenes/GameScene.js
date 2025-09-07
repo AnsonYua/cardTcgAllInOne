@@ -1025,129 +1025,7 @@ export default class GameScene extends Phaser.Scene {
     return action;
   }
 
-  handleZoneClick(zoneType, x, y) {
-    // Check if we have a selected card and it's currently our turn
-    if (!this.gameStateManager.getSelectedCard()) {
-      console.log('No card selected');
-      return;
-    }
 
-    // Check if it's the current player's turn and in main phase
-    const gameState = this.gameStateManager.getGameState();
-    const currentPhase = this.gameStateManager.getCurrentPhase();
-    const isCurrentPlayer = this.gameStateManager.isCurrentPlayer();
-    
-    if (!isCurrentPlayer) {
-      console.log('Not your turn');
-      return;
-    }
-
-    if (currentPhase !== 'MAIN_PHASE') {
-      console.log('Not in main phase');
-      return;
-    }
-
-    // Check if the selected card can be placed in this zone
-    const selectedCard = this.gameStateManager.getSelectedCard();
-    if (!this.canDropCardInZone(selectedCard, zoneType)) {
-      const cardData = selectedCard.getCardData();
-      
-      // Check if it's a basic type compatibility issue
-      if (!selectedCard.canPlayInZone(zoneType)) {
-        const cardType = cardData.cardType || cardData.type || 'UNKNOWN';
-        console.log(`Card type ${cardType} cannot be placed in ${zoneType} zone`);
-        this.showZoneRestrictionMessage(`${cardType.toUpperCase()} cards cannot be placed in ${zoneType.toUpperCase()} zone`);
-      } else {
-        // It's a field effect restriction from the leader/backend
-        const restrictions = this.gameStateManager.getZoneRestrictions(null, zoneType);
-        if (restrictions !== "ALL" && Array.isArray(restrictions)) {
-          this.showZoneRestrictionMessage(`This zone only allows: ${restrictions.join(', ')}`);
-        } else {
-          console.log(`Cannot place ${cardData.id} in ${zoneType} zone due to field effects`);
-          this.showZoneRestrictionMessage(`Cannot place this card in ${zoneType.toUpperCase()} zone due to field effects`);
-        }
-      }
-      return;
-    }
-
-    // Place the card in the zone
-    this.placeSelectedCardInZone(zoneType, x, y);
-  }
-
-  async placeSelectedCardInZone(zoneType, x, y) {
-    const card = this.gameStateManager.getSelectedCard();
-    if (!card) return;
-    const cardData = card.getCardData();
-
-    // Show loading state
-    this.setUILoadingState(true);
-
-    // Attempt to play card to server/update game state (include face-down state)
-    const cardDataWithState = {
-      ...cardData,
-      faceDown: card.isFaceDown()
-    };
-    const success = await this.playCardToZone(cardDataWithState, zoneType);
-
-    if (success) {
-      // Move card to zone position
-      card.moveToPosition(x, y);
-      
-      // Disable card interaction - cards in zones should not be clickable
-      card.disableInteraction();
-      
-      // Set zone placement for hover preview system
-      card.setZonePlacement(true, zoneType, true); // true = player zone
-      console.log(`[GameScene] Card ${card.cardData?.id} placed in player zone: ${zoneType}`);
-
-      // Activate power overlay for character cards in character zones
-      const cardType = cardData.cardType || cardData.type || 'unknown';
-      if (cardType === 'character' && ['top', 'left', 'right'].includes(zoneType.toLowerCase())) {
-        console.log('[GameScene] Activating power overlay for character card in zone:', zoneType);
-        card.setPowerOverlayVisible(true);
-        card.updatePowerOverlay();
-      }
-
-      // Remove from hand
-      const handIndex = this.playerHand.indexOf(card);
-      if (handIndex > -1) {
-        this.playerHand.splice(handIndex, 1);
-      }
-
-      // Remove from hand container
-      this.handContainer.remove(card);
-
-      // Add to zone
-      const zone = this.playerZones[zoneType];
-      if (zone) {
-        zone.card = card;
-        zone.placeholder.setVisible(false);
-        
-        // Show power overlay for character cards in character zones
-        if (card.cardData?.type === 'character' && 
-            ['top', 'left', 'right'].includes(zoneType)) {
-          card.setPowerOverlayVisible(true, true);
-        }
-      }
-
-      // Clear selection and zone highlights
-      this.gameStateManager.setSelectedCard(null);
-      this.clearZoneHighlights();
-      // Hide action buttons when card is placed
-      this.hideActionButtons();
-
-      // Reorganize remaining hand cards
-      this.reorganizeHand();
-
-      console.log(`Placed card ${cardData.id} in ${zoneType} zone via click`);
-    } else {
-      // On failure, keep card in hand and maintain selection
-      console.log(`Failed to place card ${cardData.id} in ${zoneType} zone`);
-    }
-
-    // Clear loading state
-    this.setUILoadingState(false);
-  }
 
   showZoneHighlights(card) {
     GameSceneUtils.showZoneHighlights(card, this);
@@ -1170,8 +1048,6 @@ export default class GameScene extends Phaser.Scene {
     });
     this.gameStateManager.setSelectedCard(null);
     this.clearZoneHighlights();
-    // Hide action buttons when all cards deselected
-    this.hideActionButtons();
   }
 
   reorganizeHand() {

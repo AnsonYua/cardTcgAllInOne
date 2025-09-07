@@ -202,12 +202,6 @@ export default class GameSceneUtils {
 
       // Add zone click handling for card placement when card is selected
       dropZone.setInteractive();
-      dropZone.on('pointerdown', (pointer) => {
-        console.log('dropZone clicked');
-        if (scene.handleZoneClick) {
-          scene.handleZoneClick(type, x, y);
-        }
-      });
     }
     
     return {
