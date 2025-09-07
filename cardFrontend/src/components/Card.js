@@ -640,15 +640,19 @@ export default class Card extends Phaser.GameObjects.Container {
   createPowerOverlay() {
     // Only create power overlay for character cards
     console.log("overlay data ",JSON.stringify(this.cardData))
-    if (this.cardData && this.cardData.cardType === 'unit' ||this.cardData.cardType === 'command' ) {
+    if (this.cardData && this.cardData.cardType === 'unit' ||
+        this.cardData.cardType === 'command' ||
+        this.cardData.cardType === 'pilot'
+       ) {
       if (this.powerOverlay) {
         this.powerOverlay.destroy();
       }
       
-      // Pass parent card scale to PowerOverlay to handle preview mode blur fix
+      // Pass parent card scale and card type to PowerOverlay for type-specific positioning
       this.powerOverlay = new PowerOverlay(this.scene, 0, 0, {
         parentCardScale: this.options.scale,
-        showBackground: this.options.showPowerBackground !== undefined ? this.options.showPowerBackground : false
+        showBackground: this.options.showPowerBackground !== undefined ? this.options.showPowerBackground : false,
+        cardType: this.cardData?.cardType
       });
       this.add(this.powerOverlay);
       

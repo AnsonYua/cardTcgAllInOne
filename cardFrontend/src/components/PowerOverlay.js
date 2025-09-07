@@ -19,15 +19,21 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     this.parentCardScale = options.parentCardScale || 1;
     this.isPreviewMode = this.parentCardScale > 2; // Assume preview mode if scale > 2
     
+    // Get card type for type-specific positioning
+    this.cardType = options.cardType || 'unit'; // default to 'unit'
+    
+    // Card-type-specific positioning configurations
+    const cardTypeOffsets = this.getCardTypeOffsets(this.cardType);
+    
     // Configuration
     this.config = {
-      // AP label position - responsive to preview mode
-      apOffsetX: this.isPreviewMode ?  36.5 : 36.5,       // Right side of card  
-      apOffsetY: this.isPreviewMode ? 73 : 73,         // Top area of card
+      // AP label position - responsive to preview mode and card type
+      apOffsetX: this.isPreviewMode ? cardTypeOffsets.preview.apOffsetX : cardTypeOffsets.normal.apOffsetX,
+      apOffsetY: this.isPreviewMode ? cardTypeOffsets.preview.apOffsetY : cardTypeOffsets.normal.apOffsetY,
       
-      // HP label position (next to AP) - responsive to preview mode
-      hpOffsetX: this.isPreviewMode ? 50 : 50,       // Next to AP
-      hpOffsetY: this.isPreviewMode ? 73  : 73,         // Same Y as AP (side-by-side)
+      // HP label position - responsive to preview mode and card type
+      hpOffsetX: this.isPreviewMode ? cardTypeOffsets.preview.hpOffsetX : cardTypeOffsets.normal.hpOffsetX,
+      hpOffsetY: this.isPreviewMode ? cardTypeOffsets.preview.hpOffsetY : cardTypeOffsets.normal.hpOffsetY,
       
       // Visual styling - responsive to preview mode
       fontSize: this.isPreviewMode ? 64 : 14,
@@ -71,6 +77,35 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     
     this.create();
     scene.add.existing(this);
+  }
+  
+  /**
+   * Get card-type-specific positioning offsets
+   * @param {string} cardType - Card type: 'unit', 'pilot', 'base', 'command'
+   * @returns {Object} Positioning configuration for normal and preview modes
+   */
+  getCardTypeOffsets(cardType) {
+    const offsets = {
+      unit: {
+        normal: { apOffsetX: 36.5, apOffsetY: 73, hpOffsetX: 50, hpOffsetY: 73 },
+        preview: { apOffsetX: 36.5, apOffsetY: 73, hpOffsetX: 50, hpOffsetY: 73 }
+      },
+      pilot: {
+        normal: { apOffsetX: 36.5, apOffsetY: 47, hpOffsetX: 50, hpOffsetY: 47 },
+        preview: {apOffsetX: 36.5, apOffsetY: 47, hpOffsetX: 50, hpOffsetY: 47 }
+      },
+      base: {
+        normal: { apOffsetX: 36.5, apOffsetY: 73, hpOffsetX: 50, hpOffsetY: 73 },
+        preview: { apOffsetX: 146, apOffsetY: 292, hpOffsetX: 200, hpOffsetY: 292 }
+      },
+      command: {
+        normal: { apOffsetX: 36.5, apOffsetY: 73, hpOffsetX: 50, hpOffsetY: 73 },
+        preview: { apOffsetX: 146, apOffsetY: 292, hpOffsetX: 200, hpOffsetY: 292 }
+      }
+    };
+    
+    // Return the configuration for the specified card type, or default to 'unit'
+    return offsets[cardType] || offsets.unit;
   }
   
   create() {
