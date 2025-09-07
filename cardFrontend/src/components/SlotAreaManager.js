@@ -90,7 +90,7 @@ export default class SlotAreaManager {
   updatePilotCard(slotCards, pilotData, slotPosition, playerType, slotName) {
     if (pilotData) {
       // Slot has pilot - create or update card (positioned 25px below unit)
-      const pilotY = slotPosition.y + 25; // Position pilot 25px below unit
+      const pilotY = slotPosition.y + 42; // Position pilot 25px below unit
       console.log("pilotData ", JSON.stringify(pilotData))
       if (!slotCards.pilot) {
         console.log(`Creating ${playerType} ${slotName} pilot card:`, pilotData.cardId);

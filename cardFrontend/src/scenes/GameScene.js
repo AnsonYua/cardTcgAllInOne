@@ -152,23 +152,23 @@ export default class GameScene extends Phaser.Scene {
     
       player: {
         "slot1": { x: playerStartX + width * 0.5 - 320, 
-              y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 },
+              y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 60 },
         "slot2":{ x: playerStartX + width * 0.5-200 + 10, 
-               y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70},
+               y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 60},
         "slot3": { x: playerStartX + width * 0.5 -80 + 20, 
-               y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70},
+               y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 60},
         "slot4": { x: playerStartX + width * 0.5 + 40 + 30, 
-                  y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 },
+                  y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 60 },
         "slot5": { x: playerStartX + width * 0.5+160 + 40, 
-           y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70},
+           y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 60},
         "slot6": { x: playerStartX + width * 0.5 +280 + 50,
-           y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 },
+           y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 60 },
         deck: { x: width * 0.5 + 420 , 
-                y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70},
+                y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 60},
         leaderDeck: { x: width * 0.5 - 550 , 
-                      y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 70 + 50},
+                      y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 60 + 50},
         base: { x: width * 0.5 - 550 , 
-                      y: startY + 70+ cardHeight + 10+ 15 +cardHeight + 70 + 50},
+                      y: startY + 70+ cardHeight + 10+ 15 +cardHeight + 60 + 50},
         // New row with 10 columns below existing zones
         row2: this.generateRow2Slots(playerStartX, width, startY+100, cardHeight)
       },
@@ -1402,7 +1402,7 @@ export default class GameScene extends Phaser.Scene {
     this.previewCard.setDepth(2000);
     
     // Create pilot preview (25px below unit) - Direct card data access  
-    this.previewPilotCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y + 70, pilotCard.cardData, {
+    this.previewPilotCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y + 145, pilotCard.cardData, {
       interactive: false,
       draggable: false,
       scale: 3.5,

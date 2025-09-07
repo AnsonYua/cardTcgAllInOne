@@ -15,19 +15,23 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
   constructor(scene, x = 0, y = 0, options = {}) {
     super(scene, x, y);
     
+    // Detect if parent card is scaled (for preview mode)
+    this.parentCardScale = options.parentCardScale || 1;
+    this.isPreviewMode = this.parentCardScale > 2; // Assume preview mode if scale > 2
+    
     // Configuration
     this.config = {
       // Position relative to card center
       offsetX: 36.5,         // Right side of card
       offsetY: 73,        // Top area of card
       
-      // Visual styling
-      fontSize: 16,
+      // Visual styling - adjust for scale
+      fontSize: this.isPreviewMode ? 48 : 16,
       fontFamily: 'Arial Bold',
       
-      // Background styling
-      backgroundPadding: 6,
-      backgroundRadius: 8,
+      // Background styling - adjust for scale
+      backgroundPadding: this.isPreviewMode ? 48 : 6,
+      backgroundRadius: this.isPreviewMode ? 48 : 8,
       backgroundAlpha: 0.9,
       
       // Animation settings
@@ -76,7 +80,7 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     this.background = this.scene.add.graphics();
     this.add(this.background);
     
-    // Create power text
+    // Create power text with scale-adjusted properties
     this.powerText = this.scene.add.text(0, 0, '0', {
       fontSize: `${this.config.fontSize}px`,
       fontFamily: this.config.fontFamily,
@@ -85,6 +89,12 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     });
     this.powerText.setOrigin(0.5);
     this.add(this.powerText);
+    
+    // Apply scale compensation for preview mode to prevent blur
+    if (this.isPreviewMode) {
+      console.log(`[PowerOverlay] Preview mode detected, applying scale compensation: ${1 / this.parentCardScale}`);
+      this.setScale(1 / this.parentCardScale);
+    }
     
     // Position the overlay relative to parent
     this.setPosition(this.config.offsetX, this.config.offsetY);
@@ -145,8 +155,11 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     const bgWidth = Math.max(textBounds.width + this.config.backgroundPadding * 2, 24);
     const bgHeight = textBounds.height + this.config.backgroundPadding * 2;
     
+    // Adjust line thickness for preview mode to maintain visibility
+    const lineThickness = this.isPreviewMode ? Math.ceil(2 / this.parentCardScale) : 2;
+    
     // Draw background with border
-    this.background.lineStyle(2, colorScheme.border, 1);
+    this.background.lineStyle(lineThickness, colorScheme.border, 1);
     this.background.fillStyle(colorScheme.background, this.config.backgroundAlpha);
     this.background.fillRoundedRect(
       -bgWidth / 2, 

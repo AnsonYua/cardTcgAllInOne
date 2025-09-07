@@ -6,7 +6,7 @@
   "tags": [
     "PlayCard"
   ],
-  "initialGameEnv": {
+  "initialGameEnv":  {
         "phase": "MAIN_PHASE",
         "playerId_1": "playerId_1",
         "playerId_2": "playerId_2",
@@ -24,65 +24,6 @@
                 "name": "Player 1",
                 "deck": {
                     "hand": [
-                        {
-                            "cardUid": "ST01-011_43a32288-38f9-4628-9eb3-74e30f9e21e3",
-                            "cardId": "ST01-011",
-                            "cardData": {
-                                "id": "ST01-011",
-                                "name": "Suletta Mercury",
-                                "cardType": "pilot",
-                                "color": "White",
-                                "level": 4,
-                                "cost": 1,
-                                "zone": [],
-                                "traits": [
-                                    "Academy"
-                                ],
-                                "link": [],
-                                "ap": 1,
-                                "hp": 2,
-                                "effects": {
-                                    "description": [
-                                        "【Burst】Add this card to your hand.",
-                                        "【Attack】【Once per Turn】Choose 1 of your Resources. Set it as active."
-                                    ],
-                                    "rules": [
-                                        {
-                                            "effectId": "burst_add_to_hand",
-                                            "type": "triggered",
-                                            "trigger": "BURST_CONDITION",
-                                            "target": {
-                                                "type": "card",
-                                                "scope": "self"
-                                            },
-                                            "effect": {
-                                                "action": "addToHand",
-                                                "duration": "instant"
-                                            }
-                                        },
-                                        {
-                                            "effectId": "attack_activate_resource",
-                                            "type": "activated",
-                                            "timing": [
-                                                "ATTACK_PHASE"
-                                            ],
-                                            "restrictions": [
-                                                "once_per_turn"
-                                            ],
-                                            "target": {
-                                                "type": "resource",
-                                                "scope": "self",
-                                                "count": 1
-                                            },
-                                            "effect": {
-                                                "action": "setActive",
-                                                "duration": "instant"
-                                            }
-                                        }
-                                    ]
-                                }
-                            }
-                        },
                         {
                             "cardUid": "ST01-015_6863d13a-ed71-454c-a8ce-f3cc6201bd97",
                             "cardId": "ST01-015",
@@ -284,32 +225,6 @@
                             }
                         },
                         {
-                            "cardUid": "ST01-005_847bfdd1-2175-4e8e-bfa4-baffa9ed13cd",
-                            "cardId": "ST01-005",
-                            "cardData": {
-                                "id": "ST01-005",
-                                "name": "GM",
-                                "cardType": "unit",
-                                "color": "Blue",
-                                "level": 2,
-                                "cost": 1,
-                                "zone": [
-                                    "Space",
-                                    "Earth"
-                                ],
-                                "traits": [
-                                    "Earth Federation"
-                                ],
-                                "link": [],
-                                "ap": 2,
-                                "hp": 2,
-                                "effects": {
-                                    "description": [],
-                                    "rules": []
-                                }
-                            }
-                        },
-                        {
                             "cardUid": "ST01-014_d9bbecac-0983-4963-a3e4-f361c749c374",
                             "cardId": "ST01-014",
                             "cardData": {
@@ -424,10 +339,8 @@
                         }
                     ],
                     "handUids": [
-                        "ST01-011_43a32288-38f9-4628-9eb3-74e30f9e21e3",
                         "ST01-015_6863d13a-ed71-454c-a8ce-f3cc6201bd97",
                         "ST01-016_d918cf59-d6fb-4cae-b2e6-6672ced70003",
-                        "ST01-005_847bfdd1-2175-4e8e-bfa4-baffa9ed13cd",
                         "ST01-014_d9bbecac-0983-4963-a3e4-f361c749c374",
                         "ST01-005_97acf20b-0b89-4ce3-b512-fb447e68bf40",
                         "ST01-005_451ce2ec-70ae-4f8e-a315-46f39497303e"
@@ -574,7 +487,99 @@
                             }
                         }
                     },
-                    "slot2": {},
+                    "slot2": {
+                        "unit": {
+                            "cardUid": "ST01-005_847bfdd1-2175-4e8e-bfa4-baffa9ed13cd",
+                            "cardId": "ST01-005",
+                            "placedAt": 1757234163673,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "cardData": {
+                                "id": "ST01-005",
+                                "name": "GM",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 2,
+                                "cost": 1,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Federation"
+                                ],
+                                "link": [],
+                                "ap": 2,
+                                "hp": 2,
+                                "effects": {
+                                    "description": [],
+                                    "rules": []
+                                }
+                            }
+                        },
+                        "pilot": {
+                            "cardUid": "ST01-011_43a32288-38f9-4628-9eb3-74e30f9e21e3",
+                            "cardId": "ST01-011",
+                            "placedAt": 1757234166470,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "cardData": {
+                                "id": "ST01-011",
+                                "name": "Suletta Mercury",
+                                "cardType": "pilot",
+                                "color": "White",
+                                "level": 4,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [
+                                    "Academy"
+                                ],
+                                "link": [],
+                                "ap": 1,
+                                "hp": 2,
+                                "effects": {
+                                    "description": [
+                                        "【Burst】Add this card to your hand.",
+                                        "【Attack】【Once per Turn】Choose 1 of your Resources. Set it as active."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_add_to_hand",
+                                            "type": "triggered",
+                                            "trigger": "BURST_CONDITION",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self"
+                                            },
+                                            "effect": {
+                                                "action": "addToHand",
+                                                "duration": "instant"
+                                            }
+                                        },
+                                        {
+                                            "effectId": "attack_activate_resource",
+                                            "type": "activated",
+                                            "timing": [
+                                                "ATTACK_PHASE"
+                                            ],
+                                            "restrictions": [
+                                                "once_per_turn"
+                                            ],
+                                            "target": {
+                                                "type": "resource",
+                                                "scope": "self",
+                                                "count": 1
+                                            },
+                                            "effect": {
+                                                "action": "setActive",
+                                                "duration": "instant"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
                     "slot3": {},
                     "slot4": {},
                     "slot5": {},

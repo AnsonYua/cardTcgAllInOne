@@ -640,12 +640,15 @@ export default class Card extends Phaser.GameObjects.Container {
   createPowerOverlay() {
     // Only create power overlay for character cards
     console.log("overlay data ",JSON.stringify(this.cardData))
-    if (this.cardData && this.cardData.cardType === 'unit') {
+    if (this.cardData && this.cardData.cardType === 'unit' ||this.cardData.cardType === 'command' ) {
       if (this.powerOverlay) {
         this.powerOverlay.destroy();
       }
       
-      this.powerOverlay = new PowerOverlay(this.scene);
+      // Pass parent card scale to PowerOverlay to handle preview mode blur fix
+      this.powerOverlay = new PowerOverlay(this.scene, 0, 0, {
+        parentCardScale: this.options.scale
+      });
       this.add(this.powerOverlay);
       
       // Set proper depth for overlay
@@ -654,33 +657,13 @@ export default class Card extends Phaser.GameObjects.Container {
       // Initially hidden until placed in character zone
       this.powerOverlay.setVisible(true);
       
-      console.log('[Card] Created PowerOverlay for character card:', this.cardData.id);
+      console.log('[Card] Created PowerOverlay for character card:', this.cardData.id, 'with scale:', this.options.scale);
       
       // Update power display immediately
       //this.updatePowerOverlay();
     }
   }
   
-  /**
-   * Get the current display power for this card from game state
-   * @returns {number} The current power value including all effects
-   */
-  getDisplayPower() {
-    if (!this.gameStateManager || !this.cardData) {
-      return this.cardData?.power || 0;
-    }
-    
-    // For character cards, try to find the card in zones and get currentPower
-    if (this.cardData.type === 'character') {
-      const currentPower = this.gameStateManager.getCardCurrentPowerFromZones(this.cardData.id);
-      if (currentPower !== null) {
-        return currentPower;
-      }
-    }
-    
-    // Fall back to base power
-    return this.cardData.power || 0;
-  }
   
   /**
    * Update power overlay with current power values
