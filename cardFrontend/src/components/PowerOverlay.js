@@ -20,7 +20,7 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     this.isPreviewMode = this.parentCardScale > 2; // Assume preview mode if scale > 2
     
     // Get card type for type-specific positioning
-    this.cardType = options.cardType || 'unit'; // default to 'unit'
+    this.cardType = options.cardType; // default to 'unit'
     
     // Card-type-specific positioning configurations
     const cardTypeOffsets = this.getCardTypeOffsets(this.cardType);
@@ -55,14 +55,14 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
         base: { text: '#FFFFFF', background: 0xFF5722, border: 0xE64A19 },      // Orange for attack
         boosted: { text: '#FFFFFF', background: 0xFF8A65, border: 0xFF7043 },   // Light orange boosted
         reduced: { text: '#FFFFFF', background: 0xD84315, border: 0xBF360C },   // Dark orange reduced
-        disabled: { text: '#CCCCCC', background: 0x666666, border: 0x444444 }
+        disabled: { text: '#FFFFFF', background: 0x666666, border: 0x444444 }
       },
       
       hpColors: {
         base: { text: '#FFFFFF', background: 0x4CAF50, border: 0x388E3C },      // Green for health
         boosted: { text: '#FFFFFF', background: 0x81C784, border: 0x66BB6A },   // Light green boosted
         reduced: { text: '#FFFFFF', background: 0xF44336, border: 0xD32F2F },   // Red for damaged
-        disabled: { text: '#CCCCCC', background: 0x666666, border: 0x444444 }
+        disabled: { text: '#FFFFFF', background: 0x666666, border: 0x444444 }
       },
       
       ...options
@@ -99,8 +99,8 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
         preview: { apOffsetX: 146, apOffsetY: 292, hpOffsetX: 200, hpOffsetY: 292 }
       },
       command: {
-        normal: { apOffsetX: 36.5, apOffsetY: 73, hpOffsetX: 50, hpOffsetY: 73 },
-        preview: { apOffsetX: 146, apOffsetY: 292, hpOffsetX: 200, hpOffsetY: 292 }
+        normal: { apOffsetX: 36.5, apOffsetY: 70, hpOffsetX: 50, hpOffsetY: 70 },
+        preview: {  apOffsetX: 36.5, apOffsetY: 70, hpOffsetX: 50, hpOffsetY: 70 }
       }
     };
     
@@ -230,7 +230,6 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     
     // Update AP text color
     this.apText.setFill(colorScheme.text);
-    
     // Clear existing background
     this.apBackground.clear();
     

@@ -42,7 +42,7 @@ export default class EnergyAreaManager {
         const slotPosition = this.getRow2SlotPosition(playerType, slotIndex);
         
         if (slotPosition) {
-          const card = this.createEnergyCard(energyCard, slotPosition.x, slotPosition.y, i);
+          const card = this.createEnergyCard(energyCard, slotPosition.x, slotPosition.y+5, i);
           cardArray.push(card);
         }
       });
@@ -68,7 +68,7 @@ export default class EnergyAreaManager {
     const card = new Card(this.scene, x, y, energyCard, {
       interactive: true,
       draggable: false,
-      scale: 0.75, // Smaller scale for energy cards in row2
+      scale: 0.72, // Smaller scale for energy cards in row2
       gameStateManager: this.gameStateManager,
       usePreview: true
     });
