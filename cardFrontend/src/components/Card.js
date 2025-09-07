@@ -639,7 +639,8 @@ export default class Card extends Phaser.GameObjects.Container {
    */
   createPowerOverlay() {
     // Only create power overlay for character cards
-    if (this.cardData && this.cardData.type === 'character') {
+    console.log("overlay data ",JSON.stringify(this.cardData))
+    if (this.cardData && this.cardData.cardType === 'unit') {
       if (this.powerOverlay) {
         this.powerOverlay.destroy();
       }
@@ -648,15 +649,15 @@ export default class Card extends Phaser.GameObjects.Container {
       this.add(this.powerOverlay);
       
       // Set proper depth for overlay
-      this.powerOverlay.setDepth(1000);
+      this.powerOverlay.setDepth(2500);
       
       // Initially hidden until placed in character zone
-      this.powerOverlay.setVisible(false);
+      this.powerOverlay.setVisible(true);
       
       console.log('[Card] Created PowerOverlay for character card:', this.cardData.id);
       
       // Update power display immediately
-      this.updatePowerOverlay();
+      //this.updatePowerOverlay();
     }
   }
   

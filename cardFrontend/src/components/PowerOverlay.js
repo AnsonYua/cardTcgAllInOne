@@ -18,11 +18,11 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     // Configuration
     this.config = {
       // Position relative to card center
-      offsetX: 35,         // Right side of card
-      offsetY: -35,        // Top area of card
+      offsetX: 36.5,         // Right side of card
+      offsetY: 73,        // Top area of card
       
       // Visual styling
-      fontSize: 18,
+      fontSize: 16,
       fontFamily: 'Arial Bold',
       
       // Background styling
@@ -32,7 +32,7 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
       
       // Animation settings
       animationDuration: 300,
-      scaleOnChange: 1.2,
+      scaleOnChange: 1,
       
       // Color scheme
       colors: {
