@@ -415,7 +415,7 @@ export default class Card extends Phaser.GameObjects.Container {
     }
     
     // Update power overlay for character cards
-    this.updatePowerOverlay(true);
+    this.updatePowerOverlay();
     
     // Check if card is disabled by effects
     const isDisabled = this.isCardDisabled();
@@ -647,7 +647,8 @@ export default class Card extends Phaser.GameObjects.Container {
       
       // Pass parent card scale to PowerOverlay to handle preview mode blur fix
       this.powerOverlay = new PowerOverlay(this.scene, 0, 0, {
-        parentCardScale: this.options.scale
+        parentCardScale: this.options.scale,
+        showBackground: this.options.showPowerBackground !== undefined ? this.options.showPowerBackground : false
       });
       this.add(this.powerOverlay);
       
@@ -666,20 +667,24 @@ export default class Card extends Phaser.GameObjects.Container {
   
   
   /**
-   * Update power overlay with current power values
+   * Update power overlay with current AP and HP values
    * @param {boolean} animate - Whether to animate changes
    */
   updatePowerOverlay(animate = true) {
-    if (!this.powerOverlay || this.cardData?.type !== 'character') {
-      console.log('[Card] updatePowerOverlay skipped - no overlay or not character:', this.cardData?.id, 'type:', this.cardData?.type);
+    if (!this.powerOverlay || (this.cardData?.cardType !== 'unit' && this.cardData?.cardType !== 'command')) {
+      console.log('[Card] updatePowerOverlay skipped - no overlay or not unit/command:', this.cardData?.id, 'type:', this.cardData?.cardType);
       return;
     }
     
-    // Get current and base power values
-    const currentPower = this.getDisplayPower();
-    const basePower = this.cardData.power || 0;
+    // Get current and base values for both AP and HP
+    const currentAP = this.getDisplayPower(); // Use existing power as AP
+    const baseAP = this.cardData.power || 0;
     
-    console.log('[Card] updatePowerOverlay for', this.cardData.id, '- currentPower:', currentPower, 'basePower:', basePower);
+    // Get HP values - check for hp property, fallback to power, or default to base value
+    const currentHP = this.cardData.currentHp || this.cardData.hp || this.cardData.power || 0;
+    const baseHP = this.cardData.baseHp || this.cardData.hp || this.cardData.power || 0;
+    
+    console.log('[Card] updatePowerOverlay for', this.cardData.id, '- AP:', currentAP, '/', baseAP, '- HP:', currentHP, '/', baseHP);
     
     // Hide overlay for face-down cards
     if (this.options.faceDown) {
@@ -687,11 +692,15 @@ export default class Card extends Phaser.GameObjects.Container {
       return;
     }
     
-    // Update power display with simple text for now
-    if (this.powerOverlay.updatePower) {
-      this.powerOverlay.updatePower(currentPower, basePower, animate);
+    // Update using new dual stats method
+    if (this.powerOverlay.updateStats) {
+      this.powerOverlay.updateStats(currentAP, baseAP, currentHP, baseHP);
+    } else if (this.powerOverlay.updatePower) {
+      // Fallback to legacy method if new method not available
+      console.log('[Card] Using legacy updatePower method, consider updating PowerOverlay');
+      this.powerOverlay.updatePower(currentAP, baseAP);
     } else {
-      console.warn('[Card] PowerOverlay missing updatePower method');
+      console.warn('[Card] PowerOverlay missing update methods');
     }
   }
   
@@ -701,13 +710,24 @@ export default class Card extends Phaser.GameObjects.Container {
    * @param {boolean} visible - Whether overlay should be shown
    * @param {boolean} animate - Whether to animate the change
    */
-  setPowerOverlayVisible(visible, animate = true) {
+  setPowerOverlayVisible(visible) {
     console.log('[Card] setPowerOverlayVisible called:', visible, 'for card:', this.cardData?.id, 'powerOverlay exists:', !!this.powerOverlay);
     if (this.powerOverlay) {
       this.powerOverlay.setVisible(visible);
       if (visible) {
-        this.updatePowerOverlay(animate);
+        this.updatePowerOverlay();
       }
+    }
+  }
+  
+  /**
+   * Enable or disable power overlay background and borders
+   * @param {boolean} showBackground - Whether to show backgrounds and borders
+   */
+  setPowerOverlayBackground(showBackground) {
+    console.log('[Card] setPowerOverlayBackground called:', showBackground, 'for card:', this.cardData?.id);
+    if (this.powerOverlay) {
+      this.powerOverlay.setShowBackground(showBackground);
     }
   }
 

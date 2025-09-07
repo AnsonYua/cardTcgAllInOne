@@ -112,8 +112,8 @@ export default class SlotAreaManager {
 
   createSlotCard(cardData, x, y, slotName, cardType = 'unit') {
     try {
-      // Create card using the existing Card component
-      const card = new Card(this.scene, x, y, cardData);
+      // Create card using the existing Card component with preview images for better performance
+      const card = new Card(this.scene, x, y, cardData, { usePreview: true });
       
       // CRITICAL: Set card as interactive to enable hover events
       card.setInteractive(true);

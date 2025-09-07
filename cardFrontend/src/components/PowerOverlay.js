@@ -21,83 +21,93 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     
     // Configuration
     this.config = {
-      // Position relative to card center
-      offsetX: 36.5,         // Right side of card
-      offsetY: 73,        // Top area of card
+      // AP label position - responsive to preview mode
+      apOffsetX: this.isPreviewMode ? 0 : 36.5,       // Right side of card  
+      apOffsetY: this.isPreviewMode ? 0 : 73,         // Top area of card
       
-      // Visual styling - adjust for scale
-      fontSize: this.isPreviewMode ? 48 : 16,
+      // HP label position (below AP) - responsive to preview mode
+      hpOffsetX: this.isPreviewMode ? 200 : 50,       // Same X as AP
+      hpOffsetY: this.isPreviewMode ? 292 : 73,         // Below AP with spacing
+      
+      // Visual styling - responsive to preview mode
+      fontSize: this.isPreviewMode ? 64 : 16,
       fontFamily: 'Arial Bold',
       
-      // Background styling - adjust for scale
+      // Background styling - responsive to preview mode
       backgroundPadding: this.isPreviewMode ? 48 : 6,
-      backgroundRadius: this.isPreviewMode ? 48 : 8,
+      backgroundRadius: this.isPreviewMode ? 32 : 8,
       backgroundAlpha: 0.9,
       
-      // Animation settings
-      animationDuration: 300,
-      scaleOnChange: 1,
+      // Background visibility toggle
+      showBackground: false,  // Set to false to show only text labels
       
-      // Color scheme
-      colors: {
-        base: {
-          text: '#FFFFFF',
-          background: 0x333333,
-          border: 0x666666
-        },
-        boosted: {
-          text: '#FFFFFF', 
-          background: 0x4CAF50,  // Green for positive
-          border: 0x388E3C
-        },
-        reduced: {
-          text: '#FFFFFF',
-          background: 0xF44336,  // Red for negative
-          border: 0xD32F2F
-        },
-        disabled: {
-          text: '#CCCCCC',
-          background: 0x666666,  // Gray for disabled
-          border: 0x444444
-        }
+      // Spacing between AP and HP labels - responsive to preview mode
+      labelSpacing: this.isPreviewMode ? 88 : 22,
+      
+      // Color schemes for different label types
+      apColors: {
+        base: { text: '#FFFFFF', background: 0xFF5722, border: 0xE64A19 },      // Orange for attack
+        boosted: { text: '#FFFFFF', background: 0xFF8A65, border: 0xFF7043 },   // Light orange boosted
+        reduced: { text: '#FFFFFF', background: 0xD84315, border: 0xBF360C },   // Dark orange reduced
+        disabled: { text: '#CCCCCC', background: 0x666666, border: 0x444444 }
+      },
+      
+      hpColors: {
+        base: { text: '#FFFFFF', background: 0x4CAF50, border: 0x388E3C },      // Green for health
+        boosted: { text: '#FFFFFF', background: 0x81C784, border: 0x66BB6A },   // Light green boosted
+        reduced: { text: '#FFFFFF', background: 0xF44336, border: 0xD32F2F },   // Red for damaged
+        disabled: { text: '#CCCCCC', background: 0x666666, border: 0x444444 }
       },
       
       ...options
     };
     
-    // State tracking
-    this.currentPower = 0;
-    this.basePower = 0;
+    // State tracking for dual labels
+    this.currentAP = 0;
+    this.baseAP = 0;
+    this.currentHP = 0;
+    this.baseHP = 0;
     this.isVisible = false;
-    this.animationTween = null;
     
     this.create();
     scene.add.existing(this);
   }
   
   create() {
-    // Create background circle/rounded rect
-    this.background = this.scene.add.graphics();
-    this.add(this.background);
+    // Create AP label components
+    this.apBackground = this.scene.add.graphics();
+    this.add(this.apBackground);
     
-    // Create power text with scale-adjusted properties
-    this.powerText = this.scene.add.text(0, 0, '0', {
+    this.apText = this.scene.add.text(this.config.apOffsetX, this.config.apOffsetY, '0', {
       fontSize: `${this.config.fontSize}px`,
       fontFamily: this.config.fontFamily,
-      fill: this.config.colors.base.text,
+      fill: this.config.apColors.base.text,
       align: 'center'
     });
-    this.powerText.setOrigin(0.5);
-    this.add(this.powerText);
+    this.apText.setOrigin(0.5);
+    this.add(this.apText);
     
-    // Apply scale compensation for preview mode to prevent blur
+    // Create HP label components
+    this.hpBackground = this.scene.add.graphics();
+    this.add(this.hpBackground);
+    
+    this.hpText = this.scene.add.text(this.config.hpOffsetX, this.config.hpOffsetY, '0', {
+      fontSize: `${this.config.fontSize}px`,
+      fontFamily: this.config.fontFamily,
+      fill: this.config.hpColors.base.text,
+      align: 'center'
+    });
+    this.hpText.setOrigin(0.5);
+    this.add(this.hpText);
+    
+    // Preview mode uses hardcoded values instead of scaling
     if (this.isPreviewMode) {
-      console.log(`[PowerOverlay] Preview mode detected, applying scale compensation: ${1 / this.parentCardScale}`);
-      this.setScale(1 / this.parentCardScale);
+      console.log(`[PowerOverlay] Preview mode detected, using hardcoded configuration values`);
+      // No scaling needed - all values are hardcoded for preview mode
     }
     
-    // Position the overlay relative to parent
-    this.setPosition(this.config.offsetX, this.config.offsetY);
+    // Position at origin - children are positioned relative to this container
+    this.setPosition(0, 0);
     
     // Set initial depth to ensure it appears above card
     this.setDepth(10);
@@ -107,86 +117,154 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
   }
   
   /**
-   * Update the power value displayed
-   * @param {number} currentPower - Current power value
-   * @param {number} basePower - Original base power
+   * Update both AP and HP values displayed
+   * @param {number} currentAP - Current attack power value
+   * @param {number} baseAP - Original base attack power
+   * @param {number} currentHP - Current health points value  
+   * @param {number} baseHP - Original base health points
    * @param {boolean} animate - Whether to animate the change
    */
-  updatePower(currentPower, basePower, animate = true) {
-    const oldPower = this.currentPower;
-    this.currentPower = currentPower;
-    this.basePower = basePower;
+  updateStats(currentAP, baseAP, currentHP, baseHP, animate = false) {
+    // Update state
+    this.currentAP = currentAP;
+    this.baseAP = baseAP;
+    this.currentHP = currentHP;
+    this.baseHP = baseHP;
     
-    // Update text
-    this.powerText.setText(currentPower.toString());
+    // Update text displays
+    this.apText.setText(currentAP.toString());
+    this.hpText.setText(currentHP.toString());
     
-    // Determine power state and update styling
+    // Update styling for both labels
     this.updateStyling();
     
-    // Show overlay if not visible and power > 0
-    if (!this.isVisible && currentPower > 0) {
-      this.show(animate);
+    // Show overlay if not visible and either stat > 0
+    if (!this.isVisible && (currentAP > 0 || currentHP > 0)) {
+      this.show();
     }
-    // Hide overlay if power is 0 or less
-    else if (this.isVisible && currentPower <= 0) {
-      this.hide(animate);
-    }
-    // Animate value change if visible and power changed
-    else if (this.isVisible && oldPower !== currentPower && animate) {
-      this.animateValueChange();
+    // Hide overlay if both stats are 0 or less
+    else if (this.isVisible && currentAP <= 0 && currentHP <= 0) {
+      this.hide();
     }
   }
   
   /**
-   * Update visual styling based on power state
+   * Legacy method for backward compatibility - uses currentPower as AP, sets HP to 0
+   * @param {number} currentPower - Current power value (treated as AP)
+   * @param {number} basePower - Original base power (treated as base AP)
+   * @param {boolean} animate - Whether to animate the change
+   */
+  updatePower(currentPower, basePower, animate = false) {
+    console.log('[PowerOverlay] Legacy updatePower called, consider using updateStats instead');
+    this.updateStats(currentPower, basePower, 0, 0, false);
+  }
+  
+  /**
+   * Update visual styling for both AP and HP labels
    */
   updateStyling() {
-    const powerState = this.getPowerState();
-    const colorScheme = this.config.colors[powerState];
-    
-    // Update text color
-    this.powerText.setFill(colorScheme.text);
-    
-    // Update background
-    this.background.clear();
-    
-    // Calculate background size based on text
-    const textBounds = this.powerText.getBounds();
-    const bgWidth = Math.max(textBounds.width + this.config.backgroundPadding * 2, 24);
-    const bgHeight = textBounds.height + this.config.backgroundPadding * 2;
-    
-    // Adjust line thickness for preview mode to maintain visibility
-    const lineThickness = this.isPreviewMode ? Math.ceil(2 / this.parentCardScale) : 2;
-    
-    // Draw background with border
-    this.background.lineStyle(lineThickness, colorScheme.border, 1);
-    this.background.fillStyle(colorScheme.background, this.config.backgroundAlpha);
-    this.background.fillRoundedRect(
-      -bgWidth / 2, 
-      -bgHeight / 2, 
-      bgWidth, 
-      bgHeight, 
-      this.config.backgroundRadius
-    );
-    this.background.strokeRoundedRect(
-      -bgWidth / 2, 
-      -bgHeight / 2, 
-      bgWidth, 
-      bgHeight, 
-      this.config.backgroundRadius
-    );
+    this.updateAPStyling();
+    this.updateHPStyling();
   }
   
   /**
-   * Determine the current power state for styling
-   * @returns {string} Power state: 'base', 'boosted', 'reduced', or 'disabled'
+   * Update AP label styling based on current AP state
    */
-  getPowerState() {
-    if (this.currentPower <= 0) {
+  updateAPStyling() {
+    const apState = this.getStatState(this.currentAP, this.baseAP);
+    const colorScheme = this.config.apColors[apState];
+    
+    // Update AP text color
+    this.apText.setFill(colorScheme.text);
+    
+    // Clear existing background
+    this.apBackground.clear();
+    
+    // Only draw background if showBackground is enabled
+    if (this.config.showBackground) {
+      // Calculate background size based on text
+      const textBounds = this.apText.getBounds();
+      const bgWidth = Math.max(textBounds.width + this.config.backgroundPadding * 2, 24);
+      const bgHeight = textBounds.height + this.config.backgroundPadding * 2;
+      
+      // Line thickness - responsive to preview mode
+      const lineThickness = this.isPreviewMode ? 8 : 2;
+      
+      // Draw AP background with border at AP position
+      this.apBackground.lineStyle(lineThickness, colorScheme.border, 1);
+      this.apBackground.fillStyle(colorScheme.background, this.config.backgroundAlpha);
+      this.apBackground.fillRoundedRect(
+        this.config.apOffsetX - bgWidth / 2, 
+        this.config.apOffsetY - bgHeight / 2, 
+        bgWidth, 
+        bgHeight, 
+        this.config.backgroundRadius
+      );
+      this.apBackground.strokeRoundedRect(
+        this.config.apOffsetX - bgWidth / 2, 
+        this.config.apOffsetY - bgHeight / 2, 
+        bgWidth, 
+        bgHeight, 
+        this.config.backgroundRadius
+      );
+    }
+  }
+  
+  /**
+   * Update HP label styling based on current HP state
+   */
+  updateHPStyling() {
+    const hpState = this.getStatState(this.currentHP, this.baseHP);
+    const colorScheme = this.config.hpColors[hpState];
+    
+    // Update HP text color
+    this.hpText.setFill(colorScheme.text);
+    
+    // Clear existing background
+    this.hpBackground.clear();
+    
+    // Only draw background if showBackground is enabled
+    if (this.config.showBackground) {
+      // Calculate background size based on text
+      const textBounds = this.hpText.getBounds();
+      const bgWidth = Math.max(textBounds.width + this.config.backgroundPadding * 2, 24);
+      const bgHeight = textBounds.height + this.config.backgroundPadding * 2;
+      
+      // Line thickness - responsive to preview mode
+      const lineThickness = this.isPreviewMode ? 8 : 2;
+      
+      // Draw HP background with border at HP position
+      this.hpBackground.lineStyle(lineThickness, colorScheme.border, 1);
+      this.hpBackground.fillStyle(colorScheme.background, this.config.backgroundAlpha);
+      this.hpBackground.fillRoundedRect(
+        this.config.hpOffsetX - bgWidth / 2, 
+        this.config.hpOffsetY - bgHeight / 2, 
+        bgWidth, 
+        bgHeight, 
+        this.config.backgroundRadius
+      );
+      this.hpBackground.strokeRoundedRect(
+        this.config.hpOffsetX - bgWidth / 2, 
+        this.config.hpOffsetY - bgHeight / 2, 
+        bgWidth, 
+        bgHeight, 
+        this.config.backgroundRadius
+      );
+    }
+  }
+  
+  /**
+   * Determine the current stat state for styling
+   * @param {number} currentValue - Current stat value
+   * @param {number} baseValue - Base stat value
+   * @returns {string} Stat state: 'base', 'boosted', 'reduced', or 'disabled'
+   */
+  getStatState(currentValue, baseValue) {
+    if (currentValue <= 0) {
       return 'disabled';
-    } else if (this.currentPower > this.basePower) {
+    } else if (currentValue > baseValue) {
       return 'boosted';
-    } else if (this.currentPower < this.basePower) {
+    } else if (currentValue < baseValue) {
       return 'reduced';
     } else {
       return 'base';
@@ -194,118 +272,100 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
   }
   
   /**
-   * Show the power overlay with animation
-   * @param {boolean} animate - Whether to animate the appearance
+   * Show the power overlay instantly
    */
-  show(animate = true) {
+  show() {
     if (this.isVisible) return;
     
     this.isVisible = true;
     this.setVisible(true);
     
-    if (animate) {
-      // Start small and scale up
-      this.setScale(0.1);
-      this.setAlpha(0);
-      
-      this.scene.tweens.add({
-        targets: this,
-        scaleX: 1,
-        scaleY: 1,
-        alpha: 1,
-        duration: this.config.animationDuration,
-        ease: 'Back.easeOut'
-      });
-    } else {
-      this.setScale(1);
-      this.setAlpha(1);
-    }
+    // No scaling needed - all values are hardcoded for preview mode
+    this.setScale(1);
+    this.setAlpha(1);
   }
   
   /**
-   * Hide the power overlay with animation
-   * @param {boolean} animate - Whether to animate the disappearance
+   * Hide the power overlay instantly
    */
-  hide(animate = true) {
+  hide() {
     if (!this.isVisible) return;
     
     this.isVisible = false;
-    
-    if (animate) {
-      this.scene.tweens.add({
-        targets: this,
-        scaleX: 0.1,
-        scaleY: 0.1,
-        alpha: 0,
-        duration: this.config.animationDuration,
-        ease: 'Power2',
-        onComplete: () => {
-          this.setVisible(false);
-        }
-      });
-    } else {
-      this.setVisible(false);
-    }
+    this.setVisible(false);
   }
   
-  /**
-   * Animate when power value changes
-   */
-  animateValueChange() {
-    // Stop any existing animation
-    if (this.animationTween) {
-      this.animationTween.stop();
-    }
-    
-    // Scale up briefly then back to normal
-    this.animationTween = this.scene.tweens.add({
-      targets: this,
-      scaleX: this.config.scaleOnChange,
-      scaleY: this.config.scaleOnChange,
-      duration: this.config.animationDuration / 2,
-      ease: 'Power2',
-      yoyo: true,
-      onComplete: () => {
-        this.animationTween = null;
-      }
-    });
-  }
   
-  /**
-   * Update position relative to parent card
-   * @param {number} x - X offset from card center
-   * @param {number} y - Y offset from card center
-   */
-  updatePosition(x = this.config.offsetX, y = this.config.offsetY) {
-    this.config.offsetX = x;
-    this.config.offsetY = y;
-    this.setPosition(x, y);
-  }
   
   /**
    * Set whether the overlay should be visible
    * Used for face-down cards or when power display is disabled
    * @param {boolean} visible - Whether overlay should be shown
-   * @param {boolean} animate - Whether to animate the change
    */
-  setOverlayVisible(visible, animate = true) {
-    if (visible && this.currentPower > 0) {
-      this.show(animate);
+  setOverlayVisible(visible) {
+    if (visible && (this.currentAP > 0 || this.currentHP > 0)) {
+      this.show();
     } else {
-      this.hide(animate);
+      this.hide();
     }
+  }
+  
+  /**
+   * Enable or disable background and border display
+   * @param {boolean} showBackground - Whether to show backgrounds and borders
+   */
+  setShowBackground(showBackground) {
+    this.config.showBackground = showBackground;
+    
+    // Update text styling based on background visibility
+    if (!showBackground) {
+      // Add text stroke for better visibility without background
+      this.apText.setStyle({
+        fontSize: `${this.config.fontSize}px`,
+        fontFamily: this.config.fontFamily,
+        fill: this.config.apColors.base.text,
+        stroke: '#000000',
+        strokeThickness: this.isPreviewMode ? 8 : 2,
+        align: 'center'
+      });
+      
+      this.hpText.setStyle({
+        fontSize: `${this.config.fontSize}px`,
+        fontFamily: this.config.fontFamily,
+        fill: this.config.hpColors.base.text,
+        stroke: '#000000',
+        strokeThickness: this.isPreviewMode ? 8 : 2,
+        align: 'center'
+      });
+    } else {
+      // Remove text stroke when background is present
+      this.apText.setStyle({
+        fontSize: `${this.config.fontSize}px`,
+        fontFamily: this.config.fontFamily,
+        fill: this.config.apColors.base.text,
+        stroke: null,
+        strokeThickness: 0,
+        align: 'center'
+      });
+      
+      this.hpText.setStyle({
+        fontSize: `${this.config.fontSize}px`,
+        fontFamily: this.config.fontFamily,
+        fill: this.config.hpColors.base.text,
+        stroke: null,
+        strokeThickness: 0,
+        align: 'center'
+      });
+    }
+    
+    // Refresh styling to apply changes
+    this.updateStyling();
   }
   
   /**
    * Clean up resources when destroying
    */
   destroy(fromScene = false) {
-    // Stop any running animations
-    if (this.animationTween) {
-      this.animationTween.stop();
-      this.animationTween = null;
-    }
-    
     super.destroy(fromScene);
   }
 }
