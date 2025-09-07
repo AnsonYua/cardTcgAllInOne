@@ -735,7 +735,7 @@ export default class GameSceneUtils {
   }
 
   /**
-   * Creates button section with OK button and handlers
+   * Creates button section with OK and Cancel buttons and handlers
    * @private
    */
   static _createButtonSection(scene, selectionId, selection, config, selectionState, dialogElements, updateOKButtonState, onConfirm) {
@@ -753,23 +753,45 @@ export default class GameSceneUtils {
     );
     dialogElements.buttonSection.background.setDepth(1502);
     
-    // OK button
-    dialogElements.buttonSection.okButton = scene.add.image(config.centerX, buttonSectionY, 'button');
-    dialogElements.buttonSection.okButton.setScale(1.0);
+    // Button positioning - two buttons side by side with proper spacing
+    const buttonSpacing = 240; // Further increased distance between buttons to prevent overlap
+    const buttonScale = 0.8; // Scale buttons down slightly for better fit
+    const okButtonX = config.centerX + buttonSpacing/2;
+    const cancelButtonX = config.centerX - buttonSpacing/2;
+    
+    // OK button (right side)
+    dialogElements.buttonSection.okButton = scene.add.image(okButtonX, buttonSectionY, 'button');
+    dialogElements.buttonSection.okButton.setScale(buttonScale);
     dialogElements.buttonSection.okButton.setInteractive();
     dialogElements.buttonSection.okButton.setTint(0x888888);
     dialogElements.buttonSection.okButton.setDepth(1503);
     
-    dialogElements.buttonSection.okText = scene.add.text(config.centerX, buttonSectionY, 'SELECT A CARD', {
-      fontSize: '18px',
+    dialogElements.buttonSection.okText = scene.add.text(okButtonX, buttonSectionY, 'SELECT A CARD', {
+      fontSize: '14px', // Slightly smaller font to fit better
       fontFamily: 'Arial Bold',
       fill: '#ffffff'
     });
     dialogElements.buttonSection.okText.setOrigin(0.5);
     dialogElements.buttonSection.okText.setDepth(1504);
     
+    // Cancel button (left side)
+    dialogElements.buttonSection.cancelButton = scene.add.image(cancelButtonX, buttonSectionY, 'button');
+    dialogElements.buttonSection.cancelButton.setScale(buttonScale);
+    dialogElements.buttonSection.cancelButton.setInteractive();
+    dialogElements.buttonSection.cancelButton.setTint(0xf44336); // Red tint for cancel
+    dialogElements.buttonSection.cancelButton.setDepth(1503);
+    
+    dialogElements.buttonSection.cancelText = scene.add.text(cancelButtonX, buttonSectionY, 'CANCEL', {
+      fontSize: '14px', // Slightly smaller font to fit better
+      fontFamily: 'Arial Bold',
+      fill: '#ffffff'
+    });
+    dialogElements.buttonSection.cancelText.setOrigin(0.5);
+    dialogElements.buttonSection.cancelText.setDepth(1504);
+    
     // Button events
     this._setupOKButtonEvents(scene, selectionId, selection, selectionState, dialogElements, onConfirm);
+    this._setupCancelButtonEvents(scene, dialogElements);
     
     // Initial button state
     updateOKButtonState();
@@ -792,7 +814,9 @@ export default class GameSceneUtils {
       dialogElements.cardSection.labelText,
       dialogElements.buttonSection.background,
       dialogElements.buttonSection.okButton,
-      dialogElements.buttonSection.okText
+      dialogElements.buttonSection.okText,
+      dialogElements.buttonSection.cancelButton,
+      dialogElements.buttonSection.cancelText
     ].filter(el => el);
     
     // Add all current card elements
@@ -853,7 +877,7 @@ export default class GameSceneUtils {
     
     // Extract card display info and create card image
     const { cardImageId, displayCardId } = this._extractCardDisplayInfo(card);
-    const cardImage = this._createCardImage(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig);
+    const cardImage = this._createCardImage(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig, card);
     if (cardImage) {
       dialogElements.cardListElements.push(cardImage);
       this._setupCardInteraction(scene, card, cardImage, displayCardId, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements);
@@ -866,10 +890,50 @@ export default class GameSceneUtils {
   }
 
   /**
-   * Creates card image with fallback handling
+   * Creates full Card component with AP/HP display instead of simple image
    * @private
    */
-  static _createCardImage(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig) {
+  static _createCardImage(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig, originalCard = null) {
+    // Create full Card component with AP/HP display
+    try {
+      const cardData = this._prepareCardDataForDisplay(cardImageId, displayCardId, originalCard);
+      
+      // Calculate appropriate scale for dialog display
+      const dialogScale = Math.min(
+        (cardDisplayConfig.cardDisplayWidth - 16) / 124,  // Card width is 124px by default
+        (cardDisplayConfig.cardDisplayHeight - 16) / 184  // Card height is 184px by default
+      );
+      
+      const cardComponent = new Card(scene, cardX, cardsY, cardData, {
+        usePreview: true,     // Use preview images
+        scale: dialogScale,   // Scale to fit dialog
+        interactive: true,   // Disable interaction (handled separately)
+        showBackground: false ,// No PowerOverlay background in dialogs
+        handleOutside: true
+      });
+      
+      cardComponent.setDepth(1504);
+      
+      // Ensure PowerOverlay is visible and properly configured for dialog display
+      if (cardComponent.powerOverlay) {
+        cardComponent.powerOverlay.setShowBackground(false);
+        cardComponent.powerOverlay.setVisible(true);
+      }
+      
+      console.log(`Created Card component for dialog: ${displayCardId} with AP/HP display`);
+      return cardComponent;
+      
+    } catch (error) {
+      console.error('Error creating Card component for dialog, falling back to image:', error);
+      return this._createFallbackCardImage(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig);
+    }
+  }
+
+  /**
+   * Fallback method for creating simple card image when Card component fails
+   * @private
+   */
+  static _createFallbackCardImage(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig) {
     const previewImageKey = `${cardImageId}_preview`;
     
     if (scene.textures.exists(previewImageKey)) {
@@ -894,6 +958,55 @@ export default class GameSceneUtils {
       placeholder.setDepth(1504);
       return placeholder;
     }
+  }
+
+  /**
+   * Prepare card data for Card component display
+   * @private
+   */
+  static _prepareCardDataForDisplay(cardImageId, displayCardId, originalCard = null) {
+    // Create compatible card data structure with actual card data if available
+    const baseData = {
+      id: cardImageId,
+      cardId: displayCardId || cardImageId,
+      cardType: 'unit',  // Default to unit type to ensure PowerOverlay shows
+      ap: 2,            // Default AP value
+      hp: 3,            // Default HP value
+      power: 100        // Legacy power field for compatibility
+    };
+
+    // If original card data is available, extract actual values
+    if (originalCard && typeof originalCard === 'object') {
+      // Handle different card data structures
+      const cardData = originalCard.cardData || originalCard;
+      
+      if (cardData) {
+        // Extract card type
+        if (cardData.cardType) {
+          baseData.cardType = cardData.cardType;
+        } else if (cardData.type) {
+          baseData.cardType = cardData.type;
+        }
+        
+        // Extract AP/HP values
+        if (cardData.ap !== undefined) baseData.ap = cardData.ap;
+        if (cardData.hp !== undefined) baseData.hp = cardData.hp;
+        if (cardData.power !== undefined) baseData.power = cardData.power;
+        
+        // Extract other useful properties
+        if (cardData.name) baseData.name = cardData.name;
+        if (cardData.traits) baseData.traits = cardData.traits;
+        if (cardData.effects) baseData.effects = cardData.effects;
+        
+        console.log(`Extracted card data for dialog: ${displayCardId}`, {
+          cardType: baseData.cardType,
+          ap: baseData.ap,
+          hp: baseData.hp
+        });
+      }
+    }
+
+    return baseData;
   }
 
   /**
@@ -953,6 +1066,7 @@ export default class GameSceneUtils {
       });
       
       cardImage.on('pointerdown', () => {
+        console.log("acasdx ",JSON.stringify(card))
         this._handleCardSelection(card, cardX, cardsY, selectionState, cardDisplayConfig, dialogElements);
       });
     }
@@ -1052,16 +1166,16 @@ export default class GameSceneUtils {
     if (selectionState.selectedCards.length >= 1) {
       okButton.setTint(0x4CAF50);
       if (selectionState.maxSelections > 1) {
-        okText.setText(`CONFIRM SELECTION (${selectionState.selectedCards.length}/${selectionState.maxSelections})`);
+        okText.setText(`CONFIRM (${selectionState.selectedCards.length}/${selectionState.maxSelections})`);
       } else {
-        okText.setText('CONFIRM SELECTION');
+        okText.setText('CONFIRM');
       }
     } else {
       okButton.setTint(0x888888);
       if (selectionState.maxSelections > 1) {
         okText.setText(`SELECT ${selectionState.maxSelections} CARDS`);
       } else {
-        okText.setText('SELECT A CARD');
+        okText.setText('SELECT CARD');
       }
     }
   }
@@ -1093,6 +1207,34 @@ export default class GameSceneUtils {
         // Always return an array for consistency - supports future multi-section scenarios
         onConfirm(selectionId, selectionState.selectedCards, []);
       }
+    });
+  }
+
+  /**
+   * Sets up Cancel button event handlers
+   * @private
+   */
+  static _setupCancelButtonEvents(scene, dialogElements) {
+    const cancelButton = dialogElements.buttonSection.cancelButton;
+    
+    cancelButton.on('pointerover', () => {
+      cancelButton.setTint(0xf66659); // Lighter red on hover
+      scene.input.setDefaultCursor('pointer');
+    });
+    
+    cancelButton.on('pointerout', () => {
+      cancelButton.setTint(0xf44336); // Original red
+      scene.input.setDefaultCursor('default');
+    });
+    
+    cancelButton.on('pointerdown', () => {
+      console.log('Card selection dialog cancelled by user');
+      
+      // Clean up the dialog UI
+      this._cleanupDialog(scene, dialogElements);
+      
+      // No callback needed - cancellation just closes the dialog
+      // The game should handle the lack of selection appropriately
     });
   }
 

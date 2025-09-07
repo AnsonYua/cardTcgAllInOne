@@ -29,7 +29,8 @@ export default class Card extends Phaser.GameObjects.Container {
       faceDown: false,
       scale: 1,
       usePreview: false,  // Use preview images (-preview.png) instead of original
-      disableHighlight: false,  // Disable selection highlight for leader cards
+      disableHighlight: false,
+      handleOutside:false,  // Disable selection highlight for leader cards
       ...options
     };
     
@@ -49,7 +50,8 @@ export default class Card extends Phaser.GameObjects.Container {
     this.powerOverlay = null;
     
     // Create power overlay if this is a character card
-    if (this.cardData && this.cardData.type === 'character') {
+    const cardType = this.cardData?.cardType || this.cardData?.type;
+    if (this.cardData && cardType === 'character') {
       this.createPowerOverlay();
     }
     
@@ -220,6 +222,10 @@ export default class Card extends Phaser.GameObjects.Container {
 
     // Click/tap interaction
     this.on('pointerdown', (pointer, localX, localY, event) => {
+      if(this.options.handleOutside){
+        return
+      }
+
       if (pointer.rightButtonDown()) {
         // Right click for face-down toggle - TEMPORARILY DISABLED
         console.log(`Right click on card ${this.cardData?.id} - face-down toggle disabled`);
@@ -499,17 +505,19 @@ export default class Card extends Phaser.GameObjects.Container {
   }
 
   canPlayInZone(zoneType) {
-    if (this.cardData.type === 'character') {
+    const cardType = this.cardData?.cardType || this.cardData?.type;
+    
+    if (cardType === 'character') {
       // Default character zone compatibility - can be placed in top, left, or right
       const defaultZones = ['top', 'left', 'right'];
       return this.cardData.zones ? this.cardData.zones.includes(zoneType) : defaultZones.includes(zoneType);
     }
     
-    if (this.cardData.type === 'help') {
+    if (cardType === 'help') {
       return zoneType === 'help';
     }
     
-    if (this.cardData.type === 'sp') {
+    if (cardType === 'sp') {
       return zoneType === 'sp';
     }
     
@@ -535,7 +543,8 @@ export default class Card extends Phaser.GameObjects.Container {
    * @returns {number} Power value to display
    */
   getDisplayPower() {
-    if (this.gameStateManager && this.cardData.type === 'character') {
+    const cardType = this.cardData?.cardType || this.cardData?.type;
+    if (this.gameStateManager && cardType === 'character') {
       return this.gameStateManager.getComputedCardPower(this.cardData);
     }
     return this.cardData.power || 0;

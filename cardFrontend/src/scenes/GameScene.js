@@ -1054,8 +1054,9 @@ export default class GameScene extends Phaser.Scene {
       
       // Check if it's a basic type compatibility issue
       if (!selectedCard.canPlayInZone(zoneType)) {
-        console.log(`Card type ${cardData.type} cannot be placed in ${zoneType} zone`);
-        this.showZoneRestrictionMessage(`${cardData.type.toUpperCase()} cards cannot be placed in ${zoneType.toUpperCase()} zone`);
+        const cardType = cardData.cardType || cardData.type || 'UNKNOWN';
+        console.log(`Card type ${cardType} cannot be placed in ${zoneType} zone`);
+        this.showZoneRestrictionMessage(`${cardType.toUpperCase()} cards cannot be placed in ${zoneType.toUpperCase()} zone`);
       } else {
         // It's a field effect restriction from the leader/backend
         const restrictions = this.gameStateManager.getZoneRestrictions(null, zoneType);
@@ -1100,7 +1101,8 @@ export default class GameScene extends Phaser.Scene {
       console.log(`[GameScene] Card ${card.cardData?.id} placed in player zone: ${zoneType}`);
 
       // Activate power overlay for character cards in character zones
-      if (cardData.type === 'character' && ['top', 'left', 'right'].includes(zoneType.toLowerCase())) {
+      const cardType = cardData.cardType || cardData.type || 'unknown';
+      if (cardType === 'character' && ['top', 'left', 'right'].includes(zoneType.toLowerCase())) {
         console.log('[GameScene] Activating power overlay for character card in zone:', zoneType);
         card.setPowerOverlayVisible(true);
         card.updatePowerOverlay();
