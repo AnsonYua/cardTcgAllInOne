@@ -96,8 +96,6 @@ export default class CardSelectionScene extends Phaser.Scene {
       const y = startY + (row * cardSpacingY);
       
       const card = new Card(this, x, y, cardData, {
-        interactive: true,
-        draggable: false,
         scale: 0.7
       });
       

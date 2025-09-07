@@ -54,8 +54,6 @@ export default class BaseAndShieldAreaManager {
 
   createShieldCard(cardData, x, y, index) {
     const card = new Card(this.scene, x, y, cardData, {
-      interactive: true,
-      draggable: false,
       scale: 0.85,
       gameStateManager: this.gameStateManager,
       usePreview: true
@@ -117,8 +115,6 @@ export default class BaseAndShieldAreaManager {
 
   createBaseCard(cardData, x, y, index) {
     const card = new Card(this.scene, x, y, cardData, {
-      interactive: true,
-      draggable: false,
       scale:0.9,
       gameStateManager: this.gameStateManager,
       usePreview: true

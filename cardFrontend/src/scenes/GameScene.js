@@ -682,8 +682,6 @@ export default class GameScene extends Phaser.Scene {
       let processedCardData = cardData;
       const x = startX + (index * cardSpacing);
       const card = new Card(this, x, 0, processedCardData, {
-        interactive: true,
-        draggable: false,
         scale: 1.1,
         gameStateManager: this.gameStateManager,
         usePreview: true
@@ -866,7 +864,6 @@ export default class GameScene extends Phaser.Scene {
       if (success) {
         // Move card to zone
         card.moveToPosition(x, y);
-        card.options.draggable = false;
         
         // Set zone placement for hover preview system
         card.setZonePlacement(true, zoneType, true); // true = player zone
@@ -1174,11 +1171,10 @@ export default class GameScene extends Phaser.Scene {
     if (this.cardPreviewZone && cardData) {
       // Create a larger preview card using original (full-detail) images
       this.previewCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y, cardData, {
-        interactive: false,
-        draggable: false,
         scale: 3.5, // Large scale for preview
         gameStateManager: this.gameStateManager,
-        usePreview: false // Use original full-detail images for preview
+        usePreview: false, // Use original full-detail images for preview
+        handleOutside: true // Disable selection for preview cards
       });
       
       // Set high depth to appear on top
@@ -1271,21 +1267,19 @@ export default class GameScene extends Phaser.Scene {
     
     // Create unit preview (on top) - Direct card data access
     this.previewCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y, unitCard.cardData, {
-      interactive: false,
-      draggable: false,
       scale: 3.5,
       gameStateManager: this.gameStateManager,
-      usePreview: false
+      usePreview: false,
+      handleOutside: true // Disable selection for preview cards
     });
     this.previewCard.setDepth(2000);
     
     // Create pilot preview (25px below unit) - Direct card data access  
     this.previewPilotCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y + 145, pilotCard.cardData, {
-      interactive: false,
-      draggable: false,
       scale: 3.5,
       gameStateManager: this.gameStateManager,
-      usePreview: false
+      usePreview: false,
+      handleOutside: true // Disable selection for preview cards
     });
     this.previewPilotCard.setDepth(1999); // Slightly behind unit
     
@@ -1496,8 +1490,6 @@ export default class GameScene extends Phaser.Scene {
                     
                     // Convert temporary card to actual hand card
                     const newCard = new Card(this, relativeX, relativeY, cardData, {
-                      interactive: true,
-                      draggable: true,
                       scale: 1.15,
                       gameStateManager: this.gameStateManager,
                       usePreview: true

@@ -24,12 +24,9 @@ export default class Card extends Phaser.GameObjects.Container {
 
     
     this.options = {
-      interactive: true,
-      draggable: false,
       faceDown: false,
       scale: 1,
       usePreview: false,  // Use preview images (-preview.png) instead of original
-      disableHighlight: false,
       handleOutside:false,  // Disable selection highlight for leader cards
       ...options
     };
@@ -179,8 +176,6 @@ export default class Card extends Phaser.GameObjects.Container {
   }
 
   setupInteraction() {
-    if (!this.options.interactive) return;
-
     this.setSize(120, 180);
     this.setInteractive();
 
@@ -189,11 +184,9 @@ export default class Card extends Phaser.GameObjects.Container {
     this.on('pointerout', this.handlePointerOut, this);
     this.on('pointerdown', this.handlePointerDown, this);
     
-    // Set up drag event handlers if draggable
-    if (this.options.draggable) {
-      this.on('pointermove', this.handlePointerMove, this);
-      this.on('pointerup', this.handlePointerUp, this);
-    }
+    // Set up drag event handlers (always available)
+    this.on('pointermove', this.handlePointerMove, this);
+    this.on('pointerup', this.handlePointerUp, this);
   }
 
   /**
@@ -201,10 +194,14 @@ export default class Card extends Phaser.GameObjects.Container {
    * @returns {Object} Current interaction state
    */
   getInteractionState() {
+    const baseInteraction = this.visible && this.active;
+    
     return {
-      canInteract: this.visible && this.active && !this.isInteractionDisabled,
-      canSelect: !this.options.disableHighlight && !this.options.handleOutside,
-      canDrag: this.options.draggable && !this.isDragging,
+      // Cards in zones can still be selected for highlighting, even if other interactions are disabled
+      canInteract: baseInteraction && (!this.isInteractionDisabled || this.isInZone),
+      canSelect: !this.options.handleOutside,
+      // Dragging should be disabled for cards in zones
+      canDrag: false,
       isDragging: this.isDragging,
       isInZone: this.isInZone
     };
@@ -815,10 +812,6 @@ export default class Card extends Phaser.GameObjects.Container {
   disableInteraction() {
     console.log(`[Card] Disabling interaction for card ${this.cardData?.id}`);
     
-    // Update options to reflect disabled state
-    this.options.interactive = false;
-    this.options.draggable = false;
-    
     // Clear any existing selection state
     if (this.isSelected) {
       this.deselectSilently();
@@ -828,7 +821,7 @@ export default class Card extends Phaser.GameObjects.Container {
     this.isInteractionDisabled = true;
     
     // Don't call disableInteractive() - we still want hover events for preview system
-    // Instead, we'll modify the click handler behavior in setupInteraction
+    // The getInteractionState() method will handle the disabled logic
   }
 
   /**
@@ -837,10 +830,6 @@ export default class Card extends Phaser.GameObjects.Container {
    */
   enableInteraction() {
     console.log(`[Card] Enabling interaction for card ${this.cardData?.id}`);
-    
-    // Update options
-    this.options.interactive = true;
-    // Note: draggable should be set based on context, not always enabled
     
     // Clear disabled flag
     this.isInteractionDisabled = false;

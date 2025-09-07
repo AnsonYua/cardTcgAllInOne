@@ -109,8 +109,6 @@ export default class CardAnimationUtils {
                   const relativeY = tempCard.y - scene.handContainer.y;
                   
                   const newCard = new Card(scene, relativeX, relativeY, processedCardData, {
-                    interactive: true,
-                    draggable: true,
                     scale: 1.1,
                     gameStateManager: scene.gameStateManager,
                     usePreview: true

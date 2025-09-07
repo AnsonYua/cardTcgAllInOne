@@ -28,8 +28,6 @@ export default class GameSceneUtils {
         console.log("debug cardData22", JSON.stringify(cardDataObject));
         
         const cardOptions = {
-          interactive: true, // Enable interaction for hover events
-          draggable: false,  // But disable dragging for zone cards
           scale: 0.9,
           gameStateManager: scene.gameStateManager,
           usePreview: true,
