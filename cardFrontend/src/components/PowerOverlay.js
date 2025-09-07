@@ -22,15 +22,15 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     // Configuration
     this.config = {
       // AP label position - responsive to preview mode
-      apOffsetX: this.isPreviewMode ? 0 : 36.5,       // Right side of card  
-      apOffsetY: this.isPreviewMode ? 0 : 73,         // Top area of card
+      apOffsetX: this.isPreviewMode ?  36.5 : 36.5,       // Right side of card  
+      apOffsetY: this.isPreviewMode ? 73 : 73,         // Top area of card
       
-      // HP label position (below AP) - responsive to preview mode
-      hpOffsetX: this.isPreviewMode ? 200 : 50,       // Same X as AP
-      hpOffsetY: this.isPreviewMode ? 292 : 73,         // Below AP with spacing
+      // HP label position (next to AP) - responsive to preview mode
+      hpOffsetX: this.isPreviewMode ? 50 : 50,       // Next to AP
+      hpOffsetY: this.isPreviewMode ? 73  : 73,         // Same Y as AP (side-by-side)
       
       // Visual styling - responsive to preview mode
-      fontSize: this.isPreviewMode ? 64 : 16,
+      fontSize: this.isPreviewMode ? 64 : 14,
       fontFamily: 'Arial Bold',
       
       // Background styling - responsive to preview mode
@@ -42,7 +42,7 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
       showBackground: false,  // Set to false to show only text labels
       
       // Spacing between AP and HP labels - responsive to preview mode
-      labelSpacing: this.isPreviewMode ? 88 : 22,
+      labelSpacing: this.isPreviewMode ? 100 : 20,
       
       // Color schemes for different label types
       apColors: {
@@ -85,6 +85,16 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
       align: 'center'
     });
     this.apText.setOrigin(0.5);
+    
+    // Improve text rendering quality for preview mode
+    if (this.isPreviewMode) {
+      this.apText.setScale(1);
+      this.apText.setFontSize(this.apText.fontSize);
+      this.apText.setResolution(5); // Higher resolution for crisp text
+      // Ensure pixel-perfect positioning
+      this.apText.x = Math.round(this.apText.x);
+      this.apText.y = Math.round(this.apText.y);
+    }
     this.add(this.apText);
     
     // Create HP label components
@@ -98,6 +108,15 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
       align: 'center'
     });
     this.hpText.setOrigin(0.5);
+    
+    // Improve text rendering quality for preview mode
+    if (this.isPreviewMode) {
+      this.hpText.setScale(1);
+      this.hpText.setFontSize(this.hpText.fontSize);
+      this.hpText.setResolution(5); // Higher resolution for crisp text
+      this.hpText.x = Math.round(this.hpText.x);
+      this.hpText.y = Math.round(this.hpText.y);
+    }
     this.add(this.hpText);
     
     // Preview mode uses hardcoded values instead of scaling
@@ -318,12 +337,18 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     this.config.showBackground = showBackground;
     
     // Update text styling based on background visibility
+    // Get current state-appropriate colors
+    const apState = this.getStatState(this.currentAP, this.baseAP);
+    const hpState = this.getStatState(this.currentHP, this.baseHP);
+    const apColorScheme = this.config.apColors[apState];
+    const hpColorScheme = this.config.hpColors[hpState];
+    
     if (!showBackground) {
       // Add text stroke for better visibility without background
       this.apText.setStyle({
         fontSize: `${this.config.fontSize}px`,
         fontFamily: this.config.fontFamily,
-        fill: this.config.apColors.base.text,
+        fill: apColorScheme.text,
         stroke: '#000000',
         strokeThickness: this.isPreviewMode ? 8 : 2,
         align: 'center'
@@ -332,7 +357,7 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
       this.hpText.setStyle({
         fontSize: `${this.config.fontSize}px`,
         fontFamily: this.config.fontFamily,
-        fill: this.config.hpColors.base.text,
+        fill: hpColorScheme.text,
         stroke: '#000000',
         strokeThickness: this.isPreviewMode ? 8 : 2,
         align: 'center'
@@ -342,7 +367,7 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
       this.apText.setStyle({
         fontSize: `${this.config.fontSize}px`,
         fontFamily: this.config.fontFamily,
-        fill: this.config.apColors.base.text,
+        fill: apColorScheme.text,
         stroke: null,
         strokeThickness: 0,
         align: 'center'
@@ -351,7 +376,7 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
       this.hpText.setStyle({
         fontSize: `${this.config.fontSize}px`,
         fontFamily: this.config.fontFamily,
-        fill: this.config.hpColors.base.text,
+        fill: hpColorScheme.text,
         stroke: null,
         strokeThickness: 0,
         align: 'center'
