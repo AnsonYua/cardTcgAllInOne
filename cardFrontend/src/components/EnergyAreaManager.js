@@ -37,8 +37,8 @@ export default class EnergyAreaManager {
     if (energyData && energyData.length > 0) {
       energyData.forEach((energyCard, i) => {
         // Get row2 slot position based on energy card index
-        // Player: left to right (normal), Opponent: right to left (reverse)
-        const slotIndex = playerType === 'opponent' ? (11 - i) : i;
+        // Player: left to right (normal), Opponent: also left to right (align under slot 1)
+        const slotIndex = i;
         const slotPosition = this.getRow2SlotPosition(playerType, slotIndex);
         
         if (slotPosition) {
