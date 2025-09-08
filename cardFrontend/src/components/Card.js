@@ -58,84 +58,79 @@ export default class Card extends Phaser.GameObjects.Container {
   }
 
   create() {
-    if (this.options.faceDown) {
-      // Show card back when face down
-      this.cardImage = this.scene.add.image(0, 0, GAME_CONFIG.imageKey.cardback);
-      this.add(this.cardImage);
-    } else {
-      // Check if we have a valid card ID
-      if(this.cardData.cardType == "shield" ||
-        this.cardData.cardType == "base" ||
-        this.cardData.cardType == "energy"
-       ){
+    // Check if we have a valid card ID
+    if(this.cardData.cardType == "shield" ||
+      this.cardData.cardType == "base" ||
+      this.cardData.cardType == "energy"
+      ){
 
-      }else if (!this.cardData || !this.cardData.id) {
-        console.error(`[Card] Invalid card data - missing ID:`, this.cardData);
-        this.cardImage = this.scene.add.image(0, 0, 'card-back');
-        this.cardImage.setTint(0xff0000); // Red tint
-        
-        const errorText = this.scene.add.text(0, 0, 'NO ID', {
-          fontSize: '16px',
-          fontFamily: 'Arial',
-          fill: '#ffffff',
-          align: 'center'
-        });
-        errorText.setOrigin(0.5);
-        this.add(errorText);
-        this.add(this.cardImage);
-        return;
-      }
+    }else if (!this.cardData || !this.cardData.id) {
+      console.error(`[Card] Invalid card data - missing ID:`, this.cardData);
+      this.cardImage = this.scene.add.image(0, 0, 'card-back');
+      this.cardImage.setTint(0xff0000); // Red tint
       
-      // Show actual card image when face up
-      let cardKey = this.options.usePreview ? 
-        `${this.cardData.id}-preview` :  // Use preview version (e.g., "c-1-preview")
-        this.cardData.id;                // Use original version (e.g., "c-1")
-      
-      if(this.cardData.cardType == "shield"){
-        cardKey = `${GAME_CONFIG.imageKey.cardback}-preview`
-      }else if(this.cardData.cardType == "base" && this.fullCardData.cardUid == "base_default"){
-        cardKey = this.options.usePreview ? 
-        `${GAME_CONFIG.imageKey.exBase}-preview` :  // Use preview version (e.g., "c-1-preview")
-        GAME_CONFIG.imageKey.exBase;     
-      }else if (this.cardData.cardType == "energy"){
-        cardKey = this.options.usePreview ? 
-        `${GAME_CONFIG.imageKey.extraResource}-preview` :  // Use preview version (e.g., "c-1-preview")
-        GAME_CONFIG.imageKey.extraResource  ;  
-        if (!this.fullCardData.isExtraEnergy){
-          cardKey = this.options.usePreview ? 
-          `${GAME_CONFIG.imageKey.resource}-preview` :  // Use preview version (e.g., "c-1-preview")
-          GAME_CONFIG.imageKey.resource;  
-        }  
-      }
-      
-      console.log("cardKey ", cardKey)
-      console.log(`[Card] Trying to load image with key: ${cardKey}`);
-      console.log(`[Card] Card data:`, this.cardData);
-      console.log(`[Card] Available textures:`, Object.keys(this.scene.textures.list).filter(key => key.startsWith(this.cardData.id?.substring(0, 2) || '')));
-      
-      // Check if texture exists
-      if (this.scene.textures.exists(cardKey)) {
-        this.cardImage = this.scene.add.image(0, 0, cardKey);
-        console.log(`[Card] Successfully loaded image: ${cardKey}`);
-      } else {
-        console.warn(`[Card] Texture not found: ${cardKey}, using fallback`);
-        // Create a fallback placeholder with card ID text
-        this.cardImage = this.scene.add.image(0, 0, 'card-back');
-        this.cardImage.setTint(0xff0000); // Red tint to indicate missing texture
-        
-        // Add text showing the card ID for debugging
-        const idText = this.scene.add.text(0, 0, this.cardData.id || 'NO ID', {
-          fontSize: '16px',
-          fontFamily: 'Arial',
-          fill: '#ffffff',
-          align: 'center'
-        });
-        idText.setOrigin(0.5);
-        this.add(idText);
-      }
+      const errorText = this.scene.add.text(0, 0, 'NO ID', {
+        fontSize: '16px',
+        fontFamily: 'Arial',
+        fill: '#ffffff',
+        align: 'center'
+      });
+      errorText.setOrigin(0.5);
+      this.add(errorText);
       this.add(this.cardImage);
-      
+      return;
     }
+    
+    // Show actual card image when face up
+    let cardKey = this.options.usePreview ? 
+      `${this.cardData.id}-preview` :  // Use preview version (e.g., "c-1-preview")
+      this.cardData.id;                // Use original version (e.g., "c-1")
+    
+    if(this.cardData.cardType == "shield"){
+      cardKey = `${GAME_CONFIG.imageKey.cardback}-preview`
+    }else if(this.cardData.cardType == "base" && this.fullCardData.cardUid == "base_default"){
+      cardKey = this.options.usePreview ? 
+      `${GAME_CONFIG.imageKey.exBase}-preview` :  // Use preview version (e.g., "c-1-preview")
+      GAME_CONFIG.imageKey.exBase;     
+    }else if (this.cardData.cardType == "energy"){
+      cardKey = this.options.usePreview ? 
+      `${GAME_CONFIG.imageKey.extraResource}-preview` :  // Use preview version (e.g., "c-1-preview")
+      GAME_CONFIG.imageKey.extraResource  ;  
+      if (!this.fullCardData.isExtraEnergy){
+        cardKey = this.options.usePreview ? 
+        `${GAME_CONFIG.imageKey.resource}-preview` :  // Use preview version (e.g., "c-1-preview")
+        GAME_CONFIG.imageKey.resource;  
+      }  
+    }
+    
+    console.log("cardKey ", cardKey)
+    console.log(`[Card] Trying to load image with key: ${cardKey}`);
+    console.log(`[Card] Card data:`, this.cardData);
+    console.log(`[Card] Available textures:`, Object.keys(this.scene.textures.list).filter(key => key.startsWith(this.cardData.id?.substring(0, 2) || '')));
+    
+    // Check if texture exists
+    if (this.scene.textures.exists(cardKey)) {
+      this.cardImage = this.scene.add.image(0, 0, cardKey);
+      console.log(`[Card] Successfully loaded image: ${cardKey}`);
+    } else {
+      console.warn(`[Card] Texture not found: ${cardKey}, using fallback`);
+      // Create a fallback placeholder with card ID text
+      this.cardImage = this.scene.add.image(0, 0, 'card-back');
+      this.cardImage.setTint(0xff0000); // Red tint to indicate missing texture
+      
+      // Add text showing the card ID for debugging
+      const idText = this.scene.add.text(0, 0, this.cardData.id || 'NO ID', {
+        fontSize: '16px',
+        fontFamily: 'Arial',
+        fill: '#ffffff',
+        align: 'center'
+      });
+      idText.setOrigin(0.5);
+      this.add(idText);
+    }
+    this.add(this.cardImage);
+      
+    
     
     // Scale card image to match game config dimensions with better filtering
     if (this.cardImage) {
@@ -226,6 +221,7 @@ export default class Card extends Phaser.GameObjects.Container {
    * @param {string} action - Action type (hover, unhover, select, deselect)
    */
   emitLocationAwareEvent(action) {
+    console.log("select card if in zone ", this.isInZone , " ", action )
     const eventPrefix = this.isInZone ? 'zone-card' : 'card';
     this.scene.events.emit(`${eventPrefix}-${action}`, this);
   }
@@ -288,9 +284,10 @@ export default class Card extends Phaser.GameObjects.Container {
       console.log(`Card ${this.cardData?.id} interaction blocked - disabled or invalid state`);
       return;
     }
-    
+    console.log("show click toggling");
     // Handle selection logic
     if (state.canSelect) {
+      console.log("show click toggling1111");
       this.handleSelectionToggle();
     }
     
@@ -381,12 +378,6 @@ export default class Card extends Phaser.GameObjects.Container {
     } catch (error) {
       console.error(`Error in deselectSilently() for card ${this.cardData?.id}:`, error);
     }
-  }
-
-  toggleFaceDown() {
-    this.options.faceDown = !this.options.faceDown;
-    this.recreate();
-    this.scene.events.emit('card-face-toggle', this);
   }
 
   recreate() {
@@ -578,10 +569,6 @@ export default class Card extends Phaser.GameObjects.Container {
     return this.fullCardData
   }
 
-  isFaceDown() {
-    return this.options.faceDown;
-  }
-
   // NEW: Effect System Integration Methods
   
   /**
@@ -732,11 +719,6 @@ export default class Card extends Phaser.GameObjects.Container {
       return;
     }
     
-    // Hide overlay for face-down cards
-    if (this.options.faceDown) {
-      this.powerOverlay.setVisible(false);
-      return;
-    }
     
     // Extract AP and HP values from card data using our unified method
     const { ap, hp } = this.getAPandHPFromCardData();

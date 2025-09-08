@@ -33,11 +33,7 @@ export default class GameSceneUtils {
           usePreview: true,
         };
         
-        // Add faceDown option for opponent cards
-        if (isOpponent) {
-          cardOptions.faceDown = cardData.faceDown || false;
-        }
-        
+  
         const card = new Card(scene, zone.x, zone.y, cardDataObject, cardOptions);
         zone.card = card;
         zone.placeholder.setVisible(false);

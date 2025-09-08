@@ -30,7 +30,6 @@ export interface PlayerAction {
     cardId?: string;
     cardUid?: string;
     zone?: string;
-    isFaceDown?: boolean;
     targetPhase?: GamePhase;
     [key: string]: any;
 }

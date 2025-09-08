@@ -230,7 +230,7 @@ gameState = {
 
 ### Component Design
 - **Card Component**: Extends `Phaser.GameObjects.Container` with full interaction system
-- **State Management**: Cards maintain their own state (selected, dragging, faceDown, etc.)
+- **State Management**: Cards maintain their own state (selected, dragging,etc.)
 - **Event System**: Uses Phaser events for component communication
 - **Lifecycle Management**: Proper cleanup of event listeners and tweens
 

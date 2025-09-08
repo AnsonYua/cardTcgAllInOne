@@ -323,8 +323,7 @@ await testHelper.acknowledgeEvents(gameId, eventIds);
   "data": {
     "playerId": "playerId_1",
     "card": { "cardId": "43", "name": "Card Name", "power": 150 },
-    "zone": "top",
-    "isFaceDown": false
+    "zone": "top"
   },
   "timestamp": 1640995200001,
   "expiresAt": 1640995203001,

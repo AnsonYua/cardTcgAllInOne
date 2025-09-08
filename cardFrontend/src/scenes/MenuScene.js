@@ -326,7 +326,7 @@ export default class MenuScene extends Phaser.Scene {
         },
         [opponentId]: {
           name: 'Opponent',
-          hand: Array(5).fill().map((_, i) => ({ id: `opp_card_${i}`, faceDown: true })),
+          hand: Array(5).fill().map((_, i) => ({ id: `opp_card_${i}` })),
           leader: { id: 'leader_2', name: 'Imperial Commander', power: 18 }
         }
       },

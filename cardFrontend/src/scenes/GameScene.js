@@ -596,7 +596,7 @@ export default class GameScene extends Phaser.Scene {
       });
       
       if (!this.draggedCard && card.isInZone) {
-        if (!card.isFaceDown() || this.isTestMode) {
+        if (this.isTestMode) {
           try {
             this.showSlotCardPreview(card);
           } catch (error) {
@@ -856,8 +856,7 @@ export default class GameScene extends Phaser.Scene {
       
       // Attempt to play card to server/update game state (include face-down state)
       const cardDataWithState = {
-        ...card.getCardData(),
-        faceDown: card.isFaceDown()
+        ...card.getCardData()
       };
       const success = await this.playCardToZone(cardDataWithState, zoneType);
       
@@ -1009,7 +1008,7 @@ export default class GameScene extends Phaser.Scene {
     
     // Create action in new UID/zone-based format
     const action = {
-      type: cardData.faceDown ? 'PlayCardBack' : 'PlayCard',
+      type: 'PlayCard',
       cardUID: cardUID,
       zone: normalizedZone
     };
@@ -1017,7 +1016,6 @@ export default class GameScene extends Phaser.Scene {
     console.log(`Created backend action for card ${cardData.id} (NEW UID/ZONE FORMAT):`);
     console.log(`  - Card UID: ${cardUID}`);
     console.log(`  - Zone: ${normalizedZone}`);
-    console.log(`  - Face down: ${cardData.faceDown} -> type: ${action.type}`);
     
     return action;
   }

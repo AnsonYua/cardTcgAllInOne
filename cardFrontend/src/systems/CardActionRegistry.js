@@ -155,7 +155,6 @@ export default class CardActionRegistry {
     static getDefaultActions() {
         return [
             { action: 'play', text: 'Play', color: 0x4a90e2, primary: true },
-            { action: 'facedown', text: 'Face Down', color: 0x7b68ee },
             { action: 'inspect', text: 'Inspect', color: 0x50c878 },
             { action: 'return', text: 'Return', color: 0xffa500 },
             { action: 'cancel', text: 'Cancel', color: 0xe74c3c }
