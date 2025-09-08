@@ -10,10 +10,18 @@ export default class CardActionRegistry {
         const cardType = cardData.cardType ;
         const effects = cardData.effects || {};
         const currentPhase = gameContext.phase || 'MAIN_PHASE';
-        console.log("getAvailable Action ", JSON.stringify(cardData))
-        console.log(`🎯 Getting actions for ${cardType} card in ${currentPhase}`);
+        const isInSlot = card.isInZone || false;  // Use existing card property
+        const slotInfo = gameContext.slotInfo || null;
         
-        // Base actions for card type
+        console.log("getAvailable Action ", JSON.stringify(cardData))
+        console.log(`🎯 Getting actions for ${cardType} card in ${currentPhase}, inSlot: ${isInSlot}`);
+        
+        // If card is in slot, show slot-specific actions
+        if (isInSlot && slotInfo) {
+            return this.getSlotActions(cardType, cardData, slotInfo, currentPhase);
+        }
+        
+        // Base actions for card type (hand cards)
         let actions = this.getBaseActionsForType(cardType, cardData);
         
         // Add effect-based actions
@@ -70,6 +78,75 @@ export default class CardActionRegistry {
         }
         
         return actionMap[cardType] || this.getDefaultActions();
+    }
+
+    /**
+     * Get actions for cards that are already placed in slots
+     */
+    static getSlotActions(cardType, cardData, slotInfo, currentPhase) {
+        console.log(`🎯 Getting slot actions for ${cardType} in slot ${slotInfo.slotName}, cardType in slot: ${slotInfo.cardType}`);
+        
+        const actions = [];
+        
+        // Common slot actions for all card types
+        actions.push({ action: 'viewCard', text: '查看卡牌', primary: false });
+        
+        // Card type specific slot actions
+        switch (cardType) {
+            case 'unit':
+                actions.push(
+                    { action: 'activateUnit', text: '攻擊機體', primary: true },
+                    { action: 'restUnit', text: '攻擊基地/盾', primary: false },
+                    { action: 'unitAbility', text: '使用能力', primary: false }
+                );
+                break;
+                
+            case 'pilot':
+                actions.push(
+                    { action: 'activatePilot', text: '激活驾驶员', primary: true },
+                    { action: 'pilotSkill', text: '驾驶员技能', primary: false },
+                    { action: 'ejectPilot', text: '弹射驾驶员', primary: false }
+                );
+                break;
+                
+            case 'base':
+                actions.push(
+                    { action: 'useBaseAbility', text: '基地能力', primary: true },
+                    { action: 'generateResource', text: '产生资源', primary: false },
+                    { action: 'upgradeBase', text: '升级基地', primary: false }
+                );
+                break;
+                
+            case 'command':
+                // Command cards in slots might have been played as pilots
+                if (slotInfo.cardType === 'pilot') {
+                    actions.push(
+                        { action: 'activatePilot', text: '激活驾驶员', primary: true },
+                        { action: 'pilotSkill', text: '驾驶员技能', primary: false },
+                        { action: 'revertCommand', text: '恢复指令牌', primary: false }
+                    );
+                } else {
+                    actions.push(
+                        { action: 'useCommand', text: '使用指令', primary: true },
+                        { action: 'commandBonus', text: '指令奖励', primary: false }
+                    );
+                }
+                break;
+                
+            default:
+                actions.push({ action: 'genericAbility', text: '使用能力', primary: true });
+        }
+        
+        // Phase-specific actions
+        if (currentPhase === 'BATTLE_PHASE') {
+            actions.push({ action: 'combat', text: '参与战斗', primary: true });
+        }
+        
+        // Always add cancel/close option
+        actions.push({ action: 'cancel', text: '关闭' });
+        
+        console.log(`📋 Slot actions for ${cardData.id}:`, actions.map(a => a.action));
+        return actions;
     }
     
     /**

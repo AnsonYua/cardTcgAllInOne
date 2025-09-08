@@ -31,6 +31,62 @@ export default class CardActionHandler {
             case 'playBase':
                 this.handlePlayCardAction(selectedCard, 'base');
                 break;
+            
+            // Slot-specific actions for units
+            case 'activateUnit':
+                this.handleActivateUnit(selectedCard);
+                break;
+            case 'restUnit':
+                this.handleRestUnit(selectedCard);
+                break;
+            case 'unitAbility':
+                this.handleUnitAbility(selectedCard);
+                break;
+            
+            // Slot-specific actions for pilots
+            case 'activatePilot':
+                this.handleActivatePilot(selectedCard);
+                break;
+            case 'pilotSkill':
+                this.handlePilotSkill(selectedCard);
+                break;
+            case 'ejectPilot':
+                this.handleEjectPilot(selectedCard);
+                break;
+            
+            // Slot-specific actions for bases
+            case 'useBaseAbility':
+                this.handleUseBaseAbility(selectedCard);
+                break;
+            case 'generateResource':
+                this.handleGenerateResource(selectedCard);
+                break;
+            case 'upgradeBase':
+                this.handleUpgradeBase(selectedCard);
+                break;
+            
+            // Slot-specific actions for command cards
+            case 'useCommand':
+                this.handleUseCommand(selectedCard);
+                break;
+            case 'commandBonus':
+                this.handleCommandBonus(selectedCard);
+                break;
+            case 'revertCommand':
+                this.handleRevertCommand(selectedCard);
+                break;
+            
+            // General slot actions
+            case 'viewCard':
+                this.handleViewCard(selectedCard);
+                break;
+            case 'genericAbility':
+                this.handleGenericAbility(selectedCard);
+                break;
+            case 'combat':
+                this.handleCombat(selectedCard);
+                break;
+            
             default:
                 console.log(`Unknown action: ${action}`);
         }
@@ -393,6 +449,115 @@ export default class CardActionHandler {
         } finally {
             this.setUILoadingState(false);
         }
+    }
+
+    // ============ SLOT-SPECIFIC ACTION HANDLERS ============
+
+    /**
+     * Unit-specific actions in slots
+     */
+    handleActivateUnit(selectedCard) {
+        console.log('💥 Activating unit:', selectedCard.fullCardData?.cardData?.id);
+        this.showErrorMessage('激活单位功能开发中...');
+        this.gameScene.actionButtonManager.hide();
+    }
+
+    handleRestUnit(selectedCard) {
+        console.log('😴 Resting unit:', selectedCard.fullCardData?.cardData?.id);
+        this.showErrorMessage('休息单位功能开发中...');
+        this.gameScene.actionButtonManager.hide();
+    }
+
+    handleUnitAbility(selectedCard) {
+        console.log('⚡ Using unit ability:', selectedCard.fullCardData?.cardData?.id);
+        this.showErrorMessage('单位能力功能开发中...');
+        this.gameScene.actionButtonManager.hide();
+    }
+
+    /**
+     * Pilot-specific actions in slots
+     */
+    handleActivatePilot(selectedCard) {
+        console.log('🚁 Activating pilot:', selectedCard.fullCardData?.cardData?.id);
+        this.showErrorMessage('激活驾驶员功能开发中...');
+        this.gameScene.actionButtonManager.hide();
+    }
+
+    handlePilotSkill(selectedCard) {
+        console.log('🎯 Using pilot skill:', selectedCard.fullCardData?.cardData?.id);
+        this.showErrorMessage('驾驶员技能功能开发中...');
+        this.gameScene.actionButtonManager.hide();
+    }
+
+    handleEjectPilot(selectedCard) {
+        console.log('💺 Ejecting pilot:', selectedCard.fullCardData?.cardData?.id);
+        this.showErrorMessage('弹射驾驶员功能开发中...');
+        this.gameScene.actionButtonManager.hide();
+    }
+
+    /**
+     * Base-specific actions in slots
+     */
+    handleUseBaseAbility(selectedCard) {
+        console.log('🏭 Using base ability:', selectedCard.fullCardData?.cardData?.id);
+        this.showErrorMessage('基地能力功能开发中...');
+        this.gameScene.actionButtonManager.hide();
+    }
+
+    handleGenerateResource(selectedCard) {
+        console.log('💎 Generating resources:', selectedCard.fullCardData?.cardData?.id);
+        this.showErrorMessage('产生资源功能开发中...');
+        this.gameScene.actionButtonManager.hide();
+    }
+
+    handleUpgradeBase(selectedCard) {
+        console.log('⬆️ Upgrading base:', selectedCard.fullCardData?.cardData?.id);
+        this.showErrorMessage('升级基地功能开发中...');
+        this.gameScene.actionButtonManager.hide();
+    }
+
+    /**
+     * Command card actions in slots
+     */
+    handleUseCommand(selectedCard) {
+        console.log('📜 Using command:', selectedCard.fullCardData?.cardData?.id);
+        this.showErrorMessage('使用指令功能开发中...');
+        this.gameScene.actionButtonManager.hide();
+    }
+
+    handleCommandBonus(selectedCard) {
+        console.log('🎁 Using command bonus:', selectedCard.fullCardData?.cardData?.id);
+        this.showErrorMessage('指令奖励功能开发中...');
+        this.gameScene.actionButtonManager.hide();
+    }
+
+    handleRevertCommand(selectedCard) {
+        console.log('↩️ Reverting command to pilot:', selectedCard.fullCardData?.cardData?.id);
+        this.showErrorMessage('恢复指令牌功能开发中...');
+        this.gameScene.actionButtonManager.hide();
+    }
+
+    /**
+     * General slot actions
+     */
+    handleViewCard(selectedCard) {
+        console.log('👁️ Viewing card details:', selectedCard.fullCardData?.cardData?.id);
+        // For now, just show card info in console
+        console.log('Card details:', JSON.stringify(selectedCard.fullCardData, null, 2));
+        this.showErrorMessage('查看卡牌详情功能开发中...');
+        this.gameScene.actionButtonManager.hide();
+    }
+
+    handleGenericAbility(selectedCard) {
+        console.log('⚙️ Using generic ability:', selectedCard.fullCardData?.cardData?.id);
+        this.showErrorMessage('通用能力功能开发中...');
+        this.gameScene.actionButtonManager.hide();
+    }
+
+    handleCombat(selectedCard) {
+        console.log('⚔️ Entering combat with:', selectedCard.fullCardData?.cardData?.id);
+        this.showErrorMessage('参与战斗功能开发中...');
+        this.gameScene.actionButtonManager.hide();
     }
 
 }

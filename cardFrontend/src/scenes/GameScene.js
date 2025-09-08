@@ -1361,11 +1361,11 @@ export default class GameScene extends Phaser.Scene {
       
       if (slotCards.unit === card) {
         console.log(`[getSlotInfoFromCard] Found as unit in player ${slotName}`);
-        return { playerType: 'player', slotName };
+        return { playerType: 'player', slotName, cardType: 'unit' };
       }
       if (slotCards.pilot === card) {
         console.log(`[getSlotInfoFromCard] Found as pilot in player ${slotName}`);
-        return { playerType: 'player', slotName };
+        return { playerType: 'player', slotName, cardType: 'pilot' };
       }
     }
     
@@ -1377,11 +1377,11 @@ export default class GameScene extends Phaser.Scene {
       
       if (slotCards.unit === card) {
         console.log(`[getSlotInfoFromCard] Found as unit in opponent ${slotName}`);
-        return { playerType: 'opponent', slotName };
+        return { playerType: 'opponent', slotName, cardType: 'unit' };
       }
       if (slotCards.pilot === card) {
         console.log(`[getSlotInfoFromCard] Found as pilot in opponent ${slotName}`);
-        return { playerType: 'opponent', slotName };
+        return { playerType: 'opponent', slotName, cardType: 'pilot' };
       }
     }
     
@@ -2306,7 +2306,9 @@ export default class GameScene extends Phaser.Scene {
     const gameContext = {
       phase: gameState.gameEnv?.phase || 'MAIN_PHASE',
       baseZoneAvailable: this.isBaseZoneAvailable(),
-      canPlayNormally: this.canPlayCardNormally(selectedCard)
+      canPlayNormally: this.canPlayCardNormally(selectedCard),
+      // Card location context: use existing selectedCard.isInZone property
+      slotInfo: selectedCard.isInZone ? this.getSlotInfoFromCard(selectedCard) : null
     };
 
     // Show dynamic actions based on card type and context
