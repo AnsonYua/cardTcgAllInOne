@@ -24,7 +24,6 @@ export default class Card extends Phaser.GameObjects.Container {
 
     
     this.options = {
-      faceDown: false,
       scale: 1,
       usePreview: false,  // Use preview images (-preview.png) instead of original
       handleOutside:false,  // Disable selection highlight for leader cards
