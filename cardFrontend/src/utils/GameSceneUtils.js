@@ -464,9 +464,15 @@ export default class GameSceneUtils {
       dialogTitle = selection.title;
     }
     
+    // Check if dialog needs extra height for pilots or slot targets
+    const hasSlotTargets = selection.eligibleCards?.some(card => 
+      card.isSlotTarget || (card.pilot && card.unit)
+    );
+    const dialogHeight = hasSlotTargets ? 550 : 450; // Taller for pilot displays
+    
     return {
       width: Math.min(900, width * 0.85),
-      height: 450,
+      height: dialogHeight,
       centerX: width / 2,
       centerY: height / 2,
       screenWidth: width,
@@ -933,12 +939,29 @@ export default class GameSceneUtils {
       (cardDisplayConfig.cardDisplayHeight - 16) / 184
     );
     
+    
     // Create a container to hold unit and pilot cards
     const slotContainer = scene.add.container(cardX, cardsY);
     
-    // Create unit card (always present)
+    // Create pilot card if present (positioned below unit)
+    let pilotCard = null;
+    if (slotTarget.pilot) {
+      const pilotData = this._prepareCardDataForDisplay(slotTarget.pilot.cardId, slotTarget.pilot.cardId, slotTarget.pilot);
+      pilotCard = new Card(scene, 0, 25, pilotData, {
+        usePreview: true,
+        scale: dialogScale, // Slightly smaller for better visual hierarchy
+        interactive: false, // Container will handle interaction
+        showBackground: false,
+        handleOutside: true
+      });
+      slotContainer.add(pilotCard);
+    }
+    
+
+    // Create unit card (always present) - center if no pilot, otherwise position at top
+    const unitY = slotTarget.pilot ? -20 : 0; // Center unit card when no pilot present
     const unitData = this._prepareCardDataForDisplay(slotTarget.unit.cardId, slotTarget.unit.cardId, slotTarget.unit);
-    const unitCard = new Card(scene, 0, 0, unitData, {
+    const unitCard = new Card(scene, 0, unitY, unitData, {
       usePreview: true,
       scale: dialogScale,
       interactive: false, // Container will handle interaction
@@ -947,20 +970,6 @@ export default class GameSceneUtils {
     });
     
     slotContainer.add(unitCard);
-    
-    // Create pilot card if present (positioned below unit)
-    let pilotCard = null;
-    if (slotTarget.pilot) {
-      const pilotData = this._prepareCardDataForDisplay(slotTarget.pilot.cardId, slotTarget.pilot.cardId, slotTarget.pilot);
-      pilotCard = new Card(scene, 0, 35, pilotData, {
-        usePreview: true,
-        scale: dialogScale,
-        interactive: false, // Container will handle interaction
-        showBackground: false,
-        handleOutside: true
-      });
-      slotContainer.add(pilotCard);
-    }
     
     // Store references for interaction handling
     slotContainer.unitCard = unitCard;
