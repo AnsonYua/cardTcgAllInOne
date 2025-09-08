@@ -526,16 +526,8 @@ export default class GameScene extends Phaser.Scene {
     this.events.on('card-select', (card) => {
       console.log(`GameScene: card-select event received for card ${card.cardData?.id}`);
       
-      // First, deselect ALL OTHER hand cards silently (not the clicked one)
-      this.playerHand.forEach(handCard => {
-        if (handCard !== card && handCard.isSelected) {
-          console.log(`Deselecting other card ${handCard.cardData?.id}`);
-          handCard.deselectSilently();
-        }
-      });
-      
-      // Clear any existing zone highlights
-      this.clearZoneHighlights();
+      // Deselect all cards and clear highlights, then select the target card
+      this.deselectAllCards();
       
       // Now select the clicked card
       console.log(`Selecting card ${card.cardData?.id}`);
@@ -544,7 +536,6 @@ export default class GameScene extends Phaser.Scene {
       
       // Show dynamic action buttons based on card type and effects
       this.showDynamicActionsForCard(card);
-      
     });
 
     this.events.on('card-deselect', (card) => {
@@ -587,22 +578,8 @@ export default class GameScene extends Phaser.Scene {
     this.events.on('zone-card-select', (card) => {
       console.log(`GameScene: zone-card-select event received for card ${card.cardData?.id}`);
       
-      // First, deselect ALL OTHER cards (both hand cards and zone cards)
-      // Deselect hand cards
-      this.playerHand.forEach(handCard => {
-        if (handCard !== card && handCard.isSelected) {
-          console.log(`Deselecting hand card ${handCard.cardData?.id}`);
-          handCard.deselectSilently();
-        }
-      });
-      
-      // Deselect all zone cards - delegate to SlotAreaManager (no exclusion needed)
-      if (this.slotAreaManager) {
-        this.slotAreaManager.deselectAllSlotCards();
-      }
-      
-      // Clear any existing zone highlights
-      this.clearZoneHighlights();
+      // Deselect all cards and clear highlights, then select the target card
+      this.deselectAllCards();
       
       // Now select the clicked zone card
       console.log(`Selecting zone card ${card.cardData?.id}`);
@@ -661,12 +638,8 @@ export default class GameScene extends Phaser.Scene {
     this.input.on('pointerdown', (pointer, currentlyOver) => {
       // Only deselect if clicking on background (not on a card or zone)
       if (currentlyOver.length === 0 && this.gameStateManager.getSelectedCard()) {
-        this.deselectAllHandCards();
-        // Deselect all slot cards - delegate to SlotAreaManager
-        if (this.slotAreaManager) {
-          this.slotAreaManager.deselectAllSlotCards();
-        }
-        this.gameStateManager.setSelectedCard(null); // Clear selected state
+        // Completely deselect all cards and clear game state
+        this.deselectAllCards(true);
         // Hide action buttons when clicking background
         this.hideDynamicActionButtons();
       }
@@ -1075,24 +1048,37 @@ export default class GameScene extends Phaser.Scene {
     GameSceneUtils.showZoneHighlights(card, this);
   }
 
-  clearZoneHighlights() {
-    GameSceneUtils.clearZoneHighlights(this);
-  }
-
   showZoneRestrictionMessage(message) {
     GameSceneUtils.showZoneRestrictionMessage(message, this);
   }
 
-  deselectAllHandCards() {
-    // Deselect all hand cards silently without animations
+  /**
+   * Deselect all cards (hand cards and slot cards) and clear zone highlights
+   * @param {boolean} clearGameState - Whether to also clear the selected card from game state (default: false)
+   */
+  deselectAllCards(clearGameState = false) {
+    // Deselect all hand cards
     this.playerHand.forEach(handCard => {
       if (handCard.isSelected) {
+        console.log(`Deselecting hand card ${handCard.cardData?.id}`);
         handCard.deselectSilently();
       }
     });
-    this.gameStateManager.setSelectedCard(null);
+    
+    // Deselect all slot cards - delegate to SlotAreaManager
+    if (this.slotAreaManager) {
+      this.slotAreaManager.deselectAllSlotCards();
+    }
+    
+    // Clear zone highlights
     this.clearZoneHighlights();
+    
+    // Optionally clear the selected card from game state
+    if (clearGameState) {
+      this.gameStateManager.setSelectedCard(null);
+    }
   }
+
 
 
   reorganizeHand() {

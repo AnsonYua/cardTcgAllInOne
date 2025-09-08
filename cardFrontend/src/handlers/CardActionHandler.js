@@ -327,7 +327,7 @@ export default class CardActionHandler {
         
         // Use the existing showCardSelectionDialog method
         if (this.gameScene.showCardSelectionDialog) {
-            this.gameScene.deselectAllHandCards();
+            this.gameScene.deselectAllCards(true);
             this.gameScene.showCardSelectionDialog(selectionId, selectionData);
         } else {
             console.error('showCardSelectionDialog method not available');
