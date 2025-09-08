@@ -1202,25 +1202,76 @@ export default class GameScene extends Phaser.Scene {
     // Remove existing preview card if any
     this.hideCardPreview();
     console.log("showCardPreview", cardData);
-    if (this.cardPreviewZone && cardData) {
-      // Create a larger preview card using original (full-detail) images
-      this.previewCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y, cardData, {
-        scale: 3.5, // Large scale for preview
-        gameStateManager: this.gameStateManager,
-        usePreview: false, // Use original full-detail images for preview
-        handleOutside: true // Disable selection for preview cards
-      });
-      
-      // Set high depth to appear on top
-      this.previewCard.setDepth(2000);
+    
+    if (!this.cardPreviewZone || !cardData) {
+      return;
     }
+
+    // Check if this is slot preview data (unit + pilot combination)
+    if (cardData.isSlotPreview) {
+      if (cardData.pilot) {
+        console.log("Showing slot preview with pilot:", cardData.cardData?.id, "+", cardData.pilot.cardData?.id, "for slot:", cardData.slotName);
+        // Create mock Card objects to reuse existing showDualCardPreview method
+        const mockUnitCard = { cardData: cardData.cardData };
+        const mockPilotCard = { cardData: cardData.pilot.cardData };
+        this.showDualCardPreview(mockUnitCard, mockPilotCard);
+      } else {
+        console.log("Showing slot preview (unit only):", cardData.cardData?.id, "for slot:", cardData.slotName);
+        // Use the regular single card preview logic for unit-only slots
+        const displayCardData = cardData.cardData;
+        this.previewCard = this._createPreviewCard(displayCardData, this.cardPreviewZone.x, this.cardPreviewZone.y, 2000);
+      }
+      return;
+    }
+
+    // Regular single card preview
+    const displayCardData = cardData.cardData || cardData;
+    this.previewCard = this._createPreviewCard(displayCardData, this.cardPreviewZone.x, this.cardPreviewZone.y, 2000);
   }
 
   hideCardPreview() {
+    // Hide main preview card
     if (this.previewCard) {
       this.previewCard.destroy();
       this.previewCard = null;
     }
+    
+    // Also hide pilot preview card if it exists (for slot previews)
+    if (this.previewPilotCard) {
+      this.previewPilotCard.destroy();
+      this.previewPilotCard = null;
+    }
+  }
+
+  /**
+   * Show slot preview with unit + pilot combination from selection dialog
+   * @param {Object} slotPreviewData - Slot preview data with unit and pilot info
+   */
+  showSlotPreviewWithPilot(slotPreviewData) {
+    if (!this.cardPreviewZone) return;
+    
+    const unitCardData = slotPreviewData.cardData;
+    const pilotCardData = slotPreviewData.pilot.cardData;
+    
+    // Create unit preview (on top)
+    this.previewCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y, unitCardData, {
+      scale: 3.5,
+      gameStateManager: this.gameStateManager,
+      usePreview: false,
+      handleOutside: true // Disable selection for preview cards
+    });
+    this.previewCard.setDepth(2000);
+    
+    // Create pilot preview (145px below unit - same as existing dual preview)
+    this.previewPilotCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y + 145, pilotCardData, {
+      scale: 3.5,
+      gameStateManager: this.gameStateManager,
+      usePreview: false,
+      handleOutside: true // Disable selection for preview cards
+    });
+    this.previewPilotCard.setDepth(1999); // Slightly behind unit
+    
+    console.log('Showing slot preview from dialog:', unitCardData?.id, '+', pilotCardData?.id, 'for slot:', slotPreviewData.slotName);
   }
 
   /**

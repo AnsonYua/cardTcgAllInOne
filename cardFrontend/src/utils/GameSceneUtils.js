@@ -468,7 +468,7 @@ export default class GameSceneUtils {
     const hasSlotTargets = selection.eligibleCards?.some(card => 
       card.isSlotTarget || (card.pilot && card.unit)
     );
-    const dialogHeight = hasSlotTargets ? 550 : 450; // Taller for pilot displays
+    const dialogHeight = hasSlotTargets ? 600 : 450; // Taller for pilot displays
     
     return {
       width: Math.min(900, width * 0.85),
@@ -869,17 +869,17 @@ export default class GameSceneUtils {
     cardContainer.setDepth(1503);
     dialogElements.cardListElements.push(cardContainer);
     
-    // Extract card display info and create card image
+    // Extract card display info and create card element (can be Card component or Container)
     const { cardImageId, displayCardId } = this._extractCardDisplayInfo(card);
-    const cardImage = this._createCardImage(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig, card);
-    if (cardImage) {
-      dialogElements.cardListElements.push(cardImage);
-      this._setupCardInteraction(scene, card, cardImage, displayCardId, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements);
+    const cardElement = this._createCardImage(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig, card);
+    if (cardElement) {
+      dialogElements.cardListElements.push(cardElement);
+      this._setupCardInteraction(scene, card, cardElement, displayCardId, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements);
     }
     
     // Animate card in if direction is specified
-    if (animateDirection && cardImage) {
-      this._animateCardIn(scene, cardImage, cardContainer, cardX, cardsY, animateDirection, index);
+    if (animateDirection && cardElement) {
+      this._animateCardIn(scene, cardElement, cardContainer, cardX, cardsY, animateDirection, index);
     }
   }
 
@@ -943,23 +943,8 @@ export default class GameSceneUtils {
     // Create a container to hold unit and pilot cards
     const slotContainer = scene.add.container(cardX, cardsY);
     
-    // Create pilot card if present (positioned below unit)
-    let pilotCard = null;
-    if (slotTarget.pilot) {
-      const pilotData = this._prepareCardDataForDisplay(slotTarget.pilot.cardId, slotTarget.pilot.cardId, slotTarget.pilot);
-      pilotCard = new Card(scene, 0, 25, pilotData, {
-        usePreview: true,
-        scale: dialogScale, // Slightly smaller for better visual hierarchy
-        interactive: false, // Container will handle interaction
-        showBackground: false,
-        handleOutside: true
-      });
-      slotContainer.add(pilotCard);
-    }
-    
-
     // Create unit card (always present) - center if no pilot, otherwise position at top
-    const unitY = slotTarget.pilot ? -20 : 0; // Center unit card when no pilot present
+    const unitY = slotTarget.pilot ? -25 : 0; // Center unit card when no pilot present
     const unitData = this._prepareCardDataForDisplay(slotTarget.unit.cardId, slotTarget.unit.cardId, slotTarget.unit);
     const unitCard = new Card(scene, 0, unitY, unitData, {
       usePreview: true,
@@ -970,6 +955,20 @@ export default class GameSceneUtils {
     });
     
     slotContainer.add(unitCard);
+
+    // Create pilot card if present (positioned below unit)
+    let pilotCard = null;
+    if (slotTarget.pilot) {
+      const pilotData = this._prepareCardDataForDisplay(slotTarget.pilot.cardId, slotTarget.pilot.cardId, slotTarget.pilot);
+      pilotCard = new Card(scene, 0, 35, pilotData, {
+        usePreview: true,
+        scale: dialogScale * 0.9, // Slightly smaller for better visual hierarchy
+        interactive: false, // Container will handle interaction
+        showBackground: false,
+        handleOutside: true
+      });
+      slotContainer.add(pilotCard);
+    }
     
     // Store references for interaction handling
     slotContainer.unitCard = unitCard;
@@ -1098,56 +1097,212 @@ export default class GameSceneUtils {
   }
 
   /**
-   * Sets up card interaction events
+   * Prepares slot data for preview display (unit + pilot combination)
    * @private
    */
-  static _setupCardInteraction(scene, card, cardImage, displayCardId, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements) {
-    // Handle slot containers (unit + pilot combinations)
-    if (cardImage && cardImage.slotData) {
-      cardImage.setInteractive(new Phaser.Geom.Rectangle(-65, -95, 130, 190), Phaser.Geom.Rectangle.Contains);
-      
-      cardImage.on('pointerover', () => {
-        scene.game.canvas.style.cursor = 'pointer';
-        
-        // Show preview for the unit (primary target)
-        const previewData = this._prepareCardDataForPreview(cardImage.slotData.unit);
-        scene.showCardPreview(previewData);
+  static _prepareSlotPreviewData(slotData) {
+    if (!slotData || !slotData.unit) {
+      console.warn('Invalid slot data for preview:', slotData);
+      return this._prepareCardDataForPreview({
+        id: 'unknown',
+        name: 'Unknown Slot',
+        cardType: 'character'
       });
-      
-      cardImage.on('pointerout', () => {
-        scene.game.canvas.style.cursor = 'default';
-        scene.hideCardPreview();
-      });
-      
-      cardImage.on('pointerdown', () => {
-        console.log("Slot target selected:", JSON.stringify(cardImage.slotData));
-        this._handleCardSelection(cardImage.slotData, cardX, cardsY, selectionState, cardDisplayConfig, dialogElements);
-      });
-      
+    }
+
+    // Create preview data structure that represents the slot composition
+    const slotPreviewData = {
+      cardData: slotData.unit.cardData || slotData.unit,
+      cardUid: slotData.unit.cardUid || slotData.unit.cardId,
+      slotName: slotData.slotName,
+      isSlotPreview: true,
+      // Include pilot information if present
+      pilot: slotData.pilot ? {
+        cardData: slotData.pilot.cardData || slotData.pilot,
+        cardUid: slotData.pilot.cardUid || slotData.pilot.cardId
+      } : null
+    };
+
+    console.log('Prepared slot preview data:', {
+      unit: slotData.unit.cardId,
+      pilot: slotData.pilot?.cardId || 'none',
+      slot: slotData.slotName
+    });
+
+    return slotPreviewData;
+  }
+
+  /**
+   * Sets up card interaction events for both regular cards and slot containers
+   * @private
+   */
+  static _setupCardInteraction(scene, card, cardElement, displayCardId, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements) {
+    if (!cardElement) {
+      console.warn('No card element provided for interaction setup');
       return;
     }
+
+    // Determine if this is a slot container (unit+pilot) or regular card
+    const isSlotContainer = cardElement.type === 'Container' && cardElement.slotData;
     
-    // Handle regular cards
-    if (cardImage && cardImage.setInteractive) {
-      cardImage.setInteractive();
-      
-      cardImage.on('pointerover', () => {
-        scene.game.canvas.style.cursor = 'pointer';
-        
-        // Use card data directly - no conversion needed
-        const previewData = this._prepareCardDataForPreview(card);
+    if (isSlotContainer) {
+      this._setupSlotContainerInteraction(scene, card, cardElement, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements);
+    } else {
+      this._setupRegularCardInteraction(scene, card, cardElement, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements);
+    }
+  }
+
+  /**
+   * Sets up interaction for slot containers (unit + pilot combinations)
+   * @private
+   */
+  static _setupSlotContainerInteraction(scene, card, slotContainer, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements) {
+    // Set up proper interactive area for the container
+    const interactiveWidth = cardDisplayConfig.cardDisplayWidth;
+    const interactiveHeight = cardDisplayConfig.cardDisplayHeight;
+    
+    slotContainer.setInteractive(
+      new Phaser.Geom.Rectangle(-interactiveWidth/2, -interactiveHeight/2, interactiveWidth, interactiveHeight), 
+      Phaser.Geom.Rectangle.Contains
+    );
+    
+    // Create shared hover effect management
+    const showContainerHoverEffect = () => {
+      if (!slotContainer.hoverEffect) {
+        slotContainer.hoverEffect = scene.add.graphics();
+        slotContainer.hoverEffect.lineStyle(3, 0x00ff00, 0.8);
+        slotContainer.hoverEffect.strokeRoundedRect(-interactiveWidth/2, -interactiveHeight/2, interactiveWidth, interactiveHeight, 8);
+        slotContainer.hoverEffect.setDepth(1505);
+        slotContainer.add(slotContainer.hoverEffect);
+      }
+      scene.game.canvas.style.cursor = 'pointer';
+    };
+    
+    const hideContainerHoverEffect = () => {
+      if (slotContainer.hoverEffect) {
+        slotContainer.hoverEffect.destroy();
+        slotContainer.hoverEffect = null;
+      }
+      scene.game.canvas.style.cursor = 'default';
+    };
+    
+    const handleContainerSelection = () => {
+      console.log('Slot target selected:', slotContainer.slotData.slotName, slotContainer.slotData.unit.cardId);
+      this._handleCardSelection(slotContainer.slotData, cardX, cardsY, selectionState, cardDisplayConfig, dialogElements);
+      hideContainerHoverEffect();
+    };
+    
+    // Set up container-level interactions (fallback)
+    slotContainer.on('pointerover', (pointer, localX, localY, event) => {
+      // Only trigger if not already handled by child cards
+      if (!event.stopped) {
+        showContainerHoverEffect();
+        const previewData = this._prepareSlotPreviewData(slotContainer.slotData);
         scene.showCardPreview(previewData);
-      });
-      
-      cardImage.on('pointerout', () => {
-        scene.game.canvas.style.cursor = 'default';
+      }
+    });
+    
+    slotContainer.on('pointerout', (pointer, event) => {
+      // Only trigger if not handled by child cards  
+      if (!event.stopped) {
+        hideContainerHoverEffect();
         scene.hideCardPreview();
-      });
+      }
+    });
+    
+    slotContainer.on('pointerdown', (pointer, localX, localY, event) => {
+      // Only trigger if not already handled by child cards
+      if (!event.stopped) {
+        handleContainerSelection();
+      }
+    });
+    
+    // Set up interactions on individual cards within the container
+    if (slotContainer.unitCard) {
+      this._setupSlotCardInteraction(scene, slotContainer.unitCard, slotContainer.slotData.unit, slotContainer, 
+        showContainerHoverEffect, hideContainerHoverEffect, handleContainerSelection);
+    }
+    
+    if (slotContainer.pilotCard) {
+      this._setupSlotCardInteraction(scene, slotContainer.pilotCard, slotContainer.slotData.pilot, slotContainer,
+        showContainerHoverEffect, hideContainerHoverEffect, handleContainerSelection);
+    }
+  }
+
+  /**
+   * Sets up interaction for individual cards within slot containers
+   * @private
+   */
+  static _setupSlotCardInteraction(scene, cardComponent, cardData, slotContainer, showHover, hideHover, handleSelection) {
+    if (!cardComponent || !cardComponent.setInteractive) {
+      return;
+    }
+
+    cardComponent.setInteractive();
+    
+    cardComponent.on('pointerover', (pointer, localX, localY, event) => {
+      event.stopPropagation(); // Prevent container from also handling
+      showHover();
       
-      cardImage.on('pointerdown', () => {
-        console.log("Regular card selected:", JSON.stringify(card))
-        this._handleCardSelection(card, cardX, cardsY, selectionState, cardDisplayConfig, dialogElements);
-      });
+      // Show preview for the entire slot (unit + pilot) instead of individual card
+      const previewData = this._prepareSlotPreviewData(slotContainer.slotData);
+      scene.showCardPreview(previewData);
+    });
+    
+    cardComponent.on('pointerout', (pointer, event) => {
+      event.stopPropagation(); // Prevent container from also handling
+      hideHover();
+      scene.hideCardPreview();
+    });
+    
+    cardComponent.on('pointerdown', (pointer, localX, localY, event) => {
+      event.stopPropagation(); // Prevent container from also handling
+      handleSelection();
+    });
+  }
+
+  /**
+   * Sets up interaction for regular card components
+   * @private
+   */
+  static _setupRegularCardInteraction(scene, card, cardComponent, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements) {
+    if (!cardComponent.setInteractive) {
+      console.warn('Card component does not support setInteractive');
+      return;
+    }
+
+    cardComponent.setInteractive();
+    
+    cardComponent.on('pointerover', () => {
+      scene.game.canvas.style.cursor = 'pointer';
+      
+      // Use card data directly - no conversion needed
+      const previewData = this._prepareCardDataForPreview(card);
+      scene.showCardPreview(previewData);
+    });
+    
+    cardComponent.on('pointerout', () => {
+      scene.game.canvas.style.cursor = 'default';
+      scene.hideCardPreview();
+    });
+    
+    cardComponent.on('pointerdown', () => {
+      console.log('Regular card selected:', card.cardId || card.id);
+      this._handleCardSelection(card, cardX, cardsY, selectionState, cardDisplayConfig, dialogElements);
+    });
+  }
+
+  /**
+   * Gets unique identifier for a card (handles both regular cards and slot targets)
+   * @private
+   */
+  static _getCardIdentifier(card) {
+    if (card.isSlotTarget) {
+      // For slot targets, use slotName + unit cardId as unique identifier
+      return `${card.slotName}_${card.unit?.cardId || card.unit?.id}`;
+    } else {
+      // For regular cards
+      return card.cardId || card.id || card.cardUid;
     }
   }
 
@@ -1156,12 +1311,15 @@ export default class GameSceneUtils {
    * @private
    */
   static _handleCardSelection(card, cardX, cardsY, selectionState, cardDisplayConfig, dialogElements) {
+    const cardId = this._getCardIdentifier(card);
+    
     if (selectionState.maxSelections === 1) {
-      // Single selection mode with toggle support
-      const isCurrentlySelected = selectionState.selectedCard && selectionState.selectedCard.cardId === card.cardId;
+      // Single selection mode - always select new card and deselect previous
+      const currentSelectedId = selectionState.selectedCard ? this._getCardIdentifier(selectionState.selectedCard) : null;
+      const isCurrentlySelected = currentSelectedId === cardId;
       
       if (isCurrentlySelected) {
-        // Deselect the currently selected card
+        // Deselect the currently selected card (toggle behavior)
         if (selectionState.selectedCardHighlight) {
           selectionState.selectedCardHighlight.destroy();
           selectionState.selectedCardHighlight = null;
@@ -1169,25 +1327,26 @@ export default class GameSceneUtils {
         selectionState.selectedCard = null;
         selectionState.selectedCards = [];
         selectionState.selectedCardHighlights = [];
-        console.log('Card deselected (single):', card.cardId);
+        console.log('Card deselected (single):', cardId);
       } else {
-        // Select the new card (clear previous selection first)
+        // Clear any previous selection first
         if (selectionState.selectedCardHighlight) {
           selectionState.selectedCardHighlight.destroy();
           selectionState.selectedCardHighlight = null;
         }
         
+        // Select the new card
         selectionState.selectedCard = card;
         selectionState.selectedCards = [card];
         
         // Create selection highlight
         selectionState.selectedCardHighlight = this._createSelectionHighlight(cardX, cardsY, cardDisplayConfig, dialogElements);
         selectionState.selectedCardHighlights = [selectionState.selectedCardHighlight];
-        console.log('Card selected (single):', card.cardId);
+        console.log('Card selected (single):', cardId);
       }
     } else {
       // Multiple selection mode
-      const index = selectionState.selectedCards.findIndex(c => c.cardId === card.cardId);
+      const index = selectionState.selectedCards.findIndex(c => this._getCardIdentifier(c) === cardId);
       
       if (index > -1) {
         // Deselect card
@@ -1200,12 +1359,16 @@ export default class GameSceneUtils {
             dialogElements.cardListElements.splice(elementIndex, 1);
           }
         }
+        console.log('Card deselected (multiple):', cardId);
       } else {
         // Select card (if under limit)
         if (selectionState.selectedCards.length < selectionState.maxSelections) {
           selectionState.selectedCards.push(card);
           const highlight = this._createSelectionHighlight(cardX, cardsY, cardDisplayConfig, dialogElements);
           selectionState.selectedCardHighlights.push(highlight);
+          console.log('Card selected (multiple):', cardId);
+        } else {
+          console.log('Maximum selections reached:', selectionState.maxSelections);
         }
       }
       
@@ -1415,14 +1578,14 @@ export default class GameSceneUtils {
    * Animates card in with slide effect
    * @private
    */
-  static _animateCardIn(scene, cardImage, cardContainer, cardX, cardsY, animateDirection, index) {
-    if (cardImage) {
+  static _animateCardIn(scene, cardElement, cardContainer, cardX, cardsY, animateDirection, index) {
+    if (cardElement) {
       const startX = animateDirection === 'left' ? cardX - 50 : cardX + 50;
-      cardImage.setPosition(startX, cardsY);
-      cardImage.setAlpha(0);
+      cardElement.setPosition(startX, cardsY);
+      cardElement.setAlpha(0);
       
       scene.tweens.add({
-        targets: cardImage,
+        targets: cardElement,
         x: cardX,
         alpha: 1,
         duration: 300,
