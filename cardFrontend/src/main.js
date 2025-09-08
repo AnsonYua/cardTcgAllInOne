@@ -5,7 +5,6 @@ import CardResourcePreloader from './scenes/CardResourcePreloader.js';
 import MenuScene from './scenes/MenuScene.js';
 import GameScene from './scenes/GameScene.js';
 import DemoScene from './scenes/DemoScene.js';
-import CardSelectionScene from './scenes/CardSelectionScene.js';
 import BattleResultScene from './scenes/BattleResultScene.js';
 import GameOverScene from './scenes/GameOverScene.js';
 
@@ -46,7 +45,6 @@ const config = {
     MenuScene,
     GameScene,
     DemoScene,
-    CardSelectionScene,
     BattleResultScene,
     GameOverScene
   ]

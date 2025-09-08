@@ -882,6 +882,11 @@ export default class GameSceneUtils {
    * @private
    */
   static _createCardImage(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig, originalCard = null) {
+    // Check if this is a slot target (unit + pilot combination)
+    if (originalCard && originalCard.isSlotTarget) {
+      return this._createSlotTargetDisplay(scene, cardX, cardsY, cardDisplayConfig, originalCard);
+    }
+    
     // Create full Card component with AP/HP display
     try {
       const cardData = this._prepareCardDataForDisplay(cardImageId, displayCardId, originalCard);
@@ -915,6 +920,57 @@ export default class GameSceneUtils {
       console.error('Error creating Card component for dialog, falling back to image:', error);
       return this._createFallbackCardImage(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig);
     }
+  }
+
+  /**
+   * Creates display for slot targets (unit + pilot combinations)
+   * @private
+   */
+  static _createSlotTargetDisplay(scene, cardX, cardsY, cardDisplayConfig, slotTarget) {
+    // Calculate scale for slot target display
+    const dialogScale = Math.min(
+      (cardDisplayConfig.cardDisplayWidth - 16) / 124,
+      (cardDisplayConfig.cardDisplayHeight - 16) / 184
+    );
+    
+    // Create a container to hold unit and pilot cards
+    const slotContainer = scene.add.container(cardX, cardsY);
+    
+    // Create unit card (always present)
+    const unitData = this._prepareCardDataForDisplay(slotTarget.unit.cardId, slotTarget.unit.cardId, slotTarget.unit);
+    const unitCard = new Card(scene, 0, 0, unitData, {
+      usePreview: true,
+      scale: dialogScale,
+      interactive: false, // Container will handle interaction
+      showBackground: false,
+      handleOutside: true
+    });
+    
+    slotContainer.add(unitCard);
+    
+    // Create pilot card if present (positioned below unit)
+    let pilotCard = null;
+    if (slotTarget.pilot) {
+      const pilotData = this._prepareCardDataForDisplay(slotTarget.pilot.cardId, slotTarget.pilot.cardId, slotTarget.pilot);
+      pilotCard = new Card(scene, 0, 35, pilotData, {
+        usePreview: true,
+        scale: dialogScale,
+        interactive: false, // Container will handle interaction
+        showBackground: false,
+        handleOutside: true
+      });
+      slotContainer.add(pilotCard);
+    }
+    
+    // Store references for interaction handling
+    slotContainer.unitCard = unitCard;
+    slotContainer.pilotCard = pilotCard;
+    slotContainer.slotData = slotTarget;
+    
+    slotContainer.setDepth(1504);
+    
+    console.log(`Created slot target display: ${slotTarget.unit.cardId}${slotTarget.pilot ? ` + ${slotTarget.pilot.cardId}` : ''}`);
+    return slotContainer;
   }
 
   /**
@@ -1037,6 +1093,32 @@ export default class GameSceneUtils {
    * @private
    */
   static _setupCardInteraction(scene, card, cardImage, displayCardId, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements) {
+    // Handle slot containers (unit + pilot combinations)
+    if (cardImage && cardImage.slotData) {
+      cardImage.setInteractive(new Phaser.Geom.Rectangle(-65, -95, 130, 190), Phaser.Geom.Rectangle.Contains);
+      
+      cardImage.on('pointerover', () => {
+        scene.game.canvas.style.cursor = 'pointer';
+        
+        // Show preview for the unit (primary target)
+        const previewData = this._prepareCardDataForPreview(cardImage.slotData.unit);
+        scene.showCardPreview(previewData);
+      });
+      
+      cardImage.on('pointerout', () => {
+        scene.game.canvas.style.cursor = 'default';
+        scene.hideCardPreview();
+      });
+      
+      cardImage.on('pointerdown', () => {
+        console.log("Slot target selected:", JSON.stringify(cardImage.slotData));
+        this._handleCardSelection(cardImage.slotData, cardX, cardsY, selectionState, cardDisplayConfig, dialogElements);
+      });
+      
+      return;
+    }
+    
+    // Handle regular cards
     if (cardImage && cardImage.setInteractive) {
       cardImage.setInteractive();
       
@@ -1054,7 +1136,7 @@ export default class GameSceneUtils {
       });
       
       cardImage.on('pointerdown', () => {
-        console.log("acasdx ",JSON.stringify(card))
+        console.log("Regular card selected:", JSON.stringify(card))
         this._handleCardSelection(card, cardX, cardsY, selectionState, cardDisplayConfig, dialogElements);
       });
     }

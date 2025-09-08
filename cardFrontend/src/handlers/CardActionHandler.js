@@ -477,17 +477,21 @@ export default class CardActionHandler {
         }
         
         // Find all opponent units in slots (slot1-slot6)
+        // Pass whole slot data to reduce object conversion
         const eligibleTargets = [];
         for (let i = 1; i <= 6; i++) {
             const slotName = `slot${i}`;
             const slot = opponentData.zones[slotName];
             
             if (slot && slot.unit) {
-                // Add slot info to the unit for target identification
-                const unit = { ...slot.unit };
-                unit.slot = slotName;
-                unit.playerId = opponentId; // Mark as opponent unit
-                eligibleTargets.push(unit);
+                // Pass the whole slot data with metadata
+                const slotTarget = {
+                    ...slot, // Includes unit, pilot, and any other slot data
+                    slotName: slotName,
+                    playerId: opponentId,
+                    isSlotTarget: true // Mark for special dialog handling
+                };
+                eligibleTargets.push(slotTarget);
             }
         }
         
@@ -632,18 +636,22 @@ export default class CardActionHandler {
     /**
      * Execute attack action after target selection
      */
-    executeAttackAction(attackerCard, targetUnit) {
+    executeAttackAction(attackerCard, targetSlot) {
         console.log('⚔️ Executing attack:', {
             attacker: attackerCard.fullCardData?.cardData?.id,
-            target: targetUnit.id,
-            targetSlot: targetUnit.slot
+            targetUnit: targetSlot.unit?.id,
+            targetPilot: targetSlot.pilot?.id,
+            targetSlotName: targetSlot.slotName
         });
         
         // For now, show a placeholder message with attack details
         const attackerName = attackerCard.fullCardData?.cardData?.name || 'Unknown Unit';
-        const targetName = targetUnit.name || targetUnit.id || 'Unknown Target';
+        const targetUnitName = targetSlot.unit?.name || targetSlot.unit?.id || 'Unknown Unit';
+        const targetDescription = targetSlot.pilot 
+            ? `${targetUnitName} + ${targetSlot.pilot.name || targetSlot.pilot.id}`
+            : targetUnitName;
         
-        this.showErrorMessage(`${attackerName} 攻击 ${targetName} - 战斗系统开发中...`);
+        this.showErrorMessage(`${attackerName} 攻击 ${targetDescription} - 战斗系统开发中...`);
         
         // Hide action buttons
         this.gameScene.actionButtonManager.hide();
