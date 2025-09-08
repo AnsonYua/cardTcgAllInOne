@@ -33,8 +33,8 @@ export default class CardActionHandler {
                 break;
             
             // Slot-specific actions for units
-            case 'activateUnit':
-                this.handleActivateUnit(selectedCard);
+            case 'attackUnit':
+                this.handleAttackUnit(selectedCard);
                 break;
             case 'restUnit':
                 this.handleRestUnit(selectedCard);
@@ -456,10 +456,79 @@ export default class CardActionHandler {
     /**
      * Unit-specific actions in slots
      */
-    handleActivateUnit(selectedCard) {
-        console.log('💥 Activating unit:', selectedCard.fullCardData?.cardData?.id);
-        this.showErrorMessage('激活单位功能开发中...');
-        this.gameScene.actionButtonManager.hide();
+    handleAttackUnit(selectedCard) {
+        console.log('🗡️ Initiating unit attack:', selectedCard.fullCardData?.cardData?.id);
+        
+        // Get current game state
+        const gameState = this.gameStateManager.getGameState();
+        const playerId = gameState.playerId;
+        
+        // Get opponent's zones to find all opponent units
+        const opponentId = Object.keys(gameState.gameEnv?.players || {}).find(id => id !== playerId);
+        if (!opponentId) {
+            this.showErrorMessage('无法找到对手');
+            return;
+        }
+        
+        const opponentData = gameState.gameEnv?.players?.[opponentId];
+        if (!opponentData || !opponentData.zones) {
+            this.showErrorMessage('无法访问对手区域');
+            return;
+        }
+        
+        // Find all opponent units in slots (slot1-slot6)
+        const eligibleTargets = [];
+        for (let i = 1; i <= 6; i++) {
+            const slotName = `slot${i}`;
+            const slot = opponentData.zones[slotName];
+            
+            if (slot && slot.unit) {
+                // Add slot info to the unit for target identification
+                const unit = { ...slot.unit };
+                unit.slot = slotName;
+                unit.playerId = opponentId; // Mark as opponent unit
+                eligibleTargets.push(unit);
+            }
+        }
+        
+        if (eligibleTargets.length === 0) {
+            this.showErrorMessage('没有可攻击的对手机体');
+            return;
+        }
+        
+        // Create a unique selection ID
+        const selectionId = `attack_target_${Date.now()}`;
+        
+        // Create selection data compatible with existing system
+        const selectionData = {
+            playerId: playerId,
+            eligibleCards: eligibleTargets,
+            dialogType: "SELECT_ATTACK_TARGET",
+            selectCount: 1,
+            numberOfSections: 1,
+            title: '选择攻击目标',
+            description: '选择要攻击的对手机体',
+            callback: (selectionId, selectedCards) => {
+                console.log('CardActionHandler: Attack target selected:', selectionId, selectedCards);
+                const cardsArray = Array.isArray(selectedCards) ? selectedCards : [selectedCards];
+                if (cardsArray && cardsArray.length > 0) {
+                    const targetUnit = cardsArray[0];
+                    this.executeAttackAction(selectedCard, targetUnit);
+                }
+            },
+            onCancel: () => {
+                console.log('Attack target selection cancelled');
+            }
+        };
+        
+        // Use the existing showCardSelectionDialog method
+        if (this.gameScene.showCardSelectionDialog) {
+            this.gameScene.deselectAllCards(true);
+            this.gameScene.showCardSelectionDialog(selectionId, selectionData);
+        } else {
+            console.error('showCardSelectionDialog method not available');
+            this.showErrorMessage('无法显示目标选择对话框');
+        }
     }
 
     handleRestUnit(selectedCard) {
@@ -558,6 +627,35 @@ export default class CardActionHandler {
         console.log('⚔️ Entering combat with:', selectedCard.fullCardData?.cardData?.id);
         this.showErrorMessage('参与战斗功能开发中...');
         this.gameScene.actionButtonManager.hide();
+    }
+
+    /**
+     * Execute attack action after target selection
+     */
+    executeAttackAction(attackerCard, targetUnit) {
+        console.log('⚔️ Executing attack:', {
+            attacker: attackerCard.fullCardData?.cardData?.id,
+            target: targetUnit.id,
+            targetSlot: targetUnit.slot
+        });
+        
+        // For now, show a placeholder message with attack details
+        const attackerName = attackerCard.fullCardData?.cardData?.name || 'Unknown Unit';
+        const targetName = targetUnit.name || targetUnit.id || 'Unknown Target';
+        
+        this.showErrorMessage(`${attackerName} 攻击 ${targetName} - 战斗系统开发中...`);
+        
+        // Hide action buttons
+        this.gameScene.actionButtonManager.hide();
+        
+        // TODO: Implement actual attack logic here
+        // This would involve:
+        // 1. Calculate damage based on attacker's power
+        // 2. Apply damage to target unit
+        // 3. Handle any special abilities or effects
+        // 4. Update game state
+        // 5. Potentially trigger animations
+        // 6. Send attack action to backend if available
     }
 
 }

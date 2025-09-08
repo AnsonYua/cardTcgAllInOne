@@ -88,15 +88,13 @@ export default class CardActionRegistry {
         
         const actions = [];
         
-        // Common slot actions for all card types
-        actions.push({ action: 'viewCard', text: '查看卡牌', primary: false });
+       
         
         // Card type specific slot actions
         switch (cardType) {
             case 'unit':
                 actions.push(
-                    { action: 'activateUnit', text: '攻擊機體', primary: true },
-                    { action: 'restUnit', text: '攻擊基地/盾', primary: false },
+                    { action: 'attackUnit', text: '攻擊機體', primary: true },
                     { action: 'unitAbility', text: '使用能力', primary: false }
                 );
                 break;
