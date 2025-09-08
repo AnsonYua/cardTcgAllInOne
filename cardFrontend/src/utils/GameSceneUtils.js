@@ -841,6 +841,9 @@ export default class GameSceneUtils {
       if (element) scene.tweens.killTweensOf(element);
     });
     
+    // Clean up hover effects before destroying main elements
+    this._cleanupHoverEffects(dialogElements.cardListElements);
+    
     // Get all elements and destroy them
     const allElements = this._getAllDialogElements(dialogElements);
     allElements.forEach(element => {
@@ -851,6 +854,26 @@ export default class GameSceneUtils {
     
     // Clear arrays
     dialogElements.cardListElements.length = 0;
+  }
+
+  /**
+   * Cleanup hover effects to prevent memory leaks
+   * @private
+   */
+  static _cleanupHoverEffects(cardElements) {
+    cardElements.forEach(element => {
+      // Check if element has hover effect attached
+      if (element && element.hoverEffect && !element.hoverEffect.destroyed) {
+        element.hoverEffect.destroy();
+        element.hoverEffect = null;
+      }
+      
+      // Check for container-based hover effects
+      if (element && element.type === 'Container' && element.hoverEffect && !element.hoverEffect.destroyed) {
+        element.hoverEffect.destroy();
+        element.hoverEffect = null;
+      }
+    });
   }
 
   /**
@@ -943,8 +966,24 @@ export default class GameSceneUtils {
     // Create a container to hold unit and pilot cards
     const slotContainer = scene.add.container(cardX, cardsY);
     
+
+    // Create pilot card if present (positioned below unit)
+    let pilotCard = null;
+    if (slotTarget.pilot) {
+      const pilotData = this._prepareCardDataForDisplay(slotTarget.pilot.cardId, slotTarget.pilot.cardId, slotTarget.pilot);
+      pilotCard = new Card(scene, 0, 23, pilotData, {
+        usePreview: true,
+        scale: dialogScale, // Slightly smaller for better visual hierarchy
+        interactive: false, // Container will handle interaction
+        showBackground: false,
+        handleOutside: true
+      });
+      slotContainer.add(pilotCard);
+    }
+
+
     // Create unit card (always present) - center if no pilot, otherwise position at top
-    const unitY = slotTarget.pilot ? -25 : 0; // Center unit card when no pilot present
+    const unitY = slotTarget.pilot ? -20 : 0; // Center unit card when no pilot present
     const unitData = this._prepareCardDataForDisplay(slotTarget.unit.cardId, slotTarget.unit.cardId, slotTarget.unit);
     const unitCard = new Card(scene, 0, unitY, unitData, {
       usePreview: true,
@@ -956,19 +995,6 @@ export default class GameSceneUtils {
     
     slotContainer.add(unitCard);
 
-    // Create pilot card if present (positioned below unit)
-    let pilotCard = null;
-    if (slotTarget.pilot) {
-      const pilotData = this._prepareCardDataForDisplay(slotTarget.pilot.cardId, slotTarget.pilot.cardId, slotTarget.pilot);
-      pilotCard = new Card(scene, 0, 35, pilotData, {
-        usePreview: true,
-        scale: dialogScale * 0.9, // Slightly smaller for better visual hierarchy
-        interactive: false, // Container will handle interaction
-        showBackground: false,
-        handleOutside: true
-      });
-      slotContainer.add(pilotCard);
-    }
     
     // Store references for interaction handling
     slotContainer.unitCard = unitCard;
@@ -1166,30 +1192,56 @@ export default class GameSceneUtils {
       Phaser.Geom.Rectangle.Contains
     );
     
-    // Create shared hover effect management
+    // Create shared hover effect management with animation
     const showContainerHoverEffect = () => {
       if (!slotContainer.hoverEffect) {
         slotContainer.hoverEffect = scene.add.graphics();
         slotContainer.hoverEffect.lineStyle(3, 0x00ff00, 0.8);
-        slotContainer.hoverEffect.strokeRoundedRect(-interactiveWidth/2, -interactiveHeight/2, interactiveWidth, interactiveHeight, 8);
+        slotContainer.hoverEffect.strokeRoundedRect(
+          -interactiveWidth/2 - 2, 
+          -interactiveHeight/2 - 2, 
+          interactiveWidth + 4, 
+          interactiveHeight + 4, 
+          8
+        );
         slotContainer.hoverEffect.setDepth(1505);
+        slotContainer.hoverEffect.setAlpha(0);
         slotContainer.add(slotContainer.hoverEffect);
+        
+        // Animate the hover effect in
+        scene.tweens.add({
+          targets: slotContainer.hoverEffect,
+          alpha: 0.8,
+          duration: 200,
+          ease: 'Power2.easeOut'
+        });
       }
       scene.game.canvas.style.cursor = 'pointer';
     };
     
     const hideContainerHoverEffect = () => {
       if (slotContainer.hoverEffect) {
-        slotContainer.hoverEffect.destroy();
-        slotContainer.hoverEffect = null;
+        // Animate out before destroying
+        scene.tweens.add({
+          targets: slotContainer.hoverEffect,
+          alpha: 0,
+          duration: 150,
+          ease: 'Power2.easeIn',
+          onComplete: () => {
+            if (slotContainer.hoverEffect) {
+              slotContainer.hoverEffect.destroy();
+              slotContainer.hoverEffect = null;
+            }
+          }
+        });
       }
       scene.game.canvas.style.cursor = 'default';
     };
     
     const handleContainerSelection = () => {
       console.log('Slot target selected:', slotContainer.slotData.slotName, slotContainer.slotData.unit.cardId);
+      hideContainerHoverEffect(); // Clean up hover effect on selection
       this._handleCardSelection(slotContainer.slotData, cardX, cardsY, selectionState, cardDisplayConfig, dialogElements);
-      hideContainerHoverEffect();
     };
     
     // Set up container-level interactions (fallback)
@@ -1273,8 +1325,59 @@ export default class GameSceneUtils {
 
     cardComponent.setInteractive();
     
-    cardComponent.on('pointerover', () => {
+    // Create hover frame highlighting functions with animation
+    const showRegularCardHoverEffect = () => {
+      if (!cardComponent.hoverEffect) {
+        cardComponent.hoverEffect = scene.add.graphics();
+        cardComponent.hoverEffect.lineStyle(3, 0x00ff00, 0.8);
+        cardComponent.hoverEffect.strokeRoundedRect(
+          cardX - cardDisplayConfig.cardDisplayWidth/2 - 2, 
+          cardsY - cardDisplayConfig.cardDisplayHeight/2 - 2, 
+          cardDisplayConfig.cardDisplayWidth + 4, 
+          cardDisplayConfig.cardDisplayHeight + 4, 
+          8
+        );
+        cardComponent.hoverEffect.setDepth(1505);
+        cardComponent.hoverEffect.setAlpha(0);
+        dialogElements.cardListElements.push(cardComponent.hoverEffect);
+        
+        // Animate the hover effect in
+        scene.tweens.add({
+          targets: cardComponent.hoverEffect,
+          alpha: 0.8,
+          duration: 200,
+          ease: 'Power2.easeOut'
+        });
+      }
       scene.game.canvas.style.cursor = 'pointer';
+    };
+    
+    const hideRegularCardHoverEffect = () => {
+      if (cardComponent.hoverEffect) {
+        // Animate out before destroying
+        scene.tweens.add({
+          targets: cardComponent.hoverEffect,
+          alpha: 0,
+          duration: 150,
+          ease: 'Power2.easeIn',
+          onComplete: () => {
+            if (cardComponent.hoverEffect) {
+              cardComponent.hoverEffect.destroy();
+              cardComponent.hoverEffect = null;
+              // Remove from dialog elements array
+              const index = dialogElements.cardListElements.indexOf(cardComponent.hoverEffect);
+              if (index > -1) {
+                dialogElements.cardListElements.splice(index, 1);
+              }
+            }
+          }
+        });
+      }
+      scene.game.canvas.style.cursor = 'default';
+    };
+    
+    cardComponent.on('pointerover', () => {
+      showRegularCardHoverEffect();
       
       // Use card data directly - no conversion needed
       const previewData = this._prepareCardDataForPreview(card);
@@ -1282,12 +1385,13 @@ export default class GameSceneUtils {
     });
     
     cardComponent.on('pointerout', () => {
-      scene.game.canvas.style.cursor = 'default';
+      hideRegularCardHoverEffect();
       scene.hideCardPreview();
     });
     
     cardComponent.on('pointerdown', () => {
       console.log('Regular card selected:', card.cardId || card.id);
+      hideRegularCardHoverEffect(); // Clean up hover effect on selection
       this._handleCardSelection(card, cardX, cardsY, selectionState, cardDisplayConfig, dialogElements);
     });
   }
