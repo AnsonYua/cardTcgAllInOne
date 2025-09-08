@@ -36,12 +36,6 @@ export default class CardActionHandler {
             case 'attackUnit':
                 this.handleAttackUnit(selectedCard);
                 break;
-            case 'restUnit':
-                this.handleRestUnit(selectedCard);
-                break;
-            case 'unitAbility':
-                this.handleUnitAbility(selectedCard);
-                break;
             
             // Slot-specific actions for pilots
             case 'activatePilot':
@@ -535,17 +529,6 @@ export default class CardActionHandler {
         }
     }
 
-    handleRestUnit(selectedCard) {
-        console.log('😴 Resting unit:', selectedCard.fullCardData?.cardData?.id);
-        this.showErrorMessage('休息单位功能开发中...');
-        this.gameScene.actionButtonManager.hide();
-    }
-
-    handleUnitAbility(selectedCard) {
-        console.log('⚡ Using unit ability:', selectedCard.fullCardData?.cardData?.id);
-        this.showErrorMessage('单位能力功能开发中...');
-        this.gameScene.actionButtonManager.hide();
-    }
 
     /**
      * Pilot-specific actions in slots

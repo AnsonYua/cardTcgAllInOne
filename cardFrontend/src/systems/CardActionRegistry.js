@@ -95,7 +95,7 @@ export default class CardActionRegistry {
             case 'unit':
                 actions.push(
                     { action: 'attackUnit', text: '攻擊機體', primary: true },
-                    { action: 'unitAbility', text: '使用能力', primary: false }
+                    { action: 'attackShieldArea', text: '攻擊基地/盾', primary: true }
                 );
                 break;
                 
