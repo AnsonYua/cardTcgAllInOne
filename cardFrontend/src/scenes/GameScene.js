@@ -1229,6 +1229,26 @@ export default class GameScene extends Phaser.Scene {
     this.previewCard = this._createPreviewCard(displayCardData, this.cardPreviewZone.x, this.cardPreviewZone.y, 2000);
   }
 
+  /**
+   * Creates a preview card component
+   * @param {Object} cardData - The card data to display
+   * @param {number} x - X position
+   * @param {number} y - Y position  
+   * @param {number} depth - Z depth for layering
+   * @returns {Card} The created preview card component
+   */
+  _createPreviewCard(cardData, x, y, depth = 2000) {
+    const previewCard = new Card(this, x, y, cardData, {
+      scale: 3.5,
+      gameStateManager: this.gameStateManager,
+      usePreview: true,
+      interactive: false
+    });
+    
+    previewCard.setDepth(depth);
+    return previewCard;
+  }
+
   hideCardPreview() {
     // Hide main preview card
     if (this.previewCard) {
