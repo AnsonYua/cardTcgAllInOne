@@ -369,6 +369,9 @@ export default class GameSceneUtils {
   static createCardSelectionDialog(selectionId, selection, scene, onConfirm) {
     const dialogConfig = this._createDialogConfig(scene, selection);
     
+    // Disable main game card interactions to prevent selection conflicts
+    this._disableMainGameCardInteractions(scene);
+    
     // Support for future multi-section dialogs (currently single section)
     const numberOfSections = selection.numberOfSections || 1;
     console.log(`Creating card selection dialog with ${numberOfSections} section(s)`);
@@ -854,6 +857,9 @@ export default class GameSceneUtils {
     
     // Clear arrays
     dialogElements.cardListElements.length = 0;
+    
+    // Re-enable main game card interactions
+    this._enableMainGameCardInteractions(scene);
   }
 
   /**
@@ -1724,6 +1730,100 @@ export default class GameSceneUtils {
         element.destroy();
       }
     });
+  }
+
+  /**
+   * Disables main game card interactions when dialog is open
+   * @private
+   */
+  static _disableMainGameCardInteractions(scene) {
+    // Store current interaction state for restoration
+    scene._dialogInteractionState = {
+      playerHandCards: [],
+      slotCards: []
+    };
+    
+    // Disable player hand card interactions
+    if (scene.playerHand) {
+      scene.playerHand.forEach(card => {
+        if (card && card.input && card.input.enabled) {
+          scene._dialogInteractionState.playerHandCards.push(card);
+          card.disableInteractive();
+        }
+      });
+    }
+    
+    // Disable slot area card interactions
+    if (scene.slotAreaManager) {
+      // Deselect all slot cards to prevent green highlights
+      scene.slotAreaManager.deselectAllSlotCards();
+      
+      // Disable interactions for all slot cards
+      Object.entries(scene.slotAreaManager.playerSlotCards).forEach(([slotName, slotCards]) => {
+        if (slotCards.unit && slotCards.unit.input && slotCards.unit.input.enabled) {
+          scene._dialogInteractionState.slotCards.push(slotCards.unit);
+          slotCards.unit.disableInteractive();
+        }
+        if (slotCards.pilot && slotCards.pilot.input && slotCards.pilot.input.enabled) {
+          scene._dialogInteractionState.slotCards.push(slotCards.pilot);
+          slotCards.pilot.disableInteractive();
+        }
+      });
+      
+      // Also disable opponent slot interactions to be safe
+      Object.entries(scene.slotAreaManager.opponentSlotCards).forEach(([slotName, slotCards]) => {
+        if (slotCards.unit && slotCards.unit.input && slotCards.unit.input.enabled) {
+          slotCards.unit.disableInteractive();
+        }
+        if (slotCards.pilot && slotCards.pilot.input && slotCards.pilot.input.enabled) {
+          slotCards.pilot.disableInteractive();
+        }
+      });
+    }
+    
+    console.log('Main game card interactions disabled for dialog');
+  }
+
+  /**
+   * Re-enables main game card interactions when dialog closes
+   * @private
+   */
+  static _enableMainGameCardInteractions(scene) {
+    if (!scene._dialogInteractionState) {
+      console.warn('No interaction state stored to restore');
+      return;
+    }
+    
+    // Re-enable player hand card interactions
+    scene._dialogInteractionState.playerHandCards.forEach(card => {
+      if (card && !card.destroyed) {
+        card.setInteractive();
+      }
+    });
+    
+    // Re-enable slot card interactions
+    scene._dialogInteractionState.slotCards.forEach(card => {
+      if (card && !card.destroyed) {
+        card.setInteractive();
+      }
+    });
+    
+    // Re-enable opponent slot interactions
+    if (scene.slotAreaManager) {
+      Object.entries(scene.slotAreaManager.opponentSlotCards).forEach(([slotName, slotCards]) => {
+        if (slotCards.unit && !slotCards.unit.destroyed) {
+          slotCards.unit.setInteractive();
+        }
+        if (slotCards.pilot && !slotCards.pilot.destroyed) {
+          slotCards.pilot.setInteractive();
+        }
+      });
+    }
+    
+    // Clean up stored state
+    delete scene._dialogInteractionState;
+    
+    console.log('Main game card interactions re-enabled after dialog close');
   }
 
   /**
