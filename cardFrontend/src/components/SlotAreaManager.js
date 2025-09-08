@@ -213,6 +213,43 @@ export default class SlotAreaManager {
     return [...this.getAllPlayerSlotCards(), ...this.getAllOpponentSlotCards()];
   }
 
+  // ============ SELECTION MANAGEMENT ============
+
+  /**
+   * Deselect all cards in slots (both unit and pilot cards) silently without animations
+   */
+  deselectAllSlotCards() {
+    // Deselect all player slot cards
+    Object.entries(this.playerSlotCards).forEach(([slotName, slotCards]) => {
+      // Check unit card
+      if (slotCards.unit && slotCards.unit.isSelected) {
+        console.log(`Deselecting player ${slotName} unit card ${slotCards.unit.cardData?.id}`);
+        slotCards.unit.deselectSilently();
+      }
+      
+      // Check pilot card
+      if (slotCards.pilot && slotCards.pilot.isSelected) {
+        console.log(`Deselecting player ${slotName} pilot card ${slotCards.pilot.cardData?.id}`);
+        slotCards.pilot.deselectSilently();
+      }
+    });
+    
+    // Deselect all opponent slot cards
+    Object.entries(this.opponentSlotCards).forEach(([slotName, slotCards]) => {
+      // Check unit card
+      if (slotCards.unit && slotCards.unit.isSelected) {
+        console.log(`Deselecting opponent ${slotName} unit card ${slotCards.unit.cardData?.id}`);
+        slotCards.unit.deselectSilently();
+      }
+      
+      // Check pilot card
+      if (slotCards.pilot && slotCards.pilot.isSelected) {
+        console.log(`Deselecting opponent ${slotName} pilot card ${slotCards.pilot.cardData?.id}`);
+        slotCards.pilot.deselectSilently();
+      }
+    });
+  }
+
   // ============ CLEANUP ============
 
   destroy() {

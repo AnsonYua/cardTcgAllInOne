@@ -371,7 +371,8 @@ export default class GameStateManager {
    */
   getComputedCardPower(card, playerId = null) {
     // For character cards, try to find the card in zones and get currentPower
-    if (card.type === 'character') {
+    const cardType = card.cardType || card.type;
+    if (cardType === 'character') {
       const currentPower = this.getCardCurrentPowerFromZones(card.id, playerId);
       if (currentPower !== null) {
         return currentPower;

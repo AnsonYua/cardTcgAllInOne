@@ -583,6 +583,48 @@ export default class GameScene extends Phaser.Scene {
       }
     });
     
+    // Zone card selection events - consolidated handlers for all slot cards
+    this.events.on('zone-card-select', (card) => {
+      console.log(`GameScene: zone-card-select event received for card ${card.cardData?.id}`);
+      
+      // First, deselect ALL OTHER cards (both hand cards and zone cards)
+      // Deselect hand cards
+      this.playerHand.forEach(handCard => {
+        if (handCard !== card && handCard.isSelected) {
+          console.log(`Deselecting hand card ${handCard.cardData?.id}`);
+          handCard.deselectSilently();
+        }
+      });
+      
+      // Deselect all zone cards - delegate to SlotAreaManager (no exclusion needed)
+      if (this.slotAreaManager) {
+        this.slotAreaManager.deselectAllSlotCards();
+      }
+      
+      // Clear any existing zone highlights
+      this.clearZoneHighlights();
+      
+      // Now select the clicked zone card
+      console.log(`Selecting zone card ${card.cardData?.id}`);
+      card.select();
+      this.gameStateManager.setSelectedCard(card);
+      
+      // Show dynamic action buttons based on card type and effects
+      this.showDynamicActionsForCard(card);
+    });
+    
+    this.events.on('zone-card-deselect', (card) => {
+      console.log(`GameScene: zone-card-deselect event received for card ${card.cardData?.id}`);
+      
+      // Handle zone card deselection - clear selected card
+      if (this.gameStateManager.getSelectedCard() === card) {
+        this.gameStateManager.setSelectedCard(null);
+        console.log(`Cleared selected card state for zone card ${card.cardData?.id}`);
+        // Hide action buttons when deselecting
+        this.hideDynamicActionButtons();
+      }
+    });
+    
     // Zone card hover events - enhanced for unit+pilot dual preview
     this.events.on('zone-card-hover', (card) => {
       console.log('[zone-card-hover] Event triggered for card:', {
@@ -614,11 +656,17 @@ export default class GameScene extends Phaser.Scene {
       }
     });
 
+
     // Add background click handler for deselecting cards
     this.input.on('pointerdown', (pointer, currentlyOver) => {
       // Only deselect if clicking on background (not on a card or zone)
       if (currentlyOver.length === 0 && this.gameStateManager.getSelectedCard()) {
         this.deselectAllHandCards();
+        // Deselect all slot cards - delegate to SlotAreaManager
+        if (this.slotAreaManager) {
+          this.slotAreaManager.deselectAllSlotCards();
+        }
+        this.gameStateManager.setSelectedCard(null); // Clear selected state
         // Hide action buttons when clicking background
         this.hideDynamicActionButtons();
       }
@@ -883,7 +931,8 @@ export default class GameScene extends Phaser.Scene {
           zone.placeholder.setVisible(false);
           
           // Show power overlay for character cards in character zones
-          if (card.cardData?.type === 'character' && 
+          const cardType = card.cardData?.cardType || card.cardData?.type;
+          if (cardType === 'character' && 
               ['top', 'left', 'right'].includes(zoneType)) {
             card.setPowerOverlayVisible(true, true);
           }
@@ -1044,6 +1093,7 @@ export default class GameScene extends Phaser.Scene {
     this.gameStateManager.setSelectedCard(null);
     this.clearZoneHighlights();
   }
+
 
   reorganizeHand() {
     if (this.playerHand.length === 0) return;
