@@ -47,10 +47,7 @@ export default class Card extends Phaser.GameObjects.Container {
     
     // Create power overlay if this is a character card
     const cardType = this.cardData?.cardType || this.cardData?.type;
-    if (this.cardData && cardType === 'character') {
-      this.createPowerOverlay();
-    }
-    
+
     this.create();
     this.setupInteraction();
     
@@ -58,6 +55,7 @@ export default class Card extends Phaser.GameObjects.Container {
   }
 
   create() {
+    console.log(`[Card] 11111:`, JSON.stringify(this.fullCardData));
     // Check if we have a valid card ID
     if(this.cardData.cardType == "shield" ||
       this.cardData.cardType == "base" ||
@@ -85,13 +83,11 @@ export default class Card extends Phaser.GameObjects.Container {
     let cardKey = this.options.usePreview ? 
       `${this.cardData.id}-preview` :  // Use preview version (e.g., "c-1-preview")
       this.cardData.id;                // Use original version (e.g., "c-1")
-    
     if(this.cardData.cardType == "shield"){
       cardKey = `${GAME_CONFIG.imageKey.cardback}-preview`
     }else if(this.cardData.cardType == "base" && this.fullCardData.cardUid == "base_default"){
       cardKey = this.options.usePreview ? 
-      `${GAME_CONFIG.imageKey.exBase}-preview` :  // Use preview version (e.g., "c-1-preview")
-      GAME_CONFIG.imageKey.exBase;     
+      `${GAME_CONFIG.imageKey.exBase}-preview` :  GAME_CONFIG.imageKey.exBase;     
     }else if (this.cardData.cardType == "energy"){
       cardKey = this.options.usePreview ? 
       `${GAME_CONFIG.imageKey.extraResource}-preview` :  // Use preview version (e.g., "c-1-preview")
@@ -628,18 +624,26 @@ export default class Card extends Phaser.GameObjects.Container {
    * @returns {{ap: number, hp: number}} AP and HP values
    */
   getAPandHPFromCardData() {
-    if (!this.cardData) {
+
+    if (!this.fullCardData) {
       return { ap: 0, hp: 0 };
     }
-
     // For regular cards (unit, pilot, base), get AP/HP directly from card properties
-    if (this.cardData.cardType === 'unit' || 
-        this.cardData.cardType === 'pilot' || 
-        this.cardData.cardType === 'base') {
-      return {
-        ap: this.cardData.ap || 0,
-        hp: this.cardData.hp || 0
-      };
+    if (this.fullCardData.cardData.cardType === 'unit' || 
+        this.fullCardData.cardData.cardType === 'pilot' || 
+        this.fullCardData.cardData.cardType === 'base') {
+
+        if(this.fullCardData?.currentHP){
+          return {
+            ap: this.fullCardData?.currentAP || 0,
+            hp: this.fullCardData?.currentHP || 0
+          };
+        }else{
+          return {
+            ap: this.cardData.ap|| 0,
+            hp: this.cardData.hp|| 0
+          };          
+        }
     }
 
     // For command cards with pilot_designation effect, extract AP/HP from effect parameters
@@ -662,14 +666,14 @@ export default class Card extends Phaser.GameObjects.Container {
    * Only creates overlay for cards that have meaningful power values
    */
   createPowerOverlay() {
-    console.log("overlay data ",JSON.stringify(this.cardData))
-    
+
     const shouldShowPowerOverlay = this.cardData && (
       this.cardData.cardType === 'unit' ||
       this.cardData.cardType === 'pilot' || 
       this.cardData.cardType === 'base' ||
       (this.cardData.cardType === 'command' && this.hasCommandPilotDesignation())
     );
+    console.log("overlay data ",JSON.stringify(this.cardData)," ", shouldShowPowerOverlay)
     
     if (shouldShowPowerOverlay) {
       if (this.powerOverlay) {
@@ -686,7 +690,7 @@ export default class Card extends Phaser.GameObjects.Container {
       
       // Extract AP and HP values from card data
       const { ap, hp } = this.getAPandHPFromCardData();
-      console.log("update ap and hp card", JSON.stringify(this.cardData))
+      console.log("update ap and hp card", JSON.stringify(this.fullCardData))
       console.log("update ap and hp ", ap , " ", hp)
       this.powerOverlay.updateAP(ap);
       this.powerOverlay.updateHP(hp);

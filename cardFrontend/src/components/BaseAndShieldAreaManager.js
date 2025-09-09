@@ -121,7 +121,7 @@ export default class BaseAndShieldAreaManager {
     });
     
     card.setDepth(1100); // Higher depth than shields (1000) to appear on top
-    
+    console.log("adsfasdfsda ",JSON.stringify(cardData))
     // Add hover preview functionality
     card.on('pointerover', () => {
       if (this.scene.showCardPreview) {

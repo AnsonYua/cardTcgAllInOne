@@ -94,7 +94,7 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
       },
       base: {
         normal: { apOffsetX: 36.5, apOffsetY: 73, hpOffsetX: 50, hpOffsetY: 73 },
-        preview: { apOffsetX: 146, apOffsetY: 292, hpOffsetX: 200, hpOffsetY: 292 }
+        preview: {  apOffsetX: 36.5, apOffsetY: 73, hpOffsetX: 50, hpOffsetY: 73}
       },
       command: {
         normal: { apOffsetX: 36.5, apOffsetY: 70, hpOffsetX: 50, hpOffsetY: 70 },

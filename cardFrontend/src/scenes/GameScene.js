@@ -1201,7 +1201,7 @@ export default class GameScene extends Phaser.Scene {
   showCardPreview(cardData) {
     // Remove existing preview card if any
     this.hideCardPreview();
-    console.log("showCardPreview", cardData);
+    console.log("showCardPreview111", JSON.stringify(cardData));
     
     if (!this.cardPreviewZone || !cardData) {
       return;
@@ -1225,7 +1225,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     // Regular single card preview
-    const displayCardData = cardData.cardData || cardData;
+    const displayCardData =  cardData;
     this.previewCard = this._createPreviewCard(displayCardData, this.cardPreviewZone.x, this.cardPreviewZone.y, 2000);
   }
 
@@ -1241,7 +1241,7 @@ export default class GameScene extends Phaser.Scene {
     const previewCard = new Card(this, x, y, cardData, {
       scale: 3.5,
       gameStateManager: this.gameStateManager,
-      usePreview: true,
+      usePreview: false,
       interactive: false
     });
     
