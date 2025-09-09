@@ -115,6 +115,9 @@ export class GameEngine {
                 case EventType.PLAY_CARD:
                     return this.executePlayCard(event, gameEnv);
                     
+                case EventType.PLAYER_ACTION:
+                    return this.executePlayerAction(event, gameEnv);
+                    
                 default:
                     console.log(`🎯 Processing ${event.type} event - delegating to existing game logic`);
                     return { success: true };
@@ -622,6 +625,72 @@ export class GameEngine {
                 error: error instanceof Error ? error.message : 'PLAY_CARD execution failed'
             };
         }
+    }
+    
+    private executePlayerAction(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+        // Pass event data directly to minimize conversions
+        const eventData = event.data;
+        
+        console.log(`🗡️ Processing PLAYER_ACTION event for player: ${eventData.playerId}, actionType: ${eventData.actionType}`);
+        
+        try {
+            // Validate it's the player's turn
+            if (gameEnv.currentPlayer !== eventData.playerId) {
+                return {
+                    success: false,
+                    error: `Not your turn. Current player: ${gameEnv.currentPlayer}`
+                };
+            }
+            
+            // Handle different action types
+            switch (eventData.actionType) {
+                case 'attackUnit':
+                    return this.handleAttackUnit(eventData, gameEnv);
+                    
+                case 'attackShieldArea':
+                    return this.handleAttackShieldArea(eventData, gameEnv);
+                    
+                default:
+                    return {
+                        success: false,
+                        error: `Unknown actionType: ${eventData.actionType}`
+                    };
+            }
+            
+        } catch (error) {
+            console.error(`❌ Error in executePlayerAction:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'PLAYER_ACTION execution failed'
+            };
+        }
+    }
+    
+    private handleAttackUnit(eventData: any, gameEnv: GameEnvironment): ExecutionResult {
+        console.log(`⚔️ Processing attackUnit action:`, eventData);
+        
+        // TODO: Implement attack unit logic
+        // - Validate attacking unit exists and can attack
+        // - Validate target unit exists and can be targeted
+        // - Process combat calculation
+        // - Apply damage and effects
+        // - Generate appropriate game events
+        
+        console.log('📝 TODO: Implement attackUnit logic in GameEngine');
+        return { success: true };
+    }
+    
+    private handleAttackShieldArea(eventData: any, gameEnv: GameEnvironment): ExecutionResult {
+        console.log(`🛡️ Processing attackShieldArea action:`, eventData);
+        
+        // TODO: Implement attack shield area logic
+        // - Validate attacking unit exists and can attack
+        // - Process shield area attack
+        // - Handle shield card destruction
+        // - Generate appropriate game events
+        
+        console.log('📝 TODO: Implement attackShieldArea logic in GameEngine');
+        return { success: true };
     }
     
 }

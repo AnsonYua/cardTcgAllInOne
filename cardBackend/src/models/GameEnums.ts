@@ -80,6 +80,7 @@ export enum EventType {
     
     // Player action events
     PLAY_CARD = PlayerActionType.PLAY_CARD,
+    PLAYER_ACTION = PlayerActionType.PLAYER_ACTION,
     
     // Event management events
     ACKNOWLEDGE_EVENTS = 'ACKNOWLEDGE_EVENTS'

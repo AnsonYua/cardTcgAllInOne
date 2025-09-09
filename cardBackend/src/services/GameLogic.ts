@@ -403,6 +403,19 @@ export class GameLogic {
                     }
                 };
                 
+            case PlayerActionType.PLAYER_ACTION:
+                return {
+                    id: `player_action_${Date.now()}_${Math.random()}`,
+                    type: EventType.PLAYER_ACTION,
+                    status: EventStatus.DECLARED,
+                    priority: EventPriority.NORMAL,
+                    timestamp: Date.now(),
+                    playerId: action.playerId,
+                    data: {
+                        ...action // Spread all action data including playerId, gameId, actionType and other parameters
+                    }
+                };
+                
             default:
                 console.warn(`⚠️ Unknown action type: ${action.type}`);
                 return null;
