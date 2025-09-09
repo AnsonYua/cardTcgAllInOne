@@ -2,7 +2,8 @@
 // Shield card management system
 
 import { GameEnvironment } from '../models/GameEnvironment';
-import { ShieldCard } from '../models/CardSystem';
+import { ShieldCard, createZoneCard } from '../models/CardSystem';
+import { GameEngine } from './GameEngine';
 
 export class ShieldCardManager {
     
@@ -30,21 +31,18 @@ export class ShieldCardManager {
                 console.warn(`⚠️ Only drew ${drawnCards.length} cards for shields (deck too small)`);
             }
 
-            // Create shield cards from drawn cards
+            // Create shield cards from drawn cards using proper ShieldCard interface
             drawnCards.forEach(cardUid => {
                 const cardId = cardUid.split('_')[0]; // Extract base card ID
                 
-                const shieldCard: ShieldCard = {
-                    cardUid,
-                    cardId,
-                    placedAt: Date.now(),
-                    placedBy: playerId,
-                    isRested: false,
-                    cardData: {
-                        cardType: 'shield'
-                    }
-                };
-
+                // Load full card data from card database
+                const fullCardData = GameEngine.getCardDetails(cardId);
+                const shieldCard = createZoneCard(
+                        cardUid,
+                        cardId,
+                        { ...fullCardData, cardType: 'shield' }, // Override cardType to 'shield'
+                        playerId
+                ) as ShieldCard;
                 player.zones.shieldArea.push(shieldCard);
             });
 

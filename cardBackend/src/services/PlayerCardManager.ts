@@ -3,6 +3,7 @@
 
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GameEngine } from './GameEngine';
+import { createZoneCard, UnitZoneCard, PilotZoneCard, CommandZoneCard, BaseCard } from '../models/CardSystem';
 
 export interface CardPlacementResult {
     success: boolean;
@@ -168,15 +169,13 @@ export class PlayerCardManager {
             };
         }
 
-        // Create unit card for slot placement
-        const unitCard = {
-            cardUid: cardUID,
-            cardId: cardData.id,
-            placedAt: Date.now(),
-            placedBy: playerId,
-            isRested: false,
-            cardData: cardData
-        };
+        // Create unit card using proper UnitZoneCard interface from CardSystem
+        const unitCard = createZoneCard(
+            cardUID,
+            cardData.id,
+            cardData,
+            playerId
+        ) as UnitZoneCard;
         
         // Place unit in target slot
         playerZones[targetZone].unit = unitCard;
@@ -224,15 +223,13 @@ export class PlayerCardManager {
             };
         }
 
-        // Create pilot card and attach to unit
-        const pilotCard = {
-            cardUid: cardUID,
-            cardId: cardData.id,
-            placedAt: Date.now(),
-            placedBy: playerId,
-            isRested: false,
-            cardData: cardData
-        };
+        // Create pilot card using proper PilotZoneCard interface from CardSystem
+        const pilotCard = createZoneCard(
+            cardUID,
+            cardData.id,
+            cardData,
+            playerId
+        ) as PilotZoneCard;
         
         // Place pilot in target slot with unit
         playerZones[targetZone].pilot = pilotCard;

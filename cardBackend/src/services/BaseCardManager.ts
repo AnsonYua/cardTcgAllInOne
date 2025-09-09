@@ -2,7 +2,8 @@
 // Base card management system
 
 import { GameEnvironment } from '../models/GameEnvironment';
-import { BaseCard } from '../models/CardSystem';
+import { BaseCard, createZoneCard } from '../models/CardSystem';
+import { GameEngine } from './GameEngine';
 
 export class BaseCardManager {
     
@@ -17,24 +18,17 @@ export class BaseCardManager {
                 return false;
             }
 
-            const baseCard: BaseCard = {
-                cardUid: "base_default",
-                cardId:"base_default",
-                placedAt: Date.now(),
-                placedBy: playerId,
-                isRested: false,
-                cardData: {
-                    cardType: 'base',
-                    ap:0,
-                    hp:3
-                },
-                currentHP: 0, // Default starting HP
-                originalHP: 3, // Default original HP
-                damageReceived: 0
-            };
-
-            // Calculate currentHP = originalHP - damageReceived
-            baseCard.currentHP = (baseCard.originalHP || 1) - (baseCard.damageReceived || 0);
+            // Try to load base card data from database, fallback to default
+            const baseCardId = "base_default";
+            const fullCardData = GameEngine.getCardDetails(baseCardId);
+            
+            let baseCard: BaseCard;
+            baseCard = createZoneCard(
+                    baseCardId,
+                    baseCardId,
+                    { ...fullCardData, cardType: 'base' },
+                    playerId
+            ) as BaseCard;
 
             player.zones.base.push(baseCard);
 
