@@ -174,7 +174,8 @@ export class PlayerCardManager {
             cardUID,
             cardData.id,
             cardData,
-            playerId
+            playerId,
+            'unit'
         ) as UnitZoneCard;
         
         // Place unit in target slot
@@ -224,11 +225,13 @@ export class PlayerCardManager {
         }
 
         // Create pilot card using proper PilotZoneCard interface from CardSystem
+        // This handles special case where command cards can be played as pilots
         const pilotCard = createZoneCard(
             cardUID,
             cardData.id,
             cardData,
-            playerId
+            playerId,
+            'pilot'
         ) as PilotZoneCard;
         
         // Place pilot in target slot with unit
