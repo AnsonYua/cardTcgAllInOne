@@ -344,6 +344,74 @@ export class GameController {
     }
 
     /**
+     * Execute player action (attacks, abilities, etc.)
+     * POST /api/game/player/playerAction
+     * Body: { playerId, gameId, actionType, ...actionData }
+     */
+    async playerAction(req: GameRequest, res: Response): Promise<void> {
+        try {
+            console.log('🗡️ playerAction called with body:', req.body);
+            
+            const { playerId, gameId, actionType, ...requestActionData } = req.body;
+            
+            if (!playerId || !gameId || !actionType) {
+                res.status(400).json({
+                    error: 'playerId, gameId, and actionType are required',
+                    timestamp: new Date().toISOString(),
+                    context: 'playerAction endpoint'
+                });
+                return;
+            }
+            
+            // Validate actionType
+            const validActionTypes = ['attackUnit', 'attackShieldArea'];
+            if (!validActionTypes.includes(actionType)) {
+                res.status(400).json({
+                    error: `Invalid actionType: ${actionType}. Must be one of: ${validActionTypes.join(', ')}`,
+                    timestamp: new Date().toISOString(),
+                    context: 'playerAction endpoint - actionType validation'
+                });
+                return;
+            }
+            
+            
+            // Pass complete action data to GameLogic service - minimal object conversion
+            const actionData = {
+                actionType,
+                ...requestActionData // Spread all action parameters to avoid conversion
+            };
+
+            console.log(`🎯 Processing1122 ${JSON.stringify(actionData)}`);
+
+            const result = await this.gameLogic.playerActionWithAction(gameId, playerId, actionData);
+            
+            if (result.success && result.gameEnv) {
+                res.json({
+                    success: true,
+                    gameId: result.gameId,
+                    gameEnv: result.gameEnv,
+                    actionType: actionType,
+                    result: result.result || 'Action completed successfully'
+                });
+            } else {
+                res.status(400).json({
+                    error: result.error,
+                    timestamp: new Date().toISOString(),
+                    context: 'playerAction endpoint'
+                });
+            }
+            
+        } catch (error) {
+            console.error('❌ Error in playerAction:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'playerAction endpoint'
+            });
+        }
+    }
+
+    /**
      * End current player's turn and advance game state
      * POST /api/game/player/endTurn
      */

@@ -40,7 +40,8 @@ export enum PlayerActionType {
     RESOLVE_CHOICE = 'RESOLVE_CHOICE',
     END_TURN = 'END_TURN',
     ACKNOWLEDGE_EVENTS = 'ACKNOWLEDGE_EVENTS',
-    PLAY_CARD = 'PLAY_CARD'
+    PLAY_CARD = 'PLAY_CARD',
+    PLAYER_ACTION = 'PLAYER_ACTION'
 }
 
 export enum EventType {

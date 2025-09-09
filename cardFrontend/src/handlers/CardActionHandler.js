@@ -36,6 +36,9 @@ export default class CardActionHandler {
             case 'attackUnit':
                 this.handleAttackUnit(selectedCard);
                 break;
+            case 'attackShieldArea':
+                this.handleAttackShieldArea(selectedCard);
+                break;
             
             // Slot-specific actions for pilots
             case 'activatePilot':
@@ -634,19 +637,230 @@ export default class CardActionHandler {
             ? `${targetUnitName} + ${targetSlot.pilot.name || targetSlot.pilot.id}`
             : targetUnitName;
         
-        this.showErrorMessage(`${attackerName} 攻击 ${targetDescription} - 战斗系统开发中...`);
+        // Call the playerAction API for unit attack
+        this.callPlayerActionAPI('attackUnit', attackerCard, targetSlot);
         
         // Hide action buttons
         this.gameScene.actionButtonManager.hide();
+    }
+
+    /**
+     * Handle attack on shield/base area
+     */
+    handleAttackShieldArea(selectedCard) {
+        console.log('🏰 Initiating shield/base attack:', selectedCard.fullCardData?.cardData?.id);
         
-        // TODO: Implement actual attack logic here
-        // This would involve:
-        // 1. Calculate damage based on attacker's power
-        // 2. Apply damage to target unit
-        // 3. Handle any special abilities or effects
-        // 4. Update game state
-        // 5. Potentially trigger animations
-        // 6. Send attack action to backend if available
+        // Get current game state
+        const gameState = this.gameStateManager.getGameState();
+        const playerId = gameState.playerId;
+        
+        // Get opponent's base/shield area info
+        const opponentId = Object.keys(gameState.gameEnv?.players || {}).find(id => id !== playerId);
+        if (!opponentId) {
+            this.showErrorMessage('无法找到对手');
+            return;
+        }
+
+        const opponentData = gameState.gameEnv?.players?.[opponentId];
+        if (!opponentData || !opponentData.zones) {
+            this.showErrorMessage('无法访问对手区域');
+            return;
+        }
+
+        // Check if opponent has base or shield cards that can be attacked
+        const attackableTargets = [];
+        
+        // Check base zone
+        if (opponentData.zones.base && opponentData.zones.base.length > 0) {
+            opponentData.zones.base.forEach((baseCard, index) => {
+                attackableTargets.push({
+                    type: 'base',
+                    zoneType: 'base',
+                    cardData: baseCard,
+                    index: index,
+                    playerId: opponentId,
+                    displayName: baseCard.cardData?.name || baseCard.cardData?.id || 'Base Card'
+                });
+            });
+        }
+        
+        // Check shield areas (if they exist in your game)
+        if (opponentData.zones.shield && opponentData.zones.shield.length > 0) {
+            opponentData.zones.shield.forEach((shieldCard, index) => {
+                attackableTargets.push({
+                    type: 'shield', 
+                    zoneType: 'shield',
+                    cardData: shieldCard,
+                    index: index,
+                    playerId: opponentId,
+                    displayName: shieldCard.cardData?.name || shieldCard.cardData?.id || 'Shield Card'
+                });
+            });
+        }
+
+        if (attackableTargets.length === 0) {
+            this.showErrorMessage('没有可攻击的基地或盾牌');
+            return;
+        }
+
+        // If only one target, attack directly
+        if (attackableTargets.length === 1) {
+            this.executeAttackShieldAreaAction(selectedCard, attackableTargets[0]);
+            return;
+        }
+
+        // Multiple targets - show selection dialog
+        const selectionId = `attack_shield_target_${Date.now()}`;
+        
+        const selectionData = {
+            playerId: playerId,
+            eligibleCards: attackableTargets,
+            dialogType: "SELECT_SHIELD_ATTACK_TARGET",
+            selectCount: 1,
+            numberOfSections: 1,
+            title: '选择攻击目标',
+            description: '选择要攻击的基地或盾牌',
+            callback: (selectionId, selectedCards) => {
+                console.log('CardActionHandler: Shield attack target selected:', selectionId, selectedCards);
+                const cardsArray = Array.isArray(selectedCards) ? selectedCards : [selectedCards];
+                if (cardsArray && cardsArray.length > 0) {
+                    const target = cardsArray[0];
+                    this.executeAttackShieldAreaAction(selectedCard, target);
+                }
+            },
+            onCancel: () => {
+                console.log('Shield attack target selection cancelled');
+            }
+        };
+        
+        // Use the existing showCardSelectionDialog method
+        if (this.gameScene.showCardSelectionDialog) {
+            this.gameScene.deselectAllCards(true);
+            this.gameScene.showCardSelectionDialog(selectionId, selectionData);
+        } else {
+            console.error('showCardSelectionDialog method not available');
+            this.showErrorMessage('无法显示目标选择对话框');
+        }
+    }
+
+    /**
+     * Execute attack on shield/base area
+     */
+    executeAttackShieldAreaAction(attackerCard, target) {
+        console.log('🏰⚔️ Executing shield/base attack:', {
+            attacker: attackerCard.fullCardData?.cardData?.id,
+            targetType: target.type,
+            targetZone: target.zoneType,
+            targetCard: target.cardData?.cardData?.id || target.cardData?.id,
+            targetIndex: target.index
+        });
+
+        const attackerName = attackerCard.fullCardData?.cardData?.name || 'Unknown Unit';
+        const targetName = target.displayName;
+        
+        // Call the playerAction API for shield/base attack
+        this.callPlayerActionAPI('attackShieldArea', attackerCard, target);
+        
+        // Hide action buttons
+        this.gameScene.actionButtonManager.hide();
+    }
+
+    /**
+     * Call the playerAction API endpoint
+     * @param {string} actionType - Type of action ('attackUnit' or 'attackShieldArea')
+     * @param {Object} attackerCard - The attacking card
+     * @param {Object} target - The target (unit slot or shield/base)
+     */
+    async callPlayerActionAPI(actionType, attackerCard, target) {
+        const gameState = this.gameStateManager.getGameState();
+        const playerId = gameState.playerId;
+        const gameId = gameState.gameId;
+
+        try {
+            // Extract attacker card UID
+            const attackerCardUid = attackerCard.fullCardData?.cardUid || attackerCard.fullCardData?.cardData?.cardUid;
+            if (!attackerCardUid) {
+                console.error('Cannot get attacker card UID:', attackerCard);
+                this.showErrorMessage('无法获取攻击者卡片信息');
+                return;
+            }
+
+            // Prepare action data based on action type
+            let actionData;
+            
+            if (actionType === 'attackUnit') {
+                // Target is a slot with unit (and possibly pilot)
+                const targetUnitUid = target.unit?.cardUid || target.unit?.id;
+                if (!targetUnitUid) {
+                    console.error('Cannot get target unit UID:', target);
+                    this.showErrorMessage('无法获取目标机体信息');
+                    return;
+                }
+
+                actionData = {
+                    actionType: 'attackUnit',
+                    attackerCardUid: attackerCardUid,
+                    targetType: 'unit',
+                    targetUnitUid: targetUnitUid,
+                    targetSlotName: target.slotName,
+                    targetPlayerId: target.playerId,
+                    // Include pilot information if present
+                    targetPilotUid: target.pilot?.cardUid || target.pilot?.id || null
+                };
+            } else if (actionType === 'attackShieldArea') {
+                // Target is base or shield card
+                const targetCardUid = target.cardData?.cardUid || target.cardData?.cardData?.cardUid || target.cardData?.id;
+                if (!targetCardUid) {
+                    console.error('Cannot get target card UID:', target);
+                    this.showErrorMessage('无法获取目标卡片信息');
+                    return;
+                }
+
+                actionData = {
+                    actionType: 'attackShieldArea',
+                    attackerCardUid: attackerCardUid,
+                    targetType: target.type, // 'base' or 'shield'
+                    targetCardUid: targetCardUid,
+                    targetZoneType: target.zoneType,
+                    targetIndex: target.index,
+                    targetPlayerId: target.playerId
+                };
+            } else {
+                console.error('Unknown action type:', actionType);
+                this.showErrorMessage('未知的行动类型');
+                return;
+            }
+
+            console.log('Calling playerAction API:', actionData);
+
+            // Call the API through APIManager
+            const response = await this.gameScene.apiManager.playerAction(playerId, gameId, actionData);
+
+            if (response.success) {
+                console.log('PlayerAction successful:', response);
+                this.showSuccessMessage(`${actionType} 执行成功!`);
+                
+                // The game state will be updated through the normal polling mechanism
+                // No need to manually update state here
+            } else {
+                console.error('PlayerAction failed:', response.error);
+                this.showErrorMessage(`行动失败: ${response.error || '未知错误'}`);
+            }
+
+        } catch (error) {
+            console.error('Error calling playerAction API:', error);
+            this.showErrorMessage('网络错误，请稍后重试');
+        }
+    }
+
+    /**
+     * Show success message (similar to showErrorMessage but with success styling)
+     */
+    showSuccessMessage(message) {
+        console.log('SUCCESS:', message);
+        // TODO: Implement success message UI similar to error message
+        // For now, use the existing error message system but with success styling
+        this.showErrorMessage(message);
     }
 
 }

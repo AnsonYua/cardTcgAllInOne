@@ -20,6 +20,7 @@ export interface GameLogicResult {
     error?: string;
     requiresCardSelection?: boolean;
     acknowledgedCount?: number;
+    result?: string;
 }
 
 export interface CardPlayResult {
@@ -328,6 +329,7 @@ export class GameLogic {
      * Convert player action to game event - centralized in GameLogic for cleaner flow
      */
     private createEventFromAction(action: PlayerAction): GameEvent | null {
+        console.log("action ",JSON.stringify(action))
         switch (action.type) {
             case PlayerActionType.CREATE_GAME:
                 return {
@@ -753,6 +755,71 @@ export class GameLogic {
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Failed to play card'
+            };
+        }
+    }
+
+    /**
+     * Execute player action (attacks, abilities, etc.) with minimal object conversion
+     * @param gameId - Game ID
+     * @param playerId - Player ID
+     * @param actionData - Complete action object from API (includes actionType and all action parameters)
+     * @returns Promise<GameLogicResult>
+     */
+    async playerActionWithAction(gameId: string, playerId: string, actionData: any): Promise<GameLogicResult> {
+        try {
+            console.log(`🗡️ playerActionWithAction: gameId=${gameId}, playerId=${playerId}`, actionData);
+            
+            // Validate inputs
+            if (!gameId || !playerId || !actionData?.actionType) {
+                return {
+                    success: false,
+                    error: 'gameId, playerId, and actionData.actionType are required'
+                };
+            }
+            
+            // Load game state
+            const gameEnv = await this.loadGameFromFile(gameId);
+            if (!gameEnv) {
+                return {
+                    success: false,
+                    error: 'Game not found'
+                };
+            }
+            
+            // Create PlayerAction directly from API actionData - minimal conversion
+            const playerActionEvent: PlayerAction = {
+                type: PlayerActionType.PLAYER_ACTION,
+                playerId,
+                gameId,
+                ...actionData // Spread all action data to avoid object conversion
+            };
+            
+            const actionResult = await this.processAction(gameEnv, playerActionEvent);
+            console.log('🎮 PLAYER_ACTION processed:', actionResult);
+            
+            if (!actionResult.success) {
+                return {
+                    success: false,
+                    error: actionResult.error || 'Failed to process player action'
+                };
+            }
+            
+            // Save updated game state
+            await this.saveGameToFile(gameId, gameEnv);
+            
+            return {
+                success: true,
+                gameId,
+                gameEnv,
+                result: actionResult.result || 'Action completed successfully'
+            };
+            
+        } catch (error) {
+            console.error('❌ Error in playerActionWithAction:', error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Failed to execute player action'
             };
         }
     }

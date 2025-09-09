@@ -166,6 +166,26 @@ export default class APIManager {
     });
   }
 
+  /**
+   * Send player action (attacks, abilities, etc.)
+   * @param {string} playerId - Player ID
+   * @param {string} gameId - Game ID
+   * @param {Object} actionData - Action data containing action type and details
+   * @returns {Promise<Object>} API response
+   */
+  async playerAction(playerId, gameId, actionData) {
+    console.log('APIManager: Sending playerAction:', { playerId, gameId, actionData });
+    
+    return this.request('/player/playerAction', {
+      method: 'POST',
+      body: JSON.stringify({
+        playerId,
+        gameId,
+        ...actionData
+      })
+    });
+  }
+
 
   async requestTestScenario(scenarioPath) {
     return this.request(`/test/getTestScenario?scenarioPath=${encodeURIComponent(scenarioPath)}`, {
