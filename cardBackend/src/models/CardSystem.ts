@@ -140,6 +140,8 @@ export function createZoneCard(
                 cardData: cardData as UnitCardData,
                 currentAP: cardData.ap,
                 currentHP: cardData.hp,
+                originalAP: cardData.ap,
+                originalHP: cardData.hp,
                 isRested: false,
                 isFirstPlay: true,
                 damageReceived: 0
@@ -162,6 +164,9 @@ export function createZoneCard(
             return {
                 ...baseCard,
                 cardData: cardData as BaseCardData,
+                currentHP: 3,
+                originalHP: 3,
+                damageReceived: 0,
                 isRested: false
             } as BaseCard;
             
