@@ -631,7 +631,7 @@ export default class Card extends Phaser.GameObjects.Container {
     if (this.fullCardData.cardData.cardType === 'unit' || 
         this.fullCardData.cardData.cardType === 'pilot' || 
         this.fullCardData.cardData.cardType === 'base') {
-        if(this.fullCardData?.currentHP || this.fullCardData?.originalHP){
+        if(this.fullCardData?.currentHP !=null){
           return {
             ap: this.fullCardData?.currentAP || 0,
             hp: this.fullCardData?.currentHP || 0,

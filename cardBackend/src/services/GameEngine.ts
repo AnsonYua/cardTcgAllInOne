@@ -781,19 +781,40 @@ export class GameEngine {
                 baseCard.damageReceived = newDamage;
                 baseCard.currentHP = Math.max(0, (baseCard.originalHP || 0) - newDamage);
                 
-                console.log(`🏰 Base takes ${totalAttackPower} damage (${currentDamage} → ${newDamage}), HP: ${baseCard.currentHP}`);
+                // Check if base is destroyed (HP = 0) and move to trash
+                let baseDestroyed = false;
+                if (baseCard.currentHP === 0) {
+                    // Remove from base zone using BaseCardManager
+                    const removed = BaseCardManager.removeBaseCard(gameEnv, defendingPlayerId, baseCard.cardUid);
+                    if (removed) {
+                        // Move to trash
+                        defender.addTrashCard(baseCard.cardUid, baseCard.cardData);
+                        baseDestroyed = true;
+                        console.log(`💥 Base card ${baseCard.cardUid} destroyed and moved to trash`);
+                    }
+                }
+                
+                console.log(`🏰 Base takes ${totalAttackPower} damage (${currentDamage} → ${newDamage}), HP: ${baseCard.currentHP}${baseDestroyed ? ' - DESTROYED!' : ''}`);
                 
                 // Generate base damage event
                 const notificationManager = this.getNotificationManager(gameEnv);
                 notificationManager.addNotificationEvent(
-                    'BASE_DAMAGED',
+                    baseDestroyed ? 'BASE_DESTROYED' : 'BASE_DAMAGED',
                     {
                         defendingPlayerId,
                         attackingPlayerId: playerId,
                         attackerSlot,
                         damage: totalAttackPower,
                         totalDamage: newDamage,
-                        baseHP: baseCard.currentHP
+                        baseHP: baseCard.currentHP,
+                        baseDestroyed,
+                        ...(baseDestroyed && {
+                            destroyedCard: {
+                                cardUid: baseCard.cardUid,
+                                cardId: baseCard.cardId,
+                                name: baseCard.cardData?.name || 'Unknown Base'
+                            }
+                        })
                     },
                     false,
                     'normal'
