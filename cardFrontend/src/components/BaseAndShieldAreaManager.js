@@ -41,12 +41,12 @@ export default class BaseAndShieldAreaManager {
 
       // Create new cards
       const baseY = deckZone.y + offsetY;
-      const yDirection = playerType === 'opponent' ? -1 : 1;
+      const yDirection = playerType === 'opponent' ? 1 : -1;
       
       shieldData.forEach((cardData, i) => {
         console.log(`${playerType} shield card information:`, JSON.stringify(cardData));
         
-        const card = this.createShieldCard(cardData, deckZone.x, baseY + (20 * i * yDirection), i);
+        const card = this.createShieldCard(cardData, deckZone.x, baseY- yDirection*100 + (20 * i * yDirection), i);
         cardArray.push(card);
       });
     }
@@ -60,7 +60,7 @@ export default class BaseAndShieldAreaManager {
     });
     
     card.rotation = Math.PI / 2;
-    card.setDepth(1000 - index);
+    card.setDepth(1000 + index);
     
     
     return card;
@@ -94,8 +94,8 @@ export default class BaseAndShieldAreaManager {
       let x, y;
       if (shieldCardArray.length > 0) {
         // Use first shield card position
-        x = shieldCardArray[0].x;
-        y = shieldCardArray[0].y;
+        x = shieldCardArray[shieldCardArray.length-1].x;
+        y = shieldCardArray[shieldCardArray.length-1].y;
         if(playerType ==='player'){
           y = y - 80
         }else{
