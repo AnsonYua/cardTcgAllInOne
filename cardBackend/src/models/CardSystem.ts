@@ -92,7 +92,12 @@ export interface UnitZoneCard extends ZoneCard {
 }
 
 export interface PilotZoneCard extends ZoneCard {
-    cardData: PilotCardData;
+    cardData: PilotCardData | CommandCardData;  // Allow command cards played as pilots
+    currentAP?: number;      // Current Attack Power (for command cards played as pilots)
+    currentHP?: number;      // Current Health Points (for command cards played as pilots)
+    originalAP?: number;     // Original Attack Power
+    originalHP?: number;     // Original Health Points
+    playedAs?: string;       // Track how the card is being played (for command cards played as pilots)
 }
 
 export interface CommandZoneCard extends ZoneCard {
@@ -122,7 +127,8 @@ export function createZoneCard(
     cardUid: string,
     cardId: string,
     cardData: CardData,
-    placedBy: string = ''
+    placedBy: string = '',
+    playAs?: string
 ): ZoneCard {
     const baseCard: ZoneCard = {
         cardUid,
@@ -133,7 +139,10 @@ export function createZoneCard(
         isRested: false
     };
 
-    switch ((cardData as CardData).cardType) {
+    // Priority: playAs parameter overrides cardData.cardType
+    const effectiveType = playAs || (cardData as CardData).cardType;
+    
+    switch (effectiveType) {
         case 'unit':
             return {
                 ...baseCard,
@@ -148,8 +157,43 @@ export function createZoneCard(
             } as UnitZoneCard;
             
         case 'pilot':
+            // Special handling for command cards played as pilots
+            if ((cardData as CardData).cardType === 'command' && playAs === 'pilot') {
+                console.log(`🎯 Special handling: Command card ${cardId} played as pilot`);
+                
+                // Extract AP/HP from designate_pilot effect
+                let pilotAP = 0;
+                let pilotHP = 0;
+                
+                const designatePilotEffect = cardData.effects?.rules?.find(rule => 
+                    rule.effect?.action === 'designate_pilot'
+                );
+                
+                if (designatePilotEffect && designatePilotEffect.effect?.parameters) {
+                    pilotAP = designatePilotEffect.effect.parameters.AP || 0;
+                    pilotHP = designatePilotEffect.effect.parameters.HP || 0;
+                    console.log(`🎯 Found designate_pilot effect: AP=${pilotAP}, HP=${pilotHP}`);
+                } else {
+                    console.warn(`⚠️ No designate_pilot effect found for command card ${cardId}, using defaults`);
+                }
+                
+                return {
+                    ...baseCard,
+                    currentAP: pilotAP,
+                    currentHP: pilotHP,
+                    originalAP: pilotAP,
+                    originalHP: pilotHP,
+                    cardData: cardData as CommandCardData, // Keep original command data
+                    playedAs: 'pilot' // Track how it's being played
+                } as PilotZoneCard;
+            }
+            
             return {
                 ...baseCard,
+                currentAP: cardData.ap,
+                currentHP: cardData.hp,
+                originalAP: cardData.ap,
+                originalHP: cardData.hp,
                 cardData: cardData as PilotCardData
             } as PilotZoneCard;
             
@@ -184,7 +228,7 @@ export function createZoneCard(
             } as ShieldCard;
             
         default:
-            throw new Error(`Unknown card type: ${(cardData as CardData).cardType}`);
+            throw new Error(`Unknown effective type: ${effectiveType} (cardType: ${(cardData as CardData).cardType}, playAs: ${playAs})`);
     }
 }
 
