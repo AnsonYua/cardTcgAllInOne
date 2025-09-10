@@ -9,6 +9,8 @@ import { ShieldCardManager } from './ShieldCardManager';
 import { BaseCardManager } from './BaseCardManager';
 import { GameNotificationManager } from './GameNotificationManager';
 import { PlayerCardManager } from './PlayerCardManager';
+import { UnitZoneCard } from '../models/CardSystem';
+import { PilotZoneCard } from '../models/CardSystem';
 import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -76,6 +78,40 @@ export class GameEngine {
         }
         // Add UUID to make each card instance unique
         return `${cleanCardId}_${uuidv4()}`;
+    }
+    
+    // ============ SLOT UTILITIES ============
+    
+    /**
+     * Find which slot contains a specific card UID
+     */
+    public static findSlotByCardUid(player: any, cardUid: string): { slot: string | null, unit: UnitZoneCard | null } {
+        const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'] as const;
+        
+        for (const slot of slotZones) {
+            const slotZone = (player.zones as any)[slot];
+            if (slotZone?.unit?.cardUid === cardUid) {
+                return { slot, unit: slotZone.unit as UnitZoneCard };
+            }
+        }
+        
+        return { slot: null, unit: null };
+    }
+    
+    /**
+     * Find first empty unit slot
+     */
+    public static findFirstEmptySlot(playerZones: any): string | null {
+        const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'] as const;
+        
+        for (const zone of slotZones) {
+            const slotZone = playerZones[zone];
+            if (slotZone && !slotZone.unit) {
+                return zone;
+            }
+        }
+        
+        return null;
     }
     
     // ============ MAIN EXECUTION INTERFACE ============
@@ -683,12 +719,154 @@ export class GameEngine {
     private handleAttackShieldArea(eventData: any, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`🛡️ Processing attackShieldArea action:`, eventData);
         
-        //looking at component base area, , base[0] ! = empty
-        //
-        //base[0] == empty
-        
-        console.log('📝 TODO: Implement attackShieldArea logic in GameEngine');
-        return { success: true };
+        try {
+            const { playerId, attackerCardUid } = eventData;
+            const defendingPlayerId = gameEnv.getOpponentId(playerId);
+            
+            if (!defendingPlayerId) {
+                return {
+                    success: false,
+                    error: 'Cannot determine defending player'
+                };
+            }
+            
+            // Get attacker and defender players
+            const attacker = gameEnv.getPlayer(playerId);
+            const defender = gameEnv.getPlayer(defendingPlayerId);
+            
+            if (!attacker || !defender) {
+                return {
+                    success: false,
+                    error: 'Player not found'
+                };
+            }
+            
+            // Find which slot contains the attacking card
+            const { slot: attackerSlot, unit: attackingUnit } = GameEngine.findSlotByCardUid(attacker, attackerCardUid);
+            
+            if (!attackerSlot || !attackingUnit) {
+                return {
+                    success: false,
+                    error: `Attacking unit with UID ${attackerCardUid} not found in any slot`
+                };
+            }
+            
+            console.log(`⚔️ Found attacking unit in ${attackerSlot}: ${attackingUnit.cardUid}`);
+            
+            // Calculate total attack power (unit + pilot if paired)
+            let totalAttackPower = 0;
+            totalAttackPower = attackingUnit.currentAP || 0;
+      
+            
+            // Check for pilot in same slot  
+            const attackingPilot = (attacker.zones as any)[attackerSlot]?.pilot;
+            if (attackingPilot) {
+                let pilotAP = 0;
+                pilotAP = (attackingPilot as PilotZoneCard).currentAP || attackingPilot.cardData?.ap || 0;
+                totalAttackPower += pilotAP;
+                console.log(`⚔️ Attack includes pilot AP: ${pilotAP} (Total: ${totalAttackPower})`);
+            }
+            
+            console.log(`⚔️ Total attack power: ${totalAttackPower}`);
+            
+            // Check defender's base area
+            const defenderBases = defender.zones.base;
+            
+            if (defenderBases.length > 0) {
+                // Base exists - add damage to base[0]
+                const baseCard = defenderBases[0];
+                const currentDamage = baseCard.damageReceived || 0;
+                const newDamage = currentDamage + totalAttackPower;
+                
+                baseCard.damageReceived = newDamage;
+                baseCard.currentHP = Math.max(0, (baseCard.originalHP || 0) - newDamage);
+                
+                console.log(`🏰 Base takes ${totalAttackPower} damage (${currentDamage} → ${newDamage}), HP: ${baseCard.currentHP}`);
+                
+                // Generate base damage event
+                const notificationManager = this.getNotificationManager(gameEnv);
+                notificationManager.addNotificationEvent(
+                    'BASE_DAMAGED',
+                    {
+                        defendingPlayerId,
+                        attackingPlayerId: playerId,
+                        attackerSlot,
+                        damage: totalAttackPower,
+                        totalDamage: newDamage,
+                        baseHP: baseCard.currentHP
+                    },
+                    false,
+                    'normal'
+                );
+                
+            } else {
+                // Base is empty - attack shields
+                if (defender.hasShield()) {
+                    const topShieldCard = defender.getShieldCards()[0];
+                    
+                    // Check for burst_add_to_hand effect before moving to trash
+                    let addedToHand = false;
+                    if (topShieldCard.cardData?.effects?.rules) {
+                        const burstEffect = topShieldCard.cardData.effects.rules.find((rule: any) => 
+                            rule.effectId === 'burst_add_to_hand' && 
+                            rule.effect?.action === 'addToHand'
+                        );
+                        
+                        if (burstEffect) {
+                            // Add card to hand
+                            defender.deck._handUids.push(topShieldCard.cardUid);
+                            addedToHand = true;
+                            console.log(`💫 Burst effect! Shield card ${topShieldCard.cardUid} added to hand`);
+                        }
+                    }
+                    
+                    // Remove from shield area
+                    defender.removeShieldCard(topShieldCard.cardUid);
+                    
+                    // Move to trash (only if not added to hand)
+                    if (!addedToHand) {
+                        defender.addTrashCard(topShieldCard.cardUid, topShieldCard.cardData);
+                        console.log(`🗑️ Shield card ${topShieldCard.cardUid} moved to trash`);
+                    }
+                    
+                    // Generate shield destroyed event
+                    const notificationManager = this.getNotificationManager(gameEnv);
+                    notificationManager.addNotificationEvent(
+                        'SHIELD_DESTROYED',
+                        {
+                            defendingPlayerId,
+                            attackingPlayerId: playerId,
+                            attackerSlot,
+                            destroyedCard: {
+                                cardUid: topShieldCard.cardUid,
+                                cardId: topShieldCard.cardId,
+                                name: topShieldCard.cardData?.name || 'Unknown'
+                            },
+                            burstTriggered: addedToHand,
+                            remainingShields: defender.getShieldCount()
+                        },
+                        false,
+                        'normal'
+                    );
+                    
+                } else {
+                    return {
+                        success: false,
+                        error: 'No shields to attack'
+                    };
+                }
+            }
+            
+            console.log(`✅ AttackShieldArea completed - Total damage: ${totalAttackPower}`);
+            return { success: true };
+            
+        } catch (error) {
+            console.error(`❌ Error in handleAttackShieldArea:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'AttackShieldArea execution failed'
+            };
+        }
     }
     
 }

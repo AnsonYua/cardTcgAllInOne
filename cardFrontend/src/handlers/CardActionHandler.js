@@ -838,6 +838,8 @@ export default class CardActionHandler {
 
             if (response.success) {
                 console.log('PlayerAction successful:', response);
+                this.gameStateManager.updateGameEnv(response.gameEnv);
+                this.updateGameState();
                 this.showSuccessMessage(`${actionType} 执行成功!`);
                 
                 // The game state will be updated through the normal polling mechanism

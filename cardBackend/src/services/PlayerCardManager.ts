@@ -150,17 +150,8 @@ export class PlayerCardManager {
         cardUID: string, 
         playerId: string
     ): CardPlacementResult {
-        // Find first empty unit slot
-        const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'] as const;
-        let targetZone = null;
-        
-        for (const zone of slotZones) {
-            const slotZone = playerZones[zone];
-            if (slotZone && !slotZone.unit) {
-                targetZone = zone;
-                break;
-            }
-        }
+        // Use GameEngine utility to find first empty slot
+        const targetZone = GameEngine.findFirstEmptySlot(playerZones);
         
         if (!targetZone) {
             return {
@@ -205,17 +196,8 @@ export class PlayerCardManager {
             };
         }
 
-        // Search for the target unit in slots
-        const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'] as const;
-        let targetZone = null;
-        
-        for (const zone of slotZones) {
-            const slotZone = playerZones[zone];
-            if (slotZone?.unit?.cardUid === targetUnit) {
-                targetZone = zone;
-                break;
-            }
-        }
+        // Use GameEngine utility to find target unit slot
+        const { slot: targetZone } = GameEngine.findSlotByCardUid({ zones: playerZones }, targetUnit);
         
         if (!targetZone) {
             return {
