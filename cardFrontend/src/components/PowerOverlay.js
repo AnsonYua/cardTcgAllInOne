@@ -71,6 +71,8 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     // State tracking for dual labels (simplified)
     this.ap = 0;
     this.hp = 0;
+    this.originalAP = 0;
+    this.originalHP = 0;
     this.isVisible = false;
     
     this.create();
@@ -172,17 +174,21 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
    * Update both AP and HP values displayed
    * @param {number} ap - Attack power value
    * @param {number} hp - Health points value
+   * @param {number} originalAP - Original attack power value
+   * @param {number} originalHP - Original health points value
    */
-  updateStats(ap, hp) {
+  updateStats(ap, hp, originalAP = ap, originalHP = hp) {
     // Update state
     this.ap = ap;
     this.hp = hp;
+    this.originalAP = originalAP;
+    this.originalHP = originalHP;
     
     // Update text displays
     this.apText.setText(ap.toString());
     this.hpText.setText(hp.toString());
     
-    // Update styling for both labels (simplified - always base styling)
+    // Update styling for both labels with color change logic
     this.updateStyling();
     
     // Show overlay if not visible and either stat > 0
@@ -198,23 +204,27 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
   /**
    * Update AP (Attack Power) value and styling
    * @param {number} ap - AP value
+   * @param {number} originalAP - Original AP value
    */
-  updateAP(ap) {
+  updateAP(ap, originalAP = ap) {
     this.ap = ap;
+    this.originalAP = originalAP;
     this.apText.setText(ap.toString());
     this.updateAPStyling();
-    console.log(`[PowerOverlay] AP updated: ${ap}`);
+    console.log(`[PowerOverlay] AP updated: ${ap} (original: ${originalAP})`);
   }
 
   /**
    * Update HP (Health Points) value and styling
    * @param {number} hp - HP value
+   * @param {number} originalHP - Original HP value
    */
-  updateHP(hp) {
+  updateHP(hp, originalHP = hp) {
     this.hp = hp;
+    this.originalHP = originalHP;
     this.hpText.setText(hp.toString());
     this.updateHPStyling();
-    console.log(`[PowerOverlay] HP updated: ${hp}`);
+    console.log(`update ap and hp 11222 ${hp} (original: ${originalHP})`);
   }
   
   /**
@@ -226,13 +236,16 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
   }
   
   /**
-   * Update AP label styling (simplified - always use base styling)
+   * Update AP label styling with color change for modified values
    */
   updateAPStyling() {
     const colorScheme = this.config.apColors.base; // Always use base colors
     
-    // FORCE CONSISTENT TEXT PROPERTIES
-    this.apText.setFill('#FFFFFF'); // Always white text
+    // Determine text color based on whether value has changed
+    const textColor = (this.ap !== this.originalAP) ? '#FF0000' : '#FFFFFF'; // Red if changed, white if original
+    
+    // FORCE CONSISTENT TEXT PROPERTIES with conditional color
+    this.apText.setFill(textColor);
     this.apText.setAlpha(1.0); // Force full opacity
     this.apText.setTint(0xFFFFFF); // Force white tint
     this.apText.setBlendMode(Phaser.BlendModes.NORMAL); // Force normal blend
@@ -270,13 +283,16 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
   }
   
   /**
-   * Update HP label styling (simplified - always use base styling)
+   * Update HP label styling with color change for modified values
    */
   updateHPStyling() {
     const colorScheme = this.config.hpColors.base; // Always use base colors
+    console.log("adfadsfsdafsdaf ",this.hp , " ", this.originalHP)
+    // Determine text color based on whether value has changed
+    const textColor = (this.hp !== this.originalHP) ? '#FF0000' : '#FFFFFF'; // Red if changed, white if original
     
-    // FORCE CONSISTENT TEXT PROPERTIES (identical to AP)
-    this.hpText.setFill('#FFFFFF'); // Always white text
+    // FORCE CONSISTENT TEXT PROPERTIES with conditional color
+    this.hpText.setFill(textColor);
     this.hpText.setAlpha(1.0); // Force full opacity
     this.hpText.setTint(0xFFFFFF); // Force white tint
     this.hpText.setBlendMode(Phaser.BlendModes.NORMAL); // Force normal blend

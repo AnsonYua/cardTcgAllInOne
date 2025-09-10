@@ -621,27 +621,29 @@ export default class Card extends Phaser.GameObjects.Container {
 
   /**
    * Extract AP and HP values from card data based on card type
-   * @returns {{ap: number, hp: number}} AP and HP values
+   * @returns {{ap: number, hp: number, originalAP: number, originalHP: number}} Current and original AP/HP values
    */
   getAPandHPFromCardData() {
-
     if (!this.fullCardData) {
-      return { ap: 0, hp: 0 };
+      return { ap: 0, hp: 0, originalAP: 0, originalHP: 0 };
     }
     // For regular cards (unit, pilot, base), get AP/HP directly from card properties
     if (this.fullCardData.cardData.cardType === 'unit' || 
         this.fullCardData.cardData.cardType === 'pilot' || 
         this.fullCardData.cardData.cardType === 'base') {
-
-        if(this.fullCardData?.currentHP){
+        if(this.fullCardData?.currentHP || this.fullCardData?.originalHP){
           return {
             ap: this.fullCardData?.currentAP || 0,
-            hp: this.fullCardData?.currentHP || 0
+            hp: this.fullCardData?.currentHP || 0,
+            originalAP: this.fullCardData?.originalAP || this.cardData.ap || 0,
+            originalHP: this.fullCardData?.originalHP || this.cardData.hp || 0
           };
         }else{
           return {
             ap: this.cardData.ap|| 0,
-            hp: this.cardData.hp|| 0
+            hp: this.cardData.hp|| 0,
+            originalAP: this.cardData.ap|| 0,
+            originalHP: this.cardData.hp|| 0
           };          
         }
     }
@@ -650,15 +652,19 @@ export default class Card extends Phaser.GameObjects.Container {
     if (this.cardData.cardType === 'command' && this.hasCommandPilotDesignation()) {
       const pilotEffect = this.cardData.effects?.rules?.find(rule => rule.effectId === 'pilot_designation');
       if (pilotEffect && pilotEffect.effect?.parameters) {
+        const originalAP = pilotEffect.effect.parameters.AP || 0;
+        const originalHP = pilotEffect.effect.parameters.HP || 0;
         return {
-          ap: pilotEffect.effect.parameters.AP || 0,
-          hp: pilotEffect.effect.parameters.HP || 0
+          ap: this.fullCardData?.currentAP || originalAP,
+          hp: this.fullCardData?.currentHP || originalHP,
+          originalAP: originalAP,
+          originalHP: originalHP
         };
       }
     }
 
     // Default fallback
-    return { ap: 0, hp: 0 };
+    return { ap: 0, hp: 0, originalAP: 0, originalHP: 0 };
   }
 
   /**
@@ -689,11 +695,11 @@ export default class Card extends Phaser.GameObjects.Container {
       this.add(this.powerOverlay);
       
       // Extract AP and HP values from card data
-      const { ap, hp } = this.getAPandHPFromCardData();
+      const { ap, hp, originalAP, originalHP } = this.getAPandHPFromCardData();
       console.log("update ap and hp card", JSON.stringify(this.fullCardData))
-      console.log("update ap and hp ", ap , " ", hp)
-      this.powerOverlay.updateAP(ap);
-      this.powerOverlay.updateHP(hp);
+      console.log("update ap and hp 1111", ap , " ", hp, " original:", originalAP, originalHP)
+      this.powerOverlay.updateAP(ap, originalAP);
+      this.powerOverlay.updateHP(hp, originalHP);
       // Update PowerOverlay with the extracted AP and HP values (simplified API)
       //this.powerOverlay.updateStats(ap, hp);
       
@@ -725,12 +731,12 @@ export default class Card extends Phaser.GameObjects.Container {
     
     
     // Extract AP and HP values from card data using our unified method
-    const { ap, hp } = this.getAPandHPFromCardData();
+    const { ap, hp, originalAP, originalHP } = this.getAPandHPFromCardData();
     
-    console.log('[Card] updatePowerOverlay for', this.cardData.id, '- AP:', ap, '- HP:', hp);
+    console.log('[Card] updatePowerOverlay for', this.cardData.id, '- AP:', ap, '- HP:', hp, '- Original AP:', originalAP, '- Original HP:', originalHP);
     
-    // Update using simplified API
-    this.powerOverlay.updateStats(ap, hp);
+    // Update using simplified API with original values
+    this.powerOverlay.updateStats(ap, hp, originalAP, originalHP);
     
     // Make sure overlay is visible
     this.powerOverlay.setVisible(true);
