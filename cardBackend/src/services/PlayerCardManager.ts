@@ -246,7 +246,7 @@ export class PlayerCardManager {
     }
 
     /**
-     * Place base card - placeholder implementation  
+     * Place base card - replaces existing base or places new one
      */
     private static placeBaseCard(
         playerZones: any, 
@@ -254,14 +254,55 @@ export class PlayerCardManager {
         cardUID: string, 
         playerId: string
     ): CardPlacementResult {
-        console.log(`🚧 [PLACEHOLDER] Base card placement for ${cardUID} - not yet implemented`);
-        // TODO: Implement base card placement logic
-        // Base cards might go to base zone or have special placement rules
-        
-        return {
-            success: false,
-            error: `Base card placement not yet implemented for ${cardUID}`
-        };
+        try {
+            console.log(`🏗️ Placing base card ${cardUID} for player ${playerId}`);
+            
+            // Check if base[0] exists (base zone is an array)
+            if (playerZones.base && playerZones.base.length > 0) {
+                const existingBase = playerZones.base[0];
+                console.log(`🏗️ Existing base found: ${existingBase.cardUid}, moving to trash`);
+                
+                // Move existing base to trash area
+                if (!playerZones.trashArea) {
+                    playerZones.trashArea = [];
+                }
+                playerZones.trashArea.push(existingBase);
+                
+                // Clear the base zone
+                playerZones.base = [];
+                console.log(`🗑️ Moved existing base ${existingBase.cardUid} to trash`);
+            }
+            
+            // Create new base card using proper BaseCard interface from CardSystem
+            const baseCard = createZoneCard(
+                cardUID,
+                cardData.id,
+                cardData,
+                playerId,
+                'base'
+            ) as BaseCard;
+            
+            // Initialize base zone if it doesn't exist
+            if (!playerZones.base) {
+                playerZones.base = [];
+            }
+            
+            // Place new base card in base[0]
+            playerZones.base.push(baseCard);
+            console.log(`🏗️ Placed new base card ${cardUID} in base zone`);
+            
+            return {
+                success: true,
+                placedZone: 'base'
+            };
+            
+        } catch (error) {
+            console.error(`❌ Error placing base card ${cardUID}:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Base card placement failed'
+            };
+        }
     }
 
     /**

@@ -208,8 +208,8 @@ export function createZoneCard(
             return {
                 ...baseCard,
                 cardData: cardData as BaseCardData,
-                currentHP: 3,
-                originalHP: 3,
+                currentHP: cardData?.hp?cardData?.hp:3,
+                originalHP: cardData?.hp?cardData?.hp:3 ,
                 damageReceived: 0,
                 isRested: false
             } as BaseCard;
