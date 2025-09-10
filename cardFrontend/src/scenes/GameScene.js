@@ -615,15 +615,14 @@ export default class GameScene extends Phaser.Scene {
       });
       
       if (!this.draggedCard && card.isInZone) {
-        if (this.isTestMode) {
           try {
             this.showSlotCardPreview(card);
           } catch (error) {
             console.error('[zone-card-hover] Error in showSlotCardPreview, using fallback:', error);
             this.showCardPreview(card.getCardData());
           }
-        }
       }
+      
     });
     
     this.events.on('zone-card-unhover', (card) => {

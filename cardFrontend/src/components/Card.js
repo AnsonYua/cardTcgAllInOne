@@ -99,10 +99,10 @@ export default class Card extends Phaser.GameObjects.Container {
       }  
     }
     
-    console.log("cardKey ", cardKey)
+    console.log("cardKey111 ", cardKey)
     console.log(`[Card] Trying to load image with key: ${cardKey}`);
     console.log(`[Card] Card data:`, this.cardData);
-    console.log(`[Card] Available textures:`, Object.keys(this.scene.textures.list).filter(key => key.startsWith(this.cardData.id?.substring(0, 2) || '')));
+    console.log(`[Card] Available textures:`, Object.keys(this.scene.textures.list));
     
     // Check if texture exists
     if (this.scene.textures.exists(cardKey)) {

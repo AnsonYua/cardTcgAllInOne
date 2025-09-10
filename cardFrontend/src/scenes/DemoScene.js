@@ -296,9 +296,13 @@ export default class DemoScene extends DemoSceneBasic {
   // Override simulateSetScenario for demo-specific functionality
   async simulateSetScenario() {
     this.isSetScenoria = true
+    this.isTestMode = true
     const _scenarioPath = this.scenarioPath;
+    console.log("adfadsasd ", JSON.stringify(this.isTestMode))
     this.loadCardResources().then(() => {
+      if(this.gameMode != "join"){
         super.simulateSetScenario(_scenarioPath);
+      }
     })
   }
 
