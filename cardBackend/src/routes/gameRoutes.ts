@@ -137,7 +137,7 @@ router.post('/player/acknowledgeEvents', async (req: Request, res: Response) => 
         res.json({
             success: true,
             acknowledgedCount: result.acknowledgedCount,
-            gameEvents: result.gameEnv?.gameEvents || [],
+            notificationQueue: result.gameEnv?.notificationQueue || [],
             timestamp: new Date().toISOString()
         });
         

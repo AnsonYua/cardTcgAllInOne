@@ -1,5 +1,5 @@
 // src/services/GameNotificationManager.ts
-// Frontend notification event management for gameEnv.gameEvents
+// Frontend notification event management for gameEnv.notificationQueue
 // NOTE: This is separate from EventQueue system - handles frontend polling notifications
 
 import { GameEnvironment } from '../models/GameEnvironment';
@@ -39,16 +39,16 @@ export class GameNotificationManager {
     // ============ INITIALIZATION ============
     
     private initializeGameEvents(): void {
-        if (!this.gameEnv.gameEvents) {
-            this.gameEnv.gameEvents = [];
-            console.log('📨 GameNotificationManager: Initialized gameEvents array');
+        if (!this.gameEnv.notificationQueue) {
+            this.gameEnv.notificationQueue = [];
+            console.log('📨 GameNotificationManager: Initialized notificationQueue array');
         }
     }
     
     // ============ EVENT CREATION ============
     
     /**
-     * Add a notification event to gameEnv.gameEvents for frontend consumption
+     * Add a notification event to gameEnv.notificationQueue for frontend consumption
      */
     addNotificationEvent(
         type: string, 
@@ -74,7 +74,7 @@ export class GameNotificationManager {
             payload
         };
         
-        this.gameEnv.gameEvents!.push(notificationEvent);
+        this.gameEnv.notificationQueue!.push(notificationEvent);
         
         console.log(`📨 Added notification event: ${type} (${eventId}) - Priority: ${priority}, Ack: ${requiresAcknowledgment}`);
         return eventId;
@@ -153,11 +153,11 @@ export class GameNotificationManager {
      * Mark specific events as processed by frontend
      */
     acknowledgeEvents(eventIds: string[]): number {
-        if (!this.gameEnv.gameEvents) return 0;
+        if (!this.gameEnv.notificationQueue) return 0;
         
         let acknowledgedCount = 0;
         
-        this.gameEnv.gameEvents.forEach(event => {
+        this.gameEnv.notificationQueue.forEach(event => {
             if (eventIds.includes(event.id) && !event.metadata.frontendProcessed) {
                 event.metadata.frontendProcessed = true;
                 acknowledgedCount++;
@@ -176,12 +176,12 @@ export class GameNotificationManager {
      * Clean up expired and processed events
      */
     cleanupProcessedEvents(): number {
-        if (!this.gameEnv.gameEvents) return 0;
+        if (!this.gameEnv.notificationQueue) return 0;
         
-        const initialCount = this.gameEnv.gameEvents.length;
+        const initialCount = this.gameEnv.notificationQueue.length;
         const now = Date.now();
         
-        this.gameEnv.gameEvents = this.gameEnv.gameEvents.filter(event => {
+        this.gameEnv.notificationQueue = this.gameEnv.notificationQueue.filter(event => {
             const isExpired = now > event.metadata.expiresAt;
             const isProcessed = event.metadata.frontendProcessed;
             
@@ -192,10 +192,10 @@ export class GameNotificationManager {
             return true;
         });
         
-        const cleanedCount = initialCount - this.gameEnv.gameEvents.length;
+        const cleanedCount = initialCount - this.gameEnv.notificationQueue.length;
         
         if (cleanedCount > 0) {
-            console.log(`🧹 Cleaned up ${cleanedCount} events, ${this.gameEnv.gameEvents.length} remaining`);
+            console.log(`🧹 Cleaned up ${cleanedCount} events, ${this.gameEnv.notificationQueue.length} remaining`);
         }
         
         return cleanedCount;
@@ -205,11 +205,11 @@ export class GameNotificationManager {
      * Clean up only specific acknowledged events
      */
     cleanupSpecificEvents(eventIds: string[]): number {
-        if (!this.gameEnv.gameEvents || !eventIds.length) return 0;
+        if (!this.gameEnv.notificationQueue || !eventIds.length) return 0;
         
-        const initialCount = this.gameEnv.gameEvents.length;
+        const initialCount = this.gameEnv.notificationQueue.length;
         
-        this.gameEnv.gameEvents = this.gameEnv.gameEvents.filter(event => {
+        this.gameEnv.notificationQueue = this.gameEnv.notificationQueue.filter(event => {
             const isSpecificAcknowledged = eventIds.includes(event.id) && event.metadata.frontendProcessed;
             
             if (isSpecificAcknowledged) {
@@ -218,10 +218,10 @@ export class GameNotificationManager {
             return true;
         });
         
-        const cleanedCount = initialCount - this.gameEnv.gameEvents.length;
+        const cleanedCount = initialCount - this.gameEnv.notificationQueue.length;
         
         if (cleanedCount > 0) {
-            console.log(`🧹 Cleaned up ${cleanedCount} specific events, ${this.gameEnv.gameEvents.length} remaining`);
+            console.log(`🧹 Cleaned up ${cleanedCount} specific events, ${this.gameEnv.notificationQueue.length} remaining`);
         }
         
         return cleanedCount;
@@ -231,11 +231,11 @@ export class GameNotificationManager {
      * Get all unprocessed events for a specific player
      */
     getUnprocessedEventsForPlayer(playerId: string): GameNotificationEvent[] {
-        if (!this.gameEnv.gameEvents) return [];
+        if (!this.gameEnv.notificationQueue) return [];
         
         this.cleanupProcessedEvents(); // Clean first
         
-        return this.gameEnv.gameEvents.filter(event => 
+        return this.gameEnv.notificationQueue.filter(event => 
             !event.metadata.frontendProcessed && 
             (event.payload.playerId === playerId || !event.payload.playerId) // Include global events
         );
@@ -245,11 +245,11 @@ export class GameNotificationManager {
      * Get all unprocessed events (for debugging)
      */
     getAllUnprocessedEvents(): GameNotificationEvent[] {
-        if (!this.gameEnv.gameEvents) return [];
+        if (!this.gameEnv.notificationQueue) return [];
         
         this.cleanupProcessedEvents(); // Clean first
         
-        return this.gameEnv.gameEvents.filter(event => !event.metadata.frontendProcessed);
+        return this.gameEnv.notificationQueue.filter(event => !event.metadata.frontendProcessed);
     }
     
     // ============ UTILITY METHODS ============
@@ -258,14 +258,14 @@ export class GameNotificationManager {
      * Get event statistics
      */
     getEventStats(): { total: number; unprocessed: number; expired: number } {
-        if (!this.gameEnv.gameEvents) {
+        if (!this.gameEnv.notificationQueue) {
             return { total: 0, unprocessed: 0, expired: 0 };
         }
         
         const now = Date.now();
-        const total = this.gameEnv.gameEvents.length;
-        const unprocessed = this.gameEnv.gameEvents.filter(e => !e.metadata.frontendProcessed).length;
-        const expired = this.gameEnv.gameEvents.filter(e => now > e.metadata.expiresAt).length;
+        const total = this.gameEnv.notificationQueue.length;
+        const unprocessed = this.gameEnv.notificationQueue.filter(e => !e.metadata.frontendProcessed).length;
+        const expired = this.gameEnv.notificationQueue.filter(e => now > e.metadata.expiresAt).length;
         
         return { total, unprocessed, expired };
     }
@@ -274,10 +274,10 @@ export class GameNotificationManager {
      * Force cleanup all events (for testing)
      */
     clearAllEvents(): number {
-        if (!this.gameEnv.gameEvents) return 0;
+        if (!this.gameEnv.notificationQueue) return 0;
         
-        const count = this.gameEnv.gameEvents.length;
-        this.gameEnv.gameEvents = [];
+        const count = this.gameEnv.notificationQueue.length;
+        this.gameEnv.notificationQueue = [];
         
         console.log(`🧹 Force cleared ${count} events`);
         return count;
@@ -287,11 +287,11 @@ export class GameNotificationManager {
      * Check if there are pending events that require acknowledgment
      */
     hasPendingAcknowledgments(): boolean {
-        if (!this.gameEnv.gameEvents) return false;
+        if (!this.gameEnv.notificationQueue) return false;
         
         this.cleanupProcessedEvents();
         
-        return this.gameEnv.gameEvents.some(event => 
+        return this.gameEnv.notificationQueue.some(event => 
             !event.metadata.frontendProcessed && 
             event.metadata.requiresAcknowledgment === true
         );

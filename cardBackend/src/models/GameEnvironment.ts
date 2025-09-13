@@ -44,13 +44,13 @@ export class GameEnvironment {
     public players: { [playerId: string]: Player };
     
     
-    // Simplified event system - queue moved to GameEnvironment
-    public events: GameEvent[] = [];
+    // Unified event system - renamed for clarity
+    public processingQueue: GameEvent[] = [];
     public processingEnabled: boolean = true;
     public maxEventsPerCycle: number = 50;
     
-    // Legacy event system (for backward compatibility)
-    public gameEvents?: any[];
+    // Frontend notification system (for frontend polling)
+    public notificationQueue?: any[];
     public lastEventId?: number;
     
     // Card selection system
@@ -70,14 +70,14 @@ export class GameEnvironment {
         
         this.players = {};
         
-        // Initialize new event system
-        this.events = [];
+        // Initialize event systems
+        this.processingQueue = [];
         this.processingEnabled = true;
         this.maxEventsPerCycle = 50;
         
-        // Legacy event system (for backward compatibility)
+        // Initialize frontend notification system
         this.pendingCardSelections = {};
-        this.gameEvents = [];
+        this.notificationQueue = [];
         this.lastEventId = 0;
     }
 
@@ -113,44 +113,71 @@ export class GameEnvironment {
     // ============ SIMPLIFIED EVENT SYSTEM ============
     
     /**
-     * Add event to queue with automatic priority sorting
+     * Add event to processing queue with automatic priority sorting
      */
-    public enqueueEvent(event: GameEvent): void {
-        this.events.push(event);
+    public enqueueForProcessing(event: GameEvent): void {
+        this.processingQueue.push(event);
         this.sortEventsByPriority();
-        console.log(`📋 Event queued: ${event.type} (priority: ${event.priority})`);
+        console.log(`📋 Event queued for processing: ${event.type} (priority: ${event.priority})`);
     }
     
     /**
-     * Remove specific event from queue (safer than shift())
+     * Legacy method for backward compatibility
+     */
+    public enqueueEvent(event: GameEvent): void {
+        this.enqueueForProcessing(event);
+    }
+    
+    // ============ NOTIFICATION QUEUE METHODS ============
+    
+    /**
+     * Add notification event to frontend notification queue
+     */
+    public enqueueNotification(notification: any): void {
+        if (!this.notificationQueue) {
+            this.notificationQueue = [];
+        }
+        this.notificationQueue.push(notification);
+        console.log(`📨 Notification enqueued: ${notification.type}`);
+    }
+    
+    /**
+     * Remove specific event from processing queue (safer than shift())
      * @param event - The specific event to remove
      * @returns true if event was found and removed, false otherwise
      */
-    public dequeueEvent(event: GameEvent): boolean {
-        const eventIndex = this.events.findIndex(e => e.id === event.id);
+    public dequeueFromProcessing(event: GameEvent): boolean {
+        const eventIndex = this.processingQueue.findIndex(e => e.id === event.id);
         if (eventIndex !== -1) {
-            const removedEvent = this.events.splice(eventIndex, 1)[0];
-            console.log(`📤 Event dequeued: ${removedEvent.type} (was at index ${eventIndex})`);
+            const removedEvent = this.processingQueue.splice(eventIndex, 1)[0];
+            console.log(`📤 Event dequeued from processing: ${removedEvent.type} (was at index ${eventIndex})`);
             return true;
         } else {
-            console.warn(`⚠️ Event not found in queue for removal: ${event.type} (${event.id})`);
+            console.warn(`⚠️ Event not found in processing queue for removal: ${event.type} (${event.id})`);
             return false;
         }
     }
     
     /**
-     * Remove event by ID (alternative method)
+     * Legacy method for backward compatibility
+     */
+    public dequeueEvent(event: GameEvent): boolean {
+        return this.dequeueFromProcessing(event);
+    }
+    
+    /**
+     * Remove event by ID from processing queue (alternative method)
      * @param eventId - The ID of the event to remove
      * @returns true if event was found and removed, false otherwise
      */
     public dequeueEventById(eventId: string): boolean {
-        const eventIndex = this.events.findIndex(e => e.id === eventId);
+        const eventIndex = this.processingQueue.findIndex(e => e.id === eventId);
         if (eventIndex !== -1) {
-            const removedEvent = this.events.splice(eventIndex, 1)[0];
-            console.log(`📤 Event dequeued by ID: ${removedEvent.type} (was at index ${eventIndex})`);
+            const removedEvent = this.processingQueue.splice(eventIndex, 1)[0];
+            console.log(`📤 Event dequeued by ID from processing: ${removedEvent.type} (was at index ${eventIndex})`);
             return true;
         } else {
-            console.warn(`⚠️ Event not found in queue for removal by ID: ${eventId}`);
+            console.warn(`⚠️ Event not found in processing queue for removal by ID: ${eventId}`);
             return false;
         }
     }
@@ -159,8 +186,8 @@ export class GameEnvironment {
      * Process events until blocked or queue empty
      */
     public processEvents(): ProcessingResult {
-        console.log(`🎮 Processing events - queue size: ${this.events.length}`);
-        console.log("game event 11111", JSON.stringify(this.events))
+        console.log(`🎮 Processing events - queue size: ${this.processingQueue.length}`);
+        console.log("processing queue:", JSON.stringify(this.processingQueue))
         // Dynamic import to avoid circular dependency
         const { StaticEventProcessor } = require('../services/StaticEventProcessor');
         return StaticEventProcessor.processQueue(this);
@@ -170,7 +197,7 @@ export class GameEnvironment {
      * Check if processing needs player input
      */
     public needsPlayerInput(): boolean {
-        const nextEvent = this.events[0];
+        const nextEvent = this.processingQueue[0];
         return nextEvent?.type === EventType.PLAYER_CHOICE_REQUIRED && 
                nextEvent?.status === EventStatus.DECLARED;
     }
@@ -179,7 +206,7 @@ export class GameEnvironment {
      * Get current pending player choice
      */
     public getCurrentPlayerChoice(): GameEvent | null {
-        const nextEvent = this.events[0];
+        const nextEvent = this.processingQueue[0];
         if (nextEvent?.type === EventType.PLAYER_CHOICE_REQUIRED && 
             nextEvent?.status === EventStatus.DECLARED) {
             return nextEvent;
@@ -188,32 +215,53 @@ export class GameEnvironment {
     }
     
     /**
-     * Get event queue size
+     * Get processing queue size
+     */
+    public getProcessingQueueSize(): number {
+        return this.processingQueue.length;
+    }
+    
+    /**
+     * Legacy method for backward compatibility
      */
     public getEventQueueSize(): number {
-        return this.events.length;
+        return this.getProcessingQueueSize();
     }
     
     /**
-     * Check if event queue is empty
+     * Check if processing queue is empty
+     */
+    public isProcessingQueueEmpty(): boolean {
+        return this.processingQueue.length === 0;
+    }
+    
+    /**
+     * Legacy method for backward compatibility
      */
     public isEventQueueEmpty(): boolean {
-        return this.events.length === 0;
+        return this.isProcessingQueueEmpty();
     }
     
     /**
-     * Clear event queue (for cleanup)
+     * Clear processing queue (for cleanup)
+     */
+    public clearProcessingQueue(): void {
+        this.processingQueue = [];
+        console.log('🧹 Processing queue cleared');
+    }
+    
+    /**
+     * Legacy method for backward compatibility
      */
     public clearEventQueue(): void {
-        this.events = [];
-        console.log('🧹 Event queue cleared');
+        this.clearProcessingQueue();
     }
     
     /**
      * Sort events by priority and timestamp
      */
     private sortEventsByPriority(): void {
-        this.events.sort((a, b) => {
+        this.processingQueue.sort((a, b) => {
             // Higher priority (lower number) goes first
             if (a.priority !== b.priority) {
                 return a.priority - b.priority;
@@ -312,15 +360,19 @@ export class GameEnvironment {
                 Object.entries(this.players).map(([id, player]) => [id, player.toJSON()])
             ),
             
-            // New event system
-            events: this.events,
+            // Internal processing event system
+            processingQueue: this.processingQueue,
             processingEnabled: this.processingEnabled,
             maxEventsPerCycle: this.maxEventsPerCycle,
             
-            // Legacy event system (backward compatibility)
+            // Frontend notification system
             pendingCardSelections: this.pendingCardSelections,
-            gameEvents: this.gameEvents,
-            lastEventId: this.lastEventId
+            notificationQueue: this.notificationQueue,
+            lastEventId: this.lastEventId,
+            
+            // Legacy compatibility - keep old field names for backward compatibility
+            events: this.processingQueue,
+            gameEvents: this.notificationQueue
         };
     }
 
@@ -343,14 +395,14 @@ export class GameEnvironment {
             );
         }
         
-        // Restore new event system
-        gameEnv.events = data.events || [];
+        // Restore event systems - handle both new and legacy formats
+        gameEnv.processingQueue = data.processingQueue || data.events || [];
         gameEnv.processingEnabled = data.processingEnabled !== false;
         gameEnv.maxEventsPerCycle = data.maxEventsPerCycle || 50;
         
-        // Legacy event system (backward compatibility)
+        // Frontend notification system
         gameEnv.pendingCardSelections = data.pendingCardSelections || {};
-        gameEnv.gameEvents = data.gameEvents || [];
+        gameEnv.notificationQueue = data.notificationQueue || data.gameEvents || [];
         gameEnv.lastEventId = data.lastEventId || 0;
         
         return gameEnv;

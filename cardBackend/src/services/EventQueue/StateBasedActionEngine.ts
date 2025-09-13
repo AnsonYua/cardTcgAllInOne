@@ -125,9 +125,9 @@ export class StateBasedActionEngine {
             return actions;
         }
         
-        // Check if there are no unacknowledged card draw events in the game events
-        const gameEvents = this.gameEnv.gameEvents || [];
-        const hasUnacknowledgedCardDrawEvent = gameEvents.some(event => 
+        // Check if there are no unacknowledged card draw events in the notification queue
+        const notificationQueue = this.gameEnv.notificationQueue || [];
+        const hasUnacknowledgedCardDrawEvent = notificationQueue.some(event => 
             event.type === 'CARD_DRAWN' &&
             event.metadata?.frontendProcessed === false
         );
@@ -136,7 +136,7 @@ export class StateBasedActionEngine {
         
         if (!hasUnacknowledgedCardDrawEvent) {
             // Also check that we haven't already processed a draw_to_main action recently
-            const recentDrawToMainAction = gameEvents.some(event =>
+            const recentDrawToMainAction = notificationQueue.some(event =>
                 event.type === 'PHASE_CHANGE' && 
                 event.data?.reason?.includes('Auto-advance') &&
                 event.timestamp > (Date.now() - 5000) // Within last 5 seconds

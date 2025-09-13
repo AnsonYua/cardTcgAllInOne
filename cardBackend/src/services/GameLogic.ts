@@ -431,7 +431,7 @@ export class GameLogic {
         const event = this.createEventFromAction(action);
         if (event) {
             // Add event to GameEnvironment queue
-            gameEnv.enqueueEvent(event);
+            gameEnv.enqueueForProcessing(event);
             
             // Process events using direct GameEnvironment method
             const result = gameEnv.processEvents();
@@ -631,7 +631,7 @@ export class GameLogic {
                     sp: []
                 }
             },
-            gameEvents: [],
+            notificationQueue: [],
             lastEventId: 0,
             pendingCardSelections: {},
             playSequence: {
@@ -938,7 +938,7 @@ export class GameLogic {
                 };
             }
             
-            console.log("AcknowledgeEvents before processing:", JSON.stringify(gameEnv?.gameEvents));
+            console.log("AcknowledgeEvents before processing:", JSON.stringify(gameEnv?.notificationQueue));
             
             // Process ACKNOWLEDGE_EVENTS through centralized action processing
             const acknowledgeAction: PlayerAction = {
@@ -961,7 +961,7 @@ export class GameLogic {
             // Save updated game state
             await this.saveGameToFile(gameId, gameEnv);
             
-            console.log("AcknowledgeEvents after processing:", JSON.stringify(gameEnv?.gameEvents));
+            console.log("AcknowledgeEvents after processing:", JSON.stringify(gameEnv?.notificationQueue));
             
             return {
                 success: true,

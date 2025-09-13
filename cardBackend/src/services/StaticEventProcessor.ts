@@ -29,18 +29,18 @@ export class StaticEventProcessor {
         const maxIterations = gameEnv.maxEventsPerCycle || 50;
         const engines = this.createEngineInstances(gameEnv);
         
-        console.log(`⚡ Starting event processing - queue size: ${gameEnv.events.length}`);
+        console.log(`⚡ Starting event processing - queue size: ${gameEnv.processingQueue.length}`);
         
         while (gameEnv.processingEnabled && 
-               gameEnv.events.length > 0 && 
+               gameEnv.processingQueue.length > 0 && 
                !gameEnv.needsPlayerInput() && 
                eventsProcessed < gameEnv.maxEventsPerCycle &&
                iterations < maxIterations) {
             
             iterations++; // Increment iteration counter
-            console.log(`event information 11111 `, JSON.stringify(gameEnv.events) , " event processed ", eventsProcessed , " iterations ", iterations);
+            console.log(`processing queue info:`, JSON.stringify(gameEnv.processingQueue) , " event processed ", eventsProcessed , " iterations ", iterations);
 
-            const event = gameEnv.events[0]; // Peek at next event
+            const event = gameEnv.processingQueue[0]; // Peek at next event
             if (!event) break;
             
             
@@ -63,7 +63,7 @@ export class StaticEventProcessor {
                     const reactions = this.findTriggeredReactions(event, gameEnv, engines.triggerEngine);
                     reactions.forEach(reaction => {
                         console.log(`🔗 Adding triggered reaction: ${reaction.type}`);
-                        gameEnv.enqueueEvent(reaction);
+                        gameEnv.enqueueForProcessing(reaction);
                     });
                     
                     // 3. Check for replacement effects
@@ -100,7 +100,7 @@ export class StaticEventProcessor {
                     const stateActions = this.checkForStateBasedActions(gameEnv, engines.stateEngine);
                     stateActions.forEach(stateEvent => {
                         console.log(`🏛️ Adding state-based action: ${stateEvent.type}`);
-                        gameEnv.enqueueEvent(stateEvent);
+                        gameEnv.enqueueForProcessing(stateEvent);
                     });
                     
                     // Remove the specific resolved event from queue (safer than shift)
@@ -110,11 +110,11 @@ export class StaticEventProcessor {
                     } else {
                         console.error(`❌ Failed to remove resolved event: ${event.type}`);
                         // Fallback to prevent infinite loop
-                        gameEnv.events.shift();
+                        gameEnv.processingQueue.shift();
                         eventsProcessed++;
                     }
                 }
-                console.log(`event information 111112222 `, gameEnv.events.length, " event processed ", eventsProcessed , " iterations ", iterations);
+                console.log(`event information 111112222 `, gameEnv.processingQueue.length, " event processed ", eventsProcessed , " iterations ", iterations);
 
                 
             } catch (error) {
@@ -126,7 +126,7 @@ export class StaticEventProcessor {
                 } else {
                     console.error(`❌ Failed to remove error event: ${event.type}`);
                     // Fallback to prevent infinite loop
-                    gameEnv.events.shift();
+                    gameEnv.processingQueue.shift();
                     eventsProcessed++;
                 }
                 
@@ -147,9 +147,9 @@ export class StaticEventProcessor {
         // Debug infinite loop detection
         if (iterations >= maxIterations) {
             console.error(`⚠️ Event processing stopped due to iteration limit (${maxIterations})`);
-            console.error(`Queue still has ${gameEnv.events.length} events`);
-            if (gameEnv.events.length > 0) {
-                console.error(`Next event: ${gameEnv.events[0].type} (${gameEnv.events[0].status})`);
+            console.error(`Queue still has ${gameEnv.processingQueue.length} events`);
+            if (gameEnv.processingQueue.length > 0) {
+                console.error(`Next event: ${gameEnv.processingQueue[0].type} (${gameEnv.processingQueue[0].status})`);
             }
         }
         
@@ -163,14 +163,14 @@ export class StaticEventProcessor {
         console.log(`🎮 Processing single event: ${event.type}`);
         
         // Add event to queue
-        gameEnv.enqueueEvent(event);
+        gameEnv.enqueueForProcessing(event);
         
         // Process the queue
         const result = this.processQueue(gameEnv);
         
         // Check if any error events were generated
-        if (gameEnv.gameEvents) {
-            const recentErrors = gameEnv.gameEvents.filter(evt => 
+        if (gameEnv.notificationQueue) {
+            const recentErrors = gameEnv.notificationQueue.filter(evt => 
                 evt.type === EventType.ERROR_OCCURRED && 
                 evt.timestamp > (Date.now() - 1000)
             );
@@ -326,16 +326,16 @@ export class StaticEventProcessor {
         };
         
         // Replace the original event with error event
-        const index = gameEnv.events.findIndex(e => e.id === originalEvent.id);
+        const index = gameEnv.processingQueue.findIndex(e => e.id === originalEvent.id);
         if (index !== -1) {
-            gameEnv.events[index] = errorEvent;
+            gameEnv.processingQueue[index] = errorEvent;
         }
     }
     
     private static replaceEvent(gameEnv: GameEnvironment, originalEvent: GameEvent, replacementEvent: GameEvent): void {
-        const index = gameEnv.events.findIndex(e => e.id === originalEvent.id);
+        const index = gameEnv.processingQueue.findIndex(e => e.id === originalEvent.id);
         if (index !== -1) {
-            gameEnv.events[index] = replacementEvent;
+            gameEnv.processingQueue[index] = replacementEvent;
             console.log(`🔄 Event replaced: ${originalEvent.type} → ${replacementEvent.type}`);
         }
     }
@@ -357,7 +357,7 @@ export class StaticEventProcessor {
             }
         };
         
-        gameEnv.enqueueEvent(errorEvent);
+        gameEnv.enqueueForProcessing(errorEvent);
     }
     
     // ============ UTILITY METHODS ============
@@ -392,7 +392,7 @@ export class StaticEventProcessor {
         
         // Mark choice event as resolved and add resolution event
         choiceEvent.status = EventStatus.RESOLVED;
-        gameEnv.enqueueEvent(resolveEvent);
+        gameEnv.enqueueForProcessing(resolveEvent);
         
         // Continue processing
         return this.processQueue(gameEnv);
@@ -404,8 +404,8 @@ export class StaticEventProcessor {
     public static getSystemStatus(gameEnv: GameEnvironment): any {
         return {
             eventQueue: {
-                size: gameEnv.events.length,
-                events: gameEnv.events.map(e => ({ 
+                size: gameEnv.processingQueue.length,
+                events: gameEnv.processingQueue.map(e => ({ 
                     type: e.type, 
                     status: e.status, 
                     priority: e.priority 
