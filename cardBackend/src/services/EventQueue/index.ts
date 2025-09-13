@@ -1,7 +1,9 @@
 // src/services/EventQueue/index.ts
 // Complete TCG event queue system exports
 
-export { EventManager, ProcessingResult, PlayerAction } from './EventManager';
+// EventManager removed - use GameEnvironment direct methods
+// PlayerAction moved to EventInterfaces.ts
+// ProcessingResult moved to EventInterfaces.ts
 export { 
     TriggerEngine, 
     TriggerCondition, 

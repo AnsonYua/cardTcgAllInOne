@@ -1,24 +1,19 @@
 // src/models/GameEnvironment.ts
 // Main GameEnvironment class for custom trading card game
 
-import { GamePhase, ZoneType } from './GameEnums';
+import { GamePhase, ZoneType, EventType } from './GameEnums';
 import { Player, PlayerZones, SlotZone } from './Player';
 import { ZoneCard } from './CardSystem';
-import { EventManager } from '../services/EventQueue/EventManager';
+// EventManager removed - using direct event processing
+import { GameEvent, EventStatus, EventPriority, EventFactory } from '../services/EventQueue/interfaces/GameEvent';
+import { ProcessingResult, ValidationResult } from './EventInterfaces';
 
-// ============ GAME EVENT INTERFACE ============
-
-export interface GameEvent {
-    id: string;
-    type: string;
-    data: any;
-    timestamp: number;
-    expiresAt: number;
-    frontendProcessed: boolean;
+// Forward declaration to avoid circular dependency
+declare class StaticEventProcessor {
+    static processQueue(gameEnv: GameEnvironment): ProcessingResult;
 }
 
 // ============ GAME INTERFACES ============
-
 
 export interface GameResult {
     success: boolean;
@@ -29,11 +24,7 @@ export interface GameResult {
     processingTime?: number;
 }
 
-export interface ValidationResult {
-    isValid: boolean;
-    error?: string;
-    warnings?: string[];
-}
+// GameEvent, ProcessingResult, and ValidationResult moved to separate files to avoid conflicts
 
 
 // ============ MAIN GAME ENVIRONMENT CLASS ============
@@ -53,16 +44,19 @@ export class GameEnvironment {
     public players: { [playerId: string]: Player };
     
     
-    // Event system
+    // Simplified event system - queue moved to GameEnvironment
+    public events: GameEvent[] = [];
+    public processingEnabled: boolean = true;
+    public maxEventsPerCycle: number = 50;
+    
+    // Legacy event system (for backward compatibility)
     public gameEvents?: any[];
     public lastEventId?: number;
     
     // Card selection system
     public pendingCardSelections?: { [selectionId: string]: any };
     
-    
-    // Event processing system
-    public eventManager?: EventManager;
+    // Legacy compatibility (removed - no longer using EventManager)
 
     constructor() {
         this.phase = GamePhase.WAITING_FOR_PLAYERS;
@@ -76,6 +70,12 @@ export class GameEnvironment {
         
         this.players = {};
         
+        // Initialize new event system
+        this.events = [];
+        this.processingEnabled = true;
+        this.maxEventsPerCycle = 50;
+        
+        // Legacy event system (for backward compatibility)
         this.pendingCardSelections = {};
         this.gameEvents = [];
         this.lastEventId = 0;
@@ -110,18 +110,123 @@ export class GameEnvironment {
         return null;
     }
 
-    // ============ EVENT QUEUE METHODS ============
+    // ============ SIMPLIFIED EVENT SYSTEM ============
     
-    public initializeEventManager(): void {
-        if (!this.eventManager) {
-            this.eventManager = new EventManager(this);
-            console.log('🎮 Event manager initialized');
+    /**
+     * Add event to queue with automatic priority sorting
+     */
+    public enqueueEvent(event: GameEvent): void {
+        this.events.push(event);
+        this.sortEventsByPriority();
+        console.log(`📋 Event queued: ${event.type} (priority: ${event.priority})`);
+    }
+    
+    /**
+     * Remove specific event from queue (safer than shift())
+     * @param event - The specific event to remove
+     * @returns true if event was found and removed, false otherwise
+     */
+    public dequeueEvent(event: GameEvent): boolean {
+        const eventIndex = this.events.findIndex(e => e.id === event.id);
+        if (eventIndex !== -1) {
+            const removedEvent = this.events.splice(eventIndex, 1)[0];
+            console.log(`📤 Event dequeued: ${removedEvent.type} (was at index ${eventIndex})`);
+            return true;
+        } else {
+            console.warn(`⚠️ Event not found in queue for removal: ${event.type} (${event.id})`);
+            return false;
         }
     }
     
-    public getEventManager(): EventManager | null {
-        return this.eventManager || null;
+    /**
+     * Remove event by ID (alternative method)
+     * @param eventId - The ID of the event to remove
+     * @returns true if event was found and removed, false otherwise
+     */
+    public dequeueEventById(eventId: string): boolean {
+        const eventIndex = this.events.findIndex(e => e.id === eventId);
+        if (eventIndex !== -1) {
+            const removedEvent = this.events.splice(eventIndex, 1)[0];
+            console.log(`📤 Event dequeued by ID: ${removedEvent.type} (was at index ${eventIndex})`);
+            return true;
+        } else {
+            console.warn(`⚠️ Event not found in queue for removal by ID: ${eventId}`);
+            return false;
+        }
     }
+    
+    /**
+     * Process events until blocked or queue empty
+     */
+    public processEvents(): ProcessingResult {
+        console.log(`🎮 Processing events - queue size: ${this.events.length}`);
+        console.log("game event 11111", JSON.stringify(this.events))
+        // Dynamic import to avoid circular dependency
+        const { StaticEventProcessor } = require('../services/StaticEventProcessor');
+        return StaticEventProcessor.processQueue(this);
+    }
+    
+    /**
+     * Check if processing needs player input
+     */
+    public needsPlayerInput(): boolean {
+        const nextEvent = this.events[0];
+        return nextEvent?.type === EventType.PLAYER_CHOICE_REQUIRED && 
+               nextEvent?.status === EventStatus.DECLARED;
+    }
+    
+    /**
+     * Get current pending player choice
+     */
+    public getCurrentPlayerChoice(): GameEvent | null {
+        const nextEvent = this.events[0];
+        if (nextEvent?.type === EventType.PLAYER_CHOICE_REQUIRED && 
+            nextEvent?.status === EventStatus.DECLARED) {
+            return nextEvent;
+        }
+        return null;
+    }
+    
+    /**
+     * Get event queue size
+     */
+    public getEventQueueSize(): number {
+        return this.events.length;
+    }
+    
+    /**
+     * Check if event queue is empty
+     */
+    public isEventQueueEmpty(): boolean {
+        return this.events.length === 0;
+    }
+    
+    /**
+     * Clear event queue (for cleanup)
+     */
+    public clearEventQueue(): void {
+        this.events = [];
+        console.log('🧹 Event queue cleared');
+    }
+    
+    /**
+     * Sort events by priority and timestamp
+     */
+    private sortEventsByPriority(): void {
+        this.events.sort((a, b) => {
+            // Higher priority (lower number) goes first
+            if (a.priority !== b.priority) {
+                return a.priority - b.priority;
+            }
+            // Earlier timestamp goes first within same priority
+            return a.timestamp - b.timestamp;
+        });
+    }
+    
+    // ============ LEGACY EVENT SYSTEM (Removed) ============
+    // EventManager functionality has been moved to direct GameEnvironment methods
+    // Use processEvents() instead of eventManager.processEvent()
+    // Use enqueueEvent() instead of eventManager.enqueue()
 
     // ============ GAME STATE METHODS ============
 
@@ -207,6 +312,12 @@ export class GameEnvironment {
                 Object.entries(this.players).map(([id, player]) => [id, player.toJSON()])
             ),
             
+            // New event system
+            events: this.events,
+            processingEnabled: this.processingEnabled,
+            maxEventsPerCycle: this.maxEventsPerCycle,
+            
+            // Legacy event system (backward compatibility)
             pendingCardSelections: this.pendingCardSelections,
             gameEvents: this.gameEvents,
             lastEventId: this.lastEventId
@@ -232,10 +343,12 @@ export class GameEnvironment {
             );
         }
         
-        // Zones are now managed within individual players
-        // No separate zones object needed
+        // Restore new event system
+        gameEnv.events = data.events || [];
+        gameEnv.processingEnabled = data.processingEnabled !== false;
+        gameEnv.maxEventsPerCycle = data.maxEventsPerCycle || 50;
         
-        
+        // Legacy event system (backward compatibility)
         gameEnv.pendingCardSelections = data.pendingCardSelections || {};
         gameEnv.gameEvents = data.gameEvents || [];
         gameEnv.lastEventId = data.lastEventId || 0;

@@ -4,7 +4,7 @@
 import { Request, Response } from 'express';
 import { gameLogic, GameLogic } from '../services/GameLogic';
 import { GamePhase, PlayerActionType, CardPlayType } from '../models/GameEnums';
-import { PlayerAction } from '../services/EventQueue/EventManager';
+import { PlayerAction } from '../models/EventInterfaces';
 import * as fs from 'fs';
 import * as path from 'path';
 

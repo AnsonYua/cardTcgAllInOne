@@ -22,27 +22,25 @@ export interface ExecutionResult {
 
 export class GameEngine {
     private static cardDatabase: any = null;
-    private notificationManager: GameNotificationManager | null = null;
+    // Notification managers created per call - no instance storage
     
-    constructor() {
-        console.log('🎯 GameEngine initialized');
-        this.loadCardDatabase();
+    // Static initialization - load card database on first use
+    static {
+        GameEngine.ensureCardDatabaseLoaded();
     }
     
     /**
-     * Get or create notification manager for this game
+     * Get or create notification manager for this game (static version)
      */
-    private getNotificationManager(gameEnv: GameEnvironment): GameNotificationManager {
-        if (!this.notificationManager) {
-            this.notificationManager = new GameNotificationManager(gameEnv);
-        }
-        return this.notificationManager;
+    private static getNotificationManager(gameEnv: GameEnvironment): GameNotificationManager {
+        // Create new instance per call - no shared state
+        return new GameNotificationManager(gameEnv);
     }
     
     /**
-     * Load card database into global storage for efficient access
+     * Load card database into global storage for efficient access (static version)
      */
-    private loadCardDatabase(): void {
+    private static ensureCardDatabaseLoaded(): void {
         if (!GameEngine.cardDatabase) {
             try {
                 const cardDataPath = path.join(__dirname, '../data/st01Card.json');
@@ -71,7 +69,7 @@ export class GameEngine {
     /**
      * Create unique card instance with UUID
      */
-    private createUniqueCardId(originalCardId: string): string {
+    private static createUniqueCardId(originalCardId: string): string {
         let cleanCardId = originalCardId;
         if(originalCardId.split("/").length > 1){
             cleanCardId = originalCardId.split("/")[1];
@@ -116,43 +114,43 @@ export class GameEngine {
     
     // ============ MAIN EXECUTION INTERFACE ============
     
-    execute(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    static execute(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`🔥 Executing event: ${event.type}`);
         
         try {
             switch (event.type) {
                 case EventType.CREATE_GAME:
-                    return this.executeStartGame(event, gameEnv);
+                    return GameEngine.executeStartGame(event, gameEnv);
                     
                 case EventType.JOIN_GAME:
-                    return this.executeJoinGame(event, gameEnv);
+                    return GameEngine.executeJoinGame(event, gameEnv);
                     
                 case EventType.CONFIRM_REDRAW:
-                    return this.executeStartReady(event, gameEnv);
+                    return GameEngine.executeStartReady(event, gameEnv);
                     
                 case EventType.GAMEPLAY_BEGINS:
-                    return this.executeGameStart(event, gameEnv);
+                    return GameEngine.executeGameStart(event, gameEnv);
                     
                 case EventType.ERROR_OCCURRED:
-                    return this.executeErrorEvent(event, gameEnv);
+                    return GameEngine.executeErrorEvent(event, gameEnv);
                     
                 case EventType.ACKNOWLEDGE_EVENTS:
-                    return this.executeAcknowledgeEvents(event, gameEnv);
+                    return GameEngine.executeAcknowledgeEvents(event, gameEnv);
                     
                 case EventType.PHASE_ADVANCE:
-                    return this.executePhaseAdvance(event, gameEnv);
+                    return GameEngine.executePhaseAdvance(event, gameEnv);
                     
                 case EventType.END_TURN:
-                    return this.executeEndTurn(event, gameEnv);
+                    return GameEngine.executeEndTurn(event, gameEnv);
                     
                 case EventType.NEXT_PLAYER_TURN:
-                    return this.executeNextPlayerTurn(event, gameEnv);
+                    return GameEngine.executeNextPlayerTurn(event, gameEnv);
                     
                 case EventType.PLAY_CARD:
-                    return this.executePlayCard(event, gameEnv);
+                    return GameEngine.executePlayCard(event, gameEnv);
                     
                 case EventType.PLAYER_ACTION:
-                    return this.executePlayerAction(event, gameEnv);
+                    return GameEngine.executePlayerAction(event, gameEnv);
                     
                 default:
                     console.log(`🎯 Processing ${event.type} event - delegating to existing game logic`);
@@ -169,7 +167,7 @@ export class GameEngine {
     
     // ============ EVENT-SPECIFIC EXECUTION METHODS ============
     
-    private executeStartGame(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executeStartGame(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
         const { playerId, gameId } = event.data;
         
         console.log(`🎯 Processing CREATE_GAME event for player: ${playerId}`);
@@ -194,7 +192,7 @@ export class GameEngine {
         }
     }
     
-    private executeJoinGame(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executeJoinGame(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
         const { playerId, gameId } = event.data;
         
         console.log(`🎯 Processing JOIN_GAME event for player: ${playerId}`);
@@ -207,7 +205,7 @@ export class GameEngine {
             gameEnv.playersReady[playerId] = true;
             
             // Load deck configuration and set up game
-            this.initializeGameWithDecks(gameEnv, playerId);
+            GameEngine.initializeGameWithDecks(gameEnv, playerId);
             
             console.log(`✅ JOIN_GAME event processed - second player ${playerId} added`);
             return { success: true };
@@ -221,7 +219,7 @@ export class GameEngine {
         }
     }
     
-    private executeStartReady(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executeStartReady(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
         const { playerId, gameId, isRedraw } = event.data;
         
         console.log(`🎯 Processing CONFIRM_REDRAW event for player: ${playerId}, isRedraw: ${isRedraw}`);
@@ -246,11 +244,11 @@ export class GameEngine {
                     console.log(`📤 Returned ${currentHand.length} cards to deck`);
                     
                     // Shuffle the deck again
-                    player.deck.mainDeck = this.shuffleDeck(player.deck.mainDeck);
+                    player.deck.mainDeck = GameEngine.shuffleDeck(player.deck.mainDeck);
                     console.log(`🔀 Shuffled deck with ${player.deck.mainDeck.length} cards`);
                     
                     // Assign new 5 hand to player
-                    this.drawCards(player.deck, 5);
+                    GameEngine.drawCards(player.deck, 5);
                     console.log(`🃏 Drew new hand of ${player.deck._handUids.length} cards`);
                 }
             }
@@ -266,7 +264,7 @@ export class GameEngine {
                 console.log(`✅ Player ${playerId} confirmed their redraw choice: ${isRedraw}, confirmIsRedraw: ${player.confirmIsRedraw}`);
             }
 
-            const notificationManager = this.getNotificationManager(gameEnv);
+            const notificationManager = GameEngine.getNotificationManager(gameEnv);
             
             if(gameEnv.players[playerId].isRedraw){
                 notificationManager.notifyRedrawEvent(
@@ -289,14 +287,14 @@ export class GameEngine {
     }
     
     
-    private executeErrorEvent(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executeErrorEvent(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
         const { errorReason, errorType, originalEventType, playerId } = event.data;
         
         console.log(`💥 Processing error: ${errorType} - ${errorReason}`);
         
         try {
             // Add error event using GameNotificationManager
-            const notificationManager = this.getNotificationManager(gameEnv);
+            const notificationManager = GameEngine.getNotificationManager(gameEnv);
             notificationManager.notifyError(errorType, errorReason, playerId, originalEventType);
             
             console.log(`📨 Error event added via GameNotificationManager: ${errorReason}`);
@@ -311,14 +309,14 @@ export class GameEngine {
         }
     }
     
-    private executeAcknowledgeEvents(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executeAcknowledgeEvents(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
         const { eventIds, playerId } = event.data;
         
         console.log(`🎯 Processing ACKNOWLEDGE_EVENTS for ${eventIds.length} events`);
         
         try {
             // Create notification manager and acknowledge events
-            const notificationManager = this.getNotificationManager(gameEnv);
+            const notificationManager = GameEngine.getNotificationManager(gameEnv);
             const acknowledgedCount = notificationManager.acknowledgeEvents(eventIds);
             
             console.log(`✅ ACKNOWLEDGE_EVENTS processed - ${acknowledgedCount} events acknowledged`);
@@ -333,7 +331,7 @@ export class GameEngine {
         }
     }
     
-    private executePhaseAdvance(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executePhaseAdvance(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
         const { actionId, description, affectedPlayers } = event.data;
         
         console.log(`🎯 Processing PHASE_ADVANCE event: ${description}`);
@@ -347,7 +345,7 @@ export class GameEngine {
                 gameEnv.phase = GamePhase.MAIN_PHASE;
                 
                 // Create phase change event for frontend notification
-                const notificationManager = this.getNotificationManager(gameEnv);
+                const notificationManager = GameEngine.getNotificationManager(gameEnv);
                 notificationManager.addNotificationEvent(
                     'PHASE_CHANGE',
                     {
@@ -376,7 +374,7 @@ export class GameEngine {
     
     // ============ GAME SETUP HELPERS ============
     
-    private initializeGameWithDecks(gameEnv: GameEnvironment, joinedPlayerId: string): void {
+    private static initializeGameWithDecks(gameEnv: GameEnvironment, joinedPlayerId: string): void {
         try {
             console.log('🎮 Initializing game with deck configuration...');
             
@@ -399,12 +397,12 @@ export class GameEngine {
             const deck2Cards = deckConfig.decks[deck2Config.activeDeck].cards;
             
             // Transform card IDs to unique instances with UUIDs
-            const uniqueDeck1Cards = deck1Cards.map((cardId: string) => this.createUniqueCardId(cardId));
-            const uniqueDeck2Cards = deck2Cards.map((cardId: string) => this.createUniqueCardId(cardId));
+            const uniqueDeck1Cards = deck1Cards.map((cardId: string) => GameEngine.createUniqueCardId(cardId));
+            const uniqueDeck2Cards = deck2Cards.map((cardId: string) => GameEngine.createUniqueCardId(cardId));
             
             // Create and shuffle decks with unique card instances
-            const shuffledDeck1 = this.shuffleDeck([...uniqueDeck1Cards]);
-            const shuffledDeck2 = this.shuffleDeck([...uniqueDeck2Cards]);
+            const shuffledDeck1 = GameEngine.shuffleDeck([...uniqueDeck1Cards]);
+            const shuffledDeck2 = GameEngine.shuffleDeck([...uniqueDeck2Cards]);
             
             console.log(`🎲 Generated ${uniqueDeck1Cards.length} unique cards for player 1`);
             console.log(`🎲 Generated ${uniqueDeck2Cards.length} unique cards for player 2`);
@@ -431,8 +429,8 @@ export class GameEngine {
             player2.deck.mainDeck = shuffledDeck2;
             
             // Draw initial hands (5 cards each)
-            this.drawCards(gameEnv.players[playerId1].deck, 5);
-            this.drawCards(gameEnv.players[playerId2].deck, 5);
+            GameEngine.drawCards(gameEnv.players[playerId1].deck, 5);
+            GameEngine.drawCards(gameEnv.players[playerId2].deck, 5);
             
             console.log(`🎯 Game initialized: First player is ${gameEnv.currentPlayer}, hands drawn, redraw available`);
             
@@ -442,7 +440,7 @@ export class GameEngine {
         }
     }
     
-    private shuffleDeck(cards: string[]): string[] {
+    private static shuffleDeck(cards: string[]): string[] {
         const shuffled = [...cards];
         for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -451,7 +449,7 @@ export class GameEngine {
         return shuffled;
     }
     
-    private executeGameStart(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executeGameStart(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
         const { actionId, description, affectedPlayers } = event.data;
         
         console.log(`🎯 Processing GAME_START state-based action: ${description}`);
@@ -485,12 +483,12 @@ export class GameEngine {
             // Draw 1 card from deck to first player hand
             const firstPlayer = gameEnv.players[firstPlayerId];
             if (firstPlayer && firstPlayer.deck) {
-                this.drawCards(firstPlayer.deck, 1);
+                GameEngine.drawCards(firstPlayer.deck, 1);
                 console.log(`🃏 Drew 1 card for first player ${firstPlayerId}`);
             }
             
             // Create game events using GameNotificationManager
-            const notificationManager = this.getNotificationManager(gameEnv);
+            const notificationManager = GameEngine.getNotificationManager(gameEnv);
             
             // Notify about card drawn (requires acknowledgment)
             const drawnCards = firstPlayer?.deck.handUids.slice(-1) || []; // Get last drawn card UID
@@ -514,7 +512,7 @@ export class GameEngine {
         }
     }
     
-    private drawCards(deck: any, count: number): void {
+    private static drawCards(deck: any, count: number): void {
         for (let i = 0; i < count && deck.mainDeck.length > 0; i++) {
             const drawnCard = deck.mainDeck.shift();
             if (drawnCard) {
@@ -526,7 +524,7 @@ export class GameEngine {
     
     // ============ END TURN SYSTEM ============
     
-    private executeEndTurn(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executeEndTurn(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
         const { playerId, currentTurnNumber } = event.data;
         
         console.log(`🏁 Processing END_TURN event for player: ${playerId}, turn: ${currentTurnNumber}`);
@@ -555,7 +553,7 @@ export class GameEngine {
         }
     }
     
-    private executeNextPlayerTurn(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executeNextPlayerTurn(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
         const { currentPlayer, nextPlayer, currentTurn } = event.data;
         console.log("current event in nextplayer 111", JSON.stringify(event))
         console.log(`🔄 Processing NEXT_PLAYER_TURN event: ${currentPlayer} → ${nextPlayer}, turn: ${currentTurn} → ${currentTurn + 1}`);
@@ -577,12 +575,12 @@ export class GameEngine {
                         // Draw 1 card from deck to first player hand
             const firstPlayer = gameEnv.players[nextPlayer];
             if (firstPlayer && firstPlayer.deck) {
-                this.drawCards(firstPlayer.deck, 1);
+                GameEngine.drawCards(firstPlayer.deck, 1);
                 console.log(`🃏 Drew 1 card for first player ${nextPlayer}`);
             }
             
             // Create game events using GameNotificationManager
-            const notificationManager = this.getNotificationManager(gameEnv);
+            const notificationManager = GameEngine.getNotificationManager(gameEnv);
             
             // Notify about card drawn (requires acknowledgment)
             const drawnCards = firstPlayer?.deck.handUids.slice(-1) || []; // Get last drawn card UID
@@ -602,7 +600,7 @@ export class GameEngine {
         }
     }
     
-    private executePlayCard(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executePlayCard(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
         // Pass event data directly to minimize conversions
         const eventData = event.data;
         
@@ -663,7 +661,7 @@ export class GameEngine {
         }
     }
     
-    private executePlayerAction(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executePlayerAction(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
         // Pass event data directly to minimize conversions
         const eventData = event.data;
         
@@ -681,10 +679,10 @@ export class GameEngine {
             // Handle different action types
             switch (eventData.actionType) {
                 case 'attackUnit':
-                    return this.handleAttackUnit(eventData, gameEnv);
+                    return GameEngine.handleAttackUnit(eventData, gameEnv);
                     
                 case 'attackShieldArea':
-                    return this.handleAttackShieldArea(eventData, gameEnv);
+                    return GameEngine.handleAttackShieldArea(eventData, gameEnv);
                     
                 default:
                     return {
@@ -702,7 +700,7 @@ export class GameEngine {
         }
     }
     
-    private handleAttackUnit(eventData: any, gameEnv: GameEnvironment): ExecutionResult {
+    private static handleAttackUnit(eventData: any, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`⚔️ Processing attackUnit action:`, eventData);
         
         // TODO: Implement attack unit logic
@@ -716,7 +714,7 @@ export class GameEngine {
         return { success: true };
     }
     
-    private handleAttackShieldArea(eventData: any, gameEnv: GameEnvironment): ExecutionResult {
+    private static handleAttackShieldArea(eventData: any, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`🛡️ Processing attackShieldArea action:`, eventData);
         
         try {
@@ -797,7 +795,7 @@ export class GameEngine {
                 console.log(`🏰 Base takes ${totalAttackPower} damage (${currentDamage} → ${newDamage}), HP: ${baseCard.currentHP}${baseDestroyed ? ' - DESTROYED!' : ''}`);
                 
                 // Generate base damage event
-                const notificationManager = this.getNotificationManager(gameEnv);
+                const notificationManager = GameEngine.getNotificationManager(gameEnv);
                 notificationManager.addNotificationEvent(
                     baseDestroyed ? 'BASE_DESTROYED' : 'BASE_DAMAGED',
                     {
@@ -851,7 +849,7 @@ export class GameEngine {
                     }
                     
                     // Generate shield destroyed event
-                    const notificationManager = this.getNotificationManager(gameEnv);
+                    const notificationManager = GameEngine.getNotificationManager(gameEnv);
                     notificationManager.addNotificationEvent(
                         'SHIELD_DESTROYED',
                         {
