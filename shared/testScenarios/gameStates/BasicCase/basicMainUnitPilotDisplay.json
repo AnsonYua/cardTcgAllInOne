@@ -2370,7 +2370,7 @@
             }
         },
         "pendingCardSelections": {},
-        "gameEvents": [
+        "notificationQueue": [
             {
                 "id": "error_occurred_1757435078814_1k4vwzkxs",
                 "type": "ERROR_OCCURRED",

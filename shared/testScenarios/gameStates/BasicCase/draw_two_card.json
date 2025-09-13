@@ -995,7 +995,7 @@
             }
         },
         "pendingCardSelections": {},
-        "gameEvents": [
+        "notificationQueue": [
             {
                 "id": "card_drawn_1756741545438_2547nw7xc",
                 "type": "CARD_DRAWN",

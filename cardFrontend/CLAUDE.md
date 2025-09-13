@@ -69,7 +69,7 @@ gameState = {
     currentPlayer: string,   // Active player ID
     players: {},            // Player data and hands
     zones: {},              // Card placement zones (TOP/LEFT/RIGHT/HELP/SP)
-    gameEvents: [],         // Unprocessed events
+    notificationQueue: [],  // Unprocessed events
     pendingCardSelections: {}, // Card selection workflows
     victoryPoints: {},      // Current VP totals
     round: number           // Current round/leader (1-4)
@@ -125,7 +125,7 @@ gameState = {
 
 ### Event System
 - **Real-time Updates**: Poll `GET /player/:playerId?gameId=X` every 1 second
-- **Event Processing**: Process events from `gameEnv.gameEvents` array
+- **Event Processing**: Process events from `gameEnv.notificationQueue` array
 - **Event Acknowledgment**: Call `POST /player/acknowledgeEvents` to mark processed
 - **Event Types**: 30+ different event types (GAME_STARTED, CARD_PLAYED, BATTLE_CALCULATED, etc.)
 

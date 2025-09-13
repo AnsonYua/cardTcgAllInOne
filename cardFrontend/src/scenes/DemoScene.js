@@ -345,7 +345,7 @@ export default class DemoScene extends DemoSceneBasic {
       }
       
       // Get all current game events
-      const allEvents = gameState.gameEnv.gameEvents || [];
+      const allEvents = gameState.gameEnv.notificationQueue || [];
       console.log('All events:', allEvents);
       
       // Filter for CARD_DRAWN events that haven't been processed

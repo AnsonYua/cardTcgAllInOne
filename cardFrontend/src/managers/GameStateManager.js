@@ -12,7 +12,7 @@ export default class GameStateManager {
         players: {},
         zones: {},
         fieldEffects: {},
-        gameEvents: [],
+        notificationQueue: [],
         pendingCardSelections: {},
         victoryPoints: {},
         round: 1,
@@ -271,7 +271,7 @@ export default class GameStateManager {
   }
 
   getUnprocessGameEvents(){
-    const events = this.gameState.gameEnv.gameEvents || [];
+    const events = this.gameState.gameEnv.notificationQueue || [];
     console.log("events "+JSON.stringify(events))
     const unprocessedEvents = events.filter(event => 
       event.metadata?.requiresAcknowledgment === true && 
@@ -287,10 +287,10 @@ export default class GameStateManager {
         const response = await this.apiManager.acknowledgeEvents(this.gameState.gameId, this.gameState.playerId, eventIds);
         console.log(`Acknowledged ${eventIds.length} specific events`);
         
-        // Update local gameEvents with response from backend
-        if (response && response.gameEvents) {
-          this.gameState.gameEnv.gameEvents = response.gameEvents;
-          console.log(`[GameStateManager] Updated local gameEvents from backend response`);
+        // Update local notificationQueue with response from backend
+        if (response && response.notificationQueue) {
+          this.gameState.gameEnv.notificationQueue = response.notificationQueue;
+          console.log(`[GameStateManager] Updated local notificationQueue from backend response`);
         }
       } catch (error) {
         console.error('Failed to acknowledge specific events:', error);
@@ -335,7 +335,7 @@ export default class GameStateManager {
         players: {},
         zones: {},
         fieldEffects: {},
-        gameEvents: [],
+        notificationQueue: [],
         pendingCardSelections: {},
         victoryPoints: {},
         round: 1,

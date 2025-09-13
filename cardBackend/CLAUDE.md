@@ -238,7 +238,7 @@ Strategic face-down placement system:
 Comprehensive real-time game state tracking for frontend integration:
 
 ### Event Architecture
-- **Event Storage:** All events stored in `gameEnv.gameEvents` array within game state
+- **Event Storage:** All events stored in `gameEnv.notificationQueue` array within game state
 - **Event Persistence:** Events persist for 3 seconds (matching 1-second frontend polling)
 - **Automatic Cleanup:** Expired and acknowledged events automatically removed
 - **Unique IDs:** Each event has timestamp-based unique identifier
@@ -311,7 +311,7 @@ await testHelper.acknowledgeEvents(gameId, eventIds);
 ### Frontend Integration
 **Polling Strategy:**
 - Frontend polls GET `/player/:playerId?gameId=X` every 1 second
-- Detects unprocessed events in `gameEnv.gameEvents` array
+- Detects unprocessed events in `gameEnv.notificationQueue` array
 - Processes events based on type and triggers appropriate UI actions
 - Calls POST `/player/acknowledgeEvents` to mark events as processed
 
@@ -739,7 +739,7 @@ Previously, `injectGameState` bypassed both the play sequence recording and fiel
 
 ### Frontend Integration Requirements
 - Implement 1-second polling of GET `/player/:playerId?gameId=X`
-- Process events from `gameEnv.gameEvents` array based on event type
+- Process events from `gameEnv.notificationQueue` array based on event type
 - Call POST `/player/acknowledgeEvents` to mark events as processed
 - Handle all error event types with appropriate user feedback
 - Support card selection workflow via events and blocking logic

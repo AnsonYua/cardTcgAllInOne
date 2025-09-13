@@ -124,7 +124,7 @@ npm run format
 ### API Integration
 - **Backend URL**: `http://localhost:8080` (configured in `cardFrontend/src/config/gameConfig.js`)
 - **Polling**: 1-second intervals for real-time updates via `GET /player/:playerId?gameId=X`
-- **Event Processing**: Process events from `gameEnv.gameEvents` array
+- **Event Processing**: Process events from `gameEnv.notificationQueue` array
 - **Event Acknowledgment**: Call `POST /player/acknowledgeEvents` to mark events processed
 
 ### Game State Management

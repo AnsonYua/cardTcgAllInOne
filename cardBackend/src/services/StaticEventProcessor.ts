@@ -104,7 +104,7 @@ export class StaticEventProcessor {
                     });
                     
                     // Remove the specific resolved event from queue (safer than shift)
-                    const removed = gameEnv.dequeueEvent(event);
+                    const removed = gameEnv.dequeueFromProcessing(event);
                     if (removed) {
                         eventsProcessed++;
                     } else {
@@ -120,7 +120,7 @@ export class StaticEventProcessor {
             } catch (error) {
                 console.error(`💥 Error processing event ${event.type}:`, error);
                 // Remove problematic event to prevent infinite loop
-                const removed = gameEnv.dequeueEvent(event);
+                const removed = gameEnv.dequeueFromProcessing(event);
                 if (removed) {
                     eventsProcessed++;
                 } else {

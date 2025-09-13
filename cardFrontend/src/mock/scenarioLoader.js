@@ -112,7 +112,7 @@ class FrontendScenarioLoader {
                     redraw: 0,
                     fieldEffects: { zoneRestrictions: {}, activeEffects: [] }
                 },
-                gameEvents: [],
+                notificationQueue: [],
                 lastEventId: 0,
                 // REFACTOR: Consolidated card selection system - removed pendingPlayerAction
                 pendingCardSelections: {},

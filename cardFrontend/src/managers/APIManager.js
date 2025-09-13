@@ -215,7 +215,7 @@ export default class APIManager {
       gameEnv: {
         phase: GAME_CONFIG.phases.MAIN,
         currentPlayer: playerId,
-        gameEvents: [],
+        notificationQueue: [],
         // ... other mock data
       }
     };

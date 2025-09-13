@@ -1873,7 +1873,7 @@
             }
         },
         "pendingCardSelections": {},
-        "gameEvents": [
+        "notificationQueue": [
             {
                 "id": "phase_change_1757424134057_dy840kb48",
                 "type": "PHASE_CHANGE",

@@ -121,12 +121,6 @@ export class GameEnvironment {
         console.log(`📋 Event queued for processing: ${event.type} (priority: ${event.priority})`);
     }
     
-    /**
-     * Legacy method for backward compatibility
-     */
-    public enqueueEvent(event: GameEvent): void {
-        this.enqueueForProcessing(event);
-    }
     
     // ============ NOTIFICATION QUEUE METHODS ============
     
@@ -158,12 +152,6 @@ export class GameEnvironment {
         }
     }
     
-    /**
-     * Legacy method for backward compatibility
-     */
-    public dequeueEvent(event: GameEvent): boolean {
-        return this.dequeueFromProcessing(event);
-    }
     
     /**
      * Remove event by ID from processing queue (alternative method)
@@ -274,7 +262,7 @@ export class GameEnvironment {
     // ============ LEGACY EVENT SYSTEM (Removed) ============
     // EventManager functionality has been moved to direct GameEnvironment methods
     // Use processEvents() instead of eventManager.processEvent()
-    // Use enqueueEvent() instead of eventManager.enqueue()
+    // Use enqueueForProcessing() for internal game logic events
 
     // ============ GAME STATE METHODS ============
 
@@ -370,9 +358,6 @@ export class GameEnvironment {
             notificationQueue: this.notificationQueue,
             lastEventId: this.lastEventId,
             
-            // Legacy compatibility - keep old field names for backward compatibility
-            events: this.processingQueue,
-            gameEvents: this.notificationQueue
         };
     }
 
@@ -402,7 +387,7 @@ export class GameEnvironment {
         
         // Frontend notification system
         gameEnv.pendingCardSelections = data.pendingCardSelections || {};
-        gameEnv.notificationQueue = data.notificationQueue || data.gameEvents || [];
+        gameEnv.notificationQueue = data.notificationQueue || [];
         gameEnv.lastEventId = data.lastEventId || 0;
         
         return gameEnv;
