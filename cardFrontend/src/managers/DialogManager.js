@@ -134,15 +134,16 @@ export default class DialogManager {
     const buttonY = dialogY + 50;
     const buttonWidth = 100;
     const buttonHeight = 35;
+    const buttonSpacing = 20; // Gap between buttons to prevent overlap
     
-    // Confirm button
+    // Confirm button (left side with proper spacing)
     const confirmButton = this.scene.add.graphics();
     confirmButton.fillStyle(0x4CAF50);
-    confirmButton.fillRoundedRect(dialogX - 60, buttonY - buttonHeight/2, buttonWidth, buttonHeight, 8);
+    confirmButton.fillRoundedRect(dialogX - buttonWidth - buttonSpacing/2, buttonY - buttonHeight/2, buttonWidth, buttonHeight, 8);
     confirmButton.setDepth(1502);
-    confirmButton.setInteractive(new Phaser.Geom.Rectangle(dialogX - 60, buttonY - buttonHeight/2, buttonWidth, buttonHeight), Phaser.Geom.Rectangle.Contains);
+    confirmButton.setInteractive(new Phaser.Geom.Rectangle(dialogX - buttonWidth - buttonSpacing/2, buttonY - buttonHeight/2, buttonWidth, buttonHeight), Phaser.Geom.Rectangle.Contains);
     
-    const confirmText = this.scene.add.text(dialogX - 10, buttonY, config.confirmText || 'Yes', {
+    const confirmText = this.scene.add.text(dialogX - buttonWidth/2 - buttonSpacing/2, buttonY, config.confirmText || 'Yes', {
       fontSize: '16px',
       fontFamily: 'Arial',
       fill: '#ffffff',
@@ -151,14 +152,14 @@ export default class DialogManager {
     confirmText.setOrigin(0.5);
     confirmText.setDepth(1503);
     
-    // Cancel button  
+    // Cancel button (right side with proper spacing)
     const cancelButton = this.scene.add.graphics();
     cancelButton.fillStyle(0xf44336);
-    cancelButton.fillRoundedRect(dialogX + 60 - buttonWidth, buttonY - buttonHeight/2, buttonWidth, buttonHeight, 8);
+    cancelButton.fillRoundedRect(dialogX + buttonSpacing/2, buttonY - buttonHeight/2, buttonWidth, buttonHeight, 8);
     cancelButton.setDepth(1502);
-    cancelButton.setInteractive(new Phaser.Geom.Rectangle(dialogX + 60 - buttonWidth, buttonY - buttonHeight/2, buttonWidth, buttonHeight), Phaser.Geom.Rectangle.Contains);
+    cancelButton.setInteractive(new Phaser.Geom.Rectangle(dialogX + buttonSpacing/2, buttonY - buttonHeight/2, buttonWidth, buttonHeight), Phaser.Geom.Rectangle.Contains);
     
-    const cancelText = this.scene.add.text(dialogX + 10, buttonY, config.cancelText || 'No', {
+    const cancelText = this.scene.add.text(dialogX + buttonWidth/2 + buttonSpacing/2, buttonY, config.cancelText || 'No', {
       fontSize: '16px',
       fontFamily: 'Arial',
       fill: '#ffffff',
