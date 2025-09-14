@@ -813,6 +813,9 @@ export default class GameScene extends Phaser.Scene {
     this.baseAndShieldManager.updateAll();
     this.energyAreaManager.updateEnergyAreas();
     this.slotAreaManager.updateSlotAreas();
+    
+    // Update card interaction states based on current turn
+    this.updateCardInteractionStates();
 
     if (this.isSetScenoria) {
       this.isSetScenoria = false;
@@ -2548,6 +2551,63 @@ export default class GameScene extends Phaser.Scene {
   handleActionButtonClick(action, effectData = null) {
     const selectedCard = this.gameStateManager.getSelectedCard();
     this.cardActionHandler.handleAction(action, selectedCard, effectData);
+  }
+
+  /**
+   * Update card interaction states based on current turn
+   * Sets card.active = true when it's the player's turn, false during opponent's turn
+   */
+  updateCardInteractionStates() {
+    const isCurrentPlayer = this.gameStateManager.isCurrentPlayer();
+    
+    console.log(`[GameScene] Updating card interaction states - isCurrentPlayer: ${isCurrentPlayer}`);
+    
+    // Update hand cards interaction state
+    if (this.playerHand && Array.isArray(this.playerHand)) {
+      this.playerHand.forEach(card => {
+        if (card) {
+          card.active = isCurrentPlayer;
+          console.log(`[GameScene] Set hand card ${card.cardData?.id || 'unknown'} active: ${isCurrentPlayer}`);
+        }
+      });
+    }
+    
+    // Update zone cards interaction state directly
+    this.updateZoneCardsInteractionStates(isCurrentPlayer);
+    
+    console.log(`[GameScene] Card interaction states updated for ${this.playerHand ? this.playerHand.length : 0} hand cards and zone cards`);
+  }
+
+  /**
+   * Update interaction states for cards in zones (slots, base, shield, energy areas)
+   * @param {boolean} isCurrentPlayer - Whether it's currently the player's turn
+   */
+  updateZoneCardsInteractionStates(isCurrentPlayer) {
+    let zoneCardCount = 0;
+
+    // Update slot area cards (units and pilots)
+    if (this.slotAreaManager && this.slotAreaManager.playerSlotCards) {
+      Object.keys(this.slotAreaManager.playerSlotCards).forEach(slotName => {
+        const slot = this.slotAreaManager.playerSlotCards[slotName];
+        
+        // Update unit card in slot
+        if (slot.unit && slot.unit.active !== undefined) {
+          slot.unit.active = isCurrentPlayer;
+          zoneCardCount++;
+          console.log(`[GameScene] Set ${slotName} unit card active: ${isCurrentPlayer}`);
+        }
+        
+        // Update pilot card in slot
+        if (slot.pilot && slot.pilot.active !== undefined) {
+          slot.pilot.active = isCurrentPlayer;
+          zoneCardCount++;
+          console.log(`[GameScene] Set ${slotName} pilot card active: ${isCurrentPlayer}`);
+        }
+      });
+    }
+
+
+    console.log(`[GameScene] Updated interaction states for ${zoneCardCount} zone cards`);
   }
 
   // Card action methods moved to CardActionHandler class
