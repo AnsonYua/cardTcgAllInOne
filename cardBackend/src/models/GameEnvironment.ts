@@ -56,6 +56,9 @@ export class GameEnvironment {
     // Card selection system
     public pendingCardSelections?: { [selectionId: string]: any };
     
+    // Burst effect choice system
+    public pendingBurstChoices?: { [choiceId: string]: any };
+    
     // Legacy compatibility (removed - no longer using EventManager)
 
     constructor() {

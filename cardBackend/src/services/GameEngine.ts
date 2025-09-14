@@ -155,6 +155,9 @@ export class GameEngine {
                 case EventType.SHIELD_CARD_ATTACKED:
                     return GameEngine.executeShieldCardAttacked(event, gameEnv);
                     
+                case EventType.BURST_EFFECT_CHOICE:
+                    return GameEngine.executeBurstEffectChoice(event, gameEnv);
+                    
                 default:
                     console.log(`🎯 Processing ${event.type} event - delegating to existing game logic`);
                     return { success: true };
@@ -917,18 +920,36 @@ export class GameEngine {
             for (const shieldCard of shieldCards) {
                 console.log(`🛡️ Processing shield card: ${shieldCard.cardUid}`);
                 
-                // TODO: Implement the actual card effect processing logic here
-                // This is where you'll check for burst_add_to_hand and other effects
-                // 
-                // The pattern should be:
-                // 1. Check card effects (burst_add_to_hand, etc.)
-                // 2. Apply the appropriate effect
-                // 3. Handle card placement (hand, trash, etc.)
-                // 4. Generate appropriate notification events
-                // 5. Update game state
+                // Check if card has burst effects with BURST_CONDITION trigger
+                const burstEffects = GameEngine.findBurstEffects(shieldCard.cardData);
                 
-                console.log('📋 TODO: Implement shield card effect processing');
-                console.log(`🛡️ Shield card ${shieldCard.cardUid} effects:`, shieldCard.cardData?.effects?.rules);
+                if (burstEffects.length > 0) {
+                    console.log(`💥 Found ${burstEffects.length} burst effect(s) on card ${shieldCard.cardId}`);
+                    
+                    // Create choice events for each burst effect requiring user confirmation
+                    for (const burstEffect of burstEffects) {
+                        console.log(`⚡ Creating choice event for burst effect: ${burstEffect.effectId}`);
+                        
+                        const choiceEvent = EventFactory.createBurstEffectChoiceEvent(
+                            defendingPlayerId,
+                            shieldCard.cardUid,
+                            shieldCard.cardId,
+                            shieldCard.cardData,
+                            burstEffect
+                        );
+                        
+                        // Enqueue the choice event for processing
+                        gameEnv.enqueueForProcessing(choiceEvent);
+                        
+                        console.log(`📤 Enqueued burst choice event: ${choiceEvent.id}`);
+                    }
+                } else {
+                    console.log(`📝 No burst effects found on card ${shieldCard.cardId}`);
+                }
+                
+                // Move shield card to trash (standard behavior regardless of burst effects)
+                // This will be handled by the shield destruction logic elsewhere
+                console.log(`🗑️ Shield card ${shieldCard.cardUid} will be moved to trash`);
             }
             
             // PLACEHOLDER: For now, just acknowledge the event
@@ -945,6 +966,140 @@ export class GameEngine {
                 error: error instanceof Error ? error.message : 'Shield card attack execution failed'
             };
         }
+    }
+    
+    /**
+     * Handle BURST_EFFECT_CHOICE events - these require user confirmation via API
+     * @param event - The burst effect choice event
+     * @param gameEnv - Current game environment
+     */
+    private static executeBurstEffectChoice(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+        console.log(`💥 Executing BURST_EFFECT_CHOICE event: ${event.id}`);
+        
+        try {
+            const { playerId, cardUid, cardId, cardData, burstEffect, choiceId, requiresConfirmation } = event.data;
+            
+            console.log(`⚡ Burst choice for card ${cardId} (${cardUid}): ${burstEffect.description}`);
+            console.log(`🎯 Player ${playerId} needs to confirm choice: ${choiceId}`);
+            
+            // Store the pending burst choice in game environment
+            // This will be used by the API to track pending user decisions
+            if (!gameEnv.pendingBurstChoices) {
+                gameEnv.pendingBurstChoices = {};
+            }
+            
+            gameEnv.pendingBurstChoices[choiceId] = {
+                playerId,
+                cardUid,
+                cardId,
+                cardData,
+                burstEffect,
+                choiceId,
+                timestamp: Date.now(),
+                status: 'AWAITING_USER_INPUT'
+            };
+            
+            console.log(`📋 Stored pending burst choice: ${choiceId}`);
+            console.log(`🔄 Awaiting user confirmation via API call`);
+            
+            // The choice will be resolved when the user calls the API to confirm/decline
+            // This event is successfully processed - the choice is now pending user input
+            return {
+                success: true
+            };
+            
+        } catch (error) {
+            console.error(`❌ Error in executeBurstEffectChoice:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Burst effect choice execution failed'
+            };
+        }
+    }
+    
+    /**
+     * Find burst effects on a card that should trigger on BURST_CONDITION
+     * @param cardData - The card data to search for burst effects
+     * @returns Array of burst effects with BURST_CONDITION trigger
+     */
+    private static findBurstEffects(cardData: any): Array<{ effectId: string; type: string; description: string }> {
+        const burstEffects: Array<{ effectId: string; type: string; description: string }> = [];
+        
+        if (!cardData || !cardData.effects || !cardData.effects.rules) {
+            return burstEffects;
+        }
+        
+        // Search through card effects for burst triggers
+        for (const effect of cardData.effects.rules) {
+            // Check if effect has trigger with BURST_CONDITION
+            if (effect.trigger && effect.trigger === 'BURST_CONDITION') {
+                // Extract effect type and create description
+                const effectType = effect.effect?.action || effect.type || 'unknown';
+                const description = GameEngine.createBurstEffectDescription(effect, cardData);
+                
+                burstEffects.push({
+                    effectId: effect.effectId || `burst_${effectType}_${cardData.cardId || 'unknown'}`,
+                    type: effectType,
+                    description: description
+                });
+                
+                console.log(`🔍 Found burst effect: ${effectType} on card ${cardData.cardId}`);
+            }
+        }
+        
+        return burstEffects;
+    }
+    
+    /**
+     * Create a human-readable description of a burst effect
+     * @param effect - The effect definition
+     * @param cardData - The card data
+     * @returns Human-readable description string
+     */
+    private static createBurstEffectDescription(effect: any, cardData: any): string {
+        const cardName = cardData.name || cardData.cardId || 'Unknown Card';
+        const effectType = effect.effect?.action || effect.type || 'unknown';
+        
+        switch (effectType) {
+            case 'burst_add_to_hand':
+                return `【Burst】 ${cardName}: Add this card to your hand`;
+            case 'burst_activate_main':
+                return `【Burst】 ${cardName}: Activate main effect`;
+            case 'burst_deploy':
+                return `【Burst】 ${cardName}: Deploy this card to the field`;
+            default:
+                return `【Burst】 ${cardName}: Activate burst effect (${effectType})`;
+        }
+    }
+    
+    /**
+     * Execute a burst effect when user confirms
+     * PLACEHOLDER - This method should be called when the user confirms a burst choice
+     * @param gameEnv - Current game environment
+     * @param choiceId - The choice ID that was confirmed
+     * @param confirmed - Whether the user confirmed or declined
+     */
+    static executeBurstEffect(gameEnv: GameEnvironment, choiceId: string, confirmed: boolean): ExecutionResult {
+        console.log(`💥 PLACEHOLDER: Execute burst effect for choice ${choiceId}, confirmed: ${confirmed}`);
+        
+        // TODO: Implement burst effect execution logic
+        // 1. Find the pending burst choice by choiceId
+        // 2. If confirmed, execute the specific burst effect type
+        // 3. Update game state accordingly
+        // 4. Generate appropriate notification events
+        // 5. Remove the choice from pending state
+        
+        if (!confirmed) {
+            console.log(`❌ User declined burst effect ${choiceId}`);
+            return { success: true }; // Declining is also a valid outcome
+        }
+        
+        console.log(`🚀 User confirmed burst effect ${choiceId} - executing...`);
+        
+        // PLACEHOLDER: Add actual implementation here
+        console.log(`📋 TODO: Implement specific burst effect execution logic`);
+        
+        return { success: true };
     }
     
 }

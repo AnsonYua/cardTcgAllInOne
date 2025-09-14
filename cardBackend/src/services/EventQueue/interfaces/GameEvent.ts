@@ -256,6 +256,23 @@ export interface ShieldCardAttackedEvent extends BaseGameEvent {
     };
 }
 
+export interface BurstEffectChoiceEvent extends BaseGameEvent {
+    type: EventType.BURST_EFFECT_CHOICE;
+    data: {
+        playerId: string;
+        cardUid: string;
+        cardId: string;
+        cardData: any;
+        burstEffect: {
+            effectId: string;
+            type: string;
+            description: string;
+        };
+        choiceId: string;
+        requiresConfirmation: true;
+    };
+}
+
 export type GameEvent = 
     | PhaseChangeEvent 
     | PlayerChoiceEvent 
@@ -278,7 +295,8 @@ export type GameEvent =
     | JoinGameEvent
     | BaseGameEvent
     | NextPlayerTurnEvent
-    | ShieldCardAttackedEvent;
+    | ShieldCardAttackedEvent
+    | BurstEffectChoiceEvent;
 
 export class EventFactory {
     private static eventIdCounter = 0;
@@ -509,6 +527,32 @@ export class EventFactory {
                 attackerSlot,
                 shieldCards,
                 attackPower
+            }
+        };
+    }
+    
+    static createBurstEffectChoiceEvent(
+        playerId: string,
+        cardUid: string,
+        cardId: string,
+        cardData: any,
+        burstEffect: { effectId: string; type: string; description: string }
+    ): BurstEffectChoiceEvent {
+        return {
+            id: `burst_choice_${++this.eventIdCounter}_${Date.now()}`,
+            type: EventType.BURST_EFFECT_CHOICE,
+            status: EventStatus.DECLARED,
+            priority: EventPriority.HIGH,
+            playerId,
+            timestamp: Date.now(),
+            data: {
+                playerId,
+                cardUid,
+                cardId,
+                cardData,
+                burstEffect,
+                choiceId: `burst_choice_${cardUid}_${Date.now()}`,
+                requiresConfirmation: true
             }
         };
     }
