@@ -10,7 +10,6 @@ export default class GameStateManager {
         phase: GAME_CONFIG.phases.SETUP,
         currentPlayer: null,
         players: {},
-        zones: {},
         fieldEffects: {},
         notificationQueue: [],
         pendingCardSelections: {},
@@ -82,18 +81,6 @@ export default class GameStateManager {
     return this.gameState.gameEnv.players[id];
   }
 
-  getPlayerLeader(isOpponent = false) {
-    const crtPlayer = isOpponent ? this.getOpponent() : this.gameState.playerId;
-    const leaderCard = this.gameState.gameEnv.zones[crtPlayer].leader[0];
-    console.log("da22ssd",this.gameState.gameEnv.zones[crtPlayer].leader[0])
-    const leaderCardData = {
-      id: leaderCard.cardId,
-      name: leaderCard.cardId,
-      type: leaderCard.cardData.cardType,
-      cardType: leaderCard.cardData.cardType,
-    }
-    return leaderCardData;
-  }
 
   getOpponent() {
     const players = Object.keys(this.gameState.gameEnv.players);
@@ -106,7 +93,7 @@ export default class GameStateManager {
 
   getPlayerZones(playerId = null) {
     const id = playerId || this.gameState.playerId;
-    return this.gameState.gameEnv.zones[id] || {};
+    return this.gameState.gameEnv.players[id]?.zones || {};
   }
 
   getPlayerHand(playerId = null) {
@@ -138,7 +125,7 @@ export default class GameStateManager {
     if(playerId == null) {
       playerId = currentPlayerId;
     }
-    return this.gameState.gameEnv.players[playerId].zones.shieldArea || []
+    return this.gameState.gameEnv.players[playerId]?.zones?.shieldArea || []
   }
   getOpponentShieldAreaCard(){
     const opponentId = this.getOpponent();
@@ -150,7 +137,7 @@ export default class GameStateManager {
     if(playerId == null) {
       playerId = currentPlayerId;
     }
-    return this.gameState.gameEnv.players[playerId].zones.base || []
+    return this.gameState.gameEnv.players[playerId]?.zones?.base || []
   }
   getOpponentBaseAreaCard(){
     const opponentId = this.getOpponent();
@@ -162,7 +149,7 @@ export default class GameStateManager {
     if(playerId == null) {
       playerId = currentPlayerId;
     }
-    return this.gameState.gameEnv.players[playerId].zones.energyArea || []
+    return this.gameState.gameEnv.players[playerId]?.zones?.energyArea || []
   }
   getOpponentEnergyAreaCard(){
     const opponentId = this.getOpponent();
@@ -390,16 +377,26 @@ export default class GameStateManager {
    */
   getCardCurrentPowerFromZones(cardId, playerId = null) {
     const id = playerId || this.gameState.playerId;
-    const zones = this.gameState.gameEnv.zones?.[id];
+    const player = this.gameState.gameEnv.players?.[id];
+    const zones = player?.zones;
     
     if (!zones) {
       return null;
     }
     
-    // Search through all zones for the card
-    const zoneNames = ['top', 'left', 'right', 'help', 'sp'];
+    // Search through all zones for the card (updated for new structure)
+    // Slot zones (unit cards)
+    const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'];
+    for (const slotName of slotZones) {
+      const slot = zones[slotName];
+      if (slot?.unit?.cardData?.id === cardId) {
+        return slot.unit.currentPower || slot.unit.cardData?.power || 0;
+      }
+    }
     
-    for (const zoneName of zoneNames) {
+    // Array zones (base, shieldArea, energyArea, trashArea)
+    const arrayZones = ['base', 'shieldArea', 'energyArea', 'trashArea'];
+    for (const zoneName of arrayZones) {
       const zone = zones[zoneName];
       if (zone && Array.isArray(zone)) {
         for (const zoneCard of zone) {
@@ -465,96 +462,8 @@ export default class GameStateManager {
     return this.getZoneRestrictions(playerId, zone);
   }
   
-  /**
-   * Check if card can be played in zone (using computed restrictions with preventSummon effects)
-   * @param {Object} card - Card object
-   * @param {string} zone - Zone name
-   * @param {string} playerId - Player ID (defaults to current player)
-   * @returns {boolean} Whether card can be played
-   */
-  canPlayCardInZoneComputed(card, zone, playerId = null) {
-    const restrictions = this.getComputedZoneRestrictions(playerId, zone);
-    console.log("computed restrictions (with preventSummon effects): " , JSON.stringify(restrictions))
-    
-    // Handle 'ALL' string case
-    if (restrictions === "ALL") return true;
-    
-    // Handle array cases
-    if (Array.isArray(restrictions)) {
-      // Check for 'ALL' in array
-      if (restrictions.includes("ALL")) {
-        return true;
-      }
-      // Check if card's gameType is allowed
-      return restrictions.includes(card.cardDetails.gameType);
-    }
-    
-    // Handle card with 'ALL' gameType
-    if (card.cardDetails.gameType === "ALL") return true;
-    
-    return false;
-  }
+
   
-  /**
-   * Get play sequence statistics
-   * @returns {Object} Play sequence statistics
-   */
-  getPlaySequenceStats() {
-    const playSequence = this.gameState.gameEnv.playSequence;
-    
-    if (!playSequence || !playSequence.plays) {
-      return {
-        totalPlays: 0,
-        leaderPlays: 0,
-        cardPlays: 0,
-        myPlays: 0,
-        opponentPlays: 0
-      };
-    }
-    
-    const plays = playSequence.plays;
-    const myId = this.gameState.playerId;
-    
-    return {
-      totalPlays: plays.length,
-      leaderPlays: plays.filter(p => p.action === 'PLAY_LEADER').length,
-      cardPlays: plays.filter(p => p.action === 'PLAY_CARD').length,
-      myPlays: plays.filter(p => p.playerId === myId).length,
-      opponentPlays: plays.filter(p => p.playerId !== myId).length
-    };
-  }
-  
-  /**
-   * Get disabled cards for a player
-   * @param {string} playerId - Player ID (defaults to current player)
-   * @returns {Array} Array of disabled card objects
-   */
-  getDisabledCards(playerId = null) {
-    const id = playerId || this.gameState.playerId;
-    const player = this.gameState.gameEnv.players?.[id];
-    
-    if (player && player.fieldEffects && player.fieldEffects.disabledCards) {
-      return player.fieldEffects.disabledCards;
-    }
-    
-    return [];
-  }
-  
-  /**
-   * Get victory point modifiers for a player
-   * @param {string} playerId - Player ID (defaults to current player)
-   * @returns {number} Victory point modifier
-   */
-  getVictoryPointModifier(playerId = null) {
-    const id = playerId || this.gameState.playerId;
-    const player = this.gameState.gameEnv.players?.[id];
-    
-    if (player && player.fieldEffects && player.fieldEffects.victoryPointModifiers !== undefined) {
-      return player.fieldEffects.victoryPointModifiers || 0;
-    }
-    
-    return 0;
-  }
 
   // NEW: Scenario Testing Methods
   
@@ -596,101 +505,6 @@ export default class GameStateManager {
   }
   
   /**
-   * Validate current scenario against expected results
-   * @returns {Object|null} Validation results or null if no scenario loaded
-   */
-  validateCompleteScenario() {
-    if (!this.currentScenario || !this.currentScenario.validationPoints) {
-      console.warn('No validation points defined for current scenario');
-      return null;
-    }
-    
-    const validation = { 
-      passed: true, 
-      scenarioId: this.currentScenario.id,
-      results: {} 
-    };
-    
-    for (const [testId, testData] of Object.entries(this.currentScenario.validationPoints)) {
-      validation.results[testId] = {
-        description: testData.description,
-        passed: true,
-        cards: {}
-      };
-      
-      for (const [cardId, expected] of Object.entries(testData.expected)) {
-        const actualPower = this.getCardFinalPower(cardId);
-        const passed = actualPower === expected.finalPower;
-        
-        validation.results[testId].cards[cardId] = {
-          expected: expected.finalPower,
-          actual: actualPower,
-          boost: expected.boost || 0,
-          passed: passed
-        };
-        
-        if (!passed) {
-          validation.passed = false;
-          validation.results[testId].passed = false;
-        }
-      }
-    }
-    
-    return validation;
-  }
-  
-  /**
-   * Get final power for a card (checks zone cards first, then original)
-   * @param {string} cardId - Card ID to check
-   * @returns {number} Final power value
-   */
-  getCardFinalPower(cardId) {
-    // Check zone cards first for currentPower
-    const playerIds = [this.gameState.playerId];
-    if (this.gameState.gameEnv.players) {
-      playerIds.push(...Object.keys(this.gameState.gameEnv.players).filter(id => id !== this.gameState.playerId));
-    }
-    
-    for (const playerId of playerIds) {
-      const currentPower = this.getCardCurrentPowerFromZones(cardId, playerId);
-      if (currentPower !== null) {
-        return currentPower;
-      }
-    }
-    
-    // Fallback to finding original power in field
-    return this.getCardOriginalPower(cardId);
-  }
-  
-  /**
-   * Get original power for a card from the field
-   * @param {string} cardId - Card ID to check
-   * @returns {number} Original power value
-   */
-  getCardOriginalPower(cardId) {
-    const zones = this.gameState.gameEnv.zones;
-    
-    if (!zones) return 0;
-    
-    // Search all players and zones for the card
-    for (const [playerId, playerZones] of Object.entries(zones)) {
-      for (const [zoneName, cards] of Object.entries(playerZones)) {
-        if (Array.isArray(cards)) {
-          for (const card of cards) {
-            if (card.id === cardId) {
-              return card.power || 0;
-            }
-          }
-        } else if (cards && cards.id === cardId) {
-          return cards.power || 0;
-        }
-      }
-    }
-    
-    return 0;
-  }
-  
-  /**
    * Export current game state as a scenario
    * @param {string} name - Scenario name
    * @param {string} description - Scenario description
@@ -715,49 +529,6 @@ export default class GameStateManager {
     return scenario;
   }
   
-  /**
-   * Get scenario validation statistics
-   * @returns {Object} Validation statistics
-   */
-  getScenarioValidationStats() {
-    if (!this.currentScenario) {
-      return { hasScenario: false };
-    }
-    
-    const validation = this.validateCompleteScenario();
-    
-    if (!validation) {
-      return { hasScenario: true, hasValidation: false };
-    }
-    
-    let totalTests = 0;
-    let totalCards = 0;
-    let passedTests = 0;
-    let passedCards = 0;
-    
-    for (const [testId, testResult] of Object.entries(validation.results)) {
-      totalTests++;
-      if (testResult.passed) passedTests++;
-      
-      for (const [cardId, cardResult] of Object.entries(testResult.cards)) {
-        totalCards++;
-        if (cardResult.passed) passedCards++;
-      }
-    }
-    
-    return {
-      hasScenario: true,
-      hasValidation: true,
-      scenarioId: this.currentScenario.id,
-      scenarioName: this.currentScenario.name,
-      totalTests: totalTests,
-      passedTests: passedTests,
-      totalCards: totalCards,
-      passedCards: passedCards,
-      overallPassed: validation.passed,
-      successRate: totalCards > 0 ? (passedCards / totalCards) * 100 : 0
-    };
-  }
   
   /**
    * Emit state change event to registered listeners
