@@ -977,6 +977,88 @@ export class GameLogic {
             };
         }
     }
+
+    /**
+     * Confirm or decline a burst effect choice
+     * @param gameId Game ID
+     * @param playerId Player ID making the choice
+     * @param eventId Event ID to confirm/decline
+     * @param confirmed Whether the player confirmed (true) or declined (false)
+     */
+    async confirmBurstChoice(gameId: string, playerId: string, eventId: string, confirmed: boolean): Promise<GameLogicResult> {
+        try {
+            console.log(`💥 Processing burst choice confirmation: ${eventId} by player ${playerId} (${confirmed ? 'confirmed' : 'declined'})`);
+            
+            // Load game environment
+            const gameEnv = await this.loadGameFromFile(gameId);
+            if (!gameEnv) {
+                return {
+                    success: false,
+                    error: 'Game not found'
+                };
+            }
+            
+            // Find the event in processing queue
+            const event = gameEnv.findEventById(eventId);
+            if (!event) {
+                return {
+                    success: false,
+                    error: 'Event not found in processing queue'
+                };
+            }
+            
+            // Validate event type
+            if (event.type !== EventType.BURST_EFFECT_CHOICE) {
+                return {
+                    success: false,
+                    error: 'Event is not a burst effect choice'
+                };
+            }
+            
+            // Validate player ownership
+            if (event.playerId !== playerId) {
+                return {
+                    success: false,
+                    error: 'Player is not authorized to resolve this event'
+                };
+            }
+            
+            // Update event with user choice and change status to RESOLVING
+            event.status = EventStatus.RESOLVING;
+            event.data.userConfirmed = confirmed;
+            event.data.confirmedAt = Date.now();
+            
+            console.log(`🎯 Event ${eventId} marked as RESOLVING with choice: ${confirmed}`);
+            
+            // Process events - the RESOLVING event will be handled by GameEngine
+            const processingResult = await gameEnv.processEvents();
+            
+            if (!processingResult.success) {
+                return {
+                    success: false,
+                    error: processingResult.error || 'Failed to process burst choice'
+                };
+            }
+            
+            // Save updated game state
+            await this.saveGameToFile(gameId, gameEnv);
+            
+            console.log(`✅ Burst choice ${confirmed ? 'confirmed' : 'declined'} and processed successfully`);
+            
+            return {
+                success: true,
+                gameId,
+                gameEnv: gameEnv
+            };
+            
+        } catch (error) {
+            console.error('❌ Error in confirmBurstChoice:', error);
+            return {
+                success: false,
+                error: `Failed to confirm burst choice: ${error instanceof Error ? error.message : 'Unknown error'}`
+            };
+        }
+    }
 }
 
 // ============ EXPORT SINGLETON ============

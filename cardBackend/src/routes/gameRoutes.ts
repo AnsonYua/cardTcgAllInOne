@@ -152,6 +152,12 @@ router.post('/player/acknowledgeEvents', async (req: Request, res: Response) => 
 });
 
 /**
+ * Confirm or decline a burst effect choice
+ * POST /api/game/player/confirmBurstChoice
+ */
+router.post('/player/confirmBurstChoice', gameController.confirmBurstChoice.bind(gameController));
+
+/**
  * AI player action (placeholder)
  * POST /api/game/player/playerAiAction
  */

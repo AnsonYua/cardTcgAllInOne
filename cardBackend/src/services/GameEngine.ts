@@ -1,7 +1,7 @@
 // src/services/GameEngine.ts
 // Game execution engine - handles all game state modifications
 
-import { GameEvent, EventFactory } from './EventQueue/interfaces/GameEvent';
+import { GameEvent, EventFactory, EventStatus } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase, EventType } from '../models/GameEnums';
 import { EnergyManager } from './EnergyManager';
@@ -974,39 +974,58 @@ export class GameEngine {
      * @param gameEnv - Current game environment
      */
     private static executeBurstEffectChoice(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
-        console.log(`💥 Executing BURST_EFFECT_CHOICE event: ${event.id}`);
+        console.log(`💥 Executing BURST_EFFECT_CHOICE event: ${event.id} (${event.status})`);
         
         try {
-            const { playerId, cardUid, cardId, cardData, burstEffect, choiceId, requiresConfirmation } = event.data;
+            const { playerId, cardUid, cardId, cardData, burstEffect, choiceId } = event.data;
             
-            console.log(`⚡ Burst choice for card ${cardId} (${cardUid}): ${burstEffect.description}`);
-            console.log(`🎯 Player ${playerId} needs to confirm choice: ${choiceId}`);
-            
-            // Store the pending burst choice in game environment
-            // This will be used by the API to track pending user decisions
-            if (!gameEnv.pendingBurstChoices) {
-                gameEnv.pendingBurstChoices = {};
+            // Handle different event statuses
+            if (event.status === EventStatus.DECLARED) {
+                // Event waiting for user confirmation
+                console.log(`⚡ Burst choice for card ${cardId} (${cardUid}): ${burstEffect.description}`);
+                console.log(`🎯 Player ${playerId} needs to confirm choice: ${choiceId}`);
+                console.log(`📋 Event waiting for user confirmation - processing will pause`);
+                
+                // Processing loop will stop because needsPlayerInput() detects this DECLARED event
+                return { success: true };
+                
+            } else if (event.status === EventStatus.RESOLVING) {
+                // User has made their choice - execute the effect
+                const userConfirmed = event.data.userConfirmed;
+                console.log(`🚀 User ${userConfirmed ? 'confirmed' : 'declined'} burst choice: ${choiceId}`);
+                
+                if (!userConfirmed) {
+                    console.log(`❌ Player declined burst effect - removing event`);
+                    // Remove event from queue and finish
+                    const eventIndex = gameEnv.processingQueue.findIndex(e => e.id === event.id);
+                    if (eventIndex !== -1) {
+                        gameEnv.processingQueue.splice(eventIndex, 1);
+                    }
+                    return { success: true };
+                }
+                
+                // Execute the confirmed burst effect
+                console.log(`⚡ Executing burst effect: ${burstEffect.type}`);
+                const executionResult = GameEngine.executeBurstEffect(gameEnv, choiceId, true);
+                
+                if (!executionResult.success) {
+                    return executionResult;
+                }
+                
+                // Mark event as resolved and remove from queue
+                event.status = EventStatus.RESOLVED;
+                const eventIndex = gameEnv.processingQueue.findIndex(e => e.id === event.id);
+                if (eventIndex !== -1) {
+                    gameEnv.processingQueue.splice(eventIndex, 1);
+                }
+                
+                console.log(`✅ Burst effect ${burstEffect.type} executed and event removed`);
+                return { success: true };
+                
+            } else {
+                console.log(`⚠️ Unexpected event status: ${event.status}`);
+                return { success: true }; // Skip unexpected statuses
             }
-            
-            gameEnv.pendingBurstChoices[choiceId] = {
-                playerId,
-                cardUid,
-                cardId,
-                cardData,
-                burstEffect,
-                choiceId,
-                timestamp: Date.now(),
-                status: 'AWAITING_USER_INPUT'
-            };
-            
-            console.log(`📋 Stored pending burst choice: ${choiceId}`);
-            console.log(`🔄 Awaiting user confirmation via API call`);
-            
-            // The choice will be resolved when the user calls the API to confirm/decline
-            // This event is successfully processed - the choice is now pending user input
-            return {
-                success: true
-            };
             
         } catch (error) {
             console.error(`❌ Error in executeBurstEffectChoice:`, error);

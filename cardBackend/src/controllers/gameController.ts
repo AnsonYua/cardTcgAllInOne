@@ -860,6 +860,56 @@ export class GameController {
         }
     }
 
+    /**
+     * Confirm or decline a burst effect choice
+     * POST /api/game/player/confirmBurstChoice
+     * Body: { gameId, playerId, eventId, confirmed }
+     */
+    async confirmBurstChoice(req: GameRequest, res: Response): Promise<void> {
+        try {
+            console.log('💥 Processing burst choice confirmation:', req.body);
+            
+            const { gameId, playerId, eventId, confirmed } = req.body;
+            
+            if (!gameId || !playerId || !eventId || typeof confirmed !== 'boolean') {
+                res.status(400).json({
+                    error: 'gameId, playerId, eventId, and confirmed (boolean) are required',
+                    timestamp: new Date().toISOString(),
+                    context: 'confirmBurstChoice endpoint'
+                });
+                return;
+            }
+            
+            console.log(`🎯 Player ${playerId} ${confirmed ? 'confirmed' : 'declined'} burst choice: ${eventId}`);
+            
+            // Use GameLogic service method for business logic
+            const result = await this.gameLogic.confirmBurstChoice(gameId, playerId, eventId, confirmed);
+            
+            if (result.success && result.gameEnv) {
+                res.json({
+                    success: true,
+                    gameId: result.gameId,
+                    gameEnv: result.gameEnv,
+                    message: `Burst effect ${confirmed ? 'confirmed' : 'declined'} successfully`
+                });
+            } else {
+                res.status(400).json({
+                    error: result.error || 'Failed to process burst choice',
+                    timestamp: new Date().toISOString(),
+                    context: 'confirmBurstChoice endpoint'
+                });
+            }
+            
+        } catch (error) {
+            console.error('❌ Error in confirmBurstChoice:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'confirmBurstChoice endpoint'
+            });
+        }
+    }
+
 
 
 }

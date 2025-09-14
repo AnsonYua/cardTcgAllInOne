@@ -56,9 +56,6 @@ export class GameEnvironment {
     // Card selection system
     public pendingCardSelections?: { [selectionId: string]: any };
     
-    // Burst effect choice system
-    public pendingBurstChoices?: { [choiceId: string]: any };
-    
     // Legacy compatibility (removed - no longer using EventManager)
 
     constructor() {
@@ -188,13 +185,29 @@ export class GameEnvironment {
      * Check if processing needs player input
      */
     public needsPlayerInput(): boolean {
+        // Check if first event in queue requires user confirmation
         const nextEvent = this.processingQueue[0];
-        return nextEvent?.type === EventType.PLAYER_CHOICE_REQUIRED && 
-               nextEvent?.status === EventStatus.DECLARED;
+        
+        return nextEvent?.status === EventStatus.DECLARED && (
+            nextEvent?.type === EventType.PLAYER_CHOICE_REQUIRED ||
+            nextEvent?.type === EventType.BURST_EFFECT_CHOICE
+        );
     }
     
     /**
-     * Get current pending player choice
+     * Get all events requiring user confirmation (for frontend polling)
+     */
+    public getEventsRequiringConfirmation(): GameEvent[] {
+        return this.processingQueue.filter(event => 
+            event.status === EventStatus.DECLARED && (
+                event.type === EventType.PLAYER_CHOICE_REQUIRED ||
+                event.type === EventType.BURST_EFFECT_CHOICE
+            )
+        );
+    }
+    
+    /**
+     * Get current pending player choice (backward compatibility)
      */
     public getCurrentPlayerChoice(): GameEvent | null {
         const nextEvent = this.processingQueue[0];
@@ -203,6 +216,13 @@ export class GameEnvironment {
             return nextEvent;
         }
         return null;
+    }
+    
+    /**
+     * Find event by ID in processing queue
+     */
+    public findEventById(eventId: string): GameEvent | null {
+        return this.processingQueue.find(event => event.id === eventId) || null;
     }
     
     /**

@@ -269,7 +269,6 @@ export interface BurstEffectChoiceEvent extends BaseGameEvent {
             description: string;
         };
         choiceId: string;
-        requiresConfirmation: true;
     };
 }
 
@@ -551,8 +550,7 @@ export class EventFactory {
                 cardId,
                 cardData,
                 burstEffect,
-                choiceId: `burst_choice_${cardUid}_${Date.now()}`,
-                requiresConfirmation: true
+                choiceId: `burst_choice_${cardUid}_${Date.now()}`
             }
         };
     }
