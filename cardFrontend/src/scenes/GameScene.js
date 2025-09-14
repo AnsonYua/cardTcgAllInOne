@@ -953,8 +953,8 @@ export default class GameScene extends Phaser.Scene {
 
     // Remove cards with uid = "base_default" from trash area
     const originalTrashLength = trashArea.length;
-    trashArea = trashArea.filter(card => card.uid !== "base_default");
-
+    trashArea = trashArea.filter(card => card.cardUid !== "base_default");
+    console.log("i am here 1111 ", JSON.stringify(trashArea))
     // Update the game state if any cards were removed
     if (trashArea.length !== originalTrashLength) {
       const removedCount = originalTrashLength - trashArea.length;
