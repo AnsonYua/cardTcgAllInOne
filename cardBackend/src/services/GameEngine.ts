@@ -1,7 +1,7 @@
 // src/services/GameEngine.ts
 // Game execution engine - handles all game state modifications
 
-import { GameEvent } from './EventQueue/interfaces/GameEvent';
+import { GameEvent, EventFactory } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase, EventType } from '../models/GameEnums';
 import { EnergyManager } from './EnergyManager';
@@ -151,6 +151,9 @@ export class GameEngine {
                     
                 case EventType.PLAYER_ACTION:
                     return GameEngine.executePlayerAction(event, gameEnv);
+                    
+                case EventType.SHIELD_CARD_ATTACKED:
+                    return GameEngine.executeShieldCardAttacked(event, gameEnv);
                     
                 default:
                     console.log(`🎯 Processing ${event.type} event - delegating to existing game logic`);
@@ -821,59 +824,24 @@ export class GameEngine {
             } else {
                 // Base is empty - attack shields
                 if (defender.hasShield()) {
-                    const topShieldCard = defender.getShieldCards()[0];
+                    // Get shield cards to attack - currently top card only, but easily extensible
+                    const shieldCardsToAttack = GameEngine.getShieldCardsToAttack(defender, 1); // Attack 1 card for now
                     
-                    // Check for burst_add_to_hand effect before moving to trash
-                    let addedToHand = false;
-                    if (topShieldCard.cardData?.effects?.rules) {
-                        const burstEffect = topShieldCard.cardData.effects.rules.find((rule: any) => 
-                            rule.effectId === 'burst_add_to_hand' && 
-                            rule.effect?.action === 'addToHand'
-                        );
-                        
-                        if (burstEffect) {
-                            // Add card to hand
-                            defender.deck._handUids.push(topShieldCard.cardUid);
-                            addedToHand = true;
-                            console.log(`💫 Burst effect! Shield card ${topShieldCard.cardUid} added to hand`);
-                        }
-                    }
+                    console.log(`🛡️ Creating SHIELD_CARD_ATTACKED event for ${shieldCardsToAttack.length} cards`);
                     
-                    // Remove from shield area
-                    defender.removeShieldCard(topShieldCard.cardUid);
-                    
-                    // Move to trash (only if not added to hand)
-                    if (!addedToHand) {
-                        // Restore original cardType for trash (shield cards preserve original cardType)
-                        const originalCardType = (topShieldCard as any).originalCardType || topShieldCard.cardData?.cardType;
-                        const cardDataForTrash = {
-                            ...topShieldCard.cardData,
-                            cardType: originalCardType || 'shield' // Use original cardType or fallback to 'shield'
-                        };
-                        
-                        defender.addTrashCard(topShieldCard.cardUid, cardDataForTrash);
-                        console.log(`🗑️ Shield card ${topShieldCard.cardUid} moved to trash with original cardType: ${originalCardType}`);
-                    }
-                    
-                    // Generate shield destroyed event
-                    const notificationManager = GameEngine.getNotificationManager(gameEnv);
-                    notificationManager.addNotificationEvent(
-                        'SHIELD_DESTROYED',
-                        {
-                            defendingPlayerId,
-                            attackingPlayerId: playerId,
-                            attackerSlot,
-                            destroyedCard: {
-                                cardUid: topShieldCard.cardUid,
-                                cardId: topShieldCard.cardId,
-                                name: topShieldCard.cardData?.name || 'Unknown'
-                            },
-                            burstTriggered: addedToHand,
-                            remainingShields: defender.getShieldCount()
-                        },
-                        false,
-                        'normal'
+                    // Create shield card attacked event with array support for future multi-card attacks
+                    const shieldAttackEvent = EventFactory.createShieldCardAttackedEvent(
+                        defendingPlayerId,
+                        playerId,
+                        attackerSlot,
+                        shieldCardsToAttack,
+                        totalAttackPower
                     );
+                    
+                    // Add event to the processing queue
+                    gameEnv.enqueueForProcessing(shieldAttackEvent);
+                    
+                    console.log(`🎯 Shield attack event queued: ${shieldAttackEvent.id}`);
                     
                 } else {
                     return {
@@ -891,6 +859,90 @@ export class GameEngine {
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'AttackShieldArea execution failed'
+            };
+        }
+    }
+    
+    // ============ SHIELD CARD SELECTION HELPERS ============
+    
+    /**
+     * Get shield cards to attack based on attack power or game rules
+     * @param defender - The defending player
+     * @param maxCards - Maximum number of cards to attack (1 for current game, could be 2+ in future)
+     * @returns Array of shield card data to attack
+     */
+    private static getShieldCardsToAttack(defender: any, maxCards: number = 1): Array<{cardUid: string, cardId: string, cardData: any}> {
+        const availableShields = defender.getShieldCards();
+        const cardsToAttack: Array<{cardUid: string, cardId: string, cardData: any}> = [];
+        
+        // Current game rule: Attack from top of shield area
+        // Future game rules could attack multiple cards, specific cards, etc.
+        for (let i = 0; i < Math.min(maxCards, availableShields.length); i++) {
+            const shieldCard = availableShields[i];
+            cardsToAttack.push({
+                cardUid: shieldCard.cardUid,
+                cardId: shieldCard.cardId,
+                cardData: shieldCard.cardData
+            });
+        }
+        
+        console.log(`🎯 Selected ${cardsToAttack.length} shield cards to attack (max: ${maxCards})`);
+        return cardsToAttack;
+    }
+    
+    // ============ SHIELD CARD ATTACK EVENT EXECUTION ============
+    
+    /**
+     * Execute shield card attacked event - handles card effects processing
+     * This is where burst effects like burst_add_to_hand are processed
+     */
+    private static executeShieldCardAttacked(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+        console.log(`🛡️ Executing SHIELD_CARD_ATTACKED event: ${event.id}`);
+        
+        try {
+            const { defendingPlayerId, attackingPlayerId, attackerSlot, shieldCards, attackPower } = event.data;
+            
+            console.log(`🎯 Processing shield attack - Cards: ${shieldCards.length}, Power: ${attackPower}`);
+            
+            // Get defending player
+            const defender = gameEnv.getPlayer(defendingPlayerId);
+            if (!defender) {
+                return {
+                    success: false,
+                    error: `Defending player ${defendingPlayerId} not found`
+                };
+            }
+            
+            // Process each attacked shield card
+            for (const shieldCard of shieldCards) {
+                console.log(`🛡️ Processing shield card: ${shieldCard.cardUid}`);
+                
+                // TODO: Implement the actual card effect processing logic here
+                // This is where you'll check for burst_add_to_hand and other effects
+                // 
+                // The pattern should be:
+                // 1. Check card effects (burst_add_to_hand, etc.)
+                // 2. Apply the appropriate effect
+                // 3. Handle card placement (hand, trash, etc.)
+                // 4. Generate appropriate notification events
+                // 5. Update game state
+                
+                console.log('📋 TODO: Implement shield card effect processing');
+                console.log(`🛡️ Shield card ${shieldCard.cardUid} effects:`, shieldCard.cardData?.effects?.rules);
+            }
+            
+            // PLACEHOLDER: For now, just acknowledge the event
+            // Remove this placeholder and implement the real logic based on card effects
+            
+            return {
+                success: true
+            };
+            
+        } catch (error) {
+            console.error(`❌ Error in executeShieldCardAttacked:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Shield card attack execution failed'
             };
         }
     }

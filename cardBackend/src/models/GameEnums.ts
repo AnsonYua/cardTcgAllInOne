@@ -83,5 +83,8 @@ export enum EventType {
     PLAYER_ACTION = PlayerActionType.PLAYER_ACTION,
     
     // Event management events
-    ACKNOWLEDGE_EVENTS = 'ACKNOWLEDGE_EVENTS'
+    ACKNOWLEDGE_EVENTS = 'ACKNOWLEDGE_EVENTS',
+    
+    // Shield attack events
+    SHIELD_CARD_ATTACKED = 'SHIELD_CARD_ATTACKED'
 }

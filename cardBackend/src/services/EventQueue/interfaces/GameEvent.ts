@@ -239,6 +239,23 @@ export interface AcknowledgeEventsEvent extends BaseGameEvent {
     };
 }
 
+// ============ SHIELD ATTACK EVENTS ============
+
+export interface ShieldCardAttackedEvent extends BaseGameEvent {
+    type: EventType.SHIELD_CARD_ATTACKED;
+    data: {
+        defendingPlayerId: string;
+        attackingPlayerId: string;
+        attackerSlot: string;
+        shieldCards: Array<{
+            cardUid: string;
+            cardId: string;
+            cardData: any;
+        }>;
+        attackPower: number;
+    };
+}
+
 export type GameEvent = 
     | PhaseChangeEvent 
     | PlayerChoiceEvent 
@@ -260,7 +277,8 @@ export type GameEvent =
     | StartGameEvent
     | JoinGameEvent
     | BaseGameEvent
-    | NextPlayerTurnEvent;
+    | NextPlayerTurnEvent
+    | ShieldCardAttackedEvent;
 
 export class EventFactory {
     private static eventIdCounter = 0;
@@ -466,6 +484,32 @@ export class EventFactory {
             playerId,
             timestamp: Date.now(),
             data: { playerId, eventIds }
+        };
+    }
+    
+    // ============ SHIELD ATTACK EVENT FACTORIES ============
+    
+    static createShieldCardAttackedEvent(
+        defendingPlayerId: string,
+        attackingPlayerId: string,
+        attackerSlot: string,
+        shieldCards: Array<{ cardUid: string; cardId: string; cardData: any }>,
+        attackPower: number
+    ): ShieldCardAttackedEvent {
+        return {
+            id: `shield_attacked_${++this.eventIdCounter}_${Date.now()}`,
+            type: EventType.SHIELD_CARD_ATTACKED,
+            status: EventStatus.DECLARED,
+            priority: EventPriority.HIGH,
+            playerId: defendingPlayerId,
+            timestamp: Date.now(),
+            data: {
+                defendingPlayerId,
+                attackingPlayerId,
+                attackerSlot,
+                shieldCards,
+                attackPower
+            }
         };
     }
 }
