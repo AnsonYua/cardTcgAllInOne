@@ -1936,6 +1936,94 @@
                     ],
                     "shieldArea": [
                         {
+                            "cardUid": "ST01-016_b08c8a73-101f-4c26-b9ef-edf40c9514d0",
+                            "cardId": "ST01-016",
+                            "cardData": {
+                                "id": "ST01-016",
+                                "name": "Asticassia School of Technology, Earth House",
+                                "cardType": "shield",
+                                "color": "White",
+                                "level": 2,
+                                "cost": 1,
+                                "zone": [
+                                    "Space"
+                                ],
+                                "traits": [
+                                    "Academy",
+                                    "Stronghold"
+                                ],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 5,
+                                "effects": {
+                                    "description": [
+                                        "【Burst】Deploy this card.",
+                                        "【Deploy】Add 1 of your Shields to your hand.",
+                                        "【Activate･Main】Rest this Base：All friendly Link Units get AP+1 during this turn."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_deploy",
+                                            "type": "triggered",
+                                            "trigger": "BURST_CONDITION",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self"
+                                            },
+                                            "effect": {
+                                                "action": "deploy",
+                                                "duration": "instant"
+                                            }
+                                        },
+                                        {
+                                            "effectId": "deploy_shield_to_hand",
+                                            "type": "triggered",
+                                            "trigger": "ENTERS_PLAY",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self_shield"
+                                            },
+                                            "effect": {
+                                                "action": "addToHand",
+                                                "parameters": {
+                                                    "count": 1,
+                                                    "from": "shield"
+                                                },
+                                                "duration": "instant"
+                                            }
+                                        },
+                                        {
+                                            "effectId": "activate_boost_link_units",
+                                            "type": "activated",
+                                            "timing": [
+                                                "MAIN_PHASE"
+                                            ],
+                                            "cost": {
+                                                "tap": "self"
+                                            },
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self_all",
+                                                "filters": {
+                                                    "linkStatus": "linked"
+                                                }
+                                            },
+                                            "effect": {
+                                                "action": "modifyAP",
+                                                "parameters": {
+                                                    "modifier": "+1"
+                                                },
+                                                "duration": "turn"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1757435089332,
+                            "placedBy": "playerId_2",
+                            "isRested": false
+                        },
+                        {
                             "cardUid": "ST01-011_1b77d1dc-ea19-4beb-a134-0659eda7626c",
                             "cardId": "ST01-011",
                             "cardData": {
@@ -2023,94 +2111,6 @@
                                 }
                             },
                             "placedAt": 1757435089331,
-                            "placedBy": "playerId_2",
-                            "isRested": false
-                        },
-                        {
-                            "cardUid": "ST01-016_b08c8a73-101f-4c26-b9ef-edf40c9514d0",
-                            "cardId": "ST01-016",
-                            "cardData": {
-                                "id": "ST01-016",
-                                "name": "Asticassia School of Technology, Earth House",
-                                "cardType": "shield",
-                                "color": "White",
-                                "level": 2,
-                                "cost": 1,
-                                "zone": [
-                                    "Space"
-                                ],
-                                "traits": [
-                                    "Academy",
-                                    "Stronghold"
-                                ],
-                                "link": [],
-                                "ap": 0,
-                                "hp": 5,
-                                "effects": {
-                                    "description": [
-                                        "【Burst】Deploy this card.",
-                                        "【Deploy】Add 1 of your Shields to your hand.",
-                                        "【Activate･Main】Rest this Base：All friendly Link Units get AP+1 during this turn."
-                                    ],
-                                    "rules": [
-                                        {
-                                            "effectId": "burst_deploy",
-                                            "type": "triggered",
-                                            "trigger": "BURST_CONDITION",
-                                            "target": {
-                                                "type": "card",
-                                                "scope": "self"
-                                            },
-                                            "effect": {
-                                                "action": "deploy",
-                                                "duration": "instant"
-                                            }
-                                        },
-                                        {
-                                            "effectId": "deploy_shield_to_hand",
-                                            "type": "triggered",
-                                            "trigger": "ENTERS_PLAY",
-                                            "target": {
-                                                "type": "card",
-                                                "scope": "self_shield"
-                                            },
-                                            "effect": {
-                                                "action": "addToHand",
-                                                "parameters": {
-                                                    "count": 1,
-                                                    "from": "shield"
-                                                },
-                                                "duration": "instant"
-                                            }
-                                        },
-                                        {
-                                            "effectId": "activate_boost_link_units",
-                                            "type": "activated",
-                                            "timing": [
-                                                "MAIN_PHASE"
-                                            ],
-                                            "cost": {
-                                                "tap": "self"
-                                            },
-                                            "target": {
-                                                "type": "unit",
-                                                "scope": "self_all",
-                                                "filters": {
-                                                    "linkStatus": "linked"
-                                                }
-                                            },
-                                            "effect": {
-                                                "action": "modifyAP",
-                                                "parameters": {
-                                                    "modifier": "+1"
-                                                },
-                                                "duration": "turn"
-                                            }
-                                        }
-                                    ]
-                                }
-                            },
-                            "placedAt": 1757435089332,
                             "placedBy": "playerId_2",
                             "isRested": false
                         },

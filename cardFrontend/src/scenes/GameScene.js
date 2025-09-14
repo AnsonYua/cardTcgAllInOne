@@ -11,6 +11,7 @@ import CardAnimationUtils from '../utils/CardAnimationUtils.js';
 import CardActionHandler from '../handlers/CardActionHandler.js';
 import ActionButtonManager from '../systems/ActionButtonManager.js';
 import DialogManager from '../managers/DialogManager.js';
+import TrashIconManager from '../components/TrashIconManager.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor(config = { key: 'GameScene' }) {
@@ -271,6 +272,9 @@ export default class GameScene extends Phaser.Scene {
     
     // Create deck visualizations
     this.createDeckVisualizations();
+    
+    // Create trash icons for both players
+    this.createTrashIcons();
   }
   
  
@@ -518,6 +522,54 @@ export default class GameScene extends Phaser.Scene {
     // Create action button row above hand area
     // Initialize dynamic action button system
     this.actionButtonManager.initialize();
+  }
+
+  createTrashIcons() {
+    // Get player IDs
+    const playerId = this.gameStateManager.getCurrentPlayerId();
+    const opponentId = this.gameStateManager.getOpponent();
+    
+    // Create player trash icon
+    this.playerTrashIcon = new TrashIconManager(this, {
+      isOpponent: false,
+      playerId: playerId,
+      offsetX: 0,
+      offsetY: 150 // Position 80px below deck
+    });
+    
+    // Position relative to player deck
+    this.playerTrashIcon.positionRelativeToDeck(this.layout.player.deck);
+    
+    // Create opponent trash icon
+    this.opponentTrashIcon = new TrashIconManager(this, {
+      isOpponent: true,
+      playerId: opponentId,
+      offsetX: 0,
+      offsetY: -150 // Position 80px above opponent deck
+    });
+    
+    // Position relative to opponent deck
+    this.opponentTrashIcon.positionRelativeToDeck(this.layout.opponent.deck);
+    
+    // Set up event handlers for both trash icons
+    this.setupTrashEventHandlers();
+    
+    console.log('Created trash icons for both player and opponent');
+  }
+  
+  /**
+   * Set up event handlers for trash icon interactions
+   */
+  setupTrashEventHandlers() {
+    // Handle player trash click events (placeholder functionality)
+    this.playerTrashIcon.on('trashClicked', (eventData) => {
+      this.handleTrashClick(eventData);
+    });
+    
+    // Handle opponent trash click events (placeholder functionality)
+    this.opponentTrashIcon.on('trashClicked', (eventData) => {
+      this.handleTrashClick(eventData);
+    });
   }
 
   setupEventListeners() {
@@ -865,8 +917,27 @@ export default class GameScene extends Phaser.Scene {
     GameSceneUtils.clearZoneHighlights(this);
   }
 
-  showZoneRestrictionMessage(message) {
-    GameSceneUtils.showZoneRestrictionMessage(message, this);
+  /**
+   * Handle trash icon click events (placeholder functionality)
+   * @param {Object} eventData - Event data from trash icon click
+   */
+  handleTrashClick(eventData) {
+    console.log('Handling trash icon click:', eventData);
+    
+    const trashOwner = eventData.isOpponent ? 'opponent' : 'player';
+    const currentPlayerId = this.gameStateManager.getCurrentPlayerId();
+    
+    // Show placeholder message
+    const message = `${trashOwner} trash clicked! (Placeholder functionality - no cards trashed)`;
+    this.showRoomStatus(message);
+    
+    console.log(`Trash icon clicked - ${trashOwner} (Player ID: ${eventData.playerId}, Current: ${currentPlayerId})`);
+    
+    // Here you could add future functionality such as:
+    // - Opening a trash viewing modal
+    // - Showing available cards to retrieve from trash  
+    // - Implementing trash-related game mechanics
+    // - Activating special abilities that interact with the trash
   }
 
   async handleCardDrop(card, zoneType, x, y) {
