@@ -50,6 +50,7 @@ export default class BaseAndShieldAreaManager {
         cardArray.push(card);
       });
     }
+    cardArray.forEach(card => card.active = false);
   }
 
   createShieldCard(cardData, x, y, index) {
@@ -111,6 +112,7 @@ export default class BaseAndShieldAreaManager {
       const card = this.createBaseCard(baseData[0], x, y, 0);
       cardArray.push(card);
     }
+    cardArray.forEach(card => card.active = false);
   }
 
   createBaseCard(cardData, x, y, index) {
