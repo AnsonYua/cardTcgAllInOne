@@ -119,6 +119,7 @@ export interface EnergyZoneCard extends ZoneCard {
 
 export interface ShieldCard extends ZoneCard {
     cardData: ShieldCardData; // Required for shields
+    originalCardType?: string; // Preserve original cardType for trash operations
 }
 
 // ============ ZONE CARD UTILITIES ============
@@ -224,7 +225,8 @@ export function createZoneCard(
         case 'shield':
             return {
                 ...baseCard,
-                cardData: cardData as ShieldCardData
+                cardData: cardData as ShieldCardData,
+                originalCardType: (cardData as any)?.originalCardType || cardData.cardType
             } as ShieldCard;
             
         default:

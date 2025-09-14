@@ -844,8 +844,15 @@ export class GameEngine {
                     
                     // Move to trash (only if not added to hand)
                     if (!addedToHand) {
-                        defender.addTrashCard(topShieldCard.cardUid, topShieldCard.cardData);
-                        console.log(`🗑️ Shield card ${topShieldCard.cardUid} moved to trash`);
+                        // Restore original cardType for trash (shield cards preserve original cardType)
+                        const originalCardType = (topShieldCard as any).originalCardType || topShieldCard.cardData?.cardType;
+                        const cardDataForTrash = {
+                            ...topShieldCard.cardData,
+                            cardType: originalCardType || 'shield' // Use original cardType or fallback to 'shield'
+                        };
+                        
+                        defender.addTrashCard(topShieldCard.cardUid, cardDataForTrash);
+                        console.log(`🗑️ Shield card ${topShieldCard.cardUid} moved to trash with original cardType: ${originalCardType}`);
                     }
                     
                     // Generate shield destroyed event

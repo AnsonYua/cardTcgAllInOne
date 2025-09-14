@@ -866,6 +866,7 @@
                                     ]
                                 }
                             },
+                            "originalCardType": "unit",
                             "placedAt": 1757435089331,
                             "placedBy": "playerId_1",
                             "isRested": false
@@ -895,6 +896,7 @@
                                     "rules": []
                                 }
                             },
+                            "originalCardType": "unit",
                             "placedAt": 1757435089331,
                             "placedBy": "playerId_1",
                             "isRested": false
@@ -926,6 +928,7 @@
                                     "rules": []
                                 }
                             },
+                            "originalCardType": "unit",
                             "placedAt": 1757435089331,
                             "placedBy": "playerId_1",
                             "isRested": false
@@ -988,6 +991,7 @@
                                     ]
                                 }
                             },
+                            "originalCardType": "pilot",
                             "placedAt": 1757435089331,
                             "placedBy": "playerId_1",
                             "isRested": false
@@ -1050,6 +1054,7 @@
                                     ]
                                 }
                             },
+                            "originalCardType": "pilot",
                             "placedAt": 1757435089331,
                             "placedBy": "playerId_1",
                             "isRested": false
@@ -1079,6 +1084,7 @@
                                     "rules": []
                                 }
                             },
+                            "originalCardType": "unit",
                             "placedAt": 1757435089331,
                             "placedBy": "playerId_1",
                             "isRested": false
@@ -2081,6 +2087,7 @@
                                     ]
                                 }
                             },
+                            "originalCardType": "pilot",
                             "placedAt": 1757435089331,
                             "placedBy": "playerId_2",
                             "isRested": false
@@ -2110,6 +2117,7 @@
                                     "rules": []
                                 }
                             },
+                            "originalCardType": "unit",
                             "placedAt": 1757435089331,
                             "placedBy": "playerId_2",
                             "isRested": false
@@ -2292,6 +2300,7 @@
                                     ]
                                 }
                             },
+                            "originalCardType": "pilot",
                             "placedAt": 1757435089332,
                             "placedBy": "playerId_2",
                             "isRested": false
@@ -2369,6 +2378,9 @@
                 }
             }
         },
+        "processingQueue": [],
+        "processingEnabled": true,
+        "maxEventsPerCycle": 50,
         "pendingCardSelections": {},
         "notificationQueue": [
             {

@@ -37,12 +37,16 @@ export class ShieldCardManager {
                 
                 // Load full card data from card database
                 const fullCardData = GameEngine.getCardDetails(cardId);
+                const originalCardType = fullCardData?.cardType; // Preserve original cardType
                 const shieldCard = createZoneCard(
                         cardUid,
                         cardId,
-                        { ...fullCardData, cardType: 'shield' }, // Override cardType to 'shield'
+                        { ...fullCardData, cardType: 'shield', originalCardType }, // Override cardType to 'shield' but preserve original
                         playerId
                 ) as ShieldCard;
+                
+                // Ensure originalCardType is preserved in the shield card
+                shieldCard.originalCardType = originalCardType;
                 player.zones.shieldArea.push(shieldCard);
             });
 

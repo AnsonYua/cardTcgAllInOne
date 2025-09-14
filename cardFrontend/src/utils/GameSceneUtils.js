@@ -380,7 +380,7 @@ export default class GameSceneUtils {
     // Create main dialog structure
     this._createDialogBackground(scene, dialogConfig, dialogElements);
     this._createTitleSection(scene, dialogConfig, dialogElements);
-    this._createCardSectionBackground(scene, dialogConfig, dialogElements);
+    this._createCardSectionBackground(scene, dialogConfig, dialogElements, selection);
     
     // Card display configuration
     const cardDisplayConfig = {
@@ -523,7 +523,7 @@ export default class GameSceneUtils {
    * Creates the card section background and label
    * @private
    */
-  static _createCardSectionBackground(scene, config, dialogElements) {
+  static _createCardSectionBackground(scene, config, dialogElements, selection) {
     const cardSectionY = config.centerY - config.height/2 + config.titleSectionHeight + config.cardSectionHeight/2;
     
     // Card section background
@@ -534,8 +534,16 @@ export default class GameSceneUtils {
     dialogElements.cardSection.background.strokeRoundedRect(config.centerX - config.width/2 + 10, cardSectionY - config.cardSectionHeight/2 + 10, config.width - 20, config.cardSectionHeight - 20, 10);
     dialogElements.cardSection.background.setDepth(1502);
     
-    // Card selection label
-    dialogElements.cardSection.labelText = scene.add.text(config.centerX, cardSectionY - config.cardSectionHeight/2 + 30, 'Select a card:', {
+    // Card selection label - different for read-only mode
+    const selectCount = selection.selectCount || 1;
+    let labelText = 'Select a card:';
+    if (selectCount === 0) {
+      labelText = 'Cards:'; // Read-only mode
+    } else if (selectCount > 1) {
+      labelText = `Select ${selectCount} cards:`;
+    }
+    
+    dialogElements.cardSection.labelText = scene.add.text(config.centerX, cardSectionY - config.cardSectionHeight/2 + 30, labelText, {
       fontSize: '18px',
       fontFamily: 'Arial Bold',
       fill: '#cccccc',
@@ -876,6 +884,7 @@ export default class GameSceneUtils {
     
     // Extract card display info and create card element (can be Card component or Container)
     const { cardImageId, displayCardId } = this._extractCardDisplayInfo(card);
+    console.log("card item 1111111 ", JSON.stringify(card))
     const cardElement = this._createCardImage(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig, card);
     if (cardElement) {
       dialogElements.cardListElements.push(cardElement);
@@ -1397,6 +1406,12 @@ export default class GameSceneUtils {
    * @private
    */
   static _handleCardSelection(card, cardX, cardsY, selectionState, cardDisplayConfig, dialogElements) {
+    // Handle read-only mode (selectCount: 0) - no selection allowed
+    if (selectionState.maxSelections === 0) {
+      console.log('Card selection disabled in read-only mode:', this._getCardIdentifier(card));
+      return;
+    }
+    
     const cardId = this._getCardIdentifier(card);
     
     if (selectionState.maxSelections === 1) {
@@ -1491,6 +1506,13 @@ export default class GameSceneUtils {
     const okButton = dialogElements.buttonSection.okButton;
     const okText = dialogElements.buttonSection.okText;
     
+    // Handle read-only mode (selectCount: 0)
+    if (selectionState.maxSelections === 0) {
+      okButton.setTint(0x4CAF50); // Always enabled for read-only
+      okText.setText('CLOSE');
+      return;
+    }
+    
     if (selectionState.selectedCards.length >= 1) {
       okButton.setTint(0x4CAF50);
       if (selectionState.maxSelections > 1) {
@@ -1516,7 +1538,8 @@ export default class GameSceneUtils {
     const okButton = dialogElements.buttonSection.okButton;
     
     okButton.on('pointerover', () => {
-      if (selectionState.selectedCards.length >= 1) {
+      // Handle read-only mode (selectCount: 0) or normal selection mode
+      if (selectionState.maxSelections === 0 || selectionState.selectedCards.length >= 1) {
         okButton.setTint(0x66BB6A);
         scene.input.setDefaultCursor('pointer');
       }
@@ -1528,6 +1551,17 @@ export default class GameSceneUtils {
     });
     
     okButton.on('pointerdown', () => {
+      // Handle read-only mode (selectCount: 0) - always allow close
+      if (selectionState.maxSelections === 0) {
+        // Clean up the dialog UI
+        this._cleanupDialog(scene, dialogElements);
+        
+        // Call the callback with empty selection for read-only mode
+        onConfirm(selectionId, [], []);
+        return;
+      }
+      
+      // Normal selection mode - require at least 1 card selected
       if (selectionState.selectedCards.length >= 1) {
         // Clean up the dialog UI
         this._cleanupDialog(scene, dialogElements);

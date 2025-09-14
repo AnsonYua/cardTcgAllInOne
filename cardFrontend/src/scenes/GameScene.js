@@ -45,7 +45,7 @@ export default class GameScene extends Phaser.Scene {
     this.isManualPollingMode = data.isManualPollingMode || false;
     this.gameMode = data.gameMode || 'host';  // 'host' or 'join' mode
     this.shuffleAnimationPlayed = false; // Track if shuffle animation has been played
-    
+
     // Initialize managers
     this.baseAndShieldManager = new BaseAndShieldAreaManager(this, this.gameStateManager);
     this.energyAreaManager = new EnergyAreaManager(this, this.gameStateManager);
@@ -53,7 +53,7 @@ export default class GameScene extends Phaser.Scene {
     this.cardActionHandler = new CardActionHandler(this, this.gameStateManager, this.apiManager);
     this.actionButtonManager = new ActionButtonManager(this);
     this.dialogManager = new DialogManager(this);
- 
+
     console.log('GameScene initialized with mode:', this.gameMode);
     console.log('Manual polling mode:', this.isManualPollingMode);
   }
@@ -61,17 +61,17 @@ export default class GameScene extends Phaser.Scene {
   async create() {
     console.log('GameScene create method called');
     console.log('Initial game state:', this.gameStateManager?.getGameState());
-    
+
     // Set up API manager reference in GameStateManager for card selection
     if (this.apiManager && this.gameStateManager) {
       this.gameStateManager.setApiManager(this.apiManager);
     }
-    
+
     this.createBackground();
     this.createGameBoard();
     this.createUI();
     this.setupEventListeners();
-    
+
     // Start polling if not in manual polling mode
     if (this.apiManager && !this.isManualPollingMode) {
       console.log('Starting automatic API polling...');
@@ -79,17 +79,17 @@ export default class GameScene extends Phaser.Scene {
     } else if (this.isManualPollingMode) {
       console.log('Manual polling mode enabled - use test buttons to poll');
     }
-    
+
     // Demo mode uses real backend calls with test buttons, not mock data
-    
+
     // Load leader cards data
-    
+
     // Hide hand area during shuffling
     this.hideHandArea();
-    
+
     // Initialize shuffle animation manager
     this.shuffleAnimationManager = new ShuffleAnimationManager(this);
-    
+
     // Demo mode and online mode both wait for backend events to trigger animations
     console.log('Waiting for backend events to trigger game flow...');
     this.waitingForPlayers = true;
@@ -97,12 +97,12 @@ export default class GameScene extends Phaser.Scene {
 
   createBackground() {
     const { width, height } = this.cameras.main;
-    
+
     // Create gradient background
     const graphics = this.add.graphics();
     graphics.fillGradientStyle(0x0f3460, 0x0f3460, 0x16213e, 0x16213e, 1);
     graphics.fillRect(0, 0, width, height);
-    
+
     // Add table texture
     const tableGraphics = this.add.graphics();
     tableGraphics.fillStyle(0x2d5016);
@@ -124,60 +124,92 @@ export default class GameScene extends Phaser.Scene {
       functionalArea: {
         cardPreview: {
           x: width * 0.5 + 730,
-          y: startY + 200+ cardHeight
+          y: startY + 200 + cardHeight
         },
       },
       // Opponent zones (top area) - REVERSED: slot1 displays at rightmost position
       opponent: {
-        "slot1": { x: playerStartX + width * 0.5 +280 + 50,   // Previously slot6 position
-                   y: startY + 100+ cardHeight + 10+ 15},
-        "slot2": { x: playerStartX + width * 0.5+160 + 40,    // Previously slot5 position
-                   y: startY + 100+ cardHeight + 10+ 15},
-        "slot3": { x: playerStartX + width * 0.5 + 40 + 30,   // Previously slot4 position
-                   y: startY + 100+ cardHeight + 10+ 15},
-        "slot4": { x: playerStartX + width * 0.5 -80 + 20,    // Previously slot3 position
-                   y: startY + 100+ cardHeight + 10+ 15},
-        "slot5": { x: playerStartX + width * 0.5-200 + 10,    // Previously slot2 position
-                   y: startY + 100+ cardHeight + 10+ 15},
-        "slot6": { x: playerStartX + width * 0.5 - 320,       // Previously slot1 position
-                   y: startY + 100+ cardHeight + 10+ 15},
-        "deck": { x: width * 0.5 - 500, 
-                y: startY + 100+ cardHeight+10+15},
-        leaderDeck: { x: width * 0.5 + 430 , y: startY + 100+ cardHeight+10+15},
-        base:{ x: width * 0.5 + 430 , y: startY + 130 + cardHeight+10+15},
+        "slot1": {
+          x: playerStartX + width * 0.5 + 280 + 50,   // Previously slot6 position
+          y: startY + 100 + cardHeight + 10 + 15
+        },
+        "slot2": {
+          x: playerStartX + width * 0.5 + 160 + 40,    // Previously slot5 position
+          y: startY + 100 + cardHeight + 10 + 15
+        },
+        "slot3": {
+          x: playerStartX + width * 0.5 + 40 + 30,   // Previously slot4 position
+          y: startY + 100 + cardHeight + 10 + 15
+        },
+        "slot4": {
+          x: playerStartX + width * 0.5 - 80 + 20,    // Previously slot3 position
+          y: startY + 100 + cardHeight + 10 + 15
+        },
+        "slot5": {
+          x: playerStartX + width * 0.5 - 200 + 10,    // Previously slot2 position
+          y: startY + 100 + cardHeight + 10 + 15
+        },
+        "slot6": {
+          x: playerStartX + width * 0.5 - 320,       // Previously slot1 position
+          y: startY + 100 + cardHeight + 10 + 15
+        },
+        "deck": {
+          x: width * 0.5 - 500,
+          y: startY + 100 + cardHeight + 10 + 15
+        },
+        leaderDeck: { x: width * 0.5 + 430, y: startY + 100 + cardHeight + 10 + 15 },
+        base: { x: width * 0.5 + 430, y: startY + 130 + cardHeight + 10 + 15 },
         // New row with 10 columns above existing zones (opponent is flipped)
-        row2: this.generateOpponentRow2Slots(playerStartX, width, startY-100, cardHeight)
+        row2: this.generateOpponentRow2Slots(playerStartX, width, startY - 100, cardHeight)
       },
       // Player zones (bottom area)
-    
+
       player: {
-        "slot1": { x: playerStartX + width * 0.5 - 320, 
-              y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 60 },
-        "slot2":{ x: playerStartX + width * 0.5-200 + 10, 
-               y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 60},
-        "slot3": { x: playerStartX + width * 0.5 -80 + 20, 
-               y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 60},
-        "slot4": { x: playerStartX + width * 0.5 + 40 + 30, 
-                  y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 60 },
-        "slot5": { x: playerStartX + width * 0.5+160 + 40, 
-           y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 60},
-        "slot6": { x: playerStartX + width * 0.5 +280 + 50,
-           y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 60 },
-        deck: { x: width * 0.5 + 420 , 
-                y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 60},
-        leaderDeck: { x: width * 0.5 - 550 , 
-                      y: startY + 100+ cardHeight + 10+ 15 +cardHeight + 60 + 50},
-        base: { x: width * 0.5 - 550 , 
-                      y: startY + 70+ cardHeight + 10+ 15 +cardHeight + 60 + 50},
+        "slot1": {
+          x: playerStartX + width * 0.5 - 320,
+          y: startY + 100 + cardHeight + 10 + 15 + cardHeight + 60
+        },
+        "slot2": {
+          x: playerStartX + width * 0.5 - 200 + 10,
+          y: startY + 100 + cardHeight + 10 + 15 + cardHeight + 60
+        },
+        "slot3": {
+          x: playerStartX + width * 0.5 - 80 + 20,
+          y: startY + 100 + cardHeight + 10 + 15 + cardHeight + 60
+        },
+        "slot4": {
+          x: playerStartX + width * 0.5 + 40 + 30,
+          y: startY + 100 + cardHeight + 10 + 15 + cardHeight + 60
+        },
+        "slot5": {
+          x: playerStartX + width * 0.5 + 160 + 40,
+          y: startY + 100 + cardHeight + 10 + 15 + cardHeight + 60
+        },
+        "slot6": {
+          x: playerStartX + width * 0.5 + 280 + 50,
+          y: startY + 100 + cardHeight + 10 + 15 + cardHeight + 60
+        },
+        deck: {
+          x: width * 0.5 + 420,
+          y: startY + 100 + cardHeight + 10 + 15 + cardHeight + 60
+        },
+        leaderDeck: {
+          x: width * 0.5 - 550,
+          y: startY + 100 + cardHeight + 10 + 15 + cardHeight + 60 + 50
+        },
+        base: {
+          x: width * 0.5 - 550,
+          y: startY + 70 + cardHeight + 10 + 15 + cardHeight + 60 + 50
+        },
         // New row with 10 columns below existing zones
-        row2: this.generateRow2Slots(playerStartX, width, startY+100, cardHeight)
+        row2: this.generateRow2Slots(playerStartX, width, startY + 100, cardHeight)
       },
       // Battle area (center)
       //battle: { x: width * 0.5, y: height * 0.45 },
       // Hand area (bottom)
       hand: { x: width * 0.5, y: height * 0.85 }
     };
-    
+
     this.createZones();
   }
 
@@ -186,11 +218,11 @@ export default class GameScene extends Phaser.Scene {
     const slotCount = 12;
     const slotSpacing = 70; // Space between each slot
     const rowY = startY + 100 + cardHeight + 10 + 15 + cardHeight + 70 + 80; // Below existing zones
-    
+
     // Calculate starting X to center the 10 slots
     const totalWidth = (slotCount - 1) * slotSpacing;
-    const startX = (width * 0.5) - (totalWidth / 2)-10;
-    
+    const startX = (width * 0.5) - (totalWidth / 2) - 10;
+
     // Generate 10 slot positions
     for (let i = 0; i < slotCount; i++) {
       slots.push({
@@ -199,7 +231,7 @@ export default class GameScene extends Phaser.Scene {
         index: i
       });
     }
-    
+
     return slots;
   }
 
@@ -208,11 +240,11 @@ export default class GameScene extends Phaser.Scene {
     const slotCount = 12;
     const slotSpacing = 70; // Space between each slot
     const rowY = startY + 100 + cardHeight + 10 + 15 - 80; // Above existing opponent zones
-    
+
     // Calculate starting X to center the 12 slots
     const totalWidth = (slotCount - 1) * slotSpacing;
-    const startX = (width * 0.5) - (totalWidth / 2)-80;
-    
+    const startX = (width * 0.5) - (totalWidth / 2) - 80;
+
     // Generate 12 slot positions - REVERSED for opponent (right to left display)
     for (let i = 0; i < slotCount; i++) {
       slots.push({
@@ -221,12 +253,12 @@ export default class GameScene extends Phaser.Scene {
         index: i
       });
     }
-    
+
     return slots;
   }
 
   createZones() {
-    
+
     // Create opponent zones
     this.opponentZones = {};
     console.log('About to iterate over opponent zones');
@@ -244,7 +276,7 @@ export default class GameScene extends Phaser.Scene {
         this.opponentZones[zoneType] = zone;
       }
     });
-    
+
     // Create player zones
     this.playerZones = {};
     Object.entries(this.layout.player).forEach(([zoneType, position]) => {
@@ -265,29 +297,29 @@ export default class GameScene extends Phaser.Scene {
         this.cardPreviewZone = zone;
       }
     });
-    
+
     // Add zone labels
     this.addZoneLabels();
-    
+
     // Create deck visualizations
     this.createDeckVisualizations();
-    
+
     // Create trash icons for both players
     this.createTrashIcons();
   }
-  
- 
+
+
 
   createBattleArea() {
     const { x, y } = this.layout.battle;
-    
+
     // Battle area background
     const battleBg = this.add.graphics();
     battleBg.fillStyle(0x4a4a4a, 0.3);
     battleBg.fillRoundedRect(x - 200, y - 100, 400, 200, 10);
     battleBg.lineStyle(2, 0x888888);
     battleBg.strokeRoundedRect(x - 200, y - 100, 400, 200, 10);
-    
+
     // Battle results display
     this.battleResultsText = this.add.text(x, y, 'Battle Area', {
       fontSize: '18px',
@@ -300,7 +332,7 @@ export default class GameScene extends Phaser.Scene {
 
   addZoneLabels() {
     const { width } = this.cameras.main;
-    
+
     // Opponent area label
     /*
     this.add.text(width * 0.4, this.layout.opponent.top.y - 120, 'OPPONENT ZONES', {
@@ -324,20 +356,20 @@ export default class GameScene extends Phaser.Scene {
     // Use the initial deck stacks created in createZone as the main deck stacks
     this.playerDeckStack = this.initialPlayerDeckStack || [];
     this.opponentDeckStack = this.initialOpponentDeckStack || [];
-    
+
     // The initial deck stacks are already visible, so no need to hide them
   }
 
 
   createUI() {
     const { width, height } = this.cameras.main;
-    
+
     // Top UI bar
     this.createTopUI();
-    
+
     // Connection status indicator
     this.createConnectionStatus();
-    
+
     // Phase indicator
     this.phaseText = this.add.text(width / 2, 35, 'MAIN PHASE', {
       fontSize: '20px',
@@ -346,50 +378,50 @@ export default class GameScene extends Phaser.Scene {
       align: 'center'
     });
     this.phaseText.setOrigin(0.5);
-    
+
     // Game info display (first player and opponent hand)
     this.createGameInfoDisplay();
 
-    
+
     // Action buttons
     this.createActionButtons();
-    
+
     // Hand area
     this.createHandArea();
   }
 
   createTopUI() {
     const { width } = this.cameras.main;
-    
+
     // Create UI background
     const uiBg = this.add.graphics();
     uiBg.fillStyle(0x000000, 0.5);
     uiBg.fillRect(0, 0, width, 50);
-    
+
     // Player info (left side)
     const gameState = this.gameStateManager.getGameState();
     const player = this.gameStateManager.getPlayer();
     const opponent = this.gameStateManager.getOpponent();
     const opponentData = this.gameStateManager.getPlayer(opponent);
-    
+
     this.playerInfoText = this.add.text(50, 5, `You: ${gameState.playerName}`, {
       fontSize: '16px',
       fontFamily: 'Arial',
       fill: '#ffffff'
     });
-    
+
     this.playerVPText = this.add.text(-100, 30, `VP: ${this.gameStateManager.getVictoryPoints()}`, {
       fontSize: '14px',
       fontFamily: 'Arial',
       fill: '#4CAF50'
     });
-    
+
     this.playerHandText = this.add.text(-100, 50, `Hand: ${player && player.hand ? player.hand.length : 0}`, {
       fontSize: '14px',
       fontFamily: 'Arial',
       fill: '#ffffff'
     });
-    
+
     // Opponent info (right side)
     this.opponentInfoText = this.add.text(width - 50, 5, `Opponent: ${opponentData ? opponentData.name : 'Unknown'}`, {
       fontSize: '16px',
@@ -397,21 +429,21 @@ export default class GameScene extends Phaser.Scene {
       fill: '#ffffff'
     });
     this.opponentInfoText.setOrigin(1, 0);
-    
-    this.opponentVPText = this.add.text(width +1000, 30, `VP: ${this.gameStateManager.getVictoryPoints(opponent)}`, {
+
+    this.opponentVPText = this.add.text(width + 1000, 30, `VP: ${this.gameStateManager.getVictoryPoints(opponent)}`, {
       fontSize: '14px',
       fontFamily: 'Arial',
       fill: '#FF5722'
     });
     this.opponentVPText.setOrigin(1, 0);
-    
-    this.opponentHandText = this.add.text(width+1000, 50, `Hand: ${opponentData && opponentData.hand ? opponentData.hand.length : 0}`, {
+
+    this.opponentHandText = this.add.text(width + 1000, 50, `Hand: ${opponentData && opponentData.hand ? opponentData.hand.length : 0}`, {
       fontSize: '14px',
       fontFamily: 'Arial',
       fill: '#ffffff'
     });
     this.opponentHandText.setOrigin(1, 0);
-    
+
     // Round info (center)
     this.roundText = this.add.text(width / 2, 15, `Round ${this.gameStateManager.getCurrentRound()} / 4`, {
       fontSize: '18px',
@@ -424,71 +456,71 @@ export default class GameScene extends Phaser.Scene {
 
   createActionButtons() {
     const { width, height } = this.cameras.main;
-    
+
     // End Turn button
     this.endTurnButton = this.add.image(width - 120, height - 60, 'button');
     this.endTurnButton.setScale(0.8);
     this.endTurnButton.setInteractive();
-    
+
     const endTurnText = this.add.text(width - 120, height - 60, 'End Turn', {
       fontSize: '14px',
       fontFamily: 'Arial',
       fill: '#ffffff'
     });
     endTurnText.setOrigin(0.5);
-    
+
     this.endTurnButton.on('pointerdown', () => {
       // Click visual effect
       this.endTurnButton.setTint(0x888888);
       this.endTurnButton.setScale(0.76);
       endTurnText.setScale(0.95);
-      
+
       this.time.delayedCall(100, () => {
         this.endTurnButton.clearTint();
         this.endTurnButton.setScale(0.8);
         endTurnText.setScale(1);
       });
-      
+
       this.time.delayedCall(50, () => this.endTurn());
     });
-    
+
 
   }
 
   createGameInfoDisplay() {
     const { width, height } = this.cameras.main;
-    
+
     // Position the combined display in the top-left area
     const displayX = 200;
     const displayY = 150;
-    
+
     // Create single background for all labels (expanded height for 3 lines)
     const displayBg = this.add.graphics();
     displayBg.fillStyle(0x000000, 0.7);
     displayBg.fillRoundedRect(displayX - 70, displayY - 45, 220, 105, 5);
     displayBg.lineStyle(2, 0x888888);
     displayBg.strokeRoundedRect(displayX - 70, displayY - 45, 220, 105, 5);
-    
+
     // First player label (top line)
-    this.firstPlayerText = this.add.text(displayX-60, displayY-28, 'First Player: Unknown', {
+    this.firstPlayerText = this.add.text(displayX - 60, displayY - 28, 'First Player: Unknown', {
       fontSize: '16px',
       fontFamily: 'Arial',
       fill: '#ffffff',
       align: 'left'
     });
     this.firstPlayerText.setOrigin(0, 0.5);
-    
+
     // Opponent hand label (middle line)
-    this.opponentHandCountText = this.add.text(displayX-60, displayY-4, 'Opponent Hand: 0', {
+    this.opponentHandCountText = this.add.text(displayX - 60, displayY - 4, 'Opponent Hand: 0', {
       fontSize: '16px',
       fontFamily: 'Arial',
       fill: '#ffffff',
       align: 'left'
     });
     this.opponentHandCountText.setOrigin(0, 0.5);
-    
+
     // Current turn label (bottom line)
-    this.currentTurnText = this.add.text(displayX-60, displayY+20, 'Current Turn: Unknown', {
+    this.currentTurnText = this.add.text(displayX - 60, displayY + 20, 'Current Turn: Unknown', {
       fontSize: '16px',
       fontFamily: 'Arial',
       fill: '#FFD700', // Gold color to highlight turn info
@@ -509,15 +541,15 @@ export default class GameScene extends Phaser.Scene {
 
   createHandArea() {
     const { width, height } = this.cameras.main;
-    
+
     // Hand background
     const handBg = this.add.graphics();
     handBg.fillStyle(0x000000, 0);
     //fillRoundedRect(x, y, width, height, [radius])
     handBg.fillRoundedRect(50, height - 220, width - 100, 170, 10);
-    
-    this.handContainer = this.add.container(width / 2-50, height - 120);
-    
+
+    this.handContainer = this.add.container(width / 2 - 50, height - 120);
+
     // Create action button row above hand area
     // Initialize dynamic action button system
     this.actionButtonManager.initialize();
@@ -527,7 +559,7 @@ export default class GameScene extends Phaser.Scene {
     // Get player IDs
     const playerId = this.gameStateManager.getCurrentPlayerId();
     const opponentId = this.gameStateManager.getOpponent();
-    
+
     // Create player trash icon
     this.playerTrashIcon = new TrashIconManager(this, {
       isOpponent: false,
@@ -535,10 +567,10 @@ export default class GameScene extends Phaser.Scene {
       offsetX: 0,
       offsetY: 150 // Position 80px below deck
     });
-    
+
     // Position relative to player deck
     this.playerTrashIcon.positionRelativeToDeck(this.layout.player.deck);
-    
+
     // Create opponent trash icon
     this.opponentTrashIcon = new TrashIconManager(this, {
       isOpponent: true,
@@ -546,16 +578,16 @@ export default class GameScene extends Phaser.Scene {
       offsetX: 0,
       offsetY: -150 // Position 80px above opponent deck
     });
-    
+
     // Position relative to opponent deck
     this.opponentTrashIcon.positionRelativeToDeck(this.layout.opponent.deck);
-    
+
     // Set up event handlers for both trash icons
     this.setupTrashEventHandlers();
-    
+
     console.log('Created trash icons for both player and opponent');
   }
-  
+
   /**
    * Set up event handlers for trash icon interactions
    */
@@ -564,7 +596,7 @@ export default class GameScene extends Phaser.Scene {
     this.playerTrashIcon.on('trashClicked', (eventData) => {
       this.handleTrashClick(eventData);
     });
-    
+
     // Handle opponent trash click events (placeholder functionality)
     this.opponentTrashIcon.on('trashClicked', (eventData) => {
       this.handleTrashClick(eventData);
@@ -572,19 +604,19 @@ export default class GameScene extends Phaser.Scene {
   }
 
   setupEventListeners() {
-    
+
     // Card interaction events
     this.events.on('card-select', (card) => {
       console.log(`GameScene: card-select event received for card ${card.cardData?.id}`);
-      
+
       // Deselect all cards and clear highlights, then select the target card
       this.deselectAllCards();
-      
+
       // Now select the clicked card
       console.log(`Selecting card ${card.cardData?.id}`);
       card.select();
       this.gameStateManager.setSelectedCard(card);
-      
+
       // Show dynamic action buttons based on card type and effects
       this.showDynamicActionsForCard(card);
     });
@@ -594,13 +626,13 @@ export default class GameScene extends Phaser.Scene {
       if (this.gameStateManager.getSelectedCard() === card) {
         this.gameStateManager.setSelectedCard(null);
         this.clearZoneHighlights();
-        
+
         // Hide dynamic action buttons when card is deselected  
         this.hideDynamicActionButtons();
       }
     });
-    
-    
+
+
     // Card hover events for preview
     this.events.on('card-hover', (card) => {
       // Only show preview for hand cards
@@ -608,31 +640,31 @@ export default class GameScene extends Phaser.Scene {
         this.showCardPreview(card.getCardFullData());
       }
     });
-    
+
     this.events.on('card-unhover', (card) => {
       // Hide preview when not hovering
       this.hideCardPreview();
     });
-    
+
     // Zone card selection events - consolidated handlers for all slot cards
     this.events.on('zone-card-select', (card) => {
       console.log(`GameScene: zone-card-select event received for card ${card.cardData?.id}`);
-      
+
       // Deselect all cards and clear highlights, then select the target card
       this.deselectAllCards();
-      
+
       // Now select the clicked zone card
       console.log(`Selecting zone card ${card.cardData?.id}`);
       card.select();
       this.gameStateManager.setSelectedCard(card);
-      
+
       // Show dynamic action buttons based on card type and effects
       this.showDynamicActionsForCard(card);
     });
-    
+
     this.events.on('zone-card-deselect', (card) => {
       console.log(`GameScene: zone-card-deselect event received for card ${card.cardData?.id}`);
-      
+
       // Handle zone card deselection - clear selected card
       if (this.gameStateManager.getSelectedCard() === card) {
         this.gameStateManager.setSelectedCard(null);
@@ -641,7 +673,7 @@ export default class GameScene extends Phaser.Scene {
         this.hideDynamicActionButtons();
       }
     });
-    
+
     // Zone card hover events - enhanced for unit+pilot dual preview
     this.events.on('zone-card-hover', (card) => {
       console.log('[zone-card-hover] Event triggered for card:', {
@@ -653,18 +685,18 @@ export default class GameScene extends Phaser.Scene {
         x: card.x,
         y: card.y
       });
-      
+
       if (card.isInZone) {
-          try {
-            this.showSlotCardPreview(card);
-          } catch (error) {
-            console.error('[zone-card-hover] Error in showSlotCardPreview, using fallback:', error);
-            this.showCardPreview(card.getCardData());
-          }
+        try {
+          this.showSlotCardPreview(card);
+        } catch (error) {
+          console.error('[zone-card-hover] Error in showSlotCardPreview, using fallback:', error);
+          this.showCardPreview(card.getCardData());
+        }
       }
-      
+
     });
-    
+
     this.events.on('zone-card-unhover', (card) => {
       // Hide preview for zone cards (same as hand cards)
       if (card.isInZone) {
@@ -693,50 +725,50 @@ export default class GameScene extends Phaser.Scene {
 
   showCardSelectionDialog(selectionId, selection) {
     console.log('GameScene: Delegating card selection dialog to DialogManager:', selectionId, selection);
-    
+
     // All callers must provide their own callback - no fallback needed
     if (!selection.callback) {
       console.error('Card selection requires a callback function');
       return;
     }
-    
+
     // Use DialogManager to handle the dialog
     return this.dialogManager.showCardSelectionDialog(
-      selectionId, 
-      selection, 
+      selectionId,
+      selection,
       selection.callback
     );
   }
 
-  updateCurrentPlayerHand(){
-    const handDetails =  this.gameStateManager.getPlayerHand()
+  updateCurrentPlayerHand() {
+    const handDetails = this.gameStateManager.getPlayerHand()
     const newHand = handDetails.slice(0, Math.min(handDetails.length, this.playerHand.length));
-    console.log("new hand  "+JSON.stringify(newHand))
+    console.log("new hand  " + JSON.stringify(newHand))
     this.updatePlayerHandWithCards(newHand)
   }
   updatePlayerHand() {
     // Get hand from game state manager
-    const handDetails =  this.gameStateManager.getPlayerHand()
+    const handDetails = this.gameStateManager.getPlayerHand()
     console.log('updatePlayerHand - hand data:', JSON.stringify(handDetails));
     this.updatePlayerHandWithCards(handDetails);
   }
-  
+
   updatePlayerHandWithCards(hand) {
     // Clear existing hand
     this.playerHand.forEach(card => card.destroy());
     this.playerHand = [];
     this.handContainer.removeAll();
-    
+
     console.log('updatePlayerHand - hand data:', JSON.stringify(hand));
     if (!hand || hand.length === 0) {
       console.log('No hand data found, returning early');
       return;
     }
-    
+
     // Calculate card positions
     const cardSpacing = Math.min(160, (this.cameras.main.width - 200) / hand.length);
     const startX = -(hand.length - 1) * cardSpacing / 2;
-    
+
     // Create cards
     hand.forEach((cardData, index) => {
       let processedCardData = cardData;
@@ -746,14 +778,14 @@ export default class GameScene extends Phaser.Scene {
         gameStateManager: this.gameStateManager,
         usePreview: true
       });
-      
+
       this.playerHand.push(card);
       this.handContainer.add(card);
 
     });
   }
 
-  apiZoneCardDataToCardObject(cardData){
+  apiZoneCardDataToCardObject(cardData) {
     return {
       id: cardData.id,
       name: cardData.id,
@@ -776,20 +808,20 @@ export default class GameScene extends Phaser.Scene {
     const opponent = this.gameStateManager.getOpponent();
     console.log('card data : opponent', opponent);
     const opponentData = this.gameStateManager.getPlayer(opponent);
-    
+
 
     this.baseAndShieldManager.updateAll();
     this.energyAreaManager.updateEnergyAreas();
     this.slotAreaManager.updateSlotAreas();
-    
-    if(this.isSetScenoria){
+
+    if (this.isSetScenoria) {
       this.isSetScenoria = false;
       this.updatePlayerHand();
     }
 
 
     const unprocessedEvent = this.gameStateManager.getUnprocessGameEvents();
-    if(unprocessedEvent.length > 0) {
+    if (unprocessedEvent.length > 0) {
       // Process events one by one using GameStateManager queue logic
       this.gameStateManager.processEventQueue(
         (event) => this.handleSingleEvent(event),
@@ -803,9 +835,9 @@ export default class GameScene extends Phaser.Scene {
 
     // Debug: Log current phase and animation state
     console.log('Online mode - phase:', gameState.gameEnv.phase, 'shuffleAnimationPlayed:', this.shuffleAnimationPlayed);
-    
-    if(this.isTestMode) {
-      if(gameState.gameEnv.phase === 'MAIN_PHASE') {
+
+    if (this.isTestMode) {
+      if (gameState.gameEnv.phase === 'MAIN_PHASE') {
         this.displayGameInfo();
         this.showDeckStacks();
         // Show hand area and update game state after shuffle animation completes
@@ -820,12 +852,12 @@ export default class GameScene extends Phaser.Scene {
       this.shuffleAnimationPlayed = true;
       this.showRoomStatus('Both players joined - hands dealt!');
       this.displayGameInfo();
-      
+
       // Load card resources before shuffle animation
       this.loadCardResources().then(() => {
         console.log('[GameScene] Card resources loaded, starting shuffle animation');
-        
-        if(this.firstShuffleAnimationComplete == false){
+
+        if (this.firstShuffleAnimationComplete == false) {
           this.playShuffleDeckAnimation().then(() => {
             console.log('Online mode - shuffle animation completed, selecting leader cards...');
             this.firstShuffleAnimationComplete = true
@@ -835,7 +867,7 @@ export default class GameScene extends Phaser.Scene {
         }
       }).catch((error) => {
         console.warn('[GameScene] Failed to load card resources, proceeding with fallback:', error);
-        
+
         // Continue with shuffle animation even if resource loading fails
         this.playShuffleDeckAnimation().then(() => {
           console.log('Online mode - shuffle animation completed (with resource loading fallback), selecting leader cards...');
@@ -844,45 +876,45 @@ export default class GameScene extends Phaser.Scene {
         });
       });
     }
-    
+
     if (this.gameStateManager.getPlayer().confirmIsRedraw &&
-        this.firstShuffleAnimationComplete){
-        this.updatePlayerHand();
+      this.firstShuffleAnimationComplete) {
+      this.updatePlayerHand();
     }
-    
- 
-    
+
+
+
     // Debug logging for troubleshooting
     console.log('updateUI - phase:', gameState.gameEnv.phase, 'shuffleAnimationPlayed:', this.shuffleAnimationPlayed);
-    
+
     // Update phase indicator with current player info
     const currentPhase = gameState.gameEnv.phase;
     const currentPlayer = gameState.gameEnv.currentPlayer;
     if (currentPhase) {
       this.updatePhaseIndicator(currentPhase, currentPlayer);
     }
-    
+
     // Update current turn display
     this.updateCurrentTurnDisplay(currentPlayer);
-    
+
     // Update round
     this.roundText.setText(`Round ${gameState.gameEnv.round} / 4`);
-    
+
     // Update player info
     this.playerVPText.setText(`VP: ${this.gameStateManager.getVictoryPoints()}`);
     this.playerHandText.setText(`Hand: ${player && player.hand ? player.hand.length : 0}`);
-    
+
     // Update opponent info
     this.opponentVPText.setText(`VP: ${this.gameStateManager.getVictoryPoints(opponent)}`);
     this.opponentHandText.setText(`Hand: ${opponentData && opponentData.deck.hand ? opponentData.deck.hand.length : 0}`);
-    
-    
+
+
     // Update opponent hand count display
     if (this.opponentHandCountText) {
       const opponentHandCount = opponentData && opponentData.deck?.hand ? opponentData.deck.hand.length : 0;
       this.opponentHandCountText.setText(`Opponent Hand: ${opponentHandCount}`);
     }
-    
+
     // Update turn indicator
     const isCurrentPlayer = this.gameStateManager.isCurrentPlayer();
     this.endTurnButton.setTint(isCurrentPlayer ? 0xffffff : 0x888888);
@@ -905,27 +937,67 @@ export default class GameScene extends Phaser.Scene {
   }
 
   /**
-   * Handle trash icon click events (placeholder functionality)
+   * Handle trash icon click events - Shows cards in trash area
    * @param {Object} eventData - Event data from trash icon click
    */
   handleTrashClick(eventData) {
     console.log('Handling trash icon click:', eventData);
-    
+
     const trashOwner = eventData.isOpponent ? 'opponent' : 'player';
     const currentPlayerId = this.gameStateManager.getCurrentPlayerId();
-    
-    // Show placeholder message
-    const message = `${trashOwner} trash clicked! (Placeholder functionality - no cards trashed)`;
-    this.showRoomStatus(message);
-    
-    console.log(`Trash icon clicked - ${trashOwner} (Player ID: ${eventData.playerId}, Current: ${currentPlayerId})`);
-    
-    // Here you could add future functionality such as:
-    // - Opening a trash viewing modal
-    // - Showing available cards to retrieve from trash  
-    // - Implementing trash-related game mechanics
-    // - Activating special abilities that interact with the trash
+    const targetPlayerId = eventData.isOpponent ? this.gameStateManager.getOpponent() : currentPlayerId;
+
+    // Get trash area cards from game state
+    const gameState = this.gameStateManager.getGameState();
+    let trashArea = gameState.gameEnv?.players?.[targetPlayerId]?.zones?.trashArea || [];
+
+    // Remove cards with uid = "base_default" from trash area
+    const originalTrashLength = trashArea.length;
+    trashArea = trashArea.filter(card => card.uid !== "base_default");
+
+    // Update the game state if any cards were removed
+    if (trashArea.length !== originalTrashLength) {
+      const removedCount = originalTrashLength - trashArea.length;
+      console.log(`Removed ${removedCount} base_default card(s) from ${trashOwner} trash area`);
+
+      // Update the trash area in game state
+      if (gameState.gameEnv?.players?.[targetPlayerId]?.zones) {
+        gameState.gameEnv.players[targetPlayerId].zones.trashArea = trashArea;
+      }
+    }
+
+
+    console.log(`Trash icon clicked - ${trashOwner} (Player ID: ${eventData.playerId}, Trash cards:`, trashArea.length, ')');
+
+    // Show trash dialog using existing card selection dialog system
+    if (trashArea.length === 0) {
+      // Show empty trash message
+      this.dialogManager.showInformationDialog({
+        title: `${trashOwner === 'player' ? 'Your' : 'Opponent\'s'} Trash Area`,
+        message: 'No cards in trash area.',
+        width: 350,
+        height: 150
+      });
+      return;
+    }
+
+    // Create a read-only card selection dialog for viewing trash
+    const selectionId = `trash_view_${Date.now()}`;
+    const selection = {
+      eligibleCards: trashArea,
+      selectCount: 0, // Read-only, no selection needed
+      title: `${trashOwner === 'player' ? 'Your' : 'Opponent\'s'} Trash Area`,
+      description: `${trashArea.length} card${trashArea.length !== 1 ? 's' : ''} in trash area`,
+      callback: () => {
+        // No action needed - just viewing
+        console.log('Trash dialog closed');
+      }
+    };
+
+    // Use the existing card selection dialog system
+    this.dialogManager.showCardSelectionDialog(selectionId, selection, selection.callback);
   }
+
 
   /**
    * Handle zone click for card placement
@@ -944,21 +1016,21 @@ export default class GameScene extends Phaser.Scene {
     if (this.canPlaceCardInZone(card, zoneType)) {
       // Show loading state
       this.setUILoadingState(true);
-      
+
       // Attempt to play card to server/update game state (include face-down state)
       const cardDataWithState = {
         ...card.getCardData()
       };
       const success = await this.playCardToZone(cardDataWithState, zoneType);
-      
+
       if (success) {
         // Move card to zone
         card.moveToPosition(x, y);
-        
+
         // Set zone placement for hover preview system
         card.setZonePlacement(true, zoneType, true); // true = player zone
         console.log(`[GameScene] Card ${card.cardData?.id} placed in player zone: ${zoneType}`);
-        
+
         // Remove from hand
         const handIndex = this.playerHand.indexOf(card);
         if (handIndex > -1) {
@@ -966,21 +1038,21 @@ export default class GameScene extends Phaser.Scene {
           this.handContainer.remove(card);
           this.reorganizeHand();
         }
-        
+
         // Update zone
         const zone = this.playerZones[zoneType];
         if (zone) {
           zone.card = card;
           zone.placeholder.setVisible(false);
-          
+
           // Show power overlay for character cards in character zones
           const cardType = card.cardData?.cardType || card.cardData?.type;
-          if (cardType === 'character' && 
-              ['top', 'left', 'right'].includes(zoneType)) {
+          if (cardType === 'character' &&
+            ['top', 'left', 'right'].includes(zoneType)) {
             card.setPowerOverlayVisible(true, true);
           }
         }
-        
+
         // Deselect the card
         if (this.gameStateManager.getSelectedCard() === card) {
           this.gameStateManager.setSelectedCard(null);
@@ -988,13 +1060,13 @@ export default class GameScene extends Phaser.Scene {
           // Hide action buttons when card is placed
           this.actionButtonManager.hide();
         }
-        
+
         console.log(`Successfully played card ${card.getCardData().id} to ${zoneType}`);
       } else {
         // Return card to hand on failure
         card.returnToOriginalPosition();
       }
-      
+
       // Clear loading state
       this.setUILoadingState(false);
     } else {
@@ -1005,39 +1077,39 @@ export default class GameScene extends Phaser.Scene {
 
   async playCardToZone(cardData, zoneType) {
     console.log(`Playing card ${cardData.id} to ${zoneType} zone`);
-    
+
     const gameState = this.gameStateManager.getGameState();
-    
+
     // Send API call to backend if API manager available
     if (this.apiManager) {
       try {
         // Get the cardUID from the hand for the new simplified API
         const cardUID = this.getCardUIDFromHand(cardData);
-        
+
         if (!cardUID) {
           this.showErrorMessage('Card not found in hand.');
           return false;
         }
-        
+
         console.log('Sending card play to backend:', { cardUID, zone: zoneType });
-        
+
         const response = await this.apiManager.playCard(
-          gameState.playerId, 
-          gameState.gameId, 
+          gameState.playerId,
+          gameState.gameId,
           cardUID
         );
-        
+
         console.log('Card play response:', response);
-        
+
         // The backend will update the game state, which will be received via polling
         // No need to update local state here as it will come from the server
-        
+
       } catch (error) {
         console.error('Failed to send card play action to backend:', error);
-        
+
         // Show error to user
         this.showErrorMessage('Failed to play card. Please try again.');
-        
+
         // Don't update local state on error - keep the card in hand
         return false;
       }
@@ -1049,66 +1121,66 @@ export default class GameScene extends Phaser.Scene {
         zones[gameState.playerId] = {};
       }
       zones[gameState.playerId][zoneType] = cardData;
-      
+
       this.gameStateManager.updateGameEnv({ zones });
     }
-    
+
     return true;
   }
 
   getCardUIDFromHand(cardData) {
     // Get the current hand from game state to find card UID
     const hand = this.gameStateManager.getPlayerHand();
-    
+
     // Find the actual UID of this card in the player's hand
     // Backend hand contains UID strings like "c-1_1754551822157_24"
     // Frontend cardData.id is the base ID like "c-1"
     // We need to find the actual UID that matches this base ID
     const cardUID = hand.find(handCardUID => {
       // Extract base card ID from UID (before first underscore)
-      const baseCardId = typeof handCardUID === 'string' 
-        ? handCardUID.split('_')[0] 
+      const baseCardId = typeof handCardUID === 'string'
+        ? handCardUID.split('_')[0]
         : handCardUID.id;
       return baseCardId === cardData.id;
     });
-    
+
     if (!cardUID) {
       console.error(`Card ${cardData.id} not found in player hand`);
       console.log('Available hand cards (UIDs):', hand);
       console.log('Looking for base card ID:', cardData.id);
       return null;
     }
-    
+
     return cardUID;
   }
 
   createBackendAction(cardData, zoneType) {
     // Get the cardUID using helper method
     const cardUID = this.getCardUIDFromHand(cardData);
-    
+
     if (!cardUID) {
       return null;
     }
-    
+
     // Validate and normalize zone name using ZoneMapping utility
     const normalizedZone = ZoneMapping.normalizeZone(zoneType);
-    
+
     if (!normalizedZone) {
       console.error(`Invalid zone type: ${zoneType}`);
       return null;
     }
-    
+
     // Create action in new UID/zone-based format
     const action = {
       type: 'PlayCard',
       cardUID: cardUID,
       zone: normalizedZone
     };
-    
+
     console.log(`Created backend action for card ${cardData.id} (NEW UID/ZONE FORMAT):`);
     console.log(`  - Card UID: ${cardUID}`);
     console.log(`  - Zone: ${normalizedZone}`);
-    
+
     return action;
   }
 
@@ -1134,15 +1206,15 @@ export default class GameScene extends Phaser.Scene {
         handCard.deselectSilently();
       }
     });
-    
+
     // Deselect all slot cards - delegate to SlotAreaManager
     if (this.slotAreaManager) {
       this.slotAreaManager.deselectAllSlotCards();
     }
-    
+
     // Clear zone highlights
     this.clearZoneHighlights();
-    
+
     // Optionally clear the selected card from game state
     if (clearGameState) {
       this.gameStateManager.setSelectedCard(null);
@@ -1153,10 +1225,10 @@ export default class GameScene extends Phaser.Scene {
 
   reorganizeHand() {
     if (this.playerHand.length === 0) return;
-    
+
     const cardSpacing = Math.min(160, (this.cameras.main.width - 200) / this.playerHand.length);
     const startX = -(this.playerHand.length - 1) * cardSpacing / 2;
-    
+
     this.playerHand.forEach((card, index) => {
       const newX = startX + (index * cardSpacing);
       card.moveToPosition(newX, 0, 300, false); // false = don't remove from container
@@ -1170,25 +1242,25 @@ export default class GameScene extends Phaser.Scene {
       this.showRoomStatus('Not your turn to end turn');
       return;
     }
-    
+
     try {
       const gameState = this.gameStateManager.getGameState();
       const gameId = gameState.gameId;
       const playerId = gameState.playerId;
-      
+
       if (!gameId || !playerId) {
         throw new Error('Missing gameId or playerId');
       }
-      
+
       console.log(`Ending turn for player: ${playerId}`);
       this.showRoomStatus('Ending turn...');
-      
+
       const response = await this.apiManager.endTurn(gameId, playerId);
-      
+
       if (response && response.success) {
         console.log('Turn ended successfully:', response);
         this.showRoomStatus('Turn ended successfully');
-        
+
         // Update game state if returned in response
         if (response.gameEnv) {
           this.gameStateManager.updateGameEnv(response.gameEnv);
@@ -1197,7 +1269,7 @@ export default class GameScene extends Phaser.Scene {
       } else {
         throw new Error(response?.error || 'Failed to end turn');
       }
-      
+
     } catch (error) {
       console.error('Error ending turn:', error);
       this.showRoomStatus(`Failed to end turn: ${error.message}`);
@@ -1218,16 +1290,16 @@ export default class GameScene extends Phaser.Scene {
       if (this.opponentDeckStack) {
         this.opponentDeckStack.forEach(card => card.setVisible(false));
       }
-      
+
       this.shuffleAnimationManager.playShuffleDeckAnimation(this.layout, () => {
         console.log('Shuffle animation manager callback triggered');
         // Show deck stacks immediately to maintain deck visibility
         this.showDeckStacks();
-        
+
         // Show hand area and update game state after shuffle animation completes
         this.showHandArea();
         this.updateGameState();
-        
+
         console.log('About to resolve shuffle animation promise');
         // Resolve the promise
         resolve();
@@ -1246,7 +1318,7 @@ export default class GameScene extends Phaser.Scene {
       card.setVisible(true);
       card.setAlpha(1); // Full opacity for crisp rendering
     });
-    
+
     this.opponentDeckStack.forEach((card, index) => {
       card.setVisible(true);
       card.setAlpha(1); // Full opacity for crisp rendering
@@ -1265,14 +1337,14 @@ export default class GameScene extends Phaser.Scene {
     if (this.handContainer) {
       this.handContainer.setVisible(true);
     }
-  
+
   }
 
   showCardPreview(cardData) {
     // Remove existing preview card if any
     this.hideCardPreview();
     console.log("showCardPreview111", JSON.stringify(cardData));
-    
+
     if (!this.cardPreviewZone || !cardData) {
       return;
     }
@@ -1295,7 +1367,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     // Regular single card preview
-    const displayCardData =  cardData;
+    const displayCardData = cardData;
     this.previewCard = this._createPreviewCard(displayCardData, this.cardPreviewZone.x, this.cardPreviewZone.y, 2000);
   }
 
@@ -1314,7 +1386,7 @@ export default class GameScene extends Phaser.Scene {
       usePreview: false,
       interactive: false
     });
-    
+
     previewCard.setDepth(depth);
     return previewCard;
   }
@@ -1325,7 +1397,7 @@ export default class GameScene extends Phaser.Scene {
       this.previewCard.destroy();
       this.previewCard = null;
     }
-    
+
     // Also hide pilot preview card if it exists (for slot previews)
     if (this.previewPilotCard) {
       this.previewPilotCard.destroy();
@@ -1339,10 +1411,10 @@ export default class GameScene extends Phaser.Scene {
    */
   showSlotPreviewWithPilot(slotPreviewData) {
     if (!this.cardPreviewZone) return;
-    
+
     const unitCardData = slotPreviewData.cardData;
     const pilotCardData = slotPreviewData.pilot.cardData;
-    
+
     // Create unit preview (on top)
     this.previewCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y, unitCardData, {
       scale: 3.5,
@@ -1351,7 +1423,7 @@ export default class GameScene extends Phaser.Scene {
       handleOutside: true // Disable selection for preview cards
     });
     this.previewCard.setDepth(2000);
-    
+
     // Create pilot preview (145px below unit - same as existing dual preview)
     this.previewPilotCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y + 145, pilotCardData, {
       scale: 3.5,
@@ -1360,7 +1432,7 @@ export default class GameScene extends Phaser.Scene {
       handleOutside: true // Disable selection for preview cards
     });
     this.previewPilotCard.setDepth(1999); // Slightly behind unit
-    
+
     console.log('Showing slot preview from dialog:', unitCardData?.id, '+', pilotCardData?.id, 'for slot:', slotPreviewData.slotName);
   }
 
@@ -1371,7 +1443,7 @@ export default class GameScene extends Phaser.Scene {
   showSlotCardPreview(hoveredCard) {
     // First, hide any existing preview
     this.hideSlotCardPreview();
-    
+
     if (!this.cardPreviewZone || !hoveredCard) {
       console.warn('[showSlotCardPreview] Missing cardPreviewZone or hoveredCard');
       return;
@@ -1389,7 +1461,7 @@ export default class GameScene extends Phaser.Scene {
     // Determine if this is a slot card and which slot/player it belongs to
     const slotInfo = this.getSlotInfoFromCard(hoveredCard);
     console.log('[showSlotCardPreview] Slot info:', slotInfo);
-    
+
     if (!slotInfo) {
       // Not a slot card or couldn't detect slot, use regular preview
       console.log('[showSlotCardPreview] No slot info found, using fallback preview');
@@ -1400,13 +1472,13 @@ export default class GameScene extends Phaser.Scene {
     // Get both unit and pilot cards from the slot
     const slotCards = this.slotAreaManager.getSlotCards(slotInfo.playerType, slotInfo.slotName);
     console.log('[showSlotCardPreview] Slot cards:', slotInfo.slotName, slotCards);
-    
+
     // Determine which card is being hovered over
     const isHoveringUnit = slotCards.unit === hoveredCard;
     const isHoveringPilot = slotCards.pilot === hoveredCard;
-    
+
     console.log('[showSlotCardPreview] Hover detection:', { isHoveringUnit, isHoveringPilot });
-    
+
     if (slotCards.unit && slotCards.pilot) {
       if (isHoveringUnit) {
         // Hovering over unit card - show dual preview (unit + pilot)
@@ -1439,7 +1511,7 @@ export default class GameScene extends Phaser.Scene {
    */
   showDualCardPreview(unitCard, pilotCard) {
     if (!this.cardPreviewZone) return;
-    
+
     // Create unit preview (on top) - Direct card data access
     this.previewCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y, unitCard.cardData, {
       scale: 3.5,
@@ -1448,7 +1520,7 @@ export default class GameScene extends Phaser.Scene {
       handleOutside: true // Disable selection for preview cards
     });
     this.previewCard.setDepth(2000);
-    
+
     // Create pilot preview (25px below unit) - Direct card data access  
     this.previewPilotCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y + 145, pilotCard.cardData, {
       scale: 3.5,
@@ -1457,7 +1529,7 @@ export default class GameScene extends Phaser.Scene {
       handleOutside: true // Disable selection for preview cards
     });
     this.previewPilotCard.setDepth(1999); // Slightly behind unit
-    
+
     console.log('Showing dual preview:', unitCard.cardData?.id, '+', pilotCard.cardData?.id);
   }
 
@@ -1470,7 +1542,7 @@ export default class GameScene extends Phaser.Scene {
       this.previewCard.destroy();
       this.previewCard = null;
     }
-    
+
     // Hide pilot preview card
     if (this.previewPilotCard) {
       this.previewPilotCard.destroy();
@@ -1485,21 +1557,21 @@ export default class GameScene extends Phaser.Scene {
    */
   getSlotInfoFromCard(card) {
     console.log('[getSlotInfoFromCard] Analyzing card:', card.cardData?.id, 'cardTypeInSlot:', card.cardTypeInSlot);
-    
+
     // First approach: Check if this card has slot-specific properties
     // This might not always be set, so we'll also try direct slot scanning
-    
+
     if (!this.slotAreaManager) {
       console.warn('[getSlotInfoFromCard] SlotAreaManager not available');
       return null;
     }
-    
+
     // Check player slots by scanning all slots
     for (let i = 1; i <= 6; i++) {
       const slotName = `slot${i}`;
       const slotCards = this.slotAreaManager.getSlotCards('player', slotName);
       console.log(`[getSlotInfoFromCard] Checking player ${slotName}:`, slotCards);
-      
+
       if (slotCards.unit === card) {
         console.log(`[getSlotInfoFromCard] Found as unit in player ${slotName}`);
         return { playerType: 'player', slotName, cardType: 'unit' };
@@ -1509,13 +1581,13 @@ export default class GameScene extends Phaser.Scene {
         return { playerType: 'player', slotName, cardType: 'pilot' };
       }
     }
-    
+
     // Check opponent slots
     for (let i = 1; i <= 6; i++) {
       const slotName = `slot${i}`;
       const slotCards = this.slotAreaManager.getSlotCards('opponent', slotName);
       console.log(`[getSlotInfoFromCard] Checking opponent ${slotName}:`, slotCards);
-      
+
       if (slotCards.unit === card) {
         console.log(`[getSlotInfoFromCard] Found as unit in opponent ${slotName}`);
         return { playerType: 'opponent', slotName, cardType: 'unit' };
@@ -1525,11 +1597,11 @@ export default class GameScene extends Phaser.Scene {
         return { playerType: 'opponent', slotName, cardType: 'pilot' };
       }
     }
-    
+
     console.log('[getSlotInfoFromCard] Card not found in any slot');
     return null;
   }
-  
+
 
 
 
@@ -1540,7 +1612,7 @@ export default class GameScene extends Phaser.Scene {
     // Get current game state to update
     const gameState = this.gameStateManager.getGameState();
     const player = this.gameStateManager.getPlayer();
-    
+
     if (!player || !player.hand) {
       console.error('Player hand not found');
       return;
@@ -1548,7 +1620,7 @@ export default class GameScene extends Phaser.Scene {
 
     // Add cards to game state first
     const updatedHand = [...player.hand, ...cardsToAdd];
-    
+
     // Update game state
     this.gameStateManager.updateGameEnv({
       players: {
@@ -1569,7 +1641,7 @@ export default class GameScene extends Phaser.Scene {
     const gameState = this.gameStateManager.getGameState();
     const opponent = this.gameStateManager.getOpponent();
     const opponentData = this.gameStateManager.getPlayer(opponent);
-    
+
     if (!opponentData || !opponentData.hand) {
       console.error('Opponent hand not found');
       return;
@@ -1577,7 +1649,7 @@ export default class GameScene extends Phaser.Scene {
 
     // Add cards to opponent's hand in game state
     const updatedOpponentHand = [...opponentData.hand, ...cardsToAdd];
-    
+
     // Update game state
     this.gameStateManager.updateGameEnv({
       players: {
@@ -1591,40 +1663,40 @@ export default class GameScene extends Phaser.Scene {
 
     // Update UI to reflect new opponent hand count
     this.updateUI();
-    
+
     console.log(`Added ${cardsToAdd.length} cards to opponent hand`);
   }
 
   animateCardsFromDeckToHand(cardsToAdd) {
     const playerDeckPosition = this.layout.player.deck;
-    
+
     // Animate each new card sequentially with individual slide animations
     cardsToAdd.forEach((cardData, index) => {
       setTimeout(() => {
         // Create temporary card at deck position (card back)
         const tempCard = this.add.image(playerDeckPosition.x, playerDeckPosition.y, 'card-back');
-        
+
         // Set the card to hand card size immediately
         const scaleX = GAME_CONFIG.card.width / tempCard.width;
         const scaleY = GAME_CONFIG.card.height / tempCard.height;
         const handScale = Math.min(scaleX, scaleY) * 0.95 * 1.15; // Match hand card scale
         tempCard.setScale(handScale);
         tempCard.setDepth(2000);
-        
+
         // Calculate spacing for current hand size + this new card
         const currentHandLength = this.playerHand.length; // Current cards in hand
         const totalCards = currentHandLength + 1; // Including this new card
         const cardSpacing = Math.min(160, (this.cameras.main.width - 200) / totalCards);
         const startX = -(totalCards - 1) * cardSpacing / 2;
         const newCardX = startX + (currentHandLength * cardSpacing); // Position for new card
-        
+
         // Convert to world coordinates
         const worldTargetX = this.handContainer.x + newCardX;
         const worldTargetY = this.handContainer.y;
-        
+
         // Animate existing hand cards to slide left to make space for this card
         CardAnimationUtils.slideHandCardsLeft(this, totalCards, cardSpacing);
-        
+
         // Animate new card from deck to hand position
         this.tweens.add({
           targets: tempCard,
@@ -1643,15 +1715,15 @@ export default class GameScene extends Phaser.Scene {
                 // Change to actual card image
                 const cardKey = `${cardData.id}-preview`;
                 tempCard.setTexture(cardKey);
-                
+
                 // Recalculate scale for the new texture to maintain consistent card size
                 const newScaleX = GAME_CONFIG.card.width / tempCard.width;
                 const newScaleY = GAME_CONFIG.card.height / tempCard.height;
                 const newHandScale = Math.min(newScaleX, newScaleY) * 0.95 * 1.15;
-                
+
                 // Update Y scale to match the new texture
                 tempCard.setScale(0, newHandScale);
-                
+
                 // Flip back to visible with correct scale
                 this.tweens.add({
                   targets: tempCard,
@@ -1662,24 +1734,24 @@ export default class GameScene extends Phaser.Scene {
                     // Calculate position relative to hand container
                     const relativeX = tempCard.x - this.handContainer.x;
                     const relativeY = tempCard.y - this.handContainer.y;
-                    
+
                     // Convert temporary card to actual hand card
                     const newCard = new Card(this, relativeX, relativeY, cardData, {
                       scale: 1.15,
                       gameStateManager: this.gameStateManager,
                       usePreview: true
                     });
-                    
+
                     // Add to hand array and container
                     this.playerHand.push(newCard);
                     this.handContainer.add(newCard);
-                    
+
                     // Set proper depth
                     newCard.setDepth(100);
-                    
+
                     // Destroy temporary card
                     tempCard.destroy();
-                    
+
                     console.log(`Card ${cardData.id} added to hand at position ${this.playerHand.length - 1} at (${relativeX}, ${relativeY})`);
                   }
                 });
@@ -1694,12 +1766,12 @@ export default class GameScene extends Phaser.Scene {
 
   createConnectionStatus() {
     const { width } = this.cameras.main;
-    
+
     // Connection status indicator (top right)
     const statusText = this.isManualPollingMode ? '🎮 Demo Mode' : '🟢 Live Game';
     const statusColor = this.isManualPollingMode ? '#FFD700' : '#51CF66';
-    
-    this.connectionStatusText = this.add.text(width-50, 30, statusText, {
+
+    this.connectionStatusText = this.add.text(width - 50, 30, statusText, {
       fontSize: '14px',
       fontFamily: 'Arial',
       fill: statusColor,
@@ -1713,22 +1785,22 @@ export default class GameScene extends Phaser.Scene {
     try {
       const gameState = this.gameStateManager.getGameState();
       const gameId = gameState.gameId;
-      
+
       console.log('Simulating player 2 joining room with gameId:', gameId);
-      
+
       if (!gameId) {
         throw new Error('No gameId found. Make sure game was created first.');
       }
-      
+
       // Call joinRoom API to simulate player 2 joining using the correct gameId
       const response = await this.apiManager.joinRoom(gameId, 'Demo Opponent');
       console.log('Player 2 join response:', response);
-      
+
       // Don't update game state immediately - let user poll to see changes
       console.log('Player 2 join API call completed. Use polling to see the changes.');
-      
+
       this.showRoomStatus('Player 2 joined! Use polling to see changes.');
-      
+
     } catch (error) {
       console.error('Failed to simulate player 2 join:', error);
       this.showRoomStatus('Failed to simulate player 2 join: ' + error.message);
@@ -1738,7 +1810,7 @@ export default class GameScene extends Phaser.Scene {
   displayGameInfo() {
     const gameState = this.gameStateManager.getGameState();
     const gameEnv = gameState.gameEnv;
-    
+
     const opponentId = this.gameStateManager.getOpponent();
     const opponentData = this.gameStateManager.getPlayer(opponentId);
 
@@ -1749,18 +1821,18 @@ export default class GameScene extends Phaser.Scene {
       // Determine which player goes first
       const firstPlayerId = gameEnv.firstPlayer === 0 ? playerIds[0] : playerIds[1];
       const isCurrentPlayerFirst = firstPlayerId === gameState.playerId;
-      
+
       // Display first player info
       const firstPlayerText = isCurrentPlayerFirst ? 'You go first!' : 'Opponent goes first!';
       this.showRoomStatus(`${firstPlayerText} (First player: ${firstPlayerId})`);
-   
+
       this.opponentInfoText.setText(`Opponent: ${opponentData ? opponentData.name : 'Unknown'}`);
       // Update first player display
       this.updateFirstPlayerDisplay(isCurrentPlayerFirst);
-      
+
       // Display hand count info near opponent area
       this.updateOpponentInfo(gameEnv);
-      
+
       console.log('Game Info:', {
         firstPlayer: firstPlayerId,
         currentPlayerIsFirst: isCurrentPlayerFirst,
@@ -1796,7 +1868,7 @@ export default class GameScene extends Phaser.Scene {
 
     const opponentData = this.gameStateManager.getPlayer(opponentId);
     const opponentHandCount = opponentData?.hand?.length || 0;
-    
+
     // Update existing opponent hand count display (created in createOpponentHandDisplay)
     if (this.opponentHandCountText) {
       this.opponentHandCountText.setText(`Opponent Hand: ${opponentHandCount}`);
@@ -1805,10 +1877,10 @@ export default class GameScene extends Phaser.Scene {
 
   showRedrawDialog() {
     console.log('GameScene: Showing redraw dialog via DialogManager');
-    
+
     // Handle special depth requirements for redraw dialog (bring cards to front)
     this.setCardsAboveOverlay();
-    
+
     // Use DialogManager for consistent dialog handling
     return this.dialogManager.showConfirmationDialog(
       {
@@ -1832,12 +1904,12 @@ export default class GameScene extends Phaser.Scene {
     this.playerHand.forEach(card => {
       card.setDepth(1001); // Hand cards above overlay
     });
-    
+
     // Also bring the hand container to front if it exists
     if (this.handContainer) {
       this.handContainer.setDepth(1001);
     }
-    
+
     // Bring leader cards to front (above the overlay) - same as hand cards
     console.log('DEBUG: Setting leader card depths...');
     if (this.playerZones.leader && this.playerZones.leader.card) {
@@ -1885,18 +1957,18 @@ export default class GameScene extends Phaser.Scene {
         repeat: -1,
         ease: 'Sine.easeInOut'
       });
-      
+
       // Store reference to remove later
       if (!card.redrawHighlight) {
         card.redrawHighlight = true;
       }
     });
-    
+
   }
-  
+
   highlightLeaderCards() {
     console.log('highlightLeaderCards called');
-    
+
     // Highlight player leader card
     if (this.playerZones.leader && this.playerZones.leader.card) {
       console.log('Player leader card found, starting highlight');
@@ -1914,7 +1986,7 @@ export default class GameScene extends Phaser.Scene {
     } else {
       console.log('Player leader card not found for highlighting');
     }
-    
+
     // Highlight opponent leader card
     if (this.opponentZones.leader && this.opponentZones.leader.card) {
       console.log('Opponent leader card found, starting highlight');
@@ -1941,35 +2013,35 @@ export default class GameScene extends Phaser.Scene {
         // Stop pulsing animation and reset scale
         this.tweens.killTweensOf(card);
         card.setScale(1.1, 1.1); // Reset to original scale
-        
+
         card.redrawHighlight = false;
       }
     });
-    
+
     // Also remove leader card highlights
     this.removeLeaderCardHighlight();
   }
-  
+
   removeLeaderCardHighlight() {
     console.log('removeLeaderCardHighlight called');
-    
+
     // Remove player leader card highlight
     if (this.playerZones.leader && this.playerZones.leader.card) {
       const leaderCard = this.playerZones.leader.card;
       console.log('Player leader card found, redrawHighlight:', leaderCard.redrawHighlight);
-      
+
       // Kill any tweens targeting this card regardless of highlight flag
       this.tweens.killTweensOf(leaderCard);
       // Reset scale to normal
       leaderCard.setScale(0.9, 0.9); // Leader cards use 0.9 scale
       leaderCard.redrawHighlight = false;
     }
-    
+
     // Remove opponent leader card highlight
     if (this.opponentZones.leader && this.opponentZones.leader.card) {
       const leaderCard = this.opponentZones.leader.card;
       console.log('Opponent leader card found, redrawHighlight:', leaderCard.redrawHighlight);
-      
+
       // Kill any tweens targeting this card regardless of highlight flag
       this.tweens.killTweensOf(leaderCard);
       // Reset scale to normal
@@ -1981,23 +2053,23 @@ export default class GameScene extends Phaser.Scene {
   async handleRedrawChoice(wantRedraw) {
     // DialogManager handles dialog cleanup automatically
     console.log('GameScene: Handling redraw choice:', wantRedraw);
-    
+
     // Remove hand card highlighting
     this.removeHandCardHighlight();
-    
+
     // Remove leader card highlighting
     this.removeLeaderCardHighlight();
-    
+
     // Reset hand cards depth to normal
     this.playerHand.forEach(card => {
       card.setDepth(0); // Reset to default depth
     });
-    
+
     // Reset hand container depth if it exists
     if (this.handContainer) {
       this.handContainer.setDepth(0);
     }
-    
+
     // Reset leader cards depth to normal - same as hand cards
     if (this.playerZones.leader && this.playerZones.leader.card) {
       this.playerZones.leader.card.setDepth(0);
@@ -2011,16 +2083,16 @@ export default class GameScene extends Phaser.Scene {
     if (this.opponentZones.leaderDeck && this.opponentZones.leaderDeck.card) {
       this.opponentZones.leaderDeck.card.setDepth(0);
     }
-    
+
     try {
       const gameState = this.gameStateManager.getGameState();
       console.log(`Player chose redraw: ${wantRedraw}`);
-      
+
       // Call startReady with redraw choice
       await this.apiManager.startReady(gameState.playerId, gameState.gameId, wantRedraw);
-      
+
       this.showRoomStatus(`Ready sent (redraw: ${wantRedraw}). Poll to see if both players ready.`);
-      
+
     } catch (error) {
       console.error('Failed to send ready status:', error);
       this.showRoomStatus('Failed to send ready status: ' + error.message);
@@ -2032,7 +2104,7 @@ export default class GameScene extends Phaser.Scene {
     if (this.roomStatusText) {
       this.roomStatusText.destroy();
     }
-    
+
     // Create new room status text
     const { width } = this.cameras.main;
     this.roomStatusText = this.add.text(250, 80, message, {
@@ -2042,10 +2114,10 @@ export default class GameScene extends Phaser.Scene {
       align: 'left'
     });
     this.roomStatusText.setOrigin(0.5);
-    
+
     // Set high depth to ensure status messages appear above all game elements
     this.roomStatusText.setDepth(2000);
-    
+
     // Auto-hide after 5 seconds
     this.time.delayedCall(5000, () => {
       if (this.roomStatusText) {
@@ -2060,7 +2132,7 @@ export default class GameScene extends Phaser.Scene {
     if (this.errorMessageText) {
       this.errorMessageText.destroy();
     }
-    
+
     // Create new error message text
     const { width } = this.cameras.main;
     this.errorMessageText = this.add.text(width / 2, 120, message, {
@@ -2072,10 +2144,10 @@ export default class GameScene extends Phaser.Scene {
       strokeThickness: 2
     });
     this.errorMessageText.setOrigin(0.5);
-    
+
     // Set high depth to ensure error messages appear above all game elements (leader cards use depth 1001)
     this.errorMessageText.setDepth(2000);
-    
+
     // Auto-hide after 4 seconds
     this.time.delayedCall(4000, () => {
       if (this.errorMessageText) {
@@ -2102,7 +2174,7 @@ export default class GameScene extends Phaser.Scene {
         this.loadingIndicator.setDepth(1000); // Ensure it's on top
       }
       this.loadingIndicator.setVisible(true);
-      
+
       // Disable input during loading
       this.input.enabled = false;
     } else {
@@ -2110,7 +2182,7 @@ export default class GameScene extends Phaser.Scene {
       if (this.loadingIndicator) {
         this.loadingIndicator.setVisible(false);
       }
-      
+
       // Re-enable input
       this.input.enabled = true;
     }
@@ -2121,7 +2193,7 @@ export default class GameScene extends Phaser.Scene {
     if (this.gameStateManager) {
       this.gameStateManager.stopPolling();
     }
-    
+
     // Clean up base and shield area manager
     if (this.baseAndShieldManager) {
       this.baseAndShieldManager.destroy();
@@ -2149,14 +2221,14 @@ export default class GameScene extends Phaser.Scene {
     // Clean up hover preview resources
     this.hideCardPreview();
     this.hideSlotCardPreview();
-    
-    
+
+
     // Clean up all dialogs using DialogManager
     if (this.dialogManager) {
       this.dialogManager.destroy();
       this.dialogManager = null;
     }
-    
+
     // Call parent destroy
     super.destroy();
   }
@@ -2165,7 +2237,7 @@ export default class GameScene extends Phaser.Scene {
     try {
       const gameState = this.gameStateManager.getGameState();
       const gameId = gameState.gameId;
-      
+
       console.log('Debug: gameId:', gameId);
 
       if (!gameId) {
@@ -2174,7 +2246,7 @@ export default class GameScene extends Phaser.Scene {
 
       // Backend already knows player2Id from joinRoom call, so we can directly use 'playerId_2'
       const player2Id = 'playerId_2';
-      
+
       console.log('Debug: Using player2Id:', player2Id);
 
       // Simulate player 2 calling redraw (startReady with wantRedraw = true)
@@ -2189,10 +2261,10 @@ export default class GameScene extends Phaser.Scene {
 
   handlePhaseChange(event) {
     console.log('Processing phase change event:', event);
-    
+
     // Update phase indicator
     this.updatePhaseIndicator(event.data.phase);
-    
+
     // Show phase change notification
     this.showRoomStatus(event.data.message || `Phase changed to ${event.data.phase}`);
   }
@@ -2206,12 +2278,12 @@ export default class GameScene extends Phaser.Scene {
   }
 
   updatePhaseIndicator(phase, currentPlayer = null) {
-    if(phase == null){
+    if (phase == null) {
       return;
     }
     if (this.phaseText) {
       let displayText = '';
-      switch(phase) {
+      switch (phase) {
         case 'DRAW_PHASE':
           displayText = 'DRAW PHASE';
           break;
@@ -2241,14 +2313,14 @@ export default class GameScene extends Phaser.Scene {
           // Clean up any underscore-separated phases
           displayText = phase.replace(/_/g, ' ').toUpperCase();
       }
-      
+
       // Add current player info for turn-based phases
       if (currentPlayer && this.shouldShowTurnInfo(phase)) {
         const currentPlayerId = this.gameStateManager.getCurrentPlayerId();
         const turnPlayer = currentPlayer === currentPlayerId ? 'Your Turn' : 'Opponent Turn';
         displayText += ` (${turnPlayer})`;
       }
-      
+
       this.phaseText.setText(displayText);
     }
   }
@@ -2263,23 +2335,23 @@ export default class GameScene extends Phaser.Scene {
     try {
       const apiUrl = GAME_CONFIG.api.getFullUrl(GAME_CONFIG.api.endpoints.gameResource);
       console.log('[GameScene] Fetching deck data from:', apiUrl);
-      
+
       const response = await fetch(apiUrl, {
         method: 'GET',
         headers: GAME_CONFIG.api.headers,
         signal: AbortSignal.timeout(GAME_CONFIG.api.timeout)
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      
+
       const deckData = await response.json();
       console.log('[GameScene] Deck data received:', deckData);
-      
+
       // Process deck data to extract unique card images
       const allCardPaths = new Set();
-      
+
       if (deckData.decks) {
         Object.keys(deckData.decks).forEach(deckKey => {
           const deck = deckData.decks[deckKey];
@@ -2291,17 +2363,17 @@ export default class GameScene extends Phaser.Scene {
           }
         });
       }
-      
+
       const uniqueCardPaths = Array.from(allCardPaths);
       console.log(`[GameScene] Found ${uniqueCardPaths.length} unique cards to load:`, uniqueCardPaths);
-      
+
       // Load images into Phaser texture manager
       const loadPromises = [];
       const timestamp = Date.now();
-      
+
       uniqueCardPaths.forEach(imagePath => {
         const imageKey = this.getImageKey(imagePath);
-        
+
         // Load full-size image
         const fullImageUrl = `${GAME_CONFIG.api.getImageUrl(imagePath)}?t=${timestamp}`;
         const fullPromise = new Promise((resolve, reject) => {
@@ -2318,7 +2390,7 @@ export default class GameScene extends Phaser.Scene {
           });
         });
         loadPromises.push(fullPromise);
-        
+
         // Load preview image
         const previewKey = `${imageKey}-preview`;
         const previewImageUrl = `${GAME_CONFIG.api.getPreviewImageUrl(imagePath)}?t=${timestamp}`;
@@ -2337,25 +2409,25 @@ export default class GameScene extends Phaser.Scene {
         });
         loadPromises.push(previewPromise);
       });
-      
+
       // Start loading and wait for completion
       this.load.start();
       await Promise.allSettled(loadPromises);
-      
+
       console.log('[GameScene] Card resource loading complete');
-      
+
     } catch (error) {
       console.error('[GameScene] Error loading card resources:', error);
       throw error;
     }
   }
-  
+
   getImageKey(imagePath) {
     // Extract filename from path and remove extension
     const filename = imagePath.split('/').pop();
     return filename.replace(/\.[^/.]+$/, "");
   }
-  
+
   async handleSingleEvent(event) {
     console.log("handlesingle event ", JSON.stringify(event))
     switch (event.type) {
@@ -2366,7 +2438,7 @@ export default class GameScene extends Phaser.Scene {
       case 'PLAYER_REDRAW':
         this.updateCurrentPlayerHand()
         break;
-      
+
       /*
       case 'CARD_PLAYED':
         this.handleCardPlayedEvent(event);
@@ -2392,40 +2464,40 @@ export default class GameScene extends Phaser.Scene {
         console.log(`[GameScene] Unhandled event type: ${event.type}`, event);
     }
   }
-  
+
   handleCardPlayedEvent(event) {
     console.log('[GameScene] Handling CARD_PLAYED event:', event.data);
     // Update UI based on card played
     this.updateGameState();
   }
-  
+
   handlePhaseChangeEvent(event) {
     console.log('[GameScene] Handling PHASE_CHANGE event:', event.data);
     // Update phase display
     this.updateGameState();
   }
-  
+
   handleTurnSwitchEvent(event) {
     console.log('[GameScene] Handling TURN_SWITCH event:', event.data);
     // Update turn indicators
     this.updateGameState();
   }
-  
+
   handleBattleCalculatedEvent(event) {
     console.log('[GameScene] Handling BATTLE_CALCULATED event:', event.data);
     // Trigger battle result animation
     this.updateGameState();
   }
-  
+
   handleErrorEvent(event) {
     console.error('[GameScene] Handling ERROR event:', event.data);
     // Show error message to user
     this.showRoomStatus(`Error: ${event.data.message || 'Unknown error occurred'}`, 3000);
   }
-  
+
 
   // Old static action button method removed - now using dynamic ActionButtonManager
-  
+
   /**
    * Show dynamic actions for selected card
    */
@@ -2448,7 +2520,7 @@ export default class GameScene extends Phaser.Scene {
     // Show dynamic actions based on card type and context
     this.actionButtonManager.showActionsForCard(selectedCard, gameContext);
   }
-  
+
   /**
    * Hide dynamic action buttons
    */
@@ -2472,12 +2544,12 @@ export default class GameScene extends Phaser.Scene {
     // TODO: Check phase restrictions, zone availability, etc.
     return true; // Placeholder
   }
-  
+
   handleActionButtonClick(action, effectData = null) {
     const selectedCard = this.gameStateManager.getSelectedCard();
     this.cardActionHandler.handleAction(action, selectedCard, effectData);
   }
-  
+
   // Card action methods moved to CardActionHandler class
 
   // Duplicate destroy method removed - merged into main destroy method above
