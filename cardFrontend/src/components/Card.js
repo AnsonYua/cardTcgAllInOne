@@ -196,8 +196,8 @@ export default class Card extends Phaser.GameObjects.Container {
    */
   setCursor(cursorType = 'default') {
     if (this.scene && this.scene.game && this.scene.game.canvas) {
-      const state = this.getInteractionState();
-      if (state.canInteract && cursorType === 'pointer') {
+      // Always show pointer cursor on hover, regardless of interaction state
+      if (cursorType === 'pointer') {
         this.scene.game.canvas.style.cursor = 'pointer';
       } else {
         this.scene.game.canvas.style.cursor = 'default';
