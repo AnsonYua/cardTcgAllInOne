@@ -107,71 +107,6 @@
                             }
                         },
                         {
-                            "cardUid": "ST01-013_20d620d9-242e-4aa8-b1b6-6847dff89461",
-                            "cardId": "ST01-013",
-                            "cardData": {
-                                "id": "ST01-013",
-                                "name": "Kai's Resolve",
-                                "cardType": "command",
-                                "color": "Blue",
-                                "level": 3,
-                                "cost": 1,
-                                "zone": [],
-                                "traits": [
-                                    "Earth Federation",
-                                    "White Base Team"
-                                ],
-                                "link": [],
-                                "ap": 1,
-                                "hp": 0,
-                                "effects": {
-                                    "description": [
-                                        "【Main】Choose 1 friendly Unit. It recovers 3 HP.",
-                                        "【Pilot】[Kai Shiden]"
-                                    ],
-                                    "rules": [
-                                        {
-                                            "effectId": "main_heal_friendly",
-                                            "type": "activated",
-                                            "timing": [
-                                                "MAIN_PHASE"
-                                            ],
-                                            "target": {
-                                                "type": "unit",
-                                                "scope": "self",
-                                                "count": 1
-                                            },
-                                            "effect": {
-                                                "action": "heal",
-                                                "parameters": {
-                                                    "amount": 3
-                                                },
-                                                "duration": "instant"
-                                            }
-                                        },
-                                        {
-                                            "effectId": "pilot_designation",
-                                            "type": "special",
-                                            "trigger": "continuous",
-                                            "target": {
-                                                "type": "pilot",
-                                                "scope": "any"
-                                            },
-                                            "effect": {
-                                                "action": "designate_pilot",
-                                                "parameters": {
-                                                    "pilotName": "Kai Shiden",
-                                                    "AP": 1,
-                                                    "HP": 0
-                                                },
-                                                "duration": "permanent"
-                                            }
-                                        }
-                                    ]
-                                }
-                            }
-                        },
-                        {
                             "cardUid": "ST01-015_2d81924c-bb00-41fd-b351-425a4784f478",
                             "cardId": "ST01-015",
                             "cardData": {
@@ -287,181 +222,6 @@
                             }
                         },
                         {
-                            "cardUid": "ST01-006_ba54a530-2fcc-4b9d-adb5-b9b89e152578",
-                            "cardId": "ST01-006",
-                            "cardData": {
-                                "id": "ST01-006",
-                                "name": "Gundam Aerial (Permet Score Six)",
-                                "cardType": "unit",
-                                "color": "White",
-                                "level": 5,
-                                "cost": 4,
-                                "zone": [
-                                    "Space",
-                                    "Earth"
-                                ],
-                                "traits": [
-                                    "Academy"
-                                ],
-                                "link": [
-                                    "Suletta Mercury"
-                                ],
-                                "ap": 4,
-                                "hp": 4,
-                                "effects": {
-                                    "description": [
-                                        "【When Paired】Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn."
-                                    ],
-                                    "rules": [
-                                        {
-                                            "effectId": "paired_ap_reduction",
-                                            "type": "triggered",
-                                            "trigger": "PAIRING_COMPLETE",
-                                            "target": {
-                                                "type": "unit",
-                                                "scope": "opponent",
-                                                "filters": {
-                                                    "level": "<=5"
-                                                },
-                                                "count": 1
-                                            },
-                                            "effect": {
-                                                "action": "modifyAP",
-                                                "parameters": {
-                                                    "modifier": "-3"
-                                                },
-                                                "duration": "turn"
-                                            }
-                                        }
-                                    ]
-                                }
-                            }
-                        },
-                        {
-                            "cardUid": "ST01-009_d0276af7-b917-45ba-8e16-692d241a7360",
-                            "cardId": "ST01-009",
-                            "cardData": {
-                                "id": "ST01-009",
-                                "name": "Zowort",
-                                "cardType": "unit",
-                                "color": "White",
-                                "level": 2,
-                                "cost": 2,
-                                "zone": [
-                                    "Space",
-                                    "Earth"
-                                ],
-                                "traits": [
-                                    "Academy"
-                                ],
-                                "link": [],
-                                "ap": 3,
-                                "hp": 2,
-                                "effects": {
-                                    "description": [
-                                        "<Blocker> (Rest this Unit to change the attack target to it.)",
-                                        "This Unit can't choose the enemy player as its attack target."
-                                    ],
-                                    "rules": [
-                                        {
-                                            "effectId": "blocker",
-                                            "type": "keyword",
-                                            "trigger": "ATTACK_REDIRECT",
-                                            "target": {
-                                                "type": "unit",
-                                                "scope": "self"
-                                            },
-                                            "effect": {
-                                                "action": "redirect_attack",
-                                                "parameters": {
-                                                    "cost": "rest_self"
-                                                },
-                                                "duration": "instant"
-                                            }
-                                        },
-                                        {
-                                            "effectId": "attack_restriction",
-                                            "type": "static",
-                                            "trigger": "continuous",
-                                            "target": {
-                                                "type": "unit",
-                                                "scope": "self"
-                                            },
-                                            "effect": {
-                                                "action": "restrict_attack",
-                                                "parameters": {
-                                                    "restriction": "cannot_attack_player"
-                                                },
-                                                "duration": "permanent"
-                                            }
-                                        }
-                                    ]
-                                }
-                            }
-                        },
-                        {
-                            "cardUid": "ST01-009_def374dc-4263-41b6-9aa2-d39d776b1635",
-                            "cardId": "ST01-009",
-                            "cardData": {
-                                "id": "ST01-009",
-                                "name": "Zowort",
-                                "cardType": "unit",
-                                "color": "White",
-                                "level": 2,
-                                "cost": 2,
-                                "zone": [
-                                    "Space",
-                                    "Earth"
-                                ],
-                                "traits": [
-                                    "Academy"
-                                ],
-                                "link": [],
-                                "ap": 3,
-                                "hp": 2,
-                                "effects": {
-                                    "description": [
-                                        "<Blocker> (Rest this Unit to change the attack target to it.)",
-                                        "This Unit can't choose the enemy player as its attack target."
-                                    ],
-                                    "rules": [
-                                        {
-                                            "effectId": "blocker",
-                                            "type": "keyword",
-                                            "trigger": "ATTACK_REDIRECT",
-                                            "target": {
-                                                "type": "unit",
-                                                "scope": "self"
-                                            },
-                                            "effect": {
-                                                "action": "redirect_attack",
-                                                "parameters": {
-                                                    "cost": "rest_self"
-                                                },
-                                                "duration": "instant"
-                                            }
-                                        },
-                                        {
-                                            "effectId": "attack_restriction",
-                                            "type": "static",
-                                            "trigger": "continuous",
-                                            "target": {
-                                                "type": "unit",
-                                                "scope": "self"
-                                            },
-                                            "effect": {
-                                                "action": "restrict_attack",
-                                                "parameters": {
-                                                    "restriction": "cannot_attack_player"
-                                                },
-                                                "duration": "permanent"
-                                            }
-                                        }
-                                    ]
-                                }
-                            }
-                        },
-                        {
                             "cardUid": "ST01-016_4922407e-86c5-45bb-ac94-bec3fa3c6296",
                             "cardId": "ST01-016",
                             "cardData": {
@@ -545,44 +305,13 @@
                                     ]
                                 }
                             }
-                        },
-                        {
-                            "cardUid": "ST01-005_be13f9a5-9fc9-4e3b-a9b2-fdf999d9f63d",
-                            "cardId": "ST01-005",
-                            "cardData": {
-                                "id": "ST01-005",
-                                "name": "GM",
-                                "cardType": "unit",
-                                "color": "Blue",
-                                "level": 2,
-                                "cost": 1,
-                                "zone": [
-                                    "Space",
-                                    "Earth"
-                                ],
-                                "traits": [
-                                    "Earth Federation"
-                                ],
-                                "link": [],
-                                "ap": 2,
-                                "hp": 2,
-                                "effects": {
-                                    "description": [],
-                                    "rules": []
-                                }
-                            }
                         }
                     ],
                     "handUids": [
                         "ST01-005_c6825cb6-7337-42d6-a26f-f8dded9f0c88",
                         "ST01-002_0240011b-a004-428f-bbcb-6cf94491c2ef",
-                        "ST01-013_20d620d9-242e-4aa8-b1b6-6847dff89461",
                         "ST01-015_2d81924c-bb00-41fd-b351-425a4784f478",
-                        "ST01-006_ba54a530-2fcc-4b9d-adb5-b9b89e152578",
-                        "ST01-009_d0276af7-b917-45ba-8e16-692d241a7360",
-                        "ST01-009_def374dc-4263-41b6-9aa2-d39d776b1635",
-                        "ST01-016_4922407e-86c5-45bb-ac94-bec3fa3c6296",
-                        "ST01-005_be13f9a5-9fc9-4e3b-a9b2-fdf999d9f63d"
+                        "ST01-016_4922407e-86c5-45bb-ac94-bec3fa3c6296"
                     ],
                     "mainDeck": [
                         "ST01-008_3003bc88-fdf1-4397-8ab4-df7ce5afcf27",
@@ -627,10 +356,324 @@
                 "playerPoint": 0,
                 "isReady": false,
                 "zones": {
-                    "slot1": {},
-                    "slot2": {},
-                    "slot3": {},
-                    "slot4": {},
+                    "slot1": {
+                        "unit": {
+                            "cardUid": "ST01-009_d0276af7-b917-45ba-8e16-692d241a7360",
+                            "cardId": "ST01-009",
+                            "cardData": {
+                                "id": "ST01-009",
+                                "name": "Zowort",
+                                "cardType": "unit",
+                                "color": "White",
+                                "level": 2,
+                                "cost": 2,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Academy"
+                                ],
+                                "link": [],
+                                "ap": 3,
+                                "hp": 2,
+                                "effects": {
+                                    "description": [
+                                        "<Blocker> (Rest this Unit to change the attack target to it.)",
+                                        "This Unit can't choose the enemy player as its attack target."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "blocker",
+                                            "type": "keyword",
+                                            "trigger": "ATTACK_REDIRECT",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self"
+                                            },
+                                            "effect": {
+                                                "action": "redirect_attack",
+                                                "parameters": {
+                                                    "cost": "rest_self"
+                                                },
+                                                "duration": "instant"
+                                            }
+                                        },
+                                        {
+                                            "effectId": "attack_restriction",
+                                            "type": "static",
+                                            "trigger": "continuous",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self"
+                                            },
+                                            "effect": {
+                                                "action": "restrict_attack",
+                                                "parameters": {
+                                                    "restriction": "cannot_attack_player"
+                                                },
+                                                "duration": "permanent"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1757865720753,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "currentAP": 3,
+                            "currentHP": 2,
+                            "originalAP": 3,
+                            "originalHP": 2,
+                            "isFirstPlay": true,
+                            "damageReceived": 0
+                        }
+                    },
+                    "slot2": {
+                        "unit": {
+                            "cardUid": "ST01-009_def374dc-4263-41b6-9aa2-d39d776b1635",
+                            "cardId": "ST01-009",
+                            "cardData": {
+                                "id": "ST01-009",
+                                "name": "Zowort",
+                                "cardType": "unit",
+                                "color": "White",
+                                "level": 2,
+                                "cost": 2,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Academy"
+                                ],
+                                "link": [],
+                                "ap": 3,
+                                "hp": 2,
+                                "effects": {
+                                    "description": [
+                                        "<Blocker> (Rest this Unit to change the attack target to it.)",
+                                        "This Unit can't choose the enemy player as its attack target."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "blocker",
+                                            "type": "keyword",
+                                            "trigger": "ATTACK_REDIRECT",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self"
+                                            },
+                                            "effect": {
+                                                "action": "redirect_attack",
+                                                "parameters": {
+                                                    "cost": "rest_self"
+                                                },
+                                                "duration": "instant"
+                                            }
+                                        },
+                                        {
+                                            "effectId": "attack_restriction",
+                                            "type": "static",
+                                            "trigger": "continuous",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self"
+                                            },
+                                            "effect": {
+                                                "action": "restrict_attack",
+                                                "parameters": {
+                                                    "restriction": "cannot_attack_player"
+                                                },
+                                                "duration": "permanent"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1757865721915,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "currentAP": 3,
+                            "currentHP": 2,
+                            "originalAP": 3,
+                            "originalHP": 2,
+                            "isFirstPlay": true,
+                            "damageReceived": 0
+                        }
+                    },
+                    "slot3": {
+                        "unit": {
+                            "cardUid": "ST01-006_ba54a530-2fcc-4b9d-adb5-b9b89e152578",
+                            "cardId": "ST01-006",
+                            "cardData": {
+                                "id": "ST01-006",
+                                "name": "Gundam Aerial (Permet Score Six)",
+                                "cardType": "unit",
+                                "color": "White",
+                                "level": 5,
+                                "cost": 4,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Academy"
+                                ],
+                                "link": [
+                                    "Suletta Mercury"
+                                ],
+                                "ap": 4,
+                                "hp": 4,
+                                "effects": {
+                                    "description": [
+                                        "【When Paired】Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "paired_ap_reduction",
+                                            "type": "triggered",
+                                            "trigger": "PAIRING_COMPLETE",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "filters": {
+                                                    "level": "<=5"
+                                                },
+                                                "count": 1
+                                            },
+                                            "effect": {
+                                                "action": "modifyAP",
+                                                "parameters": {
+                                                    "modifier": "-3"
+                                                },
+                                                "duration": "turn"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1757865723440,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "currentAP": 4,
+                            "currentHP": 4,
+                            "originalAP": 4,
+                            "originalHP": 4,
+                            "isFirstPlay": true,
+                            "damageReceived": 0
+                        }
+                    },
+                    "slot4": {
+                        "unit": {
+                            "cardUid": "ST01-005_be13f9a5-9fc9-4e3b-a9b2-fdf999d9f63d",
+                            "cardId": "ST01-005",
+                            "cardData": {
+                                "id": "ST01-005",
+                                "name": "GM",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 2,
+                                "cost": 1,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Federation"
+                                ],
+                                "link": [],
+                                "ap": 2,
+                                "hp": 2,
+                                "effects": {
+                                    "description": [],
+                                    "rules": []
+                                }
+                            },
+                            "placedAt": 1757865726350,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "currentAP": 2,
+                            "currentHP": 2,
+                            "originalAP": 2,
+                            "originalHP": 2,
+                            "isFirstPlay": true,
+                            "damageReceived": 0
+                        },
+                        "pilot": {
+                            "cardUid": "ST01-013_20d620d9-242e-4aa8-b1b6-6847dff89461",
+                            "cardId": "ST01-013",
+                            "cardData": {
+                                "id": "ST01-013",
+                                "name": "Kai's Resolve",
+                                "cardType": "command",
+                                "color": "Blue",
+                                "level": 3,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [
+                                    "Earth Federation",
+                                    "White Base Team"
+                                ],
+                                "link": [],
+                                "ap": 1,
+                                "hp": 0,
+                                "effects": {
+                                    "description": [
+                                        "【Main】Choose 1 friendly Unit. It recovers 3 HP.",
+                                        "【Pilot】[Kai Shiden]"
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "main_heal_friendly",
+                                            "type": "activated",
+                                            "timing": [
+                                                "MAIN_PHASE"
+                                            ],
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self",
+                                                "count": 1
+                                            },
+                                            "effect": {
+                                                "action": "heal",
+                                                "parameters": {
+                                                    "amount": 3
+                                                },
+                                                "duration": "instant"
+                                            }
+                                        },
+                                        {
+                                            "effectId": "pilot_designation",
+                                            "type": "special",
+                                            "trigger": "continuous",
+                                            "target": {
+                                                "type": "pilot",
+                                                "scope": "any"
+                                            },
+                                            "effect": {
+                                                "action": "designate_pilot",
+                                                "parameters": {
+                                                    "pilotName": "Kai Shiden",
+                                                    "AP": 1,
+                                                    "HP": 0
+                                                },
+                                                "duration": "permanent"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1757865729630,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "currentAP": 1,
+                            "currentHP": 0,
+                            "originalAP": 1,
+                            "originalHP": 0,
+                            "playedAs": "pilot"
+                        }
+                    },
                     "slot5": {},
                     "slot6": {},
                     "base": [

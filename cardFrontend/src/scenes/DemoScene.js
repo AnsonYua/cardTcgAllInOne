@@ -277,6 +277,14 @@ export default class DemoScene extends DemoSceneBasic {
             enableHover: true,
             fontSize: '12px'
           }
+        },
+        {
+          text: 'Opponent Attack',
+          onClick: () => this.opponentAttack(),
+          options: { 
+            enableHover: true,
+            fontSize: '12px'
+          }
         }
       ];
       // Create test buttons using UIHelper - creates them in a vertical column
@@ -309,7 +317,93 @@ export default class DemoScene extends DemoSceneBasic {
   async setEnvironment() {
   
   }
+  async opponentAttack(){
+    try {
+      console.log('🗡️ Simulating opponent attack from slot 1 unit to shield/base');
+      
+      // Get current game state
+      const gameState = this.gameStateManager.getGameState();
+      const gameId = gameState.gameId;
+      const opponentPlayerId = this.gameStateManager.getOpponent();
+      
+      if (!gameId) {
+        throw new Error('No gameId found. Make sure a game is active.');
+      }
+      
+      if (!opponentPlayerId) {
+        throw new Error('No opponent found. Make sure both players have joined.');
+      }
+      
+      // Get opponent's zones to check for slot 1 unit (likely 'left' zone based on game structure)
+      const opponentZones = this.gameStateManager.getPlayerZones(opponentPlayerId);
+      console.log('Opponent zones:', opponentZones);
+      
+      // Check for units in attacking zones (assuming slot1 = left zone based on card game structure)
+      let attackerSlot = null;
+      let hasAttackingUnit = false;
+      
+      // Check common zone names for slot 1 unit
+      const possibleSlots = ['slot1']; // Common zone naming patterns
+      console.log("helpe 1123221",JSON.stringify(opponentZones['slot1']))
 
+
+      attackerSlot = opponentZones['slot1'];
+      hasAttackingUnit = true;
+    
+      
+      if (!hasAttackingUnit) {
+        this.showRoomStatus('No attacking units found in opponent slots');
+        console.log('Available opponent zones:', Object.keys(opponentZones));
+        return;
+      }
+      
+      // Prepare attack action data
+      const actionData = {
+        actionType: 'attackShieldArea', // Attack shield/base area
+        playerId: opponentPlayerId,
+        gameId: gameId,
+        attackerCardUid:attackerSlot.unit.cardUid
+      };
+      
+      console.log('Sending attack action:', actionData);
+      
+      // Send the attack request via APIManager
+      const response = await this.apiManager.playerAction(opponentPlayerId, gameId, actionData);
+      
+      if (response && response.success) {
+        console.log('Attack executed successfully:', response);
+        this.showRoomStatus(`Opponent attack from ${attackerSlot} successful!`);
+        
+        // Update game state if returned in response
+        if (response.gameEnv) {
+          this.gameStateManager.updateGameEnv(response.gameEnv);
+          this.updateGameState();
+        }
+        
+        // Optionally show attack result details
+        if (response.result) {
+          console.log('Attack result:', response.result);
+          this.showRoomStatus(`Attack result: ${response.result}`);
+        }
+        
+      } else {
+        throw new Error(response?.error || 'Failed to execute attack');
+      }
+      
+    } catch (error) {
+      console.error('Failed to execute opponent attack:', error);
+      this.showRoomStatus('Failed to execute opponent attack: ' + error.message);
+      
+      // Provide helpful debugging information
+      const gameState = this.gameStateManager.getGameState();
+      console.log('Current game state for debugging:', {
+        phase: gameState.gameEnv.phase,
+        currentPlayer: gameState.gameEnv.currentPlayer,
+        players: Object.keys(gameState.gameEnv.players),
+        zones: gameState.gameEnv.players
+      });
+    }
+  }
   async opponentEndTurn(){
     const opponentPlayerId = this.gameStateManager.getOpponent();
     const gameState = this.gameStateManager.getGameState();

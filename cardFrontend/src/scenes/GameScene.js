@@ -836,6 +836,19 @@ export default class GameScene extends Phaser.Scene {
       return;
     }
 
+    // Check for burst effect choice events
+    const burstEvents = this.gameStateManager.getBurstEffectChoiceEvents();
+    if (burstEvents.length === 1) {
+      console.log('[GameScene] Found exactly 1 BURST_EFFECT_CHOICE event, showing dialog');
+      this.showBurstEffectDialog(burstEvents[0]);
+      return;
+    } else if (burstEvents.length > 1) {
+      console.warn('[GameScene] Multiple BURST_EFFECT_CHOICE events found:', burstEvents.length);
+      // Handle multiple events - could show first one or let user choose
+      this.showBurstEffectDialog(burstEvents[0]);
+      return;
+    }
+
     // Debug: Log current phase and animation state
     console.log('Online mode - phase:', gameState.gameEnv.phase, 'shuffleAnimationPlayed:', this.shuffleAnimationPlayed);
 
@@ -2100,6 +2113,49 @@ export default class GameScene extends Phaser.Scene {
       console.error('Failed to send ready status:', error);
       this.showRoomStatus('Failed to send ready status: ' + error.message);
     }
+  }
+
+  /**
+   * Show burst effect confirmation dialog
+   * @param {Object} event - BURST_EFFECT_CHOICE event from processingQueue
+   */
+  showBurstEffectDialog(event) {
+    console.log('GameScene: Showing burst effect dialog for event:', event);
+    
+    // Use DialogManager to show burst effect dialog
+    this.dialogManager.showBurstEffectDialog(event, async (confirmed) => {
+      console.log(`GameScene: User ${confirmed ? 'confirmed' : 'declined'} burst effect:`, event.id);
+      
+      try {
+        const gameState = this.gameStateManager.getGameState();
+        
+        // Call API to confirm/decline the burst effect
+        const response = await this.apiManager.confirmBurstChoice(
+          gameState.gameId, 
+          gameState.playerId, 
+          event.id, 
+          confirmed
+        );
+        
+        if (response && response.success) {
+          console.log('Burst choice confirmation successful:', response);
+          this.showRoomStatus(`Burst effect ${confirmed ? 'activated' : 'skipped'} successfully!`);
+          
+          // Update game state with response
+          if (response.gameEnv) {
+            this.gameStateManager.updateGameEnv(response.gameEnv);
+            this.updateGameState();
+          }
+          
+        } else {
+          throw new Error(response?.error || 'Failed to process burst choice');
+        }
+        
+      } catch (error) {
+        console.error('Failed to confirm burst choice:', error);
+        this.showRoomStatus('Failed to process burst effect: ' + error.message);
+      }
+    });
   }
 
   showRoomStatus(message) {

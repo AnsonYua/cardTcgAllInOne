@@ -268,6 +268,22 @@ export default class GameStateManager {
     return unprocessedEvents
   }
 
+  /**
+   * Get BURST_EFFECT_CHOICE events from the processing queue
+   * @returns {Array} Array of burst effect choice events
+   */
+  getBurstEffectChoiceEvents() {
+    const processingQueue = this.gameState.gameEnv.processingQueue || [];
+    const burstEvents = processingQueue.filter(event => 
+      event.type === 'BURST_EFFECT_CHOICE' && 
+      event.status === 'DECLARED' &&
+      event.data?.playerId === this.gameState.playerId
+    );
+    
+    console.log(`[GameStateManager] Found ${burstEvents.length} BURST_EFFECT_CHOICE events:`, burstEvents);
+    return burstEvents;
+  }
+
   async acknowledgeEvents(eventIds) {
     if (eventIds && eventIds.length > 0 && this.apiManager) {
       try {

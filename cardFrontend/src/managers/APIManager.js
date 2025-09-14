@@ -138,6 +138,23 @@ export default class APIManager {
     });
   }
 
+  /**
+   * Confirm or decline a burst effect choice
+   * @param {string} gameId - Game ID
+   * @param {string} playerId - Player ID
+   * @param {string} eventId - Event ID from processingQueue
+   * @param {boolean} confirmed - Whether the user confirmed the burst effect
+   * @returns {Promise<Object>} API response
+   */
+  async confirmBurstChoice(gameId, playerId, eventId, confirmed) {
+    console.log('APIManager: Confirming burst choice:', { gameId, playerId, eventId, confirmed });
+    
+    return this.request('/player/confirmBurstChoice', {
+      method: 'POST',
+      body: JSON.stringify({ gameId, playerId, eventId, confirmed })
+    });
+  }
+
   async endTurn(gameId, playerId) {
     return this.request('/player/endTurn', {
       method: 'POST',
