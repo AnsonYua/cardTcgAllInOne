@@ -21,7 +21,6 @@ export default class GameScene extends Phaser.Scene {
     this.playerHand = [];
     this.playerZones = {};
     this.opponentZones = {};
-    this.draggedCard = null;
     this.shuffleAnimationManager = null;
     this.cardPreviewZone = null;
     this.previewCard = null;
@@ -601,29 +600,18 @@ export default class GameScene extends Phaser.Scene {
       }
     });
     
-    this.events.on('card-drag-start', (card) => {
-      this.draggedCard = card;
-      // Hide all previews when dragging starts
-      this.hideCardPreview();
-    });
-    
-    this.events.on('card-drag-end', (card) => {
-      this.draggedCard = null;
-    });
     
     // Card hover events for preview
     this.events.on('card-hover', (card) => {
-      // Only show preview for hand cards (not dragging)
-      if (!this.draggedCard && this.playerHand.includes(card)) {
+      // Only show preview for hand cards
+      if (this.playerHand.includes(card)) {
         this.showCardPreview(card.getCardFullData());
       }
     });
     
     this.events.on('card-unhover', (card) => {
       // Hide preview when not hovering
-      if (!this.draggedCard) {
-        this.hideCardPreview();
-      }
+      this.hideCardPreview();
     });
     
     // Zone card selection events - consolidated handlers for all slot cards
@@ -666,7 +654,7 @@ export default class GameScene extends Phaser.Scene {
         y: card.y
       });
       
-      if (!this.draggedCard && card.isInZone) {
+      if (card.isInZone) {
           try {
             this.showSlotCardPreview(card);
           } catch (error) {
@@ -679,7 +667,7 @@ export default class GameScene extends Phaser.Scene {
     
     this.events.on('zone-card-unhover', (card) => {
       // Hide preview for zone cards (same as hand cards)
-      if (!this.draggedCard && card.isInZone) {
+      if (card.isInZone) {
         this.hideSlotCardPreview();
       }
     });
@@ -759,7 +747,6 @@ export default class GameScene extends Phaser.Scene {
         usePreview: true
       });
       
-      this.input.setDraggable(card);
       this.playerHand.push(card);
       this.handContainer.add(card);
 
@@ -901,8 +888,8 @@ export default class GameScene extends Phaser.Scene {
     this.endTurnButton.setTint(isCurrentPlayer ? 0xffffff : 0x888888);
   }
 
-  canDropCardInZone(card, zoneType) {
-    return GameSceneUtils.canDropCardInZone(card, zoneType, this);
+  canPlaceCardInZone(card, zoneType) {
+    return GameSceneUtils.canPlaceCardInZone(card, zoneType, this);
   }
 
   getFieldIndexFromZone(zoneType) {
@@ -940,8 +927,21 @@ export default class GameScene extends Phaser.Scene {
     // - Activating special abilities that interact with the trash
   }
 
-  async handleCardDrop(card, zoneType, x, y) {
-    if (this.canDropCardInZone(card, zoneType)) {
+  /**
+   * Handle zone click for card placement
+   */
+  handleZoneClick(zoneType, x, y) {
+    const selectedCard = this.gameStateManager.getSelectedCard();
+    if (selectedCard) {
+      console.log(`Zone clicked: ${zoneType}, selected card: ${selectedCard.cardData?.id}`);
+      this.handleCardPlacement(selectedCard, zoneType, x, y);
+    } else {
+      console.log(`Zone ${zoneType} clicked but no card selected`);
+    }
+  }
+
+  async handleCardPlacement(card, zoneType, x, y) {
+    if (this.canPlaceCardInZone(card, zoneType)) {
       // Show loading state
       this.setUILoadingState(true);
       
@@ -1670,16 +1670,9 @@ export default class GameScene extends Phaser.Scene {
                       usePreview: true
                     });
                     
-                    // Set up drag and drop
-                    this.input.setDraggable(newCard);
-                    
                     // Add to hand array and container
                     this.playerHand.push(newCard);
                     this.handContainer.add(newCard);
-                    
-                    // Update original position for drag/drop
-                    newCard.originalPosition.x = relativeX;
-                    newCard.originalPosition.y = relativeY;
                     
                     // Set proper depth
                     newCard.setDepth(100);

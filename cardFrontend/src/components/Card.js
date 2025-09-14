@@ -31,7 +31,6 @@ export default class Card extends Phaser.GameObjects.Container {
     };
     
     this.isSelected = false;
-    this.isDragging = false;
     this.originalPosition = { x, y };
     
     // Zone placement tracking for hover preview system
@@ -174,9 +173,6 @@ export default class Card extends Phaser.GameObjects.Container {
     this.on('pointerout', this.handlePointerOut, this);
     this.on('pointerdown', this.handlePointerDown, this);
     
-    // Set up drag event handlers (always available)
-    this.on('pointermove', this.handlePointerMove, this);
-    this.on('pointerup', this.handlePointerUp, this);
   }
 
   /**
@@ -190,9 +186,6 @@ export default class Card extends Phaser.GameObjects.Container {
       // Cards in zones can still be selected for highlighting, even if other interactions are disabled
       canInteract: baseInteraction && (!this.isInteractionDisabled || this.isInZone),
       canSelect: !this.options.handleOutside,
-      // Dragging should be disabled for cards in zones
-      canDrag: false,
-      isDragging: this.isDragging,
       isInZone: this.isInZone
     };
   }
@@ -226,7 +219,6 @@ export default class Card extends Phaser.GameObjects.Container {
    * Handle pointer over events
    */
   handlePointerOver(pointer, localX, localY, event) {
-    if (this.isDragging) return;
     
     this.setCursor('pointer');
     this.emitLocationAwareEvent('hover');
@@ -236,7 +228,6 @@ export default class Card extends Phaser.GameObjects.Container {
    * Handle pointer out events
    */
   handlePointerOut() {
-    if (this.isDragging) return;
     
     this.setCursor('default');
     this.emitLocationAwareEvent('unhover');
@@ -287,10 +278,6 @@ export default class Card extends Phaser.GameObjects.Container {
       this.handleSelectionToggle();
     }
     
-    // Handle drag initiation
-    if (state.canDrag && !this.isSelected) {
-      this.startDrag(pointer);
-    }
   }
 
   /**
@@ -311,43 +298,6 @@ export default class Card extends Phaser.GameObjects.Container {
     }
   }
 
-  /**
-   * Handle pointer move events for dragging
-   */
-  handlePointerMove(pointer) {
-    if (this.isDragging) {
-      this.x = pointer.x;
-      this.y = pointer.y;
-      this.scene.events.emit('card-drag', this, pointer);
-    }
-  }
-
-  /**
-   * Handle pointer up events for drag end
-   */
-  handlePointerUp(pointer) {
-    if (this.isDragging) {
-      this.stopDrag(pointer);
-    }
-  }
-
-  startDrag(pointer) {
-    this.isDragging = true;
-    this.setDepth(1000);
-    
-    // No scaling animation - just set depth and emit event
-    
-    this.scene.events.emit('card-drag-start', this, pointer);
-  }
-
-  stopDrag(pointer) {
-    this.isDragging = false;
-    this.setDepth(0);
-    
-    // No scaling animation - just reset depth and emit event
-    
-    this.scene.events.emit('card-drag-end', this, pointer);
-  }
 
   select() {
     console.log(`Card ${this.cardData?.id} select() called`);
@@ -796,7 +746,7 @@ export default class Card extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Disable card interaction (clicking, selection, dragging)
+   * Disable card interaction (clicking, selection)
    * Used when cards are placed in zones and should no longer be interactive
    * Preserves hover events for preview system
    */

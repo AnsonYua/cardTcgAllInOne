@@ -35,9 +35,7 @@ export const CARD_CONFIG = {
   // Card Animation Settings
   animation: {
     hoverScale: 1.1,
-    hoverDuration: 200,
-    dragScale: 1.05,
-    dropScale: 1.0
+    hoverDuration: 200
   },
   
   // Card Zones and Positions

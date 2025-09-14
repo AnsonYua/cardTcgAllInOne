@@ -78,7 +78,7 @@ export default class GameSceneUtils {
    * @param {Object} scene - The GameScene instance
    * @returns {boolean} - Whether the card can be dropped
    */
-  static canDropCardInZone(card, zoneType, scene) {
+  static canPlaceCardInZone(card, zoneType, scene) {
     const cardData = card.getCardData();
     // First check basic card type compatibility (local validation)
     if (!card.canPlayInZone(zoneType)) {
@@ -160,48 +160,24 @@ export default class GameSceneUtils {
     }
     
     // Zone interaction (only for player zones)
-    let dropZone = null;
+    let clickZone = null;
     if (isPlayerZone) {
-      dropZone = scene.add.zone(x, y, 130, 190);
-      dropZone.setRectangleDropZone(130, 190);
-      dropZone.setData('zoneType', type);
+      clickZone = scene.add.zone(x, y, 130, 190);
+      clickZone.setData('zoneType', type);
       
-      // Visual feedback for drop zones
-      dropZone.on('dragenter', (pointer, gameObject) => {
-        if (scene.canDropCardInZone && scene.canDropCardInZone(gameObject, type)) {
-          const highlight = scene.add.image(x, y, 'zone-highlight');
-          highlight.setTint(GAME_CONFIG.colors.success);
-          dropZone.setData('highlight', highlight);
-        }
-      });
-      
-      dropZone.on('dragleave', () => {
-        const highlight = dropZone.getData('highlight');
-        if (highlight) {
-          highlight.destroy();
-          dropZone.setData('highlight', null);
-        }
-      });
-      
-      dropZone.on('drop', (pointer, gameObject) => {
-        if (scene.handleCardDrop) {
-          scene.handleCardDrop(gameObject, type, x, y);
-        }
-        const highlight = dropZone.getData('highlight');
-        if (highlight) {
-          highlight.destroy();
-          dropZone.setData('highlight', null);
-        }
-      });
-
       // Add zone click handling for card placement when card is selected
-      dropZone.setInteractive();
+      clickZone.setInteractive();
+      clickZone.on('pointerdown', (pointer) => {
+        if (scene.handleZoneClick) {
+          scene.handleZoneClick(type, x, y);
+        }
+      });
     }
     
     return {
       placeholder,
       label,
-      dropZone,
+      clickZone,
       x,
       y,
       card: null,
@@ -294,7 +270,7 @@ export default class GameSceneUtils {
     const zones = ['top', 'left', 'right', 'help', 'sp'];
     zones.forEach(zoneType => {
       const zone = scene.playerZones[zoneType];
-      if (zone && this.canDropCardInZone(card, zoneType, scene)) {
+      if (zone && this.canPlaceCardInZone(card, zoneType, scene)) {
         // Create a subtle highlight around the zone
         const highlight = scene.add.graphics();
         highlight.lineStyle(3, 0x00ff00, 0.6); // Green with 60% opacity

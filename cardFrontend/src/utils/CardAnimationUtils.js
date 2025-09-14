@@ -230,7 +230,7 @@ export default class CardAnimationUtils {
         ease: 'Power2.easeOut'
       });
       
-      // Update original position for drag/drop functionality
+      // Update original position
       card.originalPosition = { x: newX, y: card.y };
     });
   }
