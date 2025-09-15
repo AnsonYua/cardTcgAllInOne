@@ -1,7 +1,7 @@
 // src/services/GameEngine.ts
 // Game execution engine - handles all game state modifications
 
-import { GameEvent, EventFactory, EventStatus } from './EventQueue/interfaces/GameEvent';
+import { GameEvent, EventFactory, EventStatus, EventPriority } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase, EventType } from '../models/GameEnums';
 import { EnergyManager } from './EnergyManager';
@@ -1016,7 +1016,7 @@ export class GameEngine {
             if (userDecision === 'ACTIVATE') {
                 // Execute the confirmed burst effect
                 console.log(`⚡ Executing burst effect: ${burstEffect.type}`);
-                const executionResult = GameEngine.executeBurstEffect(gameEnv, choiceId, true);
+                const executionResult = GameEngine.executeBurstEffect(gameEnv, playerId, cardUid, cardId, cardData, burstEffect);
                 
                 if (!executionResult.success) {
                     return executionResult;
@@ -1097,33 +1097,110 @@ export class GameEngine {
     }
     
     /**
-     * Execute a burst effect when user confirms
-     * PLACEHOLDER - This method should be called when the user confirms a burst choice
+     * Execute burst effect for confirmed choice
      * @param gameEnv - Current game environment
-     * @param choiceId - The choice ID that was confirmed
-     * @param confirmed - Whether the user confirmed or declined
+     * @param playerId - Player who owns the burst card
+     * @param cardUid - Unique ID of the burst card
+     * @param cardId - Card ID for reference
+     * @param cardData - Full card data
+     * @param burstEffect - Burst effect configuration
      */
-    static executeBurstEffect(gameEnv: GameEnvironment, choiceId: string, confirmed: boolean): ExecutionResult {
-        console.log(`💥 PLACEHOLDER: Execute burst effect for choice ${choiceId}, confirmed: ${confirmed}`);
+    static executeBurstEffect(
+        gameEnv: GameEnvironment, 
+        playerId: string, 
+        cardUid: string, 
+        cardId: string, 
+        cardData: any, 
+        burstEffect: any
+    ): ExecutionResult {
+        console.log(`💥 Executing burst effect ${burstEffect.type} for card ${cardUid}`);
         
-        // TODO: Implement burst effect execution logic
-        // 1. Find the pending burst choice by choiceId
-        // 2. If confirmed, execute the specific burst effect type
-        // 3. Update game state accordingly
-        // 4. Generate appropriate notification events
-        // 5. Remove the choice from pending state
+        try {
+            // Execute based on burst effect type
+            switch (burstEffect.type) {
+                case 'addToHand':
+                    return GameEngine.executeBurstAddToHand(gameEnv, playerId, cardUid, cardData);
+                    
+                case 'deploy':
+                    return GameEngine.executeBurstDeploy(gameEnv, playerId, cardUid, cardData, burstEffect);
+                    
+                default:
+                    return {
+                        success: false,
+                        error: `Unknown burst effect type: ${burstEffect.type}`
+                    };
+            }
+            
+        } catch (error) {
+            console.error(`❌ Error executing burst effect:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Burst effect execution failed'
+            };
+        }
+    }
+    
+    /**
+     * Execute addToHand burst effect - move card from shield to hand
+     */
+    private static executeBurstAddToHand(gameEnv: GameEnvironment, playerId: string, cardUid: string, cardData: any): ExecutionResult {
+        console.log(`➕ Executing addToHand burst effect for card ${cardUid}`);
         
-        if (!confirmed) {
-            console.log(`❌ User declined burst effect ${choiceId}`);
-            return { success: true }; // Declining is also a valid outcome
+        const player = gameEnv.getPlayer(playerId);
+        if (!player) {
+            return {
+                success: false,
+                error: `Player ${playerId} not found`
+            };
         }
         
-        console.log(`🚀 User confirmed burst effect ${choiceId} - executing...`);
+        // Add card to hand
+        if (!player.deck.handUids) {
+            player.deck.handUids = [];
+        }
+        player.deck.handUids.push(cardUid);
         
-        // PLACEHOLDER: Add actual implementation here
-        console.log(`📋 TODO: Implement specific burst effect execution logic`);
-        
+        console.log(`✅ Card ${cardUid} (${cardData.name}) added to ${playerId}'s hand`);
         return { success: true };
+    }
+    
+    /**
+     * Execute deploy burst effect - create PLAY_CARD event for deployment
+     */
+    private static executeBurstDeploy(gameEnv: GameEnvironment, playerId: string, cardUid: string, cardData: any, burstEffect: any): ExecutionResult {
+        console.log(`🚀 Executing deploy burst effect for card ${cardUid}`);
+        
+        try {
+            // Create PLAY_CARD event for deployment (manual creation based on GameLogic pattern)
+            const playCardEvent = {
+                id: `burst_deploy_${Date.now()}_${Math.random()}`,
+                type: EventType.PLAY_CARD,
+                status: EventStatus.DECLARED,
+                priority: EventPriority.NORMAL,
+                timestamp: Date.now(),
+                playerId: playerId,
+                data: {
+                    playerId: playerId,
+                    gameId: gameEnv.gameId,
+                    cardUID: cardUid,
+                    playAs: cardData.cardType || 'unit', // playAs - default to 'unit' if not specified
+                    targetUnit: burstEffect.targetUnit || undefined // Optional target
+                }
+            };
+            
+            // Add to processing queue for immediate execution
+            gameEnv.processingQueue.push(playCardEvent);
+            
+            console.log(`✅ Deploy PLAY_CARD event created and queued for card ${cardUid} (playAs: ${playCardEvent.data.playAs})`);
+            return { success: true };
+            
+        } catch (error) {
+            console.error(`❌ Error creating deploy PLAY_CARD event:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Deploy event creation failed'
+            };
+        }
     }
     
 }
