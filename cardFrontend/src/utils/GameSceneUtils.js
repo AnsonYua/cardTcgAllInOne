@@ -702,9 +702,15 @@ export default class GameSceneUtils {
       updateOKButtonState(); // Update button state after selection change
     };
     
-    // OK button state update
+    // Button state update (supports both old and new button systems)
     const updateOKButtonState = () => {
-      this._updateOKButtonState(selectionState, dialogElements);
+      if (dialogElements.buttonSection.config) {
+        // New configurable button system
+        this._updateConfigurableButtonState(selectionState, dialogElements, dialogElements.buttonSection.config);
+      } else {
+        // Legacy button system
+        this._updateOKButtonState(selectionState, dialogElements);
+      }
     };
     
     // Set up pagination event handlers
@@ -716,11 +722,156 @@ export default class GameSceneUtils {
   }
 
   /**
-   * Creates button section with OK and Cancel buttons and handlers
+   * Button configuration presets for different dialog types
+   * @private
+   */
+  static _getButtonPresets() {
+    return {
+      STANDARD_SELECTION: {
+        buttons: [
+          {
+            id: 'primary',
+            text: 'OK',
+            initialText: 'SELECT A CARD',
+            color: 0x4CAF50,
+            disabledColor: 0x888888,
+            position: 'right',
+            action: 'confirm',
+            enabledCondition: 'hasSelection'
+          },
+          {
+            id: 'secondary',
+            text: 'CANCEL',
+            color: 0xf44336,
+            position: 'left',
+            action: 'cancel',
+            enabledCondition: 'always'
+          }
+        ]
+      },
+      BURST_EFFECT_CHOICE: {
+        buttons: [
+          {
+            id: 'primary',
+            text: 'ACTIVATE',
+            initialText: 'Activate',
+            color: 0xff6b35, // Orange for burst effect
+            disabledColor: 0x888888,
+            position: 'right',
+            action: 'confirm',
+            enabledCondition: 'hasSelection'
+          },
+          {
+            id: 'secondary',
+            text: 'SKIP',
+            color: 0x666666,
+            position: 'left',
+            action: 'cancel',
+            enabledCondition: 'always'
+          }
+        ]
+      },
+      CONFIRMATION: {
+        buttons: [
+          {
+            id: 'primary',
+            text: 'YES',
+            color: 0x4CAF50,
+            position: 'right',
+            action: 'confirm',
+            enabledCondition: 'always'
+          },
+          {
+            id: 'secondary',
+            text: 'NO',
+            color: 0xf44336,
+            position: 'left',
+            action: 'cancel',
+            enabledCondition: 'always'
+          }
+        ]
+      },
+      INFO_ONLY: {
+        buttons: [
+          {
+            id: 'primary',
+            text: 'OK',
+            color: 0x2196F3,
+            position: 'center',
+            action: 'confirm',
+            enabledCondition: 'always'
+          }
+        ]
+      },
+      CUSTOM_EXAMPLE: {
+        buttons: [
+          {
+            id: 'primary',
+            text: 'CUSTOM ACTION',
+            initialText: 'SELECT FIRST',
+            color: 0x9C27B0, // Purple
+            disabledColor: 0x666666,
+            position: 'right',
+            action: 'confirm',
+            enabledCondition: 'hasSelection'
+          },
+          {
+            id: 'secondary',
+            text: 'ALTERNATIVE',
+            color: 0xFF9800, // Orange
+            position: 'left',
+            action: 'cancel',
+            enabledCondition: 'always'
+          }
+        ]
+      }
+    };
+  }
+
+  /**
+   * Example method showing how to create a dialog with custom button configuration
+   * @example
+   * const customSelection = {
+   *   title: 'Custom Dialog',
+   *   description: 'This dialog has custom buttons',
+   *   selectCount: 1,
+   *   eligibleCards: [...],
+   *   buttonConfig: {
+   *     buttons: [
+   *       {
+   *         id: 'primary',
+   *         text: 'SPECIAL ACTION',
+   *         color: 0x4CAF50,
+   *         position: 'right',
+   *         action: 'confirm',
+   *         enabledCondition: 'hasSelection'
+   *       }
+   *     ]
+   *   }
+   * };
+   */
+  static createCustomButtonDialog(selection, scene, onConfirm) {
+    return this.createCardSelectionDialog(
+      selection.selectionId || 'custom',
+      selection,
+      scene,
+      onConfirm
+    );
+  }
+
+  /**
+   * Creates button section with configurable buttons based on dialog type
    * @private
    */
   static _createButtonSection(scene, selectionId, selection, config, selectionState, dialogElements, updateOKButtonState, onConfirm) {
     const buttonSectionY = config.centerY + config.height/2 - config.buttonSectionHeight/2;
+    
+    // Get button configuration based on dialog type
+    const presets = this._getButtonPresets();
+    const dialogType = selection.dialogType || 'STANDARD_SELECTION';
+    const buttonConfig = selection.buttonConfig || presets[dialogType] || presets.STANDARD_SELECTION;
+    
+    console.log(`Creating button section for dialog type: ${dialogType}`, buttonConfig);
     
     // Button section background
     dialogElements.buttonSection.background = scene.add.graphics();
@@ -734,50 +885,162 @@ export default class GameSceneUtils {
     );
     dialogElements.buttonSection.background.setDepth(1502);
     
-    // Button positioning - two buttons side by side with proper spacing
-    const buttonSpacing = 240; // Further increased distance between buttons to prevent overlap
-    const buttonScale = 0.8; // Scale buttons down slightly for better fit
-    const okButtonX = config.centerX + buttonSpacing/2;
-    const cancelButtonX = config.centerX - buttonSpacing/2;
+    // Calculate button positions based on number of buttons
+    const buttons = buttonConfig.buttons || [];
+    const buttonScale = 0.8;
+    const buttonSpacing = buttons.length > 1 ? 240 : 0;
     
-    // OK button (right side)
-    dialogElements.buttonSection.okButton = scene.add.image(okButtonX, buttonSectionY, 'button');
-    dialogElements.buttonSection.okButton.setScale(buttonScale);
-    dialogElements.buttonSection.okButton.setInteractive();
-    dialogElements.buttonSection.okButton.setTint(0x888888);
-    dialogElements.buttonSection.okButton.setDepth(1503);
+    // Clear existing button elements
+    dialogElements.buttonSection.buttons = {};
+    dialogElements.buttonSection.buttonTexts = {};
     
-    dialogElements.buttonSection.okText = scene.add.text(okButtonX, buttonSectionY, 'SELECT A CARD', {
-      fontSize: '14px', // Slightly smaller font to fit better
-      fontFamily: 'Arial Bold',
-      fill: '#ffffff'
+    // Create buttons dynamically
+    buttons.forEach((btnConfig, index) => {
+      let buttonX;
+      
+      // Calculate position based on button configuration
+      if (btnConfig.position === 'center' || buttons.length === 1) {
+        buttonX = config.centerX;
+      } else if (btnConfig.position === 'right') {
+        buttonX = config.centerX + buttonSpacing/2;
+      } else if (btnConfig.position === 'left') {
+        buttonX = config.centerX - buttonSpacing/2;
+      }
+      
+      // Create button
+      const button = scene.add.image(buttonX, buttonSectionY, 'button');
+      button.setScale(buttonScale);
+      button.setInteractive();
+      button.setTint(btnConfig.enabledCondition === 'hasSelection' ? (btnConfig.disabledColor || 0x888888) : btnConfig.color);
+      button.setDepth(1503);
+      
+      // Create button text
+      const initialText = btnConfig.initialText || btnConfig.text;
+      const buttonText = scene.add.text(buttonX, buttonSectionY, initialText, {
+        fontSize: '14px',
+        fontFamily: 'Arial Bold',
+        fill: '#ffffff'
+      });
+      buttonText.setOrigin(0.5);
+      buttonText.setDepth(1504);
+      
+      // Store references
+      dialogElements.buttonSection.buttons[btnConfig.id] = button;
+      dialogElements.buttonSection.buttonTexts[btnConfig.id] = buttonText;
+      
+      // Setup button events
+      this._setupConfigurableButtonEvents(
+        scene, button, btnConfig, selectionId, selection, 
+        selectionState, dialogElements, onConfirm
+      );
     });
-    dialogElements.buttonSection.okText.setOrigin(0.5);
-    dialogElements.buttonSection.okText.setDepth(1504);
     
-    // Cancel button (left side)
-    dialogElements.buttonSection.cancelButton = scene.add.image(cancelButtonX, buttonSectionY, 'button');
-    dialogElements.buttonSection.cancelButton.setScale(buttonScale);
-    dialogElements.buttonSection.cancelButton.setInteractive();
-    dialogElements.buttonSection.cancelButton.setTint(0xf44336); // Red tint for cancel
-    dialogElements.buttonSection.cancelButton.setDepth(1503);
+    // Store button config for state updates
+    dialogElements.buttonSection.config = buttonConfig;
     
-    dialogElements.buttonSection.cancelText = scene.add.text(cancelButtonX, buttonSectionY, 'CANCEL', {
-      fontSize: '14px', // Slightly smaller font to fit better
-      fontFamily: 'Arial Bold',
-      fill: '#ffffff'
-    });
-    dialogElements.buttonSection.cancelText.setOrigin(0.5);
-    dialogElements.buttonSection.cancelText.setDepth(1504);
-    
-    // Button events
-    this._setupOKButtonEvents(scene, selectionId, selection, selectionState, dialogElements, onConfirm);
-    this._setupCancelButtonEvents(scene, dialogElements);
+    // Create custom update function for this button configuration
+    const customUpdateButtonState = () => {
+      this._updateConfigurableButtonState(selectionState, dialogElements, buttonConfig);
+    };
     
     // Initial button state
-    updateOKButtonState();
+    customUpdateButtonState();
     
     return dialogElements.buttonSection;
+  }
+
+  /**
+   * Setup events for configurable buttons
+   * @private
+   */
+  static _setupConfigurableButtonEvents(scene, button, btnConfig, selectionId, selection, selectionState, dialogElements, onConfirm) {
+    button.on('pointerdown', () => {
+      console.log(`Button ${btnConfig.id} (${btnConfig.text}) clicked`);
+      
+      if (btnConfig.action === 'confirm') {
+        // Handle confirm action (OK, ACTIVATE, YES, etc.)
+        if (btnConfig.enabledCondition === 'hasSelection' && selectionState.selectedCards.length === 0) {
+          console.log('Cannot confirm: no cards selected');
+          return;
+        }
+        
+        // Cleanup before calling callback
+        this._cleanupDialog(scene, dialogElements);
+        
+        // Call the confirm callback
+        if (onConfirm) {
+          onConfirm(selectionId, selectionState.selectedCards, dialogElements);
+        }
+      } else if (btnConfig.action === 'cancel') {
+        // Handle cancel action (CANCEL, SKIP, NO, etc.)
+        console.log(`Dialog cancelled via ${btnConfig.text} button`);
+        
+        // Cleanup dialog
+        this._cleanupDialog(scene, dialogElements);
+        
+        // Emit cancel event if needed
+        scene.events.emit('dialog-cancelled', selectionId);
+      }
+    });
+
+    // Add hover effects
+    button.on('pointerover', () => {
+      if (btnConfig.enabledCondition === 'always' || 
+          (btnConfig.enabledCondition === 'hasSelection' && selectionState.selectedCards.length > 0)) {
+        button.setTint(this._getLighterColor(btnConfig.color));
+      }
+    });
+
+    button.on('pointerout', () => {
+      const currentTint = (btnConfig.enabledCondition === 'hasSelection' && selectionState.selectedCards.length === 0) 
+        ? (btnConfig.disabledColor || 0x888888)
+        : btnConfig.color;
+      button.setTint(currentTint);
+    });
+  }
+
+  /**
+   * Update configurable button states
+   * @private
+   */
+  static _updateConfigurableButtonState(selectionState, dialogElements, buttonConfig) {
+    const buttons = buttonConfig.buttons || [];
+    
+    buttons.forEach(btnConfig => {
+      const button = dialogElements.buttonSection.buttons[btnConfig.id];
+      const buttonText = dialogElements.buttonSection.buttonTexts[btnConfig.id];
+      
+      if (!button || !buttonText) return;
+      
+      const isEnabled = (btnConfig.enabledCondition === 'always') || 
+                       (btnConfig.enabledCondition === 'hasSelection' && selectionState.selectedCards.length > 0);
+      
+      // Update button appearance
+      if (isEnabled) {
+        button.setTint(btnConfig.color);
+        if (btnConfig.enabledCondition === 'hasSelection') {
+          // Update text when card is selected
+          buttonText.setText(btnConfig.text);
+        }
+      } else {
+        button.setTint(btnConfig.disabledColor || 0x888888);
+        if (btnConfig.initialText && btnConfig.text !== btnConfig.initialText) {
+          buttonText.setText(btnConfig.initialText);
+        }
+      }
+    });
+  }
+
+  /**
+   * Get a lighter version of a color for hover effects
+   * @private
+   */
+  static _getLighterColor(color) {
+    // Simple color lightening - add 0x222222 to make it lighter
+    const r = Math.min(255, ((color >> 16) & 0xFF) + 0x22);
+    const g = Math.min(255, ((color >> 8) & 0xFF) + 0x22);
+    const b = Math.min(255, (color & 0xFF) + 0x22);
+    return (r << 16) | (g << 8) | b;
   }
 
   /**
@@ -793,12 +1056,26 @@ export default class GameSceneUtils {
       dialogElements.titleSection.descText,
       dialogElements.cardSection.background,
       dialogElements.cardSection.labelText,
-      dialogElements.buttonSection.background,
-      dialogElements.buttonSection.okButton,
-      dialogElements.buttonSection.okText,
-      dialogElements.buttonSection.cancelButton,
-      dialogElements.buttonSection.cancelText
+      dialogElements.buttonSection.background
     ].filter(el => el);
+
+    // Add configurable buttons and their texts
+    if (dialogElements.buttonSection.buttons) {
+      Object.values(dialogElements.buttonSection.buttons).forEach(button => {
+        if (button && !button.destroyed) elements.push(button);
+      });
+    }
+    if (dialogElements.buttonSection.buttonTexts) {
+      Object.values(dialogElements.buttonSection.buttonTexts).forEach(text => {
+        if (text && !text.destroyed) elements.push(text);
+      });
+    }
+    
+    // Legacy button support (fallback for older dialogs)
+    if (dialogElements.buttonSection.okButton) elements.push(dialogElements.buttonSection.okButton);
+    if (dialogElements.buttonSection.okText) elements.push(dialogElements.buttonSection.okText);
+    if (dialogElements.buttonSection.cancelButton) elements.push(dialogElements.buttonSection.cancelButton);
+    if (dialogElements.buttonSection.cancelText) elements.push(dialogElements.buttonSection.cancelText);
     
     // Add all current card elements
     dialogElements.cardListElements.forEach(element => {
@@ -1866,4 +2143,5 @@ export default class GameSceneUtils {
       }
     });
   }
+
 } 
