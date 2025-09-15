@@ -429,6 +429,7 @@ export class GameLogic {
     async processAction(gameEnv: GameEnvironment, action: PlayerAction): Promise<any> {
         // Create event in GameLogic
         const event = this.createEventFromAction(action);
+        console.log("event structure 1111", JSON.stringify(event))
         if (event) {
             // Add event to GameEnvironment queue
             gameEnv.enqueueForProcessing(event);
