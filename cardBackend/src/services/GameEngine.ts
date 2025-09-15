@@ -946,6 +946,7 @@ export class GameEngine {
                     for (const burstEffect of burstEffects) {
                         console.log(`⚡ Creating choice event for burst effect: ${burstEffect.effectId}`);
                         
+                        shieldCard.cardData.cardType = shieldCard.cardData.originalCardType
                         const choiceEvent = EventFactory.createBurstEffectChoiceEvent(
                             defendingPlayerId,
                             shieldCard.cardUid,

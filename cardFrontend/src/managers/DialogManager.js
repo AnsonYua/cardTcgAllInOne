@@ -2,6 +2,7 @@
 // Centralized dialog management system for game UI
 
 import GameSceneUtils from '../utils/GameSceneUtils.js';
+import Card from '../components/Card.js';
 
 /**
  * DialogManager - Centralized dialog handling for all UI dialogs in the game
@@ -277,7 +278,7 @@ export default class DialogManager {
   }
 
   /**
-   * Show a burst effect confirmation dialog
+   * Show a burst effect confirmation dialog using select dialog style
    * @param {Object} event - BURST_EFFECT_CHOICE event from processingQueue
    * @param {Function} onConfirm - Callback when user confirms (true/false)
    * @returns {string} Dialog ID
@@ -295,157 +296,150 @@ export default class DialogManager {
     const burstEffect = event.data.burstEffect;
     const cardName = cardData.name || `Card ${event.data.cardId}`;
     
-    // Create dialog elements
-    const { width, height } = this.scene.cameras.main;
+    console.log('Burst effect card data:', cardData);
+    console.log('Burst effect details:', burstEffect);
     
-    // Semi-transparent overlay
-    const overlay = this.scene.add.graphics();
-    overlay.fillStyle(0x000000, 0.7);
-    overlay.fillRect(0, 0, width, height);
-    overlay.setDepth(1500);
+    // Create a fake selection object that matches the card selection dialog format
+    const burstSelection = {
+      selectionId: `burst_${event.id}`,
+      title: '💥 Burst Effect Available',
+      description: `Effect: ${burstEffect.description || `Activate ${burstEffect.type} effect`}`,
+      selectCount: 1, // Always select the one card
+      eligibleCards: [{
+        cardData: cardData,
+        cardId: cardData.id || event.data.cardId,
+        cardUid: event.data.cardId,
+        preSelected: true // Mark this card as pre-selected
+      }],
+      dialogType: 'BURST_EFFECT_CHOICE',
+      autoSelectFirst: true // Flag to indicate first card should be auto-selected
+    };
     
-    // Dialog background (larger for card display)
-    const dialogWidth = 500;
-    const dialogHeight = 350;
-    const dialogX = width / 2;
-    const dialogY = height / 2;
+    // Create dialog using existing GameSceneUtils with burst effect styling
+    const dialogInterface = GameSceneUtils.createCardSelectionDialog(
+      burstSelection.selectionId,
+      burstSelection,
+      this.scene,
+      (selectedId, selectedCards, elements) => {
+        // Handle burst effect confirmation
+        console.log('DialogManager: Burst effect card selected:', selectedCards);
+        
+        // Create custom confirmation for burst effect
+        this.showBurstConfirmation(selectedCards[0], burstEffect, dialogId, onConfirm);
+      }
+    );
     
-    const dialogBg = this.scene.add.graphics();
-    dialogBg.fillStyle(0x2a2a2a);
-    dialogBg.fillRoundedRect(dialogX - dialogWidth/2, dialogY - dialogHeight/2, dialogWidth, dialogHeight, 15);
-    dialogBg.lineStyle(3, 0xff6b35); // Orange border for burst effects
-    dialogBg.strokeRoundedRect(dialogX - dialogWidth/2, dialogY - dialogHeight/2, dialogWidth, dialogHeight, 15);
-    dialogBg.setDepth(1501);
+    // Auto-select the first (and only) card after dialog is created
+    this.autoSelectFirstCard(dialogInterface, burstSelection.eligibleCards[0]);
     
-    // Title text
-    const titleText = this.scene.add.text(dialogX, dialogY - 140, '💥 Burst Effect Available', {
-      fontSize: '22px',
-      fontFamily: 'Arial Bold',
-      fill: '#ff6b35',
-      align: 'center'
-    });
-    titleText.setOrigin(0.5);
-    titleText.setDepth(1503);
+    // Override the dialog styling to add orange burst effect theme
+    this.applyBurstStyling(dialogInterface);
     
-    // Card name
-    const cardNameText = this.scene.add.text(dialogX, dialogY - 110, cardName, {
-      fontSize: '18px',
-      fontFamily: 'Arial Bold',
-      fill: '#ffffff',
-      align: 'center'
-    });
-    cardNameText.setOrigin(0.5);
-    cardNameText.setDepth(1503);
-    
-    // Card image/representation (placeholder for now - could be enhanced with actual card image)
-    const cardRepresentation = this.scene.add.graphics();
-    cardRepresentation.fillStyle(0x4a4a4a);
-    cardRepresentation.fillRoundedRect(dialogX - 60, dialogY - 90, 120, 80, 8);
-    cardRepresentation.lineStyle(2, 0x666666);
-    cardRepresentation.strokeRoundedRect(dialogX - 60, dialogY - 90, 120, 80, 8);
-    cardRepresentation.setDepth(1502);
-    
-    // Card power/type info
-    const cardInfoText = this.scene.add.text(dialogX, dialogY - 50, `${cardData.gameType || cardData.type || 'Card'}\nPower: ${cardData.power || 0}`, {
-      fontSize: '14px',
-      fontFamily: 'Arial',
-      fill: '#cccccc',
-      align: 'center'
-    });
-    cardInfoText.setOrigin(0.5);
-    cardInfoText.setDepth(1503);
-    
-    // Effect description
-    const effectDescription = burstEffect.description || `Activate ${burstEffect.type} effect`;
-    const effectText = this.scene.add.text(dialogX, dialogY + 20, `Effect: ${effectDescription}`, {
-      fontSize: '16px',
-      fontFamily: 'Arial',
-      fill: '#ffd700',
-      align: 'center',
-      wordWrap: { width: dialogWidth - 40 }
-    });
-    effectText.setOrigin(0.5);
-    effectText.setDepth(1503);
-    
-    // Question text
-    const questionText = this.scene.add.text(dialogX, dialogY + 60, 'Do you want to activate this burst effect?', {
-      fontSize: '16px',
-      fontFamily: 'Arial',
-      fill: '#ffffff',
-      align: 'center'
-    });
-    questionText.setOrigin(0.5);
-    questionText.setDepth(1503);
-    
-    // Buttons
-    const buttonY = dialogY + 110;
-    const buttonWidth = 120;
-    const buttonHeight = 40;
-    const buttonSpacing = 30;
-    
-    // Confirm button (left side)
-    const confirmButton = this.scene.add.graphics();
-    confirmButton.fillStyle(0xff6b35); // Orange for burst effect
-    confirmButton.fillRoundedRect(dialogX - buttonWidth - buttonSpacing/2, buttonY - buttonHeight/2, buttonWidth, buttonHeight, 8);
-    confirmButton.setDepth(1502);
-    confirmButton.setInteractive(new Phaser.Geom.Rectangle(dialogX - buttonWidth - buttonSpacing/2, buttonY - buttonHeight/2, buttonWidth, buttonHeight), Phaser.Geom.Rectangle.Contains);
-    
-    const confirmText = this.scene.add.text(dialogX - buttonWidth/2 - buttonSpacing/2, buttonY, 'Activate', {
-      fontSize: '16px',
-      fontFamily: 'Arial Bold',
-      fill: '#ffffff',
-      align: 'center'
-    });
-    confirmText.setOrigin(0.5);
-    confirmText.setDepth(1503);
-    
-    // Cancel button (right side)
-    const cancelButton = this.scene.add.graphics();
-    cancelButton.fillStyle(0x666666);
-    cancelButton.fillRoundedRect(dialogX + buttonSpacing/2, buttonY - buttonHeight/2, buttonWidth, buttonHeight, 8);
-    cancelButton.setDepth(1502);
-    cancelButton.setInteractive(new Phaser.Geom.Rectangle(dialogX + buttonSpacing/2, buttonY - buttonHeight/2, buttonWidth, buttonHeight), Phaser.Geom.Rectangle.Contains);
-    
-    const cancelText = this.scene.add.text(dialogX + buttonWidth/2 + buttonSpacing/2, buttonY, 'Skip', {
-      fontSize: '16px',
-      fontFamily: 'Arial',
-      fill: '#ffffff',
-      align: 'center'
-    });
-    cancelText.setOrigin(0.5);
-    cancelText.setDepth(1503);
-    
-    // Dialog elements for cleanup
-    const elements = [
-      overlay, dialogBg, titleText, cardNameText, cardRepresentation, 
-      cardInfoText, effectText, questionText, 
-      confirmButton, confirmText, cancelButton, cancelText
-    ];
-    
-    // Button event handlers
-    confirmButton.on('pointerdown', () => {
-      console.log('DialogManager: User confirmed burst effect');
-      this.closeDialog(dialogId);
-      if (onConfirm) onConfirm(true);
-    });
-    
-    cancelButton.on('pointerdown', () => {
-      console.log('DialogManager: User declined burst effect');
-      this.closeDialog(dialogId);
-      if (onConfirm) onConfirm(false);
-    });
-    
-    // Store dialog
+    // Store dialog with GameSceneUtils interface
     this.activeDialogs.set(dialogId, {
       id: dialogId,
       type: this.dialogTypes.BURST_EFFECT_CHOICE,
       eventId: event.id,
-      interface: { elements: elements, cleanup: () => this.cleanupElements(elements) },
+      interface: dialogInterface,
       createdAt: Date.now()
     });
     
     console.log(`DialogManager: Created burst effect dialog with ID: ${dialogId}`);
     return dialogId;
+  }
+  
+  /**
+   * Auto-select the first card in the dialog for burst effects
+   * @private
+   */
+  autoSelectFirstCard(dialogInterface, cardToSelect) {
+    // Use scene events to auto-select the first card once dialog is ready
+    const autoSelectListener = () => {
+      try {
+        console.log('Auto-selecting first card for burst effect:', cardToSelect);
+        
+        // Look for Card components in the dialog elements
+        if (dialogInterface.elements) {
+          for (let element of dialogInterface.elements) {
+            // Check if this is a Card component
+            if (element.cardData || element.type === 'Container') {
+              // Simulate a click event on the card
+              const fakePointer = { 
+                leftButtonDown: () => true,
+                rightButtonDown: () => false 
+              };
+              
+              // Try different ways to trigger selection
+              if (element.handlePointerDown) {
+                element.handlePointerDown(fakePointer, 0, 0, {});
+                break;
+              } else if (element.events && element.events.emit) {
+                element.events.emit('pointerdown', fakePointer, 0, 0, {});
+                break;
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.log('Auto-select failed, user can select manually:', error);
+      }
+      
+      // Remove the listener after one attempt
+      this.scene.events.off('postupdate', autoSelectListener);
+    };
+    
+    // Wait for next frame to ensure dialog is fully created
+    this.scene.events.once('postupdate', autoSelectListener);
+  }
+  
+  /**
+   * Apply burst effect styling to the select dialog
+   * @private
+   */
+  applyBurstStyling(dialogInterface) {
+    // Find and modify dialog elements to add orange burst effect styling
+    if (dialogInterface.elements) {
+      dialogInterface.elements.forEach(element => {
+        // Add orange glow to dialog background
+        if (element.type === 'Graphics' && element.lineStyle) {
+          try {
+            // Try to add orange stroke to existing graphics
+            element.lineStyle(3, 0xff6b35);
+          } catch (e) {
+            // Ignore errors for elements that can't be modified
+          }
+        }
+      });
+    }
+  }
+  
+  /**
+   * Show burst effect confirmation after card is selected
+   * @private
+   */
+  showBurstConfirmation(selectedCard, burstEffect, originalDialogId, onConfirm) {
+    // Close the original card selection dialog
+    this.closeDialog(originalDialogId);
+    
+    // Show simple confirmation dialog for burst effect
+    this.showConfirmationDialog({
+      title: '💥 Activate Burst Effect?',
+      message: `Do you want to activate the burst effect on ${selectedCard.cardData?.name || 'this card'}?\n\nEffect: ${burstEffect.description || `${burstEffect.type} effect`}`,
+      width: 450,
+      height: 200,
+      confirmText: 'Activate',
+      cancelText: 'Skip'
+    }, 
+    () => {
+      // User confirmed
+      console.log('DialogManager: User confirmed burst effect');
+      if (onConfirm) onConfirm(true);
+    },
+    () => {
+      // User cancelled  
+      console.log('DialogManager: User declined burst effect');
+      if (onConfirm) onConfirm(false);
+    });
   }
 
   /**
