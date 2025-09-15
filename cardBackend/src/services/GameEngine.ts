@@ -1030,6 +1030,12 @@ export class GameEngine {
                     };
                 }
                 
+                // IMPORTANT: Remove card from shield before moving to trash
+                const removedFromShield = GameEngine.removeFromShieldWithLogging(gameEnv, playerId, cardUid);
+                if (!removedFromShield) {
+                    console.log(`⚠️ Warning: Card ${cardUid} was not found in shield zone, but proceeding with trash move`);
+                }
+                
                 // Restore originalCardType before moving to trash (like in ShieldCardManager)
                 let cardDataForTrash = { ...cardData };
                 GameEngine.restoreCardType(cardDataForTrash);

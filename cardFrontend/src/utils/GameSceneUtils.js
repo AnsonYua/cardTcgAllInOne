@@ -409,6 +409,32 @@ export default class GameSceneUtils {
     // Initial card display
     cardManager.updateCardDisplay();
     
+    // Auto-select first card for burst confirmation dialogs
+    if (selection.dialogType === 'BURST_EFFECT_CHOICE' && 
+        selection.eligibleCards && selection.eligibleCards.length > 0) {
+      
+      // Get the first card data
+      const firstCard = selection.eligibleCards[0];
+      
+      // Calculate position for first card (index 0) using same logic as createCardsForCurrentPage
+      const currentPageCards = selection.eligibleCards.slice(0, paginationState.maxCardsPerPage);
+      const totalCardsWidth = (currentPageCards.length * cardDisplayConfig.cardDisplayWidth) + 
+                             ((currentPageCards.length - 1) * cardDisplayConfig.cardSpacing);
+      const cardsStartX = dialogConfig.centerX - totalCardsWidth / 2;
+      const cardsY = dialogElements.cardSection.centerY + 10;
+      
+      // Calculate cardX for first card (index 0)
+      const cardX = cardsStartX + (0 * (cardDisplayConfig.cardDisplayWidth + cardDisplayConfig.cardSpacing)) + cardDisplayConfig.cardDisplayWidth / 2;
+      const cardY = cardsY;
+      
+      console.log("card positions calculated:", cardX, cardY)
+      // Auto-select the first card
+      this._handleCardSelection(firstCard, cardX, cardY, selectionState, cardDisplayConfig, dialogElements);
+      cardManager.updateOKButtonState();
+      
+      console.log('Auto-selected first card for burst effect dialog:', firstCard.cardId || firstCard.cardData?.id);
+    }
+    
     // Return cleanup function and initial elements for external cleanup
     const dialogInterface = {
       elements: this._getAllDialogElements(dialogElements),

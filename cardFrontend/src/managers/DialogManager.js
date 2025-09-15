@@ -321,16 +321,37 @@ export default class DialogManager {
       burstSelection,
       this.scene,
       (selectedId, selectedCards, elements) => {
-        // Handle burst effect confirmation
-        console.log('DialogManager: Burst effect card selected:', selectedCards);
+        // Handle burst effect activation - directly call API
+        console.log('DialogManager: Burst effect ACTIVATE clicked:', selectedCards);
         
-        // Create custom confirmation for burst effect
-        this.showBurstConfirmation(selectedCards[0], burstEffect, dialogId, onConfirm);
+        // Close the current dialog
+        this.closeDialog(dialogId);
+        
+        // Directly activate the burst effect (call onConfirm with true)
+        console.log('DialogManager: Activating burst effect directly');
+        if (onConfirm) onConfirm(true);
       }
     );
     
-    // Auto-select the first (and only) card after dialog is created
-    this.autoSelectFirstCard(dialogInterface, burstSelection.eligibleCards[0]);
+    // Handle SKIP button (cancel action) - listen for dialog-cancelled event
+    const handleSkip = (eventSelectionId) => {
+      if (eventSelectionId === burstSelection.selectionId) {
+        console.log('DialogManager: Burst effect SKIP clicked');
+        
+        // Close the current dialog  
+        this.closeDialog(dialogId);
+        
+        // Skip the burst effect (call onConfirm with false)
+        console.log('DialogManager: Skipping burst effect');
+        if (onConfirm) onConfirm(false);
+        
+        // Remove the event listener
+        this.scene.events.off('dialog-cancelled', handleSkip);
+      }
+    };
+    
+    // Listen for cancel events (SKIP button)
+    this.scene.events.on('dialog-cancelled', handleSkip);
     
     // Override the dialog styling to add orange burst effect theme
     this.applyBurstStyling(dialogInterface);
@@ -346,50 +367,6 @@ export default class DialogManager {
     
     console.log(`DialogManager: Created burst effect dialog with ID: ${dialogId}`);
     return dialogId;
-  }
-  
-  /**
-   * Auto-select the first card in the dialog for burst effects
-   * @private
-   */
-  autoSelectFirstCard(dialogInterface, cardToSelect) {
-    // Use scene events to auto-select the first card once dialog is ready
-    const autoSelectListener = () => {
-      try {
-        console.log('Auto-selecting first card for burst effect:', cardToSelect);
-        
-        // Look for Card components in the dialog elements
-        if (dialogInterface.elements) {
-          for (let element of dialogInterface.elements) {
-            // Check if this is a Card component
-            if (element.cardData || element.type === 'Container') {
-              // Simulate a click event on the card
-              const fakePointer = { 
-                leftButtonDown: () => true,
-                rightButtonDown: () => false 
-              };
-              
-              // Try different ways to trigger selection
-              if (element.handlePointerDown) {
-                element.handlePointerDown(fakePointer, 0, 0, {});
-                break;
-              } else if (element.events && element.events.emit) {
-                element.events.emit('pointerdown', fakePointer, 0, 0, {});
-                break;
-              }
-            }
-          }
-        }
-      } catch (error) {
-        console.log('Auto-select failed, user can select manually:', error);
-      }
-      
-      // Remove the listener after one attempt
-      this.scene.events.off('postupdate', autoSelectListener);
-    };
-    
-    // Wait for next frame to ensure dialog is fully created
-    this.scene.events.once('postupdate', autoSelectListener);
   }
   
   /**
@@ -411,35 +388,6 @@ export default class DialogManager {
         }
       });
     }
-  }
-  
-  /**
-   * Show burst effect confirmation after card is selected
-   * @private
-   */
-  showBurstConfirmation(selectedCard, burstEffect, originalDialogId, onConfirm) {
-    // Close the original card selection dialog
-    this.closeDialog(originalDialogId);
-    
-    // Show simple confirmation dialog for burst effect
-    this.showConfirmationDialog({
-      title: '💥 Activate Burst Effect?',
-      message: `Do you want to activate the burst effect on ${selectedCard.cardData?.name || 'this card'}?\n\nEffect: ${burstEffect.description || `${burstEffect.type} effect`}`,
-      width: 450,
-      height: 200,
-      confirmText: 'Activate',
-      cancelText: 'Skip'
-    }, 
-    () => {
-      // User confirmed
-      console.log('DialogManager: User confirmed burst effect');
-      if (onConfirm) onConfirm(true);
-    },
-    () => {
-      // User cancelled  
-      console.log('DialogManager: User declined burst effect');
-      if (onConfirm) onConfirm(false);
-    });
   }
 
   /**
