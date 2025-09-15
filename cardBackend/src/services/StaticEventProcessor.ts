@@ -201,9 +201,6 @@ export class StaticEventProcessor {
             case EventType.CONFIRM_REDRAW:
                 return this.validateStartReadyEvent(event, gameEnv);
                 
-            case EventType.PLAYER_CHOICE_REQUIRED:
-                // Always valid - player choices are system-generated
-                return { isValid: true };
                 
             default:
                 // Most events are valid by default

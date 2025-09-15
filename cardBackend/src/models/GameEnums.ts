@@ -56,7 +56,6 @@ export enum EventType {
     CARD_EFFECT_TRIGGERED = 'CARD_EFFECT_TRIGGERED',
     
     // Player events
-    PLAYER_CHOICE_REQUIRED = 'PLAYER_CHOICE_REQUIRED',
     PLAYER_CHOICE_RESOLVED = 'PLAYER_CHOICE_RESOLVED',
     
     // Phase events

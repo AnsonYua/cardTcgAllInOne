@@ -969,41 +969,51 @@ export class GameEngine {
     }
     
     /**
-     * Handle BURST_EFFECT_CHOICE events - these require user confirmation via API
-     * @param event - The burst effect choice event
+     * Handle BURST_EFFECT_CHOICE events - these only execute in RESOLVING status
+     * @param event - The burst effect choice event (must be RESOLVING status)
      * @param gameEnv - Current game environment
      */
     private static executeBurstEffectChoice(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`💥 Executing BURST_EFFECT_CHOICE event: ${event.id} (${event.status})`);
         
         try {
-            const { playerId, cardUid, cardId, cardData, burstEffect, choiceId } = event.data;
+            const { playerId, cardUid, cardId, cardData, burstEffect, choiceId, userDecision } = event.data;
             
-            // Handle different event statuses
-            if (event.status === EventStatus.DECLARED) {
-                // Event waiting for user confirmation
-                console.log(`⚡ Burst choice for card ${cardId} (${cardUid}): ${burstEffect.description}`);
-                console.log(`🎯 Player ${playerId} needs to confirm choice: ${choiceId}`);
-                console.log(`📋 Event waiting for user confirmation - processing will pause`);
+            // This method should only be called for RESOLVING events
+            if (event.status !== EventStatus.RESOLVING) {
+                console.log(`⚠️ Unexpected event status: ${event.status} (expected RESOLVING)`);
+                return { success: true }; // Skip - should not happen in correct flow
+            }
+            
+            console.log(`🚀 User decided: ${userDecision} for burst choice: ${choiceId}`);
+            
+            if (userDecision === 'DECLINE') {
+                console.log(`❌ Player declined burst effect - moving card to trash area`);
                 
-                // Processing loop will stop because needsPlayerInput() detects this DECLARED event
-                return { success: true };
-                
-            } else if (event.status === EventStatus.RESOLVING) {
-                // User has made their choice - execute the effect
-                const userConfirmed = event.data.userConfirmed;
-                console.log(`🚀 User ${userConfirmed ? 'confirmed' : 'declined'} burst choice: ${choiceId}`);
-                
-                if (!userConfirmed) {
-                    console.log(`❌ Player declined burst effect - removing event`);
-                    // Remove event from queue and finish
-                    const eventIndex = gameEnv.processingQueue.findIndex(e => e.id === event.id);
-                    if (eventIndex !== -1) {
-                        gameEnv.processingQueue.splice(eventIndex, 1);
-                    }
-                    return { success: true };
+                // Get the defending player (card owner)
+                const defender = gameEnv.getPlayer(playerId);
+                if (!defender) {
+                    return {
+                        success: false,
+                        error: `Player ${playerId} not found`
+                    };
                 }
                 
+                // Restore originalCardType before moving to trash (like in ShieldCardManager)
+                let cardDataForTrash = { ...cardData };
+                if (cardData.originalCardType) {
+                    cardDataForTrash.cardType = cardData.originalCardType;
+                    console.log(`🔄 Restored cardType from ${cardData.cardType} to ${cardData.originalCardType}`);
+                }
+                
+                // Move card to trash area
+                defender.addTrashCard(cardUid, cardDataForTrash);
+                console.log(`🗑️ Card ${cardId} (${cardUid}) moved to trash area after declining burst effect`);
+                
+                return { success: true }; // Processing loop will auto-set RESOLVED
+            }
+            
+            if (userDecision === 'ACTIVATE') {
                 // Execute the confirmed burst effect
                 console.log(`⚡ Executing burst effect: ${burstEffect.type}`);
                 const executionResult = GameEngine.executeBurstEffect(gameEnv, choiceId, true);
@@ -1012,20 +1022,15 @@ export class GameEngine {
                     return executionResult;
                 }
                 
-                // Mark event as resolved and remove from queue
-                event.status = EventStatus.RESOLVED;
-                const eventIndex = gameEnv.processingQueue.findIndex(e => e.id === event.id);
-                if (eventIndex !== -1) {
-                    gameEnv.processingQueue.splice(eventIndex, 1);
-                }
-                
-                console.log(`✅ Burst effect ${burstEffect.type} executed and event removed`);
-                return { success: true };
-                
-            } else {
-                console.log(`⚠️ Unexpected event status: ${event.status}`);
-                return { success: true }; // Skip unexpected statuses
+                console.log(`✅ Burst effect ${burstEffect.type} executed successfully`);
+                return { success: true }; // Processing loop will auto-set RESOLVED
             }
+            
+            // This should never happen if flow is correct
+            return {
+                success: false,
+                error: `Invalid userDecision: ${userDecision}`
+            };
             
         } catch (error) {
             console.error(`❌ Error in executeBurstEffectChoice:`, error);

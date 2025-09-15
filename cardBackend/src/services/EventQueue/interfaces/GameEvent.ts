@@ -37,14 +37,6 @@ export interface PhaseChangeEvent extends BaseGameEvent {
     };
 }
 
-export interface PlayerChoiceEvent extends BaseGameEvent {
-    type: EventType.PLAYER_CHOICE_REQUIRED;
-    data: {
-        selectionId: string;
-        choices: string[];
-        playerId: string;
-    };
-}
 
 export interface StartGameEvent extends BaseGameEvent {
     type: EventType.CREATE_GAME;
@@ -269,12 +261,13 @@ export interface BurstEffectChoiceEvent extends BaseGameEvent {
             description: string;
         };
         choiceId: string;
+        userDecisionMade: boolean;
+        userDecision?: 'ACTIVATE' | 'DECLINE';
     };
 }
 
 export type GameEvent = 
     | PhaseChangeEvent 
-    | PlayerChoiceEvent 
     | PowerBoostEvent
     | TurnStartEvent
     | TurnEndEvent 
@@ -332,21 +325,6 @@ export class EventFactory {
         };
     }
     
-    static createPlayerChoiceEvent(
-        selectionId: string,
-        choices: string[],
-        playerId: string
-    ): PlayerChoiceEvent {
-        return {
-            id: `player_choice_${++this.eventIdCounter}_${Date.now()}`,
-            type: EventType.PLAYER_CHOICE_REQUIRED,
-            status: EventStatus.DECLARED,
-            priority: EventPriority.IMMEDIATE,
-            playerId,
-            timestamp: Date.now(),
-            data: { selectionId, choices, playerId }
-        };
-    }
     
     // ============ GAME FLOW EVENT FACTORIES ============
     
@@ -550,7 +528,9 @@ export class EventFactory {
                 cardId,
                 cardData,
                 burstEffect,
-                choiceId: `burst_choice_${cardUid}_${Date.now()}`
+                choiceId: `burst_choice_${cardUid}_${Date.now()}`,
+                userDecisionMade: false,
+                userDecision: undefined
             }
         };
     }

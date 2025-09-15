@@ -188,10 +188,13 @@ export class GameEnvironment {
         // Check if first event in queue requires user confirmation
         const nextEvent = this.processingQueue[0];
         
-        return nextEvent?.status === EventStatus.DECLARED && (
-            nextEvent?.type === EventType.PLAYER_CHOICE_REQUIRED ||
-            nextEvent?.type === EventType.BURST_EFFECT_CHOICE
-        );
+        if (nextEvent?.status === EventStatus.DECLARED && 
+            nextEvent?.type === EventType.BURST_EFFECT_CHOICE) {
+            // For burst choice events, check if user has already provided input
+            return !nextEvent.data.userDecisionMade;
+        }
+        
+        return false;
     }
     
     /**
@@ -199,10 +202,8 @@ export class GameEnvironment {
      */
     public getEventsRequiringConfirmation(): GameEvent[] {
         return this.processingQueue.filter(event => 
-            event.status === EventStatus.DECLARED && (
-                event.type === EventType.PLAYER_CHOICE_REQUIRED ||
-                event.type === EventType.BURST_EFFECT_CHOICE
-            )
+            event.status === EventStatus.DECLARED && 
+            event.type === EventType.BURST_EFFECT_CHOICE
         );
     }
     
@@ -211,7 +212,7 @@ export class GameEnvironment {
      */
     public getCurrentPlayerChoice(): GameEvent | null {
         const nextEvent = this.processingQueue[0];
-        if (nextEvent?.type === EventType.PLAYER_CHOICE_REQUIRED && 
+        if (nextEvent?.type === EventType.BURST_EFFECT_CHOICE && 
             nextEvent?.status === EventStatus.DECLARED) {
             return nextEvent;
         }

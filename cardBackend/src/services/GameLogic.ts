@@ -1023,12 +1023,12 @@ export class GameLogic {
                 };
             }
             
-            // Update event with user choice and change status to RESOLVING
-            event.status = EventStatus.RESOLVING;
-            event.data.userConfirmed = confirmed;
+            // Update event with user choice (don't change status - let processing loop handle it)
+            event.data.userDecisionMade = true;
+            event.data.userDecision = confirmed ? 'ACTIVATE' : 'DECLINE';
             event.data.confirmedAt = Date.now();
             
-            console.log(`🎯 Event ${eventId} marked as RESOLVING with choice: ${confirmed}`);
+            console.log(`🎯 Event ${eventId} updated with user choice: ${confirmed ? 'ACTIVATE' : 'DECLINE'}`);
             
             // Process events - the RESOLVING event will be handled by GameEngine
             const processingResult = await gameEnv.processEvents();
