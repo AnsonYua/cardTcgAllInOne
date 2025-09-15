@@ -86,5 +86,8 @@ export enum EventType {
     
     // Shield attack events
     SHIELD_CARD_ATTACKED = 'SHIELD_CARD_ATTACKED',
-    BURST_EFFECT_CHOICE = 'BURST_EFFECT_CHOICE'
+    BURST_EFFECT_CHOICE = 'BURST_EFFECT_CHOICE',
+    
+    // Deploy effect events
+    DEPLOY_EFFECT_TRIGGERED = 'DEPLOY_EFFECT_TRIGGERED'
 }

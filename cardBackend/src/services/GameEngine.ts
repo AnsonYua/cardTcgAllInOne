@@ -9,6 +9,7 @@ import { ShieldCardManager } from './ShieldCardManager';
 import { BaseCardManager } from './BaseCardManager';
 import { GameNotificationManager } from './GameNotificationManager';
 import { PlayerCardManager } from './PlayerCardManager';
+import { DeployEffectManager } from './DeployEffectManager';
 import { UnitZoneCard, createZoneCard } from '../models/CardSystem';
 import { PilotZoneCard } from '../models/CardSystem';
 import * as fs from 'fs';
@@ -157,6 +158,9 @@ export class GameEngine {
                     
                 case EventType.BURST_EFFECT_CHOICE:
                     return GameEngine.executeBurstEffectChoice(event, gameEnv);
+                    
+                case EventType.DEPLOY_EFFECT_TRIGGERED:
+                    return GameEngine.executeDeployEffect(event, gameEnv);
                     
                 default:
                     console.log(`🎯 Processing ${event.type} event - delegating to existing game logic`);
@@ -660,6 +664,9 @@ export class GameEngine {
 
             // Pass event data directly - no intermediate object creation
             const placementResult = PlayerCardManager.placeCardWithEventData(gameEnv, eventData);
+            
+
+            
             if (!placementResult.success) {
                 // Return card to hand if placement failed (but only for normal cards, not burst cards)
                 if (!fromBurst) {
@@ -671,6 +678,21 @@ export class GameEngine {
                 };
             }
 
+            // ✅ Card placement successful - Check for Deploy effects (ENTERS_PLAY triggers)
+            console.log(`✅ Card ${eventData.cardUID} successfully placed for player ${eventData.playerId}`);
+            
+            // Check for Deploy effects
+            const deployEffects = this.checkForDeployEffects(eventData.cardData);
+            if (deployEffects.length > 0) {
+                console.log(`🚀 Deploy effects detected: ${deployEffects.length} effects for card ${eventData.cardId}`);
+                
+                // Create and queue Deploy effect events (similar to burst effects)
+                const deployEvent = this.createDeployEffectEvent(eventData, deployEffects);
+                gameEnv.processingQueue.push(deployEvent);
+                
+                console.log(`📋 Deploy event queued: ${deployEvent.id}`);
+            }
+
             return { success: true };
             
         } catch (error) {
@@ -680,6 +702,46 @@ export class GameEngine {
                 error: error instanceof Error ? error.message : 'PLAY_CARD execution failed'
             };
         }
+    }
+    
+    /**
+     * Check if a card has Deploy effects (ENTERS_PLAY triggers)
+     */
+    private static checkForDeployEffects(cardData: any): any[] {
+        if (!cardData.effects?.rules) return [];
+        
+        const deployEffects = cardData.effects.rules.filter((rule: any) => 
+            rule.type === 'triggered' && rule.trigger === 'ENTERS_PLAY'
+        );
+        
+        console.log(`🔍 Deploy effect check for card ${cardData.cardId}: found ${deployEffects.length} effects`);
+        return deployEffects;
+    }
+    
+    /**
+     * Create Deploy effect event for processing queue
+     */
+    private static createDeployEffectEvent(eventData: any, deployEffects: any[]): GameEvent {
+        const deployEvent: GameEvent = {
+            id: `deploy_${eventData.cardUID}_${Date.now()}`,
+            type: EventType.DEPLOY_EFFECT_TRIGGERED,
+            status: EventStatus.DECLARED,
+            priority: EventPriority.NORMAL,
+            playerId: eventData.playerId,
+            data: {
+                cardId: eventData.cardId,
+                cardUID: eventData.cardUID,
+                cardData: eventData.cardData,
+                playerId: eventData.playerId,
+                zone: eventData.zone,
+                effects: deployEffects,
+                timestamp: Date.now()
+            },
+            timestamp: Date.now()
+        };
+        
+        console.log(`🚀 Created Deploy event: ${deployEvent.id} with ${deployEffects.length} effects`);
+        return deployEvent;
     }
     
     private static executePlayerAction(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
@@ -1071,6 +1133,45 @@ export class GameEngine {
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Burst effect choice execution failed'
+            };
+        }
+    }
+    
+    /**
+     * Execute Deploy effect triggered by card entering play
+     */
+    private static executeDeployEffect(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+        console.log(`🚀 Executing DEPLOY_EFFECT_TRIGGERED event: ${event.id}`);
+        
+        try {
+            // Use DeployEffectManager to process the Deploy effects
+            const result = DeployEffectManager.processDeployEffect(gameEnv, event.data);
+            
+            if (!result.success) {
+                console.log(`❌ Deploy effect processing failed: ${result.error}`);
+                return {
+                    success: false,
+                    error: result.error
+                };
+            }
+            
+            if (result.requiresSelection) {
+                console.log(`🎯 Deploy effects require player selection - workflow set up`);
+                return {
+                    success: true
+                };
+            }
+            
+            console.log(`✅ Deploy effects processed successfully: ${result.message}`);
+            return {
+                success: true
+            };
+            
+        } catch (error) {
+            console.error(`❌ Error in executeDeployEffect:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Deploy effect execution failed'
             };
         }
     }
