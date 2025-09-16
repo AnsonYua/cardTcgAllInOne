@@ -186,7 +186,7 @@ export default class Card extends Phaser.GameObjects.Container {
     const shouldDisableClick = this.cardData?.cardType === "energy" ||
      this.cardData?.cardType === "shield" || 
      this.cardData?.cardType === "base" ||
-     (!this.isPlayerZone); // Opponent cards should not be clickable
+     (this.isInZone && !this.isPlayerZone); // Opponent cards should not be clickable
     
     return {
       // Cards in zones can still be selected for highlighting, even if other interactions are disabled
