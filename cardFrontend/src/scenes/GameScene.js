@@ -40,7 +40,6 @@ export default class GameScene extends Phaser.Scene {
     this.playerZones = {};
     this.opponentZones = {};
     this.cardPreviewZone = null;
-    this.zoneHighlights = [];
     this.layout = null;
 
     this.isSetScenoria = false;
@@ -381,7 +380,6 @@ export default class GameScene extends Phaser.Scene {
       // Handle card deselection - clear selected card and zone highlights
       if (this.gameStateManager.getSelectedCard() === card) {
         this.gameStateManager.setSelectedCard(null);
-        this.clearZoneHighlights();
 
         // Hide dynamic action buttons when card is deselected  
         this.hideDynamicActionButtons();
@@ -694,13 +692,7 @@ export default class GameScene extends Phaser.Scene {
     return GameSceneUtils.getFieldIndexFromZone(zoneType);
   }
 
-  showZoneHighlights(card) {
-    GameSceneUtils.showZoneHighlights(card, this);
-  }
 
-  clearZoneHighlights() {
-    GameSceneUtils.clearZoneHighlights(this);
-  }
 
   /**
    * Handle trash icon click events - Shows cards in trash area
@@ -765,134 +757,6 @@ export default class GameScene extends Phaser.Scene {
   }
 
 
-  /**
-   * Handle zone click for card placement
-   */
-  handleZoneClick(zoneType, x, y) {
-    const selectedCard = this.gameStateManager.getSelectedCard();
-    if (selectedCard) {
-      console.log(`Zone clicked: ${zoneType}, selected card: ${selectedCard.cardData?.id}`);
-      this.handleCardPlacement(selectedCard, zoneType, x, y);
-    } else {
-      console.log(`Zone ${zoneType} clicked but no card selected`);
-    }
-  }
-
-  async handleCardPlacement(card, zoneType, x, y) {
-    if (this.canPlaceCardInZone(card, zoneType)) {
-      // Show loading state
-      this.setUILoadingState(true);
-
-      // Attempt to play card to server/update game state (include face-down state)
-      const cardDataWithState = {
-        ...card.getCardData()
-      };
-      const success = await this.playCardToZone(cardDataWithState, zoneType);
-
-      if (success) {
-        // Move card to zone
-        card.moveToPosition(x, y);
-
-        // Set zone placement for hover preview system
-        card.setZonePlacement(true, zoneType, true); // true = player zone
-        console.log(`[GameScene] Card ${card.cardData?.id} placed in player zone: ${zoneType}`);
-
-        // Remove from hand
-        const handIndex = this.playerHand.indexOf(card);
-        if (handIndex > -1) {
-          this.playerHand.splice(handIndex, 1);
-          this.handContainer.remove(card);
-          this.reorganizeHand();
-        }
-
-        // Update zone
-        const zone = this.playerZones[zoneType];
-        if (zone) {
-          zone.card = card;
-          zone.placeholder.setVisible(false);
-
-          // Show power overlay for character cards in character zones
-          const cardType = card.cardData?.cardType || card.cardData?.type;
-          if (cardType === 'character' &&
-            ['top', 'left', 'right'].includes(zoneType)) {
-            card.setPowerOverlayVisible(true, true);
-          }
-        }
-
-        // Deselect the card
-        if (this.gameStateManager.getSelectedCard() === card) {
-          this.gameStateManager.setSelectedCard(null);
-          this.clearZoneHighlights();
-          // Hide action buttons when card is placed
-          this.actionButtonManager.hide();
-        }
-
-        console.log(`Successfully played card ${card.getCardData().id} to ${zoneType}`);
-      } else {
-        // Return card to hand on failure
-        card.returnToOriginalPosition();
-      }
-
-      // Clear loading state
-      this.setUILoadingState(false);
-    } else {
-      // Return card to hand if not valid placement
-      card.returnToOriginalPosition();
-    }
-  }
-
-  async playCardToZone(cardData, zoneType) {
-    console.log(`Playing card ${cardData.id} to ${zoneType} zone`);
-
-    const gameState = this.gameStateManager.getGameState();
-
-    // Send API call to backend if API manager available
-    if (this.apiManager) {
-      try {
-        // Get the cardUID from the hand for the new simplified API
-        const cardUID = this.getCardUIDFromHand(cardData);
-
-        if (!cardUID) {
-          this.showErrorMessage('Card not found in hand.');
-          return false;
-        }
-
-        console.log('Sending card play to backend:', { cardUID, zone: zoneType });
-
-        const response = await this.apiManager.playCard(
-          gameState.playerId,
-          gameState.gameId,
-          cardUID
-        );
-
-        console.log('Card play response:', response);
-
-        // The backend will update the game state, which will be received via polling
-        // No need to update local state here as it will come from the server
-
-      } catch (error) {
-        console.error('Failed to send card play action to backend:', error);
-
-        // Show error to user
-        this.showErrorMessage('Failed to play card. Please try again.');
-
-        // Don't update local state on error - keep the card in hand
-        return false;
-      }
-    } else {
-      // Demo mode - update local state only
-      console.log('Demo mode - updating local state only');
-      const zones = { ...gameState.gameEnv.zones };
-      if (!zones[gameState.playerId]) {
-        zones[gameState.playerId] = {};
-      }
-      zones[gameState.playerId][zoneType] = cardData;
-
-      this.gameStateManager.updateGameEnv({ zones });
-    }
-
-    return true;
-  }
 
   getCardUIDFromHand(cardData) {
     // Get the current hand from game state to find card UID
@@ -952,9 +816,6 @@ export default class GameScene extends Phaser.Scene {
 
 
 
-  showZoneHighlights(card) {
-    GameSceneUtils.showZoneHighlights(card, this);
-  }
 
   showZoneRestrictionMessage(message) {
     GameSceneUtils.showZoneRestrictionMessage(message, this);
@@ -978,8 +839,6 @@ export default class GameScene extends Phaser.Scene {
       this.slotAreaManager.deselectAllSlotCards();
     }
 
-    // Clear zone highlights
-    this.clearZoneHighlights();
 
     // Optionally clear the selected card from game state
     if (clearGameState) {
@@ -1679,35 +1538,29 @@ export default class GameScene extends Phaser.Scene {
       this.handContainer.setDepth(1001);
     }
 
-    // Bring leader cards to front (above the overlay) - same as hand cards
-    console.log('DEBUG: Setting leader card depths...');
-    if (this.playerZones.leader && this.playerZones.leader.card) {
-      console.log('DEBUG: Player leader card found, setting depth to 1001');
-      this.playerZones.leader.card.setDepth(1001);
-      console.log('DEBUG: Player leader card depth is now:', this.playerZones.leader.card.depth);
-    } else {
-      console.log('DEBUG: Player leader card NOT found');
+    // Bring all zone cards to front (above the overlay)
+    console.log('DEBUG: Setting zone card depths...');
+
+    // Handle player zones
+    if (this.playerZones) {
+      Object.entries(this.playerZones).forEach(([zoneName, zone]) => {
+        if (zone && zone.card) {
+          console.log(`DEBUG: Player ${zoneName} card found, setting depth to 1001`);
+          zone.card.setDepth(1001);
+          console.log(`DEBUG: Player ${zoneName} card depth is now:`, zone.card.depth);
+        }
+      });
     }
-    if (this.playerZones.leaderDeck && this.playerZones.leaderDeck.card) {
-      console.log('DEBUG: Player leader deck card found, setting depth to 1001');
-      this.playerZones.leaderDeck.card.setDepth(1001);
-      console.log('DEBUG: Player leader deck card depth is now:', this.playerZones.leaderDeck.card.depth);
-    } else {
-      console.log('DEBUG: Player leader deck card NOT found');
-    }
-    if (this.opponentZones.leader && this.opponentZones.leader.card) {
-      console.log('DEBUG: Opponent leader card found, setting depth to 1001');
-      this.opponentZones.leader.card.setDepth(1001);
-      console.log('DEBUG: Opponent leader card depth is now:', this.opponentZones.leader.card.depth);
-    } else {
-      console.log('DEBUG: Opponent leader card NOT found');
-    }
-    if (this.opponentZones.leaderDeck && this.opponentZones.leaderDeck.card) {
-      console.log('DEBUG: Opponent leader deck card found, setting depth to 1001');
-      this.opponentZones.leaderDeck.card.setDepth(1001);
-      console.log('DEBUG: Opponent leader deck card depth is now:', this.opponentZones.leaderDeck.card.depth);
-    } else {
-      console.log('DEBUG: Opponent leader deck card NOT found');
+
+    // Handle opponent zones  
+    if (this.opponentZones) {
+      Object.entries(this.opponentZones).forEach(([zoneName, zone]) => {
+        if (zone && zone.card) {
+          console.log(`DEBUG: Opponent ${zoneName} card found, setting depth to 1001`);
+          zone.card.setDepth(1001);
+          console.log(`DEBUG: Opponent ${zoneName} card depth is now:`, zone.card.depth);
+        }
+      });
     }
   }
 
@@ -1737,42 +1590,8 @@ export default class GameScene extends Phaser.Scene {
 
   highlightLeaderCards() {
     console.log('highlightLeaderCards called');
-
-    // Highlight player leader card
-    if (this.playerZones.leader && this.playerZones.leader.card) {
-      console.log('Player leader card found, starting highlight');
-      const leaderCard = this.playerZones.leader.card;
-      this.tweens.add({
-        targets: leaderCard,
-        scaleX: leaderCard.scaleX * 1.1,
-        scaleY: leaderCard.scaleY * 1.1,
-        duration: 800,
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut'
-      });
-      leaderCard.redrawHighlight = true;
-    } else {
-      console.log('Player leader card not found for highlighting');
-    }
-
-    // Highlight opponent leader card
-    if (this.opponentZones.leader && this.opponentZones.leader.card) {
-      console.log('Opponent leader card found, starting highlight');
-      const leaderCard = this.opponentZones.leader.card;
-      this.tweens.add({
-        targets: leaderCard,
-        scaleX: leaderCard.scaleX * 1.1,
-        scaleY: leaderCard.scaleY * 1.1,
-        duration: 800,
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut'
-      });
-      leaderCard.redrawHighlight = true;
-    } else {
-      console.log('Opponent leader card not found for highlighting');
-    }
+    // Note: Leader zone highlighting is no longer needed as leader zones do not exist in new structure
+    console.log('Leader zone highlighting skipped - leader zones no longer exist');
   }
 
   removeHandCardHighlight() {
@@ -1793,30 +1612,8 @@ export default class GameScene extends Phaser.Scene {
 
   removeLeaderCardHighlight() {
     console.log('removeLeaderCardHighlight called');
-
-    // Remove player leader card highlight
-    if (this.playerZones.leader && this.playerZones.leader.card) {
-      const leaderCard = this.playerZones.leader.card;
-      console.log('Player leader card found, redrawHighlight:', leaderCard.redrawHighlight);
-
-      // Kill any tweens targeting this card regardless of highlight flag
-      this.tweens.killTweensOf(leaderCard);
-      // Reset scale to normal
-      leaderCard.setScale(0.9, 0.9); // Leader cards use 0.9 scale
-      leaderCard.redrawHighlight = false;
-    }
-
-    // Remove opponent leader card highlight
-    if (this.opponentZones.leader && this.opponentZones.leader.card) {
-      const leaderCard = this.opponentZones.leader.card;
-      console.log('Opponent leader card found, redrawHighlight:', leaderCard.redrawHighlight);
-
-      // Kill any tweens targeting this card regardless of highlight flag
-      this.tweens.killTweensOf(leaderCard);
-      // Reset scale to normal
-      leaderCard.setScale(0.9, 0.9); // Leader cards use 0.9 scale
-      leaderCard.redrawHighlight = false;
-    }
+    // Note: Leader zone highlighting cleanup is no longer needed as leader zones do not exist in new structure
+    console.log('Leader zone highlight cleanup skipped - leader zones no longer exist');
   }
 
   async handleRedrawChoice(wantRedraw) {
@@ -1839,15 +1636,9 @@ export default class GameScene extends Phaser.Scene {
       this.handContainer.setDepth(0);
     }
 
-    // Reset leader cards depth to normal - same as hand cards
-    if (this.playerZones.leader && this.playerZones.leader.card) {
-      this.playerZones.leader.card.setDepth(0);
-    }
+    // Reset leaderDeck cards depth to normal - same as hand cards
     if (this.playerZones.leaderDeck && this.playerZones.leaderDeck.card) {
       this.playerZones.leaderDeck.card.setDepth(0);
-    }
-    if (this.opponentZones.leader && this.opponentZones.leader.card) {
-      this.opponentZones.leader.card.setDepth(0);
     }
     if (this.opponentZones.leaderDeck && this.opponentZones.leaderDeck.card) {
       this.opponentZones.leaderDeck.card.setDepth(0);

@@ -146,7 +146,6 @@ export default class CardActionHandler {
                     this.gameStateManager.updateGameEnv(response.gameEnv);
                     this.updateGameState();
                     this.updatePlayerHand();
-                    this.clearZoneHighlights();
                 } else {
                     console.error(`❌ Failed to play ${playAs} card:`, response?.error);
                     this.showErrorMessage(response?.error || `Failed to play ${playAs} card`);
@@ -181,8 +180,7 @@ export default class CardActionHandler {
         // Clear selection from state manager
         this.gameStateManager.setSelectedCard(null);
         
-        // Clear zone highlights and hide buttons
-        this.clearZoneHighlights();
+        // Hide buttons
         this.gameScene.actionButtonManager.hide();
     }
 
@@ -305,9 +303,6 @@ export default class CardActionHandler {
         this.gameScene.updatePlayerHand();
     }
 
-    clearZoneHighlights() {
-        this.gameScene.clearZoneHighlights();
-    }
 
     /**
      * Handle pilot card selection by showing unit selection dialog
@@ -430,7 +425,6 @@ export default class CardActionHandler {
                     this.gameStateManager.updateGameEnv(response.gameEnv);
                     this.updateGameState();
                     this.updatePlayerHand();
-                    this.clearZoneHighlights();
                 } else {
                     console.error(`❌ Failed to play pilot card:`, response?.error);
                     this.showErrorMessage(response?.error || `Failed to play pilot card`);

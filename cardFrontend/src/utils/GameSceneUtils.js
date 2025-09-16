@@ -159,25 +159,11 @@ export default class GameSceneUtils {
       placeholder.setAlpha(0);
     }
     
-    // Zone interaction (only for player zones)
-    let clickZone = null;
-    if (isPlayerZone) {
-      clickZone = scene.add.zone(x, y, 130, 190);
-      clickZone.setData('zoneType', type);
-      
-      // Add zone click handling for card placement when card is selected
-      clickZone.setInteractive();
-      clickZone.on('pointerdown', (pointer) => {
-        if (scene.handleZoneClick) {
-          scene.handleZoneClick(type, x, y);
-        }
-      });
-    }
+    // Zone interaction removed - cards handle their own click interactions
     
     return {
       placeholder,
       label,
-      clickZone,
       x,
       y,
       card: null,
@@ -230,66 +216,6 @@ export default class GameSceneUtils {
     return deckCards;
   }
 
-  /**
-   * Clears all zone highlights
-   * @param {Object} scene - The GameScene instance
-   */
-  static clearZoneHighlights(scene) {
-    if (scene.zoneHighlights) {
-      scene.zoneHighlights.forEach(highlight => {
-        highlight.destroy();
-      });
-      scene.zoneHighlights = [];
-    }
-  }
-
-  /**
-   * Shows zone highlights for a specific card
-   * @param {Object} card - The card object
-   * @param {Object} scene - The GameScene instance
-   */
-  static showZoneHighlights(card, scene) {
-    // Clear any existing highlights
-    this.clearZoneHighlights(scene);
-    
-    console.log("show screen highlight")
-    // Check if it's the current player's turn and in main phase
-    const currentPhase = scene.gameStateManager.getCurrentPhase();
-    const isCurrentPlayer = scene.gameStateManager.isCurrentPlayer();
-    
-    if (!isCurrentPlayer || currentPhase !== 'MAIN_PHASE') {
-      return;
-    }
-
-    // Initialize zone highlights array if not exists
-    if (!scene.zoneHighlights) {
-      scene.zoneHighlights = [];
-    }
-    console.log("show screen hidelight22")
-    // Check each zone and highlight if valid
-    const zones = ['top', 'left', 'right', 'help', 'sp'];
-    zones.forEach(zoneType => {
-      const zone = scene.playerZones[zoneType];
-      if (zone && this.canPlaceCardInZone(card, zoneType, scene)) {
-        // Create a subtle highlight around the zone
-        const highlight = scene.add.graphics();
-        highlight.lineStyle(3, 0x00ff00, 0.6); // Green with 60% opacity
-        highlight.strokeRoundedRect(zone.x - 65, zone.y - 95, 130, 190, 8);
-        
-        // Add a pulsing effect
-        scene.tweens.add({
-          targets: highlight,
-          alpha: 0.3,
-          duration: 1000,
-          yoyo: true,
-          repeat: -1,
-          ease: 'Sine.easeInOut'
-        });
-        
-        scene.zoneHighlights.push(highlight);
-      }
-    });
-  }
 
   static convertCardSelectionToCardDataObject(card){
     // Handle case where card or cardId might be undefined
