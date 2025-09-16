@@ -251,6 +251,7 @@ gameState = {
 ### Card Interaction System Fixes (2024)
 - **Energy Card Interaction Control**: Fixed energy cards being clickable despite `card.active = false` - energy, shield, and base cards now properly disabled from user interaction while maintaining hover preview functionality
 - **Card Preview Current Stats Display**: Fixed slot card hover previews showing original AP/HP instead of current values - previews now correctly display `currentAP`/`currentHP` affected by game effects and buffs
+- **Opponent Slot Card Interaction Control**: Fixed opponent slot cards being clickable - implemented proper player/opponent zone distinction in SlotAreaManager to ensure only player slot cards and hand cards are clickable while opponent slot cards remain non-interactive
 
 ### UI Message System Refactoring (2024)
 - **Centralized UI Management**: All UI feedback consolidated into `UIMessageManager.js`
