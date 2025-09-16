@@ -523,26 +523,7 @@ export class GameLogic {
                     isReady: true,
                     redraw: 1,
                     playerPoint: 0,
-                    fieldEffects: {
-                        zoneRestrictions: {
-                            TOP: ['右翼', '自由', '經濟'],
-                            LEFT: ['右翼', '自由', '愛國者'],
-                            RIGHT: ['右翼', '愛國者', '經濟'],
-                            HELP: 'ALL',
-                            SP: 'ALL'
-                        },
-                        activeEffects: [
-                            {
-                                effectId: 's-1_trump_rightWing_patriot_boost',
-                                source: 's-1',
-                                type: 'powerBoost',
-                                target: { scope: 'SELF', gameTypes: ['右翼', '愛國者'] },
-                                value: 45
-                            }
-                        ],
-                        disabledCards: [],
-                        victoryPointModifiers: 0
-                    }
+                    // fieldEffects removed - not currently implemented
                 },
                 playerId_2: {
                     id: 'playerId_2',
@@ -556,26 +537,7 @@ export class GameLogic {
                     isReady: true,
                     redraw: 1,
                     playerPoint: 0,
-                    fieldEffects: {
-                        zoneRestrictions: {
-                            TOP: ['左翼', '自由', '經濟', '右翼', '愛國者'],
-                            LEFT: ['左翼', '自由', '經濟', '右翼', '愛國者'],
-                            RIGHT: ['左翼', '自由', '經濟', '右翼', '愛國者'],
-                            HELP: 'ALL',
-                            SP: 'ALL'
-                        },
-                        activeEffects: [
-                            {
-                                effectId: 's-2_biden_all_boost',
-                                source: 's-2',
-                                type: 'powerBoost',
-                                target: { scope: 'SELF', gameTypes: 'ALL' },
-                                value: 40
-                            }
-                        ],
-                        disabledCards: [],
-                        victoryPointModifiers: 0
-                    }
+                    // fieldEffects removed - not currently implemented
                 }
             },
             zones: {

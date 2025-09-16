@@ -69,50 +69,7 @@ export const isZoneCardArray = (content: ZoneContent): content is ZoneCard[] => 
 };
 
 // ============ PLAYER FIELD EFFECTS ============
-
-export interface FieldEffect {
-    effectId: string;
-    source: string;
-    sourcePlayerId?: string;
-    type: string;
-    target: {
-        scope: 'SELF' | 'OPPONENT' | 'ALL' | 'SPECIFIC';
-        zones?: ZoneType[] | 'ALL';
-        colors?: string[];
-        traits?: string[];
-        nameContains?: string[];
-        playerId?: string;
-        cardIds?: string[];
-        level?: string;
-        cost?: string;
-    };
-    value: number | boolean;
-    priority?: number;
-    unremovable?: boolean;
-    isEnabled?: boolean;
-    createdAt?: number;
-    effectData?: any;
-}
-
-export interface PlayerFieldEffects {
-    zoneRestrictions: {
-        [zone in ZoneType]?: string[] | 'ALL';
-    };
-    activeEffects: FieldEffect[];
-    specialEffects?: {
-        zonePlacementFreedom?: boolean;
-        immuneToNeutralization?: boolean;
-        untargetable?: boolean;
-        canPlayFromResource?: boolean;
-    };
-    disabledCards?: string[];
-    restedCards?: string[];
-    victoryPointModifiers?: number;
-    resourceModifiers?: {
-        bonusResources?: number;
-        resourceCostReduction?: number;
-    };
-}
+// Field effects system removed - not currently implemented in game logic
 
 // ============ PLACEHOLDER DECK CLASS ============
 // This is a simplified placeholder - implement proper deck management for your custom game
@@ -217,7 +174,7 @@ export class Player {
     public isRedraw?: boolean; // Store their actual redraw choice
     public playerPoint: number;
     public isReady: boolean;
-    public fieldEffects?: PlayerFieldEffects;
+    // fieldEffects removed - not currently implemented
     public zones!: PlayerZones;
 
     constructor(id: string, name: string = id) {
@@ -713,98 +670,10 @@ export class Player {
     }
 
     // ============ FIELD EFFECTS ============
-
+    // Field effects system removed - not currently implemented in game logic
+    
     public initializeGameStateOnly(): void {
-        if (!this.fieldEffects) {
-            this.fieldEffects = {
-                zoneRestrictions: {},
-                activeEffects: [],
-                specialEffects: {},
-                disabledCards: [],
-                victoryPointModifiers: 0
-            };
-        }
         this.playerPoint = 0;
-    }
-
-    public initializeFieldEffects(): void {
-        this.fieldEffects = {
-            zoneRestrictions: {},
-            activeEffects: [],
-            specialEffects: {},
-            disabledCards: [],
-            victoryPointModifiers: 0
-        };
-    }
-
-    public addFieldEffect(effect: FieldEffect): void {
-        if (!this.fieldEffects) this.initializeFieldEffects();
-        this.fieldEffects!.activeEffects.push(effect);
-    }
-
-    public get activeZoneRestrictions(): { [zone in ZoneType]?: string[] | 'ALL' } {
-        if (!this.fieldEffects) return {};
-
-        const ALL_TRAITS = ['Earth Federation', 'White Base Team', 'Academy', 'Newtype', 'Warship'];
-        const ALL_COLORS = ['Blue', 'White', 'Red', 'Green', 'Yellow'];
-
-        const activeRestrictions: { [zone in ZoneType]?: string[] | 'ALL' } = {};
-
-        Object.keys(this.fieldEffects.zoneRestrictions).forEach((zone: string) => {
-            const zoneType = zone as ZoneType;
-            activeRestrictions[zoneType] = this.fieldEffects!.zoneRestrictions[zoneType];
-        });
-
-        this.fieldEffects.activeEffects.forEach(effect => {
-            if (effect.type === 'preventSummon' && effect.isEnabled) {
-                const targetZones = effect.target.zones || [];
-                const zonesToProcess = targetZones === 'ALL' 
-                    ? [ZoneType.SLOT1, ZoneType.SLOT2, ZoneType.SLOT3, ZoneType.SLOT4, ZoneType.SLOT5, ZoneType.SLOT6, ZoneType.BASE]
-                    : targetZones as ZoneType[];
-
-                zonesToProcess.forEach((zone: ZoneType) => {
-                    const zoneType = zone as ZoneType;
-                    
-                    if (activeRestrictions[zoneType]) {
-                        if (activeRestrictions[zoneType] === 'ALL') {
-                            if (effect.target.traits?.length || effect.target.colors?.length) {
-                                const preventedTraits = effect.target.traits || [];
-                                const preventedColors = effect.target.colors || [];
-                                activeRestrictions[zoneType] = [...ALL_TRAITS, ...ALL_COLORS].filter(
-                                    item => !preventedTraits.includes(item) && !preventedColors.includes(item)
-                                );
-                            } else {
-                                activeRestrictions[zoneType] = [];
-                            }
-                        } else {
-                            const currentRestrictions = activeRestrictions[zoneType] as string[];
-                            
-                            if (effect.target.traits?.length || effect.target.colors?.length) {
-                                const preventedTraits = effect.target.traits || [];
-                                const preventedColors = effect.target.colors || [];
-                                activeRestrictions[zoneType] = currentRestrictions.filter(
-                                    item => !preventedTraits.includes(item) && !preventedColors.includes(item)
-                                );
-                            } else {
-                                activeRestrictions[zoneType] = [];
-                            }
-                        }
-                    } else {
-                        if (effect.target.traits?.length || effect.target.colors?.length) {
-                            const preventedTraits = effect.target.traits || [];
-                            const preventedColors = effect.target.colors || [];
-                            activeRestrictions[zoneType] = [...ALL_TRAITS, ...ALL_COLORS].filter(
-                                item => !preventedTraits.includes(item) && !preventedColors.includes(item)
-                            );
-                        } else {
-                            activeRestrictions[zoneType] = [];
-                        }
-                    }
-                });
-            }
-        });
-
-        return activeRestrictions;
     }
 
     // ============ SERIALIZATION ============
@@ -819,12 +688,7 @@ export class Player {
             playerPoint: this.playerPoint,
             isReady: this.isReady,
             zones: this.zones,
-            ...(this.fieldEffects && { 
-                fieldEffects: {
-                    ...this.fieldEffects,
-                    activeZoneRestrictions: this.activeZoneRestrictions
-                }
-            })
+            // fieldEffects removed - not currently implemented
         };
     }
 
@@ -840,9 +704,7 @@ export class Player {
         if (data.zones) {
             player.zones = data.zones;
         }
-        if (data.fieldEffects) {
-            player.fieldEffects = data.fieldEffects;
-        }
+        // fieldEffects removed - not currently implemented
         return player;
     }
 }
