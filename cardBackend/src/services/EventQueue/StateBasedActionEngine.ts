@@ -31,6 +31,8 @@ export interface GameStateViolation {
 export class StateBasedActionEngine {
     private gameEnv: GameEnvironment;
     private checkEnabled: boolean = true;
+    private repairAbilitiesCheckedThisCycle: boolean = false;
+    private processedRepairActions: Set<string> = new Set();
     
     constructor(gameEnv: GameEnvironment) {
         this.gameEnv = gameEnv;
@@ -44,6 +46,9 @@ export class StateBasedActionEngine {
      */
     checkForStateBasedActions(): StateBasedAction[] {
         if (!this.checkEnabled) return [];
+        
+        // Reset repair abilities flag at the start of each cycle
+        this.repairAbilitiesCheckedThisCycle = false;
         
         const actions: StateBasedAction[] = [];
         
@@ -170,11 +175,15 @@ export class StateBasedActionEngine {
         if (this.gameEnv.phase === GamePhase.END_PHASE) {
             console.log(`🔄 END_PHASE detected - checking for repair abilities and next player transition`);
             
-            // First, check for repair abilities for the current player
+            // First, check for repair abilities for the current player (only once per cycle)
             const currentPlayerId = this.gameEnv.currentPlayer;
-            if (currentPlayerId) {
+            if (currentPlayerId && !this.repairAbilitiesCheckedThisCycle) {
+                console.log(`🩹 Checking repair abilities for player ${currentPlayerId}`);
                 const repairActions = this.checkRepairAbilities(currentPlayerId);
                 actions.push(...repairActions);
+                this.repairAbilitiesCheckedThisCycle = true;
+            } else if (this.repairAbilitiesCheckedThisCycle) {
+                console.log(`🩹 Repair abilities already checked this cycle, skipping...`);
             }
             
             // Calculate next player
@@ -311,6 +320,7 @@ export class StateBasedActionEngine {
         
         for (const slot of slotZones) {
             const slotZone = (player.zones as any)[slot];
+            
             if (slotZone?.unit) {
                 const unit = slotZone.unit;
                 const cardData = this.getCardData(unit.cardId);
@@ -340,6 +350,7 @@ export class StateBasedActionEngine {
                             });
                         }
                     });
+                    console.log("data for healing event ", JSON.stringify(unit.cardId))
                 }
             }
         }

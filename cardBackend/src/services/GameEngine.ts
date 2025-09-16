@@ -1309,32 +1309,63 @@ export class GameEngine {
         console.log(`🎯 Executing TRIGGER_HEALING event: ${event.id}`);
         
         try {
-            // Check if this is a repair-related healing event
-            const isRepairEvent = event.data.description?.includes('healing') || 
-                                 event.data.effectType === 'repair' ||
-                                 event.data.actionId?.includes('repair');
+            // Process each affected card to determine healing type and amount
+            const affectedCards = event.data.affectedCards || [];
+            const affectedPlayers = event.data.affectedPlayers || [];
             
-            if (isRepairEvent) {
-                console.log(`🩹 Processing repair healing event for cards: ${event.data.affectedCards || 'unknown'}`);
-                
-                // Use CardEffect to handle repair
-                const CardEffect = require('./CardEffect').CardEffect;
-                const result = CardEffect.executeRepairEffect(gameEnv, event.data);
-                
-                if (!result.success) {
-                    console.log(`❌ Repair effect failed: ${result.error}`);
-                    return {
-                        success: false,
-                        error: result.error
-                    };
-                }
-                
-                console.log(`✅ Repair effect executed: ${result.message}`);
-                return { success: true };
-            } else {
-                console.log(`⚠️ Unknown TRIGGER_HEALING event type. Event data:`, event.data);
+            if (affectedCards.length === 0) {
+                console.log(`⚠️ No affected cards in TRIGGER_HEALING event`);
                 return { success: true };
             }
+            
+            console.log(`🩹 Processing healing for ${affectedCards.length} card(s): ${affectedCards.join(', ')}`);
+            
+            // Process each affected card
+            for (let i = 0; i < affectedCards.length; i++) {
+                const cardId = affectedCards[i];
+                const playerId = affectedPlayers[i] || affectedPlayers[0]; // Use corresponding player or first one
+                
+                // Get card data to determine healing effects
+                const cardData = GameEngine.getCardDetails(cardId);
+                if (!cardData) {
+                    console.log(`❌ Could not find card data for ${cardId}`);
+                    continue;
+                }
+                
+                console.log(`🔍 Checking healing effects for card ${cardId}`);
+                
+                // Look for repair/healing effects in the card
+                if (cardData.effects && cardData.effects.rules) {
+                    for (const effect of cardData.effects.rules) {
+                        if (effect.trigger === 'END_OF_TURN' && effect.effect.action === 'heal') {
+                            console.log(`🩹 Found healing effect: ${effect.effectId} (${effect.effect.parameters.amount} HP)`);
+                            
+                            // Use CardEffect to handle the repair
+                            const CardEffect = require('./CardEffect').CardEffect;
+                            const healData = {
+                                cardId: cardId,
+                                playerId: playerId,
+                                healAmount: effect.effect.parameters.amount,
+                                effectId: effect.effectId,
+                                // Include original event data for additional context
+                                originalEventData: event.data
+                            };
+                            
+                            const result = CardEffect.executeRepairEffect(gameEnv, healData);
+                            
+                            if (!result.success) {
+                                console.log(`❌ Repair effect failed for ${cardId}: ${result.error}`);
+                            } else {
+                                console.log(`✅ Repair effect executed for ${cardId}: ${result.message}`);
+                            }
+                        }
+                    }
+                } else {
+                    console.log(`⚠️ No effects found for card ${cardId}`);
+                }
+            }
+            
+            return { success: true };
             
         } catch (error) {
             console.error(`❌ Error in executeCardEffectTriggered:`, error);

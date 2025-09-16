@@ -79,11 +79,12 @@ export class CardEffect {
         
         const maxHP = cardData.hp;
         const currentHP = targetUnit.currentHP || maxHP;
-        
+        console.log("healing effect 111", JSON.stringify(currentHP))
         // Calculate actual healing (can't exceed max HP)
         const newHP = Math.min(currentHP + healAmount, maxHP);
         const actualHealing = newHP - currentHP;
-        
+        console.log("healing effect 111222", JSON.stringify(newHP))
+        console.log("healing effect 11122233", JSON.stringify(healAmount))
         if (actualHealing > 0) {
             // Apply healing
             targetUnit.currentHP = newHP;
