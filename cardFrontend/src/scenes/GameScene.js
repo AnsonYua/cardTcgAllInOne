@@ -90,8 +90,6 @@ export default class GameScene extends Phaser.Scene {
 
     // Demo mode uses real backend calls with test buttons, not mock data
 
-    // Load leader cards data
-
     // Hide hand area during shuffling
     this.hideHandArea();
 
@@ -145,7 +143,6 @@ export default class GameScene extends Phaser.Scene {
     
     // This method is now called through ZoneManager.createZones()
     // Adding additional setup that wasn't moved to ZoneManager
-    this.addZoneLabels();
     this.createDeckVisualizations();
     this.createTrashIcons();
   }
@@ -172,27 +169,6 @@ export default class GameScene extends Phaser.Scene {
     this.battleResultsText.setOrigin(0.5);
   }
 
-  addZoneLabels() {
-    const { width } = this.cameras.main;
-
-    // Opponent area label
-    /*
-    this.add.text(width * 0.4, this.layout.opponent.top.y - 120, 'OPPONENT ZONES', {
-      fontSize: '16px',
-      fontFamily: 'Arial Bold',
-      fill: '#ffffff',
-      align: 'center'
-    }).setOrigin(0.5);
-    
-    // Player area label
-    this.add.text(width * 0.4, this.layout.player.top.y - 120, 'YOUR ZONES', {
-      fontSize: '16px',
-      fontFamily: 'Arial Bold',
-      fill: '#ffffff',
-      align: 'center'
-    }).setOrigin(0.5);
-    */
-  }
 
   createDeckVisualizations() {
     // Use the initial deck stacks created in createZone as the main deck stacks
@@ -206,8 +182,8 @@ export default class GameScene extends Phaser.Scene {
   createUI() {
     const { width, height } = this.cameras.main;
 
-    // Top UI bar
-    this.createTopUI();
+    // Initialize ActionButtonManager (includes top UI creation)
+    this.actionButtonManager.initialize();
 
     // Connection status indicator
     this.createConnectionStatus();
@@ -232,69 +208,7 @@ export default class GameScene extends Phaser.Scene {
     this.createHandArea();
   }
 
-  createTopUI() {
-    const { width } = this.cameras.main;
-
-    // Create UI background
-    const uiBg = this.add.graphics();
-    uiBg.fillStyle(0x000000, 0.5);
-    uiBg.fillRect(0, 0, width, 50);
-
-    // Player info (left side)
-    const gameState = this.gameStateManager.getGameState();
-    const player = this.gameStateManager.getPlayer();
-    const opponent = this.gameStateManager.getOpponent();
-    const opponentData = this.gameStateManager.getPlayer(opponent);
-
-    this.playerInfoText = this.add.text(50, 5, `You: ${gameState.playerName}`, {
-      fontSize: '16px',
-      fontFamily: 'Arial',
-      fill: '#ffffff'
-    });
-
-    this.playerVPText = this.add.text(-100, 30, `VP: ${this.gameStateManager.getVictoryPoints()}`, {
-      fontSize: '14px',
-      fontFamily: 'Arial',
-      fill: '#4CAF50'
-    });
-
-    this.playerHandText = this.add.text(-100, 50, `Hand: ${player && player.hand ? player.hand.length : 0}`, {
-      fontSize: '14px',
-      fontFamily: 'Arial',
-      fill: '#ffffff'
-    });
-
-    // Opponent info (right side)
-    this.opponentInfoText = this.add.text(width - 50, 5, `Opponent: ${opponentData ? opponentData.name : 'Unknown'}`, {
-      fontSize: '16px',
-      fontFamily: 'Arial',
-      fill: '#ffffff'
-    });
-    this.opponentInfoText.setOrigin(1, 0);
-
-    this.opponentVPText = this.add.text(width + 1000, 30, `VP: ${this.gameStateManager.getVictoryPoints(opponent)}`, {
-      fontSize: '14px',
-      fontFamily: 'Arial',
-      fill: '#FF5722'
-    });
-    this.opponentVPText.setOrigin(1, 0);
-
-    this.opponentHandText = this.add.text(width + 1000, 50, `Hand: ${opponentData && opponentData.hand ? opponentData.hand.length : 0}`, {
-      fontSize: '14px',
-      fontFamily: 'Arial',
-      fill: '#ffffff'
-    });
-    this.opponentHandText.setOrigin(1, 0);
-
-    // Round info (center)
-    this.roundText = this.add.text(width / 2, 15, `Round ${this.gameStateManager.getCurrentRound()} / 4`, {
-      fontSize: '18px',
-      fontFamily: 'Arial Bold',
-      fill: '#ffffff',
-      align: 'center'
-    });
-    this.roundText.setOrigin(0.5);
-  }
+  // createTopUI method moved to ActionButtonManager
 
   createActionButtons() {
     const { width, height } = this.cameras.main;
@@ -755,16 +669,10 @@ export default class GameScene extends Phaser.Scene {
     // Update current turn display
     this.updateCurrentTurnDisplay(currentPlayer);
 
-    // Update round
-    this.roundText.setText(`Round ${gameState.gameEnv.round} / 4`);
-
-    // Update player info
-    this.playerVPText.setText(`VP: ${this.gameStateManager.getVictoryPoints()}`);
-    this.playerHandText.setText(`Hand: ${player && player.hand ? player.hand.length : 0}`);
-
-    // Update opponent info
-    this.opponentVPText.setText(`VP: ${this.gameStateManager.getVictoryPoints(opponent)}`);
-    this.opponentHandText.setText(`Hand: ${opponentData && opponentData.deck.hand ? opponentData.deck.hand.length : 0}`);
+    // Update top UI via ActionButtonManager
+    if (this.actionButtonManager) {
+      this.actionButtonManager.updateTopUI();
+    }
 
 
     // Update opponent hand count display
@@ -1684,7 +1592,10 @@ export default class GameScene extends Phaser.Scene {
       const firstPlayerText = isCurrentPlayerFirst ? 'You go first!' : 'Opponent goes first!';
       this.showRoomStatus(`${firstPlayerText} (First player: ${firstPlayerId})`);
 
-      this.opponentInfoText.setText(`Opponent: ${opponentData ? opponentData.name : 'Unknown'}`);
+      // Update top UI via ActionButtonManager
+      if (this.actionButtonManager) {
+        this.actionButtonManager.updateTopUI();
+      }
       // Update first player display
       this.updateFirstPlayerDisplay(isCurrentPlayerFirst);
 

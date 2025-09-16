@@ -751,4 +751,71 @@ export default class GameStateManager {
       nextEventType: this.eventQueue && this.eventQueue.length > 0 ? this.eventQueue[0].type : null
     };
   }
+  
+  /**
+   * Helper method to check hand UID count vs card container count and set scenario flag
+   * @param {Object} gameEnv - Game environment data (optional, uses current state if not provided)
+   * @param {string} context - Context string for logging
+   * @param {Object} handContainer - Hand container from GameScene
+   * @param {Object} isSetScenoria - Reference to scenario flag object
+   */
+  checkHandUIDChangesAndSetScenario(gameEnv = null, context = '', handContainer = null, isSetScenoria = null) {
+    // Use provided gameEnv or fall back to current game state
+    const currentGameState = this.getGameState();
+    const currentPlayerId = currentGameState.playerId;
+    const sourceGameEnv = gameEnv || currentGameState.gameEnv;
+    
+    // Get current hand UIDs from the source game environment
+    const gameStateHandUIDs = sourceGameEnv.players?.[currentPlayerId]?.deck?.handUids || [];
+    
+    // Get actual number of cards displayed in hand container UI
+    const cardContainerCount = handContainer ? handContainer.list.length : 0;
+    
+    // Also get the actual card UIDs from the hand container for detailed comparison
+    const cardContainerUIDs = [];
+    if (handContainer && handContainer.list) {
+      handContainer.list.forEach(card => {
+        if (card.fullCardData && card.fullCardData.cardUid) {
+          cardContainerUIDs.push(card.fullCardData.cardUid);
+        }
+      });
+    }
+    
+    console.log("data event 1111", JSON.stringify(gameStateHandUIDs.length));
+    console.log("data event 1111222", JSON.stringify(cardContainerCount));
+    
+    // Check if counts are different
+    const handCountMismatch = gameStateHandUIDs.length !== cardContainerCount;
+    
+    // Check if actual UIDs are different (more thorough check)
+    const handUIDsMismatch = JSON.stringify(gameStateHandUIDs.sort()) !== JSON.stringify(cardContainerUIDs.sort());
+    
+    // Check for unacknowledged events in source game environment
+    const unacknowledgedEvents = (sourceGameEnv.notificationQueue || []).filter(event => 
+      event.metadata?.frontendProcessed === false && 
+      event.metadata?.requiresAcknowledgment === true
+    );
+    const hasUnacknowledgedEvents = unacknowledgedEvents.length > 0;
+    
+    console.log("data event unacknowledged", JSON.stringify(unacknowledgedEvents));
+    console.log("data event count mismatch", JSON.stringify(handCountMismatch));
+    console.log("data event uids mismatch", JSON.stringify(handUIDsMismatch));
+    
+    console.log(`Hand UID comparison${context ? ` (${context})` : ''}:`, {
+      gameStateHandUIDs: gameStateHandUIDs,
+      cardContainerUIDs: cardContainerUIDs,
+      gameStateHandCount: gameStateHandUIDs.length,
+      cardContainerCount: cardContainerCount,
+      handCountMismatch: handCountMismatch,
+      handUIDsMismatch: handUIDsMismatch,
+      unacknowledgedEvents: unacknowledgedEvents.map(e => ({ id: e.id, type: e.type })),
+      hasUnacknowledgedEvents: hasUnacknowledgedEvents
+    });
+    
+    // If hand UIDs or counts are different and there are no unacknowledged events, set scenario flag
+    if ((handCountMismatch || handUIDsMismatch) && !hasUnacknowledgedEvents && isSetScenoria !== null) {
+      console.log('🎯 Setting isSetScenoria = true (hand UID/count mismatch, no unacknowledged events)');
+      isSetScenoria.value = true;
+    }
+  }
 }

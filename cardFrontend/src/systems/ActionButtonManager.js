@@ -1,5 +1,5 @@
-// ActionButtonManager.js
-// Dynamic action button creation and management system
+// ActionButtonManager.js  
+// Dynamic action button creation and management system with top UI support
 
 import CardActionRegistry from './CardActionRegistry.js';
 
@@ -9,10 +9,20 @@ export default class ActionButtonManager {
         this.actionButtonContainer = null;
         this.actionButtons = [];
         this.isVisible = false;
+        
+        // Top UI elements
+        this.topUIElements = {
+            background: null,
+            playerInfoText: null,
+            playerHandText: null,
+            opponentInfoText: null,
+            opponentHandText: null,
+            roundText: null
+        };
     }
 
     /**
-     * Initialize the action button container
+     * Initialize the action button container and top UI
      */
     initialize() {
         const width = this.gameScene.scale.width;
@@ -23,7 +33,104 @@ export default class ActionButtonManager {
         this.actionButtonContainer.setDepth(500);
         this.actionButtonContainer.setVisible(false); // Hidden by default
         
-        console.log('ActionButtonManager initialized');
+        // Initialize top UI
+        this.createTopUI();
+        
+        console.log('ActionButtonManager with Top UI initialized');
+    }
+    
+    /**
+     * Create the top UI bar with player info, VP, and round information
+     */
+    createTopUI() {
+        const { width } = this.gameScene.cameras.main;
+
+        // Create UI background
+        this.topUIElements.background = this.gameScene.add.graphics();
+        this.topUIElements.background.fillStyle(0x000000, 0.5);
+        this.topUIElements.background.fillRect(0, 0, width, 50);
+
+        // Get game state data
+        const gameState = this.gameScene.gameStateManager.getGameState();
+        const player = this.gameScene.gameStateManager.getPlayer();
+        const opponent = this.gameScene.gameStateManager.getOpponent();
+        const opponentData = this.gameScene.gameStateManager.getPlayer(opponent);
+
+        // Player info (left side)
+        this.topUIElements.playerInfoText = this.gameScene.add.text(50, 5, `You: ${gameState.playerName}`, {
+            fontSize: '16px',
+            fontFamily: 'Arial',
+            fill: '#ffffff'
+        });
+
+
+        this.topUIElements.playerHandText = this.gameScene.add.text(-100, 50, `Hand: ${player && player.hand ? player.hand.length : 0}`, {
+            fontSize: '14px',
+            fontFamily: 'Arial',
+            fill: '#ffffff'
+        });
+
+        // Opponent info (right side)
+        this.topUIElements.opponentInfoText = this.gameScene.add.text(width - 50, 5, `Opponent: ${opponentData ? opponentData.name : 'Unknown'}`, {
+            fontSize: '16px',
+            fontFamily: 'Arial',
+            fill: '#ffffff'
+        });
+        this.topUIElements.opponentInfoText.setOrigin(1, 0);
+
+
+        this.topUIElements.opponentHandText = this.gameScene.add.text(width + 1000, 50, `Hand: ${opponentData && opponentData.hand ? opponentData.hand.length : 0}`, {
+            fontSize: '14px',
+            fontFamily: 'Arial',
+            fill: '#ffffff'
+        });
+        this.topUIElements.opponentHandText.setOrigin(1, 0);
+
+        // Round info (center)
+        this.topUIElements.roundText = this.gameScene.add.text(width / 2, 15, `Round ${this.gameScene.gameStateManager.getCurrentRound()} / 4`, {
+            fontSize: '18px',
+            fontFamily: 'Arial Bold',
+            fill: '#ffffff',
+            align: 'center'
+        });
+        this.topUIElements.roundText.setOrigin(0.5);
+        
+        console.log('[ActionButtonManager] Top UI created');
+    }
+    
+    /**
+     * Update top UI with current game state data
+     */
+    updateTopUI() {
+        const gameState = this.gameScene.gameStateManager.getGameState();
+        const player = this.gameScene.gameStateManager.getPlayer();
+        const opponent = this.gameScene.gameStateManager.getOpponent();
+        const opponentData = this.gameScene.gameStateManager.getPlayer(opponent);
+        
+        // Update player info
+        if (this.topUIElements.playerInfoText) {
+            this.topUIElements.playerInfoText.setText(`You: ${gameState.playerName}`);
+        }
+        
+        
+        if (this.topUIElements.playerHandText) {
+            this.topUIElements.playerHandText.setText(`Hand: ${player && player.hand ? player.hand.length : 0}`);
+        }
+        
+        // Update opponent info
+        if (this.topUIElements.opponentInfoText) {
+            this.topUIElements.opponentInfoText.setText(`Opponent: ${opponentData ? opponentData.name : 'Unknown'}`);
+        }
+        
+        
+        if (this.topUIElements.opponentHandText) {
+            this.topUIElements.opponentHandText.setText(`Hand: ${opponentData && opponentData.hand ? opponentData.hand.length : 0}`);
+        }
+        
+        // Update round info
+        if (this.topUIElements.roundText) {
+            this.topUIElements.roundText.setText(`Round ${this.gameScene.gameStateManager.getCurrentRound()} / 4`);
+        }
     }
 
     /**
@@ -212,6 +319,15 @@ export default class ActionButtonManager {
             this.actionButtonContainer.destroy();
             this.actionButtonContainer = null;
         }
+        
+        // Destroy top UI elements
+        Object.keys(this.topUIElements).forEach(key => {
+            if (this.topUIElements[key] && this.topUIElements[key].destroy) {
+                this.topUIElements[key].destroy();
+                this.topUIElements[key] = null;
+            }
+        });
+        
         this.isVisible = false;
     }
 }
