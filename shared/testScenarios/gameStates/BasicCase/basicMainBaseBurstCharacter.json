@@ -693,42 +693,52 @@
                     ],
                     "shieldArea": [
                         {
-                            "cardUid": "ST01-004_f625d0b5-7621-469d-a67f-47a2a18dcdbb",
-                            "cardId": "ST01-004",
+                            "cardUid": "ST01-010_f625d0b5-7621-469d-a67f-47a2a18dcdbb",
+                            "cardId": "ST01-010",
                             "cardData": {
-                                "id": "ST01-004",
-                                "name": "Guntank",
+                                "id": "ST01-010",
+                                "name": "Amuro Ray",
                                 "cardType": "shield",
                                 "color": "Blue",
-                                "level": 3,
-                                "cost": 2,
-                                "zone": [
-                                    "Space",
-                                    "Earth"
-                                ],
+                                "level": 4,
+                                "cost": 1,
+                                "zone": [],
                                 "traits": [
                                     "Earth Federation",
-                                    "White Base Team"
+                                    "White Base Team",
+                                    "Newtype"
                                 ],
-                                "link": [
-                                    "Hayato Kobayashi"
-                                ],
+                                "link": [],
                                 "ap": 2,
-                                "hp": 3,
+                                "hp": 1,
                                 "effects": {
                                     "description": [
-                                        "【Deploy】Choose 1 enemy Unit with 2 or less HP. Rest it."
+                                        "【Burst】Add this card to your hand.",
+                                        "【When Paired】Choose 1 enemy Unit with 5 or less HP. Rest it."
                                     ],
                                     "rules": [
                                         {
-                                            "effectId": "deploy_rest_low_hp",
+                                            "effectId": "burst_add_to_hand",
                                             "type": "triggered",
-                                            "trigger": "ENTERS_PLAY",
+                                            "trigger": "BURST_CONDITION",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self"
+                                            },
+                                            "effect": {
+                                                "action": "addToHand",
+                                                "duration": "instant"
+                                            }
+                                        },
+                                        {
+                                            "effectId": "paired_rest_medium_hp",
+                                            "type": "triggered",
+                                            "trigger": "PAIRING_COMPLETE",
                                             "target": {
                                                 "type": "unit",
                                                 "scope": "opponent",
                                                 "filters": {
-                                                    "hp": "<=2"
+                                                    "hp": "<=5"
                                                 },
                                                 "count": 1
                                             },
@@ -739,12 +749,11 @@
                                         }
                                     ]
                                 },
-                                "originalCardType": "unit"
+                                "originalCardType": "pilot"
                             },
                             "placedAt": 1757854884783,
                             "placedBy": "playerId_1",
-                            "isRested": false,
-                            "originalCardType": "unit"
+                            "isRested": false
                         },
                         {
                             "cardUid": "ST01-006_122ee43d-d63a-4745-ac2d-d1221d4cf7c1",

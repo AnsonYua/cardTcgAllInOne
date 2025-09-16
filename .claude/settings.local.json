@@ -89,7 +89,8 @@
       "Bash(GAME_ID=\"992398f2-e662-48cc-a66f-9a687f99125a\")",
       "Bash(GAME_ID=\"ebb6d996-700f-4650-a582-892d09a7ba37\")",
       "Bash(GAME_ID=\"97561fec-98f7-4c85-8225-031322ae2371\")",
-      "Bash(GAME_ID=\"09cc7237-a9e3-46f8-9fbf-59259251a0f0\")"
+      "Bash(GAME_ID=\"09cc7237-a9e3-46f8-9fbf-59259251a0f0\")",
+      "Bash(python3:*)"
     ],
     "deny": []
   }
