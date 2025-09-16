@@ -1108,7 +1108,7 @@ export default class GameScene extends Phaser.Scene {
     if (!slotInfo) {
       // Not a slot card or couldn't detect slot, use regular preview
       console.log('[showSlotCardPreview] No slot info found, using fallback preview');
-      this.showCardPreview(hoveredCard.cardData);  // Direct access - no conversion
+      this.showCardPreview(hoveredCard.getCardFullData());  // Use full data with current stats
       return;
     }
 
@@ -1130,20 +1130,20 @@ export default class GameScene extends Phaser.Scene {
       } else if (isHoveringPilot) {
         // Hovering over pilot card - show only pilot
         console.log('[showSlotCardPreview] Hovering over pilot - showing pilot only');
-        this.showCardPreview(slotCards.pilot.cardData);  // Direct access - no conversion
+        this.showCardPreview(slotCards.pilot.getCardFullData());  // Use full data with current stats
       } else {
         // Fallback if detection failed
         console.warn('[showSlotCardPreview] Could not determine hovered card type, using fallback');
-        this.showCardPreview(hoveredCard.cardData);
+        this.showCardPreview(hoveredCard.getCardFullData());  // Use full data with current stats
       }
     } else if (slotCards.unit || slotCards.pilot) {
       // Single card in slot
       const singleCard = slotCards.unit || slotCards.pilot;
       console.log('[showSlotCardPreview] Showing single card preview for:', singleCard.cardData?.id);
-      this.showCardPreview(singleCard.cardData);  // Direct access - no conversion
+      this.showCardPreview(singleCard.getCardFullData());  // Use full data with current stats
     } else {
       console.warn('[showSlotCardPreview] No cards found in slot, using fallback');
-      this.showCardPreview(hoveredCard.cardData);  // Direct access - no conversion
+      this.showCardPreview(hoveredCard.getCardFullData());  // Use full data with current stats
     }
   }
 
@@ -1155,8 +1155,8 @@ export default class GameScene extends Phaser.Scene {
   showDualCardPreview(unitCard, pilotCard) {
     if (!this.cardPreviewZone) return;
 
-    // Create unit preview (on top) - Direct card data access
-    this.previewCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y, unitCard.cardData, {
+    // Create unit preview (on top) - Use full card data with current stats
+    this.previewCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y, unitCard.getCardFullData(), {
       scale: 3.5,
       gameStateManager: this.gameStateManager,
       usePreview: false,
@@ -1164,8 +1164,8 @@ export default class GameScene extends Phaser.Scene {
     });
     this.previewCard.setDepth(2000);
 
-    // Create pilot preview (25px below unit) - Direct card data access  
-    this.previewPilotCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y + 145, pilotCard.cardData, {
+    // Create pilot preview (25px below unit) - Use full card data with current stats  
+    this.previewPilotCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y + 145, pilotCard.getCardFullData(), {
       scale: 3.5,
       gameStateManager: this.gameStateManager,
       usePreview: false,
