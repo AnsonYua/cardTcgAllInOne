@@ -158,8 +158,40 @@ export default class SlotAreaManager {
       card.setRested(cardData.isRested || false);
     }
     
-    // Update any other dynamic properties as needed
-    // This method can be expanded for more complex card state updates
+    // Update card data with new stats (AP/HP changes, etc.)
+    if (card.fullCardData && cardData) {
+      // Store previous values for comparison
+      const previousAP = card.fullCardData.currentAP;
+      const previousHP = card.fullCardData.currentHP;
+      
+      // Update the card's full data with new information
+      card.fullCardData = { ...card.fullCardData, ...cardData };
+      
+      // Also update the nested cardData if it exists
+      if (card.cardData && cardData.cardData) {
+        card.cardData = { ...card.cardData, ...cardData.cardData };
+      }
+      
+      // Check if AP/HP values have changed
+      const newAP = card.fullCardData.currentAP;
+      const newHP = card.fullCardData.currentHP;
+      
+      const statsChanged = (previousAP !== newAP) || (previousHP !== newHP);
+      
+      if (statsChanged) {
+        console.log(`[SlotAreaManager] Stats changed for card ${card.cardData?.id}: AP ${previousAP} → ${newAP}, HP ${previousHP} → ${newHP}`);
+        
+        // Update power overlay if the card has one
+        if (card.powerOverlay && card.updatePowerOverlay) {
+          try {
+            card.updatePowerOverlay();
+            console.log(`[SlotAreaManager] Power overlay updated for card ${card.cardData?.id}`);
+          } catch (error) {
+            console.error(`[SlotAreaManager] Failed to update power overlay for card ${card.cardData?.id}:`, error);
+          }
+        }
+      }
+    }
   }
 
   // ============ UTILITY METHODS ============
