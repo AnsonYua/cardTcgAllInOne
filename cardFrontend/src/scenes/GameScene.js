@@ -5,6 +5,8 @@ import ShuffleAnimationManager from '../components/ShuffleAnimationManager.js';
 import BaseAndShieldAreaManager from '../components/BaseAndShieldAreaManager.js';
 import EnergyAreaManager from '../components/EnergyAreaManager.js';
 import SlotAreaManager from '../components/SlotAreaManager.js';
+import BoardLayoutManager from '../managers/BoardLayoutManager.js';
+import ZoneManager from '../managers/ZoneManager.js';
 import GameSceneUtils from '../utils/GameSceneUtils.js';
 import { ZoneMapping } from '../utils/ZoneMapping.js';
 import CardAnimationUtils from '../utils/CardAnimationUtils.js';
@@ -19,21 +21,27 @@ export default class GameScene extends Phaser.Scene {
     this.inGamePlayerId = "";
     this.gameStateManager = null;
     this.playerHand = [];
-    this.playerZones = {};
-    this.opponentZones = {};
     this.shuffleAnimationManager = null;
-    this.cardPreviewZone = null;
     this.previewCard = null;
     this.previewPilotCard = null;
-    this.zoneHighlights = [];
     this.isTestMode = false;
     this.firstShuffleAnimationComplete = false;
 
+    // Manager instances
     this.baseAndShieldManager = null;
     this.energyAreaManager = null;
     this.slotAreaManager = null;
+    this.boardLayoutManager = null;
+    this.zoneManager = null;
     this.opponentBase = null;
     this.dialogManager = null;
+
+    // Legacy zone references (will be managed by ZoneManager)
+    this.playerZones = {};
+    this.opponentZones = {};
+    this.cardPreviewZone = null;
+    this.zoneHighlights = [];
+    this.layout = null;
 
     this.isSetScenoria = false;
   }
@@ -112,199 +120,33 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createGameBoard() {
-    console.log('createGameBoard called');
-    const { width, height } = this.cameras.main;
-    // card size 130x190
-    // Define layout positions
-
-    const startY = 45;
-    const cardHeight = 160;
-    const playerStartX = -50;
-    this.layout = {
-      functionalArea: {
-        cardPreview: {
-          x: width * 0.5 + 730,
-          y: startY + 200 + cardHeight
-        },
-      },
-      // Opponent zones (top area) - REVERSED: slot1 displays at rightmost position
-      opponent: {
-        "slot1": {
-          x: playerStartX + width * 0.5 + 280 + 50,   // Previously slot6 position
-          y: startY + 100 + cardHeight + 10 + 15
-        },
-        "slot2": {
-          x: playerStartX + width * 0.5 + 160 + 40,    // Previously slot5 position
-          y: startY + 100 + cardHeight + 10 + 15
-        },
-        "slot3": {
-          x: playerStartX + width * 0.5 + 40 + 30,   // Previously slot4 position
-          y: startY + 100 + cardHeight + 10 + 15
-        },
-        "slot4": {
-          x: playerStartX + width * 0.5 - 80 + 20,    // Previously slot3 position
-          y: startY + 100 + cardHeight + 10 + 15
-        },
-        "slot5": {
-          x: playerStartX + width * 0.5 - 200 + 10,    // Previously slot2 position
-          y: startY + 100 + cardHeight + 10 + 15
-        },
-        "slot6": {
-          x: playerStartX + width * 0.5 - 320,       // Previously slot1 position
-          y: startY + 100 + cardHeight + 10 + 15
-        },
-        "deck": {
-          x: width * 0.5 - 500,
-          y: startY + 100 + cardHeight + 10 + 15
-        },
-        leaderDeck: { x: width * 0.5 + 430, y: startY + 100 + cardHeight + 10 + 15 },
-        base: { x: width * 0.5 + 430, y: startY + 130 + cardHeight + 10 + 15 },
-        // New row with 10 columns above existing zones (opponent is flipped)
-        row2: this.generateOpponentRow2Slots(playerStartX, width, startY - 100, cardHeight)
-      },
-      // Player zones (bottom area)
-
-      player: {
-        "slot1": {
-          x: playerStartX + width * 0.5 - 320,
-          y: startY + 100 + cardHeight + 10 + 15 + cardHeight + 60
-        },
-        "slot2": {
-          x: playerStartX + width * 0.5 - 200 + 10,
-          y: startY + 100 + cardHeight + 10 + 15 + cardHeight + 60
-        },
-        "slot3": {
-          x: playerStartX + width * 0.5 - 80 + 20,
-          y: startY + 100 + cardHeight + 10 + 15 + cardHeight + 60
-        },
-        "slot4": {
-          x: playerStartX + width * 0.5 + 40 + 30,
-          y: startY + 100 + cardHeight + 10 + 15 + cardHeight + 60
-        },
-        "slot5": {
-          x: playerStartX + width * 0.5 + 160 + 40,
-          y: startY + 100 + cardHeight + 10 + 15 + cardHeight + 60
-        },
-        "slot6": {
-          x: playerStartX + width * 0.5 + 280 + 50,
-          y: startY + 100 + cardHeight + 10 + 15 + cardHeight + 60
-        },
-        deck: {
-          x: width * 0.5 + 420,
-          y: startY + 100 + cardHeight + 10 + 15 + cardHeight + 60
-        },
-        leaderDeck: {
-          x: width * 0.5 - 550,
-          y: startY + 100 + cardHeight + 10 + 15 + cardHeight + 60 + 50
-        },
-        base: {
-          x: width * 0.5 - 550,
-          y: startY + 70 + cardHeight + 10 + 15 + cardHeight + 60 + 50
-        },
-        // New row with 10 columns below existing zones
-        row2: this.generateRow2Slots(playerStartX, width, startY + 100, cardHeight)
-      },
-      // Battle area (center)
-      //battle: { x: width * 0.5, y: height * 0.45 },
-      // Hand area (bottom)
-      hand: { x: width * 0.5, y: height * 0.85 }
-    };
-
-    this.createZones();
+    console.log('[GameScene] createGameBoard called');
+    
+    // Initialize layout manager and generate layout
+    this.boardLayoutManager = new BoardLayoutManager(this);
+    this.layout = this.boardLayoutManager.createLayout();
+    
+    // Initialize zone manager and create zones
+    this.zoneManager = new ZoneManager(this, this.layout);
+    this.zoneManager.createZones();
+    
+    // Update legacy zone references for backward compatibility
+    this.playerZones = this.zoneManager.getPlayerZones();
+    this.opponentZones = this.zoneManager.getOpponentZones();
+    this.cardPreviewZone = this.zoneManager.cardPreviewZone;
+    
+    console.log('[GameScene] Board layout and zones created successfully');
   }
 
-  generateRow2Slots(playerStartX, width, startY, cardHeight) {
-    const slots = [];
-    const slotCount = 12;
-    const slotSpacing = 70; // Space between each slot
-    const rowY = startY + 100 + cardHeight + 10 + 15 + cardHeight + 70 + 80; // Below existing zones
-
-    // Calculate starting X to center the 10 slots
-    const totalWidth = (slotCount - 1) * slotSpacing;
-    const startX = (width * 0.5) - (totalWidth / 2) - 10;
-
-    // Generate 10 slot positions
-    for (let i = 0; i < slotCount; i++) {
-      slots.push({
-        x: startX + (i * slotSpacing),
-        y: rowY,
-        index: i
-      });
-    }
-
-    return slots;
-  }
-
-  generateOpponentRow2Slots(playerStartX, width, startY, cardHeight) {
-    const slots = [];
-    const slotCount = 12;
-    const slotSpacing = 70; // Space between each slot
-    const rowY = startY + 100 + cardHeight + 10 + 15 - 80; // Above existing opponent zones
-
-    // Calculate starting X to center the 12 slots
-    const totalWidth = (slotCount - 1) * slotSpacing;
-    const startX = (width * 0.5) - (totalWidth / 2) - 80;
-
-    // Generate 12 slot positions - REVERSED for opponent (right to left display)
-    for (let i = 0; i < slotCount; i++) {
-      slots.push({
-        x: startX + ((slotCount - 1 - i) * slotSpacing), // Reverse the X position calculation
-        y: rowY,
-        index: i
-      });
-    }
-
-    return slots;
-  }
-
+  // Legacy createZones method - now handled by ZoneManager
+  // This method is called from createGameBoard via the ZoneManager
   createZones() {
-
-    // Create opponent zones
-    this.opponentZones = {};
-    console.log('About to iterate over opponent zones');
-    const opponentEntries = Object.entries(this.layout.opponent);
-    console.log('Opponent entries:', opponentEntries);
-    opponentEntries.forEach(([zoneType, position]) => {
-      console.log('Processing zone:', zoneType);
-      if (zoneType === 'row2') {
-        // Create row2 slots as an array of zones
-        this.opponentZones[zoneType] = position.map((slot, index) => {
-          return GameSceneUtils.createZone(this, slot.x, slot.y, `row2_${index}`, false);
-        });
-      } else {
-        const zone = GameSceneUtils.createZone(this, position.x, position.y, zoneType, false);
-        this.opponentZones[zoneType] = zone;
-      }
-    });
-
-    // Create player zones
-    this.playerZones = {};
-    Object.entries(this.layout.player).forEach(([zoneType, position]) => {
-      if (zoneType === 'row2') {
-        // Create row2 slots as an array of zones
-        this.playerZones[zoneType] = position.map((slot, index) => {
-          return GameSceneUtils.createZone(this, slot.x, slot.y, `row2_${index}`, true);
-        });
-      } else {
-        const zone = GameSceneUtils.createZone(this, position.x, position.y, zoneType, true);
-        this.playerZones[zoneType] = zone;
-      }
-    });
-
-    Object.entries(this.layout.functionalArea).forEach(([zoneType, position]) => {
-      const zone = GameSceneUtils.createZone(this, position.x, position.y, zoneType, false);
-      if (zoneType === 'cardPreview') {
-        this.cardPreviewZone = zone;
-      }
-    });
-
-    // Add zone labels
+    console.log('[GameScene] createZones called - delegating to ZoneManager');
+    
+    // This method is now called through ZoneManager.createZones()
+    // Adding additional setup that wasn't moved to ZoneManager
     this.addZoneLabels();
-
-    // Create deck visualizations
     this.createDeckVisualizations();
-
-    // Create trash icons for both players
     this.createTrashIcons();
   }
 
