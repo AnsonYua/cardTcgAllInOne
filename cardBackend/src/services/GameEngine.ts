@@ -803,18 +803,109 @@ export class GameEngine {
         }
     }
     
+
+    /*
+    sample request
+    {
+        "type": "PLAYER_ACTION",
+        "playerId": "playerId_2",
+        "actionType": "attackUnit",
+        "attackerCardUid": "ST01-001_a5fcfa44-d212-4400-8c12-9a58fdbcac84",
+        "targetUnitUid": "ST01-005_be13f9a5-9fc9-4e3b-a9b2-fdf999d9f63d",
+        "targetSlotName": "slot4",
+        "targetPlayerId": "playerId_1",
+        "targetPilotUid": "ST01-013_20d620d9-242e-4aa8-b1b6-6847dff89461"
+    }
+    */
     private static handleAttackUnit(eventData: any, gameEnv: GameEnvironment): ExecutionResult {
-        console.log(`⚔️ Processing attackUnit action:`, eventData);
+        console.log(`⚔️ Processing attackUnit action:`, JSON.stringify(eventData));
         
-        // TODO: Implement attack unit logic
-        // - Validate attacking unit exists and can attack
-        // - Validate target unit exists and can be targeted
-        // - Process combat calculation
-        // - Apply damage and effects
-        // - Generate appropriate game events
-        
-        console.log('📝 TODO: Implement attackUnit logic in GameEngine');
-        return { success: true };
+        try {
+            const { 
+                playerId, 
+                attackerCardUid, 
+                targetUnitUid, 
+                targetSlotName, 
+                targetPlayerId, 
+                targetPilotUid 
+            } = eventData;
+            
+            // Get attacker and defender players
+            const attacker = gameEnv.getPlayer(playerId);
+            const defender = gameEnv.getPlayer(targetPlayerId);
+            
+            if (!attacker || !defender) {
+                return {
+                    success: false,
+                    error: 'Player not found'
+                };
+            }
+            
+            // Find attacker's slot and unit
+            const { slot: attackerSlot, unit: attackingUnit } = GameEngine.findSlotByCardUid(attacker, attackerCardUid);
+            
+            if (!attackerSlot || !attackingUnit) {
+                return {
+                    success: false,
+                    error: `Attacking unit with UID ${attackerCardUid} not found in any slot`
+                };
+            }
+            
+            console.log(`⚔️ Found attacking unit in ${attackerSlot}: ${attackingUnit.cardUid}`);
+            
+            // Find defender's target unit in specified slot
+            const defenderSlot = (defender.zones as any)[targetSlotName];
+            const targetUnit = defenderSlot?.unit;
+            
+            if (!targetUnit || targetUnit.cardUid !== targetUnitUid) {
+                return {
+                    success: false,
+                    error: `Target unit with UID ${targetUnitUid} not found in slot ${targetSlotName}`
+                };
+            }
+            
+            console.log(`🎯 Found target unit in ${targetSlotName}: ${targetUnit.cardUid}`);
+            
+            // Calculate attacker's total stats (unit + pilot if present)
+            const attackerStats = GameEngine.calculateCombinedStats(attacker, attackerSlot, attackingUnit);
+            
+            // Calculate defender's total stats (unit + pilot if present)
+            const defenderStats = GameEngine.calculateCombinedStats(defender, targetSlotName, targetUnit);
+            
+            console.log(`⚔️ Attacker total stats: AP=${attackerStats.totalAP}, HP=${attackerStats.totalHP}`);
+            console.log(`🛡️ Defender total stats: AP=${defenderStats.totalAP}, HP=${defenderStats.totalHP}`);
+            
+            // Calculate damage and remaining HP (ensure >= 0)
+            const attackerRemainingHP = Math.max(0, attackerStats.totalHP - defenderStats.totalAP);
+            const defenderRemainingHP = Math.max(0, defenderStats.totalHP - attackerStats.totalAP);
+            
+            console.log(`💥 Battle result: Attacker HP: ${attackerStats.totalHP} - ${defenderStats.totalAP} = ${attackerRemainingHP}`);
+            console.log(`💥 Battle result: Defender HP: ${defenderStats.totalHP} - ${attackerStats.totalAP} = ${defenderRemainingHP}`);
+            
+            // Handle attacker damage and destruction
+            const attackerDestroyed = GameEngine.handleUnitDamageAndDestruction(
+                gameEnv, playerId, attackerSlot, attackingUnit, 'Attacker', 
+                attackerRemainingHP, defenderStats.totalAP
+            );
+            
+            // Handle defender damage and destruction
+            const defenderDestroyed = GameEngine.handleUnitDamageAndDestruction(
+                gameEnv, targetPlayerId, targetSlotName, targetUnit, 'Defender', 
+                defenderRemainingHP, attackerStats.totalAP
+            );
+            
+            
+            console.log(`⚔️ Attack completed: Attacker ${attackerDestroyed ? 'DESTROYED' : 'SURVIVED'}, Defender ${defenderDestroyed ? 'DESTROYED' : 'SURVIVED'}`);
+            
+            return { success: true };
+            
+        } catch (error) {
+            console.error(`❌ Error in handleAttackUnit:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Attack unit execution failed'
+            };
+        }
     }
     
     private static handleAttackShieldArea(eventData: any, gameEnv: GameEnvironment): ExecutionResult {
@@ -1436,6 +1527,156 @@ export class GameEngine {
             
         } catch (error) {
             console.error(`❌ Error moving card ${cardUid} to trash:`, error);
+            return false;
+        }
+    }
+    
+    // ============ ATTACK UTILITIES ============
+    
+    /**
+     * Calculate combined stats (AP + HP) for a unit and its pilot
+     * @param player - The player who owns the units
+     * @param slotName - The slot name (slot1, slot2, etc.)
+     * @param unit - The unit card
+     * @returns Combined stats with totalAP and totalHP
+     */
+    private static calculateCombinedStats(player: any, slotName: string, unit: UnitZoneCard): { totalAP: number, totalHP: number } {
+        // Get unit stats
+        let totalAP = unit.currentAP || unit.cardData?.ap || 0;
+        let totalHP = unit.currentHP || unit.cardData?.hp || 0;
+        
+        console.log(`📊 Unit stats - AP: ${totalAP}, HP: ${totalHP}`);
+        
+        // Check for pilot in the same slot
+        const pilot = (player.zones as any)[slotName]?.pilot;
+        if (pilot) {
+            const pilotAP = pilot.currentAP || pilot.cardData?.ap || 0;
+            const pilotHP = pilot.currentHP || pilot.cardData?.hp || 0;
+            
+            totalAP += pilotAP;
+            totalHP += pilotHP;
+            
+            console.log(`👨‍✈️ Pilot stats - AP: ${pilotAP}, HP: ${pilotHP} (Combined: AP=${totalAP}, HP=${totalHP})`);
+        } else {
+            console.log(`👨‍✈️ No pilot found in ${slotName}`);
+        }
+        
+        return { totalAP, totalHP };
+    }
+    
+    /**
+     * Update unit HP after taking damage
+     * @param unit - The unit to update
+     * @param newHP - The new HP value
+     */
+    private static updateUnitHP(unit: UnitZoneCard, newHP: number): void {
+        unit.currentHP = Math.max(0, newHP);
+        console.log(`🩹 Updated unit HP to ${unit.currentHP}`);
+    }
+    
+    /**
+     * Update pilot HP after taking damage
+     * @param pilot - The pilot to update
+     * @param newHP - The new HP value
+     */
+    private static updatePilotHP(pilot: PilotZoneCard, newHP: number): void {
+        pilot.currentHP = Math.max(0, newHP);
+        console.log(`🩹 Updated pilot HP to ${pilot.currentHP}`);
+    }
+    
+    /**
+     * Handle unit damage, HP updates, and destruction logic
+     * @param gameEnv - Game environment
+     * @param playerId - Player who owns the unit
+     * @param slotName - The slot containing the unit
+     * @param unit - The unit to process
+     * @param unitLabel - Label for logging (e.g., 'Attacker', 'Defender')
+     * @param unitRemainingHP - The unit's remaining HP after damage
+     * @param incomingDamage - The damage being dealt to this unit's pilot
+     * @returns boolean - true if unit was destroyed, false if it survived
+     */
+    private static handleUnitDamageAndDestruction(
+        gameEnv: GameEnvironment, 
+        playerId: string, 
+        slotName: string, 
+        unit: UnitZoneCard, 
+        unitLabel: string,
+        unitRemainingHP: number, 
+        incomingDamage: number
+    ): boolean {
+        const player = gameEnv.getPlayer(playerId);
+        if (!player) {
+            console.error(`❌ Could not find player ${playerId}`);
+            return false;
+        }
+
+        if (unitRemainingHP <= 0) {
+            // Unit is destroyed
+            console.log(`💀 ${unitLabel} destroyed! Moving to trash...`);
+            GameEngine.moveCardToTrashFromSlot(gameEnv, playerId, slotName, unit, 'unit');
+            
+            // Also move pilot to trash if present
+            const pilot = (player.zones as any)[slotName]?.pilot;
+            if (pilot) {
+                GameEngine.moveCardToTrashFromSlot(gameEnv, playerId, slotName, pilot, 'pilot');
+            }
+            
+            return true; // Unit destroyed
+        } else {
+            // Unit survives - update HP
+            GameEngine.updateUnitHP(unit, unitRemainingHP);
+            
+            // Update pilot HP if present
+            const pilot = (player.zones as any)[slotName]?.pilot;
+            if (pilot) {
+                const pilotRemainingHP = Math.max(0, (pilot.currentHP || pilot.cardData?.hp || 0) - incomingDamage);
+                GameEngine.updatePilotHP(pilot, pilotRemainingHP);
+            }
+            
+            return false; // Unit survived
+        }
+    }
+
+    /**
+     * Move a card (unit or pilot) to trash area after being destroyed
+     * @param gameEnv - Game environment
+     * @param playerId - Player who owns the card
+     * @param slotName - The slot containing the card
+     * @param card - The card to move to trash (unit or pilot)
+     * @param cardType - Type of card ('unit' or 'pilot')
+     */
+    private static moveCardToTrashFromSlot(gameEnv: GameEnvironment, playerId: string, slotName: string, card: UnitZoneCard | PilotZoneCard, cardType: 'unit' | 'pilot'): boolean {
+        try {
+            const player = gameEnv.getPlayer(playerId);
+            if (!player || !player.zones) {
+                console.error(`❌ Could not find player ${playerId} or zones`);
+                return false;
+            }
+            
+            // Initialize trash area if it doesn't exist
+            if (!player.zones.trashArea) {
+                player.zones.trashArea = [];
+            }
+            
+            // Create trash card with card data
+            const trashCard = createZoneCard(card.cardUid, card.cardId, card.cardData, playerId);
+            player.zones.trashArea.push(trashCard);
+            
+            // Remove card from slot
+            const slot = (player.zones as any)[slotName];
+            if (slot) {
+                if (cardType === 'unit') {
+                    slot.unit = null;
+                } else if (cardType === 'pilot') {
+                    slot.pilot = null;
+                }
+            }
+            
+            console.log(`🗑️ ${cardType.charAt(0).toUpperCase() + cardType.slice(1)} ${card.cardUid} moved to trash from ${slotName}`);
+            return true;
+            
+        } catch (error) {
+            console.error(`❌ Error moving ${cardType} to trash:`, error);
             return false;
         }
     }
