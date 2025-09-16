@@ -1615,34 +1615,32 @@
                     ],
                     "shieldArea": [
                         {
-                            "cardUid": "ST01-016_fba4786e-2dd2-4f90-9698-1cfd0067715f",
-                            "cardId": "ST01-016",
+                            "cardUid": "ST01-010_fba4786e-2dd2-4f90-9698-1cfd0067715f",
+                            "cardId": "ST01-010",
                             "cardData": {
-                                "id": "ST01-016",
-                                "name": "Asticassia School of Technology, Earth House",
+                                "id": "ST01-010",
+                                "name": "Amuro Ray",
                                 "cardType": "shield",
-                                "color": "White",
-                                "level": 2,
+                                "color": "Blue",
+                                "level": 4,
                                 "cost": 1,
-                                "zone": [
-                                    "Space"
-                                ],
+                                "zone": [],
                                 "traits": [
-                                    "Academy",
-                                    "Stronghold"
+                                    "Earth Federation",
+                                    "White Base Team",
+                                    "Newtype"
                                 ],
                                 "link": [],
-                                "ap": 0,
-                                "hp": 5,
+                                "ap": 2,
+                                "hp": 1,
                                 "effects": {
                                     "description": [
-                                        "【Burst】Deploy this card.",
-                                        "【Deploy】Add 1 of your Shields to your hand.",
-                                        "【Activate･Main】Rest this Base：All friendly Link Units get AP+1 during this turn."
+                                        "【Burst】Add this card to your hand.",
+                                        "【When Paired】Choose 1 enemy Unit with 5 or less HP. Rest it."
                                     ],
                                     "rules": [
                                         {
-                                            "effectId": "burst_deploy",
+                                            "effectId": "burst_add_to_hand",
                                             "type": "triggered",
                                             "trigger": "BURST_CONDITION",
                                             "target": {
@@ -1650,59 +1648,34 @@
                                                 "scope": "self"
                                             },
                                             "effect": {
-                                                "action": "deploy",
-                                                "duration": "instant"
-                                            }
-                                        },
-                                        {
-                                            "effectId": "deploy_shield_to_hand",
-                                            "type": "triggered",
-                                            "trigger": "ENTERS_PLAY",
-                                            "target": {
-                                                "type": "card",
-                                                "scope": "self_shield"
-                                            },
-                                            "effect": {
                                                 "action": "addToHand",
-                                                "parameters": {
-                                                    "count": 1,
-                                                    "from": "shield"
-                                                },
                                                 "duration": "instant"
                                             }
                                         },
                                         {
-                                            "effectId": "activate_boost_link_units",
-                                            "type": "activated",
-                                            "timing": [
-                                                "MAIN_PHASE"
-                                            ],
-                                            "cost": {
-                                                "tap": "self"
-                                            },
+                                            "effectId": "paired_rest_medium_hp",
+                                            "type": "triggered",
+                                            "trigger": "PAIRING_COMPLETE",
                                             "target": {
                                                 "type": "unit",
-                                                "scope": "self_all",
+                                                "scope": "opponent",
                                                 "filters": {
-                                                    "linkStatus": "linked"
-                                                }
+                                                    "hp": "<=5"
+                                                },
+                                                "count": 1
                                             },
                                             "effect": {
-                                                "action": "modifyAP",
-                                                "parameters": {
-                                                    "modifier": "+1"
-                                                },
-                                                "duration": "turn"
+                                                "action": "rest",
+                                                "duration": "permanent"
                                             }
                                         }
                                     ]
                                 },
-                                "originalCardType": "base"
+                                "originalCardType": "pilot"
                             },
                             "placedAt": 1757854884783,
                             "placedBy": "playerId_2",
-                            "isRested": false,
-                            "originalCardType": "base"
+                            "isRested": false
                         },
                         {
                             "cardUid": "ST01-013_a3466e63-bec3-4dc0-9c9b-11d7e77f4637",
