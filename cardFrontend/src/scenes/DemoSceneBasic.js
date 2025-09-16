@@ -60,7 +60,7 @@ export default class DemoSceneBasic extends GameScene {
         console.log('Polling response received:', response);
         
         // Check for hand UID changes and set scenario flag if needed (before state update)
-        //this.checkHandUIDChangesAndSetScenario(response.gameEnv, 'Polling');
+        //this.gameStateManager.checkHandUIDChangesAndSetScenario(response.gameEnv, 'Polling', this.handContainer, { value: this.isSetScenoria });
         
         this.gameStateManager.updateGameEnv(response.gameEnv);
         this.updateGameState();

@@ -385,7 +385,7 @@ export default class DemoScene extends DemoSceneBasic {
         // Update game state if returned in response
         if (response.gameEnv) {
           // Check for hand UID changes and set scenario flag if needed (before state update)
-          this.checkHandUIDChangesAndSetScenario(response.gameEnv, 'Attack');
+          this.gameStateManager.checkHandUIDChangesAndSetScenario(response.gameEnv, 'Attack', this.handContainer, { value: this.isSetScenoria });
   
           this.gameStateManager.updateGameEnv(response.gameEnv);
           this.updateGameState();
