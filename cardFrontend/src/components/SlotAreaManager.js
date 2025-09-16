@@ -71,7 +71,7 @@ export default class SlotAreaManager {
       // Slot has unit - create or update card
       if (!slotCards.unit) {
         console.log(`Creating ${playerType} ${slotName} unit card:`, unitData.cardId);
-        const card = this.createSlotCard(unitData, slotPosition.x, slotPosition.y, slotName, 'unit');
+        const card = this.createSlotCard(unitData, slotPosition.x, slotPosition.y, slotName, 'unit', playerType);
         slotCards.unit = card;
       } else {
         console.log(`Updating existing ${playerType} ${slotName} unit card`);
@@ -94,7 +94,7 @@ export default class SlotAreaManager {
       console.log("pilotData ", JSON.stringify(pilotData))
       if (!slotCards.pilot) {
         console.log(`Creating ${playerType} ${slotName} pilot card:`, pilotData.cardId);
-        const card = this.createSlotCard(pilotData, slotPosition.x, pilotY, slotName, 'pilot');
+        const card = this.createSlotCard(pilotData, slotPosition.x, pilotY, slotName, 'pilot', playerType);
         slotCards.pilot = card;
       } else {
         console.log(`Updating existing ${playerType} ${slotName} pilot card`);
@@ -110,7 +110,7 @@ export default class SlotAreaManager {
     }
   }
 
-  createSlotCard(cardData, x, y, slotName, cardType = 'unit') {
+  createSlotCard(cardData, x, y, slotName, cardType = 'unit', playerType = 'player') {
     try {
       // Create card using the existing Card component with preview images for better performance
       const card = new Card(this.scene, x, y, cardData, { usePreview: true });
@@ -119,9 +119,11 @@ export default class SlotAreaManager {
       card.setInteractive(true);
       
       // CRITICAL: Set zone placement properties for hover detection
+      const isPlayerZone = playerType === 'player'; // True for player slots, false for opponent slots
       card.isInZone = true;  // Mark card as placed in zone (enables zone-card-hover events)
+      card.setZonePlacement(true, slotName, isPlayerZone); // inZone=true, zoneType=slotName, isPlayerZone based on playerType
       card.zonePlacement = {
-        isPlayerZone: true,  // Assuming these are player slots
+        isPlayerZone: isPlayerZone,  // Correctly set based on playerType
         zoneType: slotName,  // slot1, slot2, etc.
         isPlaced: true
       };
