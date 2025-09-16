@@ -634,7 +634,6 @@ export class GameLogic {
             },
             notificationQueue: [],
             lastEventId: 0,
-            pendingCardSelections: {},
             playSequence: {
                 globalSequence: 2,
                 plays: [

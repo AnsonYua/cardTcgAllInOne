@@ -682,6 +682,7 @@ export class GameEngine {
             console.log(`✅ Card ${eventData.cardUID} successfully placed for player ${eventData.playerId}`);
             
             // Check for Deploy effects
+            //it should use evenData.cardUID.split.cardid to get cardData instead of passing eventData.cardData)
             const deployEffects = this.checkForDeployEffects(eventData.cardData);
             if (deployEffects.length > 0) {
                 console.log(`🚀 Deploy effects detected: ${deployEffects.length} effects for card ${eventData.cardId}`);
@@ -708,6 +709,7 @@ export class GameEngine {
      * Check if a card has Deploy effects (ENTERS_PLAY triggers)
      */
     private static checkForDeployEffects(cardData: any): any[] {
+        console.log("checkForDeployEffects 1111 " ,JSON.stringify(cardData))
         if (!cardData.effects?.rules) return [];
         
         const deployEffects = cardData.effects.rules.filter((rule: any) => 

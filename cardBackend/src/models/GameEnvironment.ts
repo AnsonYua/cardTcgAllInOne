@@ -53,8 +53,8 @@ export class GameEnvironment {
     public notificationQueue?: any[];
     public lastEventId?: number;
     
-    // Card selection system
-    public pendingCardSelections?: { [selectionId: string]: any };
+    // Card selection system - REMOVED: pendingCardSelections no longer needed
+    // Deploy effects now process automatically with smart target selection
     
     // Legacy compatibility (removed - no longer using EventManager)
 
@@ -76,7 +76,6 @@ export class GameEnvironment {
         this.maxEventsPerCycle = 50;
         
         // Initialize frontend notification system
-        this.pendingCardSelections = {};
         this.notificationQueue = [];
         this.lastEventId = 0;
     }
@@ -378,7 +377,6 @@ export class GameEnvironment {
             maxEventsPerCycle: this.maxEventsPerCycle,
             
             // Frontend notification system
-            pendingCardSelections: this.pendingCardSelections,
             notificationQueue: this.notificationQueue,
             lastEventId: this.lastEventId,
             
@@ -410,7 +408,6 @@ export class GameEnvironment {
         gameEnv.maxEventsPerCycle = data.maxEventsPerCycle || 50;
         
         // Frontend notification system
-        gameEnv.pendingCardSelections = data.pendingCardSelections || {};
         gameEnv.notificationQueue = data.notificationQueue || [];
         gameEnv.lastEventId = data.lastEventId || 0;
         
