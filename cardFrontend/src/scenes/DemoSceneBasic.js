@@ -58,8 +58,11 @@ export default class DemoSceneBasic extends GameScene {
       
       if (response && response.gameEnv) {
         console.log('Polling response received:', response);
-        this.gameStateManager.updateGameEnv(response.gameEnv);
         
+        // Check for hand UID changes and set scenario flag if needed (before state update)
+        //this.checkHandUIDChangesAndSetScenario(response.gameEnv, 'Polling');
+        
+        this.gameStateManager.updateGameEnv(response.gameEnv);
         this.updateGameState();
         
         console.log('Manual polling completed successfully');
@@ -77,5 +80,7 @@ export default class DemoSceneBasic extends GameScene {
       }
     }
   }
+
+
 
 }

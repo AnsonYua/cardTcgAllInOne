@@ -681,9 +681,8 @@ export class GameEngine {
             // ✅ Card placement successful - Check for Deploy effects (ENTERS_PLAY triggers)
             console.log(`✅ Card ${eventData.cardUID} successfully placed for player ${eventData.playerId}`);
             
-            // Check for Deploy effects
-            //it should use evenData.cardUID.split.cardid to get cardData instead of passing eventData.cardData)
-            const deployEffects = this.checkForDeployEffects(eventData.cardData);
+            // Check for Deploy effects using cardUID to extract cardId and fetch cardData from database
+            const deployEffects = this.checkForDeployEffects(eventData.cardUID);
             if (deployEffects.length > 0) {
                 console.log(`🚀 Deploy effects detected: ${deployEffects.length} effects for card ${eventData.cardId}`);
                 
@@ -706,17 +705,35 @@ export class GameEngine {
     }
     
     /**
-     * Check if a card has Deploy effects (ENTERS_PLAY triggers)
+     * Check if a card has Deploy effects (ENTERS_PLAY triggers) using cardUID to extract cardId and fetch card data
      */
-    private static checkForDeployEffects(cardData: any): any[] {
-        console.log("checkForDeployEffects 1111 " ,JSON.stringify(cardData))
-        if (!cardData.effects?.rules) return [];
+    private static checkForDeployEffects(cardUID: string): any[] {
+        console.log("checkForDeployEffects using cardUID:", cardUID);
+        
+        // Extract cardId from cardUID (format: "cardId_timestamp")
+        const cardId = cardUID.split('_')[0];
+        console.log("Extracted cardId:", cardId);
+        
+        // Get card data from database
+        const cardData = GameEngine.getCardDetails(cardId);
+        if (!cardData) {
+            console.log(`⚠️ No card data found for cardId: ${cardId}`);
+            return [];
+        }
+        
+        console.log("Retrieved cardData:", JSON.stringify(cardData));
+        
+        // Check if card has effects and rules
+        if (!cardData.effects || !cardData.effects.rules || !Array.isArray(cardData.effects.rules)) {
+            console.log(`📝 No deploy effects found - card ${cardId} has no effects.rules array`);
+            return [];
+        }
         
         const deployEffects = cardData.effects.rules.filter((rule: any) => 
             rule.type === 'triggered' && rule.trigger === 'ENTERS_PLAY'
         );
         
-        console.log(`🔍 Deploy effect check for card ${cardData.cardId}: found ${deployEffects.length} effects`);
+        console.log(`🔍 Deploy effect check for card ${cardId}: found ${deployEffects.length} effects`);
         return deployEffects;
     }
     

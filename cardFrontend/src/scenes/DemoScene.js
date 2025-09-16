@@ -295,6 +295,7 @@ export default class DemoScene extends DemoSceneBasic {
   }
 
 
+
   // Demo mode cleanup
   destroy() {
     console.log('DemoScene cleanup');
@@ -315,7 +316,14 @@ export default class DemoScene extends DemoSceneBasic {
   }
 
   async setEnvironment() {
+    // Test the hand count comparison logic
+    console.log('🧪 Testing hand count comparison logic...');
+    
+    console.log('Current game state before test:', this.gameStateManager.getGameState());
+    console.log('Current hand container count:', this.handContainer ? this.handContainer.list.length : 0);
   
+    
+    console.log('isSetScenoria after test:', this.isSetScenoria);
   }
   async opponentAttack(){
     try {
@@ -376,6 +384,9 @@ export default class DemoScene extends DemoSceneBasic {
         
         // Update game state if returned in response
         if (response.gameEnv) {
+          // Check for hand UID changes and set scenario flag if needed (before state update)
+          this.checkHandUIDChangesAndSetScenario(response.gameEnv, 'Attack');
+  
           this.gameStateManager.updateGameEnv(response.gameEnv);
           this.updateGameState();
         }
