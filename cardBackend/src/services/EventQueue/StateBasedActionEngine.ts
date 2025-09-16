@@ -31,7 +31,6 @@ export interface GameStateViolation {
 export class StateBasedActionEngine {
     private gameEnv: GameEnvironment;
     private checkEnabled: boolean = true;
-    private repairAbilitiesCheckedThisCycle: boolean = false;
     private processedRepairActions: Set<string> = new Set();
     
     constructor(gameEnv: GameEnvironment) {
@@ -47,8 +46,15 @@ export class StateBasedActionEngine {
     checkForStateBasedActions(): StateBasedAction[] {
         if (!this.checkEnabled) return [];
         
-        // Reset repair abilities flag at the start of each cycle
-        this.repairAbilitiesCheckedThisCycle = false;
+        // Clean up old repair actions from previous turns (keep only current turn)
+        const currentTurn = this.gameEnv.currentTurn;
+        const keysToRemove: string[] = [];
+        for (const key of this.processedRepairActions) {
+            if (!key.includes(`_turn_${currentTurn}`)) {
+                keysToRemove.push(key);
+            }
+        }
+        keysToRemove.forEach(key => this.processedRepairActions.delete(key));
         
         const actions: StateBasedAction[] = [];
         
@@ -177,13 +183,31 @@ export class StateBasedActionEngine {
             
             // First, check for repair abilities for the current player (only once per cycle)
             const currentPlayerId = this.gameEnv.currentPlayer;
-            if (currentPlayerId && !this.repairAbilitiesCheckedThisCycle) {
-                console.log(`🩹 Checking repair abilities for player ${currentPlayerId}`);
-                const repairActions = this.checkRepairAbilities(currentPlayerId);
-                actions.push(...repairActions);
-                this.repairAbilitiesCheckedThisCycle = true;
-            } else if (this.repairAbilitiesCheckedThisCycle) {
-                console.log(`🩹 Repair abilities already checked this cycle, skipping...`);
+            if (currentPlayerId) {
+                const currentPlayer = this.gameEnv.players[currentPlayerId];
+                if (!currentPlayer) {
+                    console.error(`❌ Current player ${currentPlayerId} not found in gameEnv.players`);
+                    return actions;
+                }
+                
+                // Initialize zones if needed
+                if (!currentPlayer.zones) {
+                    console.log(`🔧 Initializing zones for player ${currentPlayerId}`);
+                    currentPlayer.initializeZones();
+                }
+                
+                const hasCheckedRepairAbilities = currentPlayer.zones.repairAbilitiesCheckedThisCycle || false;
+                
+                if (!hasCheckedRepairAbilities) {
+                    console.log(`🩹 Checking repair abilities for player ${currentPlayerId}`);
+                    const repairActions = this.checkRepairAbilities(currentPlayerId);
+                    actions.push(...repairActions);
+                    
+                    // Set the flag to prevent repeated checking
+                    currentPlayer.zones.repairAbilitiesCheckedThisCycle = true;
+                } else {
+                    console.log(`🩹 Repair abilities already checked this cycle for player ${currentPlayerId}, skipping...`);
+                }
             }
             
             // Calculate next player
@@ -329,25 +353,36 @@ export class StateBasedActionEngine {
                     // Look for repair abilities
                     cardData.effects.rules.forEach((effect: any) => {
                         if (effect.trigger === 'END_OF_TURN' && effect.effect.action === 'heal') {
-                            console.log(`🩹 Found repair ability: ${effect.effectId} on ${unit.cardId}`);
+                            // Create a unique key for this repair action (per turn)
+                            const repairKey = `${unit.cardUid}_${effect.effectId}_turn_${this.gameEnv.currentTurn}`;
                             
-                            actions.push({
-                                actionId: `repair_${unit.cardUid}_${Date.now()}`,
-                                type: EventType.TRIGGER_HEALING,
-                                priority: 15, // High priority - execute before next player transition
-                                description: `Execute ${effect.effectId} healing for ${unit.cardId}`,
-                                affectedCards: [unit.cardId],
-                                affectedPlayers: [playerId],
-                                autoExecute: true,
-                                data: {
-                                    effectType: 'repair',
-                                    effectId: effect.effectId,
-                                    cardId: unit.cardId,
-                                    cardUid: unit.cardUid,
-                                    playerId: playerId,
-                                    healAmount: effect.effect.parameters.amount
-                                }
-                            });
+                            // Only add if we haven't processed this repair action this turn
+                            if (!this.processedRepairActions.has(repairKey)) {
+                                console.log(`🩹 Found repair ability: ${effect.effectId} on ${unit.cardId}`);
+                                
+                                // Mark this repair action as processed
+                                this.processedRepairActions.add(repairKey);
+                                
+                                actions.push({
+                                    actionId: `repair_${unit.cardUid}_${Date.now()}`,
+                                    type: EventType.TRIGGER_HEALING,
+                                    priority: 15, // High priority - execute before next player transition
+                                    description: `Execute ${effect.effectId} healing for ${unit.cardId}`,
+                                    affectedCards: [unit.cardId],
+                                    affectedPlayers: [playerId],
+                                    autoExecute: true,
+                                    data: {
+                                        effectType: 'repair',
+                                        effectId: effect.effectId,
+                                        cardId: unit.cardId,
+                                        cardUid: unit.cardUid,
+                                        playerId: playerId,
+                                        healAmount: effect.effect.parameters.amount
+                                    }
+                                });
+                            } else {
+                                console.log(`🩹 Repair ability ${effect.effectId} already processed this turn for ${unit.cardId}`);
+                            }
                         }
                     });
                     console.log("data for healing event ", JSON.stringify(unit.cardId))

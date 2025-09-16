@@ -37,6 +37,7 @@ export interface PlayerZones {
     shieldArea: ZoneCard[];    // Any card from deck can be placed as shield
     energyArea: EnergyZoneCard[];  // Energy cards for resource management
     trashArea: ZoneCard[];     // Discarded/destroyed cards
+    repairAbilitiesCheckedThisCycle?: boolean;
 }
 
 // ============ ZONE UTILITY FUNCTIONS ============
@@ -231,7 +232,7 @@ export class Player {
 
     // ============ ZONE INITIALIZATION ============
 
-    private initializeZones(): void {
+    public initializeZones(): void {
         this.zones = {
             slot1: {},
             slot2: {},
@@ -242,7 +243,8 @@ export class Player {
             base: [],
             shieldArea: [],
             energyArea: [],
-            trashArea: []
+            trashArea: [],
+            repairAbilitiesCheckedThisCycle: false
         };
     }
 
@@ -540,6 +542,9 @@ export class Player {
                 slotZone.unit.isFirstPlay = false; // No longer first turn
             }
         });
+        
+        // Reset repair abilities flag for new turn
+        this.zones.repairAbilitiesCheckedThisCycle = false;
     }
 
     public getAllUnits(): UnitZoneCard[] {
