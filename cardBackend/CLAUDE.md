@@ -289,7 +289,7 @@ await testHelper.acknowledgeEvents(gameId, eventIds);
 **Card Action Events:**
 - `CARD_PLAYED` - Card placed with full card details and zone
 - `ZONE_FILLED` - Specific zone occupied (top/left/right/help/sp)
-- `CARD_EFFECT_TRIGGERED` - Card effect activated with effect type
+- `TRIGGER_HEALING` - Healing effect triggered (repair abilities)
 - `CARD_SELECTION_REQUIRED` - Search effect needs player input
 - `CARD_SELECTION_COMPLETED` - Player completed card selection
 

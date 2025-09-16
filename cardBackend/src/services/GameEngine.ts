@@ -162,6 +162,9 @@ export class GameEngine {
                 case EventType.DEPLOY_EFFECT_TRIGGERED:
                     return GameEngine.executeDeployEffect(event, gameEnv);
                     
+                case EventType.TRIGGER_HEALING:
+                    return GameEngine.executeCardEffectTriggered(event, gameEnv);
+                    
                 default:
                     console.log(`🎯 Processing ${event.type} event - delegating to existing game logic`);
                     return { success: true };
@@ -1282,6 +1285,62 @@ export class GameEngine {
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Deploy effect execution failed'
+            };
+        }
+    }
+    
+    /**
+     * Execute TRIGGER_HEALING event - handles repair and other healing effects
+      {
+    "id": "state_1758034801142_0.10362686261607723",
+    "type": "TRIGGER_HEALING",
+    "status": "DECLARED",
+    "priority": 1,
+    "timestamp": 1758034801142,
+    "data": {
+      "actionId": "repair_ST01-001_a5fcfa44-d212-4400-8c12-9a58fdbcac84_1758034801142",
+      "description": "Execute repair_2 healing for ST01-001",
+      "affectedCards": ["ST01-001"],
+      "affectedPlayers": ["playerId_2"]
+    }
+  }
+    */
+    private static executeCardEffectTriggered(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+        console.log(`🎯 Executing TRIGGER_HEALING event: ${event.id}`);
+        
+        try {
+            // Check if this is a repair-related healing event
+            const isRepairEvent = event.data.description?.includes('healing') || 
+                                 event.data.effectType === 'repair' ||
+                                 event.data.actionId?.includes('repair');
+            
+            if (isRepairEvent) {
+                console.log(`🩹 Processing repair healing event for cards: ${event.data.affectedCards || 'unknown'}`);
+                
+                // Use CardEffect to handle repair
+                const CardEffect = require('./CardEffect').CardEffect;
+                const result = CardEffect.executeRepairEffect(gameEnv, event.data);
+                
+                if (!result.success) {
+                    console.log(`❌ Repair effect failed: ${result.error}`);
+                    return {
+                        success: false,
+                        error: result.error
+                    };
+                }
+                
+                console.log(`✅ Repair effect executed: ${result.message}`);
+                return { success: true };
+            } else {
+                console.log(`⚠️ Unknown TRIGGER_HEALING event type. Event data:`, event.data);
+                return { success: true };
+            }
+            
+        } catch (error) {
+            console.error(`❌ Error in executeCardEffectTriggered:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Card effect execution failed'
             };
         }
     }

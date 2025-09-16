@@ -168,7 +168,14 @@ export class StateBasedActionEngine {
         
         // Check if we're in END_PHASE and need to transition to next player
         if (this.gameEnv.phase === GamePhase.END_PHASE) {
-            console.log(`🔄 END_PHASE detected - checking for next player transition`);
+            console.log(`🔄 END_PHASE detected - checking for repair abilities and next player transition`);
+            
+            // First, check for repair abilities for the current player
+            const currentPlayerId = this.gameEnv.currentPlayer;
+            if (currentPlayerId) {
+                const repairActions = this.checkRepairAbilities(currentPlayerId);
+                actions.push(...repairActions);
+            }
             
             // Calculate next player
             const nextPlayerId = this.gameEnv.currentPlayer === this.gameEnv.playerId_1 
@@ -286,6 +293,75 @@ export class StateBasedActionEngine {
         console.log('🔍 Checking for illegal game states');
         
         return actions;
+    }
+    
+    /**
+     * Check for repair abilities for the specified player
+     */
+    private checkRepairAbilities(playerId: string): StateBasedAction[] {
+        const actions: StateBasedAction[] = [];
+        
+        const player = this.gameEnv.players[playerId];
+        if (!player || !player.zones) {
+            return actions;
+        }
+        
+        // Check all slot zones for units with repair abilities
+        const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'] as const;
+        
+        for (const slot of slotZones) {
+            const slotZone = (player.zones as any)[slot];
+            if (slotZone?.unit) {
+                const unit = slotZone.unit;
+                const cardData = this.getCardData(unit.cardId);
+                
+                if (cardData && cardData.effects && cardData.effects.rules) {
+                    // Look for repair abilities
+                    cardData.effects.rules.forEach((effect: any) => {
+                        if (effect.trigger === 'END_OF_TURN' && effect.effect.action === 'heal') {
+                            console.log(`🩹 Found repair ability: ${effect.effectId} on ${unit.cardId}`);
+                            
+                            actions.push({
+                                actionId: `repair_${unit.cardUid}_${Date.now()}`,
+                                type: EventType.TRIGGER_HEALING,
+                                priority: 15, // High priority - execute before next player transition
+                                description: `Execute ${effect.effectId} healing for ${unit.cardId}`,
+                                affectedCards: [unit.cardId],
+                                affectedPlayers: [playerId],
+                                autoExecute: true,
+                                data: {
+                                    effectType: 'repair',
+                                    effectId: effect.effectId,
+                                    cardId: unit.cardId,
+                                    cardUid: unit.cardUid,
+                                    playerId: playerId,
+                                    healAmount: effect.effect.parameters.amount
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        }
+        
+        if (actions.length > 0) {
+            console.log(`🩹 Found ${actions.length} repair abilities for player ${playerId}`);
+        }
+        
+        return actions;
+    }
+    
+    /**
+     * Get card data helper method
+     */
+    private getCardData(cardId: string): any {
+        try {
+            const GameEngine = require('../GameEngine');
+            return GameEngine.GameEngine.getCardDetails(cardId);
+        } catch (error) {
+            console.error(`❌ Error loading card data for ${cardId}:`, error);
+            return null;
+        }
     }
     
     

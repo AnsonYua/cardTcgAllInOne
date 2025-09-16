@@ -144,7 +144,7 @@ export interface CostPaidEvent extends BaseGameEvent {
 // ============ TRIGGERED ABILITY EVENTS ============
 
 export interface AbilityTriggeredEvent extends BaseGameEvent {
-    type: EventType.CARD_EFFECT_TRIGGERED;
+    type: EventType.TRIGGER_HEALING;
     data: {
         abilityId: string;
         sourceCardId: string;
@@ -157,7 +157,7 @@ export interface AbilityTriggeredEvent extends BaseGameEvent {
 }
 
 export interface AbilityActivatedEvent extends BaseGameEvent {
-    type: EventType.CARD_EFFECT_TRIGGERED;
+    type: EventType.TRIGGER_HEALING;
     data: {
         abilityId: string;
         sourceCardId: string;
@@ -169,7 +169,7 @@ export interface AbilityActivatedEvent extends BaseGameEvent {
 }
 
 export interface AbilityResolvedEvent extends BaseGameEvent {
-    type: EventType.CARD_EFFECT_TRIGGERED;
+    type: EventType.TRIGGER_HEALING;
     data: {
         abilityId: string;
         sourceCardId: string;
@@ -181,7 +181,7 @@ export interface AbilityResolvedEvent extends BaseGameEvent {
 // ============ COMBAT EVENTS ============
 
 export interface AttackDeclaredEvent extends BaseGameEvent {
-    type: EventType.CARD_EFFECT_TRIGGERED;
+    type: EventType.TRIGGER_HEALING;
     data: {
         attackerId: string;
         attackerUid: string;
@@ -192,7 +192,7 @@ export interface AttackDeclaredEvent extends BaseGameEvent {
 }
 
 export interface DamageDealtEvent extends BaseGameEvent {
-    type: EventType.CARD_EFFECT_TRIGGERED;
+    type: EventType.TRIGGER_HEALING;
     data: {
         sourceId: string;
         targetId: string;
@@ -400,7 +400,7 @@ export class EventFactory {
     ): AbilityTriggeredEvent {
         return {
             id: `ability_triggered_${++this.eventIdCounter}_${Date.now()}`,
-            type: EventType.CARD_EFFECT_TRIGGERED,
+            type: EventType.TRIGGER_HEALING,
             status: EventStatus.DECLARED,
             priority: EventPriority.HIGH,
             sourceId: sourceCardId,
@@ -420,7 +420,7 @@ export class EventFactory {
     ): AbilityActivatedEvent {
         return {
             id: `ability_activated_${++this.eventIdCounter}_${Date.now()}`,
-            type: EventType.CARD_EFFECT_TRIGGERED,
+            type: EventType.TRIGGER_HEALING,
             status: EventStatus.DECLARED,
             priority: EventPriority.NORMAL,
             sourceId: sourceCardId,

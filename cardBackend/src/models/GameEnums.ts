@@ -53,7 +53,7 @@ export enum EventType {
     
     // Card events
     CARD_ENTERS_PLAY = 'CARD_ENTERS_PLAY',
-    CARD_EFFECT_TRIGGERED = 'CARD_EFFECT_TRIGGERED',
+    TRIGGER_HEALING = 'TRIGGER_HEALING',
     
     // Player events
     PLAYER_CHOICE_RESOLVED = 'PLAYER_CHOICE_RESOLVED',
