@@ -229,67 +229,14 @@ export default class CardActionHandler {
      * Show error message to user
      */
     showErrorMessage(message) {
-        // Remove existing error message
-        if (this.gameScene.errorMessageText) {
-            this.gameScene.errorMessageText.destroy();
-        }
-        
-        // Create new error message text
-        const { width } = this.gameScene.cameras.main;
-        this.gameScene.errorMessageText = this.gameScene.add.text(width / 2, 120, message, {
-            fontSize: '18px',
-            fontFamily: 'Arial',
-            fill: '#FF6B6B',
-            align: 'center',
-            stroke: '#000000',
-            strokeThickness: 2
-        });
-        this.gameScene.errorMessageText.setOrigin(0.5);
-        
-        // Set high depth to ensure error messages appear above all game elements (leader cards use depth 1001)
-        this.gameScene.errorMessageText.setDepth(2000);
-        
-        // Auto-hide after 4 seconds
-        this.gameScene.time.delayedCall(4000, () => {
-            if (this.gameScene.errorMessageText) {
-                this.gameScene.errorMessageText.destroy();
-                this.gameScene.errorMessageText = null;
-            }
-        });
+        this.gameScene.showErrorMessage(message);
     }
 
     /**
      * Set UI loading state during API calls
      */
     setUILoadingState(isLoading) {
-        if (isLoading) {
-            // Create loading indicator if it doesn't exist
-            if (!this.gameScene.loadingIndicator) {
-                const { width, height } = this.gameScene.cameras.main;
-                this.gameScene.loadingIndicator = this.gameScene.add.text(width / 2, height / 2, 'Processing...', {
-                    fontSize: '24px',
-                    fontFamily: 'Arial',
-                    fill: '#FFD700',
-                    align: 'center',
-                    stroke: '#000000',
-                    strokeThickness: 3
-                });
-                this.gameScene.loadingIndicator.setOrigin(0.5);
-                this.gameScene.loadingIndicator.setDepth(1000); // Ensure it's on top
-            }
-            this.gameScene.loadingIndicator.setVisible(true);
-            
-            // Disable input during loading
-            this.gameScene.input.enabled = false;
-        } else {
-            // Hide loading indicator
-            if (this.gameScene.loadingIndicator) {
-                this.gameScene.loadingIndicator.setVisible(false);
-            }
-            
-            // Re-enable input
-            this.gameScene.input.enabled = true;
-        }
+        this.gameScene.setUILoadingState(isLoading);
     }
 
     /**
@@ -768,10 +715,7 @@ export default class CardActionHandler {
      * Show success message (similar to showErrorMessage but with success styling)
      */
     showSuccessMessage(message) {
-        console.log('SUCCESS:', message);
-        // TODO: Implement success message UI similar to error message
-        // For now, use the existing error message system but with success styling
-        this.showErrorMessage(message);
+        this.gameScene.showSuccessMessage(message);
     }
 
 }

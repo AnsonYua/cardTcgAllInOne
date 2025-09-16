@@ -81,6 +81,30 @@ export default class DemoSceneBasic extends GameScene {
     }
   }
 
+  async simulatePlayer2Redraw() {
+    try {
+      const gameState = this.gameStateManager.getGameState();
+      const gameId = gameState.gameId;
 
+      console.log('Debug: gameId:', gameId);
+
+      if (!gameId) {
+        throw new Error('No gameId found. Make sure demo was started from menu (creates game automatically).');
+      }
+
+      // Backend already knows player2Id from joinRoom call, so we can directly use 'playerId_2'
+      const player2Id = 'playerId_2';
+
+      console.log('Debug: Using player2Id:', player2Id);
+
+      // Simulate player 2 calling redraw (startReady with wantRedraw = true)
+      await this.apiManager.startReady(player2Id, gameId, true);
+
+      this.showRoomStatus('Simulated Player 2 redraw (ready with redraw=true).');
+    } catch (error) {
+      console.error('Failed to simulate player 2 redraw:', error);
+      this.showRoomStatus('Failed to simulate player 2 redraw: ' + error.message);
+    }
+  }
 
 }

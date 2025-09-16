@@ -48,7 +48,7 @@ The game uses Phaser 3 scenes with state management integration:
 src/
 ├── scenes/           # Phaser scene classes (6 total)
 ├── components/       # Reusable UI components (Card.js, ShuffleAnimationManager.js)
-├── managers/         # Game state and API managers (GameStateManager.js, APIManager.js)
+├── managers/         # Game state and API managers (GameStateManager.js, APIManager.js, UIMessageManager.js, ZoneManager.js, BoardLayoutManager.js, CardInteractionManager.js, ResourceManager.js)
 ├── config/          # Game configuration (gameConfig.js, cardConfig.js)
 ├── assets/          # Images and card artwork (organized by type: character/, leader/, utilityCard/)
 ├── mock/            # Mock data for demo mode (handCards.json)
@@ -68,7 +68,7 @@ gameState = {
     phase: string,           // Current game phase (setup/main/sp/battle/cleanup)
     currentPlayer: string,   // Active player ID
     players: {},            // Player data and hands
-    zones: {},              // Card placement zones (TOP/LEFT/RIGHT/HELP/SP)
+    zones: {},              // Card placement zones (slot1-6, leaderDeck, deck, base)
     notificationQueue: [],  // Unprocessed events
     pendingCardSelections: {}, // Card selection workflows
     victoryPoints: {},      // Current VP totals
@@ -87,8 +87,18 @@ gameState = {
 
 #### **Component-Based Design**
 - **Card Component** (`src/components/Card.js`): Sophisticated interactive card system with drag-and-drop, face-down mechanics, zone compatibility validation, and visual states
-- **Zone System**: TOP/LEFT/RIGHT/HELP/SP zones with different card type compatibility
+- **Zone System**: Modern slot-based zones (slot1-6, leaderDeck, deck, base) with flexible card placement
 - **Animation System**: Smooth transitions using Phaser tweens for all game actions
+
+#### **Manager Pattern Architecture**
+- **GameStateManager** (`src/managers/GameStateManager.js`): Centralized game state management with event handling
+- **APIManager** (`src/managers/APIManager.js`): REST API communication with error handling and retry logic
+- **UIMessageManager** (`src/managers/UIMessageManager.js`): Centralized UI feedback system (errors, success, loading states, phase indicators)
+- **ZoneManager** (`src/managers/ZoneManager.js`): Zone creation, highlighting, and interaction management
+- **BoardLayoutManager** (`src/managers/BoardLayoutManager.js`): Dynamic board layout generation and responsive positioning
+- **CardInteractionManager** (`src/managers/CardInteractionManager.js`): Centralized card interaction state management with turn-based activation
+- **ResourceManager** (`src/managers/ResourceManager.js`): Centralized card resource loading with retry logic, caching, and performance monitoring
+- **ActionButtonManager** (`src/systems/ActionButtonManager.js`): Dynamic action button system for card interactions
 
 #### **Event-Driven Architecture**
 - **Polling System**: 1-second intervals for backend synchronization
@@ -138,11 +148,14 @@ gameState = {
 ## Game Mechanics Implementation
 
 ### Card System
-- **Card Types**: Character (blue), Help (green), SP (purple), Leader (gold)
-- **Zones**: TOP/LEFT/RIGHT (character), HELP (help cards), SP (special power), LEADER, DECK zones
+- **Card Types**: Unit (combat), Command (strategy), Pilot (enhancement), Base (foundation)
+- **Zone Structure**: Modern slot-based system with flexible card placement:
+  - **Slot Zones** (slot1-6): Primary card placement areas for units, commands, pilots, and bases
+  - **Deck Zones** (deck, leaderDeck): Card draw and storage areas
+  - **Base Zone**: Foundation structures and special base cards
 - **Face-down Mechanics**: Strategic placement with right-click toggle
 - **Drag-and-Drop**: Complete system with zone validation and visual feedback
-- **Zone Compatibility**: Cards can only be placed in compatible zones
+- **Zone Compatibility**: Dynamic validation based on card type and current game state
 
 ### Phase Flow
 1. **Setup Phase**: Initial game setup and deck shuffling
@@ -204,7 +217,14 @@ gameState = {
 ### Code Organization
 - **Scene-Based**: Each game state has its own scene class
 - **Component System**: Reusable Card component with full interaction system
-- **Manager Pattern**: GameStateManager and APIManager for separation of concerns
+- **Manager Pattern**: Comprehensive manager system for separation of concerns:
+  - `GameStateManager.js` - Centralized state management
+  - `UIMessageManager.js` - UI feedback and messaging
+  - `ZoneManager.js` - Zone creation and management
+  - `BoardLayoutManager.js` - Dynamic layout generation
+  - `CardInteractionManager.js` - Turn-based card interaction states
+  - `ResourceManager.js` - Card resource loading and caching
+  - `APIManager.js` - Backend communication
 - **Configuration-Driven**: All game constants in `gameConfig.js` and `cardConfig.js`
 
 ### Animation Development
@@ -226,6 +246,36 @@ gameState = {
 - **Asset Loading**: Efficient texture management and reuse
 - **Update Loops**: Minimize calculations in update loops
 
+## Recent Architectural Improvements
+
+### UI Message System Refactoring (2024)
+- **Centralized UI Management**: All UI feedback consolidated into `UIMessageManager.js`
+- **Eliminated Code Duplication**: Removed duplicate UI methods across `GameScene.js` and `CardActionHandler.js`
+- **Enhanced Message Types**: Support for error, success, loading, and phase indicator messages
+- **Configurable Styling**: Centralized configuration for colors, positioning, and timing
+- **Memory Management**: Automatic cleanup prevents UI message memory leaks
+
+### Zone System Modernization (2024)
+- **Legacy Cleanup**: Removed obsolete leader zone references (`playerZones.leader`, `opponentZones.leader`)
+- **Slot-Based Architecture**: Modern slot1-6 system with dynamic zone management
+- **Backward Compatibility**: Maintained support for existing `leaderDeck`, `deck`, and `base` zones
+- **Dynamic Zone Creation**: `ZoneManager.js` handles all zone creation and management
+- **Improved Flexibility**: Zone system adapts to different game states and card configurations
+
+### Card Interaction System Refactoring (2024)
+- **Centralized Interaction Management**: All card interaction states managed by `CardInteractionManager.js`
+- **Turn-Based Activation**: Comprehensive turn-based card activation/deactivation system
+- **Multi-Zone Support**: Handles hand cards, slot areas, base/shield areas, and energy zones
+- **Statistics and Monitoring**: Built-in interaction statistics and performance monitoring
+- **Batch Operations**: Efficient batch updating of multiple cards with consistent state management
+
+### Resource Management System Refactoring (2024)
+- **Centralized Resource Loading**: All card resource loading managed by `ResourceManager.js`
+- **Retry Logic**: Robust retry mechanism with configurable attempts and delays
+- **Performance Monitoring**: Comprehensive loading statistics and success rate tracking
+- **Caching System**: Resource caching with hit tracking and memory management
+- **Batch Loading**: Efficient parallel loading of card images with progress tracking
+
 ## Critical Development Patterns
 
 ### Component Design
@@ -246,8 +296,76 @@ gameState = {
 - **Memory Efficiency**: Reuse textures and cleanup unused assets
 - **Loading Strategy**: Progressive loading with visual feedback
 
+### UI Message Management Patterns
+- **Centralized Messaging**: Use `UIMessageManager` for all user feedback
+- **Message Types**: Error (red), success (green), room status (gold), loading indicators
+- **Automatic Cleanup**: Messages auto-hide with configurable timeouts
+- **Scene Integration**: Connect phase indicators and UI elements through manager
+- **Usage Example**:
+  ```javascript
+  // In any scene:
+  this.uiMessageManager = new UIMessageManager(this);
+  this.uiMessageManager.showErrorMessage('Invalid action');
+  this.uiMessageManager.showSuccessMessage('Card played!');
+  this.uiMessageManager.setUILoadingState(true);
+  ```
+
+### Card Interaction Management Patterns
+- **Centralized State Control**: Use `CardInteractionManager` for all card interaction states
+- **Turn-Based Activation**: Automatic activation/deactivation based on current player turn
+- **Multi-Zone Coverage**: Handles hand, slots, base, shield, and energy areas
+- **Statistics Monitoring**: Track interaction updates with built-in statistics
+- **Usage Example**:
+  ```javascript
+  // In GameScene:
+  this.cardInteractionManager = new CardInteractionManager(this, this.gameStateManager);
+  
+  // Update all card states based on current turn
+  this.cardInteractionManager.updateAllCardInteractionStates();
+  
+  // Update specific cards
+  this.cardInteractionManager.updateCardState(card, true, 'manual activation');
+  
+  // Batch update multiple cards
+  this.cardInteractionManager.batchUpdateCards(cardArray, false, 'opponent turn');
+  
+  // Get interaction statistics
+  const stats = this.cardInteractionManager.getStats();
+  ```
+
+### Resource Management Patterns
+- **Centralized Loading**: Use `ResourceManager` for all card resource loading
+- **Retry Logic**: Automatic retry with configurable attempts and delays
+- **Performance Tracking**: Monitor loading success rates and performance metrics
+- **Caching**: Resource caching with hit tracking and memory optimization
+- **Usage Example**:
+  ```javascript
+  // In GameScene:
+  this.resourceManager = new ResourceManager(this);
+  
+  // Load all card resources from deck data
+  const result = await this.resourceManager.loadCardResources();
+  console.log(`Loaded ${result.loadedCount} resources, ${result.failedCount} failed`);
+  
+  // Preload specific cards
+  await this.resourceManager.preloadCards(['card1.png', 'card2.png']);
+  
+  // Check if resource is loaded
+  if (this.resourceManager.isResourceLoaded('card1')) {
+    console.log('Card1 is ready to use');
+  }
+  
+  // Get comprehensive loading statistics
+  const stats = this.resourceManager.getStats();
+  console.log(`Success rate: ${stats.successRate}, Average load time: ${stats.averageLoadTime}ms`);
+  ```
+
 ### Development Workflow Tips
 - **Demo-First**: Always test in demo mode before backend integration
 - **Scene Debugging**: Use `this.scene.get('SceneName')` for cross-scene communication
 - **State Inspection**: GameStateManager provides complete state visibility
 - **Performance Monitoring**: Watch for memory leaks in drag-and-drop operations
+- **Zone System**: Use `ZoneManager` for all zone-related operations instead of direct zone manipulation
+- **UI Feedback**: Always use `UIMessageManager` methods instead of creating direct Phaser text objects
+- **Card Interactions**: Use `CardInteractionManager` for all card state management instead of direct property manipulation
+- **Resource Loading**: Use `ResourceManager` for all card resource loading instead of direct fetch operations

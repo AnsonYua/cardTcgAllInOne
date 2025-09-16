@@ -14,6 +14,9 @@ import CardActionHandler from '../handlers/CardActionHandler.js';
 import ActionButtonManager from '../systems/ActionButtonManager.js';
 import DialogManager from '../managers/DialogManager.js';
 import TrashIconManager from '../components/TrashIconManager.js';
+import UIMessageManager from '../managers/UIMessageManager.js';
+import CardInteractionManager from '../managers/CardInteractionManager.js';
+import ResourceManager from '../managers/ResourceManager.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor(config = { key: 'GameScene' }) {
@@ -35,6 +38,9 @@ export default class GameScene extends Phaser.Scene {
     this.zoneManager = null;
     this.opponentBase = null;
     this.dialogManager = null;
+    this.uiMessageManager = null;
+    this.cardInteractionManager = null;
+    this.resourceManager = null;
 
     // Legacy zone references (will be managed by ZoneManager)
     this.playerZones = {};
@@ -127,6 +133,15 @@ export default class GameScene extends Phaser.Scene {
     this.zoneManager = new ZoneManager(this, this.layout);
     this.zoneManager.createZones();
     
+    // Initialize UI message manager
+    this.uiMessageManager = new UIMessageManager(this);
+    
+    // Initialize card interaction manager
+    this.cardInteractionManager = new CardInteractionManager(this, this.gameStateManager);
+    
+    // Initialize resource manager
+    this.resourceManager = new ResourceManager(this);
+    
     // Update legacy zone references for backward compatibility
     this.playerZones = this.zoneManager.getPlayerZones();
     this.opponentZones = this.zoneManager.getOpponentZones();
@@ -195,6 +210,9 @@ export default class GameScene extends Phaser.Scene {
       align: 'center'
     });
     this.phaseText.setOrigin(0.5);
+    
+    // Set phaseText element for UIMessageManager
+    this.uiMessageManager.setPhaseTextElement(this.phaseText);
 
     // Game info display (first player and opponent hand)
     this.createGameInfoDisplay();
@@ -1704,92 +1722,19 @@ export default class GameScene extends Phaser.Scene {
   }
 
   showRoomStatus(message) {
-    // Remove existing room status text
-    if (this.roomStatusText) {
-      this.roomStatusText.destroy();
-    }
-
-    // Create new room status text
-    const { width } = this.cameras.main;
-    this.roomStatusText = this.add.text(250, 80, message, {
-      fontSize: '16px',
-      fontFamily: 'Arial',
-      fill: '#FFD700',
-      align: 'left'
-    });
-    this.roomStatusText.setOrigin(0.5);
-
-    // Set high depth to ensure status messages appear above all game elements
-    this.roomStatusText.setDepth(2000);
-
-    // Auto-hide after 5 seconds
-    this.time.delayedCall(5000, () => {
-      if (this.roomStatusText) {
-        this.roomStatusText.destroy();
-        this.roomStatusText = null;
-      }
-    });
+    this.uiMessageManager.showRoomStatus(message);
   }
 
   showErrorMessage(message) {
-    // Remove existing error message
-    if (this.errorMessageText) {
-      this.errorMessageText.destroy();
-    }
+    this.uiMessageManager.showErrorMessage(message);
+  }
 
-    // Create new error message text
-    const { width } = this.cameras.main;
-    this.errorMessageText = this.add.text(width / 2, 120, message, {
-      fontSize: '18px',
-      fontFamily: 'Arial',
-      fill: '#FF6B6B',
-      align: 'center',
-      stroke: '#000000',
-      strokeThickness: 2
-    });
-    this.errorMessageText.setOrigin(0.5);
-
-    // Set high depth to ensure error messages appear above all game elements (leader cards use depth 1001)
-    this.errorMessageText.setDepth(2000);
-
-    // Auto-hide after 4 seconds
-    this.time.delayedCall(4000, () => {
-      if (this.errorMessageText) {
-        this.errorMessageText.destroy();
-        this.errorMessageText = null;
-      }
-    });
+  showSuccessMessage(message) {
+    this.uiMessageManager.showSuccessMessage(message);
   }
 
   setUILoadingState(isLoading) {
-    if (isLoading) {
-      // Create loading indicator if it doesn't exist
-      if (!this.loadingIndicator) {
-        const { width, height } = this.cameras.main;
-        this.loadingIndicator = this.add.text(width / 2, height / 2, 'Processing...', {
-          fontSize: '24px',
-          fontFamily: 'Arial',
-          fill: '#FFD700',
-          align: 'center',
-          stroke: '#000000',
-          strokeThickness: 3
-        });
-        this.loadingIndicator.setOrigin(0.5);
-        this.loadingIndicator.setDepth(1000); // Ensure it's on top
-      }
-      this.loadingIndicator.setVisible(true);
-
-      // Disable input during loading
-      this.input.enabled = false;
-    } else {
-      // Hide loading indicator
-      if (this.loadingIndicator) {
-        this.loadingIndicator.setVisible(false);
-      }
-
-      // Re-enable input
-      this.input.enabled = true;
-    }
+    this.uiMessageManager.setUILoadingState(isLoading);
   }
 
   destroy() {
@@ -1838,29 +1783,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   async simulatePlayer2Redraw() {
-    try {
-      const gameState = this.gameStateManager.getGameState();
-      const gameId = gameState.gameId;
 
-      console.log('Debug: gameId:', gameId);
-
-      if (!gameId) {
-        throw new Error('No gameId found. Make sure demo was started from menu (creates game automatically).');
-      }
-
-      // Backend already knows player2Id from joinRoom call, so we can directly use 'playerId_2'
-      const player2Id = 'playerId_2';
-
-      console.log('Debug: Using player2Id:', player2Id);
-
-      // Simulate player 2 calling redraw (startReady with wantRedraw = true)
-      await this.apiManager.startReady(player2Id, gameId, true);
-
-      this.showRoomStatus('Simulated Player 2 redraw (ready with redraw=true).');
-    } catch (error) {
-      console.error('Failed to simulate player 2 redraw:', error);
-      this.showRoomStatus('Failed to simulate player 2 redraw: ' + error.message);
-    }
   }
 
   handlePhaseChange(event) {
@@ -1882,154 +1805,27 @@ export default class GameScene extends Phaser.Scene {
   }
 
   updatePhaseIndicator(phase, currentPlayer = null) {
-    if (phase == null) {
-      return;
-    }
-    if (this.phaseText) {
-      let displayText = '';
-      switch (phase) {
-        case 'DRAW_PHASE':
-          displayText = 'DRAW PHASE';
-          break;
-        case 'MAIN_PHASE':
-          displayText = 'MAIN PHASE';
-          break;
-        case 'SP_PHASE':
-          displayText = 'SP PHASE';
-          break;
-        case 'BATTLE_PHASE':
-          displayText = 'BATTLE PHASE';
-          break;
-        case 'READY_PHASE':
-          displayText = 'READY PHASE';
-          break;
-        case 'WAITING_FOR_PLAYERS':
-          displayText = 'WAITING FOR PLAYERS';
-          break;
-        case 'BOTH_JOINED':
-          displayText = 'BOTH JOINED';
-          break;
-        case 'START_REDRAW':
-          displayText = 'REDRAW PHASE';
-          break;
-        default:
-          console.log('Unknown phase:', phase);
-          // Clean up any underscore-separated phases
-          displayText = phase.replace(/_/g, ' ').toUpperCase();
-      }
-
-      // Add current player info for turn-based phases
-      if (currentPlayer && this.shouldShowTurnInfo(phase)) {
-        const currentPlayerId = this.gameStateManager.getCurrentPlayerId();
-        const turnPlayer = currentPlayer === currentPlayerId ? 'Your Turn' : 'Opponent Turn';
-        displayText += ` (${turnPlayer})`;
-      }
-
-      this.phaseText.setText(displayText);
-    }
+    this.uiMessageManager.updatePhaseIndicator(phase, currentPlayer, this.gameStateManager);
   }
 
 
 
-
-
-
-
+  /**
+   * Load all card resources using ResourceManager
+   * Delegates to ResourceManager for centralized resource management
+   */
   async loadCardResources() {
-    try {
-      const apiUrl = GAME_CONFIG.api.getFullUrl(GAME_CONFIG.api.endpoints.gameResource);
-      console.log('[GameScene] Fetching deck data from:', apiUrl);
-
-      const response = await fetch(apiUrl, {
-        method: 'GET',
-        headers: GAME_CONFIG.api.headers,
-        signal: AbortSignal.timeout(GAME_CONFIG.api.timeout)
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const deckData = await response.json();
-      console.log('[GameScene] Deck data received:', deckData);
-
-      // Process deck data to extract unique card images
-      const allCardPaths = new Set();
-
-      if (deckData.decks) {
-        Object.keys(deckData.decks).forEach(deckKey => {
-          const deck = deckData.decks[deckKey];
-          if (deck.cards && Array.isArray(deck.cards)) {
-            deck.cards.forEach(cardPath => {
-              const imagePath = cardPath.endsWith('.png') ? cardPath : `${cardPath}.png`;
-              allCardPaths.add(imagePath);
-            });
-          }
-        });
-      }
-
-      const uniqueCardPaths = Array.from(allCardPaths);
-      console.log(`[GameScene] Found ${uniqueCardPaths.length} unique cards to load:`, uniqueCardPaths);
-
-      // Load images into Phaser texture manager
-      const loadPromises = [];
-      const timestamp = Date.now();
-
-      uniqueCardPaths.forEach(imagePath => {
-        const imageKey = this.getImageKey(imagePath);
-
-        // Load full-size image
-        const fullImageUrl = `${GAME_CONFIG.api.getImageUrl(imagePath)}?t=${timestamp}`;
-        const fullPromise = new Promise((resolve, reject) => {
-          this.load.image(imageKey, fullImageUrl);
-          this.load.once(`filecomplete-image-${imageKey}`, () => {
-            console.log(`[GameScene] Loaded: ${imageKey}`);
-            resolve();
-          });
-          this.load.once(`loaderror`, (file) => {
-            if (file.key === imageKey) {
-              console.warn(`[GameScene] Failed to load: ${imageKey}`);
-              reject(new Error(`Failed to load ${imageKey}`));
-            }
-          });
-        });
-        loadPromises.push(fullPromise);
-
-        // Load preview image
-        const previewKey = `${imageKey}-preview`;
-        const previewImageUrl = `${GAME_CONFIG.api.getPreviewImageUrl(imagePath)}?t=${timestamp}`;
-        const previewPromise = new Promise((resolve, reject) => {
-          this.load.image(previewKey, previewImageUrl);
-          this.load.once(`filecomplete-image-${previewKey}`, () => {
-            console.log(`[GameScene] Loaded preview: ${previewKey}`);
-            resolve();
-          });
-          this.load.once(`loaderror`, (file) => {
-            if (file.key === previewKey) {
-              console.warn(`[GameScene] Failed to load preview: ${previewKey}`);
-              reject(new Error(`Failed to load ${previewKey}`));
-            }
-          });
-        });
-        loadPromises.push(previewPromise);
-      });
-
-      // Start loading and wait for completion
-      this.load.start();
-      await Promise.allSettled(loadPromises);
-
-      console.log('[GameScene] Card resource loading complete');
-
-    } catch (error) {
-      console.error('[GameScene] Error loading card resources:', error);
-      throw error;
-    }
+    return await this.resourceManager.loadCardResources();
   }
 
+  /**
+   * Get Phaser texture key from image path
+   * Delegates to ResourceManager for consistent key generation
+   * @param {string} imagePath - Image file path
+   * @returns {string} Phaser texture key
+   */
   getImageKey(imagePath) {
-    // Extract filename from path and remove extension
-    const filename = imagePath.split('/').pop();
-    return filename.replace(/\.[^/.]+$/, "");
+    return this.resourceManager.getImageKey(imagePath);
   }
 
   async handleSingleEvent(event) {
@@ -2156,59 +1952,19 @@ export default class GameScene extends Phaser.Scene {
 
   /**
    * Update card interaction states based on current turn
-   * Sets card.active = true when it's the player's turn, false during opponent's turn
+   * Delegates to CardInteractionManager for centralized management
    */
   updateCardInteractionStates() {
-    const isCurrentPlayer = this.gameStateManager.isCurrentPlayer();
-    
-    console.log(`[GameScene] Updating card interaction states - isCurrentPlayer: ${isCurrentPlayer}`);
-    
-    // Update hand cards interaction state
-    if (this.playerHand && Array.isArray(this.playerHand)) {
-      this.playerHand.forEach(card => {
-        if (card) {
-          card.active = isCurrentPlayer;
-          console.log(`[GameScene] Set hand card ${card.cardData?.id || 'unknown'} active: ${isCurrentPlayer}`);
-        }
-      });
-    }
-    
-    // Update zone cards interaction state directly
-    this.updateZoneCardsInteractionStates(isCurrentPlayer);
-    
-    console.log(`[GameScene] Card interaction states updated for ${this.playerHand ? this.playerHand.length : 0} hand cards and zone cards`);
+    this.cardInteractionManager.updateAllCardInteractionStates();
   }
 
   /**
    * Update interaction states for cards in zones (slots, base, shield, energy areas)
    * @param {boolean} isCurrentPlayer - Whether it's currently the player's turn
+   * @deprecated Use cardInteractionManager.updateZoneCardStates() instead
    */
   updateZoneCardsInteractionStates(isCurrentPlayer) {
-    let zoneCardCount = 0;
-
-    // Update slot area cards (units and pilots)
-    if (this.slotAreaManager && this.slotAreaManager.playerSlotCards) {
-      Object.keys(this.slotAreaManager.playerSlotCards).forEach(slotName => {
-        const slot = this.slotAreaManager.playerSlotCards[slotName];
-        
-        // Update unit card in slot
-        if (slot.unit && slot.unit.active !== undefined) {
-          slot.unit.active = isCurrentPlayer;
-          zoneCardCount++;
-          console.log(`[GameScene] Set ${slotName} unit card active: ${isCurrentPlayer}`);
-        }
-        
-        // Update pilot card in slot
-        if (slot.pilot && slot.pilot.active !== undefined) {
-          slot.pilot.active = isCurrentPlayer;
-          zoneCardCount++;
-          console.log(`[GameScene] Set ${slotName} pilot card active: ${isCurrentPlayer}`);
-        }
-      });
-    }
-
-
-    console.log(`[GameScene] Updated interaction states for ${zoneCardCount} zone cards`);
+    this.cardInteractionManager.updateZoneCardStates(isCurrentPlayer);
   }
 
 }
