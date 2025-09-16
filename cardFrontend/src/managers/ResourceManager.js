@@ -276,8 +276,9 @@ export default class ResourceManager {
    * @returns {string} Phaser texture key
    */
   getImageKey(imagePath) {
-    // Remove extension and create a clean key
-    return imagePath.replace(/\.(png|jpg|jpeg)$/i, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+    // Extract filename from path and remove extension (matches original GameScene behavior)
+    const filename = imagePath.split('/').pop();
+    return filename.replace(/\.[^/.]+$/, "");
   }
 
   /**
