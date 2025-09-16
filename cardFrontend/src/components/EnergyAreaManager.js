@@ -48,6 +48,7 @@ export default class EnergyAreaManager {
       });
     }
     cardArray.forEach(card => card.active = false);
+
   }
 
   getRow2SlotPosition(playerType, slotIndex) {

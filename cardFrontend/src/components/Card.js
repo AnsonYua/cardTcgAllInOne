@@ -182,10 +182,16 @@ export default class Card extends Phaser.GameObjects.Container {
   getInteractionState() {
     const baseInteraction = this.visible && this.active;
     
+    // Energy cards should never be clickable, regardless of zone status
+    const shouldDisableClick = this.cardData?.cardType === "energy" ||
+     this.cardData?.cardType === "shield" || 
+     this.cardData?.cardType === "base";
+    
     return {
       // Cards in zones can still be selected for highlighting, even if other interactions are disabled
-      canInteract: baseInteraction && (!this.isInteractionDisabled || this.isInZone),
-      canSelect: !this.options.handleOutside,
+      // EXCEPT energy cards - they should never be clickable
+      canInteract: baseInteraction && (!this.isInteractionDisabled || (this.isInZone && !shouldDisableClick)),
+      canSelect: !this.options.handleOutside && !shouldDisableClick,
       isInZone: this.isInZone
     };
   }
