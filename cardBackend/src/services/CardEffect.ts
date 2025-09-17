@@ -289,14 +289,12 @@ export class CardEffect {
         let appliedCount = 0;
         
         for (const storedEffect of targetCard.continuousEffects) {
-            // Check if effect should be active based on timing and conditions
-            const shouldBeActive = CardEffect.shouldEffectBeActive(storedEffect, targetCard, gameEnv);
             
-            if (shouldBeActive && !storedEffect.active) {
-                // Activate effect
+            if (!storedEffect.active) {
+                // Activate effect (simplified - always activate stored effects)
                 const value = CardEffect.getEffectValue(storedEffect.effect.action, storedEffect.effect.parameters);
                 
-                if (storedEffect.effect.action === 'modifyAP' || storedEffect.effect.action === 'modifyHP') {
+                if (CardEffect.isStatModifyingAction(storedEffect.effect.action)) {
                     CardEffect.applyEffectValue(targetCard, storedEffect.effect.action, value);
                 }
                 
@@ -305,17 +303,6 @@ export class CardEffect {
                 appliedCount++;
                 
                 console.log(`✅ Activated effect: ${storedEffect.effectId} (${storedEffect.effect.action}) on ${targetCard.cardUid} (value: ${value})`);
-                
-            } else if (!shouldBeActive && storedEffect.active) {
-                // Deactivate effect
-                if (storedEffect.effect.action === 'modifyAP' || storedEffect.effect.action === 'modifyHP') {
-                    CardEffect.applyEffectValue(targetCard, storedEffect.effect.action, -storedEffect.appliedValue);
-                }
-                
-                storedEffect.active = false;
-                storedEffect.appliedValue = 0;
-                
-                console.log(`❌ Deactivated effect: ${storedEffect.effectId} (${storedEffect.effect.action}) on ${targetCard.cardUid}`);
             }
         }
         
@@ -323,15 +310,10 @@ export class CardEffect {
     }
     
     /**
-     * Check if a stored effect should be active based on timing and game state
+     * Check if effect action modifies card stats
      */
-    static shouldEffectBeActive(storedEffect: StoredContinuousEffect, targetCard: ZoneCard, gameEnv: GameEnvironment): boolean {
-        // Basic timing check - can be expanded with more complex logic
-        const timing = storedEffect.timing || ['YOUR_TURN'];
-        
-        // For now, always return true for continuous effects
-        // This can be enhanced with turn-based logic, pairing status, etc.
-        return true;
+    private static isStatModifyingAction(action: string): boolean {
+        return action === 'modifyAP' || action === 'modifyHP';
     }
 
     /**
@@ -370,16 +352,6 @@ export class CardEffect {
         return parseInt(cleanValue, 10) || 0;
     }
     
-    /**
-     * Extract effect parameters safely based on action type
-     */
-    static extractEffectParameters(effectRule: any): any {
-        const action = effectRule.effect?.action;
-        const parameters = effectRule.effect?.parameters || {};
-        
-        // Return parameters as-is from the actual card data structure
-        return parameters;
-    }
     
     /**
      * Get effect value based on action type and parameters
@@ -410,34 +382,31 @@ export class CardEffect {
     // ============================================================================
 
     /**
-     * Main entry point - TWO-PHASE continuous effects processing
+     * Main entry point - Simplified continuous effects processing
      */
     static processAllContinuousEffects(gameEnv: GameEnvironment): EffectProcessingResult {
-        console.log(`🔄 Processing continuous effects from paired cards (TWO-PHASE)`);
+        console.log(`🔄 Processing continuous effects (TWO-PHASE)`);
         
         try {
             let totalAdded = 0;
             let totalApplied = 0;
             
-            // PHASE 1: Add all effects to storage
-            console.log(`💾 PHASE 1: Adding effects to storage...`);
+            // Process each player with internal two-phase approach
             for (const [playerId, player] of Object.entries(gameEnv.players)) {
+                console.log(`💾 PHASE 1: Adding effects for player ${playerId}`);
                 const playerEffectsAdded = CardEffect.processPlayerSlots(player, playerId, gameEnv);
                 totalAdded += playerEffectsAdded;
-            }
-            
-            // PHASE 2: Apply all stored effects
-            console.log(`✅ PHASE 2: Applying stored effects...`);
-            for (const [playerId, player] of Object.entries(gameEnv.players)) {
+                
+                console.log(`✅ PHASE 2: Applying effects for player ${playerId}`);
                 const playerEffectsApplied = CardEffect.applyEffectsToAllPlayerUnits(playerId, gameEnv);
                 totalApplied += playerEffectsApplied;
             }
             
-            console.log(`✅ TWO-PHASE complete: ${totalAdded} effects added, ${totalApplied} effects applied`);
+            console.log(`✅ Processing complete: ${totalAdded} effects added, ${totalApplied} effects applied`);
             return { success: true, effectsProcessed: totalAdded, effectsActivated: totalApplied, effectsDeactivated: 0 };
             
         } catch (error) {
-            console.error(`❌ Error processing slot effects:`, error);
+            console.error(`❌ Error processing continuous effects:`, error);
             return { success: false, effectsProcessed: 0, effectsActivated: 0, effectsDeactivated: 0, error: String(error) };
         }
     }

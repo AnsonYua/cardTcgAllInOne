@@ -114,6 +114,61 @@ npm run format
 - **Play Sequence Tracking** - All card plays recorded with timestamps
 - **Computed State** - Final game state after all effects applied
 
+### Continuous Effects System (January 2025)
+**Consolidated Single-File Architecture** - Complete continuous effects processing in one unified service:
+
+**Core Components:**
+- `src/services/CardEffect.ts` - **SINGLE FILE** containing all continuous effects logic
+- Array-based storage with duplicate prevention using `effectId + sourceCardUid` keys
+- Two-phase processing: Phase 1 (storage), Phase 2 (application)
+- Switch-case architecture for different effect types (ALWAYS_ACTIVE, PAIR_TRIGGERED, LINK_TRIGGERED)
+
+**Effect Flow:**
+1. `processAllContinuousEffects()` - Main orchestration entry point
+2. `processPlayerSlots()` - Process each player's slots for effects
+3. `detectSlotState()` - Determine slot conditions (paired, linked, etc.)
+4. `processCardEffects()` - Extract and classify effects from individual cards
+5. `addContinuousEffect()` - Store effects (Phase 1 - no immediate application)
+6. `applyContinuousEffects()` - Apply stored effects (Phase 2 - activate and apply values)
+
+**Effect Types (Switch-Case Generalization):**
+- **ALWAYS_ACTIVE** - Continuous effects like ST01-009 "Zowort" attack restrictions
+- **PAIR_TRIGGERED** - Effects that activate when unit+pilot paired (ST01-001 "Gundam" AP+1)
+- **LINK_TRIGGERED** - Effects for unit.link matches (future expansion)
+
+**Storage Structure:**
+```typescript
+// Cards store effects in continuousEffects array
+card.continuousEffects = [
+  {
+    effectId: "pair_ap_boost_all",
+    type: "static",
+    timing: ["YOUR_TURN"],
+    effect: {
+      action: "modifyAP",
+      parameters: { modifier: "+1" },
+      duration: "while_paired"
+    },
+    sourceCardUid: "source-card-123",
+    active: false,     // Set to true when applied
+    appliedValue: 0    // Calculated value when applied
+  }
+]
+```
+
+**Integration Points:**
+- `src/services/GameEngine.ts` - Calls continuous effects processing after card placement
+- `src/services/PlayerCardManager.ts` - Returns `isOnLink`/`isOnPair` detection results
+- `src/models/ContinuousEffects.ts` - TypeScript interfaces and helper functions
+- `src/models/CardSystem.ts` - Added `continuousEffects` field to ZoneCard interface
+
+**Key Features:**
+- **Duplicate Prevention** - Uses `ContinuousEffectsHelper.addEffect()` with unique key checking
+- **Source Tracking** - Each effect tracks its source card for automatic cleanup
+- **Real Effect Structure** - Uses actual card data structure from `st01Card.json`
+- **Automatic Processing** - Always processes effects, no conditional triggers
+- **Simplified Logic** - Maximum 2 levels of nesting, focused utility methods
+
 ### Victory Conditions
 - 4 rounds (4 different leaders per player)
 - First team to 50 victory points wins
@@ -194,6 +249,13 @@ const allowedTypes = leader[zone];
 - Frontend must call `acknowledgeEvents` to prevent event buildup
 - 30+ event types including errors, phase changes, and card actions
 
+### Continuous Effects Usage
+- Use `CardEffect.processAllContinuousEffects(gameEnv)` for complete processing
+- Effects stored on `targetCard.continuousEffects` array with duplicate prevention
+- Two-phase approach: `addContinuousEffect()` then `applyContinuousEffects()`
+- Access effect data directly from card: `card.continuousEffects[i].appliedValue`
+- No manual effect cleanup needed - automatic when source cards removed
+
 ### API Response Pattern
 - All game data returned in `gameEnv` object
 - Single `phase` field for game state (eliminated duplicate `roomStatus`)
@@ -223,6 +285,9 @@ Both frontend and backend support comprehensive demo/testing modes:
 4. **SP Phase**: Only face-down placement allowed in SP zones during SP_PHASE
 5. **Event Cleanup**: Always acknowledge processed events to prevent memory issues
 6. **File Storage**: Backend uses file-based storage, not in-memory state
+7. **Continuous Effects**: Never mix ContinuousEffectManager with CardEffect.ts - everything is consolidated in CardEffect.ts
+8. **Effect Processing**: Always use two-phase approach - store first, then apply all effects
+9. **Effect Parameters**: Use real structure from `st01Card.json` (`parameters.modifier`) not assumptions (`parameters.amount`)
 
 ## Related Documentation
 
