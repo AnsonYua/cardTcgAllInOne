@@ -605,6 +605,16 @@ export class GameEngine {
                 console.log(`🃏 Drew 1 card for first player ${nextPlayer}`);
             }
             
+            // Process continuous effects when turn changes (timing updates)
+            console.log(`🔄 Turn changed - processing continuous effects for timing updates`);
+            try {
+                const { ContinuousEffectManager } = require('./ContinuousEffectManager');
+                const result = ContinuousEffectManager.processAllContinuousEffects(gameEnv);
+                console.log(`✅ Continuous effects processed: ${result.effectsProcessed} processed, ${result.effectsActivated} activated, ${result.effectsDeactivated} deactivated`);
+            } catch (error) {
+                console.error(`❌ Error processing continuous effects on turn change:`, error);
+            }
+            
             // Create game events using GameNotificationManager
             const notificationManager = GameEngine.getNotificationManager(gameEnv);
             
@@ -675,8 +685,6 @@ export class GameEngine {
             // Pass event data directly - no intermediate object creation
             const placementResult = PlayerCardManager.placeCardWithEventData(gameEnv, eventData);
             
-
-            
             if (!placementResult.success) {
                 // Return card to hand if placement failed (but only for normal cards, not burst cards)
                 if (!fromBurst) {
@@ -690,6 +698,18 @@ export class GameEngine {
 
             // ✅ Card placement successful - Check for Deploy effects (ENTERS_PLAY triggers)
             console.log(`✅ Card ${eventData.cardUID} successfully placed for player ${eventData.playerId}`);
+            
+            // Process continuous effects based on placement result
+            if (placementResult.isOnPair) {
+                console.log(`🔄 ${placementResult.isOnLink ? 'Link' : 'Pair'} created - processing continuous effects`);
+                try {
+                    const { ContinuousEffectManager } = require('./ContinuousEffectManager');
+                    const result = ContinuousEffectManager.processAllContinuousEffects(gameEnv);
+                    console.log(`✅ Continuous effects processed: ${result.effectsProcessed} processed, ${result.effectsActivated} activated, ${result.effectsDeactivated} deactivated`);
+                } catch (error) {
+                    console.error(`❌ Error processing continuous effects after ${placementResult.isOnLink ? 'link' : 'pair'} creation:`, error);
+                }
+            } 
             
             // Check for Deploy effects using cardUID to extract cardId and fetch cardData from database
             const deployEffects = this.checkForDeployEffects(eventData.cardUID);
@@ -1524,7 +1544,6 @@ export class GameEngine {
      */
     private static executeBurstDeploy(gameEnv: GameEnvironment, playerId: string, cardUid: string, cardData: any, burstEffect: any): ExecutionResult {
         console.log(`🚀 Executing deploy burst effect for card ${cardUid}`);
-        console.log("dasfdasfsdfasdafdfsdf  ",JSON.stringify(cardData))
         try {
             // Create PLAY_CARD event for deployment (manual creation based on GameLogic pattern)
             const playCardEvent = {

@@ -3,6 +3,8 @@
 
 import { GameEnvironment } from '../models/GameEnvironment';
 import { HandCard } from '../models/Player';
+import { ZoneCard } from '../models/CardSystem';
+import { StoredContinuousEffect, ContinuousEffectsHelper, createEmptyContinuousEffectsCollection } from '../models/ContinuousEffects';
 
 export interface EffectResult {
     success: boolean;
@@ -118,6 +120,209 @@ export class CardEffect {
             console.error(`❌ Error loading card data for ${cardId}:`, error);
             return null;
         }
+    }
+
+    // ============================================================================
+    // CONTINUOUS EFFECT PROCESSING METHODS (Moved from ContinuousEffectManager)
+    // ============================================================================
+
+    /**
+     * Find continuous effects that trigger on pairing
+     */
+    static findPairContinuousEffects(card: ZoneCard): any[] {
+        const effects = card.cardData?.effects?.rules || [];
+        return effects.filter(rule => {
+            const trigger = CardEffect.extractTrigger(rule);
+            const conditions = CardEffect.extractConditions(rule);
+            return trigger === 'continuous' && conditions.includes('isPaired');
+        });
+    }
+
+    /**
+     * Apply effect to all units owned by the player
+     */
+    static applyEffectToAllPlayerUnits(
+        effectRule: any, 
+        sourceCard: ZoneCard, 
+        playerId: string, 
+        gameEnv: GameEnvironment
+    ): boolean {
+        const scope = CardEffect.extractTargetScope(effectRule);
+        if (scope !== 'self_all') return false;
+        
+        const targetUnits = CardEffect.getAllPlayerUnits(playerId, gameEnv);
+        const effectId = CardEffect.extractEffectId(effectRule);
+        
+        for (const unit of targetUnits) {
+            CardEffect.addContinuousEffect(unit, effectRule, sourceCard, effectId);
+        }
+        
+        return targetUnits.length > 0;
+    }
+
+    /**
+     * Extract all unit cards for a player
+     */
+    static getAllPlayerUnits(playerId: string, gameEnv: GameEnvironment): ZoneCard[] {
+        const player = gameEnv.players[playerId];
+        if (!player?.zones) return [];
+        
+        const units: ZoneCard[] = [];
+        const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'] as const;
+        
+        for (const slotName of slotZones) {
+            const unit = (player.zones as any)[slotName]?.unit;
+            if (unit) units.push(unit);
+        }
+        
+        return units;
+    }
+
+    /**
+     * Add continuous effect to a target card with duplicate prevention
+     */
+    static addContinuousEffect(
+        targetCard: ZoneCard, 
+        effectRule: any, 
+        sourceCard: ZoneCard, 
+        effectId: string
+    ): void {
+        // Initialize array if it doesn't exist
+        if (!targetCard.continuousEffects) {
+            targetCard.continuousEffects = createEmptyContinuousEffectsCollection();
+        }
+        
+        // Extract parameters based on actual structure from st01card.json
+        const effectAction = effectRule.effect?.action || 'modifyAP';
+        const parameters = effectRule.effect?.parameters || {};
+        
+        // Calculate value based on action type and actual parameters
+        let value = 0;
+        if (effectAction === 'modifyAP' && parameters.modifier) {
+            value = CardEffect.parseModifier(parameters.modifier);
+        } else if (effectAction === 'heal' && parameters.amount) {
+            value = parameters.amount;
+        } else if (effectAction === 'damage' && parameters.amount) {
+            value = parameters.amount;
+        } else if (effectAction === 'restrict_attack') {
+            // Restriction effects don't have numeric values
+            value = 0;
+        }
+        
+        const storedEffect: StoredContinuousEffect = {
+            effectId,
+            type: effectRule.type || 'static',
+            timing: effectRule.timing || ['YOUR_TURN'],
+            effect: {
+                action: effectAction,
+                parameters: parameters,
+                duration: effectRule.effect?.duration || 'while_paired'
+            },
+            sourceCardUid: sourceCard.cardUid,
+            active: true,
+            appliedValue: value
+        };
+        
+        // Add effect with duplicate prevention
+        const wasAdded = ContinuousEffectsHelper.addEffect(targetCard.continuousEffects, storedEffect);
+        
+        if (wasAdded) {
+            // Apply effect immediately only if it was actually added (not a duplicate)
+            if (effectAction === 'modifyAP' || effectAction === 'modifyHP') {
+                CardEffect.applyEffectValue(targetCard, effectAction, value);
+            }
+            console.log(`✅ Applied and stored continuous effect: ${effectId} (${effectAction}) from ${sourceCard.cardUid} to ${targetCard.cardUid}`);
+        } else {
+            console.log(`⚠️ Skipped duplicate continuous effect: ${effectId} from ${sourceCard.cardUid} to ${targetCard.cardUid}`);
+        }
+    }
+
+    /**
+     * Apply an effect value to a card (e.g., modify AP)
+     */
+    static applyEffectValue(card: ZoneCard, action: string, value: number): void {
+        switch (action) {
+            case 'modifyAP':
+                if (card.cardData?.ap !== undefined) {
+                    const currentAP = (card as any).currentAP || card.cardData.ap;
+                    (card as any).currentAP = currentAP + value;
+                    console.log(`⚡ Applied ${value > 0 ? '+' : ''}${value} AP to ${card.cardUid} (now ${(card as any).currentAP})`);
+                }
+                break;
+            case 'modifyHP':
+                if (card.cardData?.hp !== undefined) {
+                    const currentHP = (card as any).currentHP || card.cardData.hp;
+                    (card as any).currentHP = Math.max(0, currentHP + value);
+                    console.log(`❤️ Applied ${value > 0 ? '+' : ''}${value} HP to ${card.cardUid} (now ${(card as any).currentHP})`);
+                }
+                break;
+            default:
+                console.log(`⚠️ Unknown effect action: ${action}`);
+        }
+    }
+
+    /**
+     * Parse a modifier string like "+1", "-2", "3" into a number
+     */
+    static parseModifier(modifier: string | number): number {
+        if (typeof modifier === 'number') return modifier;
+        if (typeof modifier !== 'string') return 0;
+        
+        // Handle common modifier formats from st01card.json
+        const cleanValue = modifier.replace(/[^\d\-\+]/g, '');
+        return parseInt(cleanValue, 10) || 0;
+    }
+    
+    /**
+     * Extract effect parameters safely based on action type
+     */
+    static extractEffectParameters(effectRule: any): any {
+        const action = effectRule.effect?.action;
+        const parameters = effectRule.effect?.parameters || {};
+        
+        // Return parameters as-is from the actual card data structure
+        return parameters;
+    }
+    
+    /**
+     * Get effect value based on action type and parameters
+     */
+    static getEffectValue(action: string, parameters: any): number {
+        switch (action) {
+            case 'modifyAP':
+            case 'modifyHP':
+                return parameters.modifier ? CardEffect.parseModifier(parameters.modifier) : 0;
+            case 'heal':
+            case 'damage':
+                return parameters.amount || 0;
+            case 'addToHand':
+                return parameters.count || 1;
+            case 'restrict_attack':
+            case 'rest':
+            case 'deploy':
+                // Non-numeric effects
+                return 0;
+            default:
+                console.log(`⚠️ Unknown action type for value extraction: ${action}`);
+                return 0;
+        }
+    }
+
+    // Utility methods for cleaner data extraction
+    static extractTrigger(rule: any): string {
+        return typeof rule.trigger === 'string' ? rule.trigger : rule.trigger?.event || '';
+    }
+
+    static extractConditions(rule: any): string[] {
+        return rule.conditions || rule.trigger?.conditions || [];
+    }
+
+    static extractTargetScope(rule: any): string {
+        return rule.target?.scope || rule.target?.owner || 'self';
+    }
+
+    static extractEffectId(rule: any): string {
+        return rule.effectId || rule.id || 'unknown_effect';
     }
     private gameEnv: GameEnvironment;
     private playerId: string;

@@ -1,6 +1,8 @@
 // src/models/CardSystem.ts
 // Card system interfaces and utilities for custom trading card game
 
+import { ContinuousEffectsCollection } from './ContinuousEffects';
+
 // ============ CARD DATA INTERFACES ============
 
 export interface EffectRule {
@@ -79,6 +81,7 @@ export interface ZoneCard {
     placedAt?: number;          // Timestamp when placed
     placedBy?: string;          // Player ID who placed card
     isRested?: boolean;         // Whether the card is rested/tapped (common field)
+    continuousEffects?: ContinuousEffectsCollection;  // Active continuous effects on this card
 }
 
 export interface UnitZoneCard extends ZoneCard {
@@ -185,7 +188,8 @@ export function createZoneCard(
                     originalAP: pilotAP,
                     originalHP: pilotHP,
                     cardData: cardData as CommandCardData, // Keep original command data
-                    playedAs: 'pilot' // Track how it's being played
+                    playedAs: 'pilot', // Track how it's being played
+                    originalCardType: (cardData as any)?.originalCardType || cardData.cardType
                 } as PilotZoneCard;
             }
             

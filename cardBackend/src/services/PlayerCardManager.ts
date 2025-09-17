@@ -9,6 +9,8 @@ export interface CardPlacementResult {
     success: boolean;
     error?: string;
     placedZone?: string;
+    isOnLink?: boolean;      // Whether the placement created a link (unit + pilot same card family)
+    isOnPair?: boolean;      // Whether the placement created a pair (any unit + pilot combination)
 }
 
 export interface CardPlacementOptions {
@@ -173,9 +175,14 @@ export class PlayerCardManager {
         playerZones[targetZone].unit = unitCard;
         console.log(`🎮 Placed unit card ${cardUID} in ${targetZone}`);
         
+        // Analyze the placement result for link/pair status
+        const { isOnLink, isOnPair } = this.analyzePlacementResult(playerZones, targetZone, 'unit');
+        
         return {
             success: true,
-            placedZone: targetZone
+            placedZone: targetZone,
+            isOnLink,
+            isOnPair
         };
     }
 
@@ -220,9 +227,14 @@ export class PlayerCardManager {
         playerZones[targetZone].pilot = pilotCard;
         console.log(`🎮 Placed pilot card ${cardUID} with unit in ${targetZone}`);
         
+        // Analyze the placement result for link/pair status
+        const { isOnLink, isOnPair } = this.analyzePlacementResult(playerZones, targetZone, 'pilot');
+        
         return {
             success: true,
-            placedZone: targetZone
+            placedZone: targetZone,
+            isOnLink,
+            isOnPair
         };
     }
 
@@ -241,7 +253,9 @@ export class PlayerCardManager {
         
         return {
             success: false,
-            error: `Command card placement not yet implemented for ${cardUID}`
+            error: `Command card placement not yet implemented for ${cardUID}`,
+            isOnLink: false,
+            isOnPair: false
         };
     }
 
@@ -291,16 +305,23 @@ export class PlayerCardManager {
             playerZones.base.push(baseCard);
             console.log(`🏗️ Placed new base card ${cardUID} in base zone`);
             
+            // Analyze the placement result (base cards don't create pairs but for consistency)
+            const { isOnLink, isOnPair } = this.analyzePlacementResult(playerZones, 'base', 'base');
+            
             return {
                 success: true,
-                placedZone: 'base'
+                placedZone: 'base',
+                isOnLink,
+                isOnPair
             };
             
         } catch (error) {
             console.error(`❌ Error placing base card ${cardUID}:`, error);
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Base card placement failed'
+                error: error instanceof Error ? error.message : 'Base card placement failed',
+                isOnLink: false,
+                isOnPair: false
             };
         }
     }
@@ -342,5 +363,112 @@ export class PlayerCardManager {
         }
 
         return player.deck.handUids.includes(cardUID);
+    }
+
+    // ============ LINK AND PAIR DETECTION HELPERS ============
+
+    /**
+     * Check if a slot has both unit and pilot (any combination = pair)
+     * 
+     * A "pair" occurs when any unit card is combined with any pilot card in the same slot.
+     * This is different from a "link" which requires the cards to be from the same family.
+     * 
+     * @param playerZones - The player's zone structure containing all slots
+     * @param slotName - The specific slot to check (e.g., "slot1", "slot2", etc.)
+     * @returns true if both unit and pilot cards exist in the slot, false otherwise
+     * 
+     * Examples:
+     * - Unit "Gundam" + Pilot "Amuro" = pair (true)
+     * - Unit "Gundam" + Pilot "Char" = pair (true) 
+     * - Unit "Gundam" only = not a pair (false)
+     * - Pilot "Amuro" only = not a pair (false)
+     * - Empty slot = not a pair (false)
+     */
+    private static isPairInSlot(playerZones: any, slotName: string): boolean {
+        // Access the specific slot from the player's zones
+        const slot = playerZones[slotName];
+        
+        // Use optional chaining (?.) to safely access properties
+        // Use logical AND (&&) to ensure BOTH unit and pilot exist
+        // Use double negation (!!) to convert the result to a strict boolean
+        return !!(slot?.unit && slot?.pilot);
+    }
+
+    /**
+     * Check if unit and pilot in a slot are from the same card family (link)
+     * 
+     * A "link" occurs when a unit's link field matches either:
+     * 1. The pilot's name
+     * 2. One of the pilot's traits
+     * 
+     * @param playerZones - The player's zone structure containing all slots
+     * @param slotName - The specific slot to check (e.g., "slot1", "slot2", etc.)
+     * @returns true if unit and pilot are linked, false otherwise
+     * 
+     * Examples:
+     * - Unit with link: ["Amuro"] + Pilot with name: "Amuro" = link (true)
+     * - Unit with link: ["Newtype"] + Pilot with traits: ["Newtype", "Hero"] = link (true)
+     * - Unit with link: ["Amuro"] + Pilot with name: "Char" = no link (false)
+     */
+    private static isLinkInSlot(playerZones: any, slotName: string): boolean {
+        const slot = playerZones[slotName];
+        if (!slot?.unit || !slot?.pilot) {
+            return false;
+        }
+
+        // Try to get link from unit card (check both direct property and cardData)
+        const unit = slot.unit;
+        const pilot = slot.pilot;
+        
+        // Get unit's link field - check direct property first, then cardData
+        const unitLink = unit.cardData?.link;
+        if (!unitLink || !Array.isArray(unitLink) || unitLink.length === 0) {
+            return false;
+        }
+
+        // Get pilot's name and traits for matching
+        const pilotName = pilot.cardData?.name;
+        const pilotTraits = pilot.cardData?.traits || [];
+
+        console.log(`🔗 Checking link: unit.link=${JSON.stringify(unitLink)}, pilot.name="${pilotName}", pilot.traits=${JSON.stringify(pilotTraits)}`);
+
+        // Check if unit's link matches pilot's name
+        if (pilotName && unitLink.includes(pilotName)) {
+            console.log(`✅ Link found: unit.link includes pilot name "${pilotName}"`);
+            return true;
+        }
+
+        // Check if unit's link matches any of pilot's traits
+        for (const linkValue of unitLink) {
+            if (pilotTraits.includes(linkValue)) {
+                console.log(`✅ Link found: unit.link "${linkValue}" matches pilot trait`);
+                return true;
+            }
+        }
+
+        console.log(`❌ No link found between unit and pilot`);
+        return false;
+    }
+
+    /**
+     * Analyze placement result for link/pair status
+     * Returns the state after placement has occurred
+     * 
+     * @param playerZones - The player's zone structure
+     * @param placedZone - The zone where the card was placed
+     * @param placedCardType - The type of card that was placed ('unit', 'pilot', etc.)
+     * @returns Object with isOnLink and isOnPair boolean flags
+     */
+    private static analyzePlacementResult(playerZones: any, placedZone: string, placedCardType: string): { isOnLink: boolean; isOnPair: boolean } {
+        // Check if slot has both unit and pilot after placement
+        // isOnPair need to check placedCardType
+        const isOnPair = this.isPairInSlot(playerZones, placedZone) && placedCardType == "pilot";
+        
+        // Only check for link if we have a pair
+        const isOnLink = isOnPair ? this.isLinkInSlot(playerZones, placedZone) : false;
+        
+        console.log(`🔍 Placement analysis for ${placedZone} (placed ${placedCardType}): isOnPair=${isOnPair}, isOnLink=${isOnLink}`);
+        
+        return { isOnLink, isOnPair };
     }
 }
