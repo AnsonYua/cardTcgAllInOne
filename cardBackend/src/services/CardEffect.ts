@@ -4,7 +4,29 @@
 import { GameEnvironment } from '../models/GameEnvironment';
 import { HandCard } from '../models/Player';
 import { ZoneCard } from '../models/CardSystem';
-import { StoredContinuousEffect, ContinuousEffectsHelper, createEmptyContinuousEffectsCollection } from '../models/ContinuousEffects';
+import { 
+    StoredContinuousEffect, 
+    ContinuousEffectsHelper, 
+    createEmptyContinuousEffectsCollection,
+    EffectProcessingResult,
+    findEffectByKey,
+    getEffectUniqueKey
+} from '../models/ContinuousEffects';
+
+// Continuous effect types
+export enum ContinuousEffectType {
+    ALWAYS_ACTIVE = 'ALWAYS_ACTIVE',
+    PAIR_TRIGGERED = 'PAIR_TRIGGERED', 
+    LINK_TRIGGERED = 'LINK_TRIGGERED'
+}
+
+// Slot state interface
+export interface SlotState {
+    hasUnit: boolean;
+    hasPilot: boolean;
+    isPaired: boolean;
+    isLinked: boolean;
+}
 
 export interface EffectResult {
     success: boolean;
@@ -139,9 +161,9 @@ export class CardEffect {
     }
 
     /**
-     * Apply effect to all units owned by the player
+     * PHASE 1: Add effects to all units owned by the player (storage only)
      */
-    static applyEffectToAllPlayerUnits(
+    static addEffectToAllPlayerUnits(
         effectRule: any, 
         sourceCard: ZoneCard, 
         playerId: string, 
@@ -153,11 +175,42 @@ export class CardEffect {
         const targetUnits = CardEffect.getAllPlayerUnits(playerId, gameEnv);
         const effectId = CardEffect.extractEffectId(effectRule);
         
+        let addedCount = 0;
         for (const unit of targetUnits) {
-            CardEffect.addContinuousEffect(unit, effectRule, sourceCard, effectId);
+            if (CardEffect.addContinuousEffect(unit, effectRule, sourceCard, effectId)) {
+                addedCount++;
+            }
         }
         
-        return targetUnits.length > 0;
+        console.log(`💾 Added effects to ${addedCount}/${targetUnits.length} units`);
+        return addedCount > 0;
+    }
+    
+    /**
+     * PHASE 2: Apply all continuous effects to all player units
+     */
+    static applyEffectsToAllPlayerUnits(playerId: string, gameEnv: GameEnvironment): number {
+        const targetUnits = CardEffect.getAllPlayerUnits(playerId, gameEnv);
+        let totalApplied = 0;
+        
+        for (const unit of targetUnits) {
+            totalApplied += CardEffect.applyContinuousEffects(unit, gameEnv);
+        }
+        
+        console.log(`✅ Applied ${totalApplied} effects to ${targetUnits.length} units for player ${playerId}`);
+        return totalApplied;
+    }
+    
+    /**
+     * Legacy method name for backward compatibility
+     */
+    static applyEffectToAllPlayerUnits(
+        effectRule: any, 
+        sourceCard: ZoneCard, 
+        playerId: string, 
+        gameEnv: GameEnvironment
+    ): boolean {
+        return CardEffect.addEffectToAllPlayerUnits(effectRule, sourceCard, playerId, gameEnv);
     }
 
     /**
@@ -179,14 +232,14 @@ export class CardEffect {
     }
 
     /**
-     * Add continuous effect to a target card with duplicate prevention
+     * PHASE 1: Add continuous effect to storage only (no immediate application)
      */
     static addContinuousEffect(
         targetCard: ZoneCard, 
         effectRule: any, 
         sourceCard: ZoneCard, 
         effectId: string
-    ): void {
+    ): boolean {
         // Initialize array if it doesn't exist
         if (!targetCard.continuousEffects) {
             targetCard.continuousEffects = createEmptyContinuousEffectsCollection();
@@ -196,18 +249,8 @@ export class CardEffect {
         const effectAction = effectRule.effect?.action || 'modifyAP';
         const parameters = effectRule.effect?.parameters || {};
         
-        // Calculate value based on action type and actual parameters
-        let value = 0;
-        if (effectAction === 'modifyAP' && parameters.modifier) {
-            value = CardEffect.parseModifier(parameters.modifier);
-        } else if (effectAction === 'heal' && parameters.amount) {
-            value = parameters.amount;
-        } else if (effectAction === 'damage' && parameters.amount) {
-            value = parameters.amount;
-        } else if (effectAction === 'restrict_attack') {
-            // Restriction effects don't have numeric values
-            value = 0;
-        }
+        // Calculate value for storage (but don't apply yet)
+        const value = CardEffect.getEffectValue(effectAction, parameters);
         
         const storedEffect: StoredContinuousEffect = {
             effectId,
@@ -219,22 +262,76 @@ export class CardEffect {
                 duration: effectRule.effect?.duration || 'while_paired'
             },
             sourceCardUid: sourceCard.cardUid,
-            active: true,
-            appliedValue: value
+            active: false, // Start inactive, will be activated in Phase 2
+            appliedValue: 0 // Will be set when actually applied
         };
         
-        // Add effect with duplicate prevention
+        // Add effect with duplicate prevention (storage only)
         const wasAdded = ContinuousEffectsHelper.addEffect(targetCard.continuousEffects, storedEffect);
         
         if (wasAdded) {
-            // Apply effect immediately only if it was actually added (not a duplicate)
-            if (effectAction === 'modifyAP' || effectAction === 'modifyHP') {
-                CardEffect.applyEffectValue(targetCard, effectAction, value);
-            }
-            console.log(`✅ Applied and stored continuous effect: ${effectId} (${effectAction}) from ${sourceCard.cardUid} to ${targetCard.cardUid}`);
+            console.log(`💾 Stored continuous effect: ${effectId} (${effectAction}) from ${sourceCard.cardUid} to ${targetCard.cardUid}`);
         } else {
             console.log(`⚠️ Skipped duplicate continuous effect: ${effectId} from ${sourceCard.cardUid} to ${targetCard.cardUid}`);
         }
+        
+        return wasAdded;
+    }
+    
+    /**
+     * PHASE 2: Apply all stored continuous effects to a card
+     */
+    static applyContinuousEffects(targetCard: ZoneCard, gameEnv: GameEnvironment): number {
+        if (!targetCard.continuousEffects || targetCard.continuousEffects.length === 0) {
+            return 0;
+        }
+        
+        let appliedCount = 0;
+        
+        for (const storedEffect of targetCard.continuousEffects) {
+            // Check if effect should be active based on timing and conditions
+            const shouldBeActive = CardEffect.shouldEffectBeActive(storedEffect, targetCard, gameEnv);
+            
+            if (shouldBeActive && !storedEffect.active) {
+                // Activate effect
+                const value = CardEffect.getEffectValue(storedEffect.effect.action, storedEffect.effect.parameters);
+                
+                if (storedEffect.effect.action === 'modifyAP' || storedEffect.effect.action === 'modifyHP') {
+                    CardEffect.applyEffectValue(targetCard, storedEffect.effect.action, value);
+                }
+                
+                storedEffect.active = true;
+                storedEffect.appliedValue = value;
+                appliedCount++;
+                
+                console.log(`✅ Activated effect: ${storedEffect.effectId} (${storedEffect.effect.action}) on ${targetCard.cardUid} (value: ${value})`);
+                
+            } else if (!shouldBeActive && storedEffect.active) {
+                // Deactivate effect
+                if (storedEffect.effect.action === 'modifyAP' || storedEffect.effect.action === 'modifyHP') {
+                    CardEffect.applyEffectValue(targetCard, storedEffect.effect.action, -storedEffect.appliedValue);
+                }
+                
+                storedEffect.active = false;
+                storedEffect.appliedValue = 0;
+                
+                console.log(`❌ Deactivated effect: ${storedEffect.effectId} (${storedEffect.effect.action}) on ${targetCard.cardUid}`);
+            }
+        }
+        
+        return appliedCount;
+    }
+    
+    /**
+     * Check if a stored effect should be active based on timing and game state
+     */
+    static shouldEffectBeActive(storedEffect: StoredContinuousEffect, targetCard: ZoneCard, gameEnv: GameEnvironment): boolean {
+        // Basic timing check - can be expanded with more complex logic
+        const timing = storedEffect.timing || ['YOUR_TURN'];
+        
+        // For now, always return true for continuous effects
+        // This can be enhanced with turn-based logic, pairing status, etc.
+        return true;
     }
 
     /**
@@ -306,6 +403,316 @@ export class CardEffect {
                 console.log(`⚠️ Unknown action type for value extraction: ${action}`);
                 return 0;
         }
+    }
+
+    // ============================================================================
+    // CONTINUOUS EFFECTS ORCHESTRATION (moved from ContinuousEffectManager)
+    // ============================================================================
+
+    /**
+     * Main entry point - TWO-PHASE continuous effects processing
+     */
+    static processAllContinuousEffects(gameEnv: GameEnvironment): EffectProcessingResult {
+        console.log(`🔄 Processing continuous effects from paired cards (TWO-PHASE)`);
+        
+        try {
+            let totalAdded = 0;
+            let totalApplied = 0;
+            
+            // PHASE 1: Add all effects to storage
+            console.log(`💾 PHASE 1: Adding effects to storage...`);
+            for (const [playerId, player] of Object.entries(gameEnv.players)) {
+                const playerEffectsAdded = CardEffect.processPlayerSlots(player, playerId, gameEnv);
+                totalAdded += playerEffectsAdded;
+            }
+            
+            // PHASE 2: Apply all stored effects
+            console.log(`✅ PHASE 2: Applying stored effects...`);
+            for (const [playerId, player] of Object.entries(gameEnv.players)) {
+                const playerEffectsApplied = CardEffect.applyEffectsToAllPlayerUnits(playerId, gameEnv);
+                totalApplied += playerEffectsApplied;
+            }
+            
+            console.log(`✅ TWO-PHASE complete: ${totalAdded} effects added, ${totalApplied} effects applied`);
+            return { success: true, effectsProcessed: totalAdded, effectsActivated: totalApplied, effectsDeactivated: 0 };
+            
+        } catch (error) {
+            console.error(`❌ Error processing slot effects:`, error);
+            return { success: false, effectsProcessed: 0, effectsActivated: 0, effectsDeactivated: 0, error: String(error) };
+        }
+    }
+
+    /**
+     * Process all slots for a single player
+     */
+    private static processPlayerSlots(player: any, playerId: string, gameEnv: GameEnvironment): number {
+        if (!player.zones) return 0;
+        
+        let effectCount = 0;
+        const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'] as const;
+        
+        for (const slotName of slotZones) {
+            const slot = player.zones[slotName];
+            if (!slot) continue;
+            
+            // Detect slot state for all effect types
+            const slotState = CardEffect.detectSlotState(slot);
+            
+            // Process effects based on slot state
+            effectCount += CardEffect.processSlotEffects(slot, slotState, playerId, gameEnv);
+        }
+        
+        return effectCount;
+    }
+
+    /**
+     * Detect the current state of a slot for effect processing
+     */
+    private static detectSlotState(slot: any): SlotState {
+        const hasUnit = !!slot.unit;
+        const hasPilot = !!slot.pilot;
+        const isPaired = hasUnit && hasPilot;
+        const isLinked = isPaired ? CardEffect.detectLink(slot.unit, slot.pilot) : false;
+        
+        return {
+            hasUnit,
+            hasPilot,
+            isPaired,
+            isLinked
+        };
+    }
+
+    /**
+     * Detect if unit and pilot form a link (unit.link matches pilot.name or traits)
+     */
+    private static detectLink(unit: any, pilot: any): boolean {
+        if (!unit?.cardData?.link || !pilot?.cardData) return false;
+        
+        const unitLink = unit.cardData.link;
+        const pilotName = pilot.cardData.name;
+        const pilotTraits = pilot.cardData.traits || [];
+        
+        // Check if unit's link matches pilot's name
+        if (pilotName && unitLink.includes(pilotName)) {
+            return true;
+        }
+        
+        // Check if unit's link matches any of pilot's traits
+        for (const linkValue of unitLink) {
+            if (pilotTraits.includes(linkValue)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    /**
+     * Process continuous effects for a slot based on its state
+     */
+    private static processSlotEffects(slot: any, slotState: SlotState, playerId: string, gameEnv: GameEnvironment): number {
+        let effectCount = 0;
+        
+        // Process unit effects
+        if (slot.unit) {
+            effectCount += CardEffect.processCardEffects(slot.unit, slotState, playerId, gameEnv);
+        }
+        
+        // Process pilot effects
+        if (slot.pilot) {
+            effectCount += CardEffect.processCardEffects(slot.pilot, slotState, playerId, gameEnv);
+        }
+        
+        return effectCount;
+    }
+
+    /**
+     * Process continuous effects from a single card based on slot state
+     */
+    private static processCardEffects(card: any, slotState: SlotState, playerId: string, gameEnv: GameEnvironment): number {
+        const effects = card.cardData?.effects?.rules || [];
+        let appliedCount = 0;
+        
+        for (const effectRule of effects) {
+            const trigger = CardEffect.extractTrigger(effectRule);
+            if (trigger !== 'continuous') continue;
+            
+            const effectType = CardEffect.classifyEffectType(effectRule);
+            
+            // Use switch case for different effect types
+            switch (effectType) {
+                case ContinuousEffectType.ALWAYS_ACTIVE:
+                    if (CardEffect.processAlwaysActiveEffect(effectRule, card, playerId, gameEnv)) {
+                        appliedCount++;
+                    }
+                    break;
+                    
+                case ContinuousEffectType.PAIR_TRIGGERED:
+                    if (slotState.isPaired && CardEffect.processPairTriggeredEffect(effectRule, card, playerId, gameEnv)) {
+                        appliedCount++;
+                    }
+                    break;
+                    
+                case ContinuousEffectType.LINK_TRIGGERED:
+                    if (slotState.isLinked && CardEffect.processLinkTriggeredEffect(effectRule, card, playerId, gameEnv)) {
+                        appliedCount++;
+                    }
+                    break;
+                    
+                default:
+                    console.log(`⚠️ Unknown continuous effect type: ${effectType}`);
+            }
+        }
+        
+        return appliedCount;
+    }
+
+    /**
+     * Classify the type of continuous effect based on conditions
+     */
+    private static classifyEffectType(effectRule: any): ContinuousEffectType {
+        const conditions = CardEffect.extractConditions(effectRule);
+        
+        // Check for pair-triggered effects
+        if (conditions.includes('isPaired')) {
+            return ContinuousEffectType.PAIR_TRIGGERED;
+        }
+        
+        // Check for link-triggered effects (future expansion)
+        if (conditions.includes('isLinked')) {
+            return ContinuousEffectType.LINK_TRIGGERED;
+        }
+        
+        // Default to always active effects (like ST01-009 "Zowort" attack restrictions)
+        return ContinuousEffectType.ALWAYS_ACTIVE;
+    }
+
+    /**
+     * Process always active continuous effects (PHASE 1: Storage only)
+     */
+    private static processAlwaysActiveEffect(
+        effectRule: any, 
+        sourceCard: any, 
+        playerId: string, 
+        gameEnv: GameEnvironment
+    ): boolean {
+        console.log(`🔄 Processing always active effect from ${sourceCard.cardId}`);
+        
+        const scope = CardEffect.extractTargetScope(effectRule);
+        const effectId = CardEffect.extractEffectId(effectRule);
+        
+        switch (scope) {
+            case 'self':
+            case 'self_all':
+                return CardEffect.addEffectToAllPlayerUnits(effectRule, sourceCard, playerId, gameEnv);
+            case 'opponent':
+            case 'opponent_all':
+                const opponentId = CardEffect.getOpponentId(playerId, gameEnv);
+                return CardEffect.addEffectToAllPlayerUnits(effectRule, sourceCard, opponentId, gameEnv);
+            default:
+                console.log(`⚠️ Unknown scope pattern: ${scope}`);
+                return false;
+        }
+    }
+
+    /**
+     * Process pair-triggered continuous effects (PHASE 1: Storage only)
+     */
+    private static processPairTriggeredEffect(
+        effectRule: any, 
+        sourceCard: any, 
+        playerId: string, 
+        gameEnv: GameEnvironment
+    ): boolean {
+        console.log(`🔄 Processing pair-triggered effect from ${sourceCard.cardId}`);
+        return CardEffect.addEffectToAllPlayerUnits(effectRule, sourceCard, playerId, gameEnv);
+    }
+
+    /**
+     * Process link-triggered continuous effects (PHASE 1: Storage only - placeholder)
+     */
+    private static processLinkTriggeredEffect(
+        effectRule: any, 
+        sourceCard: any, 
+        playerId: string, 
+        gameEnv: GameEnvironment
+    ): boolean {
+        console.log(`🔄 Processing link-triggered effect from ${sourceCard.cardId} (placeholder)`);
+        return CardEffect.addEffectToAllPlayerUnits(effectRule, sourceCard, playerId, gameEnv);
+    }
+
+    /**
+     * Get opponent player ID
+     */
+    private static getOpponentId(playerId: string, gameEnv: GameEnvironment): string {
+        const playerIds = Object.keys(gameEnv.players);
+        return playerIds.find(id => id !== playerId) || '';
+    }
+
+    /**
+     * Clean up effects from a removed card
+     */
+    static cleanupEffectsFromCard(removedCardUid: string, gameEnv: GameEnvironment): void {
+        console.log(`🧹 Cleaning up effects from removed card: ${removedCardUid}`);
+        
+        const allCards = CardEffect.getAllCards(gameEnv);
+        
+        for (const card of allCards) {
+            if (!card.continuousEffects || card.continuousEffects.length === 0) continue;
+            
+            const removedCount = ContinuousEffectsHelper.removeEffectsFromSource(card.continuousEffects, removedCardUid);
+            
+            for (let i = card.continuousEffects.length - 1; i >= 0; i--) {
+                const effect = card.continuousEffects[i];
+                if (effect.sourceCardUid === removedCardUid && effect.active) {
+                    CardEffect.removeEffectValue(card, effect.effect.action, effect.appliedValue);
+                }
+            }
+            
+            if (removedCount > 0) {
+                console.log(`🗑️ Cleaned up ${removedCount} effects from ${card.cardUid}`);
+            }
+        }
+    }
+
+    /**
+     * Get all cards from game environment
+     */
+    private static getAllCards(gameEnv: GameEnvironment): ZoneCard[] {
+        const cards: ZoneCard[] = [];
+        
+        for (const player of Object.values(gameEnv.players)) {
+            if (!player.zones) continue;
+            
+            const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'] as const;
+            for (const slotKey of slotZones) {
+                const slot = player.zones[slotKey];
+                if (slot.unit) cards.push(slot.unit);
+                if (slot.pilot) cards.push(slot.pilot);
+            }
+            
+            if (player.zones.base) {
+                cards.push(...player.zones.base);
+            }
+            if (player.zones.shieldArea) {
+                cards.push(...player.zones.shieldArea);
+            }
+            if (player.zones.energyArea) {
+                cards.push(...player.zones.energyArea);
+            }
+            if (player.zones.trashArea) {
+                cards.push(...player.zones.trashArea);
+            }
+        }
+        
+        return cards;
+    }
+
+    /**
+     * Remove effect value from card
+     */
+    private static removeEffectValue(card: ZoneCard, action: string, value: number): void {
+        CardEffect.applyEffectValue(card, action, -value);
     }
 
     // Utility methods for cleaner data extraction

@@ -608,8 +608,8 @@ export class GameEngine {
             // Process continuous effects when turn changes (timing updates)
             console.log(`🔄 Turn changed - processing continuous effects for timing updates`);
             try {
-                const { ContinuousEffectManager } = require('./ContinuousEffectManager');
-                const result = ContinuousEffectManager.processAllContinuousEffects(gameEnv);
+                const { CardEffect } = require('./CardEffect');
+                const result = CardEffect.processAllContinuousEffects(gameEnv);
                 console.log(`✅ Continuous effects processed: ${result.effectsProcessed} processed, ${result.effectsActivated} activated, ${result.effectsDeactivated} deactivated`);
             } catch (error) {
                 console.error(`❌ Error processing continuous effects on turn change:`, error);
@@ -699,16 +699,14 @@ export class GameEngine {
             // ✅ Card placement successful - Check for Deploy effects (ENTERS_PLAY triggers)
             console.log(`✅ Card ${eventData.cardUID} successfully placed for player ${eventData.playerId}`);
             
-            // Process continuous effects based on placement result
-            if (placementResult.isOnPair) {
-                console.log(`🔄 ${placementResult.isOnLink ? 'Link' : 'Pair'} created - processing continuous effects`);
-                try {
-                    const { ContinuousEffectManager } = require('./ContinuousEffectManager');
-                    const result = ContinuousEffectManager.processAllContinuousEffects(gameEnv);
-                    console.log(`✅ Continuous effects processed: ${result.effectsProcessed} processed, ${result.effectsActivated} activated, ${result.effectsDeactivated} deactivated`);
-                } catch (error) {
-                    console.error(`❌ Error processing continuous effects after ${placementResult.isOnLink ? 'link' : 'pair'} creation:`, error);
-                }
+            // Process continuous effects after card placement (always)
+            console.log(`🔄 Processing continuous effects after card placement${placementResult.isOnPair ? ` (${placementResult.isOnLink ? 'Link' : 'Pair'} created)` : ''}`);
+            try {
+                const { CardEffect } = require('./CardEffect');
+                const result = CardEffect.processAllContinuousEffects(gameEnv);
+                console.log(`✅ Continuous effects processed: ${result.effectsProcessed} processed, ${result.effectsActivated} activated, ${result.effectsDeactivated} deactivated`);
+            } catch (error) {
+                console.error(`❌ Error processing continuous effects after card placement:`, error);
             } 
             
             // Check for Deploy effects using cardUID to extract cardId and fetch cardData from database
