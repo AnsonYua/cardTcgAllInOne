@@ -12,6 +12,7 @@ import {
     findEffectByKey,
     getEffectUniqueKey
 } from '../models/ContinuousEffects';
+import { SLOT_ZONES } from '../config/gameConstants';
 
 // Continuous effect types
 export enum ContinuousEffectType {
@@ -65,10 +66,9 @@ export class CardEffect {
         }
         
         // Find unit in slot zones
-        const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'] as const;
         let targetUnit = null;
         
-        for (const slot of slotZones) {
+        for (const slot of SLOT_ZONES) {
             const slotZone = (player.zones as any)[slot];
             if (slotZone?.unit) {
                 // First try to match by cardUid if available
@@ -221,9 +221,8 @@ export class CardEffect {
         if (!player?.zones) return [];
         
         const units: ZoneCard[] = [];
-        const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'] as const;
         
-        for (const slotName of slotZones) {
+        for (const slotName of SLOT_ZONES) {
             const unit = (player.zones as any)[slotName]?.unit;
             if (unit) units.push(unit);
         }
@@ -391,10 +390,14 @@ export class CardEffect {
             let totalAdded = 0;
             let totalApplied = 0;
             
-            // Process each player with internal two-phase approach
+            // Process each player with three-phase approach
             for (const [playerId, player] of Object.entries(gameEnv.players)) {
+                console.log(`🧹 PHASE 0: Cleaning stale effects for player ${playerId}`);
+                const effectsRemoved = CardEffect.cleanupStaleEffectsForPlayer(player, playerId, gameEnv);
+                console.log(`   Removed ${effectsRemoved} stale effects`);
+                
                 console.log(`💾 PHASE 1: Adding effects for player ${playerId}`);
-                const playerEffectsAdded = CardEffect.processPlayerSlots(player, playerId, gameEnv);
+                const playerEffectsAdded = CardEffect.updatePlayerSlotsContinuousEffects(player, playerId, gameEnv);
                 totalAdded += playerEffectsAdded;
                 
                 console.log(`✅ PHASE 2: Applying effects for player ${playerId}`);
@@ -412,23 +415,78 @@ export class CardEffect {
     }
 
     /**
-     * Process all slots for a single player
+     * Phase 0: Clean up stale continuous effects (remove effects from cards no longer in field)
      */
-    private static processPlayerSlots(player: any, playerId: string, gameEnv: GameEnvironment): number {
+    private static cleanupStaleEffectsForPlayer(player: any, playerId: string, gameEnv: GameEnvironment): number {
+        if (!player.zones) return 0;
+        
+        let totalRemoved = 0;
+        
+        // Get all cards currently in field (slots)
+        const cardsInField = new Set<string>();
+        for (const slotName of SLOT_ZONES) {
+            const slot = player.zones[slotName];
+            if (slot?.unit?.cardUid) cardsInField.add(slot.unit.cardUid);
+            if (slot?.pilot?.cardUid) cardsInField.add(slot.pilot.cardUid);
+        }
+        
+        // Clean up continuous effects on each card
+        for (const slotName of SLOT_ZONES) {
+            const slot = player.zones[slotName];
+            
+            // Clean unit effects
+            if (slot?.unit?.continuousEffects) {
+                const removedFromUnit = CardEffect.removeStaleEffectsFromCard(slot.unit, cardsInField);
+                totalRemoved += removedFromUnit;
+            }
+            
+            // Clean pilot effects
+            if (slot?.pilot?.continuousEffects) {
+                const removedFromPilot = CardEffect.removeStaleEffectsFromCard(slot.pilot, cardsInField);
+                totalRemoved += removedFromPilot;
+            }
+        }
+        
+        return totalRemoved;
+    }
+
+    /**
+     * Remove stale effects from a single card based on source cards in field
+     */
+    private static removeStaleEffectsFromCard(card: ZoneCard, cardsInField: Set<string>): number {
+        if (!card.continuousEffects || card.continuousEffects.length === 0) return 0;
+        
+        const initialCount = card.continuousEffects.length;
+        
+        // Filter out effects whose source cards are no longer in field
+        card.continuousEffects = card.continuousEffects.filter(effect => {
+            const sourceStillExists = cardsInField.has(effect.sourceCardUid);
+            if (!sourceStillExists) {
+                console.log(`   🗑️ Removing stale effect ${effect.effectId} from source ${effect.sourceCardUid}`);
+            }
+            return sourceStillExists;
+        });
+        
+        return initialCount - card.continuousEffects.length;
+    }
+
+    /**
+     * Update continuous effects for all slots for a single player (Phase 1)
+     */
+    private static updatePlayerSlotsContinuousEffects(player: any, playerId: string, gameEnv: GameEnvironment): number {
         if (!player.zones) return 0;
         
         let effectCount = 0;
-        const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'] as const;
         
-        for (const slotName of slotZones) {
+        for (const slotName of SLOT_ZONES) {
             const slot = player.zones[slotName];
             if (!slot) continue;
             
             // Detect slot state for all effect types
             const slotState = CardEffect.detectSlotState(slot);
             
-            // Process effects based on slot state
-            effectCount += CardEffect.processSlotEffects(slot, slotState, playerId, gameEnv);
+            // Update effects based on slot state
+            effectCount += CardEffect.updateSlotContinuousEffects(slot, slotState, playerId, gameEnv);
         }
         
         return effectCount;
@@ -477,28 +535,28 @@ export class CardEffect {
     }
 
     /**
-     * Process continuous effects for a slot based on its state
+     * Update continuous effects for a single slot based on its state
      */
-    private static processSlotEffects(slot: any, slotState: SlotState, playerId: string, gameEnv: GameEnvironment): number {
+    private static updateSlotContinuousEffects(slot: any, slotState: SlotState, playerId: string, gameEnv: GameEnvironment): number {
         let effectCount = 0;
         
-        // Process unit effects
+        // Update unit effects
         if (slot.unit) {
-            effectCount += CardEffect.processCardEffects(slot.unit, slotState, playerId, gameEnv);
+            effectCount += CardEffect.updateCardContinuousEffects(slot.unit, slotState, playerId, gameEnv);
         }
         
-        // Process pilot effects
+        // Update pilot effects
         if (slot.pilot) {
-            effectCount += CardEffect.processCardEffects(slot.pilot, slotState, playerId, gameEnv);
+            effectCount += CardEffect.updateCardContinuousEffects(slot.pilot, slotState, playerId, gameEnv);
         }
         
         return effectCount;
     }
 
     /**
-     * Process continuous effects from a single card based on slot state
+     * Update continuous effects from a single card based on slot state
      */
-    private static processCardEffects(card: any, slotState: SlotState, playerId: string, gameEnv: GameEnvironment): number {
+    private static updateCardContinuousEffects(card: any, slotState: SlotState, playerId: string, gameEnv: GameEnvironment): number {
         const effects = card.cardData?.effects?.rules || [];
         let appliedCount = 0;
         
@@ -653,8 +711,7 @@ export class CardEffect {
         for (const player of Object.values(gameEnv.players)) {
             if (!player.zones) continue;
             
-            const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'] as const;
-            for (const slotKey of slotZones) {
+            for (const slotKey of SLOT_ZONES) {
                 const slot = player.zones[slotKey];
                 if (slot.unit) cards.push(slot.unit);
                 if (slot.pilot) cards.push(slot.pilot);

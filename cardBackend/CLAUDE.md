@@ -694,6 +694,246 @@ await testHelper.injectGameState(gameId, gameEnv);
 **Background:**
 Previously, `injectGameState` bypassed both the play sequence recording and field effects initialization that occurs during normal game setup, causing test scenarios to run with default "ALL" zone permissions and missing effect simulation.
 
+## Game Constants Configuration (January 2025)
+
+### Centralized Slot Zone Constants
+**Single Source of Truth for Game Zones** - All slot zone references now use centralized constants:
+
+**Core Configuration:**
+- **`src/config/gameConstants.ts`** - Central location for all game constants
+- **SLOT_ZONES constant**: `['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6']` as const
+- **Type safety**: SlotZone type definition for TypeScript validation
+- **Additional constants**: ZONE_TYPES, GAME_PHASES, CONTINUOUS_EFFECT_TYPES
+
+**Complete Configuration Structure:**
+```typescript
+// Slot zones for continuous effects processing
+export const SLOT_ZONES = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'] as const;
+export type SlotZone = typeof SLOT_ZONES[number];
+
+// Zone types for game mechanics
+export const ZONE_TYPES = {
+    BASE: 'base',
+    SHIELD_AREA: 'shieldArea', 
+    ENERGY_AREA: 'energyArea',
+    TRASH_AREA: 'trashArea',
+    LEADER: 'leader'
+} as const;
+```
+
+**Benefits:**
+- **📍 Single Source of Truth** - All slot zone references point to one location
+- **🔧 Easy Maintenance** - Changes to slot zones only need to be made in one file
+- **⚡ Type Safety** - TypeScript SlotZone type prevents invalid slot references
+- **🧹 Code Cleanup** - Eliminated 7+ redundant array declarations across codebase
+- **📈 Extensibility** - Easy to add more game constants in the same location
+- **🔄 Consistency** - All continuous effects processing uses same slot definitions
+
+**Usage Example:**
+```typescript
+import { SLOT_ZONES } from '../config/gameConstants';
+
+// Before: Hardcoded arrays scattered throughout codebase
+// const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'];
+
+// After: Centralized constant
+for (const slotName of SLOT_ZONES) {
+  const slot = player.zones[slotName];
+  // Process slot for continuous effects...
+}
+```
+
+**Files Updated with Centralized Constants:**
+- `src/services/CardEffect.ts` - 4 occurrences replaced (main effects processing)
+- `src/services/GameEngine.ts` - 2 occurrences replaced (card lookup methods)
+- `src/services/EventQueue/StateBasedActionEngine.ts` - 1 occurrence replaced (repair ability processing)
+
+**Impact:**
+- Eliminated duplicate hardcoded arrays across 7+ locations in codebase
+- Improved maintainability for future slot zone modifications
+- Enhanced type safety for slot zone references
+- Simplified debugging and code readability
+
+## Continuous Effects System (January 2025)
+
+### Overview
+**Enhanced Three-Phase Architecture** - Complete continuous effects processing with intelligent cleanup, source tracking, and future-proof method naming:
+
+**Core Components:**
+- **`src/services/CardEffect.ts`** - SINGLE FILE containing all continuous effects logic
+- **`src/config/gameConstants.ts`** - Unified slot zone constants (`SLOT_ZONES`) for consistency
+- **Array-based storage** with duplicate prevention using `effectId + sourceCardUid` keys
+- **Three-phase processing**: Phase 0 (cleanup), Phase 1 (storage), Phase 2 (application)
+- **Switch-case architecture** for different effect types (ALWAYS_ACTIVE, PAIR_TRIGGERED, LINK_TRIGGERED)
+
+### Enhanced Three-Phase Effect Flow
+```
+🧹 PHASE 0: Clean up stale effects (removes effects from cards no longer in field)
+💾 PHASE 1: Add new continuous effects to cards  
+✅ PHASE 2: Apply stored effects to cards
+```
+
+**Complete Processing Flow:**
+1. **`processAllContinuousEffects(gameEnv)`** - Main orchestration entry point
+2. **PHASE 0 (Cleanup):** `cleanupStaleEffectsForPlayer()` - Remove effects from cards no longer in field
+3. **PHASE 1 (Storage):** `updatePlayerSlotsContinuousEffects()` - Process each player's slots for new effects
+4. **Slot Detection:** `detectSlotState()` - Determine slot conditions (paired, linked, etc.)
+5. **Effect Processing:** `updateCardContinuousEffects()` - Extract and classify effects from individual cards
+6. **Effect Storage:** `addContinuousEffect()` - Store effects (Phase 1 - no immediate application)
+7. **PHASE 2 (Application):** `applyContinuousEffects()` - Apply stored effects (activate and apply values)
+
+### Phase 0 Cleanup System (NEW - January 2025)
+**Intelligent Stale Effect Removal:**
+
+**Problem Solved:**
+- Prevents "ghost effects" from cards no longer in the field
+- Eliminates effect accumulation that could break game balance
+- Ensures effect source validation for consistent game state
+
+**Implementation:**
+```typescript
+// Phase 0: Clean up stale effects for each player
+console.log(`🧹 PHASE 0: Cleaning stale effects for player ${playerId}`);
+const effectsRemoved = CardEffect.cleanupStaleEffectsForPlayer(player, playerId, gameEnv);
+console.log(`   Removed ${effectsRemoved} stale effects`);
+```
+
+**Cleanup Logic:**
+1. **Get current field state** - Collect all `cardUid` values from slots (units and pilots)
+2. **Validate effect sources** - Check each effect's `sourceCardUid` against current field
+3. **Remove stale effects** - Filter out effects whose source cards are no longer present
+4. **Comprehensive coverage** - Clean effects on both unit and pilot cards in all slots
+
+**Key Methods:**
+- **`cleanupStaleEffectsForPlayer()`** - Main Phase 0 cleanup method for single player
+- **`removeStaleEffectsFromCard()`** - Individual card cleanup with source validation
+- **Logging transparency** - Clear console output showing which effects are removed and why
+
+**Example Cleanup Log:**
+```
+🧹 PHASE 0: Cleaning stale effects for player playerId_1
+   🗑️ Removing stale effect pair_ap_boost_all from source source-card-123
+   Removed 2 stale effects
+```
+
+### Effect Types (Switch-Case Generalization)
+**Unified Processing Architecture:**
+- **ALWAYS_ACTIVE** - Continuous effects like ST01-009 "Zowort" attack restrictions
+- **PAIR_TRIGGERED** - Effects that activate when unit+pilot paired (ST01-001 "Gundam" AP+1)
+- **LINK_TRIGGERED** - Effects for unit.link matches (future expansion)
+
+**Switch-Case Implementation:**
+```typescript
+switch (effectType) {
+    case ContinuousEffectType.ALWAYS_ACTIVE:
+        if (CardEffect.processAlwaysActiveEffect(effectRule, card, playerId, gameEnv)) {
+            appliedCount++;
+        }
+        break;
+    case ContinuousEffectType.PAIR_TRIGGERED:
+        if (slotState.isPaired && CardEffect.processPairTriggeredEffect(effectRule, card, playerId, gameEnv)) {
+            appliedCount++;
+        }
+        break;
+    case ContinuousEffectType.LINK_TRIGGERED:
+        if (slotState.isLinked && CardEffect.processLinkTriggeredEffect(effectRule, card, playerId, gameEnv)) {
+            appliedCount++;
+        }
+        break;
+}
+```
+
+### Enhanced Storage Structure
+**Real-World Effect Data Structure:**
+```typescript
+// Cards store effects in continuousEffects array using real st01Card.json structure
+card.continuousEffects = [
+  {
+    effectId: "pair_ap_boost_all",
+    type: "static",
+    timing: ["YOUR_TURN"],
+    effect: {
+      action: "modifyAP",
+      parameters: { modifier: "+1" },  // Real structure from card data
+      duration: "while_paired"
+    },
+    sourceCardUid: "source-card-123",  // Source tracking for cleanup
+    active: false,     // Set to true when applied in Phase 2
+    appliedValue: 0    // Calculated value when applied
+  }
+]
+```
+
+**Key Fields:**
+- **`sourceCardUid`** - Critical for Phase 0 cleanup validation
+- **`effectId`** - Used for duplicate prevention
+- **`active`/`appliedValue`** - Two-phase application tracking
+- **`parameters.modifier`** - Real structure from card JSON data
+
+### Method Naming Conventions (January 2025)
+**"Update" Terminology for Future-Proofing:**
+
+**Philosophy:**
+- Methods use "update" instead of "add" or "process" for future extensibility
+- Supports add, remove, and modify operations as the system evolves
+- Consistent naming pattern across all continuous effects methods
+
+**Examples:**
+- **`updatePlayerSlotsContinuousEffects()`** instead of `addContinuousEffectsToPlayerSlots()`
+- **`updateSlotContinuousEffects()`** instead of `processSlotEffects()`
+- **`updateCardContinuousEffects()`** instead of `addCardEffects()`
+
+**Benefits:**
+- **🔮 Future-Proof** - Naming supports add/remove/modify operations
+- **📝 Consistent** - All methods follow same naming convention
+- **🧹 Clear Intent** - "Update" implies comprehensive processing
+- **🚀 Extensible** - Easy to add new update operations without naming conflicts
+
+### Integration Points
+**Complete System Integration:**
+- **`src/services/GameEngine.ts`** - Calls continuous effects processing after card placement
+- **`src/services/PlayerCardManager.ts`** - Returns `isOnLink`/`isOnPair` detection results
+- **`src/models/ContinuousEffects.ts`** - TypeScript interfaces and helper functions
+- **`src/models/CardSystem.ts`** - Added `continuousEffects` field to ZoneCard interface
+- **`src/config/gameConstants.ts`** - Centralized slot zone constants for consistency
+
+**Processing Triggers:**
+- **Card placement** - Automatically triggered after any card is placed
+- **Leader changes** - Triggered when new leaders activate
+- **Effect simulation** - Used during replay-based game state reconstruction
+
+### Key Features & Benefits
+**Architectural Improvements:**
+- **🧹 Three-Phase Processing** - Cleanup, storage, and application phases for robust effect management
+- **🔒 Duplicate Prevention** - Uses `ContinuousEffectsHelper.addEffect()` with unique key checking
+- **🎯 Source Tracking** - Each effect tracks its source card for automatic cleanup
+- **🗑️ Stale Effect Cleanup** - Phase 0 automatically removes effects from cards no longer on field
+- **📊 Real Effect Structure** - Uses actual card data structure from `st01Card.json`
+- **⚙️ Automatic Processing** - Always processes effects, no conditional triggers
+- **🎮 Simplified Logic** - Maximum 2 levels of nesting, focused utility methods
+- **📐 Consistent Constants** - Unified `SLOT_ZONES` constant eliminates hardcoded arrays
+
+**Developer Experience:**
+- **🚀 Single File Architecture** - All continuous effects logic in one location
+- **🔍 Clear Logging** - Comprehensive console output for debugging
+- **📋 Type Safety** - TypeScript interfaces for all effect structures
+- **🔄 Future-Proof Naming** - Method names support system evolution
+
+### Usage Guidelines
+**Primary Interface:**
+- **Main Processing**: Use `CardEffect.processAllContinuousEffects(gameEnv)` for complete processing
+- **Effect Storage**: Effects stored on `targetCard.continuousEffects` array with duplicate prevention
+- **Three-Phase Approach**: Cleanup → Storage → Application (automatic)
+- **Data Access**: Access effect data directly from card: `card.continuousEffects[i].appliedValue`
+- **Automatic Cleanup**: No manual effect cleanup needed - automatic when source cards removed
+
+**Development Rules:**
+1. **Never skip Phase 0** - Always run cleanup before adding new effects
+2. **Use centralized constants** - Import `SLOT_ZONES` from `gameConstants.ts`
+3. **Follow naming conventions** - Use "update" terminology for new methods
+4. **Trust the source tracking** - Effects automatically cleaned when source cards removed
+5. **Leverage real data structures** - Use actual card JSON structure for parameters
+
 ## Development Notes & Recent Updates
 
 ### Key Implementation Guidelines

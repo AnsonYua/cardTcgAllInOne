@@ -12,6 +12,7 @@ import { PlayerCardManager } from './PlayerCardManager';
 import { DeployEffectManager } from './DeployEffectManager';
 import { UnitZoneCard, createZoneCard } from '../models/CardSystem';
 import { PilotZoneCard } from '../models/CardSystem';
+import { SLOT_ZONES } from '../config/gameConstants';
 import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -85,9 +86,7 @@ export class GameEngine {
      * Find which slot contains a specific card UID
      */
     public static findSlotByCardUid(player: any, cardUid: string): { slot: string | null, unit: UnitZoneCard | null } {
-        const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'] as const;
-        
-        for (const slot of slotZones) {
+        for (const slot of SLOT_ZONES) {
             const slotZone = (player.zones as any)[slot];
             if (slotZone?.unit?.cardUid === cardUid) {
                 return { slot, unit: slotZone.unit as UnitZoneCard };
@@ -101,9 +100,7 @@ export class GameEngine {
      * Find first empty unit slot
      */
     public static findFirstEmptySlot(playerZones: any): string | null {
-        const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'] as const;
-        
-        for (const zone of slotZones) {
+        for (const zone of SLOT_ZONES) {
             const slotZone = playerZones[zone];
             if (slotZone && !slotZone.unit) {
                 return zone;

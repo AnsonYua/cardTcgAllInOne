@@ -4,6 +4,7 @@
 import { GameEvent, EventFactory } from './interfaces/GameEvent';
 import { GameEnvironment } from '../../models/GameEnvironment';
 import { GamePhase, EventType } from '../../models/GameEnums';
+import { SLOT_ZONES } from '../../config/gameConstants';
 
 // ============ STATE-BASED ACTION INTERFACES ============
 
@@ -340,9 +341,7 @@ export class StateBasedActionEngine {
         }
         
         // Check all slot zones for units with repair abilities
-        const slotZones = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'] as const;
-        
-        for (const slot of slotZones) {
+        for (const slot of SLOT_ZONES) {
             const slotZone = (player.zones as any)[slot];
             
             if (slotZone?.unit) {
