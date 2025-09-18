@@ -24,6 +24,7 @@ export interface GameResult {
     processingTime?: number;
 }
 
+
 // GameEvent, ProcessingResult, and ValidationResult moved to separate files to avoid conflicts
 
 

@@ -604,14 +604,13 @@ export class GameEngine {
             }
             
             // Process continuous effects when turn changes (timing updates)
-            /*
             console.log(`🔄 Turn changed - processing continuous effects for timing updates`);
             try {
                 const result = CardEffect.processAllContinuousEffects(gameEnv);
                 console.log(`✅ Continuous effects processed: ${result.effectsProcessed} processed, ${result.effectsActivated} activated, ${result.effectsDeactivated} deactivated`);
             } catch (error) {
                 console.error(`❌ Error processing continuous effects on turn change:`, error);
-            }*/
+            }
             
             // Create game events using GameNotificationManager
             const notificationManager = GameEngine.getNotificationManager(gameEnv);

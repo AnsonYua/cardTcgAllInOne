@@ -176,6 +176,9 @@ export class Player {
     public isReady: boolean;
     // fieldEffects removed - not currently implemented
     public zones!: PlayerZones;
+    
+    // Effect Registry System (NEW - January 2025)
+    public effectRegistry: { [effectKey: string]: any } = {};
 
     constructor(id: string, name: string = id) {
         this.id = id;
@@ -184,6 +187,7 @@ export class Player {
         this.playerPoint = 0;
         this.isReady = false;
         this.deck = new PlayerDeck();
+        this.effectRegistry = {};
         this.initializeZones();
     }
 
@@ -689,6 +693,7 @@ export class Player {
             isReady: this.isReady,
             zones: this.zones,
             // fieldEffects removed - not currently implemented
+            effectRegistry: this.effectRegistry
         };
     }
 
@@ -704,6 +709,9 @@ export class Player {
         if (data.zones) {
             player.zones = data.zones;
         }
+        
+        // Restore effect registry
+        player.effectRegistry = data.effectRegistry || {};
         
         // fieldEffects removed - not currently implemented
         return player;
