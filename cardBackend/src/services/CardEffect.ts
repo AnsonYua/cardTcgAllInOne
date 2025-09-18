@@ -171,7 +171,7 @@ export class CardEffect {
         gameEnv: GameEnvironment
     ): boolean {
         const scope = CardEffect.extractTargetScope(effectRule);
-        if (scope !== 'self_all') return false;
+        if (scope !== 'self_all_unit') return false;
         
         const targetUnits = CardEffect.getAllPlayerUnitsInSlot(playerId, gameEnv);
         const effectId = CardEffect.extractEffectId(effectRule);
@@ -639,7 +639,7 @@ export class CardEffect {
         
         switch (scope) {
             case 'self':
-            case 'self_all':
+            case 'self_all_unit':
                 // Apply to all units owned by the source player
                 return CardEffect.applyEffectToPlayerUnits(sourcePlayerId, effect.effect.action, value, gameEnv);
                 
@@ -675,20 +675,13 @@ export class CardEffect {
         
         let applied = false;
         
-        // Apply to all units and pilots in slot zones
+        // Apply to all units in slot zones (units only, not pilots)
         for (const slotName of SLOT_ZONES) {
             const slot = (player.zones as any)[slotName];
             
-            // Apply to unit if present
+            // Apply to unit if present (self_all_unit scope specifically targets units)
             if (slot?.unit) {
                 if (CardEffect.applyEffectToCard(slot.unit, action, value)) {
-                    applied = true;
-                }
-            }
-            
-            // Apply to pilot if present
-            if (slot?.pilot) {
-                if (CardEffect.applyEffectToCard(slot.pilot, action, value)) {
                     applied = true;
                 }
             }
@@ -941,7 +934,7 @@ export class CardEffect {
         
         switch (scope) {
             case 'self':
-            case 'self_all':
+            case 'self_all_unit':
                 return CardEffect.addEffectToAllPlayerUnits(effectRule, sourceCard, playerId, gameEnv);
             case 'opponent':
             case 'opponent_all':

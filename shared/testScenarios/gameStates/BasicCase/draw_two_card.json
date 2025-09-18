@@ -187,7 +187,7 @@
                                             ],
                                             "target": {
                                                 "type": "unit",
-                                                "scope": "self_all",
+                                                "scope": "self_all_unit",
                                                 "filters": {
                                                     "controller": "self"
                                                 }
@@ -340,7 +340,7 @@
                                             },
                                             "target": {
                                                 "type": "unit",
-                                                "scope": "self_all",
+                                                "scope": "self_all_unit",
                                                 "filters": {
                                                     "linkStatus": "linked"
                                                 }
@@ -443,7 +443,7 @@
                                             ],
                                             "target": {
                                                 "type": "unit",
-                                                "scope": "self_all",
+                                                "scope": "self_all_unit",
                                                 "filters": {
                                                     "controller": "self"
                                                 }
@@ -823,7 +823,7 @@
                                             ],
                                             "target": {
                                                 "type": "unit",
-                                                "scope": "self_all",
+                                                "scope": "self_all_unit",
                                                 "filters": {
                                                     "controller": "self"
                                                 }

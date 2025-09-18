@@ -180,7 +180,7 @@ export enum EffectAction {
 // Target scopes
 export enum EffectScope {
     SELF = "self",
-    SELF_ALL = "self_all",
+    SELF_ALL_UNIT = "self_all_unit",
     OPPONENT = "opponent",
     OPPONENT_ALL = "opponent_all",
     ALL = "all"

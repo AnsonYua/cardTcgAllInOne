@@ -997,8 +997,14 @@ export default class GameScene extends Phaser.Scene {
       if (cardData.pilot) {
         console.log("Showing slot preview with pilot:", cardData.cardData?.id, "+", cardData.pilot.cardData?.id, "for slot:", cardData.slotName);
         // Create mock Card objects to reuse existing showDualCardPreview method
-        const mockUnitCard = { cardData: cardData.cardData };
-        const mockPilotCard = { cardData: cardData.pilot.cardData };
+        const mockUnitCard = {
+            cardData: cardData.cardData,
+            getCardFullData: () => ({ cardData: cardData.cardData })  // ✅ Added missing method
+        };
+        const mockPilotCard = {
+            cardData: cardData.pilot.cardData,
+            getCardFullData: () => ({ cardData: cardData.pilot.cardData })  // ✅ Added missing method
+        };
         this.showDualCardPreview(mockUnitCard, mockPilotCard);
       } else {
         console.log("Showing slot preview (unit only):", cardData.cardData?.id, "for slot:", cardData.slotName);
