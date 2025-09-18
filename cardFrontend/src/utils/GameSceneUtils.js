@@ -215,51 +215,6 @@ export default class GameSceneUtils {
     
     return deckCards;
   }
-
-
-  static convertCardSelectionToCardDataObject(card){
-    // Handle case where card or cardId might be undefined
-    if (!card || !card.cardId) {
-      console.warn('convertCardSelectionToCardDataObject: Invalid card data', card);
-      return {
-        id: 'unknown',
-        name: 'Unknown Card',
-        cardType: 'character',
-        type: 'character',
-        power: 0,
-        zone: [],
-        traits: [],
-        description: 'Card data unavailable'
-      };
-    }
-
-    var cardType = "character"
-    if(card.cardId.startsWith("c-") || card.cardId.startsWith("ST01-")){
-      cardType = "character"
-    }else if(card.cardId.startsWith("h-")){
-      cardType = "utilityCard"
-    }else if(card.cardId.startsWith("s-")){
-      cardType = "leader"
-    }else if(card.cardId.startsWith("R-")){
-      cardType = "energy"
-    }else if(card.cardId.startsWith("EXR-")){
-      cardType = "energy"  
-    }else if(card.cardId.startsWith("EXB-")){
-      cardType = "base"
-    }
-    
-    return {
-      id: card.cardId,
-      name: card.name || card.cardId,
-      cardType: cardType,
-      type: cardType,
-      power: card.power || 0,
-      zone: card.zone || [],
-      traits: card.traits || [],
-      description: card.description || '',
-      cardUid: card.cardUid || card.cardId
-    }
-  }
   /**
    * Creates a card selection dialog UI with 3-section vertical layout
    * @param {string} selectionId - The selection ID

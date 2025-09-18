@@ -251,18 +251,6 @@ export default class CardAnimationUtils {
     };
   }
 
-  /**
-   * Get card type from card ID
-   * @param {string} cardId - Card ID (e.g., "c-1", "h-2", "sp-3", "s-4")
-   * @returns {string} - Card type ("character", "help", "sp", "leader", or "unknown")
-   */
-  static getCardTypeFromId(cardId) {
-    if (cardId.startsWith('c-')) return 'character';
-    if (cardId.startsWith('h-')) return 'help';
-    if (cardId.startsWith('sp-')) return 'sp';
-    if (cardId.startsWith('s-')) return 'leader';
-    return 'unknown';
-  }
 
   /**
    * Wait for a specified delay using Phaser's time system

@@ -199,8 +199,6 @@ export default class GameScene extends Phaser.Scene {
     // Initialize ActionButtonManager (includes top UI creation)
     this.actionButtonManager.initialize();
 
-    // Connection status indicator
-    this.createConnectionStatus();
 
     // Phase indicator
     this.phaseText = this.add.text(width / 2, 35, 'MAIN PHASE', {
@@ -1410,23 +1408,6 @@ export default class GameScene extends Phaser.Scene {
         });
       }, index * 1000); // 1000ms delay between each card to allow slide + flip animations to complete
     });
-  }
-
-
-  createConnectionStatus() {
-    const { width } = this.cameras.main;
-
-    // Connection status indicator (top right)
-    const statusText = this.isManualPollingMode ? '🎮 Demo Mode' : '🟢 Live Game';
-    const statusColor = this.isManualPollingMode ? '#FFD700' : '#51CF66';
-
-    this.connectionStatusText = this.add.text(width - 50, 30, statusText, {
-      fontSize: '14px',
-      fontFamily: 'Arial',
-      fill: statusColor,
-      align: 'right'
-    });
-    this.connectionStatusText.setOrigin(1, 0);
   }
 
 
