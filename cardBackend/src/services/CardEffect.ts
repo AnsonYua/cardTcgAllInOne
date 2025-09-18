@@ -163,13 +163,20 @@ export class CardEffect {
     }
 
     /**
-     * Validate all effect conditions (unified timing and state conditions)
+     * Validate effect conditions and turn timing (separated architecture)
      */
     static validateEffectConditions(storedEffect: any, gameEnv: GameEnvironment, cardOwnerPlayerId: string | null): boolean {
-        // Get conditions from unified array
+        // Step 1: Check turn timing first (fast exit)
+        if (storedEffect.effect?.actionTurn) {
+            if (!CardEffect.checkTurnTiming(storedEffect.effect.actionTurn, gameEnv, cardOwnerPlayerId)) {
+                return false;
+            }
+        }
+        
+        // Step 2: Check game state conditions
         const conditions = storedEffect.conditions || [];
         
-        // If no conditions specified, effect is always active
+        // If no conditions specified, effect is active (assuming turn timing passed)
         if (conditions.length === 0) {
             return true;
         }
@@ -186,7 +193,28 @@ export class CardEffect {
     }
 
     /**
-     * Check a single condition against current game state
+     * Check turn timing (separated from game state conditions)
+     */
+    private static checkTurnTiming(actionTurn: string, gameEnv: GameEnvironment, cardOwnerPlayerId: string | null): boolean {
+        switch (actionTurn) {
+            case 'YOUR_TURN':
+                return cardOwnerPlayerId ? gameEnv.currentPlayer === cardOwnerPlayerId : false;
+                
+            case 'OPPONENT_TURN':
+                return cardOwnerPlayerId ? gameEnv.currentPlayer !== cardOwnerPlayerId : false;
+                
+            case 'ANY_TIME':
+                return true;
+                
+            default:
+                console.log(`⚠️ Unknown actionTurn: ${actionTurn}`);
+                // Default to allow effect if timing is unknown (fail-safe)
+                return true;
+        }
+    }
+
+    /**
+     * Check a single game state condition (no turn timing)
      */
     private static checkSingleCondition(condition: string, gameEnv: GameEnvironment, cardOwnerPlayerId: string | null): boolean {
         switch (condition) {
@@ -197,17 +225,7 @@ export class CardEffect {
             case 'isLinked':
                 return CardEffect.checkIsLinked(cardOwnerPlayerId, gameEnv);
                 
-            // Turn-based timing conditions
-            case 'YOUR_TURN':
-                return cardOwnerPlayerId ? gameEnv.currentPlayer === cardOwnerPlayerId : false;
-                
-            case 'OPPONENT_TURN':
-                return cardOwnerPlayerId ? gameEnv.currentPlayer !== cardOwnerPlayerId : false;
-                
-            case 'ANY_TIME':
-                return true;
-                
-            // Phase-based timing conditions
+            // Phase-based timing conditions (still in conditions for now)
             case 'MAIN_PHASE':
                 return gameEnv.phase === GamePhase.MAIN_PHASE;
                 

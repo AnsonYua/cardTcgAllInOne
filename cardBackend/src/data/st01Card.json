@@ -52,8 +52,7 @@
                         "type": "static",
                         "trigger": "continuous",
                         "conditions": [
-                            "isPaired",
-                            "YOUR_TURN"
+                            "isPaired"
                         ],
                         "target": {
                             "type": "unit",
@@ -67,7 +66,7 @@
                             "parameters": {
                                 "value": 1
                             },
-                            "duration": "while_paired"
+                            "actionTurn": "YOUR_TURN"
                         }
                     }
                 ]
