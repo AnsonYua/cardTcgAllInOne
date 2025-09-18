@@ -166,18 +166,16 @@ export class CardEffect {
      * Validate all effect conditions (unified timing and state conditions)
      */
     static validateEffectConditions(storedEffect: any, gameEnv: GameEnvironment, cardOwnerPlayerId: string | null): boolean {
-        // Get conditions from unified array (with backward compatibility)
+        // Get conditions from unified array
         const conditions = storedEffect.conditions || [];
-        const legacyTiming = storedEffect.timing || [];
-        const allConditions = [...conditions, ...legacyTiming];
         
         // If no conditions specified, effect is always active
-        if (allConditions.length === 0) {
+        if (conditions.length === 0) {
             return true;
         }
         
         // All conditions must be met for effect to be active
-        for (const condition of allConditions) {
+        for (const condition of conditions) {
             if (!CardEffect.checkSingleCondition(condition, gameEnv, cardOwnerPlayerId)) {
                 return false;
             }
