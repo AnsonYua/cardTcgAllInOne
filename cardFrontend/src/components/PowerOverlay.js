@@ -135,7 +135,7 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     this.add(this.apText);
     
     // Create Total AP label (50px below AP)
-    this.totalApText = this.scene.add.text(this.config.apOffsetX, this.config.apOffsetY + 20, '0', {
+    this.totalApText = this.scene.add.text(this.config.apOffsetX, 87, '0', {
       fontSize: `${this.config.fontSize}px`,
       fontFamily: this.config.fontFamily,
       fill: this.config.apColors.base.text,
@@ -176,7 +176,7 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     this.add(this.hpText);
     
     // Create Total HP label (50px below HP)
-    this.totalHpText = this.scene.add.text(this.config.hpOffsetX, this.config.hpOffsetY + 20, '0', {
+    this.totalHpText = this.scene.add.text(this.config.hpOffsetX, 87, '0', {
       fontSize: `${this.config.fontSize}px`,
       fontFamily: this.config.fontFamily,
       fill: this.config.hpColors.base.text,
