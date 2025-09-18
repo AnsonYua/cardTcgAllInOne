@@ -172,7 +172,7 @@ export class CardEffect {
         const scope = CardEffect.extractTargetScope(effectRule);
         if (scope !== 'self_all') return false;
         
-        const targetUnits = CardEffect.getAllPlayerUnits(playerId, gameEnv);
+        const targetUnits = CardEffect.getAllPlayerUnitsInSlot(playerId, gameEnv);
         const effectId = CardEffect.extractEffectId(effectRule);
         
         let addedCount = 0;
@@ -190,7 +190,7 @@ export class CardEffect {
      * PHASE 2: Apply all continuous effects to all player units
      */
     static applyEffectsToAllPlayerUnits(playerId: string, gameEnv: GameEnvironment): number {
-        const targetUnits = CardEffect.getAllPlayerUnits(playerId, gameEnv);
+        const targetUnits = CardEffect.getAllPlayerUnitsInSlot(playerId, gameEnv);
         let totalApplied = 0;
         
         for (const unit of targetUnits) {
@@ -214,9 +214,10 @@ export class CardEffect {
     }
 
     /**
-     * Extract all unit cards for a player
+     * Extract all unit cards in slot zones for a player
+     * Note: Only returns units from slot1-slot6, excludes base/shield/energy/trash areas
      */
-    static getAllPlayerUnits(playerId: string, gameEnv: GameEnvironment): ZoneCard[] {
+    static getAllPlayerUnitsInSlot(playerId: string, gameEnv: GameEnvironment): ZoneCard[] {
         const player = gameEnv.players[playerId];
         if (!player?.zones) return [];
         
