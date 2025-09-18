@@ -162,9 +162,9 @@ export default class SlotAreaManager {
     
     // Update card data with new stats (AP/HP changes, etc.)
     if (card.fullCardData && cardData) {
-      // Store previous values for comparison
-      const previousAP = card.fullCardData.currentAP;
-      const previousHP = card.fullCardData.currentHP;
+      // Calculate previous total AP/HP values including modifications
+      const previousTotalAP = this.calculateTotalAP(card.fullCardData);
+      const previousTotalHP = this.calculateTotalHP(card.fullCardData);
       
       // Update the card's full data with new information
       card.fullCardData = { ...card.fullCardData, ...cardData };
@@ -174,14 +174,14 @@ export default class SlotAreaManager {
         card.cardData = { ...card.cardData, ...cardData.cardData };
       }
       
-      // Check if AP/HP values have changed
-      const newAP = card.fullCardData.currentAP;
-      const newHP = card.fullCardData.currentHP;
+      // Calculate new total AP/HP values including modifications
+      const newTotalAP = this.calculateTotalAP(card.fullCardData);
+      const newTotalHP = this.calculateTotalHP(card.fullCardData);
       
-      const statsChanged = (previousAP !== newAP) || (previousHP !== newHP);
+      const statsChanged = (previousTotalAP !== newTotalAP) || (previousTotalHP !== newTotalHP);
       
       if (statsChanged) {
-        console.log(`[SlotAreaManager] Stats changed for card ${card.cardData?.id}: AP ${previousAP} → ${newAP}, HP ${previousHP} → ${newHP}`);
+        console.log(`[SlotAreaManager] Total stats changed for card ${card.cardData?.id}: Total AP ${previousTotalAP} → ${newTotalAP}, Total HP ${previousTotalHP} → ${newTotalHP}`);
         
         // Update power overlay if the card has one
         if (card.powerOverlay && card.updatePowerOverlay) {
@@ -194,6 +194,84 @@ export default class SlotAreaManager {
         }
       }
     }
+  }
+
+  /**
+   * Calculate total AP including modifications (matches Card.js getAPandHPFromCardData logic)
+   * @param {Object} fullCardData - The full card data object
+   * @returns {number} Total AP value including modifications
+   */
+  calculateTotalAP(fullCardData) {
+    if (!fullCardData) return 0;
+    
+    const cardData = fullCardData.cardData || fullCardData;
+    
+    // For regular cards (unit, pilot, base)
+    if (cardData.cardType === 'unit' || cardData.cardType === 'pilot' || cardData.cardType === 'base') {
+      if (fullCardData.currentAP != null) {
+        // Use currentAP as base and add modifications
+        const baseAP = fullCardData.currentAP || 0;
+        const modifyAP = fullCardData.modifyAP || 0;
+        return baseAP + modifyAP;
+      } else {
+        // Use original AP from cardData and add modifications
+        const baseAP = cardData.ap || 0;
+        const modifyAP = fullCardData.modifyAP || 0;
+        return baseAP + modifyAP;
+      }
+    }
+    
+    // For command cards with pilot_designation effect
+    if (cardData.cardType === 'command') {
+      const pilotEffect = cardData.effects?.rules?.find(rule => rule.effectId === 'pilot_designation');
+      if (pilotEffect && pilotEffect.effect?.parameters) {
+        const originalAP = pilotEffect.effect.parameters.AP || 0;
+        const baseAP = fullCardData.currentAP || originalAP;
+        const modifyAP = fullCardData.modifyAP || 0;
+        return baseAP + modifyAP;
+      }
+    }
+    
+    return 0;
+  }
+
+  /**
+   * Calculate total HP including modifications (matches Card.js getAPandHPFromCardData logic)
+   * @param {Object} fullCardData - The full card data object
+   * @returns {number} Total HP value including modifications
+   */
+  calculateTotalHP(fullCardData) {
+    if (!fullCardData) return 0;
+    
+    const cardData = fullCardData.cardData || fullCardData;
+    
+    // For regular cards (unit, pilot, base)
+    if (cardData.cardType === 'unit' || cardData.cardType === 'pilot' || cardData.cardType === 'base') {
+      if (fullCardData.currentHP != null) {
+        // Use currentHP as base and add modifications
+        const baseHP = fullCardData.currentHP || 0;
+        const modifyHP = fullCardData.modifyHP || 0;
+        return baseHP + modifyHP;
+      } else {
+        // Use original HP from cardData and add modifications
+        const baseHP = cardData.hp || 0;
+        const modifyHP = fullCardData.modifyHP || 0;
+        return baseHP + modifyHP;
+      }
+    }
+    
+    // For command cards with pilot_designation effect
+    if (cardData.cardType === 'command') {
+      const pilotEffect = cardData.effects?.rules?.find(rule => rule.effectId === 'pilot_designation');
+      if (pilotEffect && pilotEffect.effect?.parameters) {
+        const originalHP = pilotEffect.effect.parameters.HP || 0;
+        const baseHP = fullCardData.currentHP || originalHP;
+        const modifyHP = fullCardData.modifyHP || 0;
+        return baseHP + modifyHP;
+      }
+    }
+    
+    return 0;
   }
 
   // ============ UTILITY METHODS ============
