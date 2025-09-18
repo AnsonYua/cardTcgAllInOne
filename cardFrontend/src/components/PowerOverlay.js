@@ -120,7 +120,9 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
       align: 'center'
     });
     this.apText.setOrigin(0.5);
-    
+
+
+
     // Improve text rendering quality for preview mode
     if (this.isPreviewMode) {
       this.apText.setScale(1);
