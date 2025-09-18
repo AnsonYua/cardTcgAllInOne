@@ -720,14 +720,6 @@ export class CardEffect {
         }
     }
 
-    /**
-     * Convenient helper to trigger effect recalculation 
-     * (e.g., after manual game state changes, testing, etc.)
-     */
-    static recalculateAllPlayerEffects(gameEnv: GameEnvironment): void {
-        console.log(`🔄 Manual effect recalculation triggered`);
-        CardEffect.processAllContinuousEffects(gameEnv);
-    }
 
     /**
      * Phase 0: Clean up stale continuous effects (remove effects from cards no longer in field)
@@ -995,32 +987,6 @@ export class CardEffect {
         return playerIds.find(id => id !== playerId) || '';
     }
 
-    /**
-     * Clean up effects from a removed card (Updated for player-level effects)
-     */
-    static cleanupEffectsFromCard(removedCardUid: string, gameEnv: GameEnvironment): void {
-        console.log(`🧹 Cleaning up effects from removed card: ${removedCardUid}`);
-        
-        const allCards = CardEffect.getAllCards(gameEnv);
-        let totalRemovedEffects = 0;
-        
-        for (const card of allCards) {
-            if (!card.continuousEffects || card.continuousEffects.length === 0) continue;
-            
-            const removedCount = ContinuousEffectsHelper.removeEffectsFromSource(card.continuousEffects, removedCardUid);
-            totalRemovedEffects += removedCount;
-            
-            if (removedCount > 0) {
-                console.log(`🗑️ Cleaned up ${removedCount} effects from ${card.cardUid}`);
-            }
-        }
-        
-        // After cleaning up effects, recalculate all player modifications
-        if (totalRemovedEffects > 0) {
-            console.log(`🔄 Recalculating player effects after cleanup (${totalRemovedEffects} effects removed)`);
-            CardEffect.processAllContinuousEffects(gameEnv);
-        }
-    }
 
     /**
      * Get all cards from game environment

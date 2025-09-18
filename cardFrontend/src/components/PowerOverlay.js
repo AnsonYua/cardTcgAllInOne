@@ -364,7 +364,7 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
    * @param {boolean} visible - Whether overlay should be shown
    */
   setOverlayVisible(visible) {
-    if (visible && (this.currentAP > 0 || this.currentHP > 0)) {
+    if (visible && (this.ap > 0 || this.hp > 0)) {
       this.show();
     } else {
       this.hide();
