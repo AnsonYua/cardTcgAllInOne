@@ -16,6 +16,7 @@ import { SLOT_ZONES } from '../config/gameConstants';
 import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+const { CardEffect } = require('./CardEffect');
 
 export interface ExecutionResult {
     success: boolean;
@@ -605,7 +606,6 @@ export class GameEngine {
             // Process continuous effects when turn changes (timing updates)
             console.log(`🔄 Turn changed - processing continuous effects for timing updates`);
             try {
-                const { CardEffect } = require('./CardEffect');
                 const result = CardEffect.processAllContinuousEffects(gameEnv);
                 console.log(`✅ Continuous effects processed: ${result.effectsProcessed} processed, ${result.effectsActivated} activated, ${result.effectsDeactivated} deactivated`);
             } catch (error) {
@@ -699,7 +699,6 @@ export class GameEngine {
             // Process continuous effects after card placement (always)
             console.log(`🔄 Processing continuous effects after card placement${placementResult.isOnPair ? ` (${placementResult.isOnLink ? 'Link' : 'Pair'} created)` : ''}`);
             try {
-                const { CardEffect } = require('./CardEffect');
                 const result = CardEffect.processAllContinuousEffects(gameEnv);
                 console.log(`✅ Continuous effects processed: ${result.effectsProcessed} processed, ${result.effectsActivated} activated, ${result.effectsDeactivated} deactivated`);
             } catch (error) {
@@ -970,21 +969,11 @@ export class GameEngine {
             
             console.log(`⚔️ Found attacking unit in ${attackerSlot}: ${attackingUnit.cardUid}`);
             
-            // Calculate total attack power (unit + pilot if paired)
-            let totalAttackPower = 0;
-            totalAttackPower = attackingUnit.currentAP || 0;
-      
+            // Calculate total attack power using player-level modifications
+            const combinedStats = GameEngine.calculateCombinedStats(attacker, attackerSlot, attackingUnit);
+            const totalAttackPower = combinedStats.totalAP;
             
-            // Check for pilot in same slot  
-            const attackingPilot = (attacker.zones as any)[attackerSlot]?.pilot;
-            if (attackingPilot) {
-                let pilotAP = 0;
-                pilotAP = (attackingPilot as PilotZoneCard).currentAP || attackingPilot.cardData?.ap || 0;
-                totalAttackPower += pilotAP;
-                console.log(`⚔️ Attack includes pilot AP: ${pilotAP} (Total: ${totalAttackPower})`);
-            }
-            
-            console.log(`⚔️ Total attack power: ${totalAttackPower}`);
+            console.log(`⚔️ Total attack power (with player modifications): ${totalAttackPower}`);
             
             // Check defender's base area
             const defenderBases = defender.zones.base;
@@ -1363,7 +1352,6 @@ export class GameEngine {
                             console.log(`🩹 Found healing effect: ${effect.effectId} (${effect.effect.parameters.value} HP)`);
                             
                             // Use CardEffect to handle the repair
-                            const CardEffect = require('./CardEffect').CardEffect;
                             const healData = {
                                 cardId: cardId,
                                 playerId: playerId,
@@ -1652,27 +1640,48 @@ export class GameEngine {
      * @returns Combined stats with totalAP and totalHP
      */
     private static calculateCombinedStats(player: any, slotName: string, unit: UnitZoneCard): { totalAP: number, totalHP: number } {
-        // Get unit stats
-        let totalAP = unit.currentAP || unit.cardData?.ap || 0;
-        let totalHP = unit.currentHP || unit.cardData?.hp || 0;
+        // Get base unit stats and apply unit-specific modifications
+        let baseUnitAP = unit.cardData?.ap || 0;
+        let baseUnitHP = unit.cardData?.hp || 0;
         
-        console.log(`📊 Unit stats - AP: ${totalAP}, HP: ${totalHP}`);
+        // Apply unit's individual effect modifications
+        const unitModifyAP = unit.modifyAP || 0;
+        const unitModifyHP = unit.modifyHP || 0;
+        
+        let totalAP = baseUnitAP + unitModifyAP;
+        let totalHP = baseUnitHP + unitModifyHP;
+        
+        console.log(`📊 Unit stats - Base: ${baseUnitAP} AP, ${baseUnitHP} HP | Modifications: ${unitModifyAP > 0 ? '+' : ''}${unitModifyAP} AP, ${unitModifyHP > 0 ? '+' : ''}${unitModifyHP} HP | Final: ${totalAP} AP, ${totalHP} HP`);
         
         // Check for pilot in the same slot
         const pilot = (player.zones as any)[slotName]?.pilot;
         if (pilot) {
-            const pilotAP = pilot.currentAP || pilot.cardData?.ap || 0;
-            const pilotHP = pilot.currentHP || pilot.cardData?.hp || 0;
+            const basePilotAP = pilot.cardData?.ap || 0;
+            const basePilotHP = pilot.cardData?.hp || 0;
             
-            totalAP += pilotAP;
-            totalHP += pilotHP;
+            // Apply pilot's individual effect modifications
+            const pilotModifyAP = pilot.modifyAP || 0;
+            const pilotModifyHP = pilot.modifyHP || 0;
             
-            console.log(`👨‍✈️ Pilot stats - AP: ${pilotAP}, HP: ${pilotHP} (Combined: AP=${totalAP}, HP=${totalHP})`);
+            const finalPilotAP = basePilotAP + pilotModifyAP;
+            const finalPilotHP = basePilotHP + pilotModifyHP;
+            
+            totalAP += finalPilotAP;
+            totalHP += finalPilotHP;
+            
+            console.log(`👨‍✈️ Pilot stats - Base: ${basePilotAP} AP, ${basePilotHP} HP | Modifications: ${pilotModifyAP > 0 ? '+' : ''}${pilotModifyAP} AP, ${pilotModifyHP > 0 ? '+' : ''}${pilotModifyHP} HP | Final: ${finalPilotAP} AP, ${finalPilotHP} HP`);
+            console.log(`🤝 Combined stats: ${totalAP} AP, ${totalHP} HP`);
         } else {
             console.log(`👨‍✈️ No pilot found in ${slotName}`);
         }
         
-        return { totalAP, totalHP };
+        // Prevent negative stats
+        const finalAP = Math.max(0, totalAP);
+        const finalHP = Math.max(0, totalHP);
+        
+        console.log(`🎯 Final combined stats: ${finalAP} AP, ${finalHP} HP`);
+        
+        return { totalAP: finalAP, totalHP: finalHP };
     }
     
     /**

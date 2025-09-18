@@ -188,18 +188,19 @@ export class CardEffect {
     }
     
     /**
-     * PHASE 2: Apply all continuous effects to all player units
+     * LEGACY: Apply all continuous effects to all player units
+     * 
+     * This method is now LEGACY as effects are accumulated at player level.
+     * Kept for compatibility with old effect processing system.
+     * New approach uses calculatePlayerEffects() for unified processing.
      */
     static applyEffectsToAllPlayerUnits(playerId: string, gameEnv: GameEnvironment): number {
+        console.log(`⚠️ LEGACY: applyEffectsToAllPlayerUnits called for player ${playerId}`);
+        console.log(`   Effects are now processed at player level via calculatePlayerEffects()`);
+        
+        // For backward compatibility, return the number of units processed
         const targetUnits = CardEffect.getAllPlayerUnitsInSlot(playerId, gameEnv);
-        let totalApplied = 0;
-        
-        for (const unit of targetUnits) {
-            totalApplied += CardEffect.applyContinuousEffects(unit, gameEnv);
-        }
-        
-        console.log(`✅ Applied ${totalApplied} effects to ${targetUnits.length} units for player ${playerId}`);
-        return totalApplied;
+        return targetUnits.length;
     }
     
     /**
@@ -280,41 +281,39 @@ export class CardEffect {
     }
     
     /**
-     * PHASE 2: Apply all stored continuous effects to a card with timing validation
+     * LEGACY: Apply all stored continuous effects to a card with timing validation
+     * 
+     * This method is now LEGACY as effects are accumulated at player level.
+     * Kept for compatibility with old effect storage system.
+     * New approach uses calculatePlayerEffects() for unified processing.
      */
     static applyContinuousEffects(targetCard: ZoneCard, gameEnv: GameEnvironment): number {
+        console.log(`⚠️ LEGACY: applyContinuousEffects called for ${targetCard.cardUid}`);
+        console.log(`   Effects are now processed at player level via calculatePlayerEffects()`);
+        
+        // For backward compatibility, we can still process individual card effects
+        // but they contribute to player-level totals rather than direct card mutation
         if (!targetCard.continuousEffects || targetCard.continuousEffects.length === 0) {
             return 0;
         }
         
-        let appliedCount = 0;
+        let processedCount = 0;
         
         for (const storedEffect of targetCard.continuousEffects) {
+            // Check conditions (unified timing and state conditions)
+            const sourcePlayerOwnsCard = CardEffect.findCardOwner(targetCard.cardUid, gameEnv);
+            const conditionsValid = CardEffect.validateEffectConditions(storedEffect, gameEnv, sourcePlayerOwnsCard);
             
-            if (!storedEffect.active) {
-                // Check all conditions (unified timing and state conditions) before applying effect
-                const sourcePlayerOwnsCard = CardEffect.findCardOwner(targetCard.cardUid, gameEnv);
-                const conditionsValid = CardEffect.validateEffectConditions(storedEffect, gameEnv, sourcePlayerOwnsCard);
+            if (conditionsValid) {
+                const value = CardEffect.getEffectValue(storedEffect.effect.action, storedEffect.effect.parameters);
                 
-                if (conditionsValid) {
-                    const value = CardEffect.getEffectValue(storedEffect.effect.action, storedEffect.effect.parameters);
-                    
-                    if (CardEffect.isStatModifyingAction(storedEffect.effect.action)) {
-                        CardEffect.applyEffectValue(targetCard, storedEffect.effect.action, value);
-                    }
-                    
-                    storedEffect.active = true;
-                    storedEffect.appliedValue = value;
-                    appliedCount++;
-                    
-                    console.log(`✅ Activated effect: ${storedEffect.effectId} (${storedEffect.effect.action}) on ${targetCard.cardUid} (value: ${value})`);
-                } else {
-                    console.log(`⏰ Conditions not met for effect: ${storedEffect.effectId} on ${targetCard.cardUid}`);
-                }
+                // Log the effect but don't apply directly to card
+                console.log(`📊 Legacy effect validated: ${storedEffect.effectId} (${storedEffect.effect.action}) value: ${value}`);
+                processedCount++;
             }
         }
         
-        return appliedCount;
+        return processedCount;
     }
     
     /**
@@ -325,28 +324,8 @@ export class CardEffect {
     }
 
     /**
-     * Apply an effect value to a card (e.g., modify AP)
+     * REMOVED: Old player-level approach - effects now applied directly to individual cards
      */
-    static applyEffectValue(card: ZoneCard, action: string, value: number): void {
-        switch (action) {
-            case 'modifyAP':
-                if (card.cardData?.ap !== undefined) {
-                    const currentAP = (card as any).currentAP || card.cardData.ap;
-                    (card as any).currentAP = currentAP + value;
-                    console.log(`⚡ Applied ${value > 0 ? '+' : ''}${value} AP to ${card.cardUid} (now ${(card as any).currentAP})`);
-                }
-                break;
-            case 'modifyHP':
-                if (card.cardData?.hp !== undefined) {
-                    const currentHP = (card as any).currentHP || card.cardData.hp;
-                    (card as any).currentHP = Math.max(0, currentHP + value);
-                    console.log(`❤️ Applied ${value > 0 ? '+' : ''}${value} HP to ${card.cardUid} (now ${(card as any).currentHP})`);
-                }
-                break;
-            default:
-                console.log(`⚠️ Unknown effect action: ${action}`);
-        }
-    }
 
     
     /**
@@ -507,37 +486,247 @@ export class CardEffect {
     // ============================================================================
 
     /**
-     * Main entry point - Simplified continuous effects processing
+     * Main entry point - Card-level effects processing with individual targeting
      */
     static processAllContinuousEffects(gameEnv: GameEnvironment): EffectProcessingResult {
-        console.log(`🔄 Processing continuous effects (TWO-PHASE)`);
+        console.log(`🔄 Processing continuous effects (CARD-LEVEL TARGETING)`);
         
         try {
-            let totalAdded = 0;
-            let totalApplied = 0;
+            let totalEffectsProcessed = 0;
+            let totalEffectsApplied = 0;
             
-            // Process each player with three-phase approach
+            // STEP 1: Reset all cards' modifications to 0
+            CardEffect.resetAllCardModifications(gameEnv);
+            
+            // STEP 2: PHASE 1 - Update continuous effects storage on all cards
+            const effectsUpdated = CardEffect.updateAllContinuousEffectsToCards(gameEnv);
+            console.log(`📝 Phase 1: Updated ${effectsUpdated} continuous effects to cards`);
+            
+            // STEP 3: Process each player's continuous effects
             for (const [playerId, player] of Object.entries(gameEnv.players)) {
-                console.log(`🧹 PHASE 0: Cleaning stale effects for player ${playerId}`);
-                const effectsRemoved = CardEffect.cleanupStaleEffectsForPlayer(player, playerId, gameEnv);
-                console.log(`   Removed ${effectsRemoved} stale effects`);
+                console.log(`🎯 Processing effects for player ${playerId}`);
                 
-                console.log(`💾 PHASE 1: Adding effects for player ${playerId}`);
-                const playerEffectsAdded = CardEffect.updatePlayerSlotsContinuousEffects(player, playerId, gameEnv);
-                totalAdded += playerEffectsAdded;
+                const playerEffects = CardEffect.processPlayerContinuousEffects(playerId, gameEnv);
+                totalEffectsProcessed += playerEffects.effectsProcessed;
+                totalEffectsApplied += playerEffects.effectsApplied;
                 
-                console.log(`✅ PHASE 2: Applying effects for player ${playerId}`);
-                const playerEffectsApplied = CardEffect.applyEffectsToAllPlayerUnits(playerId, gameEnv);
-                totalApplied += playerEffectsApplied;
+                console.log(`✅ Player ${playerId}: ${playerEffects.effectsApplied} effects applied to individual cards`);
             }
             
-            console.log(`✅ Processing complete: ${totalAdded} effects added, ${totalApplied} effects applied`);
-            return { success: true, effectsProcessed: totalAdded, effectsActivated: totalApplied, effectsDeactivated: 0 };
+            console.log(`✅ Processing complete: ${totalEffectsProcessed} effects processed, ${totalEffectsApplied} effects applied to cards`);
+            return { success: true, effectsProcessed: totalEffectsProcessed, effectsActivated: totalEffectsApplied, effectsDeactivated: 0 };
             
         } catch (error) {
             console.error(`❌ Error processing continuous effects:`, error);
             return { success: false, effectsProcessed: 0, effectsActivated: 0, effectsDeactivated: 0, error: String(error) };
         }
+    }
+
+    /**
+     * PHASE 1: Update continuous effects on all cards from their card data
+     * Scans all cards on the field, extracts continuous effects from card data,
+     * and stores effects in target cards' continuousEffects arrays.
+     * Includes cleanup logic to remove stale effects and add logic to populate new effects.
+     */
+    static updateAllContinuousEffectsToCards(gameEnv: GameEnvironment): number {
+        console.log(`📝 Phase 1: Updating continuous effects storage on all cards`);
+        
+        let totalEffectsUpdated = 0;
+        
+        // Process each player
+        for (const [playerId, player] of Object.entries(gameEnv.players)) {
+            if (!player.zones) continue;
+            
+            console.log(`🎯 Updating effects for player ${playerId}`);
+            
+            // CLEANUP: Remove stale effects for this player
+            const removedEffects = CardEffect.cleanupStaleEffectsForPlayer(player, playerId, gameEnv);
+            if (removedEffects > 0) {
+                console.log(`🗑️ Removed ${removedEffects} stale effects for player ${playerId}`);
+            }
+            
+            // ADD: Process all slots for this player to add new effects
+            const addedEffects = CardEffect.updatePlayerSlotsContinuousEffects(player, playerId, gameEnv);
+            totalEffectsUpdated += addedEffects;
+            
+            console.log(`💾 Added ${addedEffects} continuous effects for player ${playerId}`);
+        }
+        
+        console.log(`✅ Phase 1 complete: ${totalEffectsUpdated} total effects updated`);
+        return totalEffectsUpdated;
+    }
+
+    /**
+     * Reset all cards' modifyAP and modifyHP to 0 before recalculating effects
+     */
+    static resetAllCardModifications(gameEnv: GameEnvironment): void {
+        console.log(`🔄 Resetting all card modifications to 0`);
+        
+        for (const [playerId, player] of Object.entries(gameEnv.players)) {
+            if (!player.zones) continue;
+            
+            // Reset modifications for all slot zone cards
+            for (const slotName of SLOT_ZONES) {
+                const slot = (player.zones as any)[slotName];
+                
+                // Reset unit modifications
+                if (slot?.unit) {
+                    slot.unit.modifyAP = 0;
+                    slot.unit.modifyHP = 0;
+                }
+                
+                // Reset pilot modifications
+                if (slot?.pilot) {
+                    slot.pilot.modifyAP = 0;
+                    slot.pilot.modifyHP = 0;
+                }
+            }
+        }
+        
+        console.log(`✅ All card modifications reset to 0`);
+    }
+
+    /**
+     * Process continuous effects for a single player and apply to individual target cards
+     */
+    static processPlayerContinuousEffects(playerId: string, gameEnv: GameEnvironment): {
+        effectsProcessed: number;
+        effectsApplied: number;
+    } {
+        let effectsProcessed = 0;
+        let effectsApplied = 0;
+        
+        // Get all units for this player that can have effects
+        const playerUnits = CardEffect.getAllPlayerUnitsInSlot(playerId, gameEnv);
+        
+        for (const unit of playerUnits) {
+            if (!unit.continuousEffects) continue;
+            
+            for (const effect of unit.continuousEffects) {
+                effectsProcessed++;
+                
+                // Check if effect conditions are valid
+                const sourcePlayer = CardEffect.findCardOwner(effect.sourceCardUid, gameEnv);
+                const isValid = CardEffect.validateEffectConditions(effect, gameEnv, sourcePlayer);
+                
+                if (isValid) {
+                    const value = CardEffect.getEffectValue(effect.effect.action, effect.effect.parameters);
+                    
+                    // Apply effect to target cards based on effect scope
+                    const applied = CardEffect.applyEffectToTargetCards(effect, value, sourcePlayer, gameEnv);
+                    if (applied) {
+                        effectsApplied++;
+                        console.log(`⚡ Applied effect ${effect.effectId}: ${effect.effect.action} (${value}) from ${effect.sourceCardUid}`);
+                    }
+                } else {
+                    console.log(`⏰ Conditions not met for effect: ${effect.effectId} from ${effect.sourceCardUid}`);
+                }
+            }
+        }
+        
+        return { effectsProcessed, effectsApplied };
+    }
+
+    /**
+     * Apply effect to target cards based on effect scope and targeting rules
+     */
+    static applyEffectToTargetCards(effect: any, value: number, sourcePlayerId: string | null, gameEnv: GameEnvironment): boolean {
+        if (!sourcePlayerId) return false;
+        
+        // Determine target scope from effect data (with backward compatibility)
+        const target = effect.target || {};
+        const scope = target.scope || target.owner || 'self';
+        
+        switch (scope) {
+            case 'self':
+            case 'self_all':
+                // Apply to all units owned by the source player
+                return CardEffect.applyEffectToPlayerUnits(sourcePlayerId, effect.effect.action, value, gameEnv);
+                
+            case 'opponent':
+            case 'opponent_all':
+                // Apply to all units owned by opponent
+                const opponentId = CardEffect.getOpponentId(sourcePlayerId, gameEnv);
+                return CardEffect.applyEffectToPlayerUnits(opponentId, effect.effect.action, value, gameEnv);
+                
+            case 'all':
+            case 'both':
+                // Apply to all units on the field
+                let applied = false;
+                for (const playerId of Object.keys(gameEnv.players)) {
+                    if (CardEffect.applyEffectToPlayerUnits(playerId, effect.effect.action, value, gameEnv)) {
+                        applied = true;
+                    }
+                }
+                return applied;
+                
+            default:
+                console.log(`⚠️ Unknown effect scope: ${scope}`);
+                return false;
+        }
+    }
+
+    /**
+     * Apply effect to all units owned by a specific player
+     */
+    static applyEffectToPlayerUnits(playerId: string, action: string, value: number, gameEnv: GameEnvironment): boolean {
+        const player = gameEnv.players[playerId];
+        if (!player?.zones) return false;
+        
+        let applied = false;
+        
+        // Apply to all units and pilots in slot zones
+        for (const slotName of SLOT_ZONES) {
+            const slot = (player.zones as any)[slotName];
+            
+            // Apply to unit if present
+            if (slot?.unit) {
+                if (CardEffect.applyEffectToCard(slot.unit, action, value)) {
+                    applied = true;
+                }
+            }
+            
+            // Apply to pilot if present
+            if (slot?.pilot) {
+                if (CardEffect.applyEffectToCard(slot.pilot, action, value)) {
+                    applied = true;
+                }
+            }
+        }
+        
+        return applied;
+    }
+
+    /**
+     * Apply effect to a single card
+     */
+    static applyEffectToCard(card: any, action: string, value: number): boolean {
+        switch (action) {
+            case 'modifyAP':
+                const currentModifyAP = card.modifyAP || 0;
+                card.modifyAP = currentModifyAP + value;
+                console.log(`  ⚡ Card ${card.cardUid}: AP modifier ${currentModifyAP} → ${card.modifyAP} (${value > 0 ? '+' : ''}${value})`);
+                return true;
+                
+            case 'modifyHP':
+                const currentModifyHP = card.modifyHP || 0;
+                card.modifyHP = currentModifyHP + value;
+                console.log(`  ❤️ Card ${card.cardUid}: HP modifier ${currentModifyHP} → ${card.modifyHP} (${value > 0 ? '+' : ''}${value})`);
+                return true;
+                
+            default:
+                console.log(`⚠️ Unknown effect action for card: ${action}`);
+                return false;
+        }
+    }
+
+    /**
+     * Convenient helper to trigger effect recalculation 
+     * (e.g., after manual game state changes, testing, etc.)
+     */
+    static recalculateAllPlayerEffects(gameEnv: GameEnvironment): void {
+        console.log(`🔄 Manual effect recalculation triggered`);
+        CardEffect.processAllContinuousEffects(gameEnv);
     }
 
     /**
@@ -807,28 +996,29 @@ export class CardEffect {
     }
 
     /**
-     * Clean up effects from a removed card
+     * Clean up effects from a removed card (Updated for player-level effects)
      */
     static cleanupEffectsFromCard(removedCardUid: string, gameEnv: GameEnvironment): void {
         console.log(`🧹 Cleaning up effects from removed card: ${removedCardUid}`);
         
         const allCards = CardEffect.getAllCards(gameEnv);
+        let totalRemovedEffects = 0;
         
         for (const card of allCards) {
             if (!card.continuousEffects || card.continuousEffects.length === 0) continue;
             
             const removedCount = ContinuousEffectsHelper.removeEffectsFromSource(card.continuousEffects, removedCardUid);
-            
-            for (let i = card.continuousEffects.length - 1; i >= 0; i--) {
-                const effect = card.continuousEffects[i];
-                if (effect.sourceCardUid === removedCardUid && effect.active) {
-                    CardEffect.removeEffectValue(card, effect.effect.action, effect.appliedValue);
-                }
-            }
+            totalRemovedEffects += removedCount;
             
             if (removedCount > 0) {
                 console.log(`🗑️ Cleaned up ${removedCount} effects from ${card.cardUid}`);
             }
+        }
+        
+        // After cleaning up effects, recalculate all player modifications
+        if (totalRemovedEffects > 0) {
+            console.log(`🔄 Recalculating player effects after cleanup (${totalRemovedEffects} effects removed)`);
+            CardEffect.processAllContinuousEffects(gameEnv);
         }
     }
 
@@ -865,11 +1055,8 @@ export class CardEffect {
     }
 
     /**
-     * Remove effect value from card
+     * REMOVED: Old effect reversal approach - effects now reset and recalculated automatically
      */
-    private static removeEffectValue(card: ZoneCard, action: string, value: number): void {
-        CardEffect.applyEffectValue(card, action, -value);
-    }
 
     // Utility methods for cleaner data extraction
     static extractTrigger(rule: any): string {

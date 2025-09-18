@@ -704,6 +704,7 @@ export class Player {
         if (data.zones) {
             player.zones = data.zones;
         }
+        
         // fieldEffects removed - not currently implemented
         return player;
     }
