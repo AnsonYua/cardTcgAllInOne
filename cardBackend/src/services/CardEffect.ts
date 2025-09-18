@@ -3,14 +3,9 @@
 
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase } from '../models/GameEnums';
-import { HandCard } from '../models/Player';
 import { ZoneCard } from '../models/CardSystem';
-import { 
-    EffectProcessingResult
-} from '../models/ContinuousEffects';
+import { EffectProcessingResult } from '../models/ContinuousEffects';
 import { SLOT_ZONES } from '../config/gameConstants';
-
-
 
 export interface EffectResult {
     success: boolean;
@@ -743,58 +738,43 @@ export class CardEffect {
     }
 
 
-    /**
-     * Get all cards from game environment
-     */
-    private static getAllCards(gameEnv: GameEnvironment): ZoneCard[] {
-        const cards: ZoneCard[] = [];
-        
-        for (const player of Object.values(gameEnv.players)) {
-            if (!player.zones) continue;
-            
-            for (const slotKey of SLOT_ZONES) {
-                const slot = player.zones[slotKey];
-                if (slot.unit) cards.push(slot.unit);
-                if (slot.pilot) cards.push(slot.pilot);
-            }
-            
-            if (player.zones.base) {
-                cards.push(...player.zones.base);
-            }
-            if (player.zones.shieldArea) {
-                cards.push(...player.zones.shieldArea);
-            }
-            if (player.zones.energyArea) {
-                cards.push(...player.zones.energyArea);
-            }
-            if (player.zones.trashArea) {
-                cards.push(...player.zones.trashArea);
-            }
-        }
-        
-        return cards;
-    }
+
+    // ============================================================================
+    // STATIC UTILITY METHODS
+    // ============================================================================
 
     /**
-     * REMOVED: Old effect reversal approach - effects now reset and recalculated automatically
+     * Extract trigger type from effect rule
      */
-
-    // Utility methods for cleaner data extraction
     static extractTrigger(rule: any): string {
         return typeof rule.trigger === 'string' ? rule.trigger : rule.trigger?.event || '';
     }
 
+    /**
+     * Extract conditions array from effect rule
+     */
     static extractConditions(rule: any): string[] {
         return rule.conditions || rule.trigger?.conditions || [];
     }
 
+    /**
+     * Extract target scope from effect rule
+     */
     static extractTargetScope(rule: any): string {
         return rule.target?.scope || rule.target?.owner || 'self';
     }
 
+    /**
+     * Extract effect ID from effect rule
+     */
     static extractEffectId(rule: any): string {
         return rule.effectId || rule.id || 'unknown_effect';
     }
+
+    // ============================================================================
+    // INSTANCE METHODS AND PROPERTIES
+    // ============================================================================
+
     private gameEnv: GameEnvironment;
     private playerId: string;
     private target: any;
@@ -1007,15 +987,5 @@ export class CardEffect {
             message: `Moved ${movedCards.length} cards from shield to hand`,
             affectedCards: movedCards
         };
-    }
-    
-    // ============ HELPER METHODS ============
-    
-    /**
-     * Get opponent player ID
-     */
-    private getOpponentId(): string {
-        const playerIds = Object.keys(this.gameEnv.players);
-        return playerIds.find(id => id !== this.playerId) || '';
     }
 }
