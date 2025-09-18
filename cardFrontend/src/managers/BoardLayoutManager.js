@@ -8,7 +8,7 @@ export default class BoardLayoutManager {
     this.scene = scene;
     this.layout = null;
     this.constants = {
-      startY: 45,
+      startY: 0,
       cardHeight: 160,
       playerStartX: -50,
       slotSpacing: 70,
@@ -36,14 +36,14 @@ export default class BoardLayoutManager {
       opponent: {
         ...this.generateMainSlots('opponent', playerStartX, width, startY, cardHeight),
         ...this.generateSpecialZones('opponent', width, startY, cardHeight),
-        row2: this.generateOpponentRow2Slots(playerStartX, width, startY - 100, cardHeight)
+        row2: this.generateOpponentRow2Slots(playerStartX, width, startY - 100 -40, cardHeight)
       },
       
       // Player zones (bottom area)
       player: {
         ...this.generateMainSlots('player', playerStartX, width, startY, cardHeight),
         ...this.generateSpecialZones('player', width, startY, cardHeight),
-        row2: this.generateRow2Slots(playerStartX, width, startY + 100, cardHeight)
+        row2: this.generateRow2Slots(playerStartX, width, startY + 100+40, cardHeight)
       },
       
       // Hand area (bottom)
@@ -63,12 +63,12 @@ export default class BoardLayoutManager {
    */
   generateMainSlots(playerType, playerStartX, width, startY, cardHeight) {
     const baseY = playerType === 'opponent' 
-      ? startY + 100 + cardHeight + 10 + 15
+      ? startY + 100 + cardHeight + 10 + 15 -40
       : startY + 100 + cardHeight + 10 + 15 + cardHeight + 60;
 
     const slots = {};
     const slotPositions = [
-      { name: 'slot1', xOffset: playerType === 'opponent' ? 280 + 50 : -320 },
+      { name: 'slot1', xOffset: playerType === 'opponent' ? 280 + 50  : -320 },
       { name: 'slot2', xOffset: playerType === 'opponent' ? 160 + 40 : -200 + 10 },
       { name: 'slot3', xOffset: playerType === 'opponent' ? 40 + 30 : -80 + 20 },
       { name: 'slot4', xOffset: playerType === 'opponent' ? -80 + 20 : 40 + 30 },
@@ -94,6 +94,8 @@ export default class BoardLayoutManager {
    * @param {number} cardHeight - Card height
    */
   generateSpecialZones(playerType, width, startY, cardHeight) {
+
+    console.log("dafdsadssfd 111 ",startY)
     if (playerType === 'opponent') {
       return {
         deck: {
@@ -113,15 +115,15 @@ export default class BoardLayoutManager {
       return {
         deck: {
           x: width * 0.5 + 420,
-          y: startY + 100 + cardHeight + 10 + 15 + cardHeight + 60
+          y: startY + 100 + cardHeight + 10 + 15 + cardHeight + 60 + 50
         },
         leaderDeck: {
           x: width * 0.5 - 550,
-          y: startY + 100 + cardHeight + 10 + 15 + cardHeight + 60 + 50
+          y: startY + 100 + cardHeight + 10 + 15 + cardHeight + 60 + 50+ 50
         },
         base: {
           x: width * 0.5 - 550,
-          y: startY + 70 + cardHeight + 10 + 15 + cardHeight + 60 + 50
+          y: startY + 70 + cardHeight + 10 + 15 + cardHeight + 60 + 50+ 50
         }
       };
     }

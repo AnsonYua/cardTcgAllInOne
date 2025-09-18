@@ -117,9 +117,9 @@ export default class GameScene extends Phaser.Scene {
     // Add table texture
     const tableGraphics = this.add.graphics();
     tableGraphics.fillStyle(0x2d5016);
-    tableGraphics.fillRoundedRect(50, 50, width - 100, height - 140, 20);
+    tableGraphics.fillRoundedRect(50, 0, width - 100, height - 140, 20);
     tableGraphics.lineStyle(4, 0x8b4513);
-    tableGraphics.strokeRoundedRect(50, 50, width - 100, height - 140, 20);
+    tableGraphics.strokeRoundedRect(50, 0, width - 100, height - 140, 20);
   }
 
   createGameBoard() {
@@ -199,23 +199,10 @@ export default class GameScene extends Phaser.Scene {
     // Initialize ActionButtonManager (includes top UI creation)
     this.actionButtonManager.initialize();
 
-
-    // Phase indicator
-    this.phaseText = this.add.text(width / 2, 35, 'MAIN PHASE', {
-      fontSize: '20px',
-      fontFamily: 'Arial Bold',
-      fill: '#ffffff',
-      align: 'center'
-    });
-    this.phaseText.setOrigin(0.5);
-    
-    // Set phaseText element for UIMessageManager
-    this.uiMessageManager.setPhaseTextElement(this.phaseText);
-
     // Game info display (first player and opponent hand)
     this.createGameInfoDisplay();
-
-
+    // Set phaseText element for UIMessageManager
+    this.uiMessageManager.setPhaseTextElement(this.phaseText);
     // Action buttons
     this.createActionButtons();
 
@@ -268,9 +255,9 @@ export default class GameScene extends Phaser.Scene {
     // Create single background for all labels (expanded height for 3 lines)
     const displayBg = this.add.graphics();
     displayBg.fillStyle(0x000000, 0.7);
-    displayBg.fillRoundedRect(displayX - 70, displayY - 45, 220, 105, 5);
+    displayBg.fillRoundedRect(displayX - 70, displayY - 45, 250, 105, 5);
     displayBg.lineStyle(2, 0x888888);
-    displayBg.strokeRoundedRect(displayX - 70, displayY - 45, 220, 105, 5);
+    displayBg.strokeRoundedRect(displayX - 70, displayY - 45, 250, 105, 5);
 
     // First player label (top line)
     this.firstPlayerText = this.add.text(displayX - 60, displayY - 28, 'First Player: Unknown', {
@@ -298,6 +285,16 @@ export default class GameScene extends Phaser.Scene {
       align: 'left'
     });
     this.currentTurnText.setOrigin(0, 0.5);
+
+
+        // Phase indicator
+    this.phaseText = this.add.text(displayX - 60, displayY + 40, 'MAIN PHASE', {
+      fontSize: '16px',
+      fontFamily: 'Arial Bold',
+      fill: '#ffffff',
+      align: 'center'
+    });
+    this.phaseText.setOrigin(0,0.5);
   }
 
   createOpponentHandDisplay() {
@@ -682,11 +679,6 @@ export default class GameScene extends Phaser.Scene {
 
     // Update current turn display
     this.updateCurrentTurnDisplay(currentPlayer);
-
-    // Update top UI via ActionButtonManager
-    if (this.actionButtonManager) {
-      this.actionButtonManager.updateTopUI();
-    }
 
 
     // Update opponent hand count display
@@ -1456,10 +1448,7 @@ export default class GameScene extends Phaser.Scene {
       const firstPlayerText = isCurrentPlayerFirst ? 'You go first!' : 'Opponent goes first!';
       this.showRoomStatus(`${firstPlayerText} (First player: ${firstPlayerId})`);
 
-      // Update top UI via ActionButtonManager
-      if (this.actionButtonManager) {
-        this.actionButtonManager.updateTopUI();
-      }
+
       // Update first player display
       this.updateFirstPlayerDisplay(isCurrentPlayerFirst);
 
