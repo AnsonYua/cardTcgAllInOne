@@ -134,6 +134,25 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     }
     this.add(this.apText);
     
+    // Create Total AP label (50px below AP)
+    this.totalApText = this.scene.add.text(this.config.apOffsetX, this.config.apOffsetY + 20, '0', {
+      fontSize: `${this.config.fontSize}px`,
+      fontFamily: this.config.fontFamily,
+      fill: this.config.apColors.base.text,
+      align: 'center'
+    });
+    this.totalApText.setOrigin(0.5);
+    
+    // Improve text rendering quality for preview mode
+    if (this.isPreviewMode) {
+      this.totalApText.setScale(1);
+      this.totalApText.setFontSize(this.totalApText.fontSize);
+      this.totalApText.setResolution(5); // Higher resolution for crisp text
+      this.totalApText.x = Math.round(this.totalApText.x);
+      this.totalApText.y = Math.round(this.totalApText.y);
+    }
+    this.add(this.totalApText);
+    
     // Create HP label components
     this.hpBackground = this.scene.add.graphics();
     this.add(this.hpBackground);
@@ -155,6 +174,25 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
       this.hpText.y = Math.round(this.hpText.y);
     }
     this.add(this.hpText);
+    
+    // Create Total HP label (50px below HP)
+    this.totalHpText = this.scene.add.text(this.config.hpOffsetX, this.config.hpOffsetY + 20, '0', {
+      fontSize: `${this.config.fontSize}px`,
+      fontFamily: this.config.fontFamily,
+      fill: this.config.hpColors.base.text,
+      align: 'center'
+    });
+    this.totalHpText.setOrigin(0.5);
+    
+    // Improve text rendering quality for preview mode
+    if (this.isPreviewMode) {
+      this.totalHpText.setScale(1);
+      this.totalHpText.setFontSize(this.totalHpText.fontSize);
+      this.totalHpText.setResolution(5); // Higher resolution for crisp text
+      this.totalHpText.x = Math.round(this.totalHpText.x);
+      this.totalHpText.y = Math.round(this.totalHpText.y);
+    }
+    this.add(this.totalHpText);
     
     // Preview mode uses hardcoded values instead of scaling
     if (this.isPreviewMode) {
