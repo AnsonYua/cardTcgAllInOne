@@ -2,6 +2,7 @@
 // Universal card effect processor for all effect types
 
 import { GameEnvironment } from '../models/GameEnvironment';
+import { GamePhase } from '../models/GameEnums';
 import { HandCard } from '../models/Player';
 import { ZoneCard } from '../models/CardSystem';
 import { 
@@ -279,7 +280,7 @@ export class CardEffect {
     }
     
     /**
-     * PHASE 2: Apply all stored continuous effects to a card
+     * PHASE 2: Apply all stored continuous effects to a card with timing validation
      */
     static applyContinuousEffects(targetCard: ZoneCard, gameEnv: GameEnvironment): number {
         if (!targetCard.continuousEffects || targetCard.continuousEffects.length === 0) {
@@ -291,18 +292,25 @@ export class CardEffect {
         for (const storedEffect of targetCard.continuousEffects) {
             
             if (!storedEffect.active) {
-                // Activate effect (simplified - always activate stored effects)
-                const value = CardEffect.getEffectValue(storedEffect.effect.action, storedEffect.effect.parameters);
+                // Check all conditions (unified timing and state conditions) before applying effect
+                const sourcePlayerOwnsCard = CardEffect.findCardOwner(targetCard.cardUid, gameEnv);
+                const conditionsValid = CardEffect.validateEffectConditions(storedEffect, gameEnv, sourcePlayerOwnsCard);
                 
-                if (CardEffect.isStatModifyingAction(storedEffect.effect.action)) {
-                    CardEffect.applyEffectValue(targetCard, storedEffect.effect.action, value);
+                if (conditionsValid) {
+                    const value = CardEffect.getEffectValue(storedEffect.effect.action, storedEffect.effect.parameters);
+                    
+                    if (CardEffect.isStatModifyingAction(storedEffect.effect.action)) {
+                        CardEffect.applyEffectValue(targetCard, storedEffect.effect.action, value);
+                    }
+                    
+                    storedEffect.active = true;
+                    storedEffect.appliedValue = value;
+                    appliedCount++;
+                    
+                    console.log(`✅ Activated effect: ${storedEffect.effectId} (${storedEffect.effect.action}) on ${targetCard.cardUid} (value: ${value})`);
+                } else {
+                    console.log(`⏰ Conditions not met for effect: ${storedEffect.effectId} on ${targetCard.cardUid}`);
                 }
-                
-                storedEffect.active = true;
-                storedEffect.appliedValue = value;
-                appliedCount++;
-                
-                console.log(`✅ Activated effect: ${storedEffect.effectId} (${storedEffect.effect.action}) on ${targetCard.cardUid} (value: ${value})`);
             }
         }
         
@@ -340,41 +348,158 @@ export class CardEffect {
         }
     }
 
-    /**
-     * Parse a modifier string like "+1", "-2", "3" into a number
-     */
-    static parseModifier(modifier: string | number): number {
-        if (typeof modifier === 'number') return modifier;
-        if (typeof modifier !== 'string') return 0;
-        
-        // Handle common modifier formats from st01card.json
-        const cleanValue = modifier.replace(/[^\d\-\+]/g, '');
-        return parseInt(cleanValue, 10) || 0;
-    }
-    
     
     /**
-     * Get effect value based on action type and parameters
+     * Get effect value from unified parameters structure
+     * All numeric effects now use 'value' parameter for simplicity
      */
     static getEffectValue(action: string, parameters: any): number {
-        switch (action) {
-            case 'modifyAP':
-            case 'modifyHP':
-                return parameters.modifier ? CardEffect.parseModifier(parameters.modifier) : 0;
-            case 'heal':
-            case 'damage':
-                return parameters.amount || 0;
-            case 'addToHand':
-                return parameters.count || 1;
-            case 'restrict_attack':
-            case 'rest':
-            case 'deploy':
-                // Non-numeric effects
-                return 0;
-            default:
-                console.log(`⚠️ Unknown action type for value extraction: ${action}`);
-                return 0;
+        // Unified structure: all numeric effects use 'value' parameter
+        return parameters.value || 0;
+    }
+
+    /**
+     * Validate all effect conditions (unified timing and state conditions)
+     */
+    static validateEffectConditions(storedEffect: any, gameEnv: GameEnvironment, cardOwnerPlayerId: string | null): boolean {
+        // Get conditions from unified array (with backward compatibility)
+        const conditions = storedEffect.conditions || [];
+        const legacyTiming = storedEffect.timing || [];
+        const allConditions = [...conditions, ...legacyTiming];
+        
+        // If no conditions specified, effect is always active
+        if (allConditions.length === 0) {
+            return true;
         }
+        
+        // All conditions must be met for effect to be active
+        for (const condition of allConditions) {
+            if (!CardEffect.checkSingleCondition(condition, gameEnv, cardOwnerPlayerId)) {
+                return false;
+            }
+        }
+        
+        // All conditions passed
+        return true;
+    }
+
+    /**
+     * Check a single condition against current game state
+     */
+    private static checkSingleCondition(condition: string, gameEnv: GameEnvironment, cardOwnerPlayerId: string | null): boolean {
+        switch (condition) {
+            // State-based conditions
+            case 'isPaired':
+                return CardEffect.checkIsPaired(cardOwnerPlayerId, gameEnv);
+            
+            case 'isLinked':
+                return CardEffect.checkIsLinked(cardOwnerPlayerId, gameEnv);
+                
+            // Turn-based timing conditions
+            case 'YOUR_TURN':
+                return cardOwnerPlayerId ? gameEnv.currentPlayer === cardOwnerPlayerId : false;
+                
+            case 'OPPONENT_TURN':
+                return cardOwnerPlayerId ? gameEnv.currentPlayer !== cardOwnerPlayerId : false;
+                
+            case 'ANY_TIME':
+                return true;
+                
+            // Phase-based timing conditions
+            case 'MAIN_PHASE':
+                return gameEnv.phase === GamePhase.MAIN_PHASE;
+                
+            case 'ATTACK_PHASE':
+            case 'BATTLE_PHASE':
+                return gameEnv.phase === GamePhase.ATTACK_PHASE || gameEnv.phase === GamePhase.DAMAGE_PHASE;
+                
+            case 'END_PHASE':
+                return gameEnv.phase === GamePhase.END_PHASE;
+                
+            case 'DRAW_PHASE':
+                return gameEnv.phase === GamePhase.DRAW_PHASE;
+                
+            default:
+                console.log(`⚠️ Unknown condition: ${condition}`);
+                // Default to allow effect if condition is unknown (fail-safe)
+                return true;
+        }
+    }
+
+    /**
+     * Check if card owner has paired units (placeholder - implement based on game logic)
+     */
+    private static checkIsPaired(cardOwnerPlayerId: string | null, gameEnv: GameEnvironment): boolean {
+        if (!cardOwnerPlayerId) return false;
+        
+        const player = gameEnv.players[cardOwnerPlayerId];
+        if (!player?.zones) return false;
+        
+        // Check all slot zones for paired units (unit + pilot)
+        for (const slotName of SLOT_ZONES) {
+            const slot = (player.zones as any)[slotName];
+            if (slot?.unit && slot?.pilot) {
+                return true; // Found at least one paired slot
+            }
+        }
+        
+        return false;
+    }
+
+    /**
+     * Check if card owner has linked units (placeholder - implement based on game logic)
+     */
+    private static checkIsLinked(cardOwnerPlayerId: string | null, gameEnv: GameEnvironment): boolean {
+        if (!cardOwnerPlayerId) return false;
+        
+        const player = gameEnv.players[cardOwnerPlayerId];
+        if (!player?.zones) return false;
+        
+        // Check all slot zones for linked units (unit.link matches pilot traits/name)
+        for (const slotName of SLOT_ZONES) {
+            const slot = (player.zones as any)[slotName];
+            if (slot?.unit && slot?.pilot) {
+                if (CardEffect.detectLink(slot.unit, slot.pilot)) {
+                    return true; // Found at least one linked pair
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    /**
+     * Find which player owns a specific card by cardUid
+     */
+    static findCardOwner(cardUid: string, gameEnv: GameEnvironment): string | null {
+        for (const [playerId, player] of Object.entries(gameEnv.players)) {
+            if (!player.zones) continue;
+            
+            // Check all slot zones for the card
+            for (const slotName of SLOT_ZONES) {
+                const slot = (player.zones as any)[slotName];
+                if (slot?.unit?.cardUid === cardUid || slot?.pilot?.cardUid === cardUid) {
+                    return playerId;
+                }
+            }
+            
+            // Check other zones (base, shield, energy, trash) 
+            const otherZones = ['base', 'shieldArea', 'energyArea', 'trashArea'];
+            for (const zoneName of otherZones) {
+                const zone = (player.zones as any)[zoneName];
+                if (Array.isArray(zone)) {
+                    for (const card of zone) {
+                        if (card?.cardUid === cardUid) {
+                            return playerId;
+                        }
+                    }
+                } else if (zone?.cardUid === cardUid) {
+                    return playerId;
+                }
+            }
+        }
+        
+        return null;
     }
 
     // ============================================================================
@@ -596,18 +721,22 @@ export class CardEffect {
     }
 
     /**
-     * Classify the type of continuous effect based on conditions
+     * Classify the type of continuous effect based on unified conditions
      */
     private static classifyEffectType(effectRule: any): ContinuousEffectType {
-        const conditions = CardEffect.extractConditions(effectRule);
+        // Get all conditions from unified array (with backward compatibility)
+        const conditions = effectRule.conditions || [];
+        const legacyTiming = effectRule.timing || [];
+        const legacyConditions = CardEffect.extractConditions(effectRule);
+        const allConditions = [...conditions, ...legacyTiming, ...legacyConditions];
         
         // Check for pair-triggered effects
-        if (conditions.includes('isPaired')) {
+        if (allConditions.includes('isPaired')) {
             return ContinuousEffectType.PAIR_TRIGGERED;
         }
         
         // Check for link-triggered effects (future expansion)
-        if (conditions.includes('isLinked')) {
+        if (allConditions.includes('isLinked')) {
             return ContinuousEffectType.LINK_TRIGGERED;
         }
         
@@ -805,9 +934,9 @@ export class CardEffect {
      */
     private executeAddToHand(): EffectResult {
         const { parameters } = this.effect;
-        const { count = 1, from } = parameters;
+        const { value = 1, from } = parameters;
         
-        console.log(`🃏 Adding ${count} cards to hand from ${from}`);
+        console.log(`🃏 Adding ${value} cards to hand from ${from}`);
         
         // Resolve target cards based on target specification  
         const targetCards = this.resolveTargetCards();
@@ -815,7 +944,7 @@ export class CardEffect {
         // Execute based on "from" parameter
         switch (from) {
             case 'shield':
-                return this.addFromShieldToHand(targetCards, count);
+                return this.addFromShieldToHand(targetCards, value);
             default:
                 console.log(`⚠️ Unknown addToHand source: ${from} - returning success for placeholder`);
                 return {
@@ -830,9 +959,9 @@ export class CardEffect {
      */
     private executeHeal(): EffectResult {
         const { parameters } = this.effect;
-        const { amount = 2 } = parameters;
+        const { value = 2 } = parameters;
         
-        console.log(`🩹 Executing heal for ${amount} HP on player ${this.playerId}`);
+        console.log(`🩹 Executing heal for ${value} HP on player ${this.playerId}`);
         
         // For repair_2, target is self - find the unit that needs healing
         const targetUnit = this.findTargetUnit();
@@ -856,7 +985,7 @@ export class CardEffect {
         const currentHP = targetUnit.currentHP || maxHP;
         
         // Calculate actual healing (can't exceed max HP)
-        const newHP = Math.min(currentHP + amount, maxHP);
+        const newHP = Math.min(currentHP + value, maxHP);
         const actualHealing = newHP - currentHP;
         
         if (actualHealing > 0) {

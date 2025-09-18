@@ -754,6 +754,227 @@ for (const slotName of SLOT_ZONES) {
 - Enhanced type safety for slot zone references
 - Simplified debugging and code readability
 
+## Unified Effect Value Structure (January 2025)
+
+### Overview
+**Simplified Effect Processing Architecture** - All card effects now use a unified `value` parameter structure, eliminating complex string parsing and inconsistent parameter naming across the system.
+
+**Key Benefits:**
+- **🎯 Single Parameter Name**: All numeric effects use `value` instead of mixed `modifier`/`amount`/`count`
+- **⚡ Performance**: Eliminated string parsing overhead (`"+1"` → `1`)
+- **🔒 Type Safety**: Always numeric values, no string/number confusion
+- **🧹 Code Simplicity**: Reduced effect processing from 15+ lines to 3 lines
+- **🔮 Future-Proof**: Easy to add new effect types without parameter complexity
+
+### Unified Card Data Structure
+
+**Before: Complex Mixed Structure**
+```json
+// Multiple parameter names requiring different processing
+{
+    "effect": {
+        "action": "modifyAP",
+        "parameters": { "modifier": "+1" }  // String parsing needed
+    }
+},
+{
+    "effect": {
+        "action": "heal", 
+        "parameters": { "amount": 2 }       // Different parameter name
+    }
+},
+{
+    "effect": {
+        "action": "addToHand",
+        "parameters": { "count": 1 }        // Yet another parameter name
+    }
+}
+```
+
+**After: Unified Simple Structure**
+```json
+// Single parameter name for all numeric effects
+{
+    "effect": {
+        "action": "modifyAP",
+        "parameters": { "value": 1 }        // Direct numeric value
+    }
+},
+{
+    "effect": {
+        "action": "heal",
+        "parameters": { "value": 2 }        // Same parameter name
+    }
+},
+{
+    "effect": {
+        "action": "addToHand", 
+        "parameters": { "value": 1 }        // Consistent across all effects
+    }
+}
+```
+
+### Effect Processing Simplification
+
+**Before: Complex Multi-Case Processing**
+```typescript
+static getEffectValue(action: string, parameters: any): number {
+    switch (action) {
+        case 'modifyAP':
+        case 'modifyHP':
+            return parameters.modifier ? CardEffect.parseModifier(parameters.modifier) : 0;
+        case 'heal':
+        case 'damage':
+            return parameters.amount || 0;
+        case 'addToHand':
+            return parameters.count || 1;
+        case 'restrict_attack':
+        case 'rest':
+        case 'deploy':
+            return 0;
+        default:
+            console.log(`⚠️ Unknown action type: ${action}`);
+            return 0;
+    }
+}
+
+static parseModifier(modifier: string | number): number {
+    if (typeof modifier === 'number') return modifier;
+    if (typeof modifier !== 'string') return 0;
+    
+    const cleanValue = modifier.replace(/[^\d\-\+]/g, '');
+    return parseInt(cleanValue, 10) || 0;
+}
+```
+
+**After: Single-Line Processing**
+```typescript
+static getEffectValue(action: string, parameters: any): number {
+    // Unified structure: all numeric effects use 'value' parameter
+    return parameters.value || 0;
+}
+
+// parseModifier method completely removed!
+```
+
+### Positive and Negative Effects
+
+**Positive Effects (Buffs)**
+```json
+{
+    "effect": {
+        "action": "modifyAP",
+        "parameters": { "value": 1 }        // +1 AP boost
+    }
+},
+{
+    "effect": {
+        "action": "heal",
+        "parameters": { "value": 3 }        // Heal 3 HP
+    }
+}
+```
+
+**Negative Effects (Debuffs)**
+```json
+{
+    "effect": {
+        "action": "modifyAP", 
+        "parameters": { "value": -2 }       // -2 AP reduction
+    }
+},
+{
+    "effect": {
+        "action": "modifyHP",
+        "parameters": { "value": -1 }       // -1 HP reduction
+    }
+}
+```
+
+### Real Card Examples
+
+**ST01-001 "Gundam" Effects**
+```json
+{
+    "effects": {
+        "rules": [
+            {
+                "effectId": "repair_2",
+                "effect": {
+                    "action": "heal",
+                    "parameters": { "value": 2 }    // Repair 2 HP
+                }
+            },
+            {
+                "effectId": "pair_ap_boost_all", 
+                "effect": {
+                    "action": "modifyAP",
+                    "parameters": { "value": 1 }    // +1 AP to all units
+                }
+            }
+        ]
+    }
+}
+```
+
+### Performance Impact
+
+**Processing Comparison:**
+```typescript
+// Before: Complex parsing with potential errors
+const modifier = "+1";
+const cleanValue = modifier.replace(/[^\d\-\+]/g, '');  // Regex processing
+const value = parseInt(cleanValue, 10) || 0;           // String conversion
+card.currentAP += value;                                // Final application
+
+// After: Direct numeric operation
+const value = parameters.value || 0;                   // Direct access
+card.currentAP += value;                                // Immediate application
+```
+
+**Performance Benefits:**
+- **🚀 No String Parsing**: Eliminated regex processing and parseInt calls
+- **⚡ Reduced CPU**: Direct numeric operations instead of string manipulation
+- **🔒 Compile-Time Safety**: TypeScript can validate numeric types
+- **🧪 Easier Testing**: Predictable numeric values, no parsing edge cases
+
+### Developer Guidelines
+
+**Adding New Effect Types:**
+```typescript
+// All new effects follow the same pattern
+{
+    "action": "newEffectType",
+    "parameters": { 
+        "value": 5,                     // Always use 'value' for numeric effects
+        "additionalParam": "specific"   // Use specific names for non-numeric params
+    }
+}
+
+// Processing remains the same
+const numericValue = CardEffect.getEffectValue(action, parameters);  // Always works
+```
+
+**Validation Rules:**
+- ✅ **Always use `value`** for numeric effect parameters
+- ✅ **Use numeric types** in JSON (not strings like `"+1"`)
+- ✅ **Positive/negative** values indicate buff/debuff naturally
+- ✅ **Zero values** for non-numeric effects or default states
+
+### Migration Notes
+
+**Files Updated in Migration:**
+- **`st01Card.json`**: All effect parameters converted to unified structure
+- **`CardEffect.ts`**: Simplified getEffectValue method and removed parseModifier
+- **`GameEngine.ts`**: Updated heal effect processing to use `value` parameter
+- **`StateBasedActionEngine.ts`**: Updated repair ability processing
+- **Instance methods**: Updated executeHeal and executeAddToHand methods
+
+**Backward Compatibility:**
+- **Breaking Change**: Old parameter names (`modifier`, `amount`, `count`) no longer supported
+- **Migration Required**: All card data must use new `value` structure
+- **Code Simplification**: Significant reduction in processing complexity
+
 ## Continuous Effects System (January 2025)
 
 ### Overview
@@ -846,7 +1067,7 @@ switch (effectType) {
 ### Enhanced Storage Structure
 **Real-World Effect Data Structure:**
 ```typescript
-// Cards store effects in continuousEffects array using real st01Card.json structure
+// Cards store effects in continuousEffects array using unified value structure
 card.continuousEffects = [
   {
     effectId: "pair_ap_boost_all",
@@ -854,7 +1075,7 @@ card.continuousEffects = [
     timing: ["YOUR_TURN"],
     effect: {
       action: "modifyAP",
-      parameters: { modifier: "+1" },  // Real structure from card data
+      parameters: { value: 1 },         // Unified numeric structure
       duration: "while_paired"
     },
     sourceCardUid: "source-card-123",  // Source tracking for cleanup
@@ -868,7 +1089,7 @@ card.continuousEffects = [
 - **`sourceCardUid`** - Critical for Phase 0 cleanup validation
 - **`effectId`** - Used for duplicate prevention
 - **`active`/`appliedValue`** - Two-phase application tracking
-- **`parameters.modifier`** - Real structure from card JSON data
+- **`parameters.value`** - Unified numeric parameter for all effects
 
 ### Method Naming Conventions (January 2025)
 **"Update" Terminology for Future-Proofing:**

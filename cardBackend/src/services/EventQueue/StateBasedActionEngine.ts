@@ -376,7 +376,7 @@ export class StateBasedActionEngine {
                                         cardId: unit.cardId,
                                         cardUid: unit.cardUid,
                                         playerId: playerId,
-                                        healAmount: effect.effect.parameters.amount
+                                        healAmount: effect.effect.parameters.value
                                     }
                                 });
                             } else {

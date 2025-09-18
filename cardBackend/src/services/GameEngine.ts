@@ -1360,14 +1360,14 @@ export class GameEngine {
                 if (cardData.effects && cardData.effects.rules) {
                     for (const effect of cardData.effects.rules) {
                         if (effect.trigger === 'END_OF_TURN' && effect.effect.action === 'heal') {
-                            console.log(`🩹 Found healing effect: ${effect.effectId} (${effect.effect.parameters.amount} HP)`);
+                            console.log(`🩹 Found healing effect: ${effect.effectId} (${effect.effect.parameters.value} HP)`);
                             
                             // Use CardEffect to handle the repair
                             const CardEffect = require('./CardEffect').CardEffect;
                             const healData = {
                                 cardId: cardId,
                                 playerId: playerId,
-                                healAmount: effect.effect.parameters.amount,
+                                healAmount: effect.effect.parameters.value,
                                 effectId: effect.effectId,
                                 // Include original event data for additional context
                                 originalEventData: event.data

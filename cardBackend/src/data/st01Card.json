@@ -42,7 +42,7 @@
                         "effect": {
                             "action": "heal",
                             "parameters": {
-                                "amount": 2
+                                "value": 2
                             },
                             "duration": "instant"
                         }
@@ -52,9 +52,7 @@
                         "type": "static",
                         "trigger": "continuous",
                         "conditions": [
-                            "isPaired"
-                        ],
-                        "timing": [
+                            "isPaired",
                             "YOUR_TURN"
                         ],
                         "target": {
@@ -67,7 +65,7 @@
                         "effect": {
                             "action": "modifyAP",
                             "parameters": {
-                                "modifier": "+1"
+                                "value": 1
                             },
                             "duration": "while_paired"
                         }
@@ -119,7 +117,7 @@
                         "effect": {
                             "action": "draw",
                             "parameters": {
-                                "amount": 1
+                                "value": 1
                             },
                             "duration": "instant"
                         }
@@ -258,7 +256,7 @@
                         "effect": {
                             "action": "modifyAP",
                             "parameters": {
-                                "modifier": "-3"
+                                "value": -3
                             },
                             "duration": "turn"
                         }
@@ -537,7 +535,7 @@
                         "effect": {
                             "action": "damage",
                             "parameters": {
-                                "amount": 1
+                                "value": 1
                             },
                             "duration": "instant"
                         }
@@ -598,7 +596,7 @@
                         "effect": {
                             "action": "heal",
                             "parameters": {
-                                "amount": 3
+                                "value": 3
                             },
                             "duration": "instant"
                         }
@@ -673,7 +671,7 @@
                         "effect": {
                             "action": "modifyAP",
                             "parameters": {
-                                "modifier": "-3"
+                                "value": -3
                             },
                             "duration": "turn"
                         }
@@ -731,7 +729,7 @@
                         "effect": {
                             "action": "addToHand",
                             "parameters": {
-                                "count": 1,
+                                "value": 1,
                                 "from": "shield"
                             },
                             "duration": "instant"
@@ -840,7 +838,7 @@
                         "effect": {
                             "action": "addToHand",
                             "parameters": {
-                                "count": 1,
+                                "value": 1,
                                 "from": "shield"
                             },
                             "duration": "instant"
@@ -865,7 +863,7 @@
                         "effect": {
                             "action": "modifyAP",
                             "parameters": {
-                                "modifier": "+1"
+                                "value": 1
                             },
                             "duration": "turn"
                         }
