@@ -450,10 +450,13 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
    */
   setTotalLabelsVisibility(cardZone) {
     const isInSlot = cardZone && cardZone.startsWith('slot');
-    this.totalApText.setVisible(isInSlot);
-    this.totalHpText.setVisible(isInSlot);
+    const isInBase = cardZone === 'base';
+    const shouldShowTotalLabels = isInSlot || isInBase;
     
-    console.log(`[PowerOverlay] Total labels visibility: ${isInSlot} (zone: ${cardZone})`);
+    this.totalApText.setVisible(shouldShowTotalLabels);
+    this.totalHpText.setVisible(shouldShowTotalLabels);
+    
+    console.log(`[PowerOverlay] Total labels visibility: ${shouldShowTotalLabels} (zone: ${cardZone}, isSlot: ${isInSlot}, isBase: ${isInBase})`);
   }
   
   /**
