@@ -118,7 +118,7 @@
                             "parameters": {
                                 "value": 1
                             },
-                            "duration": "instant"
+                           "actionTurn": "ANY"
                         }
                     }
                 ]
