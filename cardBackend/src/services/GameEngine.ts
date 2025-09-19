@@ -11,6 +11,7 @@ import { GameNotificationManager } from './GameNotificationManager';
 import { PlayerCardManager } from './PlayerCardManager';
 import { DeployEffectManager } from './DeployEffectManager';
 import { PairingEffect } from './PairingEffect';
+import { GameValidator } from './GameValidator';
 import { UnitZoneCard, createZoneCard } from '../models/CardSystem';
 import { PilotZoneCard } from '../models/CardSystem';
 import { SLOT_ZONES } from '../config/gameConstants';
@@ -160,6 +161,9 @@ export class GameEngine {
                     
                 case EventType.DEPLOY_EFFECT_TRIGGERED:
                     return GameEngine.executeDeployEffect(event, gameEnv);
+                    
+                case EventType.DEPLOY_TARGET_CHOICE:
+                    return GameEngine.executeDeployTargetChoice(event, gameEnv);
                     
                 case EventType.PAIRING_EFFECT_TRIGGERED:
                     return GameEngine.executePairingEffect(event, gameEnv);
@@ -645,33 +649,38 @@ export class GameEngine {
         console.log(`🎯 Processing PLAY_CARD event for player: ${eventData.playerId}, cardUID: ${eventData.cardUID}, playAs: ${eventData.playAs}, fromBurst: ${fromBurst}, targetUnit: ${eventData.targetUnit || 'none'}`);
         
         try {
-            // Validate it's the player's turn (skip turn validation for burst cards)
-            if (!fromBurst && gameEnv.currentPlayer !== eventData.playerId) {
-                return {
-                    success: false,
-                    error: `Not your turn. Current player: ${gameEnv.currentPlayer}`
-                };
+            // Validate using centralized GameValidator
+            if (!fromBurst) {
+                const turnValidation = GameValidator.validatePlayerTurn(gameEnv, eventData.playerId);
+                if (!turnValidation.isValid) {
+                    return {
+                        success: false,
+                        error: turnValidation.error
+                    };
+                }
             }
             
-            // Find player
-            const player = gameEnv.players[eventData.playerId];
-            if (!player || !player.zones) {
+            // Validate player and zones using GameValidator
+            const playerValidation = GameValidator.validatePlayerZones(gameEnv, eventData.playerId);
+            if (!playerValidation.isValid) {
                 return {
                     success: false,
-                    error: `Player ${eventData.playerId} or zones not found`
+                    error: playerValidation.error
                 };
             }
+            const player = playerValidation.player!;
             
             // Validate card location and remove it (burst cards come from shield, normal cards from hand)
             if (fromBurst) {
                 // For burst cards, we don't need to validate/remove from hand since they're being deployed from shield
                 console.log(`💥 Burst card deployment: ${eventData.cardUID} - skipping hand validation`);
             } else {
-                // Normal card play - validate in hand and remove
-                if (!PlayerCardManager.validateCardInHand(gameEnv, eventData.playerId, eventData.cardUID)) {
+                // Normal card play - validate in hand and remove using GameValidator
+                const handValidation = GameValidator.validateCardInHand(gameEnv, eventData.playerId, eventData.cardUID);
+                if (!handValidation.isValid) {
                     return {
                         success: false,
-                        error: `Card ${eventData.cardUID} not found in player ${eventData.playerId} hand`
+                        error: handValidation.error
                     };
                 }
 
@@ -708,11 +717,6 @@ export class GameEngine {
             } catch (error) {
                 console.error(`❌ Error processing continuous effects after card placement:`, error);
             } 
-
-            /*
-            if placementResult.isOnlink
-            the linked unit isFirstPlay will become false
-            */
             
             // Check for Deploy effects using cardUID to extract cardId and fetch cardData from database
             const deployEffects = this.checkForDeployEffects(eventData.cardUID);
@@ -1351,6 +1355,124 @@ export class GameEngine {
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Deploy effect execution failed'
+            };
+        }
+    }
+
+    /**
+     * Handle DEPLOY_TARGET_CHOICE events - execute when user makes target selection
+     */
+    private static executeDeployTargetChoice(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+        console.log(`🎯 Executing DEPLOY_TARGET_CHOICE event: ${event.id} (${event.status})`);
+        
+        try {
+            const { selectedTarget, deployEffect, playerId, sourceCardUid } = event.data;
+            
+            // This method should only be called for RESOLVING events
+            if (event.status !== EventStatus.RESOLVING) {
+                console.log(`⚠️ Unexpected event status: ${event.status} (expected RESOLVING)`);
+                return { success: true }; // Skip - should not happen in correct flow
+            }
+            
+            if (!selectedTarget) {
+                return {
+                    success: false,
+                    error: "No target selected for deploy effect"
+                };
+            }
+            
+            console.log(`🚀 Applying deploy effect to target: ${selectedTarget.cardUid} in ${selectedTarget.zone}`);
+            
+            // Apply the effect to selected target
+            return this.applyDeployEffectToTarget(gameEnv, deployEffect, selectedTarget, playerId);
+            
+        } catch (error) {
+            console.error(`❌ Error in executeDeployTargetChoice:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Deploy target choice execution failed'
+            };
+        }
+    }
+
+    /**
+     * Apply deploy effect to the selected target
+     */
+    private static applyDeployEffectToTarget(gameEnv: GameEnvironment, deployEffect: any, target: any, playerId: string): ExecutionResult {
+        console.log(`🎯 Applying deploy effect action: ${deployEffect.effect.action} to target: ${target.cardUid}`);
+        
+        try {
+            // Validate target player using GameValidator
+            const playerValidation = GameValidator.validatePlayer(gameEnv, target.playerId);
+            if (!playerValidation.isValid) {
+                return { 
+                    success: false, 
+                    error: playerValidation.error 
+                };
+            }
+            
+            // Validate target zone and unit using GameValidator
+            const zoneValidation = GameValidator.validateTargetZone(gameEnv, target.playerId, target.zone, target.cardUid);
+            if (!zoneValidation.isValid) {
+                return { 
+                    success: false, 
+                    error: zoneValidation.error 
+                };
+            }
+            
+            // Get the target unit (validation already confirmed it exists)
+            const targetPlayer = playerValidation.player!;
+            const slotKey = target.zone as keyof Pick<typeof targetPlayer.zones, 'slot1'|'slot2'|'slot3'|'slot4'|'slot5'|'slot6'>;
+            const targetSlot = targetPlayer.zones[slotKey];
+            const targetUnit = targetSlot.unit!; // Non-null assertion since validation confirmed it exists
+            
+            // Apply effect based on action type
+            switch (deployEffect.effect.action) {
+                case "rest":
+                    targetUnit.isRested = true;
+                    console.log(`💤 Unit ${target.cardUid} has been rested by deploy effect`);
+                    break;
+                    
+                case "damage":
+                    const damageValue = deployEffect.effect.parameters?.value || 1;
+                    targetUnit.damageReceived = (targetUnit.damageReceived || 0) + damageValue;
+                    console.log(`🩸 Unit ${target.cardUid} takes ${damageValue} damage from deploy effect (total: ${targetUnit.damageReceived})`);
+                    break;
+                    
+                case "modifyAP":
+                    const apModifier = deployEffect.effect.parameters?.value || 0;
+                    if (!targetUnit.currentAP) {
+                        targetUnit.currentAP = targetUnit.cardData?.ap || 0;
+                    }
+                    targetUnit.currentAP += apModifier;
+                    console.log(`⚔️ Unit ${target.cardUid} AP modified by ${apModifier} (new AP: ${targetUnit.currentAP})`);
+                    break;
+                    
+                case "modifyHP":
+                    const hpModifier = deployEffect.effect.parameters?.value || 0;
+                    if (!targetUnit.currentHP) {
+                        targetUnit.currentHP = targetUnit.cardData?.hp || 0;
+                    }
+                    targetUnit.currentHP += hpModifier;
+                    console.log(`❤️ Unit ${target.cardUid} HP modified by ${hpModifier} (new HP: ${targetUnit.currentHP})`);
+                    break;
+                    
+                default:
+                    console.warn(`⚠️ Unknown deploy effect action: ${deployEffect.effect.action}`);
+                    return {
+                        success: false,
+                        error: `Unknown deploy effect action: ${deployEffect.effect.action}`
+                    };
+            }
+            
+            console.log(`✅ Deploy effect ${deployEffect.effect.action} applied successfully to ${target.cardUid}`);
+            return { success: true };
+            
+        } catch (error) {
+            console.error(`❌ Error applying deploy effect to target:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Deploy effect application failed'
             };
         }
     }

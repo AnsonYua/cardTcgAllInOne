@@ -188,10 +188,16 @@ export class GameEnvironment {
         // Check if first event in queue requires user confirmation
         const nextEvent = this.processingQueue[0];
         
-        if (nextEvent?.status === EventStatus.DECLARED && 
-            nextEvent?.type === EventType.BURST_EFFECT_CHOICE) {
+        if (nextEvent?.status === EventStatus.DECLARED) {
             // For burst choice events, check if user has already provided input
-            return !nextEvent.data.userDecisionMade;
+            if (nextEvent.type === EventType.BURST_EFFECT_CHOICE) {
+                return !nextEvent.data.userDecisionMade;
+            }
+            
+            // For deploy target choice events, check if user has already provided input
+            if (nextEvent.type === EventType.DEPLOY_TARGET_CHOICE) {
+                return !nextEvent.data.userDecisionMade;
+            }
         }
         
         return false;
