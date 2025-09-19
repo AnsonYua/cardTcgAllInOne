@@ -398,8 +398,9 @@ export class PlayerCardManager {
      * Check if unit and pilot in a slot are from the same card family (link)
      * 
      * A "link" occurs when a unit's link field matches either:
-     * 1. The pilot's name
-     * 2. One of the pilot's traits
+     * 1. The pilot's name (regular pilot cards)
+     * 2. One of the pilot's traits (regular pilot cards)
+     * 3. The pilotName from designate_pilot effect (command cards played as pilots)
      * 
      * @param playerZones - The player's zone structure containing all slots
      * @param slotName - The specific slot to check (e.g., "slot1", "slot2", etc.)
@@ -408,6 +409,7 @@ export class PlayerCardManager {
      * Examples:
      * - Unit with link: ["Amuro"] + Pilot with name: "Amuro" = link (true)
      * - Unit with link: ["Newtype"] + Pilot with traits: ["Newtype", "Hero"] = link (true)
+     * - Unit with link: ["Hayato Kobayashi"] + Command card with designate_pilot.pilotName: "Hayato Kobayashi" = link (true)
      * - Unit with link: ["Amuro"] + Pilot with name: "Char" = no link (false)
      */
     private static isLinkInSlot(playerZones: any, slotName: string): boolean {
@@ -426,23 +428,46 @@ export class PlayerCardManager {
             return false;
         }
 
-        // Get pilot's name and traits for matching
-        const pilotName = pilot.cardData?.name;
-        const pilotTraits = pilot.cardData?.traits || [];
+        // Determine pilot name for matching - handle both regular pilots and command cards with designate_pilot effect
+        let pilotNameForMatching: string | null = null;
+        let pilotTraits: string[] = [];
+        let isCommandCardPilot = false;
 
-        console.log(`🔗 Checking link: unit.link=${JSON.stringify(unitLink)}, pilot.name="${pilotName}", pilot.traits=${JSON.stringify(pilotTraits)}`);
+        // Check if this is a command card played as pilot
+        if (pilot.playedAs === 'pilot' && pilot.cardData?.cardType === 'command') {
+            isCommandCardPilot = true;
+            // Look for designate_pilot effect
+            const designatePilotEffect = pilot.cardData?.effects?.rules?.find((rule: any) => 
+                rule.effect?.action === 'designate_pilot'
+            );
+            
+            if (designatePilotEffect?.effect?.parameters?.pilotName) {
+                pilotNameForMatching = designatePilotEffect.effect.parameters.pilotName;
+                console.log(`🎯 Command card as pilot: using designate_pilot.pilotName="${pilotNameForMatching}"`);
+            } else {
+                console.warn(`⚠️ Command card played as pilot but no designate_pilot effect found for ${pilot.cardUid}`);
+            }
+        } else {
+            // Regular pilot card - use name and traits
+            pilotNameForMatching = pilot.cardData?.name || null;
+            pilotTraits = pilot.cardData?.traits || [];
+        }
 
-        // Check if unit's link matches pilot's name
-        if (pilotName && unitLink.includes(pilotName)) {
-            console.log(`✅ Link found: unit.link includes pilot name "${pilotName}"`);
+        console.log(`🔗 Checking link: unit.link=${JSON.stringify(unitLink)}, pilotName="${pilotNameForMatching}", pilotTraits=${JSON.stringify(pilotTraits)}, isCommandCardPilot=${isCommandCardPilot}`);
+
+        // Check if unit's link matches pilot name (including designate_pilot name)
+        if (pilotNameForMatching && unitLink.includes(pilotNameForMatching)) {
+            console.log(`✅ Link found: unit.link includes pilot name "${pilotNameForMatching}" ${isCommandCardPilot ? '(from designate_pilot effect)' : ''}`);
             return true;
         }
 
-        // Check if unit's link matches any of pilot's traits
-        for (const linkValue of unitLink) {
-            if (pilotTraits.includes(linkValue)) {
-                console.log(`✅ Link found: unit.link "${linkValue}" matches pilot trait`);
-                return true;
+        // For regular pilot cards, also check traits
+        if (!isCommandCardPilot) {
+            for (const linkValue of unitLink) {
+                if (pilotTraits.includes(linkValue)) {
+                    console.log(`✅ Link found: unit.link "${linkValue}" matches pilot trait`);
+                    return true;
+                }
             }
         }
 

@@ -10,6 +10,7 @@ import { BaseCardManager } from './BaseCardManager';
 import { GameNotificationManager } from './GameNotificationManager';
 import { PlayerCardManager } from './PlayerCardManager';
 import { DeployEffectManager } from './DeployEffectManager';
+import { PairingEffect } from './PairingEffect';
 import { UnitZoneCard, createZoneCard } from '../models/CardSystem';
 import { PilotZoneCard } from '../models/CardSystem';
 import { SLOT_ZONES } from '../config/gameConstants';
@@ -159,6 +160,9 @@ export class GameEngine {
                     
                 case EventType.DEPLOY_EFFECT_TRIGGERED:
                     return GameEngine.executeDeployEffect(event, gameEnv);
+                    
+                case EventType.PAIRING_EFFECT_TRIGGERED:
+                    return GameEngine.executePairingEffect(event, gameEnv);
                     
                 case EventType.TRIGGER_HEALING:
                     return GameEngine.executeCardEffectTriggered(event, gameEnv);
@@ -716,6 +720,21 @@ export class GameEngine {
                 
                 console.log(`📋 Deploy event queued: ${deployEvent.id}`);
             }
+            
+            // Check for Pairing effects if this card placement created a pairing
+            if (placementResult.isOnPair) {
+                console.log(`🤝 Pairing detected - checking for pairing effects`);
+                const pairingEffects = PairingEffect.checkForPairingEffects(eventData, placementResult, gameEnv);
+                if (pairingEffects.length > 0) {
+                    console.log(`🔗 Pairing effects detected: ${pairingEffects.length} effects`);
+                    
+                    // Create and queue Pairing effect event
+                    const pairingEvent = this.createPairingEffectEvent(eventData, pairingEffects, placementResult);
+                    gameEnv.processingQueue.push(pairingEvent);
+                    
+                    console.log(`📋 Pairing event queued: ${pairingEvent.id}`);
+                }
+            }
 
             return { success: true };
             
@@ -786,6 +805,31 @@ export class GameEngine {
         console.log(`🚀 Created Deploy event: ${deployEvent.id} with ${deployEffects.length} effects`);
         return deployEvent;
     }
+    
+
+    /**
+     * Create Pairing effect event for processing queue
+     */
+    private static createPairingEffectEvent(eventData: any, pairingEffects: any[], placementResult: any): GameEvent {
+        const pairingEvent: GameEvent = {
+            id: `pairing_${eventData.cardUID}_${Date.now()}`,
+            type: EventType.PAIRING_EFFECT_TRIGGERED,
+            status: EventStatus.DECLARED,
+            priority: EventPriority.NORMAL,
+            playerId: eventData.playerId,
+            data: {
+                // Only include data actually used by PairingEffect.processPairingEffect
+                playerId: eventData.playerId,
+                effects: pairingEffects
+            },
+            timestamp: Date.now()
+        };
+        
+        console.log(`🤝 Created Pairing event: ${pairingEvent.id} with ${pairingEffects.length} effects`);
+        return pairingEvent;
+    }
+
+
     
     private static executePlayerAction(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
         // Pass event data directly to minimize conversions
@@ -1299,6 +1343,39 @@ export class GameEngine {
             };
         }
     }
+
+    /**
+     * Execute Pairing effect triggered by unit+pilot pairing
+     */
+    private static executePairingEffect(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+        console.log(`🤝 Executing PAIRING_EFFECT_TRIGGERED event: ${event.id}`);
+        
+        try {
+            // Use PairingEffect to process the pairing effects
+            const result = PairingEffect.processPairingEffect(gameEnv, event.data);
+            
+            if (!result.success) {
+                console.log(`❌ Pairing effect processing failed: ${result.error}`);
+                return {
+                    success: false,
+                    error: result.error
+                };
+            }
+            
+            console.log(`✅ Pairing effects processed successfully: ${result.message}`);
+            return {
+                success: true
+            };
+            
+        } catch (error) {
+            console.error(`❌ Error in executePairingEffect:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Pairing effect execution failed'
+            };
+        }
+    }
+
     
     /**
      * Execute TRIGGER_HEALING event - handles repair and other healing effects
