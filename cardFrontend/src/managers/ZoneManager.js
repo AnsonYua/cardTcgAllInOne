@@ -4,6 +4,7 @@
  */
 
 import GameSceneUtils from '../utils/GameSceneUtils.js';
+import { GAME_CONFIG } from '../config/gameConfig.js';
 
 export default class ZoneManager {
   constructor(scene, layout) {
@@ -52,6 +53,16 @@ export default class ZoneManager {
       this.playerZones.deck = GameSceneUtils.createZone(
         this.scene, playerLayout.deck.x, playerLayout.deck.y, 'deck', true
       );
+      const config = {
+        numCards: 5,
+        stackOffset: 0,
+        scale: 0.95
+      };
+      const card = this.scene.add.image(playerLayout.deck.x,playerLayout.deck.y, GAME_CONFIG.imageKey.cardback);
+      const scaleX = GAME_CONFIG.card.width / card.width;
+      const scaleY = GAME_CONFIG.card.height / card.height;
+      const scale = Math.min(scaleX, scaleY) * config.scale;
+      card.setScale(scale);
     }
     
     if (playerLayout.leaderDeck) {
@@ -99,6 +110,16 @@ export default class ZoneManager {
       this.opponentZones.deck = GameSceneUtils.createZone(
         this.scene, opponentLayout.deck.x, opponentLayout.deck.y, 'deck', false
       );
+      const config = {
+        numCards: 5,
+        stackOffset: 0,
+        scale: 0.95
+      };
+      const card = this.scene.add.image(opponentLayout.deck.x,opponentLayout.deck.y, GAME_CONFIG.imageKey.cardback);
+      const scaleX = GAME_CONFIG.card.width / card.width;
+      const scaleY = GAME_CONFIG.card.height / card.height;
+      const scale = Math.min(scaleX, scaleY) * config.scale;
+      card.setScale(scale);
     }
     
     if (opponentLayout.leaderDeck) {

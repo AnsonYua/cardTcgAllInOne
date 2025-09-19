@@ -133,6 +133,7 @@ export default class GameSceneUtils {
     zoneBg.fillRoundedRect(x - zoneWidth/2, y - zoneHeight/2, zoneWidth, zoneHeight, 8);
     zoneBg.lineStyle(2, isPlayerZone ? 0x008800 : 0x880000, 0.7);
     zoneBg.strokeRoundedRect(x - zoneWidth/2, y - zoneHeight/2, zoneWidth, zoneHeight, 8);
+    zoneBg.setAlpha(0);
     // Create interactive area
     const interactive = scene.add.zone(x, y, zoneWidth, zoneHeight);
     interactive.setDropZone();
