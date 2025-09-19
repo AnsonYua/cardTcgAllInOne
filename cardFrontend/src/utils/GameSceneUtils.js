@@ -1115,6 +1115,17 @@ export default class GameSceneUtils {
       if (cardComponent.powerOverlay) {
         cardComponent.powerOverlay.setShowBackground(false);
         cardComponent.powerOverlay.setVisible(true);
+        
+        // Force total labels to show in dialog (override zone visibility rules)
+        cardComponent.powerOverlay.setTotalLabelsVisibility('slot1'); // Force show total labels
+        
+        // Update total labels with current stats from originalCard if available
+        if (originalCard && (originalCard.currentAP !== undefined || originalCard.currentHP !== undefined)) {
+          const totalAP = originalCard.currentAP || originalCard.cardData?.ap || 0;
+          const totalHP = originalCard.currentHP || originalCard.cardData?.hp || 0;
+          cardComponent.powerOverlay.updateTotalStats(totalAP, totalHP);
+          console.log(`[GameSceneUtils] Updated dialog card total stats: AP=${totalAP}, HP=${totalHP} for ${originalCard.cardData?.name || 'card'}`);
+        }
       }
       
       console.log(`Created Card component for dialog: ${displayCardId} with AP/HP display`);
@@ -1990,14 +2001,14 @@ export default class GameSceneUtils {
     
     // Re-enable player hand card interactions
     scene._dialogInteractionState.playerHandCards.forEach(card => {
-      if (card && !card.destroyed) {
+      if (card && !card.destroyed && card.sys && card.scene) {
         card.setInteractive();
       }
     });
     
     // Re-enable slot card interactions
     scene._dialogInteractionState.slotCards.forEach(card => {
-      if (card && !card.destroyed) {
+      if (card && !card.destroyed && card.sys && card.scene) {
         card.setInteractive();
       }
     });
@@ -2005,10 +2016,10 @@ export default class GameSceneUtils {
     // Re-enable opponent slot interactions
     if (scene.slotAreaManager) {
       Object.entries(scene.slotAreaManager.opponentSlotCards).forEach(([slotName, slotCards]) => {
-        if (slotCards.unit && !slotCards.unit.destroyed) {
+        if (slotCards.unit && !slotCards.unit.destroyed && slotCards.unit.sys && slotCards.unit.scene) {
           slotCards.unit.setInteractive();
         }
-        if (slotCards.pilot && !slotCards.pilot.destroyed) {
+        if (slotCards.pilot && !slotCards.pilot.destroyed && slotCards.pilot.sys && slotCards.pilot.scene) {
           slotCards.pilot.setInteractive();
         }
       });

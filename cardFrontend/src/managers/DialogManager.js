@@ -27,7 +27,8 @@ export default class DialogManager {
       CONFIRMATION: 'confirmation', 
       INFORMATION: 'information',
       REDRAW_CONFIRMATION: 'redraw_confirmation',
-      BURST_EFFECT_CHOICE: 'burst_effect_choice'
+      BURST_EFFECT_CHOICE: 'burst_effect_choice',
+      DEPLOY_TARGET_CHOICE: 'deploy_target_choice'
     };
   }
 
@@ -369,6 +370,229 @@ export default class DialogManager {
     return dialogId;
   }
   
+  /**
+   * Show a deploy target selection dialog using select dialog style
+   * @param {Object} event - DEPLOY_TARGET_CHOICE event from processingQueue
+   * @param {Function} onConfirm - Callback when user confirms target selection
+   * @returns {string} Dialog ID
+   */
+  showDeployTargetDialog(event, onConfirm) {
+    console.log('DialogManager: Showing deploy target selection dialog:', event);
+    
+    const dialogId = `deploy_target_${this.nextDialogId++}`;
+    
+    // Clean up any existing deploy target dialogs (prevent multiple deploy dialogs)
+    this.closeDialogsByType(this.dialogTypes.DEPLOY_TARGET_CHOICE);
+    
+    // Extract deploy effect and target information from event
+    const { deployEffect, availableTargets, sourceCardUid, cardId } = event.data;
+    const effectDescription = deployEffect?.effect?.action || 'Select Target';
+    
+    console.log('Deploy effect details:', deployEffect);
+    console.log('Available targets:', availableTargets);
+    
+    // Create target cards for selection using opponent zone data
+    const targetCards = this.buildTargetCardsFromOpponentZones(availableTargets);
+    
+    // Create a selection object that matches the card selection dialog format
+    const deploySelection = {
+      selectionId: `deploy_target_${event.id}`,
+      title: '🎯 Deploy Effect Target Selection',
+      description: `Effect: ${effectDescription} - Choose a target`,
+      selectCount: 1, // Always select one target
+      eligibleCards: targetCards,
+      dialogType: 'DEPLOY_TARGET_CHOICE',
+      autoSelectFirst: false // User must actively select target
+    };
+    
+    // Create dialog using existing GameSceneUtils with deploy effect styling
+    const dialogInterface = GameSceneUtils.createCardSelectionDialog(
+      deploySelection.selectionId,
+      deploySelection,
+      this.scene,
+      (selectedId, selectedCards, elements) => {
+        // Handle deploy target selection - call API with selected target
+        console.log('DialogManager: Deploy target SELECTED:', selectedCards);
+        
+        if (selectedCards && selectedCards.length > 0) {
+          const selectedTarget = selectedCards[0];
+          
+          // Close the current dialog
+          this.closeDialog(dialogId);
+          
+          // Call onConfirm with the selected target
+          console.log('DialogManager: Confirming deploy target selection');
+          if (onConfirm) onConfirm(selectedTarget);
+        }
+      }
+    );
+    
+    // Handle CANCEL button (cancel action) - listen for dialog-cancelled event
+    const handleCancel = (eventSelectionId) => {
+      if (eventSelectionId === deploySelection.selectionId) {
+        console.log('DialogManager: Deploy target selection CANCELLED');
+        
+        // Close the current dialog  
+        this.closeDialog(dialogId);
+        
+        // Cancel the deploy effect
+        console.log('DialogManager: Cancelling deploy target selection');
+        if (onConfirm) onConfirm(null); // Pass null to indicate cancellation
+        
+        // Remove the event listener
+        this.scene.events.off('dialog-cancelled', handleCancel);
+      }
+    };
+    
+    // Listen for cancel events (CANCEL button)
+    this.scene.events.on('dialog-cancelled', handleCancel);
+    
+    // Override the dialog styling to add blue deploy effect theme
+    this.applyDeployStyling(dialogInterface);
+    
+    // Store dialog with GameSceneUtils interface
+    this.activeDialogs.set(dialogId, {
+      id: dialogId,
+      type: this.dialogTypes.DEPLOY_TARGET_CHOICE,
+      eventId: event.id,
+      interface: dialogInterface,
+      createdAt: Date.now()
+    });
+    
+    console.log(`DialogManager: Created deploy target dialog with ID: ${dialogId}`);
+    return dialogId;
+  }
+  
+  /**
+   * Build target cards for selection using backend response data
+   * @param {Array} availableTargets - Target data from backend response
+   * @returns {Array} Card objects for dialog selection
+   */
+  buildTargetCardsFromOpponentZones(availableTargets) {
+    const targetCards = [];
+    
+    console.log('🎯 DialogManager: Building target cards from backend response:', availableTargets);
+    
+    // Build card objects directly from backend response data
+    availableTargets.forEach((target, index) => {
+      const { cardUid, zone, playerId, cardData, currentAP, currentHP, pilotData } = target;
+      
+      console.log(`🔍 Processing target ${index + 1}:`, {
+        cardUid,
+        zone,
+        playerId,
+        hasCardData: !!cardData,
+        currentAP,
+        currentHP,
+        hasPilotData: !!pilotData
+      });
+      
+      // Use card data from backend response, or create basic fallback
+      const targetCardData = cardData || {
+        name: `Card ${cardUid}`,
+        hp: currentHP || 0,
+        ap: currentAP || 0,
+        id: cardUid
+      };
+      
+      // Calculate total stats (including pilot if present)
+      const unitAP = currentAP || targetCardData.ap || 0;
+      const unitHP = currentHP || targetCardData.hp || 0;
+      const pilotAP = pilotData ? (pilotData.currentAP || pilotData.ap || 0) : 0;
+      const pilotHP = pilotData ? (pilotData.currentHP || pilotData.hp || 0) : 0;
+      
+      const totalAP = unitAP + pilotAP;
+      const totalHP = unitHP + pilotHP;
+      
+      // Create display name
+      let displayName = targetCardData.name || 'Unknown Card';
+      if (pilotData && pilotData.name) {
+        displayName += ` + ${pilotData.name}`;
+      }
+      displayName += ` (${zone.replace('slot', 'Slot ')})`;
+      
+      // Create card object for dialog display
+      const cardForDisplay = {
+        cardData: targetCardData,
+        cardId: targetCardData.id || cardUid,
+        cardUid: cardUid,
+        zone: zone,
+        playerId: playerId,
+        // Current stats for display (used for total labels)
+        currentHP: totalHP,
+        currentAP: totalAP,
+        damageReceived: target.damageReceived || 0,
+        // Individual unit stats
+        unitHP: unitHP,
+        unitAP: unitAP,
+        // Pilot information if available
+        pilotData: pilotData ? {
+          name: pilotData.name || 'Pilot',
+          cardData: pilotData.cardData || pilotData,
+          currentHP: pilotData.currentHP || pilotData.hp || 0,
+          currentAP: pilotData.currentAP || pilotData.ap || 0,
+          pilotHP: pilotHP,
+          pilotAP: pilotAP
+        } : null,
+        // Selection metadata
+        selectionIndex: index,
+        displayName: displayName
+      };
+      
+      targetCards.push(cardForDisplay);
+      console.log(`✅ Built target card: ${cardForDisplay.displayName}`);
+      console.log(`   - Unit: ${targetCardData.name} (AP: ${unitAP}, HP: ${unitHP})`);
+      if (pilotData) {
+        console.log(`   - Pilot: ${pilotData.name} (AP: ${pilotAP}, HP: ${pilotHP})`);
+      }
+      console.log(`   - Total Stats: AP: ${totalAP}, HP: ${totalHP}`);
+    });
+    
+    console.log(`📊 Built ${targetCards.length} target cards from backend response`);
+    return targetCards;
+  }
+  
+  /**
+   * @deprecated No longer used - display name built directly in buildTargetCardsFromOpponentZones
+   * Build display name for target card (unit + pilot if available)
+   * @param {Object} unit - Unit card data
+   * @param {Object} pilot - Pilot card data (may be null)
+   * @param {string} zone - Zone name (slot1, slot2, etc.)
+   * @returns {string} Display name
+   */
+  buildDisplayName(unit, pilot, zone) {
+    const unitName = unit.cardData?.name || 'Unit';
+    const pilotName = pilot?.cardData?.name;
+    const zoneName = zone.replace('slot', 'Slot ');
+    
+    if (pilot) {
+      return `${zoneName}: ${unitName} + ${pilotName}`;
+    } else {
+      return `${zoneName}: ${unitName}`;
+    }
+  }
+
+  /**
+   * Apply deploy effect styling to the select dialog
+   * @private
+   */
+  applyDeployStyling(dialogInterface) {
+    // Find and modify dialog elements to add blue deploy effect styling
+    if (dialogInterface.elements) {
+      dialogInterface.elements.forEach(element => {
+        // Add blue glow to dialog background
+        if (element.type === 'Graphics' && element.lineStyle) {
+          try {
+            // Try to add blue stroke to existing graphics
+            element.lineStyle(3, 0x2196F3);
+          } catch (e) {
+            // Ignore errors for elements that can't be modified
+          }
+        }
+      });
+    }
+  }
+
   /**
    * Apply burst effect styling to the select dialog
    * @private

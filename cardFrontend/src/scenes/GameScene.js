@@ -11,12 +11,14 @@ import GameSceneUtils from '../utils/GameSceneUtils.js';
 import { ZoneMapping } from '../utils/ZoneMapping.js';
 import CardAnimationUtils from '../utils/CardAnimationUtils.js';
 import CardActionHandler from '../handlers/CardActionHandler.js';
+import DeployEffectHandler from '../handlers/DeployEffectHandler.js';
 import ActionButtonManager from '../systems/ActionButtonManager.js';
 import DialogManager from '../managers/DialogManager.js';
 import TrashIconManager from '../components/TrashIconManager.js';
 import UIMessageManager from '../managers/UIMessageManager.js';
 import CardInteractionManager from '../managers/CardInteractionManager.js';
 import ResourceManager from '../managers/ResourceManager.js';
+import EventProcessor from '../managers/EventProcessor.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor(config = { key: 'GameScene' }) {
@@ -41,6 +43,7 @@ export default class GameScene extends Phaser.Scene {
     this.uiMessageManager = null;
     this.cardInteractionManager = null;
     this.resourceManager = null;
+    this.deployEffectHandler = null;
 
     // Legacy zone references (will be managed by ZoneManager)
     this.playerZones = {};
@@ -64,8 +67,10 @@ export default class GameScene extends Phaser.Scene {
     this.energyAreaManager = new EnergyAreaManager(this, this.gameStateManager);
     this.slotAreaManager = new SlotAreaManager(this, this.gameStateManager);
     this.cardActionHandler = new CardActionHandler(this, this.gameStateManager, this.apiManager);
+    this.deployEffectHandler = new DeployEffectHandler(this, this.gameStateManager, this.apiManager);
     this.actionButtonManager = new ActionButtonManager(this);
     this.dialogManager = new DialogManager(this);
+    this.eventProcessor = new EventProcessor(this);
 
     console.log('GameScene initialized with mode:', this.gameMode);
     console.log('Manual polling mode:', this.isManualPollingMode);
@@ -603,17 +608,11 @@ export default class GameScene extends Phaser.Scene {
       return;
     }
 
-    // Check for burst effect choice events
-    const burstEvents = this.gameStateManager.getBurstEffectChoiceEvents();
-    if (burstEvents.length === 1) {
-      console.log('[GameScene] Found exactly 1 BURST_EFFECT_CHOICE event, showing dialog');
-      this.showBurstEffectDialog(burstEvents[0]);
-      return;
-    } else if (burstEvents.length > 1) {
-      console.warn('[GameScene] Multiple BURST_EFFECT_CHOICE events found:', burstEvents.length);
-      // Handle multiple events - could show first one or let user choose
-      this.showBurstEffectDialog(burstEvents[0]);
-      return;
+    // Process all processing queue events using EventProcessor
+    const eventProcessed = this.eventProcessor.processAllEvents();
+    if (eventProcessed) {
+      console.log('[GameScene] Event processed by EventProcessor, stopping UI update');
+      return; // Stop UI update if a blocking event was processed
     }
 
     // Debug: Log current phase and animation state
@@ -1772,6 +1771,7 @@ export default class GameScene extends Phaser.Scene {
     });
   }
 
+
   showRoomStatus(message) {
     this.uiMessageManager.showRoomStatus(message);
   }
@@ -1822,6 +1822,12 @@ export default class GameScene extends Phaser.Scene {
     this.hideCardPreview();
     this.hideSlotCardPreview();
 
+
+    // Clean up deploy effect handler
+    if (this.deployEffectHandler) {
+      this.deployEffectHandler.destroy();
+      this.deployEffectHandler = null;
+    }
 
     // Clean up all dialogs using DialogManager
     if (this.dialogManager) {
