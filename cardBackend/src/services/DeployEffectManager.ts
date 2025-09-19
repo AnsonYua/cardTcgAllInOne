@@ -184,28 +184,27 @@ export class DeployEffectManager {
                 
                 // Apply HP filter if specified
                 if (target.filters?.hp) {
-                    const maxHp = this.parseHpFilter(target.filters.hp); // "<=2" → 2
-                    const currentHp = (unit.cardData?.hp || 0) - (unit.damageReceived || 0);
-                    
-                    console.log(`🔍 HP filter check: currentHp=${currentHp}, maxHp=${maxHp}, filter=${target.filters.hp}`);
-                    
-                    if (currentHp > maxHp) {
-                        console.log(`❌ Unit ${unit.cardUid} current HP ${currentHp} exceeds max ${maxHp}`);
-                        continue;
+                    if (target.filters.hp.contains("<=")){
+                        const maxHp = this.parseHpFilter(target.filters.hp); // "<=2" → 2
+                        const currentHp = (unit?.currentHP || 0) + (unit?.modifyHP || 0);
+                        
+                        console.log(`🔍 HP filter check: currentHp=${currentHp}, maxHp=${maxHp}, filter=${target.filters.hp}`);
+                        
+                        if (currentHp > maxHp) {
+                            console.log(`❌ Unit ${unit.cardUid} current HP ${currentHp} exceeds max ${maxHp}`);
+                            continue;
+                        }
                     }
                 }
                 
-                // Add valid target
-                const targetInfo = {
+                // Add valid target (simplified - just essential identifiers)
+                const targetRef = {
                     cardUid: unit.cardUid,
-                    cardId: unit.cardId,
                     zone: slotName,
-                    playerId: opponentId,
-                    cardData: unit.cardData,
-                    currentHp: (unit.cardData?.hp || 0) - (unit.damageReceived || 0)
+                    playerId: opponentId
                 };
                 
-                targets.push(targetInfo);
+                targets.push(targetRef);
                 console.log(`✅ Added valid target: ${unit.cardUid} in ${slotName}`);
             }
         }
