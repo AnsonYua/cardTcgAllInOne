@@ -588,33 +588,14 @@ export default class Card extends Phaser.GameObjects.Container {
     if (this.fullCardData.cardData.cardType === 'unit' || 
         this.fullCardData.cardData.cardType === 'pilot' || 
         this.fullCardData.cardData.cardType === 'base') {
-        if(this.fullCardData?.currentHP !=null){
-          // Calculate total AP and HP including modifications
-          const baseAP = this.fullCardData?.currentAP || this.cardData.ap || 0;
-          const baseHP = this.fullCardData?.currentHP || this.cardData.hp || 0;
-          const modifyAP = this.fullCardData?.modifyAP || 0;
-          const modifyHP = this.fullCardData?.modifyHP || 0;
-          
+   
           return {
-            ap: baseAP + modifyAP,
-            hp: baseHP + modifyHP,
+            ap: this.fullCardData?.originalAP || this.cardData.ap || 0,
+            hp: this.fullCardData?.originalHP || this.cardData.hp || 0,
             originalAP: this.fullCardData?.originalAP || this.cardData.ap || 0,
             originalHP: this.fullCardData?.originalHP || this.cardData.hp || 0
           };
-        }else{
-          // Calculate total AP and HP including modifications (when currentHP is null)
-          const baseAP = this.cardData.ap || 0;
-          const baseHP = this.cardData.hp || 0;
-          const modifyAP = this.fullCardData?.modifyAP || 0;
-          const modifyHP = this.fullCardData?.modifyHP || 0;
-          
-          return {
-            ap: baseAP + modifyAP,
-            hp: baseHP + modifyHP,
-            originalAP: this.cardData.ap || 0,
-            originalHP: this.cardData.hp || 0
-          };          
-        }
+       
     }
 
     // For command cards with pilot_designation effect, extract AP/HP from effect parameters
@@ -623,14 +604,10 @@ export default class Card extends Phaser.GameObjects.Container {
       if (pilotEffect && pilotEffect.effect?.parameters) {
         const originalAP = pilotEffect.effect.parameters.AP || 0;
         const originalHP = pilotEffect.effect.parameters.HP || 0;
-        const baseAP = this.fullCardData?.currentAP || originalAP;
-        const baseHP = this.fullCardData?.currentHP || originalHP;
-        const modifyAP = this.fullCardData?.modifyAP || 0;
-        const modifyHP = this.fullCardData?.modifyHP || 0;
         
         return {
-          ap: baseAP + modifyAP,
-          hp: baseHP + modifyHP,
+          ap: originalAP,
+          hp: originalHP,
           originalAP: originalAP,
           originalHP: originalHP
         };
