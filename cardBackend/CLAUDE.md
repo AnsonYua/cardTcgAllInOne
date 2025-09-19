@@ -775,7 +775,36 @@ GameEventFactory.ts (New)
 - ✅ Removed duplicate method definitions
 - ✅ All TypeScript compilation errors resolved
 
+### CardSystem.ts - Card Database Management Hub
+**CARD DATABASE MIGRATION**: Moved all card database functionality from GameEngine.ts to CardSystem.ts for better organization.
+
+**New CardDatabaseManager Class:**
+- `getCardDetails(cardId)` - Get card data from database
+- `cardExists(cardId)` - Check if card exists in database
+- `getAllCards()` - Get all cards from database
+- `getCardsByType(cardType)` - Filter cards by type
+- `searchCards(criteria)` - Advanced card search with filters
+- `reloadDatabase()` - Reload database (useful for testing)
+- `getDatabaseStats()` - Get database statistics and card counts
+
+**Migration Benefits:**
+- ✅ **Logical Organization**: Card database now in CardSystem.ts where it belongs
+- ✅ **Enhanced Functionality**: Added utility methods for card searching and management
+- ✅ **Better Separation of Concerns**: GameEngine no longer handles data access
+- ✅ **Centralized Card Operations**: All card-related functionality in CardSystem.ts
+- ✅ **Zero Breaking Changes**: All existing functionality preserved
+
+**Updated References (9 files):**
+- GameEngine.ts, PlayerCardManager.ts, ShieldCardManager.ts, BaseCardManager.ts
+- CardEffect.ts, StateBasedActionEngine.ts, Player.ts
+- All files now import `CardDatabaseManager` from `../models/CardSystem`
+
 ### Developer Guidelines
+**When Working with Card Data:**
+- Use `CardDatabaseManager` from CardSystem.ts for all card database operations
+- Card data retrieval, existence checks, database searches
+- Database statistics and management operations
+
 **When Working with Card Operations:**
 - Use `PlayerCardManager` for all card-related operations
 - Card placement, movement, HP updates, stats calculations
@@ -795,7 +824,8 @@ GameEventFactory.ts (New)
 - **Easier Debugging**: Related functionality grouped together
 - **Better Testing**: Isolated functionality easier to test
 - **Improved Maintainability**: Clear separation of concerns
-- **Scalable Architecture**: Easy to add new functionality to appropriate managersASE
+- **Scalable Architecture**: Easy to add new functionality to appropriate managers
+- **Logical Data Access**: Card database operations in CardSystem.ts where they belongASE
 
 **Critical Rule**: Players cannot place multiple cards in a single turn. Each card placement immediately ends the turn and switches to the opponent.
 
