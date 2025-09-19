@@ -1,5 +1,5 @@
 // ActionButtonManager.js  
-// Dynamic action button creation and management system with top UI support
+// Dynamic action button creation and management system
 
 import CardActionRegistry from './CardActionRegistry.js';
 
