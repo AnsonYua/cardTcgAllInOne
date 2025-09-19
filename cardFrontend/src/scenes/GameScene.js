@@ -391,7 +391,7 @@ export default class GameScene extends Phaser.Scene {
       this.gameStateManager.setSelectedCard(card);
 
       // Show dynamic action buttons based on card type and effects
-      this.showDynamicActionsForCard(card);
+      this.actionButtonManager.showDynamicActionsForCard(card);
     });
 
     this.events.on('card-deselect', (card) => {
@@ -400,7 +400,7 @@ export default class GameScene extends Phaser.Scene {
         this.gameStateManager.setSelectedCard(null);
 
         // Hide dynamic action buttons when card is deselected  
-        this.hideDynamicActionButtons();
+        this.actionButtonManager.hideDynamicActionButtons();
       }
     });
 
@@ -431,7 +431,7 @@ export default class GameScene extends Phaser.Scene {
       this.gameStateManager.setSelectedCard(card);
 
       // Show dynamic action buttons based on card type and effects
-      this.showDynamicActionsForCard(card);
+      this.actionButtonManager.showDynamicActionsForCard(card);
     });
 
     this.events.on('zone-card-deselect', (card) => {
@@ -442,7 +442,7 @@ export default class GameScene extends Phaser.Scene {
         this.gameStateManager.setSelectedCard(null);
         console.log(`Cleared selected card state for zone card ${card.cardData?.id}`);
         // Hide action buttons when deselecting
-        this.hideDynamicActionButtons();
+        this.actionButtonManager.hideDynamicActionButtons();
       }
     });
 
@@ -484,7 +484,7 @@ export default class GameScene extends Phaser.Scene {
         // Completely deselect all cards and clear game state
         this.deselectAllCards(true);
         // Hide action buttons when clicking background
-        this.hideDynamicActionButtons();
+        this.actionButtonManager.hideDynamicActionButtons();
       }
     });
   }
@@ -1955,35 +1955,7 @@ export default class GameScene extends Phaser.Scene {
 
   // Old static action button method removed - now using dynamic ActionButtonManager
 
-  /**
-   * Show dynamic actions for selected card
-   */
-  showDynamicActionsForCard(selectedCard) {
-    if (!selectedCard) {
-      this.hideDynamicActionButtons();
-      return;
-    }
 
-    // Build game context for action validation
-    const gameState = this.gameStateManager.getGameState();
-    const gameContext = {
-      phase: gameState.gameEnv?.phase || 'MAIN_PHASE',
-      baseZoneAvailable: this.isBaseZoneAvailable(),
-      canPlayNormally: this.canPlayCardNormally(selectedCard),
-      // Card location context: use existing selectedCard.isInZone property
-      slotInfo: selectedCard.isInZone ? this.getSlotInfoFromCard(selectedCard) : null
-    };
-
-    // Show dynamic actions based on card type and context
-    this.actionButtonManager.showActionsForCard(selectedCard, gameContext);
-  }
-
-  /**
-   * Hide dynamic action buttons
-   */
-  hideDynamicActionButtons() {
-    this.actionButtonManager.hide();
-  }
 
 
   /**

@@ -32,6 +32,36 @@ export default class ActionButtonManager {
     /**
      * Show dynamic actions for selected card
      */
+    showDynamicActionsForCard(selectedCard) {
+        if (!selectedCard) {
+            this.hideDynamicActionButtons();
+            return;
+        }
+
+        // Build game context for action validation
+        const gameState = this.gameScene.gameStateManager.getGameState();
+        const gameContext = {
+            phase: gameState.gameEnv?.phase || 'MAIN_PHASE',
+            baseZoneAvailable: this.gameScene.isBaseZoneAvailable(),
+            canPlayNormally: this.gameScene.canPlayCardNormally(selectedCard),
+            // Card location context: use existing selectedCard.isInZone property
+            slotInfo: selectedCard.isInZone ? this.gameScene.getSlotInfoFromCard(selectedCard) : null
+        };
+
+        // Show dynamic actions based on card type and context
+        this.showActionsForCard(selectedCard, gameContext);
+    }
+
+    /**
+     * Hide dynamic action buttons
+     */
+    hideDynamicActionButtons() {
+        this.hide();
+    }
+
+    /**
+     * Show dynamic actions for selected card (original method)
+     */
     showActionsForCard(selectedCard, gameContext = {}) {
         if (!selectedCard) {
             this.hide();
