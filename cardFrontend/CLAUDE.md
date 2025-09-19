@@ -46,13 +46,16 @@ The game uses Phaser 3 scenes with state management integration:
 ### Directory Structure
 ```
 src/
-├── scenes/           # Phaser scene classes (6 total)
-├── components/       # Reusable UI components (Card.js, ShuffleAnimationManager.js)
-├── managers/         # Game state and API managers (GameStateManager.js, APIManager.js, UIMessageManager.js, ZoneManager.js, BoardLayoutManager.js, CardInteractionManager.js, ResourceManager.js)
+├── scenes/           # Phaser scene classes (8 total including DemoScene variants)
+├── components/       # Reusable UI components (Card.js, ShuffleAnimationManager.js, area managers)
+├── managers/         # Specialized managers (20+ files including GameFlowManager, HandCardManager, CardPreviewManager, EventProcessor)
+├── services/         # Service layer (GameApiService.js for API abstraction)
+├── handlers/         # Event and action handlers (CardActionHandler.js, DeployEffectHandler.js)
+├── systems/          # Game systems (ActionButtonManager.js, CardActionRegistry.js)
+├── utils/            # Helper utilities (ZoneMapping.js, GameSceneUtils.js, CardAnimationUtils.js, UIHelper.js)
 ├── config/          # Game configuration (gameConfig.js, cardConfig.js)
 ├── assets/          # Images and card artwork (organized by type: character/, leader/, utilityCard/)
-├── mock/            # Mock data for demo mode (handCards.json)
-├── utils/           # Helper functions and utilities (currently empty)
+├── mock/            # Mock data and scenario loading (scenarioLoader.js, testConfig.json)
 └── main.js          # Application entry point with Phaser config
 ```
 
@@ -98,6 +101,11 @@ gameState = {
 - **BoardLayoutManager** (`src/managers/BoardLayoutManager.js`): Dynamic board layout generation and responsive positioning
 - **CardInteractionManager** (`src/managers/CardInteractionManager.js`): Centralized card interaction state management with turn-based activation
 - **ResourceManager** (`src/managers/ResourceManager.js`): Centralized card resource loading with retry logic, caching, and performance monitoring
+- **HandCardManager** (`src/managers/HandCardManager.js`): Complete hand card management with animations, positioning, and backend integration
+- **CardPreviewManager** (`src/managers/CardPreviewManager.js`): Sophisticated card preview system with dual card support and current stats display
+- **GameFlowManager** (`src/managers/GameFlowManager.js`): Game flow control, phase transitions, and complex update logic management
+- **GameSceneUIManager** (`src/managers/GameSceneUIManager.js`): UI creation and management with standardized patterns
+- **EventProcessor** (`src/managers/EventProcessor.js`): Generic event processing system with extensible event type registry
 - **ActionButtonManager** (`src/systems/ActionButtonManager.js`): Dynamic action button system for card interactions
 
 #### **Event-Driven Architecture**
@@ -329,6 +337,21 @@ gameState.gameEnv.players.playerId_1.zones.slot1 = {
 
 ## Recent Architectural Improvements
 
+### Major GameScene Refactoring (2024)
+- **Manager Pattern Implementation**: Extracted complex GameScene logic into specialized managers, reducing GameScene.js from ~2000+ lines to manageable size
+- **HandCardManager**: Complete hand card functionality extraction with animation support, card positioning, and UID-based backend integration
+- **CardPreviewManager**: Sophisticated preview system supporting single cards, dual card previews (unit+pilot), and slot-based previews with current stats display
+- **GameFlowManager**: Complex game flow logic extraction including phase transitions, event processing, and the massive updateUI method (~140 lines)
+- **GameSceneUIManager**: All UI creation and management extracted with standardized patterns for buttons, displays, and status indicators
+- **EventProcessor**: Generic event processing system with extensible event type registry and handler patterns
+- **GameApiService**: Standardized API call wrapper reducing code duplication with consistent response handling patterns
+
+### Zone System and Utilities Refactoring (2024)
+- **ZoneMapping Utility**: Comprehensive zone name normalization and validation system with legacy format conversion support
+- **Enhanced Zone Management**: Modern slot-based architecture with backward compatibility for existing zone types
+- **Utility Extraction**: GameSceneUtils and CardAnimationUtils for reusable game logic patterns
+- **Service Layer**: Dedicated services directory with GameApiService for API abstraction
+
 ### Card Interaction System Fixes (2024)
 - **Energy Card Interaction Control**: Fixed energy cards being clickable despite `card.active = false` - energy, shield, and base cards now properly disabled from user interaction while maintaining hover preview functionality
 - **Card Preview Current Stats Display**: Fixed slot card hover previews showing original AP/HP instead of current values - previews now correctly display `currentAP`/`currentHP` affected by game effects and buffs
@@ -446,6 +469,119 @@ gameState.gameEnv.players.playerId_1.zones.slot1 = {
   console.log(`Success rate: ${stats.successRate}, Average load time: ${stats.averageLoadTime}ms`);
   ```
 
+### New Manager Usage Patterns (2024)
+
+### HandCardManager Usage Patterns
+- **Centralized Hand Management**: Use `HandCardManager` for all hand-related operations instead of direct manipulation
+- **Animation Support**: Built-in card addition animations with proper positioning and depth management
+- **Backend Integration**: Automatic UID-based backend action creation with zone validation
+- **Usage Example**:
+  ```javascript
+  // In GameScene:
+  this.handCardManager = new HandCardManager(this);
+  this.handCardManager.createHandContainer();
+  
+  // Update hand from game state
+  this.handCardManager.updatePlayerHand();
+  
+  // Add cards with animation
+  this.handCardManager.addCardsToPlayerHand([cardData1, cardData2]);
+  
+  // Create backend actions
+  const action = this.handCardManager.createBackendAction(cardData, 'slot1');
+  ```
+
+### CardPreviewManager Usage Patterns
+- **Enhanced Preview System**: Use `CardPreviewManager` for all card preview operations with support for complex slot previews
+- **Dual Card Support**: Automatic unit+pilot preview handling with proper stat calculations
+- **Current Stats Display**: Previews show current AP/HP values affected by game effects
+- **Usage Example**:
+  ```javascript
+  // In GameScene:
+  this.cardPreviewManager = new CardPreviewManager(this);
+  
+  // Show single card preview
+  this.cardPreviewManager.showCardPreview(cardData);
+  
+  // Show slot card preview (automatically detects unit+pilot)
+  this.cardPreviewManager.showSlotCardPreview(hoveredCard);
+  
+  // Show dual preview explicitly
+  this.cardPreviewManager.showDualCardPreview(unitCard, pilotCard);
+  ```
+
+### GameFlowManager Usage Patterns
+- **Complex Flow Management**: Use `GameFlowManager` for phase transitions and game flow logic
+- **Event Processing Integration**: Handles unprocessed events and event queue processing
+- **Resource Loading**: Manages animation sequences and resource loading workflows
+- **Usage Example**:
+  ```javascript
+  // In GameScene:
+  this.gameFlowManager = new GameFlowManager(this);
+  
+  // Main game flow update (replaces complex updateUI logic)
+  this.gameFlowManager.updateGameFlow();
+  ```
+
+### EventProcessor Usage Patterns
+- **Extensible Event System**: Use `EventProcessor` for handling processing queue events with type registry
+- **Custom Event Types**: Register new event types with custom handlers
+- **Usage Example**:
+  ```javascript
+  // In GameScene:
+  this.eventProcessor = new EventProcessor(this);
+  
+  // Process all events (returns true if blocking event processed)
+  const eventProcessed = this.eventProcessor.processAllEvents();
+  
+  // Register custom event type
+  this.eventProcessor.registerEventType('CUSTOM_CHOICE', {
+    handler: this.handleCustomChoice.bind(this),
+    requiresPlayerMatch: true,
+    allowMultiple: false,
+    description: 'Custom choice events'
+  });
+  ```
+
+### GameApiService Usage Patterns
+- **Standardized API Calls**: Use `GameApiService` for consistent API call patterns with error handling
+- **Response Handling**: Automatic gameEnv updates and UI feedback
+- **Usage Example**:
+  ```javascript
+  // In GameScene:
+  this.gameApiService = new GameApiService(this.apiManager, this.gameStateManager, this.uiMessageManager);
+  
+  // Standard API calls with consistent handling
+  await this.gameApiService.endTurn();
+  await this.gameApiService.joinRoom(gameId, playerName);
+  await this.gameApiService.confirmBurstChoice(eventId, confirmed);
+  
+  // Generic API call wrapper
+  await this.gameApiService.executeApiCall(
+    () => this.apiManager.someApiCall(),
+    'Loading...',
+    'Success!',
+    'Failed to execute',
+    true // updateHand
+  );
+  ```
+
+### ZoneMapping Utility Patterns
+- **Zone Validation**: Use `ZoneMapping` for all zone name validation and normalization
+- **Legacy Compatibility**: Convert between old and new action formats
+- **Usage Example**:
+  ```javascript
+  import { ZoneMapping, ZONES } from '../utils/ZoneMapping.js';
+  
+  // Validate and normalize zone names
+  const normalizedZone = ZoneMapping.normalizeZone('TOP'); // returns 'top'
+  const isValid = ZoneMapping.isValidZone('slot1'); // returns true
+  
+  // Convert legacy actions
+  const newAction = ZoneMapping.convertLegacyAction(legacyAction, playerHand);
+  const legacyAction = ZoneMapping.convertToLegacyAction(newAction, playerHand);
+  ```
+
 ### Development Workflow Tips
 - **Demo-First**: Always test in demo mode before backend integration
 - **Scene Debugging**: Use `this.scene.get('SceneName')` for cross-scene communication
@@ -455,3 +591,7 @@ gameState.gameEnv.players.playerId_1.zones.slot1 = {
 - **UI Feedback**: Always use `UIMessageManager` methods instead of creating direct Phaser text objects
 - **Card Interactions**: Use `CardInteractionManager` for all card state management instead of direct property manipulation
 - **Resource Loading**: Use `ResourceManager` for all card resource loading instead of direct fetch operations
+- **Hand Management**: Use `HandCardManager` for all hand-related operations instead of direct manipulation
+- **Card Previews**: Use `CardPreviewManager` for all preview functionality instead of creating preview cards directly
+- **Game Flow**: Use `GameFlowManager` for complex game flow logic instead of handling in main scene
+- **API Calls**: Use `GameApiService` for standardized API call patterns with consistent error handling

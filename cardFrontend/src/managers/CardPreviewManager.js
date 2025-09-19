@@ -326,15 +326,8 @@ export default class CardPreviewManager {
    * Set cards above overlay for redraw dialog visibility
    */
   setCardsAboveOverlay() {
-    // Bring hand cards to front (above the overlay)
-    this.scene.playerHand.forEach(card => {
-      card.setDepth(1001); // Hand cards above overlay
-    });
-
-    // Also bring the hand container to front if it exists
-    if (this.scene.handContainer) {
-      this.scene.handContainer.setDepth(1001);
-    }
+    // Use HandCardManager to set hand cards above overlay
+    this.scene.handCardManager.setHandCardsAboveOverlay();
 
     // Bring all zone cards to front (above the overlay)
     console.log('DEBUG: Setting zone card depths...');
@@ -376,7 +369,8 @@ export default class CardPreviewManager {
    * Highlight hand cards with pulsing effect
    */
   highlightHandCards() {
-    this.scene.playerHand.forEach(card => {
+    const handCards = this.scene.handCardManager.getHandCards();
+    handCards.forEach(card => {
       // Add a pulsing scale effect
       this.scene.tweens.add({
         targets: card,
@@ -396,7 +390,8 @@ export default class CardPreviewManager {
    * Remove hand card highlight effects
    */
   removeHandCardHighlight() {
-    this.scene.playerHand.forEach(card => {
+    const handCards = this.scene.handCardManager.getHandCards();
+    handCards.forEach(card => {
       // Stop all tweens on the card
       this.scene.tweens.killTweensOf(card);
       

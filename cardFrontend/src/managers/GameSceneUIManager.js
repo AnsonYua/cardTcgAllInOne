@@ -125,7 +125,8 @@ export default class GameSceneUIManager {
     handBg.fillStyle(0x000000, 0);
     handBg.fillRoundedRect(50, height - 220, width - 100, 170, 10);
 
-    this.scene.handContainer = this.scene.add.container(width / 2 - 50, height - 120);
+    // Use HandCardManager to create hand container
+    this.scene.handCardManager.createHandContainer();
 
     // Initialize dynamic action button system
     this.scene.actionButtonManager.initialize();

@@ -23,6 +23,7 @@ import GameApiService from '../services/GameApiService.js';
 import GameFlowManager from '../managers/GameFlowManager.js';
 import GameSceneUIManager from '../managers/GameSceneUIManager.js';
 import CardPreviewManager from '../managers/CardPreviewManager.js';
+import HandCardManager from '../managers/HandCardManager.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor(config = { key: 'GameScene' }) {
@@ -50,6 +51,7 @@ export default class GameScene extends Phaser.Scene {
     this.gameFlowManager = null;
     this.uiManager = null;
     this.cardPreviewManager = null;
+    this.handCardManager = null;
 
     // Legacy zone references (will be managed by ZoneManager)
     this.playerZones = {};
@@ -167,6 +169,9 @@ export default class GameScene extends Phaser.Scene {
     // Initialize card preview manager
     this.cardPreviewManager = new CardPreviewManager(this);
     
+    // Initialize hand card manager
+    this.handCardManager = new HandCardManager(this);
+    
     // Update legacy zone references for backward compatibility
     this.playerZones = this.zoneManager.getPlayerZones();
     this.opponentZones = this.zoneManager.getOpponentZones();
@@ -236,11 +241,11 @@ export default class GameScene extends Phaser.Scene {
   }
 
   hideHandArea() {
-    this.uiManager.hideHandArea();
+    this.handCardManager.hideHandArea();
   }
 
   showHandArea() {
-    this.uiManager.showHandArea();
+    this.handCardManager.showHandArea();
   }
 
   showRoomStatus(message) {
@@ -326,7 +331,7 @@ export default class GameScene extends Phaser.Scene {
     // Card hover events for preview
     this.events.on('card-hover', (card) => {
       // Only show preview for hand cards
-      if (this.playerHand.includes(card)) {
+      if (this.handCardManager.isCardInHand(card)) {
         this.cardPreviewManager.showCardPreview(card.getCardFullData());
       }
     });
@@ -467,48 +472,15 @@ export default class GameScene extends Phaser.Scene {
   }
 
   updateCurrentPlayerHand() {
-    const handDetails = this.gameStateManager.getPlayerHand()
-    const newHand = handDetails.slice(0, Math.min(handDetails.length, this.playerHand.length));
-    console.log("new hand  " + JSON.stringify(newHand))
-    this.updatePlayerHandWithCards(newHand)
+    this.handCardManager.updateCurrentPlayerHand();
   }
+  
   updatePlayerHand() {
-    // Get hand from game state manager
-    const handDetails = this.gameStateManager.getPlayerHand()
-    console.log('updatePlayerHand - hand data:', JSON.stringify(handDetails));
-    this.updatePlayerHandWithCards(handDetails);
+    this.handCardManager.updatePlayerHand();
   }
 
   updatePlayerHandWithCards(hand) {
-    // Clear existing hand
-    this.playerHand.forEach(card => card.destroy());
-    this.playerHand = [];
-    this.handContainer.removeAll();
-
-    console.log('updatePlayerHand - hand data:', JSON.stringify(hand));
-    if (!hand || hand.length === 0) {
-      console.log('No hand data found, returning early');
-      return;
-    }
-
-    // Calculate card positions
-    const cardSpacing = Math.min(160, (this.cameras.main.width - 200) / hand.length);
-    const startX = -(hand.length - 1) * cardSpacing / 2;
-
-    // Create cards
-    hand.forEach((cardData, index) => {
-      let processedCardData = cardData;
-      const x = startX + (index * cardSpacing);
-      const card = new Card(this, x, 0, processedCardData, {
-        scale: 1.1,
-        gameStateManager: this.gameStateManager,
-        usePreview: true
-      });
-
-      this.playerHand.push(card);
-      this.handContainer.add(card);
-
-    });
+    this.handCardManager.updatePlayerHandWithCards(hand);
   }
 
   apiZoneCardDataToCardObject(cardData) {
@@ -614,59 +586,11 @@ export default class GameScene extends Phaser.Scene {
 
 
   getCardUIDFromHand(cardData) {
-    // Get the current hand from game state to find card UID
-    const hand = this.gameStateManager.getPlayerHand();
-
-    // Find the actual UID of this card in the player's hand
-    // Backend hand contains UID strings like "c-1_1754551822157_24"
-    // Frontend cardData.id is the base ID like "c-1"
-    // We need to find the actual UID that matches this base ID
-    const cardUID = hand.find(handCardUID => {
-      // Extract base card ID from UID (before first underscore)
-      const baseCardId = typeof handCardUID === 'string'
-        ? handCardUID.split('_')[0]
-        : handCardUID.id;
-      return baseCardId === cardData.id;
-    });
-
-    if (!cardUID) {
-      console.error(`Card ${cardData.id} not found in player hand`);
-      console.log('Available hand cards (UIDs):', hand);
-      console.log('Looking for base card ID:', cardData.id);
-      return null;
-    }
-
-    return cardUID;
+    return this.handCardManager.getCardUIDFromHand(cardData);
   }
 
   createBackendAction(cardData, zoneType) {
-    // Get the cardUID using helper method
-    const cardUID = this.getCardUIDFromHand(cardData);
-
-    if (!cardUID) {
-      return null;
-    }
-
-    // Validate and normalize zone name using ZoneMapping utility
-    const normalizedZone = ZoneMapping.normalizeZone(zoneType);
-
-    if (!normalizedZone) {
-      console.error(`Invalid zone type: ${zoneType}`);
-      return null;
-    }
-
-    // Create action in new UID/zone-based format
-    const action = {
-      type: 'PlayCard',
-      cardUID: cardUID,
-      zone: normalizedZone
-    };
-
-    console.log(`Created backend action for card ${cardData.id} (NEW UID/ZONE FORMAT):`);
-    console.log(`  - Card UID: ${cardUID}`);
-    console.log(`  - Zone: ${normalizedZone}`);
-
-    return action;
+    return this.handCardManager.createBackendAction(cardData, zoneType);
   }
 
 
@@ -681,19 +605,13 @@ export default class GameScene extends Phaser.Scene {
    * @param {boolean} clearGameState - Whether to also clear the selected card from game state (default: false)
    */
   deselectAllCards(clearGameState = false) {
-    // Deselect all hand cards
-    this.playerHand.forEach(handCard => {
-      if (handCard.isSelected) {
-        console.log(`Deselecting hand card ${handCard.cardData?.id}`);
-        handCard.deselectSilently();
-      }
-    });
+    // Deselect all hand cards using HandCardManager
+    this.handCardManager.deselectAllHandCards();
 
     // Deselect all slot cards - delegate to SlotAreaManager
     if (this.slotAreaManager) {
       this.slotAreaManager.deselectAllSlotCards();
     }
-
 
     // Optionally clear the selected card from game state
     if (clearGameState) {
@@ -704,16 +622,7 @@ export default class GameScene extends Phaser.Scene {
 
 
   reorganizeHand() {
-    if (this.playerHand.length === 0) return;
-
-    const cardSpacing = Math.min(160, (this.cameras.main.width - 200) / this.playerHand.length);
-    const startX = -(this.playerHand.length - 1) * cardSpacing / 2;
-
-    this.playerHand.forEach((card, index) => {
-      const newX = startX + (index * cardSpacing);
-      card.moveToPosition(newX, 0, 300, false); // false = don't remove from container
-      card.originalPosition.x = newX;
-    });
+    this.handCardManager.reorganizeHand();
   }
 
   async endTurn() {
@@ -933,31 +842,7 @@ export default class GameScene extends Phaser.Scene {
 
 
   addCardsToPlayerHand(cardsToAdd) {
-    // Get current game state to update
-    const gameState = this.gameStateManager.getGameState();
-    const player = this.gameStateManager.getPlayer();
-
-    if (!player || !player.hand) {
-      console.error('Player hand not found');
-      return;
-    }
-
-    // Add cards to game state first
-    const updatedHand = [...player.hand, ...cardsToAdd];
-
-    // Update game state
-    this.gameStateManager.updateGameEnv({
-      players: {
-        ...gameState.gameEnv.players,
-        [gameState.playerId]: {
-          ...player,
-          hand: updatedHand
-        }
-      }
-    });
-
-    // Animate cards from deck to hand
-    this.animateCardsFromDeckToHand(cardsToAdd);
+    this.handCardManager.addCardsToPlayerHand(cardsToAdd);
   }
 
   addCardsToOpponentHand(cardsToAdd) {
@@ -991,101 +876,7 @@ export default class GameScene extends Phaser.Scene {
     console.log(`Added ${cardsToAdd.length} cards to opponent hand`);
   }
 
-  animateCardsFromDeckToHand(cardsToAdd) {
-    const playerDeckPosition = this.layout.player.deck;
-
-    // Animate each new card sequentially with individual slide animations
-    cardsToAdd.forEach((cardData, index) => {
-      setTimeout(() => {
-        // Create temporary card at deck position (card back)
-        const tempCard = this.add.image(playerDeckPosition.x, playerDeckPosition.y, 'card-back');
-
-        // Set the card to hand card size immediately
-        const scaleX = GAME_CONFIG.card.width / tempCard.width;
-        const scaleY = GAME_CONFIG.card.height / tempCard.height;
-        const handScale = Math.min(scaleX, scaleY) * 0.95 * 1.15; // Match hand card scale
-        tempCard.setScale(handScale);
-        tempCard.setDepth(2000);
-
-        // Calculate spacing for current hand size + this new card
-        const currentHandLength = this.playerHand.length; // Current cards in hand
-        const totalCards = currentHandLength + 1; // Including this new card
-        const cardSpacing = Math.min(160, (this.cameras.main.width - 200) / totalCards);
-        const startX = -(totalCards - 1) * cardSpacing / 2;
-        const newCardX = startX + (currentHandLength * cardSpacing); // Position for new card
-
-        // Convert to world coordinates
-        const worldTargetX = this.handContainer.x + newCardX;
-        const worldTargetY = this.handContainer.y;
-
-        // Animate existing hand cards to slide left to make space for this card
-        CardAnimationUtils.slideHandCardsLeft(this, totalCards, cardSpacing);
-
-        // Animate new card from deck to hand position
-        this.tweens.add({
-          targets: tempCard,
-          x: worldTargetX,
-          y: worldTargetY,
-          duration: 500,
-          ease: 'Power2.easeOut',
-          onComplete: () => {
-            // Flip animation: card back to card face
-            this.tweens.add({
-              targets: tempCard,
-              scaleX: 0, // Flip to invisible
-              duration: 150,
-              ease: 'Power2.easeIn',
-              onComplete: () => {
-                // Change to actual card image
-                const cardKey = `${cardData.id}-preview`;
-                tempCard.setTexture(cardKey);
-
-                // Recalculate scale for the new texture to maintain consistent card size
-                const newScaleX = GAME_CONFIG.card.width / tempCard.width;
-                const newScaleY = GAME_CONFIG.card.height / tempCard.height;
-                const newHandScale = Math.min(newScaleX, newScaleY) * 0.95 * 1.15;
-
-                // Update Y scale to match the new texture
-                tempCard.setScale(0, newHandScale);
-
-                // Flip back to visible with correct scale
-                this.tweens.add({
-                  targets: tempCard,
-                  scaleX: newHandScale, // Use properly calculated scale for new texture
-                  duration: 150,
-                  ease: 'Power2.easeOut',
-                  onComplete: () => {
-                    // Calculate position relative to hand container
-                    const relativeX = tempCard.x - this.handContainer.x;
-                    const relativeY = tempCard.y - this.handContainer.y;
-
-                    // Convert temporary card to actual hand card
-                    const newCard = new Card(this, relativeX, relativeY, cardData, {
-                      scale: 1.15,
-                      gameStateManager: this.gameStateManager,
-                      usePreview: true
-                    });
-
-                    // Add to hand array and container
-                    this.playerHand.push(newCard);
-                    this.handContainer.add(newCard);
-
-                    // Set proper depth
-                    newCard.setDepth(100);
-
-                    // Destroy temporary card
-                    tempCard.destroy();
-
-                    console.log(`Card ${cardData.id} added to hand at position ${this.playerHand.length - 1} at (${relativeX}, ${relativeY})`);
-                  }
-                });
-              }
-            });
-          }
-        });
-      }, index * 1000); // 1000ms delay between each card to allow slide + flip animations to complete
-    });
-  }
+  // animateCardsFromDeckToHand method moved to HandCardManager
 
 
   async simulatePlayer2Join() {
@@ -1242,15 +1033,8 @@ export default class GameScene extends Phaser.Scene {
     // Remove leader card highlighting
     this.removeLeaderCardHighlight();
 
-    // Reset hand cards depth to normal
-    this.playerHand.forEach(card => {
-      card.setDepth(0); // Reset to default depth
-    });
-
-    // Reset hand container depth if it exists
-    if (this.handContainer) {
-      this.handContainer.setDepth(0);
-    }
+    // Reset hand cards depth to normal using HandCardManager
+    this.handCardManager.resetHandCardsDepth();
 
     // Reset leaderDeck cards depth to normal - same as hand cards
     if (this.playerZones.leaderDeck && this.playerZones.leaderDeck.card) {
@@ -1347,6 +1131,11 @@ export default class GameScene extends Phaser.Scene {
     if (this.cardPreviewManager) {
       this.cardPreviewManager.destroy();
       this.cardPreviewManager = null;
+    }
+
+    if (this.handCardManager) {
+      this.handCardManager.destroy();
+      this.handCardManager = null;
     }
 
     // Clean up action button manager
