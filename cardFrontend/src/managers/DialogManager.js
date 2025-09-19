@@ -1,7 +1,7 @@
 // DialogManager.js
 // Centralized dialog management system for game UI
 
-import GameSceneUtils from '../utils/GameSceneUtils.js';
+import DialogUIManager from './DialogUIManager.js';
 import Card from '../components/Card.js';
 
 /**
@@ -55,8 +55,8 @@ export default class DialogManager {
     // Clean up any existing card selection dialogs (prevent multiple card selection dialogs)
     this.closeDialogsByType(this.dialogTypes.CARD_SELECTION);
     
-    // Create dialog using existing GameSceneUtils
-    const dialogInterface = GameSceneUtils.createCardSelectionDialog(
+    // Create dialog using DialogUIManager directly
+    const dialogInterface = DialogUIManager.createCardSelectionDialog(
       selectionId, 
       selection, 
       this.scene, 
@@ -316,8 +316,8 @@ export default class DialogManager {
       autoSelectFirst: true // Flag to indicate first card should be auto-selected
     };
     
-    // Create dialog using existing GameSceneUtils with burst effect styling
-    const dialogInterface = GameSceneUtils.createCardSelectionDialog(
+    // Create dialog using DialogUIManager directly with burst effect styling
+    const dialogInterface = DialogUIManager.createCardSelectionDialog(
       burstSelection.selectionId,
       burstSelection,
       this.scene,
@@ -405,8 +405,8 @@ export default class DialogManager {
       autoSelectFirst: false // User must actively select target
     };
     
-    // Create dialog using existing GameSceneUtils with deploy effect styling
-    const dialogInterface = GameSceneUtils.createCardSelectionDialog(
+    // Create dialog using DialogUIManager directly with deploy effect styling
+    const dialogInterface = DialogUIManager.createCardSelectionDialog(
       deploySelection.selectionId,
       deploySelection,
       this.scene,

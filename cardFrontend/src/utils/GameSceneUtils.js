@@ -4,7 +4,6 @@
  */
 import Card from '../components/Card.js';
 import { GAME_CONFIG } from '../config/gameConfig.js';
-import DialogUIManager from '../managers/DialogUIManager.js';
 
 export default class GameSceneUtils {
   /**
@@ -221,30 +220,7 @@ export default class GameSceneUtils {
     };
   }
 
-  /**
-   * Creates a card selection dialog with pagination and interactive elements
-   * @param {string} selectionId - Unique identifier for the selection
-   * @param {Object} selection - Selection configuration object
-   * @param {Phaser.Scene} scene - Phaser scene instance
-   * @param {Function} onConfirm - Callback when user confirms selection
-   * @returns {Object} Dialog interface with cleanup method
-   */
-  static createCardSelectionDialog(selectionId, selection, scene, onConfirm) {
-    // Delegate to DialogUIManager
-    return DialogUIManager.createCardSelectionDialog(selectionId, selection, scene, onConfirm);
-  }
 
-  /**
-   * Creates a custom button dialog for specific interactions
-   * @param {Object} selection - Selection configuration with custom buttons
-   * @param {Phaser.Scene} scene - Phaser scene instance  
-   * @param {Function} onConfirm - Callback when user confirms
-   * @returns {Object} Dialog interface
-   */
-  static createCustomButtonDialog(selection, scene, onConfirm) {
-    // Delegate to DialogUIManager
-    return DialogUIManager.createCustomButtonDialog(selection, scene, onConfirm);
-  }
 
   /**
    * Calculate card position within a zone
