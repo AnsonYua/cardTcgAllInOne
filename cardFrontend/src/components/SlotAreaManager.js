@@ -64,6 +64,9 @@ export default class SlotAreaManager {
     
     // Update pilot card (positioned 25px below unit)
     this.updatePilotCard(cardArray[slotName], slotData?.pilot, slotPosition, playerType, slotName);
+
+    // Update slot total labels (both values and visibility)
+    this.updateSlotTotalLabels(playerType, slotName);
   }
 
   updateUnitCard(slotCards, unitData, slotPosition, playerType, slotName) {
@@ -343,12 +346,52 @@ export default class SlotAreaManager {
   // ============ TOTAL LABELS MANAGEMENT ============
 
   /**
+   * Update slot total AP and HP labels (both values and visibility)
+   * Comprehensive function that handles all slot scenarios
+   * @param {string} playerType - 'player' or 'opponent'
+   * @param {string} slotName - slot1, slot2, etc.
+   */
+  updateSlotTotalLabels(playerType, slotName) {
+    const slotCards = this.getSlotCards(playerType, slotName);
+    const hasUnit = slotCards.unit !== null;
+    const hasPilot = slotCards.pilot !== null;
+    
+    // Update total label values based on slot contents
+    if (hasUnit && hasPilot) {
+      // Both unit and pilot present - pilot shows combined totals
+      const { totalAP, totalHP } = this.calculateTotalInSlot(slotCards.unit, slotCards.pilot);
+      if (slotCards.pilot.updateTotalLabels) {
+        slotCards.pilot.updateTotalLabels(totalAP, totalHP);
+        console.log(`[SlotAreaManager] Updated pilot total labels (combined): AP=${totalAP}, HP=${totalHP}`);
+      }
+    } else if (hasUnit && !hasPilot) {
+      // Unit only - unit shows its own totals
+      const { totalAP, totalHP } = this.calculateTotalInSlot(slotCards.unit, null);
+      if (slotCards.unit.updateTotalLabels) {
+        slotCards.unit.updateTotalLabels(totalAP, totalHP);
+        console.log(`[SlotAreaManager] Updated unit total labels (unit only): AP=${totalAP}, HP=${totalHP}`);
+      }
+    } else if (!hasUnit && hasPilot) {
+      // Pilot only - pilot shows its own totals
+      const { totalAP, totalHP } = this.calculateTotalInSlot(null, slotCards.pilot);
+      if (slotCards.pilot.updateTotalLabels) {
+        slotCards.pilot.updateTotalLabels(totalAP, totalHP);
+        console.log(`[SlotAreaManager] Updated pilot total labels (pilot only): AP=${totalAP}, HP=${totalHP}`);
+      }
+    }
+    
+    // Update total labels visibility for the slot
+    this.updateSlotTotalLabelsVisibility(playerType, slotName);
+  }
+
+  /**
    * Update total labels visibility for all cards in a slot
    * Rule: If both unit and pilot are present, only pilot shows total labels
    * @param {string} playerType - 'player' or 'opponent'
    * @param {string} slotName - slot1, slot2, etc.
    */
   updateSlotTotalLabelsVisibility(playerType, slotName) {
+
     const slotCards = this.getSlotCards(playerType, slotName);
     const hasUnit = slotCards.unit !== null;
     const hasPilot = slotCards.pilot !== null;
@@ -385,20 +428,85 @@ export default class SlotAreaManager {
       console.log(`[SlotAreaManager] Pilot in ${slotName}: total labels ${pilotShouldShowTotals ? 'visible' : 'hidden'}`);
     }
 
-    /*
-         const { totalAP, totalHP } = this.slotAreaManager ? 
-          this.slotAreaManager.calculateTotalInSlot(unitCard, pilotCard) : 
-          { totalAP: 0, totalHP: 0 };
-        this.previewPilotCard.powerOverlay.updateTotalStats(totalAP, totalHP);
-        or
-          // Calculate total stats (unit only, no pilot)
-          const { totalAP, totalHP } = this.slotAreaManager ? 
-            this.slotAreaManager.calculateTotalInSlot(mockUnitCard, null) : 
-            { totalAP: 0, totalHP: 0 };
-          
-          this.previewCard.updateTotalLabels(totalAP, totalHP);
+
+  }
+
+  // ============ TOTAL LABELS MANAGEMENT ============
+
+  /**
+   * Force update all total labels for all slots (useful for fixing sync issues)
+   * @param {string} playerType - 'player', 'opponent', or 'all' for both
+   */
+  updateAllSlotTotalLabels(playerType = 'all') {
+    console.log(`[SlotAreaManager] Force updating all slot total labels for: ${playerType}`);
     
-    */
+    const playerTypes = playerType === 'all' ? ['player', 'opponent'] : [playerType];
+    
+    playerTypes.forEach(pType => {
+      ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'].forEach(slotName => {
+        // Use the unified updateSlotTotalLabels method
+        this.updateSlotTotalLabels(pType, slotName);
+        console.log(`[SlotAreaManager] Force updated ${pType} ${slotName} total labels`);
+      });
+    });
+  }
+
+  // ============ DEBUGGING METHODS ============
+
+  /**
+   * Debug function to trace total label calculations for a specific slot
+   * @param {string} playerType - 'player' or 'opponent'
+   * @param {string} slotName - slot1, slot2, etc.
+   */
+  debugSlotTotals(playerType, slotName) {
+    console.log(`\n=== DEBUGGING SLOT TOTALS: ${playerType} ${slotName} ===`);
+    
+    const slotCards = this.getSlotCards(playerType, slotName);
+    const hasUnit = slotCards.unit !== null;
+    const hasPilot = slotCards.pilot !== null;
+    
+    console.log(`Has unit: ${hasUnit}, Has pilot: ${hasPilot}`);
+    
+    if (hasUnit) {
+      console.log('Unit card data:', {
+        cardId: slotCards.unit.cardData?.id,
+        fullCardData: slotCards.unit.fullCardData,
+        currentAP: slotCards.unit.fullCardData?.currentAP,
+        currentHP: slotCards.unit.fullCardData?.currentHP,
+        modifyAP: slotCards.unit.fullCardData?.modifyAP,
+        modifyHP: slotCards.unit.fullCardData?.modifyHP
+      });
+    }
+    
+    if (hasPilot) {
+      console.log('Pilot card data:', {
+        cardId: slotCards.pilot.cardData?.id,
+        fullCardData: slotCards.pilot.fullCardData,
+        currentAP: slotCards.pilot.fullCardData?.currentAP,
+        currentHP: slotCards.pilot.fullCardData?.currentHP,
+        modifyAP: slotCards.pilot.fullCardData?.modifyAP,
+        modifyHP: slotCards.pilot.fullCardData?.modifyHP
+      });
+    }
+    
+    // Calculate totals for debugging
+    if (hasUnit || hasPilot) {
+      const { totalAP, totalHP } = this.calculateTotalInSlot(slotCards.unit, slotCards.pilot);
+      console.log(`Calculated totals: AP=${totalAP}, HP=${totalHP}`);
+      
+      // Check current displayed values
+      if (hasUnit && slotCards.unit.powerOverlay) {
+        console.log('Unit total labels visible:', slotCards.unit.powerOverlay.totalApText?.visible, slotCards.unit.powerOverlay.totalHpText?.visible);
+        console.log('Unit total labels text:', slotCards.unit.powerOverlay.totalApText?.text, slotCards.unit.powerOverlay.totalHpText?.text);
+      }
+      
+      if (hasPilot && slotCards.pilot.powerOverlay) {
+        console.log('Pilot total labels visible:', slotCards.pilot.powerOverlay.totalApText?.visible, slotCards.pilot.powerOverlay.totalHpText?.visible);
+        console.log('Pilot total labels text:', slotCards.pilot.powerOverlay.totalApText?.text, slotCards.pilot.powerOverlay.totalHpText?.text);
+      }
+    }
+    
+    console.log('=== END DEBUG ===\n');
   }
 
   // ============ UTILITY METHODS ============
