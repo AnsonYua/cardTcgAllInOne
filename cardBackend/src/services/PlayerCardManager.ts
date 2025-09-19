@@ -516,13 +516,14 @@ export class PlayerCardManager {
                 return;
             }
             
-            // Find the slot containing the cardUID that was just placed
-            let targetSlot: string | null = null;
+            // Find the slot containing the cardUID that was just placed using type-safe access
+            let targetSlot: keyof Pick<typeof player.zones, 'slot1'|'slot2'|'slot3'|'slot4'|'slot5'|'slot6'> | null = null;
             
             for (const slotName of SLOT_ZONES) {
-                const slot = player.zones[slotName];
+                const slotKey = slotName as keyof Pick<typeof player.zones, 'slot1'|'slot2'|'slot3'|'slot4'|'slot5'|'slot6'>;
+                const slot = player.zones[slotKey];
                 if (slot?.unit?.cardUid === cardUID || slot?.pilot?.cardUid === cardUID) {
-                    targetSlot = slotName;
+                    targetSlot = slotKey;
                     break;
                 }
             }
@@ -534,7 +535,7 @@ export class PlayerCardManager {
             
             console.log(`🎯 Found card ${cardUID} in slot ${targetSlot}`);
             
-            // Access the slot and get the unit card
+            // Access the slot and get the unit card using type-safe access
             const slot = player.zones[targetSlot];
             if (!slot || !slot.unit) {
                 console.error(`❌ No unit found in slot ${targetSlot} for link formation`);
