@@ -19,6 +19,7 @@ import UIMessageManager from '../managers/UIMessageManager.js';
 import CardInteractionManager from '../managers/CardInteractionManager.js';
 import ResourceManager from '../managers/ResourceManager.js';
 import EventProcessor from '../managers/EventProcessor.js';
+import GameApiService from '../services/GameApiService.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor(config = { key: 'GameScene' }) {
@@ -44,6 +45,7 @@ export default class GameScene extends Phaser.Scene {
     this.cardInteractionManager = null;
     this.resourceManager = null;
     this.deployEffectHandler = null;
+    this.gameApiService = null;
 
     // Legacy zone references (will be managed by ZoneManager)
     this.playerZones = {};
@@ -71,6 +73,8 @@ export default class GameScene extends Phaser.Scene {
     this.actionButtonManager = new ActionButtonManager(this);
     this.dialogManager = new DialogManager(this);
     this.eventProcessor = new EventProcessor(this);
+    
+
 
     console.log('GameScene initialized with mode:', this.gameMode);
     console.log('Manual polling mode:', this.isManualPollingMode);
@@ -140,6 +144,9 @@ export default class GameScene extends Phaser.Scene {
     
     // Initialize UI message manager
     this.uiMessageManager = new UIMessageManager(this);
+    
+    // Initialize GameApiService with UIMessageManager
+    this.gameApiService = new GameApiService(this.apiManager, this.gameStateManager, this.uiMessageManager);
     
     // Initialize card interaction manager
     this.cardInteractionManager = new CardInteractionManager(this, this.gameStateManager);
@@ -382,26 +389,13 @@ export default class GameScene extends Phaser.Scene {
     this.events.on('card-select', (card) => {
       console.log(`GameScene: card-select event received for card ${card.cardData?.id}`);
 
-      // Deselect all cards and clear highlights, then select the target card
-      this.deselectAllCards();
-
-      // Now select the clicked card
-      console.log(`Selecting card ${card.cardData?.id}`);
-      card.select();
-      this.gameStateManager.setSelectedCard(card);
-
-      // Show dynamic action buttons based on card type and effects
-      this.actionButtonManager.showDynamicActionsForCard(card);
+      // Use helper method for consistent card selection
+      this.selectCard(card, 'hand');
     });
 
     this.events.on('card-deselect', (card) => {
-      // Handle card deselection - clear selected card and zone highlights
-      if (this.gameStateManager.getSelectedCard() === card) {
-        this.gameStateManager.setSelectedCard(null);
-
-        // Hide dynamic action buttons when card is deselected  
-        this.actionButtonManager.hideDynamicActionButtons();
-      }
+      // Use helper method for consistent card deselection
+      this.deselectCard(card);
     });
 
 
@@ -422,28 +416,16 @@ export default class GameScene extends Phaser.Scene {
     this.events.on('zone-card-select', (card) => {
       console.log(`GameScene: zone-card-select event received for card ${card.cardData?.id}`);
 
-      // Deselect all cards and clear highlights, then select the target card
-      this.deselectAllCards();
-
-      // Now select the clicked zone card
-      console.log(`Selecting zone card ${card.cardData?.id}`);
-      card.select();
-      this.gameStateManager.setSelectedCard(card);
-
-      // Show dynamic action buttons based on card type and effects
-      this.actionButtonManager.showDynamicActionsForCard(card);
+      // Use helper method for consistent card selection
+      this.selectCard(card, 'zone');
     });
 
     this.events.on('zone-card-deselect', (card) => {
       console.log(`GameScene: zone-card-deselect event received for card ${card.cardData?.id}`);
-
-      // Handle zone card deselection - clear selected card
-      if (this.gameStateManager.getSelectedCard() === card) {
-        this.gameStateManager.setSelectedCard(null);
-        console.log(`Cleared selected card state for zone card ${card.cardData?.id}`);
-        // Hide action buttons when deselecting
-        this.actionButtonManager.hideDynamicActionButtons();
-      }
+      
+      // Use helper method for consistent card deselection
+      this.deselectCard(card);
+      console.log(`Cleared selected card state for zone card ${card.cardData?.id}`);
     });
 
     // Zone card hover events - enhanced for unit+pilot dual preview
@@ -493,6 +475,54 @@ export default class GameScene extends Phaser.Scene {
     //this.updatePlayerHand();
     //this.updateZones();
     this.updateUI();
+  }
+
+  /**
+   * Helper method to handle common gameEnv update pattern
+   * @param {Object} gameEnv - Game environment data from API response
+   * @param {boolean} updateHand - Whether to trigger hand update scenario
+   */
+  handleGameEnvUpdate(gameEnv, updateHand = false) {
+    if (updateHand) {
+      this.gameStateManager.checkHandUIDChangesAndSetScenario(
+        gameEnv, 
+        '', 
+        this.handContainer, 
+        { value: this.isSetScenoria }
+      );
+    }
+    this.gameStateManager.updateGameEnv(gameEnv);
+    this.updateGameState();
+  }
+
+  /**
+   * Helper method to handle card selection with consistent behavior
+   * @param {Object} card - The card to select
+   * @param {string} cardType - Type of card ('hand' or 'zone')
+   */
+  selectCard(card, cardType = 'hand') {
+    console.log(`Selecting ${cardType} card ${card.cardData?.id}`);
+    
+    // Deselect all cards first
+    this.deselectAllCards();
+    
+    // Select the target card
+    card.select();
+    this.gameStateManager.setSelectedCard(card);
+    
+    // Show dynamic action buttons
+    this.actionButtonManager.showDynamicActionsForCard(card);
+  }
+
+  /**
+   * Helper method to handle card deselection with consistent behavior
+   * @param {Object} card - The card to deselect
+   */
+  deselectCard(card) {
+    if (this.gameStateManager.getSelectedCard() === card) {
+      this.gameStateManager.setSelectedCard(null);
+      this.actionButtonManager.hideDynamicActionButtons();
+    }
   }
 
   showCardSelectionDialog(selectionId, selection) {
@@ -876,35 +906,12 @@ export default class GameScene extends Phaser.Scene {
     }
 
     try {
-      const gameState = this.gameStateManager.getGameState();
-      const gameId = gameState.gameId;
-      const playerId = gameState.playerId;
-
-      if (!gameId || !playerId) {
-        throw new Error('Missing gameId or playerId');
+      const result = await this.gameApiService.endTurn();
+      if (result.gameEnvUpdated) {
+        this.updateGameState();
       }
-
-      console.log(`Ending turn for player: ${playerId}`);
-      this.showRoomStatus('Ending turn...');
-
-      const response = await this.apiManager.endTurn(gameId, playerId);
-
-      if (response && response.success) {
-        console.log('Turn ended successfully:', response);
-        this.showRoomStatus('Turn ended successfully');
-
-        // Update game state if returned in response
-        if (response.gameEnv) {
-          this.gameStateManager.updateGameEnv(response.gameEnv);
-          this.updateGameState();
-        }
-      } else {
-        throw new Error(response?.error || 'Failed to end turn');
-      }
-
     } catch (error) {
       console.error('Error ending turn:', error);
-      this.showRoomStatus(`Failed to end turn: ${error.message}`);
     }
   }
 
@@ -1489,8 +1496,8 @@ export default class GameScene extends Phaser.Scene {
       }
 
       // Call joinRoom API to simulate player 2 joining using the correct gameId
-      const response = await this.apiManager.joinRoom(gameId, 'Demo Opponent');
-      console.log('Player 2 join response:', response);
+      const result = await this.gameApiService.joinRoom(gameId, 'Demo Opponent');
+      console.log('Player 2 join response:', result);
 
       // Don't update game state immediately - let user poll to see changes
       console.log('Player 2 join API call completed. Use polling to see the changes.');
@@ -1717,9 +1724,7 @@ export default class GameScene extends Phaser.Scene {
       console.log(`Player chose redraw: ${wantRedraw}`);
 
       // Call startReady with redraw choice
-      await this.apiManager.startReady(gameState.playerId, gameState.gameId, wantRedraw);
-
-      this.showRoomStatus(`Ready sent (redraw: ${wantRedraw}). Poll to see if both players ready.`);
+      await this.gameApiService.startReady(wantRedraw);
 
     } catch (error) {
       console.error('Failed to send ready status:', error);
@@ -1742,31 +1747,16 @@ export default class GameScene extends Phaser.Scene {
         const gameState = this.gameStateManager.getGameState();
         
         // Call API to confirm/decline the burst effect
-        const response = await this.apiManager.confirmBurstChoice(
-          gameState.gameId, 
-          gameState.playerId, 
-          event.id, 
-          confirmed
-        );
+        const result = await this.gameApiService.confirmBurstChoice(event.id, confirmed);
         
-        if (response && response.success) {
-          console.log('Burst choice confirmation successful:', response);
-          this.showRoomStatus(`Burst effect ${confirmed ? 'activated' : 'skipped'} successfully!`);
-          
-          // Update game state with response
-          if (response.gameEnv) {
-            this.gameStateManager.checkHandUIDChangesAndSetScenario(response.gameEnv, '', this.handContainer, { value: this.isSetScenoria });
-            this.gameStateManager.updateGameEnv(response.gameEnv);
-            this.updateGameState();
-          }
-          
-        } else {
-          throw new Error(response?.error || 'Failed to process burst choice');
+        if (result.gameEnvUpdated) {
+          // Set scenario flag for hand update
+          this.isSetScenoria = true;
+          this.updateGameState();
         }
         
       } catch (error) {
         console.error('Failed to confirm burst choice:', error);
-        this.showRoomStatus('Failed to process burst effect: ' + error.message);
       }
     });
   }
