@@ -708,6 +708,11 @@ export class GameEngine {
             } catch (error) {
                 console.error(`❌ Error processing continuous effects after card placement:`, error);
             } 
+
+            /*
+            if placementResult.isOnlink
+            the linked unit isFirstPlay will become false
+            */
             
             // Check for Deploy effects using cardUID to extract cardId and fetch cardData from database
             const deployEffects = this.checkForDeployEffects(eventData.cardUID);
@@ -734,6 +739,12 @@ export class GameEngine {
                     
                     console.log(`📋 Pairing event queued: ${pairingEvent.id}`);
                 }
+            }
+            
+            // Handle link formation - set linked unit's isFirstPlay to false
+            if (placementResult.isOnLink) {
+                console.log(`🔗 Link detected - updating linked unit's isFirstPlay status`);
+                PlayerCardManager.handleLinkFormation(gameEnv, eventData.playerId, eventData.cardUID);
             }
 
             return { success: true };
@@ -1877,5 +1888,6 @@ export class GameEngine {
             return false;
         }
     }
+    
     
 }

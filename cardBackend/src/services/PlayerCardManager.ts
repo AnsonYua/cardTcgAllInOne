@@ -4,6 +4,7 @@
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GameEngine } from './GameEngine';
 import { createZoneCard, UnitZoneCard, PilotZoneCard, CommandZoneCard, BaseCard } from '../models/CardSystem';
+import { SLOT_ZONES } from '../config/gameConstants';
 
 export interface CardPlacementResult {
     success: boolean;
@@ -495,5 +496,62 @@ export class PlayerCardManager {
         console.log(`🔍 Placement analysis for ${placedZone} (placed ${placedCardType}): isOnPair=${isOnPair}, isOnLink=${isOnLink}`);
         
         return { isOnLink, isOnPair };
+    }
+
+    /**
+     * Handle link formation - set linked unit's isFirstPlay to false
+     * This method should be called when a link is detected after card placement
+     * 
+     * @param gameEnv - Game environment
+     * @param playerId - Player who owns the linked unit
+     * @param cardUID - The cardUID of the card that was just placed (typically pilot)
+     */
+    static handleLinkFormation(gameEnv: GameEnvironment, playerId: string, cardUID: string): void {
+        try {
+            console.log(`🔗 Processing link formation for player ${playerId}, card ${cardUID}`);
+            
+            const player = gameEnv.players[playerId];
+            if (!player || !player.zones) {
+                console.error(`❌ Could not find player ${playerId} or zones`);
+                return;
+            }
+            
+            // Find the slot containing the cardUID that was just placed
+            let targetSlot: string | null = null;
+            
+            for (const slotName of SLOT_ZONES) {
+                const slot = player.zones[slotName];
+                if (slot?.unit?.cardUid === cardUID || slot?.pilot?.cardUid === cardUID) {
+                    targetSlot = slotName;
+                    break;
+                }
+            }
+            
+            if (!targetSlot) {
+                console.error(`❌ Could not find slot containing card ${cardUID}`);
+                return;
+            }
+            
+            console.log(`🎯 Found card ${cardUID} in slot ${targetSlot}`);
+            
+            // Access the slot and get the unit card
+            const slot = player.zones[targetSlot];
+            if (!slot || !slot.unit) {
+                console.error(`❌ No unit found in slot ${targetSlot} for link formation`);
+                return;
+            }
+            
+            const unitCard = slot.unit;
+            console.log(`📋 Processing unit ${unitCard.cardUid} for link formation`);
+            
+            // Set the unit's isFirstPlay to false since it's now linked
+            const previousFirstPlay = unitCard.isFirstPlay;
+            unitCard.isFirstPlay = false;
+            
+            console.log(`✅ Link formation complete: Unit ${unitCard.cardUid} isFirstPlay changed from ${previousFirstPlay} to ${unitCard.isFirstPlay}`);
+            
+        } catch (error) {
+            console.error(`❌ Error handling link formation:`, error);
+        }
     }
 }
