@@ -12,6 +12,7 @@ import { PlayerCardManager } from './PlayerCardManager';
 import { DeployEffectManager } from './DeployEffectManager';
 import { PairingEffect } from './PairingEffect';
 import { GameValidator } from './GameValidator';
+import { GameEventFactory } from './GameEventFactory';
 import { UnitZoneCard } from '../models/CardSystem';
 import { PilotZoneCard } from '../models/CardSystem';
 import * as fs from 'fs';
@@ -327,16 +328,17 @@ export class GameEngine {
 
                 // Create phase change event for frontend notification
                 const notificationManager = GameEngine.getNotificationManager(gameEnv);
+                const phaseChangeEvent = GameEventFactory.createPhaseChangeEvent(
+                    'DRAW_PHASE',
+                    'MAIN_PHASE',
+                    'Auto-advance: No unacknowledged card draw events',
+                    gameEnv.currentPlayer || ''
+                );
                 notificationManager.addNotificationEvent(
-                    'PHASE_CHANGE',
-                    {
-                        fromPhase: 'DRAW_PHASE',
-                        toPhase: 'MAIN_PHASE',
-                        reason: 'Auto-advance: No unacknowledged card draw events',
-                        playerId: gameEnv.currentPlayer || ''
-                    },
-                    false, // requiresAcknowledgment
-                    'high' // priority
+                    phaseChangeEvent.type,
+                    phaseChangeEvent.data,
+                    phaseChangeEvent.requiresAcknowledgment,
+                    phaseChangeEvent.priority
                 );
 
                 console.log(`✅ Phase successfully advanced to MAIN_PHASE`);
@@ -678,7 +680,7 @@ export class GameEngine {
                 console.log(`🚀 Deploy effects detected: ${deployEffects.length} effects for card ${eventData.cardId}`);
 
                 // Create and queue Deploy effect events (similar to burst effects)
-                const deployEvent = DeployEffectManager.createDeployEffectEvent(eventData, deployEffects);
+                const deployEvent = GameEventFactory.createDeployEffectEvent(eventData, deployEffects);
                 gameEnv.processingQueue.push(deployEvent);
 
                 console.log(`📋 Deploy event queued: ${deployEvent.id}`);
@@ -692,7 +694,7 @@ export class GameEngine {
                     console.log(`🔗 Pairing effects detected: ${pairingEffects.length} effects`);
 
                     // Create and queue Pairing effect event
-                    const pairingEvent = this.createPairingEffectEvent(eventData, pairingEffects, placementResult);
+                    const pairingEvent = GameEventFactory.createPairingEffectEvent(eventData, pairingEffects, placementResult);
                     gameEnv.processingQueue.push(pairingEvent);
 
                     console.log(`📋 Pairing event queued: ${pairingEvent.id}`);
@@ -718,30 +720,6 @@ export class GameEngine {
 
 
 
-
-
-
-    /**
-     * Create Pairing effect event for processing queue
-     */
-    private static createPairingEffectEvent(eventData: any, pairingEffects: any[], placementResult: any): GameEvent {
-        const pairingEvent: GameEvent = {
-            id: `pairing_${eventData.cardUID}_${Date.now()}`,
-            type: EventType.PAIRING_EFFECT_TRIGGERED,
-            status: EventStatus.DECLARED,
-            priority: EventPriority.NORMAL,
-            playerId: eventData.playerId,
-            data: {
-                // Only include data actually used by PairingEffect.processPairingEffect
-                playerId: eventData.playerId,
-                effects: pairingEffects
-            },
-            timestamp: Date.now()
-        };
-
-        console.log(`🤝 Created Pairing event: ${pairingEvent.id} with ${pairingEffects.length} effects`);
-        return pairingEvent;
-    }
 
 
 
@@ -1486,21 +1464,8 @@ export class GameEngine {
     private static executeBurstDeploy(gameEnv: GameEnvironment, playerId: string, cardUid: string, cardData: any, burstEffect: any): ExecutionResult {
         console.log(`🚀 Executing deploy burst effect for card ${cardUid}`);
         try {
-            // Create PLAY_CARD event for deployment (manual creation based on GameLogic pattern)
-            const playCardEvent = {
-                id: `burst_deploy_${Date.now()}_${Math.random()}`,
-                type: EventType.PLAY_CARD,
-                status: EventStatus.DECLARED,
-                priority: EventPriority.NORMAL,
-                timestamp: Date.now(),
-                playerId: playerId,
-                data: {
-                    playerId: playerId,
-                    cardUID: cardUid,
-                    playAs: cardData.cardType,
-                    fromBurst: true
-                }
-            };
+            // Create PLAY_CARD event for deployment using GameEventFactory
+            const playCardEvent = GameEventFactory.createBurstDeployEvent(playerId, cardUid, cardData, burstEffect);
 
             // Add to processing queue for immediate execution
             gameEnv.processingQueue.push(playCardEvent);

@@ -309,31 +309,7 @@ export class DeployEffectManager {
         }
     }
 
-    /**
-     * Create Deploy effect event for processing queue
-     */
-    static createDeployEffectEvent(eventData: any, deployEffects: any[]): GameEvent {
-        const deployEvent: GameEvent = {
-            id: `deploy_${eventData.cardUID}_${Date.now()}`,
-            type: EventType.DEPLOY_EFFECT_TRIGGERED,
-            status: EventStatus.DECLARED,
-            priority: EventPriority.NORMAL,
-            playerId: eventData.playerId,
-            data: {
-                cardId: eventData.cardId,
-                cardUID: eventData.cardUID,
-                cardData: eventData.cardData,
-                playerId: eventData.playerId,
-                zone: eventData.zone,
-                effects: deployEffects,
-                timestamp: Date.now()
-            },
-            timestamp: Date.now()
-        };
 
-        console.log(`🚀 Created Deploy event: ${deployEvent.id} with ${deployEffects.length} effects`);
-        return deployEvent;
-    }
 
     /**
      * Execute Deploy effect triggered by card entering play

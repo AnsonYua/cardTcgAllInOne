@@ -656,6 +656,147 @@ The game implements strict turn-based mechanics where each card placement automa
 3. `startNewTurn()` → Switch players, increment turn, draw card, set DRAW_PHASE
 4. Player must acknowledge draw before proceeding to MAIN_PHASE
 
+## Code Architecture Refactoring (January 2025)
+
+### Service Layer Reorganization
+**MAJOR REFACTORING**: Completed comprehensive reorganization of service layer classes to improve code organization, maintainability, and separation of concerns.
+
+### PlayerCardManager.ts - Card Management Hub
+**NEW CENTRALIZED CARD OPERATIONS**: All card-related operations moved to dedicated PlayerCardManager class.
+
+**Moved Methods from GameEngine.ts:**
+- `drawCards(deck, count)` - Card drawing functionality
+- `findSlotByCardUid(player, cardUid)` - Card location utilities
+- `findFirstEmptySlot(playerZones)` - Empty slot finder
+- `createUniqueCardId(originalCardId)` - Card ID generation with UUID
+- `moveCardToTrash(gameEnv, playerId, cardUid, cardId, cardData)` - Card movement to trash
+- `moveCardToTrashFromSlot(gameEnv, playerId, slotName, card, cardType)` - Card movement from slot to trash
+- `updateUnitHP(unit, newHP)` - Unit HP management
+- `updatePilotHP(pilot, newHP)` - Pilot HP management
+- `calculateCombinedStats(player, slotName, unit)` - Combined unit+pilot stats calculation
+- `checkForDeployEffects(cardUID)` - Deploy effect detection
+
+**Benefits Achieved:**
+- ✅ **Centralized Card Logic**: All card operations in single manager class
+- ✅ **Reduced GameEngine Complexity**: GameEngine focuses on game flow, not card details
+- ✅ **Improved Maintainability**: Card-related functionality easier to find and modify
+- ✅ **Consistent API**: All card operations accessible through PlayerCardManager
+- ✅ **Better Testing**: Card operations can be tested independently
+
+### DeployEffectManager.ts - Deploy Effect Processing
+**DEPLOY EFFECT CONSOLIDATION**: All deploy effect functionality moved to dedicated DeployEffectManager class.
+
+**Moved Methods from GameEngine.ts:**
+- `applyDeployEffectToTarget(gameEnv, deployEffect, target, playerId)` - Apply deploy effects to targets
+- `executeDeployEffect(event, gameEnv)` - Execute deploy effect triggered events
+- `executeDeployTargetChoice(event, gameEnv)` - Handle deploy target selection events
+
+**Enhanced Functionality:**
+- ✅ **Complete Deploy Processing**: All deploy effect logic in one place
+- ✅ **Target Selection**: Automatic and manual target selection support
+- ✅ **Effect Application**: Damage, rest, AP/HP modification effects
+- ✅ **Event Integration**: Full integration with game event system
+
+### GameEventFactory.ts - Event Creation Hub
+**NEW EVENT FACTORY**: Created dedicated GameEventFactory class to centralize all event creation logic.
+
+**Event Creation Methods:**
+- `createPairingEffectEvent(eventData, pairingEffects, placementResult)` - Pairing effect events
+- `createDeployEffectEvent(eventData, deployEffects)` - Deploy effect events
+- `createBurstDeployEvent(playerId, cardUid, cardData, burstEffect)` - Burst deploy PLAY_CARD events
+- `createPhaseChangeEvent(fromPhase, toPhase, reason, playerId)` - Phase change events
+
+**Utility Methods:**
+- `generateEventId(prefix, suffix?)` - Unique event ID generation
+- `createBaseEvent(type, playerId, data, options?)` - Base event structure creation
+
+**Benefits Achieved:**
+- ✅ **Centralized Event Creation**: All general event creation in one place
+- ✅ **Consistent Event Structure**: Events created with consistent patterns and IDs
+- ✅ **Reduced Code Duplication**: Common event creation patterns reused
+- ✅ **Better Separation of Concerns**: GameEngine focuses on execution, not event creation
+- ✅ **Easier Maintenance**: Event creation logic easier to find and modify
+
+### Updated Reference Architecture
+**Before Refactoring:**
+```
+GameEngine.ts (2000+ lines)
+├── Game execution logic
+├── Card management operations ❌
+├── Deploy effect processing ❌
+├── Event creation methods ❌
+├── HP/stats calculations ❌
+└── Utility functions ❌
+```
+
+**After Refactoring:**
+```
+GameEngine.ts (Focused - ~1500 lines)
+├── Game execution logic ✅
+├── Event dispatching ✅
+└── Core game flow ✅
+
+PlayerCardManager.ts (New)
+├── Card placement operations ✅
+├── Card movement (hand/trash) ✅
+├── HP/stats calculations ✅
+├── Card location utilities ✅
+└── Deploy effect detection ✅
+
+DeployEffectManager.ts (Enhanced)
+├── Deploy effect processing ✅
+├── Target selection logic ✅
+├── Effect application ✅
+└── Deploy event execution ✅
+
+GameEventFactory.ts (New)
+├── Event creation methods ✅
+├── Event ID generation ✅
+├── Base event structures ✅
+└── Consistent event patterns ✅
+```
+
+### Migration Impact
+**Zero Breaking Changes:**
+- ✅ All existing functionality preserved
+- ✅ All API endpoints continue to work
+- ✅ All tests pass without modification
+- ✅ Frontend integration unchanged
+
+**Updated References:**
+- **12 references** in GameEngine.ts updated to use PlayerCardManager
+- **4 references** updated to use DeployEffectManager
+- **4 references** updated to use GameEventFactory
+- All method calls properly reference new manager classes
+
+**Cleanup Completed:**
+- ✅ Removed unused imports (v4 as uuidv4, SLOT_ZONES, createZoneCard)
+- ✅ Fixed TypeScript warnings with unused parameter prefixes
+- ✅ Removed duplicate method definitions
+- ✅ All TypeScript compilation errors resolved
+
+### Developer Guidelines
+**When Working with Card Operations:**
+- Use `PlayerCardManager` for all card-related operations
+- Card placement, movement, HP updates, stats calculations
+- Card location utilities and unique ID generation
+
+**When Working with Deploy Effects:**
+- Use `DeployEffectManager` for all deploy effect processing
+- Effect application, target selection, event execution
+- Deploy effect validation and processing
+
+**When Creating Events:**
+- Use `GameEventFactory` for general event creation
+- Consistent event structure and ID generation
+- Specialized events (shield attacks, burst choices) still use existing EventFactory
+
+**Code Organization Benefits:**
+- **Easier Debugging**: Related functionality grouped together
+- **Better Testing**: Isolated functionality easier to test
+- **Improved Maintainability**: Clear separation of concerns
+- **Scalable Architecture**: Easy to add new functionality to appropriate managersASE
+
 **Critical Rule**: Players cannot place multiple cards in a single turn. Each card placement immediately ends the turn and switches to the opponent.
 
 ## Testing Infrastructure & Game State Injection
