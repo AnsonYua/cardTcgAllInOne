@@ -1057,12 +1057,15 @@ export default class GameSceneUtils {
   static _createSingleCardDisplay(scene, card, index, cardsStartX, cardsY, cardDisplayConfig, dialogElements, selectionState, animateDirection) {
     const cardX = cardsStartX + (index * (cardDisplayConfig.cardDisplayWidth + cardDisplayConfig.cardSpacing)) + cardDisplayConfig.cardDisplayWidth / 2;
     
-    // Card container background
+    // Card container background - made taller to accommodate total AP/HP labels
     const cardContainer = scene.add.graphics();
     cardContainer.fillStyle(0x333333);
-    cardContainer.fillRoundedRect(cardX - cardDisplayConfig.cardDisplayWidth/2, cardsY - cardDisplayConfig.cardDisplayHeight/2, cardDisplayConfig.cardDisplayWidth, cardDisplayConfig.cardDisplayHeight, 8);
+    const extraHeight = 25; // Additional height for total AP/HP labels
+    // Center the extra height: move Y position up by half the extra height to keep visual center aligned
+    const adjustedY = cardsY - cardDisplayConfig.cardDisplayHeight/2 - (extraHeight / 2);
+    cardContainer.fillRoundedRect(cardX - cardDisplayConfig.cardDisplayWidth/2, adjustedY, cardDisplayConfig.cardDisplayWidth, cardDisplayConfig.cardDisplayHeight + extraHeight, 8);
     cardContainer.lineStyle(2, 0x666666);
-    cardContainer.strokeRoundedRect(cardX - cardDisplayConfig.cardDisplayWidth/2, cardsY - cardDisplayConfig.cardDisplayHeight/2, cardDisplayConfig.cardDisplayWidth, cardDisplayConfig.cardDisplayHeight, 8);
+    cardContainer.strokeRoundedRect(cardX - cardDisplayConfig.cardDisplayWidth/2, adjustedY, cardDisplayConfig.cardDisplayWidth, cardDisplayConfig.cardDisplayHeight + extraHeight, 8);
     cardContainer.setDepth(1503);
     dialogElements.cardListElements.push(cardContainer);
     
@@ -1369,9 +1372,10 @@ export default class GameSceneUtils {
    * @private
    */
   static _setupSlotContainerInteraction(scene, card, slotContainer, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements) {
-    // Set up proper interactive area for the container
+    // Set up proper interactive area for the container - include extra height for total AP/HP labels
     const interactiveWidth = cardDisplayConfig.cardDisplayWidth;
-    const interactiveHeight = cardDisplayConfig.cardDisplayHeight;
+    const extraHeight = 25; // Match the extra height from card container background
+    const interactiveHeight = cardDisplayConfig.cardDisplayHeight + extraHeight;
     
     slotContainer.setInteractive(
       new Phaser.Geom.Rectangle(-interactiveWidth/2, -interactiveHeight/2, interactiveWidth, interactiveHeight), 
@@ -1511,16 +1515,19 @@ export default class GameSceneUtils {
 
     cardComponent.setInteractive();
     
-    // Create hover frame highlighting functions with animation
+    // Create hover frame highlighting functions with animation - match taller container background
     const showRegularCardHoverEffect = () => {
       if (!cardComponent.hoverEffect) {
         cardComponent.hoverEffect = scene.add.graphics();
         cardComponent.hoverEffect.lineStyle(3, 0x00ff00, 0.8);
+        const extraHeight = 25; // Match the extra height from card container background
+        // Match the centered positioning of the card container background
+        const adjustedY = cardsY - cardDisplayConfig.cardDisplayHeight/2 - (extraHeight / 2);
         cardComponent.hoverEffect.strokeRoundedRect(
           cardX - cardDisplayConfig.cardDisplayWidth/2 - 2, 
-          cardsY - cardDisplayConfig.cardDisplayHeight/2 - 2, 
+          adjustedY - 2, 
           cardDisplayConfig.cardDisplayWidth + 4, 
-          cardDisplayConfig.cardDisplayHeight + 4, 
+          cardDisplayConfig.cardDisplayHeight + extraHeight + 4, 
           8
         );
         cardComponent.hoverEffect.setDepth(1505);
@@ -1675,17 +1682,20 @@ export default class GameSceneUtils {
   }
 
   /**
-   * Creates selection highlight for a card
+   * Creates selection highlight for a card - matches taller container background
    * @private
    */
   static _createSelectionHighlight(cardX, cardsY, cardDisplayConfig, dialogElements) {
     const highlight = dialogElements.cardSection.background.scene.add.graphics();
     highlight.lineStyle(4, 0x00ff00);
+    const extraHeight = 25; // Match the extra height from card container background
+    // Match the centered positioning of the card container background
+    const adjustedY = cardsY - cardDisplayConfig.cardDisplayHeight/2 - (extraHeight / 2);
     highlight.strokeRoundedRect(
       cardX - cardDisplayConfig.cardDisplayWidth/2 - 2, 
-      cardsY - cardDisplayConfig.cardDisplayHeight/2 - 2, 
+      adjustedY - 2, 
       cardDisplayConfig.cardDisplayWidth + 4, 
-      cardDisplayConfig.cardDisplayHeight + 4, 
+      cardDisplayConfig.cardDisplayHeight + extraHeight + 4, 
       10
     );
     highlight.setDepth(1506);
