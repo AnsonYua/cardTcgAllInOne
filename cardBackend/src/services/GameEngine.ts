@@ -1943,12 +1943,12 @@ export class GameEngine {
         if (unitRemainingHP <= 0) {
             // Unit is destroyed
             console.log(`💀 ${unitLabel} destroyed! Moving to trash...`);
-            GameEngine.moveCardToTrashFromSlot(gameEnv, playerId, slotName, unit, 'unit');
+            PlayerCardManager.moveCardToTrashFromSlot(gameEnv, playerId, slotName, unit, 'unit');
             
             // Also move pilot to trash if present
             const pilot = (player.zones as any)[slotName]?.pilot;
             if (pilot) {
-                GameEngine.moveCardToTrashFromSlot(gameEnv, playerId, slotName, pilot, 'pilot');
+                PlayerCardManager.moveCardToTrashFromSlot(gameEnv, playerId, slotName, pilot, 'pilot');
             }
             
             return true; // Unit destroyed
@@ -1967,49 +1967,7 @@ export class GameEngine {
         }
     }
 
-    /**
-     * Move a card (unit or pilot) to trash area after being destroyed
-     * @param gameEnv - Game environment
-     * @param playerId - Player who owns the card
-     * @param slotName - The slot containing the card
-     * @param card - The card to move to trash (unit or pilot)
-     * @param cardType - Type of card ('unit' or 'pilot')
-     */
-    private static moveCardToTrashFromSlot(gameEnv: GameEnvironment, playerId: string, slotName: string, card: UnitZoneCard | PilotZoneCard, cardType: 'unit' | 'pilot'): boolean {
-        try {
-            const player = gameEnv.getPlayer(playerId);
-            if (!player || !player.zones) {
-                console.error(`❌ Could not find player ${playerId} or zones`);
-                return false;
-            }
-            
-            // Initialize trash area if it doesn't exist
-            if (!player.zones.trashArea) {
-                player.zones.trashArea = [];
-            }
-            
-            // Create trash card with card data
-            const trashCard = createZoneCard(card.cardUid, card.cardId, card.cardData, playerId);
-            player.zones.trashArea.push(trashCard);
-            
-            // Remove card from slot
-            const slot = (player.zones as any)[slotName];
-            if (slot) {
-                if (cardType === 'unit') {
-                    slot.unit = null;
-                } else if (cardType === 'pilot') {
-                    slot.pilot = null;
-                }
-            }
-            
-            console.log(`🗑️ ${cardType.charAt(0).toUpperCase() + cardType.slice(1)} ${card.cardUid} moved to trash from ${slotName}`);
-            return true;
-            
-        } catch (error) {
-            console.error(`❌ Error moving ${cardType} to trash:`, error);
-            return false;
-        }
-    }
+
     
     
 }

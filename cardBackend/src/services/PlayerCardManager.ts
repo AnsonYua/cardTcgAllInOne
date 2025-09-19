@@ -20,17 +20,17 @@ export interface CardPlacementOptions {
 }
 
 export class PlayerCardManager {
-    
+
     /**
      * Streamlined card placement - accepts event data directly to minimize conversions
      */
     static placeCardWithEventData(
-        gameEnv: GameEnvironment, 
+        gameEnv: GameEnvironment,
         eventData: any
     ): CardPlacementResult {
         try {
             const { playerId, cardUID, playAs, targetUnit } = eventData;
-            
+
             const player = gameEnv.players[playerId];
             if (!player || !player.zones) {
                 return {
@@ -41,7 +41,7 @@ export class PlayerCardManager {
 
             // Extract cardId from cardUID
             const cardId = cardUID.split('_')[0];
-            
+
             // Load full card data from card database
             const fullCardData = GameEngine.getCardDetails(cardId);
             if (!fullCardData) {
@@ -51,20 +51,20 @@ export class PlayerCardManager {
                 };
             }
 
-        
+
             switch (playAs) {
                 case 'unit':
                     return this.placeUnitCard(player.zones, fullCardData, cardUID, playerId);
-                    
+
                 case 'pilot':
                     return this.placePilotCard(player.zones, fullCardData, cardUID, playerId, targetUnit);
-                    
+
                 case 'command':
                     return this.placeCommandCard(player.zones, fullCardData, cardUID, playerId);
-                    
+
                 case 'base':
                     return this.placeBaseCard(player.zones, fullCardData, cardUID, playerId);
-                    
+
                 default:
                     return {
                         success: false,
@@ -80,14 +80,14 @@ export class PlayerCardManager {
             };
         }
     }
-    
+
     /**
      * Main card placement interface - handles all card types
      */
     static placeCard(
-        gameEnv: GameEnvironment, 
-        playerId: string, 
-        cardUID: string, 
+        gameEnv: GameEnvironment,
+        playerId: string,
+        cardUID: string,
         options: CardPlacementOptions = {}
     ): CardPlacementResult {
         try {
@@ -101,7 +101,7 @@ export class PlayerCardManager {
 
             // Extract cardId from cardUID
             const cardId = cardUID.split('_')[0];
-            
+
             // Load full card data from card database
             const fullCardData = GameEngine.getCardDetails(cardId);
             if (!fullCardData) {
@@ -118,16 +118,16 @@ export class PlayerCardManager {
             switch (cardType) {
                 case 'unit':
                     return this.placeUnitCard(player.zones, fullCardData, cardUID, playerId);
-                    
+
                 case 'pilot':
                     return this.placePilotCard(player.zones, fullCardData, cardUID, playerId, options.targetUnit);
-                    
+
                 case 'command':
                     return this.placeCommandCard(player.zones, fullCardData, cardUID, playerId);
-                    
+
                 case 'base':
                     return this.placeBaseCard(player.zones, fullCardData, cardUID, playerId);
-                    
+
                 default:
                     return {
                         success: false,
@@ -148,14 +148,14 @@ export class PlayerCardManager {
      * Place unit card in first empty slot
      */
     private static placeUnitCard(
-        playerZones: any, 
-        cardData: any, 
-        cardUID: string, 
+        playerZones: any,
+        cardData: any,
+        cardUID: string,
         playerId: string
     ): CardPlacementResult {
         // Use GameEngine utility to find first empty slot
         const targetZone = GameEngine.findFirstEmptySlot(playerZones);
-        
+
         if (!targetZone) {
             return {
                 success: false,
@@ -171,14 +171,14 @@ export class PlayerCardManager {
             playerId,
             'unit'
         ) as UnitZoneCard;
-        
+
         // Place unit in target slot
         playerZones[targetZone].unit = unitCard;
         console.log(`🎮 Placed unit card ${cardUID} in ${targetZone}`);
-        
+
         // Analyze the placement result for link/pair status
         const { isOnLink, isOnPair } = this.analyzePlacementResult(playerZones, targetZone, 'unit');
-        
+
         return {
             success: true,
             placedZone: targetZone,
@@ -191,9 +191,9 @@ export class PlayerCardManager {
      * Place pilot card on target unit
      */
     private static placePilotCard(
-        playerZones: any, 
-        cardData: any, 
-        cardUID: string, 
+        playerZones: any,
+        cardData: any,
+        cardUID: string,
         playerId: string,
         targetUnit?: string
     ): CardPlacementResult {
@@ -206,7 +206,7 @@ export class PlayerCardManager {
 
         // Use GameEngine utility to find target unit slot
         const { slot: targetZone } = GameEngine.findSlotByCardUid({ zones: playerZones }, targetUnit);
-        
+
         if (!targetZone) {
             return {
                 success: false,
@@ -223,14 +223,14 @@ export class PlayerCardManager {
             playerId,
             'pilot'
         ) as PilotZoneCard;
-        
+
         // Place pilot in target slot with unit
         playerZones[targetZone].pilot = pilotCard;
         console.log(`🎮 Placed pilot card ${cardUID} with unit in ${targetZone}`);
-        
+
         // Analyze the placement result for link/pair status
         const { isOnLink, isOnPair } = this.analyzePlacementResult(playerZones, targetZone, 'pilot');
-        
+
         return {
             success: true,
             placedZone: targetZone,
@@ -243,15 +243,15 @@ export class PlayerCardManager {
      * Place command card - placeholder implementation
      */
     private static placeCommandCard(
-        playerZones: any, 
-        cardData: any, 
-        cardUID: string, 
+        playerZones: any,
+        cardData: any,
+        cardUID: string,
         playerId: string
     ): CardPlacementResult {
         console.log(`🚧 [PLACEHOLDER] Command card placement for ${cardUID} - not yet implemented`);
         // TODO: Implement command card placement logic
         // Command cards might go to a specific command zone or have special rules
-        
+
         return {
             success: false,
             error: `Command card placement not yet implemented for ${cardUID}`,
@@ -264,30 +264,30 @@ export class PlayerCardManager {
      * Place base card - replaces existing base or places new one
      */
     private static placeBaseCard(
-        playerZones: any, 
-        cardData: any, 
-        cardUID: string, 
+        playerZones: any,
+        cardData: any,
+        cardUID: string,
         playerId: string
     ): CardPlacementResult {
         try {
             console.log(`🏗️ Placing base card ${cardUID} for player ${playerId}`);
-            
+
             // Check if base[0] exists (base zone is an array)
             if (playerZones.base && playerZones.base.length > 0) {
                 const existingBase = playerZones.base[0];
                 console.log(`🏗️ Existing base found: ${existingBase.cardUid}, moving to trash`);
-                
+
                 // Move existing base to trash area
                 if (!playerZones.trashArea) {
                     playerZones.trashArea = [];
                 }
                 playerZones.trashArea.push(existingBase);
-                
+
                 // Clear the base zone
                 playerZones.base = [];
                 console.log(`🗑️ Moved existing base ${existingBase.cardUid} to trash`);
             }
-            
+
             // Create new base card using proper BaseCard interface from CardSystem
             const baseCard = createZoneCard(
                 cardUID,
@@ -296,26 +296,26 @@ export class PlayerCardManager {
                 playerId,
                 'base'
             ) as BaseCard;
-            
+
             // Initialize base zone if it doesn't exist
             if (!playerZones.base) {
                 playerZones.base = [];
             }
-            
+
             // Place new base card in base[0]
             playerZones.base.push(baseCard);
             console.log(`🏗️ Placed new base card ${cardUID} in base zone`);
-            
+
             // Analyze the placement result (base cards don't create pairs but for consistency)
             const { isOnLink, isOnPair } = this.analyzePlacementResult(playerZones, 'base', 'base');
-            
+
             return {
                 success: true,
                 placedZone: 'base',
                 isOnLink,
                 isOnPair
             };
-            
+
         } catch (error) {
             console.error(`❌ Error placing base card ${cardUID}:`, error);
             return {
@@ -345,7 +345,7 @@ export class PlayerCardManager {
             // Remove card from handUids array only (hand is generated from handUids)
             player.deck.handUids.splice(handUidIndex, 1);
             console.log(`🎮 Removed card ${cardUID} from handUids`);
-            
+
             return true;
 
         } catch (error) {
@@ -388,7 +388,7 @@ export class PlayerCardManager {
     private static isPairInSlot(playerZones: any, slotName: string): boolean {
         // Access the specific slot from the player's zones
         const slot = playerZones[slotName];
-        
+
         // Use optional chaining (?.) to safely access properties
         // Use logical AND (&&) to ensure BOTH unit and pilot exist
         // Use double negation (!!) to convert the result to a strict boolean
@@ -422,7 +422,7 @@ export class PlayerCardManager {
         // Try to get link from unit card (check both direct property and cardData)
         const unit = slot.unit;
         const pilot = slot.pilot;
-        
+
         // Get unit's link field - check direct property first, then cardData
         const unitLink = unit.cardData?.link;
         if (!unitLink || !Array.isArray(unitLink) || unitLink.length === 0) {
@@ -438,10 +438,10 @@ export class PlayerCardManager {
         if (pilot.playedAs === 'pilot' && pilot.cardData?.cardType === 'command') {
             isCommandCardPilot = true;
             // Look for designate_pilot effect
-            const designatePilotEffect = pilot.cardData?.effects?.rules?.find((rule: any) => 
+            const designatePilotEffect = pilot.cardData?.effects?.rules?.find((rule: any) =>
                 rule.effect?.action === 'designate_pilot'
             );
-            
+
             if (designatePilotEffect?.effect?.parameters?.pilotName) {
                 pilotNameForMatching = designatePilotEffect.effect.parameters.pilotName;
                 console.log(`🎯 Command card as pilot: using designate_pilot.pilotName="${pilotNameForMatching}"`);
@@ -489,12 +489,12 @@ export class PlayerCardManager {
         // Check if slot has both unit and pilot after placement
         // isOnPair need to check placedCardType
         const isOnPair = this.isPairInSlot(playerZones, placedZone) && placedCardType == "pilot";
-        
+
         // Only check for link if we have a pair
         const isOnLink = isOnPair ? this.isLinkInSlot(playerZones, placedZone) : false;
-        
+
         console.log(`🔍 Placement analysis for ${placedZone} (placed ${placedCardType}): isOnPair=${isOnPair}, isOnLink=${isOnLink}`);
-        
+
         return { isOnLink, isOnPair };
     }
 
@@ -509,50 +509,93 @@ export class PlayerCardManager {
     static handleLinkFormation(gameEnv: GameEnvironment, playerId: string, cardUID: string): void {
         try {
             console.log(`🔗 Processing link formation for player ${playerId}, card ${cardUID}`);
-            
+
             const player = gameEnv.players[playerId];
             if (!player || !player.zones) {
                 console.error(`❌ Could not find player ${playerId} or zones`);
                 return;
             }
-            
+
             // Find the slot containing the cardUID that was just placed using type-safe access
-            let targetSlot: keyof Pick<typeof player.zones, 'slot1'|'slot2'|'slot3'|'slot4'|'slot5'|'slot6'> | null = null;
-            
+            let targetSlot: keyof Pick<typeof player.zones, 'slot1' | 'slot2' | 'slot3' | 'slot4' | 'slot5' | 'slot6'> | null = null;
+
             for (const slotName of SLOT_ZONES) {
-                const slotKey = slotName as keyof Pick<typeof player.zones, 'slot1'|'slot2'|'slot3'|'slot4'|'slot5'|'slot6'>;
+                const slotKey = slotName as keyof Pick<typeof player.zones, 'slot1' | 'slot2' | 'slot3' | 'slot4' | 'slot5' | 'slot6'>;
                 const slot = player.zones[slotKey];
                 if (slot?.unit?.cardUid === cardUID || slot?.pilot?.cardUid === cardUID) {
                     targetSlot = slotKey;
                     break;
                 }
             }
-            
+
             if (!targetSlot) {
                 console.error(`❌ Could not find slot containing card ${cardUID}`);
                 return;
             }
-            
+
             console.log(`🎯 Found card ${cardUID} in slot ${targetSlot}`);
-            
+
             // Access the slot and get the unit card using type-safe access
             const slot = player.zones[targetSlot];
             if (!slot || !slot.unit) {
                 console.error(`❌ No unit found in slot ${targetSlot} for link formation`);
                 return;
             }
-            
+
             const unitCard = slot.unit;
             console.log(`📋 Processing unit ${unitCard.cardUid} for link formation`);
-            
+
             // Set the unit's isFirstPlay to false since it's now linked
             const previousFirstPlay = unitCard.isFirstPlay;
             unitCard.isFirstPlay = false;
-            
+
             console.log(`✅ Link formation complete: Unit ${unitCard.cardUid} isFirstPlay changed from ${previousFirstPlay} to ${unitCard.isFirstPlay}`);
-            
+
         } catch (error) {
             console.error(`❌ Error handling link formation:`, error);
+        }
+    }
+
+    /**
+     * Move a card (unit or pilot) to trash area after being destroyed
+     * @param gameEnv - Game environment
+     * @param playerId - Player who owns the card
+     * @param slotName - The slot containing the card
+     * @param card - The card to move to trash (unit or pilot)
+     * @param cardType - Type of card ('unit' or 'pilot')
+     */
+    static moveCardToTrashFromSlot(gameEnv: GameEnvironment, playerId: string, slotName: string, card: UnitZoneCard | PilotZoneCard, cardType: 'unit' | 'pilot'): boolean {
+        try {
+            const player = gameEnv.getPlayer(playerId);
+            if (!player || !player.zones) {
+                console.error(`❌ Could not find player ${playerId} or zones`);
+                return false;
+            }
+
+            // Initialize trash area if it doesn't exist
+            if (!player.zones.trashArea) {
+                player.zones.trashArea = [];
+            }
+
+            // Create trash card with card data
+            const trashCard = createZoneCard(card.cardUid, card.cardId, card.cardData, playerId);
+            player.zones.trashArea.push(trashCard);
+
+            // Remove card from slot
+            const slot = (player.zones as any)[slotName];
+            if (slot) {
+                if (cardType === 'unit') {
+                    slot.unit = null;
+                } else if (cardType === 'pilot') {
+                    slot.pilot = null;
+                }
+            }
+
+            console.log(`🗑️ ${cardType.charAt(0).toUpperCase() + cardType.slice(1)} ${card.cardUid} moved to trash from ${slotName}`);
+            return true;
+        } catch (error) {
+            console.error(`❌ Error moving ${cardType} to trash:`, error);
+            return false;
         }
     }
 }
