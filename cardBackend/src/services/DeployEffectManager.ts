@@ -4,8 +4,14 @@
 import { GameEnvironment } from '../models/GameEnvironment';
 import { EventType } from '../models/GameEnums';
 import { CardEffect, EffectResult } from './CardEffect';
-import { EventFactory } from './EventQueue/interfaces/GameEvent';
+import { EventFactory, GameEvent, EventStatus, EventPriority } from './EventQueue/interfaces/GameEvent';
 import { SLOT_ZONES } from '../config/gameConstants';
+import { GameValidator } from './GameValidator';
+
+export interface ExecutionResult {
+    success: boolean;
+    error?: string;
+}
 
 /**
  * DeployEffectManager handles Deploy (ENTERS_PLAY) effect processing
@@ -219,5 +225,188 @@ export class DeployEffectManager {
             }
         }
         return 0;
+    }
+
+    /**
+     * Apply deploy effect to the selected target
+     */
+    static applyDeployEffectToTarget(gameEnv: GameEnvironment, deployEffect: any, target: any, playerId: string): ExecutionResult {
+        console.log(`🎯 Applying deploy effect action: ${deployEffect.effect.action} to target: ${target.cardUid}`);
+
+        try {
+            // Validate target player using GameValidator
+            const playerValidation = GameValidator.validatePlayer(gameEnv, target.playerId);
+            if (!playerValidation.isValid) {
+                return {
+                    success: false,
+                    error: playerValidation.error
+                };
+            }
+
+            // Validate target zone and unit using GameValidator
+            const zoneValidation = GameValidator.validateTargetZone(gameEnv, target.playerId, target.zone, target.cardUid);
+            if (!zoneValidation.isValid) {
+                return {
+                    success: false,
+                    error: zoneValidation.error
+                };
+            }
+
+            // Get the target unit (validation already confirmed it exists)
+            const targetPlayer = playerValidation.player!;
+            const slotKey = target.zone as keyof Pick<typeof targetPlayer.zones, 'slot1' | 'slot2' | 'slot3' | 'slot4' | 'slot5' | 'slot6'>;
+            const targetSlot = targetPlayer.zones[slotKey];
+            const targetUnit = targetSlot.unit!; // Non-null assertion since validation confirmed it exists
+
+            // Apply effect based on action type
+            switch (deployEffect.effect.action) {
+                case "rest":
+                    targetUnit.isRested = true;
+                    console.log(`💤 Unit ${target.cardUid} has been rested by deploy effect`);
+                    break;
+
+                case "damage":
+                    const damageValue = deployEffect.effect.parameters?.value || 1;
+                    targetUnit.damageReceived = (targetUnit.damageReceived || 0) + damageValue;
+                    console.log(`🩸 Unit ${target.cardUid} takes ${damageValue} damage from deploy effect (total: ${targetUnit.damageReceived})`);
+                    break;
+
+                case "modifyAP":
+                    const apModifier = deployEffect.effect.parameters?.value || 0;
+                    if (!targetUnit.currentAP) {
+                        targetUnit.currentAP = targetUnit.cardData?.ap || 0;
+                    }
+                    targetUnit.currentAP += apModifier;
+                    console.log(`⚔️ Unit ${target.cardUid} AP modified by ${apModifier} (new AP: ${targetUnit.currentAP})`);
+                    break;
+
+                case "modifyHP":
+                    const hpModifier = deployEffect.effect.parameters?.value || 0;
+                    if (!targetUnit.currentHP) {
+                        targetUnit.currentHP = targetUnit.cardData?.hp || 0;
+                    }
+                    targetUnit.currentHP += hpModifier;
+                    console.log(`❤️ Unit ${target.cardUid} HP modified by ${hpModifier} (new HP: ${targetUnit.currentHP})`);
+                    break;
+
+                default:
+                    console.warn(`⚠️ Unknown deploy effect action: ${deployEffect.effect.action}`);
+                    return {
+                        success: false,
+                        error: `Unknown deploy effect action: ${deployEffect.effect.action}`
+                    };
+            }
+
+            console.log(`✅ Deploy effect ${deployEffect.effect.action} applied successfully to ${target.cardUid}`);
+            return { success: true };
+
+        } catch (error) {
+            console.error(`❌ Error applying deploy effect to target:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Deploy effect application failed'
+            };
+        }
+    }
+
+    /**
+     * Create Deploy effect event for processing queue
+     */
+    static createDeployEffectEvent(eventData: any, deployEffects: any[]): GameEvent {
+        const deployEvent: GameEvent = {
+            id: `deploy_${eventData.cardUID}_${Date.now()}`,
+            type: EventType.DEPLOY_EFFECT_TRIGGERED,
+            status: EventStatus.DECLARED,
+            priority: EventPriority.NORMAL,
+            playerId: eventData.playerId,
+            data: {
+                cardId: eventData.cardId,
+                cardUID: eventData.cardUID,
+                cardData: eventData.cardData,
+                playerId: eventData.playerId,
+                zone: eventData.zone,
+                effects: deployEffects,
+                timestamp: Date.now()
+            },
+            timestamp: Date.now()
+        };
+
+        console.log(`🚀 Created Deploy event: ${deployEvent.id} with ${deployEffects.length} effects`);
+        return deployEvent;
+    }
+
+    /**
+     * Execute Deploy effect triggered by card entering play
+     */
+    static executeDeployEffect(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+        console.log(`🚀 Executing DEPLOY_EFFECT_TRIGGERED event: ${event.id}`);
+
+        try {
+            // Use DeployEffectManager to process the Deploy effects
+            const result = DeployEffectManager.processDeployEffect(gameEnv, event.data);
+
+            if (!result.success) {
+                console.log(`❌ Deploy effect processing failed: ${result.error}`);
+                return {
+                    success: false,
+                    error: result.error
+                };
+            }
+
+            if (result.requiresSelection) {
+                console.log(`🎯 Deploy effects require player selection - workflow set up`);
+                return {
+                    success: true
+                };
+            }
+
+            console.log(`✅ Deploy effects processed successfully: ${result.message}`);
+            return {
+                success: true
+            };
+
+        } catch (error) {
+            console.error(`❌ Error in executeDeployEffect:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Deploy effect execution failed'
+            };
+        }
+    }
+
+    /**
+     * Handle DEPLOY_TARGET_CHOICE events - execute when user makes target selection
+     */
+    static executeDeployTargetChoice(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+        console.log(`🎯 Executing DEPLOY_TARGET_CHOICE event: ${event.id} (${event.status})`);
+
+        try {
+            const { selectedTarget, deployEffect, playerId, sourceCardUid } = event.data;
+
+            // This method should only be called for RESOLVING events
+            if (event.status !== EventStatus.RESOLVING) {
+                console.log(`⚠️ Unexpected event status: ${event.status} (expected RESOLVING)`);
+                return { success: true }; // Skip - should not happen in correct flow
+            }
+
+            if (!selectedTarget) {
+                return {
+                    success: false,
+                    error: "No target selected for deploy effect"
+                };
+            }
+
+            console.log(`🚀 Applying deploy effect to target: ${selectedTarget.cardUid} in ${selectedTarget.zone}`);
+
+            // Apply the effect to selected target
+            return DeployEffectManager.applyDeployEffectToTarget(gameEnv, deployEffect, selectedTarget, playerId);
+
+        } catch (error) {
+            console.error(`❌ Error in executeDeployTargetChoice:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Deploy target choice execution failed'
+            };
+        }
     }
 }

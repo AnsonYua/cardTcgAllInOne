@@ -3,8 +3,9 @@
 
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GameEngine } from './GameEngine';
-import { createZoneCard, UnitZoneCard, PilotZoneCard, CommandZoneCard, BaseCard } from '../models/CardSystem';
+import { createZoneCard, UnitZoneCard, PilotZoneCard, BaseCard } from '../models/CardSystem';
 import { SLOT_ZONES } from '../config/gameConstants';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface CardPlacementResult {
     success: boolean;
@@ -153,8 +154,8 @@ export class PlayerCardManager {
         cardUID: string,
         playerId: string
     ): CardPlacementResult {
-        // Use GameEngine utility to find first empty slot
-        const targetZone = GameEngine.findFirstEmptySlot(playerZones);
+        // Use local utility to find first empty slot
+        const targetZone = PlayerCardManager.findFirstEmptySlot(playerZones);
 
         if (!targetZone) {
             return {
@@ -204,8 +205,8 @@ export class PlayerCardManager {
             };
         }
 
-        // Use GameEngine utility to find target unit slot
-        const { slot: targetZone } = GameEngine.findSlotByCardUid({ zones: playerZones }, targetUnit);
+        // Use local utility to find target unit slot
+        const { slot: targetZone } = PlayerCardManager.findSlotByCardUid({ zones: playerZones }, targetUnit);
 
         if (!targetZone) {
             return {
@@ -243,10 +244,10 @@ export class PlayerCardManager {
      * Place command card - placeholder implementation
      */
     private static placeCommandCard(
-        playerZones: any,
-        cardData: any,
+        _playerZones: any,
+        _cardData: any,
         cardUID: string,
-        playerId: string
+        _playerId: string
     ): CardPlacementResult {
         console.log(`🚧 [PLACEHOLDER] Command card placement for ${cardUID} - not yet implemented`);
         // TODO: Implement command card placement logic
@@ -556,13 +557,91 @@ export class PlayerCardManager {
         }
     }
 
+    // ============ CARD MANAGEMENT UTILITIES ============
+
+    /**
+     * Draw cards from deck to hand
+     */
+    static drawCards(deck: any, count: number): void {
+        for (let i = 0; i < count && deck.mainDeck.length > 0; i++) {
+            const drawnCard = deck.mainDeck.shift();
+            if (drawnCard) {
+                deck._handUids.push(drawnCard);
+            }
+        }
+        console.log(`🃏 Drew ${count} cards, hand size: ${deck._handUids.length}`);
+    }
+
+    /**
+     * Find which slot contains a specific card UID
+     */
+    static findSlotByCardUid(player: any, cardUid: string): { slot: string | null, unit: UnitZoneCard | null } {
+        for (const slot of SLOT_ZONES) {
+            const slotZone = (player.zones as any)[slot];
+            if (slotZone?.unit?.cardUid === cardUid) {
+                return { slot, unit: slotZone.unit as UnitZoneCard };
+            }
+        }
+        
+        return { slot: null, unit: null };
+    }
+
+    /**
+     * Find first empty unit slot
+     */
+    static findFirstEmptySlot(playerZones: any): string | null {
+        for (const zone of SLOT_ZONES) {
+            const slotZone = playerZones[zone];
+            if (slotZone && !slotZone.unit) {
+                return zone;
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * Create unique card instance with UUID
+     */
+    static createUniqueCardId(originalCardId: string): string {
+        let cleanCardId = originalCardId;
+        if(originalCardId.split("/").length > 1){
+            cleanCardId = originalCardId.split("/")[1];
+        }
+        // Add UUID to make each card instance unique
+        return `${cleanCardId}_${uuidv4()}`;
+    }
+
+    /**
+     * Move a card to trash area
+     */
+    static moveCardToTrash(gameEnv: GameEnvironment, playerId: string, cardUid: string, cardId: string, cardData: any): boolean {
+        try {
+            const player = gameEnv.getPlayer(playerId);
+            if (!player || !player.zones) {
+                console.error(`❌ Could not find player ${playerId} or zones`);
+                return false;
+            }
+
+            // Initialize trash area if it doesn't exist
+            if (!player.zones.trashArea) {
+                player.zones.trashArea = [];
+            }
+
+            // Create trash card with card data
+            const trashCard = createZoneCard(cardUid, cardId, cardData, playerId);
+            player.zones.trashArea.push(trashCard);
+
+            console.log(`🗑️ Card ${cardUid} moved to trash`);
+            return true;
+        } catch (error) {
+            console.error(`❌ Error moving card to trash:`, error);
+            return false;
+        }
+    }
+
     /**
      * Move a card (unit or pilot) to trash area after being destroyed
-     * @param gameEnv - Game environment
-     * @param playerId - Player who owns the card
-     * @param slotName - The slot containing the card
-     * @param card - The card to move to trash (unit or pilot)
-     * @param cardType - Type of card ('unit' or 'pilot')
      */
     static moveCardToTrashFromSlot(gameEnv: GameEnvironment, playerId: string, slotName: string, card: UnitZoneCard | PilotZoneCard, cardType: 'unit' | 'pilot'): boolean {
         try {
@@ -597,5 +676,85 @@ export class PlayerCardManager {
             console.error(`❌ Error moving ${cardType} to trash:`, error);
             return false;
         }
+    }
+
+    /**
+     * Update unit HP
+     */
+    static updateUnitHP(unit: UnitZoneCard, newHP: number): void {
+        unit.currentHP = Math.max(0, newHP);
+        console.log(`🩹 Updated unit HP to ${unit.currentHP}`);
+    }
+
+    /**
+     * Update pilot HP
+     */
+    static updatePilotHP(pilot: PilotZoneCard, newHP: number): void {
+        pilot.currentHP = Math.max(0, newHP);
+        console.log(`🩹 Updated pilot HP to ${pilot.currentHP}`);
+    }
+
+    /**
+     * Calculate combined stats for unit and pilot in a slot
+     */
+    static calculateCombinedStats(player: any, slotName: string, unit: UnitZoneCard): { totalAP: number, totalHP: number } {
+        // Get base unit stats and apply unit-specific modifications
+        let currentAP = unit.currentAP|| 0;
+        let currentHP = unit.currentHP || 0;
+        
+        // Get pilot in the same slot if exists
+        const pilot = (player.zones as any)[slotName]?.pilot;
+        
+        if (pilot) {
+            // Add pilot stats to unit stats
+            const pilotAP = pilot.currentAP || pilot.cardData?.ap || 0;
+            const pilotHP = pilot.currentHP || pilot.cardData?.hp || 0;
+            
+            currentAP += pilotAP;
+            currentHP += pilotHP;
+            
+            console.log(`🔢 Combined stats: Unit(${unit.currentAP || 0}/${unit.currentHP || 0}) + Pilot(${pilotAP}/${pilotHP}) = Total(${currentAP}/${currentHP})`);
+        } else {
+            console.log(`🔢 Unit only stats: ${currentAP}/${currentHP}`);
+        }
+        
+        return {
+            totalAP: currentAP,
+            totalHP: currentHP
+        };
+    }
+
+    /**
+     * Check if a card has Deploy effects (ENTERS_PLAY triggers) using cardUID to extract cardId and fetch card data
+     */
+    static checkForDeployEffects(cardUID: string): any[] {
+        console.log("checkForDeployEffects using cardUID:", cardUID);
+        
+        // Extract cardId from cardUID (remove UUID suffix)
+        const cardId = cardUID.split('_')[0];
+        
+        // Get card data from GameEngine's card database
+        const cardData = GameEngine.getCardDetails(cardId);
+        if (!cardData) {
+            console.warn(`⚠️ Card data not found for ${cardId}`);
+            return [];
+        }
+        
+        console.log(`📋 Checking deploy effects for card: ${cardData.name} (${cardId})`);
+        
+        // Check if card has effects with ENTERS_PLAY trigger
+        const deployEffects: any[] = [];
+        
+        if (cardData.effects && cardData.effects.rules) {
+            for (const rule of cardData.effects.rules) {
+                if (rule.trigger === 'ENTERS_PLAY') {
+                    deployEffects.push(rule);
+                    console.log(`🎯 Found deploy effect: ${rule.effect?.action || 'unknown'}`);
+                }
+            }
+        }
+        
+        console.log(`✅ Found ${deployEffects.length} deploy effects for ${cardUID}`);
+        return deployEffects;
     }
 }
