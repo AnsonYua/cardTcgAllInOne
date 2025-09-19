@@ -393,7 +393,7 @@ export default class DialogManager {
     
     // Create target cards for selection using opponent zone data
     const targetCards = this.buildTargetCardsFromOpponentZones(availableTargets);
-    
+    console.log("target Cardddddddd ", JSON.stringify(targetCards))
     // Create a selection object that matches the card selection dialog format
     const deploySelection = {
       selectionId: `deploy_target_${event.id}`,
@@ -473,79 +473,119 @@ export default class DialogManager {
     
     console.log('🎯 DialogManager: Building target cards from backend response:', availableTargets);
     
-    // Build card objects directly from backend response data
+    // Get game state to access slot data
+    const gameState = this.scene.gameStateManager.getGameState();
+    const targetPlayerId = availableTargets[0]?.playerId; // All targets should be from same player
+    const targetPlayer = gameState.gameEnv.players[targetPlayerId];
+    
+    if (!targetPlayer || !targetPlayer.zones) {
+      console.warn('DialogManager: Could not access target player zones for target display');
+      return targetCards;
+    }
+    
+    console.log('🔍 Target player zones:', JSON.stringify(targetPlayer.zones, null, 2));
+    
+    // Build card objects from game state zone data
     availableTargets.forEach((target, index) => {
-      const { cardUid, zone, playerId, cardData, currentAP, currentHP, pilotData } = target;
+      const { cardUid, zone, playerId } = target;
       
-      console.log(`🔍 Processing target ${index + 1}:`, {
-        cardUid,
-        zone,
-        playerId,
-        hasCardData: !!cardData,
-        currentAP,
-        currentHP,
-        hasPilotData: !!pilotData
-      });
+      console.log(`🔍 Processing target ${index + 1}:`, { cardUid, zone, playerId });
       
-      // Use card data from backend response, or create basic fallback
-      const targetCardData = cardData || {
-        name: `Card ${cardUid}`,
-        hp: currentHP || 0,
-        ap: currentAP || 0,
-        id: cardUid
-      };
+      // Get the actual slot from target player zones
+      const slot = targetPlayer.zones[zone];
+      console.log(`🔍 Slot ${zone} data:`, JSON.stringify(slot, null, 2));
       
-      // Calculate total stats (including pilot if present)
-      const unitAP = currentAP || targetCardData.ap || 0;
-      const unitHP = currentHP || targetCardData.hp || 0;
-      const pilotAP = pilotData ? (pilotData.currentAP || pilotData.ap || 0) : 0;
-      const pilotHP = pilotData ? (pilotData.currentHP || pilotData.hp || 0) : 0;
-      
-      const totalAP = unitAP + pilotAP;
-      const totalHP = unitHP + pilotHP;
-      
-      // Create display name
-      let displayName = targetCardData.name || 'Unknown Card';
-      if (pilotData && pilotData.name) {
-        displayName += ` + ${pilotData.name}`;
+      if (slot && slot.unit) {
+        const unit = slot.unit;
+        
+        // Look for pilot in the same slot
+        let pilot = null;
+        if (slot.pilot) {
+          pilot = slot.pilot;
+          console.log(`🧑‍✈️ Found pilot as slot.pilot:`, pilot.cardData?.name || 'Unknown Pilot');
+        } else if (slot.pilotCard) {
+          pilot = slot.pilotCard;
+          console.log(`🧑‍✈️ Found pilot as slot.pilotCard:`, pilot.cardData?.name || 'Unknown Pilot');
+        } else {
+          console.log(`🧑‍✈️ No pilot found in ${zone} (checked slot.pilot and slot.pilotCard)`);
+        }
+        
+        console.log(`🎯 Unit found in ${zone}:`, unit.cardData?.name || 'Unknown Unit');
+        
+        // Calculate total stats (unit + pilot if present)
+        const unitAP = unit.currentAP || unit.cardData?.ap || 0;
+        const unitHP = unit.currentHP || unit.cardData?.hp || 0;
+        const pilotAP = pilot ? (pilot.currentAP || pilot.cardData?.ap || 0) : 0;
+        const pilotHP = pilot ? (pilot.currentHP || pilot.cardData?.hp || 0) : 0;
+        
+        const totalAP = unitAP + pilotAP;
+        const totalHP = unitHP + pilotHP;
+        
+        // Create display name
+        let displayName = unit.cardData?.name || 'Unknown Unit';
+        if (pilot && pilot.cardData?.name) {
+          displayName += ` + ${pilot.cardData.name}`;
+        }
+        displayName += ` (${zone.replace('slot', 'Slot ')})`;
+        
+        // Create card object for dialog display
+        const cardForDisplay = {
+          cardData: unit.cardData || { name: 'Unknown Unit', hp: 0, ap: 0 },
+          cardId: unit.cardData?.id || cardUid,
+          cardUid: cardUid,
+          zone: zone,
+          playerId: playerId,
+          // Current stats for display (used for total labels)
+          currentHP: totalHP,
+          currentAP: totalAP,
+          damageReceived: unit.damageReceived || 0,
+          // Individual unit stats
+          unitHP: unitHP,
+          unitAP: unitAP,
+          // Pilot information if available
+          pilotData: pilot ? {
+            name: pilot.cardData?.name || 'Pilot',
+            cardData: pilot.cardData,
+            currentHP: pilot.currentHP || pilot.cardData?.hp || 0,
+            currentAP: pilot.currentAP || pilot.cardData?.ap || 0,
+            pilotHP: pilotHP,
+            pilotAP: pilotAP
+          } : null,
+          // Selection metadata
+          selectionIndex: index,
+          displayName: displayName,
+          
+          // Slot target display format (for _createSlotTargetDisplay compatibility)
+          isSlotTarget: !!pilot, // Mark as slot target if pilot exists
+          unit: {
+            cardId: unit.cardData?.id || cardUid,
+            cardData: unit.cardData,
+            currentAP: unitAP,
+            currentHP: unitHP
+          },
+          pilot: pilot ? {
+            cardId: pilot.cardData?.id || `${cardUid}_pilot`,
+            cardData: pilot.cardData,
+            currentAP: pilot.currentAP || pilot.cardData?.ap || 0,
+            currentHP: pilot.currentHP || pilot.cardData?.hp || 0
+          } : null
+        };
+        
+        targetCards.push(cardForDisplay);
+        console.log(`✅ Built target card: ${cardForDisplay.displayName}`);
+        console.log(`   - Unit: ${unit.cardData?.name} (AP: ${unitAP}, HP: ${unitHP})`);
+        if (pilot) {
+          console.log(`   - Pilot: ${pilot.cardData?.name} (AP: ${pilotAP}, HP: ${pilotHP})`);
+          console.log(`   - Slot Target Format: isSlotTarget = true (will use _createSlotTargetDisplay)`);
+        } else {
+          console.log(`   - Single Unit: isSlotTarget = false (will use regular card display)`);
+        }
+        console.log(`   - Total Stats: AP: ${totalAP}, HP: ${totalHP}`);
+      } else {
+        console.warn(`❌ Could not find unit in ${zone} for target ${cardUid}`);
+        console.log(`   - Slot exists: ${!!slot}`);
+        console.log(`   - Slot.unit exists: ${!!(slot && slot.unit)}`);
       }
-      displayName += ` (${zone.replace('slot', 'Slot ')})`;
-      
-      // Create card object for dialog display
-      const cardForDisplay = {
-        cardData: targetCardData,
-        cardId: targetCardData.id || cardUid,
-        cardUid: cardUid,
-        zone: zone,
-        playerId: playerId,
-        // Current stats for display (used for total labels)
-        currentHP: totalHP,
-        currentAP: totalAP,
-        damageReceived: target.damageReceived || 0,
-        // Individual unit stats
-        unitHP: unitHP,
-        unitAP: unitAP,
-        // Pilot information if available
-        pilotData: pilotData ? {
-          name: pilotData.name || 'Pilot',
-          cardData: pilotData.cardData || pilotData,
-          currentHP: pilotData.currentHP || pilotData.hp || 0,
-          currentAP: pilotData.currentAP || pilotData.ap || 0,
-          pilotHP: pilotHP,
-          pilotAP: pilotAP
-        } : null,
-        // Selection metadata
-        selectionIndex: index,
-        displayName: displayName
-      };
-      
-      targetCards.push(cardForDisplay);
-      console.log(`✅ Built target card: ${cardForDisplay.displayName}`);
-      console.log(`   - Unit: ${targetCardData.name} (AP: ${unitAP}, HP: ${unitHP})`);
-      if (pilotData) {
-        console.log(`   - Pilot: ${pilotData.name} (AP: ${pilotAP}, HP: ${pilotHP})`);
-      }
-      console.log(`   - Total Stats: AP: ${totalAP}, HP: ${totalHP}`);
     });
     
     console.log(`📊 Built ${targetCards.length} target cards from backend response`);
