@@ -196,6 +196,87 @@ gameState = {
 - **Validation**: Client-side validation for all card placements
 - **Fallback Systems**: Demo mode when backend unavailable
 
+## Slot Target Display System
+
+### How to Trigger `_createSlotTargetDisplay`
+
+The `_createSlotTargetDisplay` function displays unit+pilot combinations in dialogs (like deploy target selection). Here's the complete flow:
+
+#### Required Data Structure
+```javascript
+const slotTarget = {
+  // REQUIRED: Unit object
+  unit: {
+    cardId: "ST01-009",     // Card ID for texture loading
+    cardData: { name, ap, hp, id },
+    currentAP: 3,           // Current stats
+    currentHP: 2
+  },
+  // OPTIONAL: Pilot object (triggers slot display when present)
+  pilot: {
+    cardId: "ST01-002",     // Pilot card ID  
+    cardData: { name, ap, hp, id },
+    currentAP: 2,
+    currentHP: 1
+  }
+}
+```
+
+#### Trigger Flow
+1. **Backend Event**: Send `DEPLOY_TARGET_CHOICE` event
+2. **Event Processing**: EventProcessor detects event in processing queue
+3. **Dialog Creation**: DialogManager.showDeployTargetDialog() called
+4. **Data Lookup**: buildTargetCardsFromOpponentZones() accesses gameState zones
+5. **Card Format**: Creates cards with `isSlotTarget: true` when pilot exists
+6. **Display Logic**: GameSceneUtils._createCardImage() detects `isSlotTarget` flag
+7. **Slot Display**: Calls `_createSlotTargetDisplay()` for unit+pilot layout
+
+#### Backend Response Format
+```json
+{
+  "type": "DEPLOY_TARGET_CHOICE",
+  "data": {
+    "availableTargets": [
+      {
+        "cardUid": "ST01-009_uuid",
+        "zone": "slot1",
+        "playerId": "playerId_1"
+      }
+    ]
+  }
+}
+```
+
+#### Game State Requirements
+The target player's zone must contain unit+pilot data:
+```javascript
+gameState.gameEnv.players.playerId_1.zones.slot1 = {
+  unit: {
+    cardUid: "ST01-009_uuid",
+    cardData: { name: "Fighter", ap: 3, hp: 4, id: "ST01-009" },
+    currentAP: 3,
+    currentHP: 2
+  },
+  pilot: {  // Optional - triggers slot target display
+    cardUid: "ST01-002_uuid", 
+    cardData: { name: "Ace Pilot", ap: 2, hp: 1, id: "ST01-002" },
+    currentAP: 2,
+    currentHP: 1
+  }
+}
+```
+
+#### Visual Result
+- **Unit Only**: Regular card display
+- **Unit + Pilot**: Stacked display with unit on top (-20 Y offset) and pilot below (+23 Y offset)
+- **Container**: Both cards in a single interactive container
+- **Stats**: Combined AP/HP totals displayed properly
+
+#### Testing Options
+1. **Real Backend**: Have backend send proper game state with pilot in slot
+2. **Force Test**: Temporarily set `isSlotTarget: true` in DialogManager
+3. **Mock Data**: Add pilot data to demo game state
+
 ## Testing Approach
 
 ### Current Testing Strategy
