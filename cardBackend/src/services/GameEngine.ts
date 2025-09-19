@@ -1641,35 +1641,35 @@ export class GameEngine {
      */
     private static calculateCombinedStats(player: any, slotName: string, unit: UnitZoneCard): { totalAP: number, totalHP: number } {
         // Get base unit stats and apply unit-specific modifications
-        let baseUnitAP = unit.cardData?.ap || 0;
-        let baseUnitHP = unit.cardData?.hp || 0;
+        let currentAP = unit.currentAP|| 0;
+        let currentHP = unit.currentHP|| 0;
         
         // Apply unit's individual effect modifications
         const unitModifyAP = unit.modifyAP || 0;
         const unitModifyHP = unit.modifyHP || 0;
         
-        let totalAP = baseUnitAP + unitModifyAP;
-        let totalHP = baseUnitHP + unitModifyHP;
+        let totalAP = currentAP + unitModifyAP;
+        let totalHP = currentHP + unitModifyHP;
         
-        console.log(`📊 Unit stats - Base: ${baseUnitAP} AP, ${baseUnitHP} HP | Modifications: ${unitModifyAP > 0 ? '+' : ''}${unitModifyAP} AP, ${unitModifyHP > 0 ? '+' : ''}${unitModifyHP} HP | Final: ${totalAP} AP, ${totalHP} HP`);
+        console.log(`📊 Unit stats - Base: ${currentAP} AP, ${currentHP} HP | Modifications: ${unitModifyAP > 0 ? '+' : ''}${unitModifyAP} AP, ${unitModifyHP > 0 ? '+' : ''}${unitModifyHP} HP | Final: ${totalAP} AP, ${totalHP} HP`);
         
         // Check for pilot in the same slot
         const pilot = (player.zones as any)[slotName]?.pilot;
         if (pilot) {
-            const basePilotAP = pilot.cardData?.ap || 0;
-            const basePilotHP = pilot.cardData?.hp || 0;
+            const currentPilotAP = pilot.currentAP || 0;
+            const currentPilotHP = pilot.currentHP || 0;
             
             // Apply pilot's individual effect modifications
             const pilotModifyAP = pilot.modifyAP || 0;
             const pilotModifyHP = pilot.modifyHP || 0;
             
-            const finalPilotAP = basePilotAP + pilotModifyAP;
-            const finalPilotHP = basePilotHP + pilotModifyHP;
+            const finalPilotAP = currentPilotAP + pilotModifyAP;
+            const finalPilotHP = currentPilotHP + pilotModifyHP;
             
             totalAP += finalPilotAP;
             totalHP += finalPilotHP;
             
-            console.log(`👨‍✈️ Pilot stats - Base: ${basePilotAP} AP, ${basePilotHP} HP | Modifications: ${pilotModifyAP > 0 ? '+' : ''}${pilotModifyAP} AP, ${pilotModifyHP > 0 ? '+' : ''}${pilotModifyHP} HP | Final: ${finalPilotAP} AP, ${finalPilotHP} HP`);
+            console.log(`👨‍✈️ Pilot stats - Base: ${currentPilotAP} AP, ${currentPilotHP} HP | Modifications: ${pilotModifyAP > 0 ? '+' : ''}${pilotModifyAP} AP, ${pilotModifyHP > 0 ? '+' : ''}${pilotModifyHP} HP | Final: ${finalPilotAP} AP, ${finalPilotHP} HP`);
             console.log(`🤝 Combined stats: ${totalAP} AP, ${totalHP} HP`);
         } else {
             console.log(`👨‍✈️ No pilot found in ${slotName}`);
