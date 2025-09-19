@@ -20,6 +20,9 @@ import CardInteractionManager from '../managers/CardInteractionManager.js';
 import ResourceManager from '../managers/ResourceManager.js';
 import EventProcessor from '../managers/EventProcessor.js';
 import GameApiService from '../services/GameApiService.js';
+import GameFlowManager from '../managers/GameFlowManager.js';
+import GameSceneUIManager from '../managers/GameSceneUIManager.js';
+import CardPreviewManager from '../managers/CardPreviewManager.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor(config = { key: 'GameScene' }) {
@@ -28,8 +31,6 @@ export default class GameScene extends Phaser.Scene {
     this.gameStateManager = null;
     this.playerHand = [];
     this.shuffleAnimationManager = null;
-    this.previewCard = null;
-    this.previewPilotCard = null;
     this.isTestMode = false;
     this.firstShuffleAnimationComplete = false;
 
@@ -46,6 +47,9 @@ export default class GameScene extends Phaser.Scene {
     this.resourceManager = null;
     this.deployEffectHandler = null;
     this.gameApiService = null;
+    this.gameFlowManager = null;
+    this.uiManager = null;
+    this.cardPreviewManager = null;
 
     // Legacy zone references (will be managed by ZoneManager)
     this.playerZones = {};
@@ -154,6 +158,15 @@ export default class GameScene extends Phaser.Scene {
     // Initialize resource manager
     this.resourceManager = new ResourceManager(this);
     
+    // Initialize game flow manager
+    this.gameFlowManager = new GameFlowManager(this);
+    
+    // Initialize UI manager
+    this.uiManager = new GameSceneUIManager(this);
+    
+    // Initialize card preview manager
+    this.cardPreviewManager = new CardPreviewManager(this);
+    
     // Update legacy zone references for backward compatibility
     this.playerZones = this.zoneManager.getPlayerZones();
     this.opponentZones = this.zoneManager.getOpponentZones();
@@ -206,133 +219,44 @@ export default class GameScene extends Phaser.Scene {
 
 
   createUI() {
-    const { width, height } = this.cameras.main;
-
-    // Initialize ActionButtonManager (includes top UI creation)
-    this.actionButtonManager.initialize();
-
-    // Game info display (first player and opponent hand)
-    this.createGameInfoDisplay();
-    // Set phaseText element for UIMessageManager
-    this.uiMessageManager.setPhaseTextElement(this.phaseText);
-    // Action buttons
-    this.createActionButtons();
-
-    // Hand area
-    this.createHandArea();
+    // Delegate UI creation to UIManager
+    this.uiManager.createAllUI();
   }
 
-  // createTopUI method moved to ActionButtonManager
+  // UI creation methods moved to GameSceneUIManager
 
-  createActionButtons() {
-    const { width, height } = this.cameras.main;
-
-    // End Turn button
-    this.endTurnButton = this.add.image(width - 120, height - 60, 'button');
-    this.endTurnButton.setScale(0.8);
-    this.endTurnButton.setInteractive();
-
-    const endTurnText = this.add.text(width - 120, height - 60, 'End Turn', {
-      fontSize: '14px',
-      fontFamily: 'Arial',
-      fill: '#ffffff'
-    });
-    endTurnText.setOrigin(0.5);
-
-    this.endTurnButton.on('pointerdown', () => {
-      // Click visual effect
-      this.endTurnButton.setTint(0x888888);
-      this.endTurnButton.setScale(0.76);
-      endTurnText.setScale(0.95);
-
-      this.time.delayedCall(100, () => {
-        this.endTurnButton.clearTint();
-        this.endTurnButton.setScale(0.8);
-        endTurnText.setScale(1);
-      });
-
-      this.time.delayedCall(50, () => this.endTurn());
-    });
-
-
+  // UI creation methods moved to GameSceneUIManager
+  
+  updatePhaseIndicator(phase, currentPlayer) {
+    this.uiManager.updatePhaseIndicator(phase, currentPlayer);
   }
 
-  createGameInfoDisplay() {
-    const { width, height } = this.cameras.main;
-
-    // Position the combined display in the top-left area
-    const displayX = 200;
-    const displayY = 150;
-
-    // Create single background for all labels (expanded height for 3 lines)
-    const displayBg = this.add.graphics();
-    displayBg.fillStyle(0x000000, 0.7);
-    displayBg.fillRoundedRect(displayX - 70, displayY - 45, 250, 105, 5);
-    displayBg.lineStyle(2, 0x888888);
-    displayBg.strokeRoundedRect(displayX - 70, displayY - 45, 250, 105, 5);
-
-    // First player label (top line)
-    this.firstPlayerText = this.add.text(displayX - 60, displayY - 28, 'First Player: Unknown', {
-      fontSize: '16px',
-      fontFamily: 'Arial',
-      fill: '#ffffff',
-      align: 'left'
-    });
-    this.firstPlayerText.setOrigin(0, 0.5);
-
-    // Opponent hand label (middle line)
-    this.opponentHandCountText = this.add.text(displayX - 60, displayY - 4, 'Opponent Hand: 0', {
-      fontSize: '16px',
-      fontFamily: 'Arial',
-      fill: '#ffffff',
-      align: 'left'
-    });
-    this.opponentHandCountText.setOrigin(0, 0.5);
-
-    // Current turn label (bottom line)
-    this.currentTurnText = this.add.text(displayX - 60, displayY + 20, 'Current Turn: Unknown', {
-      fontSize: '16px',
-      fontFamily: 'Arial',
-      fill: '#FFD700', // Gold color to highlight turn info
-      align: 'left'
-    });
-    this.currentTurnText.setOrigin(0, 0.5);
-
-
-        // Phase indicator
-    this.phaseText = this.add.text(displayX - 60, displayY + 40, 'MAIN PHASE', {
-      fontSize: '16px',
-      fontFamily: 'Arial Bold',
-      fill: '#ffffff',
-      align: 'center'
-    });
-    this.phaseText.setOrigin(0,0.5);
+  updateCurrentTurnDisplay(currentPlayer) {
+    this.uiManager.updateCurrentTurnDisplay(currentPlayer);
   }
 
-  createOpponentHandDisplay() {
-    // This method is now part of createGameInfoDisplay
-    // Keeping empty method to avoid errors if called elsewhere
+  hideHandArea() {
+    this.uiManager.hideHandArea();
   }
 
-  createFirstPlayerDisplay() {
-    // This method is now part of createGameInfoDisplay
-    // Keeping empty method to avoid errors if called elsewhere
+  showHandArea() {
+    this.uiManager.showHandArea();
   }
 
-  createHandArea() {
-    const { width, height } = this.cameras.main;
+  showRoomStatus(message) {
+    this.uiManager.showRoomStatus(message);
+  }
 
-    // Hand background
-    const handBg = this.add.graphics();
-    handBg.fillStyle(0x000000, 0);
-    //fillRoundedRect(x, y, width, height, [radius])
-    handBg.fillRoundedRect(50, height - 220, width - 100, 170, 10);
+  showErrorMessage(message) {
+    this.uiManager.showErrorMessage(message);
+  }
 
-    this.handContainer = this.add.container(width / 2 - 50, height - 120);
+  showSuccessMessage(message) {
+    this.uiManager.showSuccessMessage(message);
+  }
 
-    // Create action button row above hand area
-    // Initialize dynamic action button system
-    this.actionButtonManager.initialize();
+  setUILoadingState(isLoading) {
+    this.uiManager.setUILoadingState(isLoading);
   }
 
   createTrashIcons() {
@@ -403,13 +327,13 @@ export default class GameScene extends Phaser.Scene {
     this.events.on('card-hover', (card) => {
       // Only show preview for hand cards
       if (this.playerHand.includes(card)) {
-        this.showCardPreview(card.getCardFullData());
+        this.cardPreviewManager.showCardPreview(card.getCardFullData());
       }
     });
 
     this.events.on('card-unhover', (card) => {
       // Hide preview when not hovering
-      this.hideCardPreview();
+      this.cardPreviewManager.hideCardPreview();
     });
 
     // Zone card selection events - consolidated handlers for all slot cards
@@ -442,10 +366,10 @@ export default class GameScene extends Phaser.Scene {
 
       if (card.isInZone) {
         try {
-          this.showSlotCardPreview(card);
+          this.cardPreviewManager.showSlotCardPreview(card);
         } catch (error) {
           console.error('[zone-card-hover] Error in showSlotCardPreview, using fallback:', error);
-          this.showCardPreview(card.getCardData());
+          this.cardPreviewManager.showCardPreview(card.getCardData());
         }
       }
 
@@ -454,7 +378,7 @@ export default class GameScene extends Phaser.Scene {
     this.events.on('zone-card-unhover', (card) => {
       // Hide preview for zone cards (same as hand cards)
       if (card.isInZone) {
-        this.hideSlotCardPreview();
+        this.cardPreviewManager.hideSlotCardPreview();
       }
     });
 
@@ -605,120 +529,14 @@ export default class GameScene extends Phaser.Scene {
   }
 
   updateUI() {
-    const gameState = this.gameStateManager.getGameState();
-    const player = this.gameStateManager.getPlayer();
-    const opponent = this.gameStateManager.getOpponent();
-    console.log('card data : opponent', opponent);
-    const opponentData = this.gameStateManager.getPlayer(opponent);
-
-
+    // Update managers first
     this.baseAndShieldManager.updateAll();
     this.energyAreaManager.updateEnergyAreas();
     this.slotAreaManager.updateSlotAreas();
-    
-    // Update card interaction states based on current turn
     this.updateCardInteractionStates();
 
-    if (this.isSetScenoria) {
-      this.isSetScenoria = false;
-      this.updatePlayerHand();
-    }
-
-
-    const unprocessedEvent = this.gameStateManager.getUnprocessGameEvents();
-    if (unprocessedEvent.length > 0) {
-      // Process events one by one using GameStateManager queue logic
-      this.gameStateManager.processEventQueue(
-        (event) => this.handleSingleEvent(event),
-        () => {
-          console.log('[GameScene] All events processed, continuing with game flow');
-          this.updateUI();
-        }
-      );
-      return;
-    }
-
-    // Process all processing queue events using EventProcessor
-    const eventProcessed = this.eventProcessor.processAllEvents();
-    if (eventProcessed) {
-      console.log('[GameScene] Event processed by EventProcessor, stopping UI update');
-      return; // Stop UI update if a blocking event was processed
-    }
-
-    // Debug: Log current phase and animation state
-    console.log('Online mode - phase:', gameState.gameEnv.phase, 'shuffleAnimationPlayed:', this.shuffleAnimationPlayed);
-
-    if (this.isTestMode) {
-      if (gameState.gameEnv.phase === 'MAIN_PHASE') {
-        this.displayGameInfo();
-        this.showDeckStacks();
-        // Show hand area and update game state after shuffle animation completes
-        this.showHandArea();
-      }
-    }
-
-    // Check for READY_PHASE and trigger shuffle animation
-    if (gameState.gameEnv.phase === 'REDRAW_PHASE' && !this.shuffleAnimationPlayed) {
-      console.log('READY_PHASE detected - triggering shuffle animation and redraw dialog');
-      console.log('Game state during READY_PHASE:', JSON.stringify(gameState, null, 2));
-      this.shuffleAnimationPlayed = true;
-      this.showRoomStatus('Both players joined - hands dealt!');
-      this.displayGameInfo();
-
-      // Load card resources before shuffle animation
-      this.loadCardResources().then(() => {
-        console.log('[GameScene] Card resources loaded, starting shuffle animation');
-
-        if (this.firstShuffleAnimationComplete == false) {
-          this.playShuffleDeckAnimation().then(() => {
-            console.log('Online mode - shuffle animation completed, selecting leader cards...');
-            this.firstShuffleAnimationComplete = true
-            this.updatePlayerHand();
-            this.showRedrawDialog();
-          });
-        }
-      }).catch((error) => {
-        console.warn('[GameScene] Failed to load card resources, proceeding with fallback:', error);
-
-        // Continue with shuffle animation even if resource loading fails
-        this.playShuffleDeckAnimation().then(() => {
-          console.log('Online mode - shuffle animation completed (with resource loading fallback), selecting leader cards...');
-          // Leader card selection removed
-          this.updatePlayerHand();
-        });
-      });
-    }
-
-    if (this.gameStateManager.getPlayer().confirmIsRedraw &&
-      this.firstShuffleAnimationComplete) {
-      this.updatePlayerHand();
-    }
-
-
-
-    // Debug logging for troubleshooting
-    console.log('updateUI - phase:', gameState.gameEnv.phase, 'shuffleAnimationPlayed:', this.shuffleAnimationPlayed);
-
-    // Update phase indicator with current player info
-    const currentPhase = gameState.gameEnv.phase;
-    const currentPlayer = gameState.gameEnv.currentPlayer;
-    if (currentPhase) {
-      this.updatePhaseIndicator(currentPhase, currentPlayer);
-    }
-
-    // Update current turn display
-    this.updateCurrentTurnDisplay(currentPlayer);
-
-
-    // Update opponent hand count display
-    if (this.opponentHandCountText) {
-      const opponentHandCount = opponentData && opponentData.deck?.hand ? opponentData.deck.hand.length : 0;
-      this.opponentHandCountText.setText(`Opponent Hand: ${opponentHandCount}`);
-    }
-
-    // Update turn indicator
-    const isCurrentPlayer = this.gameStateManager.isCurrentPlayer();
-    this.endTurnButton.setTint(isCurrentPlayer ? 0xffffff : 0x888888);
+    // Delegate complex game flow logic to GameFlowManager
+    this.gameFlowManager.updateGameFlow();
   }
 
   canPlaceCardInZone(card, zoneType) {
@@ -980,61 +798,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   showCardPreview(cardData) {
-    // Remove existing preview card if any
-    this.hideCardPreview();
-    console.log("showCardPreview111", JSON.stringify(cardData));
-
-    if (!this.cardPreviewZone || !cardData) {
-      return;
-    }
-
-    // Check if this is slot preview data (unit + pilot combination)
-    if (cardData.isSlotPreview) {
-      if (cardData.pilot) {
-        console.log("Showing slot preview with pilot:", cardData.cardData?.id, "+", cardData.pilot.cardData?.id, "for slot:", cardData.slotName);
-        // Create mock Card objects to reuse existing showDualCardPreview method
-        const mockUnitCard = {
-            cardData: cardData.cardData,
-            getCardFullData: () => ({ cardData: cardData.cardData })  // ✅ Added missing method
-        };
-        const mockPilotCard = {
-            cardData: cardData.pilot.cardData,
-            getCardFullData: () => ({ cardData: cardData.pilot.cardData })  // ✅ Added missing method
-        };
-        this.showDualCardPreview(mockUnitCard, mockPilotCard);
-      } else {
-        console.log("Showing slot preview (unit only):", cardData.cardData?.id, "for slot:", cardData.slotName);
-        // Use the regular single card preview logic for unit-only slots
-        const displayCardData = cardData.cardData;
-        this.previewCard = this._createPreviewCard(displayCardData, this.cardPreviewZone.x, this.cardPreviewZone.y, 2000);
-        
-        // Update total labels for unit-only slot preview
-        if (this.previewCard && this.previewCard.updateTotalLabels) {
-          // Create mock unit card for calculation
-          const mockUnitCard = {
-            fullCardData: cardData
-          };
-          
-          // Calculate total stats (unit only, no pilot)
-          const { totalAP, totalHP } = this.slotAreaManager ? 
-            this.slotAreaManager.calculateTotalInSlot(mockUnitCard, null) : 
-            { totalAP: 0, totalHP: 0 };
-          
-          this.previewCard.updateTotalLabels(totalAP, totalHP);
-          console.log(`[GameScene] Updated unit-only slot preview total labels: AP=${totalAP}, HP=${totalHP}`);
-        }
-        
-        // Show total labels since this is a slot preview
-        if (this.previewCard.powerOverlay && this.previewCard.powerOverlay.setTotalLabelsVisibility) {
-          this.previewCard.powerOverlay.setTotalLabelsVisibility('slot1');
-        }
-      }
-      return;
-    }
-
-    // Regular single card preview
-    const displayCardData = cardData;
-    this.previewCard = this._createPreviewCard(displayCardData, this.cardPreviewZone.x, this.cardPreviewZone.y, 2000);
+    this.cardPreviewManager.showCardPreview(cardData);
   }
 
   /**
@@ -1045,228 +809,68 @@ export default class GameScene extends Phaser.Scene {
    * @param {number} depth - Z depth for layering
    * @returns {Card} The created preview card component
    */
-  _createPreviewCard(cardData, x, y, depth = 2000) {
-    const previewCard = new Card(this, x, y, cardData, {
-      scale: 3.5,
-      gameStateManager: this.gameStateManager,
-      usePreview: false,
-      interactive: false
-    });
-
-    previewCard.setDepth(depth);
-    
-    // Show total labels on preview cards (single card preview)
-    if (previewCard.powerOverlay && previewCard.powerOverlay.setTotalLabelsVisibility) {
-      previewCard.powerOverlay.setTotalLabelsVisibility('slot1'); // Show total labels
-      
-      // Update total stats to current values if available
-      if (previewCard.updateTotalLabels && cardData && this.slotAreaManager) {
-        const totalAP = this.slotAreaManager.calculateTotalAP(cardData);
-        const totalHP = this.slotAreaManager.calculateTotalHP(cardData);
-        previewCard.updateTotalLabels(totalAP, totalHP);
-      }
-      
-      console.log('[GameScene] Showing total labels on single preview card');
-    }
-    
-    return previewCard;
-  }
+  // _createPreviewCard method moved to CardPreviewManager
 
   hideCardPreview() {
-    // Hide main preview card
-    if (this.previewCard) {
-      this.previewCard.destroy();
-      this.previewCard = null;
-    }
-
-    // Also hide pilot preview card if it exists (for slot previews)
-    if (this.previewPilotCard) {
-      this.previewPilotCard.destroy();
-      this.previewPilotCard = null;
-    }
+    this.cardPreviewManager.hideCardPreview();
   }
 
-  /**
-   * Show slot preview with unit + pilot combination from selection dialog
-   * @param {Object} slotPreviewData - Slot preview data with unit and pilot info
-   */
-  showSlotPreviewWithPilot(slotPreviewData) {
-    if (!this.cardPreviewZone) return;
-
-    const unitCardData = slotPreviewData.cardData;
-    const pilotCardData = slotPreviewData.pilot.cardData;
-
-    // Create unit preview (on top)
-    this.previewCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y, unitCardData, {
-      scale: 3.5,
-      gameStateManager: this.gameStateManager,
-      usePreview: false,
-      handleOutside: true // Disable selection for preview cards
-    });
-    this.previewCard.setDepth(2000);
-
-    // Create pilot preview (145px below unit - same as existing dual preview)
-    this.previewPilotCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y + 145, pilotCardData, {
-      scale: 3.5,
-      gameStateManager: this.gameStateManager,
-      usePreview: false,
-      handleOutside: true // Disable selection for preview cards
-    });
-    this.previewPilotCard.setDepth(1999);
-
-    // Apply total labels visibility rule: only pilot shows totals when both present
-    if (this.previewCard.powerOverlay && this.previewCard.powerOverlay.setTotalLabelsVisibility) {
-      this.previewCard.powerOverlay.setTotalLabelsVisibility('hand'); // Hide unit total labels
-      console.log('[GameScene] Hiding total labels on unit preview with pilot (selection dialog)');
-    }
-    
-    if (this.previewPilotCard.powerOverlay && this.previewPilotCard.powerOverlay.setTotalLabelsVisibility) {
-      this.previewPilotCard.powerOverlay.setTotalLabelsVisibility('slot1'); // Show pilot total labels
-      
-      // Update pilot total stats to current values
-      if (this.previewPilotCard.powerOverlay.updateTotalStats && this.slotAreaManager) {
-        const totalAP = this.slotAreaManager.calculateTotalAP(pilotCardData);
-        const totalHP = this.slotAreaManager.calculateTotalHP(pilotCardData);
-        this.previewPilotCard.powerOverlay.updateTotalStats(totalAP, totalHP);
-      }
-      
-      console.log('[GameScene] Showing total labels on pilot preview (selection dialog)');
-    }
-
-    console.log('Showing slot preview from dialog:', unitCardData?.id, '+', pilotCardData?.id, 'for slot:', slotPreviewData.slotName);
-  }
+  // showSlotPreviewWithPilot method moved to CardPreviewManager
 
   /**
    * Show enhanced preview for slot cards - displays both unit and pilot if present
    * @param {Card} hoveredCard - The card being hovered over
    */
-  showSlotCardPreview(hoveredCard) {
-    // First, hide any existing preview
-    this.hideSlotCardPreview();
-
-    if (!this.cardPreviewZone || !hoveredCard) {
-      console.warn('[showSlotCardPreview] Missing cardPreviewZone or hoveredCard');
-      return;
-    }
-
-    console.log('[showSlotCardPreview] Hovering over card:', hoveredCard.cardData?.id, 'cardTypeInSlot:', hoveredCard.cardTypeInSlot, 'isInZone:', hoveredCard.isInZone);
-
-    // Check if SlotAreaManager exists
-    if (!this.slotAreaManager) {
-      console.warn('[showSlotCardPreview] SlotAreaManager not available, using fallback preview');
-      this.showCardPreview(hoveredCard.getCardData());
-      return;
-    }
-
-    // Determine if this is a slot card and which slot/player it belongs to
-    const slotInfo = this.getSlotInfoFromCard(hoveredCard);
-    console.log('[showSlotCardPreview] Slot info:', slotInfo);
-
-    if (!slotInfo) {
-      // Not a slot card or couldn't detect slot, use regular preview
-      console.log('[showSlotCardPreview] No slot info found, using fallback preview');
-      this.showCardPreview(hoveredCard.getCardFullData());  // Use full data with current stats
-      return;
-    }
-
-    // Get both unit and pilot cards from the slot
-    const slotCards = this.slotAreaManager.getSlotCards(slotInfo.playerType, slotInfo.slotName);
-    console.log('[showSlotCardPreview] Slot cards:', slotInfo.slotName, slotCards);
-
-    // Determine which card is being hovered over
-    const isHoveringUnit = slotCards.unit === hoveredCard;
-    const isHoveringPilot = slotCards.pilot === hoveredCard;
-
-    console.log('[showSlotCardPreview] Hover detection:', { isHoveringUnit, isHoveringPilot });
-
-    if (slotCards.unit && slotCards.pilot) {
-      if (isHoveringUnit) {
-        // Hovering over unit card - show dual preview (unit + pilot)
-        console.log('[showSlotCardPreview] Hovering over unit - showing dual preview');
-        this.showDualCardPreview(slotCards.unit, slotCards.pilot);
-      } else if (isHoveringPilot) {
-        // Hovering over pilot card - show only pilot
-        console.log('[showSlotCardPreview] Hovering over pilot - showing pilot only');
-        this.showCardPreview(slotCards.pilot.getCardFullData());  // Use full data with current stats
-      } else {
-        // Fallback if detection failed
-        console.warn('[showSlotCardPreview] Could not determine hovered card type, using fallback');
-        this.showCardPreview(hoveredCard.getCardFullData());  // Use full data with current stats
-      }
-    } else if (slotCards.unit || slotCards.pilot) {
-      // Single card in slot
-      const singleCard = slotCards.unit || slotCards.pilot;
-      console.log('[showSlotCardPreview] Showing single card preview for:', singleCard.cardData?.id);
-      this.showCardPreview(singleCard.getCardFullData());  // Use full data with current stats
-    } else {
-      console.warn('[showSlotCardPreview] No cards found in slot, using fallback');
-      this.showCardPreview(hoveredCard.getCardFullData());  // Use full data with current stats
-    }
-  }
+  // showSlotCardPreview method moved to CardPreviewManager
 
   /**
    * Show dual card preview with unit on top and pilot 25px below
    * @param {Card} unitCard - The unit card
    * @param {Card} pilotCard - The pilot card  
    */
-  showDualCardPreview(unitCard, pilotCard) {
-    if (!this.cardPreviewZone) return;
-
-    // Create unit preview (on top) - Use full card data with current stats
-    this.previewCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y, unitCard.getCardFullData(), {
-      scale: 3.5,
-      gameStateManager: this.gameStateManager,
-      usePreview: false,
-      handleOutside: true // Disable selection for preview cards
-    });
-    this.previewCard.setDepth(2000);
-
-    // Create pilot preview (25px below unit) - Use full card data with current stats  
-    this.previewPilotCard = new Card(this, this.cardPreviewZone.x, this.cardPreviewZone.y + 145, pilotCard.getCardFullData(), {
-      scale: 3.5,
-      gameStateManager: this.gameStateManager,
-      usePreview: false,
-      handleOutside: true // Disable selection for preview cards
-    });
-    this.previewPilotCard.setDepth(1999); // Slightly behind unit
-
-    // Apply total labels visibility rule: only pilot shows totals when both present
-    if (this.previewCard.powerOverlay && this.previewCard.powerOverlay.setTotalLabelsVisibility) {
-      this.previewCard.powerOverlay.setTotalLabelsVisibility('hand'); // Hide unit total labels
-      console.log('[GameScene] Hiding total labels on unit preview (pilot present)');
-    }
-    
-    if (this.previewPilotCard.powerOverlay && this.previewPilotCard.powerOverlay.setTotalLabelsVisibility) {
-      this.previewPilotCard.powerOverlay.setTotalLabelsVisibility('slot1'); // Show pilot total labels
-      
-      // Update pilot total stats to current values (representing combined unit+pilot stats)
-      if (this.previewPilotCard.powerOverlay.updateTotalStats) {
-        const { totalAP, totalHP } = this.slotAreaManager ? 
-          this.slotAreaManager.calculateTotalInSlot(unitCard, pilotCard) : 
-          { totalAP: 0, totalHP: 0 };
-        this.previewPilotCard.powerOverlay.updateTotalStats(totalAP, totalHP);
-      }
-      
-      console.log('[GameScene] Showing total labels on pilot preview');
-    }
-
-    console.log('Showing dual preview:', unitCard.cardData?.id, '+', pilotCard.cardData?.id);
-  }
+  // showDualCardPreview method moved to CardPreviewManager
 
   /**
    * Hide slot card preview (includes dual preview)
    */
   hideSlotCardPreview() {
-    // Hide main preview card
-    if (this.previewCard) {
-      this.previewCard.destroy();
-      this.previewCard = null;
-    }
+    this.cardPreviewManager.hideSlotCardPreview();
+  }
 
-    // Hide pilot preview card
-    if (this.previewPilotCard) {
-      this.previewPilotCard.destroy();
-      this.previewPilotCard = null;
+  showSlotPreviewWithPilot(slotPreviewData) {
+    this.cardPreviewManager.showSlotPreviewWithPilot(slotPreviewData);
+  }
+
+  showDualCardPreview(unitCard, pilotCard) {
+    this.cardPreviewManager.showDualCardPreview(unitCard, pilotCard);
+  }
+
+  _createPreviewCard(cardData, x, y, depth = 2000) {
+    return this.cardPreviewManager._createPreviewCard(cardData, x, y, depth);
+  }
+
+  getSlotInfoFromCard(card) {
+    return this.cardPreviewManager.getSlotInfoFromCard(card);
+  }
+
+  // Getter properties to maintain compatibility with existing code
+  get previewCard() {
+    return this.cardPreviewManager ? this.cardPreviewManager.previewCard : null;
+  }
+
+  set previewCard(value) {
+    if (this.cardPreviewManager) {
+      this.cardPreviewManager.previewCard = value;
+    }
+  }
+
+  get previewPilotCard() {
+    return this.cardPreviewManager ? this.cardPreviewManager.previewPilotCard : null;
+  }
+
+  set previewPilotCard(value) {
+    if (this.cardPreviewManager) {
+      this.cardPreviewManager.previewPilotCard = value;
     }
   }
 
@@ -1582,7 +1186,7 @@ export default class GameScene extends Phaser.Scene {
     console.log('GameScene: Showing redraw dialog via DialogManager');
 
     // Handle special depth requirements for redraw dialog (bring cards to front)
-    this.setCardsAboveOverlay();
+    this.cardPreviewManager.setCardsAboveOverlay();
 
     // Use DialogManager for consistent dialog handling
     return this.dialogManager.showConfirmationDialog(
@@ -1603,64 +1207,13 @@ export default class GameScene extends Phaser.Scene {
    * Set cards above overlay for redraw dialog visibility
    */
   setCardsAboveOverlay() {
-    // Bring hand cards to front (above the overlay)
-    this.playerHand.forEach(card => {
-      card.setDepth(1001); // Hand cards above overlay
-    });
-
-    // Also bring the hand container to front if it exists
-    if (this.handContainer) {
-      this.handContainer.setDepth(1001);
-    }
-
-    // Bring all zone cards to front (above the overlay)
-    console.log('DEBUG: Setting zone card depths...');
-
-    // Handle player zones
-    if (this.playerZones) {
-      Object.entries(this.playerZones).forEach(([zoneName, zone]) => {
-        if (zone && zone.card) {
-          console.log(`DEBUG: Player ${zoneName} card found, setting depth to 1001`);
-          zone.card.setDepth(1001);
-          console.log(`DEBUG: Player ${zoneName} card depth is now:`, zone.card.depth);
-        }
-      });
-    }
-
-    // Handle opponent zones  
-    if (this.opponentZones) {
-      Object.entries(this.opponentZones).forEach(([zoneName, zone]) => {
-        if (zone && zone.card) {
-          console.log(`DEBUG: Opponent ${zoneName} card found, setting depth to 1001`);
-          zone.card.setDepth(1001);
-          console.log(`DEBUG: Opponent ${zoneName} card depth is now:`, zone.card.depth);
-        }
-      });
-    }
+    this.cardPreviewManager.setCardsAboveOverlay();
   }
 
 
 
   highlightHandCards() {
-    // Add a pulsing effect to all hand cards (no tint overlay)
-    this.playerHand.forEach(card => {
-      // Create a pulsing animation on the card container
-      this.tweens.add({
-        targets: card,
-        scaleX: card.scaleX * 1.1,
-        scaleY: card.scaleY * 1.1,
-        duration: 800,
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut'
-      });
-
-      // Store reference to remove later
-      if (!card.redrawHighlight) {
-        card.redrawHighlight = true;
-      }
-    });
-
+    this.cardPreviewManager.highlightHandCards();
   }
 
   highlightLeaderCards() {
@@ -1670,19 +1223,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   removeHandCardHighlight() {
-    // Remove highlight effects from hand cards
-    this.playerHand.forEach(card => {
-      if (card.redrawHighlight) {
-        // Stop pulsing animation and reset scale
-        this.tweens.killTweensOf(card);
-        card.setScale(1.1, 1.1); // Reset to original scale
-
-        card.redrawHighlight = false;
-      }
-    });
-
-    // Also remove leader card highlights
-    this.removeLeaderCardHighlight();
+    this.cardPreviewManager.removeHandCardHighlight();
   }
 
   removeLeaderCardHighlight() {
@@ -1696,7 +1237,7 @@ export default class GameScene extends Phaser.Scene {
     console.log('GameScene: Handling redraw choice:', wantRedraw);
 
     // Remove hand card highlighting
-    this.removeHandCardHighlight();
+    this.cardPreviewManager.removeHandCardHighlight();
 
     // Remove leader card highlighting
     this.removeLeaderCardHighlight();
@@ -1800,6 +1341,12 @@ export default class GameScene extends Phaser.Scene {
     if (this.slotAreaManager) {
       this.slotAreaManager.destroy();
       this.slotAreaManager = null;
+    }
+
+    // Clean up new managers
+    if (this.cardPreviewManager) {
+      this.cardPreviewManager.destroy();
+      this.cardPreviewManager = null;
     }
 
     // Clean up action button manager
