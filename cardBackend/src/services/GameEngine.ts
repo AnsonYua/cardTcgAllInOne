@@ -13,8 +13,7 @@ import { DeployEffectManager } from './DeployEffectManager';
 import { PairingEffect } from './PairingEffect';
 import { GameValidator } from './GameValidator';
 import { GameEventFactory } from './GameEventFactory';
-import { UnitZoneCard } from '../models/CardSystem';
-import { PilotZoneCard } from '../models/CardSystem';
+import { UnitZoneCard, PilotZoneCard, CardDatabaseManager } from '../models/CardSystem';
 import * as fs from 'fs';
 import * as path from 'path';
 const { CardEffect } = require('./CardEffect');
@@ -25,13 +24,7 @@ export interface ExecutionResult {
 }
 
 export class GameEngine {
-    private static cardDatabase: any = null;
     // Notification managers created per call - no instance storage
-
-    // Static initialization - load card database on first use
-    static {
-        GameEngine.ensureCardDatabaseLoaded();
-    }
 
     /**
      * Get or create notification manager for this game (static version)
@@ -41,34 +34,7 @@ export class GameEngine {
         return new GameNotificationManager(gameEnv);
     }
 
-    /**
-     * Load card database into global storage for efficient access (static version)
-     */
-    private static ensureCardDatabaseLoaded(): void {
-        if (!GameEngine.cardDatabase) {
-            try {
-                const cardDataPath = path.join(__dirname, '../data/st01Card.json');
-                const cardFileData = JSON.parse(fs.readFileSync(cardDataPath, 'utf8'));
-                // Extract cards from nested structure
-                GameEngine.cardDatabase = cardFileData.cards || cardFileData;
-                console.log('📚 Card database loaded into global storage');
-            } catch (error) {
-                console.error('❌ Failed to load card database:', error);
-                GameEngine.cardDatabase = {};
-            }
-        }
-    }
 
-    /**
-     * Get card details from global card database
-     */
-    public static getCardDetails(cardId: string): any {
-        if (!GameEngine.cardDatabase) {
-            console.warn('⚠️ Card database not loaded');
-            return null;
-        }
-        return GameEngine.cardDatabase[cardId] || null;
-    }
 
 
 
@@ -365,8 +331,8 @@ export class GameEngine {
             const deckConfigPath = path.join(__dirname, '../data/gcgdecks.json');
             const deckConfig = JSON.parse(fs.readFileSync(deckConfigPath, 'utf8'));
 
-            // Card data is now available via global cardDatabase
-            // No need to reload - already loaded in constructor
+            // Card data is now available via CardDatabaseManager
+            // No need to reload - already loaded in CardSystem
 
             // Get player IDs
             const playerId1 = gameEnv.playerId_1!;
@@ -1273,7 +1239,7 @@ export class GameEngine {
                 const playerId = affectedPlayers[i] || affectedPlayers[0]; // Use corresponding player or first one
 
                 // Get card data to determine healing effects
-                const cardData = GameEngine.getCardDetails(cardId);
+                const cardData = CardDatabaseManager.getCardDetails(cardId);
                 if (!cardData) {
                     console.log(`❌ Could not find card data for ${cardId}`);
                     continue;

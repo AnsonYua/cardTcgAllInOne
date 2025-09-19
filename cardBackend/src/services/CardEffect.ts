@@ -3,7 +3,7 @@
 
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase } from '../models/GameEnums';
-import { ZoneCard } from '../models/CardSystem';
+import { ZoneCard, CardDatabaseManager } from '../models/CardSystem';
 import { EffectProcessingResult } from '../models/ContinuousEffects';
 import { SLOT_ZONES } from '../config/gameConstants';
 
@@ -114,8 +114,7 @@ export class CardEffect {
      */
     private static getStaticCardData(cardId: string): any {
         try {
-            const GameEngine = require('./GameEngine');
-            return GameEngine.GameEngine.getCardDetails(cardId);
+            return CardDatabaseManager.getCardDetails(cardId);
         } catch (error) {
             console.error(`❌ Error loading card data for ${cardId}:`, error);
             return null;
@@ -928,8 +927,7 @@ export class CardEffect {
      */
     private getCardData(cardId: string): any {
         try {
-            const GameEngine = require('./GameEngine');
-            return GameEngine.GameEngine.getCardDetails(cardId);
+            return CardDatabaseManager.getCardDetails(cardId);
         } catch (error) {
             console.error(`❌ Error loading card data for ${cardId}:`, error);
             return null;

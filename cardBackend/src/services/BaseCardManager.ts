@@ -2,7 +2,7 @@
 // Base card management system
 
 import { GameEnvironment } from '../models/GameEnvironment';
-import { BaseCard, createZoneCard } from '../models/CardSystem';
+import { BaseCard, createZoneCard, CardDatabaseManager } from '../models/CardSystem';
 import { GameEngine } from './GameEngine';
 
 export class BaseCardManager {
@@ -20,7 +20,7 @@ export class BaseCardManager {
 
             // Try to load base card data from database, fallback to default
             const baseCardId = "base_default";
-            const fullCardData = GameEngine.getCardDetails(baseCardId);
+            const fullCardData = CardDatabaseManager.getCardDetails(baseCardId);
             
             let baseCard: BaseCard;
             baseCard = createZoneCard(

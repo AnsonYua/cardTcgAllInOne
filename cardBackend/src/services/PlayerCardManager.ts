@@ -3,7 +3,7 @@
 
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GameEngine } from './GameEngine';
-import { createZoneCard, UnitZoneCard, PilotZoneCard, BaseCard } from '../models/CardSystem';
+import { createZoneCard, UnitZoneCard, PilotZoneCard, BaseCard, CardDatabaseManager } from '../models/CardSystem';
 import { SLOT_ZONES } from '../config/gameConstants';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -44,7 +44,7 @@ export class PlayerCardManager {
             const cardId = cardUID.split('_')[0];
 
             // Load full card data from card database
-            const fullCardData = GameEngine.getCardDetails(cardId);
+            const fullCardData = CardDatabaseManager.getCardDetails(cardId);
             if (!fullCardData) {
                 return {
                     success: false,
@@ -104,7 +104,7 @@ export class PlayerCardManager {
             const cardId = cardUID.split('_')[0];
 
             // Load full card data from card database
-            const fullCardData = GameEngine.getCardDetails(cardId);
+            const fullCardData = CardDatabaseManager.getCardDetails(cardId);
             if (!fullCardData) {
                 return {
                     success: false,
@@ -733,8 +733,8 @@ export class PlayerCardManager {
         // Extract cardId from cardUID (remove UUID suffix)
         const cardId = cardUID.split('_')[0];
         
-        // Get card data from GameEngine's card database
-        const cardData = GameEngine.getCardDetails(cardId);
+        // Get card data from card database
+        const cardData = CardDatabaseManager.getCardDetails(cardId);
         if (!cardData) {
             console.warn(`⚠️ Card data not found for ${cardId}`);
             return [];

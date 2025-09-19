@@ -401,8 +401,8 @@ export class StateBasedActionEngine {
      */
     private getCardData(cardId: string): any {
         try {
-            const GameEngine = require('../GameEngine');
-            return GameEngine.GameEngine.getCardDetails(cardId);
+            const { CardDatabaseManager } = require('../../models/CardSystem');
+            return CardDatabaseManager.getCardDetails(cardId);
         } catch (error) {
             console.error(`❌ Error loading card data for ${cardId}:`, error);
             return null;

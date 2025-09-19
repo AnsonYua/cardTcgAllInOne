@@ -15,7 +15,8 @@ import {
     isPilotZoneCard,
     isCommandZoneCard,
     isBaseCard,
-    isEnergyZoneCard
+    isEnergyZoneCard,
+    CardDatabaseManager
 } from './CardSystem';
 import { GameEngine } from '../services/GameEngine';
 
@@ -95,7 +96,7 @@ export class PlayerDeck {
     get hand(): HandCard[] {
         return this._handUids.map(cardUid => {
             const cardId = cardUid.split('_')[0];
-            const cardData = GameEngine.getCardDetails(cardId);
+            const cardData = CardDatabaseManager.getCardDetails(cardId);
             
             return {
                 cardUid,

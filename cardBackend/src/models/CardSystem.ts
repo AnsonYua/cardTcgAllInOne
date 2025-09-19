@@ -1,6 +1,9 @@
 // src/models/CardSystem.ts
 // Card system interfaces and utilities for custom trading card game
 
+import * as fs from 'fs';
+import * as path from 'path';
+
 
 // ============ CARD DATA INTERFACES ============
 
@@ -340,4 +343,125 @@ export interface CardMapping {
 export interface PlayerDeckData {
     hand: string[];
     mainDeck: string[];
+}
+
+// ============ CARD DATABASE MANAGEMENT ============
+
+/**
+ * CardDatabaseManager handles all card database operations
+ * Provides centralized access to card data and database management
+ */
+export class CardDatabaseManager {
+    private static cardDatabase: any = null;
+
+    // Static initialization - load card database on first use
+    static {
+        CardDatabaseManager.ensureCardDatabaseLoaded();
+    }
+
+    /**
+     * Load card database into global storage for efficient access
+     */
+    private static ensureCardDatabaseLoaded(): void {
+        if (!CardDatabaseManager.cardDatabase) {
+            try {
+                const cardDataPath = path.join(__dirname, '../data/st01Card.json');
+                const cardFileData = JSON.parse(fs.readFileSync(cardDataPath, 'utf8'));
+                // Extract cards from nested structure
+                CardDatabaseManager.cardDatabase = cardFileData.cards || cardFileData;
+                console.log('📚 Card database loaded into global storage');
+            } catch (error) {
+                console.error('❌ Failed to load card database:', error);
+                CardDatabaseManager.cardDatabase = {};
+            }
+        }
+    }
+
+    /**
+     * Get card details from global card database
+     */
+    public static getCardDetails(cardId: string): any {
+        if (!CardDatabaseManager.cardDatabase) {
+            console.warn('⚠️ Card database not loaded');
+            return null;
+        }
+        return CardDatabaseManager.cardDatabase[cardId] || null;
+    }
+
+    /**
+     * Check if card exists in database
+     */
+    public static cardExists(cardId: string): boolean {
+        return !!CardDatabaseManager.getCardDetails(cardId);
+    }
+
+    /**
+     * Get all cards from database
+     */
+    public static getAllCards(): any {
+        if (!CardDatabaseManager.cardDatabase) {
+            console.warn('⚠️ Card database not loaded');
+            return {};
+        }
+        return CardDatabaseManager.cardDatabase;
+    }
+
+    /**
+     * Get cards by type
+     */
+    public static getCardsByType(cardType: string): any[] {
+        const allCards = CardDatabaseManager.getAllCards();
+        return Object.values(allCards).filter((card: any) => card.cardType === cardType);
+    }
+
+    /**
+     * Search cards by criteria
+     */
+    public static searchCards(criteria: {
+        cardType?: string;
+        name?: string;
+        traits?: string[];
+        ap?: number;
+        hp?: number;
+    }): any[] {
+        const allCards = CardDatabaseManager.getAllCards();
+        return Object.values(allCards).filter((card: any) => {
+            if (criteria.cardType && card.cardType !== criteria.cardType) return false;
+            if (criteria.name && !card.name?.includes(criteria.name)) return false;
+            if (criteria.traits && !criteria.traits.some(trait => card.traits?.includes(trait))) return false;
+            if (criteria.ap !== undefined && card.ap !== criteria.ap) return false;
+            if (criteria.hp !== undefined && card.hp !== criteria.hp) return false;
+            return true;
+        });
+    }
+
+    /**
+     * Reload card database (useful for testing or dynamic updates)
+     */
+    public static reloadDatabase(): void {
+        CardDatabaseManager.cardDatabase = null;
+        CardDatabaseManager.ensureCardDatabaseLoaded();
+    }
+
+    /**
+     * Get database statistics
+     */
+    public static getDatabaseStats(): {
+        totalCards: number;
+        cardTypes: { [type: string]: number };
+    } {
+        const allCards = CardDatabaseManager.getAllCards();
+        const cardArray = Object.values(allCards);
+        
+        const cardTypes: { [type: string]: number } = {};
+        cardArray.forEach((card: any) => {
+            const type = card.cardType || 'unknown';
+            cardTypes[type] = (cardTypes[type] || 0) + 1;
+        });
+
+        return {
+            totalCards: cardArray.length,
+            cardTypes
+        };
+    }
 }

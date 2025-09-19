@@ -2,7 +2,7 @@
 // Shield card management system
 
 import { GameEnvironment } from '../models/GameEnvironment';
-import { ShieldCard, createZoneCard } from '../models/CardSystem';
+import { ShieldCard, createZoneCard, CardDatabaseManager } from '../models/CardSystem';
 import { GameEngine } from './GameEngine';
 
 export class ShieldCardManager {
@@ -36,7 +36,7 @@ export class ShieldCardManager {
                 const cardId = cardUid.split('_')[0]; // Extract base card ID
                 
                 // Load full card data from card database
-                const fullCardData = GameEngine.getCardDetails(cardId);
+                const fullCardData = CardDatabaseManager.getCardDetails(cardId);
                 const originalCardType = fullCardData?.cardType; // Preserve original cardType
                 const shieldCard = createZoneCard(
                         cardUid,
