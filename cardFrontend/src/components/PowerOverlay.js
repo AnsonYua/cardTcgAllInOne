@@ -206,6 +206,10 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     // Set initial depth to ensure it appears above card
     this.setDepth(10);
     
+    // Initially hide total labels (only show in slots)
+    this.totalApText.setVisible(false);
+    this.totalHpText.setVisible(false);
+    
     // Initially hidden
     this.setVisible(false);
   }
@@ -265,6 +269,34 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     this.hpText.setText(hp.toString());
     this.updateHPStyling();
     console.log(`update ap and hp 11222 ${hp} (original: ${originalHP})`);
+  }
+  
+  /**
+   * Update Total AP value (only visible in slot zones)
+   * @param {number} totalAP - Total AP value including effects
+   */
+  updateTotalAP(totalAP) {
+    this.totalApText.setText(totalAP.toString());
+    console.log(`[PowerOverlay] Total AP updated: ${totalAP}`);
+  }
+
+  /**
+   * Update Total HP value (only visible in slot zones)
+   * @param {number} totalHP - Total HP value including effects
+   */
+  updateTotalHP(totalHP) {
+    this.totalHpText.setText(totalHP.toString());
+    console.log(`[PowerOverlay] Total HP updated: ${totalHP}`);
+  }
+  
+  /**
+   * Update both total values at once
+   * @param {number} totalAP - Total AP value including effects
+   * @param {number} totalHP - Total HP value including effects
+   */
+  updateTotalStats(totalAP, totalHP) {
+    this.updateTotalAP(totalAP);
+    this.updateTotalHP(totalHP);
   }
   
   /**
@@ -409,6 +441,19 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     } else {
       this.hide();
     }
+  }
+  
+  /**
+   * Set visibility of total labels based on card location
+   * Total labels (totalApText, totalHpText) only show when card is in slot zones
+   * @param {string} cardZone - Current zone of the card (e.g., 'slot1', 'slot2', 'hand', 'deck')
+   */
+  setTotalLabelsVisibility(cardZone) {
+    const isInSlot = cardZone && cardZone.startsWith('slot');
+    this.totalApText.setVisible(isInSlot);
+    this.totalHpText.setVisible(isInSlot);
+    
+    console.log(`[PowerOverlay] Total labels visibility: ${isInSlot} (zone: ${cardZone})`);
   }
   
   /**

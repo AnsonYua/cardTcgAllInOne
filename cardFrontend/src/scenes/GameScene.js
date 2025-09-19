@@ -1001,6 +1001,27 @@ export default class GameScene extends Phaser.Scene {
         // Use the regular single card preview logic for unit-only slots
         const displayCardData = cardData.cardData;
         this.previewCard = this._createPreviewCard(displayCardData, this.cardPreviewZone.x, this.cardPreviewZone.y, 2000);
+        
+        // Update total labels for unit-only slot preview
+        if (this.previewCard && this.previewCard.updateTotalLabels) {
+          // Create mock unit card for calculation
+          const mockUnitCard = {
+            fullCardData: cardData
+          };
+          
+          // Calculate total stats (unit only, no pilot)
+          const { totalAP, totalHP } = this.slotAreaManager ? 
+            this.slotAreaManager.calculateTotalInSlot(mockUnitCard, null) : 
+            { totalAP: 0, totalHP: 0 };
+          
+          this.previewCard.updateTotalLabels(totalAP, totalHP);
+          console.log(`[GameScene] Updated unit-only slot preview total labels: AP=${totalAP}, HP=${totalHP}`);
+        }
+        
+        // Show total labels since this is a slot preview
+        if (this.previewCard.powerOverlay && this.previewCard.powerOverlay.setTotalLabelsVisibility) {
+          this.previewCard.powerOverlay.setTotalLabelsVisibility('slot1');
+        }
       }
       return;
     }
@@ -1027,6 +1048,21 @@ export default class GameScene extends Phaser.Scene {
     });
 
     previewCard.setDepth(depth);
+    
+    // Show total labels on preview cards (single card preview)
+    if (previewCard.powerOverlay && previewCard.powerOverlay.setTotalLabelsVisibility) {
+      previewCard.powerOverlay.setTotalLabelsVisibility('slot1'); // Show total labels
+      
+      // Update total stats to current values if available
+      if (previewCard.updateTotalLabels && cardData && this.slotAreaManager) {
+        const totalAP = this.slotAreaManager.calculateTotalAP(cardData);
+        const totalHP = this.slotAreaManager.calculateTotalHP(cardData);
+        previewCard.updateTotalLabels(totalAP, totalHP);
+      }
+      
+      console.log('[GameScene] Showing total labels on single preview card');
+    }
+    
     return previewCard;
   }
 
@@ -1070,7 +1106,26 @@ export default class GameScene extends Phaser.Scene {
       usePreview: false,
       handleOutside: true // Disable selection for preview cards
     });
-    this.previewPilotCard.setDepth(1999); // Slightly behind unit
+    this.previewPilotCard.setDepth(1999);
+
+    // Apply total labels visibility rule: only pilot shows totals when both present
+    if (this.previewCard.powerOverlay && this.previewCard.powerOverlay.setTotalLabelsVisibility) {
+      this.previewCard.powerOverlay.setTotalLabelsVisibility('hand'); // Hide unit total labels
+      console.log('[GameScene] Hiding total labels on unit preview with pilot (selection dialog)');
+    }
+    
+    if (this.previewPilotCard.powerOverlay && this.previewPilotCard.powerOverlay.setTotalLabelsVisibility) {
+      this.previewPilotCard.powerOverlay.setTotalLabelsVisibility('slot1'); // Show pilot total labels
+      
+      // Update pilot total stats to current values
+      if (this.previewPilotCard.powerOverlay.updateTotalStats && this.slotAreaManager) {
+        const totalAP = this.slotAreaManager.calculateTotalAP(pilotCardData);
+        const totalHP = this.slotAreaManager.calculateTotalHP(pilotCardData);
+        this.previewPilotCard.powerOverlay.updateTotalStats(totalAP, totalHP);
+      }
+      
+      console.log('[GameScene] Showing total labels on pilot preview (selection dialog)');
+    }
 
     console.log('Showing slot preview from dialog:', unitCardData?.id, '+', pilotCardData?.id, 'for slot:', slotPreviewData.slotName);
   }
@@ -1168,6 +1223,26 @@ export default class GameScene extends Phaser.Scene {
       handleOutside: true // Disable selection for preview cards
     });
     this.previewPilotCard.setDepth(1999); // Slightly behind unit
+
+    // Apply total labels visibility rule: only pilot shows totals when both present
+    if (this.previewCard.powerOverlay && this.previewCard.powerOverlay.setTotalLabelsVisibility) {
+      this.previewCard.powerOverlay.setTotalLabelsVisibility('hand'); // Hide unit total labels
+      console.log('[GameScene] Hiding total labels on unit preview (pilot present)');
+    }
+    
+    if (this.previewPilotCard.powerOverlay && this.previewPilotCard.powerOverlay.setTotalLabelsVisibility) {
+      this.previewPilotCard.powerOverlay.setTotalLabelsVisibility('slot1'); // Show pilot total labels
+      
+      // Update pilot total stats to current values (representing combined unit+pilot stats)
+      if (this.previewPilotCard.powerOverlay.updateTotalStats) {
+        const { totalAP, totalHP } = this.slotAreaManager ? 
+          this.slotAreaManager.calculateTotalInSlot(unitCard, pilotCard) : 
+          { totalAP: 0, totalHP: 0 };
+        this.previewPilotCard.powerOverlay.updateTotalStats(totalAP, totalHP);
+      }
+      
+      console.log('[GameScene] Showing total labels on pilot preview');
+    }
 
     console.log('Showing dual preview:', unitCard.cardData?.id, '+', pilotCard.cardData?.id);
   }

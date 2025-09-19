@@ -744,6 +744,22 @@ export default class Card extends Phaser.GameObjects.Container {
   }
 
   /**
+   * Update total AP and HP labels (only visible in slot zones)
+   * Convenient wrapper for PowerOverlay.updateTotalStats()
+   * @param {number} totalAP - Total AP value including all effects and modifications
+   * @param {number} totalHP - Total HP value including all effects and modifications
+   */
+  updateTotalLabels(totalAP, totalHP) {
+    console.log(`[Card] updateTotalLabels called: AP=${totalAP}, HP=${totalHP} for card:`, this.cardData?.id);
+    if (this.powerOverlay && this.powerOverlay.updateTotalStats) {
+      this.powerOverlay.updateTotalStats(totalAP, totalHP);
+      console.log(`[Card] Total labels updated successfully for card:`, this.cardData?.id);
+    } else {
+      console.warn(`[Card] Cannot update total labels - PowerOverlay not available for card:`, this.cardData?.id);
+    }
+  }
+
+  /**
    * Set the zone placement status of this card
    * Used by GameScene when cards are placed in or removed from zones
    * @param {boolean} inZone - Whether the card is currently in a zone
