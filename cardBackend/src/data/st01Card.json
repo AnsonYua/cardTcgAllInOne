@@ -188,7 +188,7 @@
                         },
                         "effect": {
                             "action": "rest",
-                            "duration": "permanent"
+                           "actionTurn": "ANY"
                         }
                     }
                 ]
