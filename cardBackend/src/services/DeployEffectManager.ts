@@ -184,16 +184,9 @@ export class DeployEffectManager {
                 
                 // Apply HP filter if specified
                 if (target.filters?.hp) {
-                    if (target.filters.hp.contains("<=")){
-                        const maxHp = this.parseHpFilter(target.filters.hp); // "<=2" → 2
-                        const currentHp = (unit?.currentHP || 0) + (unit?.modifyHP || 0);
-                        
-                        console.log(`🔍 HP filter check: currentHp=${currentHp}, maxHp=${maxHp}, filter=${target.filters.hp}`);
-                        
-                        if (currentHp > maxHp) {
-                            console.log(`❌ Unit ${unit.cardUid} current HP ${currentHp} exceeds max ${maxHp}`);
-                            continue;
-                        }
+                    if (!this.validateHpFilter(unit, target.filters.hp)) {
+                        console.log(`❌ Unit ${unit.cardUid} failed HP filter: ${target.filters.hp}`);
+                        continue;
                     }
                 }
                 
@@ -214,16 +207,57 @@ export class DeployEffectManager {
     }
     
     /**
-     * Parse HP filter string to number (e.g., "<=2" → 2)
+     * Parse HP filter string to extract operator and value (e.g., "<=2" → {operator: "<=", value: 2})
      */
-    private static parseHpFilter(hpFilter: string): number {
-        if (typeof hpFilter === 'string') {
-            const match = hpFilter.match(/<=?(\d+)/);
-            if (match) {
-                return parseInt(match[1], 10);
-            }
+    private static parseHpFilter(hpFilter: string): { operator: string; value: number } | null {
+        if (typeof hpFilter !== 'string') {
+            return null;
         }
-        return 0;
+        
+        // Support multiple comparison operators
+        const match = hpFilter.match(/^(<=|>=|<|>|==|!=)(\d+)$/);
+        if (match) {
+            return {
+                operator: match[1],
+                value: parseInt(match[2], 10)
+            };
+        }
+        
+        return null;
+    }
+
+    /**
+     * Validate unit against HP filter
+     */
+    private static validateHpFilter(unit: any, hpFilter: string): boolean {
+        const parsedFilter = this.parseHpFilter(hpFilter);
+        if (!parsedFilter) {
+            console.log(`⚠️ Invalid HP filter format: ${hpFilter}`);
+            return false;
+        }
+        
+        const currentHp = (unit?.currentHP || 0) + (unit?.modifyHP || 0);
+        const { operator, value } = parsedFilter;
+        
+        console.log(`🔍 HP filter validation: currentHp=${currentHp} ${operator} ${value}`);
+        
+        switch (operator) {
+            case '<=':
+                return currentHp <= value;
+            case '>=':
+                return currentHp >= value;
+            case '<':
+                return currentHp < value;
+            case '>':
+                return currentHp > value;
+            case '==':
+                return currentHp === value;
+            case '!=':
+                return currentHp !== value;
+            default:
+                console.log(`⚠️ Unsupported HP filter operator: ${operator}`);
+                return false;
+        }
     }
 
     /**
