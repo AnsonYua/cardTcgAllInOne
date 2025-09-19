@@ -9,20 +9,10 @@ export default class ActionButtonManager {
         this.actionButtonContainer = null;
         this.actionButtons = [];
         this.isVisible = false;
-        
-        // Top UI elements
-        this.topUIElements = {
-            background: null,
-            playerInfoText: null,
-            playerHandText: null,
-            opponentInfoText: null,
-            opponentHandText: null,
-            roundText: null
-        };
     }
 
     /**
-     * Initialize the action button container and top UI
+     * Initialize the action button container
      */
     initialize() {
         const width = this.gameScene.scale.width;
@@ -32,10 +22,8 @@ export default class ActionButtonManager {
         this.actionButtonContainer = this.gameScene.add.container(width / 2, height - 250);
         this.actionButtonContainer.setDepth(500);
         this.actionButtonContainer.setVisible(false); // Hidden by default
-        
-     
-        
-        console.log('ActionButtonManager with Top UI initialized');
+            
+        console.log('ActionButtonManager initialized');
     }
     
 
@@ -227,14 +215,6 @@ export default class ActionButtonManager {
             this.actionButtonContainer.destroy();
             this.actionButtonContainer = null;
         }
-        
-        // Destroy top UI elements
-        Object.keys(this.topUIElements).forEach(key => {
-            if (this.topUIElements[key] && this.topUIElements[key].destroy) {
-                this.topUIElements[key].destroy();
-                this.topUIElements[key] = null;
-            }
-        });
         
         this.isVisible = false;
     }
