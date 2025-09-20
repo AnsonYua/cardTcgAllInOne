@@ -10,8 +10,12 @@ import CardStatCalculator from './CardStatCalculator.js';
  * Supported Item Types:
  * - slot: { type: 'slot', playerId, zone, constraints?, cardUid? }
  * - carduid: { type: 'carduid', cardUid, preSelected? }
+ * - trash: { type: 'trash', playerId, directCards? }
  * 
- * Note: Trash items are handled directly in GameScene.js (no conversion needed)
+ * Output Card Types:
+ * - Slot cards: { type: "slot", cardId, cardUid, displayName, cardData, zone, playerId, isSlotTarget, unit, pilot, totalAP, totalHP, selectionIndex }
+ * - CardUID cards: { type: "carduid", cardId, cardUid, displayName, cardData, selectionIndex, preSelected? }
+ * - Trash cards: { type: "trash", cardId, cardUid, displayName, cardData, selectionIndex, inTrash }
  */
 export default class ItemDataResolver {
   
@@ -157,30 +161,31 @@ export default class ItemDataResolver {
     }
     displayName += ` (${zone.replace('slot', 'Slot ')})`;
     
-    // Create card object in current dialog format
+    // Create minimized card object for slot selection
     const cardObject = {
-      // Core identifiers
+      // Essential identifiers
       cardId: unit.cardData?.id || unit.cardUid,
-      cardUid: unit.cardUid || cardUid,
+      cardUid: unit.cardUid,
+      type : "slot",
+      // Display data
+      displayName: displayName,
+      cardData: unit.cardData || unit, // For Card component rendering
+      
+      // Slot context (minimized)
       zone: zone,
       playerId: playerId,
-      type:"slot",
-      // Slot-level totals (unit + pilot combined)
+      isSlotTarget: !!pilot,
+      
+      // Slot data for rendering
+      unit: unit,
+      pilot: pilot || null,
+      
+      // Stats for display
       totalAP: totalAP,
       totalHP: totalHP,
       
       // Selection metadata
-      selectionIndex: index,
-      displayName: displayName,
-      
-      // Slot target display format (for _createSlotTargetDisplay compatibility)
-      isSlotTarget: !!pilot,
-      unit: unit ,
-      pilot: pilot ? pilot: null,
-      
-      // Legacy compatibility fields
-      slot: zone,
-      slotName: zone
+      selectionIndex: index
     };
     
     console.log(`🎯 Built slot card: ${displayName} (AP: ${totalAP}, HP: ${totalHP})`);
@@ -253,14 +258,15 @@ export default class ItemDataResolver {
     
     console.log(`🎴 Found card ${cardUid} in ${foundLocation}: ${cardData.name}`);
     
-    // Create card object for dialog display
+    // Create minimized card object for cardUID selection
     return {
-      cardData: cardData,
       cardId: cardData.id || cardUid,
       cardUid: cardUid,
-      preSelected: preSelected,
+      type: "carduid",
+      displayName: cardData.name || 'Unknown Card',
+      cardData: cardData, // For Card component rendering
       selectionIndex: index,
-      displayName: cardData.name || 'Unknown Card'
+      preSelected: preSelected
     };
   }
   
@@ -280,11 +286,12 @@ export default class ItemDataResolver {
     if (directCards && Array.isArray(directCards)) {
       console.log(`ItemDataResolver: Using direct trash cards (${directCards.length} cards)`);
       return directCards.map((card, trashIndex) => ({
-        cardData: card.cardData || card,
         cardId: card.cardData?.id || card.id,
         cardUid: card.cardUid || `trash_${trashIndex}`,
-        selectionIndex: trashIndex,
+        type: "trash",
         displayName: card.cardData?.name || card.name || 'Unknown Card',
+        cardData: card.cardData || card, // For Card component rendering
+        selectionIndex: trashIndex,
         inTrash: true
       }));
     }
@@ -300,11 +307,12 @@ export default class ItemDataResolver {
     console.log(`ItemDataResolver: Resolving trash area for ${playerId} (${trashArea.length} cards)`);
     
     return trashArea.map((card, trashIndex) => ({
-      cardData: card.cardData || card,
       cardId: card.cardData?.id || card.id,
       cardUid: card.cardUid || `trash_${trashIndex}`,
-      selectionIndex: trashIndex,
+      type: "trash",
       displayName: card.cardData?.name || card.name || 'Unknown Card',
+      cardData: card.cardData || card, // For Card component rendering
+      selectionIndex: trashIndex,
       inTrash: true
     }));
   }
@@ -338,5 +346,24 @@ export default class ItemDataResolver {
    */
   static getOpponentTargets(opponentId, gameState) {
     return this.getPlayerSlots(opponentId, ['has-unit'], gameState);
+  }
+
+  /**
+   * Utility: Check if a card is of a specific type
+   * @param {Object} card - Card object from ItemDataResolver
+   * @param {string} expectedType - Expected type ("slot", "carduid", "trash")
+   * @returns {boolean} True if card matches the expected type
+   */
+  static isCardType(card, expectedType) {
+    return card && card.type === expectedType;
+  }
+
+  /**
+   * Utility: Check if a card is a slot target (unit + pilot combination)
+   * @param {Object} card - Card object from ItemDataResolver
+   * @returns {boolean} True if card is a slot target with both unit and pilot
+   */
+  static isSlotTarget(card) {
+    return this.isCardType(card, "slot") && card.isSlotTarget === true;
   }
 }

@@ -39,21 +39,26 @@ export default class DialogManager {
    * @param {Function} onConfirm - Callback when user confirms selection
    * @returns {string} Dialog ID for tracking/cleanup
    */
-  showCardSelectionDialog(selectionId, selection, onConfirm) {
-    console.log('DialogManager: Showing card selection dialog:', JSON.stringify(selection));
+  /**
+   * Unified slot selection dialog (handles both card selection and deploy target selection)
+   * Both use cases select from slot data, so they're combined into one method
+   */
+  showSlotSelectionDialog(selectionId, selection, onConfirm) {
+    console.log('DialogManager: Showing unified slot selection dialog:', JSON.stringify(selection));
     
     // Check if this selection dialog is already active
     const existingDialogId = this.findDialogBySelectionId(selectionId);
     if (existingDialogId) {
-      console.log('DialogManager: Card selection dialog already active for:', selectionId);
+      console.log('DialogManager: Slot selection dialog already active for:', selectionId);
       return existingDialogId;
     }
     
     // Generate unique dialog ID
-    const dialogId = `card_selection_${this.nextDialogId++}`;
+    const dialogId = `slot_selection_${this.nextDialogId++}`;
     
-    // Clean up any existing card selection dialogs (prevent multiple card selection dialogs)
+    // Clean up any existing slot selection dialogs (prevent multiple dialogs)
     this.closeDialogsByType(this.dialogTypes.CARD_SELECTION);
+    this.closeDialogsByType(this.dialogTypes.DEPLOY_TARGET_CHOICE);
     
     // Create dialog using DialogUIManager directly
     const dialogInterface = DialogUIManager.createCardSelectionDialog(
@@ -61,21 +66,30 @@ export default class DialogManager {
       selection, 
       this.scene, 
       (selectedId, selectedCards, elements) => {
-        this.handleCardSelectionComplete(dialogId, selectionId, selectedCards, onConfirm);
+        this.handleSlotSelectionComplete(dialogId, selectionId, selectedCards, onConfirm);
       }
     );
     
     // Store dialog in active dialogs map
     this.activeDialogs.set(dialogId, {
       id: dialogId,
-      type: this.dialogTypes.CARD_SELECTION,
+      type: selection.dialogType || this.dialogTypes.CARD_SELECTION,
       selectionId: selectionId,
       interface: dialogInterface,
       createdAt: Date.now()
     });
     
-    console.log(`DialogManager: Created card selection dialog with ID: ${dialogId}`);
+    console.log(`DialogManager: Created slot selection dialog with ID: ${dialogId}`);
     return dialogId;
+  }
+
+  /*
+  add a comment here to describe the structure of selection show is it can trigger
+  SlotSelection
+  */
+  showCardSelectionDialog(selectionId, selection, onConfirm) {
+    console.log('DialogManager: Redirecting to unified slot selection dialog');
+    return this.showSlotSelectionDialog(selectionId, selection, onConfirm);
   }
 
   /**
@@ -375,20 +389,16 @@ export default class DialogManager {
    * @param {Function} onConfirm - Callback when user confirms target selection
    * @returns {string} Dialog ID
    */
+  /**
+   * Legacy method - redirects to unified slot selection dialog
+   * @deprecated Use showSlotSelectionDialog instead
+   */
   showDeployTargetDialog(event, onConfirm) {
-    console.log('DialogManager: Showing deploy target selection dialog:', event);
-    
-    const dialogId = `deploy_target_${this.nextDialogId++}`;
-    
-    // Clean up any existing deploy target dialogs (prevent multiple deploy dialogs)
-    this.closeDialogsByType(this.dialogTypes.DEPLOY_TARGET_CHOICE);
+    console.log('DialogManager: Redirecting deploy target dialog to unified slot selection');
     
     // Extract deploy effect and target information from event
     const { deployEffect, availableTargets, sourceCardUid, cardId } = event.data;
     const effectDescription = deployEffect?.effect?.action || 'Select Target';
-    
-    console.log('Deploy effect details:', deployEffect);
-    console.log('Available targets:', availableTargets);
     
     // Convert backend availableTargets to items format
     const items = availableTargets.map(target => ({
@@ -398,9 +408,7 @@ export default class DialogManager {
       cardUid: target.cardUid // Optional constraint for specific card
     }));
     
-    console.log('Deploy targets as items:', items);
-    
-    // Create a selection object with new items format
+    // Create a selection object using unified format
     const deploySelection = {
       selectionId: `deploy_target_${event.id}`,
       title: '🎯 Deploy Effect Target Selection',
@@ -411,62 +419,17 @@ export default class DialogManager {
       autoSelectFirst: false // User must actively select target
     };
     
-    // Create dialog using DialogUIManager directly with deploy effect styling
-    const dialogInterface = DialogUIManager.createCardSelectionDialog(
-      deploySelection.selectionId,
-      deploySelection,
-      this.scene,
-      (selectedId, selectedCards, elements) => {
-        // Handle deploy target selection - call API with selected target
-        console.log('DialogManager: Deploy target SELECTED:', selectedCards);
-        
-        if (selectedCards && selectedCards.length > 0) {
-          const selectedTarget = selectedCards[0];
-          
-          // Close the current dialog
-          this.closeDialog(dialogId);
-          
-          // Call onConfirm with the selected target
-          console.log('DialogManager: Confirming deploy target selection');
-          if (onConfirm) onConfirm(selectedTarget);
-        }
-      }
-    );
-    
-    // Handle CANCEL button (cancel action) - listen for dialog-cancelled event
-    const handleCancel = (eventSelectionId) => {
-      if (eventSelectionId === deploySelection.selectionId) {
-        console.log('DialogManager: Deploy target selection CANCELLED');
-        
-        // Close the current dialog  
-        this.closeDialog(dialogId);
-        
-        // Cancel the deploy effect
-        console.log('DialogManager: Cancelling deploy target selection');
+    // Use unified slot selection dialog
+    return this.showSlotSelectionDialog(deploySelection.selectionId, deploySelection, (selectionId, selectedCards) => {
+      if (selectedCards && selectedCards.length > 0) {
+        const selectedTarget = selectedCards[0];
+        console.log('DialogManager: Deploy target selected via unified dialog:', selectedTarget);
+        if (onConfirm) onConfirm(selectedTarget);
+      } else {
+        console.log('DialogManager: Deploy target selection cancelled');
         if (onConfirm) onConfirm(null); // Pass null to indicate cancellation
-        
-        // Remove the event listener
-        this.scene.events.off('dialog-cancelled', handleCancel);
       }
-    };
-    
-    // Listen for cancel events (CANCEL button)
-    this.scene.events.on('dialog-cancelled', handleCancel);
-    
-    // Override the dialog styling to add blue deploy effect theme
-    this.applyDeployStyling(dialogInterface);
-    
-    // Store dialog with GameSceneUtils interface
-    this.activeDialogs.set(dialogId, {
-      id: dialogId,
-      type: this.dialogTypes.DEPLOY_TARGET_CHOICE,
-      eventId: event.id,
-      interface: dialogInterface,
-      createdAt: Date.now()
     });
-    
-    console.log(`DialogManager: Created deploy target dialog with ID: ${dialogId}`);
-    return dialogId;
   }
   
   
@@ -610,16 +573,32 @@ export default class DialogManager {
    * @param {Array} selectedCards - Selected cards
    * @param {Function} onConfirm - Original callback
    */
-  handleCardSelectionComplete(dialogId, selectionId, selectedCards, onConfirm) {
-    console.log('DialogManager: Card selection completed:', dialogId, selectionId, selectedCards);
+  /**
+   * Handle unified slot selection completion and cleanup
+   * @param {string} dialogId - Dialog ID
+   * @param {string} selectionId - Selection ID
+   * @param {Array} selectedCards - Selected cards/slots
+   * @param {Function} onConfirm - Original callback
+   */
+  handleSlotSelectionComplete(dialogId, selectionId, selectedCards, onConfirm) {
+    console.log('DialogManager: Slot selection completed:', dialogId, selectionId, selectedCards);
     
-    // Close the dialog (cleanup already handled by GameSceneUtils)
+    // Close the dialog (cleanup already handled by DialogUIManager)
     this.activeDialogs.delete(dialogId);
     
     // Call the original callback
     if (onConfirm) {
       onConfirm(selectionId, selectedCards);
     }
+  }
+
+  /**
+   * Legacy handler - redirects to unified slot selection handler
+   * @deprecated Use handleSlotSelectionComplete instead
+   */
+  handleCardSelectionComplete(dialogId, selectionId, selectedCards, onConfirm) {
+    console.log('DialogManager: Redirecting to unified slot selection handler');
+    return this.handleSlotSelectionComplete(dialogId, selectionId, selectedCards, onConfirm);
   }
 
   /**

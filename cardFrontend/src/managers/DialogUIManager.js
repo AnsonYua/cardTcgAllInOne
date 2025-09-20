@@ -20,9 +20,50 @@ import SlotAreaManager from '../components/SlotAreaManager.js';
 export default class DialogUIManager {
 
   /**
-   * Creates a card selection dialog with pagination and interactive elements
+   * Creates a unified slot selection dialog with pagination and interactive elements
+   * 
+   * SELECTION STRUCTURE - All dialogs that can trigger slot selection must provide:
+   * 
+   * @param {Object} selection - Selection configuration object with the following structure:
+   * {
+   *   // REQUIRED: Items array for ItemDataResolver to process
+   *   items: [
+   *     // Slot items (most common - for unit/pilot selection)
+   *     { type: 'slot', playerId: 'player_1', zone: 'slot1', constraints: ['has-unit', 'no-pilot'] },
+   *     { type: 'slot', playerId: 'opponent_1', zone: 'slot2', constraints: ['has-unit'] },
+   *     
+   *     // CardUID items (for specific card references like burst effects)
+   *     { type: 'carduid', cardUid: 'card_123', preSelected: true },
+   *     
+   *     // Trash items (for trash viewing)
+   *     { type: 'trash', playerId: 'player_1', directCards: [...] }
+   *   ],
+   *   
+   *   // REQUIRED: Selection behavior
+   *   selectCount: 1,              // Number of cards user must select (0 for read-only)
+   *   
+   *   // REQUIRED: Dialog display
+   *   title: 'Select Target',      // Dialog title
+   *   description: 'Choose...',    // Dialog description
+   *   
+   *   // REQUIRED: Callback function
+   *   callback: (selectionId, selectedCards) => { ... },
+   *   
+   *   // OPTIONAL: Dialog behavior
+   *   dialogType: 'SELECT_UNIT_FOR_PILOT' | 'SELECT_ATTACK_TARGET' | 'DEPLOY_TARGET_CHOICE' | 'BURST_EFFECT_CHOICE',
+   *   autoSelectFirst: false,      // Auto-select first card
+   *   numberOfSections: 1,         // UI sections (legacy)
+   *   
+   *   // OPTIONAL: Custom buttons (if not provided, uses OK/Cancel)
+   *   buttons: ['ACTIVATE', 'SKIP']
+   * }
+   * 
+   * OUTPUT: ItemDataResolver converts items to eligibleCards with consistent structure:
+   * - Slot cards: { type: "slot", cardId, cardUid, displayName, cardData, zone, playerId, isSlotTarget, unit, pilot, totalAP, totalHP, selectionIndex }
+   * - CardUID cards: { type: "carduid", cardId, cardUid, displayName, cardData, selectionIndex, preSelected }
+   * - Trash cards: { type: "trash", cardId, cardUid, displayName, cardData, selectionIndex, inTrash }
+   * 
    * @param {string} selectionId - Unique identifier for the selection
-   * @param {Object} selection - Selection configuration object with items array
    * @param {Phaser.Scene} scene - Phaser scene instance
    * @param {Function} onConfirm - Callback when user confirms selection
    * @returns {Object} Dialog interface with cleanup method
@@ -1004,11 +1045,22 @@ export default class DialogUIManager {
         });
       }
 
-      // ✅ ENHANCED: Show card preview on hover
-
-      if (card.type == "slot") {
-        const cardDataForPreview = card.unit;
-        scene.cardPreviewManager.showCardPreview(cardDataForPreview);
+      // ✅ ENHANCED: Show card preview on hover based on card type
+      switch (card.type) {
+        case "slot":
+          // For slot cards, show the unit card data
+          const cardDataForPreview = card.unit;
+          scene.cardPreviewManager.showCardPreview(cardDataForPreview);
+          break;
+        case "carduid":
+        case "trash":
+          // For carduid and trash cards, show the card data directly
+          scene.cardPreviewManager.showCardPreview(card.cardData);
+          break;
+        default:
+          // Fallback for cards without type or unknown types
+          scene.cardPreviewManager.showCardPreview(card.cardData || card);
+          break;
       }
 
 

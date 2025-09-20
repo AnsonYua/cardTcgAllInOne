@@ -737,7 +737,6 @@ export class GameEngine {
         "actionType": "attackUnit",
         "attackerCardUid": "ST01-001_a5fcfa44-d212-4400-8c12-9a58fdbcac84",
         "targetUnitUid": "ST01-005_be13f9a5-9fc9-4e3b-a9b2-fdf999d9f63d",
-        "targetSlotName": "slot4",
         "targetPlayerId": "playerId_1",
         "targetPilotUid": "ST01-013_20d620d9-242e-4aa8-b1b6-6847dff89461"
     }
@@ -750,7 +749,6 @@ export class GameEngine {
                 playerId,
                 attackerCardUid,
                 targetUnitUid,
-                targetSlotName,
                 targetPlayerId,
                 targetPilotUid
             } = eventData;
