@@ -1,13 +1,14 @@
 /**
- * EventProcessor - Generic processing queue event handler
+ * FrontEventProcessor - Frontend processing queue event handler
  * 
  * Centralized event processing system for handling all processing queue events.
  * Provides a scalable pattern for adding new event types and their handlers.
  */
-export default class EventProcessor {
+export default class FrontEventProcessor {
   constructor(scene) {
     this.scene = scene;
     this.gameStateManager = scene.gameStateManager;
+    this.deployEffectHandler = scene.deployEffectHandler;
     
     // Event type registry with their configurations
     this.eventTypes = new Map([
@@ -29,7 +30,7 @@ export default class EventProcessor {
       // ['ZONE_SELECTION_CHOICE', { ... }]
     ]);
     
-    console.log(`[EventProcessor] Initialized with ${this.eventTypes.size} event types`);
+    console.log(`[FrontEventProcessor] Initialized with ${this.eventTypes.size} event types`);
   }
 
   /**
@@ -37,27 +38,27 @@ export default class EventProcessor {
    * Returns true if any blocking event was processed (UI should return early)
    */
   processAllEvents() {
-    console.log('[EventProcessor] Processing all events in queue');
+    console.log('[FrontEventProcessor] Processing all events in queue');
     
     // Process each registered event type in priority order
     for (const [eventType, config] of this.eventTypes) {
       const events = this.getEventsOfType(eventType, config.requiresPlayerMatch);
       
       if (events.length > 0) {
-        console.log(`[EventProcessor] Found ${events.length} ${eventType} events`);
+        console.log(`[FrontEventProcessor] Found ${events.length} ${eventType} events`);
         
         if (config.allowMultiple || events.length === 1) {
           // Handle the event(s)
           const processed = config.handler(events);
           if (processed) {
-            console.log(`[EventProcessor] Successfully processed ${eventType} event(s)`);
+            console.log(`[FrontEventProcessor] Successfully processed ${eventType} event(s)`);
             return true; // Blocking event processed, caller should return early
           }
         } else if (events.length > 1) {
-          console.warn(`[EventProcessor] Multiple ${eventType} events found (${events.length}), handling first one`);
+          console.warn(`[FrontEventProcessor] Multiple ${eventType} events found (${events.length}), handling first one`);
           const processed = config.handler([events[0]]);
           if (processed) {
-            console.log(`[EventProcessor] Successfully processed first ${eventType} event`);
+            console.log(`[FrontEventProcessor] Successfully processed first ${eventType} event`);
             return true; // Blocking event processed, caller should return early
           }
         }
@@ -87,7 +88,7 @@ export default class EventProcessor {
       events = events.filter(event => event.data?.playerId === currentPlayerId);
     }
     
-    console.log(`[EventProcessor] Found ${events.length} ${eventType} events (playerMatch: ${requiresPlayerMatch})`);
+    console.log(`[FrontEventProcessor] Found ${events.length} ${eventType} events (playerMatch: ${requiresPlayerMatch})`);
     return events;
   }
 
@@ -100,11 +101,11 @@ export default class EventProcessor {
     if (events.length === 0) return false;
     
     try {
-      console.log('[EventProcessor] Handling BURST_EFFECT_CHOICE event');
+      console.log('[FrontEventProcessor] Handling BURST_EFFECT_CHOICE event');
       this.scene.showBurstEffectDialog(events[0]);
       return true;
     } catch (error) {
-      console.error('[EventProcessor] Error handling BURST_EFFECT_CHOICE:', error);
+      console.error('[FrontEventProcessor] Error handling BURST_EFFECT_CHOICE:', error);
       return false;
     }
   }
@@ -118,16 +119,17 @@ export default class EventProcessor {
     if (events.length === 0) return false;
     
     try {
-      console.log('[EventProcessor] Handling DEPLOY_TARGET_CHOICE event');
-      if (!this.scene.deployEffectHandler) {
-        console.error('[EventProcessor] DeployEffectHandler not available');
+      console.log('[FrontEventProcessor] Handling DEPLOY_TARGET_CHOICE event');
+      if (!this.deployEffectHandler) {
+        console.error('[FrontEventProcessor] DeployEffectHandler not available');
         return false;
       }
       
-      this.scene.deployEffectHandler.showDeployTargetDialog(events[0]);
+      // Call deployEffectHandler directly without going through scene
+      this.deployEffectHandler.showDeployTargetDialog(events[0]);
       return true;
     } catch (error) {
-      console.error('[EventProcessor] Error handling DEPLOY_TARGET_CHOICE:', error);
+      console.error('[FrontEventProcessor] Error handling DEPLOY_TARGET_CHOICE:', error);
       return false;
     }
   }
@@ -142,7 +144,7 @@ export default class EventProcessor {
    * @param {string} config.description - Description of the event type
    */
   registerEventType(eventType, config) {
-    console.log(`[EventProcessor] Registering new event type: ${eventType}`);
+    console.log(`[FrontEventProcessor] Registering new event type: ${eventType}`);
     this.eventTypes.set(eventType, {
       handler: config.handler.bind(this),
       requiresPlayerMatch: config.requiresPlayerMatch ?? true,
@@ -157,7 +159,7 @@ export default class EventProcessor {
    */
   unregisterEventType(eventType) {
     if (this.eventTypes.has(eventType)) {
-      console.log(`[EventProcessor] Unregistering event type: ${eventType}`);
+      console.log(`[FrontEventProcessor] Unregistering event type: ${eventType}`);
       this.eventTypes.delete(eventType);
       return true;
     }

@@ -300,15 +300,14 @@ export default class DialogManager {
     console.log('Burst effect card data:', cardData);
     console.log('Burst effect details:', burstEffect);
     
-    // Create a fake selection object that matches the card selection dialog format
+    // Create selection object with new items format
     const burstSelection = {
       selectionId: `burst_${event.id}`,
       title: '💥 Burst Effect Available',
       description: `Effect: ${burstEffect.description || `Activate ${burstEffect.type} effect`}`,
       selectCount: 1, // Always select the one card
-      eligibleCards: [{
-        cardData: cardData,
-        cardId: cardData.id || event.data.cardId,
+      items: [{
+        type: 'carduid',
         cardUid: event.data.cardId,
         preSelected: true // Mark this card as pre-selected
       }],
@@ -391,16 +390,23 @@ export default class DialogManager {
     console.log('Deploy effect details:', deployEffect);
     console.log('Available targets:', availableTargets);
     
-    // Create target cards for selection using opponent zone data
-    const targetCards = this.buildTargetCardsFromOpponentZones(availableTargets);
-    console.log("target Cardddddddd ", JSON.stringify(targetCards))
-    // Create a selection object that matches the card selection dialog format
+    // Convert backend availableTargets to items format
+    const items = availableTargets.map(target => ({
+      type: 'slot',
+      playerId: target.playerId,
+      zone: target.zone,
+      cardUid: target.cardUid // Optional constraint for specific card
+    }));
+    
+    console.log('Deploy targets as items:', items);
+    
+    // Create a selection object with new items format
     const deploySelection = {
       selectionId: `deploy_target_${event.id}`,
       title: '🎯 Deploy Effect Target Selection',
       description: `Effect: ${effectDescription} - Choose a target`,
       selectCount: 1, // Always select one target
-      eligibleCards: targetCards,
+      items: items,
       dialogType: 'DEPLOY_TARGET_CHOICE',
       autoSelectFirst: false // User must actively select target
     };
@@ -463,154 +469,7 @@ export default class DialogManager {
     return dialogId;
   }
   
-  /**
-   * Build target cards for selection using backend response data
-   * @param {Array} availableTargets - Target data from backend response
-   * @returns {Array} Card objects for dialog selection
-   */
-  buildTargetCardsFromOpponentZones(availableTargets) {
-    const targetCards = [];
-    
-    console.log('🎯 DialogManager: Building target cards from backend response:', availableTargets);
-    
-    // Get game state to access slot data
-    const gameState = this.scene.gameStateManager.getGameState();
-    const targetPlayerId = availableTargets[0]?.playerId; // All targets should be from same player
-    const targetPlayer = gameState.gameEnv.players[targetPlayerId];
-    
-    if (!targetPlayer || !targetPlayer.zones) {
-      console.warn('DialogManager: Could not access target player zones for target display');
-      return targetCards;
-    }
-    
-    console.log('🔍 Target player zones:', JSON.stringify(targetPlayer.zones, null, 2));
-    
-    // Build card objects from game state zone data
-    availableTargets.forEach((target, index) => {
-      const { cardUid, zone, playerId } = target;
-      
-      console.log(`🔍 Processing target ${index + 1}:`, { cardUid, zone, playerId });
-      
-      // Get the actual slot from target player zones
-      const slot = targetPlayer.zones[zone];
-      console.log(`🔍 Slot ${zone} data:`, JSON.stringify(slot, null, 2));
-      
-      if (slot && slot.unit) {
-        const unit = slot.unit;
-        
-        // Look for pilot in the same slot
-        let pilot = null;
-        if (slot.pilot) {
-          pilot = slot.pilot;
-          console.log(`🧑‍✈️ Found pilot as slot.pilot:`, pilot.cardData?.name || 'Unknown Pilot');
-        } else if (slot.pilotCard) {
-          pilot = slot.pilotCard;
-          console.log(`🧑‍✈️ Found pilot as slot.pilotCard:`, pilot.cardData?.name || 'Unknown Pilot');
-        } else {
-          console.log(`🧑‍✈️ No pilot found in ${zone} (checked slot.pilot and slot.pilotCard)`);
-        }
-        
-        console.log(`🎯 Unit found in ${zone}:`, unit.cardData?.name || 'Unknown Unit');
-        
-        // Calculate total stats (unit + pilot if present)
-        const unitAP = unit.currentAP || unit.cardData?.ap || 0;
-        const unitHP = unit.currentHP || unit.cardData?.hp || 0;
-        const pilotAP = pilot ? (pilot.currentAP || pilot.cardData?.ap || 0) : 0;
-        const pilotHP = pilot ? (pilot.currentHP || pilot.cardData?.hp || 0) : 0;
-        
-        const totalAP = unitAP + pilotAP;
-        const totalHP = unitHP + pilotHP;
-        
-        // Create display name
-        let displayName = unit.cardData?.name || 'Unknown Unit';
-        if (pilot && pilot.cardData?.name) {
-          displayName += ` + ${pilot.cardData.name}`;
-        }
-        displayName += ` (${zone.replace('slot', 'Slot ')})`;
-        
-        // Create card object for dialog display
-        const cardForDisplay = {
-          cardData: unit.cardData || { name: 'Unknown Unit', hp: 0, ap: 0 },
-          cardId: unit.cardData?.id || cardUid,
-          cardUid: cardUid,
-          zone: zone,
-          playerId: playerId,
-          // Current stats for display (used for total labels)
-          currentHP: totalHP,
-          currentAP: totalAP,
-          damageReceived: unit.damageReceived || 0,
-          // Individual unit stats
-          unitHP: unitHP,
-          unitAP: unitAP,
-          // Pilot information if available
-          pilotData: pilot ? {
-            name: pilot.cardData?.name || 'Pilot',
-            cardData: pilot.cardData,
-            currentHP: pilot.currentHP || pilot.cardData?.hp || 0,
-            currentAP: pilot.currentAP || pilot.cardData?.ap || 0,
-            pilotHP: pilotHP,
-            pilotAP: pilotAP
-          } : null,
-          // Selection metadata
-          selectionIndex: index,
-          displayName: displayName,
-          
-          // Slot target display format (for _createSlotTargetDisplay compatibility)
-          isSlotTarget: !!pilot, // Mark as slot target if pilot exists
-          unit: {
-            cardId: unit.cardData?.id || cardUid,
-            cardData: unit.cardData,
-            currentAP: unitAP,
-            currentHP: unitHP
-          },
-          pilot: pilot ? {
-            cardId: pilot.cardData?.id || `${cardUid}_pilot`,
-            cardData: pilot.cardData,
-            currentAP: pilot.currentAP || pilot.cardData?.ap || 0,
-            currentHP: pilot.currentHP || pilot.cardData?.hp || 0
-          } : null
-        };
-        
-        targetCards.push(cardForDisplay);
-        console.log(`✅ Built target card: ${cardForDisplay.displayName}`);
-        console.log(`   - Unit: ${unit.cardData?.name} (AP: ${unitAP}, HP: ${unitHP})`);
-        if (pilot) {
-          console.log(`   - Pilot: ${pilot.cardData?.name} (AP: ${pilotAP}, HP: ${pilotHP})`);
-          console.log(`   - Slot Target Format: isSlotTarget = true (will use _createSlotTargetDisplay)`);
-        } else {
-          console.log(`   - Single Unit: isSlotTarget = false (will use regular card display)`);
-        }
-        console.log(`   - Total Stats: AP: ${totalAP}, HP: ${totalHP}`);
-      } else {
-        console.warn(`❌ Could not find unit in ${zone} for target ${cardUid}`);
-        console.log(`   - Slot exists: ${!!slot}`);
-        console.log(`   - Slot.unit exists: ${!!(slot && slot.unit)}`);
-      }
-    });
-    
-    console.log(`📊 Built ${targetCards.length} target cards from backend response`);
-    return targetCards;
-  }
   
-  /**
-   * @deprecated No longer used - display name built directly in buildTargetCardsFromOpponentZones
-   * Build display name for target card (unit + pilot if available)
-   * @param {Object} unit - Unit card data
-   * @param {Object} pilot - Pilot card data (may be null)
-   * @param {string} zone - Zone name (slot1, slot2, etc.)
-   * @returns {string} Display name
-   */
-  buildDisplayName(unit, pilot, zone) {
-    const unitName = unit.cardData?.name || 'Unit';
-    const pilotName = pilot?.cardData?.name;
-    const zoneName = zone.replace('slot', 'Slot ');
-    
-    if (pilot) {
-      return `${zoneName}: ${unitName} + ${pilotName}`;
-    } else {
-      return `${zoneName}: ${unitName}`;
-    }
-  }
 
   /**
    * Apply deploy effect styling to the select dialog

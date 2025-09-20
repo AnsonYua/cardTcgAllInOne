@@ -269,12 +269,12 @@ export default class GameStateManager {
   }
 
   /**
-   * @deprecated Use EventProcessor.getEventsOfType() instead
+   * @deprecated Use FrontEventProcessor.getEventsOfType() instead
    * Get BURST_EFFECT_CHOICE events from the processing queue
    * @returns {Array} Array of burst effect choice events
    */
   getBurstEffectChoiceEvents() {
-    console.warn('[GameStateManager] getBurstEffectChoiceEvents() is deprecated. Use EventProcessor instead.');
+    console.warn('[GameStateManager] getBurstEffectChoiceEvents() is deprecated. Use FrontEventProcessor instead.');
     const processingQueue = this.gameState.gameEnv.processingQueue || [];
     const burstEvents = processingQueue.filter(event => 
       event.type === 'BURST_EFFECT_CHOICE' && 
@@ -287,12 +287,12 @@ export default class GameStateManager {
   }
 
   /**
-   * @deprecated Use EventProcessor.getEventsOfType() instead
+   * @deprecated Use FrontEventProcessor.getEventsOfType() instead
    * Get DEPLOY_TARGET_CHOICE events from the processing queue
    * @returns {Array} Array of deploy target choice events
    */
   getDeployTargetChoiceEvents() {
-    console.warn('[GameStateManager] getDeployTargetChoiceEvents() is deprecated. Use EventProcessor instead.');
+    console.warn('[GameStateManager] getDeployTargetChoiceEvents() is deprecated. Use FrontEventProcessor instead.');
     const processingQueue = this.gameState.gameEnv.processingQueue || [];
     const deployEvents = processingQueue.filter(event => 
       event.type === 'DEPLOY_TARGET_CHOICE' && 

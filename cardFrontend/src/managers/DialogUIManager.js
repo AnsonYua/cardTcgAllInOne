@@ -3,6 +3,7 @@
 // Extracted from GameSceneUtils.js for better code organization
 
 import Card from '../components/Card.js';
+import ItemDataResolver from '../utils/ItemDataResolver.js';
 
 /**
  * DialogUIManager - Handles all dialog UI creation, interaction, and management
@@ -20,7 +21,7 @@ export default class DialogUIManager {
   /**
    * Creates a card selection dialog with pagination and interactive elements
    * @param {string} selectionId - Unique identifier for the selection
-   * @param {Object} selection - Selection configuration object
+   * @param {Object} selection - Selection configuration object with items array
    * @param {Phaser.Scene} scene - Phaser scene instance
    * @param {Function} onConfirm - Callback when user confirms selection
    * @returns {Object} Dialog interface with cleanup method
@@ -29,7 +30,34 @@ export default class DialogUIManager {
     console.log('🎮 DialogUIManager: Creating card selection dialog');
     console.log('Selection ID:', selectionId);
     console.log('Selection config:', selection);
-    console.log('Available cards:', selection.eligibleCards?.length || 0);
+    
+    // Resolve items to eligibleCards format
+    let eligibleCards = [];
+    if (selection.items && Array.isArray(selection.items)) {
+      console.log('📦 Resolving', selection.items.length, 'items to cards');
+      const gameState = scene.gameStateManager.getGameState();
+      
+      // Handle special case for trash items (returns flattened array)
+      selection.items.forEach(item => {
+        if (item.type === 'trash') {
+          const trashCards = ItemDataResolver._resolveTrash(item, gameState, eligibleCards.length);
+          eligibleCards.push(...trashCards);
+        } else {
+          const resolved = ItemDataResolver.resolveItems([item], gameState);
+          eligibleCards.push(...resolved);
+        }
+      });
+      
+      console.log('✅ Resolved to', eligibleCards.length, 'eligible cards');
+    } else {
+      console.warn('DialogUIManager: No items provided in selection');
+      eligibleCards = [];
+    }
+    
+    // Add eligibleCards to selection for rest of system
+    selection.eligibleCards = eligibleCards;
+    
+    console.log('Available cards:', eligibleCards.length);
     
     // Create dialog configuration and layout
     const config = this._createDialogConfig(scene, selection);
@@ -44,8 +72,8 @@ export default class DialogUIManager {
     const paginationState = {
       currentPage: 0,
       maxCardsPerPage: 4,
-      totalCards: selection.eligibleCards.length,
-      totalPages: Math.ceil(selection.eligibleCards.length / 4)
+      totalCards: eligibleCards.length,
+      totalPages: Math.ceil(eligibleCards.length / 4)
     };
     
     // Initialize selection state

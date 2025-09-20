@@ -1,6 +1,6 @@
-# EventProcessor Usage Examples
+# FrontEventProcessor Usage Examples
 
-This file demonstrates how to add new event types to the EventProcessor system.
+This file demonstrates how to add new event types to the FrontEventProcessor system.
 
 ## Adding a New Event Type
 
@@ -8,7 +8,7 @@ This file demonstrates how to add new event types to the EventProcessor system.
 
 ```javascript
 // In GameScene.js init() method or wherever appropriate:
-this.eventProcessor.registerEventType('CARD_SELECTION_CHOICE', {
+this.frontEventProcessor.registerEventType('CARD_SELECTION_CHOICE', {
   handler: this.handleCardSelectionChoice.bind(this),
   requiresPlayerMatch: true,
   allowMultiple: false,
@@ -34,7 +34,7 @@ handleCardSelectionChoice(events) {
 
 ```javascript
 // Register zone selection event
-this.eventProcessor.registerEventType('ZONE_SELECTION_CHOICE', {
+this.frontEventProcessor.registerEventType('ZONE_SELECTION_CHOICE', {
   handler: this.handleZoneSelectionChoice.bind(this),
   requiresPlayerMatch: true,
   allowMultiple: true, // Allow multiple zone selections
@@ -60,7 +60,7 @@ handleZoneSelectionChoice(events) {
 
 ```javascript
 // Register ability target event
-this.eventProcessor.registerEventType('ABILITY_TARGET_CHOICE', {
+this.frontEventProcessor.registerEventType('ABILITY_TARGET_CHOICE', {
   handler: this.handleAbilityTargetChoice.bind(this),
   requiresPlayerMatch: true,
   allowMultiple: false,
@@ -97,7 +97,7 @@ You can also register events dynamically based on game state:
 ```javascript
 // In GameScene during runtime:
 if (gameState.gameEnv.phase === 'SPECIAL_PHASE') {
-  this.eventProcessor.registerEventType('SPECIAL_PHASE_CHOICE', {
+  this.frontEventProcessor.registerEventType('SPECIAL_PHASE_CHOICE', {
     handler: this.handleSpecialPhaseChoice.bind(this),
     requiresPlayerMatch: true,
     allowMultiple: false,
@@ -123,21 +123,21 @@ Events are processed in the order they are registered. To control priority:
 
 ```javascript
 // High priority events should be registered first
-this.eventProcessor.registerEventType('CRITICAL_CHOICE', { ... });
-this.eventProcessor.registerEventType('NORMAL_CHOICE', { ... });
-this.eventProcessor.registerEventType('LOW_PRIORITY_CHOICE', { ... });
+this.frontEventProcessor.registerEventType('CRITICAL_CHOICE', { ... });
+this.frontEventProcessor.registerEventType('NORMAL_CHOICE', { ... });
+this.frontEventProcessor.registerEventType('LOW_PRIORITY_CHOICE', { ... });
 ```
 
 ## Checking for Specific Events
 
 ```javascript
 // Check if specific event types are available
-if (this.eventProcessor.hasEventsOfType('DEPLOY_TARGET_CHOICE')) {
+if (this.frontEventProcessor.hasEventsOfType('DEPLOY_TARGET_CHOICE')) {
   console.log('Deploy target events are available');
 }
 
 // Get event statistics
-const stats = this.eventProcessor.getEventStatistics();
+const stats = this.frontEventProcessor.getEventStatistics();
 console.log('Event stats:', stats);
 // Output: { totalEvents: 3, eventsByType: { 'DEPLOY_TARGET_CHOICE': 1, 'BURST_EFFECT_CHOICE': 2 }, registeredTypes: 5 }
 ```
@@ -146,7 +146,7 @@ console.log('Event stats:', stats);
 
 ```javascript
 // Remove an event type (useful for cleanup or phase transitions)
-this.eventProcessor.unregisterEventType('SPECIAL_PHASE_CHOICE');
+this.frontEventProcessor.unregisterEventType('SPECIAL_PHASE_CHOICE');
 ```
 
 ## Error Handling Best Practices

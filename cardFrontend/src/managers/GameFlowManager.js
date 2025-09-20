@@ -63,9 +63,9 @@ export default class GameFlowManager {
    * Handle event processor queue
    */
   handleEventQueue() {
-    const eventProcessed = this.scene.eventProcessor.processAllEvents();
+    const eventProcessed = this.scene.frontEventProcessor.processAllEvents();
     if (eventProcessed) {
-      console.log('[GameFlowManager] Event processed by EventProcessor, stopping UI update');
+      console.log('[GameFlowManager] Event processed by FrontEventProcessor, stopping UI update');
       return true;
     }
     return false;

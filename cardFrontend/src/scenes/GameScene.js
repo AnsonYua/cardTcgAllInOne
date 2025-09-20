@@ -18,7 +18,7 @@ import TrashIconManager from '../components/TrashIconManager.js';
 import UIMessageManager from '../managers/UIMessageManager.js';
 import CardInteractionManager from '../managers/CardInteractionManager.js';
 import ResourceManager from '../managers/ResourceManager.js';
-import EventProcessor from '../managers/EventProcessor.js';
+import FrontEventProcessor from '../managers/FrontEventProcessor.js';
 import GameApiService from '../services/GameApiService.js';
 import GameFlowManager from '../managers/GameFlowManager.js';
 import GameSceneUIManager from '../managers/GameSceneUIManager.js';
@@ -78,7 +78,7 @@ export default class GameScene extends Phaser.Scene {
     this.deployEffectHandler = new DeployEffectHandler(this, this.gameStateManager, this.apiManager);
     this.actionButtonManager = new ActionButtonManager(this);
     this.dialogManager = new DialogManager(this);
-    this.eventProcessor = new EventProcessor(this);
+    this.frontEventProcessor = new FrontEventProcessor(this);
     
 
 
@@ -569,7 +569,10 @@ export default class GameScene extends Phaser.Scene {
     // Create a read-only card selection dialog for viewing trash
     const selectionId = `trash_view_${Date.now()}`;
     const selection = {
-      eligibleCards: trashArea,
+      items: [{
+        type: 'trash',
+        playerId: targetPlayerId
+      }],
       selectCount: 0, // Read-only, no selection needed
       title: `${trashOwner === 'player' ? 'Your' : 'Opponent\'s'} Trash Area`,
       description: `${trashArea.length} card${trashArea.length !== 1 ? 's' : ''} in trash area`,

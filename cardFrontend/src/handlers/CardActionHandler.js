@@ -269,36 +269,24 @@ export default class CardActionHandler {
             return;
         }
         
-        // Find all units in slots (slot1-slot6) - use units directly without conversion
-        // Only include units that don't already have pilots attached
-        const eligibleCards = [];
+        // Create simplified items for all player slots with units but no pilots
+        const items = [];
         for (let i = 1; i <= 6; i++) {
-            const slotName = `slot${i}`;
-            const slot = playerData.zones[slotName];
-            // Also check frontend slot manager to be extra sure pilot status is consistent
-            const hasUnitInSlot = this.gameScene.slotAreaManager.hasUnitInSlot('player', slotName);
-            const hasPilotInSlot = this.gameScene.slotAreaManager.hasPilotInSlot('player', slotName);
-            
-            if (slot && slot.unit && !slot.pilot && hasUnitInSlot && !hasPilotInSlot) {
-                // Use the unit directly with minimal metadata additions
-                const unit = slot.unit;
-                unit.slot = slotName; // Add slot info directly to existing unit object
-                eligibleCards.push(unit);
-            }
-        }
-        
-        if (eligibleCards.length === 0) {
-            this.showErrorMessage('No units available to pilot. Units either need to be placed first or already have pilots attached.');
-            return;
+            items.push({
+                type: 'slot',
+                playerId: playerId,
+                zone: `slot${i}`,
+                constraints: ['has-unit', 'no-pilot']
+            });
         }
         
         // Create a unique selection ID
         const selectionId = `pilot_target_${Date.now()}`;
         
-        // Create selection data compatible with existing system
+        // Create selection data with new items format
         const selectionData = {
             playerId: playerId,
-            eligibleCards: eligibleCards,
+            items: items,
             dialogType:"SELECT_UNIT_FOR_PILOT",
             selectCount: 1,
             numberOfSections: 1,  // Single section for pilot selection
@@ -414,37 +402,24 @@ export default class CardActionHandler {
             return;
         }
         
-        // Find all opponent units in slots (slot1-slot6)
-        // Pass whole slot data to reduce object conversion
-        const eligibleTargets = [];
+        // Create simplified items for all opponent slots with units
+        const items = [];
         for (let i = 1; i <= 6; i++) {
-            const slotName = `slot${i}`;
-            const slot = opponentData.zones[slotName];
-            
-            if (slot && slot.unit) {
-                // Pass the whole slot data with metadata
-                const slotTarget = {
-                    ...slot, // Includes unit, pilot, and any other slot data
-                    slotName: slotName,
-                    playerId: opponentId,
-                    isSlotTarget: true // Mark for special dialog handling
-                };
-                eligibleTargets.push(slotTarget);
-            }
-        }
-        
-        if (eligibleTargets.length === 0) {
-            this.showErrorMessage('没有可攻击的对手机体');
-            return;
+            items.push({
+                type: 'slot',
+                playerId: opponentId,
+                zone: `slot${i}`,
+                constraints: ['has-unit']
+            });
         }
         
         // Create a unique selection ID
         const selectionId = `attack_target_${Date.now()}`;
         
-        // Create selection data compatible with existing system
+        // Create selection data with new items format
         const selectionData = {
             playerId: playerId,
-            eligibleCards: eligibleTargets,
+            items: items,
             dialogType: "SELECT_ATTACK_TARGET",
             selectCount: 1,
             numberOfSections: 1,

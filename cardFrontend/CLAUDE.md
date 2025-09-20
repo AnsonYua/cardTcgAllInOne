@@ -48,7 +48,7 @@ The game uses Phaser 3 scenes with state management integration:
 src/
 ├── scenes/           # Phaser scene classes (8 total including DemoScene variants)
 ├── components/       # Reusable UI components (Card.js, ShuffleAnimationManager.js, area managers)
-├── managers/         # Specialized managers (20+ files including GameFlowManager, HandCardManager, CardPreviewManager, EventProcessor)
+├── managers/         # Specialized managers (20+ files including GameFlowManager, HandCardManager, CardPreviewManager, FrontEventProcessor)
 ├── services/         # Service layer (GameApiService.js for API abstraction)
 ├── handlers/         # Event and action handlers (CardActionHandler.js, DeployEffectHandler.js)
 ├── systems/          # Game systems (ActionButtonManager.js, CardActionRegistry.js)
@@ -105,7 +105,7 @@ gameState = {
 - **CardPreviewManager** (`src/managers/CardPreviewManager.js`): Sophisticated card preview system with dual card support and current stats display
 - **GameFlowManager** (`src/managers/GameFlowManager.js`): Game flow control, phase transitions, and complex update logic management
 - **GameSceneUIManager** (`src/managers/GameSceneUIManager.js`): UI creation and management with standardized patterns
-- **EventProcessor** (`src/managers/EventProcessor.js`): Generic event processing system with extensible event type registry
+- **FrontEventProcessor** (`src/managers/FrontEventProcessor.js`): Generic event processing system with extensible event type registry
 - **ActionButtonManager** (`src/systems/ActionButtonManager.js`): Dynamic action button system for card interactions
 
 #### **Event-Driven Architecture**
@@ -232,7 +232,7 @@ const slotTarget = {
 
 #### Trigger Flow
 1. **Backend Event**: Send `DEPLOY_TARGET_CHOICE` event
-2. **Event Processing**: EventProcessor detects event in processing queue
+2. **Event Processing**: FrontEventProcessor detects event in processing queue
 3. **Dialog Creation**: DialogManager.showDeployTargetDialog() called
 4. **Data Lookup**: buildTargetCardsFromOpponentZones() accesses gameState zones
 5. **Card Format**: Creates cards with `isSlotTarget: true` when pilot exists
@@ -343,7 +343,7 @@ gameState.gameEnv.players.playerId_1.zones.slot1 = {
 - **CardPreviewManager**: Sophisticated preview system supporting single cards, dual card previews (unit+pilot), and slot-based previews with current stats display
 - **GameFlowManager**: Complex game flow logic extraction including phase transitions, event processing, and the massive updateUI method (~140 lines)
 - **GameSceneUIManager**: All UI creation and management extracted with standardized patterns for buttons, displays, and status indicators
-- **EventProcessor**: Generic event processing system with extensible event type registry and handler patterns
+- **FrontEventProcessor**: Generic event processing system with extensible event type registry and handler patterns
 - **GameApiService**: Standardized API call wrapper reducing code duplication with consistent response handling patterns
 
 ### Zone System and Utilities Refactoring (2024)
@@ -523,19 +523,19 @@ gameState.gameEnv.players.playerId_1.zones.slot1 = {
   this.gameFlowManager.updateGameFlow();
   ```
 
-### EventProcessor Usage Patterns
-- **Extensible Event System**: Use `EventProcessor` for handling processing queue events with type registry
+### FrontEventProcessor Usage Patterns
+- **Extensible Event System**: Use `FrontEventProcessor` for handling processing queue events with type registry
 - **Custom Event Types**: Register new event types with custom handlers
 - **Usage Example**:
   ```javascript
   // In GameScene:
-  this.eventProcessor = new EventProcessor(this);
+  this.frontEventProcessor = new FrontEventProcessor(this);
   
   // Process all events (returns true if blocking event processed)
-  const eventProcessed = this.eventProcessor.processAllEvents();
+  const eventProcessed = this.frontEventProcessor.processAllEvents();
   
   // Register custom event type
-  this.eventProcessor.registerEventType('CUSTOM_CHOICE', {
+  this.frontEventProcessor.registerEventType('CUSTOM_CHOICE', {
     handler: this.handleCustomChoice.bind(this),
     requiresPlayerMatch: true,
     allowMultiple: false,
