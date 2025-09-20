@@ -33,12 +33,92 @@ export default class DialogManager {
   }
 
   /**
+   * Helper function to create slot items based on filter conditions
+   * @param {Object} playerData - Player data from game state
+   * @param {string} playerId - Player ID
+   * @param {Function} filterFn - Function to filter slots (slot, slotName) => boolean
+   * @returns {Array} Array of slot items
+   */
+  _createSlotItems(playerData, playerId, filterFn) {
+    if (!playerData?.zones) {
+      return [];
+    }
+
+    const items = [];
+    for (let i = 1; i <= 6; i++) {
+      const slotName = `slot${i}`;
+      const slot = playerData.zones[slotName];
+
+      if (filterFn(slot, slotName)) {
+        items.push({
+          type: 'slot',
+          playerId: playerId,
+          zone: slotName,
+          cardUid: slot.unit.cardUid
+        });
+      }
+    }
+    return items;
+  }
+
+  /**
+   * Helper function to create selection data object
+   * @param {string} playerId - Player ID
+   * @param {Array} items - Items array
+   * @param {string} dialogType - Dialog type
+   * @param {string} title - Dialog title
+   * @param {string} description - Dialog description
+   * @param {Function} callback - Selection callback
+   * @returns {Object} Selection data object
+   */
+  _createSelectionData(playerId, items, dialogType, title, description, callback) {
+    return {
+      playerId: playerId,
+      items: items,
+      dialogType: dialogType,
+      selectCount: 1,
+      numberOfSections: 1,
+      title: title,
+      description: description,
+      callback: callback,
+      onCancel: () => {
+        console.log(`DialogManager: ${dialogType} selection cancelled`);
+      }
+    };
+  }
+
+  /**
+   * Helper function to validate items and show dialog
+   * @param {Array} items - Items array to validate
+   * @param {string} errorMessage - Error message if no items found
+   * @param {string} selectionId - Selection ID
+   * @param {Object} selectionData - Selection data object
+   * @returns {string|null} Dialog ID or null if no valid items
+   */
+  _validateAndShowDialog(items, errorMessage, selectionId, selectionData) {
+    if (items.length === 0) {
+      console.warn(`DialogManager: ${errorMessage}`);
+      return null;
+    }
+    return this.showCardSelectionDialog(selectionId, selectionData, selectionData.callback);
+  }
+
+  /**
    * Show a card selection dialog (main use case for game mechanics)
    * @param {string} selectionId - Unique identifier for the selection
    * @param {Object} selection - Selection configuration object
    * @param {Function} onConfirm - Callback when user confirms selection
    * @returns {string} Dialog ID for tracking/cleanup
    */
+  /*
+   SlotSelection, items should look like this
+     {
+          "cardUid": "ST01-009_d0276af7-b917-45ba-8e16-692d241a7360",
+          "zone": "slot1",
+          "playerId": "playerId_1"
+          "type":"slow"
+     }
+  */
   /**
    * Unified card selection dialog (handles slots, carduid, and trash selections)
    * This is the main dialog method that can handle all types of card selections
@@ -83,15 +163,7 @@ export default class DialogManager {
     return dialogId;
   }
 
-  /*
-  add a comment here to describe the structure of selection show is it can trigger
-    SlotSelection, items should look like this
-     {
-          "cardUid": "ST01-009_d0276af7-b917-45ba-8e16-692d241a7360",
-          "zone": "slot1",
-          "playerId": "playerId_1"
-     }
-  */
+
 
 
   /**
@@ -414,42 +486,19 @@ export default class DialogManager {
     }
 
     // Create items only for slots that actually contain units
-    const items = [];
-    for (let i = 1; i <= 6; i++) {
-      const slotName = `slot${i}`;
-      const slot = opponentData.zones[slotName];
+    const items = this._createSlotItems(opponentData, opponentId, (slot) => {
+      return slot?.unit?.cardUid; // Only slots with units
+    });
 
-      // Only add item if slot contains a unit
-      if (slot?.unit?.cardUid) {
-        items.push({
-          type: 'slot',
-          playerId: opponentId,
-          zone: slotName,
-          cardUid: slot.unit.cardUid // Include the actual unit cardUid
-        });
-      }
-    }
-
-    // Check if there are any valid targets
-    if (items.length === 0) {
-      console.warn('DialogManager: No valid attack targets found');
-      // Could show an error message or handle this case
-      return null;
-    }
-
-    // Create a unique selection ID
+    // Create selection data and validate
     const selectionId = `attack_target_${Date.now()}`;
-
-    // Create selection data with items format
-    const selectionData = {
-      playerId: attackerId,
-      items: items,
-      dialogType: "SELECT_ATTACK_TARGET",
-      selectCount: 1,
-      numberOfSections: 1,
-      title: '选择攻击目标',
-      description: '选择要攻击的对手机体',
-      callback: (selectionId, selectedCards) => {
+    const selectionData = this._createSelectionData(
+      attackerId,
+      items,
+      "SELECT_ATTACK_TARGET",
+      '选择攻击目标',
+      '选择要攻击的对手机体',
+      (selectionId, selectedCards) => {
         console.log('DialogManager: Attack target selected:', selectionId, selectedCards);
         const cardsArray = Array.isArray(selectedCards) ? selectedCards : [selectedCards];
         if (cardsArray && cardsArray.length > 0) {
@@ -458,14 +507,10 @@ export default class DialogManager {
             onAttackConfirm(selectedCard, targetUnit);
           }
         }
-      },
-      onCancel: () => {
-        console.log('DialogManager: Attack target selection cancelled');
       }
-    };
+    );
 
-    // Use unified card selection dialog
-    return this.showCardSelectionDialog(selectionId, selectionData, selectionData.callback);
+    return this._validateAndShowDialog(items, 'No valid attack targets found', selectionId, selectionData);
   }
 
   /**
@@ -490,42 +535,19 @@ export default class DialogManager {
     }
 
     // Create items only for slots that contain units but no pilots
-    const items = [];
-    for (let i = 1; i <= 6; i++) {
-      const slotName = `slot${i}`;
-      const slot = playerData.zones[slotName];
+    const items = this._createSlotItems(playerData, playerId, (slot) => {
+      return slot?.unit?.cardUid && !slot.pilot; // Units without pilots
+    });
 
-      // Only add item if slot contains a unit but no pilot
-      if (slot?.unit?.cardUid && !slot.pilot) {
-        items.push({
-          type: 'slot',
-          playerId: playerId,
-          zone: slotName,
-          cardUid: slot.unit.cardUid // Include the actual unit cardUid
-        });
-      }
-    }
-
-    // Check if there are any valid targets
-    if (items.length === 0) {
-      console.warn('DialogManager: No valid pilot targets found (need units without pilots)');
-      // Could show an error message or handle this case
-      return null;
-    }
-
-    // Create a unique selection ID
+    // Create selection data and validate
     const selectionId = `pilot_target_${Date.now()}`;
-
-    // Create selection data with items format
-    const selectionData = {
-      playerId: playerId,
-      items: items,
-      dialogType: "SELECT_UNIT_FOR_PILOT",
-      selectCount: 1,
-      numberOfSections: 1,
-      title: 'Select Unit to Pilot',
-      description: 'Choose which unit this pilot card should attach to',
-      callback: (selectionId, selectedCards) => {
+    const selectionData = this._createSelectionData(
+      playerId,
+      items,
+      "SELECT_UNIT_FOR_PILOT",
+      'Select Unit to Pilot',
+      'Choose which unit this pilot card should attach to',
+      (selectionId, selectedCards) => {
         console.log('DialogManager: Pilot target selected:', selectionId, selectedCards);
         const cardsArray = Array.isArray(selectedCards) ? selectedCards : [selectedCards];
         if (cardsArray && cardsArray.length > 0) {
@@ -534,14 +556,10 @@ export default class DialogManager {
             onPilotConfirm(pilotCard, selectedUnit);
           }
         }
-      },
-      onCancel: () => {
-        console.log('DialogManager: Pilot target selection cancelled');
       }
-    };
+    );
 
-    // Use unified card selection dialog
-    return this.showCardSelectionDialog(selectionId, selectionData, selectionData.callback);
+    return this._validateAndShowDialog(items, 'No valid pilot targets found (need units without pilots)', selectionId, selectionData);
   }
 
 
