@@ -155,6 +155,15 @@ export default class APIManager {
     });
   }
 
+  async confirmDeployChoice(gameId, playerId, eventId, selectedTarget) {
+    console.log('APIManager: Confirming deploy choice:', { gameId, playerId, eventId, selectedTarget });
+    
+    return this.request('/player/confirmDeployChoice', {
+      method: 'POST',
+      body: JSON.stringify({ gameId, playerId, eventId, selectedTarget })
+    });
+  }
+
   async endTurn(gameId, playerId) {
     return this.request('/player/endTurn', {
       method: 'POST',

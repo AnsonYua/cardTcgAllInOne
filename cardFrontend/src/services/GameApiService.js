@@ -111,6 +111,29 @@ export default class GameApiService {
   }
 
   /**
+   * Confirm deploy target choice API call with standardized handling
+   * @param {string} eventId - The deploy target choice event ID
+   * @param {Object} selectedTarget - Selected target object with cardUid, zone, playerId
+   */
+  async confirmDeployChoice(eventId, selectedTarget) {
+    const gameState = this.gameStateManager.getGameState();
+    
+    const response = await this.apiManager.confirmDeployChoice(
+      gameState.gameId, 
+      gameState.playerId, 
+      eventId, 
+      selectedTarget
+    );
+    
+    return this.handleStandardResponse(
+      response, 
+      'Deploy target selected successfully!',
+      'Failed to confirm deploy target choice',
+      true // updateHand = true for deploy effects
+    );
+  }
+
+  /**
    * Generic API call wrapper with error handling
    * @param {Function} apiCall - The API call function
    * @param {string} loadingMessage - Message to show while loading

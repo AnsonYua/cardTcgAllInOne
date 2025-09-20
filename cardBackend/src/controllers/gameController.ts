@@ -910,7 +910,65 @@ export class GameController {
         }
     }
 
+    /**
+     * Confirm deploy target choice
+     * POST /api/game/player/confirmDeployChoice
+     * Body: { gameId, playerId, eventId, selectedTarget }
+     */
+    async confirmDeployChoice(req: GameRequest, res: Response): Promise<void> {
+        try {
+            console.log('🎯 Processing deploy target choice confirmation:', req.body);
+            
+            const { gameId, playerId, eventId, selectedTarget } = req.body;
+            
+            if (!gameId || !playerId || !eventId || !selectedTarget) {
+                res.status(400).json({
+                    error: 'gameId, playerId, eventId, and selectedTarget are required',
+                    timestamp: new Date().toISOString(),
+                    context: 'confirmDeployChoice endpoint'
+                });
+                return;
+            }
 
+            // Validate selectedTarget structure
+            if (!selectedTarget.cardUid || !selectedTarget.zone || !selectedTarget.playerId) {
+                res.status(400).json({
+                    error: 'selectedTarget must include cardUid, zone, and playerId',
+                    timestamp: new Date().toISOString(),
+                    context: 'confirmDeployChoice endpoint'
+                });
+                return;
+            }
+            
+            console.log(`🚀 Player ${playerId} selected deploy target: ${selectedTarget.cardUid} in ${selectedTarget.zone}`);
+            
+            // Use GameLogic service method for business logic
+            const result = await this.gameLogic.confirmDeployChoice(gameId, playerId, eventId, selectedTarget);
+            
+            if (result.success && result.gameEnv) {
+                res.json({
+                    success: true,
+                    gameId: result.gameId,
+                    gameEnv: result.gameEnv,
+                    message: 'Deploy target selected successfully'
+                });
+            } else {
+                res.status(400).json({
+                    error: result.error || 'Failed to process deploy target choice',
+                    timestamp: new Date().toISOString(),
+                    context: 'confirmDeployChoice endpoint'
+                });
+            }
+            
+        } catch (error) {
+            console.error('❌ Error in confirmDeployChoice:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'confirmDeployChoice endpoint'
+            });
+        }
+    }
 
 }
 

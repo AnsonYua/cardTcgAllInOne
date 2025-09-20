@@ -38,28 +38,15 @@ export default class DeployEffectHandler {
           return;
         }
         
-        // Call API to submit the selected target
-        const response = await this.submitDeployTargetSelection(
-          gameState.gameId, 
-          gameState.playerId, 
-          event.id, 
-          selectedTarget
-        );
+        // Call GameApiService to submit the selected target
+        const result = await this.scene.gameApiService.confirmDeployChoice(event.id, {
+          cardUid: selectedTarget.cardUid,
+          zone: selectedTarget.zone,
+          playerId: selectedTarget.playerId
+        });
         
-        if (response && response.success) {
-          console.log('DeployEffectHandler: Deploy target selection successful:', response);
-          this.scene.showRoomStatus('Deploy effect applied successfully!');
-          
-          // Update game state with response
-          if (response.gameEnv) {
-            this.gameStateManager.checkHandUIDChangesAndSetScenario(response.gameEnv, '', this.scene.handContainer, { value: this.scene.isSetScenoria });
-            this.gameStateManager.updateGameEnv(response.gameEnv);
-            this.scene.updateGameState();
-          }
-          
-        } else {
-          throw new Error(response?.error || 'Failed to process deploy target selection');
-        }
+        console.log('DeployEffectHandler: Deploy target selection successful');
+        // GameApiService already handles gameEnv updates and UI feedback
         
       } catch (error) {
         console.error('DeployEffectHandler: Failed to submit deploy target selection:', error);
@@ -68,43 +55,6 @@ export default class DeployEffectHandler {
     });
   }
 
-  /**
-   * Submit deploy target selection to backend (placeholder API call)
-   * @param {string} gameId - Game ID
-   * @param {string} playerId - Player ID
-   * @param {string} eventId - Event ID
-   * @param {Object} selectedTarget - Selected target data
-   * @returns {Promise<Object>} API response
-   */
-  async submitDeployTargetSelection(gameId, playerId, eventId, selectedTarget) {
-    console.log('DeployEffectHandler: Submitting deploy target selection - PLACEHOLDER');
-    console.log('- gameId:', gameId);
-    console.log('- playerId:', playerId);
-    console.log('- eventId:', eventId);
-    console.log('- selectedTarget:', selectedTarget);
-    
-    // TODO: Replace with actual API call when backend endpoint is ready
-    // For now, return a mock response
-    
-    try {
-      // Placeholder API call structure:
-      // const response = await this.apiManager.submitDeployTarget(gameId, playerId, eventId, selectedTarget);
-      
-      // Mock response for now
-      const mockResponse = {
-        success: true,
-        message: 'Deploy target selection processed (PLACEHOLDER)',
-        gameEnv: null // No game state changes in placeholder
-      };
-      
-      console.log('DeployEffectHandler: Placeholder deploy target submission successful');
-      return mockResponse;
-      
-    } catch (error) {
-      console.error('DeployEffectHandler: Placeholder deploy target submission failed:', error);
-      throw error;
-    }
-  }
 
   /**
    * Handle deploy effect completion (for future extension)
