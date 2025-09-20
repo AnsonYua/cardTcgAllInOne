@@ -29,8 +29,11 @@ export default class DialogUIManager {
    *   // REQUIRED: Items array for ItemDataResolver to process
    *   items: [
    *     // Slot items (most common - for unit/pilot selection)
+   *     { type: 'slot', playerId: 'player_1', zone: 'slot1', cardUid: 'unit_card_uid' },
+   *     { type: 'slot', playerId: 'opponent_1', zone: 'slot2', cardUid: 'target_unit_uid' },
+   *     
+   *     // Alternative: Slot items with constraints (when not pre-filtering)
    *     { type: 'slot', playerId: 'player_1', zone: 'slot1', constraints: ['has-unit', 'no-pilot'] },
-   *     { type: 'slot', playerId: 'opponent_1', zone: 'slot2', constraints: ['has-unit'] },
    *     
    *     // CardUID items (for specific card references like burst effects)
    *     { type: 'carduid', cardUid: 'card_123', preSelected: true },

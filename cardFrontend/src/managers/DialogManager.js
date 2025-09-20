@@ -425,8 +425,7 @@ export default class DialogManager {
           type: 'slot',
           playerId: opponentId,
           zone: slotName,
-          cardUid: slot.unit.cardUid, // Include the actual unit cardUid
-          constraints: ['has-unit']
+          cardUid: slot.unit.cardUid // Include the actual unit cardUid
         });
       }
     }
@@ -502,8 +501,7 @@ export default class DialogManager {
           type: 'slot',
           playerId: playerId,
           zone: slotName,
-          cardUid: slot.unit.cardUid, // Include the actual unit cardUid
-          constraints: ['has-unit', 'no-pilot']
+          cardUid: slot.unit.cardUid // Include the actual unit cardUid
         });
       }
     }
