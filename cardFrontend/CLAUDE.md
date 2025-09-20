@@ -740,6 +740,30 @@ SlotAreaManager.configureSlotTotalLabels(unitCard, null, unitAP, unitHP);
 SlotAreaManager.configureSlotTotalLabels(null, pilotCard, pilotAP, pilotHP);
 ```
 
+### SlotAreaManager Card Lookup Method
+**Purpose**: Find slot information for any card instance (needed for CardPreviewManager).
+
+```javascript
+// ✅ NEW INSTANCE METHOD in SlotAreaManager.js
+/**
+ * Get slot information for a given card instance
+ * @param {Card} card - Card instance to find
+ * @returns {Object|null} Slot info with playerType, slotName, cardType or null if not found
+ */
+const slotInfo = slotAreaManager.getSlotInfoFromCard(hoveredCard);
+
+// Returns: { playerType: 'player', slotName: 'slot1', cardType: 'unit' }
+// Or: { playerType: 'opponent', slotName: 'slot3', cardType: 'pilot' }
+// Or: null if card not found in any slot
+
+// ✅ USAGE EXAMPLE (CardPreviewManager):
+const slotInfo = this.scene.slotAreaManager.getSlotInfoFromCard(hoveredCard);
+if (slotInfo) {
+  const slotCards = this.scene.slotAreaManager.getSlotCards(slotInfo.playerType, slotInfo.slotName);
+  // Now can determine unit+pilot relationships for preview
+}
+```
+
 ### Card Total Labels Configuration Method
 **Purpose**: Reusable method for configuring total AP/HP labels on any Card (dialogs, units without pilots, etc.).
 

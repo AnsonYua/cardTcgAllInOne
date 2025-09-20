@@ -855,7 +855,7 @@ export default class DialogUIManager {
   static _setupSlotContainerInteraction(scene, card, slotContainer, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements) {
     // Set up proper interactive area for the container - include extra height for total AP/HP labels
     const interactiveWidth = cardDisplayConfig.cardDisplayWidth;
-    const extraHeight = 25; // Match the extra height from card container background
+    const extraHeight = 40; // Match the extra height from card container background
     const interactiveHeight = cardDisplayConfig.cardDisplayHeight + extraHeight;
     
     slotContainer.setInteractive(
@@ -887,6 +887,26 @@ export default class DialogUIManager {
           ease: 'Power2.easeOut'
         });
       }
+      
+      // ✅ ENHANCED: Show slot card preview on hover (unit+pilot dual preview)
+      if (scene.cardPreviewManager) {
+        try {
+          // For slot containers, show dual preview if both unit and pilot are present
+          if (slotContainer.unitCard && slotContainer.pilotCard) {
+            scene.cardPreviewManager.showDualCardPreview(slotContainer.unitCard, slotContainer.pilotCard);
+            console.log('Dialog slot dual preview shown for unit+pilot');
+          } else if (slotContainer.unitCard) {
+            scene.cardPreviewManager.showCardPreview(slotContainer.unitCard.getCardFullData());
+            console.log('Dialog slot preview shown for unit only');
+          } else if (slotContainer.pilotCard) {
+            scene.cardPreviewManager.showCardPreview(slotContainer.pilotCard.getCardFullData());
+            console.log('Dialog slot preview shown for pilot only');
+          }
+        } catch (error) {
+          console.warn('Failed to show dialog slot card preview:', error);
+        }
+      }
+      
       scene.game.canvas.style.cursor = 'pointer';
     };
     
@@ -906,6 +926,17 @@ export default class DialogUIManager {
           }
         });
       }
+      
+      // ✅ ENHANCED: Hide card preview on hover out
+      if (scene.cardPreviewManager) {
+        try {
+          scene.cardPreviewManager.hideSlotCardPreview();
+          console.log('Dialog slot card preview hidden');
+        } catch (error) {
+          console.warn('Failed to hide dialog slot card preview:', error);
+        }
+      }
+      
       scene.game.canvas.style.cursor = 'default';
     };
     
@@ -916,9 +947,26 @@ export default class DialogUIManager {
     };
     
     // Set up container events
-    slotContainer.on('pointerover', showContainerHoverEffect);
-    slotContainer.on('pointerout', hideContainerHoverEffect);
-    slotContainer.on('pointerdown', handleContainerSelection);
+    //slotContainer.on('pointerover', showContainerHoverEffect);
+    //slotContainer.on('pointerout', hideContainerHoverEffect);
+    //slotContainer.on('pointerdown', handleContainerSelection);
+    
+    // ✅ ENHANCED: Also set up events on individual unit and pilot cards for better responsiveness
+    if (slotContainer.unitCard && slotContainer.unitCard.setInteractive) {
+      slotContainer.unitCard.setInteractive();
+      slotContainer.unitCard.on('pointerover', showContainerHoverEffect);
+      slotContainer.unitCard.on('pointerout', hideContainerHoverEffect);
+      slotContainer.unitCard.on('pointerdown', handleContainerSelection);
+      console.log('Unit card interaction events attached');
+    }
+    
+    if (slotContainer.pilotCard && slotContainer.pilotCard.setInteractive) {
+      slotContainer.pilotCard.setInteractive();
+      slotContainer.pilotCard.on('pointerover', showContainerHoverEffect);
+      slotContainer.pilotCard.on('pointerout', hideContainerHoverEffect);
+      slotContainer.pilotCard.on('pointerdown', handleContainerSelection);
+      console.log('Pilot card interaction events attached');
+    }
   }
 
   /**
@@ -938,7 +986,7 @@ export default class DialogUIManager {
       if (!cardComponent.hoverEffect) {
         cardComponent.hoverEffect = scene.add.graphics();
         cardComponent.hoverEffect.lineStyle(3, 0x00ff00, 0.8);
-        const extraHeight = 25; // Match the extra height from card container background
+        const extraHeight = 40; // Match the extra height from card container background
         // Match the centered positioning of the card container background
         const adjustedY = cardsY - cardDisplayConfig.cardDisplayHeight/2 - (extraHeight / 2);
         cardComponent.hoverEffect.strokeRoundedRect(
@@ -960,6 +1008,15 @@ export default class DialogUIManager {
           ease: 'Power2.easeOut'
         });
       }
+      
+      // ✅ ENHANCED: Show card preview on hover
+      
+      if(card.type == "slot"){
+          const cardDataForPreview = card.unit;
+          scene.cardPreviewManager.showCardPreview(cardDataForPreview);
+      }
+      
+      
       scene.game.canvas.style.cursor = 'pointer';
     };
     
@@ -979,6 +1036,19 @@ export default class DialogUIManager {
           }
         });
       }
+      scene.cardPreviewManager.hideCardPreview();
+      
+      
+      // ✅ ENHANCED: Hide card preview on hover out
+      if (scene.cardPreviewManager) {
+        try {
+          scene.cardPreviewManager.hideCardPreview();
+          console.log('Dialog card preview hidden');
+        } catch (error) {
+          console.warn('Failed to hide dialog card preview:', error);
+        }
+      }
+      
       scene.game.canvas.style.cursor = 'default';
     };
     
@@ -1073,7 +1143,7 @@ export default class DialogUIManager {
   static _createSelectionHighlight(cardX, cardsY, cardDisplayConfig, dialogElements) {
     const highlight = dialogElements.cardSection.background.add.graphics();
     highlight.lineStyle(4, 0x00ff00);
-    const extraHeight = 25; // Match the extra height from card container background
+    const extraHeight = 40; // Match the extra height from card container background
     // Match the centered positioning of the card container background
     const adjustedY = cardsY - cardDisplayConfig.cardDisplayHeight/2 - (extraHeight / 2);
     highlight.strokeRoundedRect(

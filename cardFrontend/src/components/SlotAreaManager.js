@@ -429,6 +429,40 @@ export default class SlotAreaManager {
 
   // ============ UTILITY METHODS ============
 
+  /**
+   * Get slot information for a given card instance
+   * @param {Card} card - Card instance to find
+   * @returns {Object|null} Slot info with playerType, slotName, cardType or null if not found
+   */
+  getSlotInfoFromCard(card) {
+    if (!card) return null;
+    
+    // Search through player slots
+    for (const slotName of ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6']) {
+      const playerSlot = this.playerSlotCards[slotName];
+      if (playerSlot.unit === card) {
+        return { playerType: 'player', slotName: slotName, cardType: 'unit' };
+      }
+      if (playerSlot.pilot === card) {
+        return { playerType: 'player', slotName: slotName, cardType: 'pilot' };
+      }
+    }
+    
+    // Search through opponent slots
+    for (const slotName of ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6']) {
+      const opponentSlot = this.opponentSlotCards[slotName];
+      if (opponentSlot.unit === card) {
+        return { playerType: 'opponent', slotName: slotName, cardType: 'unit' };
+      }
+      if (opponentSlot.pilot === card) {
+        return { playerType: 'opponent', slotName: slotName, cardType: 'pilot' };
+      }
+    }
+    
+    // Card not found in any slot
+    return null;
+  }
+
   getSlotCard(playerType, slotName, cardType = 'unit') {
     const cardArray = playerType === 'player' ? this.playerSlotCards : this.opponentSlotCards;
     return cardArray[slotName] ? cardArray[slotName][cardType] : null;
