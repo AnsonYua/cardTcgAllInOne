@@ -18,7 +18,7 @@ import SlotAreaManager from '../components/SlotAreaManager.js';
  * - Animation management
  */
 export default class DialogUIManager {
-  
+
   /**
    * Creates a card selection dialog with pagination and interactive elements
    * @param {string} selectionId - Unique identifier for the selection
@@ -31,38 +31,33 @@ export default class DialogUIManager {
     console.log('🎮 DialogUIManager: Creating card selection dialog');
     console.log('Selection ID:', selectionId);
     console.log('Selection config1111:', JSON.stringify(selection));
-    
-    // Resolve items to eligibleCards format
-    let eligibleCards = [];
-    if (selection.eligibleCards && Array.isArray(selection.eligibleCards)) {
-      // Direct eligibleCards provided (e.g., trash viewing)
-      eligibleCards = selection.eligibleCards;
-      console.log('📦 Using provided eligibleCards:', eligibleCards.length, 'cards');
-    } else if (selection.items && Array.isArray(selection.items)) {
-      // Resolve items using ItemDataResolver
-      console.log('📦 Resolving', selection.items.length, 'items to cards');
-      const gameState = scene.gameStateManager.getGameState();
-      eligibleCards = ItemDataResolver.resolveItems(selection.items, gameState);
-      console.log('✅ Resolved to 111', JSON.stringify(eligibleCards), 'eligible cards');
-    } else {
-      console.warn('DialogUIManager: No items or eligibleCards provided in selection');
-      eligibleCards = [];
+
+    // Standardized input: all callers must provide selection.items
+    if (!selection.items || !Array.isArray(selection.items)) {
+      console.warn('DialogUIManager: selection.items must be provided as an array');
+      return { elements: [], cleanup: () => { } };
     }
-    
+
+    // Resolve items to eligibleCards using ItemDataResolver
+    console.log('📦 Resolving', selection.items.length, 'items to cards');
+    const gameState = scene.gameStateManager.getGameState();
+    const eligibleCards = ItemDataResolver.resolveItems(selection.items, gameState);
+    console.log('✅ Resolved to', eligibleCards.length, 'eligible cards');
+
     // Add eligibleCards to selection for rest of system
     selection.eligibleCards = eligibleCards;
-    
+
     console.log('Available cards:', eligibleCards.length);
-    
+
     // Create dialog configuration and layout
     const config = this._createDialogConfig(scene, selection);
     const dialogElements = { cardListElements: [] };
-    
+
     // Create dialog background and layout sections
     this._createDialogBackground(scene, config, dialogElements);
     this._createTitleSection(scene, config, dialogElements);
     this._createCardSectionBackground(scene, config, dialogElements, selection);
-    
+
     // Initialize pagination state
     const paginationState = {
       currentPage: 0,
@@ -70,7 +65,7 @@ export default class DialogUIManager {
       totalCards: eligibleCards.length,
       totalPages: Math.ceil(eligibleCards.length / 4)
     };
-    
+
     // Initialize selection state
     const selectionState = {
       selectedCard: null,
@@ -79,28 +74,28 @@ export default class DialogUIManager {
       selectedCardHighlights: [],
       maxSelections: selection.selectCount || 1
     };
-    
+
     // Create card display configuration
     const cardDisplayConfig = {
       cardDisplayWidth: 140,
       cardDisplayHeight: 200,
       cardSpacing: 20
     };
-    
+
     // Create pagination controls
     this._createPaginationControls(scene, config, paginationState, dialogElements);
-    
+
     // Create card manager and display
     const { updateCardDisplay, clearSelections } = this._createCardManager(
       scene, selection, config, paginationState, selectionState, cardDisplayConfig, dialogElements
     );
-    
+
     // Handle button configuration
     let updateOKButtonState;
     if (selection.buttons) {
       // Custom button configuration
       const buttonConfig = { buttons: selection.buttons };
-      this._createButtonSection(scene, selectionId, selection, config, selectionState, dialogElements, () => {}, onConfirm);
+      this._createButtonSection(scene, selectionId, selection, config, selectionState, dialogElements, () => { }, onConfirm);
       updateOKButtonState = () => this._updateConfigurableButtonState(selectionState, dialogElements, buttonConfig);
     } else {
       // Default OK/Cancel buttons
@@ -109,16 +104,16 @@ export default class DialogUIManager {
       }, onConfirm);
       updateOKButtonState = () => this._updateOKButtonState(selectionState, dialogElements);
     }
-    
+
     // Initial card display
     updateCardDisplay('in');
     updateOKButtonState();
-    
+
     // Disable main game interactions while dialog is open
     this._disableMainGameCardInteractions(scene);
-    
+
     console.log('✅ Dialog created successfully');
-    
+
     // Return dialog interface
     return {
       elements: this._getAllDialogElements(dialogElements),
@@ -148,15 +143,15 @@ export default class DialogUIManager {
    */
   static _createDialogConfig(scene, selection) {
     const { width, height } = scene.cameras.main;
-    
+
     // Base dialog dimensions
     const dialogWidth = Math.min(width * 0.8, 800);
     const dialogHeight = Math.min(height * 0.8, 600);
-    
+
     // Responsive card sizing based on dialog width
     const cardDisplayWidth = Math.max(120, Math.min(160, (dialogWidth - 100) / 4 - 20));
     const cardDisplayHeight = cardDisplayWidth * 1.4; // Maintain aspect ratio
-    
+
     return {
       centerX: width / 2,
       centerY: height / 2,
@@ -181,23 +176,23 @@ export default class DialogUIManager {
     overlay.setDepth(1500);
     overlay.setInteractive();
     dialogElements.overlay = overlay;
-    
+
     // Main dialog background
     const background = scene.add.graphics();
     background.fillStyle(0x2a2a2a);
     background.fillRoundedRect(
-      config.centerX - config.dialogWidth/2, 
-      config.centerY - config.dialogHeight/2, 
-      config.dialogWidth, 
-      config.dialogHeight, 
+      config.centerX - config.dialogWidth / 2,
+      config.centerY - config.dialogHeight / 2,
+      config.dialogWidth,
+      config.dialogHeight,
       15
     );
     background.lineStyle(3, 0x4a4a4a);
     background.strokeRoundedRect(
-      config.centerX - config.dialogWidth/2, 
-      config.centerY - config.dialogHeight/2, 
-      config.dialogWidth, 
-      config.dialogHeight, 
+      config.centerX - config.dialogWidth / 2,
+      config.centerY - config.dialogHeight / 2,
+      config.dialogWidth,
+      config.dialogHeight,
       15
     );
     background.setDepth(1501);
@@ -210,9 +205,9 @@ export default class DialogUIManager {
    */
   static _createTitleSection(scene, config, dialogElements) {
     const titleSection = {
-      centerY: config.centerY - config.dialogHeight/2 + 50
+      centerY: config.centerY - config.dialogHeight / 2 + 50
     };
-    
+
     // Title text
     const titleText = scene.add.text(config.centerX, titleSection.centerY - 15, config.title, {
       fontSize: '24px',
@@ -222,7 +217,7 @@ export default class DialogUIManager {
     });
     titleText.setOrigin(0.5);
     titleText.setDepth(1503);
-    
+
     // Description text
     const descriptionText = scene.add.text(config.centerX, titleSection.centerY + 15, config.description, {
       fontSize: '16px',
@@ -233,7 +228,7 @@ export default class DialogUIManager {
     });
     descriptionText.setOrigin(0.5);
     descriptionText.setDepth(1503);
-    
+
     dialogElements.titleSection = {
       centerY: titleSection.centerY,
       titleText: titleText,
@@ -252,19 +247,19 @@ export default class DialogUIManager {
       width: config.dialogWidth - 40,
       height: config.dialogHeight - 200
     };
-    
+
     // Card section background
     const cardBg = scene.add.graphics();
     cardBg.fillStyle(0x1a1a1a);
     cardBg.fillRoundedRect(
-      config.centerX - cardSection.width/2,
-      cardSection.centerY - cardSection.height/2,
+      config.centerX - cardSection.width / 2,
+      cardSection.centerY - cardSection.height / 2,
       cardSection.width,
       cardSection.height,
       10
     );
     cardBg.setDepth(1502);
-    
+
     dialogElements.cardSection = {
       centerY: cardSection.centerY,
       background: scene,
@@ -280,7 +275,7 @@ export default class DialogUIManager {
    */
   static _extractCardDisplayInfo(card) {
     let cardImageId, displayCardId;
-    
+
     // Direct card object (unit from zones)
     if (card.cardData && card.cardData.id) {
       cardImageId = card.cardData.id;
@@ -301,7 +296,7 @@ export default class DialogUIManager {
       cardImageId = 'unknown';
       displayCardId = 'unknown';
     }
-    
+
     return { cardImageId, displayCardId };
   }
 
@@ -311,36 +306,36 @@ export default class DialogUIManager {
    */
   static _createPaginationControls(scene, config, paginationState, dialogElements) {
     dialogElements.paginationElements = {};
-    
+
     // Left arrow
     dialogElements.paginationElements.leftArrow = scene.add.graphics();
     dialogElements.paginationElements.leftArrow.fillStyle(0x888888);
     dialogElements.paginationElements.leftArrow.fillTriangle(
-      config.centerX - config.dialogWidth/2 + 40, dialogElements.cardSection.centerY,
-      config.centerX - config.dialogWidth/2 + 65, dialogElements.cardSection.centerY - 15,
-      config.centerX - config.dialogWidth/2 + 65, dialogElements.cardSection.centerY + 15
+      config.centerX - config.dialogWidth / 2 + 40, dialogElements.cardSection.centerY,
+      config.centerX - config.dialogWidth / 2 + 65, dialogElements.cardSection.centerY - 15,
+      config.centerX - config.dialogWidth / 2 + 65, dialogElements.cardSection.centerY + 15
     );
     dialogElements.paginationElements.leftArrow.setDepth(1504);
     dialogElements.paginationElements.leftArrow.setInteractive(new Phaser.Geom.Rectangle(
-      config.centerX - config.dialogWidth/2 + 30, dialogElements.cardSection.centerY - 20, 45, 40
+      config.centerX - config.dialogWidth / 2 + 30, dialogElements.cardSection.centerY - 20, 45, 40
     ), Phaser.Geom.Rectangle.Contains);
 
     // Right arrow
     dialogElements.paginationElements.rightArrow = scene.add.graphics();
     dialogElements.paginationElements.rightArrow.fillStyle(0x888888);
     dialogElements.paginationElements.rightArrow.fillTriangle(
-      config.centerX + config.dialogWidth/2 - 40, dialogElements.cardSection.centerY,
-      config.centerX + config.dialogWidth/2 - 65, dialogElements.cardSection.centerY - 15,
-      config.centerX + config.dialogWidth/2 - 65, dialogElements.cardSection.centerY + 15
+      config.centerX + config.dialogWidth / 2 - 40, dialogElements.cardSection.centerY,
+      config.centerX + config.dialogWidth / 2 - 65, dialogElements.cardSection.centerY - 15,
+      config.centerX + config.dialogWidth / 2 - 65, dialogElements.cardSection.centerY + 15
     );
     dialogElements.paginationElements.rightArrow.setDepth(1504);
     dialogElements.paginationElements.rightArrow.setInteractive(new Phaser.Geom.Rectangle(
-      config.centerX + config.dialogWidth/2 - 75, dialogElements.cardSection.centerY - 20, 45, 40
+      config.centerX + config.dialogWidth / 2 - 75, dialogElements.cardSection.centerY - 20, 45, 40
     ), Phaser.Geom.Rectangle.Contains);
 
     // Page text
     dialogElements.paginationElements.pageText = scene.add.text(
-      config.centerX, dialogElements.cardSection.centerY + dialogElements.cardSection.height/2 - 30,
+      config.centerX, dialogElements.cardSection.centerY + dialogElements.cardSection.height / 2 - 30,
       `Page ${paginationState.currentPage + 1} of ${paginationState.totalPages}`,
       {
         fontSize: '16px',
@@ -365,13 +360,13 @@ export default class DialogUIManager {
       'CONFIRM': { text: 'CONFIRM', color: 0x4CAF50, action: 'confirm', enabledCondition: 'hasSelection' },
       'YES': { text: 'YES', color: 0x4CAF50, action: 'confirm', enabledCondition: 'hasSelection' },
       'SELECT': { text: 'SELECT', color: 0x2196F3, action: 'confirm', enabledCondition: 'hasSelection' },
-      
+
       // Cancel buttons  
       'CANCEL': { text: 'CANCEL', color: 0xf44336, action: 'cancel', enabledCondition: 'always' },
       'SKIP': { text: 'SKIP', color: 0xf44336, action: 'cancel', enabledCondition: 'always' },
       'NO': { text: 'NO', color: 0xf44336, action: 'cancel', enabledCondition: 'always' },
       'CLOSE': { text: 'CLOSE', color: 0x666666, action: 'cancel', enabledCondition: 'always' },
-      
+
       // Special buttons
       'REDRAW': { text: 'REDRAW', color: 0xff9800, action: 'confirm', enabledCondition: 'hasSelection', initialText: 'SELECT CARDS' }
     };
@@ -385,11 +380,11 @@ export default class DialogUIManager {
     const r = (color >> 16) & 0xFF;
     const g = (color >> 8) & 0xFF;
     const b = color & 0xFF;
-    
+
     const factor = 1.3;
     return ((Math.min(255, Math.floor(r * factor)) << 16) |
-            (Math.min(255, Math.floor(g * factor)) << 8) |
-            Math.min(255, Math.floor(b * factor)));
+      (Math.min(255, Math.floor(g * factor)) << 8) |
+      Math.min(255, Math.floor(b * factor)));
   }
 
   /**
@@ -398,41 +393,41 @@ export default class DialogUIManager {
    */
   static _getAllDialogElements(dialogElements) {
     const elements = [];
-    
+
     // Basic dialog elements
     if (dialogElements.overlay) elements.push(dialogElements.overlay);
     if (dialogElements.background) elements.push(dialogElements.background);
-    
+
     // Title section
     if (dialogElements.titleSection) {
       if (dialogElements.titleSection.titleText) elements.push(dialogElements.titleSection.titleText);
       if (dialogElements.titleSection.descriptionText) elements.push(dialogElements.titleSection.descriptionText);
     }
-    
+
     // Card section
     if (dialogElements.cardSection && dialogElements.cardSection.cardBg) {
       elements.push(dialogElements.cardSection.cardBg);
     }
-    
+
     // Card list elements
     if (dialogElements.cardListElements) {
       elements.push(...dialogElements.cardListElements);
     }
-    
+
     // Pagination elements
     if (dialogElements.paginationElements) {
       Object.values(dialogElements.paginationElements).forEach(element => {
         if (element) elements.push(element);
       });
     }
-    
+
     // Button section
     if (dialogElements.buttonSection) {
       Object.values(dialogElements.buttonSection).forEach(element => {
         if (element) elements.push(element);
       });
     }
-    
+
     return elements;
   }
 
@@ -442,12 +437,12 @@ export default class DialogUIManager {
    */
   static _cleanupDialog(scene, dialogElements) {
     console.log('🧹 DialogUIManager: Starting dialog cleanup');
-    
+
     // Clean up all card elements first (including hover effects)
     if (dialogElements.cardListElements) {
       this._cleanupCardElements(dialogElements.cardListElements);
     }
-    
+
     // Clean up all dialog elements
     const allElements = this._getAllDialogElements(dialogElements);
     allElements.forEach(element => {
@@ -459,12 +454,12 @@ export default class DialogUIManager {
         }
       }
     });
-    
+
     // Clear arrays
     if (dialogElements.cardListElements) {
       dialogElements.cardListElements.length = 0;
     }
-    
+
     console.log('✅ Dialog cleanup completed');
   }
 
@@ -492,7 +487,7 @@ export default class DialogUIManager {
   static _cleanupCardElements(cardElements) {
     // Clean up hover effects first
     this._cleanupHoverEffects(cardElements);
-    
+
     // Clean up the card elements themselves
     cardElements.forEach(element => {
       if (element && element.destroy) {
@@ -511,7 +506,7 @@ export default class DialogUIManager {
    */
   static _disableMainGameCardInteractions(scene) {
     console.log('🔒 Disabling main game card interactions');
-    
+
     if (scene.children && scene.children.list) {
       scene.children.list.forEach(child => {
         if (child.texture && child.texture.key && child.texture.key.includes('card')) {
@@ -520,7 +515,7 @@ export default class DialogUIManager {
             child.disableInteractive();
           }
         }
-        
+
         if (child.type === 'Container' && child.list) {
           child.list.forEach(containerChild => {
             if (containerChild.texture && containerChild.texture.key && containerChild.texture.key.includes('card')) {
@@ -541,14 +536,14 @@ export default class DialogUIManager {
    */
   static _enableMainGameCardInteractions(scene) {
     console.log('🔓 Re-enabling main game card interactions');
-    
+
     if (scene.children && scene.children.list) {
       scene.children.list.forEach(child => {
         if (child.wasInteractiveBeforeDialog) {
           child.setInteractive();
           child.wasInteractiveBeforeDialog = false;
         }
-        
+
         if (child.type === 'Container' && child.list) {
           child.list.forEach(containerChild => {
             if (containerChild.wasInteractiveBeforeDialog) {
@@ -567,7 +562,7 @@ export default class DialogUIManager {
    */
   static _createCardManager(scene, selection, config, paginationState, selectionState, cardDisplayConfig, dialogElements) {
     const eligibleCards = selection.eligibleCards;
-    
+
     // Function to clear selections when changing pages
     const clearSelections = () => {
       selectionState.selectedCard = null;
@@ -581,35 +576,35 @@ export default class DialogUIManager {
       });
       selectionState.selectedCardHighlights.length = 0;
     };
-    
+
     // Function to create cards for current page
     const createCardsForCurrentPage = (animateDirection) => {
       const startIndex = paginationState.currentPage * paginationState.maxCardsPerPage;
       const endIndex = Math.min(startIndex + paginationState.maxCardsPerPage, eligibleCards.length);
       const currentPageCards = eligibleCards.slice(startIndex, endIndex);
-      
+
       // Calculate layout
-      const totalCardsWidth = (currentPageCards.length * cardDisplayConfig.cardDisplayWidth) + 
-                             ((currentPageCards.length - 1) * cardDisplayConfig.cardSpacing);
+      const totalCardsWidth = (currentPageCards.length * cardDisplayConfig.cardDisplayWidth) +
+        ((currentPageCards.length - 1) * cardDisplayConfig.cardSpacing);
       const cardsStartX = config.centerX - totalCardsWidth / 2;
       const cardsY = dialogElements.cardSection.centerY + 10;
-      
+
       // Create cards
       currentPageCards.forEach((card, index) => {
         this._createSingleCardDisplay(
-          scene, card, index, cardsStartX, cardsY, 
+          scene, card, index, cardsStartX, cardsY,
           cardDisplayConfig, dialogElements, selectionState, animateDirection
         );
       });
-      
+
       // Update pagination controls visibility
       this._updatePaginationVisibility(paginationState, dialogElements);
     };
-    
+
     // Main update function
     const updateCardDisplay = (animateDirection = null) => {
       clearSelections();
-      
+
       if (animateDirection && dialogElements.cardListElements.length > 0) {
         this._animateCardsOut(scene, dialogElements.cardListElements, animateDirection)
           .then(() => {
@@ -622,10 +617,10 @@ export default class DialogUIManager {
         createCardsForCurrentPage(null);
       }
     };
-    
+
     // Setup pagination events
     this._setupPaginationEvents(scene, paginationState, dialogElements, updateCardDisplay);
-    
+
     return { updateCardDisplay, clearSelections };
   }
 
@@ -635,19 +630,19 @@ export default class DialogUIManager {
    */
   static _createSingleCardDisplay(scene, card, index, cardsStartX, cardsY, cardDisplayConfig, dialogElements, selectionState, animateDirection) {
     const cardX = cardsStartX + (index * (cardDisplayConfig.cardDisplayWidth + cardDisplayConfig.cardSpacing)) + cardDisplayConfig.cardDisplayWidth / 2;
-    
+
     // Card container background - made taller to accommodate total AP/HP labels
     const cardContainer = scene.add.graphics();
     cardContainer.fillStyle(0x333333);
     const extraHeight = 40; // Additional height for total AP/HP labels
     // Center the extra height: move Y position up by half the extra height to keep visual center aligned
-    const adjustedY = cardsY - cardDisplayConfig.cardDisplayHeight/2 - (extraHeight / 2);
-    cardContainer.fillRoundedRect(cardX - cardDisplayConfig.cardDisplayWidth/2, adjustedY, cardDisplayConfig.cardDisplayWidth, cardDisplayConfig.cardDisplayHeight + extraHeight, 8);
+    const adjustedY = cardsY - cardDisplayConfig.cardDisplayHeight / 2 - (extraHeight / 2);
+    cardContainer.fillRoundedRect(cardX - cardDisplayConfig.cardDisplayWidth / 2, adjustedY, cardDisplayConfig.cardDisplayWidth, cardDisplayConfig.cardDisplayHeight + extraHeight, 8);
     cardContainer.lineStyle(2, 0x666666);
-    cardContainer.strokeRoundedRect(cardX - cardDisplayConfig.cardDisplayWidth/2, adjustedY, cardDisplayConfig.cardDisplayWidth, cardDisplayConfig.cardDisplayHeight + extraHeight, 8);
+    cardContainer.strokeRoundedRect(cardX - cardDisplayConfig.cardDisplayWidth / 2, adjustedY, cardDisplayConfig.cardDisplayWidth, cardDisplayConfig.cardDisplayHeight + extraHeight, 8);
     cardContainer.setDepth(1503);
     dialogElements.cardListElements.push(cardContainer);
-    
+
     // Extract card display info and create card element (can be Card component or Container)
     const { cardImageId, displayCardId } = this._extractCardDisplayInfo(card);
     console.log("card item 1111111 ", JSON.stringify(card))
@@ -656,7 +651,7 @@ export default class DialogUIManager {
       dialogElements.cardListElements.push(cardElement);
       this._setupCardInteraction(scene, card, cardElement, displayCardId, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements);
     }
-    
+
     // Animate card in if direction is specified
     if (animateDirection && cardElement) {
       this._animateCardIn(scene, cardElement, cardContainer, cardX, cardsY, animateDirection, index);
@@ -672,7 +667,7 @@ export default class DialogUIManager {
     if (originalCard && originalCard.isSlotTarget) {
       return this._createSlotTargetDisplay(scene, cardX, cardsY, cardDisplayConfig, originalCard);
     }
-    
+
     // Create full Card component with AP/HP display
     try {
       // Calculate appropriate scale for dialog display
@@ -680,10 +675,10 @@ export default class DialogUIManager {
         (cardDisplayConfig.cardDisplayWidth - 16) / 124,  // Card width is 124px by default
         (cardDisplayConfig.cardDisplayHeight - 16) / 184  // Card height is 184px by default
       );
-      
+
       // Determine what data to pass to Card component
       let cardDataForDisplay;
-      
+
       // Handle different card structures
       if (originalCard && originalCard.unit) {
         // Card object with unit property (from ItemDataResolver slot targets)
@@ -698,7 +693,7 @@ export default class DialogUIManager {
         // Fallback to original card
         cardDataForDisplay = originalCard;
       }
-      
+
       // Pass the determined card data to Card component (like SlotAreaManager does)
       const cardComponent = new Card(scene, cardX, cardsY, cardDataForDisplay, {
         usePreview: true,     // Use preview images
@@ -707,17 +702,17 @@ export default class DialogUIManager {
         showBackground: false, // No PowerOverlay background in dialogs
         handleOutside: true
       });
-      
+
       cardComponent.setDepth(1504);
-      
+
       // Configure total labels if available
       if (originalCard && (originalCard.totalAP !== undefined || originalCard.totalHP !== undefined)) {
         const totalAP = originalCard.totalAP || cardDataForDisplay.currentAP || cardDataForDisplay.cardData?.ap || 0;
         const totalHP = originalCard.totalHP || cardDataForDisplay.currentHP || cardDataForDisplay.cardData?.hp || 0;
-        
+
         cardComponent.configureTotalLabelsToShow(totalAP, totalHP);
       }
-      
+
       return cardComponent;
     } catch (error) {
       console.warn('Failed to create Card component, falling back to image:', error);
@@ -735,15 +730,15 @@ export default class DialogUIManager {
       (cardDisplayConfig.cardDisplayWidth - 16) / 124,
       (cardDisplayConfig.cardDisplayHeight - 16) / 184
     );
-    
+
     // Create a container to hold unit and pilot cards with extra height for total AP/HP labels
     const slotContainer = scene.add.container(cardX, cardsY);
-    
+
     // Create pilot card if present (positioned below unit with extra spacing)
     let pilotCard = null;
     if (slotTarget.pilot) {
       // Pass the whole pilot object directly to Card component (like SlotAreaManager does)
-      pilotCard = new Card(scene, 0, 23 , slotTarget.pilot, {
+      pilotCard = new Card(scene, 0, 23, slotTarget.pilot, {
         usePreview: true,
         scale: dialogScale,
         interactive: true, // Container will handle interaction
@@ -763,21 +758,21 @@ export default class DialogUIManager {
       showBackground: false,
       handleOutside: true
     });
-    
+
     slotContainer.add(unitCard);
-    
+
     // ✅ Use SlotAreaManager method for unit+pilot total label configuration
     if (slotTarget.totalAP !== undefined && slotTarget.totalHP !== undefined) {
       SlotAreaManager.configureSlotTotalLabels(unitCard, pilotCard, slotTarget.totalAP, slotTarget.totalHP);
     }
-    
+
     // Store references for interaction handling
     slotContainer.unitCard = unitCard;
     slotContainer.pilotCard = pilotCard;
     slotContainer.slotData = slotTarget;
-    
+
     slotContainer.setDepth(1504);
-    
+
     console.log(`Created slot target display: ${slotTarget.unit.cardId}${slotTarget.pilot ? ` + ${slotTarget.pilot.cardId}` : ''}`);
     return slotContainer;
   }
@@ -788,13 +783,13 @@ export default class DialogUIManager {
    */
   static _createFallbackCardImage(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig) {
     console.log(`Creating fallback image for: ${cardImageId}`);
-    
+
     // Calculate scale to fit dialog
     const dialogScale = Math.min(
       cardDisplayConfig.cardDisplayWidth / 124,
       cardDisplayConfig.cardDisplayHeight / 184
     );
-    
+
     // Create image with fallback
     let cardImage;
     try {
@@ -807,7 +802,7 @@ export default class DialogUIManager {
       cardImage.fillRoundedRect(cardX - 60, cardsY - 84, 120, 168, 8);
       cardImage.lineStyle(2, 0x666666);
       cardImage.strokeRoundedRect(cardX - 60, cardsY - 84, 120, 168, 8);
-      
+
       // Add text
       const placeholderText = scene.add.text(cardX, cardsY, displayCardId || 'Unknown', {
         fontSize: '12px',
@@ -818,12 +813,12 @@ export default class DialogUIManager {
       });
       placeholderText.setOrigin(0.5);
       placeholderText.setDepth(1505);
-      
+
       // Group them together
       const group = scene.add.group([cardImage, placeholderText]);
       return group;
     }
-    
+
     cardImage.setDepth(1504);
     return cardImage;
   }
@@ -840,7 +835,7 @@ export default class DialogUIManager {
     }
     // Determine if this is a slot container (unit+pilot) or regular card
     const isSlotContainer = cardElement.type === 'Container' && cardElement.slotData;
-    
+
     if (isSlotContainer) {
       this._setupSlotContainerInteraction(scene, card, cardElement, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements);
     } else {
@@ -857,28 +852,28 @@ export default class DialogUIManager {
     const interactiveWidth = cardDisplayConfig.cardDisplayWidth;
     const extraHeight = 40; // Match the extra height from card container background
     const interactiveHeight = cardDisplayConfig.cardDisplayHeight + extraHeight;
-    
+
     slotContainer.setInteractive(
-      new Phaser.Geom.Rectangle(-interactiveWidth/2, -interactiveHeight/2, interactiveWidth, interactiveHeight), 
+      new Phaser.Geom.Rectangle(-interactiveWidth / 2, -interactiveHeight / 2, interactiveWidth, interactiveHeight),
       Phaser.Geom.Rectangle.Contains
     );
-    
+
     // Create shared hover effect management with animation
     const showContainerHoverEffect = () => {
       if (!slotContainer.hoverEffect) {
         slotContainer.hoverEffect = scene.add.graphics();
         slotContainer.hoverEffect.lineStyle(3, 0x00ff00, 0.8);
         slotContainer.hoverEffect.strokeRoundedRect(
-          -interactiveWidth/2 - 2, 
-          -interactiveHeight/2 - 2, 
-          interactiveWidth + 4, 
-          interactiveHeight + 4, 
+          -interactiveWidth / 2 - 2,
+          -interactiveHeight / 2 - 2,
+          interactiveWidth + 4,
+          interactiveHeight + 4,
           8
         );
         slotContainer.hoverEffect.setDepth(1505);
         slotContainer.hoverEffect.setAlpha(0);
         slotContainer.add(slotContainer.hoverEffect);
-        
+
         // Animate the hover effect in
         scene.tweens.add({
           targets: slotContainer.hoverEffect,
@@ -887,7 +882,7 @@ export default class DialogUIManager {
           ease: 'Power2.easeOut'
         });
       }
-      
+
       // ✅ ENHANCED: Show slot card preview on hover (unit+pilot dual preview)
       if (scene.cardPreviewManager) {
         try {
@@ -906,10 +901,10 @@ export default class DialogUIManager {
           console.warn('Failed to show dialog slot card preview:', error);
         }
       }
-      
+
       scene.game.canvas.style.cursor = 'pointer';
     };
-    
+
     const hideContainerHoverEffect = () => {
       if (slotContainer.hoverEffect) {
         // Animate out before destroying
@@ -926,7 +921,7 @@ export default class DialogUIManager {
           }
         });
       }
-      
+
       // ✅ ENHANCED: Hide card preview on hover out
       if (scene.cardPreviewManager) {
         try {
@@ -936,21 +931,21 @@ export default class DialogUIManager {
           console.warn('Failed to hide dialog slot card preview:', error);
         }
       }
-      
+
       scene.game.canvas.style.cursor = 'default';
     };
-    
+
     // Handle container selection
     const handleContainerSelection = () => {
       console.log('Slot container selected:', card);
       this._handleCardSelection(card, cardX, cardsY, selectionState, cardDisplayConfig, dialogElements);
     };
-    
+
     // Set up container events
     //slotContainer.on('pointerover', showContainerHoverEffect);
     //slotContainer.on('pointerout', hideContainerHoverEffect);
     //slotContainer.on('pointerdown', handleContainerSelection);
-    
+
     // ✅ ENHANCED: Also set up events on individual unit and pilot cards for better responsiveness
     if (slotContainer.unitCard && slotContainer.unitCard.setInteractive) {
       slotContainer.unitCard.setInteractive();
@@ -959,7 +954,7 @@ export default class DialogUIManager {
       slotContainer.unitCard.on('pointerdown', handleContainerSelection);
       console.log('Unit card interaction events attached');
     }
-    
+
     if (slotContainer.pilotCard && slotContainer.pilotCard.setInteractive) {
       slotContainer.pilotCard.setInteractive();
       slotContainer.pilotCard.on('pointerover', showContainerHoverEffect);
@@ -980,7 +975,7 @@ export default class DialogUIManager {
     }
 
     cardComponent.setInteractive();
-    
+
     // Create hover frame highlighting functions with animation - match taller container background
     const showRegularCardHoverEffect = () => {
       if (!cardComponent.hoverEffect) {
@@ -988,18 +983,18 @@ export default class DialogUIManager {
         cardComponent.hoverEffect.lineStyle(3, 0x00ff00, 0.8);
         const extraHeight = 40; // Match the extra height from card container background
         // Match the centered positioning of the card container background
-        const adjustedY = cardsY - cardDisplayConfig.cardDisplayHeight/2 - (extraHeight / 2);
+        const adjustedY = cardsY - cardDisplayConfig.cardDisplayHeight / 2 - (extraHeight / 2);
         cardComponent.hoverEffect.strokeRoundedRect(
-          cardX - cardDisplayConfig.cardDisplayWidth/2 - 2, 
-          adjustedY - 2, 
-          cardDisplayConfig.cardDisplayWidth + 4, 
-          cardDisplayConfig.cardDisplayHeight + extraHeight + 4, 
+          cardX - cardDisplayConfig.cardDisplayWidth / 2 - 2,
+          adjustedY - 2,
+          cardDisplayConfig.cardDisplayWidth + 4,
+          cardDisplayConfig.cardDisplayHeight + extraHeight + 4,
           8
         );
         cardComponent.hoverEffect.setDepth(1505);
         cardComponent.hoverEffect.setAlpha(0);
         dialogElements.cardListElements.push(cardComponent.hoverEffect);
-        
+
         // Animate the hover effect in
         scene.tweens.add({
           targets: cardComponent.hoverEffect,
@@ -1008,18 +1003,18 @@ export default class DialogUIManager {
           ease: 'Power2.easeOut'
         });
       }
-      
+
       // ✅ ENHANCED: Show card preview on hover
-      
-      if(card.type == "slot"){
-          const cardDataForPreview = card.unit;
-          scene.cardPreviewManager.showCardPreview(cardDataForPreview);
+
+      if (card.type == "slot") {
+        const cardDataForPreview = card.unit;
+        scene.cardPreviewManager.showCardPreview(cardDataForPreview);
       }
-      
-      
+
+
       scene.game.canvas.style.cursor = 'pointer';
     };
-    
+
     const hideRegularCardHoverEffect = () => {
       if (cardComponent.hoverEffect) {
         // Animate out before destroying
@@ -1037,8 +1032,8 @@ export default class DialogUIManager {
         });
       }
       scene.cardPreviewManager.hideCardPreview();
-      
-      
+
+
       // ✅ ENHANCED: Hide card preview on hover out
       if (scene.cardPreviewManager) {
         try {
@@ -1048,16 +1043,16 @@ export default class DialogUIManager {
           console.warn('Failed to hide dialog card preview:', error);
         }
       }
-      
+
       scene.game.canvas.style.cursor = 'default';
     };
-    
+
     // Handle card selection
     const handleRegularCardSelection = () => {
       console.log('Regular card selected:', card);
       this._handleCardSelection(card, cardX, cardsY, selectionState, cardDisplayConfig, dialogElements);
     };
-    
+
     // Set up card events
     cardComponent.on('pointerover', showRegularCardHoverEffect);
     cardComponent.on('pointerout', hideRegularCardHoverEffect);
@@ -1070,12 +1065,12 @@ export default class DialogUIManager {
    */
   static _handleCardSelection(card, cardX, cardsY, selectionState, cardDisplayConfig, dialogElements) {
     const cardId = this._getCardIdentifier(card);
-    
+
     if (selectionState.maxSelections === 1) {
       // Single selection mode
       const currentSelectedId = selectionState.selectedCard ? this._getCardIdentifier(selectionState.selectedCard) : null;
       const isCurrentlySelected = currentSelectedId === cardId;
-      
+
       if (isCurrentlySelected) {
         // Deselect the currently selected card
         if (selectionState.selectedCardHighlight) {
@@ -1092,11 +1087,11 @@ export default class DialogUIManager {
           selectionState.selectedCardHighlight.destroy();
           selectionState.selectedCardHighlight = null;
         }
-        
+
         // Select the new card
         selectionState.selectedCard = card;
         selectionState.selectedCards = [card];
-        
+
         // Create selection highlight
         selectionState.selectedCardHighlight = this._createSelectionHighlight(cardX, cardsY, cardDisplayConfig, dialogElements);
         selectionState.selectedCardHighlights = [selectionState.selectedCardHighlight];
@@ -1105,7 +1100,7 @@ export default class DialogUIManager {
     } else {
       // Multiple selection mode
       const index = selectionState.selectedCards.findIndex(c => this._getCardIdentifier(c) === cardId);
-      
+
       if (index > -1) {
         // Deselect card
         selectionState.selectedCards.splice(index, 1);
@@ -1129,7 +1124,7 @@ export default class DialogUIManager {
           console.log('Maximum selections reached:', selectionState.maxSelections);
         }
       }
-      
+
       // Update legacy compatibility
       selectionState.selectedCard = selectionState.selectedCards.length > 0 ? selectionState.selectedCards[0] : null;
       selectionState.selectedCardHighlight = selectionState.selectedCardHighlights.length > 0 ? selectionState.selectedCardHighlights[0] : null;
@@ -1145,12 +1140,12 @@ export default class DialogUIManager {
     highlight.lineStyle(4, 0x00ff00);
     const extraHeight = 40; // Match the extra height from card container background
     // Match the centered positioning of the card container background
-    const adjustedY = cardsY - cardDisplayConfig.cardDisplayHeight/2 - (extraHeight / 2);
+    const adjustedY = cardsY - cardDisplayConfig.cardDisplayHeight / 2 - (extraHeight / 2);
     highlight.strokeRoundedRect(
-      cardX - cardDisplayConfig.cardDisplayWidth/2 - 2, 
-      adjustedY - 2, 
-      cardDisplayConfig.cardDisplayWidth + 4, 
-      cardDisplayConfig.cardDisplayHeight + extraHeight + 4, 
+      cardX - cardDisplayConfig.cardDisplayWidth / 2 - 2,
+      adjustedY - 2,
+      cardDisplayConfig.cardDisplayWidth + 4,
+      cardDisplayConfig.cardDisplayHeight + extraHeight + 4,
       10
     );
     highlight.setDepth(1506);
@@ -1172,21 +1167,21 @@ export default class DialogUIManager {
    */
   static _createButtonSection(scene, selectionId, selection, config, selectionState, dialogElements, updateOKButtonState, onConfirm) {
     dialogElements.buttonSection = {};
-    
+
     // Create OK and Cancel buttons
-    const buttonY = config.centerY + config.dialogHeight/2 - 50;
-    
+    const buttonY = config.centerY + config.dialogHeight / 2 - 50;
+
     // OK Button
     const okButton = scene.add.graphics();
     okButton.fillStyle(0x4CAF50);
     okButton.fillRoundedRect(config.centerX - 120, buttonY - 17, 100, 35, 8);
     okButton.setDepth(1502);
     okButton.setInteractive(new Phaser.Geom.Rectangle(config.centerX - 120, buttonY - 17, 100, 35), Phaser.Geom.Rectangle.Contains);
-    
+
     // Store button position for later color updates
     okButton._buttonY = buttonY;
     okButton._isOKButton = true;
-    
+
     const okText = scene.add.text(config.centerX - 70, buttonY, 'CONFIRM', {
       fontSize: '16px',
       fontFamily: 'Arial',
@@ -1195,18 +1190,18 @@ export default class DialogUIManager {
     });
     okText.setOrigin(0.5);
     okText.setDepth(1503);
-    
+
     // Cancel Button
     const cancelButton = scene.add.graphics();
     cancelButton.fillStyle(0xf44336);
     cancelButton.fillRoundedRect(config.centerX + 20, buttonY - 17, 100, 35, 8);
     cancelButton.setDepth(1502);
     cancelButton.setInteractive(new Phaser.Geom.Rectangle(config.centerX + 20, buttonY - 17, 100, 35), Phaser.Geom.Rectangle.Contains);
-    
+
     // Store button position for later color updates
     cancelButton._buttonY = buttonY;
     cancelButton._isOKButton = false;
-    
+
     const cancelText = scene.add.text(config.centerX + 70, buttonY, 'CANCEL', {
       fontSize: '16px',
       fontFamily: 'Arial',
@@ -1215,12 +1210,12 @@ export default class DialogUIManager {
     });
     cancelText.setOrigin(0.5);
     cancelText.setDepth(1503);
-    
+
     dialogElements.buttonSection.okButton = okButton;
     dialogElements.buttonSection.okText = okText;
     dialogElements.buttonSection.cancelButton = cancelButton;
     dialogElements.buttonSection.cancelText = cancelText;
-    
+
     // Set up button events
     this._setupOKButtonEvents(scene, selectionId, selection, selectionState, dialogElements, onConfirm);
     this._setupCancelButtonEvents(scene, dialogElements);
@@ -1232,19 +1227,19 @@ export default class DialogUIManager {
    */
   static _setupOKButtonEvents(scene, selectionId, selection, selectionState, dialogElements, onConfirm) {
     const okButton = dialogElements.buttonSection.okButton;
-    
+
     okButton.on('pointerover', () => {
       if (selectionState.maxSelections === 0 || selectionState.selectedCards.length >= 1) {
         this._setButtonColor(okButton, 0x66BB6A);
         scene.input.setDefaultCursor('pointer');
       }
     });
-    
+
     okButton.on('pointerout', () => {
       this._updateOKButtonState(selectionState, dialogElements);
       scene.input.setDefaultCursor('default');
     });
-    
+
     okButton.on('pointerdown', () => {
       if (selectionState.maxSelections === 0 || selectionState.selectedCards.length >= 1) {
         this._cleanupDialog(scene, dialogElements);
@@ -1260,17 +1255,17 @@ export default class DialogUIManager {
    */
   static _setupCancelButtonEvents(scene, dialogElements) {
     const cancelButton = dialogElements.buttonSection.cancelButton;
-    
+
     cancelButton.on('pointerover', () => {
       this._setButtonColor(cancelButton, 0xf66659);
       scene.input.setDefaultCursor('pointer');
     });
-    
+
     cancelButton.on('pointerout', () => {
       this._setButtonColor(cancelButton, 0xf44336);
       scene.input.setDefaultCursor('default');
     });
-    
+
     cancelButton.on('pointerdown', () => {
       this._cleanupDialog(scene, dialogElements);
       this._enableMainGameCardInteractions(scene);
@@ -1285,16 +1280,16 @@ export default class DialogUIManager {
   static _updateOKButtonState(selectionState, dialogElements) {
     const okButton = dialogElements.buttonSection.okButton;
     const okText = dialogElements.buttonSection.okText;
-    
+
     if (!okButton || !okText) return;
-    
+
     // Handle read-only mode (selectCount: 0)
     if (selectionState.maxSelections === 0) {
       this._setButtonColor(okButton, 0x4CAF50);
       okText.setText('CLOSE');
       return;
     }
-    
+
     if (selectionState.selectedCards.length >= 1) {
       this._setButtonColor(okButton, 0x4CAF50);
       if (selectionState.maxSelections > 1) {
@@ -1321,14 +1316,14 @@ export default class DialogUIManager {
       // Get the button's position from its current state
       const scene = button.scene;
       const centerX = scene ? scene.scale.width / 2 : 960;
-      
+
       // Find the button's Y position from the dialog config
       const buttonY = button._buttonY || (scene && scene.scale.height * 0.7) || 700;
-      
+
       // Determine button position using stored flag
       const isOKButton = button._isOKButton === true;
       const buttonX = isOKButton ? centerX - 120 : centerX + 20;
-      
+
       button.clear();
       button.fillStyle(color);
       button.fillRoundedRect(buttonX, buttonY - 17, 100, 35, 8);
@@ -1341,7 +1336,7 @@ export default class DialogUIManager {
     if (dialogElements.paginationElements) {
       const leftArrow = dialogElements.paginationElements.leftArrow;
       const rightArrow = dialogElements.paginationElements.rightArrow;
-      
+
       if (leftArrow) leftArrow.setAlpha(paginationState.currentPage > 0 ? 1 : 0.3);
       if (rightArrow) rightArrow.setAlpha(paginationState.currentPage < paginationState.totalPages - 1 ? 1 : 0.3);
     }
@@ -1352,7 +1347,7 @@ export default class DialogUIManager {
     if (dialogElements.paginationElements) {
       const leftArrow = dialogElements.paginationElements.leftArrow;
       const rightArrow = dialogElements.paginationElements.rightArrow;
-      
+
       if (leftArrow) {
         leftArrow.on('pointerdown', () => {
           if (paginationState.currentPage > 0) {
@@ -1361,7 +1356,7 @@ export default class DialogUIManager {
           }
         });
       }
-      
+
       if (rightArrow) {
         rightArrow.on('pointerdown', () => {
           if (paginationState.currentPage < paginationState.totalPages - 1) {

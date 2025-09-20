@@ -29,20 +29,31 @@ export default class ItemDataResolver {
     
     console.log('🔍 ItemDataResolver: Resolving', items.length, 'items');
     
-    const resolved = items.map((item, index) => {
+    const resolved = [];
+    
+    items.forEach((item, index) => {
       try {
-        const result = this._resolveItem(item, gameState, index);
-        if (result) {
-          console.log(`✅ Resolved item ${index}:`, item.type, result.displayName || result.cardData?.name || 'Unknown');
+        // Special handling for trash items that return multiple cards
+        if (item.type === 'trash') {
+          const trashCards = this._resolveTrash(item, gameState, index);
+          if (trashCards && Array.isArray(trashCards)) {
+            resolved.push(...trashCards);
+            console.log(`✅ Resolved trash item ${index}: ${trashCards.length} cards`);
+          }
+        } else {
+          // Regular single-card items
+          const result = this._resolveItem(item, gameState, index);
+          if (result) {
+            resolved.push(result);
+            console.log(`✅ Resolved item ${index}:`, item.type, result.displayName || result.cardData?.name || 'Unknown');
+          }
         }
-        return result;
       } catch (error) {
         console.error(`❌ Failed to resolve item ${index}:`, item, error);
-        return null;
       }
-    }).filter(Boolean);
+    });
     
-    console.log(`📊 ItemDataResolver: Resolved ${resolved.length}/${items.length} items successfully`);
+    console.log(`📊 ItemDataResolver: Resolved ${resolved.length} total cards from ${items.length} items`);
     return resolved;
   }
   
@@ -61,6 +72,8 @@ export default class ItemDataResolver {
         return this._resolveSlot(item, gameState, index);
       case 'carduid':
         return this._resolveCardUID(item, gameState, index);
+      case 'trash':
+        return this._resolveTrash(item, gameState, index);
       default:
         console.warn(`ItemDataResolver: Unknown item type: ${item.type}`);
         return null;
@@ -249,6 +262,51 @@ export default class ItemDataResolver {
       selectionIndex: index,
       displayName: cardData.name || 'Unknown Card'
     };
+  }
+  
+  /**
+   * Resolve trash item (direct card arrays)
+   * @private
+   */
+  static _resolveTrash(item, gameState, index) {
+    const { playerId, directCards } = item;
+    
+    if (!playerId) {
+      console.warn('ItemDataResolver: Trash item missing playerId');
+      return null;
+    }
+    
+    // If directCards is provided, use it directly (for GameScene trash viewing)
+    if (directCards && Array.isArray(directCards)) {
+      console.log(`ItemDataResolver: Using direct trash cards (${directCards.length} cards)`);
+      return directCards.map((card, trashIndex) => ({
+        cardData: card.cardData || card,
+        cardId: card.cardData?.id || card.id,
+        cardUid: card.cardUid || `trash_${trashIndex}`,
+        selectionIndex: trashIndex,
+        displayName: card.cardData?.name || card.name || 'Unknown Card',
+        inTrash: true
+      }));
+    }
+    
+    // Otherwise, get trash from game state
+    const player = gameState.gameEnv?.players?.[playerId];
+    if (!player || !player.zones || !player.zones.trashArea) {
+      console.warn(`ItemDataResolver: Player ${playerId} trash area not found`);
+      return null;
+    }
+    
+    const trashArea = player.zones.trashArea;
+    console.log(`ItemDataResolver: Resolving trash area for ${playerId} (${trashArea.length} cards)`);
+    
+    return trashArea.map((card, trashIndex) => ({
+      cardData: card.cardData || card,
+      cardId: card.cardData?.id || card.id,
+      cardUid: card.cardUid || `trash_${trashIndex}`,
+      selectionIndex: trashIndex,
+      displayName: card.cardData?.name || card.name || 'Unknown Card',
+      inTrash: true
+    }));
   }
   
   
