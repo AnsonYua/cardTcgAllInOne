@@ -269,49 +269,22 @@ export default class CardActionHandler {
             return;
         }
         
-        // Create simplified items for all player slots with units but no pilots
-        const items = [];
-        for (let i = 1; i <= 6; i++) {
-            items.push({
-                type: 'slot',
-                playerId: playerId,
-                zone: `slot${i}`,
-                constraints: ['has-unit', 'no-pilot']
-            });
-        }
-        
-        // Create a unique selection ID
-        const selectionId = `pilot_target_${Date.now()}`;
-        
-        // Create selection data with new items format
-        const selectionData = {
-            playerId: playerId,
-            items: items,
-            dialogType:"SELECT_UNIT_FOR_PILOT",
-            selectCount: 1,
-            numberOfSections: 1,  // Single section for pilot selection
-            title: 'Select Unit to Pilot',
-            description: 'Choose which unit this pilot card should attach to',
-            callback: (selectionId, selectedCards) => {
-                console.log('CardActionHandler: Unit selected for piloting:', selectionId, selectedCards);
-                // Ensure selectedCards is always an array
-                const cardsArray = Array.isArray(selectedCards) ? selectedCards : [selectedCards];
-                if (cardsArray && cardsArray.length > 0) {
-                    const selectedUnit = cardsArray[0];
-                    // selectedUnit is now the direct unit object, no need to find it
-                    this.executePilotCardPlay(selectedCard, selectedUnit);
-                }
-            },
-            onCancel: () => {
-                console.log('Pilot card selection cancelled');
-                // The existing dialog system will handle cleanup
-            }
-        };
-        
-        // Use DialogManager directly instead of going through GameScene
+        // Use DialogManager's specialized pilot selection dialog
         if (this.gameScene.dialogManager) {
             this.gameScene.deselectAllCards(true);
-            this.gameScene.dialogManager.showCardSelectionDialog(selectionId, selectionData, selectionData.callback);
+            const dialogId = this.gameScene.dialogManager.showPilotSelectionDialog(
+                playerId,
+                selectedCard,
+                (pilotCard, targetUnit) => {
+                    console.log('CardActionHandler: Pilot target selected via DialogManager');
+                    this.executePilotCardPlay(pilotCard, targetUnit);
+                }
+            );
+            
+            // Handle case where no valid targets were found
+            if (!dialogId) {
+                this.showErrorMessage('No available units to pilot (need units without pilots)');
+            }
         } else {
             console.error('DialogManager not available');
             this.showErrorMessage('Card selection dialog not available');
@@ -402,47 +375,23 @@ export default class CardActionHandler {
             return;
         }
         
-        // Create simplified items for all opponent slots with units
-        const items = [];
-        for (let i = 1; i <= 6; i++) {
-            items.push({
-                type: 'slot',
-                playerId: opponentId,
-                zone: `slot${i}`,
-                constraints: ['has-unit']
-            });
-        }
-        
-        // Create a unique selection ID
-        const selectionId = `attack_target_${Date.now()}`;
-        
-        // Create selection data with new items format
-        const selectionData = {
-            playerId: playerId,
-            items: items,
-            dialogType: "SELECT_ATTACK_TARGET",
-            selectCount: 1,
-            numberOfSections: 1,
-            title: '选择攻击目标',
-            description: '选择要攻击的对手机体',
-            callback: (selectionId, selectedCards) => {
-                console.log('CardActionHandler: Attack target selected:', selectionId, selectedCards);
-                const cardsArray = Array.isArray(selectedCards) ? selectedCards : [selectedCards];
-                if (cardsArray && cardsArray.length > 0) {
-                    const targetUnit = cardsArray[0];
-                    this.executeAttackAction(selectedCard, targetUnit);
-                }
-            },
-            onCancel: () => {
-                console.log('Attack target selection cancelled');
-            }
-        };
-        
-        // Use DialogManager directly instead of going through GameScene
+        // Use DialogManager's specialized attack selection dialog
         if (this.gameScene.dialogManager) {
             this.gameScene.deselectAllCards(true);
-            console.log("adsfasdfasdadsf ",JSON.stringify(selectionData))
-            this.gameScene.dialogManager.showCardSelectionDialog(selectionId, selectionData, selectionData.callback);
+            const dialogId = this.gameScene.dialogManager.showAttackSelectionDialog(
+                playerId,
+                opponentId,
+                selectedCard,
+                (attackingCard, targetUnit) => {
+                    console.log('CardActionHandler: Attack target selected via DialogManager');
+                    this.executeAttackAction(attackingCard, targetUnit);
+                }
+            );
+            
+            // Handle case where no valid targets were found
+            if (!dialogId) {
+                this.showErrorMessage('没有可攻击的对手机体');
+            }
         } else {
             console.error('DialogManager not available');
             this.showErrorMessage('无法显示目标选择对话框');
