@@ -2,6 +2,8 @@
 // Resolves simplified item references to full card objects for dialog display
 // Replaces complex eligibleCards construction with simple item specifications
 
+import CardStatCalculator from './CardStatCalculator.js';
+
 /**
  * ItemDataResolver - Converts simplified item references to dialog-ready card objects
  * 
@@ -132,14 +134,8 @@ export default class ItemDataResolver {
     const unit = slot.unit;
     const pilot = slot.pilot;
     
-    // Calculate current stats
-    const unitAP = unit.currentAP || unit.cardData?.ap || 0;
-    const unitHP = unit.currentHP || unit.cardData?.hp || 0;
-    const pilotAP = pilot ? (pilot.currentAP || pilot.cardData?.ap || 0) : 0;
-    const pilotHP = pilot ? (pilot.currentHP || pilot.cardData?.hp || 0) : 0;
-    
-    const totalAP = unitAP + pilotAP;
-    const totalHP = unitHP + pilotHP;
+    // Calculate slot-level totals (unit + pilot combined)
+    const { totalAP, totalHP } = CardStatCalculator.calculateSlotDataTotals(slot);
     
     // Create display name
     let displayName = unit.cardData?.name || 'Unknown Unit';
@@ -150,31 +146,15 @@ export default class ItemDataResolver {
     
     // Create card object in current dialog format
     const cardObject = {
-      // Core card data
-      cardData: unit.cardData || { name: 'Unknown Unit', hp: 0, ap: 0 },
+      // Core identifiers
       cardId: unit.cardData?.id || unit.cardUid,
       cardUid: unit.cardUid || cardUid,
       zone: zone,
       playerId: playerId,
       
-      // Current stats for display
-      currentHP: totalHP,
-      currentAP: totalAP,
-      damageReceived: unit.damageReceived || 0,
-      
-      // Individual unit stats
-      unitHP: unitHP,
-      unitAP: unitAP,
-      
-      // Pilot information if available
-      pilotData: pilot ? {
-        name: pilot.cardData?.name || 'Pilot',
-        cardData: pilot.cardData,
-        currentHP: pilot.currentHP || pilot.cardData?.hp || 0,
-        currentAP: pilot.currentAP || pilot.cardData?.ap || 0,
-        pilotHP: pilotHP,
-        pilotAP: pilotAP
-      } : null,
+      // Slot-level totals (unit + pilot combined)
+      totalAP: totalAP,
+      totalHP: totalHP,
       
       // Selection metadata
       selectionIndex: index,
@@ -184,15 +164,17 @@ export default class ItemDataResolver {
       isSlotTarget: !!pilot,
       unit: {
         cardId: unit.cardData?.id || unit.cardUid,
-        cardData: unit.cardData,
-        currentAP: unitAP,
-        currentHP: unitHP
+        cardData: unit.cardData || { name: 'Unknown Unit', hp: 0, ap: 0 },
+        originalAP: CardStatCalculator.getOriginalAP(unit),
+        originalHP: CardStatCalculator.getOriginalHP(unit),
+        damageReceived: unit.damageReceived || 0
       },
       pilot: pilot ? {
         cardId: pilot.cardData?.id || `${unit.cardUid}_pilot`,
         cardData: pilot.cardData,
-        currentAP: pilot.currentAP || pilot.cardData?.ap || 0,
-        currentHP: pilot.currentHP || pilot.cardData?.hp || 0
+        name: pilot.cardData?.name || 'Pilot',
+        originalAP: CardStatCalculator.getOriginalAP(pilot),
+        originalHP: CardStatCalculator.getOriginalHP(pilot)
       } : null,
       
       // Legacy compatibility fields

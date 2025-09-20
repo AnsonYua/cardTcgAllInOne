@@ -828,11 +828,27 @@ export default class DialogUIManager {
         cardData = { ...cardData, ...originalCard.cardData };
       }
       
-      // Override with current stats if available
-      if (originalCard.currentHP !== undefined) {
+      // Override with slot-level total stats if available (for slot targets)
+      if (originalCard.totalHP !== undefined) {
+        cardData.hp = originalCard.totalHP;
+      }
+      if (originalCard.totalAP !== undefined) {
+        cardData.ap = originalCard.totalAP;
+      }
+      
+      // Fallback to original stats if available (simplified structure)
+      if (originalCard.originalHP !== undefined && cardData.hp === 0) {
+        cardData.hp = originalCard.originalHP;
+      }
+      if (originalCard.originalAP !== undefined && cardData.ap === 0) {
+        cardData.ap = originalCard.originalAP;
+      }
+      
+      // Legacy fallback to current stats if available
+      if (originalCard.currentHP !== undefined && cardData.hp === 0) {
         cardData.hp = originalCard.currentHP;
       }
-      if (originalCard.currentAP !== undefined) {
+      if (originalCard.currentAP !== undefined && cardData.ap === 0) {
         cardData.ap = originalCard.currentAP;
       }
     }

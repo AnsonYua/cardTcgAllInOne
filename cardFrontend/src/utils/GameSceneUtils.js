@@ -4,6 +4,7 @@
  */
 import Card from '../components/Card.js';
 import { GAME_CONFIG } from '../config/gameConfig.js';
+import CardStatCalculator from './CardStatCalculator.js';
 
 export default class GameSceneUtils {
   /**
@@ -298,11 +299,11 @@ export default class GameSceneUtils {
     const unit = slotData.unit;
     const pilot = slotData.pilot || slotData.pilotCard;
     
-    // Calculate combined stats
-    const unitAP = unit.currentAP || unit.cardData?.ap || 0;
-    const unitHP = unit.currentHP || unit.cardData?.hp || 0;
-    const pilotAP = pilot ? (pilot.currentAP || pilot.cardData?.ap || 0) : 0;
-    const pilotHP = pilot ? (pilot.currentHP || pilot.cardData?.hp || 0) : 0;
+    // Calculate combined stats using common utility
+    const unitAP = CardStatCalculator.calculateTotalAP(unit);
+    const unitHP = CardStatCalculator.calculateTotalHP(unit);
+    const pilotAP = pilot ? CardStatCalculator.calculateTotalAP(pilot) : 0;
+    const pilotHP = pilot ? CardStatCalculator.calculateTotalHP(pilot) : 0;
     
     return {
       id: unit.cardData?.id || unit.cardId,

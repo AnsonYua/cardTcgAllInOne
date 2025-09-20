@@ -1,4 +1,5 @@
 import Card from './Card.js';
+import CardStatCalculator from '../utils/CardStatCalculator.js';
 
 export default class SlotAreaManager {
   constructor(scene, gameStateManager) {
@@ -180,8 +181,8 @@ export default class SlotAreaManager {
     // Update card data with new stats (AP/HP changes, etc.)
     if (card.fullCardData && cardData) {
       // Calculate previous total AP/HP values including modifications
-      const previousTotalAP = this.calculateTotalAP(card.fullCardData);
-      const previousTotalHP = this.calculateTotalHP(card.fullCardData);
+      const previousTotalAP = CardStatCalculator.calculateTotalAP(card.fullCardData);
+      const previousTotalHP = CardStatCalculator.calculateTotalHP(card.fullCardData);
       
       // Update the card's full data with new information
       card.fullCardData = { ...card.fullCardData, ...cardData };
@@ -192,8 +193,8 @@ export default class SlotAreaManager {
       }
       
       // Calculate new total AP/HP values including modifications
-      const newTotalAP = this.calculateTotalAP(card.fullCardData);
-      const newTotalHP = this.calculateTotalHP(card.fullCardData);
+      const newTotalAP = CardStatCalculator.calculateTotalAP(card.fullCardData);
+      const newTotalHP = CardStatCalculator.calculateTotalHP(card.fullCardData);
       
       const statsChanged = (previousTotalAP !== newTotalAP) || (previousTotalHP !== newTotalHP);
       
@@ -224,125 +225,6 @@ export default class SlotAreaManager {
   }
 
 
-  /**
-   * Calculate combined total AP and HP for unit and pilot cards in a slot
-   * @param {Object} unitCard - Unit card data (can be null)
-   * @param {Object} pilotCard - Pilot card data (optional, can be null)
-   * @returns {Object} Combined totals: { totalAP: number, totalHP: number }
-   */
-  calculateTotalInSlot(unitCard, pilotCard) {
-    let totalAP = 0;
-    let totalHP = 0;
-    
-    // Add unit card stats if unit exists
-    if (unitCard && unitCard.fullCardData) {
-      const unitCurrentAP = unitCard.fullCardData.currentAP || 0;
-      const unitModifyAP = unitCard.fullCardData.modifyAP || 0;
-      const unitCurrentHP = unitCard.fullCardData.currentHP || 0;
-      const unitModifyHP = unitCard.fullCardData.modifyHP || 0;
-      
-      totalAP += unitCurrentAP + unitModifyAP;
-      totalHP += unitCurrentHP + unitModifyHP;
-      
-      console.log(`[SlotAreaManager] Unit contribution: AP=${unitCurrentAP + unitModifyAP} (${unitCurrentAP}+${unitModifyAP}), HP=${unitCurrentHP + unitModifyHP} (${unitCurrentHP}+${unitModifyHP})`);
-    }
-    
-    // Add pilot card stats if pilot exists
-    if (pilotCard && pilotCard.fullCardData) {
-      const pilotCurrentAP = pilotCard.fullCardData.currentAP || 0;
-      const pilotModifyAP = pilotCard.fullCardData.modifyAP || 0;
-      const pilotCurrentHP = pilotCard.fullCardData.currentHP || 0;
-      const pilotModifyHP = pilotCard.fullCardData.modifyHP || 0;
-      
-      totalAP += pilotCurrentAP + pilotModifyAP;
-      totalHP += pilotCurrentHP + pilotModifyHP;
-      
-      console.log(`[SlotAreaManager] Pilot contribution: AP=${pilotCurrentAP + pilotModifyAP} (${pilotCurrentAP}+${pilotModifyAP}), HP=${pilotCurrentHP + pilotModifyHP} (${pilotCurrentHP}+${pilotModifyHP})`);
-    }
-    
-    console.log(`[SlotAreaManager] Slot total: AP=${totalAP}, HP=${totalHP}`);
-    
-    return { totalAP, totalHP };
-  }
-
-  /**
-   * Calculate total AP including modifications (matches Card.js getAPandHPFromCardData logic)
-   * @param {Object} fullCardData - The full card data object
-   * @returns {number} Total AP value including modifications
-   */
-  calculateTotalAP(fullCardData) {
-    if (!fullCardData) return 0;
-    
-    const cardData = fullCardData.cardData || fullCardData;
-    
-    // For regular cards (unit, pilot, base)
-    if (cardData.cardType === 'unit' || cardData.cardType === 'pilot' || cardData.cardType === 'base') {
-      if (fullCardData.currentAP != null) {
-        // Use currentAP as base and add modifications
-        const baseAP = fullCardData.currentAP || 0;
-        const modifyAP = fullCardData.modifyAP || 0;
-        return baseAP + modifyAP;
-      } else {
-        // Use original AP from cardData and add modifications
-        const baseAP = cardData.ap || 0;
-        const modifyAP = fullCardData.modifyAP || 0;
-        return baseAP + modifyAP;
-      }
-    }
-    
-    // For command cards with pilot_designation effect
-    if (cardData.cardType === 'command') {
-      const pilotEffect = cardData.effects?.rules?.find(rule => rule.effectId === 'pilot_designation');
-      if (pilotEffect && pilotEffect.effect?.parameters) {
-        const originalAP = pilotEffect.effect.parameters.AP || 0;
-        const baseAP = fullCardData.currentAP || originalAP;
-        const modifyAP = fullCardData.modifyAP || 0;
-        return baseAP + modifyAP;
-      }
-    }
-    
-    return 0;
-  }
-
-  /**
-   * Calculate total HP including modifications (matches Card.js getAPandHPFromCardData logic)
-   * @param {Object} fullCardData - The full card data object
-   * @returns {number} Total HP value including modifications
-   */
-  calculateTotalHP(fullCardData) {
-    if (!fullCardData) return 0;
-    
-    const cardData = fullCardData.cardData || fullCardData;
-    
-    // For regular cards (unit, pilot, base)
-    if (cardData.cardType === 'unit' || cardData.cardType === 'pilot' || cardData.cardType === 'base') {
-      if (fullCardData.currentHP != null) {
-        // Use currentHP as base and add modifications
-        const baseHP = fullCardData.currentHP || 0;
-        const modifyHP = fullCardData.modifyHP || 0;
-        return baseHP + modifyHP;
-      } else {
-        // Use original HP from cardData and add modifications
-        const baseHP = cardData.hp || 0;
-        const modifyHP = fullCardData.modifyHP || 0;
-        return baseHP + modifyHP;
-      }
-    }
-    
-    // For command cards with pilot_designation effect
-    if (cardData.cardType === 'command') {
-      const pilotEffect = cardData.effects?.rules?.find(rule => rule.effectId === 'pilot_designation');
-      if (pilotEffect && pilotEffect.effect?.parameters) {
-        const originalHP = pilotEffect.effect.parameters.HP || 0;
-        const baseHP = fullCardData.currentHP || originalHP;
-        const modifyHP = fullCardData.modifyHP || 0;
-        return baseHP + modifyHP;
-      }
-    }
-    
-    return 0;
-  }
-
   // ============ TOTAL LABELS MANAGEMENT ============
 
   /**
@@ -359,21 +241,21 @@ export default class SlotAreaManager {
     // Update total label values based on slot contents
     if (hasUnit && hasPilot) {
       // Both unit and pilot present - pilot shows combined totals
-      const { totalAP, totalHP } = this.calculateTotalInSlot(slotCards.unit, slotCards.pilot);
+      const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(slotCards.unit, slotCards.pilot);
       if (slotCards.pilot.updateTotalLabels) {
         slotCards.pilot.updateTotalLabels(totalAP, totalHP);
         console.log(`[SlotAreaManager] Updated pilot total labels (combined): AP=${totalAP}, HP=${totalHP}`);
       }
     } else if (hasUnit && !hasPilot) {
       // Unit only - unit shows its own totals
-      const { totalAP, totalHP } = this.calculateTotalInSlot(slotCards.unit, null);
+      const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(slotCards.unit, null);
       if (slotCards.unit.updateTotalLabels) {
         slotCards.unit.updateTotalLabels(totalAP, totalHP);
         console.log(`[SlotAreaManager] Updated unit total labels (unit only): AP=${totalAP}, HP=${totalHP}`);
       }
     } else if (!hasUnit && hasPilot) {
       // Pilot only - pilot shows its own totals
-      const { totalAP, totalHP } = this.calculateTotalInSlot(null, slotCards.pilot);
+      const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(null, slotCards.pilot);
       if (slotCards.pilot.updateTotalLabels) {
         slotCards.pilot.updateTotalLabels(totalAP, totalHP);
         console.log(`[SlotAreaManager] Updated pilot total labels (pilot only): AP=${totalAP}, HP=${totalHP}`);
@@ -491,7 +373,7 @@ export default class SlotAreaManager {
     
     // Calculate totals for debugging
     if (hasUnit || hasPilot) {
-      const { totalAP, totalHP } = this.calculateTotalInSlot(slotCards.unit, slotCards.pilot);
+      const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(slotCards.unit, slotCards.pilot);
       console.log(`Calculated totals: AP=${totalAP}, HP=${totalHP}`);
       
       // Check current displayed values

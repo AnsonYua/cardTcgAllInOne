@@ -3,6 +3,7 @@
  * Extracted from GameScene.js to reduce complexity and improve maintainability
  */
 import Card from '../components/Card.js';
+import CardStatCalculator from '../utils/CardStatCalculator.js';
 
 export default class CardPreviewManager {
   constructor(gameScene) {
@@ -52,9 +53,7 @@ export default class CardPreviewManager {
           };
           
           // Calculate total stats (unit only, no pilot)
-          const { totalAP, totalHP } = this.scene.slotAreaManager ? 
-            this.scene.slotAreaManager.calculateTotalInSlot(mockUnitCard, null) : 
-            { totalAP: 0, totalHP: 0 };
+          const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(mockUnitCard, null);
           
           this.previewCard.updateTotalLabels(totalAP, totalHP);
           console.log(`[CardPreviewManager] Updated unit-only slot preview total labels: AP=${totalAP}, HP=${totalHP}`);
@@ -188,9 +187,7 @@ export default class CardPreviewManager {
       
       // Update pilot total stats to current values (representing combined unit+pilot stats)
       if (this.previewPilotCard.powerOverlay.updateTotalStats) {
-        const { totalAP, totalHP } = this.scene.slotAreaManager ? 
-          this.scene.slotAreaManager.calculateTotalInSlot(unitCard, pilotCard) : 
-          { totalAP: 0, totalHP: 0 };
+        const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(unitCard, pilotCard);
         this.previewPilotCard.powerOverlay.updateTotalStats(totalAP, totalHP);
       }
       
@@ -238,9 +235,9 @@ export default class CardPreviewManager {
       this.previewPilotCard.powerOverlay.setTotalLabelsVisibility('slot1'); // Show pilot total labels
       
       // Update pilot total stats to current values
-      if (this.previewPilotCard.powerOverlay.updateTotalStats && this.scene.slotAreaManager) {
-        const totalAP = this.scene.slotAreaManager.calculateTotalAP(pilotCardData);
-        const totalHP = this.scene.slotAreaManager.calculateTotalHP(pilotCardData);
+      if (this.previewPilotCard.powerOverlay.updateTotalStats) {
+        const totalAP = CardStatCalculator.calculateTotalAP(pilotCardData);
+        const totalHP = CardStatCalculator.calculateTotalHP(pilotCardData);
         this.previewPilotCard.powerOverlay.updateTotalStats(totalAP, totalHP);
       }
       
@@ -273,9 +270,9 @@ export default class CardPreviewManager {
       previewCard.powerOverlay.setTotalLabelsVisibility('slot1'); // Show total labels
       
       // Update total stats to current values if available
-      if (previewCard.updateTotalLabels && cardData && this.scene.slotAreaManager) {
-        const totalAP = this.scene.slotAreaManager.calculateTotalAP(cardData);
-        const totalHP = this.scene.slotAreaManager.calculateTotalHP(cardData);
+      if (previewCard.updateTotalLabels && cardData) {
+        const totalAP = CardStatCalculator.calculateTotalAP(cardData);
+        const totalHP = CardStatCalculator.calculateTotalHP(cardData);
         previewCard.updateTotalLabels(totalAP, totalHP);
       }
       
