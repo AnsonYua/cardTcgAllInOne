@@ -4,6 +4,7 @@
 import { GameEnvironment } from '../models/GameEnvironment';
 import { Player } from '../models/Player';
 import { SLOT_ZONES } from '../config/gameConstants';
+import { SlotUtils } from '../utils/SlotUtils';
 
 export interface ValidationResult {
     isValid: boolean;
@@ -221,7 +222,7 @@ export class GameValidator {
     // ============ SLOT/ZONE VALIDATIONS ============
     
     /**
-     * Validate slot contains unit
+     * Validate slot contains unit (using SlotUtils for consistency)
      */
     static validateSlotUnit(gameEnv: GameEnvironment, playerId: string, cardUid: string): SlotValidationResult {
         const zonesValidation = this.validatePlayerZones(gameEnv, playerId);
@@ -229,25 +230,20 @@ export class GameValidator {
             return zonesValidation;
         }
         
-        const player = zonesValidation.player!;
+        // Use SlotUtils to find the unit
+        const slotResult = SlotUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, cardUid);
         
-        // Search for unit in all slots
-        for (const slotName of SLOT_ZONES) {
-            const slotKey = slotName as keyof Pick<typeof player.zones, 'slot1'|'slot2'|'slot3'|'slot4'|'slot5'|'slot6'>;
-            const slot = player.zones[slotKey];
-            
-            if (slot?.unit?.cardUid === cardUid) {
-                return {
-                    isValid: true,
-                    unit: slot.unit,
-                    slot: slotName
-                };
-            }
+        if (slotResult.found) {
+            return {
+                isValid: true,
+                unit: slotResult.unit,
+                slot: slotResult.slotName!
+            };
         }
         
         return {
             isValid: false,
-            error: `Unit with UID ${cardUid} not found in any slot for player ${playerId}`,
+            error: slotResult.error || `Unit with UID ${cardUid} not found in any slot for player ${playerId}`,
             errorCode: "UNIT_NOT_FOUND_IN_SLOTS"
         };
     }

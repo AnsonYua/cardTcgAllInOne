@@ -14,6 +14,7 @@ import { PairingEffect } from './PairingEffect';
 import { GameValidator } from './GameValidator';
 // GameEventFactory consolidated into EventFactory
 import { UnitZoneCard, PilotZoneCard, CardDatabaseManager } from '../models/CardSystem';
+import { SlotUtils } from '../utils/SlotUtils';
 import * as fs from 'fs';
 import * as path from 'path';
 const { CardEffect } = require('./CardEffect');
@@ -753,6 +754,18 @@ export class GameEngine {
                 targetPilotUid
             } = eventData;
 
+            // Find target slot name using target unit UID
+            const targetSlotResult = SlotUtils.findSlotNameByUnitUid(gameEnv, targetUnitUid);
+            if (!targetSlotResult.found) {
+                return {
+                    success: false,
+                    error: targetSlotResult.error || `Target unit with UID ${targetUnitUid} not found in any slot`
+                };
+            }
+
+            const targetSlotName = targetSlotResult.slotName!;
+
+            console.log(`🎯 Found target unit in ${targetSlotName}`);
             // Get attacker and defender players
             const attacker = gameEnv.getPlayer(playerId);
             const defender = gameEnv.getPlayer(targetPlayerId);
@@ -764,15 +777,17 @@ export class GameEngine {
                 };
             }
 
-            // Find attacker's slot and unit
-            const { slot: attackerSlot, unit: attackingUnit } = PlayerCardManager.findSlotByCardUid(attacker, attackerCardUid);
-
-            if (!attackerSlot || !attackingUnit) {
+            // Find attacker's slot and unit using SlotUtils
+            const attackerSlotResult = SlotUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, attackerCardUid);
+            if (!attackerSlotResult.found) {
                 return {
                     success: false,
-                    error: `Attacking unit with UID ${attackerCardUid} not found in any slot`
+                    error: attackerSlotResult.error || `Attacking unit with UID ${attackerCardUid} not found in any slot`
                 };
             }
+
+            const attackerSlot = attackerSlotResult.slotName!;
+            const attackingUnit = attackerSlotResult.unit!;
 
             console.log(`⚔️ Found attacking unit in ${attackerSlot}: ${attackingUnit.cardUid}`);
 
@@ -856,15 +871,17 @@ export class GameEngine {
                 };
             }
 
-            // Find which slot contains the attacking card
-            const { slot: attackerSlot, unit: attackingUnit } = PlayerCardManager.findSlotByCardUid(attacker, attackerCardUid);
-
-            if (!attackerSlot || !attackingUnit) {
+            // Find which slot contains the attacking card using SlotUtils
+            const attackerSlotResult = SlotUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, attackerCardUid);
+            if (!attackerSlotResult.found) {
                 return {
                     success: false,
-                    error: `Attacking unit with UID ${attackerCardUid} not found in any slot`
+                    error: attackerSlotResult.error || `Attacking unit with UID ${attackerCardUid} not found in any slot`
                 };
             }
+
+            const attackerSlot = attackerSlotResult.slotName!;
+            const attackingUnit = attackerSlotResult.unit!;
 
             console.log(`⚔️ Found attacking unit in ${attackerSlot}: ${attackingUnit.cardUid}`);
 
