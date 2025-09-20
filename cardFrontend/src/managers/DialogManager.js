@@ -64,17 +64,17 @@ export default class DialogManager {
   /**
    * Helper function to create selection data object
    * @param {string} playerId - Player ID
-   * @param {Array} items - Items array (will be resolved by DialogUIManager)
+   * @param {Array} eligibleCards - Eligible cards array (already resolved)
    * @param {string} dialogType - Dialog type
    * @param {string} title - Dialog title
    * @param {string} description - Dialog description
    * @param {Function} callback - Selection callback
    * @returns {Object} Selection data object
    */
-  _createSelectionData(playerId, items, dialogType, title, description, callback) {
+  _createSelectionData(playerId, eligibleCards, dialogType, title, description, callback) {
     return {
       playerId: playerId,
-      items: items, // Pass items directly - DialogUIManager will resolve internally
+      eligibleCards: eligibleCards, // Pass eligibleCards directly
       dialogType: dialogType,
       selectCount: 1,
       numberOfSections: 1,
@@ -88,15 +88,15 @@ export default class DialogManager {
   }
 
   /**
-   * Helper function to validate items and show dialog
-   * @param {Array} items - Items array to validate
-   * @param {string} errorMessage - Error message if no items found
+   * Helper function to validate eligible cards and show dialog
+   * @param {Array} eligibleCards - Eligible cards array to validate
+   * @param {string} errorMessage - Error message if no eligible cards found
    * @param {string} selectionId - Selection ID
    * @param {Object} selectionData - Selection data object
-   * @returns {string|null} Dialog ID or null if no valid items
+   * @returns {string|null} Dialog ID or null if no valid eligible cards
    */
-  _validateAndShowDialog(items, errorMessage, selectionId, selectionData) {
-    if (items.length === 0) {
+  _validateAndShowDialog(eligibleCards, errorMessage, selectionId, selectionData) {
+    if (eligibleCards.length === 0) {
       console.warn(`DialogManager: ${errorMessage}`);
       return null;
     }
@@ -474,8 +474,8 @@ export default class DialogManager {
       return null;
     }
 
-    // Create items only for slots that actually contain units
-    const items = this._createSlotItems(opponentData, opponentId, (slot) => {
+    // Create eligible cards only for slots that actually contain units
+    const eligibleCards = this._createSlotItems(opponentData, opponentId, (slot) => {
       return slot?.unit?.cardUid; // Only slots with units
     });
 
@@ -483,7 +483,7 @@ export default class DialogManager {
     const selectionId = `attack_target_${Date.now()}`;
     const selectionData = this._createSelectionData(
       attackerId,
-      items,
+      eligibleCards,
       "SELECT_ATTACK_TARGET",
       '选择攻击目标',
       '选择要攻击的对手机体',
@@ -499,7 +499,7 @@ export default class DialogManager {
       }
     );
 
-    return this._validateAndShowDialog(items, 'No valid attack targets found', selectionId, selectionData);
+    return this._validateAndShowDialog(eligibleCards, 'No valid attack targets found', selectionId, selectionData);
   }
 
   /**
@@ -523,8 +523,8 @@ export default class DialogManager {
       return null;
     }
 
-    // Create items only for slots that contain units but no pilots
-    const items = this._createSlotItems(playerData, playerId, (slot) => {
+    // Create eligible cards only for slots that contain units but no pilots
+    const eligibleCards = this._createSlotItems(playerData, playerId, (slot) => {
       return slot?.unit?.cardUid && !slot.pilot; // Units without pilots
     });
 
@@ -532,7 +532,7 @@ export default class DialogManager {
     const selectionId = `pilot_target_${Date.now()}`;
     const selectionData = this._createSelectionData(
       playerId,
-      items,
+      eligibleCards,
       "SELECT_UNIT_FOR_PILOT",
       'Select Unit to Pilot',
       'Choose which unit this pilot card should attach to',
@@ -548,7 +548,7 @@ export default class DialogManager {
       }
     );
 
-    return this._validateAndShowDialog(items, 'No valid pilot targets found (need units without pilots)', selectionId, selectionData);
+    return this._validateAndShowDialog(eligibleCards, 'No valid pilot targets found (need units without pilots)', selectionId, selectionData);
   }
 
 
@@ -559,8 +559,8 @@ export default class DialogManager {
     const { deployEffect, availableTargets, sourceCardUid, cardId } = event.data;
     const effectDescription = deployEffect?.effect?.action || 'Select Target';
 
-    // Convert backend availableTargets to items format (DialogUIManager will resolve internally)
-    const items = availableTargets.map(target => ({
+    // Convert backend availableTargets to eligibleCards format
+    const eligibleCards = availableTargets.map(target => ({
       dialogDisplayType: 'slot',
       playerId: target.playerId,
       zone: target.zone,
@@ -573,7 +573,7 @@ export default class DialogManager {
       title: '🎯 Deploy Effect Target Selection',
       description: `Effect: ${effectDescription} - Choose a target`,
       selectCount: 1, // Always select one target
-      items: items, // Pass items directly - DialogUIManager will resolve internally
+      eligibleCards: eligibleCards, // Pass eligibleCards directly
       dialogType: 'DEPLOY_TARGET_CHOICE',
       autoSelectFirst: false // User must actively select target
     };

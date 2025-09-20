@@ -3,8 +3,8 @@
 // Extracted from GameSceneUtils.js for better code organization
 
 import Card from '../components/Card.js';
-import CardStatCalculator from '../utils/CardStatCalculator.js';
 import SlotAreaManager from '../components/SlotAreaManager.js';
+import CardStatCalculator from '../utils/CardStatCalculator.js';
 
 /**
  * DialogUIManager - Handles all dialog UI creation, interaction, and management
@@ -22,21 +22,11 @@ export default class DialogUIManager {
   /**
    * Creates a unified slot selection dialog with pagination and interactive elements
    * 
-   * SELECTION STRUCTURE - All dialogs that can trigger slot selection must provide:
+   * SELECTION STRUCTURE - All dialogs must provide eligibleCards:
    * 
    * @param {Object} selection - Selection configuration object with the following structure:
    * {
-   *   // OPTION 1: Items array for internal resolution
-   *   items: [
-   *     // Slot items (most common - for unit/pilot selection)
-   *     { dialogDisplayType: 'slot', playerId: 'player_1', zone: 'slot1', cardUid: 'unit_card_uid' },
-   *     { dialogDisplayType: 'slot', playerId: 'opponent_1', zone: 'slot2', cardUid: 'target_unit_uid' },
-   *     
-   *     // CardUID items (for specific card references like burst effects)
-   *     { dialogDisplayType: 'carduid', cardUid: 'card_123', preSelected: true }
-   *   ],
-   *   
-   *   // OPTION 2: Pre-resolved eligibleCards array
+   *   // REQUIRED: Pre-resolved eligibleCards array
    *   eligibleCards: [
    *     { type: "slot", cardId, cardUid, displayName, cardData, zone, playerId, isSlotTarget, unit, pilot, totalAP, totalHP, selectionIndex },
    *     { type: "carduid", cardId, cardUid, displayName, cardData, selectionIndex, preSelected }
@@ -61,12 +51,9 @@ export default class DialogUIManager {
    *   buttons: ['ACTIVATE', 'SKIP']
    * }
    * 
-   * CALLING PATTERNS: 
+   * CALLING PATTERN: 
    * 
-   * // Option 1: Using items (internal resolution)
-   * DialogUIManager.createCardSelectionDialog(selectionId, { items, ... }, scene, callback);
-   * 
-   * // Option 2: Using pre-resolved eligibleCards
+   * // Using pre-resolved eligibleCards (only supported format)
    * DialogUIManager.createCardSelectionDialog(selectionId, { eligibleCards, ... }, scene, callback);
    * 
    * @param {string} selectionId - Unique identifier for the selection
@@ -79,26 +66,17 @@ export default class DialogUIManager {
     console.log('Selection ID:', selectionId);
     console.log('Selection config1111:', JSON.stringify(selection));
 
-    // Support both items and eligibleCards formats
-    let eligibleCards;
-
-    if (selection.eligibleCards && Array.isArray(selection.eligibleCards)) {
-      // Direct eligibleCards provided
-      eligibleCards = selection.eligibleCards;
-      console.log('📦 Using provided eligibleCards:', eligibleCards.length, 'cards');
-    } else if (selection.items && Array.isArray(selection.items)) {
-      // Resolve items to eligibleCards using internal resolver
-      console.log('📦 Resolving', selection.items.length, 'items to cards');
-      const gameState = scene.gameStateManager.getGameState();
-      eligibleCards = this._resolveItems(selection.items, gameState);
-      console.log('✅ Resolved to', eligibleCards.length, 'eligible cards');
-    } else {
-      console.warn('DialogUIManager: selection must provide either items or eligibleCards array');
+    // Only support eligibleCards format
+    if (!selection.eligibleCards || !Array.isArray(selection.eligibleCards)) {
+      console.warn('DialogUIManager: selection must provide eligibleCards array');
       return { elements: [], cleanup: () => { } };
     }
-
-    // Add eligibleCards to selection for rest of system
-    selection.eligibleCards = eligibleCards;
+    const gameState = scene.gameStateManager.getGameState();
+    console.log("adsfdsadsasd as",JSON.stringify(selection.eligibleCards))
+    const eligibleCards =  this._resolveItems(selection.eligibleCards, gameState);
+    selection.eligibleCards = eligibleCards
+    console.log("adsfdsadsasd as1111",JSON.stringify(eligibleCards))
+    console.log('📦 Using provided eligibleCards:', eligibleCards.length, 'cards');
 
     console.log('Available cards:', eligibleCards.length);
 
@@ -1450,7 +1428,7 @@ export default class DialogUIManager {
     }
   }
 
-  // ============ INTERNAL ITEM RESOLUTION ============
+    // ============ INTERNAL ITEM RESOLUTION ============
 
   /**
    * Internal method to resolve items to eligibleCards format
@@ -1492,17 +1470,14 @@ export default class DialogUIManager {
   static _resolveItem(item, gameState, index) {
     if (!item || !item.dialogDisplayType) {
       console.warn('DialogUIManager: Invalid item - missing dialogDisplayType');
-      return null;
+      return item;
     }
     
     switch (item.dialogDisplayType) {
       case 'slot':
         return this._resolveSlot(item, gameState, index);
-      case 'carduid':
-        return this._resolveCardUID(item, gameState, index);
       default:
-        console.warn(`DialogUIManager: Unknown item dialogDisplayType: ${item.dialogDisplayType}`);
-        return null;
+        return item;
     }
   }
 
@@ -1678,4 +1653,5 @@ export default class DialogUIManager {
       preSelected: preSelected
     };
   }
+
 }
