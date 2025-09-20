@@ -42,7 +42,7 @@ export default class DialogUIManager {
       console.log('📦 Resolving', selection.items.length, 'items to cards');
       const gameState = scene.gameStateManager.getGameState();
       eligibleCards = ItemDataResolver.resolveItems(selection.items, gameState);
-      console.log('✅ Resolved to', eligibleCards.length, 'eligible cards');
+      console.log('✅ Resolved to 111', JSON.stringify(eligibleCards), 'eligible cards');
     } else {
       console.warn('DialogUIManager: No items or eligibleCards provided in selection');
       eligibleCards = [];
@@ -1140,6 +1140,9 @@ export default class DialogUIManager {
     okButton.setDepth(1502);
     okButton.setInteractive(new Phaser.Geom.Rectangle(config.centerX - 120, buttonY - 17, 100, 35), Phaser.Geom.Rectangle.Contains);
     
+    // Store button position for later color updates
+    okButton._buttonY = buttonY;
+    
     const okText = scene.add.text(config.centerX - 70, buttonY, 'CONFIRM', {
       fontSize: '16px',
       fontFamily: 'Arial',
@@ -1239,25 +1242,45 @@ export default class DialogUIManager {
     
     // Handle read-only mode (selectCount: 0)
     if (selectionState.maxSelections === 0) {
-      okButton.setTint(0x4CAF50);
+      this._setButtonColor(okButton, 0x4CAF50);
       okText.setText('CLOSE');
       return;
     }
     
     if (selectionState.selectedCards.length >= 1) {
-      okButton.setTint(0x4CAF50);
+      this._setButtonColor(okButton, 0x4CAF50);
       if (selectionState.maxSelections > 1) {
         okText.setText(`CONFIRM (${selectionState.selectedCards.length}/${selectionState.maxSelections})`);
       } else {
         okText.setText('CONFIRM');
       }
     } else {
-      okButton.setTint(0x888888);
+      this._setButtonColor(okButton, 0x888888);
       if (selectionState.maxSelections > 1) {
         okText.setText(`SELECT ${selectionState.maxSelections} CARDS`);
       } else {
         okText.setText('SELECT CARD');
       }
+    }
+  }
+
+  /**
+   * Helper method to set Graphics button color
+   * @private
+   */
+  static _setButtonColor(button, color) {
+    if (button && typeof button.clear === 'function') {
+      // Get the button's position from its current state
+      const scene = button.scene;
+      const centerX = scene ? scene.scale.width / 2 : 960;
+      
+      // Find the button's Y position from the dialog config
+      // This should match the position used in button creation
+      const buttonY = button._buttonY || (scene && scene.scale.height * 0.7) || 700;
+      
+      button.clear();
+      button.fillStyle(color);
+      button.fillRoundedRect(centerX - 120, buttonY - 17, 100, 35, 8);
     }
   }
 
