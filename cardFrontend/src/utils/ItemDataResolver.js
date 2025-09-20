@@ -8,9 +8,9 @@ import CardStatCalculator from './CardStatCalculator.js';
  * ItemDataResolver - Converts simplified item references to dialog-ready card objects
  * 
  * Supported Item Types:
- * - slot: { type: 'slot', playerId, zone, constraints?, cardUid? }
- * - carduid: { type: 'carduid', cardUid, preSelected? }
- * - trash: { type: 'trash', playerId, directCards? }
+ * - slot: { dialogDisplayType: 'slot', playerId, zone, constraints?, cardUid? }
+ * - carduid: { dialogDisplayType: 'carduid', cardUid, preSelected? }
+ * - trash: { dialogDisplayType: 'trash', playerId, directCards? }
  * 
  * Output Card Types:
  * - Slot cards: { type: "slot", cardId, cardUid, displayName, cardData, zone, playerId, isSlotTarget, unit, pilot, totalAP, totalHP, selectionIndex }
@@ -38,7 +38,7 @@ export default class ItemDataResolver {
     items.forEach((item, index) => {
       try {
         // Special handling for trash items that return multiple cards
-        if (item.type === 'trash') {
+        if (item.dialogDisplayType === 'trash') {
           const trashCards = this._resolveTrash(item, gameState, index);
           if (trashCards && Array.isArray(trashCards)) {
             resolved.push(...trashCards);
@@ -49,7 +49,7 @@ export default class ItemDataResolver {
           const result = this._resolveItem(item, gameState, index);
           if (result) {
             resolved.push(result);
-            console.log(`✅ Resolved item ${index}:`, item.type, result.displayName || result.cardData?.name || 'Unknown');
+            console.log(`✅ Resolved item ${index}:`, item.dialogDisplayType, result.displayName || result.cardData?.name || 'Unknown');
           }
         }
       } catch (error) {
@@ -66,12 +66,12 @@ export default class ItemDataResolver {
    * @private
    */
   static _resolveItem(item, gameState, index) {
-    if (!item || !item.type) {
-      console.warn('ItemDataResolver: Invalid item - missing type');
+    if (!item || !item.dialogDisplayType) {
+      console.warn('ItemDataResolver: Invalid item - missing dialogDisplayType');
       return null;
     }
     
-    switch (item.type) {
+    switch (item.dialogDisplayType) {
       case 'slot':
         return this._resolveSlot(item, gameState, index);
       case 'carduid':
@@ -79,7 +79,7 @@ export default class ItemDataResolver {
       case 'trash':
         return this._resolveTrash(item, gameState, index);
       default:
-        console.warn(`ItemDataResolver: Unknown item type: ${item.type}`);
+        console.warn(`ItemDataResolver: Unknown item dialogDisplayType: ${item.dialogDisplayType}`);
         return null;
     }
   }

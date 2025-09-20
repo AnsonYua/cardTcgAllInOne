@@ -29,17 +29,17 @@ export default class DialogUIManager {
    *   // REQUIRED: Items array for ItemDataResolver to process
    *   items: [
    *     // Slot items (most common - for unit/pilot selection)
-   *     { type: 'slot', playerId: 'player_1', zone: 'slot1', cardUid: 'unit_card_uid' },
-   *     { type: 'slot', playerId: 'opponent_1', zone: 'slot2', cardUid: 'target_unit_uid' },
+   *     { dialogDisplayType: 'slot', playerId: 'player_1', zone: 'slot1', cardUid: 'unit_card_uid' },
+   *     { dialogDisplayType: 'slot', playerId: 'opponent_1', zone: 'slot2', cardUid: 'target_unit_uid' },
    *     
    *     // Alternative: Slot items with constraints (when not pre-filtering)
-   *     { type: 'slot', playerId: 'player_1', zone: 'slot1', constraints: ['has-unit', 'no-pilot'] },
+   *     { dialogDisplayType: 'slot', playerId: 'player_1', zone: 'slot1', constraints: ['has-unit', 'no-pilot'] },
    *     
    *     // CardUID items (for specific card references like burst effects)
-   *     { type: 'carduid', cardUid: 'card_123', preSelected: true },
+   *     { dialogDisplayType: 'carduid', cardUid: 'card_123', preSelected: true },
    *     
    *     // Trash items (for trash viewing)
-   *     { type: 'trash', playerId: 'player_1', directCards: [...] }
+   *     { dialogDisplayType: 'trash', playerId: 'player_1', directCards: [...] }
    *   ],
    *   
    *   // REQUIRED: Selection behavior
@@ -78,7 +78,7 @@ export default class DialogUIManager {
 
     // Support both items and eligibleCards formats
     let eligibleCards;
-    
+
     if (selection.eligibleCards && Array.isArray(selection.eligibleCards)) {
       // Direct eligibleCards provided (e.g., trash viewing)
       eligibleCards = selection.eligibleCards;

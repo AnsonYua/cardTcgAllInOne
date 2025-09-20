@@ -51,7 +51,7 @@ export default class DialogManager {
 
       if (filterFn(slot, slotName)) {
         items.push({
-          type: 'slot',
+          dialogDisplayType: 'slot',
           playerId: playerId,
           zone: slotName,
           cardUid: slot.unit.cardUid
@@ -395,7 +395,7 @@ export default class DialogManager {
       description: `Effect: ${burstEffect.description || `Activate ${burstEffect.type} effect`}`,
       selectCount: 1, // Always select the one card
       items: [{
-        type: 'carduid',
+        dialogDisplayType: 'carduid',
         cardUid: event.data.cardId,
         preSelected: true // Mark this card as pre-selected
       }],
@@ -572,7 +572,7 @@ export default class DialogManager {
 
     // Convert backend availableTargets to items format
     const items = availableTargets.map(target => ({
-      type: 'slot',
+      dialogDisplayType: 'slot',
       playerId: target.playerId,
       zone: target.zone,
       cardUid: target.cardUid // Optional constraint for specific card
