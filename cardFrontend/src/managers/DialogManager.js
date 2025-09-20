@@ -40,23 +40,23 @@ export default class DialogManager {
    * @returns {string} Dialog ID for tracking/cleanup
    */
   /**
-   * Unified slot selection dialog (handles both card selection and deploy target selection)
-   * Both use cases select from slot data, so they're combined into one method
+   * Unified card selection dialog (handles slots, carduid, and trash selections)
+   * This is the main dialog method that can handle all types of card selections
    */
-  showSlotSelectionDialog(selectionId, selection, onConfirm) {
-    console.log('DialogManager: Showing unified slot selection dialog:', JSON.stringify(selection));
+  showCardSelectionDialog(selectionId, selection, onConfirm) {
+    console.log('DialogManager: Showing unified card selection dialog:', JSON.stringify(selection));
 
     // Check if this selection dialog is already active
     const existingDialogId = this.findDialogBySelectionId(selectionId);
     if (existingDialogId) {
-      console.log('DialogManager: Slot selection dialog already active for:', selectionId);
+      console.log('DialogManager: Card selection dialog already active for:', selectionId);
       return existingDialogId;
     }
 
     // Generate unique dialog ID
-    const dialogId = `slot_selection_${this.nextDialogId++}`;
+    const dialogId = `card_selection_${this.nextDialogId++}`;
 
-    // Clean up any existing slot selection dialogs (prevent multiple dialogs)
+    // Clean up any existing card selection dialogs (prevent multiple dialogs)
     this.closeDialogsByType(this.dialogTypes.CARD_SELECTION);
     this.closeDialogsByType(this.dialogTypes.DEPLOY_TARGET_CHOICE);
 
@@ -66,7 +66,7 @@ export default class DialogManager {
       selection,
       this.scene,
       (selectedId, selectedCards, elements) => {
-        this.handleSlotSelectionComplete(dialogId, selectionId, selectedCards, onConfirm);
+        this.handleCardSelectionComplete(dialogId, selectionId, selectedCards, onConfirm);
       }
     );
 
@@ -79,7 +79,7 @@ export default class DialogManager {
       createdAt: Date.now()
     });
 
-    console.log(`DialogManager: Created slot selection dialog with ID: ${dialogId}`);
+    console.log(`DialogManager: Created card selection dialog with ID: ${dialogId}`);
     return dialogId;
   }
 
@@ -92,10 +92,7 @@ export default class DialogManager {
           "playerId": "playerId_1"
      }
   */
-  showCardSelectionDialog(selectionId, selection, onConfirm) {
-    console.log('DialogManager: Redirecting to unified slot selection dialog');
-    return this.showSlotSelectionDialog(selectionId, selection, onConfirm);
-  }
+
 
   /**
    * Show a confirmation dialog (for redraw, quit, etc.)
@@ -468,8 +465,8 @@ export default class DialogManager {
       }
     };
 
-    // Use unified slot selection dialog
-    return this.showSlotSelectionDialog(selectionId, selectionData, selectionData.callback);
+    // Use unified card selection dialog
+    return this.showCardSelectionDialog(selectionId, selectionData, selectionData.callback);
   }
 
   /**
@@ -545,14 +542,11 @@ export default class DialogManager {
       }
     };
 
-    // Use unified slot selection dialog
-    return this.showSlotSelectionDialog(selectionId, selectionData, selectionData.callback);
+    // Use unified card selection dialog
+    return this.showCardSelectionDialog(selectionId, selectionData, selectionData.callback);
   }
 
-  /**
-   * Legacy method - redirects to unified slot selection dialog
-   * @deprecated Use showSlotSelectionDialog instead
-   */
+
   showDeployTargetDialog(event, onConfirm) {
     console.log('DialogManager: Redirecting deploy target dialog to unified slot selection');
 
@@ -579,8 +573,8 @@ export default class DialogManager {
       autoSelectFirst: false // User must actively select target
     };
 
-    // Use unified slot selection dialog
-    return this.showSlotSelectionDialog(deploySelection.selectionId, deploySelection, (selectionId, selectedCards) => {
+    // Use unified card selection dialog
+    return this.showCardSelectionDialog(deploySelection.selectionId, deploySelection, (selectionId, selectedCards) => {
       if (selectedCards && selectedCards.length > 0) {
         const selectedTarget = selectedCards[0];
         console.log('DialogManager: Deploy target selected via unified dialog:', selectedTarget);
@@ -740,8 +734,15 @@ export default class DialogManager {
    * @param {Array} selectedCards - Selected cards/slots
    * @param {Function} onConfirm - Original callback
    */
-  handleSlotSelectionComplete(dialogId, selectionId, selectedCards, onConfirm) {
-    console.log('DialogManager: Slot selection completed:', dialogId, selectionId, selectedCards);
+  /**
+   * Handle unified card selection completion and cleanup
+   * @param {string} dialogId - Dialog ID
+   * @param {string} selectionId - Selection ID
+   * @param {Array} selectedCards - Selected cards (slots, carduid, trash)
+   * @param {Function} onConfirm - Original callback
+   */
+  handleCardSelectionComplete(dialogId, selectionId, selectedCards, onConfirm) {
+    console.log('DialogManager: Card selection completed:', dialogId, selectionId, selectedCards);
 
     // Close the dialog (cleanup already handled by DialogUIManager)
     this.activeDialogs.delete(dialogId);
@@ -750,15 +751,6 @@ export default class DialogManager {
     if (onConfirm) {
       onConfirm(selectionId, selectedCards);
     }
-  }
-
-  /**
-   * Legacy handler - redirects to unified slot selection handler
-   * @deprecated Use handleSlotSelectionComplete instead
-   */
-  handleCardSelectionComplete(dialogId, selectionId, selectedCards, onConfirm) {
-    console.log('DialogManager: Redirecting to unified slot selection handler');
-    return this.handleSlotSelectionComplete(dialogId, selectionId, selectedCards, onConfirm);
   }
 
   /**
