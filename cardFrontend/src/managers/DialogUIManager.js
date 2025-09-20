@@ -76,17 +76,23 @@ export default class DialogUIManager {
     console.log('Selection ID:', selectionId);
     console.log('Selection config1111:', JSON.stringify(selection));
 
-    // Standardized input: all callers must provide selection.items
-    if (!selection.items || !Array.isArray(selection.items)) {
-      console.warn('DialogUIManager: selection.items must be provided as an array');
+    // Support both items and eligibleCards formats
+    let eligibleCards;
+    
+    if (selection.eligibleCards && Array.isArray(selection.eligibleCards)) {
+      // Direct eligibleCards provided (e.g., trash viewing)
+      eligibleCards = selection.eligibleCards;
+      console.log('📦 Using provided eligibleCards:', eligibleCards.length, 'cards');
+    } else if (selection.items && Array.isArray(selection.items)) {
+      // Resolve items to eligibleCards using ItemDataResolver
+      console.log('📦 Resolving', selection.items.length, 'items to cards');
+      const gameState = scene.gameStateManager.getGameState();
+      eligibleCards = ItemDataResolver.resolveItems(selection.items, gameState);
+      console.log('✅ Resolved to', eligibleCards.length, 'eligible cards');
+    } else {
+      console.warn('DialogUIManager: selection must provide either items or eligibleCards array');
       return { elements: [], cleanup: () => { } };
     }
-
-    // Resolve items to eligibleCards using ItemDataResolver
-    console.log('📦 Resolving', selection.items.length, 'items to cards');
-    const gameState = scene.gameStateManager.getGameState();
-    const eligibleCards = ItemDataResolver.resolveItems(selection.items, gameState);
-    console.log('✅ Resolved to', eligibleCards.length, 'eligible cards');
 
     // Add eligibleCards to selection for rest of system
     selection.eligibleCards = eligibleCards;

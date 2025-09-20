@@ -336,14 +336,17 @@ export default class TrashManager {
 
     // Create a read-only card selection dialog for viewing trash
     const selectionId = `trash_view_${Date.now()}`;
-    
-    // Use standardized items format for trash viewing
+
+    // Convert trash area cards to eligibleCards format - preserve all original values
+    const eligibleCards = trashArea.map((card, index) => ({
+      // Preserve all original card properties
+      ...card,
+      dialogDisplayType:"singleCard"
+    }));
+
+    // Use eligibleCards format directly (no ItemDataResolver processing needed)
     const selection = {
-      items: [{
-        type: 'trash',
-        playerId: targetPlayerId,
-        directCards: trashArea // Pass the trash cards directly
-      }],
+      eligibleCards: eligibleCards, // Direct card array, no items needed
       selectCount: 0, // Read-only, no selection needed
       title: `${trashOwner === 'player' ? 'Your' : 'Opponent\'s'} Trash Area`,
       description: `${trashArea.length} card${trashArea.length !== 1 ? 's' : ''} in trash area`,
@@ -352,6 +355,8 @@ export default class TrashManager {
         console.log('TrashManager: Trash dialog closed');
       }
     };
+
+    console.log("TrashManager: Showing trash dialog with eligibleCards:", JSON.stringify(eligibleCards));
 
     // Use the existing card selection dialog system
     this.dialogManager.showCardSelectionDialog(selectionId, selection, selection.callback);
