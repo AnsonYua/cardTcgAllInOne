@@ -799,5 +799,53 @@ export default class Card extends Phaser.GameObjects.Container {
     this.setupInteraction();
   }
 
+  /**
+   * Configure PowerOverlay to show total AP/HP labels
+   * @param {number} totalAP - Total AP value to display
+   * @param {number} totalHP - Total HP value to display
+   * @param {Object} options - Configuration options
+   * @param {boolean} options.showBackground - Whether to show PowerOverlay background (default: false)
+   * @param {number} options.depth - Z-depth for the PowerOverlay (optional)
+   * @param {string} options.zone - Zone name for label visibility ('slot1' shows, 'hand' hides, default: 'slot1')
+   */
+  configureTotalLabelsToShow(totalAP, totalHP, options = {}) {
+    const config = {
+      showBackground: false,
+      zone: 'slot1',
+      ...options
+    };
+    
+    if (!this.powerOverlay) {
+      console.warn('Card has no PowerOverlay to configure');
+      return;
+    }
+    
+    try {
+      // Configure PowerOverlay settings
+      //this.powerOverlay.setShowBackground(config.showBackground);
+      this.powerOverlay.setVisible(true);
+      
+      // Set depth if provided
+      if (config.depth !== undefined) {
+        this.powerOverlay.setDepth(config.depth);
+      }
+      
+      // Set total labels visibility (following SlotAreaManager pattern)
+      if (this.powerOverlay.setTotalLabelsVisibility) {
+        this.powerOverlay.setTotalLabelsVisibility(config.zone);
+      }
+      
+      // Update total stats
+      if (this.powerOverlay.updateTotalStats) {
+        this.powerOverlay.updateTotalStats(totalAP, totalHP);
+        console.log(`Card ${this.cardData?.id} total stats: AP=${totalAP}, HP=${totalHP}`);
+      }
+      
+      console.log(`PowerOverlay total labels configured for card ${this.cardData?.id}`);
+    } catch (error) {
+      console.error(`Error configuring PowerOverlay total labels for card ${this.cardData?.id}:`, error);
+    }
+  }
+
   // Hover animation methods removed - no animations on hover
 }

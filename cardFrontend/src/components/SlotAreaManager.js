@@ -391,6 +391,42 @@ export default class SlotAreaManager {
     console.log('=== END DEBUG ===\n');
   }
 
+  /**
+   * Configure total labels for unit+pilot card pair with given total values
+   * @param {Card} unitCard - Unit card component
+   * @param {Card} pilotCard - Pilot card component (can be null)
+   * @param {number} totalAP - Total AP value to display
+   * @param {number} totalHP - Total HP value to display
+   */
+  static configureSlotTotalLabels(unitCard, pilotCard, totalAP, totalHP) {
+    const hasUnit = unitCard !== null;
+    const hasPilot = pilotCard !== null;
+    
+    // Apply SlotAreaManager total label visibility rules
+    if (hasUnit && hasPilot) {
+      // Both unit and pilot present - pilot shows combined totals, unit hides totals
+      if (pilotCard.configureTotalLabelsToShow) {
+        pilotCard.configureTotalLabelsToShow(totalAP, totalHP);
+      }
+      if (unitCard.powerOverlay && unitCard.powerOverlay.setTotalLabelsVisibility) {
+        unitCard.powerOverlay.setTotalLabelsVisibility('hand'); // Hide total labels
+      }
+      console.log(`[SlotAreaManager] Configured slot totals: pilot shows AP=${totalAP}, HP=${totalHP}, unit hidden`);
+    } else if (hasUnit && !hasPilot) {
+      // Unit only - unit shows its total labels
+      if (unitCard.configureTotalLabelsToShow) {
+        unitCard.configureTotalLabelsToShow(totalAP, totalHP);
+      }
+      console.log(`[SlotAreaManager] Configured slot totals: unit shows AP=${totalAP}, HP=${totalHP}`);
+    } else if (!hasUnit && hasPilot) {
+      // Pilot only - pilot shows its total labels
+      if (pilotCard.configureTotalLabelsToShow) {
+        pilotCard.configureTotalLabelsToShow(totalAP, totalHP);
+      }
+      console.log(`[SlotAreaManager] Configured slot totals: pilot shows AP=${totalAP}, HP=${totalHP}`);
+    }
+  }
+
   // ============ UTILITY METHODS ============
 
   getSlotCard(playerType, slotName, cardType = 'unit') {

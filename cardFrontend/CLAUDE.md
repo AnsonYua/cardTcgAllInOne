@@ -595,3 +595,251 @@ gameState.gameEnv.players.playerId_1.zones.slot1 = {
 - **Card Previews**: Use `CardPreviewManager` for all preview functionality instead of creating preview cards directly
 - **Game Flow**: Use `GameFlowManager` for complex game flow logic instead of handling in main scene
 - **API Calls**: Use `GameApiService` for standardized API call patterns with consistent error handling
+
+## Data Structure Simplification Patterns (2024)
+
+### ItemDataResolver Pattern
+**Purpose**: Convert simplified item references to dialog-ready card objects without redundant data transformation.
+
+**Core Principle**: Pass raw unit/pilot objects directly to Card components following SlotAreaManager patterns.
+
+```javascript
+// ✅ SIMPLIFIED PATTERN (Current)
+const cardObject = {
+  // Core identifiers
+  cardId: unit.cardData?.id || unit.cardUid,
+  cardUid: unit.cardUid || cardUid,
+  zone: zone,
+  playerId: playerId,
+  type: "slot",
+  
+  // Slot-level totals (unit + pilot combined)
+  totalAP: totalAP,
+  totalHP: totalHP,
+  
+  // Selection metadata
+  selectionIndex: index,
+  displayName: displayName,
+  
+  // Raw objects passed directly to Card components
+  unit: unit,  // ✅ Raw unit object
+  pilot: pilot ? pilot : null,  // ✅ Raw pilot object
+  
+  // Legacy compatibility
+  slot: zone,
+  slotName: zone
+};
+```
+
+**Key Benefits**:
+- ✅ Eliminates redundant data transformation
+- ✅ Follows established SlotAreaManager patterns
+- ✅ Maintains compatibility with Card component system
+- ✅ Reduces complexity and potential data inconsistencies
+
+### DialogUIManager Pattern
+**Purpose**: Handle diverse card data structures while maintaining total AP/HP label display.
+
+```javascript
+// Smart card data detection
+let cardDataForDisplay;
+if (originalCard && originalCard.unit) {
+  // Card object with unit property (from ItemDataResolver slot targets)
+  cardDataForDisplay = originalCard.unit;
+} else if (originalCard && originalCard.cardData) {
+  // Direct card object with cardData property
+  cardDataForDisplay = originalCard;
+} else if (originalCard && originalCard.id) {
+  // Direct cardData format
+  cardDataForDisplay = originalCard;
+} else {
+  // Fallback to original card
+  cardDataForDisplay = originalCard;
+}
+
+// ✅ SIMPLIFIED: Use Card's built-in total labels configuration method
+if (originalCard && (originalCard.totalAP !== undefined || originalCard.totalHP !== undefined)) {
+  const totalAP = originalCard.totalAP || cardDataForDisplay.currentAP || cardDataForDisplay.cardData?.ap || 0;
+  const totalHP = originalCard.totalHP || cardDataForDisplay.currentHP || cardDataForDisplay.cardData?.hp || 0;
+  
+  cardComponent.configureTotalLabels(totalAP, totalHP, {
+    showBackground: false,
+    depth: 1505,
+    zone: 'slot1'
+  });
+}
+```
+
+### Graphics Button Pattern (Fix for setTint Error)
+**Problem**: Graphics objects don't have `setTint()` method, causing runtime errors.
+
+**Solution**: Use helper method with `clear()`, `fillStyle()`, and `fillRoundedRect()`.
+
+```javascript
+// ✅ CORRECT PATTERN for Graphics buttons
+static _setButtonColor(button, color) {
+  if (button && typeof button.clear === 'function') {
+    const scene = button.scene;
+    const centerX = scene ? scene.scale.width / 2 : 960;
+    const buttonY = button._buttonY || (scene && scene.scale.height * 0.7) || 700;
+    
+    // Determine button position using stored flag
+    const isOKButton = button._isOKButton === true;
+    const buttonX = isOKButton ? centerX - 120 : centerX + 20;
+    
+    button.clear();
+    button.fillStyle(color);
+    button.fillRoundedRect(buttonX, buttonY - 17, 100, 35, 8);
+  }
+}
+
+// Usage in event handlers
+okButton.on('pointerover', () => {
+  this._setButtonColor(okButton, 0x66BB6A); // ✅ Works
+  // okButton.setTint(0x66BB6A); // ❌ Fails for Graphics objects
+});
+```
+
+### Slot Target Display Pattern
+**Purpose**: Properly display unit+pilot combinations with correct total label visibility using SlotAreaManager pattern.
+
+```javascript
+// ✅ SIMPLIFIED: Use SlotAreaManager method for unit+pilot total label configuration
+if (slotTarget.totalAP !== undefined && slotTarget.totalHP !== undefined) {
+  SlotAreaManager.configureSlotTotalLabels(unitCard, pilotCard, slotTarget.totalAP, slotTarget.totalHP);
+}
+
+// This replaces the previous inline logic:
+// - When both unit and pilot present: pilot shows combined totals, unit labels hidden
+// - When unit only: unit shows its total labels
+// - When pilot only: pilot shows its total labels
+```
+
+### SlotAreaManager Total Labels Configuration Method
+**Purpose**: Centralized unit+pilot total label configuration following established SlotAreaManager patterns.
+
+```javascript
+// ✅ NEW STATIC METHOD in SlotAreaManager.js
+/**
+ * Configure total labels for unit+pilot card pair with given total values
+ * @param {Card} unitCard - Unit card component
+ * @param {Card} pilotCard - Pilot card component (can be null)
+ * @param {number} totalAP - Total AP value to display
+ * @param {number} totalHP - Total HP value to display
+ */
+SlotAreaManager.configureSlotTotalLabels(unitCard, pilotCard, totalAP, totalHP);
+
+// ✅ USAGE EXAMPLES:
+// For slot target displays with unit+pilot
+SlotAreaManager.configureSlotTotalLabels(unitCard, pilotCard, slotData.totalAP, slotData.totalHP);
+
+// For unit only scenarios
+SlotAreaManager.configureSlotTotalLabels(unitCard, null, unitAP, unitHP);
+
+// For pilot only scenarios  
+SlotAreaManager.configureSlotTotalLabels(null, pilotCard, pilotAP, pilotHP);
+```
+
+### Card Total Labels Configuration Method
+**Purpose**: Reusable method for configuring total AP/HP labels on any Card (dialogs, units without pilots, etc.).
+
+```javascript
+// ✅ NEW METHOD in Card.js
+/**
+ * Configure PowerOverlay to show total AP/HP labels
+ * @param {number} totalAP - Total AP value to display
+ * @param {number} totalHP - Total HP value to display
+ * @param {Object} options - Configuration options
+ * @param {boolean} options.showBackground - Whether to show PowerOverlay background (default: false)
+ * @param {number} options.depth - Z-depth for the PowerOverlay (optional)
+ * @param {string} options.zone - Zone name for label visibility ('slot1' shows, 'hand' hides, default: 'slot1')
+ */
+cardComponent.configureTotalLabels(totalAP, totalHP, {
+  showBackground: false,  // No background for clean display
+  depth: 1505,           // Above card depth (optional)
+  zone: 'slot1'          // Show total labels
+});
+
+// ✅ USAGE EXAMPLES:
+// For dialogs with slot data
+cardComponent.configureTotalLabels(slotData.totalAP, slotData.totalHP);
+
+// For unit cards without pilots in slots
+cardComponent.configureTotalLabels(unitAP, unitHP, { zone: 'slot1' });
+
+// For cards in hand (hide total labels)
+cardComponent.configureTotalLabels(0, 0, { zone: 'hand' });
+```
+
+## Troubleshooting Common Issues (2024)
+
+### Data Structure Issues
+
+**Problem**: Complex data transformation leading to inconsistent card display
+```javascript
+// ❌ AVOID: Complex data transformation
+const cardData = {
+  id: cardImageId,
+  name: displayCardId || cardImageId,
+  hp: originalCard?.totalHP || originalCard?.originalHP || originalCard?.cardData?.hp || 0,
+  // ... complex transformation
+};
+```
+
+**Solution**: Pass raw objects directly
+```javascript
+// ✅ PREFERRED: Direct object passing
+const cardComponent = new Card(scene, cardX, cardsY, originalCard, options);
+```
+
+### Graphics Button Errors
+
+**Problem**: `TypeError: okButton.setTint is not a function`
+- **Cause**: Using `setTint()` on Graphics objects instead of Image/Sprite objects
+- **Fix**: Use `_setButtonColor()` helper method with proper Graphics API
+
+**Problem**: Button color updates not working
+- **Cause**: Missing position tracking or incorrect button identification
+- **Fix**: Store `_isOKButton` and `_buttonY` properties during button creation
+
+### PowerOverlay Label Issues
+
+**Problem**: Total AP/HP labels not showing in dialogs
+- **Cause**: PowerOverlay visibility settings or zone configuration
+- **Fix**: Set `setTotalLabelsVisibility('slot1')` and `updateTotalStats()`
+
+**Problem**: Labels showing background in dialogs
+- **Cause**: Default PowerOverlay background setting
+- **Fix**: Set `setShowBackground(false)` after Card creation
+
+### ItemDataResolver Integration
+
+**Problem**: Card component failing with ItemDataResolver data
+- **Cause**: Mismatch between expected Card input and ItemDataResolver output
+- **Fix**: Use smart card data detection pattern in DialogUIManager
+
+## Best Practices for Future Development
+
+### Data Flow Simplification
+1. **Minimize Transformation**: Pass raw objects when possible
+2. **Follow Patterns**: Use established SlotAreaManager patterns
+3. **Preserve Context**: Maintain original data structure integrity
+4. **Validate Compatibility**: Ensure Card component compatibility
+
+### UI Component Creation
+1. **Object Type Awareness**: Know whether you're working with Graphics, Image, or Sprite objects
+2. **Method Availability**: Check method existence before calling (e.g., `setTint()` vs Graphics API)
+3. **Position Tracking**: Store position data for dynamic updates
+4. **Proper Cleanup**: Ensure proper destruction of dynamic elements
+
+### PowerOverlay Management
+1. **Zone Configuration**: Use proper zone names for visibility ('slot1' shows, 'hand' hides)
+2. **Background Control**: Set `showBackground: false` for dialog cards
+3. **Stats Updates**: Call `updateTotalStats()` with calculated values
+4. **Depth Management**: Set appropriate depth levels for dialog overlays
+
+### Testing Strategies
+1. **Data Structure Validation**: Test with various card data formats
+2. **UI Interaction Testing**: Verify button hover/click behaviors
+3. **Label Visibility Testing**: Check total AP/HP display in different scenarios
+4. **Error Handling**: Test with malformed or missing data

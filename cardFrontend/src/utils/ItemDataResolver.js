@@ -151,7 +151,7 @@ export default class ItemDataResolver {
       cardUid: unit.cardUid || cardUid,
       zone: zone,
       playerId: playerId,
-      
+      type:"slot",
       // Slot-level totals (unit + pilot combined)
       totalAP: totalAP,
       totalHP: totalHP,
@@ -162,20 +162,8 @@ export default class ItemDataResolver {
       
       // Slot target display format (for _createSlotTargetDisplay compatibility)
       isSlotTarget: !!pilot,
-      unit: {
-        cardId: unit.cardData?.id || unit.cardUid,
-        cardData: unit.cardData || { name: 'Unknown Unit', hp: 0, ap: 0 },
-        originalAP: CardStatCalculator.getOriginalAP(unit),
-        originalHP: CardStatCalculator.getOriginalHP(unit),
-        damageReceived: unit.damageReceived || 0
-      },
-      pilot: pilot ? {
-        cardId: pilot.cardData?.id || `${unit.cardUid}_pilot`,
-        cardData: pilot.cardData,
-        name: pilot.cardData?.name || 'Pilot',
-        originalAP: CardStatCalculator.getOriginalAP(pilot),
-        originalHP: CardStatCalculator.getOriginalHP(pilot)
-      } : null,
+      unit: unit ,
+      pilot: pilot ? pilot: null,
       
       // Legacy compatibility fields
       slot: zone,

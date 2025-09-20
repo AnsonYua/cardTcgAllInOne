@@ -4,6 +4,7 @@
 
 import Card from '../components/Card.js';
 import ItemDataResolver from '../utils/ItemDataResolver.js';
+import SlotAreaManager from '../components/SlotAreaManager.js';
 
 /**
  * DialogUIManager - Handles all dialog UI creation, interaction, and management
@@ -638,7 +639,7 @@ export default class DialogUIManager {
     // Card container background - made taller to accommodate total AP/HP labels
     const cardContainer = scene.add.graphics();
     cardContainer.fillStyle(0x333333);
-    const extraHeight = 25; // Additional height for total AP/HP labels
+    const extraHeight = 40; // Additional height for total AP/HP labels
     // Center the extra height: move Y position up by half the extra height to keep visual center aligned
     const adjustedY = cardsY - cardDisplayConfig.cardDisplayHeight/2 - (extraHeight / 2);
     cardContainer.fillRoundedRect(cardX - cardDisplayConfig.cardDisplayWidth/2, adjustedY, cardDisplayConfig.cardDisplayWidth, cardDisplayConfig.cardDisplayHeight + extraHeight, 8);
@@ -650,7 +651,7 @@ export default class DialogUIManager {
     // Extract card display info and create card element (can be Card component or Container)
     const { cardImageId, displayCardId } = this._extractCardDisplayInfo(card);
     console.log("card item 1111111 ", JSON.stringify(card))
-    const cardElement = this._createCardImage(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig, card);
+    const cardElement = this._createCardDisplay(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig, card);
     if (cardElement) {
       dialogElements.cardListElements.push(cardElement);
       this._setupCardInteraction(scene, card, cardElement, displayCardId, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements);
@@ -663,10 +664,10 @@ export default class DialogUIManager {
   }
 
   /**
-   * Creates full Card component with AP/HP display instead of simple image
+   * Creates card display element (individual card or slot combination)
    * @private
    */
-  static _createCardImage(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig, originalCard = null) {
+  static _createCardDisplay(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig, originalCard = null) {
     // Check if this is a slot target (unit + pilot combination)
     if (originalCard && originalCard.isSlotTarget) {
       return this._createSlotTargetDisplay(scene, cardX, cardsY, cardDisplayConfig, originalCard);
@@ -674,29 +675,47 @@ export default class DialogUIManager {
     
     // Create full Card component with AP/HP display
     try {
-      const cardData = this._prepareCardDataForDisplay(cardImageId, displayCardId, originalCard);
-      
       // Calculate appropriate scale for dialog display
       const dialogScale = Math.min(
         (cardDisplayConfig.cardDisplayWidth - 16) / 124,  // Card width is 124px by default
         (cardDisplayConfig.cardDisplayHeight - 16) / 184  // Card height is 184px by default
       );
       
-      const cardComponent = new Card(scene, cardX, cardsY, cardData, {
+      // Determine what data to pass to Card component
+      let cardDataForDisplay;
+      
+      // Handle different card structures
+      if (originalCard && originalCard.unit) {
+        // Card object with unit property (from ItemDataResolver slot targets)
+        cardDataForDisplay = originalCard.unit;
+      } else if (originalCard && originalCard.cardData) {
+        // Direct card object with cardData property
+        cardDataForDisplay = originalCard;
+      } else if (originalCard && originalCard.id) {
+        // Direct cardData format
+        cardDataForDisplay = originalCard;
+      } else {
+        // Fallback to original card
+        cardDataForDisplay = originalCard;
+      }
+      
+      // Pass the determined card data to Card component (like SlotAreaManager does)
+      const cardComponent = new Card(scene, cardX, cardsY, cardDataForDisplay, {
         usePreview: true,     // Use preview images
         scale: dialogScale,   // Scale to fit dialog
         interactive: true,   // Disable interaction (handled separately)
-        showBackground: false ,// No PowerOverlay background in dialogs
+        showBackground: false, // No PowerOverlay background in dialogs
         handleOutside: true
       });
       
       cardComponent.setDepth(1504);
       
-      // Ensure PowerOverlay is visible and properly configured for dialog display
-      if (cardComponent.powerOverlay) {
-        cardComponent.powerOverlay.setShowBackground(false);
-        cardComponent.powerOverlay.setVisible(true);
-        cardComponent.powerOverlay.setDepth(1505);
+      // Configure total labels if available
+      if (originalCard && (originalCard.totalAP !== undefined || originalCard.totalHP !== undefined)) {
+        const totalAP = originalCard.totalAP || cardDataForDisplay.currentAP || cardDataForDisplay.cardData?.ap || 0;
+        const totalHP = originalCard.totalHP || cardDataForDisplay.currentHP || cardDataForDisplay.cardData?.hp || 0;
+        
+        cardComponent.configureTotalLabelsToShow(totalAP, totalHP);
       }
       
       return cardComponent;
@@ -720,17 +739,14 @@ export default class DialogUIManager {
     // Create a container to hold unit and pilot cards with extra height for total AP/HP labels
     const slotContainer = scene.add.container(cardX, cardsY);
     
-    // Add extra vertical spacing for slot targets to accommodate total AP/HP labels
-    const extraSpacing = 15; // Additional space for total labels
-    
     // Create pilot card if present (positioned below unit with extra spacing)
     let pilotCard = null;
     if (slotTarget.pilot) {
-      const pilotData = this._prepareCardDataForDisplay(slotTarget.pilot.cardId, slotTarget.pilot.cardId, slotTarget.pilot);
-      pilotCard = new Card(scene, 0, 23 + extraSpacing, pilotData, {
+      // Pass the whole pilot object directly to Card component (like SlotAreaManager does)
+      pilotCard = new Card(scene, 0, 23 , slotTarget.pilot, {
         usePreview: true,
         scale: dialogScale,
-        interactive: false, // Container will handle interaction
+        interactive: true, // Container will handle interaction
         showBackground: false,
         handleOutside: true
       });
@@ -738,9 +754,9 @@ export default class DialogUIManager {
     }
 
     // Create unit card (always present) - center if no pilot, otherwise position at top with extra spacing
-    const unitY = slotTarget.pilot ? -20 - extraSpacing : 0; // Add extra spacing when pilot present
-    const unitData = this._prepareCardDataForDisplay(slotTarget.unit.cardId, slotTarget.unit.cardId, slotTarget.unit);
-    const unitCard = new Card(scene, 0, unitY, unitData, {
+    const unitY = slotTarget.pilot ? -20 : 0; // Add extra spacing when pilot present
+    // Pass the whole unit object directly to Card component (like SlotAreaManager does)
+    const unitCard = new Card(scene, 0, unitY, slotTarget.unit, {
       usePreview: true,
       scale: dialogScale,
       interactive: false, // Container will handle interaction
@@ -749,6 +765,11 @@ export default class DialogUIManager {
     });
     
     slotContainer.add(unitCard);
+    
+    // ✅ Use SlotAreaManager method for unit+pilot total label configuration
+    if (slotTarget.totalAP !== undefined && slotTarget.totalHP !== undefined) {
+      SlotAreaManager.configureSlotTotalLabels(unitCard, pilotCard, slotTarget.totalAP, slotTarget.totalHP);
+    }
     
     // Store references for interaction handling
     slotContainer.unitCard = unitCard;
@@ -807,54 +828,6 @@ export default class DialogUIManager {
     return cardImage;
   }
 
-  /**
-   * Prepare card data for display in dialog
-   * @private
-   */
-  static _prepareCardDataForDisplay(cardImageId, displayCardId, originalCard = null) {
-    // Base card data structure
-    let cardData = {
-      id: cardImageId,
-      name: displayCardId || cardImageId,
-      hp: 0,
-      ap: 0,
-      description: '',
-      type: 'unknown'
-    };
-    
-    // Use original card data if available
-    if (originalCard) {
-      if (originalCard.cardData) {
-        cardData = { ...cardData, ...originalCard.cardData };
-      }
-      
-      // Override with slot-level total stats if available (for slot targets)
-      if (originalCard.totalHP !== undefined) {
-        cardData.hp = originalCard.totalHP;
-      }
-      if (originalCard.totalAP !== undefined) {
-        cardData.ap = originalCard.totalAP;
-      }
-      
-      // Fallback to original stats if available (simplified structure)
-      if (originalCard.originalHP !== undefined && cardData.hp === 0) {
-        cardData.hp = originalCard.originalHP;
-      }
-      if (originalCard.originalAP !== undefined && cardData.ap === 0) {
-        cardData.ap = originalCard.originalAP;
-      }
-      
-      // Legacy fallback to current stats if available
-      if (originalCard.currentHP !== undefined && cardData.hp === 0) {
-        cardData.hp = originalCard.currentHP;
-      }
-      if (originalCard.currentAP !== undefined && cardData.ap === 0) {
-        cardData.ap = originalCard.currentAP;
-      }
-    }
-    
-    return cardData;
-  }
 
   /**
    * Setup card interaction based on card type
@@ -1142,6 +1115,7 @@ export default class DialogUIManager {
     
     // Store button position for later color updates
     okButton._buttonY = buttonY;
+    okButton._isOKButton = true;
     
     const okText = scene.add.text(config.centerX - 70, buttonY, 'CONFIRM', {
       fontSize: '16px',
@@ -1158,6 +1132,10 @@ export default class DialogUIManager {
     cancelButton.fillRoundedRect(config.centerX + 20, buttonY - 17, 100, 35, 8);
     cancelButton.setDepth(1502);
     cancelButton.setInteractive(new Phaser.Geom.Rectangle(config.centerX + 20, buttonY - 17, 100, 35), Phaser.Geom.Rectangle.Contains);
+    
+    // Store button position for later color updates
+    cancelButton._buttonY = buttonY;
+    cancelButton._isOKButton = false;
     
     const cancelText = scene.add.text(config.centerX + 70, buttonY, 'CANCEL', {
       fontSize: '16px',
@@ -1187,7 +1165,7 @@ export default class DialogUIManager {
     
     okButton.on('pointerover', () => {
       if (selectionState.maxSelections === 0 || selectionState.selectedCards.length >= 1) {
-        okButton.setTint(0x66BB6A);
+        this._setButtonColor(okButton, 0x66BB6A);
         scene.input.setDefaultCursor('pointer');
       }
     });
@@ -1214,12 +1192,12 @@ export default class DialogUIManager {
     const cancelButton = dialogElements.buttonSection.cancelButton;
     
     cancelButton.on('pointerover', () => {
-      cancelButton.setTint(0xf66659);
+      this._setButtonColor(cancelButton, 0xf66659);
       scene.input.setDefaultCursor('pointer');
     });
     
     cancelButton.on('pointerout', () => {
-      cancelButton.setTint(0xf44336);
+      this._setButtonColor(cancelButton, 0xf44336);
       scene.input.setDefaultCursor('default');
     });
     
@@ -1275,12 +1253,15 @@ export default class DialogUIManager {
       const centerX = scene ? scene.scale.width / 2 : 960;
       
       // Find the button's Y position from the dialog config
-      // This should match the position used in button creation
       const buttonY = button._buttonY || (scene && scene.scale.height * 0.7) || 700;
+      
+      // Determine button position using stored flag
+      const isOKButton = button._isOKButton === true;
+      const buttonX = isOKButton ? centerX - 120 : centerX + 20;
       
       button.clear();
       button.fillStyle(color);
-      button.fillRoundedRect(centerX - 120, buttonY - 17, 100, 35, 8);
+      button.fillRoundedRect(buttonX, buttonY - 17, 100, 35, 8);
     }
   }
 
