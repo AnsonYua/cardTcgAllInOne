@@ -308,12 +308,12 @@ export default class CardActionHandler {
             }
         };
         
-        // Use the existing showCardSelectionDialog method
-        if (this.gameScene.showCardSelectionDialog) {
+        // Use DialogManager directly instead of going through GameScene
+        if (this.gameScene.dialogManager) {
             this.gameScene.deselectAllCards(true);
-            this.gameScene.showCardSelectionDialog(selectionId, selectionData);
+            this.gameScene.dialogManager.showCardSelectionDialog(selectionId, selectionData, selectionData.callback);
         } else {
-            console.error('showCardSelectionDialog method not available');
+            console.error('DialogManager not available');
             this.showErrorMessage('Card selection dialog not available');
         }
     }
@@ -438,12 +438,12 @@ export default class CardActionHandler {
             }
         };
         
-        // Use the existing showCardSelectionDialog method
-        if (this.gameScene.showCardSelectionDialog) {
+        // Use DialogManager directly instead of going through GameScene
+        if (this.gameScene.dialogManager) {
             this.gameScene.deselectAllCards(true);
-            this.gameScene.showCardSelectionDialog(selectionId, selectionData);
+            this.gameScene.dialogManager.showCardSelectionDialog(selectionId, selectionData, selectionData.callback);
         } else {
-            console.error('showCardSelectionDialog method not available');
+            console.error('DialogManager not available');
             this.showErrorMessage('无法显示目标选择对话框');
         }
     }

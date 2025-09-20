@@ -454,22 +454,7 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  showCardSelectionDialog(selectionId, selection) {
-    console.log('GameScene: Delegating card selection dialog to DialogManager:', selectionId, selection);
 
-    // All callers must provide their own callback - no fallback needed
-    if (!selection.callback) {
-      console.error('Card selection requires a callback function');
-      return;
-    }
-
-    // Use DialogManager to handle the dialog
-    return this.dialogManager.showCardSelectionDialog(
-      selectionId,
-      selection,
-      selection.callback
-    );
-  }
 
   updateCurrentPlayerHand() {
     this.handCardManager.updateCurrentPlayerHand();
