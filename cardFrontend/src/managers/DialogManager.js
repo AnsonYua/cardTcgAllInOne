@@ -40,7 +40,7 @@ export default class DialogManager {
    * @returns {string} Dialog ID for tracking/cleanup
    */
   showCardSelectionDialog(selectionId, selection, onConfirm) {
-    console.log('DialogManager: Showing card selection dialog:', selectionId, selection);
+    console.log('DialogManager: Showing card selection dialog:', JSON.stringify(selection));
     
     // Check if this selection dialog is already active
     const existingDialogId = this.findDialogBySelectionId(selectionId);

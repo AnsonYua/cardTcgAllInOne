@@ -30,7 +30,7 @@ export default class DialogUIManager {
   static createCardSelectionDialog(selectionId, selection, scene, onConfirm) {
     console.log('🎮 DialogUIManager: Creating card selection dialog');
     console.log('Selection ID:', selectionId);
-    console.log('Selection config:', selection);
+    console.log('Selection config1111:', JSON.stringify(selection));
     
     // Resolve items to eligibleCards format
     let eligibleCards = [];

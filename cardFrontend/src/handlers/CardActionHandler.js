@@ -441,6 +441,7 @@ export default class CardActionHandler {
         // Use DialogManager directly instead of going through GameScene
         if (this.gameScene.dialogManager) {
             this.gameScene.deselectAllCards(true);
+            console.log("adsfasdfasdadsf ",JSON.stringify(selectionData))
             this.gameScene.dialogManager.showCardSelectionDialog(selectionId, selectionData, selectionData.callback);
         } else {
             console.error('DialogManager not available');
