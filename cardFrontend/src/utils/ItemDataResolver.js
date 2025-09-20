@@ -8,9 +8,14 @@ import CardStatCalculator from './CardStatCalculator.js';
  * ItemDataResolver - Converts simplified item references to dialog-ready card objects
  * 
  * Supported Item Types:
- * - slot: { dialogDisplayType: 'slot', playerId, zone, constraints?, cardUid? }
+ * - slot: { dialogDisplayType: 'slot', playerId, zone, cardUid? }
  * - carduid: { dialogDisplayType: 'carduid', cardUid, preSelected? }
  * - trash: { dialogDisplayType: 'trash', playerId, directCards? }
+ * 
+ * Slot Flexibility:
+ * - Returns any slot with cards (unit only, pilot only, or both)
+ * - No constraint filtering - all occupied slots are valid
+ * - Optional cardUid filtering for specific card targeting
  * 
  * Output Card Types:
  * - Slot cards: { type: "slot", cardId, cardUid, displayName, cardData, zone, playerId, isSlotTarget, unit, pilot, totalAP, totalHP, selectionIndex }
@@ -89,7 +94,7 @@ export default class ItemDataResolver {
    * @private
    */
   static _resolveSlot(item, gameState, index) {
-    const { playerId, zone, constraints = [], cardUid } = item;
+    const { playerId, zone, cardUid } = item;
     
     if (!playerId || !zone) {
       console.warn('ItemDataResolver: Slot item missing playerId or zone');
@@ -110,31 +115,15 @@ export default class ItemDataResolver {
       return null;
     }
     
-    // Apply constraints
-    if (constraints.includes('has-unit') && !slot.unit) {
-      console.log(`ItemDataResolver: Slot ${zone} has no unit (constraint: has-unit)`);
-      return null;
-    }
-    
-    if (constraints.includes('no-pilot') && slot.pilot) {
-      console.log(`ItemDataResolver: Slot ${zone} has pilot (constraint: no-pilot)`);
-      return null;
-    }
-    
-    if (constraints.includes('has-pilot') && !slot.pilot) {
-      console.log(`ItemDataResolver: Slot ${zone} has no pilot (constraint: has-pilot)`);
-      return null;
-    }
-    
-    // Specific card constraint
+    // Optional specific card filter (only if cardUid specified)
     if (cardUid && slot.unit?.cardUid !== cardUid) {
       console.log(`ItemDataResolver: Slot ${zone} unit cardUid ${slot.unit?.cardUid} != ${cardUid}`);
       return null;
     }
     
-    // Must have at least a unit
-    if (!slot.unit) {
-      console.log(`ItemDataResolver: Slot ${zone} has no unit`);
+    // Allow slots with unit only, pilot only, or both unit and pilot
+    if (!slot.unit && !slot.pilot) {
+      console.log(`ItemDataResolver: Slot ${zone} is completely empty`);
       return null;
     }
     
@@ -154,30 +143,43 @@ export default class ItemDataResolver {
     // Calculate slot-level totals (unit + pilot combined)
     const { totalAP, totalHP } = CardStatCalculator.calculateSlotDataTotals(slot);
     
+    // Determine primary card for display (unit if present, otherwise pilot)
+    const primaryCard = unit || pilot;
+    
     // Create display name
-    let displayName = unit.cardData?.name || 'Unknown Unit';
-    if (pilot && pilot.cardData?.name) {
-      displayName += ` + ${pilot.cardData.name}`;
+    let displayName;
+    if (unit && pilot) {
+      // Both unit and pilot present
+      displayName = `${unit.cardData?.name || 'Unknown Unit'} + ${pilot.cardData?.name || 'Unknown Pilot'}`;
+    } else if (unit) {
+      // Unit only
+      displayName = unit.cardData?.name || 'Unknown Unit';
+    } else if (pilot) {
+      // Pilot only
+      displayName = pilot.cardData?.name || 'Unknown Pilot';
+    } else {
+      // Fallback (should not occur due to empty slot filtering)
+      displayName = 'Empty Slot';
     }
     displayName += ` (${zone.replace('slot', 'Slot ')})`;
     
     // Create minimized card object for slot selection
     const cardObject = {
-      // Essential identifiers
-      cardId: unit.cardData?.id || unit.cardUid,
-      cardUid: unit.cardUid,
+      // Essential identifiers - use primary card data
+      cardId: primaryCard?.cardData?.id || primaryCard?.cardUid || 'unknown',
+      cardUid: primaryCard?.cardUid || 'unknown',
       type : "slot",
       // Display data
       displayName: displayName,
-      cardData: unit.cardData || unit, // For Card component rendering
+      cardData: primaryCard?.cardData || primaryCard, // For Card component rendering
       
       // Slot context (minimized)
       zone: zone,
       playerId: playerId,
-      isSlotTarget: !!pilot,
+      isSlotTarget: !!(unit && pilot), // True when both unit and pilot present
       
       // Slot data for rendering
-      unit: unit,
+      unit: unit || null,
       pilot: pilot || null,
       
       // Stats for display
@@ -319,33 +321,31 @@ export default class ItemDataResolver {
   
   
   /**
-   * Utility: Get all valid slots for a player with optional constraints
+   * Utility: Get all occupied slots for a player
    * @param {string} playerId - Player ID
-   * @param {Array} constraints - Array of constraint strings
    * @param {Object} gameState - Game state
-   * @returns {Array} Array of slot items
+   * @returns {Array} Array of slot items with cards
    */
-  static getPlayerSlots(playerId, constraints = [], gameState) {
+  static getPlayerSlots(playerId, gameState) {
     const items = [];
     for (let i = 1; i <= 6; i++) {
       items.push({
-        type: 'slot',
+        dialogDisplayType: 'slot',
         playerId: playerId,
-        zone: `slot${i}`,
-        constraints: constraints
+        zone: `slot${i}`
       });
     }
     return this.resolveItems(items, gameState);
   }
   
   /**
-   * Utility: Get opponent slots for targeting
+   * Utility: Get opponent slots for targeting (all occupied slots)
    * @param {string} opponentId - Opponent player ID
    * @param {Object} gameState - Game state
    * @returns {Array} Array of targetable opponent slots
    */
   static getOpponentTargets(opponentId, gameState) {
-    return this.getPlayerSlots(opponentId, ['has-unit'], gameState);
+    return this.getPlayerSlots(opponentId, gameState);
   }
 
   /**

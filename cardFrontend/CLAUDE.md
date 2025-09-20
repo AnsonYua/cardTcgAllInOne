@@ -598,10 +598,16 @@ gameState.gameEnv.players.playerId_1.zones.slot1 = {
 
 ## Data Structure Simplification Patterns (2024)
 
-### ItemDataResolver Pattern
-**Purpose**: Convert simplified item references to dialog-ready card objects without redundant data transformation.
+### ItemDataResolver Pattern (Enhanced)
+**Purpose**: Convert simplified item references to dialog-ready card objects with maximum flexibility.
 
 **Core Principle**: Pass raw unit/pilot objects directly to Card components following SlotAreaManager patterns.
+
+**Constraint Removal**: All constraint filtering has been removed for maximum flexibility:
+- ✅ Returns any slot with cards (unit only, pilot only, or both unit+pilot)
+- ✅ No filtering by `has-unit`, `no-pilot`, or `has-pilot` constraints
+- ✅ Optional `cardUid` filtering for specific card targeting
+- ✅ Simplified utility methods without constraint parameters
 
 ```javascript
 // ✅ SIMPLIFIED PATTERN (Current)

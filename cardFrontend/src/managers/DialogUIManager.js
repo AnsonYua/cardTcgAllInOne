@@ -32,8 +32,8 @@ export default class DialogUIManager {
    *     { dialogDisplayType: 'slot', playerId: 'player_1', zone: 'slot1', cardUid: 'unit_card_uid' },
    *     { dialogDisplayType: 'slot', playerId: 'opponent_1', zone: 'slot2', cardUid: 'target_unit_uid' },
    *     
-   *     // Alternative: Slot items with constraints (when not pre-filtering)
-   *     { dialogDisplayType: 'slot', playerId: 'player_1', zone: 'slot1', constraints: ['has-unit', 'no-pilot'] },
+   *     // Slot items without cardUid (returns any occupied slot)
+   *     { dialogDisplayType: 'slot', playerId: 'player_1', zone: 'slot1' },
    *     
    *     // CardUID items (for specific card references like burst effects)
    *     { dialogDisplayType: 'carduid', cardUid: 'card_123', preSelected: true },
