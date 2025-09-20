@@ -252,14 +252,7 @@ export interface BurstEffectChoiceEvent extends BaseGameEvent {
     type: EventType.BURST_EFFECT_CHOICE;
     data: {
         playerId: string;
-        cardUid: string;
-        cardId: string;
-        cardData: any;
-        burstEffect: {
-            effectId: string;
-            type: string;
-            description: string;
-        };
+        availableTargets: Array<any>;
         choiceId: string;
         userDecisionMade: boolean;
         userDecision?: 'ACTIVATE' | 'DECLINE';
@@ -538,10 +531,7 @@ export class EventFactory {
     
     static createBurstEffectChoiceEvent(
         playerId: string,
-        cardUid: string,
-        cardId: string,
-        cardData: any,
-        burstEffect: { effectId: string; type: string; description: string }
+        cards: Array<any>
     ): BurstEffectChoiceEvent {
         return {
             id: `burst_choice_${++this.eventIdCounter}_${Date.now()}`,
@@ -552,11 +542,8 @@ export class EventFactory {
             timestamp: Date.now(),
             data: {
                 playerId,
-                cardUid,
-                cardId,
-                cardData,
-                burstEffect,
-                choiceId: `burst_choice_${cardUid}_${Date.now()}`,
+                availableTargets: cards,
+                choiceId: `burst_choice_${Date.now()}`,
                 userDecisionMade: false,
                 userDecision: undefined
             }

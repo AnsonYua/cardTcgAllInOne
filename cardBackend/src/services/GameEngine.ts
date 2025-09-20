@@ -1049,12 +1049,50 @@ export class GameEngine {
                         console.log(`⚡ Creating choice event for burst effect: ${burstEffect.effectId}`);
 
                         shieldCard.cardData.cardType = shieldCard.cardData.originalCardType
+                        /*
                         const choiceEvent = EventFactory.createBurstEffectChoiceEvent(
                             defendingPlayerId,
-                            shieldCard.cardUid,
-                            shieldCard.cardId,
-                            shieldCard.cardData,
-                            burstEffect
+                            [{
+                                ...shieldCard
+                            }]
+                        ); 
+                        update this to 
+                           const choiceEvent = EventFactory.createBurstEffectChoiceEvent(
+                            defendingPlayerId,
+                            [shieldCard]
+                        ); 
+                        and the event 
+                          static createBurstEffectChoiceEvent(
+                                playerId: string,
+                                cardUid: string,
+                                cardId: string,
+                                cardData: any,
+                                burstEffect: { effectId: string; type: string; description: string }
+                            ): BurstEffectChoiceEvent {
+                                return {
+                                    id: `burst_choice_${++this.eventIdCounter}_${Date.now()}`,
+                                    type: EventType.BURST_EFFECT_CHOICE,
+                                    status: EventStatus.DECLARED,
+                                    priority: EventPriority.HIGH,
+                                    playerId,
+                                    timestamp: Date.now(),
+                                    data: {
+                                        playerId,
+                                        cardUid,
+                                        cardId,
+                                        availableTargets:[shieldCard]
+                                        choiceId: `burst_choice_${cardUid}_${Date.now()}`,
+                                        userDecisionMade: false,
+                                        userDecision: undefined
+                                    }
+                                };
+                            }
+                        */
+                        const choiceEvent = EventFactory.createBurstEffectChoiceEvent(
+                            defendingPlayerId,
+                            [{
+                                ...shieldCard
+                            }]
                         );
 
                         // Enqueue the choice event for processing
@@ -1110,7 +1148,18 @@ export class GameEngine {
         console.log(`💥 Executing BURST_EFFECT_CHOICE event: ${event.id} (${event.status})`);
 
         try {
-            const { playerId, cardUid, cardId, cardData, burstEffect, choiceId, userDecision } = event.data;
+            const { playerId, availableTargets, choiceId, userDecision } = event.data;
+            
+            // Get the first (and typically only) target from availableTargets array
+            const target = availableTargets[0];
+            if (!target) {
+                return {
+                    success: false,
+                    error: 'No available targets in burst choice event'
+                };
+            }
+            
+            const { cardUid, cardId, cardData } = target;
 
             // This method should only be called for RESOLVING events
             if (event.status !== EventStatus.RESOLVING) {
@@ -1133,7 +1182,7 @@ export class GameEngine {
                 }
 
                 // IMPORTANT: Remove card from shield before moving to trash
-                const removedFromShield = GameEngine.removeFromShieldWithLogging(gameEnv, playerId, cardUid);
+                const removedFromShield = GameEngine.removeFromShieldWithLogging(gameEnv, playerId, target.cardUid);
                 if (!removedFromShield) {
                     console.log(`⚠️ Warning: Card ${cardUid} was not found in shield zone, but proceeding with trash move`);
                 }
@@ -1143,13 +1192,25 @@ export class GameEngine {
                 GameEngine.restoreCardType(cardDataForTrash);
 
                 // Move card to trash area
-                defender.addTrashCard(cardUid, cardDataForTrash);
-                console.log(`🗑️ Card ${cardId} (${cardUid}) moved to trash area after declining burst effect`);
+                defender.addTrashCard(target.cardUid, cardDataForTrash);
+                console.log(`🗑️ Card ${target.cardId} (${target.cardUid}) moved to trash area after declining burst effect`);
 
                 return { success: true }; // Processing loop will auto-set RESOLVED
             }
 
             if (userDecision === 'ACTIVATE') {
+                // Find the burst effect from cardData
+                const burstEffects = GameEngine.findBurstEffects(cardData);
+                if (burstEffects.length === 0) {
+                    return {
+                        success: false,
+                        error: 'No burst effects found on card'
+                    };
+                }
+                
+                // Use the first burst effect (typically only one per card)
+                const burstEffect = burstEffects[0];
+                
                 // Execute the confirmed burst effect
                 console.log(`⚡ Executing burst effect: ${burstEffect.type}`);
                 const executionResult = GameEngine.executeBurstEffect(gameEnv, playerId, cardUid, cardId, cardData, burstEffect);

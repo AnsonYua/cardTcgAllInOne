@@ -609,6 +609,12 @@ gameState.gameEnv.players.playerId_1.zones.slot1 = {
 - ✅ Optional `cardUid` filtering for specific card targeting
 - ✅ Simplified utility methods without constraint parameters
 
+**DialogUIManager Consolidation**: DialogUIManager now includes internal item resolution logic:
+- ✅ Supports both `selection.items` and `selection.eligibleCards` formats
+- ✅ Internal item resolution handles slot and carduid types (trash support removed)
+- ✅ DialogManager simplified to pass items directly to DialogUIManager
+- ✅ ItemDataResolver logic consolidated into DialogUIManager for better cohesion
+
 ```javascript
 // ✅ SIMPLIFIED PATTERN (Current)
 const cardObject = {

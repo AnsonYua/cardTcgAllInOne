@@ -3,7 +3,7 @@
 // Extracted from GameSceneUtils.js for better code organization
 
 import Card from '../components/Card.js';
-import ItemDataResolver from '../utils/ItemDataResolver.js';
+import CardStatCalculator from '../utils/CardStatCalculator.js';
 import SlotAreaManager from '../components/SlotAreaManager.js';
 
 /**
@@ -26,20 +26,20 @@ export default class DialogUIManager {
    * 
    * @param {Object} selection - Selection configuration object with the following structure:
    * {
-   *   // REQUIRED: Items array for ItemDataResolver to process
+   *   // OPTION 1: Items array for internal resolution
    *   items: [
    *     // Slot items (most common - for unit/pilot selection)
    *     { dialogDisplayType: 'slot', playerId: 'player_1', zone: 'slot1', cardUid: 'unit_card_uid' },
    *     { dialogDisplayType: 'slot', playerId: 'opponent_1', zone: 'slot2', cardUid: 'target_unit_uid' },
    *     
-   *     // Slot items without cardUid (returns any occupied slot)
-   *     { dialogDisplayType: 'slot', playerId: 'player_1', zone: 'slot1' },
-   *     
    *     // CardUID items (for specific card references like burst effects)
-   *     { dialogDisplayType: 'carduid', cardUid: 'card_123', preSelected: true },
-   *     
-   *     // Trash items (for trash viewing)
-   *     { dialogDisplayType: 'trash', playerId: 'player_1', directCards: [...] }
+   *     { dialogDisplayType: 'carduid', cardUid: 'card_123', preSelected: true }
+   *   ],
+   *   
+   *   // OPTION 2: Pre-resolved eligibleCards array
+   *   eligibleCards: [
+   *     { type: "slot", cardId, cardUid, displayName, cardData, zone, playerId, isSlotTarget, unit, pilot, totalAP, totalHP, selectionIndex },
+   *     { type: "carduid", cardId, cardUid, displayName, cardData, selectionIndex, preSelected }
    *   ],
    *   
    *   // REQUIRED: Selection behavior
@@ -61,10 +61,13 @@ export default class DialogUIManager {
    *   buttons: ['ACTIVATE', 'SKIP']
    * }
    * 
-   * OUTPUT: ItemDataResolver converts items to eligibleCards with consistent structure:
-   * - Slot cards: { type: "slot", cardId, cardUid, displayName, cardData, zone, playerId, isSlotTarget, unit, pilot, totalAP, totalHP, selectionIndex }
-   * - CardUID cards: { type: "carduid", cardId, cardUid, displayName, cardData, selectionIndex, preSelected }
-   * - Trash cards: { type: "trash", cardId, cardUid, displayName, cardData, selectionIndex, inTrash }
+   * CALLING PATTERNS: 
+   * 
+   * // Option 1: Using items (internal resolution)
+   * DialogUIManager.createCardSelectionDialog(selectionId, { items, ... }, scene, callback);
+   * 
+   * // Option 2: Using pre-resolved eligibleCards
+   * DialogUIManager.createCardSelectionDialog(selectionId, { eligibleCards, ... }, scene, callback);
    * 
    * @param {string} selectionId - Unique identifier for the selection
    * @param {Phaser.Scene} scene - Phaser scene instance
@@ -80,14 +83,14 @@ export default class DialogUIManager {
     let eligibleCards;
 
     if (selection.eligibleCards && Array.isArray(selection.eligibleCards)) {
-      // Direct eligibleCards provided (e.g., trash viewing)
+      // Direct eligibleCards provided
       eligibleCards = selection.eligibleCards;
       console.log('📦 Using provided eligibleCards:', eligibleCards.length, 'cards');
     } else if (selection.items && Array.isArray(selection.items)) {
-      // Resolve items to eligibleCards using ItemDataResolver
+      // Resolve items to eligibleCards using internal resolver
       console.log('📦 Resolving', selection.items.length, 'items to cards');
       const gameState = scene.gameStateManager.getGameState();
-      eligibleCards = ItemDataResolver.resolveItems(selection.items, gameState);
+      eligibleCards = this._resolveItems(selection.items, gameState);
       console.log('✅ Resolved to', eligibleCards.length, 'eligible cards');
     } else {
       console.warn('DialogUIManager: selection must provide either items or eligibleCards array');
@@ -1445,5 +1448,234 @@ export default class DialogUIManager {
         ease: 'Power2.easeOut'
       });
     }
+  }
+
+  // ============ INTERNAL ITEM RESOLUTION ============
+
+  /**
+   * Internal method to resolve items to eligibleCards format
+   * @private
+   * @param {Array} items - Array of item specifications
+   * @param {Object} gameState - Current game state from gameStateManager
+   * @returns {Array} Array of card objects for dialog display
+   */
+  static _resolveItems(items, gameState) {
+    if (!Array.isArray(items)) {
+      console.warn('DialogUIManager: items must be an array');
+      return [];
+    }
+    
+    console.log('🔍 DialogUIManager: Resolving', items.length, 'items');
+    
+    const resolved = [];
+    
+    items.forEach((item, index) => {
+      try {
+        const result = this._resolveItem(item, gameState, index);
+        if (result) {
+          resolved.push(result);
+          console.log(`✅ Resolved item ${index}:`, item.dialogDisplayType, result.displayName || result.cardData?.name || 'Unknown');
+        }
+      } catch (error) {
+        console.error(`❌ Failed to resolve item ${index}:`, item, error);
+      }
+    });
+    
+    console.log(`📊 DialogUIManager: Resolved ${resolved.length} total cards from ${items.length} items`);
+    return resolved;
+  }
+
+  /**
+   * Resolve single item to card object
+   * @private
+   */
+  static _resolveItem(item, gameState, index) {
+    if (!item || !item.dialogDisplayType) {
+      console.warn('DialogUIManager: Invalid item - missing dialogDisplayType');
+      return null;
+    }
+    
+    switch (item.dialogDisplayType) {
+      case 'slot':
+        return this._resolveSlot(item, gameState, index);
+      case 'carduid':
+        return this._resolveCardUID(item, gameState, index);
+      default:
+        console.warn(`DialogUIManager: Unknown item dialogDisplayType: ${item.dialogDisplayType}`);
+        return null;
+    }
+  }
+
+  /**
+   * Resolve slot item (player/opponent zones)
+   * @private
+   */
+  static _resolveSlot(item, gameState, index) {
+    const { playerId, zone, cardUid } = item;
+    
+    if (!playerId || !zone) {
+      console.warn('DialogUIManager: Slot item missing playerId or zone');
+      return null;
+    }
+    
+    // Get player data
+    const player = gameState.gameEnv?.players?.[playerId];
+    if (!player || !player.zones) {
+      console.warn(`DialogUIManager: Player ${playerId} not found or missing zones`);
+      return null;
+    }
+    
+    // Get slot data
+    const slot = player.zones[zone];
+    if (!slot) {
+      console.log(`DialogUIManager: Empty slot ${playerId}/${zone}`);
+      return null;
+    }
+    
+    // Optional specific card filter (only if cardUid specified)
+    if (cardUid && slot.unit?.cardUid !== cardUid) {
+      console.log(`DialogUIManager: Slot ${zone} unit cardUid ${slot.unit?.cardUid} != ${cardUid}`);
+      return null;
+    }
+    
+    // Allow slots with unit only, pilot only, or both unit and pilot
+    if (!slot.unit && !slot.pilot) {
+      console.log(`DialogUIManager: Slot ${zone} is completely empty`);
+      return null;
+    }
+    
+    // Build card object for dialog display
+    return this._buildSlotCard(slot, { zone, playerId, cardUid, index });
+  }
+
+  /**
+   * Build slot card object with unit+pilot data
+   * @private
+   */
+  static _buildSlotCard(slot, metadata) {
+    const { zone, playerId, cardUid, index } = metadata;
+    const unit = slot.unit;
+    const pilot = slot.pilot;
+    
+    // Calculate slot-level totals (unit + pilot combined)
+    const { totalAP, totalHP } = CardStatCalculator.calculateSlotDataTotals(slot);
+    
+    // Determine primary card for display (unit if present, otherwise pilot)
+    const primaryCard = unit || pilot;
+    
+    // Create display name
+    let displayName;
+    if (unit && pilot) {
+      // Both unit and pilot present
+      displayName = `${unit.cardData?.name || 'Unknown Unit'} + ${pilot.cardData?.name || 'Unknown Pilot'}`;
+    } else if (unit) {
+      // Unit only
+      displayName = unit.cardData?.name || 'Unknown Unit';
+    } else if (pilot) {
+      // Pilot only
+      displayName = pilot.cardData?.name || 'Unknown Pilot';
+    } else {
+      // Fallback (should not occur due to empty slot filtering)
+      displayName = 'Empty Slot';
+    }
+    displayName += ` (${zone.replace('slot', 'Slot ')})`;
+    
+    // Create minimized card object for slot selection
+    const cardObject = {
+      // Essential identifiers - use primary card data
+      cardId: primaryCard?.cardData?.id || primaryCard?.cardUid || 'unknown',
+      cardUid: primaryCard?.cardUid || 'unknown',
+      type : "slot",
+      // Display data
+      displayName: displayName,
+      cardData: primaryCard?.cardData || primaryCard, // For Card component rendering
+      
+      // Slot context (minimized)
+      zone: zone,
+      playerId: playerId,
+      isSlotTarget: !!(unit && pilot), // True when both unit and pilot present
+      
+      // Slot data for rendering
+      unit: unit || null,
+      pilot: pilot || null,
+      
+      // Stats for display
+      totalAP: totalAP,
+      totalHP: totalHP,
+      
+      // Selection metadata
+      selectionIndex: index
+    };
+    
+    console.log(`🎯 Built slot card: ${displayName} (AP: ${totalAP}, HP: ${totalHP})`);
+    return cardObject;
+  }
+
+  /**
+   * Resolve cardUID item (specific card references)
+   * @private
+   */
+  static _resolveCardUID(item, gameState, index) {
+    const { cardUid, preSelected = false } = item;
+    
+    if (!cardUid) {
+      console.warn('DialogUIManager: CardUID item missing cardUid');
+      return null;
+    }
+    
+    // Find card in game state - check multiple locations
+    let cardData = null;
+    let foundLocation = null;
+    
+    // Check all players' hands, slots, etc.
+    for (const playerId in gameState.gameEnv?.players || {}) {
+      const player = gameState.gameEnv.players[playerId];
+      
+      // Check hand
+      if (player.deck?.hand) {
+        const handCard = player.deck.hand.find(card => card.cardUid === cardUid);
+        if (handCard) {
+          cardData = handCard.cardData;
+          foundLocation = `${playerId}/hand`;
+          break;
+        }
+      }
+      
+      // Check slots
+      if (player.zones) {
+        for (const zoneName in player.zones) {
+          const zone = player.zones[zoneName];
+          if (zone.unit?.cardUid === cardUid) {
+            cardData = zone.unit.cardData;
+            foundLocation = `${playerId}/${zoneName}/unit`;
+            break;
+          }
+          if (zone.pilot?.cardUid === cardUid) {
+            cardData = zone.pilot.cardData;
+            foundLocation = `${playerId}/${zoneName}/pilot`;
+            break;
+          }
+        }
+        if (cardData) break;
+      }
+    }
+    
+    if (!cardData) {
+      console.warn(`DialogUIManager: Card ${cardUid} not found in game state`);
+      return null;
+    }
+    
+    console.log(`🎴 Found card ${cardUid} in ${foundLocation}: ${cardData.name}`);
+    
+    // Create minimized card object for cardUID selection
+    return {
+      cardId: cardData.id || cardUid,
+      cardUid: cardUid,
+      type: "carduid",
+      displayName: cardData.name || 'Unknown Card',
+      cardData: cardData, // For Card component rendering
+      selectionIndex: index,
+      preSelected: preSelected
+    };
   }
 }

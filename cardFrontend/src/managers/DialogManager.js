@@ -64,7 +64,7 @@ export default class DialogManager {
   /**
    * Helper function to create selection data object
    * @param {string} playerId - Player ID
-   * @param {Array} items - Items array
+   * @param {Array} items - Items array (will be resolved by DialogUIManager)
    * @param {string} dialogType - Dialog type
    * @param {string} title - Dialog title
    * @param {string} description - Dialog description
@@ -74,7 +74,7 @@ export default class DialogManager {
   _createSelectionData(playerId, items, dialogType, title, description, callback) {
     return {
       playerId: playerId,
-      items: items,
+      items: items, // Pass items directly - DialogUIManager will resolve internally
       dialogType: dialogType,
       selectCount: 1,
       numberOfSections: 1,
@@ -380,25 +380,14 @@ export default class DialogManager {
     // Clean up any existing burst effect dialogs (prevent multiple burst dialogs)
     this.closeDialogsByType(this.dialogTypes.BURST_EFFECT_CHOICE);
 
-    // Extract card and effect information from event
-    const cardData = event.data.cardData;
-    const burstEffect = event.data.burstEffect;
-    const cardName = cardData.name || `Card ${event.data.cardId}`;
 
-    console.log('Burst effect card data:', cardData);
-    console.log('Burst effect details:', burstEffect);
-
-    // Create selection object with new items format
+    // Create selection object with items format (DialogUIManager will resolve internally)
     const burstSelection = {
       selectionId: `burst_${event.id}`,
       title: '💥 Burst Effect Available',
-      description: `Effect: ${burstEffect.description || `Activate ${burstEffect.type} effect`}`,
+      description: `burst Effect`,
       selectCount: 1, // Always select the one card
-      items: [{
-        dialogDisplayType: 'carduid',
-        cardUid: event.data.cardId,
-        preSelected: true // Mark this card as pre-selected
-      }],
+      eligibleCards:event.data.availableTargets,
       dialogType: 'BURST_EFFECT_CHOICE',
       autoSelectFirst: true // Flag to indicate first card should be auto-selected
     };
@@ -570,7 +559,7 @@ export default class DialogManager {
     const { deployEffect, availableTargets, sourceCardUid, cardId } = event.data;
     const effectDescription = deployEffect?.effect?.action || 'Select Target';
 
-    // Convert backend availableTargets to items format
+    // Convert backend availableTargets to items format (DialogUIManager will resolve internally)
     const items = availableTargets.map(target => ({
       dialogDisplayType: 'slot',
       playerId: target.playerId,
@@ -584,7 +573,7 @@ export default class DialogManager {
       title: '🎯 Deploy Effect Target Selection',
       description: `Effect: ${effectDescription} - Choose a target`,
       selectCount: 1, // Always select one target
-      items: items,
+      items: items, // Pass items directly - DialogUIManager will resolve internally
       dialogType: 'DEPLOY_TARGET_CHOICE',
       autoSelectFirst: false // User must actively select target
     };

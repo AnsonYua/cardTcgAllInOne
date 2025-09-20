@@ -10,7 +10,6 @@ import CardStatCalculator from './CardStatCalculator.js';
  * Supported Item Types:
  * - slot: { dialogDisplayType: 'slot', playerId, zone, cardUid? }
  * - carduid: { dialogDisplayType: 'carduid', cardUid, preSelected? }
- * - trash: { dialogDisplayType: 'trash', playerId, directCards? }
  * 
  * Slot Flexibility:
  * - Returns any slot with cards (unit only, pilot only, or both)
@@ -20,7 +19,6 @@ import CardStatCalculator from './CardStatCalculator.js';
  * Output Card Types:
  * - Slot cards: { type: "slot", cardId, cardUid, displayName, cardData, zone, playerId, isSlotTarget, unit, pilot, totalAP, totalHP, selectionIndex }
  * - CardUID cards: { type: "carduid", cardId, cardUid, displayName, cardData, selectionIndex, preSelected? }
- * - Trash cards: { type: "trash", cardId, cardUid, displayName, cardData, selectionIndex, inTrash }
  */
 export default class ItemDataResolver {
   
@@ -42,20 +40,11 @@ export default class ItemDataResolver {
     
     items.forEach((item, index) => {
       try {
-        // Special handling for trash items that return multiple cards
-        if (item.dialogDisplayType === 'trash') {
-          const trashCards = this._resolveTrash(item, gameState, index);
-          if (trashCards && Array.isArray(trashCards)) {
-            resolved.push(...trashCards);
-            console.log(`✅ Resolved trash item ${index}: ${trashCards.length} cards`);
-          }
-        } else {
-          // Regular single-card items
-          const result = this._resolveItem(item, gameState, index);
-          if (result) {
-            resolved.push(result);
-            console.log(`✅ Resolved item ${index}:`, item.dialogDisplayType, result.displayName || result.cardData?.name || 'Unknown');
-          }
+        // Resolve single-card items
+        const result = this._resolveItem(item, gameState, index);
+        if (result) {
+          resolved.push(result);
+          console.log(`✅ Resolved item ${index}:`, item.dialogDisplayType, result.displayName || result.cardData?.name || 'Unknown');
         }
       } catch (error) {
         console.error(`❌ Failed to resolve item ${index}:`, item, error);
@@ -81,8 +70,6 @@ export default class ItemDataResolver {
         return this._resolveSlot(item, gameState, index);
       case 'carduid':
         return this._resolveCardUID(item, gameState, index);
-      case 'trash':
-        return this._resolveTrash(item, gameState, index);
       default:
         console.warn(`ItemDataResolver: Unknown item dialogDisplayType: ${item.dialogDisplayType}`);
         return null;
@@ -272,52 +259,6 @@ export default class ItemDataResolver {
     };
   }
   
-  /**
-   * Resolve trash item (direct card arrays)
-   * @private
-   */
-  static _resolveTrash(item, gameState, index) {
-    const { playerId, directCards } = item;
-    
-    if (!playerId) {
-      console.warn('ItemDataResolver: Trash item missing playerId');
-      return null;
-    }
-    
-    // If directCards is provided, use it directly (for GameScene trash viewing)
-    if (directCards && Array.isArray(directCards)) {
-      console.log(`ItemDataResolver: Using direct trash cards (${directCards.length} cards)`);
-      return directCards.map((card, trashIndex) => ({
-        cardId: card.cardData?.id || card.id,
-        cardUid: card.cardUid || `trash_${trashIndex}`,
-        type: "trash",
-        displayName: card.cardData?.name || card.name || 'Unknown Card',
-        cardData: card.cardData || card, // For Card component rendering
-        selectionIndex: trashIndex,
-        inTrash: true
-      }));
-    }
-    
-    // Otherwise, get trash from game state
-    const player = gameState.gameEnv?.players?.[playerId];
-    if (!player || !player.zones || !player.zones.trashArea) {
-      console.warn(`ItemDataResolver: Player ${playerId} trash area not found`);
-      return null;
-    }
-    
-    const trashArea = player.zones.trashArea;
-    console.log(`ItemDataResolver: Resolving trash area for ${playerId} (${trashArea.length} cards)`);
-    
-    return trashArea.map((card, trashIndex) => ({
-      cardId: card.cardData?.id || card.id,
-      cardUid: card.cardUid || `trash_${trashIndex}`,
-      type: "trash",
-      displayName: card.cardData?.name || card.name || 'Unknown Card',
-      cardData: card.cardData || card, // For Card component rendering
-      selectionIndex: trashIndex,
-      inTrash: true
-    }));
-  }
   
   
   /**
