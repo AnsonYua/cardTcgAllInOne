@@ -568,11 +568,19 @@ export default class GameScene extends Phaser.Scene {
 
     // Create a read-only card selection dialog for viewing trash
     const selectionId = `trash_view_${Date.now()}`;
+    
+    // Generate eligibleCards directly from trashArea (skip ItemDataResolver)
+    const eligibleCards = trashArea.map((card, trashIndex) => ({
+      cardData: card.cardData || card,
+      cardId: card.cardData?.id || card.id,
+      cardUid: card.cardUid || `trash_${trashIndex}`,
+      selectionIndex: trashIndex,
+      displayName: card.cardData?.name || card.name || 'Unknown Card',
+      inTrash: true
+    }));
+    
     const selection = {
-      items: [{
-        type: 'trash',
-        playerId: targetPlayerId
-      }],
+      eligibleCards: eligibleCards, // Direct card array, no items needed
       selectCount: 0, // Read-only, no selection needed
       title: `${trashOwner === 'player' ? 'Your' : 'Opponent\'s'} Trash Area`,
       description: `${trashArea.length} card${trashArea.length !== 1 ? 's' : ''} in trash area`,

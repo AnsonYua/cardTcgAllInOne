@@ -8,7 +8,8 @@
  * Supported Item Types:
  * - slot: { type: 'slot', playerId, zone, constraints?, cardUid? }
  * - carduid: { type: 'carduid', cardUid, preSelected? }
- * - trash: { type: 'trash', playerId }
+ * 
+ * Note: Trash items are handled directly in GameScene.js (no conversion needed)
  */
 export default class ItemDataResolver {
   
@@ -58,8 +59,6 @@ export default class ItemDataResolver {
         return this._resolveSlot(item, gameState, index);
       case 'carduid':
         return this._resolveCardUID(item, gameState, index);
-      case 'trash':
-        return this._resolveTrash(item, gameState, index);
       default:
         console.warn(`ItemDataResolver: Unknown item type: ${item.type}`);
         return null;
@@ -282,38 +281,6 @@ export default class ItemDataResolver {
     };
   }
   
-  /**
-   * Resolve trash item (trash area viewing)
-   * @private
-   */
-  static _resolveTrash(item, gameState, index) {
-    const { playerId } = item;
-    
-    if (!playerId) {
-      console.warn('ItemDataResolver: Trash item missing playerId');
-      return [];
-    }
-    
-    // Get player's trash area
-    const player = gameState.gameEnv?.players?.[playerId];
-    if (!player) {
-      console.warn(`ItemDataResolver: Player ${playerId} not found`);
-      return [];
-    }
-    
-    const trashArea = player.trashArea || [];
-    console.log(`🗑️ Found ${trashArea.length} cards in ${playerId} trash area`);
-    
-    // Return array of cards for trash viewing
-    return trashArea.map((card, trashIndex) => ({
-      cardData: card.cardData || card,
-      cardId: card.cardData?.id || card.id,
-      cardUid: card.cardUid || `trash_${trashIndex}`,
-      selectionIndex: index + trashIndex,
-      displayName: card.cardData?.name || card.name || 'Unknown Card',
-      inTrash: true
-    }));
-  }
   
   /**
    * Utility: Get all valid slots for a player with optional constraints

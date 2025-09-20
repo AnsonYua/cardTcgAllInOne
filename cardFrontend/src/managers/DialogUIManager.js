@@ -33,24 +33,18 @@ export default class DialogUIManager {
     
     // Resolve items to eligibleCards format
     let eligibleCards = [];
-    if (selection.items && Array.isArray(selection.items)) {
+    if (selection.eligibleCards && Array.isArray(selection.eligibleCards)) {
+      // Direct eligibleCards provided (e.g., trash viewing)
+      eligibleCards = selection.eligibleCards;
+      console.log('📦 Using provided eligibleCards:', eligibleCards.length, 'cards');
+    } else if (selection.items && Array.isArray(selection.items)) {
+      // Resolve items using ItemDataResolver
       console.log('📦 Resolving', selection.items.length, 'items to cards');
       const gameState = scene.gameStateManager.getGameState();
-      
-      // Handle special case for trash items (returns flattened array)
-      selection.items.forEach(item => {
-        if (item.type === 'trash') {
-          const trashCards = ItemDataResolver._resolveTrash(item, gameState, eligibleCards.length);
-          eligibleCards.push(...trashCards);
-        } else {
-          const resolved = ItemDataResolver.resolveItems([item], gameState);
-          eligibleCards.push(...resolved);
-        }
-      });
-      
+      eligibleCards = ItemDataResolver.resolveItems(selection.items, gameState);
       console.log('✅ Resolved to', eligibleCards.length, 'eligible cards');
     } else {
-      console.warn('DialogUIManager: No items provided in selection');
+      console.warn('DialogUIManager: No items or eligibleCards provided in selection');
       eligibleCards = [];
     }
     
