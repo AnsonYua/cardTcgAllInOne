@@ -244,6 +244,7 @@ export default class SlotAreaManager {
       const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(slotCards.unit, slotCards.pilot);
       if (slotCards.pilot.updateTotalLabels) {
         slotCards.pilot.updateTotalLabels(totalAP, totalHP);
+        slotCards.pilot.powerOverlay.updateCardStatus(slotCards.unit.fullCardData.isRested);
         console.log(`[SlotAreaManager] Updated pilot total labels (combined): AP=${totalAP}, HP=${totalHP}`);
       }
     } else if (hasUnit && !hasPilot) {
@@ -252,13 +253,6 @@ export default class SlotAreaManager {
       if (slotCards.unit.updateTotalLabels) {
         slotCards.unit.updateTotalLabels(totalAP, totalHP);
         console.log(`[SlotAreaManager] Updated unit total labels (unit only): AP=${totalAP}, HP=${totalHP}`);
-      }
-    } else if (!hasUnit && hasPilot) {
-      // Pilot only - pilot shows its own totals
-      const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(null, slotCards.pilot);
-      if (slotCards.pilot.updateTotalLabels) {
-        slotCards.pilot.updateTotalLabels(totalAP, totalHP);
-        console.log(`[SlotAreaManager] Updated pilot total labels (pilot only): AP=${totalAP}, HP=${totalHP}`);
       }
     }
     

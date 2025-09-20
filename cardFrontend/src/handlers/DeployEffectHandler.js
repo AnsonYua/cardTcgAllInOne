@@ -44,6 +44,12 @@ export default class DeployEffectHandler {
           zone: selectedTarget.zone,
           playerId: selectedTarget.playerId
         });
+
+        if (result.gameEnvUpdated) {
+          // Set scenario flag for hand update
+          this.scene.isSetScenoria = true;
+          this.scene.updateGameState();
+        }
         
         console.log('DeployEffectHandler: Deploy target selection successful');
         // GameApiService already handles gameEnv updates and UI feedback

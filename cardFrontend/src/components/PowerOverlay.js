@@ -194,6 +194,30 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     }
     this.add(this.totalHpText);
     
+
+
+    // Create Total AP label (50px below AP)
+    this.cardStatusText = this.scene.add.text(-45, 87, 'Rest', {
+      fontSize: `${this.config.fontSize}px`,
+      fontFamily: this.config.fontFamily,
+      fill: this.config.apColors.base.text,
+      align: 'center'
+    });
+    this.cardStatusText.setOrigin(0.5);
+    
+    // Improve text rendering quality for preview mode
+    if (this.isPreviewMode) {
+      this.cardStatusText.setScale(1);
+      this.cardStatusText.setFontSize(this.cardStatusText.fontSize);
+      this.cardStatusText.setResolution(5); // Higher resolution for crisp text
+      this.cardStatusText.x = Math.round(this.cardStatusText.x);
+      this.cardStatusText.y = Math.round(this.cardStatusText.y);
+    }
+    this.add(this.cardStatusText);
+
+
+
+
     // Preview mode uses hardcoded values instead of scaling
     if (this.isPreviewMode) {
       console.log(`[PowerOverlay] Preview mode detected, using hardcoded configuration values`);
@@ -209,6 +233,7 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     // Initially hide total labels (only show in slots)
     this.totalApText.setVisible(false);
     this.totalHpText.setVisible(false);
+    this.cardStatusText.setVisible(false);
     
     // Initially hidden
     this.setVisible(false);
@@ -221,7 +246,7 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
    * @param {number} originalAP - Original attack power value
    * @param {number} originalHP - Original health points value
    */
-  updateStats(ap, hp, originalAP = ap, originalHP = hp) {
+  updateStats(ap, hp, originalAP = ap, originalHP = hp ) {
     // Update state
     this.ap = ap;
     this.hp = hp;
@@ -278,6 +303,14 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
   updateTotalAP(totalAP) {
     this.totalApText.setText(totalAP.toString());
     console.log(`[PowerOverlay] Total AP updated: ${totalAP}`);
+  }
+
+  updateCardStatus(isRested) {
+    if(isRested){
+      this.cardStatusText.setText("rested");
+    }else{
+      this.cardStatusText.setText("active");
+    }
   }
 
   /**
@@ -455,6 +488,7 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     
     this.totalApText.setVisible(shouldShowTotalLabels);
     this.totalHpText.setVisible(shouldShowTotalLabels);
+    this.cardStatusText.setVisible(shouldShowTotalLabels);
     
     console.log(`[PowerOverlay] Total labels visibility: ${shouldShowTotalLabels} (zone: ${cardZone}, isSlot: ${isInSlot}, isBase: ${isInBase})`);
   }

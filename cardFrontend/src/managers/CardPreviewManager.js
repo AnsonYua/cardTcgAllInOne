@@ -30,10 +30,13 @@ export default class CardPreviewManager {
       if (cardData.pilot) {
         console.log("Showing slot preview with pilot:", cardData.cardData?.id, "+", cardData.pilot.cardData?.id, "for slot:", cardData.slotName);
         // Create mock Card objects to reuse existing showDualCardPreview method
+        cardData.cardData.isRested = cardData.cardData.isRested;
         const mockUnitCard = {
             cardData: cardData.cardData,
             getCardFullData: () => cardData.cardData
         };
+
+        cardData.pilot.cardData.isRested = cardData.cardData.isRested;
         const mockPilotCard = {
             cardData: cardData.pilot.cardData,
             getCardFullData: () => cardData.pilot.cardData
@@ -189,6 +192,7 @@ export default class CardPreviewManager {
       if (this.previewPilotCard.powerOverlay.updateTotalStats) {
         const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(unitCard, pilotCard);
         this.previewPilotCard.powerOverlay.updateTotalStats(totalAP, totalHP);
+        this.previewPilotCard.powerOverlay.updateCardStatus(unitCard.isRested);
       }
       
       console.log('[CardPreviewManager] Showing total labels on pilot preview');
