@@ -1049,45 +1049,7 @@ export class GameEngine {
                         console.log(`⚡ Creating choice event for burst effect: ${burstEffect.effectId}`);
 
                         shieldCard.cardData.cardType = shieldCard.cardData.originalCardType
-                        /*
-                        const choiceEvent = EventFactory.createBurstEffectChoiceEvent(
-                            defendingPlayerId,
-                            [{
-                                ...shieldCard
-                            }]
-                        ); 
-                        update this to 
-                           const choiceEvent = EventFactory.createBurstEffectChoiceEvent(
-                            defendingPlayerId,
-                            [shieldCard]
-                        ); 
-                        and the event 
-                          static createBurstEffectChoiceEvent(
-                                playerId: string,
-                                cardUid: string,
-                                cardId: string,
-                                cardData: any,
-                                burstEffect: { effectId: string; type: string; description: string }
-                            ): BurstEffectChoiceEvent {
-                                return {
-                                    id: `burst_choice_${++this.eventIdCounter}_${Date.now()}`,
-                                    type: EventType.BURST_EFFECT_CHOICE,
-                                    status: EventStatus.DECLARED,
-                                    priority: EventPriority.HIGH,
-                                    playerId,
-                                    timestamp: Date.now(),
-                                    data: {
-                                        playerId,
-                                        cardUid,
-                                        cardId,
-                                        availableTargets:[shieldCard]
-                                        choiceId: `burst_choice_${cardUid}_${Date.now()}`,
-                                        userDecisionMade: false,
-                                        userDecision: undefined
-                                    }
-                                };
-                            }
-                        */
+                        
                         const choiceEvent = EventFactory.createBurstEffectChoiceEvent(
                             defendingPlayerId,
                             [{
