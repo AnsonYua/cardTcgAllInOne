@@ -473,6 +473,12 @@ CardFactory.createHandCard(scene, cardData, x, y, options);     // Hand cards
 - ✅ Uses `Card.updateCalculatedTotalLabels()` and `Card.updateCalculatedTotalStats()`
 - ✅ Eliminated manual preview card configuration patterns
 
+**DialogUIManager.js**:
+- ✅ Uses `CardFactory.createDialogCard()` for all dialog card creation (single cards and slot cards)
+- ✅ Fixed `_createSlotTargetDisplay()`: Always shows total AP/HP labels for slot target displays, even unit-only slots
+- ✅ Uses `CardStatCalculator.calculateTotalInSlot()` for proper total calculation when values not provided
+- ✅ Eliminated duplicate card creation patterns across 3 methods (`_createCardDisplay`, `_createSlotTargetDisplay`, `_createFallbackCardImage`)
+
 #### **Migration Path for Future Development**
 
 **Preferred Patterns**:

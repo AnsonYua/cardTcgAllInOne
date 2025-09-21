@@ -5,6 +5,7 @@
 import Card from '../components/Card.js';
 import SlotAreaManager from '../components/SlotAreaManager.js';
 import CardStatCalculator from '../utils/CardStatCalculator.js';
+import CardFactory from '../utils/CardFactory.js';
 
 /**
  * DialogUIManager - Handles all dialog UI creation, interaction, and management
@@ -699,7 +700,7 @@ export default class DialogUIManager {
       return this._createSlotTargetDisplay(scene, cardX, cardsY, cardDisplayConfig, originalCard);
     }
 
-    // Create full Card component with AP/HP display
+    // Create dialog card using CardFactory
     try {
       // Calculate appropriate scale for dialog display
       const dialogScale = Math.min(
@@ -725,24 +726,15 @@ export default class DialogUIManager {
         cardDataForDisplay = originalCard;
       }
 
-      // Pass the determined card data to Card component (like SlotAreaManager does)
-      const cardComponent = new Card(scene, cardX, cardsY, cardDataForDisplay, {
-        usePreview: true,     // Use preview images
-        scale: dialogScale,   // Scale to fit dialog
-        interactive: true,   // Disable interaction (handled separately)
-        showBackground: false, // No PowerOverlay background in dialogs
-        handleOutside: true
+      // ✅ Use CardFactory for consistent dialog card creation
+      const cardComponent = CardFactory.createDialogCard(scene, cardDataForDisplay, cardX, cardsY, {
+        dialogScale: dialogScale,
+        // ✅ FIXED: Show total labels for all slot cards (type="slot"), including unit-only slots
+        totalAP: (originalCard && originalCard.type === "slot" && originalCard.totalAP !== undefined) ? 
+          (originalCard.totalAP || cardDataForDisplay.currentAP || cardDataForDisplay.cardData?.ap || 0) : undefined,
+        totalHP: (originalCard && originalCard.type === "slot" && originalCard.totalHP !== undefined) ? 
+          (originalCard.totalHP || cardDataForDisplay.currentHP || cardDataForDisplay.cardData?.hp || 0) : undefined
       });
-
-      cardComponent.setDepth(1504);
-
-      // Configure total labels if available
-      if (originalCard && (originalCard.totalAP !== undefined || originalCard.totalHP !== undefined)) {
-        const totalAP = originalCard.totalAP || cardDataForDisplay.currentAP || cardDataForDisplay.cardData?.ap || 0;
-        const totalHP = originalCard.totalHP || cardDataForDisplay.currentHP || cardDataForDisplay.cardData?.hp || 0;
-
-        cardComponent.configureTotalLabelsToShow(totalAP, totalHP);
-      }
 
       return cardComponent;
     } catch (error) {
@@ -768,34 +760,40 @@ export default class DialogUIManager {
     // Create pilot card if present (positioned below unit with extra spacing)
     let pilotCard = null;
     if (slotTarget.pilot) {
-      // Pass the whole pilot object directly to Card component (like SlotAreaManager does)
-      pilotCard = new Card(scene, 0, 23, slotTarget.pilot, {
-        usePreview: true,
-        scale: dialogScale,
-        interactive: true, // Container will handle interaction
-        showBackground: false,
-        handleOutside: true
+      // ✅ Use CardFactory for consistent pilot card creation
+      pilotCard = CardFactory.createDialogCard(scene, slotTarget.pilot, 0, 23, {
+        dialogScale: dialogScale,
+        interactive: true // Container will handle interaction
       });
       slotContainer.add(pilotCard);
     }
 
     // Create unit card (always present) - center if no pilot, otherwise position at top with extra spacing
     const unitY = slotTarget.pilot ? -20 : 0; // Add extra spacing when pilot present
-    // Pass the whole unit object directly to Card component (like SlotAreaManager does)
-    const unitCard = new Card(scene, 0, unitY, slotTarget.unit, {
-      usePreview: true,
-      scale: dialogScale,
-      interactive: false, // Container will handle interaction
-      showBackground: false,
-      handleOutside: true
+    // ✅ Use CardFactory for consistent unit card creation
+    const unitCard = CardFactory.createDialogCard(scene, slotTarget.unit, 0, unitY, {
+      dialogScale: dialogScale,
+      interactive: false // Container will handle interaction
     });
 
     slotContainer.add(unitCard);
 
-    // ✅ Use SlotAreaManager method for unit+pilot total label configuration
+    // ✅ FIXED: Always show total labels for slot target displays, even unit-only
+    // Use CardStatCalculator for proper total calculation or provided values
+    let totalAP, totalHP;
     if (slotTarget.totalAP !== undefined && slotTarget.totalHP !== undefined) {
-      SlotAreaManager.configureSlotTotalLabels(unitCard, pilotCard, slotTarget.totalAP, slotTarget.totalHP);
+      // Use provided totals (already calculated)
+      totalAP = slotTarget.totalAP;
+      totalHP = slotTarget.totalHP;
+    } else {
+      // Calculate totals using CardStatCalculator (handles unit+pilot combinations properly)
+      const totals = CardStatCalculator.calculateTotalInSlot(slotTarget.unit, slotTarget.pilot);
+      totalAP = totals.totalAP;
+      totalHP = totals.totalHP;
     }
+    
+    // Use SlotAreaManager method for unit+pilot total label configuration
+    SlotAreaManager.configureSlotTotalLabels(unitCard, pilotCard, totalAP, totalHP);
 
     // Store references for interaction handling
     slotContainer.unitCard = unitCard;

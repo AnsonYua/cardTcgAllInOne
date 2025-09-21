@@ -163,17 +163,18 @@ export default class CardFactory {
    * @param {Object} options - Creation options
    * @param {Object} options.gameStateManager - Game state manager
    * @param {number} options.dialogScale - Dynamic scale for dialog display
-   * @param {number} options.totalAP - Total AP for labels (optional)
-   * @param {number} options.totalHP - Total HP for labels (optional)
+   * @param {number} options.totalAP - Total AP for labels (optional, only for slot cards)
+   * @param {number} options.totalHP - Total HP for labels (optional, only for slot cards)
+   * @param {boolean} options.interactive - Interactive state (default: true)
    * @returns {Card} Created dialog card
    */
   static createDialogCard(scene, cardData, x, y, options = {}) {
-    const { gameStateManager, dialogScale, totalAP, totalHP } = options;
+    const { gameStateManager, dialogScale, totalAP, totalHP, interactive = true } = options;
     
     const card = new Card(scene, x, y, cardData, {
       usePreview: true,
       scale: dialogScale,
-      interactive: true,
+      interactive,
       showBackground: false,
       handleOutside: true,
       gameStateManager
@@ -181,9 +182,9 @@ export default class CardFactory {
     
     card.setDepth(1504);
     
-    // Configure total labels if values provided
-    if (totalAP !== undefined || totalHP !== undefined) {
-      card.configureTotalLabelsToShow(totalAP || 0, totalHP || 0);
+    // Configure total labels if values provided (only for slot cards with both values)
+    if (totalAP !== undefined && totalHP !== undefined) {
+      card.configureTotalLabelsToShow(totalAP, totalHP);
     }
     
     return card;
