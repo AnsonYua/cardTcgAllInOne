@@ -562,6 +562,11 @@ export default class DialogManager {
       cardUid: target.cardUid // Optional constraint for specific card
     }));
 
+    let shouldShowCancel = true 
+    if (deployEffect?.optional==false){
+      shouldShowCancel = false
+    }
+
     // Create a selection object using unified format
     const deploySelection = {
       selectionId: `deploy_target_${event.id}`,
@@ -585,7 +590,7 @@ export default class DialogManager {
       }
     },
     null, 
-    false
+    shouldShowCancel
     );
   }
 

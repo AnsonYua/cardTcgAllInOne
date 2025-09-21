@@ -944,7 +944,7 @@ export class GameEngine {
 
             } else {
                 // Base is empty - attack shields
-                if (defender.hasShield()) {
+                if (defender.hasShield() && totalAttackPower >0) {
                     // Get shield cards to attack - currently top card only, but easily extensible
                     const shieldCardsToAttack = GameEngine.getShieldCardsToAttack(defender, 1); // Attack 1 card for now
 

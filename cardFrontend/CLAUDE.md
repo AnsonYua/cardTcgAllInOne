@@ -389,6 +389,56 @@ gameState.gameEnv.players.playerId_1.zones.slot1 = {
 
 **Problem Solved**: Eliminated significant code duplication across card management components.
 
+#### **CardStatCalculator Slot Aggregation Logic Improvement (2025)**
+
+**Problem Solved**: Fixed slot stat calculation to properly aggregate currentAP/currentHP and modifyAP/modifyHP separately for accurate totals.
+
+**Issue**: The original slot calculation aggregated individual card totals, which could cause incorrect results when cards have negative modifiers.
+
+**Example Scenario**:
+```javascript
+// Unit: currentAP=1, modifyAP=-2 → individual total = -1
+// Pilot: currentAP=3, modifyAP=1 → individual total = 4
+// Old logic: -1 + 4 = 3 (conceptually problematic)
+```
+
+**Solution**: Updated `calculateTotalInSlot()` to aggregate base stats and modifications separately:
+
+```javascript
+// ✅ NEW AGGREGATION LOGIC
+static calculateTotalInSlot(unitCard, pilotCard) {
+  let totalCurrentAP = 0, totalCurrentHP = 0;
+  let totalModifyAP = 0, totalModifyHP = 0;
+  
+  // Aggregate all currentAP/currentHP values
+  if (unitCard?.fullCardData) {
+    totalCurrentAP += unitCard.fullCardData.currentAP || 0;
+    totalCurrentHP += unitCard.fullCardData.currentHP || 0;
+    totalModifyAP += unitCard.fullCardData.modifyAP || 0;
+    totalModifyHP += unitCard.fullCardData.modifyHP || 0;
+  }
+  
+  if (pilotCard?.fullCardData) {
+    totalCurrentAP += pilotCard.fullCardData.currentAP || 0;
+    totalCurrentHP += pilotCard.fullCardData.currentHP || 0;
+    totalModifyAP += pilotCard.fullCardData.modifyAP || 0;
+    totalModifyHP += pilotCard.fullCardData.modifyHP || 0;
+  }
+  
+  // Final calculation: sum all base stats, then add all modifications
+  const totalAP = totalCurrentAP + totalModifyAP;
+  const totalHP = totalCurrentHP + totalModifyHP;
+  
+  return { totalAP, totalHP };
+}
+```
+
+**Benefits**:
+- ✅ **Consistent Aggregation**: All base stats summed first, then all modifications
+- ✅ **Mathematically Sound**: `(unit.currentAP + pilot.currentAP) + (unit.modifyAP + pilot.modifyAP)`
+- ✅ **Handles Edge Cases**: Correctly processes negative modifications and zero values
+- ✅ **Clear Logic Flow**: Separates base stat aggregation from modification aggregation
+
 #### **1. Total Labels Calculation Duplication (7 occurrences eliminated)**
 
 **Before**: Manual `CardStatCalculator.calculateTotalInSlot()` + `updateTotalLabels()` patterns repeated across:
@@ -505,9 +555,14 @@ card.setDepth(depth);
 card.setZonePlacement(true, zoneName, isPlayerZone);
 // ... manual configuration
 
-// ❌ DEPRECATED: Manual calculation patterns
+// ✅ PREFERRED: Use improved slot calculation methods
 const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(unitCard, pilotCard);
 card.updateTotalLabels(totalAP, totalHP, isRested);
+
+// ❌ DEPRECATED: Manual calculation patterns (individual card logic for slots)
+const unitTotal = CardStatCalculator.calculateTotalAP(unitCard);
+const pilotTotal = CardStatCalculator.calculateTotalAP(pilotCard);
+const slotTotal = unitTotal + pilotTotal; // Wrong approach for slot calculations
 ```
 
 ## Critical Development Patterns
@@ -517,6 +572,23 @@ card.updateTotalLabels(totalAP, totalHP, isRested);
 - **State Management**: Cards maintain their own state (selected, dragging,etc.)
 - **Event System**: Uses Phaser events for component communication
 - **Lifecycle Management**: Proper cleanup of event listeners and tweens
+
+### CardStatCalculator Usage Patterns
+- **Individual Cards**: Use `calculateTotalAP()` and `calculateTotalHP()` for single card displays
+- **Slot Calculations**: Use `calculateTotalInSlot()` for unit+pilot combinations with proper aggregation
+- **Dialog Slot Data**: Use `calculateSlotDataTotals()` for slot data without Card objects
+- **Critical Rule**: Never use individual card methods for slot calculations - always use slot-specific methods
+- **Aggregation Logic**: Slot methods aggregate all currentAP/currentHP first, then add all modifyAP/modifyHP
+- **Usage Example**:
+  ```javascript
+  // ✅ CORRECT: Slot calculation
+  const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(unitCard, pilotCard);
+  
+  // ❌ WRONG: Individual card logic for slots
+  const unitAP = CardStatCalculator.calculateTotalAP(unitCard);
+  const pilotAP = CardStatCalculator.calculateTotalAP(pilotCard);
+  const total = unitAP + pilotAP; // Incorrect aggregation approach
+  ```
 
 ### API Integration Patterns
 - **Graceful Degradation**: Falls back to demo mode when API unavailable

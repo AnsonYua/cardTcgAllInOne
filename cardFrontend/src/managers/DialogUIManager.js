@@ -1151,24 +1151,84 @@ export default class DialogUIManager {
       okTextX = config.centerX;          // OK button center (matches dialog center)
     }
 
-    // ✅ ENHANCED: Create OK button with proper positioning
+    // ✅ ENHANCED: Calculate button width based on longest possible text
+    // Test all possible OK button text variations to find maximum width needed
+    const possibleTexts = [
+      'SELECT CARD',                    // Initial single selection
+      'SELECT 5 CARDS',                 // Initial multiple selection (worst case: 5 digits)
+      'CONFIRM',                        // After single selection
+      'CONFIRM (5/5)',                  // After multiple selection (worst case)
+      'CLOSE'                           // Read-only mode
+    ];
+    
+    let maxTextWidth = 0;
+    for (const text of possibleTexts) {
+      const tempText = scene.add.text(0, 0, text, {
+        fontSize: '16px',
+        fontFamily: 'Arial',
+        fill: '#ffffff',
+        align: 'center'
+      });
+      tempText.setOrigin(0.5);
+      maxTextWidth = Math.max(maxTextWidth, tempText.width);
+      tempText.destroy();
+    }
+    
+    // ✅ FIXED: Calculate button width based on maximum text width with padding
+    const buttonPadding = 20; // 10px padding on each side
+    const buttonWidth = Math.max(maxTextWidth + buttonPadding, 100); // Minimum 100px width
+    const buttonHeight = 35;
+    
+    // ✅ ENHANCED: Recalculate positions based on actual button width
+    let adjustedOkButtonX, adjustedOkTextX;
+    if (shouldShowCancel) {
+      // Two-button layout: Center both buttons as a pair
+      const buttonGap = 20; // Gap between buttons  
+      const totalButtonsWidth = buttonWidth + buttonGap + buttonWidth; // OK + gap + Cancel (same width)
+      adjustedOkButtonX = config.centerX - totalButtonsWidth / 2;  // OK button left edge, centered as pair
+      adjustedOkTextX = adjustedOkButtonX + buttonWidth / 2;       // OK button center
+    } else {
+      // Single-button layout: OK centered
+      adjustedOkButtonX = config.centerX - buttonWidth / 2;    // OK button left edge (center - half width)
+      adjustedOkTextX = config.centerX;                        // OK button center (matches dialog center)
+    }
+    
+    // ✅ ENHANCED: Set initial button color based on selection type
+    let initialButtonColor = 0x888888; // Default disabled gray for card selection
+    if (selection && selection.selectCount === 0) {
+      initialButtonColor = 0x4CAF50; // Green for read-only mode (CLOSE button)
+    }
+    
+    // ✅ ENHANCED: Create OK button with dynamic width
     const okButton = UIGraphicsHelper.createButton(scene, {
-      x: okButtonX,
+      x: adjustedOkButtonX,
       y: buttonY,
-      width: 100,
-      height: 35,
-      color: 0x4CAF50,
+      width: buttonWidth,
+      height: buttonHeight,
+      color: initialButtonColor,
       depth: 1502,
       isOKButton: true
     });
     
+    // ✅ FIXED: Store the actual button position for color updates
+    okButton._actualButtonX = adjustedOkButtonX;
+    
     // ✅ FIXED: Ensure interactive area matches button position exactly
-    const interactiveRect = new Phaser.Geom.Rectangle(okButtonX, buttonY - 17, 100, 35);
+    const interactiveRect = new Phaser.Geom.Rectangle(adjustedOkButtonX, buttonY - 17, buttonWidth, buttonHeight);
     okButton.setInteractive(interactiveRect, Phaser.Geom.Rectangle.Contains);
     // ✅ FIXED: Text positioned exactly at button center 
     // Note: UIGraphicsHelper.createButton draws button at (x, y-17), so text should be at (textX, y-17+height/2)
-    const actualButtonCenterY = buttonY - 17 + 17.5; // y - 17 + height/2 (35/2 = 17.5)
-    const okText = scene.add.text(okTextX, actualButtonCenterY, 'CONFIRM', {
+    const actualButtonCenterY = buttonY - 17 + buttonHeight / 2; // y - 17 + height/2
+    
+    // ✅ ENHANCED: Set initial text based on selection type
+    let initialButtonText = 'SELECT CARD'; // Default for single selection
+    if (selection && selection.selectCount > 1) {
+      initialButtonText = `SELECT ${selection.selectCount} CARDS`;
+    } else if (selection && selection.selectCount === 0) {
+      initialButtonText = 'CLOSE'; // Read-only mode
+    }
+    
+    const okText = scene.add.text(adjustedOkTextX, actualButtonCenterY, initialButtonText, {
       fontSize: '16px',
       fontFamily: 'Arial',
       fill: '#ffffff',
@@ -1182,18 +1242,29 @@ export default class DialogUIManager {
 
     // ✅ CONDITIONAL: Only create cancel button if shouldShowCancel is true
     if (shouldShowCancel) {
+      // ✅ ENHANCED: Use same width as OK button for perfect alignment
+      const cancelButtonWidth = buttonWidth; // Same width as OK button for better alignment
+      
+      // ✅ ENHANCED: Position cancel button based on OK button width and position
+      const cancelButtonX = adjustedOkButtonX + buttonWidth + 20; // Use the same 20px gap as defined above
+      const cancelTextX = cancelButtonX + cancelButtonWidth / 2;
+      
       const cancelButton = UIGraphicsHelper.createButton(scene, {
-        x: config.centerX + 20,
+        x: cancelButtonX,
         y: buttonY,
-        width: 100,
-        height: 35,
+        width: cancelButtonWidth,
+        height: buttonHeight,
         color: 0xf44336,
         depth: 1502,
         isOKButton: false
       });
-      cancelButton.setInteractive(new Phaser.Geom.Rectangle(config.centerX + 20, buttonY - 17, 100, 35), Phaser.Geom.Rectangle.Contains);
+      
+      // ✅ FIXED: Store the actual button position for color updates
+      cancelButton._actualButtonX = cancelButtonX;
+      
+      cancelButton.setInteractive(new Phaser.Geom.Rectangle(cancelButtonX, buttonY - 17, cancelButtonWidth, buttonHeight), Phaser.Geom.Rectangle.Contains);
 
-      const cancelText = scene.add.text(config.centerX + 70, actualButtonCenterY, 'CANCEL', {
+      const cancelText = scene.add.text(cancelTextX, actualButtonCenterY, 'CANCEL', {
         fontSize: '16px',
         fontFamily: 'Arial',
         fill: '#ffffff',

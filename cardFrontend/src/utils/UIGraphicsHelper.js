@@ -102,9 +102,16 @@ export default class UIGraphicsHelper {
       const centerX = scene ? scene.scale.width / 2 : 960;
       const buttonY = button._buttonY || (scene && scene.scale.height * 0.7) || 700;
       
-      // Determine button position using stored flag
-      const isOKButton = button._isOKButton === true;
-      const buttonX = isOKButton ? centerX - 120 : centerX + 20;
+      // ✅ FIXED: Use stored actual position if available, otherwise fall back to layout logic
+      let buttonX;
+      if (button._actualButtonX !== undefined) {
+        // Use the stored actual position from dialog creation
+        buttonX = button._actualButtonX;
+      } else {
+        // Fallback to the old hardcoded positioning for backward compatibility
+        const isOKButton = button._isOKButton === true;
+        buttonX = isOKButton ? centerX - 120 : centerX + 20;
+      }
       
       // Use stored dimensions or defaults
       const width = button._width || 100;

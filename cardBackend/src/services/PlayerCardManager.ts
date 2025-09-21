@@ -702,6 +702,9 @@ export class PlayerCardManager {
         let currentAP = unit.currentAP|| 0;
         let currentHP = unit.currentHP || 0;
         
+        let modifyAP = unit.modifyAP || 0;
+        let modifyHP = unit.modifyHP || 0;
+        
         // Get pilot in the same slot if exists
         const pilot = (player.zones as any)[slotName]?.pilot;
         
@@ -709,9 +712,14 @@ export class PlayerCardManager {
             // Add pilot stats to unit stats
             const pilotAP = pilot.currentAP || pilot.cardData?.ap || 0;
             const pilotHP = pilot.currentHP || pilot.cardData?.hp || 0;
+            const pilotModifyAP = pilot.modifyAP || 0;
+            const pilotModifyHP = pilot.modifyHP  || 0;
             
             currentAP += pilotAP;
             currentHP += pilotHP;
+
+            modifyAP += pilotModifyAP;
+            modifyHP += pilotModifyHP;
             
             console.log(`🔢 Combined stats: Unit(${unit.currentAP || 0}/${unit.currentHP || 0}) + Pilot(${pilotAP}/${pilotHP}) = Total(${currentAP}/${currentHP})`);
         } else {
@@ -719,8 +727,8 @@ export class PlayerCardManager {
         }
         
         return {
-            totalAP: currentAP,
-            totalHP: currentHP
+            totalAP: currentAP + modifyAP,
+            totalHP: currentHP + modifyHP
         };
     }
 
