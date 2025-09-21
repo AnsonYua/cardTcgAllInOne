@@ -6,6 +6,8 @@ import Card from '../components/Card.js';
 import SlotAreaManager from '../components/SlotAreaManager.js';
 import CardStatCalculator from '../utils/CardStatCalculator.js';
 import CardFactory from '../utils/CardFactory.js';
+import CardInteractionHelper from '../utils/CardInteractionHelper.js';
+import UIGraphicsHelper from '../utils/UIGraphicsHelper.js';
 
 /**
  * DialogUIManager - Handles all dialog UI creation, interaction, and management
@@ -887,110 +889,20 @@ export default class DialogUIManager {
       Phaser.Geom.Rectangle.Contains
     );
 
-    // Create shared hover effect management with animation
-    const showContainerHoverEffect = () => {
-      if (!slotContainer.hoverEffect) {
-        slotContainer.hoverEffect = scene.add.graphics();
-        slotContainer.hoverEffect.lineStyle(3, 0x00ff00, 0.8);
-        slotContainer.hoverEffect.strokeRoundedRect(
-          -interactiveWidth / 2 - 2,
-          -interactiveHeight / 2 - 2,
-          interactiveWidth + 4,
-          interactiveHeight + 4,
-          8
-        );
-        slotContainer.hoverEffect.setDepth(1505);
-        slotContainer.hoverEffect.setAlpha(0);
-        slotContainer.add(slotContainer.hoverEffect);
-
-        // Animate the hover effect in
-        scene.tweens.add({
-          targets: slotContainer.hoverEffect,
-          alpha: 0.8,
-          duration: 200,
-          ease: 'Power2.easeOut'
-        });
-      }
-
-      // ✅ ENHANCED: Show slot card preview on hover (unit+pilot dual preview)
-      if (scene.cardPreviewManager) {
-        try {
-          // For slot containers, show dual preview if both unit and pilot are present
-          if (slotContainer.unitCard && slotContainer.pilotCard) {
-            scene.cardPreviewManager.showDualCardPreview(slotContainer.unitCard, slotContainer.pilotCard);
-            console.log('Dialog slot dual preview shown for unit+pilot');
-          } else if (slotContainer.unitCard) {
-            scene.cardPreviewManager.showCardPreview(slotContainer.unitCard.getCardFullData());
-            console.log('Dialog slot preview shown for unit only');
-          } else if (slotContainer.pilotCard) {
-            scene.cardPreviewManager.showCardPreview(slotContainer.pilotCard.getCardFullData());
-            console.log('Dialog slot preview shown for pilot only');
-          }
-        } catch (error) {
-          console.warn('Failed to show dialog slot card preview:', error);
-        }
-      }
-
-      scene.game.canvas.style.cursor = 'pointer';
-    };
-
-    const hideContainerHoverEffect = () => {
-      if (slotContainer.hoverEffect) {
-        // Animate out before destroying
-        scene.tweens.add({
-          targets: slotContainer.hoverEffect,
-          alpha: 0,
-          duration: 150,
-          ease: 'Power2.easeIn',
-          onComplete: () => {
-            if (slotContainer.hoverEffect) {
-              slotContainer.hoverEffect.destroy();
-              slotContainer.hoverEffect = null;
-            }
-          }
-        });
-      }
-
-      // ✅ ENHANCED: Hide card preview on hover out
-      if (scene.cardPreviewManager) {
-        try {
-          scene.cardPreviewManager.hideSlotCardPreview();
-          console.log('Dialog slot card preview hidden');
-        } catch (error) {
-          console.warn('Failed to hide dialog slot card preview:', error);
-        }
-      }
-
-      scene.game.canvas.style.cursor = 'default';
-    };
-
-    // Handle container selection
+    // ✅ REFACTORED: Use CardInteractionHelper for slot container interaction
     const handleContainerSelection = () => {
       console.log('Slot container selected:', card);
       this._handleCardSelection(card, cardX, cardsY, selectionState, cardDisplayConfig, dialogElements);
     };
 
-    // Set up container events
-    //slotContainer.on('pointerover', showContainerHoverEffect);
-    //slotContainer.on('pointerout', hideContainerHoverEffect);
-    //slotContainer.on('pointerdown', handleContainerSelection);
-
-    // ✅ ENHANCED: Also set up events on individual unit and pilot cards for better responsiveness
-    if (slotContainer.unitCard && slotContainer.unitCard.setInteractive) {
-      slotContainer.unitCard.setInteractive();
-      slotContainer.unitCard.on('pointerover', showContainerHoverEffect);
-      slotContainer.unitCard.on('pointerout', hideContainerHoverEffect);
-      slotContainer.unitCard.on('pointerdown', handleContainerSelection);
-      console.log('Unit card interaction events attached');
-    }
-
-    if (slotContainer.pilotCard && slotContainer.pilotCard.setInteractive) {
-      slotContainer.pilotCard.setInteractive();
-      slotContainer.pilotCard.on('pointerover', showContainerHoverEffect);
-      slotContainer.pilotCard.on('pointerout', hideContainerHoverEffect);
-      slotContainer.pilotCard.on('pointerdown', handleContainerSelection);
-      console.log('Pilot card interaction events attached');
-    }
+    // Use CardInteractionHelper to set up slot container interaction
+    CardInteractionHelper.setupSlotContainerInteraction(scene, slotContainer, {
+      width: interactiveWidth,
+      height: interactiveHeight,
+      unitCard: slotContainer.unitCard,
+      pilotCard: slotContainer.pilotCard,
+      onSelection: handleContainerSelection
+    });
   }
 
   /**
@@ -1005,87 +917,25 @@ export default class DialogUIManager {
 
     cardComponent.setInteractive();
 
-    // Create hover frame highlighting functions with animation - match taller container background
-    const showRegularCardHoverEffect = () => {
-      if (!cardComponent.hoverEffect) {
-        cardComponent.hoverEffect = scene.add.graphics();
-        cardComponent.hoverEffect.lineStyle(3, 0x00ff00, 0.8);
-        const extraHeight = 40; // Match the extra height from card container background
-        // Match the centered positioning of the card container background
-        const adjustedY = cardsY - cardDisplayConfig.cardDisplayHeight / 2 - (extraHeight / 2);
-        cardComponent.hoverEffect.strokeRoundedRect(
-          cardX - cardDisplayConfig.cardDisplayWidth / 2 - 2,
-          adjustedY - 2,
-          cardDisplayConfig.cardDisplayWidth + 4,
-          cardDisplayConfig.cardDisplayHeight + extraHeight + 4,
-          8
-        );
-        cardComponent.hoverEffect.setDepth(1505);
-        cardComponent.hoverEffect.setAlpha(0);
-        dialogElements.cardListElements.push(cardComponent.hoverEffect);
-
-        // Animate the hover effect in
-        scene.tweens.add({
-          targets: cardComponent.hoverEffect,
-          alpha: 0.8,
-          duration: 200,
-          ease: 'Power2.easeOut'
-        });
-      }
-
-      // ✅ ENHANCED: Show card preview on hover based on card type
-      switch (card.type) {
-        case "slot":
-          // For slot cards, show the unit card data
-          const cardDataForPreview = card.unit;
-          scene.cardPreviewManager.showCardPreview(cardDataForPreview);
-          break;
-        case "carduid":
-        case "trash":
-          // For carduid and trash cards, show the card data directly
-          scene.cardPreviewManager.showCardPreview(card.cardData);
-          break;
-        default:
-          // Fallback for cards without type or unknown types
-          scene.cardPreviewManager.showCardPreview(card.cardData || card);
-          break;
-      }
-
-
-      scene.game.canvas.style.cursor = 'pointer';
-    };
-
-    const hideRegularCardHoverEffect = () => {
-      if (cardComponent.hoverEffect) {
-        // Animate out before destroying
-        scene.tweens.add({
-          targets: cardComponent.hoverEffect,
-          alpha: 0,
-          duration: 150,
-          ease: 'Power2.easeIn',
-          onComplete: () => {
-            if (cardComponent.hoverEffect) {
-              cardComponent.hoverEffect.destroy();
-              cardComponent.hoverEffect = null;
-            }
-          }
-        });
-      }
-      scene.cardPreviewManager.hideCardPreview();
-
-
-      // ✅ ENHANCED: Hide card preview on hover out
-      if (scene.cardPreviewManager) {
-        try {
-          scene.cardPreviewManager.hideCardPreview();
-          console.log('Dialog card preview hidden');
-        } catch (error) {
-          console.warn('Failed to hide dialog card preview:', error);
-        }
-      }
-
-      scene.game.canvas.style.cursor = 'default';
-    };
+    // ✅ REFACTORED: Use CardInteractionHelper for regular card interaction
+    
+    // Determine card data for preview based on card type
+    let cardDataForPreview;
+    switch (card.type) {
+      case "slot":
+        // For slot cards, show the unit card data
+        cardDataForPreview = card.unit;
+        break;
+      case "carduid":
+      case "trash":
+        // For carduid and trash cards, show the card data directly
+        cardDataForPreview = card.cardData;
+        break;
+      default:
+        // Fallback for cards without type or unknown types
+        cardDataForPreview = card.cardData || card;
+        break;
+    }
 
     // Handle card selection
     const handleRegularCardSelection = () => {
@@ -1093,10 +943,54 @@ export default class DialogUIManager {
       this._handleCardSelection(card, cardX, cardsY, selectionState, cardDisplayConfig, dialogElements);
     };
 
-    // Set up card events
-    cardComponent.on('pointerover', showRegularCardHoverEffect);
-    cardComponent.on('pointerout', hideRegularCardHoverEffect);
-    cardComponent.on('pointerdown', handleRegularCardSelection);
+    // Calculate hover effect dimensions - match taller container background
+    const extraHeight = 40;
+    const adjustedY = cardsY - cardDisplayConfig.cardDisplayHeight / 2 - (extraHeight / 2);
+    const hoverWidth = cardDisplayConfig.cardDisplayWidth + 4;
+    const hoverHeight = cardDisplayConfig.cardDisplayHeight + extraHeight + 4;
+
+    // Create hover effect with CardInteractionHelper
+    const hoverOptions = {
+      x: cardX,
+      y: adjustedY + hoverHeight / 2, // Center the hover effect vertically
+      width: hoverWidth,
+      height: hoverHeight
+    };
+
+    const previewOptions = {
+      type: 'single',
+      cardData: cardDataForPreview
+    };
+
+    const { showHover, hideHover } = CardInteractionHelper.createHoverWithPreview(
+      scene, 
+      cardComponent, 
+      hoverOptions, 
+      previewOptions
+    );
+
+    // Custom hover functions to handle dialog elements tracking
+    const showWithElementTracking = () => {
+      showHover();
+      // Add hover effect to dialog elements for cleanup
+      if (cardComponent.hoverEffect && !dialogElements.cardListElements.includes(cardComponent.hoverEffect)) {
+        dialogElements.cardListElements.push(cardComponent.hoverEffect);
+      }
+    };
+
+    const hideWithElementTracking = () => {
+      hideHover();
+      // Additional cleanup handled by CardInteractionHelper
+    };
+
+    // Set up card events using CardInteractionHelper
+    CardInteractionHelper.attachInteractionEvents(
+      cardComponent,
+      showWithElementTracking,
+      hideWithElementTracking,
+      handleRegularCardSelection,
+      { setInteractive: false } // Already set interactive above
+    );
   }
 
   /**
@@ -1176,19 +1070,27 @@ export default class DialogUIManager {
    * @private
    */
   static _createSelectionHighlight(cardX, cardsY, cardDisplayConfig, dialogElements) {
-    const highlight = dialogElements.cardSection.background.add.graphics();
-    highlight.lineStyle(4, 0x00ff00);
+    // ✅ REFACTORED: Use UIGraphicsHelper for selection highlight
     const extraHeight = 40; // Match the extra height from card container background
-    // Match the centered positioning of the card container background
     const adjustedY = cardsY - cardDisplayConfig.cardDisplayHeight / 2 - (extraHeight / 2);
-    highlight.strokeRoundedRect(
-      cardX - cardDisplayConfig.cardDisplayWidth / 2 - 2,
-      adjustedY - 2,
-      cardDisplayConfig.cardDisplayWidth + 4,
-      cardDisplayConfig.cardDisplayHeight + extraHeight + 4,
-      10
-    );
-    highlight.setDepth(1506);
+    const highlightWidth = cardDisplayConfig.cardDisplayWidth + 4;
+    const highlightHeight = cardDisplayConfig.cardDisplayHeight + extraHeight + 4;
+
+    const highlight = UIGraphicsHelper.createHoverEffect(dialogElements.cardSection.background, {
+      x: cardX,
+      y: adjustedY + highlightHeight / 2, // Center vertically
+      width: highlightWidth,
+      height: highlightHeight,
+      color: 0x00ff00,
+      lineWidth: 4,
+      alpha: 1.0, // Selection highlight is fully visible
+      radius: 10,
+      depth: 1506,
+      padding: 0 // No extra padding, already included in dimensions
+    });
+
+    // Set fully visible for selection highlight (not animated like hover)
+    highlight.setAlpha(1.0);
     dialogElements.cardListElements.push(highlight);
     return highlight;
   }
@@ -1211,16 +1113,17 @@ export default class DialogUIManager {
     // Create OK and Cancel buttons
     const buttonY = config.centerY + config.dialogHeight / 2 - 50;
 
-    // OK Button
-    const okButton = scene.add.graphics();
-    okButton.fillStyle(0x4CAF50);
-    okButton.fillRoundedRect(config.centerX - 120, buttonY - 17, 100, 35, 8);
-    okButton.setDepth(1502);
+    // ✅ REFACTORED: Use UIGraphicsHelper for OK button
+    const okButton = UIGraphicsHelper.createButton(scene, {
+      x: config.centerX - 120,
+      y: buttonY,
+      width: 100,
+      height: 35,
+      color: 0x4CAF50,
+      depth: 1502,
+      isOKButton: true
+    });
     okButton.setInteractive(new Phaser.Geom.Rectangle(config.centerX - 120, buttonY - 17, 100, 35), Phaser.Geom.Rectangle.Contains);
-
-    // Store button position for later color updates
-    okButton._buttonY = buttonY;
-    okButton._isOKButton = true;
 
     const okText = scene.add.text(config.centerX - 70, buttonY, 'CONFIRM', {
       fontSize: '16px',
@@ -1231,16 +1134,17 @@ export default class DialogUIManager {
     okText.setOrigin(0.5);
     okText.setDepth(1503);
 
-    // Cancel Button
-    const cancelButton = scene.add.graphics();
-    cancelButton.fillStyle(0xf44336);
-    cancelButton.fillRoundedRect(config.centerX + 20, buttonY - 17, 100, 35, 8);
-    cancelButton.setDepth(1502);
+    // ✅ REFACTORED: Use UIGraphicsHelper for Cancel button
+    const cancelButton = UIGraphicsHelper.createButton(scene, {
+      x: config.centerX + 20,
+      y: buttonY,
+      width: 100,
+      height: 35,
+      color: 0xf44336,
+      depth: 1502,
+      isOKButton: false
+    });
     cancelButton.setInteractive(new Phaser.Geom.Rectangle(config.centerX + 20, buttonY - 17, 100, 35), Phaser.Geom.Rectangle.Contains);
-
-    // Store button position for later color updates
-    cancelButton._buttonY = buttonY;
-    cancelButton._isOKButton = false;
 
     const cancelText = scene.add.text(config.centerX + 70, buttonY, 'CANCEL', {
       fontSize: '16px',
@@ -1270,7 +1174,7 @@ export default class DialogUIManager {
 
     okButton.on('pointerover', () => {
       if (selectionState.maxSelections === 0 || selectionState.selectedCards.length >= 1) {
-        this._setButtonColor(okButton, 0x66BB6A);
+        UIGraphicsHelper.setButtonColor(okButton, 0x66BB6A);
         scene.input.setDefaultCursor('pointer');
       }
     });
@@ -1297,12 +1201,12 @@ export default class DialogUIManager {
     const cancelButton = dialogElements.buttonSection.cancelButton;
 
     cancelButton.on('pointerover', () => {
-      this._setButtonColor(cancelButton, 0xf66659);
+      UIGraphicsHelper.setButtonColor(cancelButton, 0xf66659);
       scene.input.setDefaultCursor('pointer');
     });
 
     cancelButton.on('pointerout', () => {
-      this._setButtonColor(cancelButton, 0xf44336);
+      UIGraphicsHelper.setButtonColor(cancelButton, 0xf44336);
       scene.input.setDefaultCursor('default');
     });
 
@@ -1325,20 +1229,20 @@ export default class DialogUIManager {
 
     // Handle read-only mode (selectCount: 0)
     if (selectionState.maxSelections === 0) {
-      this._setButtonColor(okButton, 0x4CAF50);
+      UIGraphicsHelper.setButtonColor(okButton, 0x4CAF50);
       okText.setText('CLOSE');
       return;
     }
 
     if (selectionState.selectedCards.length >= 1) {
-      this._setButtonColor(okButton, 0x4CAF50);
+      UIGraphicsHelper.setButtonColor(okButton, 0x4CAF50);
       if (selectionState.maxSelections > 1) {
         okText.setText(`CONFIRM (${selectionState.selectedCards.length}/${selectionState.maxSelections})`);
       } else {
         okText.setText('CONFIRM');
       }
     } else {
-      this._setButtonColor(okButton, 0x888888);
+      UIGraphicsHelper.setButtonColor(okButton, 0x888888);
       if (selectionState.maxSelections > 1) {
         okText.setText(`SELECT ${selectionState.maxSelections} CARDS`);
       } else {
@@ -1347,28 +1251,7 @@ export default class DialogUIManager {
     }
   }
 
-  /**
-   * Helper method to set Graphics button color
-   * @private
-   */
-  static _setButtonColor(button, color) {
-    if (button && typeof button.clear === 'function') {
-      // Get the button's position from its current state
-      const scene = button.scene;
-      const centerX = scene ? scene.scale.width / 2 : 960;
-
-      // Find the button's Y position from the dialog config
-      const buttonY = button._buttonY || (scene && scene.scale.height * 0.7) || 700;
-
-      // Determine button position using stored flag
-      const isOKButton = button._isOKButton === true;
-      const buttonX = isOKButton ? centerX - 120 : centerX + 20;
-
-      button.clear();
-      button.fillStyle(color);
-      button.fillRoundedRect(buttonX, buttonY - 17, 100, 35, 8);
-    }
-  }
+  // ✅ REMOVED: _setButtonColor method replaced by UIGraphicsHelper.setButtonColor
 
   // Add remaining utility methods for pagination, animation, etc.
   static _updatePaginationVisibility(paginationState, dialogElements) {

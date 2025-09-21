@@ -478,6 +478,7 @@ CardFactory.createHandCard(scene, cardData, x, y, options);     // Hand cards
 - ✅ Fixed `_createSlotTargetDisplay()`: Always shows total AP/HP labels for slot target displays, even unit-only slots
 - ✅ Uses `CardStatCalculator.calculateTotalInSlot()` for proper total calculation when values not provided
 - ✅ Eliminated duplicate card creation patterns across 3 methods (`_createCardDisplay`, `_createSlotTargetDisplay`, `_createFallbackCardImage`)
+- ✅ **Fixed cardStatusText (Rested/Active) display**: Dialog cards now properly show current rested status via `CardFactory._extractRestedStatus()`
 
 #### **Migration Path for Future Development**
 
@@ -996,6 +997,7 @@ const cardComponent = new Card(scene, cardX, cardsY, originalCard, options);
 2. **Background Control**: Set `showBackground: false` for dialog cards
 3. **Stats Updates**: Call `updateTotalStats()` with calculated values
 4. **Depth Management**: Set appropriate depth levels for dialog overlays
+5. **Card Status Updates**: Ensure `isRested` status is passed to `updateCardStatus()` for proper "Rested"/"Active" display
 
 ### Testing Strategies
 1. **Data Structure Validation**: Test with various card data formats

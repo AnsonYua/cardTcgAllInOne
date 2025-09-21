@@ -187,6 +187,14 @@ export default class CardFactory {
       card.configureTotalLabelsToShow(totalAP, totalHP);
     }
     
+    // ✅ FIX: Update card status (Rested/Active) for dialog cards
+    // Extract isRested status from various possible data structures
+    const isRested = this._extractRestedStatus(cardData);
+    if (card.powerOverlay && card.powerOverlay.updateCardStatus) {
+      card.powerOverlay.updateCardStatus(isRested);
+      console.log(`[CardFactory] Updated dialog card status: ${isRested ? 'Rested' : 'Active'} for card:`, cardData?.id || cardData?.cardData?.id);
+    }
+    
     return card;
   }
   
@@ -304,5 +312,27 @@ export default class CardFactory {
     if (card.powerOverlay?.setTotalLabelsVisibility) {
       card.powerOverlay.setTotalLabelsVisibility(zone);
     }
+  }
+  
+  /**
+   * Extract isRested status from various card data structures
+   * @param {Object} cardData - Card data in various formats
+   * @returns {boolean} isRested status
+   * @private
+   */
+  static _extractRestedStatus(cardData) {
+    // Handle various data structure formats
+    if (cardData?.isRested !== undefined) {
+      return cardData.isRested;
+    }
+    if (cardData?.cardData?.isRested !== undefined) {
+      return cardData.cardData.isRested;
+    }
+    if (cardData?.fullCardData?.isRested !== undefined) {
+      return cardData.fullCardData.isRested;
+    }
+    
+    // Default to false (Active) if no rested status found
+    return false;
   }
 }
