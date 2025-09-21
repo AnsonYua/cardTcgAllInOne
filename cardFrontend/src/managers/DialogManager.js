@@ -123,7 +123,7 @@ export default class DialogManager {
    * Unified card selection dialog (handles slots, carduid, and trash selections)
    * This is the main dialog method that can handle all types of card selections
    */
-  showCardSelectionDialog(selectionId, selection, onConfirm) {
+  showCardSelectionDialog(selectionId, selection, onConfirm, onCancel=null,isAllowCancel=true) {
     console.log('DialogManager: Showing unified card selection dialog:', JSON.stringify(selection));
 
     // Check if this selection dialog is already active
@@ -148,17 +148,9 @@ export default class DialogManager {
       (selectedId, selectedCards, elements) => {
         this.handleCardSelectionComplete(dialogId, selectionId, selectedCards, onConfirm);
       },
-      // ✅ SIMPLIFIED: Optional onCancel callback parameter
-      (cancelInfo) => {
-        console.log('DialogManager: Card selection dialog cancelled:', cancelInfo);
-        
-        // Close the dialog
-        this.closeDialog(dialogId);
-        
-        // Optional: Add any specific cancel handling logic here
-        // For example, analytics tracking, user feedback, state reset, etc.
-        this.handleCardSelectionCancelled(dialogId, selectionId, cancelInfo);
-      }
+      // ✅ FIXED: Pass onCancel parameter correctly, with fallback to default cancel handler
+      onCancel,
+      isAllowCancel
     );
 
     // Store dialog in active dialogs map
@@ -591,7 +583,10 @@ export default class DialogManager {
         console.log('DialogManager: Deploy target selection cancelled');
         if (onConfirm) onConfirm(null); // Pass null to indicate cancellation
       }
-    });
+    },
+    null, 
+    false
+    );
   }
 
 

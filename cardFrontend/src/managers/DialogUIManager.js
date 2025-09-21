@@ -64,6 +64,7 @@ export default class DialogUIManager {
    * @param {Phaser.Scene} scene - Phaser scene instance
    * @param {Function} onConfirm - Callback when user confirms selection
    * @param {Function} onCancel - Optional callback when user cancels dialog (default: null)
+   * @param {boolean} isAllowCancel - Whether to show cancel button (default: true)
    * @returns {Object} Dialog interface with cleanup method
    */
   static createCardSelectionDialog(selectionId, selection, scene, onConfirm, onCancel = null, isAllowCancel=true) {
@@ -138,7 +139,8 @@ export default class DialogUIManager {
         selectionState, 
         dialogElements, () => { }, 
         onConfirm, 
-        onCancel);
+        onCancel,
+        isAllowCancel);
       updateOKButtonState = () => this._updateConfigurableButtonState(selectionState, dialogElements, buttonConfig);
     } else {
       // Default OK/Cancel buttons
@@ -151,7 +153,8 @@ export default class DialogUIManager {
           this._updateOKButtonState(state, elements);
         }, 
         onConfirm, 
-        onCancel);
+        onCancel,
+        isAllowCancel);
       updateOKButtonState = () => this._updateOKButtonState(selectionState, dialogElements);
     }
 
@@ -1127,15 +1130,30 @@ export default class DialogUIManager {
    * Create button section
    * @private
    */
-  static _createButtonSection(scene, selectionId, selection, config, selectionState, dialogElements, updateOKButtonState, onConfirm, onCancel) {
+  static _createButtonSection(scene, selectionId, selection, config, selectionState, dialogElements, updateOKButtonState, onConfirm, onCancel, isAllowCancel = true) {
     dialogElements.buttonSection = {};
 
-    // Create OK and Cancel buttons
+    // Create buttons based on isAllowCancel flag
     const buttonY = config.centerY + config.dialogHeight / 2 - 50;
+    
+    // ✅ ENHANCED: Calculate proper button and text positions
+    // Show cancel button when isAllowCancel is true OR null (default behavior)
+    const shouldShowCancel = isAllowCancel === true || isAllowCancel === null;
+    
+    let okButtonX, okTextX;
+    if (shouldShowCancel) {
+      // Two-button layout: OK on left, Cancel on right
+      okButtonX = config.centerX - 120;  // OK button left edge
+      okTextX = config.centerX - 70;     // OK button center (left edge + 50)
+    } else {
+      // Single-button layout: OK centered
+      okButtonX = config.centerX - 50;   // OK button left edge (center - half width)
+      okTextX = config.centerX;          // OK button center (matches dialog center)
+    }
 
-    // ✅ REFACTORED: Use UIGraphicsHelper for OK button
+    // ✅ ENHANCED: Create OK button with proper positioning
     const okButton = UIGraphicsHelper.createButton(scene, {
-      x: config.centerX - 120,
+      x: okButtonX,
       y: buttonY,
       width: 100,
       height: 35,
@@ -1143,9 +1161,14 @@ export default class DialogUIManager {
       depth: 1502,
       isOKButton: true
     });
-    okButton.setInteractive(new Phaser.Geom.Rectangle(config.centerX - 120, buttonY - 17, 100, 35), Phaser.Geom.Rectangle.Contains);
-
-    const okText = scene.add.text(config.centerX - 70, buttonY, 'CONFIRM', {
+    
+    // ✅ FIXED: Ensure interactive area matches button position exactly
+    const interactiveRect = new Phaser.Geom.Rectangle(okButtonX, buttonY - 17, 100, 35);
+    okButton.setInteractive(interactiveRect, Phaser.Geom.Rectangle.Contains);
+    // ✅ FIXED: Text positioned exactly at button center 
+    // Note: UIGraphicsHelper.createButton draws button at (x, y-17), so text should be at (textX, y-17+height/2)
+    const actualButtonCenterY = buttonY - 17 + 17.5; // y - 17 + height/2 (35/2 = 17.5)
+    const okText = scene.add.text(okTextX, actualButtonCenterY, 'CONFIRM', {
       fontSize: '16px',
       fontFamily: 'Arial',
       fill: '#ffffff',
@@ -1154,35 +1177,44 @@ export default class DialogUIManager {
     okText.setOrigin(0.5);
     okText.setDepth(1503);
 
-    // ✅ REFACTORED: Use UIGraphicsHelper for Cancel button
-    const cancelButton = UIGraphicsHelper.createButton(scene, {
-      x: config.centerX + 20,
-      y: buttonY,
-      width: 100,
-      height: 35,
-      color: 0xf44336,
-      depth: 1502,
-      isOKButton: false
-    });
-    cancelButton.setInteractive(new Phaser.Geom.Rectangle(config.centerX + 20, buttonY - 17, 100, 35), Phaser.Geom.Rectangle.Contains);
-
-    const cancelText = scene.add.text(config.centerX + 70, buttonY, 'CANCEL', {
-      fontSize: '16px',
-      fontFamily: 'Arial',
-      fill: '#ffffff',
-      align: 'center'
-    });
-    cancelText.setOrigin(0.5);
-    cancelText.setDepth(1503);
-
     dialogElements.buttonSection.okButton = okButton;
     dialogElements.buttonSection.okText = okText;
-    dialogElements.buttonSection.cancelButton = cancelButton;
-    dialogElements.buttonSection.cancelText = cancelText;
 
-    // Set up button events
+    // ✅ CONDITIONAL: Only create cancel button if shouldShowCancel is true
+    if (shouldShowCancel) {
+      const cancelButton = UIGraphicsHelper.createButton(scene, {
+        x: config.centerX + 20,
+        y: buttonY,
+        width: 100,
+        height: 35,
+        color: 0xf44336,
+        depth: 1502,
+        isOKButton: false
+      });
+      cancelButton.setInteractive(new Phaser.Geom.Rectangle(config.centerX + 20, buttonY - 17, 100, 35), Phaser.Geom.Rectangle.Contains);
+
+      const cancelText = scene.add.text(config.centerX + 70, actualButtonCenterY, 'CANCEL', {
+        fontSize: '16px',
+        fontFamily: 'Arial',
+        fill: '#ffffff',
+        align: 'center'
+      });
+      cancelText.setOrigin(0.5);
+      cancelText.setDepth(1503);
+
+      dialogElements.buttonSection.cancelButton = cancelButton;
+      dialogElements.buttonSection.cancelText = cancelText;
+
+      // Set up cancel button events only if cancel button exists
+      this._setupCancelButtonEvents(scene, selectionId, dialogElements, onCancel);
+    } else {
+      // Set cancel button references to null when not allowed
+      dialogElements.buttonSection.cancelButton = null;
+      dialogElements.buttonSection.cancelText = null;
+    }
+
+    // Set up OK button events
     this._setupOKButtonEvents(scene, selectionId, selection, selectionState, dialogElements, onConfirm);
-    this._setupCancelButtonEvents(scene, selectionId, dialogElements, onCancel);
   }
 
   /**
