@@ -76,116 +76,25 @@ export default class DialogUIManager {
     isAllowCancel=true,
     requireConfirmation,
     ) {
-    console.log('🎮 DialogUIManager: Creating card selection dialog');
-    console.log('Selection ID:', selectionId);
-    console.log('Selection config1111:', JSON.stringify(selection));
-
-    // Only support eligibleCards format
-    if (!selection.eligibleCards || !Array.isArray(selection.eligibleCards)) {
-      console.warn('DialogUIManager: selection must provide eligibleCards array');
+    // ✅ REFACTORED: Step 1 - Validate and resolve selection
+    const eligibleCards = this._validateAndResolveSelection(selectionId, selection, scene);
+    if (!eligibleCards) {
       return { elements: [], cleanup: () => { } };
     }
-    const gameState = scene.gameStateManager.getGameState();
-    console.log("adsfdsadsasd as",JSON.stringify(selection.eligibleCards))
-    const eligibleCards =  this._resolveItems(selection.eligibleCards, gameState);
-    selection.eligibleCards = eligibleCards
-    console.log("adsfdsadsasd as1111",JSON.stringify(eligibleCards))
-    console.log('📦 Using provided eligibleCards:', eligibleCards.length, 'cards');
 
-    console.log('Available cards:', eligibleCards.length);
+    // ✅ REFACTORED: Step 2 - Initialize dialog state
+    const dialogState = this._initializeDialogState(scene, selection, eligibleCards);
 
-    // Create dialog configuration and layout
-    const config = this._createDialogConfig(scene, selection);
-    const dialogElements = { cardListElements: [] };
+    // ✅ REFACTORED: Step 3 - Create UI components
+    const { updateCardDisplay, clearSelections } = this._createUIComponents(scene, selection, dialogState);
 
-    // Create dialog background and layout sections
-    this._createDialogBackground(scene, config, dialogElements);
-    this._createTitleSection(scene, config, dialogElements);
-    this._createCardSectionBackground(scene, config, dialogElements, selection);
-
-    // Initialize pagination state
-    const paginationState = {
-      currentPage: 0,
-      maxCardsPerPage: 4,
-      totalCards: eligibleCards.length,
-      totalPages: Math.ceil(eligibleCards.length / 4)
-    };
-
-    // Initialize selection state
-    const selectionState = {
-      selectedCard: null,
-      selectedCards: [],
-      selectedCardHighlight: null,
-      selectedCardHighlights: [],
-      maxSelections: selection.selectCount || 1
-    };
-
-    // Create card display configuration
-    const cardDisplayConfig = {
-      cardDisplayWidth: 140,
-      cardDisplayHeight: 200,
-      cardSpacing: 20
-    };
-
-    // Create pagination controls
-    this._createPaginationControls(scene, config, paginationState, dialogElements);
-
-    // Create card manager and display
-    const { updateCardDisplay, clearSelections } = this._createCardManager(
-      scene, selection, config, paginationState, selectionState, cardDisplayConfig, dialogElements
+    // ✅ REFACTORED: Step 4 - Configure button section
+    const updateOKButtonState = this._configureButtonSection(
+      selectionId, selection, scene, onConfirm, onCancel, isAllowCancel, requireConfirmation, dialogState
     );
 
-    // Handle button configuration
-    let updateOKButtonState;
-    if (selection.buttons) {
-      // Custom button configuration
-      const buttonConfig = { buttons: selection.buttons };
-      this._createButtonSection(scene, 
-        selectionId, 
-        selection, 
-        config, 
-        selectionState, 
-        dialogElements, () => { }, 
-        onConfirm, 
-        onCancel,
-        isAllowCancel,
-        requireConfirmation);
-      updateOKButtonState = () => this._updateConfigurableButtonState(selectionState, dialogElements, buttonConfig);
-    } else {
-      // Default OK/Cancel buttons
-      this._createButtonSection(scene, 
-        selectionId, 
-        selection, 
-        config, 
-        selectionState, 
-        dialogElements, (state, elements) => {
-          this._updateOKButtonState(state, elements);
-        }, 
-        onConfirm, 
-        onCancel,
-        isAllowCancel,
-        requireConfirmation);
-      updateOKButtonState = () => this._updateOKButtonState(selectionState, dialogElements);
-    }
-
-    // Initial card display
-    updateCardDisplay('in');
-    updateOKButtonState();
-
-    // Disable main game interactions while dialog is open
-    this._disableMainGameCardInteractions(scene);
-
-    console.log('✅ Dialog created successfully');
-
-    // Return dialog interface
-    return {
-      elements: this._getAllDialogElements(dialogElements),
-      cleanup: () => {
-        console.log('🧹 Cleaning up dialog interface');
-        this._cleanupDialog(scene, dialogElements);
-        this._enableMainGameCardInteractions(scene);
-      }
-    };
+    // ✅ REFACTORED: Step 5 - Finalize dialog setup and create interface
+    return this._finalizeDialogSetup(scene, dialogState, updateCardDisplay, updateOKButtonState);
   }
 
   /**
@@ -1696,6 +1605,193 @@ export default class DialogUIManager {
       cardData: cardData, // For Card component rendering
       selectionIndex: index,
       preSelected: preSelected
+    };
+  }
+
+  /**
+   * Validate and resolve selection items - extracted from createCardSelectionDialog
+   * @private
+   * @param {string} selectionId - Selection identifier for logging
+   * @param {Object} selection - Selection configuration object
+   * @param {Phaser.Scene} scene - Phaser scene instance
+   * @returns {Array} Resolved eligible cards array
+   */
+  static _validateAndResolveSelection(selectionId, selection, scene) {
+    console.log('🎮 DialogUIManager: Creating card selection dialog');
+    console.log('Selection ID:', selectionId);
+    console.log('Selection config1111:', JSON.stringify(selection));
+
+    // Only support eligibleCards format
+    if (!selection.eligibleCards || !Array.isArray(selection.eligibleCards)) {
+      console.warn('DialogUIManager: selection must provide eligibleCards array');
+      return null; // Signal validation failure
+    }
+    
+    const gameState = scene.gameStateManager.getGameState();
+    console.log("adsfdsadsasd as", JSON.stringify(selection.eligibleCards));
+    const eligibleCards = this._resolveItems(selection.eligibleCards, gameState);
+    selection.eligibleCards = eligibleCards; // ✅ PRESERVE: Mutation of selection object
+    console.log("adsfdsadsasd as1111", JSON.stringify(eligibleCards));
+    console.log('📦 Using provided eligibleCards:', eligibleCards.length, 'cards');
+    console.log('Available cards:', eligibleCards.length);
+    
+    return eligibleCards;
+  }
+
+  /**
+   * Initialize dialog state objects - extracted from createCardSelectionDialog
+   * @private
+   * @param {Phaser.Scene} scene - Phaser scene instance
+   * @param {Object} selection - Selection configuration object
+   * @param {Array} eligibleCards - Resolved eligible cards array
+   * @returns {Object} Dialog state containing config, elements, pagination, selection, and card display config
+   */
+  static _initializeDialogState(scene, selection, eligibleCards) {
+    // Create dialog configuration and layout
+    const config = this._createDialogConfig(scene, selection);
+    const dialogElements = { cardListElements: [] };
+
+    // Initialize pagination state
+    const paginationState = {
+      currentPage: 0,
+      maxCardsPerPage: 4,
+      totalCards: eligibleCards.length,
+      totalPages: Math.ceil(eligibleCards.length / 4)
+    };
+
+    // Initialize selection state
+    const selectionState = {
+      selectedCard: null,
+      selectedCards: [],
+      selectedCardHighlight: null,
+      selectedCardHighlights: [],
+      maxSelections: selection.selectCount || 1
+    };
+
+    // Create card display configuration
+    const cardDisplayConfig = {
+      cardDisplayWidth: 140,
+      cardDisplayHeight: 200,
+      cardSpacing: 20
+    };
+
+    return {
+      config,
+      dialogElements,
+      paginationState,
+      selectionState,
+      cardDisplayConfig
+    };
+  }
+
+  /**
+   * Create UI components - extracted from createCardSelectionDialog
+   * @private
+   * @param {Phaser.Scene} scene - Phaser scene instance
+   * @param {Object} selection - Selection configuration object
+   * @param {Object} dialogState - Dialog state containing config, elements, pagination, selection, and card display config
+   * @returns {Object} UI managers containing updateCardDisplay and clearSelections functions
+   */
+  static _createUIComponents(scene, selection, dialogState) {
+    const { config, dialogElements, paginationState, selectionState, cardDisplayConfig } = dialogState;
+
+    // Create dialog background and layout sections
+    this._createDialogBackground(scene, config, dialogElements);
+    this._createTitleSection(scene, config, dialogElements);
+    this._createCardSectionBackground(scene, config, dialogElements, selection);
+
+    // Create pagination controls
+    this._createPaginationControls(scene, config, paginationState, dialogElements);
+
+    // Create card manager and display
+    const { updateCardDisplay, clearSelections } = this._createCardManager(
+      scene, selection, config, paginationState, selectionState, cardDisplayConfig, dialogElements
+    );
+
+    return { updateCardDisplay, clearSelections };
+  }
+
+  /**
+   * Configure button section with complex dual-path logic - extracted from createCardSelectionDialog
+   * @private
+   * @param {string} selectionId - Selection identifier
+   * @param {Object} selection - Selection configuration object
+   * @param {Phaser.Scene} scene - Phaser scene instance
+   * @param {Function} onConfirm - Confirm callback function
+   * @param {Function} onCancel - Cancel callback function
+   * @param {boolean} isAllowCancel - Whether to allow cancel
+   * @param {boolean} requireConfirmation - Whether to require confirmation
+   * @param {Object} dialogState - Dialog state containing config, elements, pagination, selection, and card display config
+   * @returns {Function} updateOKButtonState function for the configured button type
+   */
+  static _configureButtonSection(selectionId, selection, scene, onConfirm, onCancel, isAllowCancel, requireConfirmation, dialogState) {
+    const { config, dialogElements, selectionState } = dialogState;
+    
+    // Handle button configuration - preserve exact dual-path logic
+    let updateOKButtonState;
+    if (selection.buttons) {
+      // Custom button configuration path
+      const buttonConfig = { buttons: selection.buttons };
+      this._createButtonSection(scene, 
+        selectionId, 
+        selection, 
+        config, 
+        selectionState, 
+        dialogElements, () => { }, 
+        onConfirm, 
+        onCancel,
+        isAllowCancel,
+        requireConfirmation);
+      updateOKButtonState = () => this._updateConfigurableButtonState(selectionState, dialogElements, buttonConfig);
+    } else {
+      // Default OK/Cancel buttons path
+      this._createButtonSection(scene, 
+        selectionId, 
+        selection, 
+        config, 
+        selectionState, 
+        dialogElements, (state, elements) => {
+          this._updateOKButtonState(state, elements);
+        }, 
+        onConfirm, 
+        onCancel,
+        isAllowCancel,
+        requireConfirmation);
+      updateOKButtonState = () => this._updateOKButtonState(selectionState, dialogElements);
+    }
+    
+    return updateOKButtonState;
+  }
+
+  /**
+   * Finalize dialog setup and create interface - extracted from createCardSelectionDialog
+   * @private
+   * @param {Phaser.Scene} scene - Phaser scene instance
+   * @param {Object} dialogState - Dialog state containing all dialog elements
+   * @param {Function} updateCardDisplay - Function to update card display
+   * @param {Function} updateOKButtonState - Function to update OK button state
+   * @returns {Object} Dialog interface with elements and cleanup method
+   */
+  static _finalizeDialogSetup(scene, dialogState, updateCardDisplay, updateOKButtonState) {
+    const { dialogElements } = dialogState;
+
+    // Initial card display
+    updateCardDisplay('in');
+    updateOKButtonState();
+
+    // Disable main game interactions while dialog is open
+    this._disableMainGameCardInteractions(scene);
+
+    console.log('✅ Dialog created successfully');
+
+    // Return dialog interface
+    return {
+      elements: this._getAllDialogElements(dialogElements),
+      cleanup: () => {
+        console.log('🧹 Cleaning up dialog interface');
+        this._cleanupDialog(scene, dialogElements);
+        this._enableMainGameCardInteractions(scene);
+      }
     };
   }
 
