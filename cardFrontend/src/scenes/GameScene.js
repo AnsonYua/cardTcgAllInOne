@@ -516,10 +516,8 @@ export default class GameScene extends Phaser.Scene {
     }
 
     try {
-      const result = await this.gameApiService.endTurn();
-      if (result.gameEnvUpdated) {
-        this.updateGameState();
-      }
+      // ✅ SIMPLIFIED: GameApiService handles scenario flag and updateGameState automatically
+      await this.gameApiService.endTurn(this);
     } catch (error) {
       console.error('Error ending turn:', error);
     }
@@ -944,43 +942,25 @@ export default class GameScene extends Phaser.Scene {
   showBurstEffectDialog(event) {
     console.log('GameScene: Showing burst effect dialog for event:', event);
     
-    // Use DialogManager to show burst effect dialog
+    // ✅ CONSOLIDATED: All burst effect logic in one place
+    const handleBurstChoice = async (confirmed, source = 'unknown') => {
+      console.log(`GameScene: User ${confirmed ? 'confirmed' : 'declined'} burst effect (${source}):`, event.id);
+      
+      try {
+        // GameApiService handles scenario flag and updateGameState automatically
+        await this.gameApiService.confirmBurstChoice(event.id, confirmed, this);
+      } catch (error) {
+        console.error(`Failed to process burst choice (${source}):`, error);
+      }
+    };
+    
     this.dialogManager.showBurstEffectDialog(
       event, 
-      async (confirmed) => {
-        console.log(`GameScene: User ${confirmed ? 'confirmed' : 'declined'} burst effect:`, event.id);
-        
-        try {
-          const gameState = this.gameStateManager.getGameState();
-          
-          // Call API to confirm/decline the burst effect
-          const result = await this.gameApiService.confirmBurstChoice(event.id, confirmed);
-          
-          if (result.gameEnvUpdated) {
-            // Set scenario flag for hand update
-            this.isSetScenoria = true;
-            this.updateGameState();
-          }
-          
-        } catch (error) {
-          console.error('Failed to confirm burst choice:', error);
-        }
-      },
-      // ✅ onCancel callback - placeholder for custom cancellation logic
+      (confirmed) => handleBurstChoice(confirmed, 'confirm'),
       (cancelInfo) => {
         console.log('GameScene: Burst effect dialog cancelled:', cancelInfo);
-        
-        // TODO: Add custom cancellation logic here if needed
-        // Examples:
-        // - Analytics tracking for user behavior
-        // - Custom UI feedback or animations
-        // - State cleanup or reset operations
-        // - Alternative action suggestions
-        
-        // Note: DialogUIManager already handles:
-        // - Dialog cleanup and removal
-        // - Basic cancel event emission
-        // - UI state restoration
+        // Skip the burst effect (call with false)
+        handleBurstChoice(false, 'cancel');
       }
     );
   }

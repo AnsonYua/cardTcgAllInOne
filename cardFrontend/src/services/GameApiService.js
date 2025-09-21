@@ -15,8 +15,9 @@ export default class GameApiService {
    * @param {string} successMessage - Message to show on success
    * @param {string} errorMessage - Message to show on error
    * @param {boolean} updateHand - Whether to trigger hand update scenario
+   * @param {Object} sceneContext - Scene context for scenario flag and updateGameState
    */
-  handleStandardResponse(response, successMessage, errorMessage, updateHand = false) {
+  handleStandardResponse(response, successMessage, errorMessage, updateHand = false, sceneContext = null) {
     if (response && response.success) {
       console.log(`API call successful:`, response);
       if (successMessage) {
@@ -34,6 +35,16 @@ export default class GameApiService {
           );
         }
         this.gameStateManager.updateGameEnv(response.gameEnv);
+        
+        // ✅ CENTRALIZED: Handle scenario flag and updateGameState if scene context provided
+        if (sceneContext && updateHand) {
+          console.log('GameApiService: Setting scenario flag and updating game state');
+          sceneContext.isSetScenoria = true;
+          if (typeof sceneContext.updateGameState === 'function') {
+            sceneContext.updateGameState();
+          }
+        }
+        
         return { success: true, gameEnvUpdated: true };
       }
       
@@ -50,8 +61,9 @@ export default class GameApiService {
 
   /**
    * End turn API call with standardized handling
+   * @param {Object} sceneContext - Optional scene context for automatic scenario flag handling
    */
-  async endTurn() {
+  async endTurn(sceneContext = null) {
     const gameState = this.gameStateManager.getGameState();
     const gameId = gameState.gameId;
     const playerId = gameState.playerId;
@@ -64,7 +76,13 @@ export default class GameApiService {
     this.uiMessageManager.showRoomStatus('Ending turn...');
 
     const response = await this.apiManager.endTurn(gameId, playerId);
-    return this.handleStandardResponse(response, 'Turn ended successfully', 'Failed to end turn');
+    return this.handleStandardResponse(
+      response, 
+      'Turn ended successfully', 
+      'Failed to end turn',
+      false, // updateHand = false for end turn
+      sceneContext // Pass scene context for automatic handling
+    );
   }
 
   /**
@@ -91,8 +109,11 @@ export default class GameApiService {
 
   /**
    * Confirm burst choice API call with standardized handling
+   * @param {string} eventId - The burst effect event ID
+   * @param {boolean} confirmed - Whether the burst effect was confirmed
+   * @param {Object} sceneContext - Optional scene context for automatic scenario flag handling
    */
-  async confirmBurstChoice(eventId, confirmed) {
+  async confirmBurstChoice(eventId, confirmed, sceneContext = null) {
     const gameState = this.gameStateManager.getGameState();
     
     const response = await this.apiManager.confirmBurstChoice(
@@ -106,7 +127,8 @@ export default class GameApiService {
       response, 
       `Burst effect ${confirmed ? 'activated' : 'skipped'} successfully!`,
       'Failed to process burst choice',
-      true // updateHand = true for burst effects
+      true, // updateHand = true for burst effects
+      sceneContext // Pass scene context for automatic handling
     );
   }
 
@@ -114,8 +136,9 @@ export default class GameApiService {
    * Confirm deploy target choice API call with standardized handling
    * @param {string} eventId - The deploy target choice event ID
    * @param {Object} selectedTarget - Selected target object with cardUid, zone, playerId
+   * @param {Object} sceneContext - Optional scene context for automatic scenario flag handling
    */
-  async confirmDeployChoice(eventId, selectedTarget) {
+  async confirmDeployChoice(eventId, selectedTarget, sceneContext = null) {
     const gameState = this.gameStateManager.getGameState();
     
     const response = await this.apiManager.confirmDeployChoice(
@@ -129,7 +152,8 @@ export default class GameApiService {
       response, 
       'Deploy target selected successfully!',
       'Failed to confirm deploy target choice',
-      true // updateHand = true for deploy effects
+      true, // updateHand = true for deploy effects
+      sceneContext // Pass scene context for automatic handling
     );
   }
 
