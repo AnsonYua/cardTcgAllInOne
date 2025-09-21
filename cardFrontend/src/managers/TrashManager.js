@@ -359,7 +359,7 @@ export default class TrashManager {
     console.log("TrashManager: Showing trash dialog with eligibleCards:", JSON.stringify(eligibleCards));
 
     // Use the existing card selection dialog system
-    this.dialogManager.showCardSelectionDialog(selectionId, selection, selection.callback);
+    this.dialogManager.showCardSelectionDialog(selectionId, selection, selection.callback,null , true,false);
   }
 
   /**

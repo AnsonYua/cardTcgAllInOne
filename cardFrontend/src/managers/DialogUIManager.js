@@ -65,9 +65,17 @@ export default class DialogUIManager {
    * @param {Function} onConfirm - Callback when user confirms selection
    * @param {Function} onCancel - Optional callback when user cancels dialog (default: null)
    * @param {boolean} isAllowCancel - Whether to show cancel button (default: true)
+   * @param {boolean} requireConfirmation - Whether to show OK button (default: true, null treated as true)
    * @returns {Object} Dialog interface with cleanup method
    */
-  static createCardSelectionDialog(selectionId, selection, scene, onConfirm, onCancel = null, isAllowCancel=true) {
+  static createCardSelectionDialog(selectionId, 
+    selection, 
+    scene, 
+    onConfirm, 
+    onCancel = null, 
+    isAllowCancel=true,
+    requireConfirmation,
+    ) {
     console.log('🎮 DialogUIManager: Creating card selection dialog');
     console.log('Selection ID:', selectionId);
     console.log('Selection config1111:', JSON.stringify(selection));
@@ -140,7 +148,8 @@ export default class DialogUIManager {
         dialogElements, () => { }, 
         onConfirm, 
         onCancel,
-        isAllowCancel);
+        isAllowCancel,
+        requireConfirmation);
       updateOKButtonState = () => this._updateConfigurableButtonState(selectionState, dialogElements, buttonConfig);
     } else {
       // Default OK/Cancel buttons
@@ -154,7 +163,8 @@ export default class DialogUIManager {
         }, 
         onConfirm, 
         onCancel,
-        isAllowCancel);
+        isAllowCancel,
+        requireConfirmation);
       updateOKButtonState = () => this._updateOKButtonState(selectionState, dialogElements);
     }
 
@@ -1130,26 +1140,28 @@ export default class DialogUIManager {
    * Create button section
    * @private
    */
-  static _createButtonSection(scene, selectionId, selection, config, selectionState, dialogElements, updateOKButtonState, onConfirm, onCancel, isAllowCancel = true) {
+  static _createButtonSection(scene, selectionId, selection, config, selectionState, dialogElements, updateOKButtonState, onConfirm, onCancel, isAllowCancel = true, requireConfirmation = true) {
     dialogElements.buttonSection = {};
 
-    // Create buttons based on isAllowCancel flag
+    // Create buttons based on isAllowCancel and requireConfirmation flags
     const buttonY = config.centerY + config.dialogHeight / 2 - 50;
     
-    // ✅ ENHANCED: Calculate proper button and text positions
+    // ✅ ENHANCED: Calculate which buttons to display
     // Show cancel button when isAllowCancel is true OR null (default behavior)
     const shouldShowCancel = isAllowCancel === true || isAllowCancel === null;
+    // Show OK button when requireConfirmation is true, null, or undefined (default behavior)
+    const shouldShowOK = requireConfirmation === true || requireConfirmation === null || requireConfirmation === undefined;
+    
+    // ✅ ENHANCED: Calculate button count and layout strategy
+    const buttonCount = (shouldShowOK ? 1 : 0) + (shouldShowCancel ? 1 : 0);
+    
+    // Handle no buttons case (validation mode)
+    if (buttonCount === 0) {
+      console.warn('DialogUIManager: No buttons to display (both OK and Cancel disabled)');
+      return; // Exit early if no buttons to show
+    }
     
     let okButtonX, okTextX;
-    if (shouldShowCancel) {
-      // Two-button layout: OK on left, Cancel on right
-      okButtonX = config.centerX - 120;  // OK button left edge
-      okTextX = config.centerX - 70;     // OK button center (left edge + 50)
-    } else {
-      // Single-button layout: OK centered
-      okButtonX = config.centerX - 50;   // OK button left edge (center - half width)
-      okTextX = config.centerX;          // OK button center (matches dialog center)
-    }
 
     // ✅ ENHANCED: Calculate button width based on longest possible text
     // Test all possible OK button text variations to find maximum width needed
@@ -1179,64 +1191,78 @@ export default class DialogUIManager {
     const buttonWidth = Math.max(maxTextWidth + buttonPadding, 100); // Minimum 100px width
     const buttonHeight = 35;
     
-    // ✅ ENHANCED: Recalculate positions based on actual button width
-    let adjustedOkButtonX, adjustedOkTextX;
-    if (shouldShowCancel) {
+    // ✅ ENHANCED: Calculate button positions based on which buttons are shown
+    let adjustedOkButtonX, adjustedOkTextX, adjustedCancelButtonX, adjustedCancelTextX;
+    const buttonGap = 20; // Gap between buttons
+    
+    if (shouldShowOK && shouldShowCancel) {
       // Two-button layout: Center both buttons as a pair
-      const buttonGap = 20; // Gap between buttons  
       const totalButtonsWidth = buttonWidth + buttonGap + buttonWidth; // OK + gap + Cancel (same width)
       adjustedOkButtonX = config.centerX - totalButtonsWidth / 2;  // OK button left edge, centered as pair
       adjustedOkTextX = adjustedOkButtonX + buttonWidth / 2;       // OK button center
-    } else {
-      // Single-button layout: OK centered
+      adjustedCancelButtonX = adjustedOkButtonX + buttonWidth + buttonGap; // Cancel button position
+      adjustedCancelTextX = adjustedCancelButtonX + buttonWidth / 2;       // Cancel button center
+    } else if (shouldShowOK && !shouldShowCancel) {
+      // Single OK button layout: Center OK button
       adjustedOkButtonX = config.centerX - buttonWidth / 2;    // OK button left edge (center - half width)
       adjustedOkTextX = config.centerX;                        // OK button center (matches dialog center)
+    } else if (!shouldShowOK && shouldShowCancel) {
+      // Single Cancel button layout: Center Cancel button
+      adjustedCancelButtonX = config.centerX - buttonWidth / 2;    // Cancel button left edge (center - half width)
+      adjustedCancelTextX = config.centerX;                        // Cancel button center (matches dialog center)
     }
     
-    // ✅ ENHANCED: Set initial button color based on selection type
-    let initialButtonColor = 0x888888; // Default disabled gray for card selection
-    if (selection && selection.selectCount === 0) {
-      initialButtonColor = 0x4CAF50; // Green for read-only mode (CLOSE button)
-    }
-    
-    // ✅ ENHANCED: Create OK button with dynamic width
-    const okButton = UIGraphicsHelper.createButton(scene, {
-      x: adjustedOkButtonX,
-      y: buttonY,
-      width: buttonWidth,
-      height: buttonHeight,
-      color: initialButtonColor,
-      depth: 1502,
-      isOKButton: true
-    });
-    
-    // ✅ FIXED: Store the actual button position for color updates
-    okButton._actualButtonX = adjustedOkButtonX;
-    
-    // ✅ FIXED: Ensure interactive area matches button position exactly
-    const interactiveRect = new Phaser.Geom.Rectangle(adjustedOkButtonX, buttonY - 17, buttonWidth, buttonHeight);
-    okButton.setInteractive(interactiveRect, Phaser.Geom.Rectangle.Contains);
-    // ✅ FIXED: Text positioned exactly at button center 
-    // Note: UIGraphicsHelper.createButton draws button at (x, y-17), so text should be at (textX, y-17+height/2)
+    // ✅ ENHANCED: Calculate button center Y position for both OK and Cancel buttons
     const actualButtonCenterY = buttonY - 17 + buttonHeight / 2; // y - 17 + height/2
     
-    // ✅ ENHANCED: Set initial text based on selection type
-    let initialButtonText = 'SELECT CARD'; // Default for single selection
-    if (selection && selection.selectCount > 1) {
-      initialButtonText = `SELECT ${selection.selectCount} CARDS`;
-    } else if (selection && selection.selectCount === 0) {
-      initialButtonText = 'CLOSE'; // Read-only mode
-    }
+    // ✅ CONDITIONAL: Only create OK button if shouldShowOK is true
+    let okButton = null;
+    let okText = null;
     
-    const okText = scene.add.text(adjustedOkTextX, actualButtonCenterY, initialButtonText, {
-      fontSize: '16px',
-      fontFamily: 'Arial',
-      fill: '#ffffff',
-      align: 'center'
-    });
-    okText.setOrigin(0.5);
-    okText.setDepth(1503);
+    if (shouldShowOK) {
+      // ✅ ENHANCED: Set initial button color based on selection type
+      let initialButtonColor = 0x888888; // Default disabled gray for card selection
+      if (selection && selection.selectCount === 0) {
+        initialButtonColor = 0x4CAF50; // Green for read-only mode (CLOSE button)
+      }
+      
+      // ✅ ENHANCED: Create OK button with dynamic width
+      okButton = UIGraphicsHelper.createButton(scene, {
+        x: adjustedOkButtonX,
+        y: buttonY,
+        width: buttonWidth,
+        height: buttonHeight,
+        color: initialButtonColor,
+        depth: 1502,
+        isOKButton: true
+      });
+      
+      // ✅ FIXED: Store the actual button position for color updates
+      okButton._actualButtonX = adjustedOkButtonX;
+      
+      // ✅ FIXED: Ensure interactive area matches button position exactly
+      const interactiveRect = new Phaser.Geom.Rectangle(adjustedOkButtonX, buttonY - 17, buttonWidth, buttonHeight);
+      okButton.setInteractive(interactiveRect, Phaser.Geom.Rectangle.Contains);
+      
+      // ✅ ENHANCED: Set initial text based on selection type
+      let initialButtonText = 'SELECT CARD'; // Default for single selection
+      if (selection && selection.selectCount > 1) {
+        initialButtonText = `SELECT ${selection.selectCount} CARDS`;
+      } else if (selection && selection.selectCount === 0) {
+        initialButtonText = 'CLOSE'; // Read-only mode
+      }
+      
+      okText = scene.add.text(adjustedOkTextX, actualButtonCenterY, initialButtonText, {
+        fontSize: '16px',
+        fontFamily: 'Arial',
+        fill: '#ffffff',
+        align: 'center'
+      });
+      okText.setOrigin(0.5);
+      okText.setDepth(1503);
+    }
 
+    // ✅ ENHANCED: Store button references (may be null if not created)
     dialogElements.buttonSection.okButton = okButton;
     dialogElements.buttonSection.okText = okText;
 
@@ -1245,9 +1271,9 @@ export default class DialogUIManager {
       // ✅ ENHANCED: Use same width as OK button for perfect alignment
       const cancelButtonWidth = buttonWidth; // Same width as OK button for better alignment
       
-      // ✅ ENHANCED: Position cancel button based on OK button width and position
-      const cancelButtonX = adjustedOkButtonX + buttonWidth + 20; // Use the same 20px gap as defined above
-      const cancelTextX = cancelButtonX + cancelButtonWidth / 2;
+      // ✅ ENHANCED: Use pre-calculated positions from layout logic above
+      const cancelButtonX = adjustedCancelButtonX;
+      const cancelTextX = adjustedCancelTextX;
       
       const cancelButton = UIGraphicsHelper.createButton(scene, {
         x: cancelButtonX,
@@ -1284,8 +1310,10 @@ export default class DialogUIManager {
       dialogElements.buttonSection.cancelText = null;
     }
 
-    // Set up OK button events
-    this._setupOKButtonEvents(scene, selectionId, selection, selectionState, dialogElements, onConfirm);
+    // Set up OK button events only if OK button exists
+    if (shouldShowOK) {
+      this._setupOKButtonEvents(scene, selectionId, selection, selectionState, dialogElements, onConfirm);
+    }
   }
 
   /**

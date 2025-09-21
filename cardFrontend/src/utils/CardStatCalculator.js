@@ -120,10 +120,6 @@ export default class CardStatCalculator {
       const pilotCurrentHP = pilotCard.fullCardData.currentHP || 0;
       const pilotModifyHP = pilotCard.fullCardData.modifyHP || 0;
       
-      totalAP += pilotCurrentAP + pilotModifyAP;
-      totalHP += pilotCurrentHP + pilotModifyHP;
-      
-      
       totalCurrentAP += pilotCurrentAP;
       totalCurrentHP += pilotCurrentHP;
       totalModifyAP += pilotModifyAP;
