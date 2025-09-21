@@ -479,6 +479,7 @@ CardFactory.createHandCard(scene, cardData, x, y, options);     // Hand cards
 - ✅ Uses `CardStatCalculator.calculateTotalInSlot()` for proper total calculation when values not provided
 - ✅ Eliminated duplicate card creation patterns across 3 methods (`_createCardDisplay`, `_createSlotTargetDisplay`, `_createFallbackCardImage`)
 - ✅ **Fixed cardStatusText (Rested/Active) display**: Dialog cards now properly show current rested status via `CardFactory._extractRestedStatus()`
+- ✅ **Fixed highlight frame consistency**: Selection highlights now use consistent line width (3px), corner radius (8px), and padding (2px) with hover highlights
 
 #### **Migration Path for Future Development**
 
@@ -1004,3 +1005,11 @@ const cardComponent = new Card(scene, cardX, cardsY, originalCard, options);
 2. **UI Interaction Testing**: Verify button hover/click behaviors
 3. **Label Visibility Testing**: Check total AP/HP display in different scenarios
 4. **Error Handling**: Test with malformed or missing data
+5. **Highlight Consistency**: Verify hover and selection highlights use consistent visual parameters
+
+### Highlight Frame Troubleshooting
+**Problem**: Inconsistent highlight frames between hover and selection states
+- **Check**: Line width, corner radius, padding, and alpha values match between hover and selection highlights
+- **Fix**: Use consistent parameters across `CardInteractionHelper` and `UIGraphicsHelper.createHoverEffect()`
+- **Standards**: Line width: 3px, Corner radius: 8px, Padding: 2px
+- **Intentional Differences**: Selection alpha: 1.0 (100%), Hover alpha: 0.8 (80%); Selection depth: 1506, Hover depth: 1505

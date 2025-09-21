@@ -1082,11 +1082,11 @@ export default class DialogUIManager {
       width: highlightWidth,
       height: highlightHeight,
       color: 0x00ff00,
-      lineWidth: 4,
-      alpha: 1.0, // Selection highlight is fully visible
-      radius: 10,
-      depth: 1506,
-      padding: 0 // No extra padding, already included in dimensions
+      lineWidth: 3, // ✅ FIXED: Match hover highlight line width
+      alpha: 1.0, // Selection highlight is fully visible (intentionally different from hover)
+      radius: 8, // ✅ FIXED: Match hover highlight corner radius
+      depth: 1506, // Keep higher depth for selection (intentionally different)
+      padding: 2 // ✅ FIXED: Match hover highlight padding
     });
 
     // Set fully visible for selection highlight (not animated like hover)
