@@ -307,9 +307,9 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
 
   updateCardStatus(isRested) {
     if(isRested){
-      this.cardStatusText.setText("rested");
+      this.cardStatusText.setText("Rested");
     }else{
-      this.cardStatusText.setText("active");
+      this.cardStatusText.setText("Active");
     }
   }
 
@@ -327,9 +327,10 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
    * @param {number} totalAP - Total AP value including effects
    * @param {number} totalHP - Total HP value including effects
    */
-  updateTotalStats(totalAP, totalHP) {
+  updateTotalStats(totalAP, totalHP , isRested) {
     this.updateTotalAP(totalAP);
     this.updateTotalHP(totalHP);
+    this.updateCardStatus(isRested);
   }
   
   /**

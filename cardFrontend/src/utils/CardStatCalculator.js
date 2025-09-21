@@ -91,7 +91,7 @@ export default class CardStatCalculator {
   static calculateTotalInSlot(unitCard, pilotCard) {
     let totalAP = 0;
     let totalHP = 0;
-    
+    console.log("asdadsdsadssdds 1111", JSON.stringify(unitCard.fullCardData))
     // Add unit card stats if unit exists
     if (unitCard && unitCard.fullCardData) {
       const unitCurrentAP = unitCard.fullCardData.currentAP || 0;

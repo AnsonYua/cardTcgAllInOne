@@ -726,11 +726,10 @@ export default class Card extends Phaser.GameObjects.Container {
    * @param {number} totalAP - Total AP value including all effects and modifications
    * @param {number} totalHP - Total HP value including all effects and modifications
    */
-  updateTotalLabels(totalAP, totalHP) {
+  updateTotalLabels(totalAP, totalHP , isRested) {
     console.log(`[Card] updateTotalLabels called: AP=${totalAP}, HP=${totalHP} for card:`, this.cardData?.id);
     if (this.powerOverlay && this.powerOverlay.updateTotalStats) {
-      this.powerOverlay.updateTotalStats(totalAP, totalHP);
-      this.powerOverlay.updateCardStatus(this.fullCardData?.isRested);
+      this.powerOverlay.updateTotalStats(totalAP, totalHP,isRested);
       console.log(`[Card] Total labels updated successfully for card:`, this.cardData?.id);
     } else {
       console.warn(`[Card] Cannot update total labels - PowerOverlay not available for card:`, this.cardData?.id);

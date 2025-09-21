@@ -1,5 +1,5 @@
 import Card from './Card.js';
-
+import CardStatCalculator from '../utils/CardStatCalculator.js';
 export default class BaseAndShieldAreaManager {
   constructor(scene, gameStateManager) {
     this.scene = scene;
@@ -144,20 +144,7 @@ export default class BaseAndShieldAreaManager {
       zoneType: 'base',
       isPlaced: true
     };
-    
-    // Add hover preview functionality
-    card.on('pointerover', () => {
-      if (this.scene.showCardPreview) {
-        this.scene.showCardPreview(cardData);
-      }
-    });
-    
-    card.on('pointerout', () => {
-      if (this.scene.hideCardPreview) {
-        this.scene.hideCardPreview();
-      }
-    });
-    
+   
     // Update total labels for base cards
     this.updateBaseCardTotalLabels(card);
     
@@ -174,11 +161,6 @@ export default class BaseAndShieldAreaManager {
       console.warn('[BaseAndShieldAreaManager] updateExistingBaseCard called with invalid parameters');
       return;
     }
-    
-    // Calculate previous total AP/HP values including modifications
-    const previousTotalAP = this.calculateBaseTotalAP(card.fullCardData);
-    const previousTotalHP = this.calculateBaseTotalHP(card.fullCardData);
-    
     // Update the card's full data with new information
     card.fullCardData = { ...card.fullCardData, ...cardData };
     
@@ -187,28 +169,18 @@ export default class BaseAndShieldAreaManager {
       card.cardData = { ...card.cardData, ...cardData.cardData };
     }
     
-    // Calculate new total AP/HP values including modifications
-    const newTotalAP = this.calculateBaseTotalAP(card.fullCardData);
-    const newTotalHP = this.calculateBaseTotalHP(card.fullCardData);
-    
-    const statsChanged = (previousTotalAP !== newTotalAP) || (previousTotalHP !== newTotalHP);
-    
-    if (statsChanged) {
-      console.log(`[BaseAndShieldAreaManager] Total stats changed for base card ${card.cardData?.id}: Total AP ${previousTotalAP} → ${newTotalAP}, Total HP ${previousTotalHP} → ${newTotalHP}`);
-      
-      // Update power overlay if the card has one
-      if (card.powerOverlay && card.updatePowerOverlay) {
-        try {
-          card.updatePowerOverlay();
-          console.log(`[BaseAndShieldAreaManager] Power overlay updated for base card ${card.cardData?.id}`);
-        } catch (error) {
-          console.error(`[BaseAndShieldAreaManager] Failed to update power overlay for base card ${card.cardData?.id}:`, error);
-        }
+    // Update power overlay if the card has one
+    if (card.powerOverlay && card.updatePowerOverlay) {
+      try {
+        card.updatePowerOverlay();
+        console.log(`[BaseAndShieldAreaManager] Power overlay updated for base card ${card.cardData?.id}`);
+      } catch (error) {
+        console.error(`[BaseAndShieldAreaManager] Failed to update power overlay for base card ${card.cardData?.id}:`, error);
       }
-      
-      // Update total labels with new calculated values
-      this.updateBaseCardTotalLabels(card);
     }
+    // Update total labels with new calculated values
+    this.updateBaseCardTotalLabels(card);
+    
   }
 
   /**
@@ -268,15 +240,14 @@ export default class BaseAndShieldAreaManager {
       return;
     }
     
-    // Calculate total AP and HP for base card using the same methods as update logic
-    const totalAP = this.calculateBaseTotalAP(card.fullCardData);
-    const totalHP = this.calculateBaseTotalHP(card.fullCardData);
-    
+    console.log("dafadsdsf 111 ",JSON.stringify(card.fullCardData));
+    const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(card, null);
+          
     console.log(`[BaseAndShieldAreaManager] Updating base card total labels: AP=${totalAP}, HP=${totalHP} for card:`, card.cardData?.id);
     
     // Update total labels using the Card's updateTotalLabels method
     if (card.updateTotalLabels) {
-      card.updateTotalLabels(totalAP, totalHP);
+      card.updateTotalLabels(totalAP, totalHP,card.fullCardData.isRested);
     } else {
       console.warn('[BaseAndShieldAreaManager] Card does not have updateTotalLabels method:', card.cardData?.id);
     }

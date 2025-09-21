@@ -25,54 +25,35 @@ export default class CardPreviewManager {
       return;
     }
 
-    // Check if this is slot preview data (unit + pilot combination)
-    if (cardData.isSlotPreview) {
-      if (cardData.pilot) {
-        console.log("Showing slot preview with pilot:", cardData.cardData?.id, "+", cardData.pilot.cardData?.id, "for slot:", cardData.slotName);
-        // Create mock Card objects to reuse existing showDualCardPreview method
-        cardData.cardData.isRested = cardData.cardData.isRested;
-        const mockUnitCard = {
-            cardData: cardData.cardData,
-            getCardFullData: () => cardData.cardData
-        };
+    if (cardData.pilot) {
+      console.log("Showing slot preview with pilot:", cardData.cardData?.id, "+", cardData.pilot.cardData?.id, "for slot:", cardData.slotName);
+      // Create mock Card objects to reuse existing showDualCardPreview method
+      cardData.cardData.isRested = cardData.cardData.isRested;
+      const mockUnitCard = {
+          cardData: cardData.cardData,
+          getCardFullData: () => cardData.cardData
+      };
 
-        cardData.pilot.cardData.isRested = cardData.cardData.isRested;
-        const mockPilotCard = {
-            cardData: cardData.pilot.cardData,
-            getCardFullData: () => cardData.pilot.cardData
-        };
-        this.showDualCardPreview(mockUnitCard, mockPilotCard);
-      } else {
-        console.log("Showing slot preview (unit only):", cardData.cardData?.id, "for slot:", cardData.slotName);
-        // Use the regular single card preview logic for unit-only slots
-        const displayCardData = cardData.cardData;
-        this.previewCard = this._createPreviewCard(displayCardData, this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y, 2000);
-        
-        // Update total labels for unit-only slot preview
-        if (this.previewCard && this.previewCard.updateTotalLabels) {
-          // Create mock unit card for calculation
-          const mockUnitCard = {
-            fullCardData: cardData
-          };
-          
-          // Calculate total stats (unit only, no pilot)
-          const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(mockUnitCard, null);
-          
-          this.previewCard.updateTotalLabels(totalAP, totalHP);
-          console.log(`[CardPreviewManager] Updated unit-only slot preview total labels: AP=${totalAP}, HP=${totalHP}`);
-        }
-        
-        // Show total labels since this is a slot preview
-        if (this.previewCard.powerOverlay && this.previewCard.powerOverlay.setTotalLabelsVisibility) {
-          this.previewCard.powerOverlay.setTotalLabelsVisibility('slot1');
-        }
+      cardData.pilot.cardData.isRested = cardData.cardData.isRested;
+      const mockPilotCard = {
+          cardData: cardData.pilot.cardData,
+          getCardFullData: () => cardData.pilot.cardData
+      };
+      this.showDualCardPreview(mockUnitCard, mockPilotCard);
+    } else {
+      console.log("Showing slot preview (unit only):", cardData?.id);
+      // Use the regular single card preview logic for unit-only slots
+     
+      const displayCardData = cardData;
+      this.previewCard = this._createPreviewCard(displayCardData, this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y, 2000);
+      if (this.previewCard.powerOverlay && this.previewCard.powerOverlay.setTotalLabelsVisibility) {
+        this.previewCard.powerOverlay.setTotalLabelsVisibility('slot1');
       }
-      return;
+      this.previewCard.fullCardData = cardData;
+      const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(this.previewCard, null);
+      this.previewCard.updateTotalLabels(totalAP, totalHP , cardData.isRested );
+      console.log("dasdfadsfasdfasduodate a ", totalHP);
     }
-
-    // Regular single card preview
-    const displayCardData = cardData;
-    this.previewCard = this._createPreviewCard(displayCardData, this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y, 2000);
   }
 
   /**
@@ -90,6 +71,8 @@ export default class CardPreviewManager {
    * @param {Card} hoveredCard - The card being hovered over
    */
   showSlotCardPreview(hoveredCard) {
+    console.log("adsfadsdsf ",JSON.stringify(hoveredCard.fullCardData))
+    
     // First, hide any existing preview
     this.hideSlotCardPreview();
 
@@ -103,7 +86,7 @@ export default class CardPreviewManager {
     // Check if SlotAreaManager exists
     if (!this.scene.slotAreaManager) {
       console.warn('[showSlotCardPreview] SlotAreaManager not available, using fallback preview');
-      this.showCardPreview(hoveredCard.getCardData());
+      this.showCardPreview(hoveredCard.getCardFullData());
       return;
     }
 
@@ -117,7 +100,7 @@ export default class CardPreviewManager {
       this.showCardPreview(hoveredCard.getCardFullData());  // Use full data with current stats
       return;
     }
-
+    
     // Get both unit and pilot cards from the slot
     const slotCards = this.scene.slotAreaManager.getSlotCards(slotInfo.playerType, slotInfo.slotName);
     console.log('[showSlotCardPreview] Slot cards:', slotInfo.slotName, slotCards);
@@ -191,8 +174,7 @@ export default class CardPreviewManager {
       // Update pilot total stats to current values (representing combined unit+pilot stats)
       if (this.previewPilotCard.powerOverlay.updateTotalStats) {
         const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(unitCard, pilotCard);
-        this.previewPilotCard.powerOverlay.updateTotalStats(totalAP, totalHP);
-        this.previewPilotCard.powerOverlay.updateCardStatus(unitCard.isRested);
+        this.previewPilotCard.powerOverlay.updateTotalStats(totalAP, totalHP,unitCard.isRested);
       }
       
       console.log('[CardPreviewManager] Showing total labels on pilot preview');
@@ -201,55 +183,6 @@ export default class CardPreviewManager {
     console.log('Showing dual preview:', unitCard.cardData?.id, '+', pilotCard.cardData?.id);
   }
 
-  /**
-   * Show slot preview with unit + pilot combination from selection dialog
-   * @param {Object} slotPreviewData - Slot preview data with unit and pilot info
-   */
-  showSlotPreviewWithPilot(slotPreviewData) {
-    if (!this.scene.cardPreviewZone) return;
-
-    const unitCardData = slotPreviewData.cardData;
-    const pilotCardData = slotPreviewData.pilot.cardData;
-
-    // Create unit preview (on top)
-    this.previewCard = new Card(this.scene, this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y, unitCardData, {
-      scale: 3.5,
-      gameStateManager: this.gameStateManager,
-      usePreview: false,
-      handleOutside: true // Disable selection for preview cards
-    });
-    this.previewCard.setDepth(2000);
-
-    // Create pilot preview (145px below unit - same as existing dual preview)
-    this.previewPilotCard = new Card(this.scene, this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y + 145, pilotCardData, {
-      scale: 3.5,
-      gameStateManager: this.gameStateManager,
-      usePreview: false,
-      handleOutside: true // Disable selection for preview cards
-    });
-    this.previewPilotCard.setDepth(1999);
-
-    // Apply total labels visibility rule: only pilot shows totals when both present
-    if (this.previewCard.powerOverlay && this.previewCard.powerOverlay.setTotalLabelsVisibility) {
-      this.previewCard.powerOverlay.setTotalLabelsVisibility('hand'); // Hide unit total labels
-      console.log('[CardPreviewManager] Hiding total labels on unit preview with pilot (selection dialog)');
-    }
-    
-    if (this.previewPilotCard.powerOverlay && this.previewPilotCard.powerOverlay.setTotalLabelsVisibility) {
-      this.previewPilotCard.powerOverlay.setTotalLabelsVisibility('slot1'); // Show pilot total labels
-      
-      // Update pilot total stats to current values
-      if (this.previewPilotCard.powerOverlay.updateTotalStats) {
-        const totalAP = CardStatCalculator.calculateTotalAP(pilotCardData);
-        const totalHP = CardStatCalculator.calculateTotalHP(pilotCardData);
-        this.previewPilotCard.powerOverlay.updateTotalStats(totalAP, totalHP);
-      }
-      
-      console.log('[CardPreviewManager] Showing total labels on pilot preview (selection dialog)');
-    }
-
-    console.log('Showing slot preview from dialog:', unitCardData?.id, '+', pilotCardData?.id, 'for slot:', slotPreviewData.slotName);
-  }
 
   /**
    * Creates a preview card component
@@ -271,15 +204,7 @@ export default class CardPreviewManager {
     
     // Show total labels on preview cards (single card preview)
     if (previewCard.powerOverlay && previewCard.powerOverlay.setTotalLabelsVisibility) {
-      previewCard.powerOverlay.setTotalLabelsVisibility('slot1'); // Show total labels
-      
-      // Update total stats to current values if available
-      if (previewCard.updateTotalLabels && cardData) {
-        const totalAP = CardStatCalculator.calculateTotalAP(cardData);
-        const totalHP = CardStatCalculator.calculateTotalHP(cardData);
-        previewCard.updateTotalLabels(totalAP, totalHP);
-      }
-      
+      previewCard.powerOverlay.setTotalLabelsVisibility('slot1'); // Show total labels    
       console.log('[CardPreviewManager] Showing total labels on single preview card');
     }
     

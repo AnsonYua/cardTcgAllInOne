@@ -60,73 +60,63 @@ export default class SlotAreaManager {
       return;
     }
 
-    // Update unit card
-    this.updateUnitCard(cardArray[slotName], slotData?.unit, slotPosition, playerType, slotName);
-    
-    // Update pilot card (positioned 25px below unit)
-    this.updatePilotCard(cardArray[slotName], slotData?.pilot, slotPosition, playerType, slotName);
-
-    // Update slot total labels (both values and visibility)
-    this.updateSlotTotalLabels(playerType, slotName);
+    // ✅ OPTIMIZED: Single comprehensive slot update
+    this.updateSlotComprehensive(playerType, slotName, slotData, slotPosition);
   }
 
-  updateUnitCard(slotCards, unitData, slotPosition, playerType, slotName) {
-    if (unitData) {
+  // ✅ OPTIMIZED: Comprehensive slot update (replaces updateUnitCard + updatePilotCard + updateSlotTotalLabels)
+  updateSlotComprehensive(playerType, slotName, slotData, slotPosition) {
+    const cardArray = playerType === 'player' ? this.playerSlotCards : this.opponentSlotCards;
+    const slotCards = cardArray[slotName];
+    
+    // ===== UNIT CARD MANAGEMENT =====
+    if (slotData?.unit) {
       // Slot has unit - create or update card
       if (!slotCards.unit) {
-        console.log(`Creating ${playerType} ${slotName} unit card:`, unitData.cardId);
-        const card = this.createSlotCard(unitData, slotPosition.x, slotPosition.y, slotName, 'unit', playerType);
+        console.log(`Creating ${playerType} ${slotName} unit card:`, slotData.unit.cardId);
+        const card = this.createSlotCard(slotData.unit, slotPosition.x, slotPosition.y, slotName, 'unit', playerType);
         slotCards.unit = card;
-        
-        // Update total labels visibility for the entire slot
-        this.updateSlotTotalLabelsVisibility(playerType, slotName);
       } else {
         console.log(`Updating existing ${playerType} ${slotName} unit card`);
-        this.updateExistingSlotCard(slotCards.unit, unitData);
+        // Data update will be handled by updateSlotTotalLabels()
       }
     } else {
       // No unit - remove card if exists
       if (slotCards.unit) {
         console.log(`Removing ${playerType} ${slotName} unit card - slot now empty`);
-        
         slotCards.unit.destroy();
         slotCards.unit = null;
-        
-        // Update total labels visibility for the entire slot after removal
-        this.updateSlotTotalLabelsVisibility(playerType, slotName);
       }
     }
-  }
-
-  updatePilotCard(slotCards, pilotData, slotPosition, playerType, slotName) {
-    if (pilotData) {
+    
+    // ===== PILOT CARD MANAGEMENT =====
+    if (slotData?.pilot) {
       // Slot has pilot - create or update card (positioned 25px below unit)
       const pilotY = slotPosition.y + 42; // Position pilot 25px below unit
-      console.log("pilotData ", JSON.stringify(pilotData))
+      console.log("pilotData ", JSON.stringify(slotData.pilot))
       if (!slotCards.pilot) {
-        console.log(`Creating ${playerType} ${slotName} pilot card:`, pilotData.cardId);
-        const card = this.createSlotCard(pilotData, slotPosition.x, pilotY, slotName, 'pilot', playerType);
+        console.log(`Creating ${playerType} ${slotName} pilot card:`, slotData.pilot.cardId);
+        const card = this.createSlotCard(slotData.pilot, slotPosition.x, pilotY, slotName, 'pilot', playerType);
         slotCards.pilot = card;
-        
-        // Update total labels visibility for the entire slot
-        this.updateSlotTotalLabelsVisibility(playerType, slotName);
       } else {
         console.log(`Updating existing ${playerType} ${slotName} pilot card`);
-        this.updateExistingSlotCard(slotCards.pilot, pilotData);
+        // Data update will be handled by updateSlotTotalLabels()
       }
     } else {
       // No pilot - remove card if exists
       if (slotCards.pilot) {
         console.log(`Removing ${playerType} ${slotName} pilot card - no pilot data`);
-        
         slotCards.pilot.destroy();
         slotCards.pilot = null;
-        
-        // Update total labels visibility for the entire slot after removal
-        this.updateSlotTotalLabelsVisibility(playerType, slotName);
       }
     }
+    
+    // ===== UNIFIED TOTAL LABELS AND DATA UPDATE (Always runs for consistency) =====
+    this.updateSlotTotalLabels(playerType, slotName, slotData?.unit, slotData?.pilot);
+    console.log(`[SlotAreaManager] ✅ Comprehensive slot update completed for ${playerType} ${slotName}`);
   }
+
+
 
   createSlotCard(cardData, x, y, slotName, cardType = 'unit', playerType = 'player') {
     try {
@@ -172,7 +162,70 @@ export default class SlotAreaManager {
     }
   }
 
-  updateExistingSlotCard(card, cardData) {
+
+
+  // ============ TOTAL LABELS MANAGEMENT ============
+
+  /**
+   * Update slot total AP and HP labels (both values and visibility)
+   * Comprehensive function that handles all slot scenarios and card data updates
+   * @param {string} playerType - 'player' or 'opponent'
+   * @param {string} slotName - slot1, slot2, etc.
+   * @param {Object} unitData - Optional unit card data to update
+   * @param {Object} pilotData - Optional pilot card data to update
+   */
+  updateSlotTotalLabels(playerType, slotName, unitData = null, pilotData = null) {
+    const slotCards = this.getSlotCards(playerType, slotName);
+    const hasUnit = slotCards.unit !== null;
+    const hasPilot = slotCards.pilot !== null;
+    
+    // ===== UPDATE CARD DATA FIRST (merged from updateExistingSlotCard) =====
+    if (hasUnit && unitData) {
+      this.updateCardData(slotCards.unit, unitData);
+    }
+    if (hasPilot && pilotData) {
+      this.updateCardData(slotCards.pilot, pilotData);
+    }
+    
+    // ===== UNIFIED TOTAL LABELS UPDATE =====
+    this.updateSlotTotalLabelsValue(slotCards, hasUnit, hasPilot, unitData, pilotData);
+    this.updateSlotTotalLabelsVisibility(playerType, slotName);
+  }
+
+  /**
+   * Update total labels for slot cards with unified logic
+   * @param {Object} slotCards - Object containing unit and pilot cards
+   * @param {boolean} hasUnit - Whether unit exists
+   * @param {boolean} hasPilot - Whether pilot exists
+   * @param {Object} unitData - Unit card data (for rested state)
+   * @param {Object} pilotData - Pilot card data (for rested state)
+   */
+  updateSlotTotalLabelsValue(slotCards, hasUnit, hasPilot, unitData, pilotData) {
+    if (hasUnit && hasPilot) {
+      // Both unit and pilot present - pilot shows combined totals
+      const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(slotCards.unit, slotCards.pilot);
+      if (slotCards.pilot.updateTotalLabels) {
+        const isRested = unitData?.isRested || slotCards.unit.fullCardData?.isRested || false;
+        slotCards.pilot.updateTotalLabels(totalAP, totalHP, isRested);
+        console.log(`[SlotAreaManager] Updated pilot total labels (combined): AP=${totalAP}, HP=${totalHP}, rested=${isRested}`);
+      }
+    } else if (hasUnit && !hasPilot) {
+      // Unit only - unit shows its own totals
+      const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(slotCards.unit, null);
+      if (slotCards.unit.updateTotalLabels) {
+        const isRested = unitData?.isRested || slotCards.unit.fullCardData?.isRested || false;
+        slotCards.unit.updateTotalLabels(totalAP, totalHP, isRested);
+        console.log(`[SlotAreaManager] Updated unit total labels (unit only): AP=${totalAP}, HP=${totalHP}, rested=${isRested}`);
+      }
+    }
+  }
+
+  /**
+   * Update individual card data (extracted from updateExistingSlotCard)
+   * @param {Card} card - Card component to update
+   * @param {Object} cardData - New card data
+   */
+  updateCardData(card, cardData) {
     // Update rested state
     if (card.setRested) {
       card.setRested(cardData.isRested || false);
@@ -180,10 +233,6 @@ export default class SlotAreaManager {
     
     // Update card data with new stats (AP/HP changes, etc.)
     if (card.fullCardData && cardData) {
-      // Calculate previous total AP/HP values including modifications
-      const previousTotalAP = CardStatCalculator.calculateTotalAP(card.fullCardData);
-      const previousTotalHP = CardStatCalculator.calculateTotalHP(card.fullCardData);
-      
       // Update the card's full data with new information
       card.fullCardData = { ...card.fullCardData, ...cardData };
       
@@ -192,72 +241,16 @@ export default class SlotAreaManager {
         card.cardData = { ...card.cardData, ...cardData.cardData };
       }
       
-      // Calculate new total AP/HP values including modifications
-      const newTotalAP = CardStatCalculator.calculateTotalAP(card.fullCardData);
-      const newTotalHP = CardStatCalculator.calculateTotalHP(card.fullCardData);
-      
-      const statsChanged = (previousTotalAP !== newTotalAP) || (previousTotalHP !== newTotalHP);
-      
-      if (statsChanged) {
-        console.log(`[SlotAreaManager] Total stats changed for card ${card.cardData?.id}: Total AP ${previousTotalAP} → ${newTotalAP}, Total HP ${previousTotalHP} → ${newTotalHP}`);
-        
-        // Update power overlay if the card has one
-        if (card.powerOverlay && card.updatePowerOverlay) {
-          try {
-            card.updatePowerOverlay();
-            console.log(`[SlotAreaManager] Power overlay updated for card ${card.cardData?.id}`);
-          } catch (error) {
-            console.error(`[SlotAreaManager] Failed to update power overlay for card ${card.cardData?.id}:`, error);
-          }
-        }
-        
-        // Update total labels with new calculated values
-        if (card.powerOverlay && card.powerOverlay.updateTotalStats) {
-          try {
-            card.powerOverlay.updateTotalStats(newTotalAP, newTotalHP);
-            console.log(`[SlotAreaManager] Total stats updated: AP=${newTotalAP}, HP=${newTotalHP} for card ${card.cardData?.id}`);
-          } catch (error) {
-            console.error(`[SlotAreaManager] Failed to update total stats for card ${card.cardData?.id}:`, error);
-          }
+      // Update power overlay if the card has one
+      if (card.powerOverlay && card.updatePowerOverlay) {
+        try {
+          card.updatePowerOverlay();
+          console.log(`[SlotAreaManager] Power overlay updated for card ${card.cardData?.id}`);
+        } catch (error) {
+          console.error(`[SlotAreaManager] Failed to update power overlay for card ${card.cardData?.id}:`, error);
         }
       }
     }
-  }
-
-
-  // ============ TOTAL LABELS MANAGEMENT ============
-
-  /**
-   * Update slot total AP and HP labels (both values and visibility)
-   * Comprehensive function that handles all slot scenarios
-   * @param {string} playerType - 'player' or 'opponent'
-   * @param {string} slotName - slot1, slot2, etc.
-   */
-  updateSlotTotalLabels(playerType, slotName) {
-    const slotCards = this.getSlotCards(playerType, slotName);
-    const hasUnit = slotCards.unit !== null;
-    const hasPilot = slotCards.pilot !== null;
-    
-    // Update total label values based on slot contents
-    if (hasUnit && hasPilot) {
-      // Both unit and pilot present - pilot shows combined totals
-      const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(slotCards.unit, slotCards.pilot);
-      if (slotCards.pilot.updateTotalLabels) {
-        slotCards.pilot.updateTotalLabels(totalAP, totalHP);
-        slotCards.pilot.powerOverlay.updateCardStatus(slotCards.unit.fullCardData.isRested);
-        console.log(`[SlotAreaManager] Updated pilot total labels (combined): AP=${totalAP}, HP=${totalHP}`);
-      }
-    } else if (hasUnit && !hasPilot) {
-      // Unit only - unit shows its own totals
-      const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(slotCards.unit, null);
-      if (slotCards.unit.updateTotalLabels) {
-        slotCards.unit.updateTotalLabels(totalAP, totalHP);
-        console.log(`[SlotAreaManager] Updated unit total labels (unit only): AP=${totalAP}, HP=${totalHP}`);
-      }
-    }
-    
-    // Update total labels visibility for the slot
-    this.updateSlotTotalLabelsVisibility(playerType, slotName);
   }
 
   /**

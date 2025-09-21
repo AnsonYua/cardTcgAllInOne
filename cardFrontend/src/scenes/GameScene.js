@@ -607,7 +607,7 @@ export default class GameScene extends Phaser.Scene {
     this.cardPreviewManager.hideCardPreview();
   }
 
-  // showSlotPreviewWithPilot method moved to CardPreviewManager
+  //  method moved to CardPreviewManager
 
   /**
    * Show enhanced preview for slot cards - displays both unit and pilot if present
@@ -629,9 +629,6 @@ export default class GameScene extends Phaser.Scene {
     this.cardPreviewManager.hideSlotCardPreview();
   }
 
-  showSlotPreviewWithPilot(slotPreviewData) {
-    this.cardPreviewManager.showSlotPreviewWithPilot(slotPreviewData);
-  }
 
   showDualCardPreview(unitCard, pilotCard) {
     this.cardPreviewManager.showDualCardPreview(unitCard, pilotCard);
