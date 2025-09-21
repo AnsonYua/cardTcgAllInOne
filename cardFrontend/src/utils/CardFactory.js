@@ -82,6 +82,9 @@ export default class CardFactory {
     // Update total labels for base cards
     card.updateCalculatedTotalLabels(null, cardData.isRested);
     
+    // ✅ FIX: Show total labels on base cards (was missing after refactoring)
+    this._setupTotalLabelsVisibility(card, 'base');
+    
     return card;
   }
   

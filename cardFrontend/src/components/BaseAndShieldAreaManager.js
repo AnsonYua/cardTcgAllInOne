@@ -157,9 +157,15 @@ export default class BaseAndShieldAreaManager {
         console.error(`[BaseAndShieldAreaManager] Failed to update power overlay for base card ${card.cardData?.id}:`, error);
       }
     }
+    
     // Update total labels with new calculated values
     card.updateCalculatedTotalLabels(null, cardData.isRested);
     
+    // ✅ FIX: Ensure total labels are visible for updated base cards
+    if (card.powerOverlay && card.powerOverlay.setTotalLabelsVisibility) {
+      card.powerOverlay.setTotalLabelsVisibility('base');
+      console.log(`[BaseAndShieldAreaManager] Set total labels visibility for updated base card:`, card.cardData?.id);
+    }
   }
 
 

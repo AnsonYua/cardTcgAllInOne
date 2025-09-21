@@ -148,6 +148,10 @@ export default class ActionButtonManager {
             
             // Add click handler with effect data
             button.on('pointerdown', () => {
+                // ✅ FEATURE: Hide all action buttons after any button is clicked
+                this.hide();
+                
+                // Handle the action
                 this.gameScene.handleActionButtonClick(actionConfig.action, buttonData.effectData);
             });
             
