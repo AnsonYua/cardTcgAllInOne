@@ -731,11 +731,15 @@ export default class DialogUIManager {
       // ✅ Use CardFactory for consistent dialog card creation
       const cardComponent = CardFactory.createDialogCard(scene, cardDataForDisplay, cardX, cardsY, {
         dialogScale: dialogScale,
-        // ✅ FIXED: Show total labels for all slot cards (type="slot"), including unit-only slots
+        // ✅ CENTRALIZED: Use CardStatCalculator for consistent total calculation
         totalAP: (originalCard && originalCard.type === "slot" && originalCard.totalAP !== undefined) ? 
-          (originalCard.totalAP || cardDataForDisplay.currentAP || cardDataForDisplay.cardData?.ap || 0) : undefined,
+          originalCard.totalAP : 
+          (originalCard && originalCard.type === "slot") ? 
+            CardStatCalculator.calculateTotalAP(cardDataForDisplay) : undefined,
         totalHP: (originalCard && originalCard.type === "slot" && originalCard.totalHP !== undefined) ? 
-          (originalCard.totalHP || cardDataForDisplay.currentHP || cardDataForDisplay.cardData?.hp || 0) : undefined
+          originalCard.totalHP : 
+          (originalCard && originalCard.type === "slot") ? 
+            CardStatCalculator.calculateTotalHP(cardDataForDisplay) : undefined
       });
 
       return cardComponent;
