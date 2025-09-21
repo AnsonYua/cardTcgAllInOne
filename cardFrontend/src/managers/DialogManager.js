@@ -147,6 +147,17 @@ export default class DialogManager {
       this.scene,
       (selectedId, selectedCards, elements) => {
         this.handleCardSelectionComplete(dialogId, selectionId, selectedCards, onConfirm);
+      },
+      // ✅ SIMPLIFIED: Optional onCancel callback parameter
+      (cancelInfo) => {
+        console.log('DialogManager: Card selection dialog cancelled:', cancelInfo);
+        
+        // Close the dialog
+        this.closeDialog(dialogId);
+        
+        // Optional: Add any specific cancel handling logic here
+        // For example, analytics tracking, user feedback, state reset, etc.
+        this.handleCardSelectionCancelled(dialogId, selectionId, cancelInfo);
       }
     );
 
@@ -370,9 +381,10 @@ export default class DialogManager {
    * Show a burst effect confirmation dialog using select dialog style
    * @param {Object} event - BURST_EFFECT_CHOICE event from processingQueue
    * @param {Function} onConfirm - Callback when user confirms (true/false)
+   * @param {Function} onCancel - Optional callback when user cancels (receives cancelInfo)
    * @returns {string} Dialog ID
    */
-  showBurstEffectDialog(event, onConfirm) {
+  showBurstEffectDialog(event, onConfirm, onCancel = null) {
     console.log('DialogManager: Showing burst effect confirmation dialog:', event);
 
     const dialogId = `burst_effect_${this.nextDialogId++}`;
@@ -401,34 +413,26 @@ export default class DialogManager {
         // Handle burst effect activation - directly call API
         console.log('DialogManager: Burst effect ACTIVATE clicked:', selectedCards);
 
-        // Close the current dialog
-        this.closeDialog(dialogId);
-
+        // DialogUIManager handles dialog cleanup automatically
         // Directly activate the burst effect (call onConfirm with true)
         console.log('DialogManager: Activating burst effect directly');
         if (onConfirm) onConfirm(true);
+      },
+      // ✅ SIMPLIFIED: Use onCancel parameter instead of event listener
+      (cancelInfo) => {
+        console.log('DialogManager: Burst effect SKIP clicked via onCancel:', cancelInfo);
+
+        // DialogUIManager handles dialog cleanup automatically
+        // Call the onCancel callback if provided, otherwise default to onConfirm(false)
+        if (onCancel) {
+          console.log('DialogManager: Calling onCancel with cancelInfo');
+          onCancel(cancelInfo);
+        } else {
+          console.log('DialogManager: No onCancel provided, falling back to onConfirm(false)');
+          if (onConfirm) onConfirm(false);
+        }
       }
     );
-
-    // Handle SKIP button (cancel action) - listen for dialog-cancelled event
-    const handleSkip = (eventSelectionId) => {
-      if (eventSelectionId === burstSelection.selectionId) {
-        console.log('DialogManager: Burst effect SKIP clicked');
-
-        // Close the current dialog  
-        this.closeDialog(dialogId);
-
-        // Skip the burst effect (call onConfirm with false)
-        console.log('DialogManager: Skipping burst effect');
-        if (onConfirm) onConfirm(false);
-
-        // Remove the event listener
-        this.scene.events.off('dialog-cancelled', handleSkip);
-      }
-    };
-
-    // Listen for cancel events (SKIP button)
-    this.scene.events.on('dialog-cancelled', handleSkip);
 
     // Override the dialog styling to add orange burst effect theme
     this.applyBurstStyling(dialogInterface);

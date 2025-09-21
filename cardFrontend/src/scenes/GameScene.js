@@ -945,25 +945,44 @@ export default class GameScene extends Phaser.Scene {
     console.log('GameScene: Showing burst effect dialog for event:', event);
     
     // Use DialogManager to show burst effect dialog
-    this.dialogManager.showBurstEffectDialog(event, async (confirmed) => {
-      console.log(`GameScene: User ${confirmed ? 'confirmed' : 'declined'} burst effect:`, event.id);
-      
-      try {
-        const gameState = this.gameStateManager.getGameState();
+    this.dialogManager.showBurstEffectDialog(
+      event, 
+      async (confirmed) => {
+        console.log(`GameScene: User ${confirmed ? 'confirmed' : 'declined'} burst effect:`, event.id);
         
-        // Call API to confirm/decline the burst effect
-        const result = await this.gameApiService.confirmBurstChoice(event.id, confirmed);
-        
-        if (result.gameEnvUpdated) {
-          // Set scenario flag for hand update
-          this.isSetScenoria = true;
-          this.updateGameState();
+        try {
+          const gameState = this.gameStateManager.getGameState();
+          
+          // Call API to confirm/decline the burst effect
+          const result = await this.gameApiService.confirmBurstChoice(event.id, confirmed);
+          
+          if (result.gameEnvUpdated) {
+            // Set scenario flag for hand update
+            this.isSetScenoria = true;
+            this.updateGameState();
+          }
+          
+        } catch (error) {
+          console.error('Failed to confirm burst choice:', error);
         }
+      },
+      // ✅ onCancel callback - placeholder for custom cancellation logic
+      (cancelInfo) => {
+        console.log('GameScene: Burst effect dialog cancelled:', cancelInfo);
         
-      } catch (error) {
-        console.error('Failed to confirm burst choice:', error);
+        // TODO: Add custom cancellation logic here if needed
+        // Examples:
+        // - Analytics tracking for user behavior
+        // - Custom UI feedback or animations
+        // - State cleanup or reset operations
+        // - Alternative action suggestions
+        
+        // Note: DialogUIManager already handles:
+        // - Dialog cleanup and removal
+        // - Basic cancel event emission
+        // - UI state restoration
       }
-    });
+    );
   }
 
 

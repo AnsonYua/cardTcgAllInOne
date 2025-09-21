@@ -57,14 +57,16 @@ export default class DialogUIManager {
    * CALLING PATTERN: 
    * 
    * // Using pre-resolved eligibleCards (only supported format)
-   * DialogUIManager.createCardSelectionDialog(selectionId, { eligibleCards, ... }, scene, callback);
+   * DialogUIManager.createCardSelectionDialog(selectionId, { eligibleCards, ... }, scene, onConfirm, onCancel);
    * 
    * @param {string} selectionId - Unique identifier for the selection
+   * @param {Object} selection - Selection configuration object
    * @param {Phaser.Scene} scene - Phaser scene instance
    * @param {Function} onConfirm - Callback when user confirms selection
+   * @param {Function} onCancel - Optional callback when user cancels dialog (default: null)
    * @returns {Object} Dialog interface with cleanup method
    */
-  static createCardSelectionDialog(selectionId, selection, scene, onConfirm) {
+  static createCardSelectionDialog(selectionId, selection, scene, onConfirm, onCancel = null) {
     console.log('🎮 DialogUIManager: Creating card selection dialog');
     console.log('Selection ID:', selectionId);
     console.log('Selection config1111:', JSON.stringify(selection));
@@ -129,13 +131,27 @@ export default class DialogUIManager {
     if (selection.buttons) {
       // Custom button configuration
       const buttonConfig = { buttons: selection.buttons };
-      this._createButtonSection(scene, selectionId, selection, config, selectionState, dialogElements, () => { }, onConfirm);
+      this._createButtonSection(scene, 
+        selectionId, 
+        selection, 
+        config, 
+        selectionState, 
+        dialogElements, () => { }, 
+        onConfirm, 
+        onCancel);
       updateOKButtonState = () => this._updateConfigurableButtonState(selectionState, dialogElements, buttonConfig);
     } else {
       // Default OK/Cancel buttons
-      this._createButtonSection(scene, selectionId, selection, config, selectionState, dialogElements, (state, elements) => {
-        this._updateOKButtonState(state, elements);
-      }, onConfirm);
+      this._createButtonSection(scene, 
+        selectionId, 
+        selection, 
+        config, 
+        selectionState, 
+        dialogElements, (state, elements) => {
+          this._updateOKButtonState(state, elements);
+        }, 
+        onConfirm, 
+        onCancel);
       updateOKButtonState = () => this._updateOKButtonState(selectionState, dialogElements);
     }
 
@@ -1111,7 +1127,7 @@ export default class DialogUIManager {
    * Create button section
    * @private
    */
-  static _createButtonSection(scene, selectionId, selection, config, selectionState, dialogElements, updateOKButtonState, onConfirm) {
+  static _createButtonSection(scene, selectionId, selection, config, selectionState, dialogElements, updateOKButtonState, onConfirm, onCancel) {
     dialogElements.buttonSection = {};
 
     // Create OK and Cancel buttons
@@ -1166,7 +1182,7 @@ export default class DialogUIManager {
 
     // Set up button events
     this._setupOKButtonEvents(scene, selectionId, selection, selectionState, dialogElements, onConfirm);
-    this._setupCancelButtonEvents(scene, dialogElements);
+    this._setupCancelButtonEvents(scene, selectionId, dialogElements, onCancel);
   }
 
   /**
@@ -1201,7 +1217,7 @@ export default class DialogUIManager {
    * Setup Cancel button events
    * @private
    */
-  static _setupCancelButtonEvents(scene, dialogElements) {
+  static _setupCancelButtonEvents(scene, selectionId, dialogElements, onCancel) {
     const cancelButton = dialogElements.buttonSection.cancelButton;
 
     cancelButton.on('pointerover', () => {
@@ -1215,9 +1231,22 @@ export default class DialogUIManager {
     });
 
     cancelButton.on('pointerdown', () => {
+      // ✅ ENHANCED: Call dedicated onCancel callback if provided
+      if (onCancel) {
+        console.log('DialogUIManager: Calling dedicated cancel callback');
+        onCancel({
+          reason: 'user_cancelled',
+          selectionId: selectionId,
+          timestamp: Date.now(),
+          dialogType: 'card_selection'
+        });
+      }
+      
       this._cleanupDialog(scene, dialogElements);
       this._enableMainGameCardInteractions(scene);
-      scene.events.emit('dialog-cancelled');
+      
+      // Still emit the original event for backward compatibility
+      scene.events.emit('dialog-cancelled', selectionId);
     });
   }
 
