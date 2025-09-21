@@ -385,6 +385,123 @@ gameState.gameEnv.players.playerId_1.zones.slot1 = {
 - **Caching System**: Resource caching with hit tracking and memory management
 - **Batch Loading**: Efficient parallel loading of card images with progress tracking
 
+### Card System Refactoring - Code Deduplication (2025)
+
+**Problem Solved**: Eliminated significant code duplication across card management components.
+
+#### **1. Total Labels Calculation Duplication (7 occurrences eliminated)**
+
+**Before**: Manual `CardStatCalculator.calculateTotalInSlot()` + `updateTotalLabels()` patterns repeated across:
+- SlotAreaManager.js
+- BaseAndShieldAreaManager.js  
+- CardPreviewManager.js
+
+**After**: Added three convenience methods to `Card.js`:
+```javascript
+// Calculate and update total labels in one call
+const { totalAP, totalHP } = card.updateCalculatedTotalLabels(pilotCard, isRested);
+
+// Calculate and update total stats for power overlay
+const { totalAP, totalHP } = card.updateCalculatedTotalStats(pilotCard, isRested);
+
+// Calculate and configure total labels display
+const { totalAP, totalHP } = card.calculateAndConfigureTotalLabels(pilotCard, options);
+```
+
+#### **2. Card Creation Duplication (17+ new Card() instances eliminated)**
+
+**Before**: Manual `new Card()` with repetitive configuration patterns across managers:
+```javascript
+// Repeated across multiple files
+const card = new Card(scene, x, y, cardData, {
+  usePreview: true,
+  gameStateManager: this.gameStateManager
+});
+card.setDepth(depth);
+card.setZonePlacement(true, zoneName, isPlayerZone);
+// ... more repeated configuration
+```
+
+**After**: Created `CardFactory.js` with 6 specialized factory methods:
+
+```javascript
+// Specialized factory methods with pre-configured settings
+CardFactory.createSlotCard(scene, cardData, x, y, options);     // Slot placement
+CardFactory.createBaseCard(scene, cardData, x, y, options);     // Base cards
+CardFactory.createShieldCard(scene, cardData, x, y, options);   // Shield rotation
+CardFactory.createPreviewCard(scene, cardData, x, y, options);  // Large previews
+CardFactory.createDialogCard(scene, cardData, x, y, options);   // Dialog display
+CardFactory.createHandCard(scene, cardData, x, y, options);     // Hand cards
+```
+
+#### **Implementation Benefits**
+
+**✅ Code Reduction**:
+- Eliminated 7 instances of manual calculation + update patterns
+- Consolidated 17+ repetitive card creation patterns
+- Removed 50+ lines of duplicate configuration code
+
+**✅ Maintainability**:
+- Single source of truth for card creation logic
+- Centralized total labels calculation patterns
+- Consistent depth, interaction, and zone placement setup
+
+**✅ Performance**:
+- Reduced bundle size through elimination of duplicate code
+- Consistent optimization patterns across all card types
+- Reusable configuration templates
+
+**✅ Developer Experience**:
+- Simple, discoverable API for card operations
+- Context-specific factory methods prevent configuration errors
+- Self-documenting method names and parameters
+
+#### **Refactored Components**
+
+**SlotAreaManager.js**:
+- ✅ Uses `CardFactory.createSlotCard()` for unit/pilot card creation
+- ✅ Uses `Card.updateCalculatedTotalLabels()` for slot total calculations
+- ✅ Eliminated manual `CardStatCalculator` + `updateTotalLabels` patterns
+
+**BaseAndShieldAreaManager.js**:
+- ✅ Uses `CardFactory.createBaseCard()` and `CardFactory.createShieldCard()`
+- ✅ Uses `Card.updateCalculatedTotalLabels()` for base card totals
+- ✅ Removed old `calculateBaseTotalAP/HP` methods
+
+**CardPreviewManager.js**:
+- ✅ Uses `CardFactory.createPreviewCard()` for all preview creation
+- ✅ Uses `Card.updateCalculatedTotalLabels()` and `Card.updateCalculatedTotalStats()`
+- ✅ Eliminated manual preview card configuration patterns
+
+#### **Migration Path for Future Development**
+
+**Preferred Patterns**:
+```javascript
+// ✅ PREFERRED: Use CardFactory for card creation
+const card = CardFactory.createSlotCard(scene, cardData, x, y, {
+  slotName: 'slot1',
+  cardType: 'unit', 
+  playerType: 'player',
+  gameStateManager: this.gameStateManager
+});
+
+// ✅ PREFERRED: Use Card convenience methods for calculations
+const { totalAP, totalHP } = card.updateCalculatedTotalLabels(pilotCard, isRested);
+```
+
+**Deprecated Patterns**:
+```javascript
+// ❌ DEPRECATED: Manual card creation and configuration
+const card = new Card(scene, x, y, cardData, options);
+card.setDepth(depth);
+card.setZonePlacement(true, zoneName, isPlayerZone);
+// ... manual configuration
+
+// ❌ DEPRECATED: Manual calculation patterns
+const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(unitCard, pilotCard);
+card.updateTotalLabels(totalAP, totalHP, isRested);
+```
+
 ## Critical Development Patterns
 
 ### Component Design

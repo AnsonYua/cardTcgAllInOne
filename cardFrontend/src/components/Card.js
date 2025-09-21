@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_CONFIG } from '../config/gameConfig.js';
 import PowerOverlay from './PowerOverlay.js';
+import CardStatCalculator from '../utils/CardStatCalculator.js';
 
 
 export default class Card extends Phaser.GameObjects.Container {
@@ -845,6 +846,47 @@ export default class Card extends Phaser.GameObjects.Container {
     } catch (error) {
       console.error(`Error configuring PowerOverlay total labels for card ${this.cardData?.id}:`, error);
     }
+  }
+
+  /**
+   * Calculate and update own total labels with optional pilot
+   * Convenience method that combines CardStatCalculator.calculateTotalInSlot() with updateTotalLabels()
+   * @param {Card|null} pilotCard - Optional pilot card for combined calculation
+   * @param {boolean} isRested - Rest state for visual effects
+   * @returns {Object} { totalAP, totalHP } - Calculated totals
+   */
+  updateCalculatedTotalLabels(pilotCard = null, isRested = false) {
+    const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(this, pilotCard);
+    this.updateTotalLabels(totalAP, totalHP, isRested);
+    return { totalAP, totalHP };
+  }
+
+  /**
+   * Calculate and update own total stats with optional pilot
+   * Convenience method that combines CardStatCalculator.calculateTotalInSlot() with powerOverlay.updateTotalStats()
+   * @param {Card|null} pilotCard - Optional pilot card for combined calculation
+   * @param {boolean} isRested - Rest state for visual effects
+   * @returns {Object} { totalAP, totalHP } - Calculated totals
+   */
+  updateCalculatedTotalStats(pilotCard = null, isRested = false) {
+    const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(this, pilotCard);
+    if (this.powerOverlay?.updateTotalStats) {
+      this.powerOverlay.updateTotalStats(totalAP, totalHP, isRested);
+    }
+    return { totalAP, totalHP };
+  }
+
+  /**
+   * Calculate and configure total labels to show with optional pilot
+   * Convenience method that combines CardStatCalculator.calculateTotalInSlot() with configureTotalLabelsToShow()
+   * @param {Card|null} pilotCard - Optional pilot card for combined calculation
+   * @param {Object} options - Configuration options for configureTotalLabelsToShow
+   * @returns {Object} { totalAP, totalHP } - Calculated totals
+   */
+  calculateAndConfigureTotalLabels(pilotCard = null, options = {}) {
+    const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(this, pilotCard);
+    this.configureTotalLabelsToShow(totalAP, totalHP, options);
+    return { totalAP, totalHP };
   }
 
   // Hover animation methods removed - no animations on hover

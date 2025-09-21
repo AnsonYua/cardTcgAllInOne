@@ -267,7 +267,7 @@ This project contains extensive documentation covering all aspects of the game i
 ### 🎮 Frontend Documentation
 
 - **[Frontend README](cardFrontend/README.md)** - Frontend setup, controls, and game mechanics
-- **[Frontend CLAUDE Guide](cardFrontend/CLAUDE.md)** - Frontend-specific development patterns
+- **[Frontend CLAUDE Guide](cardFrontend/CLAUDE.md)** - Frontend-specific development patterns and recent improvements
 - **[Frontend Architecture](cardFrontend/frontend.md)** - Detailed frontend architecture and components
 - **[API Integration Test](cardFrontend/API_INTEGRATION_TEST.md)** - Frontend-backend integration testing
 - **[GameScene Refactoring](cardFrontend/GameScene_Refactoring_Summary.md)** - Recent UI and scene improvements

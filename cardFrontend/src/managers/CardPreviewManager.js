@@ -3,7 +3,7 @@
  * Extracted from GameScene.js to reduce complexity and improve maintainability
  */
 import Card from '../components/Card.js';
-import CardStatCalculator from '../utils/CardStatCalculator.js';
+import CardFactory from '../utils/CardFactory.js';
 
 export default class CardPreviewManager {
   constructor(gameScene) {
@@ -50,9 +50,8 @@ export default class CardPreviewManager {
         this.previewCard.powerOverlay.setTotalLabelsVisibility('slot1');
       }
       this.previewCard.fullCardData = cardData;
-      const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(this.previewCard, null);
-      this.previewCard.updateTotalLabels(totalAP, totalHP , cardData.isRested );
-      console.log("dasdfadsfasdfasduodate a ", totalHP);
+      const { totalAP, totalHP } = this.previewCard.updateCalculatedTotalLabels(null, cardData.isRested);
+      console.log("[CardPreviewManager] Updated preview total labels: AP=" + totalAP + ", HP=" + totalHP);
     }
   }
 
@@ -145,22 +144,20 @@ export default class CardPreviewManager {
     if (!this.scene.cardPreviewZone) return;
 
     // Create unit preview (on top) - Use full card data with current stats
-    this.previewCard = new Card(this.scene, this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y, unitCard.getCardFullData(), {
-      scale: 3.5,
+    this.previewCard = CardFactory.createPreviewCard(this.scene, unitCard.getCardFullData(), this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y, {
       gameStateManager: this.gameStateManager,
-      usePreview: false,
-      handleOutside: true // Disable selection for preview cards
+      scale: 3.5,
+      depth: 2000,
+      interactive: false
     });
-    this.previewCard.setDepth(2000);
 
     // Create pilot preview (145px below unit) - Use full card data with current stats  
-    this.previewPilotCard = new Card(this.scene, this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y + 145, pilotCard.getCardFullData(), {
-      scale: 3.5,
+    this.previewPilotCard = CardFactory.createPreviewCard(this.scene, pilotCard.getCardFullData(), this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y + 145, {
       gameStateManager: this.gameStateManager,
-      usePreview: false,
-      handleOutside: true // Disable selection for preview cards
+      scale: 3.5,
+      depth: 1999, // Slightly behind unit
+      interactive: false
     });
-    this.previewPilotCard.setDepth(1999); // Slightly behind unit
 
     // Apply total labels visibility rule: only pilot shows totals when both present
     if (this.previewCard.powerOverlay && this.previewCard.powerOverlay.setTotalLabelsVisibility) {
@@ -173,8 +170,7 @@ export default class CardPreviewManager {
       
       // Update pilot total stats to current values (representing combined unit+pilot stats)
       if (this.previewPilotCard.powerOverlay.updateTotalStats) {
-        const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(unitCard, pilotCard);
-        this.previewPilotCard.powerOverlay.updateTotalStats(totalAP, totalHP,unitCard.isRested);
+        this.previewPilotCard.updateCalculatedTotalStats(unitCard, unitCard.isRested);
       }
       
       console.log('[CardPreviewManager] Showing total labels on pilot preview');
@@ -193,22 +189,12 @@ export default class CardPreviewManager {
    * @returns {Card} The created preview card component
    */
   _createPreviewCard(cardData, x, y, depth = 2000) {
-    const previewCard = new Card(this.scene, x, y, cardData, {
-      scale: 3.5,
+    return CardFactory.createPreviewCard(this.scene, cardData, x, y, {
       gameStateManager: this.gameStateManager,
-      usePreview: false,
+      scale: 3.5,
+      depth,
       interactive: false
     });
-
-    previewCard.setDepth(depth);
-    
-    // Show total labels on preview cards (single card preview)
-    if (previewCard.powerOverlay && previewCard.powerOverlay.setTotalLabelsVisibility) {
-      previewCard.powerOverlay.setTotalLabelsVisibility('slot1'); // Show total labels    
-      console.log('[CardPreviewManager] Showing total labels on single preview card');
-    }
-    
-    return previewCard;
   }
 
   /**

@@ -1,5 +1,6 @@
 import Card from './Card.js';
 import CardStatCalculator from '../utils/CardStatCalculator.js';
+import CardFactory from '../utils/CardFactory.js';
 
 export default class SlotAreaManager {
   constructor(scene, gameStateManager) {
@@ -120,40 +121,14 @@ export default class SlotAreaManager {
 
   createSlotCard(cardData, x, y, slotName, cardType = 'unit', playerType = 'player') {
     try {
-      // Create card using the existing Card component with preview images for better performance
-      const card = new Card(this.scene, x, y, cardData, { usePreview: true });
+      const card = CardFactory.createSlotCard(this.scene, cardData, x, y, {
+        slotName,
+        cardType,
+        playerType,
+        gameStateManager: this.gameStateManager
+      });
       
-      // CRITICAL: Set card as interactive to enable hover events
-      card.setInteractive(true);
-      
-      // CRITICAL: Set zone placement properties for hover detection
-      const isPlayerZone = playerType === 'player'; // True for player slots, false for opponent slots
-      card.isInZone = true;  // Mark card as placed in zone (enables zone-card-hover events)
-      card.setZonePlacement(true, slotName, isPlayerZone); // inZone=true, zoneType=slotName, isPlayerZone based on playerType
-      card.zonePlacement = {
-        isPlayerZone: isPlayerZone,  // Correctly set based on playerType
-        zoneType: slotName,  // slot1, slot2, etc.
-        isPlaced: true
-      };
-      
-      // Add card type information for identification
-      card.cardTypeInSlot = cardType;
-      
-      // Set appropriate depth for layering (pilots above units)
-      if (cardType === 'pilot') {
-        card.setDepth(200); // Pilots render above units
-      } else {
-        card.setDepth(210); // Units at base depth
-      }
-      
-      // Add rested visual state if needed
-      if (cardData.isRested) {
-        card.setRested(true);
-      }
-      
-      // Card creation successful
       console.log(`✅ Created ${cardType} slot card for ${slotName}:`, cardData.cardId || cardData.id);
-      
       return card;
       
     } catch (error) {
@@ -203,18 +178,16 @@ export default class SlotAreaManager {
   updateSlotTotalLabelsValue(slotCards, hasUnit, hasPilot, unitData, pilotData) {
     if (hasUnit && hasPilot) {
       // Both unit and pilot present - pilot shows combined totals
-      const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(slotCards.unit, slotCards.pilot);
-      if (slotCards.pilot.updateTotalLabels) {
+      if (slotCards.pilot.updateCalculatedTotalLabels) {
         const isRested = unitData?.isRested || slotCards.unit.fullCardData?.isRested || false;
-        slotCards.pilot.updateTotalLabels(totalAP, totalHP, isRested);
+        const { totalAP, totalHP } = slotCards.pilot.updateCalculatedTotalLabels(slotCards.unit, isRested);
         console.log(`[SlotAreaManager] Updated pilot total labels (combined): AP=${totalAP}, HP=${totalHP}, rested=${isRested}`);
       }
     } else if (hasUnit && !hasPilot) {
       // Unit only - unit shows its own totals
-      const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(slotCards.unit, null);
-      if (slotCards.unit.updateTotalLabels) {
+      if (slotCards.unit.updateCalculatedTotalLabels) {
         const isRested = unitData?.isRested || slotCards.unit.fullCardData?.isRested || false;
-        slotCards.unit.updateTotalLabels(totalAP, totalHP, isRested);
+        const { totalAP, totalHP } = slotCards.unit.updateCalculatedTotalLabels(null, isRested);
         console.log(`[SlotAreaManager] Updated unit total labels (unit only): AP=${totalAP}, HP=${totalHP}, rested=${isRested}`);
       }
     }

@@ -1,5 +1,5 @@
 import Card from './Card.js';
-import CardStatCalculator from '../utils/CardStatCalculator.js';
+import CardFactory from '../utils/CardFactory.js';
 export default class BaseAndShieldAreaManager {
   constructor(scene, gameStateManager) {
     this.scene = scene;
@@ -54,17 +54,11 @@ export default class BaseAndShieldAreaManager {
   }
 
   createShieldCard(cardData, x, y, index) {
-    const card = new Card(this.scene, x, y, cardData, {
-      scale: 0.85,
+    return CardFactory.createShieldCard(this.scene, cardData, x, y, {
       gameStateManager: this.gameStateManager,
-      usePreview: true
+      index,
+      scale: 0.85
     });
-    
-    card.rotation = Math.PI / 2;
-    card.setDepth(1000 + index);
-    
-    
-    return card;
   }
 
   // ============ BASE AREA MANAGEMENT ============
@@ -128,27 +122,12 @@ export default class BaseAndShieldAreaManager {
   }
 
   createBaseCard(cardData, x, y, index) {
-    const card = new Card(this.scene, x, y, cardData, {
-      scale:0.9,
-      gameStateManager: this.gameStateManager,
-      usePreview: true
-    });
-    
-    card.setDepth(1100); // Higher depth than shields (1000) to appear on top
     console.log("adsfasdfsda ",JSON.stringify(cardData))
     
-    // Set zone placement for base cards to enable total labels
-    card.setZonePlacement(true, 'base', true); // inZone=true, zoneType='base', isPlayerZone=true
-    card.zonePlacement = {
-      isPlayerZone: true,
-      zoneType: 'base',
-      isPlaced: true
-    };
-   
-    // Update total labels for base cards
-    this.updateBaseCardTotalLabels(card);
-    
-    return card;
+    return CardFactory.createBaseCard(this.scene, cardData, x, y, {
+      gameStateManager: this.gameStateManager,
+      scale: 0.9
+    });
   }
 
   /**
@@ -179,55 +158,10 @@ export default class BaseAndShieldAreaManager {
       }
     }
     // Update total labels with new calculated values
-    this.updateBaseCardTotalLabels(card);
+    card.updateCalculatedTotalLabels(null, cardData.isRested);
     
   }
 
-  /**
-   * Calculate total AP for base card including modifications
-   * @param {Object} fullCardData - The full card data object
-   * @returns {number} Total AP value including modifications
-   */
-  calculateBaseTotalAP(fullCardData) {
-    if (!fullCardData) return 0;
-    
-    const cardData = fullCardData.cardData || fullCardData;
-    
-    if (fullCardData.currentAP != null) {
-      // Use currentAP as base and add modifications
-      const baseAP = fullCardData.currentAP || 0;
-      const modifyAP = fullCardData.modifyAP || 0;
-      return baseAP + modifyAP;
-    } else {
-      // Use original AP from cardData and add modifications
-      const baseAP = cardData.ap || 0;
-      const modifyAP = fullCardData.modifyAP || 0;
-      return baseAP + modifyAP;
-    }
-  }
-
-  /**
-   * Calculate total HP for base card including modifications
-   * @param {Object} fullCardData - The full card data object
-   * @returns {number} Total HP value including modifications
-   */
-  calculateBaseTotalHP(fullCardData) {
-    if (!fullCardData) return 0;
-    
-    const cardData = fullCardData.cardData || fullCardData;
-    
-    if (fullCardData.currentHP != null) {
-      // Use currentHP as base and add modifications
-      const baseHP = fullCardData.currentHP || 0;
-      const modifyHP = fullCardData.modifyHP || 0;
-      return baseHP + modifyHP;
-    } else {
-      // Use original HP from cardData and add modifications
-      const baseHP = cardData.hp || 0;
-      const modifyHP = fullCardData.modifyHP || 0;
-      return baseHP + modifyHP;
-    }
-  }
 
   /**
    * Update total AP and HP labels for base cards
@@ -241,16 +175,10 @@ export default class BaseAndShieldAreaManager {
     }
     
     console.log("dafadsdsf 111 ",JSON.stringify(card.fullCardData));
-    const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(card, null);
-          
-    console.log(`[BaseAndShieldAreaManager] Updating base card total labels: AP=${totalAP}, HP=${totalHP} for card:`, card.cardData?.id);
+    console.log(`[BaseAndShieldAreaManager] Updating base card total labels for card:`, card.cardData?.id);
     
-    // Update total labels using the Card's updateTotalLabels method
-    if (card.updateTotalLabels) {
-      card.updateTotalLabels(totalAP, totalHP,card.fullCardData.isRested);
-    } else {
-      console.warn('[BaseAndShieldAreaManager] Card does not have updateTotalLabels method:', card.cardData?.id);
-    }
+    // Use Card convenience method for calculation and update
+    card.updateCalculatedTotalLabels(null, card.fullCardData.isRested);
     
     // Ensure total labels are visible for base cards (they should be in 'base' zone)
     if (card.powerOverlay && card.powerOverlay.setTotalLabelsVisibility) {
@@ -270,7 +198,7 @@ export default class BaseAndShieldAreaManager {
     const updateCards = (cards, type) => {
       cards.forEach(card => {
         if (card && card.fullCardData) {
-          this.updateBaseCardTotalLabels(card);
+          card.updateCalculatedTotalLabels(null, card.fullCardData.isRested);
           console.log(`[BaseAndShieldAreaManager] Force updated ${type} base card total labels:`, card.cardData?.id);
         }
       });
