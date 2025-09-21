@@ -378,13 +378,11 @@ export default class DialogManager {
   }
 
   /**
-   * Show a burst effect confirmation dialog using select dialog style
+   * Show a burst effect confirmation dialog with integrated API handling
    * @param {Object} event - BURST_EFFECT_CHOICE event from processingQueue
-   * @param {Function} onConfirm - Callback when user confirms (true/false)
-   * @param {Function} onCancel - Optional callback when user cancels (receives cancelInfo)
    * @returns {string} Dialog ID
    */
-  showBurstEffectDialog(event, onConfirm, onCancel = null) {
+  showBurstEffectDialog(event) {
     console.log('DialogManager: Showing burst effect confirmation dialog:', event);
 
     const dialogId = `burst_effect_${this.nextDialogId++}`;
@@ -392,6 +390,21 @@ export default class DialogManager {
     // Clean up any existing burst effect dialogs (prevent multiple burst dialogs)
     this.closeDialogsByType(this.dialogTypes.BURST_EFFECT_CHOICE);
 
+    // ✅ CONSOLIDATED: All burst effect logic in DialogManager
+    const handleBurstChoice = async (confirmed, source = 'unknown') => {
+      console.log(`DialogManager: User ${confirmed ? 'confirmed' : 'declined'} burst effect (${source}):`, event.id);
+      
+      try {
+        // Access GameApiService through scene
+        if (this.scene.gameApiService) {
+          await this.scene.gameApiService.confirmBurstChoice(event.id, confirmed, this.scene);
+        } else {
+          console.error('DialogManager: GameApiService not available on scene');
+        }
+      } catch (error) {
+        console.error(`DialogManager: Failed to process burst choice (${source}):`, error);
+      }
+    };
 
     // Create selection object with items format (DialogUIManager will resolve internally)
     const burstSelection = {
@@ -399,7 +412,7 @@ export default class DialogManager {
       title: '💥 Burst Effect Available',
       description: `burst Effect`,
       selectCount: 1, // Always select the one card
-      eligibleCards:event.data.availableTargets,
+      eligibleCards: event.data.availableTargets,
       dialogType: 'BURST_EFFECT_CHOICE',
       autoSelectFirst: true // Flag to indicate first card should be auto-selected
     };
@@ -410,27 +423,13 @@ export default class DialogManager {
       burstSelection,
       this.scene,
       (selectedId, selectedCards, elements) => {
-        // Handle burst effect activation - directly call API
+        // Handle burst effect activation
         console.log('DialogManager: Burst effect ACTIVATE clicked:', selectedCards);
-
-        // DialogUIManager handles dialog cleanup automatically
-        // Directly activate the burst effect (call onConfirm with true)
-        console.log('DialogManager: Activating burst effect directly');
-        if (onConfirm) onConfirm(true);
+        handleBurstChoice(true, 'confirm');
       },
-      // ✅ SIMPLIFIED: Use onCancel parameter instead of event listener
       (cancelInfo) => {
         console.log('DialogManager: Burst effect SKIP clicked via onCancel:', cancelInfo);
-
-        // DialogUIManager handles dialog cleanup automatically
-        // Call the onCancel callback if provided, otherwise default to onConfirm(false)
-        if (onCancel) {
-          console.log('DialogManager: Calling onCancel with cancelInfo');
-          onCancel(cancelInfo);
-        } else {
-          console.log('DialogManager: No onCancel provided, falling back to onConfirm(false)');
-          if (onConfirm) onConfirm(false);
-        }
+        handleBurstChoice(false, 'cancel');
       }
     );
 

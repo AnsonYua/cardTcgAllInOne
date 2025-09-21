@@ -935,35 +935,6 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  /**
-   * Show burst effect confirmation dialog
-   * @param {Object} event - BURST_EFFECT_CHOICE event from processingQueue
-   */
-  showBurstEffectDialog(event) {
-    console.log('GameScene: Showing burst effect dialog for event:', event);
-    
-    // ✅ CONSOLIDATED: All burst effect logic in one place
-    const handleBurstChoice = async (confirmed, source = 'unknown') => {
-      console.log(`GameScene: User ${confirmed ? 'confirmed' : 'declined'} burst effect (${source}):`, event.id);
-      
-      try {
-        // GameApiService handles scenario flag and updateGameState automatically
-        await this.gameApiService.confirmBurstChoice(event.id, confirmed, this);
-      } catch (error) {
-        console.error(`Failed to process burst choice (${source}):`, error);
-      }
-    };
-    
-    this.dialogManager.showBurstEffectDialog(
-      event, 
-      (confirmed) => handleBurstChoice(confirmed, 'confirm'),
-      (cancelInfo) => {
-        console.log('GameScene: Burst effect dialog cancelled:', cancelInfo);
-        // Skip the burst effect (call with false)
-        handleBurstChoice(false, 'cancel');
-      }
-    );
-  }
 
 
   showRoomStatus(message) {

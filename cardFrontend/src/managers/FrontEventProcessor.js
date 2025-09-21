@@ -102,7 +102,8 @@ export default class FrontEventProcessor {
     
     try {
       console.log('[FrontEventProcessor] Handling BURST_EFFECT_CHOICE event');
-      this.scene.showBurstEffectDialog(events[0]);
+      // ✅ REFACTORED: Use DialogManager directly (business logic moved to DialogManager)
+      this.scene.dialogManager.showBurstEffectDialog(events[0]);
       return true;
     } catch (error) {
       console.error('[FrontEventProcessor] Error handling BURST_EFFECT_CHOICE:', error);
