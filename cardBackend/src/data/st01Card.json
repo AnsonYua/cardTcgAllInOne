@@ -178,6 +178,7 @@
                         "effectId": "deploy_rest_low_hp",
                         "type": "triggered",
                         "trigger": "ENTERS_PLAY",
+                        "optional":false,
                         "target": {
                             "type": "unit",
                             "scope": "opponent",

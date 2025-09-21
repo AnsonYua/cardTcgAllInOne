@@ -66,7 +66,7 @@ export default class DialogUIManager {
    * @param {Function} onCancel - Optional callback when user cancels dialog (default: null)
    * @returns {Object} Dialog interface with cleanup method
    */
-  static createCardSelectionDialog(selectionId, selection, scene, onConfirm, onCancel = null) {
+  static createCardSelectionDialog(selectionId, selection, scene, onConfirm, onCancel = null, isAllowCancel=true) {
     console.log('🎮 DialogUIManager: Creating card selection dialog');
     console.log('Selection ID:', selectionId);
     console.log('Selection config1111:', JSON.stringify(selection));
