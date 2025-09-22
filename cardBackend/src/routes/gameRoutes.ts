@@ -161,7 +161,7 @@ router.post('/player/confirmBurstChoice', gameController.confirmBurstChoice.bind
  * Confirm deploy target choice
  * POST /api/game/player/confirmDeployChoice
  */
-router.post('/player/confirmDeployChoice', gameController.confirmDeployChoice.bind(gameController));
+router.post('/player/confirmTargetChoice', gameController.confirmTargetChoice.bind(gameController));
 
 /**
  * AI player action (placeholder)

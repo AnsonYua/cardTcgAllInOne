@@ -28,7 +28,7 @@ export default class DialogManager {
       INFORMATION: 'information',
       REDRAW_CONFIRMATION: 'redraw_confirmation',
       BURST_EFFECT_CHOICE: 'burst_effect_choice',
-      DEPLOY_TARGET_CHOICE: 'deploy_target_choice'
+      TARGET_CHOICE: 'target_choice'
     };
   }
 
@@ -138,7 +138,7 @@ export default class DialogManager {
 
     // Clean up any existing card selection dialogs (prevent multiple dialogs)
     this.closeDialogsByType(this.dialogTypes.CARD_SELECTION);
-    this.closeDialogsByType(this.dialogTypes.DEPLOY_TARGET_CHOICE);
+    this.closeDialogsByType(this.dialogTypes.TARGET_CHOICE);
 
     // Create dialog using DialogUIManager directly
     const dialogInterface = DialogUIManager.createCardSelectionDialog(
@@ -382,6 +382,7 @@ export default class DialogManager {
 
     // Clean up any existing burst effect dialogs (prevent multiple burst dialogs)
     this.closeDialogsByType(this.dialogTypes.BURST_EFFECT_CHOICE);
+    this.closeDialogsByType(this.dialogTypes.TARGET_CHOICE);
 
     // ✅ CONSOLIDATED: All burst effect logic in DialogManager
     const handleBurstChoice = async (confirmed, source = 'unknown') => {
@@ -440,6 +441,93 @@ export default class DialogManager {
 
     console.log(`DialogManager: Created burst effect dialog with ID: ${dialogId}`);
     return dialogId;
+  }
+
+  /**
+   * Show unified target choice dialog (handles deploy, pairing, activation effects)
+   * @param {Object} event - TARGET_CHOICE event from processingQueue
+   * @param {Function} onConfirm - Callback when user confirms target selection
+   * @returns {string} Dialog ID
+   */
+  showTargetChoiceDialog(event, onConfirm) {
+    console.log('DialogManager: Showing unified target choice dialog:', event);
+    
+    // Extract effect information from TARGET_CHOICE event
+    const { effect, availableTargets, sourceCardUid, sourceCardId, sourceType } = event.data;
+    const effectDescription = effect?.action || 'Select Target';
+    const isOptional = effect?.optional !== false;
+    
+    // Convert backend availableTargets to eligibleCards format
+    const eligibleCards = availableTargets.map(target => ({
+      dialogDisplayType: 'slot',
+      playerId: target.playerId,
+      zone: target.zone,
+      cardUid: target.cardUid
+    }));
+
+    // Create selection object using unified format
+    const targetSelection = {
+      selectionId: `target_choice_${event.id}`,
+      title: this.getTargetChoiceTitle(sourceType),
+      description: `Effect: ${effectDescription} - Choose a target`,
+      selectCount: 1,
+      eligibleCards: eligibleCards,
+      dialogType: 'TARGET_CHOICE',
+      autoSelectFirst: false
+    };
+
+    // Use unified card selection dialog with TARGET_CHOICE API handling
+    return this.showCardSelectionDialog(
+      targetSelection.selectionId, 
+      targetSelection, 
+      async (selectionId, selectedCards) => {
+        if (selectedCards && selectedCards.length > 0) {
+          const selectedTarget = selectedCards[0];
+          console.log('DialogManager: Target selected via unified dialog:', selectedTarget);
+          
+          try {
+            // Call unified TARGET_CHOICE API through GameApiService
+            // Always send as array for consistency, even for single target
+            if (this.scene.gameApiService) {
+              await this.scene.gameApiService.confirmTargetChoice(event.id, [{
+                cardUid: selectedTarget.cardUid,
+                zone: selectedTarget.zone,
+                playerId: selectedTarget.playerId
+              }], this.scene);
+            } else {
+              console.error('DialogManager: GameApiService not available on scene');
+            }
+          } catch (error) {
+            console.error('DialogManager: Failed to process target choice:', error);
+          }
+          
+          if (onConfirm) onConfirm(selectedTarget);
+        } else {
+          console.log('DialogManager: Target selection cancelled');
+          if (onConfirm) onConfirm(null);
+        }
+      },
+      null,
+      isOptional
+    );
+  }
+
+  /**
+   * Get appropriate title for target choice dialog based on source type
+   * @param {string} sourceType - Source type (DEPLOY, PAIRING, ACTIVATION)
+   * @returns {string} Dialog title
+   */
+  getTargetChoiceTitle(sourceType) {
+    switch (sourceType) {
+      case 'DEPLOY':
+        return '🎯 Deploy Effect Target Selection';
+      case 'PAIRING':
+        return '🔗 Pairing Effect Target Selection';
+      case 'ACTIVATION':
+        return '⚡ Activation Effect Target Selection';
+      default:
+        return '🎯 Target Selection';
+    }
   }
 
   /**
@@ -575,7 +663,7 @@ export default class DialogManager {
       description: `Effect: ${effectDescription} - Choose a target`,
       selectCount: 1, // Always select one target
       eligibleCards: eligibleCards, // Pass eligibleCards directly
-      dialogType: 'DEPLOY_TARGET_CHOICE',
+      dialogType: 'TARGET_CHOICE',
       autoSelectFirst: false // User must actively select target
     };
 

@@ -1024,16 +1024,16 @@ export class GameLogic {
     }
 
     /**
-     * Confirm deploy target choice
+     * Confirm target choice (array-only TARGET_CHOICE API)
      * @param gameId Game ID
      * @param playerId Player ID making the choice
      * @param eventId Event ID to confirm
-     * @param selectedTarget Selected target object with cardUid, zone, playerId
+     * @param selectedTargets Array of selected target objects with cardUid, zone, playerId
      */
-    async confirmDeployChoice(gameId: string, playerId: string, eventId: string, selectedTarget: any): Promise<GameLogicResult> {
+    async confirmTargetChoice(gameId: string, playerId: string, eventId: string, selectedTargets: any[]): Promise<GameLogicResult> {
         try {
-            console.log(`🎯 Processing deploy target choice confirmation: ${eventId} by player ${playerId}`);
-            console.log(`Selected target:`, selectedTarget);
+            console.log(`🎯 Processing target choice confirmation: ${eventId} by player ${playerId}`);
+            console.log(`Selected targets:`, selectedTargets);
             
             // Load game environment
             const gameEnv = await this.loadGameFromFile(gameId);
@@ -1044,57 +1044,57 @@ export class GameLogic {
                 };
             }
 
-            // Find the deploy target choice event
+            // Find the target choice event
             const event = gameEnv.processingQueue.find(e => e.id === eventId);
             if (!event) {
                 return {
                     success: false,
-                    error: 'Deploy target choice event not found'
+                    error: 'Target choice event not found'
                 };
             }
 
-            if (event.type !== EventType.DEPLOY_TARGET_CHOICE) {
+            if (event.type !== EventType.TARGET_CHOICE) {
                 return {
                     success: false,
-                    error: 'Event is not a deploy target choice'
+                    error: 'Event is not a target choice'
                 };
             }
 
-            // Validate that the selected target is in the available targets
+            // Validate that all selected targets are in the available targets
             const availableTargets = event.data.availableTargets || [];
-            const isValidTarget = availableTargets.some((target: any) => 
-                target.cardUid === selectedTarget.cardUid && 
-                target.zone === selectedTarget.zone && 
-                target.playerId === selectedTarget.playerId
-            );
-
-            if (!isValidTarget) {
-                return {
-                    success: false,
-                    error: 'Selected target is not in available targets list'
-                };
+            for (const selectedTarget of selectedTargets) {
+                const isValidTarget = availableTargets.some((target: any) => 
+                    target.cardUid === selectedTarget.cardUid && 
+                    target.zone === selectedTarget.zone && 
+                    target.playerId === selectedTarget.playerId
+                );
+                if (!isValidTarget) {
+                    return {
+                        success: false,
+                        error: `Selected target ${selectedTarget.cardUid} in ${selectedTarget.zone} is not in available targets list`
+                    };
+                }
             }
 
             // Update event with user selection
-            event.data.selectedTarget = selectedTarget;
+            event.data.selectedTargets = selectedTargets;
             event.data.userDecisionMade = true;
             
-            console.log(`🎯 Event ${eventId} updated with selected target: ${selectedTarget.cardUid} in ${selectedTarget.zone}`);
+            console.log(`🎯 Event ${eventId} updated with ${selectedTargets.length} selected target(s):`, 
+                       selectedTargets.map(t => `${t.cardUid} in ${t.zone}`));
             
-            // Process events - the RESOLVING event will be handled by DeployEffectManager
-            const processingResult = await StaticEventProcessor.processEvent(gameEnv, event);
-            
+            const processingResult = await gameEnv.processEvents();
             if (!processingResult.success) {
                 return {
                     success: false,
-                    error: processingResult.error || 'Failed to process deploy target choice'
+                    error: processingResult.error || 'Failed to process target choice'
                 };
             }
 
             // Save game state
             await this.saveGameToFile(gameId, gameEnv);
             
-            console.log(`✅ Deploy target choice confirmed and processed successfully`);
+            console.log(`✅ Target choice confirmed and processed successfully (${selectedTargets.length} target${selectedTargets.length > 1 ? 's' : ''})`);
             
             return {
                 success: true,
@@ -1103,10 +1103,10 @@ export class GameLogic {
             };
             
         } catch (error) {
-            console.error('❌ Error in confirmDeployChoice:', error);
+            console.error('❌ Error in confirmTargetChoice:', error);
             return {
                 success: false,
-                error: `Failed to confirm deploy choice: ${error instanceof Error ? error.message : 'Unknown error'}`
+                error: `Failed to confirm target choice: ${error instanceof Error ? error.message : 'Unknown error'}`
             };
         }
     }

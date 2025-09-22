@@ -132,14 +132,14 @@ this.frontEventProcessor.registerEventType('LOW_PRIORITY_CHOICE', { ... });
 
 ```javascript
 // Check if specific event types are available
-if (this.frontEventProcessor.hasEventsOfType('DEPLOY_TARGET_CHOICE')) {
-  console.log('Deploy target events are available');
+if (this.frontEventProcessor.hasEventsOfType('TARGET_CHOICE')) {
+  console.log('Target choice events are available');
 }
 
 // Get event statistics
 const stats = this.frontEventProcessor.getEventStatistics();
 console.log('Event stats:', stats);
-// Output: { totalEvents: 3, eventsByType: { 'DEPLOY_TARGET_CHOICE': 1, 'BURST_EFFECT_CHOICE': 2 }, registeredTypes: 5 }
+// Output: { totalEvents: 3, eventsByType: { 'TARGET_CHOICE': 1, 'BURST_EFFECT_CHOICE': 2 }, registeredTypes: 5 }
 ```
 
 ## Removing Event Types

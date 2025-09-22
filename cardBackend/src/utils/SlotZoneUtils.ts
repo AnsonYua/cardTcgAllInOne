@@ -1,9 +1,29 @@
-// src/utils/SlotUtils.ts
-// Utility class for slot-related operations
+/**
+ * SlotZone Utilities
+ * 
+ * Centralized type-safe utilities for working with slot zones.
+ * Eliminates repeated type guard logic across the codebase.
+ * MERGED: Includes functionality from SlotUtils for comprehensive slot operations.
+ */
 
-import { GameEnvironment } from '../models/GameEnvironment';
 import { SLOT_ZONES } from '../config/gameConstants';
+import { GameEnvironment } from '../models/GameEnvironment';
 
+// Type for valid slot zone names
+export type SlotZoneName = typeof SLOT_ZONES[number];
+
+export interface SlotZone {
+    unit?: any;    // UnitZoneCard
+    pilot?: any;   // PilotZoneCard
+}
+
+export interface SlotValidationResult {
+    isValid: boolean;
+    slot?: SlotZone;
+    error?: string;
+}
+
+// MERGED from SlotUtils: Search result interface
 export interface SlotSearchResult {
     found: boolean;
     slotName?: string;
@@ -13,11 +33,155 @@ export interface SlotSearchResult {
     error?: string;
 }
 
-/**
- * Utility class for slot-related operations
- * Provides methods to search, validate, and manipulate slot data
- */
-export class SlotUtils {
+export class SlotZoneUtils {
+
+    /**
+     * Validate that a slot is a proper SlotZone (not boolean or array)
+     */
+    static validateSlotZone(slot: any, zoneName: string): SlotValidationResult {
+        if (!slot) {
+            return {
+                isValid: false,
+                error: `Zone ${zoneName} is empty`
+            };
+        }
+        
+        if (typeof slot === 'boolean') {
+            return {
+                isValid: false,
+                error: `Zone ${zoneName} is a boolean, not a valid slot zone`
+            };
+        }
+        
+        if (Array.isArray(slot)) {
+            return {
+                isValid: false,
+                error: `Zone ${zoneName} is an array, not a valid slot zone`
+            };
+        }
+        
+        return {
+            isValid: true,
+            slot: slot as SlotZone
+        };
+    }
+
+    /**
+     * Get slot zone with type safety
+     */
+    static getSlotZone(playerZones: any, zoneName: string): SlotValidationResult {
+        const slot = playerZones[zoneName as keyof typeof playerZones];
+        return this.validateSlotZone(slot, zoneName);
+    }
+
+    /**
+     * Check if zone name is a valid slot zone
+     */
+    static isSlotZoneName(zoneName: string): zoneName is SlotZoneName {
+        return SLOT_ZONES.includes(zoneName as SlotZoneName);
+    }
+
+    /**
+     * Get all valid slot zones from player zones
+     */
+    static getAllSlotZones(playerZones: any): { [key: string]: SlotZone } {
+        const slotZones: { [key: string]: SlotZone } = {};
+        
+        for (const zoneName of SLOT_ZONES) {
+            const result = this.getSlotZone(playerZones, zoneName);
+            if (result.isValid && result.slot) {
+                slotZones[zoneName] = result.slot;
+            }
+        }
+        
+        return slotZones;
+    }
+
+    /**
+     * Check if slot has a unit card
+     */
+    static hasUnit(slot: SlotZone): boolean {
+        return !!(slot.unit && slot.unit.cardUid);
+    }
+
+    /**
+     * Check if slot has a pilot card
+     */
+    static hasPilot(slot: SlotZone): boolean {
+        return !!(slot.pilot && slot.pilot.cardUid);
+    }
+
+    /**
+     * Check if slot is paired (has both unit and pilot)
+     */
+    static isPaired(slot: SlotZone): boolean {
+        return this.hasUnit(slot) && this.hasPilot(slot);
+    }
+
+    /**
+     * Check if slot is empty (no unit or pilot)
+     */
+    static isEmpty(slot: SlotZone): boolean {
+        return !this.hasUnit(slot) && !this.hasPilot(slot);
+    }
+
+    /**
+     * Get unit from slot with type safety
+     */
+    static getUnit(slot: SlotZone): any | null {
+        return this.hasUnit(slot) ? slot.unit : null;
+    }
+
+    /**
+     * Get pilot from slot with type safety
+     */
+    static getPilot(slot: SlotZone): any | null {
+        return this.hasPilot(slot) ? slot.pilot : null;
+    }
+
+    /**
+     * Find card in slot by UID
+     */
+    static findCardByUid(slot: SlotZone, cardUid: string): { card: any; type: 'unit' | 'pilot' } | null {
+        if (this.hasUnit(slot) && slot.unit.cardUid === cardUid) {
+            return { card: slot.unit, type: 'unit' };
+        }
+        
+        if (this.hasPilot(slot) && slot.pilot.cardUid === cardUid) {
+            return { card: slot.pilot, type: 'pilot' };
+        }
+        
+        return null;
+    }
+
+    /**
+     * Get slot zone names as constant array
+     */
+    static getSlotZoneNames(): SlotZoneName[] {
+        return [...SLOT_ZONES];
+    }
+
+    /**
+     * Create error result for invalid slots
+     */
+    static createSlotError(zoneName: string, reason: string): SlotValidationResult {
+        return {
+            isValid: false,
+            error: `Zone ${zoneName}: ${reason}`
+        };
+    }
+
+    /**
+     * Create success result for valid slots
+     */
+    static createSlotSuccess(slot: SlotZone): SlotValidationResult {
+        return {
+            isValid: true,
+            slot
+        };
+    }
+
+    // ===== MERGED METHODS FROM SlotUtils =====
 
     /**
      * Find the target slot name using target unit UID

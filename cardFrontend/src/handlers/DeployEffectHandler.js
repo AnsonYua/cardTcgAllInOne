@@ -19,7 +19,7 @@ export default class DeployEffectHandler {
 
   /**
    * Show deploy target selection dialog
-   * @param {Object} event - DEPLOY_TARGET_CHOICE event from processingQueue
+   * @param {Object} event - TARGET_CHOICE event from processingQueue (converted to legacy format for compatibility)
    */
   showDeployTargetDialog(event) {
     console.log('DeployEffectHandler: Showing deploy target dialog for event:', event);
@@ -38,12 +38,12 @@ export default class DeployEffectHandler {
           return;
         }
         
-        // Call GameApiService to submit the selected target
-        const result = await this.scene.gameApiService.confirmDeployChoice(event.id, {
+        // Call GameApiService to submit the selected target using unified API
+        const result = await this.scene.gameApiService.confirmTargetChoice(event.id, [{
           cardUid: selectedTarget.cardUid,
           zone: selectedTarget.zone,
           playerId: selectedTarget.playerId
-        });
+        }]);
 
         if (result.gameEnvUpdated) {
           // Set scenario flag for hand update

@@ -155,12 +155,21 @@ export default class APIManager {
     });
   }
 
-  async confirmDeployChoice(gameId, playerId, eventId, selectedTarget) {
-    console.log('APIManager: Confirming deploy choice:', { gameId, playerId, eventId, selectedTarget });
+
+  /**
+   * Confirm target choice for unified TARGET_CHOICE events
+   * @param {string} gameId - Game ID
+   * @param {string} playerId - Player ID
+   * @param {string} eventId - Event ID from processingQueue
+   * @param {Object} selectedTarget - Selected target object with cardUid, zone, playerId
+   * @returns {Promise<Object>} API response
+   */
+  async confirmTargetChoice(gameId, playerId, eventId, selectedTargets) {
+    console.log('APIManager: Confirming target choice:', { gameId, playerId, eventId, selectedTargets });
     
-    return this.request('/player/confirmDeployChoice', {
+    return this.request('/player/confirmTargetChoice', {
       method: 'POST',
-      body: JSON.stringify({ gameId, playerId, eventId, selectedTarget })
+      body: JSON.stringify({ gameId, playerId, eventId, selectedTargets })
     });
   }
 

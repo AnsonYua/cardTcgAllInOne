@@ -90,8 +90,10 @@ export enum EventType {
     
     // Deploy effect events
     DEPLOY_EFFECT_TRIGGERED = 'DEPLOY_EFFECT_TRIGGERED',
-    DEPLOY_TARGET_CHOICE = 'DEPLOY_TARGET_CHOICE',
     
     // Pairing effect events
-    PAIRING_EFFECT_TRIGGERED = 'PAIRING_EFFECT_TRIGGERED'
+    PAIRING_EFFECT_TRIGGERED = 'PAIRING_EFFECT_TRIGGERED',
+    
+    // Unified target choice system
+    TARGET_CHOICE = 'TARGET_CHOICE'
 }

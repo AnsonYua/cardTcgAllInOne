@@ -4,7 +4,7 @@
 import { GameEnvironment } from '../models/GameEnvironment';
 import { Player } from '../models/Player';
 import { SLOT_ZONES } from '../config/gameConstants';
-import { SlotUtils } from '../utils/SlotUtils';
+import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 
 export interface ValidationResult {
     isValid: boolean;
@@ -222,7 +222,7 @@ export class GameValidator {
     // ============ SLOT/ZONE VALIDATIONS ============
     
     /**
-     * Validate slot contains unit (using SlotUtils for consistency)
+     * Validate slot contains unit (using SlotZoneUtils)
      */
     static validateSlotUnit(gameEnv: GameEnvironment, playerId: string, cardUid: string): SlotValidationResult {
         const zonesValidation = this.validatePlayerZones(gameEnv, playerId);
@@ -230,8 +230,8 @@ export class GameValidator {
             return zonesValidation;
         }
         
-        // Use SlotUtils to find the unit
-        const slotResult = SlotUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, cardUid);
+        // Use SlotZoneUtils to find the unit
+        const slotResult = SlotZoneUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, cardUid);
         
         if (slotResult.found) {
             return {

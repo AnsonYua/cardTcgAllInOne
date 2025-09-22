@@ -286,23 +286,6 @@ export default class GameStateManager {
     return burstEvents;
   }
 
-  /**
-   * @deprecated Use FrontEventProcessor.getEventsOfType() instead
-   * Get DEPLOY_TARGET_CHOICE events from the processing queue
-   * @returns {Array} Array of deploy target choice events
-   */
-  getDeployTargetChoiceEvents() {
-    console.warn('[GameStateManager] getDeployTargetChoiceEvents() is deprecated. Use FrontEventProcessor instead.');
-    const processingQueue = this.gameState.gameEnv.processingQueue || [];
-    const deployEvents = processingQueue.filter(event => 
-      event.type === 'DEPLOY_TARGET_CHOICE' && 
-      event.status === 'DECLARED' &&
-      event.data?.playerId === this.gameState.playerId
-    );
-    
-    console.log(`[GameStateManager] Found ${deployEvents.length} DEPLOY_TARGET_CHOICE events:`, deployEvents);
-    return deployEvents;
-  }
 
   async acknowledgeEvents(eventIds) {
     if (eventIds && eventIds.length > 0 && this.apiManager) {

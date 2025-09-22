@@ -46,7 +46,7 @@ export default class DialogUIManager {
    *   callback: (selectionId, selectedCards) => { ... },
    *   
    *   // OPTIONAL: Dialog behavior
-   *   dialogType: 'SELECT_UNIT_FOR_PILOT' | 'SELECT_ATTACK_TARGET' | 'DEPLOY_TARGET_CHOICE' | 'BURST_EFFECT_CHOICE',
+   *   dialogType: 'SELECT_UNIT_FOR_PILOT' | 'SELECT_ATTACK_TARGET' | 'TARGET_CHOICE' | 'BURST_EFFECT_CHOICE',
    *   autoSelectFirst: false,      // Auto-select first card
    *   numberOfSections: 1,         // UI sections (legacy)
    *   

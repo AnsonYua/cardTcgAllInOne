@@ -259,30 +259,57 @@ export interface BurstEffectChoiceEvent extends BaseGameEvent {
     };
 }
 
-export interface DeployTargetChoiceEvent extends BaseGameEvent {
-    type: EventType.DEPLOY_TARGET_CHOICE;
+export interface TargetChoiceEvent extends BaseGameEvent {
+    type: EventType.TARGET_CHOICE;
     data: {
+        // Common fields
         playerId: string;           // Player making the choice
-        sourceCardUid: string;      // Card with deploy effect
+        choiceId: string;           // Unique choice identifier
+        userDecisionMade: boolean;  // Choice completion status
+        
+        // Source information
+        sourceType: 'DEPLOY' | 'PAIRING' | 'ACTIVATION' | 'CONTINUOUS';
+        sourceCardUid: string;      // Card triggering the effect
         sourceCardId: string;
-        deployEffect: {
+        sourceSlot?: string;        // For pairing effects
+        
+        // Effect information
+        effect: {
             effectId: string;
-            description: string;
-            target: any;            // Target filters (type: "unit", scope: "opponent", etc.)
-            effect: any;            // Action to perform (action: "rest")
+            action: string;         // 'modifyAP', 'damage', 'rest', etc.
+            parameters: any;        // Effect parameters
+            description?: string;
         };
-        availableTargets: Array<{   // Valid targets based on filters (simplified references)
+        
+        // Target configuration
+        targetConfig: {
+            type: 'unit' | 'pilot' | 'card';
+            scope: 'self' | 'opponent' | 'any';
+            count: number;          // How many targets to select
+            filters?: {
+                level?: string;     // "<=5", ">=3", etc.
+                hp?: string;        // "<=2", ">1", etc.
+                status?: string;    // "rested", "active"
+                traits?: string[];  // Trait requirements
+                zone?: string[];    // Specific zones only
+            };
+        };
+        
+        // Available targets (computed)
+        availableTargets: Array<{
+            cardUid: string;
+            cardId: string;
+            zone: string;
+            playerId: string;
+            cardData?: any;         // For display purposes
+        }>;
+        
+        // User selection result
+        selectedTargets?: Array<{
             cardUid: string;
             zone: string;
             playerId: string;
         }>;
-        choiceId: string;
-        userDecisionMade: boolean;
-        selectedTarget?: {
-            cardUid: string;
-            zone: string;
-            playerId: string;
-        };
     };
 }
 
@@ -309,7 +336,7 @@ export type GameEvent =
     | NextPlayerTurnEvent
     | ShieldCardAttackedEvent
     | BurstEffectChoiceEvent
-    | DeployTargetChoiceEvent;
+    | TargetChoiceEvent;
 
 export class EventFactory {
     private static eventIdCounter = 0;
@@ -550,29 +577,35 @@ export class EventFactory {
         };
     }
     
-    static createDeployTargetChoiceEvent(
+    static createTargetChoiceEvent(
         playerId: string,
+        sourceType: 'DEPLOY' | 'PAIRING' | 'ACTIVATION' | 'CONTINUOUS',
         sourceCardUid: string,
         sourceCardId: string,
-        deployEffect: any,
-        availableTargets: any[]
-    ): DeployTargetChoiceEvent {
+        effect: any,
+        targetConfig: any,
+        availableTargets: any[],
+        sourceSlot?: string
+    ): TargetChoiceEvent {
         return {
-            id: `deploy_target_choice_${++this.eventIdCounter}_${Date.now()}`,
-            type: EventType.DEPLOY_TARGET_CHOICE,
+            id: `target_choice_${++this.eventIdCounter}_${Date.now()}`,
+            type: EventType.TARGET_CHOICE,
             status: EventStatus.DECLARED,
             priority: EventPriority.HIGH,
             playerId,
             timestamp: Date.now(),
             data: {
                 playerId,
+                choiceId: `target_choice_${sourceType.toLowerCase()}_${sourceCardUid}_${Date.now()}`,
+                userDecisionMade: false,
+                sourceType,
                 sourceCardUid,
                 sourceCardId,
-                deployEffect,
+                sourceSlot,
+                effect,
+                targetConfig,
                 availableTargets,
-                choiceId: `deploy_target_${sourceCardUid}_${Date.now()}`,
-                userDecisionMade: false,
-                selectedTarget: undefined
+                selectedTargets: undefined
             }
         };
     }

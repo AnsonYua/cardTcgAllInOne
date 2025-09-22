@@ -194,8 +194,8 @@ export class GameEnvironment {
                 return !nextEvent.data.userDecisionMade;
             }
             
-            // For deploy target choice events, check if user has already provided input
-            if (nextEvent.type === EventType.DEPLOY_TARGET_CHOICE) {
+            // For target choice events, check if user has already provided input
+            if (nextEvent.type === EventType.TARGET_CHOICE) {
                 return !nextEvent.data.userDecisionMade;
             }
         }

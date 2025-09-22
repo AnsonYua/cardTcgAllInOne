@@ -7,6 +7,7 @@ import { CardEffect, EffectResult } from './CardEffect';
 import { EventFactory, GameEvent, EventStatus, EventPriority } from './EventQueue/interfaces/GameEvent';
 import { SLOT_ZONES } from '../config/gameConstants';
 import { GameValidator } from './GameValidator';
+import { TargetChoiceManager } from './TargetChoiceManager';
 
 export interface ExecutionResult {
     success: boolean;
@@ -64,76 +65,54 @@ export class DeployEffectManager {
     }
     
     /**
-     * Process individual Deploy effect with player target selection support
-     * Detects if effect requires player choice and creates appropriate events
+     * Process individual Deploy effect using unified TargetChoiceManager
+     * Replaces old DEPLOY_TARGET_CHOICE with unified TARGET_CHOICE system
      */
     private static processIndividualEffect(gameEnv: GameEnvironment, eventData: any, effect: any): any {
         const { playerId, cardUID, cardId } = eventData;
         
-        console.log(`🔧 Processing Deploy effect for player ${playerId}`);
+        console.log(`🔧 Processing Deploy effect for player ${playerId} using unified system`);
         console.log(`📋 Effect data:`, JSON.stringify(effect, null, 2));
         
         try {
-            // Check if effect requires player target selection
-            if (this.requiresPlayerTargetSelection(effect)) {
-                console.log(`🎯 Deploy effect requires player target selection`);
-                
-                // Generate available targets based on effect filters
-                const availableTargets = this.generateAvailableTargets(gameEnv, playerId, effect);
-                
-                if (availableTargets.length === 0) {
-                    return {
-                        success: false,
-                        error: "No valid targets available for deploy effect"
-                    };
-                }
-                
-                console.log(`🎯 Found ${availableTargets.length} available targets`);
-                
-                // Create target choice event
-                const targetChoiceEvent = EventFactory.createDeployTargetChoiceEvent(
-                    playerId,
-                    cardUID,
-                    cardId,
-                    effect,
-                    availableTargets
-                );
-                
-                // Queue the choice event
-                gameEnv.enqueueForProcessing(targetChoiceEvent);
-                
-                console.log(`📤 Enqueued deploy target choice event: ${targetChoiceEvent.id}`);
-                
-                return {
-                    success: true,
-                    message: "Target selection required",
-                    requiresPlayerInput: true
-                };
-            }
+            // Create effect definition directly - no unnecessary factory wrapper
+            const effectDefinition = {
+                effectId: `deploy_${effect.effectId || 'effect'}_${cardId}`,
+                action: effect.effect?.action || 'unknown',
+                parameters: effect.effect?.parameters || {}
+            };
             
-            // Process automatically for non-interactive effects
-            console.log(`⚡ Processing Deploy effect automatically (no player input required)`);
+            // Create target config directly - no wrapper needed
+            const targetConfig = {
+                type: effect.target?.type || 'unit',
+                scope: effect.target?.scope || 'opponent', 
+                count: effect.target?.count || 1,
+                filters: effect.target?.filters || {}
+            };
             
-            // Create universal card effect processor
-            const cardEffect = new CardEffect(
+            // Use unified TargetChoiceManager directly
+            const result = TargetChoiceManager.processEffectWithTargetChoice(
                 gameEnv,
                 playerId,
-                effect.target,
-                effect.effect
+                'DEPLOY',
+                cardUID,
+                cardId,
+                effectDefinition,
+                targetConfig
             );
             
-            // Execute the effect automatically
-            const result: EffectResult = cardEffect.execute();
-            
+            // Return result directly - no unnecessary processing wrapper
             return {
                 success: result.success,
-                message: result.message,
                 error: result.error,
-                affectedCards: result.affectedCards
+                requiresSelection: result.requiresSelection,
+                autoApplied: result.autoApplied,
+                message: result.requiresSelection ? "Target selection required" : 
+                        result.autoApplied ? `Effect applied to ${result.affectedTargets?.length || 0} target(s)` : 
+                        "Effect processed successfully"
             };
             
         } catch (error) {
-            console.error(`❌ Error in Deploy effect processing:`, error);
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Deploy effect processing failed'
@@ -384,37 +363,33 @@ export class DeployEffectManager {
     }
 
     /**
-     * Handle DEPLOY_TARGET_CHOICE events - execute when user makes target selection
+     * Handle TARGET_CHOICE events - unified replacement for DEPLOY_TARGET_CHOICE
+     * Now delegates to TargetChoiceManager for consistent processing
      */
     static executeDeployTargetChoice(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
-        console.log(`🎯 Executing DEPLOY_TARGET_CHOICE event: ${event.id} (${event.status})`);
+        console.log(`🎯 Executing TARGET_CHOICE event (legacy DeployEffect method): ${event.id}`);
+        console.log(`🔄 Delegating to unified TargetChoiceManager`);
 
         try {
-            const { selectedTarget, deployEffect, playerId, sourceCardUid } = event.data;
-
-            // This method should only be called for RESOLVING events
-            if (event.status !== EventStatus.RESOLVING) {
-                console.log(`⚠️ Unexpected event status: ${event.status} (expected RESOLVING)`);
-                return { success: true }; // Skip - should not happen in correct flow
-            }
-
-            if (!selectedTarget) {
+            // Delegate to unified TargetChoiceManager
+            const result = TargetChoiceManager.executeTargetChoice(event, gameEnv);
+            
+            if (!result.success) {
+                console.error(`❌ Unified target choice execution failed: ${result.error}`);
                 return {
                     success: false,
-                    error: "No target selected for deploy effect"
+                    error: result.error
                 };
             }
-
-            console.log(`🚀 Applying deploy effect to target: ${selectedTarget.cardUid} in ${selectedTarget.zone}`);
-
-            // Apply the effect to selected target
-            return DeployEffectManager.applyDeployEffectToTarget(gameEnv, deployEffect, selectedTarget, playerId);
+            
+            console.log(`✅ Successfully executed target choice via unified system`);
+            return { success: true };
 
         } catch (error) {
-            console.error(`❌ Error in executeDeployTargetChoice:`, error);
+            console.error(`❌ Error delegating to TargetChoiceManager:`, error);
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Deploy target choice execution failed'
+                error: error instanceof Error ? error.message : 'Target choice delegation failed'
             };
         }
     }

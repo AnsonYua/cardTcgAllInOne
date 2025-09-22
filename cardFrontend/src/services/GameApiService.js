@@ -132,27 +132,28 @@ export default class GameApiService {
     );
   }
 
+
   /**
-   * Confirm deploy target choice API call with standardized handling
-   * @param {string} eventId - The deploy target choice event ID
-   * @param {Object} selectedTarget - Selected target object with cardUid, zone, playerId
+   * Confirm target choice API call with standardized handling (unified TARGET_CHOICE)
+   * @param {string} eventId - The target choice event ID
+   * @param {Array} selectedTargets - Array of selected target objects with cardUid, zone, playerId
    * @param {Object} sceneContext - Optional scene context for automatic scenario flag handling
    */
-  async confirmDeployChoice(eventId, selectedTarget, sceneContext = null) {
+  async confirmTargetChoice(eventId, selectedTargets, sceneContext = null) {
     const gameState = this.gameStateManager.getGameState();
     
-    const response = await this.apiManager.confirmDeployChoice(
+    const response = await this.apiManager.confirmTargetChoice(
       gameState.gameId, 
       gameState.playerId, 
       eventId, 
-      selectedTarget
+      selectedTargets
     );
     
     return this.handleStandardResponse(
       response, 
-      'Deploy target selected successfully!',
-      'Failed to confirm deploy target choice',
-      true, // updateHand = true for deploy effects
+      'Target selected successfully!',
+      'Failed to confirm target choice',
+      true, // updateHand = true for target choice effects
       sceneContext // Pass scene context for automatic handling
     );
   }

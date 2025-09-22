@@ -2,6 +2,7 @@
 // Pairing effect management - handles PAIRING_COMPLETE triggered effects
 
 import { GameEnvironment } from '../models/GameEnvironment';
+import { TargetChoiceManager } from './TargetChoiceManager';
 
 export interface PairingEffectResult {
     success: boolean;
@@ -398,34 +399,94 @@ export class PairingEffect {
     }
 
     /**
-     * Execute AP modification effect from pairing
+     * Execute AP modification effect from pairing using unified TARGET_CHOICE system
+     * Now supports player choice for strategic target selection (e.g., ST01-006)
      */
     private static executePairingModifyAPEffect(gameEnv: GameEnvironment, playerId: string, parameters: any, target: any, effect: any): { success: boolean; error?: string } {
         const modifyAmount = parameters.value || 0;
-        console.log(`⚔️ Executing pairing AP modification: ${modifyAmount > 0 ? '+' : ''}${modifyAmount} AP`);
+        console.log(`⚔️ Executing pairing AP modification: ${modifyAmount > 0 ? '+' : ''}${modifyAmount} AP on ${target.scope} targets`);
         
-        // Find the paired unit to modify
-        const player = gameEnv.getPlayer(playerId);
-        if (!player) {
+        try {
+            // Create effect definition directly - no factory overhead
+            const effectDefinition = {
+                effectId: `pairing_ap_modification_${effect.unitCard.cardId}`,
+                action: 'modifyAP',
+                parameters: parameters
+            };
+            
+            // Create target config directly from target object
+            const targetConfig = {
+                type: target.type || 'unit',
+                scope: target.scope || 'self',
+                count: target.count || 1,
+                filters: target.filters || {}
+            };
+            
+            // Use unified TargetChoiceManager directly
+            const result = TargetChoiceManager.processEffectWithTargetChoice(
+                gameEnv,
+                playerId,
+                'PAIRING',
+                effect.unitCard.cardUID,
+                effect.unitCard.cardId,
+                effectDefinition,
+                targetConfig,
+                effect.pairedSlot  // Source slot for pairing effects
+            );
+            
+            // Return result directly - no unnecessary conversions
+            return {
+                success: result.success,
+                error: result.error
+            };
+            
+        } catch (error) {
             return {
                 success: false,
-                error: `Player ${playerId} not found`
+                error: error instanceof Error ? error.message : 'Pairing AP modification failed'
             };
         }
+    }
+    
+    /**
+     * Find eligible targets based on target filters
+     */
+    private static findEligibleTargets(player: any, target: any): any[] {
+        const SLOT_ZONES = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'];
+        const eligibleTargets: any[] = [];
         
-        const { slot: pairedSlot, unit: pairedUnit } = this.findSlotByCardUid(player, effect.unitCard.cardUID);
-        if (!pairedSlot || !pairedUnit) {
-            return {
-                success: false,
-                error: `Could not find paired unit for AP modification`
-            };
+        for (const slotName of SLOT_ZONES) {
+            const slot = player.zones[slotName];
+            if (slot?.unit && target.type === 'unit') {
+                const unit = slot.unit;
+                
+                // Apply filters
+                if (this.matchesFilters(unit, target.filters || {})) {
+                    eligibleTargets.push(unit);
+                }
+            }
         }
         
-        // Apply AP modification
-        pairedUnit.currentAP = Math.max(0, (pairedUnit.currentAP || pairedUnit.cardData?.ap || 0) + modifyAmount);
+        console.log(`🎯 Found ${eligibleTargets.length} eligible targets for effect`);
+        return eligibleTargets;
+    }
+    
+    /**
+     * Check if a unit matches the target filters
+     */
+    private static matchesFilters(unit: any, filters: any): boolean {
+        // Level filter
+        if (filters.level) {
+            const unitLevel = unit.cardData?.level || 0;
+            if (!this.compareValues(unitLevel, filters.level.includes('<=') ? '<=' : '>=', 
+                                  parseInt(filters.level.replace(/[^\d]/g, '')) || 0)) {
+                return false;
+            }
+        }
         
-        console.log(`✅ Modified ${effect.unitCard.cardId} AP by ${modifyAmount}, new AP: ${pairedUnit.currentAP}`);
-        return { success: true };
+        // Add more filter types as needed (hp, traits, etc.)
+        
+        return true;
     }
 
     /**

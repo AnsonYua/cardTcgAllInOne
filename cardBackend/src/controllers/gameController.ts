@@ -911,61 +911,82 @@ export class GameController {
     }
 
     /**
-     * Confirm deploy target choice
-     * POST /api/game/player/confirmDeployChoice
-     * Body: { gameId, playerId, eventId, selectedTarget }
+     * Confirm target choice (array-only TARGET_CHOICE API)
+     * POST /api/game/player/confirmTargetChoice
+     * Body: { gameId, playerId, eventId, selectedTargets } - Array format required
      */
-    async confirmDeployChoice(req: GameRequest, res: Response): Promise<void> {
+    async confirmTargetChoice(req: GameRequest, res: Response): Promise<void> {
         try {
-            console.log('🎯 Processing deploy target choice confirmation:', req.body);
+            console.log('🎯 Processing target choice confirmation:', req.body);
             
-            const { gameId, playerId, eventId, selectedTarget } = req.body;
+            const { gameId, playerId, eventId, selectedTargets } = req.body;
             
-            if (!gameId || !playerId || !eventId || !selectedTarget) {
+            if (!gameId || !playerId || !eventId) {
                 res.status(400).json({
-                    error: 'gameId, playerId, eventId, and selectedTarget are required',
+                    error: 'gameId, playerId, and eventId are required',
                     timestamp: new Date().toISOString(),
-                    context: 'confirmDeployChoice endpoint'
+                    context: 'confirmTargetChoice endpoint'
                 });
                 return;
             }
 
-            // Validate selectedTarget structure
-            if (!selectedTarget.cardUid || !selectedTarget.zone || !selectedTarget.playerId) {
+            if (!selectedTargets || !Array.isArray(selectedTargets)) {
                 res.status(400).json({
-                    error: 'selectedTarget must include cardUid, zone, and playerId',
+                    error: 'selectedTargets array is required',
                     timestamp: new Date().toISOString(),
-                    context: 'confirmDeployChoice endpoint'
+                    context: 'confirmTargetChoice endpoint'
                 });
                 return;
             }
+
+            // Validate that we have at least one target
+            if (selectedTargets.length === 0) {
+                res.status(400).json({
+                    error: 'At least one target must be selected',
+                    timestamp: new Date().toISOString(),
+                    context: 'confirmTargetChoice endpoint'
+                });
+                return;
+            }
+
+            // Validate each target structure
+            for (const target of selectedTargets) {
+                if (!target.cardUid || !target.zone || !target.playerId) {
+                    res.status(400).json({
+                        error: 'Each target must include cardUid, zone, and playerId',
+                        timestamp: new Date().toISOString(),
+                        context: 'confirmTargetChoice endpoint'
+                    });
+                    return;
+                }
+            }
             
-            console.log(`🚀 Player ${playerId} selected deploy target: ${selectedTarget.cardUid} in ${selectedTarget.zone}`);
+            console.log(`🚀 Player ${playerId} selected ${selectedTargets.length} target(s):`, selectedTargets.map(t => `${t.cardUid} in ${t.zone}`));
             
             // Use GameLogic service method for business logic
-            const result = await this.gameLogic.confirmDeployChoice(gameId, playerId, eventId, selectedTarget);
+            const result = await this.gameLogic.confirmTargetChoice(gameId, playerId, eventId, selectedTargets);
             
             if (result.success && result.gameEnv) {
                 res.json({
                     success: true,
                     gameId: result.gameId,
                     gameEnv: result.gameEnv,
-                    message: 'Deploy target selected successfully'
+                    message: `Target selection successful (${selectedTargets.length} target${selectedTargets.length > 1 ? 's' : ''})`
                 });
             } else {
                 res.status(400).json({
-                    error: result.error || 'Failed to process deploy target choice',
+                    error: result.error || 'Failed to process target choice',
                     timestamp: new Date().toISOString(),
-                    context: 'confirmDeployChoice endpoint'
+                    context: 'confirmTargetChoice endpoint'
                 });
             }
             
         } catch (error) {
-            console.error('❌ Error in confirmDeployChoice:', error);
+            console.error('❌ Error in confirmTargetChoice:', error);
             res.status(500).json({
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
-                context: 'confirmDeployChoice endpoint'
+                context: 'confirmTargetChoice endpoint'
             });
         }
     }

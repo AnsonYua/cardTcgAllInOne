@@ -91,7 +91,9 @@
       "Bash(GAME_ID=\"97561fec-98f7-4c85-8225-031322ae2371\")",
       "Bash(GAME_ID=\"09cc7237-a9e3-46f8-9fbf-59259251a0f0\")",
       "Bash(python3:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(__NEW_LINE__ echo \"✅ TypeScript compilation passed (checked earlier)\")",
+      "Bash(__NEW_LINE__ echo \"\")"
     ],
     "deny": []
   }

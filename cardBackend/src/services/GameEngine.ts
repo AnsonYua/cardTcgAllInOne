@@ -11,10 +11,11 @@ import { GameNotificationManager } from './GameNotificationManager';
 import { PlayerCardManager } from './PlayerCardManager';
 import { DeployEffectManager } from './DeployEffectManager';
 import { PairingEffect } from './PairingEffect';
+import { TargetChoiceManager } from './TargetChoiceManager';
 import { GameValidator } from './GameValidator';
 // GameEventFactory consolidated into EventFactory
 import { UnitZoneCard, PilotZoneCard, CardDatabaseManager } from '../models/CardSystem';
-import { SlotUtils } from '../utils/SlotUtils';
+import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import * as fs from 'fs';
 import * as path from 'path';
 const { CardEffect } = require('./CardEffect');
@@ -92,8 +93,8 @@ export class GameEngine {
                 case EventType.DEPLOY_EFFECT_TRIGGERED:
                     return DeployEffectManager.executeDeployEffect(event, gameEnv);
 
-                case EventType.DEPLOY_TARGET_CHOICE:
-                    return DeployEffectManager.executeDeployTargetChoice(event, gameEnv);
+                case EventType.TARGET_CHOICE:
+                    return TargetChoiceManager.executeTargetChoice(event, gameEnv);
 
                 case EventType.PAIRING_EFFECT_TRIGGERED:
                     return GameEngine.executePairingEffect(event, gameEnv);
@@ -755,7 +756,7 @@ export class GameEngine {
             } = eventData;
 
             // Find target slot name using target unit UID
-            const targetSlotResult = SlotUtils.findSlotNameByUnitUid(gameEnv, targetUnitUid);
+            const targetSlotResult = SlotZoneUtils.findSlotNameByUnitUid(gameEnv, targetUnitUid);
             if (!targetSlotResult.found) {
                 return {
                     success: false,
@@ -777,8 +778,8 @@ export class GameEngine {
                 };
             }
 
-            // Find attacker's slot and unit using SlotUtils
-            const attackerSlotResult = SlotUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, attackerCardUid);
+            // Find attacker's slot and unit using SlotZoneUtils
+            const attackerSlotResult = SlotZoneUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, attackerCardUid);
             if (!attackerSlotResult.found) {
                 return {
                     success: false,
@@ -871,8 +872,8 @@ export class GameEngine {
                 };
             }
 
-            // Find which slot contains the attacking card using SlotUtils
-            const attackerSlotResult = SlotUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, attackerCardUid);
+            // Find which slot contains the attacking card using SlotZoneUtils
+            const attackerSlotResult = SlotZoneUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, attackerCardUid);
             if (!attackerSlotResult.found) {
                 return {
                     success: false,
