@@ -258,7 +258,7 @@
                             "parameters": {
                                 "value": -3
                             },
-                            "actionTurn": "ANY"
+                            "actionTurn": "TURN"
                         }
                     }
                 ]

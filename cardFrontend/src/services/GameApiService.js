@@ -80,7 +80,7 @@ export default class GameApiService {
       response, 
       'Turn ended successfully', 
       'Failed to end turn',
-      false, // updateHand = false for end turn
+      true, // updateHand = false for end turn
       sceneContext // Pass scene context for automatic handling
     );
   }
