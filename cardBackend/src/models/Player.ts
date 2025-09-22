@@ -178,8 +178,22 @@ export class Player {
     // fieldEffects removed - not currently implemented
     public zones!: PlayerZones;
     
-    // Effect Registry System (NEW - January 2025)
+    // ============ EFFECT SYSTEMS ARCHITECTURE (January 2025) ============
+    
+    // 1. CONTINUOUS EFFECTS REGISTRY
+    // Purpose: Tracks persistent effects from cards in play (leaders, paired units)
+    // Lifecycle: Added when cards enter play, removed when they leave
+    // Processing: Managed by CardEffect.ts, applied during continuous effects phase
+    // Example: Leader power boosts, pairing bonuses that last while conditions are met
+    // Storage: gameEnv.players[id].effectRegistry
     public effectRegistry: { [effectKey: string]: any } = {};
+    
+    // 2. TEMPORARY EFFECTS (CARD-LEVEL STORAGE)
+    // Purpose: Short-term effects that expire (UNTIL_END_OF_TURN, etc.)
+    // Storage: Stored directly on individual cards in card.temporaryEffects arrays
+    // Processing: Managed by TargetChoiceManager.ts
+    // Location: gameEnv.players[id].zones.slotX.unit.temporaryEffects
+    // Example: ST01-006 "When Paired" -3 AP effect until end of turn
 
     constructor(id: string, name: string = id) {
         this.id = id;
@@ -713,6 +727,15 @@ export class Player {
         
         // Restore effect registry
         player.effectRegistry = data.effectRegistry || {};
+        
+        // Legacy effects structure removed - no longer needed
+        // effectRegistry is now the primary effects system
+        
+        // Clean up any legacy effects data from old save files
+        if (data.effects) {
+            console.log(`🧹 Removing legacy effects data from player ${data.id} save file`);
+            delete data.effects;
+        }
         
         // fieldEffects removed - not currently implemented
         return player;

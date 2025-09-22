@@ -7,6 +7,16 @@ import * as path from 'path';
 
 // ============ CARD DATA INTERFACES ============
 
+// Simplified temporary effect for unit-level storage
+export interface TemporaryEffect {
+    sourceCardUid: string;              // Card that created this effect
+    modifyAP?: number;                  // AP modification (optional)
+    modifyHP?: number;                  // HP modification (optional)
+    duration: string;                   // Effect duration
+    appliedTurn: number;                // Which turn this was applied
+    appliedBy: string;                  // Which player applied it
+}
+
 export interface EffectRule {
     id: string;
     type: 'continuous' | 'triggered' | 'restriction';
@@ -97,6 +107,9 @@ export interface UnitZoneCard extends ZoneCard {
     // NEW: Effect modifications (added to base stats for final calculation)
     modifyAP?: number;       // AP bonus/penalty from effects (default: 0)
     modifyHP?: number;       // HP bonus/penalty from effects (default: 0)
+    
+    // NEW: Temporary effects applied to this unit
+    temporaryEffects?: TemporaryEffect[];  // Effects that expire at end of turn
 }
 
 export interface PilotZoneCard extends ZoneCard {
@@ -110,6 +123,9 @@ export interface PilotZoneCard extends ZoneCard {
     // NEW: Effect modifications (added to base stats for final calculation)
     modifyAP?: number;       // AP bonus/penalty from effects (default: 0)
     modifyHP?: number;       // HP bonus/penalty from effects (default: 0)
+    
+    // NEW: Temporary effects applied to this pilot
+    temporaryEffects?: TemporaryEffect[];  // Effects that expire at end of turn
 }
 
 export interface CommandZoneCard extends ZoneCard {

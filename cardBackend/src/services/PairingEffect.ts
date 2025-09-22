@@ -407,13 +407,6 @@ export class PairingEffect {
         console.log(`⚔️ Executing pairing AP modification: ${modifyAmount > 0 ? '+' : ''}${modifyAmount} AP on ${target.scope} targets`);
         
         try {
-            // Create effect definition directly - no factory overhead
-            const effectDefinition = {
-                effectId: `pairing_ap_modification_${effect.unitCard.cardId}`,
-                action: 'modifyAP',
-                parameters: parameters
-            };
-            
             // Create target config directly from target object
             const targetConfig = {
                 type: target.type || 'unit',
@@ -422,14 +415,14 @@ export class PairingEffect {
                 filters: target.filters || {}
             };
             
-            // Use unified TargetChoiceManager directly
+            // Use unified TargetChoiceManager directly with nested structure
             const result = TargetChoiceManager.processEffectWithTargetChoice(
                 gameEnv,
                 playerId,
                 'PAIRING',
                 effect.unitCard.cardUID,
                 effect.unitCard.cardId,
-                effectDefinition,
+                effect,
                 targetConfig,
                 effect.pairedSlot  // Source slot for pairing effects
             );

@@ -75,19 +75,12 @@ export class DeployEffectManager {
         console.log(`📋 Effect data:`, JSON.stringify(effect, null, 2));
         
         try {
-            // Create effect definition directly - no unnecessary factory wrapper
-            const effectDefinition = {
-                effectId: `deploy_${effect.effectId || 'effect'}_${cardId}`,
-                action: effect.effect?.action || 'unknown',
-                parameters: effect.effect?.parameters || {}
-            };
-            
-            // Create target config directly - no wrapper needed
-            const targetConfig = {
-                type: effect.target?.type || 'unit',
-                scope: effect.target?.scope || 'opponent', 
-                count: effect.target?.count || 1,
-                filters: effect.target?.filters || {}
+            // Pass nested structure directly - no conversion needed
+            const targetConfig = effect.target || {
+                type: 'unit',
+                scope: 'opponent',
+                count: 1,
+                filters: {}
             };
             
             // Use unified TargetChoiceManager directly
@@ -97,7 +90,7 @@ export class DeployEffectManager {
                 'DEPLOY',
                 cardUID,
                 cardId,
-                effectDefinition,
+                effect,
                 targetConfig
             );
             

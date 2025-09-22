@@ -486,6 +486,9 @@ export class GameEngine {
                 };
             }
 
+            // Clean up temporary effects before ending turn
+            TargetChoiceManager.cleanupExpiredTemporaryEffects(gameEnv, playerId);
+
             // Simply set phase to END_TURN - let state-based actions handle the transition
             gameEnv.phase = GamePhase.END_PHASE;
             console.log(`🏁 Phase set to END_PHASE - state-based actions will handle next player transition`);
