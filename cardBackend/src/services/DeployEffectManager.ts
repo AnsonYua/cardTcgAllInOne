@@ -66,16 +66,13 @@ export class DeployEffectManager {
     
     /**
      * Process individual Deploy effect using unified TargetChoiceManager
-     * Replaces old DEPLOY_TARGET_CHOICE with unified TARGET_CHOICE system
      */
     private static processIndividualEffect(gameEnv: GameEnvironment, eventData: any, effect: any): any {
-        const { playerId, cardUID, cardId } = eventData;
-        
-        console.log(`🔧 Processing Deploy effect for player ${playerId} using unified system`);
+        console.log(`🔧 Processing Deploy effect for player ${eventData.playerId} using unified system`);
         console.log(`📋 Effect data:`, JSON.stringify(effect, null, 2));
         
         try {
-            // Pass nested structure directly - no conversion needed
+            // Use default target config if not provided
             const targetConfig = effect.target || {
                 type: 'unit',
                 scope: 'opponent',
@@ -83,18 +80,18 @@ export class DeployEffectManager {
                 filters: {}
             };
             
-            // Use unified TargetChoiceManager directly
+            // Process effect using unified TargetChoiceManager
             const result = TargetChoiceManager.processEffectWithTargetChoice(
                 gameEnv,
-                playerId,
+                eventData.playerId,
                 'DEPLOY',
-                cardUID,
-                cardId,
+                eventData.cardUID,
+                eventData.cardId,
                 effect,
                 targetConfig
             );
             
-            // Return result directly - no unnecessary processing wrapper
+            // Return result with appropriate message
             return {
                 success: result.success,
                 error: result.error,
@@ -128,9 +125,8 @@ export class DeployEffectManager {
      */
     private static generateAvailableTargets(gameEnv: GameEnvironment, playerId: string, effect: any): any[] {
         const targets: any[] = [];
-        const { target } = effect;
         
-        console.log(`🔍 Generating targets for effect with filters:`, JSON.stringify(target, null, 2));
+        console.log(`🔍 Generating targets for effect with filters:`, JSON.stringify(effect.target, null, 2));
         
         // Get opponent player ID
         const opponentId = Object.keys(gameEnv.players).find(id => id !== playerId);
@@ -155,9 +151,9 @@ export class DeployEffectManager {
                 console.log(`🔍 Checking unit in ${slotName}: ${unit.cardUid} (HP: ${unit.cardData?.hp || 0}, Damage: ${unit.damageReceived || 0})`);
                 
                 // Apply HP filter if specified
-                if (target.filters?.hp) {
-                    if (!this.validateHpFilter(unit, target.filters.hp)) {
-                        console.log(`❌ Unit ${unit.cardUid} failed HP filter: ${target.filters.hp}`);
+                if (effect.target.filters?.hp) {
+                    if (!this.validateHpFilter(unit, effect.target.filters.hp)) {
+                        console.log(`❌ Unit ${unit.cardUid} failed HP filter: ${effect.target.filters.hp}`);
                         continue;
                     }
                 }

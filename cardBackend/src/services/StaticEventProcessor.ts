@@ -38,7 +38,7 @@ export class StaticEventProcessor {
                iterations < maxIterations) {
             
             iterations++; // Increment iteration counter
-            console.log(`processing queue info:`, JSON.stringify(gameEnv.processingQueue) , " event processed ", eventsProcessed , " iterations ", iterations);
+            console.log(`⚡ Queue: ${gameEnv.processingQueue.length}, processed: ${eventsProcessed}, iteration: ${iterations}`);
 
             const event = gameEnv.processingQueue[0]; // Peek at next event
             if (!event) break;
@@ -114,7 +114,6 @@ export class StaticEventProcessor {
                         eventsProcessed++;
                     }
                 }
-                console.log(`event information 111112222 `, gameEnv.processingQueue.length, " event processed ", eventsProcessed , " iterations ", iterations);
 
                 
             } catch (error) {
@@ -267,7 +266,7 @@ export class StaticEventProcessor {
         try {
             const stateActions = stateEngine.checkForStateBasedActions();
             
-            // Convert state-based actions to events
+            // Convert state-based actions to events - minimal conversion
             const stateEvents: GameEvent[] = [];
             stateActions.forEach(action => {
                 if (action.autoExecute) {
@@ -275,22 +274,11 @@ export class StaticEventProcessor {
                         id: `state_${Date.now()}_${Math.random()}`,
                         type: action.type,
                         status: EventStatus.DECLARED,
-                        priority: EventPriority.HIGH, // State-based actions have high priority
+                        priority: EventPriority.HIGH,
                         timestamp: Date.now(),
-                        data: {
-                            actionId: action.actionId,
-                            description: action.description,
-                            affectedCards: action.affectedCards,
-                            affectedPlayers: action.affectedPlayers
-                        }
+                        // Pass action data directly without field reconstruction
+                        data: action.data || {}
                     };
-                    
-                    // Add specific data for certain action types
-                    if (action.type === EventType.NEXT_PLAYER_TURN) {
-                        stateEvent.data.currentPlayer = action.data?.currentPlayer;
-                        stateEvent.data.nextPlayer = action.data?.nextPlayer;
-                        stateEvent.data.currentTurn = action.data?.currentTurn;
-                    }
                     
                     stateEvents.push(stateEvent);
                 }

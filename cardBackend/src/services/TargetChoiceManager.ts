@@ -151,7 +151,6 @@ export class TargetChoiceManager {
      */
     static executeTargetChoice(event: any, gameEnv: GameEnvironment): { success: boolean; error?: string } {
         console.log(`🎯 Executing TARGET_CHOICE event: ${event.id} (${event.status})`);
-        console.log("adsfdsafsdfads 11111 1",JSON.stringify(event))
         try {
             if (event.status !== EventStatus.RESOLVING) {
                 console.log(`⚠️ Unexpected event status: ${event.status} (expected RESOLVING)`);
@@ -304,8 +303,6 @@ export class TargetChoiceManager {
                 }
             }
             
-            console.log("adsfasdfdsfasdfadssdasd   ",JSON.stringify(effect));
-            console.log("adsfasdfdsfasdfadssdasd111   ",sourceCardUid , "  ", sourceCardId);
             // Create temporary effect if duration-based
             if (effect.timing?.duration === 'UNTIL_END_OF_TURN' && sourceCardUid && sourceCardId) {
                 this.createTemporaryEffect(gameEnv, effect, selectedTargets, sourcePlayerId, sourceCardUid, sourceCardId);

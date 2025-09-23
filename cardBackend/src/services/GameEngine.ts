@@ -13,12 +13,11 @@ import { DeployEffectManager } from './DeployEffectManager';
 import { PairingEffect } from './PairingEffect';
 import { TargetChoiceManager } from './TargetChoiceManager';
 import { GameValidator } from './GameValidator';
-// GameEventFactory consolidated into EventFactory
 import { UnitZoneCard, PilotZoneCard, CardDatabaseManager } from '../models/CardSystem';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
+import { CardEffect } from './CardEffect';
 import * as fs from 'fs';
 import * as path from 'path';
-const { CardEffect } = require('./CardEffect');
 
 export interface ExecutionResult {
     success: boolean;
@@ -26,25 +25,14 @@ export interface ExecutionResult {
 }
 
 export class GameEngine {
-    // Notification managers created per call - no instance storage
+    // ============ MAIN EXECUTION INTERFACE ============
 
     /**
      * Get or create notification manager for this game (static version)
      */
     private static getNotificationManager(gameEnv: GameEnvironment): GameNotificationManager {
-        // Create new instance per call - no shared state
         return new GameNotificationManager(gameEnv);
     }
-
-
-
-
-
-    // ============ SLOT UTILITIES ============
-
-
-
-    // ============ MAIN EXECUTION INTERFACE ============
 
     static execute(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`🔥 Executing event: ${event.type}`);
@@ -118,19 +106,17 @@ export class GameEngine {
     // ============ EVENT-SPECIFIC EXECUTION METHODS ============
 
     private static executeStartGame(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
-        const { playerId, gameId } = event.data;
-
-        console.log(`🎯 Processing CREATE_GAME event for player: ${playerId}`);
+        console.log(`🎯 Processing CREATE_GAME event for player: ${event.data.playerId}`);
 
         try {
-            // Initialize basic game state (moved from GameLogic.createGame)
-            gameEnv.playerId_1 = playerId;
+            // Initialize basic game state
+            gameEnv.playerId_1 = event.data.playerId;
             gameEnv.phase = GamePhase.WAITING_FOR_PLAYERS;
             gameEnv.gameStarted = false;
             gameEnv.playersReady = gameEnv.playersReady || {};
-            gameEnv.playersReady[playerId] = true;
+            gameEnv.playersReady[event.data.playerId] = true;
 
-            console.log(`✅ CREATE_GAME event processed - game state initialized for ${playerId}`);
+            console.log(`✅ CREATE_GAME event processed - game state initialized for ${event.data.playerId}`);
             return { success: true };
 
         } catch (error) {
@@ -143,21 +129,19 @@ export class GameEngine {
     }
 
     private static executeJoinGame(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
-        const { playerId, gameId } = event.data;
-
-        console.log(`🎯 Processing JOIN_GAME event for player: ${playerId}`);
+        console.log(`🎯 Processing JOIN_GAME event for player: ${event.data.playerId}`);
 
         try {
-            // Add second player and update phase (moved from GameLogic.joinGame)
-            gameEnv.playerId_2 = playerId;
+            // Add second player and update phase
+            gameEnv.playerId_2 = event.data.playerId;
             gameEnv.phase = GamePhase.REDRAW_PHASE;
             gameEnv.gameStarted = true;
-            gameEnv.playersReady[playerId] = true;
+            gameEnv.playersReady[event.data.playerId] = true;
 
             // Load deck configuration and set up game
-            GameEngine.initializeGameWithDecks(gameEnv, playerId);
+            GameEngine.initializeGameWithDecks(gameEnv, event.data.playerId);
 
-            console.log(`✅ JOIN_GAME event processed - second player ${playerId} added`);
+            console.log(`✅ JOIN_GAME event processed - second player ${event.data.playerId} added`);
             return { success: true };
 
         } catch (error) {
@@ -170,61 +154,48 @@ export class GameEngine {
     }
 
     private static executeStartReady(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
-        const { playerId, gameId, isRedraw } = event.data;
-
-        console.log(`🎯 Processing CONFIRM_REDRAW event for player: ${playerId}, isRedraw: ${isRedraw}`);
+        console.log(`🎯 Processing CONFIRM_REDRAW event for player: ${event.data.playerId}, isRedraw: ${event.data.isRedraw}`);
 
         try {
             // Initialize playersReady if not exists
-            if (!gameEnv.playersReady) {
-                gameEnv.playersReady = {};
-            }
+            gameEnv.playersReady = gameEnv.playersReady || {};
 
             // Handle redraw logic
-            if (isRedraw) {
-                console.log(`🔄 Processing redraw for player ${playerId}`);
+            if (event.data.isRedraw) {
+                console.log(`🔄 Processing redraw for player ${event.data.playerId}`);
 
-                const player = gameEnv.players[playerId];
-                if (player && player.deck) {
-                    // Put current hand back to deck
+                const player = gameEnv.players[event.data.playerId];
+                if (player?.deck) {
+                    // Put current hand back to deck, shuffle, and draw new hand
                     const currentHand = [...player.deck._handUids];
                     player.deck.mainDeck.push(...currentHand);
                     player.deck._handUids = [];
-
+                    
                     console.log(`📤 Returned ${currentHand.length} cards to deck`);
-
-                    // Shuffle the deck again
+                    
                     player.deck.mainDeck = GameEngine.shuffleDeck(player.deck.mainDeck);
-                    console.log(`🔀 Shuffled deck with ${player.deck.mainDeck.length} cards`);
-
-                    // Assign new 5 hand to player
                     PlayerCardManager.drawCards(player.deck, 5);
-                    console.log(`🃏 Drew new hand of ${player.deck._handUids.length} cards`);
+                    
+                    console.log(`🔀 Shuffled deck and drew new hand of ${player.deck._handUids.length} cards`);
                 }
             }
 
-            // Mark player as ready and set confirmIsRedraw to true (they confirmed their choice)
-            gameEnv.playersReady[playerId] = true;
-
-            const player = gameEnv.players[playerId];
+            // Mark player as ready and set redraw choice
+            gameEnv.playersReady[event.data.playerId] = true;
+            
+            const player = gameEnv.players[event.data.playerId];
             if (player) {
-                // Store their actual redraw choice and mark as confirmed
-                player.isRedraw = isRedraw;
-                player.confirmIsRedraw = true; // They confirmed their choice (yes or no)
-                console.log(`✅ Player ${playerId} confirmed their redraw choice: ${isRedraw}, confirmIsRedraw: ${player.confirmIsRedraw}`);
+                player.isRedraw = event.data.isRedraw;
+                player.confirmIsRedraw = true;
+                console.log(`✅ Player ${event.data.playerId} confirmed redraw choice: ${event.data.isRedraw}`);
             }
 
-            const notificationManager = GameEngine.getNotificationManager(gameEnv);
-
-            if (gameEnv.players[playerId].isRedraw) {
-                notificationManager.notifyRedrawEvent(
-                    playerId
-                )
+            // Notify redraw event if needed
+            if (event.data.isRedraw) {
+                GameEngine.getNotificationManager(gameEnv).notifyRedrawEvent(event.data.playerId);
             }
-            // Note: GAME_START will be triggered automatically by StateBasedActionEngine
-            // when it detects both players are ready and confirmed
 
-            console.log(`✅ CONFIRM_REDRAW event processed - player ${playerId} marked as ready (redraw: ${isRedraw})`);
+            console.log(`✅ CONFIRM_REDRAW event processed - player ${event.data.playerId} marked as ready`);
             return { success: true };
 
         } catch (error) {
@@ -238,16 +209,17 @@ export class GameEngine {
 
 
     private static executeErrorEvent(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
-        const { errorReason, errorType, originalEventType, playerId } = event.data;
-
-        console.log(`💥 Processing error: ${errorType} - ${errorReason}`);
+        console.log(`💥 Processing error: ${event.data.errorType} - ${event.data.errorReason}`);
 
         try {
-            // Add error event using GameNotificationManager
-            const notificationManager = GameEngine.getNotificationManager(gameEnv);
-            notificationManager.notifyError(errorType, errorReason, playerId, originalEventType);
+            GameEngine.getNotificationManager(gameEnv).notifyError(
+                event.data.errorType, 
+                event.data.errorReason, 
+                event.data.playerId, 
+                event.data.originalEventType
+            );
 
-            console.log(`📨 Error event added via GameNotificationManager: ${errorReason}`);
+            console.log(`📨 Error event added: ${event.data.errorReason}`);
             return { success: true };
 
         } catch (error) {
@@ -260,14 +232,11 @@ export class GameEngine {
     }
 
     private static executeAcknowledgeEvents(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
-        const { eventIds, playerId } = event.data;
-
-        console.log(`🎯 Processing ACKNOWLEDGE_EVENTS for ${eventIds.length} events`);
+        console.log(`🎯 Processing ACKNOWLEDGE_EVENTS for ${event.data.eventIds.length} events`);
 
         try {
-            // Create notification manager and acknowledge events
-            const notificationManager = GameEngine.getNotificationManager(gameEnv);
-            const acknowledgedCount = notificationManager.acknowledgeEvents(eventIds);
+            const acknowledgedCount = GameEngine.getNotificationManager(gameEnv)
+                .acknowledgeEvents(event.data.eventIds);
 
             console.log(`✅ ACKNOWLEDGE_EVENTS processed - ${acknowledgedCount} events acknowledged`);
             return { success: true };

@@ -204,8 +204,9 @@ export class PlayerCardManager {
             };
         }
 
-        // Use local utility to find target unit slot
-        const { slot: targetZone } = PlayerCardManager.findSlotByCardUid({ zones: playerZones }, targetUnit);
+        // Use local utility to find target unit slot - minimize object destructuring
+        const slotResult = PlayerCardManager.findSlotByCardUid({ zones: playerZones }, targetUnit);
+        const targetZone = slotResult.slot;
 
         if (!targetZone) {
             return {
@@ -240,7 +241,8 @@ export class PlayerCardManager {
     }
 
     /**
-     * Place command card - placeholder implementation
+     * Place command card - currently not supported in main placement flow
+     * Note: Command cards can be played as pilots via designate_pilot effect
      */
     private static placeCommandCard(
         _playerZones: any,
@@ -248,13 +250,11 @@ export class PlayerCardManager {
         cardUID: string,
         _playerId: string
     ): CardPlacementResult {
-        console.log(`🚧 [PLACEHOLDER] Command card placement for ${cardUID} - not yet implemented`);
-        // TODO: Implement command card placement logic
-        // Command cards might go to a specific command zone or have special rules
+        console.log(`🚧 Command card direct placement not supported for ${cardUID}`);
 
         return {
             success: false,
-            error: `Command card placement not yet implemented for ${cardUID}`,
+            error: `Command card direct placement not supported for ${cardUID}`,
             isOnLink: false,
             isOnPair: false
         };
@@ -565,10 +565,10 @@ export class PlayerCardManager {
         for (let i = 0; i < count && deck.mainDeck.length > 0; i++) {
             const drawnCard = deck.mainDeck.shift();
             if (drawnCard) {
-                deck._handUids.push(drawnCard);
+                deck.handUids.push(drawnCard);
             }
         }
-        console.log(`🃏 Drew ${count} cards, hand size: ${deck._handUids.length}`);
+        console.log(`🃏 Drew ${count} cards, hand size: ${deck.handUids.length}`);
     }
 
     /**
@@ -603,11 +603,9 @@ export class PlayerCardManager {
      * Create unique card instance with UUID
      */
     static createUniqueCardId(originalCardId: string): string {
-        let cleanCardId = originalCardId;
-        if(originalCardId.split("/").length > 1){
-            cleanCardId = originalCardId.split("/")[1];
-        }
-        // Add UUID to make each card instance unique
+        // Optimize string processing - split once and extract if needed
+        const parts = originalCardId.split("/");
+        const cleanCardId = parts.length > 1 ? parts[1] : originalCardId;
         return `${cleanCardId}_${uuidv4()}`;
     }
 

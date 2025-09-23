@@ -11,12 +11,8 @@ import { SLOT_ZONES } from '../../config/gameConstants';
 export interface StateBasedAction {
     actionId: string;
     type: EventType;
-    priority: number;
-    description: string;
-    affectedCards: string[];
-    affectedPlayers: string[];
     autoExecute: boolean;
-    data?: any;
+    data?: any; // Optional data for specific action types
 }
 
 export interface GameStateViolation {
@@ -69,8 +65,7 @@ export class StateBasedActionEngine {
         actions.push(...this.checkPhaseRequirements());
         actions.push(...this.checkIllegalGameStates());
         
-        // Sort by priority (higher number = higher priority)
-        actions.sort((a, b) => b.priority - a.priority);
+        // Actions processed in order found (no priority sorting needed)
         
         if (actions.length > 0) {
             console.log(`🔍 State-based actions found: ${actions.length}`);
@@ -115,10 +110,6 @@ export class StateBasedActionEngine {
             actions.push({
                 actionId: `game_start_${Date.now()}`,
                 type: EventType.GAMEPLAY_BEGINS,
-                priority: 200, // High priority for game flow
-                description: 'Both players ready and confirmed - start game with resource allocation',
-                affectedCards: [],
-                affectedPlayers: [this.gameEnv.playerId_1!, this.gameEnv.playerId_2!],
                 autoExecute: true
             });
         }
@@ -160,10 +151,6 @@ export class StateBasedActionEngine {
                 actions.push({
                     actionId: `draw_to_main_${Date.now()}`,
                     type: EventType.PHASE_ADVANCE,
-                    priority: 180, // High priority for phase transitions
-                    description: 'Auto-advance from DRAW_PHASE to MAIN_PHASE (no draw events pending)',
-                    affectedCards: [],
-                    affectedPlayers: [this.gameEnv.currentPlayer || ''],
                     autoExecute: true
                 });
             }
@@ -222,15 +209,9 @@ export class StateBasedActionEngine {
                 actions.push({
                     actionId: `end_phase_next_player_${Date.now()}`,
                     type: EventType.NEXT_PLAYER_TURN,
-                    priority: 10,
-                    affectedPlayers: [this.gameEnv.currentPlayer || '', nextPlayerId],
-                    affectedCards: [],
-                    description: `Transition from END_PHASE to next player: ${nextPlayerId}`,
                     autoExecute: true,
                     data: {
-                        currentPlayer: this.gameEnv.currentPlayer,
-                        nextPlayer: nextPlayerId,
-                        currentTurn: this.gameEnv.currentTurn
+                        nextPlayer: nextPlayerId
                     }
                 });
             }
@@ -365,17 +346,9 @@ export class StateBasedActionEngine {
                                 actions.push({
                                     actionId: `repair_${unit.cardUid}_${Date.now()}`,
                                     type: EventType.TRIGGER_HEALING,
-                                    priority: 15, // High priority - execute before next player transition
-                                    description: `Execute ${effect.effectId} healing for ${unit.cardId}`,
-                                    affectedCards: [unit.cardId],
-                                    affectedPlayers: [playerId],
                                     autoExecute: true,
                                     data: {
-                                        effectType: 'repair',
-                                        effectId: effect.effectId,
-                                        cardId: unit.cardId,
                                         cardUid: unit.cardUid,
-                                        playerId: playerId,
                                         healAmount: effect.parameters.value
                                     }
                                 });
@@ -384,7 +357,6 @@ export class StateBasedActionEngine {
                             }
                         }
                     });
-                    console.log("data for healing event ", JSON.stringify(unit.cardId))
                 }
             }
         }
