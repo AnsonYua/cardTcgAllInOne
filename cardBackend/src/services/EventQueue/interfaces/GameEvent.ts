@@ -587,6 +587,21 @@ export class EventFactory {
         availableTargets: any[],
         sourceSlot?: string
     ): TargetChoiceEvent {
+        // Create the data object directly without reconstruction
+        const eventData = {
+            playerId,
+            choiceId: `target_choice_${sourceType.toLowerCase()}_${sourceCardUid}_${Date.now()}`,
+            userDecisionMade: false,
+            sourceType,
+            sourceCardUid,
+            sourceCardId,
+            sourceSlot,
+            effect,            // Pass effect object directly without conversion
+            targetConfig,      // Pass targetConfig object directly without conversion
+            availableTargets,  // Pass availableTargets array directly without conversion
+            selectedTargets: undefined
+        };
+
         return {
             id: `target_choice_${++this.eventIdCounter}_${Date.now()}`,
             type: EventType.TARGET_CHOICE,
@@ -594,19 +609,7 @@ export class EventFactory {
             priority: EventPriority.HIGH,
             playerId,
             timestamp: Date.now(),
-            data: {
-                playerId,
-                choiceId: `target_choice_${sourceType.toLowerCase()}_${sourceCardUid}_${Date.now()}`,
-                userDecisionMade: false,
-                sourceType,
-                sourceCardUid,
-                sourceCardId,
-                sourceSlot,
-                effect,
-                targetConfig,
-                availableTargets,
-                selectedTargets: undefined
-            }
+            data: eventData    // Pass eventData object directly without reconstruction
         };
     }
     
@@ -616,17 +619,19 @@ export class EventFactory {
      * Create Pairing effect event for processing queue
      */
     static createPairingEffectEvent(eventData: any, pairingEffects: any[], placementResult: any): GameEvent {
+        // Pass objects directly without reconstruction to minimize conversions
+        const eventDataObject = {
+            playerId: eventData.playerId,  // Pass playerId directly from eventData
+            effects: pairingEffects        // Pass effects array directly
+        };
+
         const pairingEvent: GameEvent = {
             id: `pairing_${eventData.cardUID}_${Date.now()}`,
             type: EventType.PAIRING_EFFECT_TRIGGERED,
             status: EventStatus.DECLARED,
             priority: EventPriority.NORMAL,
             playerId: eventData.playerId,
-            data: {
-                // Only include data actually used by PairingEffect.processPairingEffect
-                playerId: eventData.playerId,
-                effects: pairingEffects
-            },
+            data: eventDataObject,          // Pass eventDataObject directly
             timestamp: Date.now()
         };
 
@@ -638,11 +643,20 @@ export class EventFactory {
      * Create PLAY_CARD event for burst deploy effects
      */
     static createBurstDeployEvent(playerId: string, cardUid: string, cardData: any, burstEffect: any): GameEvent {
-        // Determine playAs based on card type and burst effect
-        let playAs = cardData.cardType;
-        if (cardData.cardType === 'command' && burstEffect.effect?.action === 'designate_pilot') {
-            playAs = 'pilot';
-        }
+        // Determine playAs based on card type and burst effect - minimize conversions
+        const playAs = (cardData.cardType === 'command' && burstEffect.effect?.action === 'designate_pilot') 
+            ? 'pilot' 
+            : cardData.cardType;
+
+        // Create data object directly to minimize conversions
+        const eventData = {
+            playerId,                          // Pass playerId directly
+            cardUID: cardUid,                  // Pass cardUid directly
+            cardId: cardData.id || cardData.cardId,  // Extract cardId once
+            cardData,                          // Pass cardData object directly
+            playAs,                            // Use computed playAs value
+            fromBurst: true
+        };
 
         const playCardEvent: GameEvent = {
             id: `burst_deploy_${Date.now()}_${Math.random()}`,
@@ -650,15 +664,8 @@ export class EventFactory {
             status: EventStatus.DECLARED,
             priority: EventPriority.NORMAL,
             timestamp: Date.now(),
-            playerId: playerId,
-            data: {
-                playerId: playerId,
-                cardUID: cardUid,
-                cardId: cardData.id || cardData.cardId,
-                cardData: cardData,
-                playAs: playAs,
-                fromBurst: true
-            }
+            playerId,
+            data: eventData                    // Pass eventData object directly
         };
 
         console.log(`🚀 Created burst deploy PLAY_CARD event: ${playCardEvent.id} (playAs: ${playAs})`);
@@ -669,21 +676,24 @@ export class EventFactory {
      * Create Deploy effect event for processing queue
      */
     static createDeployEffectEvent(eventData: any, deployEffects: any[]): GameEvent {
+        // Create event data object directly from input to minimize conversions
+        const eventDataObject = {
+            cardId: eventData.cardId,          // Pass cardId directly from eventData
+            cardUID: eventData.cardUID,        // Pass cardUID directly from eventData
+            cardData: eventData.cardData,      // Pass cardData object directly from eventData
+            playerId: eventData.playerId,      // Pass playerId directly from eventData
+            zone: eventData.zone,              // Pass zone directly from eventData
+            effects: deployEffects,            // Pass effects array directly
+            timestamp: Date.now()
+        };
+
         const deployEvent: GameEvent = {
             id: `deploy_${eventData.cardUID}_${Date.now()}`,
             type: EventType.DEPLOY_EFFECT_TRIGGERED,
             status: EventStatus.DECLARED,
             priority: EventPriority.NORMAL,
             playerId: eventData.playerId,
-            data: {
-                cardId: eventData.cardId,
-                cardUID: eventData.cardUID,
-                cardData: eventData.cardData,
-                playerId: eventData.playerId,
-                zone: eventData.zone,
-                effects: deployEffects,
-                timestamp: Date.now()
-            },
+            data: eventDataObject,             // Pass eventDataObject directly
             timestamp: Date.now()
         };
 

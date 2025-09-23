@@ -30,18 +30,17 @@ export class PlayerCardManager {
         eventData: any
     ): CardPlacementResult {
         try {
-            const { playerId, cardUID, playAs, targetUnit } = eventData;
-
-            const player = gameEnv.players[playerId];
+            // Use eventData object directly to minimize property extraction conversions
+            const player = gameEnv.players[eventData.playerId];
             if (!player || !player.zones) {
                 return {
                     success: false,
-                    error: `Player ${playerId} or zones not found`
+                    error: `Player ${eventData.playerId} or zones not found`
                 };
             }
 
-            // Extract cardId from cardUID
-            const cardId = cardUID.split('_')[0];
+            // Extract cardId from cardUID - minimize string operations
+            const cardId = eventData.cardUID.split('_')[0];
 
             // Load full card data from card database
             const fullCardData = CardDatabaseManager.getCardDetails(cardId);
@@ -52,24 +51,24 @@ export class PlayerCardManager {
                 };
             }
 
-
-            switch (playAs) {
+            // Use eventData properties directly in method calls to minimize conversions
+            switch (eventData.playAs) {
                 case 'unit':
-                    return this.placeUnitCard(player.zones, fullCardData, cardUID, playerId);
+                    return this.placeUnitCard(player.zones, fullCardData, eventData.cardUID, eventData.playerId);
 
                 case 'pilot':
-                    return this.placePilotCard(player.zones, fullCardData, cardUID, playerId, targetUnit);
+                    return this.placePilotCard(player.zones, fullCardData, eventData.cardUID, eventData.playerId, eventData.targetUnit);
 
                 case 'command':
-                    return this.placeCommandCard(player.zones, fullCardData, cardUID, playerId);
+                    return this.placeCommandCard(player.zones, fullCardData, eventData.cardUID, eventData.playerId);
 
                 case 'base':
-                    return this.placeBaseCard(player.zones, fullCardData, cardUID, playerId);
+                    return this.placeBaseCard(player.zones, fullCardData, eventData.cardUID, eventData.playerId);
 
                 default:
                     return {
                         success: false,
-                        error: `cannot play as ${playAs} for card ${cardUID}`
+                        error: `cannot play as ${eventData.playAs} for card ${eventData.cardUID}`
                     };
             }
 

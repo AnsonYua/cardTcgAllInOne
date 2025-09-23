@@ -43,13 +43,11 @@ export interface EffectDefinition {
     type?: string;
     trigger?: string;
     target?: TargetConfig;
-    effect: {
-        action: string;         // 'modifyAP', 'damage', 'rest', etc.
-        parameters?: any;       // Effect parameters
+    action: string;         // 'modifyAP', 'damage', 'rest', etc.
+    parameters?: any;       // Effect parameters
+    timing?: {
         duration?: string;
-        timing?: {
-            duration: 'UNTIL_END_OF_TURN';
-        };
+        actionTurn?: string;
     };
     description?: string;
 }
@@ -87,9 +85,7 @@ export class TargetChoiceManager {
         
         console.log(`🎯 Processing ${sourceType} effect: ${effect.effectId} requiring target selection`);
         
-        // Extract action and parameters from nested structure
-        const action = effect.effect?.action || 'unknown';
-        const parameters = effect.effect?.parameters || {};
+        // No need to extract action and parameters - pass effect object directly to minimize conversions
         
         try {
             // Generate available targets based on config
@@ -106,15 +102,15 @@ export class TargetChoiceManager {
             
             // Decision logic: Choice vs Auto-application
             if (this.requiresPlayerChoice(targetConfig, availableTargets)) {
-                // Create TARGET_CHOICE event for player selection
+                // Create TARGET_CHOICE event for player selection - pass objects directly
                 const choiceEvent = EventFactory.createTargetChoiceEvent(
                     playerId,
                     sourceType,
                     sourceCardUid,
                     sourceCardId,
-                    effect,
-                    targetConfig,
-                    availableTargets,
+                    effect,            // Pass effect object directly without conversion
+                    targetConfig,      // Pass targetConfig object directly without conversion  
+                    availableTargets,  // Pass availableTargets array directly without conversion
                     sourceSlot
                 );
                 
@@ -162,22 +158,19 @@ export class TargetChoiceManager {
                 return { success: true }; // Skip - should not happen in correct flow
             }
 
-            // Handle both singular and plural target selection formats
-            let selectedTargets;
-            if (event.data.selectedTargets) {
-                // Array format from multi-target selection
-                selectedTargets = event.data.selectedTargets;
-            } else if (event.data.selectedTarget) {
-                // Single object format from frontend - convert to array
-                selectedTargets = [event.data.selectedTarget];
-            } else {
+            // Get event data object directly without destructuring to minimize conversions
+            const eventData = event.data;
+            
+            // Use selectedTargets directly from eventData, normalizing to array if needed
+            const selectedTargets = eventData.selectedTargets || 
+                                  (eventData.selectedTarget ? [eventData.selectedTarget] : null);
+
+            if (!selectedTargets) {
                 return {
                     success: false,
                     error: 'No targets selected for effect'
                 };
             }
-
-            const { effect, playerId, sourceCardUid, sourceCardId } = event.data;
 
             if (!selectedTargets || selectedTargets.length === 0) {
                 return {
@@ -186,15 +179,22 @@ export class TargetChoiceManager {
                 };
             }
 
-            // Apply effect to selected targets
-            const result = this.applyEffectToTargets(gameEnv, effect, selectedTargets, playerId, sourceCardUid, sourceCardId);
+            // Apply effect to selected targets - pass eventData object directly to minimize conversions
+            const result = this.applyEffectToTargets(
+                gameEnv, 
+                eventData.effect,          // Use effect directly from eventData
+                selectedTargets, 
+                eventData.playerId,        // Use playerId directly from eventData
+                eventData.sourceCardUid,   // Use sourceCardUid directly from eventData
+                eventData.sourceCardId     // Use sourceCardId directly from eventData
+            );
 
             if (!result.success) {
                 console.log(`❌ Failed to apply effect to selected targets: ${result.error}`);
                 return result;
             }
 
-            console.log(`✅ Successfully applied ${effect.effectId} to ${selectedTargets.length} selected target(s)`);
+            console.log(`✅ Successfully applied ${eventData.effect.effectId} to ${selectedTargets.length} selected target(s)`);
             return { success: true };
 
         } catch (error) {
@@ -292,7 +292,7 @@ export class TargetChoiceManager {
         sourceCardId?: string
     ): { success: boolean; error?: string } {
         
-        console.log(`⚡ Applying effect ${effect.effect.action} to ${selectedTargets.length} target(s)`);
+        console.log(`⚡ Applying effect ${effect.action} to ${selectedTargets.length} target(s)`);
         
         try {
             // Apply immediate effect to all targets
@@ -307,11 +307,11 @@ export class TargetChoiceManager {
             console.log("adsfasdfdsfasdfadssdasd   ",JSON.stringify(effect));
             console.log("adsfasdfdsfasdfadssdasd111   ",sourceCardUid , "  ", sourceCardId);
             // Create temporary effect if duration-based
-            if (effect.effect.timing?.duration === 'UNTIL_END_OF_TURN' && sourceCardUid && sourceCardId) {
+            if (effect.timing?.duration === 'UNTIL_END_OF_TURN' && sourceCardUid && sourceCardId) {
                 this.createTemporaryEffect(gameEnv, effect, selectedTargets, sourcePlayerId, sourceCardUid, sourceCardId);
             }
             
-            console.log(`✅ Successfully applied ${effect.effect.action} to all ${selectedTargets.length} target(s)`);
+            console.log(`✅ Successfully applied ${effect.action} to all ${selectedTargets.length} target(s)`);
             return { success: true };
             
         } catch (error) {
@@ -333,7 +333,7 @@ export class TargetChoiceManager {
         sourcePlayerId: string
     ): { success: boolean; error?: string } {
         
-        console.log(`🎯 Applying ${effect.effect.action} to target: ${target.cardUid} in ${target.zone}`);
+        console.log(`🎯 Applying ${effect.action} to target: ${target.cardUid} in ${target.zone}`);
         
         try {
             // Get target player and slot
@@ -367,24 +367,25 @@ export class TargetChoiceManager {
             
             const targetCard = cardResult.card;
             
-            // Apply effect based on action type
-            const value = effect.effect.parameters?.value || 0;
-            
-            switch (effect.effect.action) {
+            // Apply effect based on action type - use effect object directly to minimize conversions
+            switch (effect.action) {
                 case 'modifyAP':
-                    targetCard.modifyAP = value;
-                    console.log(`⚔️ Modified 1111111${targetCard.modifyAP} `);
+                    const apValue = effect.parameters?.value || 0;
+                    targetCard.modifyAP = apValue;
+                    console.log(`⚔️ Modified ${targetCard.cardUid} AP by ${apValue}`);
                     break;
                     
                 case 'modifyHP':
+                    const hpValue = effect.parameters?.value || 0;
                     const originalHP = targetCard.currentHP || targetCard.cardData?.hp || 0;
-                    targetCard.currentHP = Math.max(0, originalHP + value);
-                    console.log(`❤️ Modified ${target.cardUid} HP by ${value}, from ${originalHP} to ${targetCard.currentHP}`);
+                    targetCard.currentHP = Math.max(0, originalHP + hpValue);
+                    console.log(`❤️ Modified ${target.cardUid} HP by ${hpValue}, from ${originalHP} to ${targetCard.currentHP}`);
                     break;
                     
                 case 'damage':
-                    targetCard.damageReceived = (targetCard.damageReceived || 0) + value;
-                    console.log(`🩸 ${target.cardUid} takes ${value} damage (total: ${targetCard.damageReceived})`);
+                    const damageValue = effect.parameters?.value || 0;
+                    targetCard.damageReceived = (targetCard.damageReceived || 0) + damageValue;
+                    console.log(`🩸 ${target.cardUid} takes ${damageValue} damage (total: ${targetCard.damageReceived})`);
                     break;
                     
                 case 'rest':
@@ -393,16 +394,17 @@ export class TargetChoiceManager {
                     break;
                     
                 case 'heal':
-                    const healAmount = Math.min(value, targetCard.damageReceived || 0);
+                    const healValue = effect.parameters?.value || 0;
+                    const healAmount = Math.min(healValue, targetCard.damageReceived || 0);
                     targetCard.damageReceived = (targetCard.damageReceived || 0) - healAmount;
                     console.log(`🩹 ${target.cardUid} healed ${healAmount} damage`);
                     break;
                     
                 default:
-                    console.log(`⚠️ Unknown effect action: ${effect.effect.action}`);
+                    console.log(`⚠️ Unknown effect action: ${effect.action}`);
                     return {
                         success: false,
-                        error: `Unknown effect action: ${effect.effect.action}`
+                        error: `Unknown effect action: ${effect.action}`
                     };
             }
             
@@ -455,10 +457,7 @@ export class TargetChoiceManager {
         
         console.log(`⏰ Creating temporary effect: ${effect.effectId} until end of turn`);
         
-        // Extract effect values from the effect definition
-        const modifyAP = effect.effect.action === 'modifyAP' ? effect.effect.parameters?.value : undefined;
-        const modifyHP = effect.effect.action === 'modifyHP' ? effect.effect.parameters?.value : undefined;
-        const duration = effect.effect?.timing?.duration as string; 
+        // Use effect object directly to minimize conversions 
         
         // Apply effect to each target unit directly
         for (const target of selectedTargets) {
@@ -483,12 +482,12 @@ export class TargetChoiceManager {
             
             const targetCard = cardResult.card as UnitZoneCard | PilotZoneCard;
             
-            // Create the temporary effect for this specific unit
+            // Create the temporary effect for this specific unit - use effect object directly
             const tempEffect: TemporaryEffect = {
                 sourceCardUid: sourceCardUid,
-                modifyAP: modifyAP,
-                modifyHP: modifyHP,
-                duration: duration || 'UNTIL_END_OF_TURN',
+                modifyAP: effect.action === 'modifyAP' ? effect.parameters?.value : undefined,
+                modifyHP: effect.action === 'modifyHP' ? effect.parameters?.value : undefined,
+                duration: effect.timing?.duration as string || 'UNTIL_END_OF_TURN',
                 appliedTurn: gameEnv.currentTurn,
                 appliedBy: sourcePlayerId
             };
@@ -501,15 +500,15 @@ export class TargetChoiceManager {
             // Add the effect directly to the target card
             targetCard.temporaryEffects.push(tempEffect);
             
-            // Apply the effect immediately to the card's modifiers
-            if (modifyAP !== undefined) {
-                targetCard.modifyAP = (targetCard.modifyAP || 0) + modifyAP;
-                console.log(`✅ Applied AP effect ${modifyAP} to ${target.cardUid} (new modifyAP: ${targetCard.modifyAP})`);
+            // Apply the effect immediately to the card's modifiers - use tempEffect object directly
+            if (tempEffect.modifyAP !== undefined) {
+                targetCard.modifyAP = (targetCard.modifyAP || 0) + tempEffect.modifyAP;
+                console.log(`✅ Applied AP effect ${tempEffect.modifyAP} to ${target.cardUid} (new modifyAP: ${targetCard.modifyAP})`);
             }
             
-            if (modifyHP !== undefined) {
-                targetCard.modifyHP = (targetCard.modifyHP || 0) + modifyHP;
-                console.log(`✅ Applied HP effect ${modifyHP} to ${target.cardUid} (new modifyHP: ${targetCard.modifyHP})`);
+            if (tempEffect.modifyHP !== undefined) {
+                targetCard.modifyHP = (targetCard.modifyHP || 0) + tempEffect.modifyHP;
+                console.log(`✅ Applied HP effect ${tempEffect.modifyHP} to ${target.cardUid} (new modifyHP: ${targetCard.modifyHP})`);
             }
             
             console.log(`✅ Added temporary effect from ${sourceCardUid} to unit ${target.cardUid}`);

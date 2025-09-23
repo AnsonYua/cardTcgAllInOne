@@ -351,7 +351,7 @@ export class StateBasedActionEngine {
                 if (cardData && cardData.effects && cardData.effects.rules) {
                     // Look for repair abilities
                     cardData.effects.rules.forEach((effect: any) => {
-                        if (effect.trigger === 'END_OF_TURN' && effect.effect.action === 'heal') {
+                        if (effect.trigger === 'END_OF_TURN' && effect.action === 'heal') {
                             // Create a unique key for this repair action (per turn)
                             const repairKey = `${unit.cardUid}_${effect.effectId}_turn_${this.gameEnv.currentTurn}`;
                             
@@ -376,7 +376,7 @@ export class StateBasedActionEngine {
                                         cardId: unit.cardId,
                                         cardUid: unit.cardUid,
                                         playerId: playerId,
-                                        healAmount: effect.effect.parameters.value
+                                        healAmount: effect.parameters.value
                                     }
                                 });
                             } else {

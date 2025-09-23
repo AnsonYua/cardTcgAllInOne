@@ -183,7 +183,7 @@
                         "effectId": "deploy_rest_low_hp",
                         "type": "triggered",
                         "trigger": "ENTERS_PLAY",
-                        "optional":false,
+                        "optional": false,
                         "target": {
                             "type": "unit",
                             "scope": "opponent",
@@ -192,9 +192,9 @@
                             },
                             "count": 1
                         },
-                        "effect": {
-                            "action": "rest",
-                           "actionTurn": "ANY"
+                        "action": "rest",
+                        "timing": {
+                            "actionTurn": "ANY"
                         }
                     }
                 ]
@@ -258,14 +258,12 @@
                             },
                             "count": 1
                         },
-                        "effect": {
-                            "action": "modifyAP",
-                            "parameters": {
-                                "value": -3
-                            },
-                            "timing": {
-                                "duration": "UNTIL_END_OF_TURN"
-                            }
+                        "action": "modifyAP",
+                        "parameters": {
+                            "value": -3
+                        },
+                        "timing": {
+                            "duration": "UNTIL_END_OF_TURN"
                         }
                     }
                 ]
@@ -325,12 +323,9 @@
                             "type": "unit",
                             "scope": "self"
                         },
-                        "effect": {
-                            "action": "redirect_attack",
-                            "parameters": {
-                                "cost": "rest_self"
-                            },
-                            "duration": "instant"
+                        "action": "redirect_attack",
+                        "parameters": {
+                            "cost": "rest_self"
                         }
                     }
                 ]
@@ -367,12 +362,9 @@
                             "type": "unit",
                             "scope": "self"
                         },
-                        "effect": {
-                            "action": "redirect_attack",
-                            "parameters": {
-                                "cost": "rest_self"
-                            },
-                            "duration": "instant"
+                        "action": "redirect_attack",
+                        "parameters": {
+                            "cost": "rest_self"
                         }
                     },
                     {
@@ -383,12 +375,9 @@
                             "type": "unit",
                             "scope": "self"
                         },
-                        "effect": {
-                            "action": "restrict_attack",
-                            "parameters": {
-                                "restriction": "cannot_attack_player"
-                            },
-                            "duration": "permanent"
+                        "action": "restrict_attack",
+                        "parameters": {
+                            "restriction": "cannot_attack_player"
                         }
                     }
                 ]
@@ -424,10 +413,7 @@
                             "type": "card",
                             "scope": "self"
                         },
-                        "effect": {
-                            "action": "addToHand",
-                            "duration": "instant"
-                        }
+                        "action": "addToHand"
                     },
                     {
                         "effectId": "paired_rest_medium_hp",
@@ -441,10 +427,7 @@
                             },
                             "count": 1
                         },
-                        "effect": {
-                            "action": "rest",
-                            "duration": "permanent"
-                        }
+                        "action": "rest"
                     }
                 ]
             }
@@ -477,10 +460,7 @@
                             "type": "card",
                             "scope": "self"
                         },
-                        "effect": {
-                            "action": "addToHand",
-                            "duration": "instant"
-                        }
+                        "action": "addToHand"
                     },
                     {
                         "effectId": "attack_activate_resource",
@@ -496,10 +476,7 @@
                             "scope": "self",
                             "count": 1
                         },
-                        "effect": {
-                            "action": "setActive",
-                            "duration": "instant"
-                        }
+                        "action": "setActive"
                     }
                 ]
             }
@@ -539,12 +516,9 @@
                             },
                             "count": 1
                         },
-                        "effect": {
-                            "action": "damage",
-                            "parameters": {
-                                "value": 1
-                            },
-                            "duration": "instant"
+                        "action": "damage",
+                        "parameters": {
+                            "value": 1
                         }
                     },
                     {
@@ -555,14 +529,11 @@
                             "type": "pilot",
                             "scope": "any"
                         },
-                        "effect": {
-                            "action": "designate_pilot",
-                            "parameters": {
-                                "pilotName": "Hayato Kobayashi",
-                                "AP":0,
-                                "HP":1
-                            },
-                            "duration": "permanent"
+                        "action": "designate_pilot",
+                        "parameters": {
+                            "pilotName": "Hayato Kobayashi",
+                            "AP": 0,
+                            "HP": 1
                         }
                     }
                 ]
@@ -600,12 +571,9 @@
                             "scope": "self",
                             "count": 1
                         },
-                        "effect": {
-                            "action": "heal",
-                            "parameters": {
-                                "value": 3
-                            },
-                            "duration": "instant"
+                        "action": "heal",
+                        "parameters": {
+                            "value": 3
                         }
                     },
                     {
@@ -616,14 +584,11 @@
                             "type": "pilot",
                             "scope": "any"
                         },
-                        "effect": {
-                            "action": "designate_pilot",
-                            "parameters": {
-                                "pilotName": "Kai Shiden",
-                                "AP":1,
-                                "HP":0
-                            },
-                            "duration": "permanent"
+                        "action": "designate_pilot",
+                        "parameters": {
+                            "pilotName": "Kai Shiden",
+                            "AP": 1,
+                            "HP": 0
                         }
                     }
                 ]
@@ -655,12 +620,9 @@
                             "type": "card",
                             "scope": "self"
                         },
-                        "effect": {
-                            "action": "activate_ability",
-                            "parameters": {
-                                "abilityType": "main"
-                            },
-                            "duration": "instant"
+                        "action": "activate_ability",
+                        "parameters": {
+                            "abilityType": "main"
                         }
                     },
                     {
@@ -675,12 +637,9 @@
                             "scope": "opponent",
                             "count": 1
                         },
-                        "effect": {
-                            "action": "modifyAP",
-                            "parameters": {
-                                "value": -3
-                            },
-                            "duration": "turn"
+                        "action": "modifyAP",
+                        "parameters": {
+                            "value": -3
                         }
                     }
                 ]
@@ -720,10 +679,7 @@
                             "type": "card",
                             "scope": "self"
                         },
-                        "effect": {
-                            "action": "deploy",
-                            "duration": "instant"
-                        }
+                        "action": "deploy"
                     },
                     {
                         "effectId": "deploy_shield_to_hand",
@@ -733,13 +689,10 @@
                             "type": "card",
                             "scope": "self_shield"
                         },
-                        "effect": {
-                            "action": "addToHand",
-                            "parameters": {
-                                "value": 1,
-                                "from": "shield"
-                            },
-                            "duration": "instant"
+                        "action": "addToHand",
+                        "parameters": {
+                            "value": 1,
+                            "from": "shield"
                         }
                     },
                     {
@@ -755,41 +708,39 @@
                         "conditions": [
                             "boardStateCheck"
                         ],
-                        "effect": {
-                            "action": "conditionalTokenDeploy",
-                            "parameters": {
-                                "condition1": {
-                                    "unitsInPlay": 0,
-                                    "token": {
-                                        "name": "Gundam",
-                                        "traits": [
-                                            "White Base Team"
-                                        ],
-                                        "ap": 3,
-                                        "hp": 3
-                                    }
-                                },
-                                "condition2": {
-                                    "unitsInPlay": 1,
-                                    "token": {
-                                        "name": "Guncannon",
-                                        "traits": [
-                                            "White Base Team"
-                                        ],
-                                        "ap": 2,
-                                        "hp": 2
-                                    }
-                                },
-                                "condition3": {
-                                    "unitsInPlay": ">=2",
-                                    "token": {
-                                        "name": "Guntank",
-                                        "traits": [
-                                            "White Base Team"
-                                        ],
-                                        "ap": 1,
-                                        "hp": 1
-                                    }
+                        "action": "conditionalTokenDeploy",
+                        "parameters": {
+                            "condition1": {
+                                "unitsInPlay": 0,
+                                "token": {
+                                    "name": "Gundam",
+                                    "traits": [
+                                        "White Base Team"
+                                    ],
+                                    "ap": 3,
+                                    "hp": 3
+                                }
+                            },
+                            "condition2": {
+                                "unitsInPlay": 1,
+                                "token": {
+                                    "name": "Guncannon",
+                                    "traits": [
+                                        "White Base Team"
+                                    ],
+                                    "ap": 2,
+                                    "hp": 2
+                                }
+                            },
+                            "condition3": {
+                                "unitsInPlay": ">=2",
+                                "token": {
+                                    "name": "Guntank",
+                                    "traits": [
+                                        "White Base Team"
+                                    ],
+                                    "ap": 1,
+                                    "hp": 1
                                 }
                             }
                         }
@@ -829,10 +780,7 @@
                             "type": "card",
                             "scope": "self"
                         },
-                        "effect": {
-                            "action": "deploy",
-                            "duration": "instant"
-                        }
+                        "action": "deploy"
                     },
                     {
                         "effectId": "deploy_shield_to_hand",
@@ -842,13 +790,10 @@
                             "type": "card",
                             "scope": "self_shield"
                         },
-                        "effect": {
-                            "action": "addToHand",
-                            "parameters": {
-                                "value": 1,
-                                "from": "shield"
-                            },
-                            "duration": "instant"
+                        "action": "addToHand",
+                        "parameters": {
+                            "value": 1,
+                            "from": "shield"
                         }
                     },
                     {
@@ -867,12 +812,9 @@
                                 "linkStatus": "linked"
                             }
                         },
-                        "effect": {
-                            "action": "modifyAP",
-                            "parameters": {
-                                "value": 1
-                            },
-                            "duration": "turn"
+                        "action": "modifyAP",
+                        "parameters": {
+                            "value": 1
                         }
                     }
                 ]
