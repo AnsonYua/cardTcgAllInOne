@@ -97,13 +97,13 @@ export class GameNotificationManager {
     /**
      * Notify frontend about card draw (requires acknowledgment)
      */
-    notifyCardDrawn(playerId: string, drawnCardUids: string[], newHandSize: number): string {
+    notifyCardDrawn(playerId: string, drawnCarduids: string[], newHandSize: number): string {
         return this.addNotificationEvent(
             'CARD_DRAWN', 
             {
                 playerId,
-                drawnCards: drawnCardUids,
-                cardsDrawn: drawnCardUids.length,
+                drawnCards: drawnCarduids,
+                cardsDrawn: drawnCarduids.length,
                 newHandSize
             },
             true, // requiresAcknowledgment

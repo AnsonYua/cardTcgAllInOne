@@ -8,17 +8,17 @@ import CardStatCalculator from './CardStatCalculator.js';
  * ItemDataResolver - Converts simplified item references to dialog-ready card objects
  * 
  * Supported Item Types:
- * - slot: { dialogDisplayType: 'slot', playerId, zone, cardUid? }
- * - carduid: { dialogDisplayType: 'carduid', cardUid, preSelected? }
+ * - slot: { dialogDisplayType: 'slot', playerId, zone, carduid? }
+ * - carduid: { dialogDisplayType: 'carduid', carduid, preSelected? }
  * 
  * Slot Flexibility:
  * - Returns any slot with cards (unit only, pilot only, or both)
  * - No constraint filtering - all occupied slots are valid
- * - Optional cardUid filtering for specific card targeting
+ * - Optional carduid filtering for specific card targeting
  * 
  * Output Card Types:
- * - Slot cards: { type: "slot", cardId, cardUid, displayName, cardData, zone, playerId, isSlotTarget, unit, pilot, totalAP, totalHP, selectionIndex }
- * - CardUID cards: { type: "carduid", cardId, cardUid, displayName, cardData, selectionIndex, preSelected? }
+ * - Slot cards: { type: "slot", cardId, carduid, displayName, cardData, zone, playerId, isSlotTarget, unit, pilot, totalAP, totalHP, selectionIndex }
+ * - Carduid cards: { type: "carduid", cardId, carduid, displayName, cardData, selectionIndex, preSelected? }
  */
 export default class ItemDataResolver {
   
@@ -69,7 +69,7 @@ export default class ItemDataResolver {
       case 'slot':
         return this._resolveSlot(item, gameState, index);
       case 'carduid':
-        return this._resolveCardUID(item, gameState, index);
+        return this._resolveCarduid(item, gameState, index);
       default:
         console.warn(`ItemDataResolver: Unknown item dialogDisplayType: ${item.dialogDisplayType}`);
         return null;
@@ -81,7 +81,7 @@ export default class ItemDataResolver {
    * @private
    */
   static _resolveSlot(item, gameState, index) {
-    const { playerId, zone, cardUid } = item;
+    const { playerId, zone, carduid } = item;
     
     if (!playerId || !zone) {
       console.warn('ItemDataResolver: Slot item missing playerId or zone');
@@ -102,9 +102,9 @@ export default class ItemDataResolver {
       return null;
     }
     
-    // Optional specific card filter (only if cardUid specified)
-    if (cardUid && slot.unit?.cardUid !== cardUid) {
-      console.log(`ItemDataResolver: Slot ${zone} unit cardUid ${slot.unit?.cardUid} != ${cardUid}`);
+    // Optional specific card filter (only if carduid specified)
+    if (carduid && slot.unit?.carduid !== carduid) {
+      console.log(`ItemDataResolver: Slot ${zone} unit carduid ${slot.unit?.carduid} != ${carduid}`);
       return null;
     }
     
@@ -115,7 +115,7 @@ export default class ItemDataResolver {
     }
     
     // Build card object for dialog display
-    return this._buildSlotCard(slot, { zone, playerId, cardUid, index });
+    return this._buildSlotCard(slot, { zone, playerId, carduid, index });
   }
   
   /**
@@ -123,7 +123,7 @@ export default class ItemDataResolver {
    * @private
    */
   static _buildSlotCard(slot, metadata) {
-    const { zone, playerId, cardUid, index } = metadata;
+    const { zone, playerId, carduid, index } = metadata;
     const unit = slot.unit;
     const pilot = slot.pilot;
     
@@ -153,8 +153,8 @@ export default class ItemDataResolver {
     // Create minimized card object for slot selection
     const cardObject = {
       // Essential identifiers - use primary card data
-      cardId: primaryCard?.cardData?.id || primaryCard?.cardUid || 'unknown',
-      cardUid: primaryCard?.cardUid || 'unknown',
+      cardId: primaryCard?.cardData?.id || primaryCard?.carduid || 'unknown',
+      carduid: primaryCard?.carduid || 'unknown',
       type : "slot",
       // Display data
       displayName: displayName,
@@ -182,14 +182,14 @@ export default class ItemDataResolver {
   }
   
   /**
-   * Resolve cardUID item (specific card references)
+   * Resolve carduid item (specific card references)
    * @private
    */
-  static _resolveCardUID(item, gameState, index) {
-    const { cardUid, preSelected = false } = item;
+  static _resolveCarduid(item, gameState, index) {
+    const { carduid, preSelected = false } = item;
     
-    if (!cardUid) {
-      console.warn('ItemDataResolver: CardUID item missing cardUid');
+    if (!carduid) {
+      console.warn('ItemDataResolver: Carduid item missing carduid');
       return null;
     }
     
@@ -203,7 +203,7 @@ export default class ItemDataResolver {
       
       // Check hand
       if (player.deck?.hand) {
-        const handCard = player.deck.hand.find(card => card.cardUid === cardUid);
+        const handCard = player.deck.hand.find(card => card.carduid === carduid);
         if (handCard) {
           cardData = handCard.cardData;
           foundLocation = `${playerId}/hand`;
@@ -215,12 +215,12 @@ export default class ItemDataResolver {
       if (player.zones) {
         for (const zoneName in player.zones) {
           const zone = player.zones[zoneName];
-          if (zone.unit?.cardUid === cardUid) {
+          if (zone.unit?.carduid === carduid) {
             cardData = zone.unit.cardData;
             foundLocation = `${playerId}/${zoneName}/unit`;
             break;
           }
-          if (zone.pilot?.cardUid === cardUid) {
+          if (zone.pilot?.carduid === carduid) {
             cardData = zone.pilot.cardData;
             foundLocation = `${playerId}/${zoneName}/pilot`;
             break;
@@ -231,7 +231,7 @@ export default class ItemDataResolver {
       
       // Check trash
       if (player.trashArea) {
-        const trashCard = player.trashArea.find(card => card.cardUid === cardUid);
+        const trashCard = player.trashArea.find(card => card.carduid === carduid);
         if (trashCard) {
           cardData = trashCard.cardData;
           foundLocation = `${playerId}/trash`;
@@ -241,16 +241,16 @@ export default class ItemDataResolver {
     }
     
     if (!cardData) {
-      console.warn(`ItemDataResolver: Card ${cardUid} not found in game state`);
+      console.warn(`ItemDataResolver: Card ${carduid} not found in game state`);
       return null;
     }
     
-    console.log(`🎴 Found card ${cardUid} in ${foundLocation}: ${cardData.name}`);
+    console.log(`🎴 Found card ${carduid} in ${foundLocation}: ${cardData.name}`);
     
-    // Create minimized card object for cardUID selection
+    // Create minimized card object for carduid selection
     return {
-      cardId: cardData.id || cardUid,
-      cardUid: cardUid,
+      cardId: cardData.id || carduid,
+      carduid: carduid,
       type: "carduid",
       displayName: cardData.name || 'Unknown Card',
       cardData: cardData, // For Card component rendering

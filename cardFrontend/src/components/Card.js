@@ -85,7 +85,7 @@ export default class Card extends Phaser.GameObjects.Container {
       this.cardData.id;                // Use original version (e.g., "c-1")
     if(this.cardData.cardType == "shield"){
       cardKey = `${GAME_CONFIG.imageKey.cardback}-preview`
-    }else if(this.cardData.cardType == "base" && this.fullCardData.cardUid == "base_default"){
+    }else if(this.cardData.cardType == "base" && this.fullCardData.carduid == "base_default"){
       cardKey = this.options.usePreview ? 
       `${GAME_CONFIG.imageKey.exBase}-preview` :  GAME_CONFIG.imageKey.exBase;     
     }else if (this.cardData.cardType == "energy"){

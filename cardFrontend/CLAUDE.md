@@ -246,7 +246,7 @@ const slotTarget = {
   "data": {
     "availableTargets": [
       {
-        "cardUid": "ST01-009_uuid",
+        "carduid": "ST01-009_uuid",
         "zone": "slot1",
         "playerId": "playerId_1"
       }
@@ -260,13 +260,13 @@ The target player's zone must contain unit+pilot data:
 ```javascript
 gameState.gameEnv.players.playerId_1.zones.slot1 = {
   unit: {
-    cardUid: "ST01-009_uuid",
+    carduid: "ST01-009_uuid",
     cardData: { name: "Fighter", ap: 3, hp: 4, id: "ST01-009" },
     currentAP: 3,
     currentHP: 2
   },
   pilot: {  // Optional - triggers slot target display
-    cardUid: "ST01-002_uuid", 
+    carduid: "ST01-002_uuid", 
     cardData: { name: "Ace Pilot", ap: 2, hp: 1, id: "ST01-002" },
     currentAP: 2,
     currentHP: 1
@@ -803,7 +803,7 @@ const slotTotal = unitTotal + pilotTotal; // Wrong approach for slot calculation
 **Constraint Removal**: All constraint filtering has been removed for maximum flexibility:
 - ✅ Returns any slot with cards (unit only, pilot only, or both unit+pilot)
 - ✅ No filtering by `has-unit`, `no-pilot`, or `has-pilot` constraints
-- ✅ Optional `cardUid` filtering for specific card targeting
+- ✅ Optional `carduid` filtering for specific card targeting
 - ✅ Simplified utility methods without constraint parameters
 
 **DialogUIManager Consolidation**: DialogUIManager now includes internal item resolution logic:
@@ -816,8 +816,8 @@ const slotTotal = unitTotal + pilotTotal; // Wrong approach for slot calculation
 // ✅ SIMPLIFIED PATTERN (Current)
 const cardObject = {
   // Core identifiers
-  cardId: unit.cardData?.id || unit.cardUid,
-  cardUid: unit.cardUid || cardUid,
+  cardId: unit.cardData?.id || unit.carduid,
+  carduid: unit.carduid || carduid,
   zone: zone,
   playerId: playerId,
   type: "slot",

@@ -231,13 +231,13 @@ export class GameController {
     /**
      * Process player action with card auto-discovery from zones
      * POST /api/game/player/playCard
-     * Body: { gameId, playerId, cardUID } or { gameId, playerId, action }
+     * Body: { gameId, playerId, carduid } or { gameId, playerId, action }
      */
     async playCard(req: GameRequest, res: Response): Promise<void> {
         try {
             console.log('🎮 Processing player action:', req.body);
             
-            const { gameId, playerId, cardUID, action } = req.body;
+            const { gameId, playerId, carduid, action } = req.body;
             
             if (!gameId || !playerId) {
                 res.status(400).json({
@@ -253,8 +253,8 @@ export class GameController {
                 console.log('🎯 Processing structured action:', action);
                 
                 // Handle PlayCard actions with playAs specification
-                if (action.type === 'PlayCard' && action.cardUID && action.playAs) {
-                    const cardUID = action.cardUID;
+                if (action.type === 'PlayCard' && action.carduid && action.playAs) {
+                    const carduid = action.carduid;
                     const playAs = action.playAs;
                     const targetUnit = action.targetUnit; // Extract targetUnit if provided
                     
@@ -280,7 +280,7 @@ export class GameController {
                         return;
                     }
                     
-                    console.log(`🎯 Playing card ${cardUID} as ${playAs}${targetUnit ? ` targeting ${targetUnit}` : ''}`);
+                    console.log(`🎯 Playing card ${carduid} as ${playAs}${targetUnit ? ` targeting ${targetUnit}` : ''}`);
                     
                     // Pass action object directly to avoid parameter unpacking/repacking
                     const result = await this.gameLogic.playCardWithAction(gameId, playerId, action);
@@ -304,12 +304,12 @@ export class GameController {
                 // Handle missing required fields for PlayCard action
                 if (action.type === 'PlayCard') {
                     const missingFields = [];
-                    if (!action.cardUID) missingFields.push('cardUID');
+                    if (!action.carduid) missingFields.push('carduid');
                     if (!action.playAs) missingFields.push('playAs');
                     
                     res.status(400).json({
                         error: `PlayCard action missing required fields: ${missingFields.join(', ')}`,
-                        message: 'PlayCard action requires both cardUID and playAs parameters',
+                        message: 'PlayCard action requires both carduid and playAs parameters',
                         timestamp: new Date().toISOString(),
                         context: 'playCard endpoint - PlayCard validation'
                     });

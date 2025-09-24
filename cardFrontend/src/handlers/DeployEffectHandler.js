@@ -40,7 +40,7 @@ export default class DeployEffectHandler {
         
         // Call GameApiService to submit the selected target using unified API
         const result = await this.scene.gameApiService.confirmTargetChoice(event.id, [{
-          cardUid: selectedTarget.cardUid,
+          carduid: selectedTarget.carduid,
           zone: selectedTarget.zone,
           playerId: selectedTarget.playerId
         }]);
@@ -88,7 +88,7 @@ export default class DeployEffectHandler {
       return false;
     }
 
-    if (!selectedTarget.cardUid || !selectedTarget.zone || !selectedTarget.playerId) {
+    if (!selectedTarget.carduid || !selectedTarget.zone || !selectedTarget.playerId) {
       console.warn('DeployEffectHandler: Invalid target structure:', selectedTarget);
       return false;
     }

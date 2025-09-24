@@ -79,11 +79,11 @@ export default class APIManager {
   }
 
   // Legacy: Simplified player action API - now converts to structured action
-  async playCardLegacy(playerId, gameId, cardUID) {
+  async playCardLegacy(playerId, gameId, carduid) {
     // Convert legacy playCard to structured action
     const action = {
       type: 'PlayCard',
-      cardUID: cardUID,
+      carduid: carduid,
       playAs: 'unit'  // Default to unit for legacy calls
     };
     
@@ -161,7 +161,7 @@ export default class APIManager {
    * @param {string} gameId - Game ID
    * @param {string} playerId - Player ID
    * @param {string} eventId - Event ID from processingQueue
-   * @param {Object} selectedTarget - Selected target object with cardUid, zone, playerId
+   * @param {Object} selectedTarget - Selected target object with carduid, zone, playerId
    * @returns {Promise<Object>} API response
    */
   async confirmTargetChoice(gameId, playerId, eventId, selectedTargets) {

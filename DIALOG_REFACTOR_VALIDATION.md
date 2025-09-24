@@ -56,18 +56,18 @@ const items = availableTargets.map(target => ({
   type: 'slot',
   playerId: target.playerId,
   zone: target.zone,
-  cardUid: target.cardUid
+  carduid: target.carduid
 }));
 ```
 
-### 4. **Burst Effect Confirmation** (CardUID-Based)
+### 4. **Burst Effect Confirmation** (Carduid-Based)
 **File**: `DialogManager.js:309-313`
 ```javascript
 // OLD: Complex card object building from event data
 // NEW: Simple carduid item reference
 items: [{
   type: 'carduid',
-  cardUid: event.data.cardId,
+  carduid: event.data.cardId,
   preSelected: true
 }]
 ```

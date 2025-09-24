@@ -491,10 +491,10 @@ export default class GameSceneUtils {
     // Direct card object (unit from zones)
     if (card.cardData && card.cardData.id) {
       cardImageId = card.cardData.id;
-      displayCardId = card.cardUid || card.cardId;
+      displayCardId = card.carduid || card.cardId;
     } else if (card.cardData && card.cardData.cardId) {
       cardImageId = card.cardData.cardId;
-      displayCardId = card.cardUid || card.cardId;
+      displayCardId = card.carduid || card.cardId;
     } else if (card.cardId) {
       // Fallback for simple card objects
       cardImageId = card.cardId;
@@ -1304,7 +1304,7 @@ export default class GameSceneUtils {
     if (card.cardData) {
       return {
         cardData: card.cardData,
-        cardUid: card.cardUid,
+        carduid: card.carduid,
         slot: card.slot
       };
     }
@@ -1313,7 +1313,7 @@ export default class GameSceneUtils {
     if (card.id || card.cardId) {
       return {
         cardData: card,
-        cardUid: card.cardUid || card.cardId || card.id
+        carduid: card.carduid || card.cardId || card.id
       };
     }
     
@@ -1326,7 +1326,7 @@ export default class GameSceneUtils {
         cardType: 'character',
         type: 'character'
       },
-      cardUid: 'unknown'
+      carduid: 'unknown'
     };
   }
 
@@ -1347,13 +1347,13 @@ export default class GameSceneUtils {
     // Create preview data structure that represents the slot composition
     const slotPreviewData = {
       cardData: slotData.unit.cardData || slotData.unit,
-      cardUid: slotData.unit.cardUid || slotData.unit.cardId,
+      carduid: slotData.unit.carduid || slotData.unit.cardId,
       slotName: slotData.slotName,
       isSlotPreview: true,
       // Include pilot information if present
       pilot: slotData.pilot ? {
         cardData: slotData.pilot.cardData || slotData.pilot,
-        cardUid: slotData.pilot.cardUid || slotData.pilot.cardId
+        carduid: slotData.pilot.carduid || slotData.pilot.cardId
       } : null
     };
 
@@ -1618,7 +1618,7 @@ export default class GameSceneUtils {
       return `${card.slotName}_${card.unit?.cardId || card.unit?.id}`;
     } else {
       // For regular cards
-      return card.cardId || card.id || card.cardUid;
+      return card.cardId || card.id || card.carduid;
     }
   }
 

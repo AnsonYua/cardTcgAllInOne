@@ -48,7 +48,7 @@ export interface TargetChoiceEvent extends BaseGameEvent {
         
         // Source information
         sourceType: 'DEPLOY' | 'PAIRING' | 'ACTIVATION' | 'CONTINUOUS';
-        sourceCardUid: string;      // Card triggering the effect
+        sourceCarduid: string;      // Card triggering the effect
         sourceCardId: string;
         sourceSlot?: string;        // For pairing effects
         
@@ -105,7 +105,7 @@ export class TargetChoiceManager {
         gameEnv: GameEnvironment,
         playerId: string,
         sourceType: string,
-        sourceCardUid: string,
+        sourceCarduid: string,
         effect: any,
         targetConfig: any
     ): TargetChoiceEvent;
@@ -187,7 +187,7 @@ if (target.count === 1 && eligibleTargets.length > 1) {
         gameEnv,
         playerId,
         'PAIRING',
-        effect.unitCard.cardUID,
+        effect.unitCard.carduid,
         {
             effectId: effect.effectId,
             action: 'modifyAP',

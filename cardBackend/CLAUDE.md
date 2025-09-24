@@ -666,7 +666,7 @@ The game implements strict turn-based mechanics where each card placement automa
 
 **Moved Methods from GameEngine.ts:**
 - `drawCards(deck, count)` - Card drawing functionality
-- `findSlotByCardUid(player, carduid)` - Card location utilities
+- `findSlotByCarduid(player, carduid)` - Card location utilities
 - `findFirstEmptySlot(playerZones)` - Empty slot finder
 - `createUniqueCardId(originalCardId)` - Card ID generation with UUID
 - `moveCardToTrash(gameEnv, playerId, carduid, cardId, cardData)` - Card movement to trash
@@ -674,7 +674,7 @@ The game implements strict turn-based mechanics where each card placement automa
 - `updateUnitHP(unit, newHP)` - Unit HP management
 - `updatePilotHP(pilot, newHP)` - Pilot HP management
 - `calculateCombinedStats(player, slotName, unit)` - Combined unit+pilot stats calculation
-- `checkForDeployEffects(cardUID)` - Deploy effect detection
+- `checkForDeployEffects(carduid)` - Deploy effect detection
 
 **Benefits Achieved:**
 - ✅ **Centralized Card Logic**: All card operations in single manager class
@@ -1154,7 +1154,7 @@ const numericValue = CardEffect.getEffectValue(action, parameters);  // Always w
 **Core Components:**
 - **`src/services/CardEffect.ts`** - SINGLE FILE containing all continuous effects logic
 - **`src/config/gameConstants.ts`** - Unified slot zone constants (`SLOT_ZONES`) for consistency
-- **Array-based storage** with duplicate prevention using `effectId + sourceCardUid` keys
+- **Array-based storage** with duplicate prevention using `effectId + sourceCarduid` keys
 - **Three-phase processing**: Phase 0 (cleanup), Phase 1 (storage), Phase 2 (application)
 - **Switch-case architecture** for different effect types (ALWAYS_ACTIVE, PAIR_TRIGGERED, LINK_TRIGGERED)
 
@@ -1192,7 +1192,7 @@ console.log(`   Removed ${effectsRemoved} stale effects`);
 
 **Cleanup Logic:**
 1. **Get current field state** - Collect all `carduid` values from slots (units and pilots)
-2. **Validate effect sources** - Check each effect's `sourceCardUid` against current field
+2. **Validate effect sources** - Check each effect's `sourceCarduid` against current field
 3. **Remove stale effects** - Filter out effects whose source cards are no longer present
 4. **Comprehensive coverage** - Clean effects on both unit and pilot cards in all slots
 
@@ -1249,7 +1249,7 @@ card.continuousEffects = [
       parameters: { value: 1 },         // Unified numeric structure
       duration: "while_paired"
     },
-    sourceCardUid: "source-card-123",  // Source tracking for cleanup
+    sourceCarduid: "source-card-123",  // Source tracking for cleanup
     active: false,     // Set to true when applied in Phase 2
     appliedValue: 0    // Calculated value when applied
   }
@@ -1257,7 +1257,7 @@ card.continuousEffects = [
 ```
 
 **Key Fields:**
-- **`sourceCardUid`** - Critical for Phase 0 cleanup validation
+- **`sourceCarduid`** - Critical for Phase 0 cleanup validation
 - **`effectId`** - Used for duplicate prevention
 - **`active`/`appliedValue`** - Two-phase application tracking
 - **`parameters.value`** - Unified numeric parameter for all effects

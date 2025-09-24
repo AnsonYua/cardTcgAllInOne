@@ -433,7 +433,7 @@ export class CardEffect {
         
         return {
             effectId: effectRule.effectId,
-            sourceCardUid: sourceCard.carduid,
+            sourceCarduid: sourceCard.carduid,
             sourcePlayerId: sourcePlayerId,
             effectData: effectRule,
             scope: effectRule.target?.scope || 'self_all_unit',
@@ -549,7 +549,7 @@ export class CardEffect {
                 return CardEffect.getAllPlayerUnitsInSlot(opponentId, gameEnv);
             case 'self':
                 // Get the source card itself
-                return CardEffect.getCardByUid(effectEntry.sourceCardUid, gameEnv) ? [CardEffect.getCardByUid(effectEntry.sourceCardUid, gameEnv)] : [];
+                return CardEffect.getCardByUid(effectEntry.sourceCarduid, gameEnv) ? [CardEffect.getCardByUid(effectEntry.sourceCarduid, gameEnv)] : [];
             default:
                 console.log(`⚠️ Unknown scope: ${scope}`);
                 return [];
@@ -589,7 +589,7 @@ export class CardEffect {
         for (const [effectKey, effectEntry] of Object.entries(player.effectRegistry)) {
             const typedEntry = effectEntry as any; // Type assertion for effectRegistry entries
             // Check if source card still exists
-            const sourceCard = CardEffect.getCardByUid(typedEntry.sourceCardUid, gameEnv);
+            const sourceCard = CardEffect.getCardByUid(typedEntry.sourceCarduid, gameEnv);
             
             if (!sourceCard) {
                 effectsToRemove.push(effectKey);

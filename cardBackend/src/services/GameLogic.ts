@@ -399,7 +399,7 @@ export class GameLogic {
                     data: {
                         playerId: action.playerId,
                         gameId: action.gameId,
-                        cardUID: action.cardUID,
+                        carduid: action.carduid,
                         playAs: action.playAs,
                         targetUnit: action.targetUnit
                     }
@@ -679,10 +679,10 @@ export class GameLogic {
             console.log(`🎯 playCardWithAction: gameId=${gameId}, playerId=${playerId}`, action);
             
             // Validate inputs
-            if (!gameId || !playerId || !action?.cardUID) {
+            if (!gameId || !playerId || !action?.carduid) {
                 return {
                     success: false,
-                    error: 'gameId, playerId, and action.cardUID are required'
+                    error: 'gameId, playerId, and action.carduid are required'
                 };
             }
             
@@ -700,7 +700,7 @@ export class GameLogic {
                 type: PlayerActionType.PLAY_CARD,
                 playerId,
                 gameId,
-                cardUID: action.cardUID,
+                carduid: action.carduid,
                 playAs: action.playAs,
                 targetUnit: action.targetUnit
             };
@@ -802,20 +802,20 @@ export class GameLogic {
      * Process player action with card auto-discovery from zones
      * @param gameId - Game ID
      * @param playerId - Player ID  
-     * @param cardUID - Card UID to find and act upon
+     * @param carduid - Card UID to find and act upon
      * @param playAs - How the card should be played (unit/command/pilot/base)
      * @param targetUnit - For pilot cards, the unit to attach to
      * @returns Promise<GameLogicResult>
      */
-    async playCard(gameId: string, playerId: string, cardUID: string, playAs?: string, targetUnit?: string): Promise<GameLogicResult> {
+    async playCard(gameId: string, playerId: string, carduid: string, playAs?: string, targetUnit?: string): Promise<GameLogicResult> {
         try {
-            console.log(`🎯 playCard: gameId=${gameId}, playerId=${playerId}, cardUID=${cardUID}, playAs=${playAs || 'default'}, targetUnit=${targetUnit || 'none'}`);
+            console.log(`🎯 playCard: gameId=${gameId}, playerId=${playerId}, carduid=${carduid}, playAs=${playAs || 'default'}, targetUnit=${targetUnit || 'none'}`);
             
             // Validate inputs
-            if (!gameId || !playerId || !cardUID) {
+            if (!gameId || !playerId || !carduid) {
                 return {
                     success: false,
-                    error: 'gameId, playerId, and cardUID are required'
+                    error: 'gameId, playerId, and carduid are required'
                 };
             }
             
@@ -833,7 +833,7 @@ export class GameLogic {
                 type: PlayerActionType.PLAY_CARD,
                 playerId,
                 gameId,
-                cardUID,
+                carduid,
                 playAs,
                 targetUnit
             };

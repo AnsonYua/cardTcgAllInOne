@@ -14,7 +14,7 @@ export interface StoredContinuousEffect {
     };
     
     // Runtime fields (added by system)
-    sourceCardUid: string;         // Who created this effect
+    sourceCarduid: string;         // Who created this effect
     active: boolean;               // Currently applying?
     appliedValue: number;          // Calculated value currently applied
 }
@@ -22,16 +22,16 @@ export interface StoredContinuousEffect {
 /**
  * Helper function to create a unique key for duplicate detection
  */
-export function getEffectUniqueKey(effectId: string, sourceCardUid: string): string {
-    return `${effectId}_${sourceCardUid}`;
+export function getEffectUniqueKey(effectId: string, sourceCarduid: string): string {
+    return `${effectId}_${sourceCarduid}`;
 }
 
 /**
  * Helper function to find effect in array by unique key
  */
-export function findEffectByKey(effects: ContinuousEffectsCollection, effectId: string, sourceCardUid: string): StoredContinuousEffect | undefined {
-    const uniqueKey = getEffectUniqueKey(effectId, sourceCardUid);
-    return effects.find(effect => getEffectUniqueKey(effect.effectId, effect.sourceCardUid) === uniqueKey);
+export function findEffectByKey(effects: ContinuousEffectsCollection, effectId: string, sourceCarduid: string): StoredContinuousEffect | undefined {
+    const uniqueKey = getEffectUniqueKey(effectId, sourceCarduid);
+    return effects.find(effect => getEffectUniqueKey(effect.effectId, effect.sourceCarduid) === uniqueKey);
 }
 
 /**
@@ -77,30 +77,30 @@ export class ContinuousEffectsHelper {
      * Add effect to collection with duplicate prevention
      */
     static addEffect(collection: ContinuousEffectsCollection, newEffect: StoredContinuousEffect): boolean {
-        // Check for duplicates using effectId + sourceCardUid
-        const existing = findEffectByKey(collection, newEffect.effectId, newEffect.sourceCardUid);
+        // Check for duplicates using effectId + sourceCarduid
+        const existing = findEffectByKey(collection, newEffect.effectId, newEffect.sourceCarduid);
         
         if (existing) {
-            console.log(`⚠️ Duplicate effect prevented: ${newEffect.effectId} from ${newEffect.sourceCardUid}`);
+            console.log(`⚠️ Duplicate effect prevented: ${newEffect.effectId} from ${newEffect.sourceCarduid}`);
             return false; // Duplicate found, not added
         }
         
         collection.push(newEffect);
-        console.log(`✅ Added effect: ${newEffect.effectId} from ${newEffect.sourceCardUid}`);
+        console.log(`✅ Added effect: ${newEffect.effectId} from ${newEffect.sourceCarduid}`);
         return true; // Successfully added
     }
     
     /**
-     * Remove effect from collection by effectId and sourceCardUid
+     * Remove effect from collection by effectId and sourceCarduid
      */
-    static removeEffect(collection: ContinuousEffectsCollection, effectId: string, sourceCardUid: string): boolean {
+    static removeEffect(collection: ContinuousEffectsCollection, effectId: string, sourceCarduid: string): boolean {
         const index = collection.findIndex(effect => 
-            getEffectUniqueKey(effect.effectId, effect.sourceCardUid) === getEffectUniqueKey(effectId, sourceCardUid)
+            getEffectUniqueKey(effect.effectId, effect.sourceCarduid) === getEffectUniqueKey(effectId, sourceCarduid)
         );
         
         if (index !== -1) {
             collection.splice(index, 1);
-            console.log(`🗑️ Removed effect: ${effectId} from ${sourceCardUid}`);
+            console.log(`🗑️ Removed effect: ${effectId} from ${sourceCarduid}`);
             return true;
         }
         
@@ -110,19 +110,19 @@ export class ContinuousEffectsHelper {
     /**
      * Remove all effects from a specific source card
      */
-    static removeEffectsFromSource(collection: ContinuousEffectsCollection, sourceCardUid: string): number {
+    static removeEffectsFromSource(collection: ContinuousEffectsCollection, sourceCarduid: string): number {
         const initialLength = collection.length;
         
         // Filter out effects from the specified source
         for (let i = collection.length - 1; i >= 0; i--) {
-            if (collection[i].sourceCardUid === sourceCardUid) {
+            if (collection[i].sourceCarduid === sourceCarduid) {
                 collection.splice(i, 1);
             }
         }
         
         const removedCount = initialLength - collection.length;
         if (removedCount > 0) {
-            console.log(`🗑️ Removed ${removedCount} effects from source: ${sourceCardUid}`);
+            console.log(`🗑️ Removed ${removedCount} effects from source: ${sourceCarduid}`);
         }
         
         return removedCount;
@@ -138,12 +138,12 @@ export class ContinuousEffectsHelper {
     /**
      * Update effect activity status
      */
-    static updateEffectActivity(collection: ContinuousEffectsCollection, effectId: string, sourceCardUid: string, active: boolean): boolean {
-        const effect = findEffectByKey(collection, effectId, sourceCardUid);
+    static updateEffectActivity(collection: ContinuousEffectsCollection, effectId: string, sourceCarduid: string, active: boolean): boolean {
+        const effect = findEffectByKey(collection, effectId, sourceCarduid);
         
         if (effect && effect.active !== active) {
             effect.active = active;
-            console.log(`🔄 Updated effect activity: ${effectId} from ${sourceCardUid} → ${active ? 'active' : 'inactive'}`);
+            console.log(`🔄 Updated effect activity: ${effectId} from ${sourceCarduid} → ${active ? 'active' : 'inactive'}`);
             return true;
         }
         

@@ -547,7 +547,7 @@ export class GameEngine {
      *   "data": {
      *     "playerId": "playerId_1",
      *     "gameId": "game_abc123",
-     *     "cardUID": "ST01-001_a5fcfa44-d212-4400-8c12-9a58fdbcac84",
+     *     "carduid": "ST01-001_a5fcfa44-d212-4400-8c12-9a58fdbcac84",
      *     "playAs": "unit",
      *     "targetUnit": "??"
      *   }
@@ -562,7 +562,7 @@ export class GameEngine {
         const eventData = event.data;
         const fromBurst = eventData.fromBurst || false;
 
-        console.log(`🎯 Processing PLAY_CARD event for player: ${eventData.playerId}, cardUID: ${eventData.cardUID}, playAs: ${eventData.playAs}, fromBurst: ${fromBurst}, targetUnit: ${eventData.targetUnit || 'none'}`);
+        console.log(`🎯 Processing PLAY_CARD event for player: ${eventData.playerId}, carduid: ${eventData.carduid}, playAs: ${eventData.playAs}, fromBurst: ${fromBurst}, targetUnit: ${eventData.targetUnit || 'none'}`);
 
         try {
             // Validate using centralized GameValidator
@@ -589,10 +589,10 @@ export class GameEngine {
             // Validate card location and remove it (burst cards come from shield, normal cards from hand)
             if (fromBurst) {
                 // For burst cards, we don't need to validate/remove from hand since they're being deployed from shield
-                console.log(`💥 Burst card deployment: ${eventData.cardUID} - skipping hand validation`);
+                console.log(`💥 Burst card deployment: ${eventData.carduid} - skipping hand validation`);
             } else {
                 // Normal card play - validate in hand and remove using GameValidator
-                const handValidation = GameValidator.validateCardInHand(gameEnv, eventData.playerId, eventData.cardUID);
+                const handValidation = GameValidator.validateCardInHand(gameEnv, eventData.playerId, eventData.carduid);
                 if (!handValidation.isValid) {
                     return {
                         success: false,
@@ -600,10 +600,10 @@ export class GameEngine {
                     };
                 }
 
-                if (!PlayerCardManager.removeCardFromHand(gameEnv, eventData.playerId, eventData.cardUID)) {
+                if (!PlayerCardManager.removeCardFromHand(gameEnv, eventData.playerId, eventData.carduid)) {
                     return {
                         success: false,
-                        error: `Failed to remove card ${eventData.cardUID} from player ${eventData.playerId} hand`
+                        error: `Failed to remove card ${eventData.carduid} from player ${eventData.playerId} hand`
                     };
                 }
             }
@@ -614,7 +614,7 @@ export class GameEngine {
             if (!placementResult.success) {
                 // Return card to hand if placement failed (but only for normal cards, not burst cards)
                 if (!fromBurst) {
-                    player.deck._handUids.push(eventData.cardUID);
+                    player.deck._handUids.push(eventData.carduid);
                 }
                 return {
                     success: false,
@@ -623,10 +623,10 @@ export class GameEngine {
             }
 
             // ✅ Card placement successful - Check for Deploy effects (ENTERS_PLAY triggers)
-            console.log(`✅ Card ${eventData.cardUID} successfully placed for player ${eventData.playerId}`);
+            console.log(`✅ Card ${eventData.carduid} successfully placed for player ${eventData.playerId}`);
 
-            // Check for Deploy effects using cardUID to extract cardId and fetch cardData from database
-            const deployEffects = PlayerCardManager.checkForDeployEffects(eventData.cardUID);
+            // Check for Deploy effects using carduid to extract cardId and fetch cardData from database
+            const deployEffects = PlayerCardManager.checkForDeployEffects(eventData.carduid);
             if (deployEffects.length > 0) {
                 console.log(`🚀 Deploy effects detected: ${deployEffects.length} effects for card ${eventData.cardId}`);
 
@@ -650,7 +650,7 @@ export class GameEngine {
             // Handle link formation - set linked unit's isFirstPlay to false
             if (placementResult.isOnLink) {
                 console.log(`🔗 Link detected - updating linked unit's isFirstPlay status`);
-                PlayerCardManager.handleLinkFormation(gameEnv, eventData.playerId, eventData.cardUID);
+                PlayerCardManager.handleLinkFormation(gameEnv, eventData.playerId, eventData.carduid);
             }
 
 
@@ -726,7 +726,7 @@ export class GameEngine {
         "type": "PLAYER_ACTION",
         "playerId": "playerId_2",
         "actionType": "attackUnit",
-        "attackerCardUid": "ST01-001_a5fcfa44-d212-4400-8c12-9a58fdbcac84",
+        "attackerCarduid": "ST01-001_a5fcfa44-d212-4400-8c12-9a58fdbcac84",
         "targetUnitUid": "ST01-005_be13f9a5-9fc9-4e3b-a9b2-fdf999d9f63d",
         "targetPlayerId": "playerId_1",
         "targetPilotUid": "ST01-013_20d620d9-242e-4aa8-b1b6-6847dff89461"
@@ -738,7 +738,7 @@ export class GameEngine {
         try {
             const {
                 playerId,
-                attackerCardUid,
+                attackerCarduid,
                 targetUnitUid,
                 targetPlayerId,
                 targetPilotUid
@@ -768,11 +768,11 @@ export class GameEngine {
             }
 
             // Find attacker's slot and unit using SlotZoneUtils
-            const attackerSlotResult = SlotZoneUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, attackerCardUid);
+            const attackerSlotResult = SlotZoneUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, attackerCarduid);
             if (!attackerSlotResult.found) {
                 return {
                     success: false,
-                    error: attackerSlotResult.error || `Attacking unit with UID ${attackerCardUid} not found in any slot`
+                    error: attackerSlotResult.error || `Attacking unit with UID ${attackerCarduid} not found in any slot`
                 };
             }
 
@@ -840,7 +840,7 @@ export class GameEngine {
         console.log(`🛡️ Processing attackShieldArea action:`, eventData);
 
         try {
-            const { playerId, attackerCardUid } = eventData;
+            const { playerId, attackerCarduid } = eventData;
             const defendingPlayerId = gameEnv.getOpponentId(playerId);
 
             if (!defendingPlayerId) {
@@ -862,11 +862,11 @@ export class GameEngine {
             }
 
             // Find which slot contains the attacking card using SlotZoneUtils
-            const attackerSlotResult = SlotZoneUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, attackerCardUid);
+            const attackerSlotResult = SlotZoneUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, attackerCarduid);
             if (!attackerSlotResult.found) {
                 return {
                     success: false,
-                    error: attackerSlotResult.error || `Attacking unit with UID ${attackerCardUid} not found in any slot`
+                    error: attackerSlotResult.error || `Attacking unit with UID ${attackerCarduid} not found in any slot`
                 };
             }
 

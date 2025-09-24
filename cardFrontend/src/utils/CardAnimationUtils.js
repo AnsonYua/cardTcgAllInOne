@@ -153,16 +153,16 @@ export default class CardAnimationUtils {
     
     // Handle multiple cards sequentially
     for (let i = 0; i < drawnCards.length; i++) {
-      const cardUid = drawnCards[i];
-      const cardData = scene.gameStateManager.getCardDataByUid(cardUid);
+      const carduid = drawnCards[i];
+      const cardData = scene.gameStateManager.getCardDataByUid(carduid);
       
       if (!cardData) {
-        console.warn(`[CardAnimationUtils] Card data not found for UID: ${cardUid}`);
+        console.warn(`[CardAnimationUtils] Card data not found for UID: ${carduid}`);
         continue;
       }
       
       await this.animateCardDraw(scene, {
-        cardUid,
+        carduid,
         cardData,
         targetHandSize: newHandSize,
         cardIndex: newHandSize - drawnCards.length + i
@@ -177,13 +177,13 @@ export default class CardAnimationUtils {
    * @returns {Promise} - Promise that resolves when animation completes
    */
   static async animateCardDraw(scene, options) {
-    const { cardUid, cardData, targetHandSize, cardIndex } = options;
+    const { carduid, cardData, targetHandSize, cardIndex } = options;
     
-    console.log(`[CardAnimationUtils] Animating card ${cardUid} to position ${cardIndex}`);
+    console.log(`[CardAnimationUtils] Animating card ${carduid} to position ${cardIndex}`);
     
     return this.animateCardToHandUnified(scene, {
       card: cardData,
-      cardUid,  // Track specific UID for debugging
+      carduid,  // Track specific UID for debugging
       targetHandLength: targetHandSize,
       cardIndex,
       isPromise: true

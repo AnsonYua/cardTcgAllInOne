@@ -179,7 +179,7 @@ export default class FrontEventProcessor {
           optional: targetChoiceEvent.data.effect?.optional !== false
         },
         availableTargets: targetChoiceEvent.data.availableTargets || [],
-        sourceCardUid: targetChoiceEvent.data.sourceCardUid,
+        sourceCarduid: targetChoiceEvent.data.sourceCarduid,
         cardId: targetChoiceEvent.data.sourceCardId
       }
     };

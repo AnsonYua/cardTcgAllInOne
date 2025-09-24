@@ -11,7 +11,7 @@ selection = {
   eligibleCards: [
     {
       cardData: { name, ap, hp, id },
-      cardUid: "unit_123",
+      carduid: "unit_123",
       zone: "slot1", 
       playerId: "player_2",
       currentHP: 5, currentAP: 3,
@@ -98,7 +98,7 @@ selection = {
 - Targets include mix of unit-only and unit+pilot slots
 
 **Test Flow**:
-1. Backend sends event with `availableTargets: [{ cardUid, zone, playerId }]`
+1. Backend sends event with `availableTargets: [{ carduid, zone, playerId }]`
 2. Dialog should appear with title "🎯 Deploy Effect Target Selection"
 3. Should show ONLY the targets specified by backend
 4. Should display correct unit+pilot combinations
@@ -113,7 +113,7 @@ selection = {
 
 ---
 
-### 🎴 **Category 2: CardUID-Based Dialogs (2 types)**
+### 🎴 **Category 2: Carduid-Based Dialogs (2 types)**
 
 #### **Test Case 2.1: Burst Effect Confirmation**
 **File**: `DialogManager.js` - Burst effect activation choice
@@ -284,7 +284,7 @@ describe('Dialog Refactor Validation', () => {
     });
   });
 
-  describe('CardUID-Based Dialogs', () => {
+  describe('Carduid-Based Dialogs', () => {
     test('Burst Effect Dialog', async () => {
       // Mock burst effect event
       // Verify single card shown

@@ -1,6 +1,7 @@
 // CardActionHandler.js
 // Dedicated handler for all card action buttons and related functionality
 
+import HandUtils from '../utils/HandUtils.js';
 
 export default class CardActionHandler {
     constructor(gameScene, gameStateManager, apiManager) {
@@ -103,7 +104,7 @@ export default class CardActionHandler {
             return;
         }
         
-        console.log(`Playing card as ${playAs.charAt(0).toUpperCase() + playAs.slice(1)}:`, selectedCard.fullCardData.cardUid);
+        console.log(`Playing card as ${playAs.charAt(0).toUpperCase() + playAs.slice(1)}:`, selectedCard.fullCardData.carduid);
         this.gameScene.actionButtonManager.hide();
         
         // Special handling for pilot cards - show unit selection dialog
@@ -113,9 +114,9 @@ export default class CardActionHandler {
         }
         
         try {
-            const cardUID = selectedCard.fullCardData.cardUid;
+            const carduid = selectedCard.fullCardData.carduid;
             
-            if (!cardUID) {
+            if (!carduid) {
                 this.showErrorMessage('Card not found in hand.');
                 return;
             }
@@ -126,7 +127,7 @@ export default class CardActionHandler {
             // Create structured action with playAs specification
             const action = {
                 type: 'PlayCard',
-                cardUID: cardUID,
+                carduid: carduid,
                 playAs: playAs
             };
             
@@ -194,35 +195,6 @@ export default class CardActionHandler {
             return false;
         }
         return true;
-    }
-
-    /**
-     * Get card UID from hand for backend API calls
-     */
-    getCardUIDFromHand(cardData) {
-        // Get the current hand from game state to find card UID
-        const hand = this.gameStateManager.getPlayerHand();
-        
-        // Find the actual UID of this card in the player's hand
-        // Backend hand contains UID strings like "c-1_1754551822157_24"
-        // Frontend cardData.id is the base ID like "c-1"
-        // We need to find the actual UID that matches this base ID
-        const cardUID = hand.find(handCardUID => {
-            // Extract base card ID from UID (before first underscore)
-            const baseCardId = typeof handCardUID === 'string' 
-                ? handCardUID.split('_')[0] 
-                : handCardUID.id;
-            return baseCardId === cardData.id;
-        });
-        
-        if (!cardUID) {
-            console.error(`Card ${cardData.id} not found in player hand`);
-            console.log('Available hand cards (UIDs):', hand);
-            console.log('Looking for base card ID:', cardData.id);
-            return null;
-        }
-        
-        return cardUID;
     }
 
     /**
@@ -298,10 +270,10 @@ export default class CardActionHandler {
      */
     async executePilotCardPlay(selectedCard, selectedUnit) {
         try {
-            const cardUID = selectedCard.fullCardData.cardUid;
-            const targetUnit = selectedUnit.cardUid; // Use the unit's cardUid as targetUnit
+            const carduid = selectedCard.fullCardData.carduid;
+            const targetUnit = selectedUnit.carduid; // Use the unit's carduid as targetUnit
             console.log("call api for piliot", selectedCard , " ",selectedUnit)
-            if (!cardUID) {
+            if (!carduid) {
                 this.showErrorMessage('Card not found in hand.');
                 return;
             }
@@ -312,7 +284,7 @@ export default class CardActionHandler {
             // Create structured action with playAs and targetUnit
             const action = {
                 type: 'PlayCard',
-                cardUID: cardUID,
+                carduid: carduid,
                 playAs: 'pilot',
                 targetUnit: targetUnit
             };
@@ -533,8 +505,8 @@ export default class CardActionHandler {
 
         try {
             // Extract attacker card UID
-            const attackerCardUid = attackerCard.fullCardData?.cardUid || attackerCard.fullCardData?.cardData?.cardUid;
-            if (!attackerCardUid) {
+            const attackerCarduid = attackerCard.fullCardData?.carduid || attackerCard.fullCardData?.cardData?.carduid;
+            if (!attackerCarduid) {
                 console.error('Cannot get attacker card UID:', attackerCard);
                 this.showErrorMessage('无法获取攻击者卡片信息');
                 return;
@@ -543,7 +515,7 @@ export default class CardActionHandler {
             // Simple action data - backend handles target selection automatically
             const actionData = {
                 actionType: 'attackShieldArea',
-                attackerCardUid: attackerCardUid
+                attackerCarduid: attackerCarduid
             };
 
             console.log('Calling attackShieldArea API:', actionData);
@@ -580,8 +552,8 @@ export default class CardActionHandler {
 
         try {
             // Extract attacker card UID
-            const attackerCardUid = attackerCard.fullCardData?.cardUid || attackerCard.fullCardData?.cardData?.cardUid;
-            if (!attackerCardUid) {
+            const attackerCarduid = attackerCard.fullCardData?.carduid || attackerCard.fullCardData?.cardData?.carduid;
+            if (!attackerCarduid) {
                 console.error('Cannot get attacker card UID:', attackerCard);
                 this.showErrorMessage('无法获取攻击者卡片信息');
                 return;
@@ -592,7 +564,7 @@ export default class CardActionHandler {
             
             if (actionType === 'attackUnit') {
                 // Target is a slot with unit (and possibly pilot)
-                const targetUnitUid = target.unit?.cardUid || target.unit?.id;
+                const targetUnitUid = target.unit?.carduid || target.unit?.id;
                 if (!targetUnitUid) {
                     console.error('Cannot get target unit UID:', target);
                     this.showErrorMessage('无法获取目标机体信息');
@@ -601,13 +573,13 @@ export default class CardActionHandler {
 
                 actionData = {
                     actionType: 'attackUnit',
-                    attackerCardUid: attackerCardUid,
+                    attackerCarduid: attackerCarduid,
                     targetType: 'unit',
                     targetUnitUid: targetUnitUid,
                     targetSlotName: target.slotName,
                     targetPlayerId: target.playerId,
                     // Include pilot information if present
-                    targetPilotUid: target.pilot?.cardUid || target.pilot?.id || null
+                    targetPilotUid: target.pilot?.carduid || target.pilot?.id || null
                 };
             } else {
                 console.error('Unknown action type:', actionType);

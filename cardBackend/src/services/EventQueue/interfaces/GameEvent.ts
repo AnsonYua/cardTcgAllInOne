@@ -148,7 +148,7 @@ export interface AbilityTriggeredEvent extends BaseGameEvent {
     data: {
         abilityId: string;
         sourceCardId: string;
-        sourceCardUid: string;
+        sourceCarduid: string;
         playerId: string;
         triggerCondition: string;
         isOptional: boolean;
@@ -161,7 +161,7 @@ export interface AbilityActivatedEvent extends BaseGameEvent {
     data: {
         abilityId: string;
         sourceCardId: string;
-        sourceCardUid: string;
+        sourceCarduid: string;
         playerId: string;
         cost?: number;
         targets?: string[];
@@ -269,7 +269,7 @@ export interface TargetChoiceEvent extends BaseGameEvent {
         
         // Source information
         sourceType: 'DEPLOY' | 'PAIRING' | 'ACTIVATION' | 'CONTINUOUS';
-        sourceCardUid: string;      // Card triggering the effect
+        sourceCarduid: string;      // Card triggering the effect
         sourceCardId: string;
         sourceSlot?: string;        // For pairing effects
         
@@ -440,7 +440,7 @@ export class EventFactory {
     static createAbilityTriggeredEvent(
         abilityId: string,
         sourceCardId: string,
-        sourceCardUid: string,
+        sourceCarduid: string,
         playerId: string,
         triggerCondition: string,
         isOptional: boolean = false,
@@ -454,14 +454,14 @@ export class EventFactory {
             sourceId: sourceCardId,
             playerId,
             timestamp: Date.now(),
-            data: { abilityId, sourceCardId, sourceCardUid, playerId, triggerCondition, isOptional, targets }
+            data: { abilityId, sourceCardId, sourceCarduid, playerId, triggerCondition, isOptional, targets }
         };
     }
     
     static createAbilityActivatedEvent(
         abilityId: string,
         sourceCardId: string,
-        sourceCardUid: string,
+        sourceCarduid: string,
         playerId: string,
         cost?: number,
         targets?: string[]
@@ -474,7 +474,7 @@ export class EventFactory {
             sourceId: sourceCardId,
             playerId,
             timestamp: Date.now(),
-            data: { abilityId, sourceCardId, sourceCardUid, playerId, cost, targets }
+            data: { abilityId, sourceCardId, sourceCarduid, playerId, cost, targets }
         };
     }
     
@@ -580,7 +580,7 @@ export class EventFactory {
     static createTargetChoiceEvent(
         playerId: string,
         sourceType: 'DEPLOY' | 'PAIRING' | 'ACTIVATION' | 'CONTINUOUS',
-        sourceCardUid: string,
+        sourceCarduid: string,
         sourceCardId: string,
         effect: any,
         targetConfig: any,
@@ -590,10 +590,10 @@ export class EventFactory {
         // Create the data object directly without reconstruction
         const eventData = {
             playerId,
-            choiceId: `target_choice_${sourceType.toLowerCase()}_${sourceCardUid}_${Date.now()}`,
+            choiceId: `target_choice_${sourceType.toLowerCase()}_${sourceCarduid}_${Date.now()}`,
             userDecisionMade: false,
             sourceType,
-            sourceCardUid,
+            sourceCarduid,
             sourceCardId,
             sourceSlot,
             effect,            // Pass effect object directly without conversion
@@ -626,7 +626,7 @@ export class EventFactory {
         };
 
         const pairingEvent: GameEvent = {
-            id: `pairing_${eventData.cardUID}_${Date.now()}`,
+            id: `pairing_${eventData.carduid}_${Date.now()}`,
             type: EventType.PAIRING_EFFECT_TRIGGERED,
             status: EventStatus.DECLARED,
             priority: EventPriority.NORMAL,
@@ -651,7 +651,7 @@ export class EventFactory {
         // Create data object directly to minimize conversions
         const eventData = {
             playerId,                          // Pass playerId directly
-            cardUID: carduid,                  // Pass carduid directly
+            carduid: carduid,                  // Pass carduid directly
             cardId: cardData.id || cardData.cardId,  // Extract cardId once
             cardData,                          // Pass cardData object directly
             playAs,                            // Use computed playAs value
@@ -679,7 +679,7 @@ export class EventFactory {
         // Create event data object directly from input to minimize conversions
         const eventDataObject = {
             cardId: eventData.cardId,          // Pass cardId directly from eventData
-            cardUID: eventData.cardUID,        // Pass cardUID directly from eventData
+            carduid: eventData.carduid,        // Pass carduid directly from eventData
             cardData: eventData.cardData,      // Pass cardData object directly from eventData
             playerId: eventData.playerId,      // Pass playerId directly from eventData
             zone: eventData.zone,              // Pass zone directly from eventData
@@ -688,7 +688,7 @@ export class EventFactory {
         };
 
         const deployEvent: GameEvent = {
-            id: `deploy_${eventData.cardUID}_${Date.now()}`,
+            id: `deploy_${eventData.carduid}_${Date.now()}`,
             type: EventType.DEPLOY_EFFECT_TRIGGERED,
             status: EventStatus.DECLARED,
             priority: EventPriority.NORMAL,

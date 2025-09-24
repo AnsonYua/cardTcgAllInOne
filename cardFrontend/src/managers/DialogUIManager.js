@@ -31,8 +31,8 @@ export default class DialogUIManager {
    * {
    *   // REQUIRED: Pre-resolved eligibleCards array
    *   eligibleCards: [
-   *     { type: "slot", cardId, cardUid, displayName, cardData, zone, playerId, isSlotTarget, unit, pilot, totalAP, totalHP, selectionIndex },
-   *     { type: "carduid", cardId, cardUid, displayName, cardData, selectionIndex, preSelected }
+   *     { type: "slot", cardId, carduid, displayName, cardData, zone, playerId, isSlotTarget, unit, pilot, totalAP, totalHP, selectionIndex },
+   *     { type: "carduid", cardId, carduid, displayName, cardData, selectionIndex, preSelected }
    *   ],
    *   
    *   // REQUIRED: Selection behavior
@@ -251,10 +251,10 @@ export default class DialogUIManager {
     // Direct card object (unit from zones)
     if (card.cardData && card.cardData.id) {
       cardImageId = card.cardData.id;
-      displayCardId = card.cardUid || card.cardId;
+      displayCardId = card.carduid || card.cardId;
     } else if (card.cardData && card.cardData.cardId) {
       cardImageId = card.cardData.cardId;
-      displayCardId = card.cardUid || card.cardId;
+      displayCardId = card.carduid || card.cardId;
     } else if (card.cardId) {
       // Fallback for simple card objects
       cardImageId = card.cardId;
@@ -1042,7 +1042,7 @@ export default class DialogUIManager {
    * @private
    */
   static _getCardIdentifier(card) {
-    return card.cardUid || card.cardId || card.id || card.displayCardId || 'unknown';
+    return card.carduid || card.cardId || card.id || card.displayCardId || 'unknown';
   }
 
   /**
@@ -1440,7 +1440,7 @@ export default class DialogUIManager {
    * @private
    */
   static _resolveSlot(item, gameState, index) {
-    const { playerId, zone, cardUid } = item;
+    const { playerId, zone, carduid } = item;
     
     if (!playerId || !zone) {
       console.warn('DialogUIManager: Slot item missing playerId or zone');
@@ -1461,9 +1461,9 @@ export default class DialogUIManager {
       return null;
     }
     
-    // Optional specific card filter (only if cardUid specified)
-    if (cardUid && slot.unit?.cardUid !== cardUid) {
-      console.log(`DialogUIManager: Slot ${zone} unit cardUid ${slot.unit?.cardUid} != ${cardUid}`);
+    // Optional specific card filter (only if carduid specified)
+    if (carduid && slot.unit?.carduid !== carduid) {
+      console.log(`DialogUIManager: Slot ${zone} unit carduid ${slot.unit?.carduid} != ${carduid}`);
       return null;
     }
     
@@ -1474,7 +1474,7 @@ export default class DialogUIManager {
     }
     
     // Build card object for dialog display
-    return this._buildSlotCard(slot, { zone, playerId, cardUid, index });
+    return this._buildSlotCard(slot, { zone, playerId, carduid, index });
   }
 
   /**
@@ -1482,7 +1482,7 @@ export default class DialogUIManager {
    * @private
    */
   static _buildSlotCard(slot, metadata) {
-    const { zone, playerId, cardUid, index } = metadata;
+    const { zone, playerId, carduid, index } = metadata;
     const unit = slot.unit;
     const pilot = slot.pilot;
     
@@ -1512,8 +1512,8 @@ export default class DialogUIManager {
     // Create minimized card object for slot selection
     const cardObject = {
       // Essential identifiers - use primary card data
-      cardId: primaryCard?.cardData?.id || primaryCard?.cardUid || 'unknown',
-      cardUid: primaryCard?.cardUid || 'unknown',
+      cardId: primaryCard?.cardData?.id || primaryCard?.carduid || 'unknown',
+      carduid: primaryCard?.carduid || 'unknown',
       type : "slot",
       // Display data
       displayName: displayName,
@@ -1541,14 +1541,14 @@ export default class DialogUIManager {
   }
 
   /**
-   * Resolve cardUID item (specific card references)
+   * Resolve carduid item (specific card references)
    * @private
    */
-  static _resolveCardUID(item, gameState, index) {
-    const { cardUid, preSelected = false } = item;
+  static _resolveCarduid(item, gameState, index) {
+    const { carduid, preSelected = false } = item;
     
-    if (!cardUid) {
-      console.warn('DialogUIManager: CardUID item missing cardUid');
+    if (!carduid) {
+      console.warn('DialogUIManager: Carduid item missing carduid');
       return null;
     }
     
@@ -1562,7 +1562,7 @@ export default class DialogUIManager {
       
       // Check hand
       if (player.deck?.hand) {
-        const handCard = player.deck.hand.find(card => card.cardUid === cardUid);
+        const handCard = player.deck.hand.find(card => card.carduid === carduid);
         if (handCard) {
           cardData = handCard.cardData;
           foundLocation = `${playerId}/hand`;
@@ -1574,12 +1574,12 @@ export default class DialogUIManager {
       if (player.zones) {
         for (const zoneName in player.zones) {
           const zone = player.zones[zoneName];
-          if (zone.unit?.cardUid === cardUid) {
+          if (zone.unit?.carduid === carduid) {
             cardData = zone.unit.cardData;
             foundLocation = `${playerId}/${zoneName}/unit`;
             break;
           }
-          if (zone.pilot?.cardUid === cardUid) {
+          if (zone.pilot?.carduid === carduid) {
             cardData = zone.pilot.cardData;
             foundLocation = `${playerId}/${zoneName}/pilot`;
             break;
@@ -1590,16 +1590,16 @@ export default class DialogUIManager {
     }
     
     if (!cardData) {
-      console.warn(`DialogUIManager: Card ${cardUid} not found in game state`);
+      console.warn(`DialogUIManager: Card ${carduid} not found in game state`);
       return null;
     }
     
-    console.log(`🎴 Found card ${cardUid} in ${foundLocation}: ${cardData.name}`);
+    console.log(`🎴 Found card ${carduid} in ${foundLocation}: ${cardData.name}`);
     
-    // Create minimized card object for cardUID selection
+    // Create minimized card object for carduid selection
     return {
-      cardId: cardData.id || cardUid,
-      cardUid: cardUid,
+      cardId: cardData.id || carduid,
+      carduid: carduid,
       type: "carduid",
       displayName: cardData.name || 'Unknown Card',
       cardData: cardData, // For Card component rendering

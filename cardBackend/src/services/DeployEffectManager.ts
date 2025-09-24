@@ -26,7 +26,7 @@ export class DeployEffectManager {
      * All effects are processed automatically with smart target selection
      */
     static processDeployEffect(gameEnv: GameEnvironment, eventData: any): any {
-        console.log(`🚀 Processing Deploy effects for card ${eventData.cardId} (${eventData.cardUID})`);
+        console.log(`🚀 Processing Deploy effects for card ${eventData.cardId} (${eventData.carduid})`);
         console.log(`📋 Effects to process: ${eventData.effects.length}`);
         
         let processedEffects = 0;
@@ -85,7 +85,7 @@ export class DeployEffectManager {
                 gameEnv,
                 eventData.playerId,
                 'DEPLOY',
-                eventData.cardUID,
+                eventData.carduid,
                 eventData.cardId,
                 effect,
                 targetConfig

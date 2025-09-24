@@ -51,7 +51,7 @@ const selection = {
 const eligibleCards = trashArea.map((card, trashIndex) => ({
   cardData: card.cardData || card,
   cardId: card.cardData?.id || card.id,
-  cardUid: card.cardUid || `trash_${trashIndex}`,
+  carduid: card.carduid || `trash_${trashIndex}`,
   selectionIndex: trashIndex,
   displayName: card.cardData?.name || card.name || 'Unknown Card',
   inTrash: true
@@ -140,7 +140,7 @@ const selection = {
 const selection = {
   items: [
     { type: 'slot', playerId: 'p1', zone: 'slot1', constraints: ['has-unit'] },
-    { type: 'carduid', cardUid: 'card_123' }
+    { type: 'carduid', carduid: 'card_123' }
   ],
   selectCount: 1,
   title: "Title",

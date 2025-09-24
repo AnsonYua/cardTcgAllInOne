@@ -298,7 +298,7 @@ export default class TrashManager {
 
     // Remove cards with uid = "base_default" from trash area
     const originalTrashLength = trashArea.length;
-    trashArea = trashArea.filter(card => card.cardUid !== "base_default");
+    trashArea = trashArea.filter(card => card.carduid !== "base_default");
     
     console.log(`TrashManager: Filtered trash area - ${originalTrashLength} -> ${trashArea.length} cards`);
 

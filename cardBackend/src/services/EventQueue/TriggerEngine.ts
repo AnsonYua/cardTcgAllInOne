@@ -32,7 +32,7 @@ export interface PlayerFilter {
 export interface RegisteredTrigger {
     triggerId: string;
     sourceCardId: string;
-    sourceCardUid: string;
+    sourceCarduid: string;
     abilityId: string;
     condition: TriggerCondition;
     isOptional: boolean;
@@ -43,7 +43,7 @@ export interface RegisteredTrigger {
 export interface ContinuousEffect {
     effectId: string;
     sourceCardId: string;
-    sourceCardUid: string;
+    sourceCarduid: string;
     effectType: string;
     targets: CardFilter;
     modification: any;
@@ -84,7 +84,7 @@ export class TriggerEngine {
      */
     unregisterTriggersForCard(carduid: string): void {
         this.registeredTriggers.forEach((triggers, eventType) => {
-            const filtered = triggers.filter(t => t.sourceCardUid !== carduid);
+            const filtered = triggers.filter(t => t.sourceCarduid !== carduid);
             if (filtered.length !== triggers.length) {
                 this.registeredTriggers.set(eventType, filtered);
                 console.log(`🎯 Triggers unregistered for card: ${carduid}`);
@@ -111,7 +111,7 @@ export class TriggerEngine {
      */
     removeContinuousEffectsForCard(carduid: string): void {
         const originalLength = this.continuousEffects.length;
-        this.continuousEffects = this.continuousEffects.filter(e => e.sourceCardUid !== carduid);
+        this.continuousEffects = this.continuousEffects.filter(e => e.sourceCarduid !== carduid);
         
         if (this.continuousEffects.length !== originalLength) {
             console.log(`🔄 Continuous effects removed for card: ${carduid}`);
@@ -138,7 +138,7 @@ export class TriggerEngine {
                 const abilityEvent = EventFactory.createAbilityTriggeredEvent(
                     trigger.abilityId,
                     trigger.sourceCardId,
-                    trigger.sourceCardUid,
+                    trigger.sourceCarduid,
                     event.playerId || '',
                     event.type,
                     trigger.isOptional

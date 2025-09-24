@@ -335,13 +335,13 @@ export class GameEnvironment {
         return player ? player.isZoneOccupied(zone) : false;
     }
 
-    public placeCardInZone(playerId: string, zone: ZoneType, cardUID: string): boolean {
-        console.log(`🔍 placeCardInZone called: playerId=${playerId}, zone=${zone}, cardUID=${cardUID}`);
+    public placeCardInZone(playerId: string, zone: ZoneType, carduid: string): boolean {
+        console.log(`🔍 placeCardInZone called: playerId=${playerId}, zone=${zone}, carduid=${carduid}`);
         
         const player = this.getPlayer(playerId);
         if (!player) return false;
         
-        player.setCardInZone(zone, cardUID, undefined);
+        player.setCardInZone(zone, carduid, undefined);
         
         const zoneName = zone.toLowerCase() as keyof PlayerZones;
         console.log(`🔍 After setCardInZone: ${zone} zone contains:`, player.zones[zoneName]);

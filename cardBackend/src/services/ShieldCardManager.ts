@@ -21,9 +21,9 @@ export class ShieldCardManager {
             // Draw 6 cards from deck
             const drawnCards: string[] = [];
             for (let i = 0; i < 6 && player.deck.mainDeck.length > 0; i++) {
-                const drawnCardUid = player.deck.mainDeck.shift();
-                if (drawnCardUid) {
-                    drawnCards.push(drawnCardUid);
+                const drawnCarduid = player.deck.mainDeck.shift();
+                if (drawnCarduid) {
+                    drawnCards.push(drawnCarduid);
                 }
             }
 

@@ -54,7 +54,7 @@ export default class DialogManager {
           dialogDisplayType: 'slot',
           playerId: playerId,
           zone: slotName,
-          cardUid: slot.unit.cardUid
+          carduid: slot.unit.carduid
         });
       }
     }
@@ -113,7 +113,7 @@ export default class DialogManager {
   /*
    SlotSelection, items should look like this
      {
-          "cardUid": "ST01-009_d0276af7-b917-45ba-8e16-692d241a7360",
+          "carduid": "ST01-009_d0276af7-b917-45ba-8e16-692d241a7360",
           "zone": "slot1",
           "playerId": "playerId_1"
           "type":"slow"
@@ -453,7 +453,7 @@ export default class DialogManager {
     console.log('DialogManager: Showing unified target choice dialog:', event);
     
     // Extract effect information from TARGET_CHOICE event
-    const { effect, availableTargets, sourceCardUid, sourceCardId, sourceType } = event.data;
+    const { effect, availableTargets, sourceCarduid, sourceCardId, sourceType } = event.data;
     const effectDescription = effect?.action || 'Select Target';
     const isOptional = effect?.optional !== false;
     
@@ -462,7 +462,7 @@ export default class DialogManager {
       dialogDisplayType: 'slot',
       playerId: target.playerId,
       zone: target.zone,
-      cardUid: target.cardUid
+      carduid: target.carduid
     }));
 
     // Create selection object using unified format
@@ -490,7 +490,7 @@ export default class DialogManager {
             // Always send as array for consistency, even for single target
             if (this.scene.gameApiService) {
               await this.scene.gameApiService.confirmTargetChoice(event.id, [{
-                cardUid: selectedTarget.cardUid,
+                carduid: selectedTarget.carduid,
                 zone: selectedTarget.zone,
                 playerId: selectedTarget.playerId
               }], this.scene);
@@ -560,7 +560,7 @@ export default class DialogManager {
 
     // Create eligible cards only for slots that actually contain units
     const eligibleCards = this._createSlotItems(opponentData, opponentId, (slot) => {
-      return slot?.unit?.cardUid; // Only slots with units
+      return slot?.unit?.carduid; // Only slots with units
     });
 
     // Create selection data and validate
@@ -609,7 +609,7 @@ export default class DialogManager {
 
     // Create eligible cards only for slots that contain units but no pilots
     const eligibleCards = this._createSlotItems(playerData, playerId, (slot) => {
-      return slot?.unit?.cardUid && !slot.pilot; // Units without pilots
+      return slot?.unit?.carduid && !slot.pilot; // Units without pilots
     });
 
     // Create selection data and validate
@@ -640,7 +640,7 @@ export default class DialogManager {
     console.log('DialogManager: Redirecting deploy target dialog to unified slot selection');
 
     // Extract deploy effect and target information from event
-    const { deployEffect, availableTargets, sourceCardUid, cardId } = event.data;
+    const { deployEffect, availableTargets, sourceCarduid, cardId } = event.data;
     const effectDescription = deployEffect?.effect?.action || 'Select Target';
 
     // Convert backend availableTargets to eligibleCards format
@@ -648,7 +648,7 @@ export default class DialogManager {
       dialogDisplayType: 'slot',
       playerId: target.playerId,
       zone: target.zone,
-      cardUid: target.cardUid // Optional constraint for specific card
+      carduid: target.carduid // Optional constraint for specific card
     }));
 
     let shouldShowCancel = true 

@@ -9,7 +9,7 @@ import { GameEnvironment } from '../../models/GameEnvironment';
 export interface ActivatedEffect {
     effectId: string;
     sourceCardId: string;
-    sourceCardUid: string;
+    sourceCarduid: string;
     abilityId: string;
     playerId: string;
     cost?: number;

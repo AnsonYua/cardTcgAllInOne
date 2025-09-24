@@ -28,7 +28,7 @@ pilotData: pilot ? {
 **2. `pilot` object:**
 ```javascript
 pilot: pilot ? {
-  cardId: pilot.cardData?.id || `${unit.cardUid}_pilot`,
+  cardId: pilot.cardData?.id || `${unit.carduid}_pilot`,
   cardData: pilot.cardData,
   currentAP: pilot.currentAP || pilot.cardData?.ap || 0,
   currentHP: pilot.currentHP || pilot.cardData?.hp || 0
@@ -73,7 +73,7 @@ console.log(`Created slot target display: ${slotTarget.unit.cardId}${slotTarget.
 ### Consolidated Structure
 ```javascript
 pilot: pilot ? {
-  cardId: pilot.cardData?.id || `${unit.cardUid}_pilot`,
+  cardId: pilot.cardData?.id || `${unit.carduid}_pilot`,
   cardData: pilot.cardData,
   name: pilot.cardData?.name || 'Pilot',                    // ✅ Added from pilotData
   currentAP: pilot.currentAP || pilot.cardData?.ap || 0,
@@ -110,7 +110,7 @@ pilotData: pilot ? {
 ```javascript
 // ENHANCED: Added missing fields to existing pilot structure (+2 lines)
 pilot: pilot ? {
-  cardId: pilot.cardData?.id || `${unit.cardUid}_pilot`,
+  cardId: pilot.cardData?.id || `${unit.carduid}_pilot`,
   cardData: pilot.cardData,
   name: pilot.cardData?.name || 'Pilot',        // ✅ NEW
   currentAP: pilot.currentAP || pilot.cardData?.ap || 0,

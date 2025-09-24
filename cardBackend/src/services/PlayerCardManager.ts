@@ -39,8 +39,8 @@ export class PlayerCardManager {
                 };
             }
 
-            // Extract cardId from cardUID - minimize string operations
-            const cardId = eventData.cardUID.split('_')[0];
+            // Extract cardId from carduid - minimize string operations
+            const cardId = eventData.carduid.split('_')[0];
 
             // Load full card data from card database
             const fullCardData = CardDatabaseManager.getCardDetails(cardId);
@@ -54,21 +54,21 @@ export class PlayerCardManager {
             // Use eventData properties directly in method calls to minimize conversions
             switch (eventData.playAs) {
                 case 'unit':
-                    return this.placeUnitCard(player.zones, fullCardData, eventData.cardUID, eventData.playerId);
+                    return this.placeUnitCard(player.zones, fullCardData, eventData.carduid, eventData.playerId);
 
                 case 'pilot':
-                    return this.placePilotCard(player.zones, fullCardData, eventData.cardUID, eventData.playerId, eventData.targetUnit);
+                    return this.placePilotCard(player.zones, fullCardData, eventData.carduid, eventData.playerId, eventData.targetUnit);
 
                 case 'command':
-                    return this.placeCommandCard(player.zones, fullCardData, eventData.cardUID, eventData.playerId);
+                    return this.placeCommandCard(player.zones, fullCardData, eventData.carduid, eventData.playerId);
 
                 case 'base':
-                    return this.placeBaseCard(player.zones, fullCardData, eventData.cardUID, eventData.playerId);
+                    return this.placeBaseCard(player.zones, fullCardData, eventData.carduid, eventData.playerId);
 
                 default:
                     return {
                         success: false,
-                        error: `cannot play as ${eventData.playAs} for card ${eventData.cardUID}`
+                        error: `cannot play as ${eventData.playAs} for card ${eventData.carduid}`
                     };
             }
 
@@ -87,7 +87,7 @@ export class PlayerCardManager {
     static placeCard(
         gameEnv: GameEnvironment,
         playerId: string,
-        cardUID: string,
+        carduid: string,
         options: CardPlacementOptions = {}
     ): CardPlacementResult {
         try {
@@ -99,8 +99,8 @@ export class PlayerCardManager {
                 };
             }
 
-            // Extract cardId from cardUID
-            const cardId = cardUID.split('_')[0];
+            // Extract cardId from carduid
+            const cardId = carduid.split('_')[0];
 
             // Load full card data from card database
             const fullCardData = CardDatabaseManager.getCardDetails(cardId);
@@ -117,21 +117,21 @@ export class PlayerCardManager {
 
             switch (cardType) {
                 case 'unit':
-                    return this.placeUnitCard(player.zones, fullCardData, cardUID, playerId);
+                    return this.placeUnitCard(player.zones, fullCardData, carduid, playerId);
 
                 case 'pilot':
-                    return this.placePilotCard(player.zones, fullCardData, cardUID, playerId, options.targetUnit);
+                    return this.placePilotCard(player.zones, fullCardData, carduid, playerId, options.targetUnit);
 
                 case 'command':
-                    return this.placeCommandCard(player.zones, fullCardData, cardUID, playerId);
+                    return this.placeCommandCard(player.zones, fullCardData, carduid, playerId);
 
                 case 'base':
-                    return this.placeBaseCard(player.zones, fullCardData, cardUID, playerId);
+                    return this.placeBaseCard(player.zones, fullCardData, carduid, playerId);
 
                 default:
                     return {
                         success: false,
-                        error: `Unknown card type '${cardType}' for card ${cardUID}`
+                        error: `Unknown card type '${cardType}' for card ${carduid}`
                     };
             }
 
@@ -150,7 +150,7 @@ export class PlayerCardManager {
     private static placeUnitCard(
         playerZones: any,
         cardData: any,
-        cardUID: string,
+        carduid: string,
         playerId: string
     ): CardPlacementResult {
         // Use local utility to find first empty slot
@@ -165,7 +165,7 @@ export class PlayerCardManager {
 
         // Create unit card using proper UnitZoneCard interface from CardSystem
         const unitCard = createZoneCard(
-            cardUID,
+            carduid,
             cardData.id,
             cardData,
             playerId,
@@ -174,7 +174,7 @@ export class PlayerCardManager {
 
         // Place unit in target slot
         playerZones[targetZone].unit = unitCard;
-        console.log(`🎮 Placed unit card ${cardUID} in ${targetZone}`);
+        console.log(`🎮 Placed unit card ${carduid} in ${targetZone}`);
 
         // Analyze the placement result for link/pair status
         const { isOnLink, isOnPair } = this.analyzePlacementResult(playerZones, targetZone, 'unit');
@@ -193,32 +193,32 @@ export class PlayerCardManager {
     private static placePilotCard(
         playerZones: any,
         cardData: any,
-        cardUID: string,
+        carduid: string,
         playerId: string,
         targetUnit?: string
     ): CardPlacementResult {
         if (!targetUnit) {
             return {
                 success: false,
-                error: `Pilot card ${cardUID} requires targetUnit parameter`
+                error: `Pilot card ${carduid} requires targetUnit parameter`
             };
         }
 
         // Use local utility to find target unit slot - minimize object destructuring
-        const slotResult = PlayerCardManager.findSlotByCardUid({ zones: playerZones }, targetUnit);
+        const slotResult = PlayerCardManager.findSlotByCarduid({ zones: playerZones }, targetUnit);
         const targetZone = slotResult.slot;
 
         if (!targetZone) {
             return {
                 success: false,
-                error: `Target unit ${targetUnit} not found in slots for pilot ${cardUID}`
+                error: `Target unit ${targetUnit} not found in slots for pilot ${carduid}`
             };
         }
 
         // Create pilot card using proper PilotZoneCard interface from CardSystem
         // This handles special case where command cards can be played as pilots
         const pilotCard = createZoneCard(
-            cardUID,
+            carduid,
             cardData.id,
             cardData,
             playerId,
@@ -227,7 +227,7 @@ export class PlayerCardManager {
 
         // Place pilot in target slot with unit
         playerZones[targetZone].pilot = pilotCard;
-        console.log(`🎮 Placed pilot card ${cardUID} with unit in ${targetZone}`);
+        console.log(`🎮 Placed pilot card ${carduid} with unit in ${targetZone}`);
 
         // Analyze the placement result for link/pair status
         const { isOnLink, isOnPair } = this.analyzePlacementResult(playerZones, targetZone, 'pilot');
@@ -247,14 +247,14 @@ export class PlayerCardManager {
     private static placeCommandCard(
         _playerZones: any,
         _cardData: any,
-        cardUID: string,
+        carduid: string,
         _playerId: string
     ): CardPlacementResult {
-        console.log(`🚧 Command card direct placement not supported for ${cardUID}`);
+        console.log(`🚧 Command card direct placement not supported for ${carduid}`);
 
         return {
             success: false,
-            error: `Command card direct placement not supported for ${cardUID}`,
+            error: `Command card direct placement not supported for ${carduid}`,
             isOnLink: false,
             isOnPair: false
         };
@@ -266,11 +266,11 @@ export class PlayerCardManager {
     private static placeBaseCard(
         playerZones: any,
         cardData: any,
-        cardUID: string,
+        carduid: string,
         playerId: string
     ): CardPlacementResult {
         try {
-            console.log(`🏗️ Placing base card ${cardUID} for player ${playerId}`);
+            console.log(`🏗️ Placing base card ${carduid} for player ${playerId}`);
 
             // Check if base[0] exists (base zone is an array)
             if (playerZones.base && playerZones.base.length > 0) {
@@ -290,7 +290,7 @@ export class PlayerCardManager {
 
             // Create new base card using proper BaseCard interface from CardSystem
             const baseCard = createZoneCard(
-                cardUID,
+                carduid,
                 cardData.id,
                 cardData,
                 playerId,
@@ -304,7 +304,7 @@ export class PlayerCardManager {
 
             // Place new base card in base[0]
             playerZones.base.push(baseCard);
-            console.log(`🏗️ Placed new base card ${cardUID} in base zone`);
+            console.log(`🏗️ Placed new base card ${carduid} in base zone`);
 
             // Analyze the placement result (base cards don't create pairs but for consistency)
             const { isOnLink, isOnPair } = this.analyzePlacementResult(playerZones, 'base', 'base');
@@ -317,7 +317,7 @@ export class PlayerCardManager {
             };
 
         } catch (error) {
-            console.error(`❌ Error placing base card ${cardUID}:`, error);
+            console.error(`❌ Error placing base card ${carduid}:`, error);
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Base card placement failed',
@@ -330,21 +330,21 @@ export class PlayerCardManager {
     /**
      * Remove card from player hand (handUids only)
      */
-    static removeCardFromHand(gameEnv: GameEnvironment, playerId: string, cardUID: string): boolean {
+    static removeCardFromHand(gameEnv: GameEnvironment, playerId: string, carduid: string): boolean {
         try {
             const player = gameEnv.players[playerId];
             if (!player?.deck?.handUids) {
                 return false;
             }
 
-            const handUidIndex = player.deck.handUids.findIndex(uid => uid === cardUID);
+            const handUidIndex = player.deck.handUids.findIndex(uid => uid === carduid);
             if (handUidIndex === -1) {
                 return false;
             }
 
             // Remove card from handUids array only (hand is generated from handUids)
             player.deck.handUids.splice(handUidIndex, 1);
-            console.log(`🎮 Removed card ${cardUID} from handUids`);
+            console.log(`🎮 Removed card ${carduid} from handUids`);
 
             return true;
 
@@ -357,13 +357,13 @@ export class PlayerCardManager {
     /**
      * Validate card is in player hand
      */
-    static validateCardInHand(gameEnv: GameEnvironment, playerId: string, cardUID: string): boolean {
+    static validateCardInHand(gameEnv: GameEnvironment, playerId: string, carduid: string): boolean {
         const player = gameEnv.players[playerId];
         if (!player?.deck?.handUids) {
             return false;
         }
 
-        return player.deck.handUids.includes(cardUID);
+        return player.deck.handUids.includes(carduid);
     }
 
     // ============ LINK AND PAIR DETECTION HELPERS ============
@@ -504,11 +504,11 @@ export class PlayerCardManager {
      * 
      * @param gameEnv - Game environment
      * @param playerId - Player who owns the linked unit
-     * @param cardUID - The cardUID of the card that was just placed (typically pilot)
+     * @param carduid - The carduid of the card that was just placed (typically pilot)
      */
-    static handleLinkFormation(gameEnv: GameEnvironment, playerId: string, cardUID: string): void {
+    static handleLinkFormation(gameEnv: GameEnvironment, playerId: string, carduid: string): void {
         try {
-            console.log(`🔗 Processing link formation for player ${playerId}, card ${cardUID}`);
+            console.log(`🔗 Processing link formation for player ${playerId}, card ${carduid}`);
 
             const player = gameEnv.players[playerId];
             if (!player || !player.zones) {
@@ -516,24 +516,24 @@ export class PlayerCardManager {
                 return;
             }
 
-            // Find the slot containing the cardUID that was just placed using type-safe access
+            // Find the slot containing the carduid that was just placed using type-safe access
             let targetSlot: keyof Pick<typeof player.zones, 'slot1' | 'slot2' | 'slot3' | 'slot4' | 'slot5' | 'slot6'> | null = null;
 
             for (const slotName of SLOT_ZONES) {
                 const slotKey = slotName as keyof Pick<typeof player.zones, 'slot1' | 'slot2' | 'slot3' | 'slot4' | 'slot5' | 'slot6'>;
                 const slot = player.zones[slotKey];
-                if (slot?.unit?.carduid === cardUID || slot?.pilot?.carduid === cardUID) {
+                if (slot?.unit?.carduid === carduid || slot?.pilot?.carduid === carduid) {
                     targetSlot = slotKey;
                     break;
                 }
             }
 
             if (!targetSlot) {
-                console.error(`❌ Could not find slot containing card ${cardUID}`);
+                console.error(`❌ Could not find slot containing card ${carduid}`);
                 return;
             }
 
-            console.log(`🎯 Found card ${cardUID} in slot ${targetSlot}`);
+            console.log(`🎯 Found card ${carduid} in slot ${targetSlot}`);
 
             // Access the slot and get the unit card using type-safe access
             const slot = player.zones[targetSlot];
@@ -574,7 +574,7 @@ export class PlayerCardManager {
     /**
      * Find which slot contains a specific card UID
      */
-    static findSlotByCardUid(player: any, carduid: string): { slot: string | null, unit: UnitZoneCard | null } {
+    static findSlotByCarduid(player: any, carduid: string): { slot: string | null, unit: UnitZoneCard | null } {
         for (const slot of SLOT_ZONES) {
             const slotZone = (player.zones as any)[slot];
             if (slotZone?.unit?.carduid === carduid) {
@@ -730,13 +730,13 @@ export class PlayerCardManager {
     }
 
     /**
-     * Check if a card has Deploy effects (ENTERS_PLAY triggers) using cardUID to extract cardId and fetch card data
+     * Check if a card has Deploy effects (ENTERS_PLAY triggers) using carduid to extract cardId and fetch card data
      */
-    static checkForDeployEffects(cardUID: string): any[] {
-        console.log("checkForDeployEffects using cardUID:", cardUID);
+    static checkForDeployEffects(carduid: string): any[] {
+        console.log("checkForDeployEffects using carduid:", carduid);
         
-        // Extract cardId from cardUID (remove UUID suffix)
-        const cardId = cardUID.split('_')[0];
+        // Extract cardId from carduid (remove UUID suffix)
+        const cardId = carduid.split('_')[0];
         
         // Get card data from card database
         const cardData = CardDatabaseManager.getCardDetails(cardId);
@@ -759,7 +759,7 @@ export class PlayerCardManager {
             }
         }
         
-        console.log(`✅ Found ${deployEffects.length} deploy effects for ${cardUID}`);
+        console.log(`✅ Found ${deployEffects.length} deploy effects for ${carduid}`);
         return deployEffects;
     }
 }

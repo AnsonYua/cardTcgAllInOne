@@ -359,8 +359,6 @@ export default class GameScene extends Phaser.Scene {
   }
 
   updateGameState() {
-    //this.updatePlayerHand();
-    //this.updateZones();
     this.updateUI();
   }
 
@@ -462,15 +460,6 @@ export default class GameScene extends Phaser.Scene {
     return GameSceneUtils.getFieldIndexFromZone(zoneType);
   }
 
-
-
-
-
-
-
-  getCardUIDFromHand(cardData) {
-    return this.handCardManager.getCardUIDFromHand(cardData);
-  }
 
   createBackendAction(cardData, zoneType) {
     return this.handCardManager.createBackendAction(cardData, zoneType);

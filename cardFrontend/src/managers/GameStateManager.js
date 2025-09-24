@@ -426,9 +426,9 @@ export default class GameStateManager {
           }
           // Also check the card array format (legacy)
           if (zoneCard.card && Array.isArray(zoneCard.card)) {
-            const cardUid = zoneCard.card[0];
+            const carduid = zoneCard.card[0];
             // Extract cardId from UID (format: cardId_timestamp_number)
-            const extractedCardId = cardUid ? cardUid.split('_')[0] : null;
+            const extractedCardId = carduid ? carduid.split('_')[0] : null;
             if (extractedCardId === cardId) {
               return zoneCard.currentPower !== undefined ? zoneCard.currentPower : null;
             }
@@ -586,19 +586,19 @@ export default class GameStateManager {
   
   /**
    * Get card data by UID from player hand
-   * @param {string} cardUid - Card UID (e.g., "ST01-012_64e905b3-af0b-4454-9ab2-9f4953bf7c80")
+   * @param {string} carduid - Card UID (e.g., "ST01-012_64e905b3-af0b-4454-9ab2-9f4953bf7c80")
    * @returns {Object|null} Card data or null if not found
    */
-  getCardDataByUid(cardUid) {
-    if (!cardUid) return null;
+  getCardDataByUid(carduid) {
+    if (!carduid) return null;
     
     // Extract card ID from UID (everything before first underscore)
-    const cardId = cardUid.split('_')[0];
+    const cardId = carduid.split('_')[0];
     
     // Find card in current player's hand
     const currentHand = this.getPlayerHand();
     if (!currentHand || !Array.isArray(currentHand)) {
-      console.warn(`[GameStateManager] Invalid hand data when looking for UID: ${cardUid}`);
+      console.warn(`[GameStateManager] Invalid hand data when looking for UID: ${carduid}`);
       return null;
     }
     
@@ -607,22 +607,22 @@ export default class GameStateManager {
       // Handle different hand card formats
       if (typeof handCard === 'string') {
         // String format: check if UID matches
-        if (handCard === cardUid) {
+        if (handCard === carduid) {
           return {
-            cardUid: cardUid,
+            carduid: carduid,
             cardData: this.findCardDataById(cardId)
           };
         }
-      } else if (handCard && handCard.cardUid) {
+      } else if (handCard && handCard.carduid) {
         // Object format: check UID
-        if (handCard.cardUid === cardUid) {
+        if (handCard.carduid === carduid) {
           return handCard;
         }
       } else if (handCard && handCard.id) {
         // Legacy format: check card ID
         if (handCard.id === cardId) {
           return {
-            cardUid: cardUid,
+            carduid: carduid,
             cardData: handCard
           };
         }
@@ -633,12 +633,12 @@ export default class GameStateManager {
     const cardData = this.findCardDataById(cardId);
     if (cardData) {
       return {
-        cardUid: cardUid,
+        carduid: carduid,
         cardData: cardData
       };
     }
     
-    console.warn(`[GameStateManager] Card not found for UID: ${cardUid}, ID: ${cardId}`);
+    console.warn(`[GameStateManager] Card not found for UID: ${carduid}, ID: ${cardId}`);
     return null;
   }
   
@@ -778,8 +778,8 @@ export default class GameStateManager {
     const cardContainerUIDs = [];
     if (handContainer && handContainer.list) {
       handContainer.list.forEach(card => {
-        if (card.fullCardData && card.fullCardData.cardUid) {
-          cardContainerUIDs.push(card.fullCardData.cardUid);
+        if (card.fullCardData && card.fullCardData.carduid) {
+          cardContainerUIDs.push(card.fullCardData.carduid);
         }
       });
     }

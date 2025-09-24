@@ -71,7 +71,7 @@ const { totalAP, totalHP } = CardStatCalculator.calculateSlotDataTotals(slot);
 ```javascript
 // NEW: Simplified slot calculation
 static _buildSlotCard(slot, metadata) {
-  const { zone, playerId, cardUid, index } = metadata;
+  const { zone, playerId, carduid, index } = metadata;
   const unit = slot.unit;
   const pilot = slot.pilot;
   

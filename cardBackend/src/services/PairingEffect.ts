@@ -16,7 +16,7 @@ export interface PairingEffectResult {
 export interface PlayCardEventData {
     playerId: string;
     gameId: string;
-    cardUID: string;
+    carduid: string;
     playAs: string;
     targetUnit?: string;
     fromBurst?: boolean;
@@ -42,14 +42,14 @@ export interface EffectCondition {
 }
 
 export interface SourceCard {
-    cardUID: string;
+    carduid: string;
     cardId: string;
     cardData: any;
     cardType: 'unit' | 'pilot';
 }
 
 export interface UnitCard {
-    cardUID: string;
+    carduid: string;
     cardId: string;
     cardData: any;
     currentAP?: number;
@@ -57,7 +57,7 @@ export interface UnitCard {
 }
 
 export interface PilotCard {
-    cardUID: string;
+    carduid: string;
     cardId: string;
     cardData: any;
     currentAP?: number;
@@ -77,7 +77,7 @@ export interface PairingEffect {
     target?: EffectTarget;
     // Minimal data - we can derive everything else from these two fields
     pairedSlot: string;           // Which slot the pairing occurred in
-    sourceCardUid: string;       // Which card triggered the effect
+    sourceCarduid: string;       // Which card triggered the effect
     // Deprecated fields - will be removed after migration
     sourceCard?: SourceCard;
     unitCard?: UnitCard;
@@ -130,7 +130,7 @@ export interface NotificationManager {
 }
 
 export interface CardInfo {
-    cardUID: string;
+    carduid: string;
     cardId: string;
     cardData: any;
     cardType: 'unit' | 'pilot';
@@ -142,7 +142,7 @@ export class PairingEffect {
     
     /**
      * Get pairing data dynamically from minimal effect information
-     * ✅ IMPROVED: Single source of truth - derive all data from pairedSlot + sourceCardUid
+     * ✅ IMPROVED: Single source of truth - derive all data from pairedSlot + sourceCarduid
      */
     private static getPairingData(effect: PairingEffect, gameEnv: GameEnvironment, playerId: string) {
         const player = gameEnv.getPlayer(playerId);
@@ -154,7 +154,7 @@ export class PairingEffect {
         return {
             unit: slotZone.unit,
             pilot: slotZone.pilot,
-            sourceCard: this.getSourceCardFromUid(effect.sourceCardUid, slotZone),
+            sourceCard: this.getSourceCardFromUid(effect.sourceCarduid, slotZone),
             slot: effect.pairedSlot
         };
     }
@@ -162,11 +162,11 @@ export class PairingEffect {
     /**
      * Get source card data from UID
      */
-    private static getSourceCardFromUid(sourceCardUid: string, slotZone: any) {
-        if (slotZone.unit?.cardUID === sourceCardUid) {
+    private static getSourceCardFromUid(sourceCarduid: string, slotZone: any) {
+        if (slotZone.unit?.carduid === sourceCarduid) {
             return { ...slotZone.unit, cardType: 'unit' };
         }
-        if (slotZone.pilot?.cardUID === sourceCardUid) {
+        if (slotZone.pilot?.carduid === sourceCarduid) {
             return { ...slotZone.pilot, cardType: 'pilot' };
         }
         return null;
@@ -187,9 +187,9 @@ export class PairingEffect {
         }
 
         // Find the slot where the pairing occurred
-        const { slot: pairedSlot, unit: pairedUnit } = this.findSlotByCardUid(player as any, eventData.cardUID);
+        const { slot: pairedSlot, unit: pairedUnit } = this.findSlotByCarduid(player as any, eventData.carduid);
         if (!pairedSlot || !pairedUnit) {
-            console.log(`⚠️ Could not find paired slot for card ${eventData.cardUID}`);
+            console.log(`⚠️ Could not find paired slot for card ${eventData.carduid}`);
             return null;
         }
 
@@ -205,8 +205,8 @@ export class PairingEffect {
 
         // Check both unit and pilot for pairing effects
         const cardsToCheck: CardInfo[] = [
-            { cardUID: pairedUnit.cardUID, cardId: pairedUnit.cardId, cardData: pairedUnit.cardData, cardType: 'unit' },
-            { cardUID: pilot.cardUID, cardId: pilot.cardId, cardData: pilot.cardData, cardType: 'pilot' }
+            { carduid: pairedUnit.carduid, cardId: pairedUnit.cardId, cardData: pairedUnit.cardData, cardType: 'unit' },
+            { carduid: pilot.carduid, cardId: pilot.cardId, cardData: pilot.cardData, cardType: 'pilot' }
         ];
 
         for (const cardInfo of cardsToCheck) {
@@ -223,8 +223,8 @@ export class PairingEffect {
                     const pairingEffect: PairingEffect = {
                         ...effect,                           // Spread all effect properties (effectId, type, trigger, action, conditions)
                         pairedSlot: pairedSlot!,            // Required: slot where pairing occurred
-                        sourceCardUid: cardInfo.cardUID     // Required: source card that triggered effect
-                        // ✅ Removed redundant: sourceCard, unitCard, pilotCard - can be derived from pairedSlot + sourceCardUid
+                        sourceCarduid: cardInfo.carduid     // Required: source card that triggered effect
+                        // ✅ Removed redundant: sourceCard, unitCard, pilotCard - can be derived from pairedSlot + sourceCarduid
                     };
                     pairingEffects.push(pairingEffect);
                     console.log(`🔗 Found pairing effect: ${effect.effectId} from ${cardInfo.cardType} ${cardInfo.cardId} in slot ${pairedSlot}`);
@@ -246,7 +246,7 @@ export class PairingEffect {
         };
         
         const pairingEvent: GameEvent = {
-            id: `pairing_${eventData.cardUID}_${Date.now()}`,
+            id: `pairing_${eventData.carduid}_${Date.now()}`,
             type: EventType.PAIRING_EFFECT_TRIGGERED,
             status: EventStatus.DECLARED,
             priority: EventPriority.NORMAL,
@@ -621,7 +621,7 @@ export class PairingEffect {
                 gameEnv,
                 playerId,
                 'PAIRING',
-                this.getPairingData(effect, gameEnv, playerId)?.unit?.cardUID || 'unknown',
+                this.getPairingData(effect, gameEnv, playerId)?.unit?.carduid || 'unknown',
                 this.getPairingData(effect, gameEnv, playerId)?.unit?.cardId || 'unknown',
                 effect as any,
                 targetConfig,
@@ -740,16 +740,16 @@ export class PairingEffect {
     /**
      * Find slot by card UID (copied from GameEngine to remove dependency)
      */
-    private static findSlotByCardUid(player: PlayerZones, cardUID: string): { slot: string | null; unit: (UnitCard & { cardData?: any }) | null } {
+    private static findSlotByCarduid(player: PlayerZones, carduid: string): { slot: string | null; unit: (UnitCard & { cardData?: any }) | null } {
         const SLOT_ZONES = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'];
         
         for (const slotName of SLOT_ZONES) {
             const slot = player.zones[slotName];
-            if (slot?.unit?.carduid === cardUID) {
+            if (slot?.unit?.carduid === carduid) {
                 return { slot: slotName, unit: slot.unit };
             }
             console.log("slot data q1111 ",JSON.stringify(slot));
-            if (slot?.pilot?.carduid === cardUID) {
+            if (slot?.pilot?.carduid === carduid) {
                 return { slot: slotName, unit: slot.unit || null }; // Return unit even if pilot was matched
             }
         }

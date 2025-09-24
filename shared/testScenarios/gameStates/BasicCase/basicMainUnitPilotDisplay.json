@@ -25,7 +25,7 @@
                 "deck": {
                     "hand": [
                         {
-                            "cardUid": "ST01-015_9de22ec3-3729-4e0c-a0bb-a42670810c99",
+                            "carduid": "ST01-015_9de22ec3-3729-4e0c-a0bb-a42670810c99",
                             "cardId": "ST01-015",
                             "cardData": {
                                 "id": "ST01-015",
@@ -140,7 +140,7 @@
                             }
                         },
                         {
-                            "cardUid": "ST01-012_9a877258-f3a3-4c02-9aed-04e6ed50bec3",
+                            "carduid": "ST01-012_9a877258-f3a3-4c02-9aed-04e6ed50bec3",
                             "cardId": "ST01-012",
                             "cardData": {
                                 "id": "ST01-012",
@@ -208,7 +208,7 @@
                             }
                         },
                         {
-                            "cardUid": "ST01-013_3947fe20-46de-4f76-aea8-5a307a2f40cf",
+                            "carduid": "ST01-013_3947fe20-46de-4f76-aea8-5a307a2f40cf",
                             "cardId": "ST01-013",
                             "cardData": {
                                 "id": "ST01-013",
@@ -273,7 +273,7 @@
                             }
                         },
                         {
-                            "cardUid": "ST01-014_ce62bb49-49bd-4464-89f6-1993af6a21d2",
+                            "carduid": "ST01-014_ce62bb49-49bd-4464-89f6-1993af6a21d2",
                             "cardId": "ST01-014",
                             "cardData": {
                                 "id": "ST01-014",
@@ -334,7 +334,7 @@
                             }
                         },
                         {
-                            "cardUid": "ST01-014_2f05ba2f-4023-4488-ae06-77fc45fbdd45",
+                            "carduid": "ST01-014_2f05ba2f-4023-4488-ae06-77fc45fbdd45",
                             "cardId": "ST01-014",
                             "cardData": {
                                 "id": "ST01-014",
@@ -446,7 +446,7 @@
                 "zones": {
                     "slot1": {
                         "unit": {
-                            "cardUid": "ST01-009_e31bb100-01af-4c2e-81eb-e49bb1f8c6f2",
+                            "carduid": "ST01-009_e31bb100-01af-4c2e-81eb-e49bb1f8c6f2",
                             "cardId": "ST01-009",
                             "cardData": {
                                 "id": "ST01-009",
@@ -519,7 +519,7 @@
                     },
                     "slot2": {
                         "unit": {
-                            "cardUid": "ST01-008_02065454-6c77-440e-acfe-56f384eeca17",
+                            "carduid": "ST01-008_02065454-6c77-440e-acfe-56f384eeca17",
                             "cardId": "ST01-008",
                             "cardData": {
                                 "id": "ST01-008",
@@ -573,7 +573,7 @@
                             "damageReceived": 0
                         },
                         "pilot": {
-                            "cardUid": "ST01-010_e882da13-278b-488a-8e29-40c14f022bc9",
+                            "carduid": "ST01-010_e882da13-278b-488a-8e29-40c14f022bc9",
                             "cardId": "ST01-010",
                             "cardData": {
                                 "id": "ST01-010",
@@ -641,7 +641,7 @@
                     },
                     "slot3": {
                         "unit": {
-                            "cardUid": "ST01-006_1a141af9-0559-46d7-8dcd-e50adec4a650",
+                            "carduid": "ST01-006_1a141af9-0559-46d7-8dcd-e50adec4a650",
                             "cardId": "ST01-006",
                             "cardData": {
                                 "id": "ST01-006",
@@ -701,7 +701,7 @@
                             "damageReceived": 0
                         },
                         "pilot": {
-                            "cardUid": "ST01-013_c8ba4182-7d1e-46e2-b3f3-c0c06bd351cc",
+                            "carduid": "ST01-013_c8ba4182-7d1e-46e2-b3f3-c0c06bd351cc",
                             "cardId": "ST01-013",
                             "cardData": {
                                 "id": "ST01-013",
@@ -779,7 +779,7 @@
                     "slot6": {},
                     "base": [
                         {
-                            "cardUid": "base_default",
+                            "carduid": "base_default",
                             "cardId": "base_default",
                             "cardData": {
                                 "cardType": "base"
@@ -794,7 +794,7 @@
                     ],
                     "shieldArea": [
                         {
-                            "cardUid": "ST01-001_2e85193b-5c10-4c87-863a-1ef9db7cc923",
+                            "carduid": "ST01-001_2e85193b-5c10-4c87-863a-1ef9db7cc923",
                             "cardId": "ST01-001",
                             "cardData": {
                                 "id": "ST01-001",
@@ -872,7 +872,7 @@
                             "isRested": false
                         },
                         {
-                            "cardUid": "ST01-005_7e706893-57af-4d66-8ae4-9acd81c1507f",
+                            "carduid": "ST01-005_7e706893-57af-4d66-8ae4-9acd81c1507f",
                             "cardId": "ST01-005",
                             "cardData": {
                                 "id": "ST01-005",
@@ -902,7 +902,7 @@
                             "isRested": false
                         },
                         {
-                            "cardUid": "ST01-007_cf09a503-efd3-45ee-a088-17e649ffa6bd",
+                            "carduid": "ST01-007_cf09a503-efd3-45ee-a088-17e649ffa6bd",
                             "cardId": "ST01-007",
                             "cardData": {
                                 "id": "ST01-007",
@@ -934,7 +934,7 @@
                             "isRested": false
                         },
                         {
-                            "cardUid": "ST01-010_708006a1-78a3-47ba-8801-1c087e279dc6",
+                            "carduid": "ST01-010_708006a1-78a3-47ba-8801-1c087e279dc6",
                             "cardId": "ST01-010",
                             "cardData": {
                                 "id": "ST01-010",
@@ -997,7 +997,7 @@
                             "isRested": false
                         },
                         {
-                            "cardUid": "ST01-011_b3da1f5f-9972-4388-a5fd-3273a8d2a121",
+                            "carduid": "ST01-011_b3da1f5f-9972-4388-a5fd-3273a8d2a121",
                             "cardId": "ST01-011",
                             "cardData": {
                                 "id": "ST01-011",
@@ -1060,7 +1060,7 @@
                             "isRested": false
                         },
                         {
-                            "cardUid": "ST01-005_22f712f4-6ffe-438a-96f8-1624d812bae0",
+                            "carduid": "ST01-005_22f712f4-6ffe-438a-96f8-1624d812bae0",
                             "cardId": "ST01-005",
                             "cardData": {
                                 "id": "ST01-005",
@@ -1092,7 +1092,7 @@
                     ],
                     "energyArea": [
                         {
-                            "cardUid": "energy_basic_1757435089330_0.03908424370480024",
+                            "carduid": "energy_basic_1757435089330_0.03908424370480024",
                             "cardId": "energy_basic",
                             "placedAt": 1757435089330,
                             "placedBy": "playerId_1",
@@ -1103,7 +1103,7 @@
                             }
                         },
                         {
-                            "cardUid": "energy_basic_1757435095947_0.42943773447499534",
+                            "carduid": "energy_basic_1757435095947_0.42943773447499534",
                             "cardId": "energy_basic",
                             "placedAt": 1757435095947,
                             "placedBy": "playerId_1",
@@ -1114,7 +1114,7 @@
                             }
                         },
                         {
-                            "cardUid": "energy_basic_1757435100025_0.28214493932297713",
+                            "carduid": "energy_basic_1757435100025_0.28214493932297713",
                             "cardId": "energy_basic",
                             "placedAt": 1757435100025,
                             "placedBy": "playerId_1",
@@ -1125,7 +1125,7 @@
                             }
                         },
                         {
-                            "cardUid": "energy_basic_1757435104652_0.8358443727383751",
+                            "carduid": "energy_basic_1757435104652_0.8358443727383751",
                             "cardId": "energy_basic",
                             "placedAt": 1757435104652,
                             "placedBy": "playerId_1",
@@ -1136,7 +1136,7 @@
                             }
                         },
                         {
-                            "cardUid": "energy_basic_1757435111194_0.10355617003148065",
+                            "carduid": "energy_basic_1757435111194_0.10355617003148065",
                             "cardId": "energy_basic",
                             "placedAt": 1757435111194,
                             "placedBy": "playerId_1",
@@ -1156,7 +1156,7 @@
                 "deck": {
                     "hand": [
                         {
-                            "cardUid": "ST01-015_d40888d8-bf45-466b-a060-397cc330ccb4",
+                            "carduid": "ST01-015_d40888d8-bf45-466b-a060-397cc330ccb4",
                             "cardId": "ST01-015",
                             "cardData": {
                                 "id": "ST01-015",
@@ -1271,7 +1271,7 @@
                             }
                         },
                         {
-                            "cardUid": "ST01-007_98fe7221-9a6c-42e9-810e-52a2c488572c",
+                            "carduid": "ST01-007_98fe7221-9a6c-42e9-810e-52a2c488572c",
                             "cardId": "ST01-007",
                             "cardData": {
                                 "id": "ST01-007",
@@ -1299,7 +1299,7 @@
                             }
                         },
                         {
-                            "cardUid": "ST01-015_99884806-41c3-46c8-ad42-c8af50361184",
+                            "carduid": "ST01-015_99884806-41c3-46c8-ad42-c8af50361184",
                             "cardId": "ST01-015",
                             "cardData": {
                                 "id": "ST01-015",
@@ -1414,7 +1414,7 @@
                             }
                         },
                         {
-                            "cardUid": "ST01-012_331e1d9c-a54c-4974-a473-aaa9d0d83d47",
+                            "carduid": "ST01-012_331e1d9c-a54c-4974-a473-aaa9d0d83d47",
                             "cardId": "ST01-012",
                             "cardData": {
                                 "id": "ST01-012",
@@ -1532,7 +1532,7 @@
                 "zones": {
                     "slot1": {
                         "unit": {
-                            "cardUid": "ST01-001_1302816e-7d71-435d-8a92-ca81d0bd8121",
+                            "carduid": "ST01-001_1302816e-7d71-435d-8a92-ca81d0bd8121",
                             "cardId": "ST01-001",
                             "cardData": {
                                 "id": "ST01-001",
@@ -1617,7 +1617,7 @@
                     },
                     "slot2": {
                         "unit": {
-                            "cardUid": "ST01-005_dfb6b5a9-f1b3-4f4e-b277-e3addcdadd99",
+                            "carduid": "ST01-005_dfb6b5a9-f1b3-4f4e-b277-e3addcdadd99",
                             "cardId": "ST01-005",
                             "cardData": {
                                 "id": "ST01-005",
@@ -1652,7 +1652,7 @@
                             "damageReceived": 0
                         },
                         "pilot": {
-                            "cardUid": "ST01-012_ed307cf3-c21e-4d8b-aca9-ed784a96237a",
+                            "carduid": "ST01-012_ed307cf3-c21e-4d8b-aca9-ed784a96237a",
                             "cardId": "ST01-012",
                             "cardData": {
                                 "id": "ST01-012",
@@ -1730,7 +1730,7 @@
                     },
                     "slot3": {
                         "unit": {
-                            "cardUid": "ST01-008_31fd1061-8053-4f87-b49b-453ee1b9c39a",
+                            "carduid": "ST01-008_31fd1061-8053-4f87-b49b-453ee1b9c39a",
                             "cardId": "ST01-008",
                             "cardData": {
                                 "id": "ST01-008",
@@ -1786,7 +1786,7 @@
                     },
                     "slot4": {
                         "unit": {
-                            "cardUid": "ST01-009_47714eb0-9be2-4dbe-9fc7-5a0dc39cdafc",
+                            "carduid": "ST01-009_47714eb0-9be2-4dbe-9fc7-5a0dc39cdafc",
                             "cardId": "ST01-009",
                             "cardData": {
                                 "id": "ST01-009",
@@ -1857,7 +1857,7 @@
                             "damageReceived": 0
                         },
                         "pilot": {
-                            "cardUid": "ST01-010_af2c828a-d916-43f8-963e-de3ee850f7a1",
+                            "carduid": "ST01-010_af2c828a-d916-43f8-963e-de3ee850f7a1",
                             "cardId": "ST01-010",
                             "cardData": {
                                 "id": "ST01-010",
@@ -1927,7 +1927,7 @@
                     "slot6": {},
                     "base": [
                         {
-                            "cardUid": "base_default",
+                            "carduid": "base_default",
                             "cardId": "base_default",
                             "cardData": {
                                 "cardType": "base"
@@ -1942,7 +1942,7 @@
                     ],
                     "shieldArea": [
                         {
-                            "cardUid": "ST01-016_b08c8a73-101f-4c26-b9ef-edf40c9514d0",
+                            "carduid": "ST01-016_b08c8a73-101f-4c26-b9ef-edf40c9514d0",
                             "cardId": "ST01-016",
                             "cardData": {
                                 "id": "ST01-016",
@@ -2030,7 +2030,7 @@
                             "isRested": false
                         },
                         {
-                            "cardUid": "ST01-011_1b77d1dc-ea19-4beb-a134-0659eda7626c",
+                            "carduid": "ST01-011_1b77d1dc-ea19-4beb-a134-0659eda7626c",
                             "cardId": "ST01-011",
                             "cardData": {
                                 "id": "ST01-011",
@@ -2093,7 +2093,7 @@
                             "isRested": false
                         },
                         {
-                            "cardUid": "ST01-005_2db997f4-b10f-4c9d-af7d-7997e6bf8852",
+                            "carduid": "ST01-005_2db997f4-b10f-4c9d-af7d-7997e6bf8852",
                             "cardId": "ST01-005",
                             "cardData": {
                                 "id": "ST01-005",
@@ -2123,7 +2123,7 @@
                             "isRested": false
                         },
                         {
-                            "cardUid": "ST01-013_799e99b6-eae5-4f87-8693-be4866158820",
+                            "carduid": "ST01-013_799e99b6-eae5-4f87-8693-be4866158820",
                             "cardId": "ST01-013",
                             "cardData": {
                                 "id": "ST01-013",
@@ -2191,7 +2191,7 @@
                             "isRested": false
                         },
                         {
-                            "cardUid": "ST01-004_33db0f83-5e39-4972-a8d7-0af5a480e12e",
+                            "carduid": "ST01-004_33db0f83-5e39-4972-a8d7-0af5a480e12e",
                             "cardId": "ST01-004",
                             "cardData": {
                                 "id": "ST01-004",
@@ -2243,7 +2243,7 @@
                             "isRested": false
                         },
                         {
-                            "cardUid": "ST01-010_641b9773-3623-412a-87c5-fe4de6b63910",
+                            "carduid": "ST01-010_641b9773-3623-412a-87c5-fe4de6b63910",
                             "cardId": "ST01-010",
                             "cardData": {
                                 "id": "ST01-010",
@@ -2308,7 +2308,7 @@
                     ],
                     "energyArea": [
                         {
-                            "cardUid": "energy_extra_1757435089330_0.6532264678140085",
+                            "carduid": "energy_extra_1757435089330_0.6532264678140085",
                             "cardId": "energy_extra",
                             "placedAt": 1757435089330,
                             "placedBy": "playerId_2",
@@ -2319,7 +2319,7 @@
                             }
                         },
                         {
-                            "cardUid": "energy_basic_1757435093897_0.19823001223806092",
+                            "carduid": "energy_basic_1757435093897_0.19823001223806092",
                             "cardId": "energy_basic",
                             "placedAt": 1757435093897,
                             "placedBy": "playerId_2",
@@ -2330,7 +2330,7 @@
                             }
                         },
                         {
-                            "cardUid": "energy_basic_1757435098411_0.0020843988199001906",
+                            "carduid": "energy_basic_1757435098411_0.0020843988199001906",
                             "cardId": "energy_basic",
                             "placedAt": 1757435098411,
                             "placedBy": "playerId_2",
@@ -2341,7 +2341,7 @@
                             }
                         },
                         {
-                            "cardUid": "energy_basic_1757435101577_0.9153956744026481",
+                            "carduid": "energy_basic_1757435101577_0.9153956744026481",
                             "cardId": "energy_basic",
                             "placedAt": 1757435101577,
                             "placedBy": "playerId_2",
@@ -2352,7 +2352,7 @@
                             }
                         },
                         {
-                            "cardUid": "energy_basic_1757435106172_0.31486366810920385",
+                            "carduid": "energy_basic_1757435106172_0.31486366810920385",
                             "cardId": "energy_basic",
                             "placedAt": 1757435106172,
                             "placedBy": "playerId_2",
@@ -2363,7 +2363,7 @@
                             }
                         },
                         {
-                            "cardUid": "energy_basic_1757435214015_0.49364147452306906",
+                            "carduid": "energy_basic_1757435214015_0.49364147452306906",
                             "cardId": "energy_basic",
                             "placedAt": 1757435214015,
                             "placedBy": "playerId_2",

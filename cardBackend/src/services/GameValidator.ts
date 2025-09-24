@@ -178,7 +178,7 @@ export class GameValidator {
     /**
      * Validate card is in player hand
      */
-    static validateCardInHand(gameEnv: GameEnvironment, playerId: string, cardUID: string): ValidationResult {
+    static validateCardInHand(gameEnv: GameEnvironment, playerId: string, carduid: string): ValidationResult {
         const playerValidation = this.validatePlayer(gameEnv, playerId);
         if (!playerValidation.isValid) {
             return playerValidation;
@@ -193,10 +193,10 @@ export class GameValidator {
             };
         }
         
-        if (!player.deck._handUids.includes(cardUID)) {
+        if (!player.deck._handUids.includes(carduid)) {
             return {
                 isValid: false,
-                error: `Card ${cardUID} not found in player ${playerId} hand`,
+                error: `Card ${carduid} not found in player ${playerId} hand`,
                 errorCode: "CARD_NOT_IN_HAND"
             };
         }

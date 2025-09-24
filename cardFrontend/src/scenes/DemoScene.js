@@ -370,7 +370,7 @@ export default class DemoScene extends DemoSceneBasic {
         actionType: 'attackShieldArea', // Attack shield/base area
         playerId: opponentPlayerId,
         gameId: gameId,
-        attackerCardUid:attackerSlot.unit.cardUid
+        attackerCarduid:attackerSlot.unit.carduid
       };
       
       console.log('Sending attack action:', actionData);

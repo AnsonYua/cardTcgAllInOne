@@ -136,7 +136,7 @@ export default class GameApiService {
   /**
    * Confirm target choice API call with standardized handling (unified TARGET_CHOICE)
    * @param {string} eventId - The target choice event ID
-   * @param {Array} selectedTargets - Array of selected target objects with cardUid, zone, playerId
+   * @param {Array} selectedTargets - Array of selected target objects with carduid, zone, playerId
    * @param {Object} sceneContext - Optional scene context for automatic scenario flag handling
    */
   async confirmTargetChoice(eventId, selectedTargets, sceneContext = null) {

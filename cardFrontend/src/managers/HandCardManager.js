@@ -4,6 +4,7 @@
  */
 import Card from '../components/Card.js';
 import { ZoneMapping } from '../utils/ZoneMapping.js';
+import HandUtils from '../utils/HandUtils.js';
 
 export default class HandCardManager {
   constructor(gameScene) {
@@ -100,47 +101,16 @@ export default class HandCardManager {
   }
 
   /**
-   * Get card UID from hand based on card data
-   * @param {Object} cardData - Card data to find UID for
-   * @returns {string|null} Card UID or null if not found
-   */
-  getCardUIDFromHand(cardData) {
-    // Get the current hand from game state to find card UID
-    const hand = this.gameStateManager.getPlayerHand();
-
-    // Find the actual UID of this card in the player's hand
-    // Backend hand contains UID strings like "c-1_1754551822157_24"
-    // Frontend cardData.id is the base ID like "c-1"
-    // We need to find the actual UID that matches this base ID
-    const cardUID = hand.find(handCardUID => {
-      // Extract base card ID from UID (before first underscore)
-      const baseCardId = typeof handCardUID === 'string'
-        ? handCardUID.split('_')[0]
-        : handCardUID.id;
-      return baseCardId === cardData.id;
-    });
-
-    if (!cardUID) {
-      console.error(`Card ${cardData.id} not found in player hand`);
-      console.log('Available hand cards (UIDs):', hand);
-      console.log('Looking for base card ID:', cardData.id);
-      return null;
-    }
-
-    return cardUID;
-  }
-
-  /**
    * Create backend action for card play
    * @param {Object} cardData - Card data
    * @param {string} zoneType - Zone type to play card to
    * @returns {Object|null} Backend action or null if invalid
    */
   createBackendAction(cardData, zoneType) {
-    // Get the cardUID using helper method
-    const cardUID = this.getCardUIDFromHand(cardData);
+    // Get the carduid using helper method
+    const carduid = HandUtils.getCarduidFromHand(cardData, this.gameStateManager);
 
-    if (!cardUID) {
+    if (!carduid) {
       return null;
     }
 
@@ -155,12 +125,12 @@ export default class HandCardManager {
     // Create action in new UID/zone-based format
     const action = {
       type: 'PlayCard',
-      cardUID: cardUID,
+      carduid: carduid,
       zone: normalizedZone
     };
 
     console.log(`Created backend action for card ${cardData.id} (NEW UID/ZONE FORMAT):`);
-    console.log(`  - Card UID: ${cardUID}`);
+    console.log(`  - Card UID: ${carduid}`);
     console.log(`  - Zone: ${normalizedZone}`);
 
     return action;

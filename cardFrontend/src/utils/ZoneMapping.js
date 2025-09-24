@@ -138,15 +138,15 @@ export class ZoneMapping {
       return null;
     }
 
-    const cardUID = playerHand[legacyAction.card_idx];
-    if (!cardUID) {
+    const carduid = playerHand[legacyAction.card_idx];
+    if (!carduid) {
       console.warn(`Card not found at index: ${legacyAction.card_idx}`);
       return null;
     }
 
     return {
       type: legacyAction.type,
-      cardUID: cardUID,
+      carduid: carduid,
       zone: zoneName
     };
   }
@@ -155,7 +155,7 @@ export class ZoneMapping {
    * Convert new action format to legacy format for backward compatibility
    */
   static convertToLegacyAction(newAction, playerHand) {
-    if (!newAction || !newAction.cardUID || !newAction.zone) {
+    if (!newAction || !newAction.carduid || !newAction.zone) {
       console.warn('Invalid new action format');
       return null;
     }
@@ -165,9 +165,9 @@ export class ZoneMapping {
       return null;
     }
 
-    const cardIndex = playerHand.findIndex(handCardUID => handCardUID === newAction.cardUID);
+    const cardIndex = playerHand.findIndex(handCarduid => handCarduid === newAction.carduid);
     if (cardIndex === -1) {
-      console.warn(`Card UID not found in hand: ${newAction.cardUID}`);
+      console.warn(`Card UID not found in hand: ${newAction.carduid}`);
       return null;
     }
 
