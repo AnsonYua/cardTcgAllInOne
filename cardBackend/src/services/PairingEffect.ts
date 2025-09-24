@@ -608,24 +608,24 @@ export class PairingEffect {
         console.log(`⚔️ Executing pairing AP modification: ${modifyAmount > 0 ? '+' : ''}${modifyAmount} AP on ${target.scope} targets`);
         
         try {
-            // Create target config directly from target object
+            const normalizedTarget = target || effect.target;
             const targetConfig = {
-                type: (target.type as 'unit' | 'pilot' | 'card') || 'unit',
-                scope: (target.scope as 'any' | 'self' | 'opponent') || 'self',
-                count: target.count || 1,
-                filters: target.filters || {}
+                type: (normalizedTarget?.type as 'unit' | 'pilot' | 'card') || 'unit',
+                scope: (normalizedTarget?.scope as 'any' | 'self' | 'opponent') || 'self',
+                count: normalizedTarget?.count && normalizedTarget.count > 0 ? normalizedTarget.count : 1,
+                filters: normalizedTarget?.filters || {}
             };
-            
-            // Use unified TargetChoiceManager directly with nested structure
+
+            const normalizedEffect = { ...(effect as any), target: targetConfig };
+            const pairingData = this.getPairingData(effect, gameEnv, playerId);
+            const sourceCarduid = effect.sourceCarduid || pairingData?.unit?.carduid || 'unknown';
+
+            // Use unified TargetChoiceManager directly with normalized structure
             const result = TargetChoiceManager.processEffectWithTargetChoice(
                 gameEnv,
                 playerId,
-                'PAIRING',
-                this.getPairingData(effect, gameEnv, playerId)?.unit?.carduid || 'unknown',
-                this.getPairingData(effect, gameEnv, playerId)?.unit?.cardId || 'unknown',
-                effect as any,
-                targetConfig,
-                effect.pairedSlot  // Source slot for pairing effects
+                sourceCarduid,
+                normalizedEffect
             );
             
             // Return result directly - no unnecessary conversions

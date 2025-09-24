@@ -123,66 +123,12 @@ export default class FrontEventProcessor {
       const event = events[0];
       console.log('[FrontEventProcessor] Handling TARGET_CHOICE event:', event);
       
-      // Determine source type from event data
-      const sourceType = event.data?.sourceType || 'UNKNOWN';
-      
-      if (sourceType === 'DEPLOY' || sourceType === 'DEPLOY_TARGET_CHOICE') {
-        // Handle deploy effects through existing deploy handler
-        if (!this.deployEffectHandler) {
-          console.error('[FrontEventProcessor] DeployEffectHandler not available');
-          return false;
-        }
-        
-        // Convert TARGET_CHOICE event to legacy format for compatibility
-        const legacyEvent = this.convertToLegacyDeployEvent(event);
-        this.deployEffectHandler.showDeployTargetDialog(legacyEvent);
-        return true;
-        
-      } else if (sourceType === 'PAIRING') {
-        // Handle pairing effects through dialog manager
-        console.log('[FrontEventProcessor] Handling pairing effect TARGET_CHOICE');
-        this.scene.dialogManager.showTargetChoiceDialog(event);
-        return true;
-        
-      } else if (sourceType === 'ACTIVATION') {
-        // Handle activation effects through dialog manager
-        console.log('[FrontEventProcessor] Handling activation effect TARGET_CHOICE');
-        this.scene.dialogManager.showTargetChoiceDialog(event);
-        return true;
-        
-      } else {
-        console.warn(`[FrontEventProcessor] Unknown TARGET_CHOICE sourceType: ${sourceType}`);
-        // Fallback to generic target choice dialog
-        this.scene.dialogManager.showTargetChoiceDialog(event);
-        return true;
-      }
+      this.scene.dialogManager.showTargetChoiceDialog(event);
+      return true;
     } catch (error) {
       console.error('[FrontEventProcessor] Error handling TARGET_CHOICE:', error);
       return false;
     }
-  }
-
-  /**
-   * Convert TARGET_CHOICE event to legacy DEPLOY_TARGET_CHOICE format for compatibility
-   * @param {Object} targetChoiceEvent - TARGET_CHOICE event
-   * @returns {Object} Legacy deploy event format
-   */
-  convertToLegacyDeployEvent(targetChoiceEvent) {
-    return {
-      id: targetChoiceEvent.id,
-      type: 'DEPLOY_TARGET_CHOICE',
-      data: {
-        deployEffect: {
-          effect: {
-            action: targetChoiceEvent.data.effect?.action || 'unknown'
-          },
-          optional: targetChoiceEvent.data.effect?.optional !== false
-        },
-        availableTargets: targetChoiceEvent.data.availableTargets || [],
-        sourceCarduid: targetChoiceEvent.data.sourceCarduid,
-        cardId: targetChoiceEvent.data.sourceCardId
-      }
-    };
   }
 
   /**

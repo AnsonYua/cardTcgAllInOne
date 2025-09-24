@@ -72,23 +72,12 @@ export class DeployEffectManager {
         console.log(`📋 Effect data:`, JSON.stringify(effect, null, 2));
         
         try {
-            // Use default target config if not provided
-            const targetConfig = effect.target || {
-                type: 'unit',
-                scope: 'opponent',
-                count: 1,
-                filters: {}
-            };
-            
             // Process effect using unified TargetChoiceManager
             const result = TargetChoiceManager.processEffectWithTargetChoice(
                 gameEnv,
                 eventData.playerId,
-                'DEPLOY',
                 eventData.carduid,
-                eventData.cardId,
-                effect,
-                targetConfig
+                effect
             );
             
             // Return result with appropriate message

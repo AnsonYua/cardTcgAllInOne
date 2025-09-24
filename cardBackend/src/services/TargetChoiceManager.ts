@@ -75,19 +75,15 @@ export class TargetChoiceManager {
     static processEffectWithTargetChoice(
         gameEnv: GameEnvironment,
         playerId: string,
-        sourceType: 'DEPLOY' | 'PAIRING' | 'ACTIVATION',
         sourceCarduid: string,
-        sourceCardId: string,
-        effect: EffectDefinition,
-        targetConfig: TargetConfig,
-        sourceSlot?: string
+        effect: EffectDefinition
     ): TargetChoiceResult {
-        
-        console.log(`🎯 Processing ${sourceType} effect: ${effect.effectId} requiring target selection`);
-        
-        // No need to extract action and parameters - pass effect object directly to minimize conversions
-        
+        const effectLabel = effect.effectId || effect.action || 'unknown';
+        console.log(`🎯 Processing effect ${effectLabel} requiring target selection`);
+
         try {
+            const targetConfig = this.resolveTargetConfig(effect);
+            const sourceCardId = this.deriveSourceCardId(sourceCarduid);
             // Generate available targets based on config
             const availableTargets = this.generateAvailableTargets(gameEnv, playerId, targetConfig);
             
@@ -103,16 +99,12 @@ export class TargetChoiceManager {
             // Decision logic: Choice vs Auto-application
             if (this.requiresPlayerChoice(targetConfig, availableTargets)) {
                 // Create TARGET_CHOICE event for player selection - pass objects directly
-                const choiceEvent = EventFactory.createTargetChoiceEvent(
+                const choiceEvent = EventFactory.createTargetChoiceEvent({
                     playerId,
-                    sourceType,
                     sourceCarduid,
-                    sourceCardId,
-                    effect,            // Pass effect object directly without conversion
-                    targetConfig,      // Pass targetConfig object directly without conversion  
-                    availableTargets,  // Pass availableTargets array directly without conversion
-                    sourceSlot
-                );
+                    effect,
+                    availableTargets
+                });
                 
                 // Add to processing queue for game event processing
                 gameEnv.processingQueue.push(choiceEvent);
@@ -180,12 +172,12 @@ export class TargetChoiceManager {
 
             // Apply effect to selected targets - pass eventData object directly to minimize conversions
             const result = this.applyEffectToTargets(
-                gameEnv, 
-                eventData.effect,          // Use effect directly from eventData
-                selectedTargets, 
-                eventData.playerId,        // Use playerId directly from eventData
-                eventData.sourceCarduid,   // Use sourceCarduid directly from eventData
-                eventData.sourceCardId     // Use sourceCardId directly from eventData
+                gameEnv,
+                eventData.effect,
+                selectedTargets,
+                eventData.playerId,
+                eventData.sourceCarduid,
+                this.deriveSourceCardId(eventData.sourceCarduid)
             );
 
             if (!result.success) {
@@ -277,6 +269,46 @@ export class TargetChoiceManager {
         
         console.log(`🎯 Generated ${targets.length} valid targets`);
         return targets;
+    }
+
+    /**
+     * Derive complete target configuration using effect defaults when necessary
+     */
+    private static resolveTargetConfig(effect: EffectDefinition): TargetConfig {
+        const defaultConfig: TargetConfig = {
+            type: 'unit',
+            scope: 'opponent',
+            count: 1,
+            filters: {}
+        };
+
+        const rawTarget: Partial<TargetConfig> | undefined = (effect as any)?.target;
+        if (!rawTarget) {
+            return defaultConfig;
+        }
+
+        return {
+            type: rawTarget.type || defaultConfig.type,
+            scope: rawTarget.scope || defaultConfig.scope,
+            count: typeof rawTarget.count === 'number' && rawTarget.count > 0 ? rawTarget.count : defaultConfig.count,
+            filters: rawTarget.filters || defaultConfig.filters
+        };
+    }
+
+    /**
+     * Extract source cardId from composite carduid identifier
+     */
+    private static deriveSourceCardId(sourceCarduid?: string): string | undefined {
+        if (!sourceCarduid) {
+            return undefined;
+        }
+
+        const parts = sourceCarduid.split('_').filter(Boolean);
+        if (parts.length === 0) {
+            return undefined;
+        }
+
+        return parts[parts.length - 1];
     }
 
     /**

@@ -453,9 +453,10 @@ export default class DialogManager {
     console.log('DialogManager: Showing unified target choice dialog:', event);
     
     // Extract effect information from TARGET_CHOICE event
-    const { effect, availableTargets, sourceCarduid, sourceCardId, sourceType } = event.data;
-    const effectDescription = effect?.action || 'Select Target';
+    const { effect, availableTargets } = event.data;
+    const effectDescription = effect?.action || effect?.description || 'Select Target';
     const isOptional = effect?.optional !== false;
+    const selectCount = (effect?.target && effect.target.count) ? effect.target.count : 1;
     
     // Convert backend availableTargets to eligibleCards format
     const eligibleCards = availableTargets.map(target => ({
@@ -468,9 +469,9 @@ export default class DialogManager {
     // Create selection object using unified format
     const targetSelection = {
       selectionId: `target_choice_${event.id}`,
-      title: this.getTargetChoiceTitle(sourceType),
+      title: this.getTargetChoiceTitle(effect),
       description: `Effect: ${effectDescription} - Choose a target`,
-      selectCount: 1,
+      selectCount,
       eligibleCards: eligibleCards,
       dialogType: 'TARGET_CHOICE',
       autoSelectFirst: false
@@ -513,21 +514,22 @@ export default class DialogManager {
   }
 
   /**
-   * Get appropriate title for target choice dialog based on source type
-   * @param {string} sourceType - Source type (DEPLOY, PAIRING, ACTIVATION)
+   * Get appropriate title for target choice dialog based on effect context
+   * @param {Object} effect - Effect metadata attached to the event
    * @returns {string} Dialog title
    */
-  getTargetChoiceTitle(sourceType) {
-    switch (sourceType) {
-      case 'DEPLOY':
-        return '🎯 Deploy Effect Target Selection';
-      case 'PAIRING':
-        return '🔗 Pairing Effect Target Selection';
-      case 'ACTIVATION':
-        return '⚡ Activation Effect Target Selection';
-      default:
-        return '🎯 Target Selection';
+  getTargetChoiceTitle(effect) {
+    const trigger = (effect?.trigger || '').toUpperCase();
+    if (trigger.includes('PAIRING')) {
+      return '🔗 Pairing Effect Target Selection';
     }
+    if (trigger.includes('DEPLOY')) {
+      return '🎯 Deploy Effect Target Selection';
+    }
+    if (trigger.includes('ACTIVATION') || trigger.includes('ACTIVATE')) {
+      return '⚡ Activation Effect Target Selection';
+    }
+    return '🎯 Target Selection';
   }
 
   /**

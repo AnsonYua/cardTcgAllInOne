@@ -268,10 +268,7 @@ export interface TargetChoiceEvent extends BaseGameEvent {
         userDecisionMade: boolean;  // Choice completion status
         
         // Source information
-        sourceType: 'DEPLOY' | 'PAIRING' | 'ACTIVATION' | 'CONTINUOUS';
         sourceCarduid: string;      // Card triggering the effect
-        sourceCardId: string;
-        sourceSlot?: string;        // For pairing effects
         
         // Effect information
         effect: {
@@ -279,20 +276,6 @@ export interface TargetChoiceEvent extends BaseGameEvent {
             action: string;         // 'modifyAP', 'damage', 'rest', etc.
             parameters: any;        // Effect parameters
             description?: string;
-        };
-        
-        // Target configuration
-        targetConfig: {
-            type: 'unit' | 'pilot' | 'card';
-            scope: 'self' | 'opponent' | 'any';
-            count: number;          // How many targets to select
-            filters?: {
-                level?: string;     // "<=5", ">=3", etc.
-                hp?: string;        // "<=2", ">1", etc.
-                status?: string;    // "rested", "active"
-                traits?: string[];  // Trait requirements
-                zone?: string[];    // Specific zones only
-            };
         };
         
         // Available targets (computed)
@@ -577,28 +560,21 @@ export class EventFactory {
         };
     }
     
-    static createTargetChoiceEvent(
-        playerId: string,
-        sourceType: 'DEPLOY' | 'PAIRING' | 'ACTIVATION' | 'CONTINUOUS',
-        sourceCarduid: string,
-        sourceCardId: string,
-        effect: any,
-        targetConfig: any,
-        availableTargets: any[],
-        sourceSlot?: string
-    ): TargetChoiceEvent {
-        // Create the data object directly without reconstruction
+    static createTargetChoiceEvent(params: {
+        playerId: string;
+        sourceCarduid: string;
+        effect: any;
+        availableTargets: any[];
+    }): TargetChoiceEvent {
+        const { playerId, sourceCarduid, effect, availableTargets } = params;
+        const effectKey = effect?.effectId || effect?.action || 'effect';
         const eventData = {
             playerId,
-            choiceId: `target_choice_${sourceType.toLowerCase()}_${sourceCarduid}_${Date.now()}`,
+            choiceId: `target_choice_${effectKey}_${Date.now()}`,
             userDecisionMade: false,
-            sourceType,
             sourceCarduid,
-            sourceCardId,
-            sourceSlot,
-            effect,            // Pass effect object directly without conversion
-            targetConfig,      // Pass targetConfig object directly without conversion
-            availableTargets,  // Pass availableTargets array directly without conversion
+            effect,
+            availableTargets,
             selectedTargets: undefined
         };
 
