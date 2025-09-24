@@ -461,13 +461,6 @@ export default class GameScene extends Phaser.Scene {
   }
 
 
-  createBackendAction(cardData, zoneType) {
-    return this.handCardManager.createBackendAction(cardData, zoneType);
-  }
-
-
-
-
   showZoneRestrictionMessage(message) {
     GameSceneUtils.showZoneRestrictionMessage(message, this);
   }

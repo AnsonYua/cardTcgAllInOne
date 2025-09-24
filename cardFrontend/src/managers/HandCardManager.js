@@ -3,7 +3,6 @@
  * Extracted from GameScene.js to reduce complexity and improve maintainability
  */
 import Card from '../components/Card.js';
-import { ZoneMapping } from '../utils/ZoneMapping.js';
 import HandUtils from '../utils/HandUtils.js';
 
 export default class HandCardManager {
@@ -98,42 +97,6 @@ export default class HandCardManager {
       card.moveToPosition(newX, 0, 300, false); // false = don't remove from container
       card.originalPosition.x = newX;
     });
-  }
-
-  /**
-   * Create backend action for card play
-   * @param {Object} cardData - Card data
-   * @param {string} zoneType - Zone type to play card to
-   * @returns {Object|null} Backend action or null if invalid
-   */
-  createBackendAction(cardData, zoneType) {
-    // Get the carduid using helper method
-    const carduid = HandUtils.getCarduidFromHand(cardData, this.gameStateManager);
-
-    if (!carduid) {
-      return null;
-    }
-
-    // Validate and normalize zone name using ZoneMapping utility
-    const normalizedZone = ZoneMapping.normalizeZone(zoneType);
-
-    if (!normalizedZone) {
-      console.error(`Invalid zone type: ${zoneType}`);
-      return null;
-    }
-
-    // Create action in new UID/zone-based format
-    const action = {
-      type: 'PlayCard',
-      carduid: carduid,
-      zone: normalizedZone
-    };
-
-    console.log(`Created backend action for card ${cardData.id} (NEW UID/ZONE FORMAT):`);
-    console.log(`  - Card UID: ${carduid}`);
-    console.log(`  - Zone: ${normalizedZone}`);
-
-    return action;
   }
 
   /**
