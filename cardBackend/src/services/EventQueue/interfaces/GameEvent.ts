@@ -227,6 +227,7 @@ export interface AcknowledgeEventsEvent extends BaseGameEvent {
     type: EventType.ACKNOWLEDGE_EVENTS;
     data: {
         eventIds: string[];
+        acknowledgedCount?: number;
     };
 }
 
@@ -517,7 +518,7 @@ export class EventFactory {
             priority: EventPriority.NORMAL,
             playerId,
             timestamp: Date.now(),
-            data: { eventIds }
+            data: { eventIds, acknowledgedCount: 0 }
         };
     }
     

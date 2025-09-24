@@ -1,7 +1,7 @@
 // src/services/GameEngine.ts
 // Game execution engine - handles all game state modifications
 
-import { GameEvent, EventFactory, EventStatus, EventPriority } from './EventQueue/interfaces/GameEvent';
+import { GameEvent, AcknowledgeEventsEvent, EventFactory, EventStatus, EventPriority } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase, EventType } from '../models/GameEnums';
 import { EnergyManager } from './EnergyManager';
@@ -23,6 +23,7 @@ import * as path from 'path';
 export interface ExecutionResult {
     success: boolean;
     error?: string;
+    acknowledgedCount?: number;
 }
 
 export class GameEngine {
@@ -56,7 +57,7 @@ export class GameEngine {
                     return GameEngine.executeErrorEvent(event, gameEnv);
 
                 case EventType.ACKNOWLEDGE_EVENTS:
-                    return GameEngine.executeAcknowledgeEvents(event, gameEnv);
+                    return GameEngine.executeAcknowledgeEvents(event as AcknowledgeEventsEvent, gameEnv);
 
                 case EventType.PHASE_ADVANCE:
                     return GameEngine.executePhaseAdvance(event, gameEnv);
@@ -232,15 +233,16 @@ export class GameEngine {
         }
     }
 
-    private static executeAcknowledgeEvents(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executeAcknowledgeEvents(event: AcknowledgeEventsEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`🎯 Processing ACKNOWLEDGE_EVENTS for ${event.data.eventIds.length} events`);
 
         try {
             const acknowledgedCount = GameEngine.getNotificationManager(gameEnv)
                 .acknowledgeEvents(event.data.eventIds);
 
+            event.data.acknowledgedCount = acknowledgedCount;
             console.log(`✅ ACKNOWLEDGE_EVENTS processed - ${acknowledgedCount} events acknowledged`);
-            return { success: true };
+            return { success: true, acknowledgedCount };
 
         } catch (error) {
             console.error(`❌ Error in executeAcknowledgeEvents:`, error);
@@ -258,7 +260,7 @@ export class GameEngine {
 
         try {
             // Handle specific phase advance actions
-            if (actionId && actionId.startsWith('draw_to_main_')) {
+            if (true) {
                 console.log(`🔄 Auto-advancing from DRAW_PHASE to MAIN_PHASE`);
 
                 // Change phase directly

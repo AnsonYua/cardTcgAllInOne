@@ -230,7 +230,7 @@ export class StaticEventProcessor {
     }
     
     private static validateStartReadyEvent(event: GameEvent, gameEnv: GameEnvironment): ValidationResult {
-        const { playerId, isRedraw } = event.data;
+        const { playerId } = event;
         
         // Basic validation: Check if player exists in game
         if (playerId !== gameEnv.playerId_1 && playerId !== gameEnv.playerId_2) {

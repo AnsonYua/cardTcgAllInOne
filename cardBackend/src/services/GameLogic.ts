@@ -382,12 +382,6 @@ export class GameLogic {
                     action.currentTurn || 0
                 );
                 
-            case PlayerActionType.ACKNOWLEDGE_EVENTS:
-                return EventFactory.createAcknowledgeEventsEvent(
-                    action.playerId,
-                    action.eventIds || []
-                );
-                
             case PlayerActionType.PLAY_CARD:
                 return {
                     id: `play_card_${Date.now()}_${Math.random()}`,
@@ -903,32 +897,29 @@ export class GameLogic {
             
             console.log("AcknowledgeEvents before processing:", JSON.stringify(gameEnv?.notificationQueue));
             
-            // Process ACKNOWLEDGE_EVENTS through centralized action processing
-            const acknowledgeAction: PlayerAction = {
-                type: PlayerActionType.ACKNOWLEDGE_EVENTS,
+            const acknowledgeEvent = EventFactory.createAcknowledgeEventsEvent(
                 playerId,
-                gameId,
                 eventIds
-            };
-            
-            const actionResult = await this.processAction(gameEnv, acknowledgeAction);
-            console.log('🎮 ACKNOWLEDGE_EVENTS processed:', actionResult);
-            
-            if (!actionResult.success) {
+            );
+
+            const processingResult = await StaticEventProcessor.processEvent(gameEnv, acknowledgeEvent);
+            console.log('🎮 ACKNOWLEDGE_EVENTS processed:', processingResult);
+
+            if (!processingResult.success) {
                 return {
                     success: false,
-                    error: actionResult.error || 'Failed to acknowledge events'
+                    error: processingResult.error || 'Failed to acknowledge events'
                 };
             }
-            
+
             // Save updated game state
             await this.saveGameToFile(gameId, gameEnv);
-            
+
             console.log("AcknowledgeEvents after processing:", JSON.stringify(gameEnv?.notificationQueue));
-            
+
             return {
                 success: true,
-                acknowledgedCount: eventIds.length,
+                acknowledgedCount: acknowledgeEvent.data.acknowledgedCount ?? 0,
                 gameEnv: gameEnv
             };
             
