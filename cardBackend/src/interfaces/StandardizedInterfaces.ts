@@ -1,7 +1,8 @@
 // src/interfaces/StandardizedInterfaces.ts
 // Standardized interfaces for event system and effect processing
 
-import { EventType, EventStatus, EventPriority } from '../models/GameEnums';
+import { EventType } from '../models/GameEnums';
+import { EventStatus, EventPriority } from '../services/EventQueue/interfaces/GameEvent';
 
 // ============ STANDARDIZED EVENT INTERFACES ============
 

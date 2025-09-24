@@ -226,7 +226,6 @@ export interface EndTurnEvent extends BaseGameEvent {
 export interface AcknowledgeEventsEvent extends BaseGameEvent {
     type: EventType.ACKNOWLEDGE_EVENTS;
     data: {
-        playerId: string;
         eventIds: string[];
     };
 }
@@ -518,7 +517,7 @@ export class EventFactory {
             priority: EventPriority.NORMAL,
             playerId,
             timestamp: Date.now(),
-            data: { playerId, eventIds }
+            data: { eventIds }
         };
     }
     

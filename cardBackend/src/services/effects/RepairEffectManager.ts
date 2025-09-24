@@ -8,6 +8,17 @@ import { StateBasedAction } from '../EventQueue/StateBasedActionEngine';
 import { SLOT_ZONES } from '../../config/gameConstants';
 import { CardDatabaseManager } from '../../models/CardSystem';
 
+// Import standardized interfaces
+import {
+    StandardEffectManager,
+    StandardGameEvent,
+    StandardExecutionResult,
+    ValidationResult,
+    StateChange
+} from '../../interfaces/StandardizedInterfaces';
+import { getCardIdFromUid } from '../../utils/CardUtils';
+import { eventDataValidator } from '../../validators/EventDataValidator';
+
 // Minimal data structure for repair effects
 interface RepairEventData {
     carduid: string;
@@ -19,8 +30,162 @@ interface ExecutionResult {
     error?: string;
 }
 
-export class RepairEffectManager {
+export class RepairEffectManager implements StandardEffectManager {
     private static processedRepairActions: Set<string> = new Set();
+
+    // ============ STANDARDIZED INTERFACE IMPLEMENTATION ============
+    
+    /**
+     * Execute effect using standardized interface
+     */
+    async executeEffect(event: StandardGameEvent, gameEnv: GameEnvironment): Promise<StandardExecutionResult> {
+        const startTime = Date.now();
+        console.log(`🩹 [STANDARD] Processing Repair effect for card ${event.data.carduid}`);
+        
+        // Validate event data
+        const validation = this.validateEffect(event, gameEnv);
+        if (!validation.isValid) {
+            return {
+                success: false,
+                effectsApplied: 0,
+                affectedCards: [],
+                stateChanges: [],
+                error: {
+                    code: 'VALIDATION_FAILED',
+                    message: `Repair effect validation failed: ${validation.errors.join(', ')}`,
+                    carduid: event.data.carduid,
+                    playerId: event.data.playerId
+                },
+                warnings: validation.warnings,
+                metadata: {
+                    executionTime: Date.now() - startTime,
+                    manager: this.getManagerName()
+                }
+            };
+        }
+        
+        const stateChanges: StateChange[] = [];
+        const affectedCards: string[] = [];
+        
+        try {
+            // Extract repair data from standardized event structure
+            const repairData: RepairEventData = {
+                carduid: event.data.carduid,
+                healAmount: event.data.parameters.value
+            };
+            
+            console.log(`🩹 Processing repair with ${repairData.healAmount} heal amount`);
+            
+            // Execute using existing repair logic
+            const result = RepairEffectManager.executeRepairEffect(event as any, gameEnv);
+            
+            if (result.success) {
+                affectedCards.push(event.data.carduid);
+                stateChanges.push({
+                    type: 'CARD_PROPERTY',
+                    carduid: event.data.carduid,
+                    property: 'damageReceived',
+                    oldValue: 'unknown', // Would need to track before value
+                    newValue: 'healed',
+                    timestamp: Date.now()
+                });
+            }
+            
+            return {
+                success: result.success,
+                effectsApplied: result.success ? 1 : 0,
+                affectedCards,
+                stateChanges,
+                error: result.error ? {
+                    code: 'EXECUTION_ERROR',
+                    message: result.error,
+                    carduid: event.data.carduid,
+                    playerId: event.data.playerId
+                } : undefined,
+                metadata: {
+                    executionTime: Date.now() - startTime,
+                    manager: this.getManagerName()
+                }
+            };
+            
+        } catch (error) {
+            console.error(`❌ Error in standardized repair effect execution:`, error);
+            return {
+                success: false,
+                effectsApplied: 0,
+                affectedCards,
+                stateChanges,
+                error: {
+                    code: 'EXECUTION_ERROR',
+                    message: error instanceof Error ? error.message : 'Repair effect execution failed',
+                    carduid: event.data.carduid,
+                    playerId: event.data.playerId,
+                    context: error
+                },
+                metadata: {
+                    executionTime: Date.now() - startTime,
+                    manager: this.getManagerName()
+                }
+            };
+        }
+    }
+    
+    /**
+     * Validate effect before execution
+     */
+    validateEffect(event: StandardGameEvent, gameEnv: GameEnvironment): ValidationResult {
+        const errors: string[] = [];
+        const warnings: string[] = [];
+        
+        // Validate event structure
+        const eventValidation = eventDataValidator.validateEvent(event);
+        errors.push(...eventValidation.errors);
+        warnings.push(...eventValidation.warnings);
+        
+        // Validate repair-specific requirements
+        if (!event.data.parameters.value || event.data.parameters.value <= 0) {
+            errors.push('Repair effect requires positive heal amount');
+        }
+        
+        if (event.data.parameters.action !== 'heal' && event.data.parameters.action !== 'repair') {
+            warnings.push(`Repair effect typically uses 'heal' or 'repair' action, found: ${event.data.parameters.action}`);
+        }
+        
+        // Validate player exists
+        if (!gameEnv.players || !gameEnv.players[event.data.playerId]) {
+            errors.push(`Player ${event.data.playerId} not found in game environment`);
+        }
+        
+        // Validate carduid format
+        const cardId = getCardIdFromUid(event.data.carduid);
+        if (!cardId) {
+            errors.push(`Invalid carduid format: ${event.data.carduid}`);
+        }
+        
+        return {
+            isValid: errors.length === 0,
+            errors,
+            warnings
+        };
+    }
+    
+    /**
+     * Get human-readable description of effect
+     */
+    getEffectDescription(event: StandardGameEvent): string {
+        const cardId = getCardIdFromUid(event.data.carduid);
+        const healAmount = event.data.parameters.value;
+        return `Repair effect for ${cardId}: heal ${healAmount} damage`;
+    }
+    
+    /**
+     * Get manager name for identification
+     */
+    getManagerName(): string {
+        return 'RepairEffectManager';
+    }
+    
+    // ============ EXISTING LEGACY METHODS ============
 
     /**
      * DETECTION: Check for repair abilities at end of turn
@@ -39,7 +204,9 @@ export class RepairEffectManager {
             
             if (slotZone?.unit) {
                 const unit = slotZone.unit;
-                const cardData = CardDatabaseManager.getCardDetails(unit.cardId);
+                // Extract cardId from carduid using established pattern
+                const cardId = getCardIdFromUid(unit.carduid);
+                const cardData = CardDatabaseManager.getCardDetails(cardId);
                 
                 if (cardData?.effects?.rules) {
                     // Look for repair abilities
@@ -50,7 +217,7 @@ export class RepairEffectManager {
                             
                             // Only add if not processed this turn
                             if (!this.processedRepairActions.has(repairKey)) {
-                                console.log(`🩹 Found repair ability: ${effect.effectId} on ${unit.cardId}`);
+                                console.log(`🩹 Found repair ability: ${effect.effectId} on ${cardId}`);
                                 
                                 // Mark as processed
                                 this.processedRepairActions.add(repairKey);
@@ -165,11 +332,11 @@ export class RepairEffectManager {
      */
     private static cleanupOldRepairActions(currentTurn: number): void {
         const keysToRemove: string[] = [];
-        for (const key of this.processedRepairActions) {
+        Array.from(this.processedRepairActions).forEach(key => {
             if (!key.includes(`_turn_${currentTurn}`)) {
                 keysToRemove.push(key);
             }
-        }
+        });
         keysToRemove.forEach(key => this.processedRepairActions.delete(key));
     }
 }

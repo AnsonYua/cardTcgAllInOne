@@ -301,7 +301,7 @@ export default class CardActionHandler {
                 console.log('PlayCard response:', response);
                 
                 if (response && response.success) {
-                    console.log(`✅ Pilot card played successfully on unit ${selectedUnit.cardId}`);
+                    console.log(`✅ Pilot card played successfully on unit ${selectedUnit.carduid}`);
                     this.gameStateManager.updateGameEnv(response.gameEnv);
                     this.updateGameState();
                     this.updatePlayerHand();

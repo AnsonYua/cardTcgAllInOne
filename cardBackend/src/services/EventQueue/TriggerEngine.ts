@@ -133,14 +133,13 @@ export class TriggerEngine {
             
             // Check if trigger condition is met
             if (this.evaluateTriggerCondition(trigger.condition, event)) {
-                console.log(`🎯 Trigger activated: ${trigger.abilityId} from ${trigger.sourceCardId}`);
+                console.log(`🎯 Trigger activated: ${trigger.abilityId} from ${trigger.sourceCarduid}`);
                 
                 const abilityEvent = EventFactory.createAbilityTriggeredEvent(
                     trigger.abilityId,
-                    trigger.sourceCardId,
-                    trigger.sourceCarduid,
+                    trigger.sourceCarduid,      // UPDATED: Use only carduid, no redundant cardId
                     event.playerId || '',
-                    event.type,
+                    event.type,                 // This is the triggerCondition parameter
                     trigger.isOptional
                 );
                 

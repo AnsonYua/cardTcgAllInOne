@@ -312,9 +312,11 @@ export class PairingEffect implements StandardEffectManager {
             // Track state changes
             if (result.success && result.affectedTargets) {
                 for (const target of result.affectedTargets) {
+                    // Handle both string and TargetReference types
+                    const carduid = typeof target === 'string' ? target : target.carduid;
                     stateChanges.push({
                         type: 'CARD_PROPERTY',
-                        carduid: target.carduid || target,
+                        carduid: carduid,
                         property: effect.action || 'pairing_effect',
                         oldValue: 'unknown',
                         newValue: 'modified',
@@ -326,7 +328,7 @@ export class PairingEffect implements StandardEffectManager {
             return {
                 success: result.success,
                 error: result.error,
-                affectedCards: result.affectedTargets?.map(t => t.carduid || t) || []
+                affectedCards: result.affectedTargets?.map(t => typeof t === 'string' ? t : t.carduid) || []
             };
             
         } catch (error) {
