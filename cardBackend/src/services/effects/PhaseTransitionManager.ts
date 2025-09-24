@@ -3,8 +3,9 @@
 
 import { GameEnvironment } from '../../models/GameEnvironment';
 import { GamePhase, EventType } from '../../models/GameEnums';
-import { GameEvent, EventStatus, EventPriority } from '../EventQueue/interfaces/GameEvent';
+import { GameEvent, EventStatus, EventPriority, EventFactory } from '../EventQueue/interfaces/GameEvent';
 import { StateBasedAction } from '../EventQueue/StateBasedActionEngine';
+import { GameNotificationManager } from '../GameNotificationManager';
 
 interface ExecutionResult {
     success: boolean;
@@ -154,22 +155,32 @@ export class PhaseTransitionManager {
     }
 
     /**
-     * Execute PHASE_ADVANCE event
+        id: `state_${Date.now()}_${Math.random()}`,
+        type: action.type,
+        status: EventStatus.DECLARED,
+        priority: EventPriority.HIGH,
+        timestamp: Date.now(),
+        // Pass action data directly without field reconstruction
+        data: action.data || {}
      */
     static executePhaseAdvance(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`🎯 Executing PHASE_ADVANCE event: ${event.id}`);
-        
+
         try {
-            // Advance from DRAW_PHASE to MAIN_PHASE
-            if (gameEnv.phase === GamePhase.DRAW_PHASE) {
+            const currentPhase = gameEnv.phase;
+
+            // Advance from DRAW_PHASE to MAIN_PHASE when appropriate
+            if (currentPhase === GamePhase.DRAW_PHASE) {
                 gameEnv.phase = GamePhase.MAIN_PHASE;
-                console.log(`✅ Phase advanced: DRAW_PHASE → MAIN_PHASE`);
+                console.log(`✅ Phase advanced: ${currentPhase} → ${gameEnv.phase}`);
+
+                console.log(`📨 Phase change notification enqueued`);
             } else {
-                console.log(`⚠️ PHASE_ADVANCE called from unexpected phase: ${gameEnv.phase}`);
+                console.log(`⚠️ PHASE_ADVANCE called from unexpected phase: ${currentPhase}`);
             }
-            
+
             return { success: true };
-            
+
         } catch (error) {
             console.error(`❌ Error executing PHASE_ADVANCE:`, error);
             return {

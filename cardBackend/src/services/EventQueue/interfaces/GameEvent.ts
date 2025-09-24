@@ -28,14 +28,6 @@ export interface BaseGameEvent {
 }
 
 
-export interface PhaseChangeEvent extends BaseGameEvent {
-    type: EventType.PHASE_ADVANCE;
-    data: {
-        fromPhase: string;
-        toPhase: string;
-        reason: string;
-    };
-}
 
 
 export interface StartGameEvent extends BaseGameEvent {
@@ -297,7 +289,7 @@ export interface TargetChoiceEvent extends BaseGameEvent {
 }
 
 export type GameEvent = 
-    | PhaseChangeEvent 
+    | AcknowledgeEventsEvent
     | PowerBoostEvent
     | TurnStartEvent
     | TurnEndEvent 
@@ -312,7 +304,6 @@ export type GameEvent =
     | DamageDealtEvent
     | StateBasedActionEvent
     | EndTurnEvent
-    | AcknowledgeEventsEvent
     | StartGameEvent
     | JoinGameEvent
     | BaseGameEvent
@@ -338,21 +329,6 @@ export class EventFactory {
             playerId,
             timestamp: Date.now(),
             data: { selectionId, choices, playerId }
-        };
-    }
-    
-    static createPhaseChangeEvent(
-        fromPhase: string,
-        toPhase: string,
-        reason: string
-    ): PhaseChangeEvent {
-        return {
-            id: `phase_change_${++this.eventIdCounter}_${Date.now()}`,
-            type: EventType.PHASE_ADVANCE,
-            status: EventStatus.DECLARED,
-            priority: EventPriority.HIGH,
-            timestamp: Date.now(),
-            data: { fromPhase, toPhase, reason }
         };
     }
     

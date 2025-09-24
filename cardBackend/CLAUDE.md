@@ -703,8 +703,7 @@ The game implements strict turn-based mechanics where each card placement automa
 **Event Creation Methods:**
 - `createPairingEffectEvent(eventData, pairingEffects, placementResult)` - Pairing effect events
 - `createDeployEffectEvent(eventData, deployEffects)` - Deploy effect events
-- `createBurstDeployEvent(playerId, carduid, cardData, burstEffect)` - Burst deploy PLAY_CARD events
-- `createPhaseChangeEvent(fromPhase, toPhase, reason, playerId)` - Phase change events
+- `createBurstDeployEvent(playerId, carduid, cardData, burstEffect)` - Burst deploy 
 
 **Utility Methods:**
 - `generateEventId(prefix, suffix?)` - Unique event ID generation

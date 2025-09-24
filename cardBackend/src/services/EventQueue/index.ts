@@ -27,7 +27,6 @@ export {
     GameEvent, 
     BaseGameEvent,
     CardEntersPlayEvent,
-    PhaseChangeEvent,
     PowerBoostEvent,
     TurnStartEvent,
     TurnEndEvent,

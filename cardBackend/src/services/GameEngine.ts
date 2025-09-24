@@ -13,6 +13,7 @@ import { DeployEffectManager } from './DeployEffectManager';
 import { PairingEffect } from './PairingEffect';
 import { TargetChoiceManager } from './TargetChoiceManager';
 import { EffectManagerRegistry } from './effects/EffectManagerRegistry';
+import { PhaseTransitionManager } from './effects/PhaseTransitionManager';
 import { GameValidator } from './GameValidator';
 import { UnitZoneCard, PilotZoneCard, CardDatabaseManager } from '../models/CardSystem';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
@@ -60,7 +61,7 @@ export class GameEngine {
                     return GameEngine.executeAcknowledgeEvents(event as AcknowledgeEventsEvent, gameEnv);
 
                 case EventType.PHASE_ADVANCE:
-                    return GameEngine.executePhaseAdvance(event, gameEnv);
+                    return PhaseTransitionManager.executePhaseAdvance(event, gameEnv);
 
                 case EventType.END_TURN:
                     return GameEngine.executeEndTurn(event, gameEnv);
@@ -249,47 +250,6 @@ export class GameEngine {
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'ACKNOWLEDGE_EVENTS execution failed'
-            };
-        }
-    }
-
-    private static executePhaseAdvance(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
-        const { actionId, description, affectedPlayers } = event.data;
-
-        console.log(`🎯 Processing PHASE_ADVANCE event: ${description}`);
-
-        try {
-            // Handle specific phase advance actions
-            if (true) {
-                console.log(`🔄 Auto-advancing from DRAW_PHASE to MAIN_PHASE`);
-
-                // Change phase directly
-                gameEnv.phase = GamePhase.MAIN_PHASE;
-
-                // Create phase change event for frontend notification
-                const notificationManager = GameEngine.getNotificationManager(gameEnv);
-                const phaseChangeEvent = EventFactory.createPhaseChangeEvent(
-                    'DRAW_PHASE',
-                    'MAIN_PHASE',
-                    'Auto-advance: No unacknowledged card draw events'
-                );
-                notificationManager.addNotificationEvent(
-                    phaseChangeEvent.type,
-                    phaseChangeEvent.data,
-                    false, // requiresAcknowledgment
-                    'high' // priority as string
-                );
-
-                console.log(`✅ Phase successfully advanced to MAIN_PHASE`);
-            }
-
-            return { success: true };
-
-        } catch (error) {
-            console.error(`❌ Error in executePhaseAdvance:`, error);
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : 'PHASE_ADVANCE execution failed'
             };
         }
     }
