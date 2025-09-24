@@ -139,7 +139,8 @@ export default class CardFactory {
       gameStateManager, 
       scale = 3.5, 
       depth = 2000, 
-      interactive = false 
+      interactive = false,
+      zone = 'slot1'
     } = options;
     
     const card = new Card(scene, x, y, cardData, {
@@ -151,8 +152,8 @@ export default class CardFactory {
     
     card.setDepth(depth);
     
-    // Show total labels on preview cards
-    this._setupTotalLabelsVisibility(card, 'slot1');
+    // Show total labels based on caller context
+    this._setupTotalLabelsVisibility(card, zone);
     
     return card;
   }

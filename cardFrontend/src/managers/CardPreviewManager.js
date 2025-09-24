@@ -45,10 +45,7 @@ export default class CardPreviewManager {
       // Use the regular single card preview logic for unit-only slots
      
       const displayCardData = cardData;
-      this.previewCard = this._createPreviewCard(displayCardData, this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y, 2000);
-      if (this.previewCard.powerOverlay && this.previewCard.powerOverlay.setTotalLabelsVisibility) {
-        this.previewCard.powerOverlay.setTotalLabelsVisibility('slot1');
-      }
+      this.previewCard = this._createPreviewCard(displayCardData, this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y, 2000, false);
       this.previewCard.fullCardData = cardData;
       const { totalAP, totalHP } = this.previewCard.updateCalculatedTotalLabels(null, cardData.isRested);
       console.log("[CardPreviewManager] Updated preview total labels: AP=" + totalAP + ", HP=" + totalHP);
@@ -118,7 +115,13 @@ export default class CardPreviewManager {
       } else if (isHoveringPilot) {
         // Hovering over pilot card - show only pilot
         console.log('[showSlotCardPreview] Hovering over pilot - showing pilot only');
-        this.showCardPreview(slotCards.pilot.getCardFullData());  // Use full data with current stats
+        const pilotData = slotCards.pilot.getCardFullData();
+        this.previewCard = this._createPreviewCard(pilotData, this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y, 2000, true);
+        this.previewCard.fullCardData = pilotData;
+        if (this.previewCard.updateCalculatedTotalLabels) {
+          const totals = this.previewCard.updateCalculatedTotalLabels(null, pilotData.isRested);
+          console.log('[CardPreviewManager] Pilot preview totals:', totals);
+        }
       } else {
         // Fallback if detection failed
         console.warn('[showSlotCardPreview] Could not determine hovered card type, using fallback');
@@ -128,7 +131,16 @@ export default class CardPreviewManager {
       // Single card in slot
       const singleCard = slotCards.unit || slotCards.pilot;
       console.log('[showSlotCardPreview] Showing single card preview for:', singleCard.cardData?.id);
-      this.showCardPreview(singleCard.getCardFullData());  // Use full data with current stats
+      const singleData = singleCard.getCardFullData();
+      const isUnit = slotCards.unit === singleCard;
+      const zone = isUnit ? 'slot1' : 'hand';
+      this.previewCard = this._createPreviewCard(singleData, this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y, 2000, zone === 'slot1');
+      this.previewCard.fullCardData = singleData;
+      if (this.previewCard.updateCalculatedTotalLabels) {
+        const partnerCard = isUnit ? slotCards.pilot : null;
+        const totals = this.previewCard.updateCalculatedTotalLabels(partnerCard || null, singleData.isRested);
+        console.log('[CardPreviewManager] Single slot preview totals:', totals);
+      }
     } else {
       console.warn('[showSlotCardPreview] No cards found in slot, using fallback');
       this.showCardPreview(hoveredCard.getCardFullData());  // Use full data with current stats
@@ -188,12 +200,13 @@ export default class CardPreviewManager {
    * @param {number} depth - Z depth for layering
    * @returns {Card} The created preview card component
    */
-  _createPreviewCard(cardData, x, y, depth = 2000) {
+  _createPreviewCard(cardData, x, y, depth = 2000, showTotals = true) {
     return CardFactory.createPreviewCard(this.scene, cardData, x, y, {
       gameStateManager: this.gameStateManager,
       scale: 3.5,
       depth,
-      interactive: false
+      interactive: false,
+      zone: showTotals ? 'slot1' : 'hand'
     });
   }
 
