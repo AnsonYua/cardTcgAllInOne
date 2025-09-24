@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { GAME_CONFIG } from '../config/gameConfig.js';
-import Card from '../components/Card.js';
 import ShuffleAnimationManager from '../components/ShuffleAnimationManager.js';
 import BaseAndShieldAreaManager from '../components/BaseAndShieldAreaManager.js';
 import EnergyAreaManager from '../components/EnergyAreaManager.js';
@@ -8,7 +7,6 @@ import SlotAreaManager from '../components/SlotAreaManager.js';
 import BoardLayoutManager from '../managers/BoardLayoutManager.js';
 import ZoneManager from '../managers/ZoneManager.js';
 import GameSceneUtils from '../utils/GameSceneUtils.js';
-import { ZoneMapping } from '../utils/ZoneMapping.js';
 import CardAnimationUtils from '../utils/CardAnimationUtils.js';
 import CardActionHandler from '../handlers/CardActionHandler.js';
 import DeployEffectHandler from '../handlers/DeployEffectHandler.js';
@@ -197,26 +195,6 @@ export default class GameScene extends Phaser.Scene {
 
 
 
-  createBattleArea() {
-    const { x, y } = this.layout.battle;
-
-    // Battle area background
-    const battleBg = this.add.graphics();
-    battleBg.fillStyle(0x4a4a4a, 0.3);
-    battleBg.fillRoundedRect(x - 200, y - 100, 400, 200, 10);
-    battleBg.lineStyle(2, 0x888888);
-    battleBg.strokeRoundedRect(x - 200, y - 100, 400, 200, 10);
-
-    // Battle results display
-    this.battleResultsText = this.add.text(x, y, 'Battle Area', {
-      fontSize: '18px',
-      fontFamily: 'Arial',
-      fill: '#ffffff',
-      align: 'center'
-    });
-    this.battleResultsText.setOrigin(0.5);
-  }
-
 
   createDeckVisualizations() {
     // Use the initial deck stacks created in createZone as the main deck stacks
@@ -236,40 +214,6 @@ export default class GameScene extends Phaser.Scene {
 
   // UI creation methods moved to GameSceneUIManager
   
-  updatePhaseIndicator(phase, currentPlayer) {
-    this.uiManager.updatePhaseIndicator(phase, currentPlayer);
-  }
-
-  updateCurrentTurnDisplay(currentPlayer) {
-    this.uiManager.updateCurrentTurnDisplay(currentPlayer);
-  }
-
-  hideHandArea() {
-    this.handCardManager.hideHandArea();
-  }
-
-  showHandArea() {
-    this.handCardManager.showHandArea();
-  }
-
-  showRoomStatus(message) {
-    this.uiManager.showRoomStatus(message);
-  }
-
-  showErrorMessage(message) {
-    this.uiManager.showErrorMessage(message);
-  }
-
-  showSuccessMessage(message) {
-    this.uiManager.showSuccessMessage(message);
-  }
-
-  setUILoadingState(isLoading) {
-    this.uiManager.setUILoadingState(isLoading);
-  }
-
-
-
   setupEventListeners() {
 
     // Card interaction events
@@ -643,64 +587,6 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  /**
-   * Determine slot information from a hovered card
-   * @param {Card} card - The card being hovered
-   * @returns {Object|null} Slot info with playerType and slotName, or null if not a slot card
-   */
-  getSlotInfoFromCard(card) {
-    console.log('[getSlotInfoFromCard] Analyzing card:', card.cardData?.id, 'cardTypeInSlot:', card.cardTypeInSlot);
-
-    // First approach: Check if this card has slot-specific properties
-    // This might not always be set, so we'll also try direct slot scanning
-
-    if (!this.slotAreaManager) {
-      console.warn('[getSlotInfoFromCard] SlotAreaManager not available');
-      return null;
-    }
-
-    // Check player slots by scanning all slots
-    for (let i = 1; i <= 6; i++) {
-      const slotName = `slot${i}`;
-      const slotCards = this.slotAreaManager.getSlotCards('player', slotName);
-      console.log(`[getSlotInfoFromCard] Checking player ${slotName}:`, slotCards);
-
-      if (slotCards.unit === card) {
-        console.log(`[getSlotInfoFromCard] Found as unit in player ${slotName}`);
-        return { playerType: 'player', slotName, cardType: 'unit' };
-      }
-      if (slotCards.pilot === card) {
-        console.log(`[getSlotInfoFromCard] Found as pilot in player ${slotName}`);
-        return { playerType: 'player', slotName, cardType: 'pilot' };
-      }
-    }
-
-    // Check opponent slots
-    for (let i = 1; i <= 6; i++) {
-      const slotName = `slot${i}`;
-      const slotCards = this.slotAreaManager.getSlotCards('opponent', slotName);
-      console.log(`[getSlotInfoFromCard] Checking opponent ${slotName}:`, slotCards);
-
-      if (slotCards.unit === card) {
-        console.log(`[getSlotInfoFromCard] Found as unit in opponent ${slotName}`);
-        return { playerType: 'opponent', slotName, cardType: 'unit' };
-      }
-      if (slotCards.pilot === card) {
-        console.log(`[getSlotInfoFromCard] Found as pilot in opponent ${slotName}`);
-        return { playerType: 'opponent', slotName, cardType: 'pilot' };
-      }
-    }
-
-    console.log('[getSlotInfoFromCard] Card not found in any slot');
-    return null;
-  }
-
-
-
-
-
-
-
   addCardsToPlayerHand(cardsToAdd) {
     this.handCardManager.addCardsToPlayerHand(cardsToAdd);
   }
@@ -997,28 +883,6 @@ export default class GameScene extends Phaser.Scene {
     super.destroy();
   }
 
-  async simulatePlayer2Redraw() {
-
-  }
-
-  handlePhaseChange(event) {
-    console.log('Processing phase change event:', event);
-
-    // Update phase indicator
-    this.updatePhaseIndicator(event.data.phase);
-
-    // Show phase change notification
-    this.showRoomStatus(event.data.message || `Phase changed to ${event.data.phase}`);
-  }
-
-
-
-  shouldShowTurnInfo(phase) {
-    // Only show turn info for phases where turns matter
-    const turnBasedPhases = ['DRAW_PHASE', 'MAIN_PHASE', 'SP_PHASE'];
-    return turnBasedPhases.includes(phase);
-  }
-
   updatePhaseIndicator(phase, currentPlayer = null) {
     this.uiMessageManager.updatePhaseIndicator(phase, currentPlayer, this.gameStateManager);
   }
@@ -1054,62 +918,10 @@ export default class GameScene extends Phaser.Scene {
         this.updateCurrentPlayerHand()
         break;
 
-      /*
-      case 'CARD_PLAYED':
-        this.handleCardPlayedEvent(event);
-        break;
-        
-      case 'PHASE_CHANGE':
-        this.handlePhaseChangeEvent(event);
-        break;
-        
-      case 'TURN_SWITCH':
-        this.handleTurnSwitchEvent(event);
-        break;
-        
-      case 'BATTLE_CALCULATED':
-        this.handleBattleCalculatedEvent(event);
-        break;
-        
-      case 'ERROR_OCCURRED':
-        this.handleErrorEvent(event);
-        break;
-      */
       default:
         console.log(`[GameScene] Unhandled event type: ${event.type}`, event);
     }
   }
-
-  handleCardPlayedEvent(event) {
-    console.log('[GameScene] Handling CARD_PLAYED event:', event.data);
-    // Update UI based on card played
-    this.updateGameState();
-  }
-
-  handlePhaseChangeEvent(event) {
-    console.log('[GameScene] Handling PHASE_CHANGE event:', event.data);
-    // Update phase display
-    this.updateGameState();
-  }
-
-  handleTurnSwitchEvent(event) {
-    console.log('[GameScene] Handling TURN_SWITCH event:', event.data);
-    // Update turn indicators
-    this.updateGameState();
-  }
-
-  handleBattleCalculatedEvent(event) {
-    console.log('[GameScene] Handling BATTLE_CALCULATED event:', event.data);
-    // Trigger battle result animation
-    this.updateGameState();
-  }
-
-  handleErrorEvent(event) {
-    console.error('[GameScene] Handling ERROR event:', event.data);
-    // Show error message to user
-    this.showRoomStatus(`Error: ${event.data.message || 'Unknown error occurred'}`, 3000);
-  }
-
 
   // Old static action button method removed - now using dynamic ActionButtonManager
 
@@ -1143,15 +955,6 @@ export default class GameScene extends Phaser.Scene {
    */
   updateCardInteractionStates() {
     this.cardInteractionManager.updateAllCardInteractionStates();
-  }
-
-  /**
-   * Update interaction states for cards in zones (slots, base, shield, energy areas)
-   * @param {boolean} isCurrentPlayer - Whether it's currently the player's turn
-   * @deprecated Use cardInteractionManager.updateZoneCardStates() instead
-   */
-  updateZoneCardsInteractionStates(isCurrentPlayer) {
-    this.cardInteractionManager.updateZoneCardStates(isCurrentPlayer);
   }
 
 }
