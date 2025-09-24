@@ -19,7 +19,7 @@ export interface PlayerAction {
     type: string;
     playerId: string;
     cardId?: string;
-    cardUid?: string;
+    carduid?: string;
     zone?: string;
     targetPhase?: any; // GamePhase
     [key: string]: any;

@@ -275,7 +275,7 @@ export class PlayerCardManager {
             // Check if base[0] exists (base zone is an array)
             if (playerZones.base && playerZones.base.length > 0) {
                 const existingBase = playerZones.base[0];
-                console.log(`🏗️ Existing base found: ${existingBase.cardUid}, moving to trash`);
+                console.log(`🏗️ Existing base found: ${existingBase.carduid}, moving to trash`);
 
                 // Move existing base to trash area
                 if (!playerZones.trashArea) {
@@ -285,7 +285,7 @@ export class PlayerCardManager {
 
                 // Clear the base zone
                 playerZones.base = [];
-                console.log(`🗑️ Moved existing base ${existingBase.cardUid} to trash`);
+                console.log(`🗑️ Moved existing base ${existingBase.carduid} to trash`);
             }
 
             // Create new base card using proper BaseCard interface from CardSystem
@@ -446,7 +446,7 @@ export class PlayerCardManager {
                 pilotNameForMatching = designatePilotEffect.effect.parameters.pilotName;
                 console.log(`🎯 Command card as pilot: using designate_pilot.pilotName="${pilotNameForMatching}"`);
             } else {
-                console.warn(`⚠️ Command card played as pilot but no designate_pilot effect found for ${pilot.cardUid}`);
+                console.warn(`⚠️ Command card played as pilot but no designate_pilot effect found for ${pilot.carduid}`);
             }
         } else {
             // Regular pilot card - use name and traits
@@ -522,7 +522,7 @@ export class PlayerCardManager {
             for (const slotName of SLOT_ZONES) {
                 const slotKey = slotName as keyof Pick<typeof player.zones, 'slot1' | 'slot2' | 'slot3' | 'slot4' | 'slot5' | 'slot6'>;
                 const slot = player.zones[slotKey];
-                if (slot?.unit?.cardUid === cardUID || slot?.pilot?.cardUid === cardUID) {
+                if (slot?.unit?.carduid === cardUID || slot?.pilot?.carduid === cardUID) {
                     targetSlot = slotKey;
                     break;
                 }
@@ -543,13 +543,13 @@ export class PlayerCardManager {
             }
 
             const unitCard = slot.unit;
-            console.log(`📋 Processing unit ${unitCard.cardUid} for link formation`);
+            console.log(`📋 Processing unit ${unitCard.carduid} for link formation`);
 
             // Set the unit's isFirstPlay to false since it's now linked
             const previousFirstPlay = unitCard.isFirstPlay;
             unitCard.isFirstPlay = false;
 
-            console.log(`✅ Link formation complete: Unit ${unitCard.cardUid} isFirstPlay changed from ${previousFirstPlay} to ${unitCard.isFirstPlay}`);
+            console.log(`✅ Link formation complete: Unit ${unitCard.carduid} isFirstPlay changed from ${previousFirstPlay} to ${unitCard.isFirstPlay}`);
 
         } catch (error) {
             console.error(`❌ Error handling link formation:`, error);
@@ -574,10 +574,10 @@ export class PlayerCardManager {
     /**
      * Find which slot contains a specific card UID
      */
-    static findSlotByCardUid(player: any, cardUid: string): { slot: string | null, unit: UnitZoneCard | null } {
+    static findSlotByCardUid(player: any, carduid: string): { slot: string | null, unit: UnitZoneCard | null } {
         for (const slot of SLOT_ZONES) {
             const slotZone = (player.zones as any)[slot];
-            if (slotZone?.unit?.cardUid === cardUid) {
+            if (slotZone?.unit?.carduid === carduid) {
                 return { slot, unit: slotZone.unit as UnitZoneCard };
             }
         }
@@ -612,7 +612,7 @@ export class PlayerCardManager {
     /**
      * Move a card to trash area
      */
-    static moveCardToTrash(gameEnv: GameEnvironment, playerId: string, cardUid: string, cardId: string, cardData: any): boolean {
+    static moveCardToTrash(gameEnv: GameEnvironment, playerId: string, carduid: string, cardId: string, cardData: any): boolean {
         try {
             const player = gameEnv.getPlayer(playerId);
             if (!player || !player.zones) {
@@ -626,10 +626,10 @@ export class PlayerCardManager {
             }
 
             // Create trash card with card data
-            const trashCard = createZoneCard(cardUid, cardId, cardData, playerId);
+            const trashCard = createZoneCard(carduid, cardId, cardData, playerId);
             player.zones.trashArea.push(trashCard);
 
-            console.log(`🗑️ Card ${cardUid} moved to trash`);
+            console.log(`🗑️ Card ${carduid} moved to trash`);
             return true;
         } catch (error) {
             console.error(`❌ Error moving card to trash:`, error);
@@ -654,7 +654,7 @@ export class PlayerCardManager {
             }
 
             // Create trash card with card data
-            const trashCard = createZoneCard(card.cardUid, card.cardId, card.cardData, playerId);
+            const trashCard = createZoneCard(card.carduid, card.cardId, card.cardData, playerId);
             player.zones.trashArea.push(trashCard);
 
             // Remove card from slot
@@ -667,7 +667,7 @@ export class PlayerCardManager {
                 }
             }
 
-            console.log(`🗑️ ${cardType.charAt(0).toUpperCase() + cardType.slice(1)} ${card.cardUid} moved to trash from ${slotName}`);
+            console.log(`🗑️ ${cardType.charAt(0).toUpperCase() + cardType.slice(1)} ${card.carduid} moved to trash from ${slotName}`);
             return true;
         } catch (error) {
             console.error(`❌ Error moving ${cardType} to trash:`, error);

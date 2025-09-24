@@ -666,10 +666,10 @@ The game implements strict turn-based mechanics where each card placement automa
 
 **Moved Methods from GameEngine.ts:**
 - `drawCards(deck, count)` - Card drawing functionality
-- `findSlotByCardUid(player, cardUid)` - Card location utilities
+- `findSlotByCardUid(player, carduid)` - Card location utilities
 - `findFirstEmptySlot(playerZones)` - Empty slot finder
 - `createUniqueCardId(originalCardId)` - Card ID generation with UUID
-- `moveCardToTrash(gameEnv, playerId, cardUid, cardId, cardData)` - Card movement to trash
+- `moveCardToTrash(gameEnv, playerId, carduid, cardId, cardData)` - Card movement to trash
 - `moveCardToTrashFromSlot(gameEnv, playerId, slotName, card, cardType)` - Card movement from slot to trash
 - `updateUnitHP(unit, newHP)` - Unit HP management
 - `updatePilotHP(pilot, newHP)` - Pilot HP management
@@ -703,7 +703,7 @@ The game implements strict turn-based mechanics where each card placement automa
 **Event Creation Methods:**
 - `createPairingEffectEvent(eventData, pairingEffects, placementResult)` - Pairing effect events
 - `createDeployEffectEvent(eventData, deployEffects)` - Deploy effect events
-- `createBurstDeployEvent(playerId, cardUid, cardData, burstEffect)` - Burst deploy PLAY_CARD events
+- `createBurstDeployEvent(playerId, carduid, cardData, burstEffect)` - Burst deploy PLAY_CARD events
 - `createPhaseChangeEvent(fromPhase, toPhase, reason, playerId)` - Phase change events
 
 **Utility Methods:**
@@ -1191,7 +1191,7 @@ console.log(`   Removed ${effectsRemoved} stale effects`);
 ```
 
 **Cleanup Logic:**
-1. **Get current field state** - Collect all `cardUid` values from slots (units and pilots)
+1. **Get current field state** - Collect all `carduid` values from slots (units and pilots)
 2. **Validate effect sources** - Check each effect's `sourceCardUid` against current field
 3. **Remove stale effects** - Filter out effects whose source cards are no longer present
 4. **Comprehensive coverage** - Clean effects on both unit and pilot cards in all slots

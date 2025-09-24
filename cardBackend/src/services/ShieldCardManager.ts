@@ -32,14 +32,14 @@ export class ShieldCardManager {
             }
 
             // Create shield cards from drawn cards using proper ShieldCard interface
-            drawnCards.forEach(cardUid => {
-                const cardId = cardUid.split('_')[0]; // Extract base card ID
+            drawnCards.forEach(carduid => {
+                const cardId = carduid.split('_')[0]; // Extract base card ID
                 
                 // Load full card data from card database
                 const fullCardData = CardDatabaseManager.getCardDetails(cardId);
                 const originalCardType = fullCardData?.cardType; // Preserve original cardType
                 const shieldCard = createZoneCard(
-                        cardUid,
+                        carduid,
                         cardId,
                         { ...fullCardData, cardType: 'shield', originalCardType }, // Override cardType to 'shield' but preserve original
                         playerId
@@ -62,17 +62,17 @@ export class ShieldCardManager {
     /**
      * Remove shield card from shieldArea
      */
-    static removeShieldCard(gameEnv: GameEnvironment, playerId: string, cardUid: string): boolean {
+    static removeShieldCard(gameEnv: GameEnvironment, playerId: string, carduid: string): boolean {
         try {
             const player = gameEnv.players[playerId];
             if (!player || !player.zones) {
                 return false;
             }
 
-            const index = player.zones.shieldArea.findIndex(shield => shield.cardUid === cardUid);
+            const index = player.zones.shieldArea.findIndex(shield => shield.carduid === carduid);
             if (index >= 0) {
                 player.zones.shieldArea.splice(index, 1);
-                console.log(`🛡️ Removed shield card ${cardUid} from player ${playerId}`);
+                console.log(`🛡️ Removed shield card ${carduid} from player ${playerId}`);
                 return true;
             }
 

@@ -66,7 +66,7 @@ export const isTrashZone = (zone: ZoneType): zone is ZoneType.TRASH => {
 export type ZoneContent = ZoneCard[] | undefined;
 
 export const isZoneCardArray = (content: ZoneContent): content is ZoneCard[] => {
-    return Array.isArray(content) && (content.length === 0 || 'cardUid' in content[0]);
+    return Array.isArray(content) && (content.length === 0 || 'carduid' in content[0]);
 };
 
 // ============ PLAYER FIELD EFFECTS ============
@@ -76,7 +76,7 @@ export const isZoneCardArray = (content: ZoneContent): content is ZoneCard[] => 
 // This is a simplified placeholder - implement proper deck management for your custom game
 
 export interface HandCard {
-    cardUid: string;
+    carduid: string;
     cardId: string;
     cardData: any;
 }
@@ -94,12 +94,12 @@ export class PlayerDeck {
      * Get hand as array of card objects with details from global card database
      */
     get hand(): HandCard[] {
-        return this._handUids.map(cardUid => {
-            const cardId = cardUid.split('_')[0];
+        return this._handUids.map(carduid => {
+            const cardId = carduid.split('_')[0];
             const cardData = CardDatabaseManager.getCardDetails(cardId);
             
             return {
-                cardUid,
+                carduid,
                 cardId,
                 cardData: cardData || {
                     id: cardId,
@@ -119,11 +119,11 @@ export class PlayerDeck {
     }
 
     drawCard(): string | null {
-        const cardUid = this.mainDeck.pop() || null;
-        if (cardUid) {
-            this._handUids.push(cardUid);
+        const carduid = this.mainDeck.pop() || null;
+        if (carduid) {
+            this._handUids.push(carduid);
         }
-        return cardUid;
+        return carduid;
     }
 
     getHandSize(): number {
@@ -135,8 +135,8 @@ export class PlayerDeck {
     }
 
 
-    playCardFromHand(cardUid: string, zone: string): boolean {
-        const cardIndex = this._handUids.indexOf(cardUid);
+    playCardFromHand(carduid: string, zone: string): boolean {
+        const cardIndex = this._handUids.indexOf(carduid);
         if (cardIndex >= 0) {
             this._handUids.splice(cardIndex, 1);
             return true;
@@ -226,11 +226,11 @@ export class Player {
 
     // ============ ZONE MANAGEMENT ============
 
-    public setCardInZone(zone: ZoneType, cardUid: string, cardData?: CardData): void {
-        console.log(`🔍 Player.setCardInZone ENTRY: playerId=${this.id}, zone=${zone}, cardUid=${cardUid}`);
+    public setCardInZone(zone: ZoneType, carduid: string, cardData?: CardData): void {
+        console.log(`🔍 Player.setCardInZone ENTRY: playerId=${this.id}, zone=${zone}, carduid=${carduid}`);
         
         const normalizedZone = zone.toLowerCase() as ZoneType;
-        const cardId = cardUid.split("_")[0];
+        const cardId = carduid.split("_")[0];
         
         let resolvedCardData = cardData;
         if (!resolvedCardData) {
@@ -253,7 +253,7 @@ export class Player {
         }
         
         // Use createZoneCard for all card types now
-        const zoneCard = createZoneCard(cardUid, cardId, resolvedCardData, this.id);
+        const zoneCard = createZoneCard(carduid, cardId, resolvedCardData, this.id);
         
         if (isSlotZone(normalizedZone)) {
             // Type-safe access to slot zones
@@ -262,10 +262,10 @@ export class Player {
             
             if (zoneCard.cardData?.cardType === 'unit') {
                 slotZone.unit = zoneCard as UnitZoneCard;
-                console.log(`✅ Set unit in ${zone}: ${cardUid}`);
+                console.log(`✅ Set unit in ${zone}: ${carduid}`);
             } else if (zoneCard.cardData?.cardType === 'pilot') {
                 slotZone.pilot = zoneCard as PilotZoneCard;
-                console.log(`✅ Set pilot in ${zone}: ${cardUid}`);
+                console.log(`✅ Set pilot in ${zone}: ${carduid}`);
             } else {
                 console.warn(`⚠️ Invalid card type ${zoneCard.cardData?.cardType} for slot zone ${zone}`);
             }
@@ -276,27 +276,27 @@ export class Player {
         } else if (normalizedZone === ZoneType.SHIELD) {
             // Shield can accept any card type from deck
             this.zones.shieldArea.push(zoneCard);
-            console.log(`✅ Set shield card in ${zone}: ${cardUid}`);
+            console.log(`✅ Set shield card in ${zone}: ${carduid}`);
             
         } else if (normalizedZone === ZoneType.ENERGY) {
             // Energy cards go to energy zone
             this.zones.energyArea.push(zoneCard as EnergyZoneCard);
-            console.log(`✅ Set energy card in ${zone}: ${cardUid}`);
+            console.log(`✅ Set energy card in ${zone}: ${carduid}`);
             
         } else if (normalizedZone === ZoneType.TRASH) {
             // Any card can go to trash area
             this.zones.trashArea.push(zoneCard);
-            console.log(`🗑️ Set card in trash area: ${cardUid}`);
+            console.log(`🗑️ Set card in trash area: ${carduid}`);
             
         } else {
             console.warn(`⚠️ Unknown zone placement for card type ${zoneCard.cardData?.cardType} in zone ${normalizedZone}`);
         }
         
-        console.log(`✅ Set card in zone: ${cardUid} (${cardId}) → ${zone} for player ${this.id}`);
+        console.log(`✅ Set card in zone: ${carduid} (${cardId}) → ${zone} for player ${this.id}`);
     }
 
-    public setCardInZoneWithData(zone: ZoneType, cardUid: string, cardData: any): void {
-        this.setCardInZone(zone, cardUid, cardData);
+    public setCardInZoneWithData(zone: ZoneType, carduid: string, cardData: any): void {
+        this.setCardInZone(zone, carduid, cardData);
     }
 
     public getCardInZone(zone: ZoneType, cardType: 'unit' | 'pilot' = 'unit'): string | null {
@@ -305,25 +305,25 @@ export class Player {
             const slotZone = this.zones[slotKey] as SlotZone;
             
             const card = cardType === 'pilot' ? slotZone.pilot : slotZone.unit;
-            return card?.cardUid || null;
+            return card?.carduid || null;
         }
         
         if (zone === ZoneType.SHIELD) {
-            return this.zones.shieldArea.length > 0 ? this.zones.shieldArea[0].cardUid : null;
+            return this.zones.shieldArea.length > 0 ? this.zones.shieldArea[0].carduid : null;
         }
         
         if (zone === ZoneType.ENERGY) {
-            return this.zones.energyArea.length > 0 ? this.zones.energyArea[0].cardUid : null;
+            return this.zones.energyArea.length > 0 ? this.zones.energyArea[0].carduid : null;
         }
         
         if (zone === ZoneType.TRASH) {
-            return this.zones.trashArea.length > 0 ? this.zones.trashArea[0].cardUid : null;
+            return this.zones.trashArea.length > 0 ? this.zones.trashArea[0].carduid : null;
         }
         
         const targetZone = this.zones[zone];
         if (Array.isArray(targetZone) && targetZone.length > 0) {
             const zoneCard = targetZone[0] as ZoneCard;
-            return zoneCard.cardUid || null;
+            return zoneCard.carduid || null;
         }
         
         return null;
@@ -480,12 +480,12 @@ export class Player {
         return this.zones.shieldArea.length > 0;
     }
 
-    public addShieldCard(cardUid: string, cardData?: CardData): void {
-        this.setCardInZone(ZoneType.SHIELD, cardUid, cardData);
+    public addShieldCard(carduid: string, cardData?: CardData): void {
+        this.setCardInZone(ZoneType.SHIELD, carduid, cardData);
     }
 
-    public removeShieldCard(cardUid: string): boolean {
-        const index = this.zones.shieldArea.findIndex(card => card.cardUid === cardUid);
+    public removeShieldCard(carduid: string): boolean {
+        const index = this.zones.shieldArea.findIndex(card => card.carduid === carduid);
         if (index >= 0) {
             this.zones.shieldArea.splice(index, 1);
             return true;
@@ -504,7 +504,7 @@ export class Player {
         if (!slotZone.unit) return false;
         
         // Units can attack multiple times - no limitations
-        console.log(`⚔️ Unit ${slotZone.unit.cardUid} declares attack from ${attackerZone}`);
+        console.log(`⚔️ Unit ${slotZone.unit.carduid} declares attack from ${attackerZone}`);
         return true;
     }
 
@@ -568,7 +568,7 @@ export class Player {
         // Apply damage
         slotZone.unit.damageReceived = (slotZone.unit.damageReceived || 0) + damage;
         
-        console.log(`🩸 Unit ${slotZone.unit.cardUid} takes ${damage} damage (total: ${slotZone.unit.damageReceived})`);
+        console.log(`🩸 Unit ${slotZone.unit.carduid} takes ${damage} damage (total: ${slotZone.unit.damageReceived})`);
         return true;
     }
 
@@ -599,22 +599,22 @@ export class Player {
             .length; // Each energy card provides 1 energy
     }
 
-    public tapEnergy(cardUid: string): boolean {
-        const energyCard = this.zones.energyArea.find(card => card.cardUid === cardUid);
+    public tapEnergy(carduid: string): boolean {
+        const energyCard = this.zones.energyArea.find(card => card.carduid === carduid);
         if (!energyCard || energyCard.isRested || energyCard.isExtraEnergy) return false;
         
         energyCard.isRested = true;
-        console.log(`⚡ Energy ${cardUid} tapped`);
+        console.log(`⚡ Energy ${carduid} tapped`);
         return true;
     }
 
-    public consumeEnergy(cardUid: string): boolean {
-        const energyCard = this.zones.energyArea.find(card => card.cardUid === cardUid);
+    public consumeEnergy(carduid: string): boolean {
+        const energyCard = this.zones.energyArea.find(card => card.carduid === carduid);
         if (!energyCard || energyCard.isExtraEnergy) return false;
         
         // All energy cards are consumable in the simplified system
         energyCard.isExtraEnergy = true;
-        console.log(`💥 Consumable energy ${cardUid} consumed and removed`);
+        console.log(`💥 Consumable energy ${carduid} consumed and removed`);
         return true;
     }
 
@@ -646,12 +646,12 @@ export class Player {
         return this.zones.trashArea.length > 0;
     }
 
-    public addTrashCard(cardUid: string, cardData?: CardData): void {
-        this.setCardInZone(ZoneType.TRASH, cardUid, cardData);
+    public addTrashCard(carduid: string, cardData?: CardData): void {
+        this.setCardInZone(ZoneType.TRASH, carduid, cardData);
     }
 
-    public removeTrashCard(cardUid: string): boolean {
-        const index = this.zones.trashArea.findIndex(card => card.cardUid === cardUid);
+    public removeTrashCard(carduid: string): boolean {
+        const index = this.zones.trashArea.findIndex(card => card.carduid === carduid);
         if (index >= 0) {
             this.zones.trashArea.splice(index, 1);
             return true;
@@ -671,8 +671,8 @@ export class Player {
         return this.deck.drawCard();
     }
 
-    public playCardFromHand(cardUid: string, zone: string = 'slot1'): boolean {
-        return this.deck.playCardFromHand(cardUid, zone);
+    public playCardFromHand(carduid: string, zone: string = 'slot1'): boolean {
+        return this.deck.playCardFromHand(carduid, zone);
     }
 
     public getHandSize(): number {
@@ -684,8 +684,8 @@ export class Player {
     }
 
 
-    public getCardIdFromUid(cardUid: string): string | null {
-        return this.deck.getCardIdFromUid(cardUid);
+    public getCardIdFromUid(carduid: string): string | null {
+        return this.deck.getCardIdFromUid(carduid);
     }
 
     // ============ FIELD EFFECTS ============

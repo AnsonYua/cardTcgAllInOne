@@ -9,7 +9,7 @@ import * as path from 'path';
 
 // Simplified temporary effect for unit-level storage
 export interface TemporaryEffect {
-    sourceCardUid: string;              // Card that created this effect
+    sourceCarduid: string;              // Card that created this effect
     modifyAP?: number;                  // AP modification (optional)
     modifyHP?: number;                  // HP modification (optional)
     duration: string;                   // Effect duration
@@ -87,7 +87,7 @@ export type CardData = UnitCardData | PilotCardData | CommandCardData | BaseCard
 // ============ ZONE CARD INTERFACES ============
 
 export interface ZoneCard {
-    cardUid: string;            // Unique game instance ID
+    carduid: string;            // Unique game instance ID
     cardId: string;             // Base card ID
     cardData?: CardData;        // Complete card data from JSON (optional for energy cards)
     placedAt?: number;          // Timestamp when placed
@@ -153,14 +153,14 @@ export interface ShieldCard extends ZoneCard {
 // ============ ZONE CARD UTILITIES ============
 
 export function createZoneCard(
-    cardUid: string,
+    carduid: string,
     cardId: string,
     cardData: CardData,
     placedBy: string = '',
     playAs?: string
 ): ZoneCard {
     const baseCard: ZoneCard = {
-        cardUid,
+        carduid,
         cardId,
         cardData,
         placedAt: Date.now(),

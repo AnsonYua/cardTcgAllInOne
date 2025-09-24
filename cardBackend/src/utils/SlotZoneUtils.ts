@@ -101,14 +101,14 @@ export class SlotZoneUtils {
      * Check if slot has a unit card
      */
     static hasUnit(slot: SlotZone): boolean {
-        return !!(slot.unit && slot.unit.cardUid);
+        return !!(slot.unit && slot.unit.carduid);
     }
 
     /**
      * Check if slot has a pilot card
      */
     static hasPilot(slot: SlotZone): boolean {
-        return !!(slot.pilot && slot.pilot.cardUid);
+        return !!(slot.pilot && slot.pilot.carduid);
     }
 
     /**
@@ -142,12 +142,12 @@ export class SlotZoneUtils {
     /**
      * Find card in slot by UID
      */
-    static findCardByUid(slot: SlotZone, cardUid: string): { card: any; type: 'unit' | 'pilot' } | null {
-        if (this.hasUnit(slot) && slot.unit.cardUid === cardUid) {
+    static findCardByUid(slot: SlotZone, carduid: string): { card: any; type: 'unit' | 'pilot' } | null {
+        if (this.hasUnit(slot) && slot.unit.carduid === carduid) {
             return { card: slot.unit, type: 'unit' };
         }
         
-        if (this.hasPilot(slot) && slot.pilot.cardUid === cardUid) {
+        if (this.hasPilot(slot) && slot.pilot.carduid === carduid) {
             return { card: slot.pilot, type: 'pilot' };
         }
         
@@ -218,7 +218,7 @@ export class SlotZoneUtils {
                 const slot = player.zones[slotKey];
 
                 // Check if unit in this slot matches the target UID
-                if (slot?.unit?.cardUid === targetUnitUid) {
+                if (slot?.unit?.carduid === targetUnitUid) {
                     return {
                         found: true,
                         slotName: slotName,
@@ -274,7 +274,7 @@ export class SlotZoneUtils {
             const slot = player.zones[slotKey];
 
             // Check if unit in this slot matches the target UID
-            if (slot?.unit?.cardUid === targetUnitUid) {
+            if (slot?.unit?.carduid === targetUnitUid) {
                 return {
                     found: true,
                     slotName: slotName,

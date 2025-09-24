@@ -28,11 +28,11 @@ export class CardEffect {
         // Handle both data structures: direct fields or nested in data
         const eventData = repairData.data || repairData;
         const cardId = eventData.cardId || (repairData.affectedCards && repairData.affectedCards[0]);
-        const cardUid = eventData.cardUid;
+        const carduid = eventData.carduid;
         const playerId = eventData.playerId || (repairData.affectedPlayers && repairData.affectedPlayers[0]);
         const healAmount = eventData.healAmount || 2; // Default to 2 for repair_2
         
-        console.log(`🩹 Static repair execution: ${healAmount} HP for ${cardId} (${cardUid || 'unknown UID'})`);
+        console.log(`🩹 Static repair execution: ${healAmount} HP for ${cardId} (${carduid || 'unknown UID'})`);
         
         // Find the target unit
         const player = gameEnv.players[playerId];
@@ -49,8 +49,8 @@ export class CardEffect {
         for (const slot of SLOT_ZONES) {
             const slotZone = (player.zones as any)[slot];
             if (slotZone?.unit) {
-                // First try to match by cardUid if available
-                if (cardUid && slotZone.unit.cardUid === cardUid) {
+                // First try to match by carduid if available
+                if (carduid && slotZone.unit.carduid === carduid) {
                     targetUnit = slotZone.unit;
                     break;
                 }
@@ -63,10 +63,10 @@ export class CardEffect {
         }
         
         if (!targetUnit) {
-            console.log(`❌ Could not find target unit with cardId: ${cardId}, cardUid: ${cardUid} for player: ${playerId}`);
+            console.log(`❌ Could not find target unit with cardId: ${cardId}, carduid: ${carduid} for player: ${playerId}`);
             return {
                 success: false,
-                error: `Target unit not found (cardId: ${cardId}, cardUid: ${cardUid})`
+                error: `Target unit not found (cardId: ${cardId}, carduid: ${carduid})`
             };
         }
         
@@ -313,16 +313,16 @@ export class CardEffect {
     }
 
     /**
-     * Find which player owns a specific card by cardUid
+     * Find which player owns a specific card by carduid
      */
-    static findCardOwner(cardUid: string, gameEnv: GameEnvironment): string | null {
+    static findCardOwner(carduid: string, gameEnv: GameEnvironment): string | null {
         for (const [playerId, player] of Object.entries(gameEnv.players)) {
             if (!player.zones) continue;
             
             // Check all slot zones for the card
             for (const slotName of SLOT_ZONES) {
                 const slot = (player.zones as any)[slotName];
-                if (slot?.unit?.cardUid === cardUid || slot?.pilot?.cardUid === cardUid) {
+                if (slot?.unit?.carduid === carduid || slot?.pilot?.carduid === carduid) {
                     return playerId;
                 }
             }
@@ -333,11 +333,11 @@ export class CardEffect {
                 const zone = (player.zones as any)[zoneName];
                 if (Array.isArray(zone)) {
                     for (const card of zone) {
-                        if (card?.cardUid === cardUid) {
+                        if (card?.carduid === carduid) {
                             return playerId;
                         }
                     }
-                } else if (zone?.cardUid === cardUid) {
+                } else if (zone?.carduid === carduid) {
                     return playerId;
                 }
             }
@@ -412,7 +412,7 @@ export class CardEffect {
                 continue;
             }
             
-            const effectKey = `${effectRule.effectId}_${card.cardUid}`;
+            const effectKey = `${effectRule.effectId}_${card.carduid}`;
             
             // Add effect to player's registry if not already present
             if (!player.effectRegistry[effectKey]) {
@@ -433,7 +433,7 @@ export class CardEffect {
         
         return {
             effectId: effectRule.effectId,
-            sourceCardUid: sourceCard.cardUid,
+            sourceCardUid: sourceCard.carduid,
             sourcePlayerId: sourcePlayerId,
             effectData: effectRule,
             scope: effectRule.target?.scope || 'self_all_unit',
@@ -474,12 +474,12 @@ export class CardEffect {
             for (const slotName of SLOT_ZONES) {
                 const slot = (player.zones as any)[slotName];
                 
-                if (slot?.unit?.cardUid === card.cardUid) {
+                if (slot?.unit?.carduid === card.carduid) {
                     // Card found in unit position, check if slot has pilot
                     return slot.pilot != null;
                 }
                 
-                if (slot?.pilot?.cardUid === card.cardUid) {
+                if (slot?.pilot?.carduid === card.carduid) {
                     // Card found in pilot position, check if slot has unit
                     return slot.unit != null;
                 }
@@ -559,18 +559,18 @@ export class CardEffect {
     /**
      * Get card by UID across all players and slots
      */
-    static getCardByUid(cardUid: string, gameEnv: GameEnvironment): any | null {
+    static getCardByUid(carduid: string, gameEnv: GameEnvironment): any | null {
         for (const [playerId, player] of Object.entries(gameEnv.players)) {
             if (!player.zones) continue;
             
             for (const slotName of SLOT_ZONES) {
                 const slot = (player.zones as any)[slotName];
                 
-                if (slot?.unit?.cardUid === cardUid) {
+                if (slot?.unit?.carduid === carduid) {
                     return slot.unit;
                 }
                 
-                if (slot?.pilot?.cardUid === cardUid) {
+                if (slot?.pilot?.carduid === carduid) {
                     return slot.pilot;
                 }
             }
@@ -717,13 +717,13 @@ export class CardEffect {
             case 'modifyAP':
                 const currentModifyAP = card.modifyAP || 0;
                 card.modifyAP = currentModifyAP + value;
-                console.log(`  ⚡ Card ${card.cardUid}: AP modifier ${currentModifyAP} → ${card.modifyAP} (${value > 0 ? '+' : ''}${value})`);
+                console.log(`  ⚡ Card ${card.carduid}: AP modifier ${currentModifyAP} → ${card.modifyAP} (${value > 0 ? '+' : ''}${value})`);
                 return true;
                 
             case 'modifyHP':
                 const currentModifyHP = card.modifyHP || 0;
                 card.modifyHP = currentModifyHP + value;
-                console.log(`  ❤️ Card ${card.cardUid}: HP modifier ${currentModifyHP} → ${card.modifyHP} (${value > 0 ? '+' : ''}${value})`);
+                console.log(`  ❤️ Card ${card.carduid}: HP modifier ${currentModifyHP} → ${card.modifyHP} (${value > 0 ? '+' : ''}${value})`);
                 return true;
                 
             default:
@@ -989,7 +989,7 @@ export class CardEffect {
                 shieldCards.splice(index, 1);
                 
                 // Add to hand using correct _handUids structure
-                player.deck._handUids.push(card.cardUid);
+                player.deck._handUids.push(card.carduid);
                 movedCards.push(card);
             }
         }

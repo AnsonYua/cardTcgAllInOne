@@ -224,14 +224,14 @@ export class GameValidator {
     /**
      * Validate slot contains unit (using SlotZoneUtils)
      */
-    static validateSlotUnit(gameEnv: GameEnvironment, playerId: string, cardUid: string): SlotValidationResult {
+    static validateSlotUnit(gameEnv: GameEnvironment, playerId: string, carduid: string): SlotValidationResult {
         const zonesValidation = this.validatePlayerZones(gameEnv, playerId);
         if (!zonesValidation.isValid) {
             return zonesValidation;
         }
         
         // Use SlotZoneUtils to find the unit
-        const slotResult = SlotZoneUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, cardUid);
+        const slotResult = SlotZoneUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, carduid);
         
         if (slotResult.found) {
             return {
@@ -243,7 +243,7 @@ export class GameValidator {
         
         return {
             isValid: false,
-            error: slotResult.error || `Unit with UID ${cardUid} not found in any slot for player ${playerId}`,
+            error: slotResult.error || `Unit with UID ${carduid} not found in any slot for player ${playerId}`,
             errorCode: "UNIT_NOT_FOUND_IN_SLOTS"
         };
     }
@@ -251,7 +251,7 @@ export class GameValidator {
     /**
      * Validate target zone exists and is accessible
      */
-    static validateTargetZone(gameEnv: GameEnvironment, playerId: string, zone: string, cardUid: string): ValidationResult {
+    static validateTargetZone(gameEnv: GameEnvironment, playerId: string, zone: string, carduid: string): ValidationResult {
         const zonesValidation = this.validatePlayerZones(gameEnv, playerId);
         if (!zonesValidation.isValid) {
             return zonesValidation;
@@ -264,10 +264,10 @@ export class GameValidator {
             const slotKey = zone as keyof Pick<typeof player.zones, 'slot1'|'slot2'|'slot3'|'slot4'|'slot5'|'slot6'>;
             const slot = player.zones[slotKey];
             
-            if (!slot?.unit || slot.unit.cardUid !== cardUid) {
+            if (!slot?.unit || slot.unit.carduid !== carduid) {
                 return {
                     isValid: false,
-                    error: `Target unit ${cardUid} not found in zone ${zone}`,
+                    error: `Target unit ${carduid} not found in zone ${zone}`,
                     errorCode: "TARGET_UNIT_NOT_FOUND"
                 };
             }
@@ -342,7 +342,7 @@ export class GameValidator {
             };
         }
         
-        const requiredFields = ['cardUid', 'zone', 'playerId'];
+        const requiredFields = ['carduid', 'zone', 'playerId'];
         for (const field of requiredFields) {
             if (!selectedTarget[field]) {
                 return {

@@ -951,9 +951,9 @@ export class GameController {
 
             // Validate each target structure
             for (const target of selectedTargets) {
-                if (!target.cardUid || !target.zone || !target.playerId) {
+                if (!target.carduid || !target.zone || !target.playerId) {
                     res.status(400).json({
-                        error: 'Each target must include cardUid, zone, and playerId',
+                        error: 'Each target must include carduid, zone, and playerId',
                         timestamp: new Date().toISOString(),
                         context: 'confirmTargetChoice endpoint'
                     });
@@ -961,7 +961,7 @@ export class GameController {
                 }
             }
             
-            console.log(`🚀 Player ${playerId} selected ${selectedTargets.length} target(s):`, selectedTargets.map(t => `${t.cardUid} in ${t.zone}`));
+            console.log(`🚀 Player ${playerId} selected ${selectedTargets.length} target(s):`, selectedTargets.map(t => `${t.carduid} in ${t.zone}`));
             
             // Use GameLogic service method for business logic
             const result = await this.gameLogic.confirmTargetChoice(gameId, playerId, eventId, selectedTargets);

@@ -117,7 +117,7 @@ export interface CardEntersPlayEvent extends BaseGameEvent {
     type: EventType.CARD_ENTERS_PLAY;
     data: {
         cardId: string;
-        cardUid: string;
+        carduid: string;
         zone: string;
         playerId: string;
         wasFromHand: boolean;
@@ -240,7 +240,7 @@ export interface ShieldCardAttackedEvent extends BaseGameEvent {
         attackingPlayerId: string;
         attackerSlot: string;
         shieldCards: Array<{
-            cardUid: string;
+            carduid: string;
             cardId: string;
             cardData: any;
         }>;
@@ -297,7 +297,7 @@ export interface TargetChoiceEvent extends BaseGameEvent {
         
         // Available targets (computed)
         availableTargets: Array<{
-            cardUid: string;
+            carduid: string;
             cardId: string;
             zone: string;
             playerId: string;
@@ -306,7 +306,7 @@ export interface TargetChoiceEvent extends BaseGameEvent {
         
         // User selection result
         selectedTargets?: Array<{
-            cardUid: string;
+            carduid: string;
             zone: string;
             playerId: string;
         }>;
@@ -416,7 +416,7 @@ export class EventFactory {
     
     static createCardEntersPlayEvent(
         cardId: string,
-        cardUid: string,
+        carduid: string,
         zone: string,
         playerId: string,
         wasFromHand: boolean = true,
@@ -430,7 +430,7 @@ export class EventFactory {
             sourceId: cardId,
             playerId,
             timestamp: Date.now(),
-            data: { cardId, cardUid, zone, playerId, wasFromHand, faceDown }
+            data: { cardId, carduid, zone, playerId, wasFromHand, faceDown }
         };
     }
     
@@ -536,7 +536,7 @@ export class EventFactory {
         defendingPlayerId: string,
         attackingPlayerId: string,
         attackerSlot: string,
-        shieldCards: Array<{ cardUid: string; cardId: string; cardData: any }>,
+        shieldCards: Array<{ carduid: string; cardId: string; cardData: any }>,
         attackPower: number
     ): ShieldCardAttackedEvent {
         return {
@@ -642,7 +642,7 @@ export class EventFactory {
     /**
      * Create PLAY_CARD event for burst deploy effects
      */
-    static createBurstDeployEvent(playerId: string, cardUid: string, cardData: any, burstEffect: any): GameEvent {
+    static createBurstDeployEvent(playerId: string, carduid: string, cardData: any, burstEffect: any): GameEvent {
         // Determine playAs based on card type and burst effect - minimize conversions
         const playAs = (cardData.cardType === 'command' && burstEffect.effect?.action === 'designate_pilot') 
             ? 'pilot' 
@@ -651,7 +651,7 @@ export class EventFactory {
         // Create data object directly to minimize conversions
         const eventData = {
             playerId,                          // Pass playerId directly
-            cardUID: cardUid,                  // Pass cardUid directly
+            cardUID: carduid,                  // Pass carduid directly
             cardId: cardData.id || cardData.cardId,  // Extract cardId once
             cardData,                          // Pass cardData object directly
             playAs,                            // Use computed playAs value

@@ -44,17 +44,17 @@ export class BaseCardManager {
     /**
      * Remove base card from base zone
      */
-    static removeBaseCard(gameEnv: GameEnvironment, playerId: string, cardUid: string): boolean {
+    static removeBaseCard(gameEnv: GameEnvironment, playerId: string, carduid: string): boolean {
         try {
             const player = gameEnv.players[playerId];
             if (!player || !player.zones) {
                 return false;
             }
 
-            const index = player.zones.base.findIndex(base => base.cardUid === cardUid);
+            const index = player.zones.base.findIndex(base => base.carduid === carduid);
             if (index >= 0) {
                 player.zones.base.splice(index, 1);
-                console.log(`🏰 Removed base card ${cardUid} from player ${playerId}`);
+                console.log(`🏰 Removed base card ${carduid} from player ${playerId}`);
                 return true;
             }
 
@@ -85,14 +85,14 @@ export class BaseCardManager {
     /**
      * Update base card HP after damage
      */
-    static updateBaseCardHP(gameEnv: GameEnvironment, playerId: string, cardUid: string, damageReceived: number): boolean {
+    static updateBaseCardHP(gameEnv: GameEnvironment, playerId: string, carduid: string, damageReceived: number): boolean {
         try {
             const player = gameEnv.players[playerId];
             if (!player || !player.zones) {
                 return false;
             }
 
-            const baseCard = player.zones.base.find(base => base.cardUid === cardUid);
+            const baseCard = player.zones.base.find(base => base.carduid === carduid);
             if (!baseCard) {
                 return false;
             }
@@ -100,7 +100,7 @@ export class BaseCardManager {
             baseCard.damageReceived = damageReceived;
             baseCard.currentHP = (baseCard.originalHP || 1) - damageReceived;
 
-            console.log(`🏰 Updated base card ${cardUid} HP: ${baseCard.currentHP} (${baseCard.originalHP} - ${damageReceived})`);
+            console.log(`🏰 Updated base card ${carduid} HP: ${baseCard.currentHP} (${baseCard.originalHP} - ${damageReceived})`);
             return true;
 
         } catch (error) {

@@ -17,9 +17,9 @@ export class EnergyManager {
                 return false;
             }
 
-            const cardUid = `energy_basic_${Date.now()}_${Math.random()}`;
+            const carduid = `energy_basic_${Date.now()}_${Math.random()}`;
             const basicEnergyCard: EnergyZoneCard = {
-                cardUid,
+                carduid,
                 cardId: 'energy_basic',
                 placedAt: Date.now(),
                 placedBy: playerId,
@@ -54,9 +54,9 @@ export class EnergyManager {
                 return false;
             }
 
-            const cardUid = `energy_extra_${Date.now()}_${Math.random()}`;
+            const carduid = `energy_extra_${Date.now()}_${Math.random()}`;
             const extraEnergyCard: EnergyZoneCard = {
-                cardUid,
+                carduid,
                 cardId: 'energy_extra',
                 placedAt: Date.now(),
                 placedBy: playerId,

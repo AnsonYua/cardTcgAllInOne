@@ -31,7 +31,7 @@ export interface TargetConfig {
 }
 
 export interface TargetReference {
-    cardUid: string;
+    carduid: string;
     cardId: string;
     zone: string;
     playerId: string;
@@ -76,7 +76,7 @@ export class TargetChoiceManager {
         gameEnv: GameEnvironment,
         playerId: string,
         sourceType: 'DEPLOY' | 'PAIRING' | 'ACTIVATION',
-        sourceCardUid: string,
+        sourceCarduid: string,
         sourceCardId: string,
         effect: EffectDefinition,
         targetConfig: TargetConfig,
@@ -106,7 +106,7 @@ export class TargetChoiceManager {
                 const choiceEvent = EventFactory.createTargetChoiceEvent(
                     playerId,
                     sourceType,
-                    sourceCardUid,
+                    sourceCarduid,
                     sourceCardId,
                     effect,            // Pass effect object directly without conversion
                     targetConfig,      // Pass targetConfig object directly without conversion  
@@ -126,7 +126,7 @@ export class TargetChoiceManager {
             } else {
                 // Auto-apply to single target or all targets (based on count)
                 const targetsToApply = availableTargets.slice(0, targetConfig.count);
-                const result = this.applyEffectToTargets(gameEnv, effect, targetsToApply, playerId, sourceCardUid, sourceCardId);
+                const result = this.applyEffectToTargets(gameEnv, effect, targetsToApply, playerId, sourceCarduid, sourceCardId);
                 
                 console.log(`🤖 Auto-applied ${effect.effectId} to ${targetsToApply.length} target(s)`);
                 return {
@@ -184,7 +184,7 @@ export class TargetChoiceManager {
                 eventData.effect,          // Use effect directly from eventData
                 selectedTargets, 
                 eventData.playerId,        // Use playerId directly from eventData
-                eventData.sourceCardUid,   // Use sourceCardUid directly from eventData
+                eventData.sourceCarduid,   // Use sourceCarduid directly from eventData
                 eventData.sourceCardId     // Use sourceCardId directly from eventData
             );
 
@@ -248,13 +248,13 @@ export class TargetChoiceManager {
                     const unit = SlotZoneUtils.getUnit(slotZone);
                     if (unit && this.validateTargetFilters(unit, targetConfig.filters || {})) {
                         targets.push({
-                            cardUid: unit.cardUid,
+                            carduid: unit.carduid,
                             cardId: unit.cardId,
                             zone: slotName,
                             playerId: targetPlayerId,
                             cardData: unit.cardData
                         });
-                        console.log(`✅ Added unit target: ${unit.cardUid} in ${slotName}`);
+                        console.log(`✅ Added unit target: ${unit.carduid} in ${slotName}`);
                     }
                 }
                 
@@ -263,13 +263,13 @@ export class TargetChoiceManager {
                     const pilot = SlotZoneUtils.getPilot(slotZone);
                     if (pilot && this.validateTargetFilters(pilot, targetConfig.filters || {})) {
                         targets.push({
-                            cardUid: pilot.cardUid,
+                            carduid: pilot.carduid,
                             cardId: pilot.cardId,
                             zone: slotName,
                             playerId: targetPlayerId,
                             cardData: pilot.cardData
                         });
-                        console.log(`✅ Added pilot target: ${pilot.cardUid} in ${slotName}`);
+                        console.log(`✅ Added pilot target: ${pilot.carduid} in ${slotName}`);
                     }
                 }
             }
@@ -287,7 +287,7 @@ export class TargetChoiceManager {
         effect: EffectDefinition,
         selectedTargets: TargetReference[],
         sourcePlayerId: string,
-        sourceCardUid?: string,
+        sourceCarduid?: string,
         sourceCardId?: string
     ): { success: boolean; error?: string } {
         
@@ -298,14 +298,14 @@ export class TargetChoiceManager {
             for (const target of selectedTargets) {
                 const result = this.applyEffectToSingleTarget(gameEnv, effect, target, sourcePlayerId);
                 if (!result.success) {
-                    console.error(`❌ Failed to apply effect to target ${target.cardUid}: ${result.error}`);
+                    console.error(`❌ Failed to apply effect to target ${target.carduid}: ${result.error}`);
                     return result;
                 }
             }
             
             // Create temporary effect if duration-based
-            if (effect.timing?.duration === 'UNTIL_END_OF_TURN' && sourceCardUid && sourceCardId) {
-                this.createTemporaryEffect(gameEnv, effect, selectedTargets, sourcePlayerId, sourceCardUid, sourceCardId);
+            if (effect.timing?.duration === 'UNTIL_END_OF_TURN' && sourceCarduid && sourceCardId) {
+                this.createTemporaryEffect(gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid, sourceCardId);
             }
             
             console.log(`✅ Successfully applied ${effect.action} to all ${selectedTargets.length} target(s)`);
@@ -330,7 +330,7 @@ export class TargetChoiceManager {
         sourcePlayerId: string
     ): { success: boolean; error?: string } {
         
-        console.log(`🎯 Applying ${effect.action} to target: ${target.cardUid} in ${target.zone}`);
+        console.log(`🎯 Applying ${effect.action} to target: ${target.carduid} in ${target.zone}`);
         
         try {
             // Get target player and slot
@@ -354,11 +354,11 @@ export class TargetChoiceManager {
             const slotZone = slotResult.slot;
             
             // Find the target card using utility function
-            const cardResult = SlotZoneUtils.findCardByUid(slotZone, target.cardUid);
+            const cardResult = SlotZoneUtils.findCardByUid(slotZone, target.carduid);
             if (!cardResult) {
                 return {
                     success: false,
-                    error: `Target card ${target.cardUid} not found in ${target.zone}`
+                    error: `Target card ${target.carduid} not found in ${target.zone}`
                 };
             }
             
@@ -369,32 +369,32 @@ export class TargetChoiceManager {
                 case 'modifyAP':
                     const apValue = effect.parameters?.value || 0;
                     targetCard.modifyAP = apValue;
-                    console.log(`⚔️ Modified ${targetCard.cardUid} AP by ${apValue}`);
+                    console.log(`⚔️ Modified ${targetCard.carduid} AP by ${apValue}`);
                     break;
                     
                 case 'modifyHP':
                     const hpValue = effect.parameters?.value || 0;
                     const originalHP = targetCard.currentHP || targetCard.cardData?.hp || 0;
                     targetCard.currentHP = Math.max(0, originalHP + hpValue);
-                    console.log(`❤️ Modified ${target.cardUid} HP by ${hpValue}, from ${originalHP} to ${targetCard.currentHP}`);
+                    console.log(`❤️ Modified ${target.carduid} HP by ${hpValue}, from ${originalHP} to ${targetCard.currentHP}`);
                     break;
                     
                 case 'damage':
                     const damageValue = effect.parameters?.value || 0;
                     targetCard.damageReceived = (targetCard.damageReceived || 0) + damageValue;
-                    console.log(`🩸 ${target.cardUid} takes ${damageValue} damage (total: ${targetCard.damageReceived})`);
+                    console.log(`🩸 ${target.carduid} takes ${damageValue} damage (total: ${targetCard.damageReceived})`);
                     break;
                     
                 case 'rest':
                     targetCard.isRested = true;
-                    console.log(`💤 ${target.cardUid} has been rested`);
+                    console.log(`💤 ${target.carduid} has been rested`);
                     break;
                     
                 case 'heal':
                     const healValue = effect.parameters?.value || 0;
                     const healAmount = Math.min(healValue, targetCard.damageReceived || 0);
                     targetCard.damageReceived = (targetCard.damageReceived || 0) - healAmount;
-                    console.log(`🩹 ${target.cardUid} healed ${healAmount} damage`);
+                    console.log(`🩹 ${target.carduid} healed ${healAmount} damage`);
                     break;
                     
                 default:
@@ -448,7 +448,7 @@ export class TargetChoiceManager {
         effect: EffectDefinition,
         selectedTargets: TargetReference[],
         sourcePlayerId: string,
-        sourceCardUid: string,
+        sourceCarduid: string,
         sourceCardId: string
     ): void {
         
@@ -471,9 +471,9 @@ export class TargetChoiceManager {
                 continue;
             }
             
-            const cardResult = SlotZoneUtils.findCardByUid(slotResult.slot, target.cardUid);
+            const cardResult = SlotZoneUtils.findCardByUid(slotResult.slot, target.carduid);
             if (!cardResult) {
-                console.log(`⚠️ Target card ${target.cardUid} not found in ${target.zone}`);
+                console.log(`⚠️ Target card ${target.carduid} not found in ${target.zone}`);
                 continue;
             }
             
@@ -481,7 +481,7 @@ export class TargetChoiceManager {
             
             // Create the temporary effect for this specific unit - use effect object directly
             const tempEffect: TemporaryEffect = {
-                sourceCardUid: sourceCardUid,
+                sourceCarduid: sourceCarduid,
                 modifyAP: effect.action === 'modifyAP' ? effect.parameters?.value : undefined,
                 modifyHP: effect.action === 'modifyHP' ? effect.parameters?.value : undefined,
                 duration: effect.timing?.duration as string || 'UNTIL_END_OF_TURN',
@@ -500,15 +500,15 @@ export class TargetChoiceManager {
             // Apply the effect immediately to the card's modifiers - use tempEffect object directly
             if (tempEffect.modifyAP !== undefined) {
                 targetCard.modifyAP = (targetCard.modifyAP || 0) + tempEffect.modifyAP;
-                console.log(`✅ Applied AP effect ${tempEffect.modifyAP} to ${target.cardUid} (new modifyAP: ${targetCard.modifyAP})`);
+                console.log(`✅ Applied AP effect ${tempEffect.modifyAP} to ${target.carduid} (new modifyAP: ${targetCard.modifyAP})`);
             }
             
             if (tempEffect.modifyHP !== undefined) {
                 targetCard.modifyHP = (targetCard.modifyHP || 0) + tempEffect.modifyHP;
-                console.log(`✅ Applied HP effect ${tempEffect.modifyHP} to ${target.cardUid} (new modifyHP: ${targetCard.modifyHP})`);
+                console.log(`✅ Applied HP effect ${tempEffect.modifyHP} to ${target.carduid} (new modifyHP: ${targetCard.modifyHP})`);
             }
             
-            console.log(`✅ Added temporary effect from ${sourceCardUid} to unit ${target.cardUid}`);
+            console.log(`✅ Added temporary effect from ${sourceCarduid} to unit ${target.carduid}`);
         }
     }
 
@@ -539,7 +539,7 @@ export class TargetChoiceManager {
                                             tempEffect.appliedBy === endingPlayerId;
                         
                         if (shouldExpire) {
-                            console.log(`⏰ Expiring temporary effect from ${tempEffect.sourceCardUid} on unit ${slot.unit!.cardUid}`);
+                            console.log(`⏰ Expiring temporary effect from ${tempEffect.sourceCarduid} on unit ${slot.unit!.carduid}`);
                             this.revertTemporaryEffectFromUnit(slot.unit!, tempEffect);
                         }
                         
@@ -557,7 +557,7 @@ export class TargetChoiceManager {
                                             tempEffect.appliedBy === endingPlayerId;
                         
                         if (shouldExpire) {
-                            console.log(`⏰ Expiring temporary effect from ${tempEffect.sourceCardUid} on pilot ${slot.pilot!.cardUid}`);
+                            console.log(`⏰ Expiring temporary effect from ${tempEffect.sourceCarduid} on pilot ${slot.pilot!.carduid}`);
                             this.revertTemporaryEffectFromUnit(slot.pilot!, tempEffect);
                         }
                         
@@ -576,19 +576,19 @@ export class TargetChoiceManager {
      * Simplified to work directly on the unit instead of searching through targets
      */
     private static revertTemporaryEffectFromUnit(unit: UnitZoneCard | PilotZoneCard, tempEffect: TemporaryEffect): void {
-        console.log(`🔄 Reverting temporary effect from ${tempEffect.sourceCardUid} on unit ${unit.cardUid}`);
+        console.log(`🔄 Reverting temporary effect from ${tempEffect.sourceCarduid} on unit ${unit.carduid}`);
         
         // Revert effects directly from the unit's modifiers
         if (tempEffect.modifyAP !== undefined) {
             const currentAP = unit.modifyAP || 0;
             unit.modifyAP = currentAP - tempEffect.modifyAP;
-            console.log(`🔄 Reverted AP modification on ${unit.cardUid}: ${currentAP} → ${unit.modifyAP}`);
+            console.log(`🔄 Reverted AP modification on ${unit.carduid}: ${currentAP} → ${unit.modifyAP}`);
         }
         
         if (tempEffect.modifyHP !== undefined) {
             const currentHP = unit.modifyHP || 0;
             unit.modifyHP = currentHP - tempEffect.modifyHP;
-            console.log(`🔄 Reverted HP modification on ${unit.cardUid}: ${currentHP} → ${unit.modifyHP}`);
+            console.log(`🔄 Reverted HP modification on ${unit.carduid}: ${currentHP} → ${unit.modifyHP}`);
         }
     }
 
@@ -618,7 +618,7 @@ export class TargetChoiceManager {
         if (filters.level) {
             const cardLevel = card.cardData?.level || 0;
             if (!this.validateComparisonFilter(cardLevel, filters.level)) {
-                console.log(`❌ Card ${card.cardUid} failed level filter: ${filters.level}`);
+                console.log(`❌ Card ${card.carduid} failed level filter: ${filters.level}`);
                 return false;
             }
         }
@@ -627,7 +627,7 @@ export class TargetChoiceManager {
         if (filters.hp) {
             const currentHp = (card.currentHP || 0) + (card.modifyHP || 0);
             if (!this.validateComparisonFilter(currentHp, filters.hp)) {
-                console.log(`❌ Card ${card.cardUid} failed HP filter: ${filters.hp}`);
+                console.log(`❌ Card ${card.carduid} failed HP filter: ${filters.hp}`);
                 return false;
             }
         }
@@ -636,7 +636,7 @@ export class TargetChoiceManager {
         if (filters.status) {
             const cardStatus = card.isRested ? 'rested' : 'active';
             if (cardStatus !== filters.status) {
-                console.log(`❌ Card ${card.cardUid} failed status filter: expected ${filters.status}, got ${cardStatus}`);
+                console.log(`❌ Card ${card.carduid} failed status filter: expected ${filters.status}, got ${cardStatus}`);
                 return false;
             }
         }
@@ -648,7 +648,7 @@ export class TargetChoiceManager {
                 cardTraits.some((cardTrait: string) => cardTrait === requiredTrait)
             );
             if (!hasRequiredTrait) {
-                console.log(`❌ Card ${card.cardUid} failed trait filter: required ${filters.traits}, has ${cardTraits}`);
+                console.log(`❌ Card ${card.carduid} failed trait filter: required ${filters.traits}, has ${cardTraits}`);
                 return false;
             }
         }

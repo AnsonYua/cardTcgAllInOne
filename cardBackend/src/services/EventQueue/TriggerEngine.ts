@@ -82,12 +82,12 @@ export class TriggerEngine {
     /**
      * Unregister triggers for a card (when card leaves play)
      */
-    unregisterTriggersForCard(cardUid: string): void {
+    unregisterTriggersForCard(carduid: string): void {
         this.registeredTriggers.forEach((triggers, eventType) => {
-            const filtered = triggers.filter(t => t.sourceCardUid !== cardUid);
+            const filtered = triggers.filter(t => t.sourceCardUid !== carduid);
             if (filtered.length !== triggers.length) {
                 this.registeredTriggers.set(eventType, filtered);
-                console.log(`🎯 Triggers unregistered for card: ${cardUid}`);
+                console.log(`🎯 Triggers unregistered for card: ${carduid}`);
             }
         });
     }
@@ -109,12 +109,12 @@ export class TriggerEngine {
     /**
      * Remove continuous effects for a card
      */
-    removeContinuousEffectsForCard(cardUid: string): void {
+    removeContinuousEffectsForCard(carduid: string): void {
         const originalLength = this.continuousEffects.length;
-        this.continuousEffects = this.continuousEffects.filter(e => e.sourceCardUid !== cardUid);
+        this.continuousEffects = this.continuousEffects.filter(e => e.sourceCardUid !== carduid);
         
         if (this.continuousEffects.length !== originalLength) {
-            console.log(`🔄 Continuous effects removed for card: ${cardUid}`);
+            console.log(`🔄 Continuous effects removed for card: ${carduid}`);
         }
     }
     
@@ -227,7 +227,7 @@ export class TriggerEngine {
     /**
      * Initialize triggers for a card entering play
      */
-    initializeCardTriggers(cardId: string, cardUid: string, playerId: string): void {
+    initializeCardTriggers(cardId: string, carduid: string, playerId: string): void {
         // TODO: Load card data and register its triggered abilities
         console.log(`🎯 Initializing triggers for card: ${cardId}`);
         
@@ -236,10 +236,10 @@ export class TriggerEngine {
         // if (cardData.abilities) {
         //     cardData.abilities.forEach(ability => {
         //         if (ability.trigger) {
-        //             this.registerTrigger(createTriggerFromAbility(ability, cardUid, playerId));
+        //             this.registerTrigger(createTriggerFromAbility(ability, carduid, playerId));
         //         }
         //         if (ability.continuous) {
-        //             this.registerContinuousEffect(createEffectFromAbility(ability, cardUid, playerId));
+        //             this.registerContinuousEffect(createEffectFromAbility(ability, carduid, playerId));
         //         }
         //     });
         // }
@@ -248,10 +248,10 @@ export class TriggerEngine {
     /**
      * Clean up triggers when card leaves play
      */
-    cleanupCardEffects(cardUid: string): void {
-        this.unregisterTriggersForCard(cardUid);
-        this.removeContinuousEffectsForCard(cardUid);
-        console.log(`🧹 Cleaned up all effects for card: ${cardUid}`);
+    cleanupCardEffects(carduid: string): void {
+        this.unregisterTriggersForCard(carduid);
+        this.removeContinuousEffectsForCard(carduid);
+        console.log(`🧹 Cleaned up all effects for card: ${carduid}`);
     }
     
     // ============ SERIALIZATION ============

@@ -603,14 +603,14 @@ export class GameLogic {
                     {
                         sequenceId: 1,
                         playerId: 'playerId_1',
-                        cardUid: 's-1',
+                        carduid: 's-1',
                         action: 'PLAY_LEADER',
                         zone: 'leader'
                     },
                     {
                         sequenceId: 2,
                         playerId: 'playerId_2',
-                        cardUid: 's-2',
+                        carduid: 's-2',
                         action: 'PLAY_LEADER',
                         zone: 'leader'
                     }
@@ -1028,7 +1028,7 @@ export class GameLogic {
      * @param gameId Game ID
      * @param playerId Player ID making the choice
      * @param eventId Event ID to confirm
-     * @param selectedTargets Array of selected target objects with cardUid, zone, playerId
+     * @param selectedTargets Array of selected target objects with carduid, zone, playerId
      */
     async confirmTargetChoice(gameId: string, playerId: string, eventId: string, selectedTargets: any[]): Promise<GameLogicResult> {
         try {
@@ -1064,14 +1064,14 @@ export class GameLogic {
             const availableTargets = event.data.availableTargets || [];
             for (const selectedTarget of selectedTargets) {
                 const isValidTarget = availableTargets.some((target: any) => 
-                    target.cardUid === selectedTarget.cardUid && 
+                    target.carduid === selectedTarget.carduid && 
                     target.zone === selectedTarget.zone && 
                     target.playerId === selectedTarget.playerId
                 );
                 if (!isValidTarget) {
                     return {
                         success: false,
-                        error: `Selected target ${selectedTarget.cardUid} in ${selectedTarget.zone} is not in available targets list`
+                        error: `Selected target ${selectedTarget.carduid} in ${selectedTarget.zone} is not in available targets list`
                     };
                 }
             }
@@ -1081,7 +1081,7 @@ export class GameLogic {
             event.data.userDecisionMade = true;
             
             console.log(`🎯 Event ${eventId} updated with ${selectedTargets.length} selected target(s):`, 
-                       selectedTargets.map(t => `${t.cardUid} in ${t.zone}`));
+                       selectedTargets.map(t => `${t.carduid} in ${t.zone}`));
             
             const processingResult = await gameEnv.processEvents();
             if (!processingResult.success) {

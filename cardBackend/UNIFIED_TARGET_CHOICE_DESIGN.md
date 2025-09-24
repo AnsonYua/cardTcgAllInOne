@@ -76,7 +76,7 @@ export interface TargetChoiceEvent extends BaseGameEvent {
         
         // Available targets (computed)
         availableTargets: Array<{
-            cardUid: string;
+            carduid: string;
             cardId: string;
             zone: string;
             playerId: string;
@@ -85,7 +85,7 @@ export interface TargetChoiceEvent extends BaseGameEvent {
         
         // User selection result
         selectedTargets?: Array<{
-            cardUid: string;
+            carduid: string;
             zone: string;
             playerId: string;
         }>;
@@ -269,7 +269,7 @@ POST /api/game/player/resolveChoice
     "choiceId": "target_choice_pairing_123",
     "selectedTargets": [
         {
-            "cardUid": "ST01-001_target",
+            "carduid": "ST01-001_target",
             "zone": "slot1",
             "playerId": "playerId_2"
         }

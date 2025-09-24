@@ -148,25 +148,25 @@ export class DeployEffectManager {
             const slot = opponent.zones[slotName];
             if (slot?.unit) {
                 const unit = slot.unit;
-                console.log(`🔍 Checking unit in ${slotName}: ${unit.cardUid} (HP: ${unit.cardData?.hp || 0}, Damage: ${unit.damageReceived || 0})`);
+                console.log(`🔍 Checking unit in ${slotName}: ${unit.carduid} (HP: ${unit.cardData?.hp || 0}, Damage: ${unit.damageReceived || 0})`);
                 
                 // Apply HP filter if specified
                 if (effect.target.filters?.hp) {
                     if (!this.validateHpFilter(unit, effect.target.filters.hp)) {
-                        console.log(`❌ Unit ${unit.cardUid} failed HP filter: ${effect.target.filters.hp}`);
+                        console.log(`❌ Unit ${unit.carduid} failed HP filter: ${effect.target.filters.hp}`);
                         continue;
                     }
                 }
                 
                 // Add valid target (simplified - just essential identifiers)
                 const targetRef = {
-                    cardUid: unit.cardUid,
+                    carduid: unit.carduid,
                     zone: slotName,
                     playerId: opponentId
                 };
                 
                 targets.push(targetRef);
-                console.log(`✅ Added valid target: ${unit.cardUid} in ${slotName}`);
+                console.log(`✅ Added valid target: ${unit.carduid} in ${slotName}`);
             }
         }
         
@@ -232,7 +232,7 @@ export class DeployEffectManager {
      * Apply deploy effect to the selected target
      */
     static applyDeployEffectToTarget(gameEnv: GameEnvironment, deployEffect: any, target: any, playerId: string): ExecutionResult {
-        console.log(`🎯 Applying deploy effect action: ${deployEffect.effect.action} to target: ${target.cardUid}`);
+        console.log(`🎯 Applying deploy effect action: ${deployEffect.effect.action} to target: ${target.carduid}`);
 
         try {
             // Validate target player using GameValidator
@@ -245,7 +245,7 @@ export class DeployEffectManager {
             }
 
             // Validate target zone and unit using GameValidator
-            const zoneValidation = GameValidator.validateTargetZone(gameEnv, target.playerId, target.zone, target.cardUid);
+            const zoneValidation = GameValidator.validateTargetZone(gameEnv, target.playerId, target.zone, target.carduid);
             if (!zoneValidation.isValid) {
                 return {
                     success: false,
@@ -263,13 +263,13 @@ export class DeployEffectManager {
             switch (deployEffect.effect.action) {
                 case "rest":
                     targetUnit.isRested = true;
-                    console.log(`💤 Unit ${target.cardUid} has been rested by deploy effect`);
+                    console.log(`💤 Unit ${target.carduid} has been rested by deploy effect`);
                     break;
 
                 case "damage":
                     const damageValue = deployEffect.effect.parameters?.value || 1;
                     targetUnit.damageReceived = (targetUnit.damageReceived || 0) + damageValue;
-                    console.log(`🩸 Unit ${target.cardUid} takes ${damageValue} damage from deploy effect (total: ${targetUnit.damageReceived})`);
+                    console.log(`🩸 Unit ${target.carduid} takes ${damageValue} damage from deploy effect (total: ${targetUnit.damageReceived})`);
                     break;
 
                 case "modifyAP":
@@ -278,7 +278,7 @@ export class DeployEffectManager {
                         targetUnit.currentAP = targetUnit.cardData?.ap || 0;
                     }
                     targetUnit.currentAP += apModifier;
-                    console.log(`⚔️ Unit ${target.cardUid} AP modified by ${apModifier} (new AP: ${targetUnit.currentAP})`);
+                    console.log(`⚔️ Unit ${target.carduid} AP modified by ${apModifier} (new AP: ${targetUnit.currentAP})`);
                     break;
 
                 case "modifyHP":
@@ -287,7 +287,7 @@ export class DeployEffectManager {
                         targetUnit.currentHP = targetUnit.cardData?.hp || 0;
                     }
                     targetUnit.currentHP += hpModifier;
-                    console.log(`❤️ Unit ${target.cardUid} HP modified by ${hpModifier} (new HP: ${targetUnit.currentHP})`);
+                    console.log(`❤️ Unit ${target.carduid} HP modified by ${hpModifier} (new HP: ${targetUnit.currentHP})`);
                     break;
 
                 default:
@@ -298,7 +298,7 @@ export class DeployEffectManager {
                     };
             }
 
-            console.log(`✅ Deploy effect ${deployEffect.effect.action} applied successfully to ${target.cardUid}`);
+            console.log(`✅ Deploy effect ${deployEffect.effect.action} applied successfully to ${target.carduid}`);
             return { success: true };
 
         } catch (error) {

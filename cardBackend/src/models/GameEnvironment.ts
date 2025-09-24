@@ -350,15 +350,15 @@ export class GameEnvironment {
     }
 
 
-    public playCard(playerId: string, cardUid: string, zone: ZoneType): boolean {
+    public playCard(playerId: string, carduid: string, zone: ZoneType): boolean {
         const player = this.getPlayer(playerId);
         if (!player) return false;
         
         // Remove card from hand
-        if (!player.playCardFromHand(cardUid)) return false;
+        if (!player.playCardFromHand(carduid)) return false;
         
         // Place in zone
-        return this.placeCardInZone(playerId, zone, cardUid);
+        return this.placeCardInZone(playerId, zone, carduid);
     }
 
     // ============ SERIALIZATION ============
