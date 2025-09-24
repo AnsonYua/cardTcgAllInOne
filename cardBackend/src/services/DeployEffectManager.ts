@@ -9,6 +9,18 @@ import { SLOT_ZONES } from '../config/gameConstants';
 import { GameValidator } from './GameValidator';
 import { TargetChoiceManager } from './TargetChoiceManager';
 
+// Import standardized interfaces
+import {
+    StandardEffectManager,
+    StandardGameEvent,
+    StandardExecutionResult,
+    ValidationResult,
+    StateChange
+} from '../interfaces/StandardizedInterfaces';
+import { getCardIdFromUid } from '../utils/CardUtils';
+import { eventDataValidator } from '../validators/EventDataValidator';
+
+// Legacy ExecutionResult for backward compatibility
 export interface ExecutionResult {
     success: boolean;
     error?: string;
@@ -17,22 +29,246 @@ export interface ExecutionResult {
 /**
  * DeployEffectManager handles Deploy (ENTERS_PLAY) effect processing
  * All effects are processed automatically with smart target selection
- * REFACTORED: Removed pendingCardSelections - no longer supports player-interactive effects
+ * REFACTORED: Now implements StandardEffectManager interface
+ * STANDARDIZED: Removed redundant cardId usage, uses carduid.split('_')[0] instead
  */
-export class DeployEffectManager {
+export class DeployEffectManager implements StandardEffectManager {
+    
+    // ============ STANDARDIZED INTERFACE IMPLEMENTATION ============
+    
+    /**
+     * Execute effect using standardized interface
+     */
+    async executeEffect(event: StandardGameEvent, gameEnv: GameEnvironment): Promise<StandardExecutionResult> {
+        const startTime = Date.now();
+        console.log(`🚀 [STANDARD] Processing Deploy effect for card ${event.data.carduid}`);
+        
+        // Validate event data
+        const validation = this.validateEffect(event, gameEnv);
+        if (!validation.isValid) {
+            return {
+                success: false,
+                effectsApplied: 0,
+                affectedCards: [],
+                stateChanges: [],
+                error: {
+                    code: 'VALIDATION_FAILED',
+                    message: `Deploy effect validation failed: ${validation.errors.join(', ')}`,
+                    carduid: event.data.carduid,
+                    playerId: event.data.playerId
+                },
+                warnings: validation.warnings,
+                metadata: {
+                    executionTime: Date.now() - startTime,
+                    manager: this.getManagerName()
+                }
+            };
+        }
+        
+        // Extract cardId from carduid - no redundant cardId field needed
+        const cardId = getCardIdFromUid(event.data.carduid);
+        console.log(`📋 Derived cardId: ${cardId} from carduid: ${event.data.carduid}`);
+        
+        const stateChanges: StateChange[] = [];
+        const affectedCards: string[] = [];
+        
+        try {
+            // Build effects data from standardized event structure
+            const effects = event.data.parameters.conditions || []; // Effects should be in conditions array
+            console.log(`📋 Processing ${effects.length} deploy effects`);
+            
+            let processedEffects = 0;
+            let failedEffects = 0;
+            
+            // Process each deploy effect
+            for (const effect of effects) {
+                console.log(`⚡ Processing Deploy effect: ${effect.type || 'unnamed'}`);
+                
+                const effectResult = await this.processStandardizedEffect(
+                    gameEnv, 
+                    event.data, 
+                    effect, 
+                    stateChanges
+                );
+                
+                if (effectResult.success) {
+                    processedEffects++;
+                    affectedCards.push(...effectResult.affectedCards);
+                    console.log(`✅ Deploy effect processed successfully`);
+                } else {
+                    failedEffects++;
+                    console.log(`❌ Deploy effect failed: ${effectResult.error}`);
+                }
+            }
+            
+            return {
+                success: processedEffects > 0,
+                effectsApplied: processedEffects,
+                affectedCards,
+                stateChanges,
+                error: failedEffects > 0 ? {
+                    code: 'PARTIAL_FAILURE',
+                    message: `${failedEffects} out of ${effects.length} effects failed`,
+                    carduid: event.data.carduid,
+                    playerId: event.data.playerId
+                } : undefined,
+                metadata: {
+                    executionTime: Date.now() - startTime,
+                    manager: this.getManagerName(),
+                    debugInfo: { processedEffects, failedEffects }
+                }
+            };
+            
+        } catch (error) {
+            console.error(`❌ Error in standardized deploy effect execution:`, error);
+            return {
+                success: false,
+                effectsApplied: 0,
+                affectedCards,
+                stateChanges,
+                error: {
+                    code: 'EXECUTION_ERROR',
+                    message: error instanceof Error ? error.message : 'Deploy effect execution failed',
+                    carduid: event.data.carduid,
+                    playerId: event.data.playerId,
+                    context: error
+                },
+                metadata: {
+                    executionTime: Date.now() - startTime,
+                    manager: this.getManagerName()
+                }
+            };
+        }
+    }
+    
+    /**
+     * Validate effect before execution
+     */
+    validateEffect(event: StandardGameEvent, gameEnv: GameEnvironment): ValidationResult {
+        const errors: string[] = [];
+        const warnings: string[] = [];
+        
+        // Validate event structure
+        const eventValidation = eventDataValidator.validateEvent(event);
+        errors.push(...eventValidation.errors);
+        warnings.push(...eventValidation.warnings);
+        
+        // Validate specific deploy effect requirements
+        if (!event.data.parameters.conditions || !Array.isArray(event.data.parameters.conditions)) {
+            warnings.push('No deploy effects found in event.data.parameters.conditions');
+        }
+        
+        // Validate player exists
+        if (!gameEnv.players[event.data.playerId]) {
+            errors.push(`Player ${event.data.playerId} not found in game environment`);
+        }
+        
+        // Validate carduid format
+        const cardId = getCardIdFromUid(event.data.carduid);
+        if (!cardId) {
+            errors.push(`Invalid carduid format: ${event.data.carduid}`);
+        }
+        
+        return {
+            isValid: errors.length === 0,
+            errors,
+            warnings
+        };
+    }
+    
+    /**
+     * Get human-readable description of effect
+     */
+    getEffectDescription(event: StandardGameEvent): string {
+        const cardId = getCardIdFromUid(event.data.carduid);
+        const effectCount = event.data.parameters.conditions?.length || 0;
+        return `Deploy effects for ${cardId}: ${effectCount} effects to process`;
+    }
+    
+    /**
+     * Get manager name for identification
+     */
+    getManagerName(): string {
+        return 'DeployEffectManager';
+    }
+    
+    // ============ STANDARDIZED HELPER METHODS ============
+    
+    /**
+     * Process individual standardized effect with state change tracking
+     */
+    private async processStandardizedEffect(
+        gameEnv: GameEnvironment,
+        eventData: any,
+        effect: any,
+        stateChanges: StateChange[]
+    ): Promise<{ success: boolean; error?: string; affectedCards: string[] }> {
+        
+        try {
+            // Process effect using unified TargetChoiceManager
+            const result = TargetChoiceManager.processEffectWithTargetChoice(
+                gameEnv,
+                eventData.playerId,
+                eventData.carduid,
+                effect
+            );
+            
+            // Track state changes for debugging
+            if (result.success && result.affectedTargets) {
+                for (const target of result.affectedTargets) {
+                    stateChanges.push({
+                        type: 'CARD_PROPERTY',
+                        carduid: target.carduid || target,
+                        property: effect.action || 'unknown',
+                        oldValue: 'unknown', // Would need to track before/after values
+                        newValue: 'modified',
+                        timestamp: Date.now()
+                    });
+                }
+            }
+            
+            return {
+                success: result.success,
+                error: result.error,
+                affectedCards: result.affectedTargets?.map(t => t.carduid || t) || []
+            };
+            
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Effect processing failed',
+                affectedCards: []
+            };
+        }
+    }
+    
+    // ============ LEGACY METHODS (BACKWARD COMPATIBILITY) ============
     
     /**
      * Process Deploy effect triggered by card entering play
-     * All effects are processed automatically with smart target selection
+     * LEGACY: Updated to eliminate redundant cardId usage
      */
     static processDeployEffect(gameEnv: GameEnvironment, eventData: any): any {
-        console.log(`🚀 Processing Deploy effects for card ${eventData.cardId} (${eventData.carduid})`);
-        console.log(`📋 Effects to process: ${eventData.effects.length}`);
+        // Extract cardId from carduid instead of using redundant cardId field
+        const cardId = getCardIdFromUid(eventData.carduid);
+        console.log(`🚀 Processing Deploy effects for card ${cardId} (carduid: ${eventData.carduid})`);
+        console.log(`📋 Effects to process: ${eventData.effects?.length || 0}`);
         
         let processedEffects = 0;
         let failedEffects = 0;
         
         try {
+            // Ensure effects array exists
+            if (!eventData.effects || !Array.isArray(eventData.effects)) {
+                console.warn(`⚠️ No effects found for card ${cardId}`);
+                return {
+                    success: true,
+                    processedEffects: 0,
+                    failedEffects: 0,
+                    message: 'No deploy effects to process'
+                };
+            }
+            
             // Process each Deploy effect automatically
             for (const effect of eventData.effects) {
                 console.log(`⚡ Processing Deploy effect: ${effect.effectId || 'unnamed'} (${effect.effect?.action})`);

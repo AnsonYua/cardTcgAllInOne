@@ -59,7 +59,7 @@ export interface JoinGameEvent extends BaseGameEvent {
 export interface PowerBoostEvent extends BaseGameEvent {
     type: EventType.RESOURCE_GAINED;
     data: {
-        cardId: string;
+        carduid: string;        // CHANGED: Use carduid instead of cardId
         value: number;
         playerId: string;
     };
@@ -116,12 +116,12 @@ export interface StepEndEvent extends BaseGameEvent {
 export interface CardEntersPlayEvent extends BaseGameEvent {
     type: EventType.CARD_ENTERS_PLAY;
     data: {
-        cardId: string;
-        carduid: string;
+        carduid: string;         // PRIMARY: Use carduid as single source of truth
         zone: string;
         playerId: string;
         wasFromHand: boolean;
         faceDown: boolean;
+        // REMOVED: cardId - use getCardIdFromUid(carduid) instead
     };
 }
 
@@ -134,9 +134,9 @@ export interface CardEntersPlayEvent extends BaseGameEvent {
 export interface CostPaidEvent extends BaseGameEvent {
     type: EventType.RESOURCE_GAINED;
     data: {
-        cardId: string;
+        carduid: string;         // CHANGED: Use carduid instead of cardId
         cost: number;
-        paymentCards: string[];
+        paymentCards: string[];  // These are carduids too
         playerId: string;
     };
 }
@@ -241,7 +241,7 @@ export interface ShieldCardAttackedEvent extends BaseGameEvent {
         attackerSlot: string;
         shieldCards: Array<{
             carduid: string;
-            cardId: string;
+            // REMOVED: cardId - use getCardIdFromUid(carduid) instead
             cardData: any;
         }>;
         attackPower: number;
@@ -281,7 +281,7 @@ export interface TargetChoiceEvent extends BaseGameEvent {
         // Available targets (computed)
         availableTargets: Array<{
             carduid: string;
-            cardId: string;
+            // REMOVED: cardId - use getCardIdFromUid(carduid) instead
             zone: string;
             playerId: string;
             cardData?: any;         // For display purposes
@@ -398,22 +398,25 @@ export class EventFactory {
     // ============ CARD LIFECYCLE EVENT FACTORIES ============
     
     static createCardEntersPlayEvent(
-        cardId: string,
-        carduid: string,
+        carduid: string,        // SIMPLIFIED: Only need carduid, derive cardId internally
         zone: string,
         playerId: string,
         wasFromHand: boolean = true,
         faceDown: boolean = false
     ): CardEntersPlayEvent {
+        // Import getCardIdFromUid at runtime to avoid circular dependencies
+        const { getCardIdFromUid } = require('../../utils/CardUtils');
+        const cardId = getCardIdFromUid(carduid);
+        
         return {
             id: `card_enters_${++this.eventIdCounter}_${Date.now()}`,
             type: EventType.CARD_ENTERS_PLAY,
             status: EventStatus.DECLARED,
             priority: EventPriority.NORMAL,
-            sourceId: cardId,
+            sourceId: cardId,      // Use derived cardId for sourceId
             playerId,
             timestamp: Date.now(),
-            data: { cardId, carduid, zone, playerId, wasFromHand, faceDown }
+            data: { carduid, zone, playerId, wasFromHand, faceDown }  // No redundant cardId
         };
     }
     
@@ -422,19 +425,22 @@ export class EventFactory {
     
     static createAbilityTriggeredEvent(
         abilityId: string,
-        sourceCardId: string,
-        sourceCarduid: string,
+        sourceCarduid: string,      // CHANGED: Removed redundant sourceCardId parameter
         playerId: string,
         triggerCondition: string,
         isOptional: boolean = false,
         targets?: string[]
     ): AbilityTriggeredEvent {
+        // Import getCardIdFromUid at runtime to avoid circular dependencies
+        const { getCardIdFromUid } = require('../../utils/CardUtils');
+        const sourceCardId = getCardIdFromUid(sourceCarduid);
+        
         return {
             id: `ability_triggered_${++this.eventIdCounter}_${Date.now()}`,
             type: EventType.TRIGGER_HEALING,
             status: EventStatus.DECLARED,
             priority: EventPriority.HIGH,
-            sourceId: sourceCardId,
+            sourceId: sourceCardId,      // Use derived sourceCardId
             playerId,
             timestamp: Date.now(),
             data: { abilityId, sourceCardId, sourceCarduid, playerId, triggerCondition, isOptional, targets }
@@ -443,18 +449,21 @@ export class EventFactory {
     
     static createAbilityActivatedEvent(
         abilityId: string,
-        sourceCardId: string,
-        sourceCarduid: string,
+        sourceCarduid: string,      // CHANGED: Removed redundant sourceCardId parameter
         playerId: string,
         cost?: number,
         targets?: string[]
     ): AbilityActivatedEvent {
+        // Import getCardIdFromUid at runtime to avoid circular dependencies
+        const { getCardIdFromUid } = require('../../utils/CardUtils');
+        const sourceCardId = getCardIdFromUid(sourceCarduid);
+        
         return {
             id: `ability_activated_${++this.eventIdCounter}_${Date.now()}`,
             type: EventType.TRIGGER_HEALING,
             status: EventStatus.DECLARED,
             priority: EventPriority.NORMAL,
-            sourceId: sourceCardId,
+            sourceId: sourceCardId,      // Use derived sourceCardId
             playerId,
             timestamp: Date.now(),
             data: { abilityId, sourceCardId, sourceCarduid, playerId, cost, targets }
@@ -519,7 +528,7 @@ export class EventFactory {
         defendingPlayerId: string,
         attackingPlayerId: string,
         attackerSlot: string,
-        shieldCards: Array<{ carduid: string; cardId: string; cardData: any }>,
+        shieldCards: Array<{ carduid: string; cardData: any }>,  // SIMPLIFIED: Removed redundant cardId
         attackPower: number
     ): ShieldCardAttackedEvent {
         return {
@@ -533,7 +542,7 @@ export class EventFactory {
                 defendingPlayerId,
                 attackingPlayerId,
                 attackerSlot,
-                shieldCards,
+                shieldCards,        // Pass simplified shieldCards without cardId
                 attackPower
             }
         };
@@ -619,6 +628,9 @@ export class EventFactory {
      * Create PLAY_CARD event for burst deploy effects
      */
     static createBurstDeployEvent(playerId: string, carduid: string, cardData: any, burstEffect: any): GameEvent {
+        // Import getCardIdFromUid at runtime to avoid circular dependencies
+        const { getCardIdFromUid } = require('../../utils/CardUtils');
+        
         // Determine playAs based on card type and burst effect - minimize conversions
         const playAs = (cardData.cardType === 'command' && burstEffect.effect?.action === 'designate_pilot') 
             ? 'pilot' 
@@ -628,7 +640,7 @@ export class EventFactory {
         const eventData = {
             playerId,                          // Pass playerId directly
             carduid: carduid,                  // Pass carduid directly
-            cardId: cardData.id || cardData.cardId,  // Extract cardId once
+            cardId: getCardIdFromUid(carduid), // CHANGED: Derive cardId from carduid instead of cardData
             cardData,                          // Pass cardData object directly
             playAs,                            // Use computed playAs value
             fromBurst: true
@@ -652,9 +664,12 @@ export class EventFactory {
      * Create Deploy effect event for processing queue
      */
     static createDeployEffectEvent(eventData: any, deployEffects: any[]): GameEvent {
+        // Import getCardIdFromUid at runtime to avoid circular dependencies
+        const { getCardIdFromUid } = require('../../utils/CardUtils');
+        
         // Create event data object directly from input to minimize conversions
         const eventDataObject = {
-            cardId: eventData.cardId,          // Pass cardId directly from eventData
+            cardId: getCardIdFromUid(eventData.carduid), // CHANGED: Derive cardId from carduid
             carduid: eventData.carduid,        // Pass carduid directly from eventData
             cardData: eventData.cardData,      // Pass cardData object directly from eventData
             playerId: eventData.playerId,      // Pass playerId directly from eventData

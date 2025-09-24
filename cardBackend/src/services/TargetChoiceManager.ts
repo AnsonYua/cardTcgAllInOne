@@ -32,7 +32,7 @@ export interface TargetConfig {
 
 export interface TargetReference {
     carduid: string;
-    cardId: string;
+    // REMOVED: cardId - use getCardIdFromUid(carduid) instead
     zone: string;
     playerId: string;
     cardData?: any;     // For display purposes
@@ -241,7 +241,6 @@ export class TargetChoiceManager {
                     if (unit && this.validateTargetFilters(unit, targetConfig.filters || {})) {
                         targets.push({
                             carduid: unit.carduid,
-                            cardId: unit.cardId,
                             zone: slotName,
                             playerId: targetPlayerId,
                             cardData: unit.cardData
@@ -256,7 +255,6 @@ export class TargetChoiceManager {
                     if (pilot && this.validateTargetFilters(pilot, targetConfig.filters || {})) {
                         targets.push({
                             carduid: pilot.carduid,
-                            cardId: pilot.cardId,
                             zone: slotName,
                             playerId: targetPlayerId,
                             cardData: pilot.cardData

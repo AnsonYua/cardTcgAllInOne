@@ -6,6 +6,17 @@ import { TargetChoiceManager } from './TargetChoiceManager';
 import { GameEvent, EventStatus, EventPriority } from './EventQueue/interfaces/GameEvent';
 import { EventType } from '../models/GameEnums';
 
+// Import standardized interfaces
+import {
+    StandardEffectManager,
+    StandardGameEvent,
+    StandardExecutionResult,
+    ValidationResult,
+    StateChange
+} from '../interfaces/StandardizedInterfaces';
+import { getCardIdFromUid } from '../utils/CardUtils';
+import { eventDataValidator } from '../validators/EventDataValidator';
+
 export interface PairingEffectResult {
     success: boolean;
     error?: string;
@@ -43,14 +54,14 @@ export interface EffectCondition {
 
 export interface SourceCard {
     carduid: string;
-    cardId: string;
+    // REMOVED: cardId - use getCardIdFromUid(carduid) instead
     cardData: any;
     cardType: 'unit' | 'pilot';
 }
 
 export interface UnitCard {
     carduid: string;
-    cardId: string;
+    // REMOVED: cardId - use getCardIdFromUid(carduid) instead
     cardData: any;
     currentAP?: number;
     currentHP?: number;
@@ -58,7 +69,7 @@ export interface UnitCard {
 
 export interface PilotCard {
     carduid: string;
-    cardId: string;
+    // REMOVED: cardId - use getCardIdFromUid(carduid) instead
     cardData: any;
     currentAP?: number;
     currentHP?: number;
@@ -131,12 +142,201 @@ export interface NotificationManager {
 
 export interface CardInfo {
     carduid: string;
-    cardId: string;
+    // REMOVED: cardId - use getCardIdFromUid(carduid) instead
     cardData: any;
     cardType: 'unit' | 'pilot';
 }
 
-export class PairingEffect {
+export class PairingEffect implements StandardEffectManager {
+    
+    // ============ STANDARDIZED INTERFACE IMPLEMENTATION ============
+    
+    /**
+     * Execute effect using standardized interface
+     */
+    async executeEffect(event: StandardGameEvent, gameEnv: GameEnvironment): Promise<StandardExecutionResult> {
+        const startTime = Date.now();
+        console.log(`🤝 [STANDARD] Processing Pairing effect for card ${event.data.carduid}`);
+        
+        // Validate event data
+        const validation = this.validateEffect(event, gameEnv);
+        if (!validation.isValid) {
+            return {
+                success: false,
+                effectsApplied: 0,
+                affectedCards: [],
+                stateChanges: [],
+                error: {
+                    code: 'VALIDATION_FAILED',
+                    message: `Pairing effect validation failed: ${validation.errors.join(', ')}`,
+                    carduid: event.data.carduid,
+                    playerId: event.data.playerId
+                },
+                warnings: validation.warnings,
+                metadata: {
+                    executionTime: Date.now() - startTime,
+                    manager: this.getManagerName()
+                }
+            };
+        }
+        
+        const stateChanges: StateChange[] = [];
+        const affectedCards: string[] = [];
+        
+        try {
+            // Extract effects from standardized event structure
+            const effects = event.data.parameters.conditions || [];
+            console.log(`🤝 Processing ${effects.length} pairing effects`);
+            
+            let processedEffects = 0;
+            
+            // Process each pairing effect
+            for (const effect of effects) {
+                console.log(`⚡ Processing Pairing effect: ${effect.type || 'unnamed'}`);
+                
+                const result = await this.processStandardizedPairingEffect(
+                    gameEnv,
+                    event.data,
+                    effect,
+                    stateChanges
+                );
+                
+                if (result.success) {
+                    processedEffects++;
+                    affectedCards.push(...result.affectedCards);
+                    console.log(`✅ Pairing effect processed successfully`);
+                }
+            }
+            
+            return {
+                success: processedEffects > 0,
+                effectsApplied: processedEffects,
+                affectedCards,
+                stateChanges,
+                metadata: {
+                    executionTime: Date.now() - startTime,
+                    manager: this.getManagerName(),
+                    debugInfo: { processedEffects, totalEffects: effects.length }
+                }
+            };
+            
+        } catch (error) {
+            console.error(`❌ Error in standardized pairing effect execution:`, error);
+            return {
+                success: false,
+                effectsApplied: 0,
+                affectedCards,
+                stateChanges,
+                error: {
+                    code: 'EXECUTION_ERROR',
+                    message: error instanceof Error ? error.message : 'Pairing effect execution failed',
+                    carduid: event.data.carduid,
+                    playerId: event.data.playerId,
+                    context: error
+                },
+                metadata: {
+                    executionTime: Date.now() - startTime,
+                    manager: this.getManagerName()
+                }
+            };
+        }
+    }
+    
+    /**
+     * Validate effect before execution
+     */
+    validateEffect(event: StandardGameEvent, gameEnv: GameEnvironment): ValidationResult {
+        const errors: string[] = [];
+        const warnings: string[] = [];
+        
+        // Validate event structure
+        const eventValidation = eventDataValidator.validateEvent(event);
+        errors.push(...eventValidation.errors);
+        warnings.push(...eventValidation.warnings);
+        
+        // Validate player exists
+        if (!gameEnv.players || !gameEnv.players[event.data.playerId]) {
+            errors.push(`Player ${event.data.playerId} not found in game environment`);
+        }
+        
+        // Validate carduid format
+        const cardId = getCardIdFromUid(event.data.carduid);
+        if (!cardId) {
+            errors.push(`Invalid carduid format: ${event.data.carduid}`);
+        }
+        
+        return {
+            isValid: errors.length === 0,
+            errors,
+            warnings
+        };
+    }
+    
+    /**
+     * Get human-readable description of effect
+     */
+    getEffectDescription(event: StandardGameEvent): string {
+        const cardId = getCardIdFromUid(event.data.carduid);
+        const effectCount = event.data.parameters.conditions?.length || 0;
+        return `Pairing effects for ${cardId}: ${effectCount} effects to process`;
+    }
+    
+    /**
+     * Get manager name for identification
+     */
+    getManagerName(): string {
+        return 'PairingEffectManager';
+    }
+    
+    // ============ STANDARDIZED HELPER METHODS ============
+    
+    /**
+     * Process individual standardized pairing effect
+     */
+    private async processStandardizedPairingEffect(
+        gameEnv: GameEnvironment,
+        eventData: any,
+        effect: any,
+        stateChanges: StateChange[]
+    ): Promise<{ success: boolean; error?: string; affectedCards: string[] }> {
+        
+        try {
+            // Use unified TargetChoiceManager for processing
+            const result = TargetChoiceManager.processEffectWithTargetChoice(
+                gameEnv,
+                eventData.playerId,
+                eventData.carduid,
+                effect
+            );
+            
+            // Track state changes
+            if (result.success && result.affectedTargets) {
+                for (const target of result.affectedTargets) {
+                    stateChanges.push({
+                        type: 'CARD_PROPERTY',
+                        carduid: target.carduid || target,
+                        property: effect.action || 'pairing_effect',
+                        oldValue: 'unknown',
+                        newValue: 'modified',
+                        timestamp: Date.now()
+                    });
+                }
+            }
+            
+            return {
+                success: result.success,
+                error: result.error,
+                affectedCards: result.affectedTargets?.map(t => t.carduid || t) || []
+            };
+            
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Pairing effect processing failed',
+                affectedCards: []
+            };
+        }
+    }
     
     // ============ DYNAMIC DATA RETRIEVAL HELPERS ============
     
@@ -201,12 +401,15 @@ export class PairingEffect {
             return null;
         }
 
-        console.log(`🤝 Checking pairing effects for Unit: ${pairedUnit.cardId}, Pilot: ${pilot.cardId}`);
+        // Derive cardIds from carduids for logging
+        const unitCardId = getCardIdFromUid(pairedUnit.carduid);
+        const pilotCardId = getCardIdFromUid(pilot.carduid);
+        console.log(`🤝 Checking pairing effects for Unit: ${unitCardId}, Pilot: ${pilotCardId}`);
 
         // Check both unit and pilot for pairing effects
         const cardsToCheck: CardInfo[] = [
-            { carduid: pairedUnit.carduid, cardId: pairedUnit.cardId, cardData: pairedUnit.cardData, cardType: 'unit' },
-            { carduid: pilot.carduid, cardId: pilot.cardId, cardData: pilot.cardData, cardType: 'pilot' }
+            { carduid: pairedUnit.carduid, cardData: pairedUnit.cardData, cardType: 'unit' },
+            { carduid: pilot.carduid, cardData: pilot.cardData, cardType: 'pilot' }
         ];
 
         for (const cardInfo of cardsToCheck) {
@@ -227,7 +430,9 @@ export class PairingEffect {
                         // ✅ Removed redundant: sourceCard, unitCard, pilotCard - can be derived from pairedSlot + sourceCarduid
                     };
                     pairingEffects.push(pairingEffect);
-                    console.log(`🔗 Found pairing effect: ${effect.effectId} from ${cardInfo.cardType} ${cardInfo.cardId} in slot ${pairedSlot}`);
+                    // Derive cardId from carduid for logging
+                    const cardId = getCardIdFromUid(cardInfo.carduid);
+                    console.log(`🔗 Found pairing effect: ${effect.effectId} from ${cardInfo.cardType} ${cardId} in slot ${pairedSlot}`);
                 }
             }
         }
@@ -384,19 +589,23 @@ export class PairingEffect {
      */
     private static hasRequiredTraits(card: UnitCard | PilotCard, requiredTraits: string[]): boolean {
         if (!card?.cardData?.traits || !Array.isArray(card.cardData.traits)) {
-            console.log(`⚠️ Card ${card?.cardId} has no traits array`);
+            // Derive cardId from carduid for logging
+            const cardId = card ? getCardIdFromUid(card.carduid) : 'unknown';
+            console.log(`⚠️ Card ${cardId} has no traits array`);
             return false;
         }
 
         const cardTraits = card.cardData.traits;
-        console.log(`🏷️ Card ${card.cardId} traits:`, cardTraits, `Required:`, requiredTraits);
+        // Derive cardId from carduid for logging
+        const cardId = getCardIdFromUid(card.carduid);
+        console.log(`🏷️ Card ${cardId} traits:`, cardTraits, `Required:`, requiredTraits);
 
         // Check if card has all required traits
         const hasAllTraits = requiredTraits.every(requiredTrait => 
             cardTraits.some((cardTrait: string) => cardTrait === requiredTrait)
         );
 
-        console.log(`✅ Trait match result for ${card.cardId}:`, hasAllTraits);
+        console.log(`✅ Trait match result for ${cardId}:`, hasAllTraits);
         return hasAllTraits;
     }
 
