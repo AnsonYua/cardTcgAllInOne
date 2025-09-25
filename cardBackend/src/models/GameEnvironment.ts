@@ -5,7 +5,7 @@ import { GamePhase, ZoneType, EventType } from './GameEnums';
 import { Player, PlayerZones, SlotZone } from './Player';
 import { ZoneCard } from './CardSystem';
 // EventManager removed - using direct event processing
-import { GameEvent, EventStatus, EventPriority, EventFactory } from '../services/EventQueue/interfaces/GameEvent';
+import { GameEvent, EventStatus, EventPriority, EventFactory, BurstEffectChoiceEvent, TargetChoiceEvent } from '../services/EventQueue/interfaces/GameEvent';
 import { ProcessingResult, ValidationResult } from './EventInterfaces';
 
 // Forward declaration to avoid circular dependency
@@ -191,12 +191,14 @@ export class GameEnvironment {
         if (nextEvent?.status === EventStatus.DECLARED) {
             // For burst choice events, check if user has already provided input
             if (nextEvent.type === EventType.BURST_EFFECT_CHOICE) {
-                return !nextEvent.data.userDecisionMade;
+                const burstChoice = nextEvent as BurstEffectChoiceEvent;
+                return !burstChoice.data.userDecisionMade;
             }
             
             // For target choice events, check if user has already provided input
             if (nextEvent.type === EventType.TARGET_CHOICE) {
-                return !nextEvent.data.userDecisionMade;
+                const targetChoice = nextEvent as TargetChoiceEvent;
+                return !targetChoice.data.userDecisionMade;
             }
         }
         

@@ -3,7 +3,7 @@
 
 import { GameEnvironment } from '../../models/GameEnvironment';
 import { GamePhase, EventType } from '../../models/GameEnums';
-import { GameEvent, EventStatus, EventPriority, EventFactory } from '../EventQueue/interfaces/GameEvent';
+import { GameEvent, EventStatus, EventPriority, EventFactory, NextPlayerTurnEvent, GameplayBeginsEvent } from '../EventQueue/interfaces/GameEvent';
 import { StateBasedAction } from '../EventQueue/StateBasedActionEngine';
 import { GameNotificationManager } from '../GameNotificationManager';
 
@@ -135,7 +135,7 @@ export class PhaseTransitionManager {
     /**
      * Execute GAMEPLAY_BEGINS event
      */
-    static executeGameplayBegins(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    static executeGameplayBegins(event: GameplayBeginsEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`🎯 Executing GAMEPLAY_BEGINS event: ${event.id}`);
         
         try {
@@ -193,7 +193,7 @@ export class PhaseTransitionManager {
     /**
      * Execute NEXT_PLAYER_TURN event
      */
-    static executeNextPlayerTurn(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    static executeNextPlayerTurn(event: NextPlayerTurnEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`🎯 Executing NEXT_PLAYER_TURN event: ${event.id}`);
         
         try {
@@ -251,11 +251,11 @@ export class PhaseTransitionManager {
         
         switch (event.type) {
             case EventType.GAMEPLAY_BEGINS:
-                return this.executeGameplayBegins(event, gameEnv);
+                return this.executeGameplayBegins(event as GameplayBeginsEvent, gameEnv);
             case EventType.PHASE_ADVANCE:
                 return this.executePhaseAdvance(event, gameEnv);
             case EventType.NEXT_PLAYER_TURN:
-                return this.executeNextPlayerTurn(event, gameEnv);
+                return this.executeNextPlayerTurn(event as NextPlayerTurnEvent, gameEnv);
             default:
                 return {
                     success: false,

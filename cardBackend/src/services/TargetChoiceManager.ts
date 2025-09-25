@@ -301,25 +301,6 @@ export class TargetChoiceManager {
     }
 
     /**
-     * Apply effect to selected targets using unified application logic
-     */
-    static applyEffectToTargets(
-        gameEnv: GameEnvironment,
-        effect: EffectDefinition,
-        selectedTargets: TargetReference[],
-        sourcePlayerId: string,
-        sourceCarduid?: string
-    ): { success: boolean; error?: string } {
-        return EffectExecutor.applyEffectToTargets(
-            gameEnv,
-            effect,
-            selectedTargets,
-            sourcePlayerId,
-            sourceCarduid
-        );
-    }
-
-    /**
      * Determine if player choice is required
      * 
      * Logic:

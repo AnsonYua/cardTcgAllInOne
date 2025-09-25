@@ -1,7 +1,7 @@
 // src/services/StaticEventProcessor.ts
 // Static event processor for simplified event system
 
-import { GameEvent, EventStatus, EventPriority } from './EventQueue/interfaces/GameEvent';
+import { GameEvent, EventStatus, EventPriority, ErrorOccurredEventData, JoinGameEvent, ConfirmRedrawEvent, TargetChoiceEvent } from './EventQueue/interfaces/GameEvent';
 import { ProcessingResult, ValidationResult } from '../models/EventInterfaces';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GameEngine } from './GameEngine';
@@ -134,11 +134,16 @@ export class StaticEventProcessor {
             }
         }
         
+        const currentChoiceEvent = gameEnv.getCurrentPlayerChoice();
+        const waitingForChoice = currentChoiceEvent && typeof currentChoiceEvent.data === 'object'
+            ? (currentChoiceEvent.data as Record<string, unknown>)['choiceId']
+            : undefined;
+
         const result: ProcessingResult = {
             success: true,
             eventsProcessed,
             needsPlayerInput: gameEnv.needsPlayerInput(),
-            waitingForChoice: gameEnv.getCurrentPlayerChoice()?.data?.selectionId
+            waitingForChoice: typeof waitingForChoice === 'string' ? waitingForChoice : undefined
         };
         
         console.log(`📊 Event processing complete: ${eventsProcessed} events processed (${iterations} iterations)`);
@@ -176,11 +181,12 @@ export class StaticEventProcessor {
             
             if (recentErrors.length > 0) {
                 const latestError = recentErrors[recentErrors.length - 1];
+                const errorData = latestError.data as ErrorOccurredEventData;
                 return {
                     success: false,
                     eventsProcessed: result.eventsProcessed,
                     needsPlayerInput: result.needsPlayerInput,
-                    error: latestError.data.errorReason || 'Validation failed'
+                    error: typeof errorData.errorReason === 'string' ? errorData.errorReason : 'Validation failed'
                 };
             }
         }
@@ -195,10 +201,10 @@ export class StaticEventProcessor {
         
         switch (event.type) {
             case EventType.JOIN_GAME:
-                return this.validateJoinGameEvent(event, gameEnv);
+                return this.validateJoinGameEvent(event as JoinGameEvent, gameEnv);
                 
             case EventType.CONFIRM_REDRAW:
-                return this.validateStartReadyEvent(event, gameEnv);
+                return this.validateStartReadyEvent(event as ConfirmRedrawEvent, gameEnv);
                 
                 
             default:
@@ -207,7 +213,7 @@ export class StaticEventProcessor {
         }
     }
     
-    private static validateJoinGameEvent(event: GameEvent, gameEnv: GameEnvironment): ValidationResult {
+    private static validateJoinGameEvent(event: JoinGameEvent, gameEnv: GameEnvironment): ValidationResult {
         const { playerId } = event.data;
         
         // Check if room is available for joining
@@ -229,7 +235,7 @@ export class StaticEventProcessor {
         return { isValid: true };
     }
     
-    private static validateStartReadyEvent(event: GameEvent, gameEnv: GameEnvironment): ValidationResult {
+    private static validateStartReadyEvent(event: ConfirmRedrawEvent, gameEnv: GameEnvironment): ValidationResult {
         const { playerId } = event;
         
         // Basic validation: Check if player exists in game
@@ -355,8 +361,8 @@ export class StaticEventProcessor {
         console.log(`🎯 Resolving player choice: ${selectionId}`);
         
         // Find pending choice event
-        const choiceEvent = gameEnv.getCurrentPlayerChoice();
-        if (!choiceEvent || choiceEvent.data.selectionId !== selectionId) {
+        const choiceEvent = gameEnv.getCurrentPlayerChoice() as TargetChoiceEvent | null;
+        if (!choiceEvent || choiceEvent.data.choiceId !== selectionId) {
             return {
                 success: false,
                 eventsProcessed: 0,
@@ -364,16 +370,16 @@ export class StaticEventProcessor {
                 error: 'No matching player choice found'
             };
         }
-        
+
         // Generate choice resolution event
         const resolveEvent: GameEvent = {
             id: `choice_resolved_${Date.now()}_${Math.random()}`,
             type: EventType.PLAYER_CHOICE_RESOLVED,
             status: EventStatus.DECLARED,
             priority: EventPriority.IMMEDIATE,
-            playerId: choiceEvent.data.playerId,
+            playerId: choiceEvent.playerId,
             timestamp: Date.now(),
-            data: { selectionId, choices, playerId: choiceEvent.data.playerId }
+            data: { choiceId: selectionId, choices, playerId: choiceEvent.playerId }
         };
         
         // Mark choice event as resolved and add resolution event

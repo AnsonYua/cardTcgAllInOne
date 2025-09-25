@@ -3,12 +3,15 @@
 
 import { GameEnvironment } from '../models/GameEnvironment';
 import { TargetChoiceManager } from './TargetChoiceManager';
+import { EffectExecutor } from './effects/EffectExecutor';
 import {
     PlayCardEventData,
     EventFactory,
     PairingEffectEvent,
     PairingEffectEventData,
-    PairingEffectDefinition
+    PairingEffectDefinition,
+    EffectTargetConfig,
+    TargetFilters
 } from './EventQueue/interfaces/GameEvent';
 import { EventType } from '../models/GameEnums';
 
@@ -38,7 +41,7 @@ export interface CardPlacementResult {
     slotName?: string;
 }
 
-export interface EffectCondition {
+export type EffectCondition = Record<string, unknown> & {
     type: string;
     target?: string;
     traits?: string[];
@@ -46,14 +49,7 @@ export interface EffectCondition {
     operator?: string;
     value?: number;
     filters?: any;
-}
-
-export interface SourceCard {
-    carduid: string;
-    // REMOVED: cardId - use getCardIdFromUid(carduid) instead
-    cardData: any;
-    cardType: 'unit' | 'pilot';
-}
+};
 
 export interface UnitCard {
     carduid: string;
@@ -73,25 +69,19 @@ export interface PilotCard {
 
 export interface PairingEffect extends PairingEffectDefinition {
     conditions?: EffectCondition[];
-    parameters?: {
-        value?: number;
-        [key: string]: any;
-    };
+    parameters?: PairingEffectParameters;
     target?: EffectTarget;
-    // Minimal data - we can derive everything else from these two fields
-    pairedSlot: string;           // Which slot the pairing occurred in
-    sourceCarduid: string;       // Which card triggered the effect
-    // Deprecated fields - will be removed after migration
-    sourceCard?: SourceCard;
-    unitCard?: UnitCard;
-    pilotCard?: PilotCard;
+}
+
+export interface PairingEffectParameters extends Record<string, unknown> {
+    value?: number;
 }
 
 export interface EffectTarget {
     scope: string;
     type?: string;
     count?: number;
-    filters?: any;
+    filters?: TargetFilters;
 }
 
 // ✅ REMOVED: FullPairingEffect interface - no longer needed after simplification
@@ -322,38 +312,6 @@ export class PairingEffectManager implements StandardEffectManager {
     // ============ DYNAMIC DATA RETRIEVAL HELPERS ============
     
     /**
-     * Get pairing data dynamically from minimal effect information
-     * ✅ IMPROVED: Single source of truth - derive all data from pairedSlot + sourceCarduid
-     */
-    private static getPairingData(effect: PairingEffect, gameEnv: GameEnvironment, playerId: string) {
-        const player = gameEnv.getPlayer(playerId);
-        if (!player?.zones) return null;
-        
-        const slotZone = (player.zones as any)[effect.pairedSlot];
-        if (!slotZone) return null;
-        
-        return {
-            unit: slotZone.unit,
-            pilot: slotZone.pilot,
-            sourceCard: this.getSourceCardFromUid(effect.sourceCarduid, slotZone),
-            slot: effect.pairedSlot
-        };
-    }
-    
-    /**
-     * Get source card data from UID
-     */
-    private static getSourceCardFromUid(sourceCarduid: string, slotZone: any) {
-        if (slotZone.unit?.carduid === sourceCarduid) {
-            return { ...slotZone.unit, cardType: 'unit' };
-        }
-        if (slotZone.pilot?.carduid === sourceCarduid) {
-            return { ...slotZone.pilot, cardType: 'pilot' };
-        }
-        return null;
-    }
-    
-    /**
      * ✅ IMPROVED: Check for pairing effects and return event directly (consolidated)
      * Eliminates intermediate step and object creation overhead
      */
@@ -398,27 +356,23 @@ export class PairingEffectManager implements StandardEffectManager {
         ];
 
         for (const cardInfo of cardsToCheck) {
-            if (!cardInfo.cardData?.effects?.rules) continue;
+            const rawRules = Array.isArray(cardInfo.cardData?.effects?.rules)
+                ? cardInfo.cardData.effects.rules
+                : [];
 
-            const cardPairingEffects = cardInfo.cardData.effects.rules.filter((rule: any) => 
-                rule.type === 'triggered' && rule.trigger === 'PAIRING_COMPLETE'
-            );
-
-            for (const effect of cardPairingEffects) {
-                // Validate conditions (e.g., trait matching)
-                if (this.validatePairingConditions(effect.conditions || [], pairedUnit, pilot, gameEnv)) {
-                    // ✅ IMPROVED: Minimal data construction using spread operator
-                    const pairingEffect: PairingEffect = {
-                        ...effect,                           // Spread all effect properties (effectId, type, trigger, action, conditions)
-                        pairedSlot: pairedSlot!,            // Required: slot where pairing occurred
-                        sourceCarduid: cardInfo.carduid     // Required: source card that triggered effect
-                        // ✅ Removed redundant: sourceCard, unitCard, pilotCard - can be derived from pairedSlot + sourceCarduid
-                    };
-                    pairingEffects.push(pairingEffect);
-                    // Derive cardId from carduid for logging
-                    const cardId = getCardIdFromUid(cardInfo.carduid);
-                    console.log(`🔗 Found pairing effect: ${effect.effectId} from ${cardInfo.cardType} ${cardId} in slot ${pairedSlot}`);
+            for (const rawRule of rawRules) {
+                const normalizedEffect = this.normalizePairingRule(rawRule, pairedSlot!, cardInfo.carduid);
+                if (!normalizedEffect) {
+                    continue;
                 }
+
+                if (!this.validatePairingConditions(normalizedEffect.conditions || [], pairedUnit, pilot, gameEnv)) {
+                    continue;
+                }
+
+                pairingEffects.push(normalizedEffect);
+                const cardId = getCardIdFromUid(cardInfo.carduid);
+                console.log(`🔗 Found pairing effect: ${normalizedEffect.effectId} from ${cardInfo.cardType} ${cardId} in slot ${pairedSlot}`);
             }
         }
 
@@ -440,14 +394,135 @@ export class PairingEffectManager implements StandardEffectManager {
         return pairingEvent;
     }
 
+    private static normalizePairingRule(rule: unknown, pairedSlot: string, sourceCarduid: string): PairingEffect | null {
+        if (!rule || typeof rule !== 'object') {
+            return null;
+        }
+
+        const raw = rule as Record<string, unknown>;
+
+        const triggerValue = raw['trigger'];
+        let trigger: string | undefined;
+        if (typeof triggerValue === 'string') {
+            trigger = triggerValue;
+        } else if (triggerValue && typeof triggerValue === 'object') {
+            const triggerRecord = triggerValue as Record<string, unknown>;
+            if (typeof triggerRecord['event'] === 'string') {
+                trigger = triggerRecord['event'] as string;
+            }
+        }
+
+        if (trigger !== 'PAIRING_COMPLETE') {
+            return null;
+        }
+
+        const action = this.extractAction(raw);
+        if (!action) {
+            console.log(`⚠️ Skipping pairing rule without actionable effect`);
+            return null;
+        }
+
+        const effectId = typeof raw['effectId'] === 'string' ? raw['effectId'] : 'pairing_effect';
+        const type = typeof raw['type'] === 'string' ? raw['type'] : undefined;
+        const optional = typeof raw['optional'] === 'boolean' ? raw['optional'] : undefined;
+        const description = raw['description'];
+
+        const pairingEffect: PairingEffect = {
+            effectId,
+            type,
+            trigger: 'PAIRING_COMPLETE',
+            optional,
+            action,
+            parameters: this.normalizeParameters(raw),
+            timing: this.normalizeTiming(raw['timing']),
+            target: this.normalizeTarget(raw['target']),
+            conditions: Array.isArray(raw['conditions']) ? raw['conditions'] as EffectCondition[] : undefined,
+            description: Array.isArray(description) || typeof description === 'string' ? description as string | string[] : undefined,
+            pairedSlot,
+            sourceCarduid
+        };
+
+        return pairingEffect;
+    }
+
+    private static extractAction(rule: Record<string, unknown>): string | undefined {
+        const directAction = rule['action'];
+        if (typeof directAction === 'string' && directAction.length > 0) {
+            return directAction;
+        }
+
+        const nestedEffect = rule['effect'];
+        if (nestedEffect && typeof nestedEffect === 'object') {
+            const nestedAction = (nestedEffect as Record<string, unknown>)['action'];
+            if (typeof nestedAction === 'string' && nestedAction.length > 0) {
+                return nestedAction;
+            }
+        }
+
+        return undefined;
+    }
+
+    private static normalizeParameters(rule: Record<string, unknown>): PairingEffectParameters | undefined {
+        const directParameters = rule['parameters'];
+        if (directParameters && typeof directParameters === 'object') {
+            return directParameters as PairingEffectParameters;
+        }
+
+        const nestedEffect = rule['effect'];
+        if (nestedEffect && typeof nestedEffect === 'object') {
+            const effectParameters = (nestedEffect as Record<string, unknown>)['parameters'];
+            if (effectParameters && typeof effectParameters === 'object') {
+                return effectParameters as PairingEffectParameters;
+            }
+        }
+
+        return undefined;
+    }
+
+    private static normalizeTiming(timingValue: unknown): PairingEffect['timing'] {
+        if (!timingValue || typeof timingValue !== 'object') {
+            return undefined;
+        }
+
+        const timing = timingValue as Record<string, unknown>;
+        const duration = typeof timing['duration'] === 'string' ? timing['duration'] : undefined;
+        const actionTurn = typeof timing['actionTurn'] === 'string' ? timing['actionTurn'] : undefined;
+
+        if (!duration && !actionTurn) {
+            return undefined;
+        }
+
+        return { duration, actionTurn };
+    }
+
+    private static normalizeTarget(targetValue: unknown): EffectTarget | undefined {
+        if (!targetValue || typeof targetValue !== 'object') {
+            return undefined;
+        }
+
+        const target = targetValue as Record<string, unknown>;
+        const scope = typeof target['scope'] === 'string' ? target['scope'] : undefined;
+        const type = typeof target['type'] === 'string' ? target['type'] : undefined;
+        const count = typeof target['count'] === 'number' ? target['count'] : undefined;
+        const filtersValue = target['filters'];
+        const filters = filtersValue && typeof filtersValue === 'object' ? filtersValue as TargetFilters : undefined;
+
+        if (!scope && !type && !count && !filters) {
+            return undefined;
+        }
+
+        return {
+            scope: scope || 'self',
+            type,
+            count,
+            filters
+        };
+    }
+
     /**
      * Process pairing effects - main processing entry point
-     *   const eventDataObject = {
-            playerId: eventData.playerId,
-            effects: pairingEffects
-        };
      */
-    static processPairingEffect(gameEnv: GameEnvironment, playerId:string, eventData: PairingEffectEventData): PairingEffectResult {
+    static processPairingEffect(gameEnv: GameEnvironment, playerId: string, eventData: PairingEffectEventData): PairingEffectResult {
         console.log(`🤝 PairingEffectManager.processPairingEffect - processing pairing effects`);
         
         try {
@@ -471,15 +546,33 @@ export class PairingEffectManager implements StandardEffectManager {
                 const { effectId } = effect;
                 
                 console.log(`⚡ Executing pairing effect: ${effectId}`);
-                
-                // Execute the effect based on its action
-                const executionResult = this.executePairingEffectAction(gameEnv, playerId, effect);
-                
-                if (!executionResult.success) {
-                    console.error(`❌ Failed to execute pairing effect ${effectId}: ${executionResult.error}`);
+                const action = EffectExecutor.getEffectAction(effect);
+
+                if (action === 'draw') {
+                    const drawResult = EffectExecutor.applyPlayerDrawEffect(gameEnv, playerId, effect);
+                    if (!drawResult.success) {
+                        console.error(`❌ Failed to execute draw effect ${effectId}: ${drawResult.error}`);
+                        continue;
+                    }
+
+                    console.log(`✅ Pairing effect ${effectId} executed successfully`);
+                    effectsProcessed++;
                     continue;
                 }
-                
+
+                const sourceCarduid = effect.sourceCarduid || eventData.carduid;
+                const choiceResult = TargetChoiceManager.processEffectWithTargetChoice(
+                    gameEnv,
+                    playerId,
+                    sourceCarduid,
+                    effect
+                );
+
+                if (!choiceResult.success && !choiceResult.requiresSelection) {
+                    console.error(`❌ Failed to execute pairing effect ${effectId}: ${choiceResult.error}`);
+                    continue;
+                }
+
                 console.log(`✅ Pairing effect ${effectId} executed successfully`);
                 effectsProcessed++;
             }
@@ -679,163 +772,6 @@ export class PairingEffectManager implements StandardEffectManager {
     }
 
     /**
-     * Execute specific pairing effect action (draw, heal, etc.)
-     * ✅ IMPROVED: Updated to use simplified PairingEffect structure
-     */
-    private static executePairingEffectAction(gameEnv: GameEnvironment, playerId: string, effect: PairingEffect): { success: boolean; error?: string } {
-        // With simplified structure, action and parameters are now directly on the effect
-        const { action, parameters = {} } = effect;
-        
-        console.log(`🎯 Executing pairing action: ${action} with parameters:`, parameters);
-
-        try {
-            switch (action) {
-                case 'draw':
-                    return this.executePairingDrawEffect(gameEnv, playerId, effect);
-                case 'heal':
-                    return this.executePairingHealEffect(gameEnv, playerId, effect);
-                case 'modifyAP':
-                    return this.executePairingModifyAPEffect(gameEnv, playerId, effect);
-                case 'modifyHP':
-                    return this.executePairingModifyHPEffect(gameEnv, playerId, effect);
-                default:
-                    console.log(`⚠️ Unknown pairing effect action: ${action}`);
-                    return {
-                        success: false,
-                        error: `Unknown pairing effect action: ${action}`
-                    };
-            }
-        } catch (error) {
-            console.error(`❌ Error executing pairing action ${action}:`, error);
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : `Failed to execute ${action}`
-            };
-        }
-    }
-
-    /**
-     * Execute draw effect from pairing
-     */
-    private static executePairingDrawEffect(gameEnv: GameEnvironment, playerId: string, effect: PairingEffect): { success: boolean; error?: string } {
-        const parameters = effect.parameters || {};
-        const drawCount = typeof parameters.value === 'number' ? parameters.value : 1;
-        const target = effect.target;
-
-        if (!target) {
-            return {
-                success: false,
-                error: 'No target specified for draw effect'
-            };
-        }
-        const targetPlayerId = target.scope === 'self' ? playerId : gameEnv.getOpponentId(playerId)!;
-        
-        if (!targetPlayerId) {
-            return {
-                success: false,
-                error: 'Could not determine target player for draw effect'
-            };
-        }
-        
-        const player = gameEnv.getPlayer(targetPlayerId);
-        if (!player || !player.deck) {
-            return {
-                success: false,
-                error: `Target player ${targetPlayerId} or deck not found`
-            };
-        }
-        
-        // Draw cards using GameEngine method
-        this.drawCards(player.deck, drawCount);
-        
-        console.log(`🃏 Drew ${drawCount} card(s) for player ${targetPlayerId} via pairing effect`);
-    
-        
-        return { success: true };
-    }
-
-    /**
-     * Execute heal effect from pairing
-     */
-    private static executePairingHealEffect(gameEnv: GameEnvironment, playerId: string, effect: PairingEffect): { success: boolean; error?: string } {
-        const parameters = effect.parameters || {};
-        const healAmount = typeof parameters.value === 'number' ? parameters.value : 0;
-        console.log(`🩹 Executing pairing heal effect: ${healAmount} HP`);
-        
-        // Use existing CardEffect system for healing
-        const { CardEffect } = require('./CardEffect');
-        const healData = {
-            cardId: this.getPairingData(effect, gameEnv, playerId)?.unit?.cardId || 'unknown',
-            playerId: playerId,
-            healAmount: healAmount,
-            effectId: effect.effectId,
-            triggeredByPairing: true
-        };
-        
-        const result = CardEffect.executeRepairEffect(gameEnv, healData);
-        
-        if (!result.success) {
-            console.log(`❌ Pairing heal effect failed: ${result.error}`);
-            return result;
-        }
-        
-        console.log(`✅ Pairing heal effect executed: ${result.message}`);
-        return result;
-    }
-
-    /**
-     * Execute AP modification effect from pairing using unified TARGET_CHOICE system
-     * Now supports player choice for strategic target selection (e.g., ST01-006)
-     */
-    private static executePairingModifyAPEffect(gameEnv: GameEnvironment, playerId: string, effect: PairingEffect): { success: boolean; error?: string } {
-        const parameters = effect.parameters || {};
-        const modifyAmount = typeof parameters.value === 'number' ? parameters.value : 0;
-        const target = effect.target;
-
-        if (!target) {
-            return {
-                success: false,
-                error: 'No target specified for AP modification effect'
-            };
-        }
-        console.log(`⚔️ Executing pairing AP modification: ${modifyAmount > 0 ? '+' : ''}${modifyAmount} AP on ${target.scope} targets`);
-        
-        try {
-            const normalizedTarget = target;
-            const targetConfig = {
-                type: (normalizedTarget?.type as 'unit' | 'pilot' | 'card') || 'unit',
-                scope: (normalizedTarget?.scope as 'any' | 'self' | 'opponent') || 'self',
-                count: normalizedTarget?.count && normalizedTarget.count > 0 ? normalizedTarget.count : 1,
-                filters: normalizedTarget?.filters || {}
-            };
-
-            const normalizedEffect = { ...(effect as any), target: targetConfig };
-            const pairingData = this.getPairingData(effect, gameEnv, playerId);
-            const sourceCarduid = effect.sourceCarduid || pairingData?.unit?.carduid || 'unknown';
-
-            // Use unified TargetChoiceManager directly with normalized structure
-            const result = TargetChoiceManager.processEffectWithTargetChoice(
-                gameEnv,
-                playerId,
-                sourceCarduid,
-                normalizedEffect
-            );
-            
-            // Return result directly - no unnecessary conversions
-            return {
-                success: result.success,
-                error: result.error
-            };
-            
-        } catch (error) {
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : 'Pairing AP modification failed'
-            };
-        }
-    }
-    
-    /**
      * Find eligible targets based on target filters
      */
     private static findEligibleTargets(player: PlayerZones, target: EffectTarget): (UnitCard & { cardData?: any })[] {
@@ -874,61 +810,6 @@ export class PairingEffectManager implements StandardEffectManager {
         // Add more filter types as needed (hp, traits, etc.)
         
         return true;
-    }
-
-    /**
-     * Execute HP modification effect from pairing
-     */
-    private static executePairingModifyHPEffect(gameEnv: GameEnvironment, playerId: string, effect: PairingEffect): { success: boolean; error?: string } {
-        const parameters = effect.parameters || {};
-        const modifyAmount = typeof parameters.value === 'number' ? parameters.value : 0;
-        console.log(`❤️ Executing pairing HP modification: ${modifyAmount > 0 ? '+' : ''}${modifyAmount} HP`);
-        
-        // Find the paired unit to modify
-        const player = gameEnv.getPlayer(playerId);
-        if (!player) {
-            return {
-                success: false,
-                error: `Player ${playerId} not found`
-            };
-        }
-        
-        // ✅ IMPROVED: Use dynamic data retrieval instead of stored objects
-        const pairingData = this.getPairingData(effect, gameEnv, playerId);
-        if (!pairingData?.unit) {
-            return {
-                success: false,
-                error: `Could not find unit in slot ${effect.pairedSlot} for HP modification`
-            };
-        }
-        const pairedUnit = pairingData.unit;
-        if (!pairingData.unit) {
-            return {
-                success: false,
-                error: `Could not find paired unit for HP modification`
-            };
-        }
-        
-        // Apply HP modification
-        if (pairedUnit) {
-            pairedUnit.currentHP = Math.max(0, (pairedUnit.currentHP || pairedUnit.cardData?.hp || 0) + modifyAmount);
-        }
-        
-        console.log(`✅ Modified ${pairingData.unit.cardId} HP by ${modifyAmount}, new HP: ${pairedUnit?.currentHP}`);
-        return { success: true };
-    }
-
-    /**
-     * Helper method for drawing cards (similar to GameEngine implementation)
-     */
-    private static drawCards(deck: any, count: number): void {
-        for (let i = 0; i < count && deck.mainDeck.length > 0; i++) {
-            const drawnCard = deck.mainDeck.shift();
-            if (drawnCard) {
-                deck._handUids.push(drawnCard);
-            }
-        }
-        console.log(`🃏 Drew ${count} cards, hand size: ${deck._handUids.length}`);
     }
 
     /**

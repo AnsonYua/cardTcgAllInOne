@@ -3,7 +3,7 @@
 
 import { GameEnvironment } from '../../models/GameEnvironment';
 import { UnitZoneCard, PilotZoneCard, TemporaryEffect } from '../../models/CardSystem';
-import { EffectDefinition, EffectTiming, TargetReference } from '../EventQueue/interfaces/GameEvent';
+import { EffectDefinition, EffectTiming, TargetReference, TargetScope } from '../EventQueue/interfaces/GameEvent';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { SLOT_ZONES } from '../../config/gameConstants';
 
@@ -28,25 +28,46 @@ export class EffectExecutor {
             };
         }
 
+        if (action === 'draw') {
+            return this.applyPlayerDrawEffect(gameEnv, sourcePlayerId, effect);
+        }
+
         const parameters = this.getEffectParameters(effect);
         const timing = this.getEffectTiming(effect);
 
         console.log(`⚡ Applying effect ${action} to ${selectedTargets.length} target(s)`);
 
         try {
+            const successfullyApplied: TargetReference[] = [];
+
             for (const target of selectedTargets) {
-                const result = this.applyEffectToSingleTarget(gameEnv, effect, target, sourcePlayerId, action, parameters);
-                if (!result.success) {
-                    console.error(`❌ Failed to apply effect to target ${target.carduid}: ${result.error}`);
-                    return result;
+                const resolvedTarget = this.resolveTargetCard(gameEnv, target);
+                if (!resolvedTarget) {
+                    return {
+                        success: false,
+                        error: `Target card ${target.carduid} not found in zone ${target.zone}`
+                    };
                 }
+
+                const applyResult = this.applyEffectToResolvedCard(
+                    resolvedTarget.card,
+                    action,
+                    parameters,
+                    target
+                );
+
+                if (!applyResult.success) {
+                    return applyResult;
+                }
+
+                successfullyApplied.push(target);
             }
 
-            if (timing?.duration === 'UNTIL_END_OF_TURN' && sourceCarduid) {
-                this.createTemporaryEffect(gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid);
+            if (timing?.duration === 'UNTIL_END_OF_TURN' && sourceCarduid && successfullyApplied.length > 0) {
+                this.createTemporaryEffect(gameEnv, effect, successfullyApplied, sourcePlayerId, sourceCarduid);
             }
 
-            console.log(`✅ Successfully applied ${action} to all ${selectedTargets.length} target(s)`);
+            console.log(`✅ Successfully applied ${action} to ${successfullyApplied.length} target(s)`);
             return { success: true };
 
         } catch (error) {
@@ -56,6 +77,42 @@ export class EffectExecutor {
                 error: error instanceof Error ? error.message : 'Effect application failed'
             };
         }
+    }
+
+    static applyPlayerDrawEffect(gameEnv: GameEnvironment, sourcePlayerId: string, effect: EffectDefinition): { success: boolean; error?: string } {
+        const parameters = this.getEffectParameters(effect);
+        const drawCount = this.extractNumericValue(parameters) ?? 1;
+
+        if (drawCount <= 0) {
+            return {
+                success: false,
+                error: 'Draw effect requires a positive value'
+            };
+        }
+
+        const targetPlayerIds = this.resolvePlayerIdsForScope(gameEnv, sourcePlayerId, effect.target?.scope);
+        if (targetPlayerIds.length === 0) {
+            return {
+                success: false,
+                error: 'No eligible player targets for draw effect'
+            };
+        }
+
+        for (const targetPlayerId of targetPlayerIds) {
+            const player = gameEnv.getPlayer(targetPlayerId);
+            if (!player?.deck) {
+                console.error(`❌ Player ${targetPlayerId} deck not found for draw effect`);
+                return {
+                    success: false,
+                    error: `Player ${targetPlayerId} deck not found`
+                };
+            }
+
+            this.drawCardsIntoHand(player.deck, drawCount);
+        }
+
+        console.log(`🃏 Applied draw effect (${drawCount}) to players: ${targetPlayerIds.join(', ')}`);
+        return { success: true };
     }
 
     /**
@@ -117,82 +174,6 @@ export class EffectExecutor {
         return effect.timing;
     }
 
-    private static applyEffectToSingleTarget(
-        gameEnv: GameEnvironment,
-        effect: EffectDefinition,
-        target: TargetReference,
-        sourcePlayerId: string,
-        action: string,
-        parameters?: Record<string, unknown>
-    ): { success: boolean; error?: string } {
-
-        console.log(`🎯 Applying ${action} to target: ${target.carduid} in ${target.zone}`);
-
-        try {
-            const targetPlayer = gameEnv.getPlayer(target.playerId);
-            if (!targetPlayer) {
-                return { success: false, error: `Target player ${target.playerId} not found` };
-            }
-
-            const slotResult = SlotZoneUtils.getSlotZone(targetPlayer.zones, target.zone);
-            if (!slotResult.isValid || !slotResult.slot) {
-                return { success: false, error: `Target zone ${target.zone} not found or invalid: ${slotResult.error}` };
-            }
-
-            const cardResult = SlotZoneUtils.findCardByUid(slotResult.slot, target.carduid);
-            if (!cardResult) {
-                return { success: false, error: `Target card ${target.carduid} not found in ${target.zone}` };
-            }
-
-            const targetCard = cardResult.card;
-
-            switch (action) {
-                case 'modifyAP': {
-                    const apValue = typeof parameters?.value === 'number' ? parameters.value : 0;
-                    targetCard.modifyAP = apValue;
-                    console.log(`⚔️ Modified ${targetCard.carduid} AP by ${apValue}`);
-                    break;
-                }
-                case 'modifyHP': {
-                    const hpValue = typeof parameters?.value === 'number' ? parameters.value : 0;
-                    const originalHP = targetCard.currentHP || targetCard.cardData?.hp || 0;
-                    targetCard.currentHP = Math.max(0, originalHP + hpValue);
-                    console.log(`❤️ Modified ${target.carduid} HP by ${hpValue}, from ${originalHP} to ${targetCard.currentHP}`);
-                    break;
-                }
-                case 'damage': {
-                    const damageValue = typeof parameters?.value === 'number' ? parameters.value : 0;
-                    targetCard.damageReceived = (targetCard.damageReceived || 0) + damageValue;
-                    console.log(`🩸 ${target.carduid} takes ${damageValue} damage (total: ${targetCard.damageReceived})`);
-                    break;
-                }
-                case 'rest':
-                    targetCard.isRested = true;
-                    console.log(`💤 ${target.carduid} has been rested`);
-                    break;
-                case 'heal': {
-                    const healValue = typeof parameters?.value === 'number' ? parameters.value : 0;
-                    const healAmount = Math.min(healValue, targetCard.damageReceived || 0);
-                    targetCard.damageReceived = (targetCard.damageReceived || 0) - healAmount;
-                    console.log(`🩹 ${target.carduid} healed ${healAmount} damage`);
-                    break;
-                }
-                default:
-                    console.log(`⚠️ Unknown effect action: ${action}`);
-                    return { success: false, error: `Unknown effect action: ${action}` };
-            }
-
-            return { success: true };
-
-        } catch (error) {
-            console.error(`❌ Error applying effect to single target:`, error);
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : 'Single target effect application failed'
-            };
-        }
-    }
-
     private static createTemporaryEffect(
         gameEnv: GameEnvironment,
         effect: EffectDefinition,
@@ -225,10 +206,12 @@ export class EffectExecutor {
             const targetCard = cardResult.card as UnitZoneCard | PilotZoneCard;
             const parameters = effect.parameters || effect.effect?.parameters || {};
 
+            const parameterValue = parameters['value'];
+
             const tempEffect: TemporaryEffect = {
                 sourceCarduid,
-                modifyAP: effect.action === 'modifyAP' && typeof parameters.value === 'number' ? parameters.value : undefined,
-                modifyHP: effect.action === 'modifyHP' && typeof parameters.value === 'number' ? parameters.value : undefined,
+                modifyAP: effect.action === 'modifyAP' && typeof parameterValue === 'number' ? parameterValue : undefined,
+                modifyHP: effect.action === 'modifyHP' && typeof parameterValue === 'number' ? parameterValue : undefined,
                 duration: effect.timing?.duration || 'UNTIL_END_OF_TURN',
                 appliedTurn: gameEnv.currentTurn,
                 appliedBy: sourcePlayerId
@@ -239,19 +222,243 @@ export class EffectExecutor {
             }
 
             targetCard.temporaryEffects.push(tempEffect);
-
-            if (tempEffect.modifyAP !== undefined) {
-                targetCard.modifyAP = (targetCard.modifyAP || 0) + tempEffect.modifyAP;
-                console.log(`✅ Applied AP effect ${tempEffect.modifyAP} to ${target.carduid} (new modifyAP: ${targetCard.modifyAP})`);
-            }
-
-            if (tempEffect.modifyHP !== undefined) {
-                targetCard.modifyHP = (targetCard.modifyHP || 0) + tempEffect.modifyHP;
-                console.log(`✅ Applied HP effect ${tempEffect.modifyHP} to ${target.carduid} (new modifyHP: ${targetCard.modifyHP})`);
-            }
-
             console.log(`✅ Added temporary effect from ${sourceCarduid} to unit ${target.carduid}`);
         }
+    }
+
+    private static resolveTargetCard(
+        gameEnv: GameEnvironment,
+        target: TargetReference
+    ): { card: UnitZoneCard | PilotZoneCard; cardType: 'unit' | 'pilot'; slotName: string } | null {
+        const targetPlayer = gameEnv.getPlayer(target.playerId);
+        if (!targetPlayer) {
+            console.error(`❌ Target player ${target.playerId} not found`);
+            return null;
+        }
+
+        const slotResult = SlotZoneUtils.getSlotZone(targetPlayer.zones, target.zone);
+        if (!slotResult.isValid || !slotResult.slot) {
+            console.log(`⚠️ Target zone ${target.zone} not found: ${slotResult.error}`);
+            return null;
+        }
+
+        const cardResult = SlotZoneUtils.findCardByUid(slotResult.slot, target.carduid);
+        if (!cardResult) {
+            console.log(`⚠️ Target card ${target.carduid} not found in ${target.zone}`);
+            return null;
+        }
+
+        return {
+            card: cardResult.card as UnitZoneCard | PilotZoneCard,
+            cardType: cardResult.type,
+            slotName: target.zone
+        };
+    }
+
+    private static applyEffectToResolvedCard(
+        targetCard: UnitZoneCard | PilotZoneCard,
+        action: string,
+        parameters: Record<string, unknown> | undefined,
+        target: TargetReference
+    ): { success: boolean; error?: string } {
+        switch (action) {
+            case 'modifyAP':
+            case 'modifyHP':
+                return this.applyModifyStat(targetCard, action, parameters, target);
+
+            case 'heal':
+                return this.applyHealToCard(targetCard, parameters, target);
+
+            case 'damage':
+                return this.applyDamageToCard(targetCard, parameters, target);
+
+            case 'rest':
+                return this.applyRestState(targetCard, true, target);
+
+            case 'setActive':
+                return this.applyRestState(targetCard, false, target);
+
+            default:
+                console.log(`⚠️ Unsupported effect action: ${action}`);
+                return {
+                    success: false,
+                    error: `Unsupported effect action: ${action}`
+                };
+        }
+    }
+
+    private static applyModifyStat(
+        targetCard: UnitZoneCard | PilotZoneCard,
+        action: 'modifyAP' | 'modifyHP',
+        parameters: Record<string, unknown> | undefined,
+        target: TargetReference
+    ): { success: boolean; error?: string } {
+        const value = this.extractNumericValue(parameters);
+        if (value === undefined) {
+            return {
+                success: false,
+                error: `${action} effect requires numeric value`
+            };
+        }
+
+        const property = action === 'modifyAP' ? 'modifyAP' : 'modifyHP';
+        const previousValue = (targetCard as any)[property] || 0;
+        (targetCard as any)[property] = previousValue + value;
+
+        console.log(`  ⚙️ ${target.carduid}: ${property} ${previousValue} → ${(targetCard as any)[property]} (${value > 0 ? '+' : ''}${value})`);
+        return { success: true };
+    }
+
+    private static applyHealToCard(
+        targetCard: UnitZoneCard | PilotZoneCard,
+        parameters: Record<string, unknown> | undefined,
+        target: TargetReference
+    ): { success: boolean; error?: string } {
+        const value = this.extractNumericValue(parameters);
+        if (value === undefined) {
+            return {
+                success: false,
+                error: 'Heal effect requires numeric value'
+            };
+        }
+
+        const maxHP = targetCard.cardData?.hp ?? targetCard.originalHP ?? targetCard.currentHP ?? 0;
+        if (maxHP === 0) {
+            return {
+                success: false,
+                error: `Card ${target.carduid} has no HP information`
+            };
+        }
+
+        const currentHP = typeof targetCard.currentHP === 'number' ? targetCard.currentHP : maxHP;
+        const newHP = Math.min(maxHP, currentHP + value);
+        targetCard.currentHP = newHP;
+
+        if (typeof (targetCard as any).damageReceived === 'number') {
+            const previousDamage = (targetCard as any).damageReceived;
+            (targetCard as any).damageReceived = Math.max(0, previousDamage - value);
+        }
+
+        console.log(`  🩹 ${target.carduid}: HP ${currentHP} → ${newHP}`);
+        return { success: true };
+    }
+
+    private static applyDamageToCard(
+        targetCard: UnitZoneCard | PilotZoneCard,
+        parameters: Record<string, unknown> | undefined,
+        target: TargetReference
+    ): { success: boolean; error?: string } {
+        const value = this.extractNumericValue(parameters);
+        if (value === undefined) {
+            return {
+                success: false,
+                error: 'Damage effect requires numeric value'
+            };
+        }
+
+        const maxHP = targetCard.cardData?.hp ?? targetCard.originalHP ?? targetCard.currentHP ?? 0;
+        if (maxHP === 0) {
+            return {
+                success: false,
+                error: `Card ${target.carduid} has no HP information`
+            };
+        }
+
+        const currentHP = typeof targetCard.currentHP === 'number' ? targetCard.currentHP : maxHP;
+        const newHP = Math.max(0, currentHP - value);
+        targetCard.currentHP = newHP;
+
+        const previousDamage = typeof (targetCard as any).damageReceived === 'number'
+            ? (targetCard as any).damageReceived
+            : 0;
+        (targetCard as any).damageReceived = previousDamage + value;
+
+        console.log(`  💥 ${target.carduid}: HP ${currentHP} → ${newHP} (damage ${value})`);
+        return { success: true };
+    }
+
+    private static applyRestState(
+        targetCard: UnitZoneCard | PilotZoneCard,
+        shouldRest: boolean,
+        target: TargetReference
+    ): { success: boolean; error?: string } {
+        targetCard.isRested = shouldRest;
+        console.log(`  😌 ${target.carduid}: ${shouldRest ? 'rested' : 'activated'}`);
+        return { success: true };
+    }
+
+    private static extractNumericValue(parameters?: Record<string, unknown>): number | undefined {
+        if (!parameters) {
+            return undefined;
+        }
+
+        const rawValue =
+            parameters['value'] ??
+            parameters['amount'] ??
+            parameters['modifier'];
+        if (typeof rawValue === 'number') {
+            return rawValue;
+        }
+
+        if (typeof rawValue === 'string') {
+            const parsed = Number(rawValue);
+            return Number.isNaN(parsed) ? undefined : parsed;
+        }
+
+        return undefined;
+    }
+
+    private static resolvePlayerIdsForScope(
+        gameEnv: GameEnvironment,
+        sourcePlayerId: string,
+        scope: TargetScope | string | undefined
+    ): string[] {
+        if (!scope || scope === 'self' || scope === 'SELF') {
+            return [sourcePlayerId];
+        }
+
+        if (scope === 'opponent' || scope === 'OPPONENT') {
+            const opponentId = gameEnv.getOpponentId(sourcePlayerId);
+            return opponentId ? [opponentId] : [];
+        }
+
+        if (scope === 'any' || scope === 'both') {
+            const opponentId = gameEnv.getOpponentId(sourcePlayerId);
+            return opponentId ? [sourcePlayerId, opponentId] : [sourcePlayerId];
+        }
+
+        // Fallback: treat custom scopes (e.g., self_all_unit) as self to avoid silent failures
+        return [sourcePlayerId];
+    }
+
+    private static drawCardsIntoHand(deck: any, count: number): void {
+        if (!deck || !Array.isArray(deck.mainDeck)) {
+            throw new Error('Deck structure invalid for draw effect');
+        }
+
+        if (!Array.isArray(deck._handUids)) {
+            deck._handUids = Array.isArray(deck.handUids) ? [...deck.handUids] : [];
+        }
+
+        if (!Array.isArray(deck.handUids)) {
+            deck.handUids = Array.isArray(deck._handUids) ? [...deck._handUids] : [];
+        }
+
+        for (let i = 0; i < count && deck.mainDeck.length > 0; i++) {
+            const drawnCard = deck.mainDeck.shift();
+            if (!drawnCard) continue;
+
+            if (!deck._handUids.includes(drawnCard)) {
+                deck._handUids.push(drawnCard);
+            }
+
+            if (Array.isArray(deck.handUids) && !deck.handUids.includes(drawnCard)) {
+                deck.handUids.push(drawnCard);
+            }
+        }
+
+        const handSize = Array.isArray(deck.handUids) ? deck.handUids.length : deck._handUids.length;
+        console.log(`🃏 Deck draw complete. Hand size: ${handSize}`);
     }
 
     private static removeExpiredEffectsFromCard(

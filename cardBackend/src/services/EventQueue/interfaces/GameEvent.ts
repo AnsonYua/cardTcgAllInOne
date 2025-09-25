@@ -15,7 +15,7 @@ export enum EventPriority {
     LOW = 3
 }
 
-export interface BaseGameEvent {
+export interface BaseGameEvent<TData = unknown> {
     id: string;
     type: EventType;
     status: EventStatus;
@@ -23,7 +23,7 @@ export interface BaseGameEvent {
     sourceId?: string;
     playerId: string;
     timestamp: number;
-    data: any;
+    data: TData;
     reactionsPolled?: boolean;
 }
 
@@ -48,6 +48,16 @@ export interface JoinGameEvent extends BaseGameEvent {
     };
 }
 
+export interface ConfirmRedrawEventData {
+    playerId: string;
+    gameId: string;
+    isRedraw: boolean;
+}
+
+export interface ConfirmRedrawEvent extends BaseGameEvent<ConfirmRedrawEventData> {
+    type: EventType.CONFIRM_REDRAW;
+}
+
 export interface PowerBoostEvent extends BaseGameEvent {
     type: EventType.RESOURCE_GAINED;
     data: {
@@ -55,6 +65,17 @@ export interface PowerBoostEvent extends BaseGameEvent {
         value: number;
         playerId: string;
     };
+}
+
+export interface GameplayBeginsEventData {
+    actionId?: string;
+    description?: string;
+    affectedPlayers?: string[];
+    [key: string]: unknown;
+}
+
+export interface GameplayBeginsEvent extends BaseGameEvent<GameplayBeginsEventData> {
+    type: EventType.GAMEPLAY_BEGINS;
 }
 
 // ============ LOGICAL GAME FLOW EVENTS ============
@@ -104,7 +125,7 @@ export interface StepEndEvent extends BaseGameEvent {
 }
 
 export interface PlayCardEventData {
-    gameId: string;
+    gameId?: string;
     carduid: string;
     playAs: string;
     targetUnit?: string;
@@ -113,9 +134,8 @@ export interface PlayCardEventData {
     [key: string]: unknown;
 }
 
-export interface PlayCardEvent extends BaseGameEvent {
+export interface PlayCardEvent extends BaseGameEvent<PlayCardEventData> {
     type: EventType.PLAY_CARD;
-    data: PlayCardEventData;
 }
 
 export interface TargetFilters {
@@ -179,30 +199,22 @@ export interface DeployEffectEventData {
     effects: EffectDefinition[];
 }
 
-export interface DeployEffectEvent extends BaseGameEvent {
+export interface DeployEffectEvent extends BaseGameEvent<DeployEffectEventData> {
     type: EventType.DEPLOY_EFFECT_TRIGGERED;
-    data: DeployEffectEventData;
 }
 
-export interface PairingEffectDefinition {
-    effectId: string;
-    type?: string;
-    trigger?: string;
-    action?: string;
-    conditions?: any[];
-    parameters?: any;
-    target?: any;
+export interface PairingEffectDefinition extends EffectDefinition {
     pairedSlot: string;
     sourceCarduid: string;
 }
 
 export interface PairingEffectEventData {
+    carduid: string;
     effects: PairingEffectDefinition[];
 }
 
-export interface PairingEffectEvent extends BaseGameEvent {
+export interface PairingEffectEvent extends BaseGameEvent<PairingEffectEventData> {
     type: EventType.PAIRING_EFFECT_TRIGGERED;
-    data: PairingEffectEventData;
 }
 
 // ============ CARD LIFECYCLE EVENTS ============
@@ -277,9 +289,8 @@ export interface RepairEffectEventData {
     healAmount: number;
 }
 
-export interface RepairEffectEvent extends BaseGameEvent {
+export interface RepairEffectEvent extends BaseGameEvent<RepairEffectEventData> {
     type: EventType.TRIGGER_HEALING;
-    data: RepairEffectEventData;
 }
 
 // ============ COMBAT EVENTS ============
@@ -318,12 +329,37 @@ export interface StateBasedActionEvent extends BaseGameEvent {
     };
 }
 
+export interface ErrorOccurredEventData {
+    errorType: string;
+    errorReason: string;
+    playerId?: string;
+    originalEventType?: EventType;
+    originalEventId?: string;
+    [key: string]: unknown;
+}
+
+export interface ErrorOccurredEvent extends BaseGameEvent<ErrorOccurredEventData> {
+    type: EventType.ERROR_OCCURRED;
+}
+
+export interface PlayerActionEventData {
+    playerId: string;
+    actionType: string;
+    fromBurst?: boolean;
+    [key: string]: unknown;
+}
+
+export interface PlayerActionEvent extends BaseGameEvent<PlayerActionEventData> {
+    type: EventType.PLAYER_ACTION;
+}
+
 export interface EndTurnEvent extends BaseGameEvent {
     type: EventType.END_TURN;
     data: {
         playerId: string;
         currentTurnNumber: number;
         timestamp: number;
+        fromBurst?: boolean;
     };
 }
 
@@ -379,9 +415,8 @@ export interface TargetChoiceEventData {
     selectedTargets?: TargetChoiceSelection[];
 }
 
-export interface TargetChoiceEvent extends BaseGameEvent {
+export interface TargetChoiceEvent extends BaseGameEvent<TargetChoiceEventData> {
     type: EventType.TARGET_CHOICE;
-    data: TargetChoiceEventData;
 }
 
 export type GameEvent = 
@@ -391,6 +426,10 @@ export type GameEvent =
     | RepairEffectEvent
     | PairingEffectEvent
     | PowerBoostEvent
+    | ConfirmRedrawEvent
+    | GameplayBeginsEvent
+    | ErrorOccurredEvent
+    | PlayerActionEvent
     | TurnStartEvent
     | TurnEndEvent 
     | StepBeginEvent
@@ -406,7 +445,7 @@ export type GameEvent =
     | EndTurnEvent
     | StartGameEvent
     | JoinGameEvent
-    | BaseGameEvent
+    | BaseGameEvent<unknown>
     | NextPlayerTurnEvent
     | ShieldCardAttackedEvent
     | BurstEffectChoiceEvent
@@ -461,7 +500,7 @@ export class EventFactory {
 
     static createPlayCardEvent(
         playerId: string,
-        gameId: string,
+        gameId: string | undefined,
         carduid: string,
         playAs: string,
         targetUnit?: string,
@@ -473,9 +512,9 @@ export class EventFactory {
         }
 
         const eventData: PlayCardEventData = {
-            gameId,
             carduid,
             playAs,
+            ...(typeof gameId === 'string' && gameId.length > 0 ? { gameId } : {}),
             ...(typeof targetUnit === 'string' ? { targetUnit } : {}),
             ...sanitizedExtras
         };
@@ -738,6 +777,7 @@ export class EventFactory {
     ): PairingEffectEvent {
 
         const eventData: PairingEffectEventData = {
+            carduid,
             effects: pairingEffects
         };
 
@@ -758,7 +798,7 @@ export class EventFactory {
     /**
      * Create PLAY_CARD event for burst deploy effects
      */
-    static createBurstDeployEvent(playerId: string, carduid: string, cardData: any, burstEffect: any): GameEvent {
+    static createBurstDeployEvent(playerId: string, carduid: string, cardData: any, burstEffect: any): PlayCardEvent {
         // Import getCardIdFromUid at runtime to avoid circular dependencies
         const { getCardIdFromUid } = require('../../utils/CardUtils');
         
@@ -768,23 +808,22 @@ export class EventFactory {
             : cardData.cardType;
 
         // Create data object directly to minimize conversions
-        const eventData = {
-            playerId,                          // Pass playerId directly
-            carduid: carduid,                  // Pass carduid directly
-            cardId: getCardIdFromUid(carduid), // CHANGED: Derive cardId from carduid instead of cardData
-            cardData,                          // Pass cardData object directly
-            playAs,                            // Use computed playAs value
-            fromBurst: true
+        const eventData: PlayCardEventData = {
+            carduid,
+            playAs,
+            fromBurst: true,
+            cardId: getCardIdFromUid(carduid),
+            cardData
         };
 
-        const playCardEvent: GameEvent = {
+        const playCardEvent: PlayCardEvent = {
             id: `burst_deploy_${Date.now()}_${Math.random()}`,
             type: EventType.PLAY_CARD,
             status: EventStatus.DECLARED,
             priority: EventPriority.NORMAL,
             timestamp: Date.now(),
             playerId,
-            data: eventData                    // Pass eventData object directly
+            data: eventData
         };
 
         console.log(`🚀 Created burst deploy PLAY_CARD event: ${playCardEvent.id} (playAs: ${playAs})`);
@@ -806,16 +845,16 @@ export class EventFactory {
     /**
      * Create base event structure with common fields
      */
-    static createBaseEvent(
+    static createBaseEvent<TData>(
         type: EventType,
         playerId: string,
-        data: any,
+        data: TData,
         options: {
             id?: string;
             status?: EventStatus;
             priority?: EventPriority;
         } = {}
-    ): GameEvent {
+    ): BaseGameEvent<TData> {
         return {
             id: options.id || this.generateEventId(type.toLowerCase()),
             type: type,

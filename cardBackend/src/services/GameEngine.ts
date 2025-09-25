@@ -3,7 +3,9 @@
 
 import { GameEvent, AcknowledgeEventsEvent, PlayCardEvent, PlayCardEventData, 
     EventFactory, EventStatus,
-     EventPriority, DeployEffectEvent,DeployEffectEventData, TargetChoiceEvent } from './EventQueue/interfaces/GameEvent';
+     EventPriority, DeployEffectEvent,DeployEffectEventData, TargetChoiceEvent, PairingEffectEvent,
+     ConfirmRedrawEvent, GameplayBeginsEvent, ErrorOccurredEvent, BurstEffectChoiceEvent, ShieldCardAttackedEvent,
+     StartGameEvent, JoinGameEvent, NextPlayerTurnEvent, EndTurnEvent, PlayerActionEvent } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase, EventType } from '../models/GameEnums';
 import { EnergyManager } from './EnergyManager';
@@ -22,6 +24,7 @@ import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { CardEffect } from './CardEffect';
 import * as fs from 'fs';
 import * as path from 'path';
+import { getCardIdFromUid } from '../utils/CardUtils';
 
 export interface ExecutionResult {
     success: boolean;
@@ -45,19 +48,19 @@ export class GameEngine {
         try {
             switch (event.type) {
                 case EventType.CREATE_GAME:
-                    return GameEngine.executeStartGame(event, gameEnv);
+                    return GameEngine.executeStartGame(event as StartGameEvent, gameEnv);
 
                 case EventType.JOIN_GAME:
-                    return GameEngine.executeJoinGame(event, gameEnv);
+                    return GameEngine.executeJoinGame(event as JoinGameEvent, gameEnv);
 
                 case EventType.CONFIRM_REDRAW:
-                    return GameEngine.executeStartReady(event, gameEnv);
+                    return GameEngine.executeStartReady(event as ConfirmRedrawEvent, gameEnv);
 
                 case EventType.GAMEPLAY_BEGINS:
-                    return GameEngine.executeGameStart(event, gameEnv);
+                    return GameEngine.executeGameStart(event as GameplayBeginsEvent, gameEnv);
 
                 case EventType.ERROR_OCCURRED:
-                    return GameEngine.executeErrorEvent(event, gameEnv);
+                    return GameEngine.executeErrorEvent(event as ErrorOccurredEvent, gameEnv);
 
                 case EventType.ACKNOWLEDGE_EVENTS:
                     return GameEngine.executeAcknowledgeEvents(event as AcknowledgeEventsEvent, gameEnv);
@@ -66,22 +69,22 @@ export class GameEngine {
                     return PhaseTransitionManager.executePhaseAdvance(event, gameEnv);
 
                 case EventType.END_TURN:
-                    return GameEngine.executeEndTurn(event, gameEnv);
+                    return GameEngine.executeEndTurn(event as EndTurnEvent, gameEnv);
 
                 case EventType.NEXT_PLAYER_TURN:
-                    return GameEngine.executeNextPlayerTurn(event, gameEnv);
+                    return GameEngine.executeNextPlayerTurn(event as NextPlayerTurnEvent, gameEnv);
 
                 case EventType.PLAY_CARD:
                     return GameEngine.executePlayCard(event as PlayCardEvent, gameEnv);
 
                 case EventType.PLAYER_ACTION:
-                    return GameEngine.executePlayerAction(event, gameEnv);
+                    return GameEngine.executePlayerAction(event as PlayerActionEvent, gameEnv);
 
                 case EventType.SHIELD_CARD_ATTACKED:
-                    return GameEngine.executeShieldCardAttacked(event, gameEnv);
+                    return GameEngine.executeShieldCardAttacked(event as ShieldCardAttackedEvent, gameEnv);
 
                 case EventType.BURST_EFFECT_CHOICE:
-                    return GameEngine.executeBurstEffectChoice(event, gameEnv);
+                    return GameEngine.executeBurstEffectChoice(event as BurstEffectChoiceEvent, gameEnv);
 
                 case EventType.DEPLOY_EFFECT_TRIGGERED:
                     return DeployEffectManager.executeDeployEffect(event as DeployEffectEvent, gameEnv);
@@ -90,7 +93,7 @@ export class GameEngine {
                     return TargetChoiceManager.executeTargetChoice(event as TargetChoiceEvent, gameEnv);
 
                 case EventType.PAIRING_EFFECT_TRIGGERED:
-                    return GameEngine.executePairingEffect(event, gameEnv);
+                    return GameEngine.executePairingEffect(event as PairingEffectEvent, gameEnv);
 
                 case EventType.TRIGGER_HEALING:
                     return GameEngine.executeCardEffectTriggered(event, gameEnv);
@@ -110,7 +113,7 @@ export class GameEngine {
 
     // ============ EVENT-SPECIFIC EXECUTION METHODS ============
 
-    private static executeStartGame(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executeStartGame(event: StartGameEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`🎯 Processing CREATE_GAME event for player: ${event.data.playerId}`);
 
         try {
@@ -133,7 +136,7 @@ export class GameEngine {
         }
     }
 
-    private static executeJoinGame(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executeJoinGame(event: JoinGameEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`🎯 Processing JOIN_GAME event for player: ${event.data.playerId}`);
 
         try {
@@ -158,7 +161,7 @@ export class GameEngine {
         }
     }
 
-    private static executeStartReady(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executeStartReady(event: ConfirmRedrawEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`🎯 Processing CONFIRM_REDRAW event for player: ${event.data.playerId}, isRedraw: ${event.data.isRedraw}`);
 
         try {
@@ -213,7 +216,7 @@ export class GameEngine {
     }
 
 
-    private static executeErrorEvent(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executeErrorEvent(event: ErrorOccurredEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`💥 Processing error: ${event.data.errorType} - ${event.data.errorReason}`);
 
         try {
@@ -333,7 +336,7 @@ export class GameEngine {
         return shuffled;
     }
 
-    private static executeGameStart(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executeGameStart(event: GameplayBeginsEvent, gameEnv: GameEnvironment): ExecutionResult {
         const { actionId, description, affectedPlayers } = event.data;
 
         console.log(`🎯 Processing GAME_START state-based action: ${description}`);
@@ -400,7 +403,7 @@ export class GameEngine {
 
     // ============ END TURN SYSTEM ============
 
-    private static executeEndTurn(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executeEndTurn(event: EndTurnEvent, gameEnv: GameEnvironment): ExecutionResult {
         const { playerId, currentTurnNumber } = event.data;
         const fromBurst = event.data.fromBurst || false;
 
@@ -438,7 +441,7 @@ export class GameEngine {
         }
     }
 
-    private static executeNextPlayerTurn(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executeNextPlayerTurn(event: NextPlayerTurnEvent, gameEnv: GameEnvironment): ExecutionResult {
         const { currentPlayer, nextPlayer, currentTurn } = event.data;
         console.log("current event in nextplayer 111", JSON.stringify(event))
         console.log(`🔄 Processing NEXT_PLAYER_TURN event: ${currentPlayer} → ${nextPlayer}, turn: ${currentTurn} → ${currentTurn + 1}`);
@@ -649,8 +652,7 @@ export class GameEngine {
 
 
 
-    private static executePlayerAction(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
-        // Pass event data directly to minimize conversions
+    private static executePlayerAction(event: PlayerActionEvent, gameEnv: GameEnvironment): ExecutionResult {
         const eventData = event.data;
         const fromBurst = eventData.fromBurst || false;
 
@@ -977,7 +979,7 @@ export class GameEngine {
      * Execute shield card attacked event - handles card effects processing
      * This is where burst effects like burst_add_to_hand are processed
      */
-    private static executeShieldCardAttacked(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executeShieldCardAttacked(event: ShieldCardAttackedEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`🛡️ Executing SHIELD_CARD_ATTACKED event: ${event.id}`);
 
         try {
@@ -997,12 +999,13 @@ export class GameEngine {
             // Process each attacked shield card
             for (const shieldCard of shieldCards) {
                 console.log(`🛡️ Processing shield card: ${shieldCard.carduid}`);
+                const shieldCardId = getCardIdFromUid(shieldCard.carduid);
 
                 // Check if card has burst effects with BURST_CONDITION trigger
                 const burstEffects = GameEngine.findBurstEffects(shieldCard.cardData);
 
                 if (burstEffects.length > 0) {
-                    console.log(`💥 Found ${burstEffects.length} burst effect(s) on card ${shieldCard.cardId}`);
+                    console.log(`💥 Found ${burstEffects.length} burst effect(s) on card ${shieldCardId}`);
 
                     // Create choice events for each burst effect requiring user confirmation
                     for (const burstEffect of burstEffects) {
@@ -1023,7 +1026,7 @@ export class GameEngine {
                         console.log(`📤 Enqueued burst choice event: ${choiceEvent.id}`);
                     }
                 } else {
-                    console.log(`📝 No burst effects found on card ${shieldCard.cardId}`);
+                    console.log(`📝 No burst effects found on card ${shieldCardId}`);
 
                     // Move card to trash if no burst effects
                     console.log(`🗑️ Moving card ${shieldCard.carduid} to trash (no burst effects)`);
@@ -1037,7 +1040,7 @@ export class GameEngine {
                         GameEngine.restoreCardType(cardDataForTrash);
 
                         // Move to trash
-                        PlayerCardManager.moveCardToTrash(gameEnv, defendingPlayerId, shieldCard.carduid, shieldCard.cardId, cardDataForTrash);
+                        PlayerCardManager.moveCardToTrash(gameEnv, defendingPlayerId, shieldCard.carduid, shieldCardId, cardDataForTrash);
                     } else {
                         console.error(`❌ Failed to remove card ${shieldCard.carduid} from shield before moving to trash`);
                     }
@@ -1066,7 +1069,7 @@ export class GameEngine {
      * @param event - The burst effect choice event (must be RESOLVING status)
      * @param gameEnv - Current game environment
      */
-    private static executeBurstEffectChoice(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executeBurstEffectChoice(event: BurstEffectChoiceEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`💥 Executing BURST_EFFECT_CHOICE event: ${event.id} (${event.status})`);
 
         try {
@@ -1169,12 +1172,12 @@ export class GameEngine {
     /**
      * Execute Pairing effect triggered by unit+pilot pairing
      */
-    private static executePairingEffect(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executePairingEffect(event: PairingEffectEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`🤝 Executing PAIRING_EFFECT_TRIGGERED event: ${event.id}`);
 
         try {
             // Use PairingEffectManager to process the pairing effects
-            const result = PairingEffectManager.processPairingEffect(gameEnv, event.playerId,event.data);
+            const result = PairingEffectManager.processPairingEffect(gameEnv, event.playerId, event.data);
 
             if (!result.success) {
                 console.log(`❌ Pairing effect processing failed: ${result.error}`);

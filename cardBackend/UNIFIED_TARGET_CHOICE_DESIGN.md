@@ -319,7 +319,6 @@ POST /api/game/player/resolveChoice
 ### Unit Tests
 - `TargetChoiceManager.generateAvailableTargets()` with various filters
 - `TargetChoiceManager.validateTargetFilters()` with edge cases
-- `TargetChoiceManager.applyEffectToTargets()` with different effect types
 
 ### Integration Tests  
 - ST01-006 pairing effect with multiple eligible targets

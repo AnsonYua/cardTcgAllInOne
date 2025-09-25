@@ -10,6 +10,7 @@ import { Request, Response } from 'express';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase, ZoneType, PlayerActionType, EventType } from '../models/GameEnums';
 import { EventFactory, GameEvent, EventStatus, EventPriority } from './EventQueue/index';
+import { BurstEffectChoiceEvent, TargetChoiceEvent } from './EventQueue/interfaces/GameEvent';
 import { PlayerAction } from '../models/EventInterfaces';
 import { StaticEventProcessor } from './StaticEventProcessor';
 
@@ -958,7 +959,7 @@ export class GameLogic {
             }
             
             // Find the event in processing queue
-            const event = gameEnv.findEventById(eventId);
+            const event = gameEnv.findEventById(eventId) as BurstEffectChoiceEvent | undefined;
             if (!event) {
                 return {
                     success: false,
@@ -985,7 +986,7 @@ export class GameLogic {
             // Update event with user choice (don't change status - let processing loop handle it)
             event.data.userDecisionMade = true;
             event.data.userDecision = confirmed ? 'ACTIVATE' : 'DECLINE';
-            event.data.confirmedAt = Date.now();
+            (event.data as Record<string, unknown>)['confirmedAt'] = Date.now();
             
             console.log(`🎯 Event ${eventId} updated with user choice: ${confirmed ? 'ACTIVATE' : 'DECLINE'}`);
             
@@ -1041,7 +1042,7 @@ export class GameLogic {
             }
 
             // Find the target choice event
-            const event = gameEnv.processingQueue.find(e => e.id === eventId);
+            const event = gameEnv.processingQueue.find(e => e.id === eventId) as TargetChoiceEvent | undefined;
             if (!event) {
                 return {
                     success: false,
