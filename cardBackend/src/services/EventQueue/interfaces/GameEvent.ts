@@ -109,7 +109,6 @@ export interface PlayCardEventData {
     playAs: string;
     targetUnit?: string;
     fromBurst?: boolean;
-    cardId?: string;
     slotName?: string;
     [key: string]: unknown;
 }
@@ -183,6 +182,27 @@ export interface DeployEffectEventData {
 export interface DeployEffectEvent extends BaseGameEvent {
     type: EventType.DEPLOY_EFFECT_TRIGGERED;
     data: DeployEffectEventData;
+}
+
+export interface PairingEffectDefinition {
+    effectId: string;
+    type?: string;
+    trigger?: string;
+    action?: string;
+    conditions?: any[];
+    parameters?: any;
+    target?: any;
+    pairedSlot: string;
+    sourceCarduid: string;
+}
+
+export interface PairingEffectEventData {
+    effects: PairingEffectDefinition[];
+}
+
+export interface PairingEffectEvent extends BaseGameEvent {
+    type: EventType.PAIRING_EFFECT_TRIGGERED;
+    data: PairingEffectEventData;
 }
 
 // ============ CARD LIFECYCLE EVENTS ============
@@ -370,6 +390,7 @@ export type GameEvent =
     | PlayCardEvent
     | DeployEffectEvent
     | RepairEffectEvent
+    | PairingEffectEvent
     | PowerBoostEvent
     | TurnStartEvent
     | TurnEndEvent 
@@ -712,20 +733,23 @@ export class EventFactory {
     /**
      * Create Pairing effect event for processing queue
      */
-    static createPairingEffectEvent(eventData: any, pairingEffects: any[], placementResult: any): GameEvent {
-        // Pass objects directly without reconstruction to minimize conversions
-        const eventDataObject = {
-            playerId: eventData.playerId,  // Pass playerId directly from eventData
-            effects: pairingEffects        // Pass effects array directly
+    static createPairingEffectEvent(
+        playerId: string,
+        carduid: string,
+        pairingEffects: PairingEffectDefinition[]
+    ): PairingEffectEvent {
+
+        const eventData: PairingEffectEventData = {
+            effects: pairingEffects
         };
 
-        const pairingEvent: GameEvent = {
-            id: `pairing_${eventData.carduid}_${Date.now()}`,
+        const pairingEvent: PairingEffectEvent = {
+            id: `pairing_${carduid}_${Date.now()}`,
             type: EventType.PAIRING_EFFECT_TRIGGERED,
             status: EventStatus.DECLARED,
             priority: EventPriority.NORMAL,
-            playerId: eventData.playerId,
-            data: eventDataObject,          // Pass eventDataObject directly
+            playerId,
+            data: eventData,
             timestamp: Date.now()
         };
 

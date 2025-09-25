@@ -610,7 +610,7 @@ export class GameEngine {
             // ✅ IMPROVED: Check for Pairing effects and get event directly (consolidated)
             if (placementResult.isOnPair) {
                 console.log(`🤝 Pairing detected - checking for pairing effects`);
-                const pairingEvent = PairingEffectManager.checkForPairingEffectsEvent(eventData, placementResult, gameEnv, playerId);
+                const pairingEvent = PairingEffectManager.checkForPairingEffectsEvent(eventData, gameEnv, playerId);
                 if (pairingEvent) {
                     gameEnv.processingQueue.push(pairingEvent);
                     console.log(`📋 Pairing event queued: ${pairingEvent.id}`);
@@ -1174,7 +1174,7 @@ export class GameEngine {
 
         try {
             // Use PairingEffectManager to process the pairing effects
-            const result = PairingEffectManager.processPairingEffect(gameEnv, event.data);
+            const result = PairingEffectManager.processPairingEffect(gameEnv, event.playerId,event.data);
 
             if (!result.success) {
                 console.log(`❌ Pairing effect processing failed: ${result.error}`);

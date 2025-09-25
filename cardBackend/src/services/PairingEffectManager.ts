@@ -3,7 +3,13 @@
 
 import { GameEnvironment } from '../models/GameEnvironment';
 import { TargetChoiceManager } from './TargetChoiceManager';
-import { GameEvent, EventStatus, EventPriority, PlayCardEventData } from './EventQueue/interfaces/GameEvent';
+import {
+    PlayCardEventData,
+    EventFactory,
+    PairingEffectEvent,
+    PairingEffectEventData,
+    PairingEffectDefinition
+} from './EventQueue/interfaces/GameEvent';
 import { EventType } from '../models/GameEnums';
 
 // Import standardized interfaces
@@ -65,11 +71,7 @@ export interface PilotCard {
     currentHP?: number;
 }
 
-export interface PairingEffect {
-    effectId: string;
-    type: string;
-    trigger: string;
-    action?: string;
+export interface PairingEffect extends PairingEffectDefinition {
     conditions?: EffectCondition[];
     parameters?: {
         value?: number;
@@ -83,19 +85,6 @@ export interface PairingEffect {
     sourceCard?: SourceCard;
     unitCard?: UnitCard;
     pilotCard?: PilotCard;
-}
-
-export interface PairingEventData {
-    playerId: string;
-    effects: PairingEffect[];
-}
-
-export interface EffectDefinition {
-    action: string;
-    parameters: {
-        value?: number;
-        [key: string]: any;
-    };
 }
 
 export interface EffectTarget {
@@ -370,10 +359,9 @@ export class PairingEffectManager implements StandardEffectManager {
      */
     static checkForPairingEffectsEvent(
         eventData: PlayCardEventData,
-        placementResult: CardPlacementResult,
         gameEnv: GameEnvironment,
         playerId: string
-    ): GameEvent | null {
+    ): PairingEffectEvent | null {
         console.log("PairingEffectManager.checkForPairingEffects - pairing detected, checking for triggered effects");
         
         const pairingEffects: PairingEffect[] = [];
@@ -442,21 +430,12 @@ export class PairingEffectManager implements StandardEffectManager {
         }
         
         // Create event directly instead of returning array
-        const eventDataObject = {
+        const pairingEvent = EventFactory.createPairingEffectEvent(
             playerId,
-            effects: pairingEffects
-        };
-        
-        const pairingEvent: GameEvent = {
-            id: `pairing_${eventData.carduid}_${Date.now()}`,
-            type: EventType.PAIRING_EFFECT_TRIGGERED,
-            status: EventStatus.DECLARED,
-            priority: EventPriority.NORMAL,
-            playerId,
-            data: eventDataObject,
-            timestamp: Date.now()
-        };
-        
+            eventData.carduid,
+            pairingEffects
+        );
+
         console.log(`🤝 Created Pairing event: ${pairingEvent.id} with ${pairingEffects.length} effects`);
         return pairingEvent;
     }
@@ -468,13 +447,14 @@ export class PairingEffectManager implements StandardEffectManager {
             effects: pairingEffects
         };
      */
-    static processPairingEffect(gameEnv: GameEnvironment, eventData: PairingEventData): PairingEffectResult {
+    static processPairingEffect(gameEnv: GameEnvironment, playerId:string, eventData: PairingEffectEventData): PairingEffectResult {
         console.log(`🤝 PairingEffectManager.processPairingEffect - processing pairing effects`);
         
         try {
-            const { playerId, effects } = eventData;
+            const { effects } = eventData;
+            const pairingEffects = effects as PairingEffect[];
             
-            if (!effects || effects.length === 0) {
+            if (!pairingEffects || pairingEffects.length === 0) {
                 console.log(`⚠️ No pairing effects to process`);
                 return { 
                     success: true, 
@@ -483,11 +463,11 @@ export class PairingEffectManager implements StandardEffectManager {
                 };
             }
             
-            console.log(`🔗 Processing ${effects.length} pairing effect(s) for player ${playerId}`);
+            console.log(`🔗 Processing ${pairingEffects.length} pairing effect(s) for player ${playerId}`);
             let effectsProcessed = 0;
             
             // Process each pairing effect (no tracking needed - re-pairing is impossible)
-            for (const effect of effects) {
+            for (const effect of pairingEffects) {
                 const { effectId } = effect;
                 
                 console.log(`⚡ Executing pairing effect: ${effectId}`);
