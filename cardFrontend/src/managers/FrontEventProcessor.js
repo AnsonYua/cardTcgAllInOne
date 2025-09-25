@@ -85,9 +85,8 @@ export default class FrontEventProcessor {
     // Filter by player if required
     if (requiresPlayerMatch) {
       const currentPlayerId = this.gameStateManager.gameState.playerId;
-      events = events.filter(event => event.data?.playerId === currentPlayerId);
+      events = events.filter(event => event?.playerId === currentPlayerId);
     }
-    
     console.log(`[FrontEventProcessor] Found ${events.length} ${eventType} events (playerMatch: ${requiresPlayerMatch})`);
     return events;
   }

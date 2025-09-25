@@ -684,31 +684,6 @@ export class CardEffect {
     }
 
 
-
-    /**
-     * Apply effect to all units owned by a specific player
-     */
-    static applyEffectToPlayerUnits(playerId: string, action: string, value: number, gameEnv: GameEnvironment): boolean {
-        const player = gameEnv.players[playerId];
-        if (!player?.zones) return false;
-        
-        let applied = false;
-        
-        // Apply to all units in slot zones (units only, not pilots)
-        for (const slotName of SLOT_ZONES) {
-            const slot = (player.zones as any)[slotName];
-            
-            // Apply to unit if present (self_all_unit scope specifically targets units)
-            if (slot?.unit) {
-                if (CardEffect.applyEffectToCard(slot.unit, action, value)) {
-                    applied = true;
-                }
-            }
-        }
-        
-        return applied;
-    }
-
     /**
      * Apply effect to a single card
      */

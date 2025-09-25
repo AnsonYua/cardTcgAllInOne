@@ -15,7 +15,6 @@ import {
     EventStatus,
     EffectDefinition,
     EffectTargetConfig,
-    EffectTiming,
     TargetChoiceEvent,
     TargetChoiceSelection,
     TargetFilters,
@@ -26,8 +25,9 @@ import {
 import { EventType } from '../models/GameEnums';
 import { SLOT_ZONES } from '../config/gameConstants';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
-import { TemporaryEffect, UnitZoneCard, PilotZoneCard } from '../models/CardSystem';
+import { UnitZoneCard, PilotZoneCard } from '../models/CardSystem';
 import { v4 as uuidv4 } from 'uuid';
+import { EffectExecutor } from './effects/EffectExecutor';
 
 interface ResolvedTargetConfig {
     type: TargetType;
@@ -65,7 +65,7 @@ export class TargetChoiceManager {
         sourceCarduid: string,
         effect: EffectDefinition
     ): TargetChoiceResult {
-        const effectAction = this.getEffectAction(effect);
+        const effectAction = EffectExecutor.getEffectAction(effect);
         const effectLabel = effect.effectId || effectAction || 'unknown';
         console.log(`🎯 Processing effect ${effectLabel} requiring target selection`);
 
@@ -106,7 +106,7 @@ export class TargetChoiceManager {
             } else {
                 // Auto-apply to single target or all targets (based on count)
                 const targetsToApply = availableTargets.slice(0, targetConfig.count);
-                const result = this.applyEffectToTargets(gameEnv, effect, targetsToApply, playerId, sourceCarduid, sourceCardId);
+                const result = EffectExecutor.applyEffectToTargets(gameEnv, effect, targetsToApply, playerId, sourceCarduid);
                 
                 console.log(`🤖 Auto-applied ${effect.effectId} to ${targetsToApply.length} target(s)`);
                 return {
@@ -166,13 +166,12 @@ export class TargetChoiceManager {
             }));
 
             // Apply effect to selected targets - pass eventData object directly to minimize conversions
-            const result = this.applyEffectToTargets(
+            const result = EffectExecutor.applyEffectToTargets(
                 gameEnv,
                 eventData.effect,
                 normalizedTargets,
-                eventData.playerId,
-                eventData.sourceCarduid,
-                this.deriveSourceCardId(eventData.sourceCarduid)
+                event.playerId,
+                eventData.sourceCarduid
             );
 
             if (!result.success) {
@@ -309,146 +308,15 @@ export class TargetChoiceManager {
         effect: EffectDefinition,
         selectedTargets: TargetReference[],
         sourcePlayerId: string,
-        sourceCarduid?: string,
-        sourceCardId?: string
+        sourceCarduid?: string
     ): { success: boolean; error?: string } {
-        
-        const action = this.getEffectAction(effect);
-        if (!action) {
-            return {
-                success: false,
-                error: 'Effect action is undefined'
-            };
-        }
-
-        const parameters = this.getEffectParameters(effect);
-        const timing = this.getEffectTiming(effect);
-
-        console.log(`⚡ Applying effect ${action} to ${selectedTargets.length} target(s)`);
-        
-        try {
-            // Apply immediate effect to all targets
-            for (const target of selectedTargets) {
-                const result = this.applyEffectToSingleTarget(gameEnv, effect, target, sourcePlayerId, action, parameters);
-                if (!result.success) {
-                    console.error(`❌ Failed to apply effect to target ${target.carduid}: ${result.error}`);
-                    return result;
-                }
-            }
-            
-            // Create temporary effect if duration-based
-            if (timing?.duration === 'UNTIL_END_OF_TURN' && sourceCarduid && sourceCardId) {
-                this.createTemporaryEffect(gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid, sourceCardId, action, parameters, timing);
-            }
-            
-            console.log(`✅ Successfully applied ${action} to all ${selectedTargets.length} target(s)`);
-            return { success: true };
-            
-        } catch (error) {
-            console.error(`❌ Error applying effect to targets:`, error);
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : 'Effect application failed'
-            };
-        }
-    }
-
-    /**
-     * Apply effect to a single target - unified logic for all effect types
-     */
-    private static applyEffectToSingleTarget(
-        gameEnv: GameEnvironment,
-        effect: EffectDefinition,
-        target: TargetReference,
-        sourcePlayerId: string,
-        action: string,
-        parameters?: Record<string, unknown>
-    ): { success: boolean; error?: string } {
-        
-        console.log(`🎯 Applying ${action} to target: ${target.carduid} in ${target.zone}`);
-        
-        try {
-            // Get target player and slot
-            const targetPlayer = gameEnv.getPlayer(target.playerId);
-            if (!targetPlayer) {
-                return {
-                    success: false,
-                    error: `Target player ${target.playerId} not found`
-                };
-            }
-            
-            // Use type-safe slot validation
-            const slotResult = SlotZoneUtils.getSlotZone(targetPlayer.zones, target.zone);
-            if (!slotResult.isValid || !slotResult.slot) {
-                return {
-                    success: false,
-                    error: `Target zone ${target.zone} not found or invalid: ${slotResult.error}`
-                };
-            }
-            
-            const slotZone = slotResult.slot;
-            
-            // Find the target card using utility function
-            const cardResult = SlotZoneUtils.findCardByUid(slotZone, target.carduid);
-            if (!cardResult) {
-                return {
-                    success: false,
-                    error: `Target card ${target.carduid} not found in ${target.zone}`
-                };
-            }
-            
-            const targetCard = cardResult.card;
-            
-            // Apply effect based on action type - use effect object directly to minimize conversions
-            switch (action) {
-                case 'modifyAP':
-                    const apValue = typeof parameters?.value === 'number' ? parameters.value : 0;
-                    targetCard.modifyAP = apValue;
-                    console.log(`⚔️ Modified ${targetCard.carduid} AP by ${apValue}`);
-                    break;
-                    
-                case 'modifyHP':
-                    const hpValue = typeof parameters?.value === 'number' ? parameters.value : 0;
-                    const originalHP = targetCard.currentHP || targetCard.cardData?.hp || 0;
-                    targetCard.currentHP = Math.max(0, originalHP + hpValue);
-                    console.log(`❤️ Modified ${target.carduid} HP by ${hpValue}, from ${originalHP} to ${targetCard.currentHP}`);
-                    break;
-                    
-                case 'damage':
-                    const damageValue = typeof parameters?.value === 'number' ? parameters.value : 0;
-                    targetCard.damageReceived = (targetCard.damageReceived || 0) + damageValue;
-                    console.log(`🩸 ${target.carduid} takes ${damageValue} damage (total: ${targetCard.damageReceived})`);
-                    break;
-                    
-                case 'rest':
-                    targetCard.isRested = true;
-                    console.log(`💤 ${target.carduid} has been rested`);
-                    break;
-                    
-                case 'heal':
-                    const healValue = typeof parameters?.value === 'number' ? parameters.value : 0;
-                    const healAmount = Math.min(healValue, targetCard.damageReceived || 0);
-                    targetCard.damageReceived = (targetCard.damageReceived || 0) - healAmount;
-                    console.log(`🩹 ${target.carduid} healed ${healAmount} damage`);
-                    break;
-                    
-                default:
-                    console.log(`⚠️ Unknown effect action: ${action}`);
-                    return {
-                        success: false,
-                        error: `Unknown effect action: ${action}`
-                    };
-            }
-            
-            return { success: true };
-            
-        } catch (error) {
-            console.error(`❌ Error applying effect to single target:`, error);
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : 'Single target effect application failed'
-            };
-        }
+        return EffectExecutor.applyEffectToTargets(
+            gameEnv,
+            effect,
+            selectedTargets,
+            sourcePlayerId,
+            sourceCarduid
+        );
     }
 
     /**
@@ -475,159 +343,11 @@ export class TargetChoiceManager {
     }
     
     /**
-     * Create temporary effect for UNTIL_END_OF_TURN duration effects
-     * Now stores effects directly on target units instead of player level
-     */
-    private static createTemporaryEffect(
-        gameEnv: GameEnvironment,
-        effect: EffectDefinition,
-        selectedTargets: TargetReference[],
-        sourcePlayerId: string,
-        sourceCarduid: string,
-        sourceCardId: string,
-        action: string,
-        parameters?: Record<string, unknown>,
-        timing?: EffectTiming
-    ): void {
-        
-        console.log(`⏰ Creating temporary effect: ${effect.effectId} until end of turn`);
-        
-        // Use effect object directly to minimize conversions 
-        
-        // Apply effect to each target unit directly
-        for (const target of selectedTargets) {
-            const targetPlayer = gameEnv.getPlayer(target.playerId);
-            if (!targetPlayer) {
-                console.error(`❌ Target player ${target.playerId} not found for temporary effect`);
-                continue;
-            }
-            
-            // Get the target card (unit or pilot)
-            const slotResult = SlotZoneUtils.getSlotZone(targetPlayer.zones, target.zone);
-            if (!slotResult.isValid || !slotResult.slot) {
-                console.log(`⚠️ Target zone ${target.zone} not found: ${slotResult.error}`);
-                continue;
-            }
-            
-            const cardResult = SlotZoneUtils.findCardByUid(slotResult.slot, target.carduid);
-            if (!cardResult) {
-                console.log(`⚠️ Target card ${target.carduid} not found in ${target.zone}`);
-                continue;
-            }
-            
-            const targetCard = cardResult.card as UnitZoneCard | PilotZoneCard;
-            
-            // Create the temporary effect for this specific unit - use effect object directly
-            const tempEffect: TemporaryEffect = {
-                sourceCarduid: sourceCarduid,
-                modifyAP: action === 'modifyAP' && typeof parameters?.value === 'number' ? parameters.value : undefined,
-                modifyHP: action === 'modifyHP' && typeof parameters?.value === 'number' ? parameters.value : undefined,
-                duration: timing?.duration || 'UNTIL_END_OF_TURN',
-                appliedTurn: gameEnv.currentTurn,
-                appliedBy: sourcePlayerId
-            };
-            
-            // Initialize temporaryEffects array if it doesn't exist
-            if (!targetCard.temporaryEffects) {
-                targetCard.temporaryEffects = [];
-            }
-            
-            // Add the effect directly to the target card
-            targetCard.temporaryEffects.push(tempEffect);
-            
-            // Apply the effect immediately to the card's modifiers - use tempEffect object directly
-            if (tempEffect.modifyAP !== undefined) {
-                targetCard.modifyAP = (targetCard.modifyAP || 0) + tempEffect.modifyAP;
-                console.log(`✅ Applied AP effect ${tempEffect.modifyAP} to ${target.carduid} (new modifyAP: ${targetCard.modifyAP})`);
-            }
-            
-            if (tempEffect.modifyHP !== undefined) {
-                targetCard.modifyHP = (targetCard.modifyHP || 0) + tempEffect.modifyHP;
-                console.log(`✅ Applied HP effect ${tempEffect.modifyHP} to ${target.carduid} (new modifyHP: ${targetCard.modifyHP})`);
-            }
-            
-            console.log(`✅ Added temporary effect from ${sourceCarduid} to unit ${target.carduid}`);
-        }
-    }
-
-    /**
      * Clean up expired temporary effects at end of turn
      * Now works with unit-stored effects instead of player-level effects
      */
     static cleanupExpiredTemporaryEffects(gameEnv: GameEnvironment, endingPlayerId: string): void {
-        console.log(`🧹 Cleaning up temporary effects for player ${endingPlayerId} (turn ${gameEnv.currentTurn})`);
-        
-        let totalExpiredCount = 0;
-        
-        // Clean up effects on all players' units (effects applied by the ending player)
-        for (const playerId of Object.keys(gameEnv.players)) {
-            const player = gameEnv.getPlayer(playerId);
-            if (!player) continue;
-            
-            // Check all slot zones for units with temporary effects
-            for (const slotName of SLOT_ZONES) {
-                const slot = player.zones[slotName];
-                
-                // Clean up unit effects
-                if (slot.unit?.temporaryEffects) {
-                    const initialCount = slot.unit.temporaryEffects.length;
-                    slot.unit.temporaryEffects = slot.unit.temporaryEffects.filter(tempEffect => {
-                        const shouldExpire = tempEffect.duration === 'UNTIL_END_OF_TURN' && 
-                                            tempEffect.appliedTurn === gameEnv.currentTurn &&
-                                            tempEffect.appliedBy === endingPlayerId;
-                        
-                        if (shouldExpire) {
-                            console.log(`⏰ Expiring temporary effect from ${tempEffect.sourceCarduid} on unit ${slot.unit!.carduid}`);
-                            this.revertTemporaryEffectFromUnit(slot.unit!, tempEffect);
-                        }
-                        
-                        return !shouldExpire;
-                    });
-                    totalExpiredCount += initialCount - slot.unit.temporaryEffects.length;
-                }
-                
-                // Clean up pilot effects
-                if (slot.pilot?.temporaryEffects) {
-                    const initialCount = slot.pilot.temporaryEffects.length;
-                    slot.pilot.temporaryEffects = slot.pilot.temporaryEffects.filter(tempEffect => {
-                        const shouldExpire = tempEffect.duration === 'UNTIL_END_OF_TURN' && 
-                                            tempEffect.appliedTurn === gameEnv.currentTurn &&
-                                            tempEffect.appliedBy === endingPlayerId;
-                        
-                        if (shouldExpire) {
-                            console.log(`⏰ Expiring temporary effect from ${tempEffect.sourceCarduid} on pilot ${slot.pilot!.carduid}`);
-                            this.revertTemporaryEffectFromUnit(slot.pilot!, tempEffect);
-                        }
-                        
-                        return !shouldExpire;
-                    });
-                    totalExpiredCount += initialCount - slot.pilot.temporaryEffects.length;
-                }
-            }
-        }
-        
-        console.log(`✅ Cleaned up ${totalExpiredCount} expired temporary effects applied by player ${endingPlayerId}`);
-    }
-    
-    /**
-     * Revert a temporary effect from a specific unit
-     * Simplified to work directly on the unit instead of searching through targets
-     */
-    private static revertTemporaryEffectFromUnit(unit: UnitZoneCard | PilotZoneCard, tempEffect: TemporaryEffect): void {
-        console.log(`🔄 Reverting temporary effect from ${tempEffect.sourceCarduid} on unit ${unit.carduid}`);
-        
-        // Revert effects directly from the unit's modifiers
-        if (tempEffect.modifyAP !== undefined) {
-            const currentAP = unit.modifyAP || 0;
-            unit.modifyAP = currentAP - tempEffect.modifyAP;
-            console.log(`🔄 Reverted AP modification on ${unit.carduid}: ${currentAP} → ${unit.modifyAP}`);
-        }
-        
-        if (tempEffect.modifyHP !== undefined) {
-            const currentHP = unit.modifyHP || 0;
-            unit.modifyHP = currentHP - tempEffect.modifyHP;
-            console.log(`🔄 Reverted HP modification on ${unit.carduid}: ${currentHP} → ${unit.modifyHP}`);
-        }
+        EffectExecutor.cleanupExpiredTemporaryEffects(gameEnv, endingPlayerId);
     }
 
     /**
@@ -744,29 +464,4 @@ export class TargetChoiceManager {
         }
     }
 
-    private static getEffectAction(effect: EffectDefinition): string | undefined {
-        const directAction = typeof effect.action === 'string' ? effect.action : undefined;
-        if (directAction && directAction.length > 0) {
-            return directAction;
-        }
-
-        const nestedAction = effect.effect?.action;
-        if (typeof nestedAction === 'string' && nestedAction.length > 0) {
-            return nestedAction;
-        }
-
-        return undefined;
-    }
-
-    private static getEffectParameters(effect: EffectDefinition): Record<string, unknown> | undefined {
-        if (effect.parameters) {
-            return effect.parameters;
-        }
-
-        return effect.effect?.parameters;
-    }
-
-    private static getEffectTiming(effect: EffectDefinition): EffectTiming | undefined {
-        return effect.timing;
-    }
 }

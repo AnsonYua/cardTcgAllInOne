@@ -370,7 +370,6 @@ export interface TargetChoiceSelection {
 }
 
 export interface TargetChoiceEventData {
-    playerId: string;
     choiceId: string;
     userDecisionMade: boolean;
     sourceCarduid: string;
@@ -687,7 +686,6 @@ export class EventFactory {
         const { playerId, sourceCarduid, effect, availableTargets } = params;
         const effectKey = effect?.effectId || effect?.action || 'effect';
         const eventData: TargetChoiceEventData = {
-            playerId,
             choiceId: `target_choice_${effectKey}_${Date.now()}`,
             userDecisionMade: false,
             sourceCarduid,

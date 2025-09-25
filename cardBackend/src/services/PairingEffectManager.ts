@@ -684,20 +684,20 @@ export class PairingEffectManager implements StandardEffectManager {
      */
     private static executePairingEffectAction(gameEnv: GameEnvironment, playerId: string, effect: PairingEffect): { success: boolean; error?: string } {
         // With simplified structure, action and parameters are now directly on the effect
-        const { action, parameters = {}, target } = effect;
+        const { action, parameters = {} } = effect;
         
         console.log(`🎯 Executing pairing action: ${action} with parameters:`, parameters);
-        
+
         try {
             switch (action) {
                 case 'draw':
-                    return this.executePairingDrawEffect(gameEnv, playerId, parameters, target);
+                    return this.executePairingDrawEffect(gameEnv, playerId, effect);
                 case 'heal':
-                    return this.executePairingHealEffect(gameEnv, playerId, parameters, target, effect);
+                    return this.executePairingHealEffect(gameEnv, playerId, effect);
                 case 'modifyAP':
-                    return this.executePairingModifyAPEffect(gameEnv, playerId, parameters, target, effect);
+                    return this.executePairingModifyAPEffect(gameEnv, playerId, effect);
                 case 'modifyHP':
-                    return this.executePairingModifyHPEffect(gameEnv, playerId, parameters, target, effect);
+                    return this.executePairingModifyHPEffect(gameEnv, playerId, effect);
                 default:
                     console.log(`⚠️ Unknown pairing effect action: ${action}`);
                     return {
@@ -717,8 +717,11 @@ export class PairingEffectManager implements StandardEffectManager {
     /**
      * Execute draw effect from pairing
      */
-    private static executePairingDrawEffect(gameEnv: GameEnvironment, playerId: string, parameters: { [key: string]: any; value?: number }, target: EffectTarget | undefined): { success: boolean; error?: string } {
-        const drawCount = parameters.value || 1;
+    private static executePairingDrawEffect(gameEnv: GameEnvironment, playerId: string, effect: PairingEffect): { success: boolean; error?: string } {
+        const parameters = effect.parameters || {};
+        const drawCount = typeof parameters.value === 'number' ? parameters.value : 1;
+        const target = effect.target;
+
         if (!target) {
             return {
                 success: false,
@@ -754,8 +757,9 @@ export class PairingEffectManager implements StandardEffectManager {
     /**
      * Execute heal effect from pairing
      */
-    private static executePairingHealEffect(gameEnv: GameEnvironment, playerId: string, parameters: { [key: string]: any; value?: number }, target: EffectTarget | undefined, effect: PairingEffect): { success: boolean; error?: string } {
-        const healAmount = parameters.value || 0;
+    private static executePairingHealEffect(gameEnv: GameEnvironment, playerId: string, effect: PairingEffect): { success: boolean; error?: string } {
+        const parameters = effect.parameters || {};
+        const healAmount = typeof parameters.value === 'number' ? parameters.value : 0;
         console.log(`🩹 Executing pairing heal effect: ${healAmount} HP`);
         
         // Use existing CardEffect system for healing
@@ -783,8 +787,11 @@ export class PairingEffectManager implements StandardEffectManager {
      * Execute AP modification effect from pairing using unified TARGET_CHOICE system
      * Now supports player choice for strategic target selection (e.g., ST01-006)
      */
-    private static executePairingModifyAPEffect(gameEnv: GameEnvironment, playerId: string, parameters: { [key: string]: any; value?: number }, target: EffectTarget | undefined, effect: PairingEffect): { success: boolean; error?: string } {
-        const modifyAmount = parameters.value || 0;
+    private static executePairingModifyAPEffect(gameEnv: GameEnvironment, playerId: string, effect: PairingEffect): { success: boolean; error?: string } {
+        const parameters = effect.parameters || {};
+        const modifyAmount = typeof parameters.value === 'number' ? parameters.value : 0;
+        const target = effect.target;
+
         if (!target) {
             return {
                 success: false,
@@ -794,7 +801,7 @@ export class PairingEffectManager implements StandardEffectManager {
         console.log(`⚔️ Executing pairing AP modification: ${modifyAmount > 0 ? '+' : ''}${modifyAmount} AP on ${target.scope} targets`);
         
         try {
-            const normalizedTarget = target || effect.target;
+            const normalizedTarget = target;
             const targetConfig = {
                 type: (normalizedTarget?.type as 'unit' | 'pilot' | 'card') || 'unit',
                 scope: (normalizedTarget?.scope as 'any' | 'self' | 'opponent') || 'self',
@@ -872,8 +879,9 @@ export class PairingEffectManager implements StandardEffectManager {
     /**
      * Execute HP modification effect from pairing
      */
-    private static executePairingModifyHPEffect(gameEnv: GameEnvironment, playerId: string, parameters: { [key: string]: any; value?: number }, target: EffectTarget | undefined, effect: PairingEffect): { success: boolean; error?: string } {
-        const modifyAmount = parameters.value || 0;
+    private static executePairingModifyHPEffect(gameEnv: GameEnvironment, playerId: string, effect: PairingEffect): { success: boolean; error?: string } {
+        const parameters = effect.parameters || {};
+        const modifyAmount = typeof parameters.value === 'number' ? parameters.value : 0;
         console.log(`❤️ Executing pairing HP modification: ${modifyAmount > 0 ? '+' : ''}${modifyAmount} HP`);
         
         // Find the paired unit to modify
