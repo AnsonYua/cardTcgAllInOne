@@ -103,6 +103,23 @@ export interface StepEndEvent extends BaseGameEvent {
     };
 }
 
+export interface PlayCardEventData {
+    playerId: string;
+    gameId: string;
+    carduid: string;
+    playAs: string;
+    targetUnit?: any;
+    fromBurst?: boolean;
+    cardId?: string;
+    slotName?: string;
+    [key: string]: any;
+}
+
+export interface PlayCardEvent extends BaseGameEvent {
+    type: EventType.PLAY_CARD;
+    data: PlayCardEventData;
+}
+
 // ============ CARD LIFECYCLE EVENTS ============
 
 export interface CardEntersPlayEvent extends BaseGameEvent {
@@ -290,6 +307,7 @@ export interface TargetChoiceEvent extends BaseGameEvent {
 
 export type GameEvent = 
     | AcknowledgeEventsEvent
+    | PlayCardEvent
     | PowerBoostEvent
     | TurnStartEvent
     | TurnEndEvent 
@@ -356,6 +374,32 @@ export class EventFactory {
             playerId,
             timestamp: Date.now(),
             data: { playerId, turnNumber, nextPlayerId }
+        };
+    }
+
+    static createPlayCardEvent(
+        playerId: string,
+        gameId: string,
+        carduid: string,
+        playAs: string,
+        targetUnit?: any,
+        extras: Partial<Omit<PlayCardEvent['data'], 'playerId' | 'gameId' | 'carduid' | 'playAs' | 'targetUnit'>> = {}
+    ): PlayCardEvent {
+        return {
+            id: `play_card_${++this.eventIdCounter}_${Date.now()}`,
+            type: EventType.PLAY_CARD,
+            status: EventStatus.DECLARED,
+            priority: EventPriority.NORMAL,
+            timestamp: Date.now(),
+            playerId,
+            data: {
+                playerId,
+                gameId,
+                carduid,
+                playAs,
+                targetUnit,
+                ...extras
+            }
         };
     }
     

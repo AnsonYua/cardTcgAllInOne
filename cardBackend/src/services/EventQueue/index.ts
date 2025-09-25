@@ -32,6 +32,7 @@ export {
     TurnEndEvent,
     StepBeginEvent,
     StepEndEvent,
+    PlayCardEvent,
     CostPaidEvent,
     AbilityTriggeredEvent,
     AbilityActivatedEvent,

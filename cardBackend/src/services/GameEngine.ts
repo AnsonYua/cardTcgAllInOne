@@ -1,7 +1,7 @@
 // src/services/GameEngine.ts
 // Game execution engine - handles all game state modifications
 
-import { GameEvent, AcknowledgeEventsEvent, EventFactory, EventStatus, EventPriority } from './EventQueue/interfaces/GameEvent';
+import { GameEvent, AcknowledgeEventsEvent, PlayCardEvent, PlayCardEventData, EventFactory, EventStatus, EventPriority } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase, EventType } from '../models/GameEnums';
 import { EnergyManager } from './EnergyManager';
@@ -70,7 +70,7 @@ export class GameEngine {
                     return GameEngine.executeNextPlayerTurn(event, gameEnv);
 
                 case EventType.PLAY_CARD:
-                    return GameEngine.executePlayCard(event, gameEnv);
+                    return GameEngine.executePlayCard(event as PlayCardEvent, gameEnv);
 
                 case EventType.PLAYER_ACTION:
                     return GameEngine.executePlayerAction(event, gameEnv);
@@ -519,17 +519,26 @@ export class GameEngine {
      * - fromBurst: true (indicates burst deployment)
      * - slotName: target slot for deployment
      */
-    private static executePlayCard(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
-        // Pass event data directly to minimize conversions
-        const eventData = event.data;
+    private static executePlayCard(event: PlayCardEvent, gameEnv: GameEnvironment): ExecutionResult {
+        // Extract playerId from event (preparing for removal from PlayCardEventData)
+        const playerId = event.playerId;
+        // Use PlayCardEventData object for other properties
+        const eventData: PlayCardEventData = event.data;
         const fromBurst = eventData.fromBurst || false;
 
-        console.log(`🎯 Processing PLAY_CARD event for player: ${eventData.playerId}, carduid: ${eventData.carduid}, playAs: ${eventData.playAs}, fromBurst: ${fromBurst}, targetUnit: ${eventData.targetUnit || 'none'}`);
+        if (!playerId) {
+            return {
+                success: false,
+                error: 'No playerId found in event'
+            };
+        }
+
+        console.log(`🎯 Processing PLAY_CARD event for player: ${playerId}, carduid: ${eventData.carduid}, playAs: ${eventData.playAs}, fromBurst: ${fromBurst}, targetUnit: ${eventData.targetUnit || 'none'}`);
 
         try {
             // Validate using centralized GameValidator
             if (!fromBurst) {
-                const turnValidation = GameValidator.validatePlayerTurn(gameEnv, eventData.playerId);
+                const turnValidation = GameValidator.validatePlayerTurn(gameEnv, playerId);
                 if (!turnValidation.isValid) {
                     return {
                         success: false,
@@ -539,7 +548,7 @@ export class GameEngine {
             }
 
             // Validate player and zones using GameValidator
-            const playerValidation = GameValidator.validatePlayerZones(gameEnv, eventData.playerId);
+            const playerValidation = GameValidator.validatePlayerZones(gameEnv, playerId);
             if (!playerValidation.isValid) {
                 return {
                     success: false,
@@ -554,7 +563,7 @@ export class GameEngine {
                 console.log(`💥 Burst card deployment: ${eventData.carduid} - skipping hand validation`);
             } else {
                 // Normal card play - validate in hand and remove using GameValidator
-                const handValidation = GameValidator.validateCardInHand(gameEnv, eventData.playerId, eventData.carduid);
+                const handValidation = GameValidator.validateCardInHand(gameEnv, playerId, eventData.carduid);
                 if (!handValidation.isValid) {
                     return {
                         success: false,
@@ -562,16 +571,16 @@ export class GameEngine {
                     };
                 }
 
-                if (!PlayerCardManager.removeCardFromHand(gameEnv, eventData.playerId, eventData.carduid)) {
+                if (!PlayerCardManager.removeCardFromHand(gameEnv, playerId, eventData.carduid)) {
                     return {
                         success: false,
-                        error: `Failed to remove card ${eventData.carduid} from player ${eventData.playerId} hand`
+                        error: `Failed to remove card ${eventData.carduid} from player ${playerId} hand`
                     };
                 }
             }
 
             // Pass event data directly - no intermediate object creation
-            const placementResult = PlayerCardManager.placeCardWithEventData(gameEnv, eventData);
+            const placementResult = PlayerCardManager.placeCardWithEventData(gameEnv, playerId, eventData);
 
             if (!placementResult.success) {
                 // Return card to hand if placement failed (but only for normal cards, not burst cards)
@@ -585,7 +594,7 @@ export class GameEngine {
             }
 
             // ✅ Card placement successful - Check for Deploy effects (ENTERS_PLAY triggers)
-            console.log(`✅ Card ${eventData.carduid} successfully placed for player ${eventData.playerId}`);
+            console.log(`✅ Card ${eventData.carduid} successfully placed for player ${playerId}`);
 
             // Check for Deploy effects using carduid to extract cardId and fetch cardData from database
             const deployEffects = PlayerCardManager.checkForDeployEffects(eventData.carduid);
@@ -612,7 +621,7 @@ export class GameEngine {
             // Handle link formation - set linked unit's isFirstPlay to false
             if (placementResult.isOnLink) {
                 console.log(`🔗 Link detected - updating linked unit's isFirstPlay status`);
-                PlayerCardManager.handleLinkFormation(gameEnv, eventData.playerId, eventData.carduid);
+                PlayerCardManager.handleLinkFormation(gameEnv, playerId, eventData.carduid);
             }
 
 

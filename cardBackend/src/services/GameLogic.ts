@@ -383,21 +383,23 @@ export class GameLogic {
                 );
                 
             case PlayerActionType.PLAY_CARD:
-                return {
-                    id: `play_card_${Date.now()}_${Math.random()}`,
-                    type: EventType.PLAY_CARD,
-                    status: EventStatus.DECLARED,
-                    priority: EventPriority.NORMAL,
-                    timestamp: Date.now(),
-                    playerId: action.playerId,
-                    data: {
-                        playerId: action.playerId,
-                        gameId: action.gameId,
-                        carduid: action.carduid,
-                        playAs: action.playAs,
-                        targetUnit: action.targetUnit
+                if (!action.gameId || !action.carduid) {
+                    console.warn('⚠️ PLAY_CARD action missing required identifiers', action);
+                    return null;
+                }
+
+                return EventFactory.createPlayCardEvent(
+                    action.playerId,
+                    action.gameId,
+                    action.carduid,
+                    action.playAs || 'unit',
+                    action.targetUnit,
+                    {
+                        fromBurst: action.fromBurst,
+                        cardId: action.cardId,
+                        slotName: action.slotName
                     }
-                };
+                );
                 
             case PlayerActionType.PLAYER_ACTION:
                 return {
@@ -689,23 +691,26 @@ export class GameLogic {
                 };
             }
             
-            // Create PlayerAction directly from API action - minimal conversion
-            const playCardEvent: PlayerAction = {
-                type: PlayerActionType.PLAY_CARD,
+            const playCardEvent = EventFactory.createPlayCardEvent(
                 playerId,
                 gameId,
-                carduid: action.carduid,
-                playAs: action.playAs,
-                targetUnit: action.targetUnit
-            };
-            
-            const actionResult = await this.processAction(gameEnv, playCardEvent);
-            console.log('🎮 PLAY_CARD processed:', actionResult);
-            
-            if (!actionResult.success) {
+                action.carduid,
+                action.playAs || 'unit',
+                action.targetUnit,
+                {
+                    fromBurst: action.fromBurst,
+                    cardId: action.cardId,
+                    slotName: action.slotName
+                }
+            );
+
+            const processingResult = await StaticEventProcessor.processEvent(gameEnv, playCardEvent);
+            console.log('🎮 PLAY_CARD processed:', processingResult);
+
+            if (!processingResult.success) {
                 return {
                     success: false,
-                    error: actionResult.error || 'Failed to process player action'
+                    error: processingResult.error || 'Failed to process player action'
                 };
             }
             

@@ -3,7 +3,7 @@
 
 import { GameEnvironment } from '../models/GameEnvironment';
 import { TargetChoiceManager } from './TargetChoiceManager';
-import { GameEvent, EventStatus, EventPriority } from './EventQueue/interfaces/GameEvent';
+import { GameEvent, EventStatus, EventPriority, PlayCardEventData } from './EventQueue/interfaces/GameEvent';
 import { EventType } from '../models/GameEnums';
 
 // Import standardized interfaces
@@ -22,16 +22,6 @@ export interface PairingEffectResult {
     error?: string;
     message?: string;
     effectsProcessed?: number;
-}
-
-export interface PlayCardEventData {
-    playerId: string;
-    gameId: string;
-    carduid: string;
-    playAs: string;
-    targetUnit?: string;
-    fromBurst?: boolean;
-    slotName?: string;
 }
 
 export interface CardPlacementResult {

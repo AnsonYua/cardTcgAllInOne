@@ -5,6 +5,7 @@ import { GameEnvironment } from '../models/GameEnvironment';
 import { GameEngine } from './GameEngine';
 import { createZoneCard, UnitZoneCard, PilotZoneCard, BaseCard, CardDatabaseManager } from '../models/CardSystem';
 import { SLOT_ZONES } from '../config/gameConstants';
+import { PlayCardEventData } from './EventQueue/interfaces/GameEvent';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface CardPlacementResult {
@@ -23,47 +24,57 @@ export interface CardPlacementOptions {
 export class PlayerCardManager {
 
     /**
-     * Streamlined card placement - accepts event data directly to minimize conversions
+     * Streamlined card placement - accepts PlayCardEventData directly for type safety and to minimize conversions
      */
     static placeCardWithEventData(
         gameEnv: GameEnvironment,
-        eventData: any
+        playerId: string,
+        eventData: PlayCardEventData
     ): CardPlacementResult {
         try {
             // Use eventData object directly to minimize property extraction conversions
-            const player = gameEnv.players[eventData.playerId];
+            const player = gameEnv.players[playerId];
             if (!player || !player.zones) {
                 return {
                     success: false,
-                    error: `Player ${eventData.playerId} or zones not found`
+                    error: `Player ${playerId} or zones not found`
                 };
             }
 
-            // Extract cardId from carduid - minimize string operations
-            const cardId = eventData.carduid.split('_')[0];
-
-            // Load full card data from card database
-            const fullCardData = CardDatabaseManager.getCardDetails(cardId);
+            const fullCardData = CardDatabaseManager.getCardDetailsFromCarduid(eventData.carduid);
             if (!fullCardData) {
                 return {
                     success: false,
-                    error: `Card data not found for ${cardId} in card database`
+                    error: `Card data not found for ${eventData.carduid} in card database`
                 };
             }
 
             // Use eventData properties directly in method calls to minimize conversions
             switch (eventData.playAs) {
                 case 'unit':
-                    return this.placeUnitCard(player.zones, fullCardData, eventData.carduid, eventData.playerId);
+                    return this.placeUnitCard(player.zones, 
+                                             fullCardData, 
+                                             eventData.carduid, 
+                                             playerId);
 
                 case 'pilot':
-                    return this.placePilotCard(player.zones, fullCardData, eventData.carduid, eventData.playerId, eventData.targetUnit);
+                    return this.placePilotCard(player.zones, 
+                                               fullCardData, 
+                                               eventData.carduid,
+                                               playerId, 
+                                               eventData.targetUnit);
 
                 case 'command':
-                    return this.placeCommandCard(player.zones, fullCardData, eventData.carduid, eventData.playerId);
+                    return this.placeCommandCard(player.zones, 
+                                                 fullCardData, 
+                                                 eventData.carduid, 
+                                                 playerId);
 
                 case 'base':
-                    return this.placeBaseCard(player.zones, fullCardData, eventData.carduid, eventData.playerId);
+                    return this.placeBaseCard(player.zones, 
+                                              fullCardData, 
+                                              eventData.carduid, 
+                                              playerId);
 
                 default:
                     return {

@@ -405,6 +405,19 @@ export class CardDatabaseManager {
     }
 
     /**
+     * Get card details from global card database
+     */
+    public static getCardDetailsFromCarduid(carduid: string): any {
+         const cardId = carduid.split('_')[0];
+        if (!CardDatabaseManager.cardDatabase) {
+            console.warn('⚠️ Card database not loaded');
+            return null;
+        }
+        return CardDatabaseManager.cardDatabase[cardId] || null;
+    }
+
+
+    /**
      * Check if card exists in database
      */
     public static cardExists(cardId: string): boolean {
