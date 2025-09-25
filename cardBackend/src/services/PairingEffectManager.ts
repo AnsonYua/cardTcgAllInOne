@@ -1,4 +1,4 @@
-// src/services/PairingEffect.ts
+// src/services/PairingEffectManager.ts
 // Pairing effect management - handles PAIRING_COMPLETE triggered effects
 
 import { GameEnvironment } from '../models/GameEnvironment';
@@ -137,7 +137,7 @@ export interface CardInfo {
     cardType: 'unit' | 'pilot';
 }
 
-export class PairingEffect implements StandardEffectManager {
+export class PairingEffectManager implements StandardEffectManager {
     
     // ============ STANDARDIZED INTERFACE IMPLEMENTATION ============
     
@@ -368,13 +368,18 @@ export class PairingEffect implements StandardEffectManager {
      * ✅ IMPROVED: Check for pairing effects and return event directly (consolidated)
      * Eliminates intermediate step and object creation overhead
      */
-    static checkForPairingEffectsEvent(eventData: PlayCardEventData, placementResult: CardPlacementResult, gameEnv: GameEnvironment): GameEvent | null {
-        console.log("PairingEffect.checkForPairingEffects - pairing detected, checking for triggered effects");
+    static checkForPairingEffectsEvent(
+        eventData: PlayCardEventData,
+        placementResult: CardPlacementResult,
+        gameEnv: GameEnvironment,
+        playerId: string
+    ): GameEvent | null {
+        console.log("PairingEffectManager.checkForPairingEffects - pairing detected, checking for triggered effects");
         
         const pairingEffects: PairingEffect[] = [];
-        const player = gameEnv.getPlayer(eventData.playerId);
+        const player = gameEnv.getPlayer(playerId);
         if (!player || !player.zones) {
-            console.log(`⚠️ Player ${eventData.playerId} or zones not found for pairing effect check`);
+            console.log(`⚠️ Player ${playerId} or zones not found for pairing effect check`);
             return null;
         }
 
@@ -438,7 +443,7 @@ export class PairingEffect implements StandardEffectManager {
         
         // Create event directly instead of returning array
         const eventDataObject = {
-            playerId: eventData.playerId,
+            playerId,
             effects: pairingEffects
         };
         
@@ -447,7 +452,7 @@ export class PairingEffect implements StandardEffectManager {
             type: EventType.PAIRING_EFFECT_TRIGGERED,
             status: EventStatus.DECLARED,
             priority: EventPriority.NORMAL,
-            playerId: eventData.playerId,
+            playerId,
             data: eventDataObject,
             timestamp: Date.now()
         };
@@ -464,7 +469,7 @@ export class PairingEffect implements StandardEffectManager {
         };
      */
     static processPairingEffect(gameEnv: GameEnvironment, eventData: PairingEventData): PairingEffectResult {
-        console.log(`🤝 PairingEffect.processPairingEffect - processing pairing effects`);
+        console.log(`🤝 PairingEffectManager.processPairingEffect - processing pairing effects`);
         
         try {
             const { playerId, effects } = eventData;
@@ -507,7 +512,7 @@ export class PairingEffect implements StandardEffectManager {
             };
             
         } catch (error) {
-            console.error(`❌ Error in PairingEffect.processPairingEffect:`, error);
+            console.error(`❌ Error in PairingEffectManager.processPairingEffect:`, error);
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Pairing effect processing failed'

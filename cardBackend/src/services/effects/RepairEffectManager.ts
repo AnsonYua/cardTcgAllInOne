@@ -3,7 +3,7 @@
 
 import { GameEnvironment } from '../../models/GameEnvironment';
 import { EventType } from '../../models/GameEnums';
-import { GameEvent, EventStatus, EventPriority } from '../EventQueue/interfaces/GameEvent';
+import { RepairEffectEvent, RepairEffectEventData } from '../EventQueue/interfaces/GameEvent';
 import { StateBasedAction } from '../EventQueue/StateBasedActionEngine';
 import { SLOT_ZONES } from '../../config/gameConstants';
 import { CardDatabaseManager } from '../../models/CardSystem';
@@ -18,12 +18,6 @@ import {
 } from '../../interfaces/StandardizedInterfaces';
 import { getCardIdFromUid } from '../../utils/CardUtils';
 import { eventDataValidator } from '../../validators/EventDataValidator';
-
-// Minimal data structure for repair effects
-interface RepairEventData {
-    carduid: string;
-    healAmount: number;
-}
 
 interface ExecutionResult {
     success: boolean;
@@ -69,15 +63,30 @@ export class RepairEffectManager implements StandardEffectManager {
         
         try {
             // Extract repair data from standardized event structure
-            const repairData: RepairEventData = {
+            const repairData: RepairEffectEventData = {
                 carduid: event.data.carduid,
                 healAmount: event.data.parameters.value
             };
             
             console.log(`🩹 Processing repair with ${repairData.healAmount} heal amount`);
             
+            const resolvedPlayerId = event.playerId ?? event.data.playerId;
+            if (!resolvedPlayerId) {
+                throw new Error('Repair effect event missing playerId');
+            }
+
+            const legacyEvent: RepairEffectEvent = {
+                id: event.id,
+                type: EventType.TRIGGER_HEALING,
+                status: event.status,
+                priority: event.priority,
+                timestamp: event.timestamp,
+                playerId: resolvedPlayerId,
+                data: repairData
+            };
+
             // Execute using existing repair logic
-            const result = RepairEffectManager.executeRepairEffect(event as any, gameEnv);
+            const result = RepairEffectManager.executeRepairEffect(legacyEvent, gameEnv);
             
             if (result.success) {
                 affectedCards.push(event.data.carduid);
@@ -222,14 +231,17 @@ export class RepairEffectManager implements StandardEffectManager {
                                 // Mark as processed
                                 this.processedRepairActions.add(repairKey);
                                 
+                                const healAmount = effect.parameters?.value ?? effect.effect?.parameters?.value ?? 0;
+                                const repairActionData: RepairEffectEventData = {
+                                    carduid: unit.carduid,
+                                    healAmount
+                                };
+
                                 actions.push({
                                     actionId: `repair_${unit.carduid}_${Date.now()}`,
                                     type: EventType.TRIGGER_HEALING,
                                     autoExecute: true,
-                                    data: {
-                                        carduid: unit.carduid,
-                                        healAmount: effect.parameters.value
-                                    } as RepairEventData
+                                    data: repairActionData
                                 });
                             }
                         }
@@ -247,11 +259,11 @@ export class RepairEffectManager implements StandardEffectManager {
     /**
      * EXECUTION: Execute repair effect on specific card
      */
-    static executeRepairEffect(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
+    static executeRepairEffect(event: RepairEffectEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`🩹 Executing repair effect: ${event.id}`);
         
         try {
-            const data = event.data as RepairEventData;
+            const data = event.data;
             
             if (!data.carduid || !data.healAmount) {
                 return {

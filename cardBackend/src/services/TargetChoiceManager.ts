@@ -10,48 +10,31 @@
  */
 
 import { GameEnvironment } from '../models/GameEnvironment';
-import { EventFactory, EventStatus } from './EventQueue/interfaces/GameEvent';
+import {
+    EventFactory,
+    EventStatus,
+    EffectDefinition,
+    EffectTargetConfig,
+    EffectTiming,
+    TargetChoiceEvent,
+    TargetChoiceSelection,
+    TargetFilters,
+    TargetReference,
+    TargetScope,
+    TargetType
+} from './EventQueue/interfaces/GameEvent';
 import { EventType } from '../models/GameEnums';
 import { SLOT_ZONES } from '../config/gameConstants';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { TemporaryEffect, UnitZoneCard, PilotZoneCard } from '../models/CardSystem';
 import { v4 as uuidv4 } from 'uuid';
 
-export interface TargetConfig {
-    type: 'unit' | 'pilot' | 'card';
-    scope: 'self' | 'opponent' | 'any';
+interface ResolvedTargetConfig {
+    type: TargetType;
+    scope: TargetScope;
     count: number;
-    filters?: {
-        level?: string;     // "<=5", ">=3"
-        hp?: string;        // "<=2", ">1"
-        status?: string;    // "rested", "active"
-        traits?: string[];  // ["Academy", "Earth Federation"]
-        zone?: string[];    // ["slot1", "slot2"] - specific zones only
-    };
+    filters: TargetFilters;
 }
-
-export interface TargetReference {
-    carduid: string;
-    // REMOVED: cardId - use getCardIdFromUid(carduid) instead
-    zone: string;
-    playerId: string;
-    cardData?: any;     // For display purposes
-}
-
-export interface EffectDefinition {
-    effectId: string;
-    type?: string;
-    trigger?: string;
-    target?: TargetConfig;
-    action: string;         // 'modifyAP', 'damage', 'rest', etc.
-    parameters?: any;       // Effect parameters
-    timing?: {
-        duration?: string;
-        actionTurn?: string;
-    };
-    description?: string;
-}
-
 
 export interface TargetChoiceResult {
     success: boolean;
@@ -63,6 +46,10 @@ export interface TargetChoiceResult {
 
 
 export class TargetChoiceManager {
+
+    private static readonly DEFAULT_TARGET_TYPE: TargetType = 'unit';
+    private static readonly DEFAULT_TARGET_SCOPE: TargetScope = 'opponent';
+    private static readonly DEFAULT_TARGET_COUNT = 1;
 
     /**
      * Main entry point: Process effect that may require target selection
@@ -78,7 +65,8 @@ export class TargetChoiceManager {
         sourceCarduid: string,
         effect: EffectDefinition
     ): TargetChoiceResult {
-        const effectLabel = effect.effectId || effect.action || 'unknown';
+        const effectAction = this.getEffectAction(effect);
+        const effectLabel = effect.effectId || effectAction || 'unknown';
         console.log(`🎯 Processing effect ${effectLabel} requiring target selection`);
 
         try {
@@ -141,7 +129,7 @@ export class TargetChoiceManager {
     /**
      * Execute TARGET_CHOICE event when player makes selection
      */
-    static executeTargetChoice(event: any, gameEnv: GameEnvironment): { success: boolean; error?: string } {
+    static executeTargetChoice(event: TargetChoiceEvent, gameEnv: GameEnvironment): { success: boolean; error?: string } {
         console.log(`🎯 Executing TARGET_CHOICE event: ${event.id} (${event.status})`);
         try {
             if (event.status !== EventStatus.RESOLVING) {
@@ -153,8 +141,9 @@ export class TargetChoiceManager {
             const eventData = event.data;
             
             // Use selectedTargets directly from eventData, normalizing to array if needed
-            const selectedTargets = eventData.selectedTargets || 
-                                  (eventData.selectedTarget ? [eventData.selectedTarget] : null);
+            const selectedTargets: TargetChoiceSelection[] | undefined =
+                eventData.selectedTargets ??
+                (eventData.selectedTarget ? [eventData.selectedTarget] : undefined);
 
             if (!selectedTargets) {
                 return {
@@ -163,18 +152,24 @@ export class TargetChoiceManager {
                 };
             }
 
-            if (!selectedTargets || selectedTargets.length === 0) {
+            if (selectedTargets.length === 0) {
                 return {
                     success: false,
                     error: 'No targets selected for effect'
                 };
             }
 
+            const normalizedTargets: TargetReference[] = selectedTargets.map((selection) => ({
+                carduid: selection.carduid,
+                zone: selection.zone,
+                playerId: selection.playerId
+            }));
+
             // Apply effect to selected targets - pass eventData object directly to minimize conversions
             const result = this.applyEffectToTargets(
                 gameEnv,
                 eventData.effect,
-                selectedTargets,
+                normalizedTargets,
                 eventData.playerId,
                 eventData.sourceCarduid,
                 this.deriveSourceCardId(eventData.sourceCarduid)
@@ -203,7 +198,7 @@ export class TargetChoiceManager {
     static generateAvailableTargets(
         gameEnv: GameEnvironment, 
         playerId: string, 
-        targetConfig: TargetConfig
+        targetConfig: ResolvedTargetConfig
     ): TargetReference[] {
         
         const targets: TargetReference[] = [];
@@ -223,7 +218,7 @@ export class TargetChoiceManager {
             console.log(`🎯 Searching player ${targetPlayerId} for valid targets`);
             
             // Search specified zones (or all slot zones by default)
-            const zonesToSearch = targetConfig.filters?.zone || SLOT_ZONES;
+            const zonesToSearch = targetConfig.filters.zone || SLOT_ZONES;
             
             for (const slotName of zonesToSearch) {
                 // Use type-safe slot validation
@@ -272,24 +267,21 @@ export class TargetChoiceManager {
     /**
      * Derive complete target configuration using effect defaults when necessary
      */
-    private static resolveTargetConfig(effect: EffectDefinition): TargetConfig {
-        const defaultConfig: TargetConfig = {
-            type: 'unit',
-            scope: 'opponent',
-            count: 1,
-            filters: {}
-        };
-
-        const rawTarget: Partial<TargetConfig> | undefined = (effect as any)?.target;
-        if (!rawTarget) {
-            return defaultConfig;
-        }
+    private static resolveTargetConfig(effect: EffectDefinition): ResolvedTargetConfig {
+        const target: EffectTargetConfig | undefined = effect.target;
+        const type = (target?.type as TargetType) || this.DEFAULT_TARGET_TYPE;
+        const scope = (target?.scope as TargetScope) || this.DEFAULT_TARGET_SCOPE;
+        const countValue = target?.count;
+        const count = typeof countValue === 'number' && countValue > 0
+            ? countValue
+            : this.DEFAULT_TARGET_COUNT;
+        const filters: TargetFilters = target?.filters ? { ...target.filters } : {};
 
         return {
-            type: rawTarget.type || defaultConfig.type,
-            scope: rawTarget.scope || defaultConfig.scope,
-            count: typeof rawTarget.count === 'number' && rawTarget.count > 0 ? rawTarget.count : defaultConfig.count,
-            filters: rawTarget.filters || defaultConfig.filters
+            type,
+            scope,
+            count,
+            filters
         };
     }
 
@@ -321,12 +313,23 @@ export class TargetChoiceManager {
         sourceCardId?: string
     ): { success: boolean; error?: string } {
         
-        console.log(`⚡ Applying effect ${effect.action} to ${selectedTargets.length} target(s)`);
+        const action = this.getEffectAction(effect);
+        if (!action) {
+            return {
+                success: false,
+                error: 'Effect action is undefined'
+            };
+        }
+
+        const parameters = this.getEffectParameters(effect);
+        const timing = this.getEffectTiming(effect);
+
+        console.log(`⚡ Applying effect ${action} to ${selectedTargets.length} target(s)`);
         
         try {
             // Apply immediate effect to all targets
             for (const target of selectedTargets) {
-                const result = this.applyEffectToSingleTarget(gameEnv, effect, target, sourcePlayerId);
+                const result = this.applyEffectToSingleTarget(gameEnv, effect, target, sourcePlayerId, action, parameters);
                 if (!result.success) {
                     console.error(`❌ Failed to apply effect to target ${target.carduid}: ${result.error}`);
                     return result;
@@ -334,11 +337,11 @@ export class TargetChoiceManager {
             }
             
             // Create temporary effect if duration-based
-            if (effect.timing?.duration === 'UNTIL_END_OF_TURN' && sourceCarduid && sourceCardId) {
-                this.createTemporaryEffect(gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid, sourceCardId);
+            if (timing?.duration === 'UNTIL_END_OF_TURN' && sourceCarduid && sourceCardId) {
+                this.createTemporaryEffect(gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid, sourceCardId, action, parameters, timing);
             }
             
-            console.log(`✅ Successfully applied ${effect.action} to all ${selectedTargets.length} target(s)`);
+            console.log(`✅ Successfully applied ${action} to all ${selectedTargets.length} target(s)`);
             return { success: true };
             
         } catch (error) {
@@ -357,10 +360,12 @@ export class TargetChoiceManager {
         gameEnv: GameEnvironment,
         effect: EffectDefinition,
         target: TargetReference,
-        sourcePlayerId: string
+        sourcePlayerId: string,
+        action: string,
+        parameters?: Record<string, unknown>
     ): { success: boolean; error?: string } {
         
-        console.log(`🎯 Applying ${effect.action} to target: ${target.carduid} in ${target.zone}`);
+        console.log(`🎯 Applying ${action} to target: ${target.carduid} in ${target.zone}`);
         
         try {
             // Get target player and slot
@@ -395,22 +400,22 @@ export class TargetChoiceManager {
             const targetCard = cardResult.card;
             
             // Apply effect based on action type - use effect object directly to minimize conversions
-            switch (effect.action) {
+            switch (action) {
                 case 'modifyAP':
-                    const apValue = effect.parameters?.value || 0;
+                    const apValue = typeof parameters?.value === 'number' ? parameters.value : 0;
                     targetCard.modifyAP = apValue;
                     console.log(`⚔️ Modified ${targetCard.carduid} AP by ${apValue}`);
                     break;
                     
                 case 'modifyHP':
-                    const hpValue = effect.parameters?.value || 0;
+                    const hpValue = typeof parameters?.value === 'number' ? parameters.value : 0;
                     const originalHP = targetCard.currentHP || targetCard.cardData?.hp || 0;
                     targetCard.currentHP = Math.max(0, originalHP + hpValue);
                     console.log(`❤️ Modified ${target.carduid} HP by ${hpValue}, from ${originalHP} to ${targetCard.currentHP}`);
                     break;
                     
                 case 'damage':
-                    const damageValue = effect.parameters?.value || 0;
+                    const damageValue = typeof parameters?.value === 'number' ? parameters.value : 0;
                     targetCard.damageReceived = (targetCard.damageReceived || 0) + damageValue;
                     console.log(`🩸 ${target.carduid} takes ${damageValue} damage (total: ${targetCard.damageReceived})`);
                     break;
@@ -421,17 +426,17 @@ export class TargetChoiceManager {
                     break;
                     
                 case 'heal':
-                    const healValue = effect.parameters?.value || 0;
+                    const healValue = typeof parameters?.value === 'number' ? parameters.value : 0;
                     const healAmount = Math.min(healValue, targetCard.damageReceived || 0);
                     targetCard.damageReceived = (targetCard.damageReceived || 0) - healAmount;
                     console.log(`🩹 ${target.carduid} healed ${healAmount} damage`);
                     break;
                     
                 default:
-                    console.log(`⚠️ Unknown effect action: ${effect.action}`);
+                    console.log(`⚠️ Unknown effect action: ${action}`);
                     return {
                         success: false,
-                        error: `Unknown effect action: ${effect.action}`
+                        error: `Unknown effect action: ${action}`
                     };
             }
             
@@ -454,7 +459,7 @@ export class TargetChoiceManager {
      * - If count>1 → Always requires choice (select multiple)
      * - If only one target or auto-select scenarios → No choice needed
      */
-    private static requiresPlayerChoice(targetConfig: TargetConfig, availableTargets: TargetReference[]): boolean {
+    private static requiresPlayerChoice(targetConfig: ResolvedTargetConfig, availableTargets: TargetReference[]): boolean {
         // Multiple target selection always requires choice
         if (targetConfig.count > 1) {
             return availableTargets.length > 0;
@@ -479,7 +484,10 @@ export class TargetChoiceManager {
         selectedTargets: TargetReference[],
         sourcePlayerId: string,
         sourceCarduid: string,
-        sourceCardId: string
+        sourceCardId: string,
+        action: string,
+        parameters?: Record<string, unknown>,
+        timing?: EffectTiming
     ): void {
         
         console.log(`⏰ Creating temporary effect: ${effect.effectId} until end of turn`);
@@ -512,9 +520,9 @@ export class TargetChoiceManager {
             // Create the temporary effect for this specific unit - use effect object directly
             const tempEffect: TemporaryEffect = {
                 sourceCarduid: sourceCarduid,
-                modifyAP: effect.action === 'modifyAP' ? effect.parameters?.value : undefined,
-                modifyHP: effect.action === 'modifyHP' ? effect.parameters?.value : undefined,
-                duration: effect.timing?.duration as string || 'UNTIL_END_OF_TURN',
+                modifyAP: action === 'modifyAP' && typeof parameters?.value === 'number' ? parameters.value : undefined,
+                modifyHP: action === 'modifyHP' && typeof parameters?.value === 'number' ? parameters.value : undefined,
+                duration: timing?.duration || 'UNTIL_END_OF_TURN',
                 appliedTurn: gameEnv.currentTurn,
                 appliedBy: sourcePlayerId
             };
@@ -625,16 +633,31 @@ export class TargetChoiceManager {
     /**
      * Get target player IDs based on scope
      */
-    private static getTargetPlayerIds(gameEnv: GameEnvironment, playerId: string, scope: string): string[] {
+   private static getTargetPlayerIds(gameEnv: GameEnvironment, playerId: string, scope: TargetScope): string[] {
         switch (scope) {
             case 'self':
+            case 'self_all_unit':
+            case 'self_all':
+            case 'self_unit':
+            case 'self_shield':
                 return [playerId];
             case 'opponent':
+            case 'opponent_unit':
+            case 'opponent_all_unit':
                 const opponentId = gameEnv.getOpponentId(playerId);
                 return opponentId ? [opponentId] : [];
             case 'any':
                 return Object.keys(gameEnv.players);
             default:
+                if (typeof scope === 'string') {
+                    if (scope.startsWith('self')) {
+                        return [playerId];
+                    }
+                    if (scope.startsWith('opponent')) {
+                        const opponent = gameEnv.getOpponentId(playerId);
+                        return opponent ? [opponent] : [];
+                    }
+                }
                 console.log(`⚠️ Unknown target scope: ${scope}`);
                 return [];
         }
@@ -643,7 +666,7 @@ export class TargetChoiceManager {
     /**
      * Unified target validation with all filter types
      */
-    private static validateTargetFilters(card: any, filters: any): boolean {
+    private static validateTargetFilters(card: UnitZoneCard | PilotZoneCard, filters: TargetFilters = {}): boolean {
         // Level filter (from pairing effects)
         if (filters.level) {
             const cardLevel = card.cardData?.level || 0;
@@ -719,5 +742,31 @@ export class TargetChoiceManager {
                 console.log(`⚠️ Unsupported comparison operator: ${operator}`);
                 return false;
         }
+    }
+
+    private static getEffectAction(effect: EffectDefinition): string | undefined {
+        const directAction = typeof effect.action === 'string' ? effect.action : undefined;
+        if (directAction && directAction.length > 0) {
+            return directAction;
+        }
+
+        const nestedAction = effect.effect?.action;
+        if (typeof nestedAction === 'string' && nestedAction.length > 0) {
+            return nestedAction;
+        }
+
+        return undefined;
+    }
+
+    private static getEffectParameters(effect: EffectDefinition): Record<string, unknown> | undefined {
+        if (effect.parameters) {
+            return effect.parameters;
+        }
+
+        return effect.effect?.parameters;
+    }
+
+    private static getEffectTiming(effect: EffectDefinition): EffectTiming | undefined {
+        return effect.timing;
     }
 }

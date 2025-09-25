@@ -3,7 +3,7 @@
 
 import { GameEvent, AcknowledgeEventsEvent, PlayCardEvent, PlayCardEventData, 
     EventFactory, EventStatus,
-     EventPriority, DeployEffectEvent,DeployEffectEventData } from './EventQueue/interfaces/GameEvent';
+     EventPriority, DeployEffectEvent,DeployEffectEventData, TargetChoiceEvent } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase, EventType } from '../models/GameEnums';
 import { EnergyManager } from './EnergyManager';
@@ -12,7 +12,7 @@ import { BaseCardManager } from './BaseCardManager';
 import { GameNotificationManager } from './GameNotificationManager';
 import { PlayerCardManager } from './PlayerCardManager';
 import { DeployEffectManager } from './DeployEffectManager';
-import { PairingEffect } from './PairingEffect';
+import { PairingEffectManager } from './PairingEffectManager';
 import { TargetChoiceManager } from './TargetChoiceManager';
 import { EffectManagerRegistry } from './effects/EffectManagerRegistry';
 import { PhaseTransitionManager } from './effects/PhaseTransitionManager';
@@ -87,7 +87,7 @@ export class GameEngine {
                     return DeployEffectManager.executeDeployEffect(event as DeployEffectEvent, gameEnv);
 
                 case EventType.TARGET_CHOICE:
-                    return TargetChoiceManager.executeTargetChoice(event, gameEnv);
+                    return TargetChoiceManager.executeTargetChoice(event as TargetChoiceEvent, gameEnv);
 
                 case EventType.PAIRING_EFFECT_TRIGGERED:
                     return GameEngine.executePairingEffect(event, gameEnv);
@@ -610,7 +610,7 @@ export class GameEngine {
             // ✅ IMPROVED: Check for Pairing effects and get event directly (consolidated)
             if (placementResult.isOnPair) {
                 console.log(`🤝 Pairing detected - checking for pairing effects`);
-                const pairingEvent = PairingEffect.checkForPairingEffectsEvent(eventData, placementResult, gameEnv);
+                const pairingEvent = PairingEffectManager.checkForPairingEffectsEvent(eventData, placementResult, gameEnv, playerId);
                 if (pairingEvent) {
                     gameEnv.processingQueue.push(pairingEvent);
                     console.log(`📋 Pairing event queued: ${pairingEvent.id}`);
@@ -1173,8 +1173,8 @@ export class GameEngine {
         console.log(`🤝 Executing PAIRING_EFFECT_TRIGGERED event: ${event.id}`);
 
         try {
-            // Use PairingEffect to process the pairing effects
-            const result = PairingEffect.processPairingEffect(gameEnv, event.data);
+            // Use PairingEffectManager to process the pairing effects
+            const result = PairingEffectManager.processPairingEffect(gameEnv, event.data);
 
             if (!result.success) {
                 console.log(`❌ Pairing effect processing failed: ${result.error}`);

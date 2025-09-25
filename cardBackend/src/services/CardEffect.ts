@@ -4,7 +4,7 @@
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase } from '../models/GameEnums';
 import { ZoneCard, CardDatabaseManager } from '../models/CardSystem';
-import { EffectProcessingResult } from '../models/ContinuousEffects';
+import { EffectProcessingResult } from '../models/ContinuousEffectStore';
 import { SLOT_ZONES } from '../config/gameConstants';
 
 export interface EffectResult {

@@ -3,7 +3,7 @@
 
 import { GameEnvironment } from '../../models/GameEnvironment';
 import { EventType } from '../../models/GameEnums';
-import { GameEvent } from '../EventQueue/interfaces/GameEvent';
+import { GameEvent, RepairEffectEvent } from '../EventQueue/interfaces/GameEvent';
 import { StateBasedAction } from '../EventQueue/StateBasedActionEngine';
 import { RepairEffectManager } from './RepairEffectManager';
 import { PhaseTransitionManager } from './PhaseTransitionManager';
@@ -142,7 +142,7 @@ export class EffectManagerRegistry {
     private static executeLegacyEffect(event: GameEvent | StandardGameEvent, gameEnv: GameEnvironment): ExecutionResult {
         switch (event.type) {
             case EventType.TRIGGER_HEALING:
-                return RepairEffectManager.executeRepairEffect(event as GameEvent, gameEnv);
+                return RepairEffectManager.executeRepairEffect(event as RepairEffectEvent, gameEnv);
             
             case EventType.GAMEPLAY_BEGINS:
             case EventType.PHASE_ADVANCE:

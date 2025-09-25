@@ -104,15 +104,14 @@ export interface StepEndEvent extends BaseGameEvent {
 }
 
 export interface PlayCardEventData {
-    playerId: string;
     gameId: string;
     carduid: string;
     playAs: string;
-    targetUnit?: any;
+    targetUnit?: string;
     fromBurst?: boolean;
     cardId?: string;
     slotName?: string;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 export interface PlayCardEvent extends BaseGameEvent {
@@ -120,9 +119,65 @@ export interface PlayCardEvent extends BaseGameEvent {
     data: PlayCardEventData;
 }
 
+export interface TargetFilters {
+    level?: string;
+    hp?: string;
+    status?: string;
+    traits?: string[];
+    zone?: string[];
+    controller?: string;
+    [key: string]: unknown;
+}
+
+export type TargetScope = 'self' | 'opponent' | 'any' | string;
+
+export type TargetType = 'unit' | 'pilot' | 'card' | 'player' | string;
+
+export interface EffectTargetConfig {
+    type?: TargetType;
+    scope?: TargetScope;
+    count?: number;
+    filters?: TargetFilters;
+    zone?: string[];
+}
+
+export interface TargetReference {
+    carduid: string;
+    zone: string;
+    playerId: string;
+    cardData?: Record<string, unknown>;
+}
+
+export interface EffectTiming {
+    duration?: string;
+    actionTurn?: string;
+}
+
+export type EffectCondition = string | Record<string, unknown>;
+
+export interface EffectDetails {
+    action: string;
+    parameters?: Record<string, unknown>;
+    duration?: string;
+}
+
+export interface EffectDefinition {
+    effectId: string;
+    type?: string;
+    trigger?: string;
+    optional?: boolean;
+    target?: EffectTargetConfig;
+    action?: string;
+    parameters?: Record<string, unknown>;
+    timing?: EffectTiming;
+    conditions?: EffectCondition[];
+    description?: string | string[];
+    effect?: EffectDetails;
+}
+
 export interface DeployEffectEventData {
     carduid: string;
-    effects: any[];
+    effects: EffectDefinition[];
 }
 
 export interface DeployEffectEvent extends BaseGameEvent {
@@ -195,6 +250,16 @@ export interface AbilityResolvedEvent extends BaseGameEvent {
         effects: any[];
         playerId: string;
     };
+}
+
+export interface RepairEffectEventData {
+    carduid: string;
+    healAmount: number;
+}
+
+export interface RepairEffectEvent extends BaseGameEvent {
+    type: EventType.TRIGGER_HEALING;
+    data: RepairEffectEventData;
 }
 
 // ============ COMBAT EVENTS ============
@@ -278,47 +343,33 @@ export interface BurstEffectChoiceEvent extends BaseGameEvent {
     };
 }
 
+export interface TargetChoiceSelection {
+    carduid: string;
+    zone: string;
+    playerId: string;
+}
+
+export interface TargetChoiceEventData {
+    playerId: string;
+    choiceId: string;
+    userDecisionMade: boolean;
+    sourceCarduid: string;
+    effect: EffectDefinition;
+    availableTargets: TargetReference[];
+    selectedTarget?: TargetChoiceSelection;
+    selectedTargets?: TargetChoiceSelection[];
+}
+
 export interface TargetChoiceEvent extends BaseGameEvent {
     type: EventType.TARGET_CHOICE;
-    data: {
-        // Common fields
-        playerId: string;           // Player making the choice
-        choiceId: string;           // Unique choice identifier
-        userDecisionMade: boolean;  // Choice completion status
-        
-        // Source information
-        sourceCarduid: string;      // Card triggering the effect
-        
-        // Effect information
-        effect: {
-            effectId: string;
-            action: string;         // 'modifyAP', 'damage', 'rest', etc.
-            parameters: any;        // Effect parameters
-            description?: string;
-        };
-        
-        // Available targets (computed)
-        availableTargets: Array<{
-            carduid: string;
-            // REMOVED: cardId - use getCardIdFromUid(carduid) instead
-            zone: string;
-            playerId: string;
-            cardData?: any;         // For display purposes
-        }>;
-        
-        // User selection result
-        selectedTargets?: Array<{
-            carduid: string;
-            zone: string;
-            playerId: string;
-        }>;
-    };
+    data: TargetChoiceEventData;
 }
 
 export type GameEvent = 
     | AcknowledgeEventsEvent
     | PlayCardEvent
     | DeployEffectEvent
+    | RepairEffectEvent
     | PowerBoostEvent
     | TurnStartEvent
     | TurnEndEvent 
@@ -393,9 +444,22 @@ export class EventFactory {
         gameId: string,
         carduid: string,
         playAs: string,
-        targetUnit?: any,
-        extras: Partial<Omit<PlayCardEvent['data'], 'playerId' | 'gameId' | 'carduid' | 'playAs' | 'targetUnit'>> = {}
+        targetUnit?: string,
+        extras: Partial<PlayCardEventData> = {}
     ): PlayCardEvent {
+        const sanitizedExtras: Partial<PlayCardEventData> = { ...extras };
+        if ('playerId' in sanitizedExtras) {
+            delete (sanitizedExtras as Record<string, unknown>).playerId;
+        }
+
+        const eventData: PlayCardEventData = {
+            gameId,
+            carduid,
+            playAs,
+            ...(typeof targetUnit === 'string' ? { targetUnit } : {}),
+            ...sanitizedExtras
+        };
+
         return {
             id: `play_card_${++this.eventIdCounter}_${Date.now()}`,
             type: EventType.PLAY_CARD,
@@ -403,14 +467,7 @@ export class EventFactory {
             priority: EventPriority.NORMAL,
             timestamp: Date.now(),
             playerId,
-            data: {
-                playerId,
-                gameId,
-                carduid,
-                playAs,
-                targetUnit,
-                ...extras
-            }
+            data: eventData
         };
     }
     
@@ -603,19 +660,18 @@ export class EventFactory {
     static createTargetChoiceEvent(params: {
         playerId: string;
         sourceCarduid: string;
-        effect: any;
-        availableTargets: any[];
+        effect: EffectDefinition;
+        availableTargets: TargetReference[];
     }): TargetChoiceEvent {
         const { playerId, sourceCarduid, effect, availableTargets } = params;
         const effectKey = effect?.effectId || effect?.action || 'effect';
-        const eventData = {
+        const eventData: TargetChoiceEventData = {
             playerId,
             choiceId: `target_choice_${effectKey}_${Date.now()}`,
             userDecisionMade: false,
             sourceCarduid,
             effect,
-            availableTargets,
-            selectedTargets: undefined
+            availableTargets
         };
 
         return {
@@ -632,7 +688,7 @@ export class EventFactory {
     static createDeployEffectEvent(
         playerId: string,
         carduid: string,
-        deployEffects: any[],
+        deployEffects: EffectDefinition[],
     ): DeployEffectEvent {
 
         const deployEffectEventData: DeployEffectEventData = {

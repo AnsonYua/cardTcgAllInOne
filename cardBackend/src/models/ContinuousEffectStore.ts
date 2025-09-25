@@ -1,5 +1,5 @@
-// src/models/ContinuousEffects.ts
-// Continuous effects system interfaces and types
+// src/models/ContinuousEffectStore.ts
+// Continuous effects system interfaces and helper utilities
 
 export interface StoredContinuousEffect {
     effectId: string;              // "pair_ap_boost_all"
@@ -72,7 +72,7 @@ export interface EffectProcessingResult {
 /**
  * Helper functions for managing array-based continuous effects
  */
-export class ContinuousEffectsHelper {
+export class ContinuousEffectStore {
     /**
      * Add effect to collection with duplicate prevention
      */
