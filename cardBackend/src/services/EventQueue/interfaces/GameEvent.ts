@@ -21,7 +21,7 @@ export interface BaseGameEvent {
     status: EventStatus;
     priority: EventPriority;
     sourceId?: string;
-    playerId?: string;
+    playerId: string;
     timestamp: number;
     data: any;
     reactionsPolled?: boolean;
@@ -118,6 +118,16 @@ export interface PlayCardEventData {
 export interface PlayCardEvent extends BaseGameEvent {
     type: EventType.PLAY_CARD;
     data: PlayCardEventData;
+}
+
+export interface DeployEffectEventData {
+    carduid: string;
+    effects: any[];
+}
+
+export interface DeployEffectEvent extends BaseGameEvent {
+    type: EventType.DEPLOY_EFFECT_TRIGGERED;
+    data: DeployEffectEventData;
 }
 
 // ============ CARD LIFECYCLE EVENTS ============
@@ -308,6 +318,7 @@ export interface TargetChoiceEvent extends BaseGameEvent {
 export type GameEvent = 
     | AcknowledgeEventsEvent
     | PlayCardEvent
+    | DeployEffectEvent
     | PowerBoostEvent
     | TurnStartEvent
     | TurnEndEvent 
@@ -618,6 +629,28 @@ export class EventFactory {
         };
     }
     
+    static createDeployEffectEvent(
+        playerId: string,
+        carduid: string,
+        deployEffects: any[],
+    ): DeployEffectEvent {
+
+        const deployEffectEventData: DeployEffectEventData = {
+            carduid,
+            effects: deployEffects
+        };
+        
+        return {
+            id: `deploy_${++this.eventIdCounter}_${Date.now()}`,
+            type: EventType.DEPLOY_EFFECT_TRIGGERED,
+            status: EventStatus.DECLARED,
+            priority: EventPriority.NORMAL,
+            playerId,
+            timestamp: Date.now(),
+            data: deployEffectEventData
+        };
+    }
+    
     // ============ GAME-SPECIFIC EVENT FACTORIES (Moved from GameEventFactory.ts) ============
     
     /**
@@ -680,37 +713,6 @@ export class EventFactory {
         return playCardEvent;
     }
 
-    /**
-     * Create Deploy effect event for processing queue
-     */
-    static createDeployEffectEvent(eventData: any, deployEffects: any[]): GameEvent {
-        // Import getCardIdFromUid at runtime to avoid circular dependencies
-        const { getCardIdFromUid } = require('../../utils/CardUtils');
-        
-        // Create event data object directly from input to minimize conversions
-        const eventDataObject = {
-            cardId: getCardIdFromUid(eventData.carduid), // CHANGED: Derive cardId from carduid
-            carduid: eventData.carduid,        // Pass carduid directly from eventData
-            cardData: eventData.cardData,      // Pass cardData object directly from eventData
-            playerId: eventData.playerId,      // Pass playerId directly from eventData
-            zone: eventData.zone,              // Pass zone directly from eventData
-            effects: deployEffects,            // Pass effects array directly
-            timestamp: Date.now()
-        };
-
-        const deployEvent: GameEvent = {
-            id: `deploy_${eventData.carduid}_${Date.now()}`,
-            type: EventType.DEPLOY_EFFECT_TRIGGERED,
-            status: EventStatus.DECLARED,
-            priority: EventPriority.NORMAL,
-            playerId: eventData.playerId,
-            data: eventDataObject,             // Pass eventDataObject directly
-            timestamp: Date.now()
-        };
-
-        console.log(`🚀 Created Deploy event: ${deployEvent.id} with ${deployEffects.length} effects`);
-        return deployEvent;
-    }
 
     // ============ UTILITY METHODS ============
     

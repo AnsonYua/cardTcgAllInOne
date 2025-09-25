@@ -1,7 +1,9 @@
 // src/services/GameEngine.ts
 // Game execution engine - handles all game state modifications
 
-import { GameEvent, AcknowledgeEventsEvent, PlayCardEvent, PlayCardEventData, EventFactory, EventStatus, EventPriority } from './EventQueue/interfaces/GameEvent';
+import { GameEvent, AcknowledgeEventsEvent, PlayCardEvent, PlayCardEventData, 
+    EventFactory, EventStatus,
+     EventPriority, DeployEffectEvent,DeployEffectEventData } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase, EventType } from '../models/GameEnums';
 import { EnergyManager } from './EnergyManager';
@@ -82,7 +84,7 @@ export class GameEngine {
                     return GameEngine.executeBurstEffectChoice(event, gameEnv);
 
                 case EventType.DEPLOY_EFFECT_TRIGGERED:
-                    return DeployEffectManager.executeDeployEffect(event, gameEnv);
+                    return DeployEffectManager.executeDeployEffect(event as DeployEffectEvent, gameEnv);
 
                 case EventType.TARGET_CHOICE:
                     return TargetChoiceManager.executeTargetChoice(event, gameEnv);
@@ -596,16 +598,13 @@ export class GameEngine {
             // ✅ Card placement successful - Check for Deploy effects (ENTERS_PLAY triggers)
             console.log(`✅ Card ${eventData.carduid} successfully placed for player ${playerId}`);
 
-            // Check for Deploy effects using carduid to extract cardId and fetch cardData from database
-            const deployEffects = PlayerCardManager.checkForDeployEffects(eventData.carduid);
-            if (deployEffects.length > 0) {
-                console.log(`🚀 Deploy effects detected: ${deployEffects.length} effects for card ${eventData.cardId}`);
-
-                // Create and queue Deploy effect events (similar to burst effects)
-                const deployEvent = EventFactory.createDeployEffectEvent(eventData, deployEffects);
-                gameEnv.processingQueue.push(deployEvent);
-
-                console.log(`📋 Deploy event queued: ${deployEvent.id}`);
+            // ✅ IMPROVED: Single-step deploy effect processing (consolidated from two-step legacy approach)
+            const deployResult = DeployEffectManager.checkAndQueueDeployEffects(eventData,playerId, gameEnv);
+            if (!deployResult.success) {
+                console.log(`⚠️ Deploy effect processing error: ${deployResult.error}`);
+                // Continue with execution - deploy effect failure shouldn't block card placement
+            } else if (deployResult.effectsFound > 0) {
+                console.log(`✅ Deploy effects processed: ${deployResult.effectsFound} effects queued`);
             }
 
             // ✅ IMPROVED: Check for Pairing effects and get event directly (consolidated)

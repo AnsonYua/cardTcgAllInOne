@@ -740,37 +740,4 @@ export class PlayerCardManager {
         };
     }
 
-    /**
-     * Check if a card has Deploy effects (ENTERS_PLAY triggers) using carduid to extract cardId and fetch card data
-     */
-    static checkForDeployEffects(carduid: string): any[] {
-        console.log("checkForDeployEffects using carduid:", carduid);
-        
-        // Extract cardId from carduid (remove UUID suffix)
-        const cardId = carduid.split('_')[0];
-        
-        // Get card data from card database
-        const cardData = CardDatabaseManager.getCardDetails(cardId);
-        if (!cardData) {
-            console.warn(`⚠️ Card data not found for ${cardId}`);
-            return [];
-        }
-        
-        console.log(`📋 Checking deploy effects for card: ${cardData.name} (${cardId})`);
-        
-        // Check if card has effects with ENTERS_PLAY trigger
-        const deployEffects: any[] = [];
-        
-        if (cardData.effects && cardData.effects.rules) {
-            for (const rule of cardData.effects.rules) {
-                if (rule.trigger === 'ENTERS_PLAY') {
-                    deployEffects.push(rule);
-                    console.log(`🎯 Found deploy effect: ${rule.effect?.action || 'unknown'}`);
-                }
-            }
-        }
-        
-        console.log(`✅ Found ${deployEffects.length} deploy effects for ${carduid}`);
-        return deployEffects;
-    }
 }

@@ -287,23 +287,6 @@ export class RepairEffectManager implements StandardEffectManager {
         }
     }
 
-    /**
-     * EVENT GENERATION: Create repair event with minimal data
-     */
-    static createRepairEvent(carduid: string, healAmount: number): GameEvent {
-        return {
-            id: `repair_${carduid}_${Date.now()}`,
-            type: EventType.TRIGGER_HEALING,
-            status: EventStatus.DECLARED,
-            priority: EventPriority.NORMAL,
-            timestamp: Date.now(),
-            data: {
-                carduid,
-                healAmount
-            } as RepairEventData
-        };
-    }
-
     // ============ HELPER METHODS ============
 
     /**

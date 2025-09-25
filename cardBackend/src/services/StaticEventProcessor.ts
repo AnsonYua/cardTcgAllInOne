@@ -97,7 +97,7 @@ export class StaticEventProcessor {
                     console.log(`✅ Event resolved: ${event.type}`);
                     
                     // Check for state-based actions after resolution
-                    const stateActions = this.checkForStateBasedActions(gameEnv, engines.stateEngine);
+                    const stateActions = this.checkForStateBasedActions(gameEnv, event.playerId,engines.stateEngine);
                     stateActions.forEach(stateEvent => {
                         console.log(`🏛️ Adding state-based action: ${stateEvent.type}`);
                         gameEnv.enqueueForProcessing(stateEvent);
@@ -261,7 +261,7 @@ export class StaticEventProcessor {
         return null; // No replacement effects for now
     }
     
-    private static checkForStateBasedActions(gameEnv: GameEnvironment, stateEngine: StateBasedActionEngine): GameEvent[] {
+    private static checkForStateBasedActions(gameEnv: GameEnvironment, playerId:string,stateEngine: StateBasedActionEngine): GameEvent[] {
         console.log('🏛️ Checking for state-based actions...');
         try {
             const stateActions = stateEngine.checkForStateBasedActions();
@@ -276,6 +276,7 @@ export class StaticEventProcessor {
                         status: EventStatus.DECLARED,
                         priority: EventPriority.HIGH,
                         timestamp: Date.now(),
+                        playerId:playerId,
                         // Pass action data directly without field reconstruction
                         data: action.data || {}
                     };
