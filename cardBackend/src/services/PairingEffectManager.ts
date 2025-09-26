@@ -10,7 +10,6 @@ import {
     PairingEffectEvent,
     PairingEffectEventData,
     PairingEffectDefinition,
-    EffectTargetConfig,
     TargetFilters
 } from './EventQueue/interfaces/GameEvent';
 import { EventType } from '../models/GameEnums';
@@ -25,6 +24,7 @@ import {
 } from '../interfaces/StandardizedInterfaces';
 import { getCardIdFromUid } from '../utils/CardUtils';
 import { eventDataValidator } from '../validators/EventDataValidator';
+import { ensureEffectDefaults, normalizeEffectRule } from '../utils/EffectNormalizationUtils';
 
 export interface PairingEffectResult {
     success: boolean;
@@ -271,11 +271,12 @@ export class PairingEffectManager implements StandardEffectManager {
         
         try {
             // Use unified TargetChoiceManager for processing
+            const normalizedEffect = ensureEffectDefaults(effect);
             const result = TargetChoiceManager.processEffectWithTargetChoice(
                 gameEnv,
                 eventData.playerId,
                 eventData.carduid,
-                effect
+                normalizedEffect
             );
             
             // Track state changes
@@ -286,7 +287,7 @@ export class PairingEffectManager implements StandardEffectManager {
                     stateChanges.push({
                         type: 'CARD_PROPERTY',
                         carduid: carduid,
-                        property: effect.action || 'pairing_effect',
+                        property: normalizedEffect.action || 'pairing_effect',
                         oldValue: 'unknown',
                         newValue: 'modified',
                         timestamp: Date.now()
@@ -400,123 +401,35 @@ export class PairingEffectManager implements StandardEffectManager {
         }
 
         const raw = rule as Record<string, unknown>;
-
         const triggerValue = raw['trigger'];
-        let trigger: string | undefined;
-        if (typeof triggerValue === 'string') {
-            trigger = triggerValue;
-        } else if (triggerValue && typeof triggerValue === 'object') {
-            const triggerRecord = triggerValue as Record<string, unknown>;
-            if (typeof triggerRecord['event'] === 'string') {
-                trigger = triggerRecord['event'] as string;
-            }
-        }
+        const resolvedTrigger = typeof triggerValue === 'string'
+            ? triggerValue
+            : triggerValue && typeof triggerValue === 'object' && typeof (triggerValue as Record<string, unknown>)['event'] === 'string'
+                ? (triggerValue as Record<string, unknown>)['event'] as string
+                : undefined;
 
-        if (trigger !== 'PAIRING_COMPLETE') {
+        if (resolvedTrigger !== 'PAIRING_COMPLETE') {
             return null;
         }
 
-        const action = this.extractAction(raw);
-        if (!action) {
+        const normalized = normalizeEffectRule(raw, {
+            fallbackEffectId: 'pairing_effect',
+            expectedTriggers: ['PAIRING_COMPLETE'],
+            defaultTrigger: 'PAIRING_COMPLETE',
+            requireAction: true,
+            defaultTargetScope: 'self'
+        });
+
+        if (!normalized) {
             console.log(`⚠️ Skipping pairing rule without actionable effect`);
             return null;
         }
 
-        const effectId = typeof raw['effectId'] === 'string' ? raw['effectId'] : 'pairing_effect';
-        const type = typeof raw['type'] === 'string' ? raw['type'] : undefined;
-        const optional = typeof raw['optional'] === 'boolean' ? raw['optional'] : undefined;
-        const description = raw['description'];
-
-        const pairingEffect: PairingEffect = {
-            effectId,
-            type,
-            trigger: 'PAIRING_COMPLETE',
-            optional,
-            action,
-            parameters: this.normalizeParameters(raw),
-            timing: this.normalizeTiming(raw['timing']),
-            target: this.normalizeTarget(raw['target']),
-            conditions: Array.isArray(raw['conditions']) ? raw['conditions'] as EffectCondition[] : undefined,
-            description: Array.isArray(description) || typeof description === 'string' ? description as string | string[] : undefined,
+        return {
+            ...normalized,
             pairedSlot,
             sourceCarduid
-        };
-
-        return pairingEffect;
-    }
-
-    private static extractAction(rule: Record<string, unknown>): string | undefined {
-        const directAction = rule['action'];
-        if (typeof directAction === 'string' && directAction.length > 0) {
-            return directAction;
-        }
-
-        const nestedEffect = rule['effect'];
-        if (nestedEffect && typeof nestedEffect === 'object') {
-            const nestedAction = (nestedEffect as Record<string, unknown>)['action'];
-            if (typeof nestedAction === 'string' && nestedAction.length > 0) {
-                return nestedAction;
-            }
-        }
-
-        return undefined;
-    }
-
-    private static normalizeParameters(rule: Record<string, unknown>): PairingEffectParameters | undefined {
-        const directParameters = rule['parameters'];
-        if (directParameters && typeof directParameters === 'object') {
-            return directParameters as PairingEffectParameters;
-        }
-
-        const nestedEffect = rule['effect'];
-        if (nestedEffect && typeof nestedEffect === 'object') {
-            const effectParameters = (nestedEffect as Record<string, unknown>)['parameters'];
-            if (effectParameters && typeof effectParameters === 'object') {
-                return effectParameters as PairingEffectParameters;
-            }
-        }
-
-        return undefined;
-    }
-
-    private static normalizeTiming(timingValue: unknown): PairingEffect['timing'] {
-        if (!timingValue || typeof timingValue !== 'object') {
-            return undefined;
-        }
-
-        const timing = timingValue as Record<string, unknown>;
-        const duration = typeof timing['duration'] === 'string' ? timing['duration'] : undefined;
-        const actionTurn = typeof timing['actionTurn'] === 'string' ? timing['actionTurn'] : undefined;
-
-        if (!duration && !actionTurn) {
-            return undefined;
-        }
-
-        return { duration, actionTurn };
-    }
-
-    private static normalizeTarget(targetValue: unknown): EffectTarget | undefined {
-        if (!targetValue || typeof targetValue !== 'object') {
-            return undefined;
-        }
-
-        const target = targetValue as Record<string, unknown>;
-        const scope = typeof target['scope'] === 'string' ? target['scope'] : undefined;
-        const type = typeof target['type'] === 'string' ? target['type'] : undefined;
-        const count = typeof target['count'] === 'number' ? target['count'] : undefined;
-        const filtersValue = target['filters'];
-        const filters = filtersValue && typeof filtersValue === 'object' ? filtersValue as TargetFilters : undefined;
-
-        if (!scope && !type && !count && !filters) {
-            return undefined;
-        }
-
-        return {
-            scope: scope || 'self',
-            type,
-            count,
-            filters
-        };
+        } as PairingEffect;
     }
 
     /**
@@ -543,13 +456,14 @@ export class PairingEffectManager implements StandardEffectManager {
             
             // Process each pairing effect (no tracking needed - re-pairing is impossible)
             for (const effect of pairingEffects) {
-                const { effectId } = effect;
+                const normalizedEffect = ensureEffectDefaults(effect);
+                const { effectId } = normalizedEffect;
                 
                 console.log(`⚡ Executing pairing effect: ${effectId}`);
-                const action = EffectExecutor.getEffectAction(effect);
+                const action = EffectExecutor.getEffectAction(normalizedEffect);
 
                 if (action === 'draw') {
-                    const drawResult = EffectExecutor.applyPlayerDrawEffect(gameEnv, playerId, effect);
+                    const drawResult = EffectExecutor.applyPlayerDrawEffect(gameEnv, playerId, normalizedEffect);
                     if (!drawResult.success) {
                         console.error(`❌ Failed to execute draw effect ${effectId}: ${drawResult.error}`);
                         continue;
@@ -560,12 +474,12 @@ export class PairingEffectManager implements StandardEffectManager {
                     continue;
                 }
 
-                const sourceCarduid = effect.sourceCarduid || eventData.carduid;
+                const sourceCarduid = normalizedEffect.sourceCarduid || eventData.carduid;
                 const choiceResult = TargetChoiceManager.processEffectWithTargetChoice(
                     gameEnv,
                     playerId,
                     sourceCarduid,
-                    effect
+                    normalizedEffect
                 );
 
                 if (!choiceResult.success && !choiceResult.requiresSelection) {

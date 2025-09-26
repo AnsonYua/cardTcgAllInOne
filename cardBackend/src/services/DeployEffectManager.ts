@@ -6,11 +6,11 @@ import { CardDatabaseManager } from '../models/CardSystem';
 import {
     DeployEffectEvent,
     EffectDefinition,
-    EffectDetails,
     PlayCardEventData
 } from './EventQueue/interfaces/GameEvent';
 import { EventFactory } from './EventQueue/interfaces/GameEvent';
 import { TargetChoiceManager, TargetChoiceResult } from './TargetChoiceManager';
+import { ensureEffectDefaults, normalizeEffectRule } from '../utils/EffectNormalizationUtils';
 
 export interface ExecutionResult {
     success: boolean;
@@ -80,7 +80,7 @@ export class DeployEffectManager {
         const failures: string[] = [];
 
         for (const effect of event.data.effects) {
-            const normalizedEffect = this.ensureEffectDefaults(effect);
+            const normalizedEffect = ensureEffectDefaults(effect);
             const result: TargetChoiceResult = TargetChoiceManager.processEffectWithTargetChoice(
                 gameEnv,
                 event.playerId,
@@ -107,72 +107,19 @@ export class DeployEffectManager {
      * Normalize raw rule data from card JSON into EffectDefinition shape.
      */
     private static normalizeDeployEffect(rule: Record<string, unknown>): EffectDefinition {
-        const effectDetails = this.extractEffectDetails(rule.effect as EffectDetails | undefined);
-        const parameters = this.extractParameters(rule, effectDetails);
+        const normalized = normalizeEffectRule(rule, {
+            fallbackEffectId: 'deploy_effect',
+            expectedTriggers: ['ENTERS_PLAY'],
+            defaultTrigger: 'ENTERS_PLAY'
+        });
 
-        const normalized: EffectDefinition = {
-            effectId: String(rule.effectId ?? 'deploy_effect'),
-            type: typeof rule.type === 'string' ? rule.type : undefined,
-            trigger: typeof rule.trigger === 'string' ? rule.trigger : undefined,
-            optional: typeof rule.optional === 'boolean' ? rule.optional : undefined,
-            target: (rule.target as EffectDefinition['target']) || undefined,
-            action: effectDetails?.action,
-            parameters,
-            timing: this.extractTiming(rule),
-            conditions: Array.isArray(rule.conditions) ? rule.conditions : undefined,
-            description: rule.description as EffectDefinition['description'],
-            effect: effectDetails || undefined
-        };
+        if (!normalized) {
+            return {
+                effectId: 'deploy_effect',
+                trigger: 'ENTERS_PLAY'
+            };
+        }
 
         return normalized;
     }
-
-    /**
-     * Ensure event effects retain flattened action/parameters for downstream consumers.
-     */
-    private static ensureEffectDefaults(effect: EffectDefinition): EffectDefinition {
-        const effectDetails = effect.effect ?? undefined;
-        const action = effect.action ?? effectDetails?.action;
-        const parameters = effect.parameters ?? effectDetails?.parameters;
-
-        if (action === effect.action && parameters === effect.parameters) {
-            return effect;
-        }
-
-        return {
-            ...effect,
-            action,
-            parameters
-        };
-    }
-
-    private static extractEffectDetails(effect: EffectDetails | undefined): EffectDetails | undefined {
-        if (!effect) {
-            return undefined;
-        }
-        if (typeof effect.action !== 'string') {
-            return undefined;
-        }
-        return effect;
-    }
-
-    private static extractParameters(rule: Record<string, unknown>, effectDetails?: EffectDetails): Record<string, unknown> | undefined {
-        if (rule.parameters && typeof rule.parameters === 'object') {
-            return rule.parameters as Record<string, unknown>;
-        }
-        return effectDetails?.parameters;
-    }
-
-    private static extractTiming(rule: Record<string, unknown>): EffectDefinition['timing'] {
-        const timing = rule.timing;
-        if (!timing || typeof timing !== 'object') {
-            return undefined;
-        }
-        const { duration, actionTurn } = timing as { duration?: string; actionTurn?: string };
-        if (!duration && !actionTurn) {
-            return undefined;
-        }
-        return { duration, actionTurn };
-    }
 }
-

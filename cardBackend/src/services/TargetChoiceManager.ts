@@ -14,7 +14,6 @@ import {
     EventFactory,
     EventStatus,
     EffectDefinition,
-    EffectTargetConfig,
     TargetChoiceEvent,
     TargetChoiceSelection,
     TargetFilters,
@@ -22,12 +21,11 @@ import {
     TargetScope,
     TargetType
 } from './EventQueue/interfaces/GameEvent';
-import { EventType } from '../models/GameEnums';
 import { SLOT_ZONES } from '../config/gameConstants';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { UnitZoneCard, PilotZoneCard } from '../models/CardSystem';
-import { v4 as uuidv4 } from 'uuid';
 import { EffectExecutor } from './effects/EffectExecutor';
+import { ensureEffectDefaults, normalizeTargetConfig, validateComparisonFilter } from '../utils/EffectNormalizationUtils';
 
 interface ResolvedTargetConfig {
     type: TargetType;
@@ -65,12 +63,13 @@ export class TargetChoiceManager {
         sourceCarduid: string,
         effect: EffectDefinition
     ): TargetChoiceResult {
-        const effectAction = EffectExecutor.getEffectAction(effect);
-        const effectLabel = effect.effectId || effectAction || 'unknown';
+        const normalizedEffect = ensureEffectDefaults(effect);
+        const effectAction = EffectExecutor.getEffectAction(normalizedEffect);
+        const effectLabel = normalizedEffect.effectId || effectAction || 'unknown';
         console.log(`🎯 Processing effect ${effectLabel} requiring target selection`);
 
         try {
-            const targetConfig = this.resolveTargetConfig(effect);
+            const targetConfig = this.resolveTargetConfig(normalizedEffect);
             const sourceCardId = this.deriveSourceCardId(sourceCarduid);
             // Generate available targets based on config
             const availableTargets = this.generateAvailableTargets(gameEnv, playerId, targetConfig);
@@ -90,7 +89,7 @@ export class TargetChoiceManager {
                 const choiceEvent = EventFactory.createTargetChoiceEvent({
                     playerId,
                     sourceCarduid,
-                    effect,
+                    effect: normalizedEffect,
                     availableTargets
                 });
                 
@@ -106,7 +105,7 @@ export class TargetChoiceManager {
             } else {
                 // Auto-apply to single target or all targets (based on count)
                 const targetsToApply = availableTargets.slice(0, targetConfig.count);
-                const result = EffectExecutor.applyEffectToTargets(gameEnv, effect, targetsToApply, playerId, sourceCarduid);
+                const result = EffectExecutor.applyEffectToTargets(gameEnv, normalizedEffect, targetsToApply, playerId, sourceCarduid);
                 
                 console.log(`🤖 Auto-applied ${effect.effectId} to ${targetsToApply.length} target(s)`);
                 return {
@@ -166,9 +165,10 @@ export class TargetChoiceManager {
             }));
 
             // Apply effect to selected targets - pass eventData object directly to minimize conversions
+            const normalizedEffect = ensureEffectDefaults(eventData.effect);
             const result = EffectExecutor.applyEffectToTargets(
                 gameEnv,
-                eventData.effect,
+                normalizedEffect,
                 normalizedTargets,
                 event.playerId,
                 eventData.sourceCarduid
@@ -179,7 +179,7 @@ export class TargetChoiceManager {
                 return result;
             }
 
-            console.log(`✅ Successfully applied ${eventData.effect.effectId} to ${selectedTargets.length} selected target(s)`);
+            console.log(`✅ Successfully applied ${normalizedEffect.effectId} to ${selectedTargets.length} selected target(s)`);
             return { success: true };
 
         } catch (error) {
@@ -267,14 +267,22 @@ export class TargetChoiceManager {
      * Derive complete target configuration using effect defaults when necessary
      */
     private static resolveTargetConfig(effect: EffectDefinition): ResolvedTargetConfig {
-        const target: EffectTargetConfig | undefined = effect.target;
-        const type = (target?.type as TargetType) || this.DEFAULT_TARGET_TYPE;
-        const scope = (target?.scope as TargetScope) || this.DEFAULT_TARGET_SCOPE;
-        const countValue = target?.count;
+        const normalizedTarget = normalizeTargetConfig(effect.target, {
+            scope: this.DEFAULT_TARGET_SCOPE,
+            type: this.DEFAULT_TARGET_TYPE,
+            count: this.DEFAULT_TARGET_COUNT
+        });
+
+        const type = (normalizedTarget?.type as TargetType) || this.DEFAULT_TARGET_TYPE;
+        const scope = (normalizedTarget?.scope as TargetScope) || this.DEFAULT_TARGET_SCOPE;
+        const countValue = normalizedTarget?.count;
         const count = typeof countValue === 'number' && countValue > 0
             ? countValue
             : this.DEFAULT_TARGET_COUNT;
-        const filters: TargetFilters = target?.filters ? { ...target.filters } : {};
+        const filters: TargetFilters = normalizedTarget?.filters ? { ...normalizedTarget.filters } : {};
+        if (normalizedTarget?.zone) {
+            filters.zone = normalizedTarget.zone;
+        }
 
         return {
             type,
@@ -371,7 +379,7 @@ export class TargetChoiceManager {
         // Level filter (from pairing effects)
         if (filters.level) {
             const cardLevel = card.cardData?.level || 0;
-            if (!this.validateComparisonFilter(cardLevel, filters.level)) {
+            if (!validateComparisonFilter(cardLevel, filters.level)) {
                 console.log(`❌ Card ${card.carduid} failed level filter: ${filters.level}`);
                 return false;
             }
@@ -380,7 +388,7 @@ export class TargetChoiceManager {
         // HP filter (from deploy effects)
         if (filters.hp) {
             const currentHp = (card.currentHP || 0) + (card.modifyHP || 0);
-            if (!this.validateComparisonFilter(currentHp, filters.hp)) {
+            if (!validateComparisonFilter(currentHp, filters.hp)) {
                 console.log(`❌ Card ${card.carduid} failed HP filter: ${filters.hp}`);
                 return false;
             }
@@ -408,41 +416,6 @@ export class TargetChoiceManager {
         }
         
         return true;
-    }
-
-    /**
-     * Unified comparison filter validation (handles both HP and level filters)
-     */
-    private static validateComparisonFilter(value: number, filterString: string): boolean {
-        // Parse filter string like "<=5", ">=3", ">1", etc.
-        const match = filterString.match(/^(<=|>=|<|>|==|!=)(\d+)$/);
-        if (!match) {
-            console.log(`⚠️ Invalid filter format: ${filterString}`);
-            return false;
-        }
-        
-        const operator = match[1];
-        const filterValue = parseInt(match[2], 10);
-        
-        console.log(`🔍 Filter validation: ${value} ${operator} ${filterValue}`);
-        
-        switch (operator) {
-            case '<=':
-                return value <= filterValue;
-            case '>=':
-                return value >= filterValue;
-            case '<':
-                return value < filterValue;
-            case '>':
-                return value > filterValue;
-            case '==':
-                return value === filterValue;
-            case '!=':
-                return value !== filterValue;
-            default:
-                console.log(`⚠️ Unsupported comparison operator: ${operator}`);
-                return false;
-        }
     }
 
 }
