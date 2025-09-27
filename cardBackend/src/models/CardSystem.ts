@@ -84,6 +84,17 @@ export interface ShieldCardData extends BasicCardData {
 
 export type CardData = UnitCardData | PilotCardData | CommandCardData | BaseCardData | EnergyCardData | ShieldCardData;
 
+export interface FieldCardValue {
+    totalTempModifyAP?: number; 
+    totalTempModifyHP?: number; 
+    totalContinueModifyAP?: number; 
+    totalContinueModifyHP?: number; 
+    totalDamageReceived?: number; 
+    totalCurrentAP?: number; 
+    totalCurrentHP?: number; 
+}
+
+
 // ============ ZONE CARD INTERFACES ============
 
 export interface ZoneCard {
@@ -143,6 +154,7 @@ export interface BaseCard extends ZoneCard {
     currentHP?: number; 
     originalHP?: number;
     damageReceived?:number;
+    fieldCardValue?:FieldCardValue;
 }
 
 export interface EnergyZoneCard extends ZoneCard {

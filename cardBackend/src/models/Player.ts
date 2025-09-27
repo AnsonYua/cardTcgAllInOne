@@ -16,7 +16,8 @@ import {
     isCommandZoneCard,
     isBaseCard,
     isEnergyZoneCard,
-    CardDatabaseManager
+    CardDatabaseManager,
+    FieldCardValue
 } from './CardSystem';
 import { GameEngine } from '../services/GameEngine';
 
@@ -25,6 +26,7 @@ import { GameEngine } from '../services/GameEngine';
 export interface SlotZone {
     unit?: UnitZoneCard;        // Primary unit in slot
     pilot?: PilotZoneCard;      // Pilot paired with unit
+    fieldCardValue?:FieldCardValue;
 }
 
 export interface PlayerZones {
@@ -698,6 +700,7 @@ export class Player {
     // ============ SERIALIZATION ============
 
     public toJSON(): any {
+        const serializedZones = this.serializeZonesForResponse();
         return {
             id: this.id,
             name: this.name,
@@ -706,7 +709,7 @@ export class Player {
             isRedraw: this.isRedraw,
             playerPoint: this.playerPoint,
             isReady: this.isReady,
-            zones: this.zones,
+            zones: serializedZones,
             // fieldEffects removed - not currently implemented
             effectRegistry: this.effectRegistry
         };
@@ -739,5 +742,50 @@ export class Player {
         
         // fieldEffects removed - not currently implemented
         return player;
+    }
+
+    private serializeZonesForResponse(): PlayerZones {
+        const serializeCard = (card: any) => {
+            if (!card) {
+                return card;
+            }
+
+            const serialized = { ...card };
+
+            if (typeof card.continueModifyAP === 'number') {
+                serialized.modifyAP = card.continueModifyAP ;
+            }
+
+            if (typeof card.continueModifyHP === 'number') {
+                serialized.modifyHP = card.continueModifyHP ;
+            }
+
+            return serialized;
+        };
+
+        const serializeSlot = (slot: SlotZone | undefined): SlotZone => {
+            if (!slot) {
+                return {};
+            }
+
+            return {
+                unit: serializeCard(slot.unit),
+                pilot: serializeCard(slot.pilot)
+            };
+        };
+
+        return {
+            slot1: serializeSlot(this.zones.slot1),
+            slot2: serializeSlot(this.zones.slot2),
+            slot3: serializeSlot(this.zones.slot3),
+            slot4: serializeSlot(this.zones.slot4),
+            slot5: serializeSlot(this.zones.slot5),
+            slot6: serializeSlot(this.zones.slot6),
+            base: this.zones.base.map(serializeCard),
+            shieldArea: this.zones.shieldArea.map(serializeCard),
+            energyArea: this.zones.energyArea.map(serializeCard),
+            trashArea: this.zones.trashArea.map(serializeCard),
+            repairAbilitiesCheckedThisCycle: this.zones.repairAbilitiesCheckedThisCycle
+        };
     }
 }
