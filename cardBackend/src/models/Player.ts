@@ -753,11 +753,11 @@ export class Player {
             const serialized = { ...card };
 
             if (typeof card.continueModifyAP === 'number') {
-                serialized.modifyAP = card.continueModifyAP ;
+                serialized.modifyAP = card.continueModifyAP + 1;
             }
 
             if (typeof card.continueModifyHP === 'number') {
-                serialized.modifyHP = card.continueModifyHP ;
+                serialized.modifyHP = card.continueModifyHP + 1;
             }
 
             return serialized;
@@ -768,9 +768,21 @@ export class Player {
                 return {};
             }
 
+            const unit = serializeCard(slot.unit);
+            const pilot = serializeCard(slot.pilot);
+            const fieldCardValue = this.calculateFieldCardValue(unit, pilot);
+
+            if (unit) {
+                unit.fieldCardValue = fieldCardValue;
+            }
+
+            if (pilot) {
+                pilot.fieldCardValue = this.calculateFieldCardValue(pilot, undefined);
+            }
+
             return {
-                unit: serializeCard(slot.unit),
-                pilot: serializeCard(slot.pilot)
+                unit,
+                pilot
             };
         };
 
@@ -787,5 +799,41 @@ export class Player {
             trashArea: this.zones.trashArea.map(serializeCard),
             repairAbilitiesCheckedThisCycle: this.zones.repairAbilitiesCheckedThisCycle
         };
+    }
+
+    private calculateFieldCardValue(unit: any, pilot: any | undefined): FieldCardValue {
+        const base: FieldCardValue = {
+            totalTempModifyAP: 0,
+            totalTempModifyHP: 0,
+            totalContinueModifyAP: 0,
+            totalContinueModifyHP: 0,
+            totalDamageReceived: 0,
+            totalCurrentAP: 0,
+            totalCurrentHP: 0
+        };
+        if (!unit) {
+            return base;
+        }
+
+        const value: FieldCardValue = {
+            totalTempModifyAP:  0,
+            totalTempModifyHP: 0,
+            totalContinueModifyAP: unit.continueModifyAP?? 0,
+            totalContinueModifyHP: unit.continueModifyHP ?? 0,
+            totalDamageReceived: unit.damage ?? 0,
+            totalCurrentAP: 0,
+            totalCurrentHP: 0
+        };
+
+        const unitCurrentAP = typeof unit.currentAP === 'number' ? unit.currentAP : unit.cardData?.ap ?? 0;
+        const unitCurrentHP = typeof unit.currentHP === 'number' ? unit.currentHP : unit.cardData?.hp ?? 0;
+
+        const pilotCurrentAP = pilot ? (typeof pilot.currentAP === 'number' ? pilot.currentAP : pilot.cardData?.ap ?? 0) : 0;
+        const pilotCurrentHP = pilot ? (typeof pilot.currentHP === 'number' ? pilot.currentHP : pilot.cardData?.hp ?? 0) : 0;
+
+        value.totalCurrentAP = unitCurrentAP + pilotCurrentAP;
+        value.totalCurrentHP = unitCurrentHP + pilotCurrentHP;
+
+        return value;
     }
 }
