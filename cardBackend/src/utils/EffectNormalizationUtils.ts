@@ -2,6 +2,7 @@ import {
     EffectCondition,
     EffectDefinition,
     EffectDetails,
+    EffectSourceCondition,
     EffectTiming,
     EffectTargetConfig,
     TargetFilters
@@ -15,6 +16,10 @@ interface NormalizeEffectRuleOptions {
     defaultTargetScope?: string;
     defaultTargetType?: string;
     defaultTargetCount?: number;
+    includePairedMetadata?: {
+        pairedSlot: string;
+        sourceCarduid: string;
+    };
 }
 
 const COMPARISON_FILTER_REGEX = /^(<=|>=|<|>|==|!=)(\d+)$/;
@@ -54,6 +59,10 @@ export function normalizeEffectRule(
         ? (raw['conditions'] as EffectCondition[])
         : undefined;
 
+    const sourceConditions = Array.isArray(raw['sourceConditions'])
+        ? (raw['sourceConditions'] as EffectSourceCondition[])
+        : undefined;
+
     const description = typeof raw['description'] === 'string' || Array.isArray(raw['description'])
         ? (raw['description'] as string | string[])
         : undefined;
@@ -75,11 +84,20 @@ export function normalizeEffectRule(
         parameters,
         timing,
         conditions,
-        description
+        description,
+        sourceConditions
     };
 
     if (effectDetails) {
         normalized.effect = effectDetails;
+    }
+
+    if (options.includePairedMetadata) {
+        return {
+            ...normalized,
+            pairedSlot: options.includePairedMetadata.pairedSlot,
+            sourceCarduid: options.includePairedMetadata.sourceCarduid
+        } as EffectDefinition;
     }
 
     return normalized;

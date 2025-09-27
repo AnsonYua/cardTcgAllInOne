@@ -8,6 +8,7 @@
 
 import { SLOT_ZONES } from '../config/gameConstants';
 import { GameEnvironment } from '../models/GameEnvironment';
+import { TargetReference } from '../services/EventQueue/interfaces/GameEvent';
 
 // Type for valid slot zone names
 export type SlotZoneName = typeof SLOT_ZONES[number];
@@ -30,6 +31,8 @@ export interface SlotSearchResult {
     playerId?: string;
     unit?: any;
     pilot?: any;
+    card?: any;
+    type?: 'unit' | 'pilot';
     error?: string;
 }
 
@@ -37,6 +40,13 @@ export interface SlotSearchByCardResult {
     slotName: string | null;
     unit: any | null;
     pilot: any | null;
+}
+
+export interface ResolvedTargetReference {
+    card: any;
+    type: 'unit' | 'pilot';
+    slotName: string;
+    playerId: string;
 }
 
 export class SlotZoneUtils {
@@ -185,6 +195,95 @@ export class SlotZoneUtils {
         }
 
         return { slotName: null, unit: null, pilot: null };
+    }
+
+    static resolveTargetReference(gameEnv: GameEnvironment, target: TargetReference): ResolvedTargetReference | null {
+        const player = typeof gameEnv.getPlayer === 'function'
+            ? gameEnv.getPlayer(target.playerId)
+            : gameEnv.players[target.playerId];
+
+        if (!player?.zones) {
+            console.error(`❌ Target player ${target.playerId} not found`);
+            return null;
+        }
+
+        const slotResult = this.getSlotZone(player.zones, target.zone);
+        if (!slotResult.isValid || !slotResult.slot) {
+            console.log(`⚠️ Target zone ${target.zone} not found: ${slotResult.error}`);
+            return null;
+        }
+
+        const cardResult = this.findCardByUid(slotResult.slot, target.carduid);
+        if (!cardResult) {
+            console.log(`⚠️ Target card ${target.carduid} not found in ${target.zone}`);
+            return null;
+        }
+
+        return {
+            card: cardResult.card,
+            type: cardResult.type,
+            slotName: target.zone,
+            playerId: target.playerId
+        };
+    }
+
+    /**
+     * Locate a card by uid across all players and slot zones.
+     */
+    static findCardByUidAcrossPlayers(gameEnv: GameEnvironment, carduid: string): SlotSearchResult {
+        if (!carduid) {
+            return {
+                found: false,
+                error: 'Carduid is required'
+            };
+        }
+
+        for (const [playerId, player] of Object.entries(gameEnv.players)) {
+            const resolvedPlayer = typeof gameEnv.getPlayer === 'function'
+                ? gameEnv.getPlayer(playerId)
+                : player;
+
+            if (!resolvedPlayer?.zones) {
+                continue;
+            }
+
+            const result = this.findSlotByCarduid(resolvedPlayer.zones, carduid);
+            if (!result.slotName) {
+                continue;
+            }
+
+            const matchedUnit = result.unit && result.unit.carduid === carduid ? result.unit : null;
+            const matchedPilot = result.pilot && result.pilot.carduid === carduid ? result.pilot : null;
+            const matchedCard = matchedUnit || matchedPilot || null;
+            const matchedType = matchedUnit ? 'unit' : matchedPilot ? 'pilot' : undefined;
+
+            return {
+                found: true,
+                playerId,
+                slotName: result.slotName,
+                unit: result.unit || undefined,
+                pilot: result.pilot || undefined,
+                card: matchedCard || undefined,
+                type: matchedType
+            };
+        }
+
+        return {
+            found: false,
+            error: `Card ${carduid} not found in any player zones`
+        };
+    }
+
+    /**
+     * Convenience helper to retrieve the raw card object by uid across players.
+     */
+    static getCardByUid(gameEnv: GameEnvironment, carduid: string): any | null {
+        const searchResult = this.findCardByUidAcrossPlayers(gameEnv, carduid);
+        if (!searchResult.found) {
+            return null;
+        }
+
+        return searchResult.card ?? searchResult.unit ?? searchResult.pilot ?? null;
     }
 
     /**

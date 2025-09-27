@@ -21,7 +21,7 @@ import { PhaseTransitionManager } from './effects/PhaseTransitionManager';
 import { GameValidator } from './GameValidator';
 import { UnitZoneCard, PilotZoneCard, CardDatabaseManager } from '../models/CardSystem';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
-import { CardEffect } from './CardEffect';
+import { ContinuousEffectManager } from './ContinuousEffectManager';
 import * as fs from 'fs';
 import * as path from 'path';
 import { getCardIdFromUid } from '../utils/CardUtils';
@@ -472,7 +472,7 @@ export class GameEngine {
             // Process continuous effects when turn changes (timing updates)
             console.log(`🔄 Turn changed - processing continuous effects for timing updates`);
             try {
-                const result = CardEffect.processAllContinuousEffects(gameEnv);
+                const result = ContinuousEffectManager.processAllContinuousEffects(gameEnv);
                 console.log(`✅ Continuous effects processed: ${result.effectsProcessed} processed, ${result.effectsActivated} activated, ${result.effectsDeactivated} deactivated`);
             } catch (error) {
                 console.error(`❌ Error processing continuous effects on turn change:`, error);
@@ -630,7 +630,7 @@ export class GameEngine {
             // Process continuous effects after card placement (always)
             console.log(`🔄 Processing continuous effects after card placement${placementResult.isOnPair ? ` (${placementResult.isOnLink ? 'Link' : 'Pair'} created)` : ''}`);
             try {
-                const result = CardEffect.processAllContinuousEffects(gameEnv);
+                const result = ContinuousEffectManager.processAllContinuousEffects(gameEnv);
                 console.log(`✅ Continuous effects processed: ${result.effectsProcessed} processed, ${result.effectsActivated} activated, ${result.effectsDeactivated} deactivated`);
             } catch (error) {
                 console.error(`❌ Error processing continuous effects after card placement:`, error);

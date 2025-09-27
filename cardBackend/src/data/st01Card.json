@@ -52,8 +52,10 @@
                         "effectId": "pair_ap_boost_all",
                         "type": "static",
                         "trigger": "continuous",
-                        "conditions": [
-                            "isPaired"
+                        "sourceConditions": [
+                            {
+                                "type": "paired"
+                            }
                         ],
                         "action": "modifyAP",
                         "parameters": {

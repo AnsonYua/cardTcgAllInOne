@@ -413,19 +413,19 @@ export class PairingEffectManager implements StandardEffectManager {
             expectedTriggers: ['PAIRING_COMPLETE'],
             defaultTrigger: 'PAIRING_COMPLETE',
             requireAction: true,
-            defaultTargetScope: 'self'
-        });
+            defaultTargetScope: 'self',
+            includePairedMetadata: {
+                pairedSlot,
+                sourceCarduid
+            }
+        }) as PairingEffect | null;
 
         if (!normalized) {
             console.log(`⚠️ Skipping pairing rule without actionable effect`);
             return null;
         }
 
-        return {
-            ...normalized,
-            pairedSlot,
-            sourceCarduid
-        } as PairingEffect;
+        return normalized;
     }
 
     /**

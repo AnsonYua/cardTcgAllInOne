@@ -41,7 +41,7 @@ export class EffectExecutor {
             const successfullyApplied: TargetReference[] = [];
 
             for (const target of selectedTargets) {
-                const resolvedTarget = this.resolveTargetCard(gameEnv, target);
+                const resolvedTarget = SlotZoneUtils.resolveTargetReference(gameEnv, target);
                 if (!resolvedTarget) {
                     return {
                         success: false,
@@ -50,7 +50,7 @@ export class EffectExecutor {
                 }
 
                 const applyResult = this.applyEffectToResolvedCard(
-                    resolvedTarget.card,
+                    resolvedTarget.card as UnitZoneCard | PilotZoneCard,
                     action,
                     parameters,
                     target
@@ -144,6 +144,33 @@ export class EffectExecutor {
     }
 
     /**
+     * Apply a direct stat modification to a single card without building a full target reference.
+     */
+    static applyDirectCardEffect(card: UnitZoneCard | PilotZoneCard, action: string, value: number): boolean {
+        switch (action) {
+            case 'modifyAP': {
+                const previous = (card as any).modifyAP || 0;
+                (card as any).modifyAP = previous + value;
+                console.log(
+                    `  ⚡ Card ${card.carduid}: modifyAP ${previous} → ${(card as any).modifyAP} (${value > 0 ? '+' : ''}${value})`
+                );
+                return true;
+            }
+            case 'modifyHP': {
+                const previous = (card as any).modifyHP || 0;
+                (card as any).modifyHP = previous + value;
+                console.log(
+                    `  ❤️ Card ${card.carduid}: modifyHP ${previous} → ${(card as any).modifyHP} (${value > 0 ? '+' : ''}${value})`
+                );
+                return true;
+            }
+            default:
+                console.log(`⚠️ Unsupported direct card effect action: ${action}`);
+                return false;
+        }
+    }
+
+    /**
      * Determine effect action
      */
     static getEffectAction(effect: EffectDefinition): string | undefined {
@@ -185,25 +212,12 @@ export class EffectExecutor {
         console.log(`⏰ Creating temporary effect: ${effect.effectId} until end of turn`);
 
         for (const target of selectedTargets) {
-            const targetPlayer = gameEnv.getPlayer(target.playerId);
-            if (!targetPlayer) {
-                console.error(`❌ Target player ${target.playerId} not found for temporary effect`);
+            const resolvedTarget = SlotZoneUtils.resolveTargetReference(gameEnv, target);
+            if (!resolvedTarget) {
                 continue;
             }
 
-            const slotResult = SlotZoneUtils.getSlotZone(targetPlayer.zones, target.zone);
-            if (!slotResult.isValid || !slotResult.slot) {
-                console.log(`⚠️ Target zone ${target.zone} not found: ${slotResult.error}`);
-                continue;
-            }
-
-            const cardResult = SlotZoneUtils.findCardByUid(slotResult.slot, target.carduid);
-            if (!cardResult) {
-                console.log(`⚠️ Target card ${target.carduid} not found in ${target.zone}`);
-                continue;
-            }
-
-            const targetCard = cardResult.card as UnitZoneCard | PilotZoneCard;
+            const targetCard = resolvedTarget.card as UnitZoneCard | PilotZoneCard;
             const parameters = effect.parameters || effect.effect?.parameters || {};
 
             const parameterValue = parameters['value'];
@@ -224,35 +238,6 @@ export class EffectExecutor {
             targetCard.temporaryEffects.push(tempEffect);
             console.log(`✅ Added temporary effect from ${sourceCarduid} to unit ${target.carduid}`);
         }
-    }
-
-    private static resolveTargetCard(
-        gameEnv: GameEnvironment,
-        target: TargetReference
-    ): { card: UnitZoneCard | PilotZoneCard; cardType: 'unit' | 'pilot'; slotName: string } | null {
-        const targetPlayer = gameEnv.getPlayer(target.playerId);
-        if (!targetPlayer) {
-            console.error(`❌ Target player ${target.playerId} not found`);
-            return null;
-        }
-
-        const slotResult = SlotZoneUtils.getSlotZone(targetPlayer.zones, target.zone);
-        if (!slotResult.isValid || !slotResult.slot) {
-            console.log(`⚠️ Target zone ${target.zone} not found: ${slotResult.error}`);
-            return null;
-        }
-
-        const cardResult = SlotZoneUtils.findCardByUid(slotResult.slot, target.carduid);
-        if (!cardResult) {
-            console.log(`⚠️ Target card ${target.carduid} not found in ${target.zone}`);
-            return null;
-        }
-
-        return {
-            card: cardResult.card as UnitZoneCard | PilotZoneCard,
-            cardType: cardResult.type,
-            slotName: target.zone
-        };
     }
 
     private static applyEffectToResolvedCard(

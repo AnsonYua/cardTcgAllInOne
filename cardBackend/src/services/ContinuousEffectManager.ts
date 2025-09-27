@@ -1,4 +1,4 @@
-// src/services/CardEffect.ts
+// src/services/ContinuousEffectManager.ts
 // Universal card effect processor for all effect types
 
 import { GameEnvironment } from '../models/GameEnvironment';
@@ -6,6 +6,15 @@ import { GamePhase } from '../models/GameEnums';
 import { ZoneCard, CardDatabaseManager } from '../models/CardSystem';
 import { EffectProcessingResult } from '../models/ContinuousEffectStore';
 import { SLOT_ZONES } from '../config/gameConstants';
+import { SlotZoneUtils } from '../utils/SlotZoneUtils';
+import { EffectExecutor } from './effects/EffectExecutor';
+import { ensureEffectDefaults } from '../utils/EffectNormalizationUtils';
+import {
+    EffectDefinition,
+    EffectSourceCondition,
+    EffectSourceConditionObject
+} from './EventQueue/interfaces/GameEvent';
+import { json } from 'stream/consumers';
 
 export interface EffectResult {
     success: boolean;
@@ -16,10 +25,26 @@ export interface EffectResult {
 }
 
 /**
- * Universal CardEffect class that handles any card effect based on JSON structure
+ * Universal ContinuousEffectManager class that handles any card effect based on JSON structure
  * Works with any target, action, and parameters combination
  */
-export class CardEffect {
+
+type RawSourceCondition = EffectSourceCondition;
+
+type StructuredSourceCondition = EffectSourceConditionObject & { type: string };
+
+type ZoneCardWithData = ZoneCard & {
+    carduid: string;
+    cardData?: {
+        effects?: {
+            rules?: EffectDefinition[];
+        };
+        [key: string]: unknown;
+    };
+    [key: string]: unknown;
+};
+
+export class ContinuousEffectManager {
     
     /**
      * Static method to execute repair effects from StateBasedActionEngine
@@ -71,7 +96,7 @@ export class CardEffect {
         }
         
         // Get card data to check max HP
-        const cardData = CardEffect.getStaticCardData(cardId);
+        const cardData = ContinuousEffectManager.getStaticCardData(cardId);
         if (!cardData) {
             return {
                 success: false,
@@ -122,7 +147,7 @@ export class CardEffect {
     }
 
     // ============================================================================
-    // CONTINUOUS EFFECT PROCESSING METHODS (Moved from ContinuousEffectManager)
+    // CONTINUOUS EFFECT PROCESSING METHODS
     // ============================================================================
 
 
@@ -164,10 +189,16 @@ export class CardEffect {
     /**
      * Validate effect conditions and turn timing (separated architecture)
      */
-    static validateEffectConditions(storedEffect: any, gameEnv: GameEnvironment, cardOwnerPlayerId: string | null): boolean {
+    static validateEffectConditions(
+        storedEffect: EffectDefinition,
+        gameEnv: GameEnvironment,
+        cardOwnerPlayerId: string | null,
+        sourceCard?: ZoneCardWithData
+    ): boolean {
         // Step 1: Check turn timing first (fast exit)
-        if (storedEffect.effect?.actionTurn) {
-            if (!CardEffect.checkTurnTiming(storedEffect.effect.actionTurn, gameEnv, cardOwnerPlayerId)) {
+        const actionTurn = storedEffect.timing?.actionTurn;
+        if (actionTurn) {
+            if (!ContinuousEffectManager.checkTurnTiming(actionTurn, gameEnv, cardOwnerPlayerId)) {
                 return false;
             }
         }
@@ -182,7 +213,7 @@ export class CardEffect {
         
         // All conditions must be met for effect to be active
         for (const condition of conditions) {
-            if (!CardEffect.checkSingleCondition(condition, gameEnv, cardOwnerPlayerId)) {
+            if (!ContinuousEffectManager.checkSingleCondition(condition, gameEnv, cardOwnerPlayerId, sourceCard)) {
                 return false;
             }
         }
@@ -215,32 +246,87 @@ export class CardEffect {
     /**
      * Check a single game state condition (no turn timing)
      */
-    private static checkSingleCondition(condition: string, gameEnv: GameEnvironment, cardOwnerPlayerId: string | null): boolean {
-        switch (condition) {
-            // State-based conditions
+    private static checkSingleCondition(
+        condition: unknown,
+        gameEnv: GameEnvironment,
+        cardOwnerPlayerId: string | null,
+        sourceCard?: any
+    ): boolean {
+        if (typeof condition === 'string') {
+            switch (condition) {
+                case 'isPaired':
+                    return ContinuousEffectManager.checkPlayerHasPairedUnits(cardOwnerPlayerId, gameEnv);
+
+                case 'isLinked':
+                    return ContinuousEffectManager.checkIsLinked(cardOwnerPlayerId, gameEnv);
+
+                case 'MAIN_PHASE':
+                    return gameEnv.phase === GamePhase.MAIN_PHASE;
+
+                case 'ATTACK_PHASE':
+                case 'BATTLE_PHASE':
+                    return gameEnv.phase === GamePhase.ATTACK_PHASE || gameEnv.phase === GamePhase.DAMAGE_PHASE;
+
+                case 'END_PHASE':
+                    return gameEnv.phase === GamePhase.END_PHASE;
+
+                case 'DRAW_PHASE':
+                    return gameEnv.phase === GamePhase.DRAW_PHASE;
+
+                default:
+                    console.log(`⚠️ Unknown condition: ${condition}`);
+                    return true;
+            }
+        }
+
+        if (!condition || typeof condition !== 'object') {
+            return true;
+        }
+
+        const typedCondition = condition as Record<string, unknown>;
+        const type = (typedCondition.type as string) || '';
+        const scope = (typedCondition.scope as string) || 'player';
+
+        switch (type) {
+            case 'paired':
             case 'isPaired':
-                return CardEffect.checkPlayerHasPairedUnits(cardOwnerPlayerId, gameEnv);
-            
+                if (scope === 'source') {
+                    return sourceCard ? ContinuousEffectManager.checkIsPaired(sourceCard, gameEnv) : false;
+                }
+                return ContinuousEffectManager.checkPlayerHasPairedUnits(cardOwnerPlayerId, gameEnv);
+
+            case 'linked':
             case 'isLinked':
-                return CardEffect.checkIsLinked(cardOwnerPlayerId, gameEnv);
-                
-            // Phase-based timing conditions (still in conditions for now)
-            case 'MAIN_PHASE':
-                return gameEnv.phase === GamePhase.MAIN_PHASE;
-                
-            case 'ATTACK_PHASE':
-            case 'BATTLE_PHASE':
-                return gameEnv.phase === GamePhase.ATTACK_PHASE || gameEnv.phase === GamePhase.DAMAGE_PHASE;
-                
-            case 'END_PHASE':
-                return gameEnv.phase === GamePhase.END_PHASE;
-                
-            case 'DRAW_PHASE':
-                return gameEnv.phase === GamePhase.DRAW_PHASE;
-                
+                if (scope === 'source') {
+                    return sourceCard ? ContinuousEffectManager.checkCardIsLinked(sourceCard, gameEnv) : false;
+                }
+                return ContinuousEffectManager.checkIsLinked(cardOwnerPlayerId, gameEnv);
+
+            case 'turn':
+                return typeof typedCondition.value === 'string'
+                    ? ContinuousEffectManager.checkTurnTiming(typedCondition.value, gameEnv, cardOwnerPlayerId)
+                    : true;
+
+            case 'phase':
+                if (typeof typedCondition.value !== 'string') {
+                    return true;
+                }
+                switch (typedCondition.value) {
+                    case 'MAIN_PHASE':
+                        return gameEnv.phase === GamePhase.MAIN_PHASE;
+                    case 'ATTACK_PHASE':
+                    case 'BATTLE_PHASE':
+                        return gameEnv.phase === GamePhase.ATTACK_PHASE || gameEnv.phase === GamePhase.DAMAGE_PHASE;
+                    case 'END_PHASE':
+                        return gameEnv.phase === GamePhase.END_PHASE;
+                    case 'DRAW_PHASE':
+                        return gameEnv.phase === GamePhase.DRAW_PHASE;
+                    default:
+                        return true;
+                }
+
             default:
-                console.log(`⚠️ Unknown condition: ${condition}`);
-                // Default to allow effect if condition is unknown (fail-safe)
+                console.log(`⚠️ Unknown structured condition: ${type}`);
                 return true;
         }
     }
@@ -266,6 +352,106 @@ export class CardEffect {
     }
 
     /**
+     * Check if specific source conditions are satisfied for a card
+     */
+    static sourceConditionsMet(
+        effectRule: EffectDefinition,
+        card: ZoneCardWithData,
+        gameEnv: GameEnvironment,
+        cardOwnerPlayerId: string | null
+    ): boolean {
+        if (!card?.cardData?.effects?.rules?.length) {
+            return false;
+        }
+
+        const conditions = effectRule.sourceConditions;
+        if (!Array.isArray(conditions) || conditions.length === 0) {
+            return true;
+        }
+
+        for (const condition of conditions) {
+            const structuredCondition = ContinuousEffectManager.normalizeSourceCondition(condition);
+            if (!ContinuousEffectManager.evaluateSourceCondition(structuredCondition, card, gameEnv, cardOwnerPlayerId)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static normalizeSourceCondition(condition: RawSourceCondition): StructuredSourceCondition {
+        if (!condition) {
+            return { type: 'unknown' };
+        }
+
+        if (typeof condition === 'string') {
+            return { type: condition };
+        }
+
+        if (typeof condition !== 'object') {
+            return { type: 'unknown' };
+        }
+
+        const typedCondition = condition as EffectSourceConditionObject;
+        const normalizedType = typeof typedCondition.type === 'string' && typedCondition.type.length > 0
+            ? typedCondition.type
+            : 'unknown';
+
+        const normalized: StructuredSourceCondition = {
+            ...typedCondition,
+            type: normalizedType
+        };
+
+        if (normalized.type === 'controller' && typeof normalized.value !== 'string') {
+            const { value, ...rest } = normalized;
+            return { ...rest } as StructuredSourceCondition;
+        }
+
+        return normalized;
+    }
+
+    private static evaluateSourceCondition(
+        condition: StructuredSourceCondition,
+        card: ZoneCardWithData,
+        gameEnv: GameEnvironment,
+        cardOwnerPlayerId: string | null
+    ): boolean {
+        const type = condition.type || '';
+
+        switch (type) {
+            case 'paired':
+            case 'isPaired':
+                return ContinuousEffectManager.checkIsPaired(card, gameEnv);
+
+            case 'linked':
+            case 'isLinked':
+                return ContinuousEffectManager.checkCardIsLinked(card, gameEnv);
+
+            case 'controller': {
+                const desired = typeof condition.value === 'string' ? (condition.value as string) : undefined;
+                if (!desired) {
+                    return true;
+                }
+                const ownerId = ContinuousEffectManager.findCardOwner(card.carduid, gameEnv);
+                if (!ownerId) {
+                    return false;
+                }
+                if (desired === 'self') {
+                    return ownerId === cardOwnerPlayerId;
+                }
+                if (desired === 'opponent') {
+                    return cardOwnerPlayerId ? ownerId !== cardOwnerPlayerId : false;
+                }
+                return ownerId === desired;
+            }
+
+            default:
+                console.log(`⚠️ Unknown source condition type: ${type}`);
+                return true;
+        }
+    }
+
+    /**
      * Check if card owner has linked units (placeholder - implement based on game logic)
      */
     private static checkIsLinked(cardOwnerPlayerId: string | null, gameEnv: GameEnvironment): boolean {
@@ -278,7 +464,7 @@ export class CardEffect {
         for (const slotName of SLOT_ZONES) {
             const slot = (player.zones as any)[slotName];
             if (slot?.unit && slot?.pilot) {
-                if (CardEffect.detectLink(slot.unit, slot.pilot)) {
+                if (ContinuousEffectManager.detectLink(slot.unit, slot.pilot)) {
                     return true; // Found at least one linked pair
                 }
             }
@@ -373,17 +559,17 @@ export class CardEffect {
                 
                 // Process unit cards as potential effect sources
                 if (slot?.unit) {
-                    CardEffect.updateRegistryFromCard(slot.unit, playerId, gameEnv);
+                    ContinuousEffectManager.updateRegistryFromCard(slot.unit as ZoneCardWithData, playerId, gameEnv);
                 }
                 
                 // Process pilot cards as potential effect sources  
                 if (slot?.pilot) {
-                    CardEffect.updateRegistryFromCard(slot.pilot, playerId, gameEnv);
+                    ContinuousEffectManager.updateRegistryFromCard(slot.pilot as ZoneCardWithData, playerId, gameEnv);
                 }
             }
             
             // Cleanup invalid effects for this player
-            CardEffect.cleanupPlayerRegistryEffects(player, playerId, gameEnv);
+            ContinuousEffectManager.cleanupPlayerRegistryEffects(player, playerId, gameEnv);
             
             const activeEffects = Object.keys(player.effectRegistry).length;
             console.log(`✅ Player ${playerId} effect registry: ${activeEffects} active effects`);
@@ -393,22 +579,25 @@ export class CardEffect {
     /**
      * Update registry from a single card (if it's a valid effect source)
      */
-    static updateRegistryFromCard(card: any, playerId: string, gameEnv: GameEnvironment): void {
-        if (!CardEffect.isValidEffectSource(card, gameEnv)) {
-            return;
-        }
-        
+    static updateRegistryFromCard(card: ZoneCardWithData, playerId: string, gameEnv: GameEnvironment): void {
         const player = gameEnv.players[playerId];
         if (!player) return;
         
-        const effects = card.cardData?.effects?.rules || [];
+        const effects = (card.cardData?.effects?.rules as EffectDefinition[] | undefined) || [];
+        if (effects.length === 0) {
+            return;
+        }
         
         for (const effectRule of effects) {
-            const trigger = CardEffect.extractTrigger(effectRule);
+            const trigger = ContinuousEffectManager.extractTrigger(effectRule);
             if (trigger !== 'continuous') continue;
             
+            if (!ContinuousEffectManager.sourceConditionsMet(effectRule, card, gameEnv, playerId)) {
+                continue;
+            }
+
             // Check if effect conditions are met
-            if (!CardEffect.validateEffectConditions(effectRule, gameEnv, playerId)) {
+            if (!ContinuousEffectManager.validateEffectConditions(effectRule, gameEnv, playerId, card)) {
                 continue;
             }
             
@@ -416,7 +605,8 @@ export class CardEffect {
             
             // Add effect to player's registry if not already present
             if (!player.effectRegistry[effectKey]) {
-                const registryEntry = CardEffect.createRegistryEntry(effectRule, card, playerId);
+                const normalizedEffect = ensureEffectDefaults(effectRule);
+                const registryEntry = ContinuousEffectManager.createRegistryEntry(normalizedEffect, card, playerId);
                 player.effectRegistry[effectKey] = registryEntry;
                 console.log(`  ➕ Added effect ${effectRule.effectId} from ${card.cardId} to player ${playerId} registry`);
             }
@@ -426,10 +616,10 @@ export class CardEffect {
     /**
      * Create registry entry for an effect
      */
-    static createRegistryEntry(effectRule: any, sourceCard: any, sourcePlayerId: string): any {
-        const effectAction = effectRule.effect?.action || 'modifyAP';
-        const parameters = effectRule.effect?.parameters || {};
-        const value = CardEffect.getEffectValue(effectAction, parameters);
+    static createRegistryEntry(effectRule: EffectDefinition, sourceCard: ZoneCardWithData, sourcePlayerId: string): any {
+        const effectAction = EffectExecutor.getEffectAction(effectRule) || 'modifyAP';
+        const parameters = effectRule.parameters || effectRule.effect?.parameters || {};
+        const value = ContinuousEffectManager.getEffectValue(effectAction, parameters);
         
         return {
             effectId: effectRule.effectId,
@@ -446,27 +636,9 @@ export class CardEffect {
     }
 
     /**
-     * Check if a card is a valid effect source
-     */
-    static isValidEffectSource(card: any, gameEnv: GameEnvironment): boolean {
-        // Must have effects in card data
-        if (!card.cardData?.effects?.rules?.length) {
-            return false;
-        }
-        
-        // For ST01-001 "Gundam", must be paired to be active source
-        if (card.cardId === "ST01-001") {
-            return CardEffect.checkIsPaired(card, gameEnv);
-        }
-        
-        // Other cards with continuous effects are always valid sources when on field
-        return true;
-    }
-
-    /**
      * Check if a card is paired (for pair-triggered effects)
      */
-    static checkIsPaired(card: any, gameEnv: GameEnvironment): boolean {
+    static checkIsPaired(card: ZoneCardWithData, gameEnv: GameEnvironment): boolean {
         // Find the card's slot
         for (const [playerId, player] of Object.entries(gameEnv.players)) {
             if (!player.zones) continue;
@@ -489,6 +661,34 @@ export class CardEffect {
         return false;
     }
 
+    private static checkCardIsLinked(card: ZoneCardWithData, gameEnv: GameEnvironment): boolean {
+        for (const player of Object.values(gameEnv.players)) {
+            if (!player?.zones) continue;
+
+            for (const slotName of SLOT_ZONES) {
+                const slot = (player.zones as any)[slotName];
+                if (!slot?.unit && !slot?.pilot) {
+                    continue;
+                }
+
+                const isUnit = slot?.unit?.carduid === card.carduid;
+                const isPilot = slot?.pilot?.carduid === card.carduid;
+
+                if (!isUnit && !isPilot) {
+                    continue;
+                }
+
+                if (slot.unit && slot.pilot) {
+                    return ContinuousEffectManager.detectLink(slot.unit, slot.pilot);
+                }
+
+                return false;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Apply registry effects to all valid targets
      */
@@ -508,15 +708,46 @@ export class CardEffect {
                 const typedEntry = effectEntry as any; // Type assertion for effectRegistry entries
                 if (!typedEntry.active) continue;
                 
-                // Re-validate conditions (YOUR_TURN/OPPONENT_TURN may have changed)
-                if (!CardEffect.validateEffectConditions(typedEntry.effectData, gameEnv, typedEntry.sourcePlayerId)) {
+                const sourceCard = SlotZoneUtils.getCardByUid(gameEnv, typedEntry.sourceCarduid) as ZoneCardWithData | null;
+                if (!sourceCard) {
                     continue;
                 }
+
+                if (!ContinuousEffectManager.sourceConditionsMet(
+                    typedEntry.effectData as EffectDefinition,
+                    sourceCard,
+                    gameEnv,
+                    typedEntry.sourcePlayerId
+                )) {
+                    continue;
+                }
+
+                // Re-validate conditions (YOUR_TURN/OPPONENT_TURN may have changed)
+                if (!ContinuousEffectManager.validateEffectConditions(
+                    typedEntry.effectData as EffectDefinition,
+                    gameEnv,
+                    typedEntry.sourcePlayerId,
+                    sourceCard
+                )) {
+                    continue;
+                }
+                console.log("adsdsadsfsd " ,JSON.stringify(typedEntry))
+                const targets = ContinuousEffectManager.resolveRegistryTargets(typedEntry, gameEnv);
                 
-                const targets = CardEffect.resolveRegistryTargets(typedEntry, gameEnv);
-                
+                const numericValue = typeof typedEntry.value === 'number' ? typedEntry.value : 0;
+                const action = typedEntry.action;
+
                 for (const target of targets) {
-                    CardEffect.applyEffectToCard(target, typedEntry.action, typedEntry.value);
+                    if (typeof action !== 'string') {
+                        console.log('⚠️ Registry effect missing action, skipping');
+                        continue;
+                    }
+
+                    const applied = EffectExecutor.applyDirectCardEffect(target, action, numericValue);
+                    if (!applied) {
+                        continue;
+                    }
+
                     playerAppliedCount++;
                     totalAppliedCount++;
                 }
@@ -543,40 +774,18 @@ export class CardEffect {
         
         switch (scope) {
             case 'self_all_unit':
-                return CardEffect.getAllPlayerUnitsInSlot(sourcePlayerId, gameEnv);
+                return ContinuousEffectManager.getAllPlayerUnitsInSlot(sourcePlayerId, gameEnv);
             case 'opponent_all':
-                const opponentId = CardEffect.getOpponentId(sourcePlayerId, gameEnv);
-                return CardEffect.getAllPlayerUnitsInSlot(opponentId, gameEnv);
+                const opponentId = ContinuousEffectManager.getOpponentId(sourcePlayerId, gameEnv);
+                return ContinuousEffectManager.getAllPlayerUnitsInSlot(opponentId, gameEnv);
             case 'self':
                 // Get the source card itself
-                return CardEffect.getCardByUid(effectEntry.sourceCarduid, gameEnv) ? [CardEffect.getCardByUid(effectEntry.sourceCarduid, gameEnv)] : [];
+                const sourceCard = SlotZoneUtils.getCardByUid(gameEnv, effectEntry.sourceCarduid) as ZoneCardWithData | null;
+                return sourceCard ? [sourceCard] : [];
             default:
                 console.log(`⚠️ Unknown scope: ${scope}`);
                 return [];
         }
-    }
-
-    /**
-     * Get card by UID across all players and slots
-     */
-    static getCardByUid(carduid: string, gameEnv: GameEnvironment): any | null {
-        for (const [playerId, player] of Object.entries(gameEnv.players)) {
-            if (!player.zones) continue;
-            
-            for (const slotName of SLOT_ZONES) {
-                const slot = (player.zones as any)[slotName];
-                
-                if (slot?.unit?.carduid === carduid) {
-                    return slot.unit;
-                }
-                
-                if (slot?.pilot?.carduid === carduid) {
-                    return slot.pilot;
-                }
-            }
-        }
-        
-        return null;
     }
 
     /**
@@ -589,18 +798,33 @@ export class CardEffect {
         for (const [effectKey, effectEntry] of Object.entries(player.effectRegistry)) {
             const typedEntry = effectEntry as any; // Type assertion for effectRegistry entries
             // Check if source card still exists
-            const sourceCard = CardEffect.getCardByUid(typedEntry.sourceCarduid, gameEnv);
-            
+            const sourceCard = SlotZoneUtils.getCardByUid(gameEnv, typedEntry.sourceCarduid) as ZoneCardWithData | null;
+
             if (!sourceCard) {
                 effectsToRemove.push(effectKey);
                 console.log(`  🗑️ Removing effect ${typedEntry.effectId} from player ${playerId} - source card no longer in field`);
                 continue;
             }
-            
-            // Check if source is still valid (e.g., ST01-001 must remain paired)
-            if (!CardEffect.isValidEffectSource(sourceCard, gameEnv)) {
+
+            if (!ContinuousEffectManager.sourceConditionsMet(
+                typedEntry.effectData as EffectDefinition,
+                sourceCard,
+                gameEnv,
+                typedEntry.sourcePlayerId
+            )) {
                 effectsToRemove.push(effectKey);
                 console.log(`  🗑️ Removing effect ${typedEntry.effectId} from player ${playerId} - source no longer valid`);
+                continue;
+            }
+
+            if (!ContinuousEffectManager.validateEffectConditions(
+                typedEntry.effectData as EffectDefinition,
+                gameEnv,
+                typedEntry.sourcePlayerId,
+                sourceCard
+            )) {
+                effectsToRemove.push(effectKey);
+                console.log(`  🗑️ Removing effect ${typedEntry.effectId} from player ${playerId} - conditions no longer met`);
                 continue;
             }
         }
@@ -616,7 +840,7 @@ export class CardEffect {
     }
 
     // ============================================================================
-    // CONTINUOUS EFFECTS ORCHESTRATION (moved from ContinuousEffectManager)
+    // CONTINUOUS EFFECTS ORCHESTRATION
     // ============================================================================
 
     /**
@@ -627,13 +851,13 @@ export class CardEffect {
         
         try {
             // STEP 1: Reset all cards' modifications to 0
-            CardEffect.resetAllCardModifications(gameEnv);
+            ContinuousEffectManager.resetAllCardModifications(gameEnv);
             
             // STEP 2: Update effect registry from sources (replaces old Phase 1)
-            CardEffect.updateEffectRegistry(gameEnv);
+            ContinuousEffectManager.updateEffectRegistry(gameEnv);
             
             // STEP 3: Apply registry effects to all valid targets (replaces old Phase 2)
-            CardEffect.applyRegistryToTargets(gameEnv);
+            ContinuousEffectManager.applyRegistryToTargets(gameEnv);
             
             // Count total effects across all players
             let totalEffects = 0;
@@ -683,29 +907,6 @@ export class CardEffect {
         console.log(`✅ All card modifications reset to 0`);
     }
 
-
-    /**
-     * Apply effect to a single card
-     */
-    static applyEffectToCard(card: any, action: string, value: number): boolean {
-        switch (action) {
-            case 'modifyAP':
-                const currentModifyAP = card.modifyAP || 0;
-                card.modifyAP = currentModifyAP + value;
-                console.log(`  ⚡ Card ${card.carduid}: AP modifier ${currentModifyAP} → ${card.modifyAP} (${value > 0 ? '+' : ''}${value})`);
-                return true;
-                
-            case 'modifyHP':
-                const currentModifyHP = card.modifyHP || 0;
-                card.modifyHP = currentModifyHP + value;
-                console.log(`  ❤️ Card ${card.carduid}: HP modifier ${currentModifyHP} → ${card.modifyHP} (${value > 0 ? '+' : ''}${value})`);
-                return true;
-                
-            default:
-                console.log(`⚠️ Unknown effect action for card: ${action}`);
-                return false;
-        }
-    }
 
 
 
@@ -783,7 +984,7 @@ export class CardEffect {
     execute(): EffectResult {
         const { action } = this.effect;
         
-        console.log(`🎯 CardEffect executing: ${action} for player ${this.playerId}`);
+        console.log(`🎯 ContinuousEffectManager executing: ${action} for player ${this.playerId}`);
         
         try {
             switch (action) {
@@ -799,7 +1000,7 @@ export class CardEffect {
                     };
             }
         } catch (error) {
-            console.error(`❌ CardEffect execution failed:`, error);
+            console.error(`❌ ContinuousEffectManager execution failed:`, error);
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Effect execution failed'

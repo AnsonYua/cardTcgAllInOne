@@ -180,6 +180,17 @@ export interface EffectDetails {
     duration?: string;
 }
 
+export type SourceConditionScope = 'source' | 'player' | 'game';
+
+export interface EffectSourceConditionObject {
+    type: string;
+    scope?: SourceConditionScope;
+    value?: unknown;
+    [key: string]: unknown;
+}
+
+export type EffectSourceCondition = string | EffectSourceConditionObject;
+
 export interface EffectDefinition {
     effectId: string;
     type?: string;
@@ -192,6 +203,7 @@ export interface EffectDefinition {
     conditions?: EffectCondition[];
     description?: string | string[];
     effect?: EffectDetails;
+    sourceConditions?: EffectSourceCondition[];
 }
 
 export interface DeployEffectEventData {

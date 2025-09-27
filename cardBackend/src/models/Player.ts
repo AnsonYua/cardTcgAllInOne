@@ -183,7 +183,7 @@ export class Player {
     // 1. CONTINUOUS EFFECTS REGISTRY
     // Purpose: Tracks persistent effects from cards in play (leaders, paired units)
     // Lifecycle: Added when cards enter play, removed when they leave
-    // Processing: Managed by CardEffect.ts, applied during continuous effects phase
+    // Processing: Managed by ContinuousEffectManager.ts, applied during continuous effects phase
     // Example: Leader power boosts, pairing bonuses that last while conditions are met
     // Storage: gameEnv.players[id].effectRegistry
     public effectRegistry: { [effectKey: string]: any } = {};
