@@ -26,6 +26,7 @@ import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { UnitZoneCard, PilotZoneCard } from '../models/CardSystem';
 import { EffectExecutor } from './effects/EffectExecutor';
 import { ensureEffectDefaults, normalizeTargetConfig, validateComparisonFilter } from '../utils/EffectNormalizationUtils';
+import { PlayerCardManager } from './PlayerCardManager';
 
 interface ResolvedTargetConfig {
     type: TargetType;
@@ -232,7 +233,7 @@ export class TargetChoiceManager {
                 // Check unit targets
                 if (targetConfig.type === 'unit' && SlotZoneUtils.hasUnit(slotZone)) {
                     const unit = SlotZoneUtils.getUnit(slotZone);
-                    if (unit && this.validateTargetFilters(unit, targetConfig.filters || {})) {
+                    if (unit && this.validateTargetFilters(gameEnv , unit, targetConfig.filters || {})) {
                         targets.push({
                             carduid: unit.carduid,
                             zone: slotName,
@@ -244,6 +245,7 @@ export class TargetChoiceManager {
                 }
                 
                 // Check pilot targets
+                /*
                 if (targetConfig.type === 'pilot' && SlotZoneUtils.hasPilot(slotZone)) {
                     const pilot = SlotZoneUtils.getPilot(slotZone);
                     if (pilot && this.validateTargetFilters(pilot, targetConfig.filters || {})) {
@@ -255,7 +257,7 @@ export class TargetChoiceManager {
                         });
                         console.log(`✅ Added pilot target: ${pilot.carduid} in ${slotName}`);
                     }
-                }
+                }*/
             }
         }
         
@@ -375,7 +377,7 @@ export class TargetChoiceManager {
     /**
      * Unified target validation with all filter types
      */
-    private static validateTargetFilters(card: UnitZoneCard | PilotZoneCard, filters: TargetFilters = {}): boolean {
+    private static validateTargetFilters(gameEnv: GameEnvironment,card: UnitZoneCard | PilotZoneCard, filters: TargetFilters = {}): boolean {
         // Level filter (from pairing effects)
         if (filters.level) {
             const cardLevel = card.cardData?.level || 0;
@@ -387,7 +389,7 @@ export class TargetChoiceManager {
         
         // HP filter (from deploy effects)
         if (filters.hp) {
-            const currentHp = (card.currentHP || 0) + (card.modifyHP || 0);
+            const currentHp = PlayerCardManager.getCurrentUnitCardInSlotAPandHP(gameEnv,card.carduid).totalHP;
             if (!validateComparisonFilter(currentHp, filters.hp)) {
                 console.log(`❌ Card ${card.carduid} failed HP filter: ${filters.hp}`);
                 return false;

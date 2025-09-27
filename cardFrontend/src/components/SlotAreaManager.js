@@ -314,9 +314,7 @@ export default class SlotAreaManager {
         cardId: slotCards.unit.cardData?.id,
         fullCardData: slotCards.unit.fullCardData,
         currentAP: slotCards.unit.fullCardData?.currentAP,
-        currentHP: slotCards.unit.fullCardData?.currentHP,
-        modifyAP: slotCards.unit.fullCardData?.modifyAP,
-        modifyHP: slotCards.unit.fullCardData?.modifyHP
+        currentHP: slotCards.unit.fullCardData?.currentHP
       });
     }
     
@@ -325,9 +323,7 @@ export default class SlotAreaManager {
         cardId: slotCards.pilot.cardData?.id,
         fullCardData: slotCards.pilot.fullCardData,
         currentAP: slotCards.pilot.fullCardData?.currentAP,
-        currentHP: slotCards.pilot.fullCardData?.currentHP,
-        modifyAP: slotCards.pilot.fullCardData?.modifyAP,
-        modifyHP: slotCards.pilot.fullCardData?.modifyHP
+        currentHP: slotCards.pilot.fullCardData?.currentHP
       });
     }
     

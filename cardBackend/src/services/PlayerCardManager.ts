@@ -7,6 +7,7 @@ import { createZoneCard, UnitZoneCard, PilotZoneCard, BaseCard, CardDatabaseMana
 import { SLOT_ZONES } from '../config/gameConstants';
 import { PlayCardEventData } from './EventQueue/interfaces/GameEvent';
 import { v4 as uuidv4 } from 'uuid';
+import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 
 export interface CardPlacementResult {
     success: boolean;
@@ -686,58 +687,69 @@ export class PlayerCardManager {
         }
     }
 
+
+
     /**
      * Update unit HP
      */
-    static updateUnitHP(unit: UnitZoneCard, newHP: number): void {
-        unit.currentHP = Math.max(0, newHP);
+    static updateUnitDamage(unit: UnitZoneCard, newDamage: number): void {
+        unit.damageReceived = (unit.damageReceived || 0) + newDamage;
         console.log(`🩹 Updated unit HP to ${unit.currentHP}`);
     }
 
-    /**
-     * Update pilot HP
-     */
-    static updatePilotHP(pilot: PilotZoneCard, newHP: number): void {
-        pilot.currentHP = Math.max(0, newHP);
-        console.log(`🩹 Updated pilot HP to ${pilot.currentHP}`);
-    }
+    static getCurrentUnitCardInSlotAPandHP(gameEnv:GameEnvironment , unitCardUid:string): { totalAP: number, totalHP: number } {
+        const resolveNumber = (value: unknown, fallback = 0): number => {
+            return typeof value === 'number' && !Number.isNaN(value) ? value : fallback;
+        };
 
-    /**
-     * Calculate combined stats for unit and pilot in a slot
-     */
-    static calculateCombinedStats(player: any, slotName: string, unit: UnitZoneCard): { totalAP: number, totalHP: number } {
-        // Get base unit stats and apply unit-specific modifications
-        let currentAP = unit.currentAP|| 0;
-        let currentHP = unit.currentHP || 0;
-        
-        let modifyAP = unit.modifyAP || 0;
-        let modifyHP = unit.modifyHP || 0;
-        
-        // Get pilot in the same slot if exists
-        const pilot = (player.zones as any)[slotName]?.pilot;
-        
-        if (pilot) {
-            // Add pilot stats to unit stats
-            const pilotAP = pilot.currentAP || pilot.cardData?.ap || 0;
-            const pilotHP = pilot.currentHP || pilot.cardData?.hp || 0;
-            const pilotModifyAP = pilot.modifyAP || 0;
-            const pilotModifyHP = pilot.modifyHP  || 0;
-            
-            currentAP += pilotAP;
-            currentHP += pilotHP;
-
-            modifyAP += pilotModifyAP;
-            modifyHP += pilotModifyHP;
-            
-            console.log(`🔢 Combined stats: Unit(${unit.currentAP || 0}/${unit.currentHP || 0}) + Pilot(${pilotAP}/${pilotHP}) = Total(${currentAP}/${currentHP})`);
-        } else {
-            console.log(`🔢 Unit only stats: ${currentAP}/${currentHP}`);
+        const searchResult = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, unitCardUid);
+        if (!searchResult.found || !searchResult.playerId || !searchResult.slotName) {
+            return { totalAP: 0, totalHP: 0 };
         }
-        
+
+        const player = gameEnv.players[searchResult.playerId];
+        if (!player?.zones) {
+            return { totalAP: 0, totalHP: 0 };
+        }
+
+        const slotResult = SlotZoneUtils.getSlotZone(player.zones, searchResult.slotName);
+        if (!slotResult.isValid || !slotResult.slot) {
+            return { totalAP: 0, totalHP: 0 };
+        }
+
+        const unit = slotResult.slot.unit as UnitZoneCard | undefined;
+        if (!unit || unit.carduid !== unitCardUid) {
+            return { totalAP: 0, totalHP: 0 };
+        }
+
+        const pilot = slotResult.slot.pilot as PilotZoneCard | undefined;
+
+        const unitCurrentAP = resolveNumber(unit.currentAP, resolveNumber(unit.cardData?.ap));
+        const unitCurrentHP = resolveNumber(unit.currentHP, resolveNumber(unit.cardData?.hp));
+        const unitDamageReceived = resolveNumber(unit.damageReceived);
+        const unitContinueModifyAP = resolveNumber(unit.continueModifyAP);
+        const unitContinueModifyHP = resolveNumber(unit.continueModifyHP);
+
+        let totalAP = unitCurrentAP + unitContinueModifyAP;
+        let totalHP = unitCurrentHP - unitDamageReceived + unitContinueModifyHP;
+
+        if (pilot) {
+            const pilotCurrentAP = resolveNumber(pilot.currentAP, resolveNumber(pilot.cardData?.ap));
+            const pilotCurrentHP = resolveNumber(pilot.currentHP, resolveNumber(pilot.cardData?.hp));
+            const pilotContinueModifyAP = resolveNumber(pilot.continueModifyAP);
+            const pilotContinueModifyHP = resolveNumber(pilot.continueModifyHP);
+            const pilotDamageReceived = 'damageReceived' in pilot ? resolveNumber((pilot as { damageReceived?: number }).damageReceived) : 0;
+
+            totalAP += pilotCurrentAP + pilotContinueModifyAP;
+            totalHP += pilotCurrentHP - pilotDamageReceived + pilotContinueModifyHP;
+        }
+
         return {
-            totalAP: currentAP + modifyAP,
-            totalHP: currentHP + modifyHP
+            totalAP,
+            totalHP
         };
     }
+
+   
 
 }

@@ -404,34 +404,6 @@ gameState.gameEnv.players.playerId_1.zones.slot1 = {
 
 **Solution**: Updated `calculateTotalInSlot()` to aggregate base stats and modifications separately:
 
-```javascript
-// ✅ NEW AGGREGATION LOGIC
-static calculateTotalInSlot(unitCard, pilotCard) {
-  let totalCurrentAP = 0, totalCurrentHP = 0;
-  let totalModifyAP = 0, totalModifyHP = 0;
-  
-  // Aggregate all currentAP/currentHP values
-  if (unitCard?.fullCardData) {
-    totalCurrentAP += unitCard.fullCardData.currentAP || 0;
-    totalCurrentHP += unitCard.fullCardData.currentHP || 0;
-    totalModifyAP += unitCard.fullCardData.modifyAP || 0;
-    totalModifyHP += unitCard.fullCardData.modifyHP || 0;
-  }
-  
-  if (pilotCard?.fullCardData) {
-    totalCurrentAP += pilotCard.fullCardData.currentAP || 0;
-    totalCurrentHP += pilotCard.fullCardData.currentHP || 0;
-    totalModifyAP += pilotCard.fullCardData.modifyAP || 0;
-    totalModifyHP += pilotCard.fullCardData.modifyHP || 0;
-  }
-  
-  // Final calculation: sum all base stats, then add all modifications
-  const totalAP = totalCurrentAP + totalModifyAP;
-  const totalHP = totalCurrentHP + totalModifyHP;
-  
-  return { totalAP, totalHP };
-}
-```
 
 **Benefits**:
 - ✅ **Consistent Aggregation**: All base stats summed first, then all modifications

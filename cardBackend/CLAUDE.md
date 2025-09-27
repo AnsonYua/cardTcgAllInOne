@@ -673,7 +673,6 @@ The game implements strict turn-based mechanics where each card placement automa
 - `moveCardToTrashFromSlot(gameEnv, playerId, slotName, card, cardType)` - Card movement from slot to trash
 - `updateUnitHP(unit, newHP)` - Unit HP management
 - `updatePilotHP(pilot, newHP)` - Pilot HP management
-- `calculateCombinedStats(player, slotName, unit)` - Combined unit+pilot stats calculation
 - `checkForDeployEffects(carduid)` - Deploy effect detection
 
 **Benefits Achieved:**

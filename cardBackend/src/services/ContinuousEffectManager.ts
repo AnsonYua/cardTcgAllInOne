@@ -854,14 +854,14 @@ export class ContinuousEffectManager {
                 
                 // Reset unit modifications
                 if (slot?.unit) {
-                    slot.unit.modifyAP = 0;
-                    slot.unit.modifyHP = 0;
+                    slot.unit.continueModifyAP = 0;
+                    slot.unit.continueModifyHP = 0;
                 }
                 
                 // Reset pilot modifications
                 if (slot?.pilot) {
-                    slot.pilot.modifyAP = 0;
-                    slot.pilot.modifyHP = 0;
+                    slot.pilot.continueModifyAP = 0;
+                    slot.pilot.continueModifyHP = 0;
                 }
             }
         }

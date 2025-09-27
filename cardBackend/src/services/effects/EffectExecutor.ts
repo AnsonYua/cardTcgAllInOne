@@ -473,6 +473,8 @@ export class EffectExecutor {
     }
 
     private static revertTemporaryEffectFromUnit(card: UnitZoneCard | PilotZoneCard, tempEffect: TemporaryEffect): void {
+       /* to be update
+       
         if (tempEffect.modifyAP !== undefined) {
             const currentAP = card.modifyAP || 0;
             card.modifyAP = currentAP - tempEffect.modifyAP;
@@ -483,6 +485,6 @@ export class EffectExecutor {
             const currentHP = card.modifyHP || 0;
             card.modifyHP = currentHP - tempEffect.modifyHP;
             console.log(`🔄 Reverted HP modification on ${card.carduid}: ${currentHP} → ${card.modifyHP}`);
-        }
+        }*/
     }
 }

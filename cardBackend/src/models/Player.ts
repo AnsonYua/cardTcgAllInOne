@@ -785,14 +785,6 @@ export class Player {
 
             const serialized = { ...card } as MutableCard<T>;
 
-            if (hasContinuousModifiers(card) && typeof card.continueModifyAP === 'number') {
-                serialized.modifyAP = card.continueModifyAP + 1;
-            }
-
-            if (hasContinuousModifiers(card) && typeof card.continueModifyHP === 'number') {
-                serialized.modifyHP = card.continueModifyHP + 1;
-            }
-
             return serialized;
         };
 
@@ -854,15 +846,35 @@ export class Player {
         const unit = slot.unit;
         const pilot = slot.pilot;
 
-        const unitAP = unit ? this.resolveCardValue(unit.currentAP, unit.cardData?.ap) : 0;
-        const unitHP = unit ? this.resolveCardValue(unit.currentHP, unit.cardData?.hp) : 0;
-        const pilotAP = pilot ? this.resolveCardValue(pilot.currentAP, pilot.cardData?.ap) : 0;
-        const pilotHP = pilot ? this.resolveCardValue(pilot.currentHP, pilot.cardData?.hp) : 0;
+        const unitCurrentAP = unit ? this.resolveCardValue(unit.currentAP, unit.cardData?.ap) : 0;
+        const unitCurrentHP = unit ? this.resolveCardValue(unit.currentHP, unit.cardData?.hp) : 0;
+        const pilotCurrentAP = pilot ? this.resolveCardValue(pilot.currentAP, pilot.cardData?.ap) : 0;
+        const pilotCurrentHP = pilot ? this.resolveCardValue(pilot.currentHP, pilot.cardData?.hp) : 0;
+
+        const unitTempModifyAP = unit ? this.resolveCardValue(0, 0) : 0;
+        const unitTempModifyHP = unit ? this.resolveCardValue(0, 0) : 0;
+        const pilotTempModifyAP = pilot ? this.resolveCardValue(0, 0) : 0;
+        const pilotTempModifyHP = pilot ? this.resolveCardValue(0, 0) : 0;
+
+        const unitContinueModifyAP = unit ? this.resolveCardValue(unit.continueModifyAP, 0) : 0;
+        const unitContinueModifyHP = unit ? this.resolveCardValue(unit.continueModifyHP, 0) : 0;
+        const pilotContinueModifyAP = pilot ? this.resolveCardValue(pilot.continueModifyAP, 0) : 0;
+        const pilotContinueModifyHP = pilot ? this.resolveCardValue(pilot.continueModifyHP, 0) : 0;
+
+        const unitDamageReceived = unit ? this.resolveCardValue(unit.damageReceived, 0) : 0;
+        const pilotDamageReceived = pilot && 'damageReceived' in pilot
+            ? this.resolveCardValue((pilot as { damageReceived?: number }).damageReceived, 0)
+            : 0;
 
         return {
             ...baseValue,
-            totalCurrentAP: unitAP + pilotAP,
-            totalCurrentHP: unitHP + pilotHP
+            totalTempModifyAP: unitTempModifyAP + pilotTempModifyAP,
+            totalTempModifyHP: unitTempModifyHP + pilotTempModifyHP,
+            totalContinueModifyAP: unitContinueModifyAP + pilotContinueModifyAP,
+            totalContinueModifyHP: unitContinueModifyHP + pilotContinueModifyHP,
+            totalDamageReceived: unitDamageReceived + pilotDamageReceived,
+            totalCurrentAP: unitCurrentAP + pilotCurrentAP,
+            totalCurrentHP: unitCurrentHP + pilotCurrentHP
         };
     }
 

@@ -114,11 +114,7 @@ export interface UnitZoneCard extends ZoneCard {
     originalAP?: number;
     isFirstPlay?: boolean;   // Whether this is the unit's first turn on field
     damageReceived?: number; // Cumulative damage taken this turn
-    
-    // NEW: Effect modifications (added to base stats for final calculation)
-    modifyAP?: number;       // AP bonus/penalty from effects (default: 0)
-    modifyHP?: number;       // HP bonus/penalty from effects (default: 0)
-    
+
     continueModifyAP?: number;   
     continueModifyHP?: number;   
 
@@ -133,10 +129,6 @@ export interface PilotZoneCard extends ZoneCard {
     originalAP?: number;     // Original Attack Power
     originalHP?: number;     // Original Health Points
     playedAs?: string;       // Track how the card is being played (for command cards played as pilots)
-    
-    // NEW: Effect modifications (added to base stats for final calculation)
-    modifyAP?: number;       // AP bonus/penalty from effects (default: 0)
-    modifyHP?: number;       // HP bonus/penalty from effects (default: 0)
     
     continueModifyAP?: number;   
     continueModifyHP?: number;   
@@ -199,9 +191,7 @@ export function createZoneCard(
                 originalHP: cardData.hp,
                 isRested: false,
                 isFirstPlay: true,
-                damageReceived: 0,
-                modifyAP: 0,    // NEW: Initialize effect modifications
-                modifyHP: 0     // NEW: Initialize effect modifications
+                damageReceived: 0
             } as UnitZoneCard;
             
         case 'pilot':
@@ -233,9 +223,7 @@ export function createZoneCard(
                     originalHP: pilotHP,
                     cardData: cardData as CommandCardData, // Keep original command data
                     playedAs: 'pilot', // Track how it's being played
-                    originalCardType: (cardData as any)?.originalCardType || cardData.cardType,
-                    modifyAP: 0,    // NEW: Initialize effect modifications
-                    modifyHP: 0     // NEW: Initialize effect modifications
+                    originalCardType: (cardData as any)?.originalCardType || cardData.cardType
                 } as PilotZoneCard;
             }
             
@@ -245,9 +233,7 @@ export function createZoneCard(
                 currentHP: cardData.hp,
                 originalAP: cardData.ap,
                 originalHP: cardData.hp,
-                cardData: cardData as PilotCardData,
-                modifyAP: 0,    // NEW: Initialize effect modifications
-                modifyHP: 0     // NEW: Initialize effect modifications
+                cardData: cardData as PilotCardData
             } as PilotZoneCard;
             
         case 'command':

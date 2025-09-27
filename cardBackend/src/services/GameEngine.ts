@@ -749,13 +749,13 @@ export class GameEngine {
             }
 
             const attackerSlot = attackerSlotResult.slotName!;
-            const attackingUnit = attackerSlotResult.unit!;
+            const attackingUnit = attackerSlotResult.unit! as UnitZoneCard;
 
             console.log(`⚔️ Found attacking unit in ${attackerSlot}: ${attackingUnit.carduid}`);
 
             // Find defender's target unit in specified slot
             const defenderSlot = (defender.zones as any)[targetSlotName];
-            const targetUnit = defenderSlot?.unit;
+            const targetUnit = defenderSlot?.unit as UnitZoneCard;
 
             if (!targetUnit || targetUnit.carduid !== targetUnitUid) {
                 return {
@@ -766,21 +766,19 @@ export class GameEngine {
 
             console.log(`🎯 Found target unit in ${targetSlotName}: ${targetUnit.carduid}`);
 
-            // Calculate attacker's total stats (unit + pilot if present)
-            const attackerStats = PlayerCardManager.calculateCombinedStats(attacker, attackerSlot, attackingUnit);
+            // Calculate attacker and defender stats using centralized slot lookup
+            const attackerStats = PlayerCardManager.getCurrentUnitCardInSlotAPandHP(gameEnv, attackingUnit.carduid);
+            const defenderStats = PlayerCardManager.getCurrentUnitCardInSlotAPandHP(gameEnv, targetUnit.carduid);
 
-            // Calculate defender's total stats (unit + pilot if present)
-            const defenderStats = PlayerCardManager.calculateCombinedStats(defender, targetSlotName, targetUnit);
-
-            console.log(`⚔️ Attacker total stats: AP=${attackerStats.totalAP}, HP=${attackerStats.totalHP}`);
-            console.log(`🛡️ Defender total stats: AP=${defenderStats.totalAP}, HP=${defenderStats.totalHP}`);
+            console.log(`⚔️ Attacker total stats: AP=${attackerStats.totalAP}, HP=${attackerStats.totalHP} , damage = ${(attackingUnit.damageReceived)}` );
+            console.log(`🛡️ Defender total stats: AP=${defenderStats.totalAP}, HP=${defenderStats.totalHP}, damage = ${(targetUnit.damageReceived)}`);
 
             // Calculate damage and remaining HP (ensure >= 0)
-            const attackerRemainingHP = Math.max(0, attackerStats.totalHP - defenderStats.totalAP);
-            const defenderRemainingHP = Math.max(0, defenderStats.totalHP - attackerStats.totalAP);
+            const attackerRemainingHP = Math.max(0, attackerStats.totalHP - (attackingUnit.damageReceived || 0) - defenderStats.totalAP);
+            const defenderRemainingHP = Math.max(0, defenderStats.totalHP - (targetUnit.damageReceived || 0)  - attackerStats.totalAP);
 
-            console.log(`💥 Battle result: Attacker HP: ${attackerStats.totalHP} - ${defenderStats.totalAP} = ${attackerRemainingHP}`);
-            console.log(`💥 Battle result: Defender HP: ${defenderStats.totalHP} - ${attackerStats.totalAP} = ${defenderRemainingHP}`);
+            console.log(`💥 Battle result: Attacker HP: ${attackerStats.totalHP} -${attackingUnit.damageReceived } - ${defenderStats.totalAP} = ${attackerRemainingHP}`);
+            console.log(`💥 Battle result: Defender HP: ${defenderStats.totalHP} -${targetUnit.damageReceived } - ${attackerStats.totalAP} = ${defenderRemainingHP}`);
 
             // Handle attacker damage and destruction
             const attackerDestroyed = GameEngine.handleUnitDamageAndDestruction(
@@ -848,7 +846,7 @@ export class GameEngine {
             console.log(`⚔️ Found attacking unit in ${attackerSlot}: ${attackingUnit.carduid}`);
 
             // Calculate total attack power using player-level modifications
-            const combinedStats = PlayerCardManager.calculateCombinedStats(attacker, attackerSlot, attackingUnit);
+            const combinedStats = PlayerCardManager.getCurrentUnitCardInSlotAPandHP(gameEnv, attackingUnit.carduid);
             const totalAttackPower = combinedStats.totalAP;
 
             console.log(`⚔️ Total attack power (with player modifications): ${totalAttackPower}`);
@@ -863,11 +861,11 @@ export class GameEngine {
                 const newDamage = currentDamage + totalAttackPower;
 
                 baseCard.damageReceived = newDamage;
-                baseCard.currentHP = Math.max(0, (baseCard.originalHP || 0) - newDamage);
+                //baseCard.currentHP = Math.max(0, (baseCard.originalHP || 0) - newDamage);
 
                 // Check if base is destroyed (HP = 0) and move to trash
                 let baseDestroyed = false;
-                if (baseCard.currentHP === 0) {
+                if ((baseCard.currentHP || 0) - newDamage <= 0) {
                     // Remove from base zone using BaseCardManager
                     const removed = BaseCardManager.removeBaseCard(gameEnv, defendingPlayerId, baseCard.carduid);
                     if (removed) {
@@ -1464,16 +1462,7 @@ export class GameEngine {
 
             return true; // Unit destroyed
         } else {
-            // Unit survives - update HP
-            PlayerCardManager.updateUnitHP(unit, unitRemainingHP);
-
-            // Update pilot HP if present
-            const pilot = (player.zones as any)[slotName]?.pilot;
-            if (pilot) {
-                const pilotRemainingHP = Math.max(0, (pilot.currentHP || pilot.cardData?.hp || 0) - incomingDamage);
-                PlayerCardManager.updatePilotHP(pilot, pilotRemainingHP);
-            }
-
+            PlayerCardManager.updateUnitDamage(unit,incomingDamage);
             return false; // Unit survived
         }
     }

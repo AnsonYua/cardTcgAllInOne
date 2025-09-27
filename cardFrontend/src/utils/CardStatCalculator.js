@@ -128,9 +128,13 @@ export default class CardStatCalculator {
             const totalAP = fieldValueData.fieldCardValue?.totalCurrentAP + 
             fieldValueData.fieldCardValue?.totalContinueModifyAP + 
             fieldValueData.fieldCardValue?.totalTempModifyAP;
+
             const totalHP = fieldValueData.fieldCardValue?.totalCurrentHP + 
             fieldValueData.fieldCardValue?.totalContinueModifyHP + 
             fieldValueData.fieldCardValue?.totalTempModifyHP;
+
+            console.log(`[CardStatCalculator] Found card `, totalAP);
+            
             return { totalAP, totalHP };
           }
         }
@@ -158,22 +162,43 @@ export default class CardStatCalculator {
     let totalAP = 0;
     let totalHP = 0;
     
-    // Add unit stats if present
-    if (slotData.unit) {
-      const unitAP = this.calculateTotalAP(slotData.unit);
-      const unitHP = this.calculateTotalHP(slotData.unit);
-      totalAP += unitAP;
-      totalHP += unitHP;
-    }
-    
-    // Add pilot stats if present
-    if (slotData.pilot) {
-      const pilotAP = this.calculateTotalAP(slotData.pilot);
-      const pilotHP = this.calculateTotalHP(slotData.pilot);
-      totalAP += pilotAP;
-      totalHP += pilotHP;
-    }
-    
+  /*
+  const unitFullData = slotData.unit
+  const carduid = unitFullData.carduid;
+      const gameState = unitCard.gameStateManager.getGameState();
+      const players = gameState?.gameEnv?.players || {};
+      const slotNames = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'];
+      let slotLogged = false;
+
+      for (const [playerId, player] of Object.entries(players)) {
+        if (slotLogged) break;
+        const zones = player?.zones;
+        if (!zones) continue;
+
+        for (const slotName of slotNames) {
+          const slot = zones[slotName];
+          if (!slot) continue;
+
+          if (slot.unit?.carduid === carduid || slot.pilot?.carduid === carduid) {
+            console.log(`[CardStatCalculator] Found card ${carduid} in ${playerId} ${slotName}:`, slot);
+            slotLogged = true;
+
+            const fieldValueData = slot;
+            const totalAP = fieldValueData.fieldCardValue?.totalCurrentAP + 
+            fieldValueData.fieldCardValue?.totalContinueModifyAP + 
+            fieldValueData.fieldCardValue?.totalTempModifyAP;
+
+            const totalHP = fieldValueData.fieldCardValue?.totalCurrentHP + 
+            fieldValueData.fieldCardValue?.totalContinueModifyHP + 
+            fieldValueData.fieldCardValue?.totalTempModifyHP;
+
+            console.log(`[CardStatCalculator] Found card `, totalAP);
+            
+            return { totalAP, totalHP };
+          }
+        }
+  
+  */
     return { totalAP, totalHP };
   }
 

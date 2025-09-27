@@ -4,7 +4,6 @@
  */
 import Card from '../components/Card.js';
 import { GAME_CONFIG } from '../config/gameConfig.js';
-import CardStatCalculator from './CardStatCalculator.js';
 
 export default class GameSceneUtils {
   /**
@@ -270,50 +269,4 @@ export default class GameSceneUtils {
     });
   }
 
-  /**
-   * Utility method to get card display data for preview
-   * @param {Object} card - Card object
-   * @returns {Object} Preview data
-   */
-  static _prepareCardDataForPreview(card) {
-    if (!card) return null;
-    
-    return {
-      id: card.cardId || card.id,
-      name: card.cardData?.name || card.name || 'Unknown',
-      hp: card.currentHP || card.cardData?.hp || 0,
-      ap: card.currentAP || card.cardData?.ap || 0,
-      description: card.cardData?.description || '',
-      type: card.cardData?.type || 'unknown'
-    };
-  }
-
-  /**
-   * Prepare slot preview data for unit+pilot combinations
-   * @param {Object} slotData - Slot data with unit and pilot
-   * @returns {Object} Combined preview data
-   */
-  static _prepareSlotPreviewData(slotData) {
-    if (!slotData || !slotData.unit) return null;
-    
-    const unit = slotData.unit;
-    const pilot = slotData.pilot || slotData.pilotCard;
-    
-    // Calculate combined stats using common utility
-    const unitAP = CardStatCalculator.calculateTotalAP(unit);
-    const unitHP = CardStatCalculator.calculateTotalHP(unit);
-    const pilotAP = pilot ? CardStatCalculator.calculateTotalAP(pilot) : 0;
-    const pilotHP = pilot ? CardStatCalculator.calculateTotalHP(pilot) : 0;
-    
-    return {
-      id: unit.cardData?.id || unit.cardId,
-      name: unit.cardData?.name || 'Unit',
-      hp: unitHP + pilotHP,
-      ap: unitAP + pilotAP,
-      description: `${unit.cardData?.name || 'Unit'}${pilot ? ` + ${pilot.cardData?.name || 'Pilot'}` : ''}`,
-      type: 'slot_combination',
-      unitData: this._prepareCardDataForPreview(unit),
-      pilotData: pilot ? this._prepareCardDataForPreview(pilot) : null
-    };
-  }
 }
