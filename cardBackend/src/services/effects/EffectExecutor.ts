@@ -146,21 +146,21 @@ export class EffectExecutor {
     /**
      * Apply a direct stat modification to a single card without building a full target reference.
      */
-    static applyDirectCardEffect(card: UnitZoneCard | PilotZoneCard, action: string, value: number): boolean {
+    static applyContinueCardEffect(card: UnitZoneCard | PilotZoneCard, action: string, value: number): boolean {
         switch (action) {
             case 'modifyAP': {
-                const previous = (card as any).modifyAP || 0;
-                (card as any).modifyAP = previous + value;
+                const previous = (card as any).continueModifyAP || 0;
+                (card as any).continueModifyAP = previous + value;
                 console.log(
-                    `  ⚡ Card ${card.carduid}: modifyAP ${previous} → ${(card as any).modifyAP} (${value > 0 ? '+' : ''}${value})`
+                    `  ⚡ Card ${card.carduid}: continueModifyAP ${previous} → ${(card as any).continueModifyAP} (${value > 0 ? '+' : ''}${value})`
                 );
                 return true;
             }
             case 'modifyHP': {
-                const previous = (card as any).modifyHP || 0;
-                (card as any).modifyHP = previous + value;
+                const previous = (card as any).continueModifyHP || 0;
+                (card as any).continueModifyHP = previous + value;
                 console.log(
-                    `  ❤️ Card ${card.carduid}: modifyHP ${previous} → ${(card as any).modifyHP} (${value > 0 ? '+' : ''}${value})`
+                    `  ❤️ Card ${card.carduid}: continueModifyHP ${previous} → ${(card as any).modifyHP} (${value > 0 ? '+' : ''}${value})`
                 );
                 return true;
             }

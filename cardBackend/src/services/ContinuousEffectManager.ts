@@ -8,13 +8,12 @@ import { EffectProcessingResult } from '../models/ContinuousEffectStore';
 import { SLOT_ZONES } from '../config/gameConstants';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { EffectExecutor } from './effects/EffectExecutor';
-import { ensureEffectDefaults } from '../utils/EffectNormalizationUtils';
 import {
-    EffectDefinition,
-    EffectSourceCondition,
-    EffectSourceConditionObject
-} from './EventQueue/interfaces/GameEvent';
-import { json } from 'stream/consumers';
+    ensureEffectDefaults,
+    normalizeSourceConditions,
+    NormalizedSourceCondition
+} from '../utils/EffectNormalizationUtils';
+import { EffectDefinition } from './EventQueue/interfaces/GameEvent';
 
 export interface EffectResult {
     success: boolean;
@@ -28,11 +27,6 @@ export interface EffectResult {
  * Universal ContinuousEffectManager class that handles any card effect based on JSON structure
  * Works with any target, action, and parameters combination
  */
-
-type RawSourceCondition = EffectSourceCondition;
-
-type StructuredSourceCondition = EffectSourceConditionObject & { type: string };
-
 type ZoneCardWithData = ZoneCard & {
     carduid: string;
     cardData?: {
@@ -364,14 +358,13 @@ export class ContinuousEffectManager {
             return false;
         }
 
-        const conditions = effectRule.sourceConditions;
-        if (!Array.isArray(conditions) || conditions.length === 0) {
+        const normalizedConditions = normalizeSourceConditions(effectRule.sourceConditions);
+        if (normalizedConditions.length === 0) {
             return true;
         }
 
-        for (const condition of conditions) {
-            const structuredCondition = ContinuousEffectManager.normalizeSourceCondition(condition);
-            if (!ContinuousEffectManager.evaluateSourceCondition(structuredCondition, card, gameEnv, cardOwnerPlayerId)) {
+        for (const condition of normalizedConditions) {
+            if (!ContinuousEffectManager.evaluateSourceCondition(condition, card, gameEnv, cardOwnerPlayerId)) {
                 return false;
             }
         }
@@ -379,39 +372,8 @@ export class ContinuousEffectManager {
         return true;
     }
 
-    private static normalizeSourceCondition(condition: RawSourceCondition): StructuredSourceCondition {
-        if (!condition) {
-            return { type: 'unknown' };
-        }
-
-        if (typeof condition === 'string') {
-            return { type: condition };
-        }
-
-        if (typeof condition !== 'object') {
-            return { type: 'unknown' };
-        }
-
-        const typedCondition = condition as EffectSourceConditionObject;
-        const normalizedType = typeof typedCondition.type === 'string' && typedCondition.type.length > 0
-            ? typedCondition.type
-            : 'unknown';
-
-        const normalized: StructuredSourceCondition = {
-            ...typedCondition,
-            type: normalizedType
-        };
-
-        if (normalized.type === 'controller' && typeof normalized.value !== 'string') {
-            const { value, ...rest } = normalized;
-            return { ...rest } as StructuredSourceCondition;
-        }
-
-        return normalized;
-    }
-
     private static evaluateSourceCondition(
-        condition: StructuredSourceCondition,
+        condition: NormalizedSourceCondition,
         card: ZoneCardWithData,
         gameEnv: GameEnvironment,
         cardOwnerPlayerId: string | null
@@ -743,7 +705,7 @@ export class ContinuousEffectManager {
                         continue;
                     }
 
-                    const applied = EffectExecutor.applyDirectCardEffect(target, action, numericValue);
+                    const applied = EffectExecutor.applyContinueCardEffect(target, action, numericValue);
                     if (!applied) {
                         continue;
                     }

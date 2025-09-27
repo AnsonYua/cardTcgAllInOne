@@ -108,6 +108,9 @@ export interface UnitZoneCard extends ZoneCard {
     modifyAP?: number;       // AP bonus/penalty from effects (default: 0)
     modifyHP?: number;       // HP bonus/penalty from effects (default: 0)
     
+    continueModifyAP?: number;   
+    continueModifyHP?: number;   
+
     // NEW: Temporary effects applied to this unit
     temporaryEffects?: TemporaryEffect[];  // Effects that expire at end of turn
 }
@@ -124,6 +127,8 @@ export interface PilotZoneCard extends ZoneCard {
     modifyAP?: number;       // AP bonus/penalty from effects (default: 0)
     modifyHP?: number;       // HP bonus/penalty from effects (default: 0)
     
+    continueModifyAP?: number;   
+    continueModifyHP?: number;   
     // NEW: Temporary effects applied to this pilot
     temporaryEffects?: TemporaryEffect[];  // Effects that expire at end of turn
 }

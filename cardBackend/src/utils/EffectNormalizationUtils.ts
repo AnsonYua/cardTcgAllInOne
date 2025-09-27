@@ -3,6 +3,7 @@ import {
     EffectDefinition,
     EffectDetails,
     EffectSourceCondition,
+    EffectSourceConditionObject,
     EffectTiming,
     EffectTargetConfig,
     TargetFilters
@@ -60,7 +61,7 @@ export function normalizeEffectRule(
         : undefined;
 
     const sourceConditions = Array.isArray(raw['sourceConditions'])
-        ? (raw['sourceConditions'] as EffectSourceCondition[])
+        ? normalizeSourceConditions(raw['sourceConditions'] as EffectSourceCondition[])
         : undefined;
 
     const description = typeof raw['description'] === 'string' || Array.isArray(raw['description'])
@@ -117,6 +118,44 @@ export function ensureEffectDefaults<TEffect extends EffectDefinition>(effect: T
         action,
         parameters
     } as TEffect;
+}
+
+export interface NormalizedSourceCondition extends EffectSourceConditionObject {
+    type: string;
+}
+
+export function normalizeSourceCondition(condition: EffectSourceCondition | undefined): NormalizedSourceCondition {
+    if (!condition) {
+        return { type: 'unknown' };
+    }
+
+    if (typeof condition === 'string') {
+        return { type: condition };
+    }
+
+    const normalizedType = typeof condition.type === 'string' && condition.type.length > 0
+        ? condition.type
+        : 'unknown';
+
+    const normalized: NormalizedSourceCondition = {
+        ...condition,
+        type: normalizedType
+    };
+
+    if (normalized.type === 'controller' && typeof normalized.value !== 'string') {
+        const { value, ...rest } = normalized;
+        return { ...rest };
+    }
+
+    return normalized;
+}
+
+export function normalizeSourceConditions(conditions?: EffectSourceCondition[]): NormalizedSourceCondition[] {
+    if (!Array.isArray(conditions) || conditions.length === 0) {
+        return [];
+    }
+
+    return conditions.map((condition) => normalizeSourceCondition(condition));
 }
 
 export function normalizeEffectDetails(effect: EffectDetails | undefined): EffectDetails | undefined {
