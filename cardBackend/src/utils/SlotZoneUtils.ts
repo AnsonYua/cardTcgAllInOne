@@ -33,6 +33,12 @@ export interface SlotSearchResult {
     error?: string;
 }
 
+export interface SlotSearchByCardResult {
+    slotName: string | null;
+    unit: any | null;
+    pilot: any | null;
+}
+
 export class SlotZoneUtils {
 
     /**
@@ -152,6 +158,33 @@ export class SlotZoneUtils {
         }
         
         return null;
+    }
+
+    /**
+     * Locate the slot containing the provided carduid for a single player's zones.
+     */
+    static findSlotByCarduid(playerZones: any, carduid: string): SlotSearchByCardResult {
+        if (!carduid) {
+            return { slotName: null, unit: null, pilot: null };
+        }
+
+        for (const zoneName of SLOT_ZONES) {
+            const validation = this.getSlotZone(playerZones, zoneName);
+            if (!validation.isValid || !validation.slot) {
+                continue;
+            }
+
+            const { unit, pilot } = validation.slot;
+            if (unit?.carduid === carduid || pilot?.carduid === carduid) {
+                return {
+                    slotName: zoneName,
+                    unit: unit || null,
+                    pilot: pilot || null
+                };
+            }
+        }
+
+        return { slotName: null, unit: null, pilot: null };
     }
 
     /**

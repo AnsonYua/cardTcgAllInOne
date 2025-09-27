@@ -85,7 +85,7 @@ export function normalizeEffectRule(
     return normalized;
 }
 
-export function ensureEffectDefaults(effect: EffectDefinition): EffectDefinition {
+export function ensureEffectDefaults<TEffect extends EffectDefinition>(effect: TEffect): TEffect {
     const effectDetails = effect.effect;
     const action = resolveAction(effect.action, effectDetails);
     const parameters = effect.parameters ?? effectDetails?.parameters;
@@ -98,7 +98,7 @@ export function ensureEffectDefaults(effect: EffectDefinition): EffectDefinition
         ...effect,
         action,
         parameters
-    };
+    } as TEffect;
 }
 
 export function normalizeEffectDetails(effect: EffectDetails | undefined): EffectDetails | undefined {

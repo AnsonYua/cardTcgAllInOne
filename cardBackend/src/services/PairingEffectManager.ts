@@ -23,6 +23,7 @@ import {
     StateChange
 } from '../interfaces/StandardizedInterfaces';
 import { getCardIdFromUid } from '../utils/CardUtils';
+import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { eventDataValidator } from '../validators/EventDataValidator';
 import { ensureEffectDefaults, normalizeEffectRule } from '../utils/EffectNormalizationUtils';
 
@@ -331,7 +332,7 @@ export class PairingEffectManager implements StandardEffectManager {
         }
 
         // Find the slot where the pairing occurred
-        const { slot: pairedSlot, unit: pairedUnit } = this.findSlotByCarduid(player as any, eventData.carduid);
+        const { slotName: pairedSlot, unit: pairedUnit } = SlotZoneUtils.findSlotByCarduid(player.zones, eventData.carduid);
         if (!pairedSlot || !pairedUnit) {
             console.log(`⚠️ Could not find paired slot for card ${eventData.carduid}`);
             return null;
@@ -344,11 +345,6 @@ export class PairingEffectManager implements StandardEffectManager {
             console.log(`⚠️ No pilot found in paired slot ${pairedSlot}`);
             return null;
         }
-
-        // Derive cardIds from carduids for logging
-        const unitCardId = getCardIdFromUid(pairedUnit.carduid);
-        const pilotCardId = getCardIdFromUid(pilot.carduid);
-        console.log(`🤝 Checking pairing effects for Unit: ${unitCardId}, Pilot: ${pilotCardId}`);
 
         // Check both unit and pilot for pairing effects
         const cardsToCheck: CardInfo[] = [
@@ -724,26 +720,6 @@ export class PairingEffectManager implements StandardEffectManager {
         // Add more filter types as needed (hp, traits, etc.)
         
         return true;
-    }
-
-    /**
-     * Find slot by card UID (copied from GameEngine to remove dependency)
-     */
-    private static findSlotByCarduid(player: PlayerZones, carduid: string): { slot: string | null; unit: (UnitCard & { cardData?: any }) | null } {
-        const SLOT_ZONES = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'];
-        
-        for (const slotName of SLOT_ZONES) {
-            const slot = player.zones[slotName];
-            if (slot?.unit?.carduid === carduid) {
-                return { slot: slotName, unit: slot.unit };
-            }
-            console.log("slot data q1111 ",JSON.stringify(slot));
-            if (slot?.pilot?.carduid === carduid) {
-                return { slot: slotName, unit: slot.unit || null }; // Return unit even if pilot was matched
-            }
-        }
-        
-        return { slot: null, unit: null };
     }
 
     /**
