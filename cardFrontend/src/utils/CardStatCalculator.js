@@ -4,84 +4,23 @@
  */
 
 export default class CardStatCalculator {
-  /**
-   * Calculate total AP including modifications (matches Card.js getAPandHPFromCardData logic)
-   * @param {Object} fullCardData - The full card data object
-   * @returns {number} Total AP value including modifications
-   */
-  static calculateTotalAP(fullCardData) {
-    if (!fullCardData) return 0;
-    
-    const cardData = fullCardData.cardData || fullCardData;
-    
-    // For regular cards (unit, pilot, base)
-    if (cardData.cardType === 'unit' || cardData.cardType === 'pilot' || cardData.cardType === 'base') {
-      if (fullCardData.currentAP != null) {
-        // Use currentAP as base and add modifications
-        const baseAP = fullCardData.currentAP || 0;
-        const modifyAP = fullCardData.modifyAP || 0;
-        return baseAP + modifyAP;
-      } else {
-        // Use original AP from cardData and add modifications
-        const baseAP = cardData.ap || 0;
-        const modifyAP = fullCardData.modifyAP || 0;
-        return baseAP + modifyAP;
+
+
+  static getTotalApAndHpByCardData(cardData) {
+    let totalAP = 0;
+    let totalHP = 0;
+    const isBaseCard = cardData?.cardType === 'base';
+    if(isBaseCard){
+      const fieldTotals = this._calculateTotalsFromFieldValue((cardData).fieldCardValue);
+      if (fieldTotals) {
+        return fieldTotals;
       }
     }
-    
-    // For command cards with pilot_designation effect
-    if (cardData.cardType === 'command') {
-      const pilotEffect = cardData.effects?.rules?.find(rule => rule.effectId === 'pilot_designation');
-      if (pilotEffect && pilotEffect.effect?.parameters) {
-        const originalAP = pilotEffect.effect.parameters.AP || 0;
-        const baseAP = fullCardData.currentAP || originalAP;
-        const modifyAP = fullCardData.modifyAP || 0;
-        return baseAP + modifyAP;
-      }
-    }
-    
-    return 0;
+
+    return { totalAP, totalHP };
   }
 
-  /**
-   * Calculate total HP including modifications (matches Card.js getAPandHPFromCardData logic)
-   * @param {Object} fullCardData - The full card data object
-   * @returns {number} Total HP value including modifications
-   */
-  static calculateTotalHP(fullCardData) {
-    if (!fullCardData) return 0;
-    
-    const cardData = fullCardData.cardData || fullCardData;
-    
-    // For regular cards (unit, pilot, base)
-    if (cardData.cardType === 'unit' || cardData.cardType === 'pilot' || cardData.cardType === 'base') {
-      if (fullCardData.currentHP != null) {
-        // Use currentHP as base and add modifications
-        const baseHP = fullCardData.currentHP || 0;
-        const modifyHP = fullCardData.modifyHP || 0;
-        return baseHP + modifyHP;
-      } else {
-        // Use original HP from cardData and add modifications
-        const baseHP = cardData.hp || 0;
-        const modifyHP = fullCardData.modifyHP || 0;
-        return baseHP + modifyHP;
-      }
-    }
-    
-    // For command cards with pilot_designation effect
-    if (cardData.cardType === 'command') {
-      const pilotEffect = cardData.effects?.rules?.find(rule => rule.effectId === 'pilot_designation');
-      if (pilotEffect && pilotEffect.effect?.parameters) {
-        const originalHP = pilotEffect.effect.parameters.HP || 0;
-        const baseHP = fullCardData.currentHP || originalHP;
-        const modifyHP = fullCardData.modifyHP || 0;
-        return baseHP + modifyHP;
-      }
-    }
-    
-    return 0;
-  }
-
+  
   /**
    * Calculate combined total AP and HP for unit and pilot cards in a slot
    * @param {Object} unitCard - Unit card data (can be null)
@@ -95,53 +34,15 @@ export default class CardStatCalculator {
 
     if (isBaseCard) {
       console.log('[CardStatCalculator] Base card data:', unitFullData || unitCardData);
-      const fieldValueData = unitFullData || unitCardData;
-      const totalAP = fieldValueData.fieldCardValue?.totalCurrentAP + 
-      fieldValueData.fieldCardValue?.totalContinueModifyAP + 
-      fieldValueData.fieldCardValue?.totalTempModifyAP;
-      const totalHP = fieldValueData.fieldCardValue?.totalCurrentHP + 
-      fieldValueData.fieldCardValue?.totalContinueModifyHP + 
-      fieldValueData.fieldCardValue?.totalTempModifyHP;
-      return { totalAP, totalHP };
-
-    } else if (unitCard && unitFullData?.carduid && unitCard.gameStateManager?.getGameState) {
-      const carduid = unitFullData.carduid;
-      const gameState = unitCard.gameStateManager.getGameState();
-      const players = gameState?.gameEnv?.players || {};
-      const slotNames = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'];
-      let slotLogged = false;
-
-      for (const [playerId, player] of Object.entries(players)) {
-        if (slotLogged) break;
-        const zones = player?.zones;
-        if (!zones) continue;
-
-        for (const slotName of slotNames) {
-          const slot = zones[slotName];
-          if (!slot) continue;
-
-          if (slot.unit?.carduid === carduid || slot.pilot?.carduid === carduid) {
-            console.log(`[CardStatCalculator] Found card ${carduid} in ${playerId} ${slotName}:`, slot);
-            slotLogged = true;
-
-            const fieldValueData = slot;
-            const totalAP = fieldValueData.fieldCardValue?.totalCurrentAP + 
-            fieldValueData.fieldCardValue?.totalContinueModifyAP + 
-            fieldValueData.fieldCardValue?.totalTempModifyAP;
-
-            const totalHP = fieldValueData.fieldCardValue?.totalCurrentHP + 
-            fieldValueData.fieldCardValue?.totalContinueModifyHP + 
-            fieldValueData.fieldCardValue?.totalTempModifyHP;
-
-            console.log(`[CardStatCalculator] Found card `, totalAP);
-            
-            return { totalAP, totalHP };
-          }
-        }
+      const fieldTotals = this._calculateTotalsFromFieldValue((unitFullData || unitCardData).fieldCardValue);
+      if (fieldTotals) {
+        return fieldTotals;
       }
 
-      if (!slotLogged) {
-        console.log(`[CardStatCalculator] Slot not found for card ${carduid}`);
+    } else if (unitCard && unitFullData?.carduid && unitCard.gameStateManager?.getGameState) {
+      const totalsFromState = this._findTotalsFromGameState(unitFullData.carduid, unitCard.gameStateManager);
+      if (totalsFromState) {
+        return totalsFromState;
       }
     }
 
@@ -159,47 +60,70 @@ export default class CardStatCalculator {
    * @returns {Object} Combined totals: { totalAP: number, totalHP: number }
    */
   static calculateSlotDataTotals(slotData) {
-    let totalAP = 0;
-    let totalHP = 0;
-    
-  /*
-  const unitFullData = slotData.unit
-  const carduid = unitFullData.carduid;
-      const gameState = unitCard.gameStateManager.getGameState();
-      const players = gameState?.gameEnv?.players || {};
-      const slotNames = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'];
-      let slotLogged = false;
+    const totalsFromSlot = this._calculateTotalsFromSlot(slotData);
+    if (totalsFromSlot) {
+      return totalsFromSlot;
+    }
 
-      for (const [playerId, player] of Object.entries(players)) {
-        if (slotLogged) break;
-        const zones = player?.zones;
-        if (!zones) continue;
+    return { totalAP: 0, totalHP: 0 };
+  }
 
-        for (const slotName of slotNames) {
-          const slot = zones[slotName];
-          if (!slot) continue;
+  static _calculateTotalsFromFieldValue(fieldValue) {
+    if (!fieldValue) {
+      return null;
+    }
+    const totalAP = (fieldValue.totalCurrentAP || 0)
 
-          if (slot.unit?.carduid === carduid || slot.pilot?.carduid === carduid) {
-            console.log(`[CardStatCalculator] Found card ${carduid} in ${playerId} ${slotName}:`, slot);
-            slotLogged = true;
+    const totalHP = (fieldValue.totalCurrentHP || 0)
 
-            const fieldValueData = slot;
-            const totalAP = fieldValueData.fieldCardValue?.totalCurrentAP + 
-            fieldValueData.fieldCardValue?.totalContinueModifyAP + 
-            fieldValueData.fieldCardValue?.totalTempModifyAP;
+    return { totalAP, totalHP };
+  }
 
-            const totalHP = fieldValueData.fieldCardValue?.totalCurrentHP + 
-            fieldValueData.fieldCardValue?.totalContinueModifyHP + 
-            fieldValueData.fieldCardValue?.totalTempModifyHP;
+  static _findTotalsFromGameState(carduid, gameStateManager) {
+    if (!carduid || !gameStateManager?.getGameState) {
+      return null;
+    }
 
-            console.log(`[CardStatCalculator] Found card `, totalAP);
-            
-            return { totalAP, totalHP };
+    const gameState = gameStateManager.getGameState();
+    const players = gameState?.gameEnv?.players || {};
+    const slotNames = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'];
+
+    for (const [playerId, player] of Object.entries(players)) {
+      const zones = player?.zones;
+      if (!zones) continue;
+
+      for (const slotName of slotNames) {
+        const slot = zones[slotName];
+        if (!slot) continue;
+
+        if (slot.unit?.carduid === carduid || slot.pilot?.carduid === carduid) {
+          console.log(`[CardStatCalculator] Found card ${carduid} in ${playerId} ${slotName}:`, slot);
+
+          const totals = this._calculateTotalsFromSlot(slot);
+          if (totals) {
+            return totals;
           }
         }
-  
-  */
-    return { totalAP, totalHP };
+      }
+    }
+
+    console.log(`[CardStatCalculator] Slot not found for card ${carduid}`);
+    return null;
+  }
+
+  static _calculateTotalsFromSlot(slot) {
+    if (!slot) {
+      return null;
+    }
+
+    const fieldTotals = this._calculateTotalsFromFieldValue(slot.fieldCardValue);
+    if (fieldTotals) {
+      return fieldTotals;
+    }
+
+    let totalAP = 0;
+    let totalHP = 0;
+    return {totalAP,to}
   }
 
   /**

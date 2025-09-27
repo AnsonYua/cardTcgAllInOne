@@ -651,11 +651,7 @@ export default class DialogUIManager {
       // Determine what data to pass to Card component
       let cardDataForDisplay;
 
-      // Handle different card structures
-      if (originalCard && originalCard.unit) {
-        // Card object with unit property (from ItemDataResolver slot targets)
-        cardDataForDisplay = originalCard.unit;
-      } else if (originalCard && originalCard.cardData) {
+      if (originalCard && originalCard.cardData) {
         // Direct card object with cardData property
         cardDataForDisplay = originalCard;
       } else if (originalCard && originalCard.id) {
@@ -670,14 +666,8 @@ export default class DialogUIManager {
       const cardComponent = CardFactory.createDialogCard(scene, cardDataForDisplay, cardX, cardsY, {
         dialogScale: dialogScale,
         // ✅ CENTRALIZED: Use CardStatCalculator for consistent total calculation
-        totalAP: (originalCard && originalCard.type === "slot" && originalCard.totalAP !== undefined) ? 
-          originalCard.totalAP : 
-          (originalCard && originalCard.type === "slot") ? 
-            CardStatCalculator.calculateTotalAP(cardDataForDisplay) : undefined,
-        totalHP: (originalCard && originalCard.type === "slot" && originalCard.totalHP !== undefined) ? 
-          originalCard.totalHP : 
-          (originalCard && originalCard.type === "slot") ? 
-            CardStatCalculator.calculateTotalHP(cardDataForDisplay) : undefined
+        totalAP: CardStatCalculator.getTotalApAndHpByCardData(cardDataForDisplay).totalAP || 0  ,
+        totalHP: CardStatCalculator.getTotalApAndHpByCardData(cardDataForDisplay).totalHP|| 0 
       });
 
       return cardComponent;
