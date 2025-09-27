@@ -89,6 +89,12 @@ export default class CardStatCalculator {
    * @returns {Object} Combined totals: { totalAP: number, totalHP: number }
    */
   static calculateTotalInSlot(unitCard, pilotCard) {
+
+
+    //if it is not base card , use unitCard.carduid and find the slot 
+    //and console.log slot
+    //if it is base card console.log the card data
+
     let totalAP = 0;
     let totalHP = 0;
 

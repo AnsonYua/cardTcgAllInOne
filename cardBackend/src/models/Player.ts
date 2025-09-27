@@ -94,7 +94,7 @@ export interface SerializedPlayerZones {
     slot4: SerializedSlot;
     slot5: SerializedSlot;
     slot6: SerializedSlot;
-    base: ZoneCard[];
+    base: BaseCard[];
     shieldArea: ZoneCard[];
     energyArea: EnergyZoneCard[];
     trashArea: ZoneCard[];
@@ -776,12 +776,14 @@ export class Player {
     }
 
     private serializeZonesForResponse(): SerializedPlayerZones {
+        type MutableCard<T extends ZoneCard> = T & Partial<ContinuousModifiers>;
+
         const serializeCard = <T extends ZoneCard>(card: T | undefined): T | undefined => {
             if (!card) {
                 return undefined;
             }
 
-            const serialized = { ...card } as T & Partial<ContinuousModifiers>;
+            const serialized = { ...card } as MutableCard<T>;
 
             if (hasContinuousModifiers(card) && typeof card.continueModifyAP === 'number') {
                 serialized.modifyAP = card.continueModifyAP + 1;
@@ -812,12 +814,26 @@ export class Player {
             slot4: serializeSlot(this.zones.slot4),
             slot5: serializeSlot(this.zones.slot5),
             slot6: serializeSlot(this.zones.slot6),
-            base: this.zones.base.map((card) => serializeCard(card) ?? card),
+            base: this.zones.base.map((card) => this.maximizeBaseCard(card)),
             shieldArea: this.zones.shieldArea.map((card) => serializeCard(card) ?? card),
             energyArea: this.zones.energyArea.map((card) => serializeCard(card) ?? card),
             trashArea: this.zones.trashArea.map((card) => serializeCard(card) ?? card),
             repairAbilitiesCheckedThisCycle: this.zones.repairAbilitiesCheckedThisCycle
         };
+    }
+
+    private maximizeBaseCard(card: BaseCard): BaseCard {
+        const serialized = { ...card };
+        serialized.fieldCardValue = {
+            totalTempModifyAP: 0,
+            totalTempModifyHP: 0,
+            totalContinueModifyAP: 0,
+            totalContinueModifyHP: 0,
+            totalDamageReceived: typeof card.damageReceived === 'number' ? card.damageReceived : 0,
+            totalCurrentAP: 0,
+            totalCurrentHP: this.resolveCardValue(card.currentHP, card.originalHP)
+        };
+        return serialized;
     }
 
     private calculateSlotFieldValue(slot: SlotZone | undefined): FieldCardValue {
