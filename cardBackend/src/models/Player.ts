@@ -744,7 +744,7 @@ export class Player {
         return player;
     }
 
-    private serializeZonesForResponse(): PlayerZones {
+    private serializeZonesForResponse(): any {
         const serializeCard = (card: any) => {
             if (!card) {
                 return card;
@@ -763,26 +763,13 @@ export class Player {
             return serialized;
         };
 
-        const serializeSlot = (slot: SlotZone | undefined): SlotZone => {
-            if (!slot) {
-                return {};
-            }
-
-            const unit = serializeCard(slot.unit);
-            const pilot = serializeCard(slot.pilot);
-            const fieldCardValue = this.calculateFieldCardValue(unit, pilot);
-
-            if (unit) {
-                unit.fieldCardValue = fieldCardValue;
-            }
-
-            if (pilot) {
-                pilot.fieldCardValue = this.calculateFieldCardValue(pilot, undefined);
-            }
-
+        const serializeSlot = (slot: SlotZone | undefined) => {
+            const unit = serializeCard(slot?.unit);
+            const pilot = serializeCard(slot?.pilot);
             return {
                 unit,
-                pilot
+                pilot,
+                fieldCardValue: this.calculateSlotFieldValue(slot)
             };
         };
 
@@ -801,8 +788,8 @@ export class Player {
         };
     }
 
-    private calculateFieldCardValue(unit: any, pilot: any | undefined): FieldCardValue {
-        const base: FieldCardValue = {
+    private calculateSlotFieldValue(slot: SlotZone | undefined): FieldCardValue {
+        const defaults: FieldCardValue = {
             totalTempModifyAP: 0,
             totalTempModifyHP: 0,
             totalContinueModifyAP: 0,
@@ -811,29 +798,24 @@ export class Player {
             totalCurrentAP: 0,
             totalCurrentHP: 0
         };
-        if (!unit) {
-            return base;
+
+        if (!slot) {
+            return defaults;
         }
 
-        const value: FieldCardValue = {
-            totalTempModifyAP:  0,
-            totalTempModifyHP: 0,
-            totalContinueModifyAP: unit.continueModifyAP?? 0,
-            totalContinueModifyHP: unit.continueModifyHP ?? 0,
-            totalDamageReceived: unit.damage ?? 0,
-            totalCurrentAP: 0,
-            totalCurrentHP: 0
-        };
+        const unit = slot.unit;
+        const pilot = slot.pilot;
 
-        const unitCurrentAP = typeof unit.currentAP === 'number' ? unit.currentAP : unit.cardData?.ap ?? 0;
-        const unitCurrentHP = typeof unit.currentHP === 'number' ? unit.currentHP : unit.cardData?.hp ?? 0;
+        const unitCurrentAP = unit ? (typeof unit.currentAP === 'number' ? unit.currentAP : unit.cardData?.ap ?? 0) : 0;
+        const unitCurrentHP = unit ? (typeof unit.currentHP === 'number' ? unit.currentHP : unit.cardData?.hp ?? 0) : 0;
 
         const pilotCurrentAP = pilot ? (typeof pilot.currentAP === 'number' ? pilot.currentAP : pilot.cardData?.ap ?? 0) : 0;
         const pilotCurrentHP = pilot ? (typeof pilot.currentHP === 'number' ? pilot.currentHP : pilot.cardData?.hp ?? 0) : 0;
 
-        value.totalCurrentAP = unitCurrentAP + pilotCurrentAP;
-        value.totalCurrentHP = unitCurrentHP + pilotCurrentHP;
-
-        return value;
+        return {
+            ...defaults,
+            totalCurrentAP: unitCurrentAP + pilotCurrentAP,
+            totalCurrentHP: unitCurrentHP + pilotCurrentHP
+        };
     }
 }
