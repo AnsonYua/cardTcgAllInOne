@@ -89,53 +89,61 @@ export default class CardStatCalculator {
    * @returns {Object} Combined totals: { totalAP: number, totalHP: number }
    */
   static calculateTotalInSlot(unitCard, pilotCard) {
+    const unitFullData = unitCard?.fullCardData || null;
+    const unitCardData = unitFullData?.cardData || unitCard?.cardData || null;
+    const isBaseCard = unitCardData?.cardType === 'base';
 
+    if (isBaseCard) {
+      console.log('[CardStatCalculator] Base card data:', unitFullData || unitCardData);
+      const fieldValueData = unitFullData || unitCardData;
+      const totalAP = fieldValueData.fieldCardValue?.totalCurrentAP + 
+      fieldValueData.fieldCardValue?.totalContinueModifyAP + 
+      fieldValueData.fieldCardValue?.totalTempModifyAP;
+      const totalHP = fieldValueData.fieldCardValue?.totalCurrentHP + 
+      fieldValueData.fieldCardValue?.totalContinueModifyHP + 
+      fieldValueData.fieldCardValue?.totalTempModifyHP;
+      return { totalAP, totalHP };
 
-    //if it is not base card , use unitCard.carduid and find the slot 
-    //and console.log slot
-    //if it is base card console.log the card data
+    } else if (unitCard && unitFullData?.carduid && unitCard.gameStateManager?.getGameState) {
+      const carduid = unitFullData.carduid;
+      const gameState = unitCard.gameStateManager.getGameState();
+      const players = gameState?.gameEnv?.players || {};
+      const slotNames = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'];
+      let slotLogged = false;
+
+      for (const [playerId, player] of Object.entries(players)) {
+        if (slotLogged) break;
+        const zones = player?.zones;
+        if (!zones) continue;
+
+        for (const slotName of slotNames) {
+          const slot = zones[slotName];
+          if (!slot) continue;
+
+          if (slot.unit?.carduid === carduid || slot.pilot?.carduid === carduid) {
+            console.log(`[CardStatCalculator] Found card ${carduid} in ${playerId} ${slotName}:`, slot);
+            slotLogged = true;
+
+            const fieldValueData = slot;
+            const totalAP = fieldValueData.fieldCardValue?.totalCurrentAP + 
+            fieldValueData.fieldCardValue?.totalContinueModifyAP + 
+            fieldValueData.fieldCardValue?.totalTempModifyAP;
+            const totalHP = fieldValueData.fieldCardValue?.totalCurrentHP + 
+            fieldValueData.fieldCardValue?.totalContinueModifyHP + 
+            fieldValueData.fieldCardValue?.totalTempModifyHP;
+            return { totalAP, totalHP };
+          }
+        }
+      }
+
+      if (!slotLogged) {
+        console.log(`[CardStatCalculator] Slot not found for card ${carduid}`);
+      }
+    }
 
     let totalAP = 0;
     let totalHP = 0;
 
-    let totalCurrentAP = 0;
-    let totalCurrentHP = 0;
-   
-    let totalModifyAP = 0;
-    let totalModifyHP = 0; 
-    console.log("asdadsdsadssdds 1111", JSON.stringify(unitCard.fullCardData))
-    // Add unit card stats if unit exists
-    if (unitCard && unitCard.fullCardData) {
-      const unitCurrentAP = unitCard.fullCardData.currentAP || 0;
-      const unitModifyAP = unitCard.fullCardData.modifyAP || 0;
-      const unitCurrentHP = unitCard.fullCardData.currentHP || 0;
-      const unitModifyHP = unitCard.fullCardData.modifyHP || 0;
-      
-      totalCurrentAP += unitCurrentAP;
-      totalCurrentHP += unitCurrentHP;
-      totalModifyAP += unitModifyAP;
-      totalModifyHP += unitModifyHP;
-      
-      console.log(`[CardStatCalculator] Unit contribution: AP=${unitCurrentAP + unitModifyAP} (${unitCurrentAP}+${unitModifyAP}), HP=${unitCurrentHP + unitModifyHP} (${unitCurrentHP}+${unitModifyHP})`);
-    }
-    
-    // Add pilot card stats if pilot exists
-    if (pilotCard && pilotCard.fullCardData) {
-      const pilotCurrentAP = pilotCard.fullCardData.currentAP || 0;
-      const pilotModifyAP = pilotCard.fullCardData.modifyAP || 0;
-      const pilotCurrentHP = pilotCard.fullCardData.currentHP || 0;
-      const pilotModifyHP = pilotCard.fullCardData.modifyHP || 0;
-      
-      totalCurrentAP += pilotCurrentAP;
-      totalCurrentHP += pilotCurrentHP;
-      totalModifyAP += pilotModifyAP;
-      totalModifyHP += pilotModifyHP;
-
-      console.log(`[CardStatCalculator] Pilot contribution: AP=${pilotCurrentAP + pilotModifyAP} (${pilotCurrentAP}+${pilotModifyAP}), HP=${pilotCurrentHP + pilotModifyHP} (${pilotCurrentHP}+${pilotModifyHP})`);
-    }
-    totalAP = totalCurrentAP + totalModifyAP;
-    totalHP = totalCurrentHP + totalModifyHP;
-    console.log(`[CardStatCalculator] Slot total: AP=${totalAP}, HP=${totalHP}`);
     
     return { totalAP, totalHP };
   }
