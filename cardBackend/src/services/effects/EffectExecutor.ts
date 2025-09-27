@@ -160,7 +160,7 @@ export class EffectExecutor {
                 const previous = (card as any).continueModifyHP || 0;
                 (card as any).continueModifyHP = previous + value;
                 console.log(
-                    `  ❤️ Card ${card.carduid}: continueModifyHP ${previous} → ${(card as any).modifyHP} (${value > 0 ? '+' : ''}${value})`
+                    `  ❤️ Card ${card.carduid}: continueModifyHP ${previous} → ${(card as any).continueModifyHP} (${value > 0 ? '+' : ''}${value})`
                 );
                 return true;
             }
