@@ -74,6 +74,37 @@ export const isZoneCardArray = (content: ZoneContent): content is ZoneCard[] => 
 // ============ PLAYER FIELD EFFECTS ============
 // Field effects system removed - not currently implemented in game logic
 
+interface ContinuousModifiers {
+    continueModifyAP?: number;
+    continueModifyHP?: number;
+    modifyAP?: number;
+    modifyHP?: number;
+}
+
+export interface SerializedSlot {
+    unit?: UnitZoneCard;
+    pilot?: PilotZoneCard;
+    fieldCardValue: FieldCardValue;
+}
+
+export interface SerializedPlayerZones {
+    slot1: SerializedSlot;
+    slot2: SerializedSlot;
+    slot3: SerializedSlot;
+    slot4: SerializedSlot;
+    slot5: SerializedSlot;
+    slot6: SerializedSlot;
+    base: ZoneCard[];
+    shieldArea: ZoneCard[];
+    energyArea: EnergyZoneCard[];
+    trashArea: ZoneCard[];
+    repairAbilitiesCheckedThisCycle?: boolean;
+}
+
+export function hasContinuousModifiers(card: ZoneCard): card is ZoneCard & ContinuousModifiers {
+    return 'continueModifyAP' in card || 'continueModifyHP' in card;
+}
+
 // ============ PLACEHOLDER DECK CLASS ============
 // This is a simplified placeholder - implement proper deck management for your custom game
 
@@ -744,28 +775,29 @@ export class Player {
         return player;
     }
 
-    private serializeZonesForResponse(): any {
-        const serializeCard = (card: any) => {
+    private serializeZonesForResponse(): SerializedPlayerZones {
+        const serializeCard = <T extends ZoneCard>(card: T | undefined): T | undefined => {
             if (!card) {
-                return card;
+                return undefined;
             }
 
-            const serialized = { ...card };
+            const serialized = { ...card } as T & Partial<ContinuousModifiers>;
 
-            if (typeof card.continueModifyAP === 'number') {
+            if (hasContinuousModifiers(card) && typeof card.continueModifyAP === 'number') {
                 serialized.modifyAP = card.continueModifyAP + 1;
             }
 
-            if (typeof card.continueModifyHP === 'number') {
+            if (hasContinuousModifiers(card) && typeof card.continueModifyHP === 'number') {
                 serialized.modifyHP = card.continueModifyHP + 1;
             }
 
             return serialized;
         };
 
-        const serializeSlot = (slot: SlotZone | undefined) => {
+        const serializeSlot = (slot: SlotZone | undefined): SerializedSlot => {
             const unit = serializeCard(slot?.unit);
             const pilot = serializeCard(slot?.pilot);
+
             return {
                 unit,
                 pilot,
@@ -780,16 +812,16 @@ export class Player {
             slot4: serializeSlot(this.zones.slot4),
             slot5: serializeSlot(this.zones.slot5),
             slot6: serializeSlot(this.zones.slot6),
-            base: this.zones.base.map(serializeCard),
-            shieldArea: this.zones.shieldArea.map(serializeCard),
-            energyArea: this.zones.energyArea.map(serializeCard),
-            trashArea: this.zones.trashArea.map(serializeCard),
+            base: this.zones.base.map((card) => serializeCard(card) ?? card),
+            shieldArea: this.zones.shieldArea.map((card) => serializeCard(card) ?? card),
+            energyArea: this.zones.energyArea.map((card) => serializeCard(card) ?? card),
+            trashArea: this.zones.trashArea.map((card) => serializeCard(card) ?? card),
             repairAbilitiesCheckedThisCycle: this.zones.repairAbilitiesCheckedThisCycle
         };
     }
 
     private calculateSlotFieldValue(slot: SlotZone | undefined): FieldCardValue {
-        const defaults: FieldCardValue = {
+        const baseValue: FieldCardValue = {
             totalTempModifyAP: 0,
             totalTempModifyHP: 0,
             totalContinueModifyAP: 0,
@@ -800,22 +832,31 @@ export class Player {
         };
 
         if (!slot) {
-            return defaults;
+            return baseValue;
         }
 
         const unit = slot.unit;
         const pilot = slot.pilot;
 
-        const unitCurrentAP = unit ? (typeof unit.currentAP === 'number' ? unit.currentAP : unit.cardData?.ap ?? 0) : 0;
-        const unitCurrentHP = unit ? (typeof unit.currentHP === 'number' ? unit.currentHP : unit.cardData?.hp ?? 0) : 0;
-
-        const pilotCurrentAP = pilot ? (typeof pilot.currentAP === 'number' ? pilot.currentAP : pilot.cardData?.ap ?? 0) : 0;
-        const pilotCurrentHP = pilot ? (typeof pilot.currentHP === 'number' ? pilot.currentHP : pilot.cardData?.hp ?? 0) : 0;
+        const unitAP = unit ? this.resolveCardValue(unit.currentAP, unit.cardData?.ap) : 0;
+        const unitHP = unit ? this.resolveCardValue(unit.currentHP, unit.cardData?.hp) : 0;
+        const pilotAP = pilot ? this.resolveCardValue(pilot.currentAP, pilot.cardData?.ap) : 0;
+        const pilotHP = pilot ? this.resolveCardValue(pilot.currentHP, pilot.cardData?.hp) : 0;
 
         return {
-            ...defaults,
-            totalCurrentAP: unitCurrentAP + pilotCurrentAP,
-            totalCurrentHP: unitCurrentHP + pilotCurrentHP
+            ...baseValue,
+            totalCurrentAP: unitAP + pilotAP,
+            totalCurrentHP: unitHP + pilotHP
         };
+    }
+
+    private resolveCardValue(currentValue: number | undefined, baseValue: number | undefined): number {
+        if (typeof currentValue === 'number') {
+            return currentValue;
+        }
+        if (typeof baseValue === 'number') {
+            return baseValue;
+        }
+        return 0;
     }
 }
