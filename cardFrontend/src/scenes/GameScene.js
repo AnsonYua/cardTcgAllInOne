@@ -429,11 +429,6 @@ export default class GameScene extends Phaser.Scene {
   }
 
 
-
-  reorganizeHand() {
-    this.handCardManager.reorganizeHand();
-  }
-
   async endTurn() {
     if (!this.gameStateManager.isCurrentPlayer()) {
       console.log('Not your turn');
