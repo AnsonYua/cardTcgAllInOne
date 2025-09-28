@@ -42,7 +42,7 @@ export default class EnergyAreaManager {
         const slotPosition = this.getRow2SlotPosition(playerType, slotIndex);
         
         if (slotPosition) {
-          const card = this.createEnergyCard(energyCard, slotPosition.x, slotPosition.y+5, i);
+          const card = this.createEnergyCard(playerType, energyCard, slotPosition.x, slotPosition.y + 5, i);
           cardArray.push(card);
         }
       });
@@ -66,15 +66,20 @@ export default class EnergyAreaManager {
     return null;
   }
 
-  createEnergyCard(energyCard, x, y, index) {
+  createEnergyCard(playerType, energyCard, x, y, index) {
     const card = new Card(this.scene, x, y, energyCard, {
       scale: 0.72, // Smaller scale for energy cards in row2
       gameStateManager: this.gameStateManager,
       usePreview: true
     });
-    
+
     // Set depth to appear above zones but below other cards
     card.setDepth(500 + index);
+
+    card.setZoneContext('energy', {
+      isInZone: true,
+      isPlayerZone: playerType === 'player'
+    });
     
     // Add hover preview functionality
     card.on('pointerover', () => {

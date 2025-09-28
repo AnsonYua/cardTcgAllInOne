@@ -161,11 +161,7 @@ export default class BaseAndShieldAreaManager {
     // Update total labels with new calculated values
     card.updateCalculatedTotalLabels(null, cardData.isRested);
     
-    // ✅ FIX: Ensure total labels are visible for updated base cards
-    if (card.powerOverlay && card.powerOverlay.setTotalLabelsVisibility) {
-      card.powerOverlay.setTotalLabelsVisibility('base');
-      console.log(`[BaseAndShieldAreaManager] Set total labels visibility for updated base card:`, card.cardData?.id);
-    }
+    card.applyZoneOverlayRules();
   }
 
 
@@ -186,11 +182,7 @@ export default class BaseAndShieldAreaManager {
     // Use Card convenience method for calculation and update
     card.updateCalculatedTotalLabels(null, card.fullCardData.isRested);
     
-    // Ensure total labels are visible for base cards (they should be in 'base' zone)
-    if (card.powerOverlay && card.powerOverlay.setTotalLabelsVisibility) {
-      card.powerOverlay.setTotalLabelsVisibility('base');
-      console.log(`[BaseAndShieldAreaManager] Set total labels visibility for base card:`, card.cardData?.id);
-    }
+    card.applyZoneOverlayRules();
   }
 
   /**

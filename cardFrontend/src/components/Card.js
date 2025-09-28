@@ -38,6 +38,12 @@ export default class Card extends Phaser.GameObjects.Container {
     this.isInZone = false;
     this.zoneType = null;
     this.isPlayerZone = false;
+    this.zoneContext = {
+      zoneType: null,
+      isPlayerZone: false,
+      isInZone: false
+    };
+    this.resetOverlayOverrides();
     
     // Interaction state tracking
     this.isInteractionDisabled = false;
@@ -143,7 +149,119 @@ export default class Card extends Phaser.GameObjects.Container {
     
     // Create power overlay for character cards (initially hidden)
     this.createPowerOverlay();
-    
+
+  }
+
+  shouldShowOverlayForZone(zoneType) {
+    if (!zoneType) {
+      return true;
+    }
+    if (zoneType === 'hand') {
+      return true;
+    }
+    return true;
+  }
+
+  shouldShowTotalsForZone(zoneType) {
+    if (!zoneType || typeof zoneType !== 'string') {
+      return false;
+    }
+    return zoneType === 'base' || zoneType.startsWith('slot');
+  }
+
+  resetOverlayOverrides() {
+    this.overlayContextOverrides = {
+      totalsVisible: undefined,
+      overlayVisible: undefined,
+      totalsZoneOverride: undefined
+    };
+  }
+
+  setOverlayOverrides(overrides = {}, options = {}) {
+    if (!this.overlayContextOverrides || options.replace) {
+      this.resetOverlayOverrides();
+    }
+
+    const filteredEntries = Object.entries(overrides).filter(([_, value]) => value !== undefined);
+    if (filteredEntries.length === 0) {
+      if (options.apply !== false) {
+        this.applyZoneOverlayRules();
+      }
+      return;
+    }
+
+    this.overlayContextOverrides = {
+      ...this.overlayContextOverrides,
+      ...Object.fromEntries(filteredEntries)
+    };
+
+    if (options.apply !== false) {
+      this.applyZoneOverlayRules();
+    }
+  }
+
+  clearOverlayOverrides(apply = true) {
+    this.resetOverlayOverrides();
+    if (apply) {
+      this.applyZoneOverlayRules();
+    }
+  }
+
+  setZoneContext(zoneType = null, options = {}) {
+    this.zoneType = zoneType;
+    if (typeof options.isPlayerZone === 'boolean') {
+      this.isPlayerZone = options.isPlayerZone;
+    }
+    if (typeof options.isInZone === 'boolean') {
+      this.isInZone = options.isInZone;
+    }
+
+    this.zoneContext = {
+      zoneType,
+      isPlayerZone: this.isPlayerZone,
+      isInZone: this.isInZone
+    };
+
+    const shouldClear = options.clearOverrides !== false;
+    if (shouldClear) {
+      this.resetOverlayOverrides();
+    }
+
+    const overrides = {
+      totalsVisible: options.totalsVisible,
+      overlayVisible: options.overlayVisible,
+      totalsZoneOverride: options.totalsZoneOverride
+    };
+
+    this.setOverlayOverrides(overrides, { apply: false });
+
+    this.applyZoneOverlayRules();
+  }
+
+  applyZoneOverlayRules() {
+    if (!this.powerOverlay) {
+      return;
+    }
+
+    const zoneType = this.zoneContext?.zoneType || null;
+    const totalsOverride = this.overlayContextOverrides?.totalsVisible;
+    const totalsVisible = typeof totalsOverride === 'boolean'
+      ? totalsOverride
+      : this.shouldShowTotalsForZone(zoneType);
+
+    const totalsZoneOverride = this.overlayContextOverrides?.totalsZoneOverride;
+    const totalsZone = totalsZoneOverride || (totalsVisible ? (zoneType || 'slot1') : 'hand');
+
+    if (this.powerOverlay.setTotalLabelsVisibility) {
+      this.powerOverlay.setTotalLabelsVisibility(totalsZone);
+    }
+
+    const overlayOverride = this.overlayContextOverrides?.overlayVisible;
+    const overlayVisible = typeof overlayOverride === 'boolean'
+      ? overlayOverride
+      : this.shouldShowOverlayForZone(zoneType);
+
+    this.powerOverlay.setOverlayVisible(overlayVisible);
   }
 
   createZoneIcons() {
@@ -654,7 +772,7 @@ export default class Card extends Phaser.GameObjects.Container {
 
       this.powerOverlay.setBaseStats(originalAP, originalHP);
       this.powerOverlay.updateTotalStats(ap, hp, isRested);
-      this.powerOverlay.setOverlayVisible(true);
+      this.applyZoneOverlayRules();
     }
   }
   
@@ -683,7 +801,7 @@ export default class Card extends Phaser.GameObjects.Container {
 
     this.powerOverlay.setBaseStats(originalAP, originalHP);
     this.powerOverlay.updateTotalStats(ap, hp, isRested);
-    this.powerOverlay.setOverlayVisible(true);
+    this.applyZoneOverlayRules();
   }
   
   /**
@@ -694,11 +812,20 @@ export default class Card extends Phaser.GameObjects.Container {
    */
   setPowerOverlayVisible(visible) {
     console.log('[Card] setPowerOverlayVisible called:', visible, 'for card:', this.cardData?.id, 'powerOverlay exists:', !!this.powerOverlay);
-    if (this.powerOverlay) {
-      this.powerOverlay.setOverlayVisible(visible);
-      if (visible) {
-        this.updatePowerOverlay();
-      }
+    if (!this.powerOverlay) {
+      return;
+    }
+
+    if (visible === null || visible === undefined) {
+      this.clearOverlayOverrides();
+      this.applyZoneOverlayRules();
+      return;
+    }
+
+    this.setOverlayOverrides({ overlayVisible: visible });
+
+    if (visible) {
+      this.updatePowerOverlay();
     }
   }
   
@@ -724,6 +851,7 @@ export default class Card extends Phaser.GameObjects.Container {
     if (this.powerOverlay && this.powerOverlay.updateTotalStats) {
       this.powerOverlay.updateTotalStats(totalAP, totalHP,isRested);
       console.log(`[Card] Total labels updated successfully for card:`, this.cardData?.id);
+      this.applyZoneOverlayRules();
     } else {
       console.warn(`[Card] Cannot update total labels - PowerOverlay not available for card:`, this.cardData?.id);
     }
@@ -737,9 +865,12 @@ export default class Card extends Phaser.GameObjects.Container {
    * @param {boolean} isPlayerZone - Whether this is a player zone or opponent zone
    */
   setZonePlacement(inZone, zoneType = null, isPlayerZone = false) {
-    this.isInZone = inZone;
-    this.zoneType = zoneType;
-    this.isPlayerZone = isPlayerZone;
+    this.setZoneContext(zoneType, {
+      isInZone: inZone,
+      isPlayerZone,
+      clearOverrides: true
+    });
+
     console.log(`[Card] ${this.cardData?.id} zone placement updated: inZone=${inZone}, type=${zoneType}, player=${isPlayerZone}`);
   }
   
@@ -807,28 +938,19 @@ export default class Card extends Phaser.GameObjects.Container {
       zone: 'slot1',
       ...options
     };
-    
+
     if (!this.powerOverlay) {
       console.warn('Card has no PowerOverlay to configure');
       return;
     }
-    
+
     try {
-      // Configure PowerOverlay settings
-      //this.powerOverlay.setShowBackground(config.showBackground);
-      this.powerOverlay.setVisible(true);
-      
-      // Set depth if provided
-      if (config.depth !== undefined) {
-        this.powerOverlay.setDepth(config.depth);
-      }
-      
-      // Set total labels visibility (following SlotAreaManager pattern)
-      if (this.powerOverlay.setTotalLabelsVisibility) {
-        this.powerOverlay.setTotalLabelsVisibility(config.zone);
-      }
-      
-      // Update total stats
+      const overrideZone = config.zone || this.zoneContext?.zoneType || 'slot1';
+      this.setOverlayOverrides({
+        totalsVisible: true,
+        totalsZoneOverride: overrideZone
+      });
+
       if (this.powerOverlay.updateTotalStats) {
         this.powerOverlay.updateTotalStats(totalAP, totalHP);
         console.log(`Card ${this.cardData?.id} total stats: AP=${totalAP}, HP=${totalHP}`);

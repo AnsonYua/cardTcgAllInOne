@@ -160,7 +160,8 @@ export default class CardPreviewManager {
       gameStateManager: this.gameStateManager,
       scale: 3.5,
       depth: 2000,
-      interactive: false
+      interactive: false,
+      zone: unitCard.zoneContext?.zoneType || 'slot1'
     });
 
     // Create pilot preview (145px below unit) - Use full card data with current stats  
@@ -168,23 +169,19 @@ export default class CardPreviewManager {
       gameStateManager: this.gameStateManager,
       scale: 3.5,
       depth: 1999, // Slightly behind unit
-      interactive: false
+      interactive: false,
+      zone: pilotCard.zoneContext?.zoneType || 'slot1'
     });
 
     // Apply total labels visibility rule: only pilot shows totals when both present
-    if (this.previewCard.powerOverlay && this.previewCard.powerOverlay.setTotalLabelsVisibility) {
-      this.previewCard.powerOverlay.setTotalLabelsVisibility('hand'); // Hide unit total labels
+    if (this.previewCard?.setOverlayOverrides) {
+      this.previewCard.setOverlayOverrides({ totalsVisible: false });
       console.log('[CardPreviewManager] Hiding total labels on unit preview (pilot present)');
     }
-    
-    if (this.previewPilotCard.powerOverlay && this.previewPilotCard.powerOverlay.setTotalLabelsVisibility) {
-      this.previewPilotCard.powerOverlay.setTotalLabelsVisibility('slot1'); // Show pilot total labels
-      
-      // Update pilot total stats to current values (representing combined unit+pilot stats)
-      if (this.previewPilotCard.powerOverlay.updateTotalStats) {
-        this.previewPilotCard.updateCalculatedTotalStats(unitCard, unitCard.isRested);
-      }
-      
+
+    if (this.previewPilotCard?.configureTotalLabelsToShow) {
+      const { totalAP, totalHP } = this.previewPilotCard.updateCalculatedTotalStats(unitCard, unitCard.isRested);
+      this.previewPilotCard.configureTotalLabelsToShow(totalAP, totalHP, { zone: this.previewPilotCard.zoneContext?.zoneType || 'slot1' });
       console.log('[CardPreviewManager] Showing total labels on pilot preview');
     }
 

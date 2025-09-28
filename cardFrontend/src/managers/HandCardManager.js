@@ -75,6 +75,11 @@ export default class HandCardManager {
         usePreview: true
       });
 
+      card.setZoneContext('hand', {
+        isInZone: false,
+        isPlayerZone: true
+      });
+
       this.playerHand.push(card);
       this.handContainer.add(card);
     });
@@ -151,6 +156,11 @@ export default class HandCardManager {
         usePreview: true
       });
 
+      tempCard.setZoneContext('hand', {
+        isInZone: false,
+        isPlayerZone: true
+      });
+
       // Set high depth so it appears above other cards during animation
       tempCard.setDepth(1000);
 
@@ -172,6 +182,11 @@ export default class HandCardManager {
             scale: 1.1,
             gameStateManager: this.gameStateManager,
             usePreview: true
+          });
+
+          newCard.setZoneContext('hand', {
+            isInZone: false,
+            isPlayerZone: true
           });
 
           // Add to hand array and container

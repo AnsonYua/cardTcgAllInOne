@@ -46,7 +46,10 @@ export default class GameSceneUtils {
           try {
             const cardPosition = this.calculateCardPosition(zoneObject, index);
             const card = new Card(scene, cardPosition.x, cardPosition.y, cardData);
-            
+
+            const zoneType = zoneKey;
+            card.setZonePlacement(zoneType !== 'hand', zoneType, !isOpponent);
+
             if (zoneObject.cards) {
               zoneObject.cards.push(card);
             }

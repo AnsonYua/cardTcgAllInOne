@@ -113,6 +113,11 @@ export default class CardAnimationUtils {
                     gameStateManager: scene.gameStateManager,
                     usePreview: true
                   });
+
+                  newCard.setZoneContext('hand', {
+                    isInZone: false,
+                    isPlayerZone: true
+                  });
                   
                   scene.input.setDraggable(newCard);
                   scene.playerHand.push(newCard);

@@ -662,12 +662,16 @@ export default class DialogUIManager {
         cardDataForDisplay = originalCard;
       }
 
-      // ✅ Use CardFactory for consistent dialog card creation
+      const inferredZone = this._inferZoneFromCard(originalCard, cardDataForDisplay);
+      const fallbackZone = inferredZone || 'hand';
+      const totalsInfo = CardStatCalculator.getTotalApAndHpByCardData(cardDataForDisplay) || {};
+      const showTotals = typeof fallbackZone === 'string' && (fallbackZone === 'base' || fallbackZone.startsWith('slot'));
+
       const cardComponent = CardFactory.createDialogCard(scene, cardDataForDisplay, cardX, cardsY, {
         dialogScale: dialogScale,
-        // ✅ CENTRALIZED: Use CardStatCalculator for consistent total calculation
-        totalAP: CardStatCalculator.getTotalApAndHpByCardData(cardDataForDisplay).totalAP || 0  ,
-        totalHP: CardStatCalculator.getTotalApAndHpByCardData(cardDataForDisplay).totalHP|| 0 
+        totalAP: showTotals ? (totalsInfo.totalAP ?? 0) : undefined,
+        totalHP: showTotals ? (totalsInfo.totalHP ?? 0) : undefined,
+        zone: fallbackZone
       });
 
       return cardComponent;
@@ -675,6 +679,22 @@ export default class DialogUIManager {
       console.warn('Failed to create Card component, falling back to image:', error);
       return this._createFallbackCardImage(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig);
     }
+  }
+
+  static _inferZoneFromCard(originalCard, cardDataFallback = null) {
+    const candidates = [
+      originalCard?.zoneContext?.zoneType,
+      originalCard?.zonePlacement?.zoneType,
+      originalCard?.zoneType,
+      originalCard?.zone,
+      originalCard?.slotName,
+      originalCard?.zoneName,
+      cardDataFallback?.zoneType,
+      cardDataFallback?.zone
+    ];
+
+    const resolved = candidates.find(value => typeof value === 'string' && value.length > 0);
+    return resolved || null;
   }
 
   /**
@@ -693,11 +713,14 @@ export default class DialogUIManager {
 
     // Create pilot card if present (positioned below unit with extra spacing)
     let pilotCard = null;
+    const slotZone = slotTarget.slotName || 'slot1';
+
     if (slotTarget.pilot) {
       // ✅ Use CardFactory for consistent pilot card creation
       pilotCard = CardFactory.createDialogCard(scene, slotTarget.pilot, 0, 23, {
         dialogScale: dialogScale,
-        interactive: true // Container will handle interaction
+        interactive: true, // Container will handle interaction
+        zone: slotZone
       });
       slotContainer.add(pilotCard);
     }
@@ -707,7 +730,8 @@ export default class DialogUIManager {
     // ✅ Use CardFactory for consistent unit card creation
     const unitCard = CardFactory.createDialogCard(scene, slotTarget.unit, 0, unitY, {
       dialogScale: dialogScale,
-      interactive: false // Container will handle interaction
+      interactive: false, // Container will handle interaction
+      zone: slotZone
     });
 
     slotContainer.add(unitCard);

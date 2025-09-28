@@ -79,11 +79,8 @@ export default class CardFactory {
     // Disable interaction for base cards
     this._setupInteraction(card, false);
     
-    // Update total labels for base cards
+    // Update total labels for base cards (overlay visibility handled by zone context)
     card.updateCalculatedTotalLabels(null, cardData.isRested);
-    
-    // ✅ FIX: Show total labels on base cards (was missing after refactoring)
-    this._setupTotalLabelsVisibility(card, 'base');
     
     return card;
   }
@@ -151,10 +148,12 @@ export default class CardFactory {
     });
     
     card.setDepth(depth);
-    
-    // Show total labels based on caller context
-    this._setupTotalLabelsVisibility(card, zone);
-    
+
+    card.setZoneContext(zone, {
+      isInZone: zone !== 'hand',
+      isPlayerZone: true
+    });
+
     return card;
   }
   
@@ -173,7 +172,7 @@ export default class CardFactory {
    * @returns {Card} Created dialog card
    */
   static createDialogCard(scene, cardData, x, y, options = {}) {
-    const { gameStateManager, dialogScale, totalAP, totalHP, interactive = true } = options;
+    const { gameStateManager, dialogScale, totalAP, totalHP, interactive = true, zone = 'hand' } = options;
     
     const card = new Card(scene, x, y, cardData, {
       usePreview: true,
@@ -185,10 +184,15 @@ export default class CardFactory {
     });
     
     card.setDepth(1504);
+
+    card.setZoneContext(zone, {
+      isInZone: zone !== 'hand',
+      isPlayerZone: true
+    });
     
-    // Configure total labels if values provided (only for slot cards with both values)
-    if (totalAP !== undefined && totalHP !== undefined) {
-      card.configureTotalLabelsToShow(totalAP, totalHP);
+    const shouldShowTotals = totalAP !== undefined && totalHP !== undefined && typeof zone === 'string' && (zone === 'base' || zone.startsWith('slot'));
+    if (shouldShowTotals) {
+      card.configureTotalLabelsToShow(totalAP, totalHP, { zone });
     }
     
     // ✅ FIX: Update card status (Rested/Active) for dialog cards
@@ -224,7 +228,12 @@ export default class CardFactory {
     });
     
     card.setDepth(depth);
-    
+
+    card.setZoneContext('hand', {
+      isInZone: false,
+      isPlayerZone: true
+    });
+
     return card;
   }
   
@@ -303,18 +312,6 @@ export default class CardFactory {
   static _setupRestState(card, cardData) {
     if (cardData.isRested) {
       card.setRested(true);
-    }
-  }
-  
-  /**
-   * Set up total labels visibility for a card
-   * @param {Card} card - Card to configure
-   * @param {string} zone - Zone name for visibility
-   * @private
-   */
-  static _setupTotalLabelsVisibility(card, zone) {
-    if (card.powerOverlay?.setTotalLabelsVisibility) {
-      card.powerOverlay.setTotalLabelsVisibility(zone);
     }
   }
   

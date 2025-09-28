@@ -257,16 +257,32 @@ export default class SlotAreaManager {
     }
     
     // Apply visibility to unit card
-    if (slotCards.unit && slotCards.unit.powerOverlay && slotCards.unit.powerOverlay.setTotalLabelsVisibility) {
-      const unitZone = unitShouldShowTotals ? slotName : 'hand';
-      slotCards.unit.powerOverlay.setTotalLabelsVisibility(unitZone);
+    if (slotCards.unit?.clearOverlayOverrides && slotCards.unit?.setOverlayOverrides) {
+      slotCards.unit.clearOverlayOverrides(false);
+      if (unitShouldShowTotals) {
+        slotCards.unit.setOverlayOverrides({
+          totalsVisible: true,
+          totalsZoneOverride: slotName
+        }, { apply: false });
+      } else {
+        slotCards.unit.setOverlayOverrides({ totalsVisible: false, totalsZoneOverride: null }, { apply: false });
+      }
+      slotCards.unit.applyZoneOverlayRules();
       console.log(`[SlotAreaManager] Unit in ${slotName}: total labels ${unitShouldShowTotals ? 'visible' : 'hidden'}`);
     }
     
     // Apply visibility to pilot card
-    if (slotCards.pilot && slotCards.pilot.powerOverlay && slotCards.pilot.powerOverlay.setTotalLabelsVisibility) {
-      const pilotZone = pilotShouldShowTotals ? slotName : 'hand';
-      slotCards.pilot.powerOverlay.setTotalLabelsVisibility(pilotZone);
+    if (slotCards.pilot?.clearOverlayOverrides && slotCards.pilot?.setOverlayOverrides) {
+      slotCards.pilot.clearOverlayOverrides(false);
+      if (pilotShouldShowTotals) {
+        slotCards.pilot.setOverlayOverrides({
+          totalsVisible: true,
+          totalsZoneOverride: slotName
+        }, { apply: false });
+      } else {
+        slotCards.pilot.setOverlayOverrides({ totalsVisible: false, totalsZoneOverride: null }, { apply: false });
+      }
+      slotCards.pilot.applyZoneOverlayRules();
       console.log(`[SlotAreaManager] Pilot in ${slotName}: total labels ${pilotShouldShowTotals ? 'visible' : 'hidden'}`);
     }
 
@@ -357,25 +373,27 @@ export default class SlotAreaManager {
     const hasPilot = pilotCard !== null;
     
     // Apply SlotAreaManager total label visibility rules
+    const zoneForTotals = unitCard?.zoneContext?.zoneType || pilotCard?.zoneContext?.zoneType || 'slot1';
+
     if (hasUnit && hasPilot) {
       // Both unit and pilot present - pilot shows combined totals, unit hides totals
       if (pilotCard.configureTotalLabelsToShow) {
-        pilotCard.configureTotalLabelsToShow(totalAP, totalHP);
+        pilotCard.configureTotalLabelsToShow(totalAP, totalHP, { zone: zoneForTotals });
       }
-      if (unitCard.powerOverlay && unitCard.powerOverlay.setTotalLabelsVisibility) {
-        unitCard.powerOverlay.setTotalLabelsVisibility('hand'); // Hide total labels
+      if (unitCard?.setOverlayOverrides) {
+        unitCard.setOverlayOverrides({ totalsVisible: false, totalsZoneOverride: null });
       }
       console.log(`[SlotAreaManager] Configured slot totals: pilot shows AP=${totalAP}, HP=${totalHP}, unit hidden`);
     } else if (hasUnit && !hasPilot) {
       // Unit only - unit shows its total labels
       if (unitCard.configureTotalLabelsToShow) {
-        unitCard.configureTotalLabelsToShow(totalAP, totalHP);
+        unitCard.configureTotalLabelsToShow(totalAP, totalHP, { zone: zoneForTotals });
       }
       console.log(`[SlotAreaManager] Configured slot totals: unit shows AP=${totalAP}, HP=${totalHP}`);
     } else if (!hasUnit && hasPilot) {
       // Pilot only - pilot shows its total labels
       if (pilotCard.configureTotalLabelsToShow) {
-        pilotCard.configureTotalLabelsToShow(totalAP, totalHP);
+        pilotCard.configureTotalLabelsToShow(totalAP, totalHP, { zone: zoneForTotals });
       }
       console.log(`[SlotAreaManager] Configured slot totals: pilot shows AP=${totalAP}, HP=${totalHP}`);
     }
