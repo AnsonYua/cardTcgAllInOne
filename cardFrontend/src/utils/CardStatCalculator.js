@@ -20,38 +20,3 @@ export default class CardStatCalculator {
     };
   }
 
-  /**
-   * Calculate combined total AP/HP for unit + pilot cards currently occupying a slot.
-   * Prefers the slot-level fieldCardValue when present.
-   */
-  static calculateTotalInSlot(unitCard, pilotCard) {
-    const slotFieldValue = normalizeFieldCardValue(
-      unitCard?.slotFieldCardValue
-        || pilotCard?.slotFieldCardValue
-        || unitCard?.fullCardData?.fieldCardValue
-        || pilotCard?.fullCardData?.fieldCardValue
-        || unitCard?.cardData?.fieldCardValue
-        || pilotCard?.cardData?.fieldCardValue
-    );
-
-    if (slotFieldValue) {
-      return {
-        totalAP: slotFieldValue.totalAP,
-        totalHP: slotFieldValue.totalHP
-      };
-    }
-
-    const unitTotals = this.getTotalApAndHpByCardData(
-      unitCard?.fullCardData ?? unitCard?.cardData ?? unitCard ?? {}
-    );
-    const pilotTotals = this.getTotalApAndHpByCardData(
-      pilotCard?.fullCardData ?? pilotCard?.cardData ?? pilotCard ?? {}
-    );
-
-    return {
-      totalAP: (unitTotals?.totalAP ?? 0) + (pilotTotals?.totalAP ?? 0),
-      totalHP: (unitTotals?.totalHP ?? 0) + (pilotTotals?.totalHP ?? 0)
-    };
-  }
-
-}

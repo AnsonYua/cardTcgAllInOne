@@ -4,6 +4,7 @@
  */
 import Card from '../components/Card.js';
 import CardFactory from '../utils/CardFactory.js';
+import { applySlotOverlaySet, applySlotTotalsVisibility, finalizeSlotOverlayState } from '../utils/PowerOverlayCoordinator.js';
 
 export default class CardPreviewManager {
   constructor(gameScene) {
@@ -47,8 +48,22 @@ export default class CardPreviewManager {
       const displayCardData = cardData;
       this.previewCard = this._createPreviewCard(displayCardData, this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y, 2000, false);
       this.previewCard.fullCardData = cardData;
-      const { totalAP, totalHP } = this.previewCard.updateCalculatedTotalLabels(null, cardData.isRested);
-      console.log("[CardPreviewManager] Updated preview total labels: AP=" + totalAP + ", HP=" + totalHP);
+
+      const overlayState = applySlotOverlaySet({
+        unitCard: this.previewCard,
+        pilotCard: null,
+        unitData: cardData,
+        pilotData: null,
+        slotFieldValue: cardData.fieldCardValue || null
+      });
+
+      applySlotTotalsVisibility(this.previewCard, null, {
+        unitShowsTotals: overlayState.unitShowsTotals,
+        pilotShowsTotals: overlayState.pilotShowsTotals,
+        zone: this.previewCard.zoneContext?.zoneType || 'slot1'
+      });
+
+      finalizeSlotOverlayState(overlayState);
     }
   }
 
@@ -118,10 +133,22 @@ export default class CardPreviewManager {
         const pilotData = slotCards.pilot.getCardFullData();
         this.previewCard = this._createPreviewCard(pilotData, this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y, 2000, true);
         this.previewCard.fullCardData = pilotData;
-        if (this.previewCard.updateCalculatedTotalLabels) {
-          const totals = this.previewCard.updateCalculatedTotalLabels(null, pilotData.isRested);
-          console.log('[CardPreviewManager] Pilot preview totals:', totals);
-        }
+
+        const overlayState = applySlotOverlaySet({
+          unitCard: null,
+          pilotCard: this.previewCard,
+          unitData: null,
+          pilotData: pilotData,
+          slotFieldValue: pilotData.fieldCardValue || null
+        });
+
+        applySlotTotalsVisibility(null, this.previewCard, {
+          unitShowsTotals: overlayState.unitShowsTotals,
+          pilotShowsTotals: overlayState.pilotShowsTotals,
+          zone: this.previewCard.zoneContext?.zoneType || 'slot1'
+        });
+
+        finalizeSlotOverlayState(overlayState);
       } else {
         // Fallback if detection failed
         console.warn('[showSlotCardPreview] Could not determine hovered card type, using fallback');
@@ -136,11 +163,30 @@ export default class CardPreviewManager {
       const zone = isUnit ? 'slot1' : 'hand';
       this.previewCard = this._createPreviewCard(singleData, this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y, 2000, zone === 'slot1');
       this.previewCard.fullCardData = singleData;
-      if (this.previewCard.updateCalculatedTotalLabels) {
-        const partnerCard = isUnit ? slotCards.pilot : null;
-        const totals = this.previewCard.updateCalculatedTotalLabels(partnerCard || null, singleData.isRested);
-        console.log('[CardPreviewManager] Single slot preview totals:', totals);
-      }
+      const slotFieldValue = singleData.fieldCardValue
+        || slotCards.unit?.fullCardData?.fieldCardValue
+        || slotCards.pilot?.fullCardData?.fieldCardValue
+        || null;
+
+      const overlayState = applySlotOverlaySet({
+        unitCard: isUnit ? this.previewCard : null,
+        pilotCard: isUnit ? null : this.previewCard,
+        unitData: isUnit ? singleData : null,
+        pilotData: isUnit ? null : singleData,
+        slotFieldValue
+      });
+
+      applySlotTotalsVisibility(
+        isUnit ? this.previewCard : null,
+        isUnit ? null : this.previewCard,
+        {
+          unitShowsTotals: overlayState.unitShowsTotals,
+          pilotShowsTotals: overlayState.pilotShowsTotals,
+          zone: this.previewCard.zoneContext?.zoneType || zone
+        }
+      );
+
+      finalizeSlotOverlayState(overlayState);
     } else {
       console.warn('[showSlotCardPreview] No cards found in slot, using fallback');
       this.showCardPreview(hoveredCard.getCardFullData());  // Use full data with current stats
@@ -180,12 +226,23 @@ export default class CardPreviewManager {
       console.log('[CardPreviewManager] Hiding total labels on unit preview (pilot present)');
     }
 
-    if (this.previewPilotCard?.configureTotalLabelsToShow) {
-      const { totalAP, totalHP } = this.previewPilotCard.updateCalculatedTotalStats(unitCard, unitCard.isRested);
-      this.previewPilotCard.configureTotalLabelsToShow(totalAP, totalHP, { zone: this.previewPilotCard.zoneContext?.zoneType || 'slot1' });
-      this.previewPilotCard.applyZoneOverlayRules?.();
-      console.log('[CardPreviewManager] Showing total labels on pilot preview');
-    }
+    const overlayState = applySlotOverlaySet({
+      unitCard: this.previewCard,
+      pilotCard: this.previewPilotCard,
+      unitData: unitCard.getCardFullData(),
+      pilotData: pilotCard.getCardFullData(),
+      slotFieldValue: unitCard.getCardFullData()?.fieldCardValue || pilotCard.getCardFullData()?.fieldCardValue || null
+    });
+
+    applySlotTotalsVisibility(this.previewCard, this.previewPilotCard, {
+      unitShowsTotals: overlayState.unitShowsTotals,
+      pilotShowsTotals: overlayState.pilotShowsTotals,
+      zone: this.previewPilotCard.zoneContext?.zoneType || 'slot1'
+    });
+
+    finalizeSlotOverlayState(overlayState);
+
+    console.log('[CardPreviewManager] Showing dual preview totals:', overlayState);
 
     console.log('Showing dual preview:', unitCard.cardData?.id, '+', pilotCard.cardData?.id);
   }
