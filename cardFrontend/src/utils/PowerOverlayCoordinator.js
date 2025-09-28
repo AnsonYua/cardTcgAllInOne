@@ -1,5 +1,4 @@
-import { normalizeFieldCardValue } from './FieldValueUtils.js';
-import CardStatCalculator from './CardStatCalculator.js';
+import { normalizeFieldCardValue, getTotalsFromCardData } from './FieldValueUtils.js';
 
 function getOriginalStatsFromData(cardData) {
   if (!cardData) {
@@ -104,24 +103,28 @@ function resolveCardTotals({ card, cardData, slotTotals, useSlotTotals, baseStat
     return totals;
   }
 
+  const fallbackTotals = getTotalsFromCardData(cardData);
+
   if (typeof card?.getAPandHPFromCardData === 'function') {
     const derived = card.getAPandHPFromCardData();
     if (derived) {
       if (typeof derived.ap === 'number') {
         totals.totalAP = derived.ap;
+      } else {
+        totals.totalAP = fallbackTotals.totalAP;
       }
       if (typeof derived.hp === 'number') {
         totals.totalHP = derived.hp;
+      } else {
+        totals.totalHP = fallbackTotals.totalHP;
       }
-    }
-  } else {
-    const fallbackTotals = CardStatCalculator.getTotalApAndHpByCardData(cardData) || {};
-    if (typeof fallbackTotals.totalAP === 'number') {
+    } else {
       totals.totalAP = fallbackTotals.totalAP;
-    }
-    if (typeof fallbackTotals.totalHP === 'number') {
       totals.totalHP = fallbackTotals.totalHP;
     }
+  } else {
+    totals.totalAP = fallbackTotals.totalAP;
+    totals.totalHP = fallbackTotals.totalHP;
   }
 
   return totals;
@@ -132,24 +135,25 @@ function setCardTotalsAndStatus(card, totals, baseStats) {
     return;
   }
 
-  if (card.powerOverlay?.setBaseStats) {
-    card.powerOverlay.setBaseStats(
-        baseStats.originalAP,
-        baseStats.originalHP
-      );
+  const overlay = card.powerOverlay;
+  if (!overlay) {
+    return;
   }
 
-  if (card.powerOverlay?.setCardTotalAPandHP) {
-    card.powerOverlay.setCardTotalAPandHP(
-        totals.totalAP,
-        totals.totalHP,
-      );
-  }
-
-  if (card.powerOverlay?.setCardStatus) {
-    card.powerOverlay.setCardStatus(
-        totals.isRested
-      );
+  if (overlay.setBaseStats && overlay.setCardTotalAPandHP) {
+    overlay.setBaseStats(baseStats.originalAP, baseStats.originalHP);
+    overlay.setCardTotalAPandHP(totals.totalAP, totals.totalHP);
+    if (overlay.setCardStatus) {
+      overlay.setCardStatus(totals.isRested);
+    }
+  } else if (overlay.updateTotalStats) {
+    overlay.updateTotalStats(
+      totals.totalAP,
+      totals.totalHP,
+      totals.isRested,
+      baseStats.originalAP,
+      baseStats.originalHP
+    );
   }
 }
 
@@ -296,7 +300,7 @@ export function buildSingleCardTotals(cardData) {
     return normalized;
   }
 
-  const totals = CardStatCalculator.getTotalApAndHpByCardData(cardData) || {};
+  const totals = getTotalsFromCardData(cardData);
 
   return normalizeFieldCardValue({
     totalOriginalAP: 0,

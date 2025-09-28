@@ -2,8 +2,7 @@
 // Resolves simplified item references to full card objects for dialog display
 // Replaces complex eligibleCards construction with simple item specifications
 
-import CardStatCalculator from './CardStatCalculator.js';
-import { normalizeFieldCardValue } from './FieldValueUtils.js';
+import { normalizeFieldCardValue, getTotalsFromCardData } from './FieldValueUtils.js';
 
 /**
  * ItemDataResolver - Converts simplified item references to dialog-ready card objects
@@ -130,8 +129,8 @@ export default class ItemDataResolver {
     
     // Calculate slot-level totals (unit + pilot combined)
     const slotFieldValue = normalizeFieldCardValue(slot.fieldCardValue);
-    const unitTotals = CardStatCalculator.getTotalApAndHpByCardData(unit);
-    const pilotTotals = CardStatCalculator.getTotalApAndHpByCardData(pilot);
+    const unitTotals = getTotalsFromCardData(unit);
+    const pilotTotals = getTotalsFromCardData(pilot);
     const totalAP = slotFieldValue?.totalAP ?? (unitTotals.totalAP ?? 0) + (pilotTotals.totalAP ?? 0);
     const totalHP = slotFieldValue?.totalHP ?? (unitTotals.totalHP ?? 0) + (pilotTotals.totalHP ?? 0);
     

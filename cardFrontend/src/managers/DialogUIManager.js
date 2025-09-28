@@ -3,12 +3,11 @@
 // Extracted from GameSceneUtils.js for better code organization
 
 import Card from '../components/Card.js';
-import CardStatCalculator from '../utils/CardStatCalculator.js';
 import CardFactory from '../utils/CardFactory.js';
 import CardInteractionHelper from '../utils/CardInteractionHelper.js';
 import UIGraphicsHelper from '../utils/UIGraphicsHelper.js';
 import { applySlotOverlaySet, applySlotTotalsVisibility, finalizeSlotOverlayState } from '../utils/PowerOverlayCoordinator.js';
-import { normalizeFieldCardValue } from '../utils/FieldValueUtils.js';
+import { getTotalsFromCardData, normalizeFieldCardValue } from '../utils/FieldValueUtils.js';
 
 /**
  * DialogUIManager - Handles all dialog UI creation, interaction, and management
@@ -665,7 +664,7 @@ export default class DialogUIManager {
 
       const inferredZone = this._inferZoneFromCard(originalCard, cardDataForDisplay);
       const fallbackZone = inferredZone || 'hand';
-      const totalsInfo = CardStatCalculator.getTotalApAndHpByCardData(cardDataForDisplay) || {};
+      const totalsInfo = getTotalsFromCardData(cardDataForDisplay);
       const showTotals = typeof fallbackZone === 'string' && (fallbackZone === 'base' || fallbackZone.startsWith('slot'));
 
       const cardComponent = CardFactory.createDialogCard(scene, cardDataForDisplay, cardX, cardsY, {
@@ -1506,8 +1505,8 @@ export default class DialogUIManager {
     
     // Calculate slot-level totals (unit + pilot combined)
     const slotFieldValue = normalizeFieldCardValue(slot.fieldCardValue);
-    const unitTotals = CardStatCalculator.getTotalApAndHpByCardData(unit);
-    const pilotTotals = CardStatCalculator.getTotalApAndHpByCardData(pilot);
+    const unitTotals = getTotalsFromCardData(unit);
+    const pilotTotals = getTotalsFromCardData(pilot);
     const totalAP = slotFieldValue?.totalAP ?? (unitTotals.totalAP ?? 0) + (pilotTotals.totalAP ?? 0);
     const totalHP = slotFieldValue?.totalHP ?? (unitTotals.totalHP ?? 0) + (pilotTotals.totalHP ?? 0);
     

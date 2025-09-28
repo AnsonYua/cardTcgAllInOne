@@ -65,3 +65,20 @@ export function assignFieldCardValue(target, fieldCardValue) {
     delete target.fieldCardValue;
   }
 }
+
+export function getTotalsFromCardData(cardLike) {
+  const normalized = normalizeFieldCardValue(cardLike?.fieldCardValue);
+  if (normalized) {
+    return {
+      totalAP: normalized.totalAP ?? 0,
+      totalHP: normalized.totalHP ?? 0
+    };
+  }
+
+  const source = cardLike?.cardData || cardLike || {};
+
+  return {
+    totalAP: source.totalAP ?? source.ap ?? 0,
+    totalHP: source.totalHP ?? source.hp ?? 0
+  };
+}

@@ -150,10 +150,8 @@ export default class PowerOverlay extends Phaser.GameObjects.Container {
     this.updateTotalTextColors();
   }
 
-  setCardStatus(totalAP = 0, totalHP = 0) {
-    if (typeof isRested === 'boolean') {
-      this.cardStatusText.setText(isRested ? 'Rested' : 'Active');
-    }
+  setCardStatus(isRested = false) {
+    this.cardStatusText.setText(isRested ? 'Rested' : 'Active');
   }
 
 
