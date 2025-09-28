@@ -84,13 +84,14 @@ export default class CardFactory {
     // Disable interaction for base cards
     this._setupInteraction(card, false);
     
+    /*
     if (card.setFieldCardValue) {
       card.setFieldCardValue(fieldCardValue, { source: 'card' });
     }
 
     // Update total labels for base cards (overlay visibility handled by zone context)
     card.updateCalculatedTotalLabels(null, cardData.isRested);
-    
+    */
     return card;
   }
   

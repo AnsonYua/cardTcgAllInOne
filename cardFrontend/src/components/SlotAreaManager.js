@@ -166,22 +166,17 @@ export default class SlotAreaManager {
     }
     
     // ===== UNIFIED TOTAL LABELS UPDATE =====
-    this.applySlotFieldValue(slotCards, slotFieldValue, unitData, pilotData);
+    const unitIsRested = unitData?.isRested ?? slotCards.unit?.fullCardData?.isRested ?? false;
+    const pilotIsRested = pilotData?.isRested ?? slotCards.pilot?.fullCardData?.isRested ?? unitIsRested;
 
-    if (hasUnit) {
-      slotCards.unit.updatePowerOverlay();
-    }
-    if (hasPilot) {
-      slotCards.pilot.updatePowerOverlay();
-    }
+    const normalizedSlotField = this.applySlotFieldValue(slotCards, slotFieldValue, unitData, pilotData, unitIsRested, pilotIsRested);
 
-    const effectiveFieldValue = normalizeFieldCardValue(slotFieldValue
-      || unitData?.fieldCardValue
-      || pilotData?.fieldCardValue
-      || slotCards.unit?.slotFieldCardValue
-      || slotCards.pilot?.slotFieldCardValue
+    const effectiveFieldValue = normalizedSlotField
+      || normalizeFieldCardValue(unitData?.fieldCardValue)
+      || normalizeFieldCardValue(pilotData?.fieldCardValue)
       || slotCards.unit?.fieldCardValue
-      || slotCards.pilot?.fieldCardValue);
+      || slotCards.pilot?.fieldCardValue
+      || null;
 
     let totalAP;
     let totalHP;
@@ -194,50 +189,37 @@ export default class SlotAreaManager {
       totalHP = totals.totalHP;
     }
 
-    SlotAreaManager.configureSlotTotalLabels(slotCards.unit, slotCards.pilot, totalAP, totalHP);
+    SlotAreaManager.configureSlotTotalLabels(slotCards.unit, slotCards.pilot, totalAP, totalHP, {
+      unitIsRested,
+      pilotIsRested
+    });
 
     this.updateSlotTotalLabelsVisibility(playerType, slotName);
   }
 
-  /**
-   * Update total labels for slot cards with unified logic
-   * @param {Object} slotCards - Object containing unit and pilot cards
-   * @param {boolean} hasUnit - Whether unit exists
-   * @param {boolean} hasPilot - Whether pilot exists
-   * @param {Object} unitData - Unit card data (for rested state)
-   * @param {Object} pilotData - Pilot card data (for rested state)
-   */
-  updateSlotTotalLabelsValue(slotCards, hasUnit, hasPilot, unitData, pilotData, slotName) {
-    if (hasUnit && hasPilot) {
-      // Both unit and pilot present - pilot shows combined totals
-      if (slotCards.pilot.updateCalculatedTotalLabels) {
-        const isRested = unitData?.isRested || slotCards.unit.fullCardData?.isRested || false;
-        const { totalAP, totalHP } = slotCards.pilot.updateCalculatedTotalLabels(slotCards.unit, isRested);
-        console.log(`[SlotAreaManager] Updated pilot total labels (combined): AP=${totalAP}, HP=${totalHP}, rested=${isRested}`);
-      }
-    } else if (hasUnit && !hasPilot) {
-      // Unit only - unit shows its own totals
-      if (slotCards.unit.updateCalculatedTotalLabels) {
-        const isRested = unitData?.isRested || slotCards.unit.fullCardData?.isRested || false;
-        const { totalAP, totalHP } = slotCards.unit.updateCalculatedTotalLabels(null, isRested);
-        console.log(`[SlotAreaManager] Updated unit total labels (unit only): AP=${totalAP}, HP=${totalHP}, rested=${isRested}`);
-      }
-    }
-  }
+  applySlotFieldValue(slotCards, slotFieldValue, unitData, pilotData, unitIsRested, pilotIsRested) {
+    const normalizedSlotField = normalizeFieldCardValue(slotFieldValue);
 
-  applySlotFieldValue(slotCards, slotFieldValue, unitData, pilotData) {
     if (slotCards.unit?.setFieldCardValue) {
-      slotCards.unit.setFieldCardValue(unitData?.fieldCardValue ?? slotFieldValue ?? null, {
-        source: 'slot',
-        updateOverlay: false
+      const unitFieldValue = normalizeFieldCardValue(unitData?.fieldCardValue) || slotCards.unit.fieldCardValue || null;
+      slotCards.unit.setFieldCardValue(unitFieldValue, {
+        source: 'card',
+        isRested: unitIsRested
       });
     }
+
     if (slotCards.pilot?.setFieldCardValue) {
-      slotCards.pilot.setFieldCardValue(pilotData?.fieldCardValue ?? slotFieldValue ?? null, {
+      const pilotFieldValue = normalizedSlotField
+        || normalizeFieldCardValue(pilotData?.fieldCardValue)
+        || slotCards.pilot.fieldCardValue
+        || null;
+      slotCards.pilot.setFieldCardValue(pilotFieldValue, {
         source: 'slot',
-        updateOverlay: false
+        isRested: pilotIsRested
       });
     }
+
+    return normalizedSlotField;
   }
 
   /**
@@ -261,22 +243,6 @@ export default class SlotAreaManager {
         card.cardData = { ...card.cardData, ...cardData.cardData };
       }
 
-      if (card.setFieldCardValue) {
-        card.setFieldCardValue(cardData.fieldCardValue, {
-          source: 'slot',
-          updateOverlay: false
-        });
-      }
-
-      // Update power overlay if the card has one
-      if (card.powerOverlay && card.updatePowerOverlay) {
-        try {
-          card.updatePowerOverlay();
-          console.log(`[SlotAreaManager] Power overlay updated for card ${card.cardData?.id}`);
-        } catch (error) {
-          console.error(`[SlotAreaManager] Failed to update power overlay for card ${card.cardData?.id}:`, error);
-        }
-      }
     }
   }
 
@@ -422,17 +388,19 @@ export default class SlotAreaManager {
    * @param {number} totalAP - Total AP value to display
    * @param {number} totalHP - Total HP value to display
    */
-  static configureSlotTotalLabels(unitCard, pilotCard, totalAP, totalHP) {
+  static configureSlotTotalLabels(unitCard, pilotCard, totalAP, totalHP, options = {}) {
     const hasUnit = unitCard !== null;
     const hasPilot = pilotCard !== null;
     
     // Apply SlotAreaManager total label visibility rules
     const zoneForTotals = unitCard?.zoneContext?.zoneType || pilotCard?.zoneContext?.zoneType || 'slot1';
+    const unitIsRested = options.unitIsRested ?? unitCard?.fullCardData?.isRested ?? unitCard?.cardData?.isRested ?? false;
+    const pilotIsRested = options.pilotIsRested ?? pilotCard?.fullCardData?.isRested ?? pilotCard?.cardData?.isRested ?? false;
 
     if (hasUnit && hasPilot) {
       // Both unit and pilot present - pilot shows combined totals, unit hides totals
       if (pilotCard.configureTotalLabelsToShow) {
-        pilotCard.configureTotalLabelsToShow(totalAP, totalHP, { zone: zoneForTotals });
+        pilotCard.configureTotalLabelsToShow(totalAP, totalHP, { zone: zoneForTotals, isRested: pilotIsRested });
       }
       if (unitCard?.setOverlayOverrides) {
         unitCard.setOverlayOverrides({ totalsVisible: false, totalsZoneOverride: null });
@@ -443,14 +411,14 @@ export default class SlotAreaManager {
     } else if (hasUnit && !hasPilot) {
       // Unit only - unit shows its total labels
       if (unitCard.configureTotalLabelsToShow) {
-        unitCard.configureTotalLabelsToShow(totalAP, totalHP, { zone: zoneForTotals });
+        unitCard.configureTotalLabelsToShow(totalAP, totalHP, { zone: zoneForTotals, isRested: unitIsRested });
         unitCard.applyZoneOverlayRules?.();
       }
       console.log(`[SlotAreaManager] Configured slot totals: unit shows AP=${totalAP}, HP=${totalHP}`);
     } else if (!hasUnit && hasPilot) {
       // Pilot only - pilot shows its total labels
       if (pilotCard.configureTotalLabelsToShow) {
-        pilotCard.configureTotalLabelsToShow(totalAP, totalHP, { zone: zoneForTotals });
+        pilotCard.configureTotalLabelsToShow(totalAP, totalHP, { zone: zoneForTotals, isRested: pilotIsRested });
         pilotCard.applyZoneOverlayRules?.();
       }
       console.log(`[SlotAreaManager] Configured slot totals: pilot shows AP=${totalAP}, HP=${totalHP}`);

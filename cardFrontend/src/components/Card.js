@@ -183,6 +183,7 @@ export default class Card extends Phaser.GameObjects.Container {
     if (source === 'slot') {
       this.slotFieldCardValue = normalizedValue;
     } else {
+      this.slotFieldCardValue = null;
       this.fieldCardValue = normalizedValue;
     }
 
@@ -194,12 +195,18 @@ export default class Card extends Phaser.GameObjects.Container {
       }
     }
 
-    if (options.updateOverlay === false || !this.powerOverlay) {
+    if (options.updateOverlay !== false) {
+      this.refreshOverlayStats(options.isRested);
+    }
+  }
+
+  refreshOverlayStats(isRestedOverride) {
+    if (!this.powerOverlay) {
       return;
     }
 
     const { ap, hp, originalAP, originalHP } = this.getAPandHPFromCardData();
-    const isRested = this.fullCardData?.isRested ?? this.cardData?.isRested ?? false;
+    const isRested = isRestedOverride ?? this.fullCardData?.isRested ?? this.cardData?.isRested ?? false;
 
     this.powerOverlay.setBaseStats(originalAP, originalHP);
     this.powerOverlay.updateTotalStats(ap, hp, isRested);
@@ -811,12 +818,8 @@ export default class Card extends Phaser.GameObjects.Container {
       });
       this.add(this.powerOverlay);
       
-      const { ap, hp, originalAP, originalHP } = this.getAPandHPFromCardData();
       const isRested = this.fullCardData?.isRested ?? this.cardData?.isRested ?? false;
-
-      this.powerOverlay.setBaseStats(originalAP, originalHP);
-      this.powerOverlay.updateTotalStats(ap, hp, isRested);
-      this.applyZoneOverlayRules();
+      this.refreshOverlayStats(isRested);
     }
   }
   
@@ -837,15 +840,8 @@ export default class Card extends Phaser.GameObjects.Container {
       console.log('[Card] updatePowerOverlay skipped - no overlay or not supported type:', this.cardData?.id, 'type:', this.cardData?.cardType);
       return;
     }
-    
-    
-    // Extract AP and HP values from card data using our unified method
-    const { ap, hp, originalAP, originalHP } = this.getAPandHPFromCardData();
     const isRested = this.fullCardData?.isRested ?? this.cardData?.isRested ?? false;
-
-    this.powerOverlay.setBaseStats(originalAP, originalHP);
-    this.powerOverlay.updateTotalStats(ap, hp, isRested);
-    this.applyZoneOverlayRules();
+    this.refreshOverlayStats(isRested);
   }
   
   /**

@@ -151,7 +151,7 @@ export default class BaseAndShieldAreaManager {
     if (card.setFieldCardValue) {
       card.setFieldCardValue(cardData.fieldCardValue, {
         source: 'slot',
-        updateOverlay: false
+        isRested: cardData.isRested
       });
     }
 
@@ -192,9 +192,8 @@ export default class BaseAndShieldAreaManager {
     if (card.setFieldCardValue) {
       card.setFieldCardValue(card.fullCardData.fieldCardValue, {
         source: 'slot',
-        updateOverlay: false
+        isRested: card.fullCardData.isRested
       });
-      card.updatePowerOverlay();
     }
 
     card.applyZoneOverlayRules();
