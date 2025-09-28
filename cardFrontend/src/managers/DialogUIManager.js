@@ -3,12 +3,11 @@
 // Extracted from GameSceneUtils.js for better code organization
 
 import Card from '../components/Card.js';
-import SlotAreaManager from '../components/SlotAreaManager.js';
 import CardStatCalculator from '../utils/CardStatCalculator.js';
-import { normalizeFieldCardValue } from '../utils/FieldValueUtils.js';
 import CardFactory from '../utils/CardFactory.js';
 import CardInteractionHelper from '../utils/CardInteractionHelper.js';
 import UIGraphicsHelper from '../utils/UIGraphicsHelper.js';
+import { applySlotOverlaySet, applySlotTotalsVisibility } from '../utils/PowerOverlayCoordinator.js';
 
 /**
  * DialogUIManager - Handles all dialog UI creation, interaction, and management
@@ -740,25 +739,19 @@ export default class DialogUIManager {
 
     slotContainer.add(unitCard);
 
-    // ✅ FIXED: Always show total labels for slot target displays, even unit-only
-    // Use CardStatCalculator for proper total calculation or provided values
-    const slotFieldTotals = normalizeFieldCardValue(slotTarget.fieldCardValue);
-    let totalAP;
-    let totalHP;
-    if (slotFieldTotals) {
-      totalAP = slotFieldTotals.totalAP;
-      totalHP = slotFieldTotals.totalHP;
-    } else if (slotTarget.totalAP !== undefined && slotTarget.totalHP !== undefined) {
-      totalAP = slotTarget.totalAP;
-      totalHP = slotTarget.totalHP;
-    } else {
-      const totals = CardStatCalculator.calculateTotalInSlot(slotTarget.unit, slotTarget.pilot);
-      totalAP = totals.totalAP;
-      totalHP = totals.totalHP;
-    }
-    
-    // Use SlotAreaManager method for unit+pilot total label configuration
-    SlotAreaManager.configureSlotTotalLabels(unitCard, pilotCard, totalAP, totalHP);
+    const overlayState = applySlotOverlaySet({
+      unitCard,
+      pilotCard,
+      unitData: slotTarget.unit,
+      pilotData: slotTarget.pilot,
+      slotFieldValue: slotTarget.fieldCardValue || null
+    });
+
+    applySlotTotalsVisibility(unitCard, pilotCard, {
+      unitShowsTotals: overlayState.unitShowsTotals,
+      pilotShowsTotals: overlayState.pilotShowsTotals,
+      zone: slotZone
+    });
 
     // Store references for interaction handling
     slotContainer.unitCard = unitCard;

@@ -1,7 +1,7 @@
 import Card from './Card.js';
 import CardStatCalculator from '../utils/CardStatCalculator.js';
 import CardFactory from '../utils/CardFactory.js';
-import { normalizeFieldCardValue } from '../utils/FieldValueUtils.js';
+import { applySlotOverlaySet, applySlotTotalsVisibility } from '../utils/PowerOverlayCoordinator.js';
 
 export default class SlotAreaManager {
   constructor(scene, gameStateManager) {
@@ -49,12 +49,8 @@ export default class SlotAreaManager {
   }
 
   updateSlot(playerType, slotName, slotData) {
-    const cardArray = playerType === 'player' ? this.playerSlotCards : this.opponentSlotCards;
-    const zones = playerType === 'player' ? this.scene.playerZones : this.scene.opponentZones;
+    const slotPosition = this.getSlotPosition(playerType, slotName);
     
-    // Get slot position from scene zones
-    const slotPosition = zones[slotName];
-
     console.log(`Updating ${playerType} ${slotName} slot:`, JSON.stringify(slotData));
 
     if (!slotPosition) {
@@ -71,52 +67,113 @@ export default class SlotAreaManager {
     const cardArray = playerType === 'player' ? this.playerSlotCards : this.opponentSlotCards;
     const slotCards = cardArray[slotName];
     const slotFieldValue = slotData?.fieldCardValue || null;
-    
-    // ===== UNIT CARD MANAGEMENT =====
-    if (slotData?.unit) {
-      // Slot has unit - create or update card
-      if (!slotCards.unit) {
-        console.log(`Creating ${playerType} ${slotName} unit card:`, slotData.unit.cardId);
-        const card = this.createSlotCard(slotData.unit, slotPosition.x, slotPosition.y, slotName, 'unit', playerType, slotFieldValue);
-        slotCards.unit = card;
-      } else {
-        console.log(`Updating existing ${playerType} ${slotName} unit card`);
-        // Data update will be handled by updateSlotTotalLabels()
-      }
-    } else {
-      // No unit - remove card if exists
-      if (slotCards.unit) {
-        console.log(`Removing ${playerType} ${slotName} unit card - slot now empty`);
-        slotCards.unit.destroy();
-        slotCards.unit = null;
-      }
-    }
-    
-    // ===== PILOT CARD MANAGEMENT =====
-    if (slotData?.pilot) {
-      // Slot has pilot - create or update card (positioned 25px below unit)
-      const pilotY = slotPosition.y + 42; // Position pilot 25px below unit
-      console.log("pilotData ", JSON.stringify(slotData.pilot))
-      if (!slotCards.pilot) {
-        console.log(`Creating ${playerType} ${slotName} pilot card:`, slotData.pilot.cardId);
-        const card = this.createSlotCard(slotData.pilot, slotPosition.x, pilotY, slotName, 'pilot', playerType, slotFieldValue);
-        slotCards.pilot = card;
-      } else {
-        console.log(`Updating existing ${playerType} ${slotName} pilot card`);
-        // Data update will be handled by updateSlotTotalLabels()
-      }
-    } else {
-      // No pilot - remove card if exists
-      if (slotCards.pilot) {
-        console.log(`Removing ${playerType} ${slotName} pilot card - no pilot data`);
-        slotCards.pilot.destroy();
-        slotCards.pilot = null;
-      }
-    }
-    
-    // ===== UNIFIED TOTAL LABELS AND DATA UPDATE (Always runs for consistency) =====
-    this.updateSlotTotalLabels(playerType, slotName, slotData?.unit, slotData?.pilot, slotFieldValue);
+
+    const unitCard = this.syncSlotCard({
+      slotCards,
+      cardData: slotData?.unit,
+      cardType: 'unit',
+      playerType,
+      slotName,
+      x: slotPosition.x,
+      y: slotPosition.y,
+      slotFieldValue
+    });
+
+    const pilotCard = this.syncSlotCard({
+      slotCards,
+      cardData: slotData?.pilot,
+      cardType: 'pilot',
+      playerType,
+      slotName,
+      x: slotPosition.x,
+      y: slotPosition.y + 42,
+      slotFieldValue
+    });
+
+    this.updateSlotPowerOverlays({
+      slotCards,
+      slotFieldValue,
+      unitData: slotData?.unit,
+      pilotData: slotData?.pilot,
+      slotName,
+      playerType
+    });
+
     console.log(`[SlotAreaManager] ✅ Comprehensive slot update completed for ${playerType} ${slotName}`);
+  }
+
+  getSlotPosition(playerType, slotName) {
+    const zones = playerType === 'player' ? this.scene.playerZones : this.scene.opponentZones;
+    return zones ? zones[slotName] : null;
+  }
+
+  syncSlotCard({ slotCards, cardData, cardType, playerType, slotName, x, y, slotFieldValue }) {
+    const existing = slotCards[cardType];
+
+    if (!cardData) {
+      if (existing) {
+        existing.destroy();
+        slotCards[cardType] = null;
+      }
+      return null;
+    }
+
+    if (!existing) {
+      console.log(`Creating ${playerType} ${slotName} ${cardType} card:`, cardData.cardId || cardData.id);
+      const created = this.createSlotCard(cardData, x, y, slotName, cardType, playerType, slotFieldValue);
+      slotCards[cardType] = created;
+      return created;
+    }
+
+    this.hydrateSlotCard(existing, cardData);
+    return existing;
+  }
+
+  hydrateSlotCard(card, cardData) {
+    if (!card || !cardData) {
+      return;
+    }
+
+    card.fullCardData = { ...card.fullCardData, ...cardData };
+
+    if (card.cardData && cardData.cardData) {
+      card.cardData = { ...card.cardData, ...cardData.cardData };
+    }
+
+    if (card.setRested) {
+      card.setRested(cardData.isRested || false);
+    }
+  }
+
+  updateSlotPowerOverlays({ slotCards, slotFieldValue, unitData, pilotData, slotName, playerType }) {
+    const unitCard = slotCards.unit;
+    const pilotCard = slotCards.pilot;
+
+    if (!unitCard && !pilotCard) {
+      this.updateSlotTotalLabelsVisibility(playerType, slotName, { unit: false, pilot: false });
+      return;
+    }
+
+    if (unitCard && unitData) {
+      this.hydrateSlotCard(unitCard, unitData);
+    }
+
+    if (pilotCard && pilotData) {
+      this.hydrateSlotCard(pilotCard, pilotData);
+    }
+
+    const overlayState = applySlotOverlaySet({
+      unitCard: unitCard && unitData ? unitCard : null,
+      pilotCard: pilotCard && pilotData ? pilotCard : null,
+      unitData,
+      pilotData,
+      slotFieldValue
+    });
+
+    this.updateSlotTotalLabelsVisibility(playerType, slotName, {
+      unit: overlayState.unitShowsTotals,
+      pilot: overlayState.pilotShowsTotals
+    });
   }
 
 
@@ -154,96 +211,22 @@ export default class SlotAreaManager {
    */
   updateSlotTotalLabels(playerType, slotName, unitData = null, pilotData = null, slotFieldValue = null) {
     const slotCards = this.getSlotCards(playerType, slotName);
-    const hasUnit = slotCards.unit !== null;
-    const hasPilot = slotCards.pilot !== null;
 
-    // ===== UPDATE CARD DATA FIRST (merged from updateExistingSlotCard) =====
-    if (hasUnit && unitData) {
-      this.updateCardData(slotCards.unit, unitData);
+    if (slotCards.unit && unitData) {
+      this.hydrateSlotCard(slotCards.unit, unitData);
     }
-    if (hasPilot && pilotData) {
-      this.updateCardData(slotCards.pilot, pilotData);
+    if (slotCards.pilot && pilotData) {
+      this.hydrateSlotCard(slotCards.pilot, pilotData);
     }
-    
-    // ===== UNIFIED TOTAL LABELS UPDATE =====
-    const unitIsRested = unitData?.isRested ?? slotCards.unit?.fullCardData?.isRested ?? false;
-    const pilotIsRested = pilotData?.isRested ?? slotCards.pilot?.fullCardData?.isRested ?? unitIsRested;
 
-    
-    const normalizedSlotField = this.applySlotFieldValue(slotCards, slotFieldValue, unitData, pilotData, unitIsRested, pilotIsRested);
-
-    const effectiveFieldValue = normalizedSlotField
-      || normalizeFieldCardValue(unitData?.fieldCardValue)
-      || normalizeFieldCardValue(pilotData?.fieldCardValue)
-      || slotCards.unit?.fieldCardValue
-      || slotCards.pilot?.fieldCardValue
-      || null;
-
-    let totalAP;
-    let totalHP;
-    if (effectiveFieldValue) {
-      totalAP = effectiveFieldValue.totalAP;
-      totalHP = effectiveFieldValue.totalHP;
-    } else {
-      const totals = CardStatCalculator.calculateTotalInSlot(slotCards.unit, slotCards.pilot);
-      totalAP = totals.totalAP;
-      totalHP = totals.totalHP;
-    }
-    SlotAreaManager.configureSlotTotalLabels(slotCards.unit, slotCards.pilot, totalAP, totalHP, {
-      unitIsRested,
-      pilotIsRested
+    this.updateSlotPowerOverlays({
+      slotCards,
+      slotFieldValue,
+      unitData,
+      pilotData,
+      slotName,
+      playerType
     });
-
-    this.updateSlotTotalLabelsVisibility(playerType, slotName);
-  }
-
-  applySlotFieldValue(slotCards, slotFieldValue, unitData, pilotData, unitIsRested, pilotIsRested) {
-    const normalizedSlotField = normalizeFieldCardValue(slotFieldValue);
-
-    if (slotCards.unit?.setFieldCardValue) {
-      const unitFieldValue = normalizeFieldCardValue(unitData?.fieldCardValue) || slotCards.unit.fieldCardValue || null;
-      slotCards.unit.setFieldCardValue(unitFieldValue, {
-        source: 'card',
-        isRested: unitIsRested
-      });
-    }
-
-    if (slotCards.pilot?.setFieldCardValue) {
-      const pilotFieldValue = normalizedSlotField
-        || normalizeFieldCardValue(pilotData?.fieldCardValue)
-        || slotCards.pilot.fieldCardValue
-        || null;
-      slotCards.pilot.setFieldCardValue(pilotFieldValue, {
-        source: 'slot',
-        isRested: pilotIsRested
-      });
-    }
-
-    return normalizedSlotField;
-  }
-
-  /**
-   * Update individual card data (extracted from updateExistingSlotCard)
-   * @param {Card} card - Card component to update
-   * @param {Object} cardData - New card data
-   */
-  updateCardData(card, cardData) {
-    // Update rested state
-    if (card.setRested) {
-      card.setRested(cardData.isRested || false);
-    }
-    
-    // Update card data with new stats (AP/HP changes, etc.)
-    if (card.fullCardData && cardData) {
-      // Update the card's full data with new information
-      card.fullCardData = { ...card.fullCardData, ...cardData };
-      
-      // Also update the nested cardData if it exists
-      if (card.cardData && cardData.cardData) {
-        card.cardData = { ...card.cardData, ...cardData.cardData };
-      }
-
-    }
   }
 
   /**
@@ -252,82 +235,15 @@ export default class SlotAreaManager {
    * @param {string} playerType - 'player' or 'opponent'
    * @param {string} slotName - slot1, slot2, etc.
    */
-  updateSlotTotalLabelsVisibility(playerType, slotName) {
-
+  updateSlotTotalLabelsVisibility(playerType, slotName, visibilityOverrides = null) {
     const slotCards = this.getSlotCards(playerType, slotName);
-    const hasUnit = slotCards.unit !== null;
-    const hasPilot = slotCards.pilot !== null;
-    
-    // Determine visibility rules
-    let unitShouldShowTotals = false;
-    let pilotShouldShowTotals = false;
-    
-    if (hasUnit && hasPilot) {
-      // Both unit and pilot present - only pilot shows totals
-      unitShouldShowTotals = false;
-      pilotShouldShowTotals = true;
-    } else if (hasUnit && !hasPilot) {
-      // Only unit present - unit shows totals
-      unitShouldShowTotals = true;
-      pilotShouldShowTotals = false;
-    } else if (!hasUnit && hasPilot) {
-      // Only pilot present - pilot shows totals
-      unitShouldShowTotals = false;
-      pilotShouldShowTotals = true;
-    }
-    
-    // Apply visibility to unit card
-    if (slotCards.unit?.clearOverlayOverrides && slotCards.unit?.setOverlayOverrides) {
-      slotCards.unit.clearOverlayOverrides(false);
-      if (unitShouldShowTotals) {
-        slotCards.unit.setOverlayOverrides({
-          totalsVisible: true,
-          totalsZoneOverride: slotName
-        }, { apply: false });
-      } else {
-        slotCards.unit.setOverlayOverrides({ totalsVisible: false, totalsZoneOverride: null }, { apply: false });
-      }
-      slotCards.unit.applyZoneOverlayRules();
-      console.log(`[SlotAreaManager] Unit in ${slotName}: total labels ${unitShouldShowTotals ? 'visible' : 'hidden'}`);
-    }
-    
-    // Apply visibility to pilot card
-    if (slotCards.pilot?.clearOverlayOverrides && slotCards.pilot?.setOverlayOverrides) {
-      slotCards.pilot.clearOverlayOverrides(false);
-      if (pilotShouldShowTotals) {
-        slotCards.pilot.setOverlayOverrides({
-          totalsVisible: true,
-          totalsZoneOverride: slotName
-        }, { apply: false });
-      } else {
-        slotCards.pilot.setOverlayOverrides({ totalsVisible: false, totalsZoneOverride: null }, { apply: false });
-      }
-      slotCards.pilot.applyZoneOverlayRules();
-      console.log(`[SlotAreaManager] Pilot in ${slotName}: total labels ${pilotShouldShowTotals ? 'visible' : 'hidden'}`);
-    }
-
-
-  }
-
-  // ============ TOTAL LABELS MANAGEMENT ============
-
-  /**
-   * Force update all total labels for all slots (useful for fixing sync issues)
-   * @param {string} playerType - 'player', 'opponent', or 'all' for both
-   */
-  updateAllSlotTotalLabels(playerType = 'all') {
-    console.log(`[SlotAreaManager] Force updating all slot total labels for: ${playerType}`);
-    
-    const playerTypes = playerType === 'all' ? ['player', 'opponent'] : [playerType];
-    
-    playerTypes.forEach(pType => {
-      ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'].forEach(slotName => {
-        // Use the unified updateSlotTotalLabels method
-        this.updateSlotTotalLabels(pType, slotName);
-        console.log(`[SlotAreaManager] Force updated ${pType} ${slotName} total labels`);
-      });
+    applySlotTotalsVisibility(slotCards.unit, slotCards.pilot, {
+      unitShowsTotals: visibilityOverrides?.unit,
+      pilotShowsTotals: visibilityOverrides?.pilot,
+      zone: slotName
     });
   }
+
 
   // ============ DEBUGGING METHODS ============
 
@@ -379,50 +295,6 @@ export default class SlotAreaManager {
     }
     
     console.log('=== END DEBUG ===\n');
-  }
-
-  /**
-   * Configure total labels for unit+pilot card pair with given total values
-   * @param {Card} unitCard - Unit card component
-   * @param {Card} pilotCard - Pilot card component (can be null)
-   * @param {number} totalAP - Total AP value to display
-   * @param {number} totalHP - Total HP value to display
-   */
-  static configureSlotTotalLabels(unitCard, pilotCard, totalAP, totalHP, options = {}) {
-    const hasUnit = unitCard !== null;
-    const hasPilot = pilotCard !== null;
-    
-    // Apply SlotAreaManager total label visibility rules
-    const zoneForTotals = unitCard?.zoneContext?.zoneType || pilotCard?.zoneContext?.zoneType || 'slot1';
-    const unitIsRested = options.unitIsRested ?? unitCard?.fullCardData?.isRested ?? unitCard?.cardData?.isRested ?? false;
-    const pilotIsRested = options.pilotIsRested ?? pilotCard?.fullCardData?.isRested ?? pilotCard?.cardData?.isRested ?? false;
-
-    if (hasUnit && hasPilot) {
-      // Both unit and pilot present - pilot shows combined totals, unit hides totals
-      if (pilotCard.configureTotalLabelsToShow) {
-        pilotCard.configureTotalLabelsToShow(totalAP, totalHP, { zone: zoneForTotals, isRested: pilotIsRested });
-      }
-      if (unitCard?.setOverlayOverrides) {
-        unitCard.setOverlayOverrides({ totalsVisible: false, totalsZoneOverride: null });
-        unitCard.applyZoneOverlayRules();
-      }
-      pilotCard?.applyZoneOverlayRules?.();
-      console.log(`[SlotAreaManager] Configured slot totals: pilot shows AP=${totalAP}, HP=${totalHP}, unit hidden`);
-    } else if (hasUnit && !hasPilot) {
-      // Unit only - unit shows its total labels
-      if (unitCard.configureTotalLabelsToShow) {
-        unitCard.configureTotalLabelsToShow(totalAP, totalHP, { zone: zoneForTotals, isRested: unitIsRested });
-        unitCard.applyZoneOverlayRules?.();
-      }
-      console.log(`[SlotAreaManager] Configured slot totals: unit shows AP=${totalAP}, HP=${totalHP}`);
-    } else if (!hasUnit && hasPilot) {
-      // Pilot only - pilot shows its total labels
-      if (pilotCard.configureTotalLabelsToShow) {
-        pilotCard.configureTotalLabelsToShow(totalAP, totalHP, { zone: zoneForTotals, isRested: pilotIsRested });
-        pilotCard.applyZoneOverlayRules?.();
-      }
-      console.log(`[SlotAreaManager] Configured slot totals: pilot shows AP=${totalAP}, HP=${totalHP}`);
-    }
   }
 
   // ============ UTILITY METHODS ============

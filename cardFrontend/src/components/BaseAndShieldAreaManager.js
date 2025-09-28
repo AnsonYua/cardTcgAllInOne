@@ -1,5 +1,5 @@
-import Card from './Card.js';
 import CardFactory from '../utils/CardFactory.js';
+import { applyOverlayToCard, applySlotTotalsVisibility, buildSingleCardTotals } from '../utils/PowerOverlayCoordinator.js';
 export default class BaseAndShieldAreaManager {
   constructor(scene, gameStateManager) {
     this.scene = scene;
@@ -122,8 +122,6 @@ export default class BaseAndShieldAreaManager {
   }
 
   createBaseCard(cardData, x, y, index) {
-    console.log("adsfasdfsda ",JSON.stringify(cardData))
-    
     return CardFactory.createBaseCard(this.scene, cardData, x, y, {
       gameStateManager: this.gameStateManager,
       scale: 0.9
@@ -142,33 +140,23 @@ export default class BaseAndShieldAreaManager {
     }
     // Update the card's full data with new information
     card.fullCardData = { ...card.fullCardData, ...cardData };
-    
+
     // Also update the nested cardData if it exists
     if (card.cardData && cardData.cardData) {
       card.cardData = { ...card.cardData, ...cardData.cardData };
     }
 
-    if (card.setFieldCardValue) {
-      card.setFieldCardValue(cardData.fieldCardValue, {
-        source: 'slot',
-        isRested: cardData.isRested
-      });
-    }
+    const totalsField = buildSingleCardTotals(cardData);
 
-    // Update power overlay if the card has one
-    if (card.powerOverlay && card.updatePowerOverlay) {
-      try {
-        card.updatePowerOverlay();
-        console.log(`[BaseAndShieldAreaManager] Power overlay updated for base card ${card.cardData?.id}`);
-      } catch (error) {
-        console.error(`[BaseAndShieldAreaManager] Failed to update power overlay for base card ${card.cardData?.id}:`, error);
-      }
-    }
-    
-    // Update total labels with new calculated values
-    card.updateCalculatedTotalLabels(null, cardData.isRested);
-    
-    card.applyZoneOverlayRules();
+    applyOverlayToCard(card, cardData, {
+      slotTotals: totalsField,
+      useSlotTotals: true
+    });
+
+    applySlotTotalsVisibility(card, null, {
+      unitShowsTotals: true,
+      zone: 'base'
+    });
   }
 
 
@@ -182,26 +170,23 @@ export default class BaseAndShieldAreaManager {
       console.warn('[BaseAndShieldAreaManager] updateBaseCardTotalLabels called with invalid card');
       return;
     }
-    
-    console.log("dafadsdsf 111 ",JSON.stringify(card.fullCardData));
     console.log(`[BaseAndShieldAreaManager] Updating base card total labels for card:`, card.cardData?.id);
     
-    // Use Card convenience method for calculation and update
-    card.updateCalculatedTotalLabels(null, card.fullCardData.isRested);
+    const totalsField = buildSingleCardTotals(card.fullCardData);
 
-    if (card.setFieldCardValue) {
-      card.setFieldCardValue(card.fullCardData.fieldCardValue, {
-        source: 'slot',
-        isRested: card.fullCardData.isRested
-      });
-    }
+    applyOverlayToCard(card, card.fullCardData, {
+      slotTotals: totalsField,
+      useSlotTotals: true
+    });
 
-    card.applyZoneOverlayRules();
+    applySlotTotalsVisibility(card, null, {
+      unitShowsTotals: true,
+      zone: 'base'
+    });
   }
 
   /**
    * Force update all base card total labels (useful for fixing sync issues)
-   * Similar to SlotAreaManager.updateAllSlotTotalLabels but for base cards
    * @param {string} playerType - 'player', 'opponent', or 'all' for both
    */
   updateAllBaseCardTotalLabels(playerType = 'all') {
@@ -210,7 +195,7 @@ export default class BaseAndShieldAreaManager {
     const updateCards = (cards, type) => {
       cards.forEach(card => {
         if (card && card.fullCardData) {
-          card.updateCalculatedTotalLabels(null, card.fullCardData.isRested);
+          this.updateBaseCardTotalLabels(card);
           console.log(`[BaseAndShieldAreaManager] Force updated ${type} base card total labels:`, card.cardData?.id);
         }
       });
