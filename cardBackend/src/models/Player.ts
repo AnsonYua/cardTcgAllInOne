@@ -20,6 +20,7 @@ import {
     FieldCardValue
 } from './CardSystem';
 import { GameEngine } from '../services/GameEngine';
+import { calculateBaseFieldValue, calculateSlotFieldValue } from '../utils/FieldValueCalculator';
 
 // ============ ZONE INTERFACES ============
 
@@ -795,7 +796,7 @@ export class Player {
             return {
                 unit,
                 pilot,
-                fieldCardValue: this.calculateSlotFieldValue(slot)
+                fieldCardValue: calculateSlotFieldValue(slot)
             };
         };
 
@@ -816,75 +817,8 @@ export class Player {
 
     private maximizeBaseCard(card: BaseCard): BaseCard {
         const serialized = { ...card };
-        serialized.fieldCardValue = {
-            totalTempModifyAP: 0,
-            totalTempModifyHP: 0,
-            totalContinueModifyAP: 0,
-            totalContinueModifyHP: 0,
-            totalDamageReceived: typeof card.damageReceived === 'number' ? card.damageReceived : 0,
-            totalCurrentAP: 0,
-            totalCurrentHP: this.resolveCardValue(card.currentHP, card.originalHP)
-        };
+        serialized.fieldCardValue = calculateBaseFieldValue(card);
         return serialized;
     }
 
-    private calculateSlotFieldValue(slot: SlotZone | undefined): FieldCardValue {
-        const baseValue: FieldCardValue = {
-            totalTempModifyAP: 0,
-            totalTempModifyHP: 0,
-            totalContinueModifyAP: 0,
-            totalContinueModifyHP: 0,
-            totalDamageReceived: 0,
-            totalCurrentAP: 0,
-            totalCurrentHP: 0
-        };
-
-        if (!slot) {
-            return baseValue;
-        }
-
-        const unit = slot.unit;
-        const pilot = slot.pilot;
-
-        const unitCurrentAP = unit ? this.resolveCardValue(unit.currentAP, unit.cardData?.ap) : 0;
-        const unitCurrentHP = unit ? this.resolveCardValue(unit.currentHP, unit.cardData?.hp) : 0;
-        const pilotCurrentAP = pilot ? this.resolveCardValue(pilot.currentAP, pilot.cardData?.ap) : 0;
-        const pilotCurrentHP = pilot ? this.resolveCardValue(pilot.currentHP, pilot.cardData?.hp) : 0;
-
-        const unitTempModifyAP = unit ? this.resolveCardValue(0, 0) : 0;
-        const unitTempModifyHP = unit ? this.resolveCardValue(0, 0) : 0;
-        const pilotTempModifyAP = pilot ? this.resolveCardValue(0, 0) : 0;
-        const pilotTempModifyHP = pilot ? this.resolveCardValue(0, 0) : 0;
-
-        const unitContinueModifyAP = unit ? this.resolveCardValue(unit.continueModifyAP, 0) : 0;
-        const unitContinueModifyHP = unit ? this.resolveCardValue(unit.continueModifyHP, 0) : 0;
-        const pilotContinueModifyAP = pilot ? this.resolveCardValue(pilot.continueModifyAP, 0) : 0;
-        const pilotContinueModifyHP = pilot ? this.resolveCardValue(pilot.continueModifyHP, 0) : 0;
-
-        const unitDamageReceived = unit ? this.resolveCardValue(unit.damageReceived, 0) : 0;
-        const pilotDamageReceived = pilot && 'damageReceived' in pilot
-            ? this.resolveCardValue((pilot as { damageReceived?: number }).damageReceived, 0)
-            : 0;
-
-        return {
-            ...baseValue,
-            totalTempModifyAP: unitTempModifyAP + pilotTempModifyAP,
-            totalTempModifyHP: unitTempModifyHP + pilotTempModifyHP,
-            totalContinueModifyAP: unitContinueModifyAP + pilotContinueModifyAP,
-            totalContinueModifyHP: unitContinueModifyHP + pilotContinueModifyHP,
-            totalDamageReceived: unitDamageReceived + pilotDamageReceived,
-            totalCurrentAP: unitCurrentAP + pilotCurrentAP,
-            totalCurrentHP: unitCurrentHP + pilotCurrentHP
-        };
-    }
-
-    private resolveCardValue(currentValue: number | undefined, baseValue: number | undefined): number {
-        if (typeof currentValue === 'number') {
-            return currentValue;
-        }
-        if (typeof baseValue === 'number') {
-            return baseValue;
-        }
-        return 0;
-    }
 }

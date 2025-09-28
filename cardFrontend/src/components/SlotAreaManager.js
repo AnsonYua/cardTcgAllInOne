@@ -313,17 +313,15 @@ export default class SlotAreaManager {
       console.log('Unit card data:', {
         cardId: slotCards.unit.cardData?.id,
         fullCardData: slotCards.unit.fullCardData,
-        currentAP: slotCards.unit.fullCardData?.currentAP,
-        currentHP: slotCards.unit.fullCardData?.currentHP
+        fieldCardValue: slotCards.unit.fullCardData?.fieldCardValue
       });
     }
-    
+
     if (hasPilot) {
       console.log('Pilot card data:', {
         cardId: slotCards.pilot.cardData?.id,
         fullCardData: slotCards.pilot.fullCardData,
-        currentAP: slotCards.pilot.fullCardData?.currentAP,
-        currentHP: slotCards.pilot.fullCardData?.currentHP
+        fieldCardValue: slotCards.pilot.fullCardData?.fieldCardValue
       });
     }
     

@@ -98,20 +98,20 @@ export class ContinuousEffectManager {
             };
         }
         
-        const maxHP = cardData.hp;
-        const currentHP = targetUnit.currentHP || maxHP;
-        console.log("healing effect 111", JSON.stringify(currentHP))
-        // Calculate actual healing (can't exceed max HP)
-        const newHP = Math.min(currentHP + healAmount, maxHP);
-        const actualHealing = newHP - currentHP;
-        console.log("healing effect 111222", JSON.stringify(newHP))
-        console.log("healing effect 11122233", JSON.stringify(healAmount))
+        const maxHP = cardData.hp || targetUnit.originalHP || 0;
+        const currentDamage = targetUnit.damageReceived || 0;
+        const currentHP = Math.max(0, maxHP - currentDamage);
+
+        const healAmountClamped = Math.max(0, healAmount);
+        const actualHealing = Math.min(healAmountClamped, currentDamage);
+        const newDamage = currentDamage - actualHealing;
+        const newHP = Math.max(0, maxHP - newDamage);
+
         if (actualHealing > 0) {
-            // Apply healing
-            targetUnit.currentHP = newHP;
-            
+            targetUnit.damageReceived = newDamage;
+
             console.log(`✅ Repaired ${cardId} for ${actualHealing} HP (${currentHP} → ${newHP}/${maxHP})`);
-            
+
             return {
                 success: true,
                 message: `Repaired ${cardId} for ${actualHealing} HP`,
@@ -1022,17 +1022,18 @@ export class ContinuousEffectManager {
             };
         }
         
-        const maxHP = cardData.hp;
-        const currentHP = targetUnit.currentHP || maxHP;
-        
-        // Calculate actual healing (can't exceed max HP)
-        const newHP = Math.min(currentHP + value, maxHP);
-        const actualHealing = newHP - currentHP;
+        const maxHP = cardData.hp || targetUnit.originalHP || 0;
+        const currentDamage = targetUnit.damageReceived || 0;
+        const currentHP = Math.max(0, maxHP - currentDamage);
+
+        const healAmountClamped = Math.max(0, value);
+        const actualHealing = Math.min(healAmountClamped, currentDamage);
+        const newDamage = currentDamage - actualHealing;
+        const newHP = Math.max(0, maxHP - newDamage);
         
         if (actualHealing > 0) {
-            // Apply healing
-            targetUnit.currentHP = newHP;
-            
+            targetUnit.damageReceived = newDamage;
+
             console.log(`✅ Healed ${targetUnit.cardId} for ${actualHealing} HP (${currentHP} → ${newHP}/${maxHP})`);
             
             return {

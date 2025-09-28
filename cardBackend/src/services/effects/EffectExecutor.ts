@@ -307,7 +307,7 @@ export class EffectExecutor {
             };
         }
 
-        const maxHP = targetCard.cardData?.hp ?? targetCard.originalHP ?? targetCard.currentHP ?? 0;
+        const maxHP = targetCard.originalHP ?? targetCard.cardData?.hp ?? 0;
         if (maxHP === 0) {
             return {
                 success: false,
@@ -315,16 +315,17 @@ export class EffectExecutor {
             };
         }
 
-        const currentHP = typeof targetCard.currentHP === 'number' ? targetCard.currentHP : maxHP;
-        const newHP = Math.min(maxHP, currentHP + value);
-        targetCard.currentHP = newHP;
+        const previousDamage = typeof (targetCard as any).damageReceived === 'number'
+            ? (targetCard as any).damageReceived
+            : 0;
 
-        if (typeof (targetCard as any).damageReceived === 'number') {
-            const previousDamage = (targetCard as any).damageReceived;
-            (targetCard as any).damageReceived = Math.max(0, previousDamage - value);
-        }
+        const healAmount = Math.max(0, value);
+        const newDamage = Math.max(0, previousDamage - healAmount);
+        (targetCard as any).damageReceived = newDamage;
 
-        console.log(`  🩹 ${target.carduid}: HP ${currentHP} → ${newHP}`);
+        const resultingHP = Math.max(0, maxHP - newDamage);
+
+        console.log(`  🩹 ${target.carduid}: damage ${previousDamage} → ${newDamage} (HP ${resultingHP}/${maxHP})`);
         return { success: true };
     }
 
@@ -341,7 +342,7 @@ export class EffectExecutor {
             };
         }
 
-        const maxHP = targetCard.cardData?.hp ?? targetCard.originalHP ?? targetCard.currentHP ?? 0;
+        const maxHP = targetCard.originalHP ?? targetCard.cardData?.hp ?? 0;
         if (maxHP === 0) {
             return {
                 success: false,
@@ -349,16 +350,15 @@ export class EffectExecutor {
             };
         }
 
-        const currentHP = typeof targetCard.currentHP === 'number' ? targetCard.currentHP : maxHP;
-        const newHP = Math.max(0, currentHP - value);
-        targetCard.currentHP = newHP;
-
         const previousDamage = typeof (targetCard as any).damageReceived === 'number'
             ? (targetCard as any).damageReceived
             : 0;
-        (targetCard as any).damageReceived = previousDamage + value;
+        const newDamage = previousDamage + value;
+        (targetCard as any).damageReceived = newDamage;
 
-        console.log(`  💥 ${target.carduid}: HP ${currentHP} → ${newHP} (damage ${value})`);
+        const resultingHP = Math.max(0, maxHP - newDamage);
+
+        console.log(`  💥 ${target.carduid}: damage ${previousDamage} → ${newDamage} (HP ${resultingHP}/${maxHP})`);
         return { success: true };
     }
 
@@ -473,18 +473,18 @@ export class EffectExecutor {
     }
 
     private static revertTemporaryEffectFromUnit(card: UnitZoneCard | PilotZoneCard, tempEffect: TemporaryEffect): void {
-       /* to be update
-       
         if (tempEffect.modifyAP !== undefined) {
-            const currentAP = card.modifyAP || 0;
-            card.modifyAP = currentAP - tempEffect.modifyAP;
-            console.log(`🔄 Reverted AP modification on ${card.carduid}: ${currentAP} → ${card.modifyAP}`);
+            const currentAP = (card as any).modifyAP || 0;
+            const nextAP = currentAP - tempEffect.modifyAP;
+            (card as any).modifyAP = nextAP;
+            console.log(`🔄 Reverted AP modification on ${card.carduid}: ${currentAP} → ${nextAP}`);
         }
 
         if (tempEffect.modifyHP !== undefined) {
-            const currentHP = card.modifyHP || 0;
-            card.modifyHP = currentHP - tempEffect.modifyHP;
-            console.log(`🔄 Reverted HP modification on ${card.carduid}: ${currentHP} → ${card.modifyHP}`);
-        }*/
+            const currentHP = (card as any).modifyHP || 0;
+            const nextHP = currentHP - tempEffect.modifyHP;
+            (card as any).modifyHP = nextHP;
+            console.log(`🔄 Reverted HP modification on ${card.carduid}: ${currentHP} → ${nextHP}`);
+        }
     }
 }

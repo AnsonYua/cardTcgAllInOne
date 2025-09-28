@@ -24,6 +24,7 @@ import {
 } from '../interfaces/StandardizedInterfaces';
 import { getCardIdFromUid } from '../utils/CardUtils';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
+import { getCardTotals } from '../utils/FieldValueCalculator';
 import { eventDataValidator } from '../validators/EventDataValidator';
 import { ensureEffectDefaults, normalizeEffectRule } from '../utils/EffectNormalizationUtils';
 
@@ -56,16 +57,12 @@ export interface UnitCard {
     carduid: string;
     // REMOVED: cardId - use getCardIdFromUid(carduid) instead
     cardData: any;
-    currentAP?: number;
-    currentHP?: number;
 }
 
 export interface PilotCard {
     carduid: string;
     // REMOVED: cardId - use getCardIdFromUid(carduid) instead
     cardData: any;
-    currentAP?: number;
-    currentHP?: number;
 }
 
 export interface PairingEffect extends PairingEffectDefinition {
@@ -657,7 +654,12 @@ export class PairingEffectManager implements StandardEffectManager {
      * Get card's current power
      */
     private static getCardPower(card: UnitCard | PilotCard): number {
-        return card?.currentAP || card?.cardData?.ap || 0;
+        if (!card) {
+            return 0;
+        }
+
+        const totals = getCardTotals(card as any);
+        return totals.totalAP;
     }
 
     /**

@@ -85,13 +85,15 @@ export interface ShieldCardData extends BasicCardData {
 export type CardData = UnitCardData | PilotCardData | CommandCardData | BaseCardData | EnergyCardData | ShieldCardData;
 
 export interface FieldCardValue {
-    totalTempModifyAP?: number; 
-    totalTempModifyHP?: number; 
-    totalContinueModifyAP?: number; 
-    totalContinueModifyHP?: number; 
-    totalDamageReceived?: number; 
-    totalCurrentAP?: number; 
-    totalCurrentHP?: number; 
+    totalOriginalAP?: number;
+    totalOriginalHP?: number;
+    totalTempModifyAP?: number;
+    totalTempModifyHP?: number;
+    totalContinueModifyAP?: number;
+    totalContinueModifyHP?: number;
+    totalDamageReceived?: number;
+    totalAP?: number;
+    totalHP?: number;
 }
 
 
@@ -108,8 +110,6 @@ export interface ZoneCard {
 
 export interface UnitZoneCard extends ZoneCard {
     cardData: UnitCardData;  // Required for units
-    currentAP?: number;      // Current Attack Power after modifiers (DEPRECATED - use modifyAP)
-    currentHP?: number;      // Current Health Points after damage (DEPRECATED - use modifyHP)
     originalHP?: number;
     originalAP?: number;
     isFirstPlay?: boolean;   // Whether this is the unit's first turn on field
@@ -124,8 +124,6 @@ export interface UnitZoneCard extends ZoneCard {
 
 export interface PilotZoneCard extends ZoneCard {
     cardData: PilotCardData | CommandCardData;  // Allow command cards played as pilots
-    currentAP?: number;      // Current Attack Power (DEPRECATED - use modifyAP)
-    currentHP?: number;      // Current Health Points (DEPRECATED - use modifyHP)
     originalAP?: number;     // Original Attack Power
     originalHP?: number;     // Original Health Points
     playedAs?: string;       // Track how the card is being played (for command cards played as pilots)
@@ -143,7 +141,6 @@ export interface CommandZoneCard extends ZoneCard {
 
 export interface BaseCard extends ZoneCard {
     cardData: BaseCardData;  // Required for base structures
-    currentHP?: number; 
     originalHP?: number;
     damageReceived?:number;
     fieldCardValue?:FieldCardValue;
@@ -185,8 +182,6 @@ export function createZoneCard(
             return {
                 ...baseCard,
                 cardData: cardData as UnitCardData,
-                currentAP: cardData.ap,
-                currentHP: cardData.hp,
                 originalAP: cardData.ap,
                 originalHP: cardData.hp,
                 isRested: false,
@@ -217,8 +212,6 @@ export function createZoneCard(
                 
                 return {
                     ...baseCard,
-                    currentAP: pilotAP,
-                    currentHP: pilotHP,
                     originalAP: pilotAP,
                     originalHP: pilotHP,
                     cardData: cardData as CommandCardData, // Keep original command data
@@ -229,8 +222,6 @@ export function createZoneCard(
             
             return {
                 ...baseCard,
-                currentAP: cardData.ap,
-                currentHP: cardData.hp,
                 originalAP: cardData.ap,
                 originalHP: cardData.hp,
                 cardData: cardData as PilotCardData
@@ -247,7 +238,6 @@ export function createZoneCard(
             return {
                 ...baseCard,
                 cardData: cardData as BaseCardData,
-                currentHP: cardData?.hp?cardData?.hp:3,
                 originalHP: cardData?.hp?cardData?.hp:3 ,
                 damageReceived: 0,
                 isRested: false
@@ -324,17 +314,38 @@ export class ZoneCardUtils {
     }
 
     static getCurrentAP(card: ZoneCard): number {
-        if (isUnitZoneCard(card)) {
-            return card.currentAP || card.cardData?.ap || 0;
-        }
-        return card.cardData?.ap || 0;
+        const baseAP = 'originalAP' in card
+            ? (card as UnitZoneCard | PilotZoneCard).originalAP ?? card.cardData?.ap ?? 0
+            : card.cardData?.ap ?? 0;
+        const continueAP = 'continueModifyAP' in card ? (card as UnitZoneCard | PilotZoneCard).continueModifyAP ?? 0 : 0;
+        const temporaryAP = this.sumTemporaryModifier(card, 'modifyAP');
+        return baseAP + continueAP + temporaryAP;
     }
 
     static getCurrentHP(card: ZoneCard): number {
-        if (isUnitZoneCard(card)) {
-            return card.currentHP || card.cardData?.hp || 0;
+        const baseHP = 'originalHP' in card
+            ? (card as UnitZoneCard | PilotZoneCard | BaseCard).originalHP ?? card.cardData?.hp ?? 0
+            : card.cardData?.hp ?? 0;
+        const continueHP = 'continueModifyHP' in card ? (card as UnitZoneCard | PilotZoneCard).continueModifyHP ?? 0 : 0;
+        const temporaryHP = this.sumTemporaryModifier(card, 'modifyHP');
+        const damage = isPilotZoneCard(card) ? 0 : (card as UnitZoneCard | BaseCard).damageReceived ?? 0;
+        return Math.max(0, baseHP + continueHP + temporaryHP - damage);
+    }
+
+    private static sumTemporaryModifier(card: ZoneCard, property: 'modifyAP' | 'modifyHP'): number {
+        const effects = (card as Partial<UnitZoneCard | PilotZoneCard>).temporaryEffects;
+        if (Array.isArray(effects) && effects.length > 0) {
+            return effects.reduce((total, effect) => {
+                const value = effect[property];
+                if (typeof value === 'number' && !Number.isNaN(value)) {
+                    return total + value;
+                }
+                return total;
+            }, 0);
         }
-        return card.cardData?.hp || 0;
+
+        const legacy = (card as any)[property];
+        return typeof legacy === 'number' && !Number.isNaN(legacy) ? legacy : 0;
     }
 
     // Note: Pilot-unit pairing now handled implicitly through SlotZone structure

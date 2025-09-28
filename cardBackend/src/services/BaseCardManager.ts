@@ -32,7 +32,8 @@ export class BaseCardManager {
 
             player.zones.base.push(baseCard);
 
-            console.log(`🏰 Created base card for player ${playerId}, currentHP: ${baseCard.currentHP}`);
+            const baseHP = baseCard.originalHP ?? baseCard.cardData?.hp ?? 0;
+            console.log(`🏰 Created base card for player ${playerId}, HP: ${baseHP}`);
             return true;
 
         } catch (error) {
@@ -98,9 +99,10 @@ export class BaseCardManager {
             }
 
             baseCard.damageReceived = damageReceived;
-            baseCard.currentHP = (baseCard.originalHP || 1) - damageReceived;
+            const maxHP = baseCard.originalHP || baseCard.cardData?.hp || 0;
+            const remainingHP = Math.max(0, maxHP - damageReceived);
 
-            console.log(`🏰 Updated base card ${carduid} HP: ${baseCard.currentHP} (${baseCard.originalHP} - ${damageReceived})`);
+            console.log(`🏰 Updated base card ${carduid} HP: ${remainingHP} (${baseCard.originalHP} - ${damageReceived})`);
             return true;
 
         } catch (error) {

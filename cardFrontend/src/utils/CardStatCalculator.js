@@ -72,9 +72,9 @@ export default class CardStatCalculator {
     if (!fieldValue) {
       return null;
     }
-    const totalAP = (fieldValue.totalCurrentAP || 0)
+    const totalAP = fieldValue?.totalAP || 0
 
-    const totalHP = (fieldValue.totalCurrentHP || 0)
+    const totalHP = fieldValue?.totalHP || 0
 
     return { totalAP, totalHP };
   }

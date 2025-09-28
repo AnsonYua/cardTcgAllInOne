@@ -770,15 +770,15 @@ export class GameEngine {
             const attackerStats = PlayerCardManager.getCurrentUnitCardInSlotAPandHP(gameEnv, attackingUnit.carduid);
             const defenderStats = PlayerCardManager.getCurrentUnitCardInSlotAPandHP(gameEnv, targetUnit.carduid);
 
-            console.log(`⚔️ Attacker total stats: AP=${attackerStats.totalAP}, HP=${attackerStats.totalHP} , damage = ${(attackingUnit.damageReceived)}` );
-            console.log(`🛡️ Defender total stats: AP=${defenderStats.totalAP}, HP=${defenderStats.totalHP}, damage = ${(targetUnit.damageReceived)}`);
+            console.log(`⚔️ Attacker total stats: AP=${attackerStats.totalAP}, HP=${attackerStats.totalHP}`);
+            console.log(`🛡️ Defender total stats: AP=${defenderStats.totalAP}, HP=${defenderStats.totalHP}`);
 
             // Calculate damage and remaining HP (ensure >= 0)
-            const attackerRemainingHP = Math.max(0, attackerStats.totalHP - (attackingUnit.damageReceived || 0) - defenderStats.totalAP);
-            const defenderRemainingHP = Math.max(0, defenderStats.totalHP - (targetUnit.damageReceived || 0)  - attackerStats.totalAP);
+            const attackerRemainingHP = Math.max(0, attackerStats.totalHP - defenderStats.totalAP);
+            const defenderRemainingHP = Math.max(0, defenderStats.totalHP - attackerStats.totalAP);
 
-            console.log(`💥 Battle result: Attacker HP: ${attackerStats.totalHP} -${attackingUnit.damageReceived } - ${defenderStats.totalAP} = ${attackerRemainingHP}`);
-            console.log(`💥 Battle result: Defender HP: ${defenderStats.totalHP} -${targetUnit.damageReceived } - ${attackerStats.totalAP} = ${defenderRemainingHP}`);
+            console.log(`💥 Battle result: Attacker HP: ${attackerStats.totalHP} - ${defenderStats.totalAP} = ${attackerRemainingHP}`);
+            console.log(`💥 Battle result: Defender HP: ${defenderStats.totalHP} - ${attackerStats.totalAP} = ${defenderRemainingHP}`);
 
             // Handle attacker damage and destruction
             const attackerDestroyed = GameEngine.handleUnitDamageAndDestruction(
@@ -859,13 +859,14 @@ export class GameEngine {
                 const baseCard = defenderBases[0];
                 const currentDamage = baseCard.damageReceived || 0;
                 const newDamage = currentDamage + totalAttackPower;
+                const maxHP = baseCard.originalHP || baseCard.cardData?.hp || 0;
+                const remainingHP = Math.max(0, maxHP - newDamage);
 
                 baseCard.damageReceived = newDamage;
-                //baseCard.currentHP = Math.max(0, (baseCard.originalHP || 0) - newDamage);
 
                 // Check if base is destroyed (HP = 0) and move to trash
                 let baseDestroyed = false;
-                if ((baseCard.currentHP || 0) - newDamage <= 0) {
+                if (remainingHP <= 0) {
                     // Remove from base zone using BaseCardManager
                     const removed = BaseCardManager.removeBaseCard(gameEnv, defendingPlayerId, baseCard.carduid);
                     if (removed) {
@@ -876,7 +877,7 @@ export class GameEngine {
                     }
                 }
 
-                console.log(`🏰 Base takes ${totalAttackPower} damage (${currentDamage} → ${newDamage}), HP: ${baseCard.currentHP}${baseDestroyed ? ' - DESTROYED!' : ''}`);
+                console.log(`🏰 Base takes ${totalAttackPower} damage (${currentDamage} → ${newDamage}), HP: ${remainingHP}${baseDestroyed ? ' - DESTROYED!' : ''}`);
 
                 // Generate base damage event
                 const notificationManager = GameEngine.getNotificationManager(gameEnv);
@@ -888,7 +889,7 @@ export class GameEngine {
                         attackerSlot,
                         damage: totalAttackPower,
                         totalDamage: newDamage,
-                        baseHP: baseCard.currentHP,
+                        baseHP: remainingHP,
                         baseDestroyed,
                         ...(baseDestroyed && {
                             destroyedCard: {

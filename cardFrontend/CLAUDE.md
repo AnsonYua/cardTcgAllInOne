@@ -52,6 +52,7 @@ This playbook gives Claude Code the context it needs to work inside `cardFronten
 - After each poll (or API mutation), `GameApiService.handleStandardResponse` updates `gameEnv`, optionally triggers `checkHandUIDChangesAndSetScenario`, and flags `GameScene` to refresh board visuals.
 - `FrontEventProcessor.processAllEvents()` should run before rendering updates; return `true` when a modal blocks further interaction.
 - Card interactions flow: `CardInteractionManager` listens to pointer events → `CardActionHandler` / `DeployEffectHandler` interpret the intent → `GameApiService` performs the mutation → updated state re-renders via `HandCardManager`, `ZoneManager`, and animation helpers.
+- Slots and bases now attach a `fieldCardValue` object with the shape `{ totalOriginalAP, totalOriginalHP, totalContinueModifyAP, totalContinueModifyHP, totalTempModifyAP, totalTempModifyHP, totalDamageReceived, totalAP, totalHP }`. Use `totalAP/totalHP` for rendered totals and `totalOriginal*` when you need baseline stats; the backend has dropped reliance on per-card `currentAP/currentHP` so front-end code should avoid those legacy fields.
 
 ## Assets & Configuration
 - `src/config/gameConfig.js` stores dimensions, scaling rules, and phase constants. Modify when changing canvas size or adding phases.
