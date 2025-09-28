@@ -11,7 +11,8 @@ export function normalizeFieldCardValue(fieldValue) {
     totalContinueModifyHP: fieldValue.totalContinueModifyHP ?? fieldValue.totalContinueModifyHp ?? 0,
     totalDamageReceived: fieldValue.totalDamageReceived ?? 0,
     totalAP: fieldValue.totalAP ?? fieldValue.totalAp ?? 0,
-    totalHP: fieldValue.totalHP ?? fieldValue.totalHp ?? 0
+    totalHP: fieldValue.totalHP ?? fieldValue.totalHp ?? 0,
+    isRested: fieldValue.isRested === undefined ? null : !!fieldValue.isRested
   };
 }
 

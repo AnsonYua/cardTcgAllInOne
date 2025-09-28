@@ -94,6 +94,7 @@ export interface FieldCardValue {
     totalDamageReceived?: number;
     totalAP?: number;
     totalHP?: number;
+    isRested?: boolean;
 }
 
 

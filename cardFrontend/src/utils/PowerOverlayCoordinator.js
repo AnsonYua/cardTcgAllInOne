@@ -31,6 +31,10 @@ function getOriginalStatsFromData(cardData) {
 }
 
 export function buildSlotTotalsField(slotFieldValue, unitData, pilotData) {
+  const slotRested = (slotFieldValue && slotFieldValue.isRested !== undefined)
+    ? !!slotFieldValue.isRested
+    : Boolean(unitData?.isRested || pilotData?.isRested);
+
   if (!slotFieldValue && !unitData && !pilotData) {
     return { field: null, totalAP: 0, totalHP: 0 };
   }
@@ -38,7 +42,10 @@ export function buildSlotTotalsField(slotFieldValue, unitData, pilotData) {
   const normalizedSlot = normalizeFieldCardValue(slotFieldValue);
   if (normalizedSlot) {
     return {
-      field: normalizedSlot,
+      field: {
+        ...normalizedSlot,
+        isRested: normalizedSlot.isRested === null ? slotRested : normalizedSlot.isRested
+      },
       totalAP: normalizedSlot.totalAP ?? 0,
       totalHP: normalizedSlot.totalHP ?? 0
     };
@@ -59,7 +66,8 @@ export function buildSlotTotalsField(slotFieldValue, unitData, pilotData) {
     totalContinueModifyHP: 0,
     totalDamageReceived: 0,
     totalAP: totals.totalAP ?? 0,
-    totalHP: totals.totalHP ?? 0
+    totalHP: totals.totalHP ?? 0,
+    isRested: slotRested
   });
 
   return {
@@ -185,6 +193,7 @@ export function buildSingleCardTotals(cardData) {
     totalContinueModifyHP: 0,
     totalDamageReceived: 0,
     totalAP: totals.totalAP ?? 0,
-    totalHP: totals.totalHP ?? 0
+    totalHP: totals.totalHP ?? 0,
+    isRested: cardData?.isRested
   });
 }
