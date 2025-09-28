@@ -585,38 +585,41 @@ export default class Card extends Phaser.GameObjects.Container {
     if (!this.fullCardData) {
       return { ap: 0, hp: 0, originalAP: 0, originalHP: 0 };
     }
-    // For regular cards (unit, pilot, base), get AP/HP directly from card properties
-    if (this.fullCardData.cardData.cardType === 'unit' || 
-        this.fullCardData.cardData.cardType === 'pilot' || 
-        this.fullCardData.cardData.cardType === 'base') {
-   
-          return {
-            ap: this.fullCardData?.originalAP || this.cardData.ap || 0,
-            hp: this.fullCardData?.originalHP || this.cardData.hp || 0,
-            originalAP: this.fullCardData?.originalAP || this.cardData.ap || 0,
-            originalHP: this.fullCardData?.originalHP || this.cardData.hp || 0
-          };
-       
+
+    const resolvedCardData = this.fullCardData.cardData || this.cardData || {};
+
+    let originalAP = this.fullCardData?.originalAP;
+    let originalHP = this.fullCardData?.originalHP;
+
+    if (originalAP == null) {
+      originalAP = resolvedCardData.ap || 0;
+    }
+    if (originalHP == null) {
+      originalHP = resolvedCardData.hp || 0;
     }
 
-    // For command cards with pilot_designation effect, extract AP/HP from effect parameters
-    if (this.cardData.cardType === 'command' && this.hasCommandPilotDesignation()) {
-      const pilotEffect = this.cardData.effects?.rules?.find(rule => rule.action === 'designate_pilot');
-      if (pilotEffect) {
-        const originalAP = this.cardData.ap || 0;
-        const originalHP = this.cardData.hp || 0;
-        
-        return {
-          ap: originalAP,
-          hp: originalHP,
-          originalAP: originalAP,
-          originalHP: originalHP
-        };
+    if (resolvedCardData.cardType === 'command' && this.hasCommandPilotDesignation()) {
+      const designateRule = resolvedCardData.effects?.rules?.find(rule => {
+        const action = rule.effect?.action || rule.action;
+        return action === 'designate_pilot';
+      });
+
+      const params = designateRule?.effect?.parameters || designateRule?.parameters;
+      if (params) {
+        if (typeof params.AP === 'number') {
+          originalAP = params.AP;
+        }
+        if (typeof params.HP === 'number') {
+          originalHP = params.HP;
+        }
       }
     }
 
-    // Default fallback
-    return { ap: 0, hp: 0, originalAP: 0, originalHP: 0 };
+    const fieldTotals = this.fullCardData.fieldCardValue || resolvedCardData.fieldCardValue;
+    const totalAP = fieldTotals?.totalAP ?? originalAP;
+    const totalHP = fieldTotals?.totalHP ?? originalHP;
+
+    return { ap: totalAP, hp: totalHP, originalAP, originalHP };
   }
 
   /**
@@ -646,20 +649,12 @@ export default class Card extends Phaser.GameObjects.Container {
       });
       this.add(this.powerOverlay);
       
-      // Extract AP and HP values from card data
       const { ap, hp, originalAP, originalHP } = this.getAPandHPFromCardData();
-      console.log("update ap and hp card", JSON.stringify(this.fullCardData))
-      console.log("update ap and hp 1111", ap , " ", hp, " original:", originalAP, originalHP)
-      this.powerOverlay.updateAP(ap, originalAP);
-      this.powerOverlay.updateHP(hp, originalHP);
-      // Update PowerOverlay with the extracted AP and HP values (simplified API)
-      //this.powerOverlay.updateStats(ap, hp);
-      
-      console.log(`[Card] PowerOverlay initialized with AP: ${ap}, HP: ${hp} for card: ${this.cardData?.id || 'unknown'}`);
-      
-      // Initially hidden until placed in character zone
-      this.powerOverlay.setVisible(true);
-      //this.updatePowerOverlay();
+      const isRested = this.fullCardData?.isRested ?? this.cardData?.isRested ?? false;
+
+      this.powerOverlay.setBaseStats(originalAP, originalHP);
+      this.powerOverlay.updateTotalStats(ap, hp, isRested);
+      this.powerOverlay.setOverlayVisible(true);
     }
   }
   
@@ -684,14 +679,11 @@ export default class Card extends Phaser.GameObjects.Container {
     
     // Extract AP and HP values from card data using our unified method
     const { ap, hp, originalAP, originalHP } = this.getAPandHPFromCardData();
-    
-    console.log('[Card] updatePowerOverlay for', this.cardData.id, '- AP:', ap, '- HP:', hp, '- Original AP:', originalAP, '- Original HP:', originalHP);
-    
-    // Update using simplified API with original values
-    this.powerOverlay.updateStats(ap, hp, originalAP, originalHP);
-    
-    // Make sure overlay is visible
-    this.powerOverlay.setVisible(true);
+    const isRested = this.fullCardData?.isRested ?? this.cardData?.isRested ?? false;
+
+    this.powerOverlay.setBaseStats(originalAP, originalHP);
+    this.powerOverlay.updateTotalStats(ap, hp, isRested);
+    this.powerOverlay.setOverlayVisible(true);
   }
   
   /**
@@ -703,7 +695,7 @@ export default class Card extends Phaser.GameObjects.Container {
   setPowerOverlayVisible(visible) {
     console.log('[Card] setPowerOverlayVisible called:', visible, 'for card:', this.cardData?.id, 'powerOverlay exists:', !!this.powerOverlay);
     if (this.powerOverlay) {
-      this.powerOverlay.setVisible(visible);
+      this.powerOverlay.setOverlayVisible(visible);
       if (visible) {
         this.updatePowerOverlay();
       }

@@ -201,12 +201,17 @@ export default class CardPreviewManager {
    * @returns {Card} The created preview card component
    */
   _createPreviewCard(cardData, x, y, depth = 2000, showTotals = true) {
+    const inferredCardType = cardData?.cardType || cardData?.cardData?.cardType;
+    const wantsBaseOverlay = inferredCardType === 'base';
+    const shouldShowTotals = showTotals || wantsBaseOverlay;
+    const targetZone = wantsBaseOverlay ? 'base' : (shouldShowTotals ? 'slot1' : 'hand');
+
     return CardFactory.createPreviewCard(this.scene, cardData, x, y, {
       gameStateManager: this.gameStateManager,
       scale: 3.5,
       depth,
       interactive: false,
-      zone: showTotals ? 'slot1' : 'hand'
+      zone: targetZone
     });
   }
 

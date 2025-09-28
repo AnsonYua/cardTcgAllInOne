@@ -1,557 +1,233 @@
 import Phaser from 'phaser';
-import { GAME_CONFIG } from '../config/gameConfig.js';
 
 /**
- * PowerOverlay - A component for displaying power numbers on cards in zones
- * 
- * Features:
- * - Displays current power value overlaid on card
- * - Color coding for different power states
- * - Animation support for power value changes
- * - Hide/show logic for face-down cards
- * - Integration with computed power system
+ * PowerOverlay renders the printed AP/HP alongside the live totals that include
+ * modifiers coming from the game state. The overlay keeps the original values
+ * static (apText/hpText) and updates the total labels independently.
  */
 export default class PowerOverlay extends Phaser.GameObjects.Container {
   constructor(scene, x = 0, y = 0, options = {}) {
     super(scene, x, y);
-    
-    // Detect if parent card is scaled (for preview mode)
+
     this.parentCardScale = options.parentCardScale || 1;
-    this.isPreviewMode = this.parentCardScale > 2; // Assume preview mode if scale > 2
-    
-    // Get card type for type-specific positioning
-    this.cardType = options.cardType; // default to 'unit'
-    
-    // Card-type-specific positioning configurations
-    const cardTypeOffsets = this.getCardTypeOffsets(this.cardType);
-    
-    // Configuration
+    this.isPreviewMode = this.parentCardScale > 2;
+    this.cardType = options.cardType || 'unit';
+
+    const offsets = this.getCardTypeOffsets(this.cardType);
+
     this.config = {
-      // AP label position - responsive to preview mode and card type
-      apOffsetX: this.isPreviewMode ? cardTypeOffsets.preview.apOffsetX : cardTypeOffsets.normal.apOffsetX,
-      apOffsetY: this.isPreviewMode ? cardTypeOffsets.preview.apOffsetY : cardTypeOffsets.normal.apOffsetY,
-      
-      // HP label position - responsive to preview mode and card type
-      hpOffsetX: this.isPreviewMode ? cardTypeOffsets.preview.hpOffsetX : cardTypeOffsets.normal.hpOffsetX,
-      hpOffsetY: this.isPreviewMode ? cardTypeOffsets.preview.hpOffsetY : cardTypeOffsets.normal.hpOffsetY,
-      
-      // Visual styling - responsive to preview mode
-      fontSize: this.isPreviewMode ? 64 : 14,
+      apOffsetX: this.isPreviewMode ? offsets.preview.apOffsetX : offsets.normal.apOffsetX,
+      apOffsetY: this.isPreviewMode ? offsets.preview.apOffsetY : offsets.normal.apOffsetY,
+      hpOffsetX: this.isPreviewMode ? offsets.preview.hpOffsetX : offsets.normal.hpOffsetX,
+      hpOffsetY: this.isPreviewMode ? offsets.preview.hpOffsetY : offsets.normal.hpOffsetY,
+      totalLabelOffsetY: 87,
+      fontSize: options.fontSize ?? 14,
       fontFamily: 'Arial Bold',
-      
-      // Background styling - responsive to preview mode
-      backgroundPadding: this.isPreviewMode ? 48 : 6,
-      backgroundRadius: this.isPreviewMode ? 32 : 8,
-      backgroundAlpha: 0.9,
-      
-      // Background visibility toggle
-      showBackground: false,  // Set to false to show only text labels
-      
-      // Spacing between AP and HP labels - responsive to preview mode
-      labelSpacing: this.isPreviewMode ? 100 : 20,
-      
-      // Color schemes for different label types
+      showBackground: !!options.showBackground,
       apColors: {
-        base: { text: '#FFFFFF', background: 0xFF5722, border: 0xE64A19 },      // Orange for attack
-        boosted: { text: '#FFFFFF', background: 0xFF8A65, border: 0xFF7043 },   // Light orange boosted
-        reduced: { text: '#FFFFFF', background: 0xD84315, border: 0xBF360C },   // Dark orange reduced
-        disabled: { text: '#FFFFFF', background: 0x666666, border: 0x444444 }
+        base: { text: '#FFFFFF' }
       },
-      
       hpColors: {
-        base: { text: '#FFFFFF', background: 0x4CAF50, border: 0x388E3C },      // Green for health
-        boosted: { text: '#FFFFFF', background: 0x81C784, border: 0x66BB6A },   // Light green boosted
-        reduced: { text: '#FFFFFF', background: 0xF44336, border: 0xD32F2F },   // Red for damaged
-        disabled: { text: '#FFFFFF', background: 0x666666, border: 0x444444 }
-      },
-      
-      ...options
+        base: { text: '#FFFFFF' }
+      }
     };
-    
-    // State tracking for dual labels (simplified)
-    this.ap = 0;
-    this.hp = 0;
+
     this.originalAP = 0;
     this.originalHP = 0;
+    this.totalAP = 0;
+    this.totalHP = 0;
     this.isVisible = false;
-    
-    this.create();
+
+    this.createTexts();
     scene.add.existing(this);
   }
-  
-  /**
-   * Get card-type-specific positioning offsets
-   * @param {string} cardType - Card type: 'unit', 'pilot', 'base', 'command'
-   * @returns {Object} Positioning configuration for normal and preview modes
-   */
+
   getCardTypeOffsets(cardType) {
-    const offsets = {
+    const defaults = {
       unit: {
         normal: { apOffsetX: 36.5, apOffsetY: 73, hpOffsetX: 50, hpOffsetY: 73 },
         preview: { apOffsetX: 36.5, apOffsetY: 73, hpOffsetX: 50, hpOffsetY: 73 }
       },
       pilot: {
         normal: { apOffsetX: 36.5, apOffsetY: 47, hpOffsetX: 50, hpOffsetY: 47 },
-        preview: {apOffsetX: 36.5, apOffsetY: 47, hpOffsetX: 50, hpOffsetY: 47 }
+        preview: { apOffsetX: 36.5, apOffsetY: 47, hpOffsetX: 50, hpOffsetY: 47 }
       },
       base: {
         normal: { apOffsetX: 36.5, apOffsetY: 73, hpOffsetX: 50, hpOffsetY: 73 },
-        preview: {  apOffsetX: 36.5, apOffsetY: 73, hpOffsetX: 50, hpOffsetY: 73}
+        preview: { apOffsetX: 36.5, apOffsetY: 73, hpOffsetX: 50, hpOffsetY: 73 }
       },
       command: {
         normal: { apOffsetX: 36.5, apOffsetY: 70, hpOffsetX: 50, hpOffsetY: 70 },
-        preview: {  apOffsetX: 36.5, apOffsetY: 70, hpOffsetX: 50, hpOffsetY: 70 }
+        preview: { apOffsetX: 36.5, apOffsetY: 70, hpOffsetX: 50, hpOffsetY: 70 }
       }
     };
-    
-    // Return the configuration for the specified card type, or default to 'unit'
-    return offsets[cardType] || offsets.unit;
+
+    return defaults[cardType] || defaults.unit;
   }
-  
-  create() {
-    // Create AP label components
-    this.apBackground = this.scene.add.graphics();
-    this.add(this.apBackground);
-    
-    this.apText = this.scene.add.text(this.config.apOffsetX, this.config.apOffsetY, '0', {
+
+  createTexts() {
+    const baseStyle = {
       fontSize: `${this.config.fontSize}px`,
       fontFamily: this.config.fontFamily,
       fill: this.config.apColors.base.text,
       align: 'center'
-    });
+    };
+
+    const textResolution = Math.max(1, Math.ceil(this.parentCardScale));
+    const applyResolution = text => text.setResolution(textResolution);
+
+    this.apText = this.scene.add.text(this.config.apOffsetX, this.config.apOffsetY, '0', baseStyle);
     this.apText.setOrigin(0.5);
-
-
-
-    // Improve text rendering quality for preview mode
-    if (this.isPreviewMode) {
-      this.apText.setScale(1);
-      this.apText.setFontSize(this.apText.fontSize);
-      this.apText.setResolution(5); // Higher resolution for crisp text
-      // Ensure pixel-perfect positioning
-      this.apText.x = Math.round(this.apText.x);
-      this.apText.y = Math.round(this.apText.y);
-    }
+    applyResolution(this.apText);
     this.add(this.apText);
-    
-    // Create Total AP label (50px below AP)
-    this.totalApText = this.scene.add.text(this.config.apOffsetX, 87, '0', {
-      fontSize: `${this.config.fontSize}px`,
-      fontFamily: this.config.fontFamily,
-      fill: this.config.apColors.base.text,
-      align: 'center'
-    });
+
+    this.totalApText = this.scene.add.text(
+      this.config.apOffsetX,
+      this.config.totalLabelOffsetY,
+      '0',
+      baseStyle
+    );
     this.totalApText.setOrigin(0.5);
-    
-    // Improve text rendering quality for preview mode
-    if (this.isPreviewMode) {
-      this.totalApText.setScale(1);
-      this.totalApText.setFontSize(this.totalApText.fontSize);
-      this.totalApText.setResolution(5); // Higher resolution for crisp text
-      this.totalApText.x = Math.round(this.totalApText.x);
-      this.totalApText.y = Math.round(this.totalApText.y);
-    }
+    applyResolution(this.totalApText);
     this.add(this.totalApText);
-    
-    // Create HP label components
-    this.hpBackground = this.scene.add.graphics();
-    this.add(this.hpBackground);
-    
-    this.hpText = this.scene.add.text(this.config.hpOffsetX, this.config.hpOffsetY, '0', {
-      fontSize: `${this.config.fontSize}px`,
-      fontFamily: this.config.fontFamily,
-      fill: this.config.hpColors.base.text,
-      align: 'center'
-    });
+
+    const hpStyle = {
+      ...baseStyle,
+      fill: this.config.hpColors.base.text
+    };
+
+    this.hpText = this.scene.add.text(this.config.hpOffsetX, this.config.hpOffsetY, '0', hpStyle);
     this.hpText.setOrigin(0.5);
-    
-    // Improve text rendering quality for preview mode
-    if (this.isPreviewMode) {
-      this.hpText.setScale(1);
-      this.hpText.setFontSize(this.hpText.fontSize);
-      this.hpText.setResolution(5); // Higher resolution for crisp text
-      this.hpText.x = Math.round(this.hpText.x);
-      this.hpText.y = Math.round(this.hpText.y);
-    }
+    applyResolution(this.hpText);
     this.add(this.hpText);
-    
-    // Create Total HP label (50px below HP)
-    this.totalHpText = this.scene.add.text(this.config.hpOffsetX, 87, '0', {
-      fontSize: `${this.config.fontSize}px`,
-      fontFamily: this.config.fontFamily,
-      fill: this.config.hpColors.base.text,
-      align: 'center'
-    });
+
+    this.totalHpText = this.scene.add.text(
+      this.config.hpOffsetX,
+      this.config.totalLabelOffsetY,
+      '0',
+      hpStyle
+    );
     this.totalHpText.setOrigin(0.5);
-    
-    // Improve text rendering quality for preview mode
-    if (this.isPreviewMode) {
-      this.totalHpText.setScale(1);
-      this.totalHpText.setFontSize(this.totalHpText.fontSize);
-      this.totalHpText.setResolution(5); // Higher resolution for crisp text
-      this.totalHpText.x = Math.round(this.totalHpText.x);
-      this.totalHpText.y = Math.round(this.totalHpText.y);
-    }
+    applyResolution(this.totalHpText);
     this.add(this.totalHpText);
-    
 
-
-    // Create Total AP label (50px below AP)
-    this.cardStatusText = this.scene.add.text(-45, 87, 'Rest', {
-      fontSize: `${this.config.fontSize}px`,
-      fontFamily: this.config.fontFamily,
-      fill: this.config.apColors.base.text,
-      align: 'center'
-    });
+    this.cardStatusText = this.scene.add.text(
+      -45,
+      this.config.totalLabelOffsetY,
+      '',
+      {
+        fontSize: `${this.config.fontSize}px`,
+        fontFamily: this.config.fontFamily,
+        fill: this.config.apColors.base.text,
+        align: 'center'
+      }
+    );
     this.cardStatusText.setOrigin(0.5);
-    
-    // Improve text rendering quality for preview mode
-    if (this.isPreviewMode) {
-      this.cardStatusText.setScale(1);
-      this.cardStatusText.setFontSize(this.cardStatusText.fontSize);
-      this.cardStatusText.setResolution(5); // Higher resolution for crisp text
-      this.cardStatusText.x = Math.round(this.cardStatusText.x);
-      this.cardStatusText.y = Math.round(this.cardStatusText.y);
-    }
+    applyResolution(this.cardStatusText);
     this.add(this.cardStatusText);
 
-
-
-
-    // Preview mode uses hardcoded values instead of scaling
-    if (this.isPreviewMode) {
-      console.log(`[PowerOverlay] Preview mode detected, using hardcoded configuration values`);
-      // No scaling needed - all values are hardcoded for preview mode
-    }
-    
-    // Position at origin - children are positioned relative to this container
-    this.setPosition(0, 0);
-    
-    // Set initial depth to ensure it appears above card
-    this.setDepth(10);
-    
-    // Initially hide total labels (only show in slots)
     this.totalApText.setVisible(false);
     this.totalHpText.setVisible(false);
     this.cardStatusText.setVisible(false);
-    
-    // Initially hidden
     this.setVisible(false);
+
+    this.setShowBackground(this.config.showBackground);
   }
-  
-  /**
-   * Update both AP and HP values displayed
-   * @param {number} ap - Attack power value
-   * @param {number} hp - Health points value
-   * @param {number} originalAP - Original attack power value
-   * @param {number} originalHP - Original health points value
-   */
-  updateStats(ap, hp, originalAP = ap, originalHP = hp ) {
-    // Update state
-    this.ap = ap;
-    this.hp = hp;
+
+  setBaseStats(originalAP = 0, originalHP = 0) {
     this.originalAP = originalAP;
     this.originalHP = originalHP;
-    
-    // Update text displays
-    this.apText.setText(ap.toString());
-    this.hpText.setText(hp.toString());
-    
-    // Update styling for both labels with color change logic
-    this.updateStyling();
-    
-    // Show overlay if not visible and either stat > 0
-    if (!this.isVisible && (ap > 0 || hp > 0)) {
-      this.show();
+    this.apText.setText(originalAP.toString());
+    this.hpText.setText(originalHP.toString());
+    this.updateTotalTextColors();
+  }
+
+  updateTotalStats(totalAP = 0, totalHP = 0, isRested, originalAP, originalHP) {
+    if (typeof originalAP === 'number') {
+      this.originalAP = originalAP;
+      this.apText.setText(originalAP.toString());
     }
-    // Hide overlay if both stats are 0 or less
-    else if (this.isVisible && ap <= 0 && hp <= 0) {
+    if (typeof originalHP === 'number') {
+      this.originalHP = originalHP;
+      this.hpText.setText(originalHP.toString());
+    }
+
+    this.totalAP = totalAP;
+    this.totalHP = totalHP;
+
+    this.totalApText.setText(totalAP.toString());
+    this.totalHpText.setText(totalHP.toString());
+
+    if (typeof isRested === 'boolean') {
+      this.cardStatusText.setText(isRested ? 'Rested' : 'Active');
+    }
+
+    this.updateTotalTextColors();
+
+    if (totalAP > 0 || totalHP > 0 || this.originalAP > 0 || this.originalHP > 0) {
+      this.show();
+    } else {
       this.hide();
     }
   }
-  
-  /**
-   * Update AP (Attack Power) value and styling
-   * @param {number} ap - AP value
-   * @param {number} originalAP - Original AP value
-   */
-  updateAP(ap, originalAP = ap) {
-    this.ap = ap;
-    this.originalAP = originalAP;
-    this.apText.setText(ap.toString());
-    this.updateAPStyling();
-    console.log(`[PowerOverlay] AP updated: ${ap} (original: ${originalAP})`);
+
+  updateTotalTextColors() {
+    const apColor = this.totalAP !== this.originalAP ? '#FF6B6B' : this.config.apColors.base.text;
+    const hpColor = this.totalHP !== this.originalHP ? '#FF6B6B' : this.config.hpColors.base.text;
+
+    this.totalApText.setColor(apColor);
+    this.totalHpText.setColor(hpColor);
   }
 
-  /**
-   * Update HP (Health Points) value and styling
-   * @param {number} hp - HP value
-   * @param {number} originalHP - Original HP value
-   */
-  updateHP(hp, originalHP = hp) {
-    this.hp = hp;
-    this.originalHP = originalHP;
-    this.hpText.setText(hp.toString());
-    this.updateHPStyling();
-    console.log(`update ap and hp 11222 ${hp} (original: ${originalHP})`);
-  }
-  
-  /**
-   * Update Total AP value (only visible in slot zones)
-   * @param {number} totalAP - Total AP value including effects
-   */
-  updateTotalAP(totalAP) {
-    this.totalApText.setText(totalAP.toString());
-    console.log(`[PowerOverlay] Total AP updated: ${totalAP}`);
-  }
-
-  updateCardStatus(isRested) {
-    if(isRested){
-      this.cardStatusText.setText("Rested");
-    }else{
-      this.cardStatusText.setText("Active");
-    }
-  }
-
-  /**
-   * Update Total HP value (only visible in slot zones)
-   * @param {number} totalHP - Total HP value including effects
-   */
-  updateTotalHP(totalHP) {
-    this.totalHpText.setText(totalHP.toString());
-    console.log(`[PowerOverlay] Total HP updated: ${totalHP}`);
-  }
-  
-  /**
-   * Update both total values at once
-   * @param {number} totalAP - Total AP value including effects
-   * @param {number} totalHP - Total HP value including effects
-   */
-  updateTotalStats(totalAP, totalHP , isRested) {
-    this.updateTotalAP(totalAP);
-    this.updateTotalHP(totalHP);
-    this.updateCardStatus(isRested);
-  }
-  
-  /**
-   * Update visual styling for both AP and HP labels
-   */
-  updateStyling() {
-    this.updateAPStyling();
-    this.updateHPStyling();
-  }
-  
-  /**
-   * Update AP label styling with color change for modified values
-   */
-  updateAPStyling() {
-    const colorScheme = this.config.apColors.base; // Always use base colors
-    
-    // Determine text color based on whether value has changed
-    const textColor = (this.ap !== this.originalAP) ? '#FF0000' : '#FFFFFF'; // Red if changed, white if original
-    
-    // FORCE CONSISTENT TEXT PROPERTIES with conditional color
-    this.apText.setFill(textColor);
-    this.apText.setAlpha(1.0); // Force full opacity
-    this.apText.setTint(0xFFFFFF); // Force white tint
-    this.apText.setBlendMode(Phaser.BlendModes.NORMAL); // Force normal blend
-    // Clear existing background
-    this.apBackground.clear();
-    
-    // Only draw background if showBackground is enabled
-    if (this.config.showBackground) {
-      // Calculate background size based on text
-      const textBounds = this.apText.getBounds();
-      const bgWidth = Math.max(textBounds.width + this.config.backgroundPadding * 2, 24);
-      const bgHeight = textBounds.height + this.config.backgroundPadding * 2;
-      
-      // Line thickness - responsive to preview mode
-      const lineThickness = this.isPreviewMode ? 8 : 2;
-      
-      // Draw AP background with border at AP position
-      this.apBackground.lineStyle(lineThickness, colorScheme.border, 1);
-      this.apBackground.fillStyle(colorScheme.background, this.config.backgroundAlpha);
-      this.apBackground.fillRoundedRect(
-        this.config.apOffsetX - bgWidth / 2, 
-        this.config.apOffsetY - bgHeight / 2, 
-        bgWidth, 
-        bgHeight, 
-        this.config.backgroundRadius
-      );
-      this.apBackground.strokeRoundedRect(
-        this.config.apOffsetX - bgWidth / 2, 
-        this.config.apOffsetY - bgHeight / 2, 
-        bgWidth, 
-        bgHeight, 
-        this.config.backgroundRadius
-      );
-    }
-  }
-  
-  /**
-   * Update HP label styling with color change for modified values
-   */
-  updateHPStyling() {
-    const colorScheme = this.config.hpColors.base; // Always use base colors
-    console.log("adfadsfsdafsdaf ",this.hp , " ", this.originalHP)
-    // Determine text color based on whether value has changed
-    const textColor = (this.hp !== this.originalHP) ? '#FF0000' : '#FFFFFF'; // Red if changed, white if original
-    
-    // FORCE CONSISTENT TEXT PROPERTIES with conditional color
-    this.hpText.setFill(textColor);
-    this.hpText.setAlpha(1.0); // Force full opacity
-    this.hpText.setTint(0xFFFFFF); // Force white tint
-    this.hpText.setBlendMode(Phaser.BlendModes.NORMAL); // Force normal blend
-    
-    // Clear existing background
-    this.hpBackground.clear();
-    
-    // Only draw background if showBackground is enabled
-    if (this.config.showBackground) {
-      // Calculate background size based on text
-      const textBounds = this.hpText.getBounds();
-      const bgWidth = Math.max(textBounds.width + this.config.backgroundPadding * 2, 24);
-      const bgHeight = textBounds.height + this.config.backgroundPadding * 2;
-      
-      // Line thickness - responsive to preview mode
-      const lineThickness = this.isPreviewMode ? 8 : 2;
-      
-      // Draw HP background with border at HP position
-      this.hpBackground.lineStyle(lineThickness, colorScheme.border, 1);
-      this.hpBackground.fillStyle(colorScheme.background, this.config.backgroundAlpha);
-      this.hpBackground.fillRoundedRect(
-        this.config.hpOffsetX - bgWidth / 2, 
-        this.config.hpOffsetY - bgHeight / 2, 
-        bgWidth, 
-        bgHeight, 
-        this.config.backgroundRadius
-      );
-      this.hpBackground.strokeRoundedRect(
-        this.config.hpOffsetX - bgWidth / 2, 
-        this.config.hpOffsetY - bgHeight / 2, 
-        bgWidth, 
-        bgHeight, 
-        this.config.backgroundRadius
-      );
-    }
-  }
-  
-  // getStatState method removed - no longer needed with simplified ap/hp system
-  
-  /**
-   * Show the power overlay instantly
-   */
   show() {
-    if (this.isVisible) return;
-    
+    if (this.isVisible) {
+      return;
+    }
     this.isVisible = true;
     this.setVisible(true);
-    
-    // No scaling needed - all values are hardcoded for preview mode
-    this.setScale(1);
-    this.setAlpha(1);
   }
-  
-  /**
-   * Hide the power overlay instantly
-   */
+
   hide() {
-    if (!this.isVisible) return;
-    
+    if (!this.isVisible) {
+      return;
+    }
     this.isVisible = false;
     this.setVisible(false);
   }
-  
-  
-  
-  /**
-   * Set whether the overlay should be visible
-   * Used for face-down cards or when power display is disabled
-   * @param {boolean} visible - Whether overlay should be shown
-   */
+
   setOverlayVisible(visible) {
-    if (visible && (this.ap > 0 || this.hp > 0)) {
+    if (visible) {
       this.show();
     } else {
       this.hide();
     }
   }
-  
-  /**
-   * Set visibility of total labels based on card location
-   * Total labels (totalApText, totalHpText) only show when card is in slot zones
-   * @param {string} cardZone - Current zone of the card (e.g., 'slot1', 'slot2', 'hand', 'deck')
-   */
+
   setTotalLabelsVisibility(cardZone) {
     const isInSlot = cardZone && cardZone.startsWith('slot');
     const isInBase = cardZone === 'base';
-    const shouldShowTotalLabels = isInSlot || isInBase;
-    
-    this.totalApText.setVisible(shouldShowTotalLabels);
-    this.totalHpText.setVisible(shouldShowTotalLabels);
-    this.cardStatusText.setVisible(shouldShowTotalLabels);
-    
-    console.log(`[PowerOverlay] Total labels visibility: ${shouldShowTotalLabels} (zone: ${cardZone}, isSlot: ${isInSlot}, isBase: ${isInBase})`);
+    const shouldShowTotals = isInSlot || isInBase;
+
+    this.totalApText.setVisible(shouldShowTotals);
+    this.totalHpText.setVisible(shouldShowTotals);
+    this.cardStatusText.setVisible(shouldShowTotals);
   }
-  
-  /**
-   * Enable or disable background and border display
-   * @param {boolean} showBackground - Whether to show backgrounds and borders
-   */
+
   setShowBackground(showBackground) {
     this.config.showBackground = showBackground;
-    
-    // Update text styling based on background visibility (simplified - always use base colors)
-    const apColorScheme = this.config.apColors.base;
-    const hpColorScheme = this.config.hpColors.base;
-    
-    if (!showBackground) {
-      // Add text stroke for better visibility without background
-      this.apText.setStyle({
-        fontSize: `${this.config.fontSize}px`,
-        fontFamily: this.config.fontFamily,
-        fill: apColorScheme.text,
-        stroke: '#000000',
-        strokeThickness: this.isPreviewMode ? 8 : 2,
-        align: 'center'
-      });
-      
-      this.hpText.setStyle({
-        fontSize: `${this.config.fontSize}px`,
-        fontFamily: this.config.fontFamily,
-        fill: hpColorScheme.text,
-        stroke: '#000000',
-        strokeThickness: this.isPreviewMode ? 8 : 2,
-        align: 'center'
-      });
-    } else {
-      // Remove text stroke when background is present
-      this.apText.setStyle({
-        fontSize: `${this.config.fontSize}px`,
-        fontFamily: this.config.fontFamily,
-        fill: apColorScheme.text,
-        stroke: null,
-        strokeThickness: 0,
-        align: 'center'
-      });
-      
-      this.hpText.setStyle({
-        fontSize: `${this.config.fontSize}px`,
-        fontFamily: this.config.fontFamily,
-        fill: hpColorScheme.text,
-        stroke: null,
-        strokeThickness: 0,
-        align: 'center'
-      });
-    }
-    
-    // Refresh styling to apply changes
-    this.updateStyling();
+    const strokeThickness = showBackground ? 0 : Math.max(0.5, 2 / this.parentCardScale);
+
+    const applyStyle = text => {
+      text.setStroke('#000000', strokeThickness);
+    };
+
+    applyStyle(this.apText);
+    applyStyle(this.hpText);
+    applyStyle(this.totalApText);
+    applyStyle(this.totalHpText);
+    applyStyle(this.cardStatusText);
   }
-  
-  /**
-   * Clean up resources when destroying
-   */
+
   destroy(fromScene = false) {
     super.destroy(fromScene);
   }
