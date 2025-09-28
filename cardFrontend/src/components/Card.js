@@ -574,7 +574,7 @@ export default class Card extends Phaser.GameObjects.Container {
     }
     
     // Check if the command card has pilot_designation effect in its rules
-    return this.cardData.effects?.rules?.some(rule => rule.effectId === 'pilot_designation') || false;
+    return this.cardData.effects?.rules?.some(rule => rule.action === 'designate_pilot') || false;
   }
 
   /**
@@ -601,10 +601,10 @@ export default class Card extends Phaser.GameObjects.Container {
 
     // For command cards with pilot_designation effect, extract AP/HP from effect parameters
     if (this.cardData.cardType === 'command' && this.hasCommandPilotDesignation()) {
-      const pilotEffect = this.cardData.effects?.rules?.find(rule => rule.effectId === 'pilot_designation');
-      if (pilotEffect && pilotEffect.effect?.parameters) {
-        const originalAP = pilotEffect.effect.parameters.AP || 0;
-        const originalHP = pilotEffect.effect.parameters.HP || 0;
+      const pilotEffect = this.cardData.effects?.rules?.find(rule => rule.action === 'designate_pilot');
+      if (pilotEffect) {
+        const originalAP = this.cardData.ap || 0;
+        const originalHP = this.cardData.hp || 0;
         
         return {
           ap: originalAP,
