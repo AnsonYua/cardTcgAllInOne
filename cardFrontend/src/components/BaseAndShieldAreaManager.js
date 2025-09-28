@@ -147,7 +147,14 @@ export default class BaseAndShieldAreaManager {
     if (card.cardData && cardData.cardData) {
       card.cardData = { ...card.cardData, ...cardData.cardData };
     }
-    
+
+    if (card.setFieldCardValue) {
+      card.setFieldCardValue(cardData.fieldCardValue, {
+        source: 'slot',
+        updateOverlay: false
+      });
+    }
+
     // Update power overlay if the card has one
     if (card.powerOverlay && card.updatePowerOverlay) {
       try {
@@ -181,7 +188,15 @@ export default class BaseAndShieldAreaManager {
     
     // Use Card convenience method for calculation and update
     card.updateCalculatedTotalLabels(null, card.fullCardData.isRested);
-    
+
+    if (card.setFieldCardValue) {
+      card.setFieldCardValue(card.fullCardData.fieldCardValue, {
+        source: 'slot',
+        updateOverlay: false
+      });
+      card.updatePowerOverlay();
+    }
+
     card.applyZoneOverlayRules();
   }
 

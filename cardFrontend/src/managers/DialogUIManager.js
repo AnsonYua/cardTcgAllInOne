@@ -5,6 +5,7 @@
 import Card from '../components/Card.js';
 import SlotAreaManager from '../components/SlotAreaManager.js';
 import CardStatCalculator from '../utils/CardStatCalculator.js';
+import { normalizeFieldCardValue } from '../utils/FieldValueUtils.js';
 import CardFactory from '../utils/CardFactory.js';
 import CardInteractionHelper from '../utils/CardInteractionHelper.js';
 import UIGraphicsHelper from '../utils/UIGraphicsHelper.js';
@@ -671,7 +672,8 @@ export default class DialogUIManager {
         dialogScale: dialogScale,
         totalAP: showTotals ? (totalsInfo.totalAP ?? 0) : undefined,
         totalHP: showTotals ? (totalsInfo.totalHP ?? 0) : undefined,
-        zone: fallbackZone
+        zone: fallbackZone,
+        fieldCardValue: inferredZone && inferredZone.startsWith('slot') ? (originalCard?.fieldCardValue || cardDataForDisplay?.fieldCardValue || null) : (cardDataForDisplay?.fieldCardValue || null)
       });
 
       return cardComponent;
@@ -720,7 +722,8 @@ export default class DialogUIManager {
       pilotCard = CardFactory.createDialogCard(scene, slotTarget.pilot, 0, 23, {
         dialogScale: dialogScale,
         interactive: true, // Container will handle interaction
-        zone: slotZone
+        zone: slotZone,
+        fieldCardValue: slotTarget.fieldCardValue || slotTarget.pilot?.fieldCardValue || null
       });
       slotContainer.add(pilotCard);
     }
@@ -731,20 +734,24 @@ export default class DialogUIManager {
     const unitCard = CardFactory.createDialogCard(scene, slotTarget.unit, 0, unitY, {
       dialogScale: dialogScale,
       interactive: false, // Container will handle interaction
-      zone: slotZone
+      zone: slotZone,
+      fieldCardValue: slotTarget.fieldCardValue || slotTarget.unit?.fieldCardValue || null
     });
 
     slotContainer.add(unitCard);
 
     // ✅ FIXED: Always show total labels for slot target displays, even unit-only
     // Use CardStatCalculator for proper total calculation or provided values
-    let totalAP, totalHP;
-    if (slotTarget.totalAP !== undefined && slotTarget.totalHP !== undefined) {
-      // Use provided totals (already calculated)
+    const slotFieldTotals = normalizeFieldCardValue(slotTarget.fieldCardValue);
+    let totalAP;
+    let totalHP;
+    if (slotFieldTotals) {
+      totalAP = slotFieldTotals.totalAP;
+      totalHP = slotFieldTotals.totalHP;
+    } else if (slotTarget.totalAP !== undefined && slotTarget.totalHP !== undefined) {
       totalAP = slotTarget.totalAP;
       totalHP = slotTarget.totalHP;
     } else {
-      // Calculate totals using CardStatCalculator (handles unit+pilot combinations properly)
       const totals = CardStatCalculator.calculateTotalInSlot(slotTarget.unit, slotTarget.pilot);
       totalAP = totals.totalAP;
       totalHP = totals.totalHP;

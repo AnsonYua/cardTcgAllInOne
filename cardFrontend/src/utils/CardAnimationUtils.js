@@ -118,6 +118,12 @@ export default class CardAnimationUtils {
                     isInZone: false,
                     isPlayerZone: true
                   });
+
+                  if (newCard.setFieldCardValue) {
+                    newCard.setFieldCardValue(processedCardData.fieldCardValue, {
+                      source: 'card'
+                    });
+                  }
                   
                   scene.input.setDraggable(newCard);
                   scene.playerHand.push(newCard);

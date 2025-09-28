@@ -80,6 +80,12 @@ export default class HandCardManager {
         isPlayerZone: true
       });
 
+      if (card.setFieldCardValue) {
+        card.setFieldCardValue(processedCardData.fieldCardValue, {
+          source: 'card'
+        });
+      }
+
       this.playerHand.push(card);
       this.handContainer.add(card);
     });
@@ -161,6 +167,12 @@ export default class HandCardManager {
         isPlayerZone: true
       });
 
+      if (tempCard.setFieldCardValue) {
+        tempCard.setFieldCardValue(cardData.fieldCardValue, {
+          source: 'card'
+        });
+      }
+
       // Set high depth so it appears above other cards during animation
       tempCard.setDepth(1000);
 
@@ -188,6 +200,12 @@ export default class HandCardManager {
             isInZone: false,
             isPlayerZone: true
           });
+
+          if (newCard.setFieldCardValue) {
+            newCard.setFieldCardValue(cardData.fieldCardValue, {
+              source: 'card'
+            });
+          }
 
           // Add to hand array and container
           this.playerHand.push(newCard);

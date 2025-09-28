@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GAME_CONFIG } from '../config/gameConfig.js';
 import PowerOverlay from './PowerOverlay.js';
 import CardStatCalculator from '../utils/CardStatCalculator.js';
+import { resolveFieldCardTotals, normalizeFieldCardValue } from '../utils/FieldValueUtils.js';
 
 
 export default class Card extends Phaser.GameObjects.Container {
@@ -50,6 +51,8 @@ export default class Card extends Phaser.GameObjects.Container {
     
     // Power overlay for character cards in zones
     this.powerOverlay = null;
+    this.fieldCardValue = normalizeFieldCardValue(this.fullCardData?.fieldCardValue);
+    this.slotFieldCardValue = null;
     
     // Create power overlay if this is a character card
     const cardType = this.cardData?.cardType || this.cardData?.type;
@@ -167,6 +170,40 @@ export default class Card extends Phaser.GameObjects.Container {
       return false;
     }
     return zoneType === 'base' || zoneType.startsWith('slot');
+  }
+
+  getActiveFieldCardValue() {
+    return this.slotFieldCardValue || this.fieldCardValue || null;
+  }
+
+  setFieldCardValue(fieldCardValue, options = {}) {
+    const normalizedValue = normalizeFieldCardValue(fieldCardValue);
+    const source = options.source || 'card';
+
+    if (source === 'slot') {
+      this.slotFieldCardValue = normalizedValue;
+    } else {
+      this.fieldCardValue = normalizedValue;
+    }
+
+    if (this.fullCardData) {
+      if (normalizedValue) {
+        this.fullCardData.fieldCardValue = normalizedValue;
+      } else if (this.fullCardData.fieldCardValue) {
+        delete this.fullCardData.fieldCardValue;
+      }
+    }
+
+    if (options.updateOverlay === false || !this.powerOverlay) {
+      return;
+    }
+
+    const { ap, hp, originalAP, originalHP } = this.getAPandHPFromCardData();
+    const isRested = this.fullCardData?.isRested ?? this.cardData?.isRested ?? false;
+
+    this.powerOverlay.setBaseStats(originalAP, originalHP);
+    this.powerOverlay.updateTotalStats(ap, hp, isRested);
+    this.applyZoneOverlayRules();
   }
 
   resetOverlayOverrides() {
@@ -705,16 +742,15 @@ export default class Card extends Phaser.GameObjects.Container {
     }
 
     const resolvedCardData = this.fullCardData.cardData || this.cardData || {};
+    const { fieldCardValue, totalAP, totalHP, originalAP, originalHP } = resolveFieldCardTotals({
+      slotFieldValue: this.slotFieldCardValue,
+      existingFieldValue: this.fieldCardValue,
+      fullCardData: this.fullCardData,
+      cardData: resolvedCardData
+    });
 
-    let originalAP = this.fullCardData?.originalAP;
-    let originalHP = this.fullCardData?.originalHP;
-
-    if (originalAP == null) {
-      originalAP = resolvedCardData.ap || 0;
-    }
-    if (originalHP == null) {
-      originalHP = resolvedCardData.hp || 0;
-    }
+    let adjustedOriginalAP = originalAP;
+    let adjustedOriginalHP = originalHP;
 
     if (resolvedCardData.cardType === 'command' && this.hasCommandPilotDesignation()) {
       const designateRule = resolvedCardData.effects?.rules?.find(rule => {
@@ -725,19 +761,29 @@ export default class Card extends Phaser.GameObjects.Container {
       const params = designateRule?.effect?.parameters || designateRule?.parameters;
       if (params) {
         if (typeof params.AP === 'number') {
-          originalAP = params.AP;
+          adjustedOriginalAP = params.AP;
         }
         if (typeof params.HP === 'number') {
-          originalHP = params.HP;
+          adjustedOriginalHP = params.HP;
         }
       }
     }
 
-    const fieldTotals = this.fullCardData.fieldCardValue || resolvedCardData.fieldCardValue;
-    const totalAP = fieldTotals?.totalAP ?? originalAP;
-    const totalHP = fieldTotals?.totalHP ?? originalHP;
+    const adjustedTotalAP = totalAP ?? adjustedOriginalAP;
+    const adjustedTotalHP = totalHP ?? adjustedOriginalHP;
 
-    return { ap: totalAP, hp: totalHP, originalAP, originalHP };
+    if (fieldCardValue) {
+      if (this.slotFieldCardValue) {
+        this.slotFieldCardValue = fieldCardValue;
+      } else {
+        this.fieldCardValue = fieldCardValue;
+        if (this.fullCardData) {
+          this.fullCardData.fieldCardValue = fieldCardValue;
+        }
+      }
+    }
+
+    return { ap: adjustedTotalAP, hp: adjustedTotalHP, originalAP: adjustedOriginalAP, originalHP: adjustedOriginalHP };
   }
 
   /**

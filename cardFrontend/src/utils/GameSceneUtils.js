@@ -50,6 +50,12 @@ export default class GameSceneUtils {
             const zoneType = zoneKey;
             card.setZonePlacement(zoneType !== 'hand', zoneType, !isOpponent);
 
+            if (card.setFieldCardValue) {
+              const zoneFieldValue = zoneData?.fieldCardValue || cardData?.fieldCardValue || null;
+              const source = zoneType === 'base' || zoneType.startsWith('slot') ? 'slot' : 'card';
+              card.setFieldCardValue(zoneFieldValue, { source });
+            }
+
             if (zoneObject.cards) {
               zoneObject.cards.push(card);
             }

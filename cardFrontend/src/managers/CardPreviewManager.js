@@ -176,12 +176,14 @@ export default class CardPreviewManager {
     // Apply total labels visibility rule: only pilot shows totals when both present
     if (this.previewCard?.setOverlayOverrides) {
       this.previewCard.setOverlayOverrides({ totalsVisible: false });
+      this.previewCard.applyZoneOverlayRules?.();
       console.log('[CardPreviewManager] Hiding total labels on unit preview (pilot present)');
     }
 
     if (this.previewPilotCard?.configureTotalLabelsToShow) {
       const { totalAP, totalHP } = this.previewPilotCard.updateCalculatedTotalStats(unitCard, unitCard.isRested);
       this.previewPilotCard.configureTotalLabelsToShow(totalAP, totalHP, { zone: this.previewPilotCard.zoneContext?.zoneType || 'slot1' });
+      this.previewPilotCard.applyZoneOverlayRules?.();
       console.log('[CardPreviewManager] Showing total labels on pilot preview');
     }
 
@@ -208,7 +210,8 @@ export default class CardPreviewManager {
       scale: 3.5,
       depth,
       interactive: false,
-      zone: targetZone
+      zone: targetZone,
+      fieldCardValue: cardData?.fieldCardValue || null
     });
   }
 

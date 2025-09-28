@@ -24,7 +24,8 @@ export default class CardFactory {
       slotName,
       cardType = 'unit',
       playerType = 'player',
-      gameStateManager
+      gameStateManager,
+      fieldCardValue = cardData?.fieldCardValue || null
     } = options;
     
     const card = new Card(scene, x, y, cardData, {
@@ -46,7 +47,11 @@ export default class CardFactory {
     
     // Set up rest state
     this._setupRestState(card, cardData);
-    
+
+    if (card.setFieldCardValue) {
+      card.setFieldCardValue(fieldCardValue, { source: 'slot' });
+    }
+
     return card;
   }
   
@@ -62,7 +67,7 @@ export default class CardFactory {
    * @returns {Card} Created base card
    */
   static createBaseCard(scene, cardData, x, y, options = {}) {
-    const { gameStateManager, scale = 0.9 } = options;
+    const { gameStateManager, scale = 0.9, fieldCardValue = cardData?.fieldCardValue || null } = options;
     
     const card = new Card(scene, x, y, cardData, {
       scale,
@@ -79,6 +84,10 @@ export default class CardFactory {
     // Disable interaction for base cards
     this._setupInteraction(card, false);
     
+    if (card.setFieldCardValue) {
+      card.setFieldCardValue(fieldCardValue, { source: 'card' });
+    }
+
     // Update total labels for base cards (overlay visibility handled by zone context)
     card.updateCalculatedTotalLabels(null, cardData.isRested);
     
@@ -137,7 +146,8 @@ export default class CardFactory {
       scale = 3.5, 
       depth = 2000, 
       interactive = false,
-      zone = 'slot1'
+      zone = 'slot1',
+      fieldCardValue = cardData?.fieldCardValue || null
     } = options;
     
     const card = new Card(scene, x, y, cardData, {
@@ -153,6 +163,11 @@ export default class CardFactory {
       isInZone: zone !== 'hand',
       isPlayerZone: true
     });
+
+    if (card.setFieldCardValue) {
+      const source = zone === 'base' || zone.startsWith('slot') ? 'slot' : 'card';
+      card.setFieldCardValue(fieldCardValue, { source });
+    }
 
     return card;
   }
@@ -172,7 +187,7 @@ export default class CardFactory {
    * @returns {Card} Created dialog card
    */
   static createDialogCard(scene, cardData, x, y, options = {}) {
-    const { gameStateManager, dialogScale, totalAP, totalHP, interactive = true, zone = 'hand' } = options;
+    const { gameStateManager, dialogScale, totalAP, totalHP, interactive = true, zone = 'hand', fieldCardValue = cardData?.fieldCardValue || null } = options;
     
     const card = new Card(scene, x, y, cardData, {
       usePreview: true,
@@ -189,6 +204,11 @@ export default class CardFactory {
       isInZone: zone !== 'hand',
       isPlayerZone: true
     });
+
+    if (card.setFieldCardValue) {
+      const source = zone === 'base' || zone.startsWith('slot') ? 'slot' : 'card';
+      card.setFieldCardValue(fieldCardValue, { source });
+    }
     
     const shouldShowTotals = totalAP !== undefined && totalHP !== undefined && typeof zone === 'string' && (zone === 'base' || zone.startsWith('slot'));
     if (shouldShowTotals) {
@@ -219,7 +239,7 @@ export default class CardFactory {
    * @returns {Card} Created hand card
    */
   static createHandCard(scene, cardData, x, y, options = {}) {
-    const { gameStateManager, scale = 1.1, depth = 0 } = options;
+    const { gameStateManager, scale = 1.1, depth = 0, fieldCardValue = cardData?.fieldCardValue || null } = options;
     
     const card = new Card(scene, x, y, cardData, {
       scale,
@@ -233,6 +253,10 @@ export default class CardFactory {
       isInZone: false,
       isPlayerZone: true
     });
+
+    if (card.setFieldCardValue) {
+      card.setFieldCardValue(fieldCardValue, { source: 'card' });
+    }
 
     return card;
   }
