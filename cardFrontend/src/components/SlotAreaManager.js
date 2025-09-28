@@ -169,6 +169,7 @@ export default class SlotAreaManager {
     const unitIsRested = unitData?.isRested ?? slotCards.unit?.fullCardData?.isRested ?? false;
     const pilotIsRested = pilotData?.isRested ?? slotCards.pilot?.fullCardData?.isRested ?? unitIsRested;
 
+    
     const normalizedSlotField = this.applySlotFieldValue(slotCards, slotFieldValue, unitData, pilotData, unitIsRested, pilotIsRested);
 
     const effectiveFieldValue = normalizedSlotField
@@ -188,7 +189,6 @@ export default class SlotAreaManager {
       totalAP = totals.totalAP;
       totalHP = totals.totalHP;
     }
-
     SlotAreaManager.configureSlotTotalLabels(slotCards.unit, slotCards.pilot, totalAP, totalHP, {
       unitIsRested,
       pilotIsRested

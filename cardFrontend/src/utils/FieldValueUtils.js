@@ -25,14 +25,12 @@ export function resolveFieldCardTotals({ slotFieldValue, existingFieldValue, ful
 
   const normalizedFieldValue = normalizeFieldCardValue(prioritizedFieldValue);
 
-  const originalAP = normalizedFieldValue?.totalOriginalAP
-    ?? fullCardData?.originalAP
+  const originalAP = fullCardData?.originalAP
     ?? resolvedCard?.originalAP
     ?? resolvedCard?.ap
     ?? 0;
 
-  const originalHP = normalizedFieldValue?.totalOriginalHP
-    ?? fullCardData?.originalHP
+  const originalHP = fullCardData?.originalHP
     ?? resolvedCard?.originalHP
     ?? resolvedCard?.hp
     ?? 0;
