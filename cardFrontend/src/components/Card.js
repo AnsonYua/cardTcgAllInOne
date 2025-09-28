@@ -737,10 +737,10 @@ export default class Card extends Phaser.GameObjects.Container {
    * @returns {{ap: number, hp: number, originalAP: number, originalHP: number}} Current and original AP/HP values
    */
   getAPandHPFromCardData() {
+    /*
     if (!this.fullCardData) {
       return { ap: 0, hp: 0, originalAP: 0, originalHP: 0 };
-    }
-
+    }*/
     const resolvedCardData = this.fullCardData.cardData || this.cardData || {};
     const { fieldCardValue, totalAP, totalHP, originalAP, originalHP } = resolveFieldCardTotals({
       slotFieldValue: this.slotFieldCardValue,
@@ -748,10 +748,8 @@ export default class Card extends Phaser.GameObjects.Container {
       fullCardData: this.fullCardData,
       cardData: resolvedCardData
     });
-
     let adjustedOriginalAP = originalAP;
     let adjustedOriginalHP = originalHP;
-
     if (resolvedCardData.cardType === 'command' && this.hasCommandPilotDesignation()) {
       const designateRule = resolvedCardData.effects?.rules?.find(rule => {
         const action = rule.effect?.action || rule.action;

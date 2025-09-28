@@ -226,50 +226,44 @@
                 "ap": 1,
                 "hp": 0,
                 "effects": {
-                  "description": [
+                "description": [
                     "【Main】Choose 1 friendly Unit. It recovers 3 HP.",
                     "【Pilot】[Kai Shiden]"
-                  ],
-                  "rules": [
+                ],
+                "rules": [
                     {
-                      "effectId": "main_heal_friendly",
-                      "type": "activated",
-                      "timing": [
-                        "MAIN_PHASE"
-                      ],
-                      "target": {
-                        "type": "unit",
-                        "scope": "self",
-                        "count": 1
-                      },
-                      "effect": {
+                        "effectId": "main_heal_friendly",
+                        "type": "activated",
+                        "timing": [
+                            "MAIN_PHASE"
+                        ],
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "count": 1
+                        },
                         "action": "heal",
                         "parameters": {
-                          "amount": 3
-                        },
-                        "duration": "instant"
-                      }
+                            "value": 3
+                        }
                     },
                     {
-                      "effectId": "pilot_designation",
-                      "type": "special",
-                      "trigger": "continuous",
-                      "target": {
-                        "type": "pilot",
-                        "scope": "any"
-                      },
-                      "effect": {
+                        "effectId": "pilot_designation",
+                        "type": "special",
+                        "trigger": "continuous",
+                        "target": {
+                            "type": "pilot",
+                            "scope": "any"
+                        },
                         "action": "designate_pilot",
                         "parameters": {
-                          "pilotName": "Kai Shiden",
-                          "AP": 1,
-                          "HP": 0
-                        },
-                        "duration": "permanent"
-                      }
+                            "pilotName": "Kai Shiden",
+                            "AP": 1,
+                            "HP": 0
+                        }
                     }
-                  ]
-                }
+                ]
+            }
               }
             },
             {
@@ -711,50 +705,44 @@
                 "ap": 1,
                 "hp": 0,
                 "effects": {
-                  "description": [
+                "description": [
                     "【Main】Choose 1 friendly Unit. It recovers 3 HP.",
                     "【Pilot】[Kai Shiden]"
-                  ],
-                  "rules": [
+                ],
+                "rules": [
                     {
-                      "effectId": "main_heal_friendly",
-                      "type": "activated",
-                      "timing": [
-                        "MAIN_PHASE"
-                      ],
-                      "target": {
-                        "type": "unit",
-                        "scope": "self",
-                        "count": 1
-                      },
-                      "effect": {
+                        "effectId": "main_heal_friendly",
+                        "type": "activated",
+                        "timing": [
+                            "MAIN_PHASE"
+                        ],
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "count": 1
+                        },
                         "action": "heal",
                         "parameters": {
-                          "amount": 3
-                        },
-                        "duration": "instant"
-                      }
+                            "value": 3
+                        }
                     },
                     {
-                      "effectId": "pilot_designation",
-                      "type": "special",
-                      "trigger": "continuous",
-                      "target": {
-                        "type": "pilot",
-                        "scope": "any"
-                      },
-                      "effect": {
+                        "effectId": "pilot_designation",
+                        "type": "special",
+                        "trigger": "continuous",
+                        "target": {
+                            "type": "pilot",
+                            "scope": "any"
+                        },
                         "action": "designate_pilot",
                         "parameters": {
-                          "pilotName": "Kai Shiden",
-                          "AP": 1,
-                          "HP": 0
-                        },
-                        "duration": "permanent"
-                      }
+                            "pilotName": "Kai Shiden",
+                            "AP": 1,
+                            "HP": 0
+                        }
                     }
-                  ]
-                }
+                ]
+            }
               },
               "placedAt": 1757435126398,
               "placedBy": "playerId_1",
@@ -2117,50 +2105,44 @@
                 "ap": 1,
                 "hp": 0,
                 "effects": {
-                  "description": [
+                "description": [
                     "【Main】Choose 1 friendly Unit. It recovers 3 HP.",
                     "【Pilot】[Kai Shiden]"
-                  ],
-                  "rules": [
+                ],
+                "rules": [
                     {
-                      "effectId": "main_heal_friendly",
-                      "type": "activated",
-                      "timing": [
-                        "MAIN_PHASE"
-                      ],
-                      "target": {
-                        "type": "unit",
-                        "scope": "self",
-                        "count": 1
-                      },
-                      "effect": {
+                        "effectId": "main_heal_friendly",
+                        "type": "activated",
+                        "timing": [
+                            "MAIN_PHASE"
+                        ],
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "count": 1
+                        },
                         "action": "heal",
                         "parameters": {
-                          "amount": 3
-                        },
-                        "duration": "instant"
-                      }
+                            "value": 3
+                        }
                     },
                     {
-                      "effectId": "pilot_designation",
-                      "type": "special",
-                      "trigger": "continuous",
-                      "target": {
-                        "type": "pilot",
-                        "scope": "any"
-                      },
-                      "effect": {
+                        "effectId": "pilot_designation",
+                        "type": "special",
+                        "trigger": "continuous",
+                        "target": {
+                            "type": "pilot",
+                            "scope": "any"
+                        },
                         "action": "designate_pilot",
                         "parameters": {
-                          "pilotName": "Kai Shiden",
-                          "AP": 1,
-                          "HP": 0
-                        },
-                        "duration": "permanent"
-                      }
+                            "pilotName": "Kai Shiden",
+                            "AP": 1,
+                            "HP": 0
+                        }
                     }
-                  ]
-                }
+                ]
+            }
               },
               "placedAt": 1757435089332,
               "placedBy": "playerId_2",
