@@ -50,13 +50,6 @@ export function buildSlotTotalsField(slotFieldValue, unitData, pilotData) {
       totalHP: normalizedSlot.totalHP ?? 0
     };
   }
-
-  const totals = CardStatCalculator.calculateSlotDataTotals({
-    fieldCardValue: slotFieldValue,
-    unit: unitData || null,
-    pilot: pilotData || null
-  });
-
   const fallbackField = normalizeFieldCardValue({
     totalOriginalAP: 0,
     totalOriginalHP: 0,
@@ -65,9 +58,9 @@ export function buildSlotTotalsField(slotFieldValue, unitData, pilotData) {
     totalContinueModifyAP: 0,
     totalContinueModifyHP: 0,
     totalDamageReceived: 0,
-    totalAP: totals.totalAP ?? 0,
-    totalHP: totals.totalHP ?? 0,
-    isRested: slotRested
+    totalAP:  0,
+    totalHP:  0,
+    isRested: false
   });
 
   return {
@@ -77,32 +70,134 @@ export function buildSlotTotalsField(slotFieldValue, unitData, pilotData) {
   };
 }
 
-export function applyOverlayToCard(card, cardData, options = {}) {
-  if (!card || !cardData) {
+function assignCardFieldValues(card, cardData, slotTotals, useSlotTotals) {
+  if (!card?.setFieldCardValue) {
     return;
   }
 
-  const { slotTotals = null, useSlotTotals = false } = options;
-
-  if (card.setFieldCardValue) {
-    card.setFieldCardValue(cardData.fieldCardValue || null, { source: 'card', updateOverlay: false });
-    const slotValue = useSlotTotals ? slotTotals : null;
-    card.setFieldCardValue(slotValue, { source: 'slot', updateOverlay: false });
-  }
-
-  if (card.refreshOverlayStats) {
-    card.refreshOverlayStats(cardData.isRested);
-  } else if (card.powerOverlay) {
-    const { originalAP, originalHP } = getOriginalStatsFromData(cardData);
-    card.powerOverlay.setBaseStats(originalAP, originalHP);
-    const totalAP = useSlotTotals && slotTotals ? slotTotals.totalAP ?? originalAP : originalAP;
-    const totalHP = useSlotTotals && slotTotals ? slotTotals.totalHP ?? originalHP : originalHP;
-    card.powerOverlay.updateTotalStats(totalAP, totalHP, cardData.isRested, originalAP, originalHP);
-  }
-
-  card.applyZoneOverlayRules?.();
+  card.setFieldCardValue(cardData.fieldCardValue || null, { source: 'card', updateOverlay: false });
+  const slotValue = useSlotTotals ? slotTotals : null;
+  card.setFieldCardValue(slotValue, { source: 'slot', updateOverlay: false });
 }
 
+function setCardBaseStats(card, cardData) {
+  const baseStats = getOriginalStatsFromData(cardData);
+  if (card?.powerOverlay?.setBaseStats) {
+    card.powerOverlay.setBaseStats(baseStats.originalAP, baseStats.originalHP);
+  }
+  return baseStats;
+}
+
+function resolveCardTotals({ card, cardData, slotTotals, useSlotTotals, baseStats }) {
+  const totals = {
+    totalAP: baseStats.originalAP,
+    totalHP: baseStats.originalHP,
+    isRested: Boolean(cardData?.isRested)
+  };
+
+  if (useSlotTotals && slotTotals) {
+    totals.totalAP = slotTotals.totalAP ?? totals.totalAP;
+    totals.totalHP = slotTotals.totalHP ?? totals.totalHP;
+    if (slotTotals.isRested !== undefined && slotTotals.isRested !== null) {
+      totals.isRested = !!slotTotals.isRested;
+    }
+    return totals;
+  }
+
+  if (typeof card?.getAPandHPFromCardData === 'function') {
+    const derived = card.getAPandHPFromCardData();
+    if (derived) {
+      if (typeof derived.ap === 'number') {
+        totals.totalAP = derived.ap;
+      }
+      if (typeof derived.hp === 'number') {
+        totals.totalHP = derived.hp;
+      }
+    }
+  } else {
+    const fallbackTotals = CardStatCalculator.getTotalApAndHpByCardData(cardData) || {};
+    if (typeof fallbackTotals.totalAP === 'number') {
+      totals.totalAP = fallbackTotals.totalAP;
+    }
+    if (typeof fallbackTotals.totalHP === 'number') {
+      totals.totalHP = fallbackTotals.totalHP;
+    }
+  }
+
+  return totals;
+}
+
+function setCardTotalsAndStatus(card, totals, baseStats) {
+  if (!card) {
+    return;
+  }
+
+  if (card.powerOverlay?.setBaseStats) {
+    card.powerOverlay.setBaseStats(
+        baseStats.originalAP,
+        baseStats.originalHP
+      );
+  }
+
+  if (card.powerOverlay?.setCardTotalAPandHP) {
+    card.powerOverlay.setCardTotalAPandHP(
+        totals.totalAP,
+        totals.totalHP,
+      );
+  }
+
+  if (card.powerOverlay?.setCardStatus) {
+    card.powerOverlay.setCardStatus(
+        totals.isRested
+      );
+  }
+}
+
+function collectCardOverlayState(card, cardData, options = {}) {
+  if (!card || !cardData) {
+    return null;
+  }
+
+  const { slotTotals, useSlotTotals } = options;
+
+  assignCardFieldValues(card, cardData, slotTotals, useSlotTotals);
+  const baseStats = setCardBaseStats(card, cardData);
+  const totals = resolveCardTotals({
+    card,
+    cardData,
+    slotTotals: useSlotTotals ? slotTotals : null,
+    useSlotTotals,
+    baseStats
+  });
+
+  return {
+    card,
+    baseStats,
+    totals
+  };
+}
+
+// Applies base + total stats to a card and refreshes its overlay without triggering zone rules twice
+export function applyOverlayToCard(card, cardData, options = {}) {
+  if (!card || !cardData) {
+    return null;
+  }
+
+  const { slotTotals = null, useSlotTotals = false } = options;
+  const state = collectCardOverlayState(card, cardData, {
+    slotTotals,
+    useSlotTotals
+  });
+
+  if (state) {
+    setCardTotalsAndStatus(state.card, state.totals, state.baseStats);
+    state.card.applyZoneOverlayRules?.();
+  }
+
+  return state;
+}
+
+// Calculates slot totals, pushes printed stats, and reconciles slot-level overrides for unit/pilot cards
 export function applySlotOverlaySet({ unitCard, pilotCard, unitData, pilotData, slotFieldValue }) {
   const hasUnit = !!unitCard && !!unitData;
   const hasPilot = !!pilotCard && !!pilotData;
@@ -122,29 +217,32 @@ export function applySlotOverlaySet({ unitCard, pilotCard, unitData, pilotData, 
   const pilotShowsTotals = hasPilot;
   const unitShowsTotals = hasUnit && !hasPilot;
 
-  if (hasUnit) {
-    applyOverlayToCard(unitCard, unitData, {
-      slotTotals: unitShowsTotals ? slotTotalsField : null,
-      useSlotTotals: unitShowsTotals
-    });
-  }
+  const unitState = hasUnit
+    ? collectCardOverlayState(unitCard, unitData, {
+        slotTotals: unitShowsTotals ? slotTotalsField : null,
+        useSlotTotals: unitShowsTotals
+      })
+    : null;
 
-  if (hasPilot) {
-    applyOverlayToCard(pilotCard, pilotData, {
-      slotTotals: pilotShowsTotals ? slotTotalsField : null,
-      useSlotTotals: pilotShowsTotals
-    });
-  }
+  const pilotState = hasPilot
+    ? collectCardOverlayState(pilotCard, pilotData, {
+        slotTotals: pilotShowsTotals ? slotTotalsField : null,
+        useSlotTotals: pilotShowsTotals
+      })
+    : null;
 
   return {
     totalAP,
     totalHP,
     slotTotalsField,
     unitShowsTotals,
-    pilotShowsTotals
+    pilotShowsTotals,
+    unitState,
+    pilotState
   };
 }
 
+// Applies the "only one totals label" rule across unit/pilot, respecting optional overrides
 export function applySlotTotalsVisibility(unitCard, pilotCard, options = {}) {
   const hasUnit = !!unitCard;
   const hasPilot = !!pilotCard;
@@ -169,6 +267,22 @@ export function applySlotTotalsVisibility(unitCard, pilotCard, options = {}) {
       totalsZoneOverride: pilotVisible ? zone : null
     }, { apply: false });
     pilotCard.applyZoneOverlayRules?.();
+  }
+}
+
+export function finalizeSlotOverlayState(slotState) {
+  if (!slotState) {
+    return;
+  }
+
+  if (slotState.unitState) {
+    setCardTotalsAndStatus(slotState.unitState.card, slotState.unitState.totals, slotState.unitState.baseStats);
+    slotState.unitState.card.applyZoneOverlayRules?.();
+  }
+
+  if (slotState.pilotState) {
+    setCardTotalsAndStatus(slotState.pilotState.card, slotState.pilotState.totals, slotState.pilotState.baseStats);
+    slotState.pilotState.card.applyZoneOverlayRules?.();
   }
 }
 

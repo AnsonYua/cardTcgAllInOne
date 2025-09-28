@@ -7,7 +7,8 @@ import CardStatCalculator from '../utils/CardStatCalculator.js';
 import CardFactory from '../utils/CardFactory.js';
 import CardInteractionHelper from '../utils/CardInteractionHelper.js';
 import UIGraphicsHelper from '../utils/UIGraphicsHelper.js';
-import { applySlotOverlaySet, applySlotTotalsVisibility } from '../utils/PowerOverlayCoordinator.js';
+import { applySlotOverlaySet, applySlotTotalsVisibility, finalizeSlotOverlayState } from '../utils/PowerOverlayCoordinator.js';
+import { normalizeFieldCardValue } from '../utils/FieldValueUtils.js';
 
 /**
  * DialogUIManager - Handles all dialog UI creation, interaction, and management
@@ -752,6 +753,9 @@ export default class DialogUIManager {
       pilotShowsTotals: overlayState.pilotShowsTotals,
       zone: slotZone
     });
+
+    // Step 3: commit totals and rested status to the dialog cards
+    finalizeSlotOverlayState(overlayState);
 
     // Store references for interaction handling
     slotContainer.unitCard = unitCard;
@@ -1501,7 +1505,11 @@ export default class DialogUIManager {
     const pilot = slot.pilot;
     
     // Calculate slot-level totals (unit + pilot combined)
-    const { totalAP, totalHP } = CardStatCalculator.calculateSlotDataTotals(slot);
+    const slotFieldValue = normalizeFieldCardValue(slot.fieldCardValue);
+    const unitTotals = CardStatCalculator.getTotalApAndHpByCardData(unit);
+    const pilotTotals = CardStatCalculator.getTotalApAndHpByCardData(pilot);
+    const totalAP = slotFieldValue?.totalAP ?? (unitTotals.totalAP ?? 0) + (pilotTotals.totalAP ?? 0);
+    const totalHP = slotFieldValue?.totalHP ?? (unitTotals.totalHP ?? 0) + (pilotTotals.totalHP ?? 0);
     
     // Determine primary card for display (unit if present, otherwise pilot)
     const primaryCard = unit || pilot;

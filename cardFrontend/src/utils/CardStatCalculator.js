@@ -54,24 +54,4 @@ export default class CardStatCalculator {
     };
   }
 
-  /**
-   * Calculate total AP/HP from raw slot data (no Card instances).
-   */
-  static calculateSlotDataTotals(slotData) {
-    const slotFieldValue = normalizeFieldCardValue(slotData?.fieldCardValue);
-    if (slotFieldValue) {
-      return {
-        totalAP: slotFieldValue.totalAP,
-        totalHP: slotFieldValue.totalHP
-      };
-    }
-
-    const unitTotals = this.getTotalApAndHpByCardData(slotData?.unit || {});
-    const pilotTotals = this.getTotalApAndHpByCardData(slotData?.pilot || {});
-
-    return {
-      totalAP: (unitTotals?.totalAP ?? 0) + (pilotTotals?.totalAP ?? 0),
-      totalHP: (unitTotals?.totalHP ?? 0) + (pilotTotals?.totalHP ?? 0)
-    };
-  }
 }

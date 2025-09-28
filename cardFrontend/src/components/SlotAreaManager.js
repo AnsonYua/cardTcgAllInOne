@@ -1,7 +1,7 @@
 import Card from './Card.js';
 import CardStatCalculator from '../utils/CardStatCalculator.js';
 import CardFactory from '../utils/CardFactory.js';
-import { applySlotOverlaySet, applySlotTotalsVisibility } from '../utils/PowerOverlayCoordinator.js';
+import { applySlotOverlaySet, applySlotTotalsVisibility, finalizeSlotOverlayState } from '../utils/PowerOverlayCoordinator.js';
 
 export default class SlotAreaManager {
   constructor(scene, gameStateManager) {
@@ -68,26 +68,24 @@ export default class SlotAreaManager {
     const slotCards = cardArray[slotName];
     const slotFieldValue = slotData?.fieldCardValue || null;
 
-    const unitCard = this.syncSlotCard({
+    const unitCard = this.prepareSlotCardInstance({
       slotCards,
       cardData: slotData?.unit,
       cardType: 'unit',
       playerType,
       slotName,
       x: slotPosition.x,
-      y: slotPosition.y,
-      slotFieldValue
+      y: slotPosition.y
     });
 
-    const pilotCard = this.syncSlotCard({
+    const pilotCard = this.prepareSlotCardInstance({
       slotCards,
       cardData: slotData?.pilot,
       cardType: 'pilot',
       playerType,
       slotName,
       x: slotPosition.x,
-      y: slotPosition.y + 42,
-      slotFieldValue
+      y: slotPosition.y + 42
     });
 
     this.updateSlotPowerOverlays({
@@ -107,7 +105,7 @@ export default class SlotAreaManager {
     return zones ? zones[slotName] : null;
   }
 
-  syncSlotCard({ slotCards, cardData, cardType, playerType, slotName, x, y, slotFieldValue }) {
+  prepareSlotCardInstance({ slotCards, cardData, cardType, playerType, slotName, x, y }) {
     const existing = slotCards[cardType];
 
     if (!cardData) {
@@ -120,16 +118,16 @@ export default class SlotAreaManager {
 
     if (!existing) {
       console.log(`Creating ${playerType} ${slotName} ${cardType} card:`, cardData.cardId || cardData.id);
-      const created = this.createSlotCard(cardData, x, y, slotName, cardType, playerType, slotFieldValue);
+      const created = this.createSlotCard(cardData, x, y, slotName, cardType, playerType);
       slotCards[cardType] = created;
       return created;
     }
 
-    this.hydrateSlotCard(existing, cardData);
+    this.updateZoneCardData(existing, cardData);
     return existing;
   }
 
-  hydrateSlotCard(card, cardData) {
+  updateZoneCardData(card, cardData) {
     if (!card || !cardData) {
       return;
     }
@@ -149,19 +147,7 @@ export default class SlotAreaManager {
     const unitCard = slotCards.unit;
     const pilotCard = slotCards.pilot;
 
-    if (!unitCard && !pilotCard) {
-      this.updateSlotTotalLabelsVisibility(playerType, slotName, { unit: false, pilot: false });
-      return;
-    }
-
-    if (unitCard && unitData) {
-      this.hydrateSlotCard(unitCard, unitData);
-    }
-
-    if (pilotCard && pilotData) {
-      this.hydrateSlotCard(pilotCard, pilotData);
-    }
-
+    // Step 1: align card data + base stats without committing totals yet
     const overlayState = applySlotOverlaySet({
       unitCard: unitCard && unitData ? unitCard : null,
       pilotCard: pilotCard && pilotData ? pilotCard : null,
@@ -170,22 +156,27 @@ export default class SlotAreaManager {
       slotFieldValue
     });
 
-    this.updateSlotTotalLabelsVisibility(playerType, slotName, {
-      unit: overlayState.unitShowsTotals,
-      pilot: overlayState.pilotShowsTotals
+    // Step 2: decide which card should display combined totals for the slot
+    applySlotTotalsVisibility(unitCard, pilotCard, {
+      unitShowsTotals: overlayState.unitShowsTotals,
+      pilotShowsTotals: overlayState.pilotShowsTotals,
+      zone: slotName
     });
+
+    // Step 3: push total AP/HP and rested status into the overlays
+    finalizeSlotOverlayState(overlayState);
   }
 
 
 
-  createSlotCard(cardData, x, y, slotName, cardType = 'unit', playerType = 'player', slotFieldValue = null) {
+  createSlotCard(cardData, x, y, slotName, cardType = 'unit', playerType = 'player') {
     try {
       const card = CardFactory.createSlotCard(this.scene, cardData, x, y, {
         slotName,
         cardType,
         playerType,
         gameStateManager: this.gameStateManager,
-        fieldCardValue: slotFieldValue || cardData?.fieldCardValue || null
+        fieldCardValue: cardData?.fieldCardValue || null
       });
       
       console.log(`✅ Created ${cardType} slot card for ${slotName}:`, cardData.cardId || cardData.id);
@@ -197,105 +188,6 @@ export default class SlotAreaManager {
     }
   }
 
-
-
-  // ============ TOTAL LABELS MANAGEMENT ============
-
-  /**
-   * Update slot total AP and HP labels (both values and visibility)
-   * Comprehensive function that handles all slot scenarios and card data updates
-   * @param {string} playerType - 'player' or 'opponent'
-   * @param {string} slotName - slot1, slot2, etc.
-   * @param {Object} unitData - Optional unit card data to update
-   * @param {Object} pilotData - Optional pilot card data to update
-   */
-  updateSlotTotalLabels(playerType, slotName, unitData = null, pilotData = null, slotFieldValue = null) {
-    const slotCards = this.getSlotCards(playerType, slotName);
-
-    if (slotCards.unit && unitData) {
-      this.hydrateSlotCard(slotCards.unit, unitData);
-    }
-    if (slotCards.pilot && pilotData) {
-      this.hydrateSlotCard(slotCards.pilot, pilotData);
-    }
-
-    this.updateSlotPowerOverlays({
-      slotCards,
-      slotFieldValue,
-      unitData,
-      pilotData,
-      slotName,
-      playerType
-    });
-  }
-
-  /**
-   * Update total labels visibility for all cards in a slot
-   * Rule: If both unit and pilot are present, only pilot shows total labels
-   * @param {string} playerType - 'player' or 'opponent'
-   * @param {string} slotName - slot1, slot2, etc.
-   */
-  updateSlotTotalLabelsVisibility(playerType, slotName, visibilityOverrides = null) {
-    const slotCards = this.getSlotCards(playerType, slotName);
-    applySlotTotalsVisibility(slotCards.unit, slotCards.pilot, {
-      unitShowsTotals: visibilityOverrides?.unit,
-      pilotShowsTotals: visibilityOverrides?.pilot,
-      zone: slotName
-    });
-  }
-
-
-  // ============ DEBUGGING METHODS ============
-
-  /**
-   * Debug function to trace total label calculations for a specific slot
-   * @param {string} playerType - 'player' or 'opponent'
-   * @param {string} slotName - slot1, slot2, etc.
-   */
-  debugSlotTotals(playerType, slotName) {
-    console.log(`\n=== DEBUGGING SLOT TOTALS: ${playerType} ${slotName} ===`);
-    
-    const slotCards = this.getSlotCards(playerType, slotName);
-    const hasUnit = slotCards.unit !== null;
-    const hasPilot = slotCards.pilot !== null;
-    
-    console.log(`Has unit: ${hasUnit}, Has pilot: ${hasPilot}`);
-    
-    if (hasUnit) {
-      console.log('Unit card data:', {
-        cardId: slotCards.unit.cardData?.id,
-        fullCardData: slotCards.unit.fullCardData,
-        fieldCardValue: slotCards.unit.fullCardData?.fieldCardValue
-      });
-    }
-
-    if (hasPilot) {
-      console.log('Pilot card data:', {
-        cardId: slotCards.pilot.cardData?.id,
-        fullCardData: slotCards.pilot.fullCardData,
-        fieldCardValue: slotCards.pilot.fullCardData?.fieldCardValue
-      });
-    }
-    
-    // Calculate totals for debugging
-    if (hasUnit || hasPilot) {
-      const { totalAP, totalHP } = CardStatCalculator.calculateTotalInSlot(slotCards.unit, slotCards.pilot);
-      console.log(`Calculated totals: AP=${totalAP}, HP=${totalHP}`);
-      
-      // Check current displayed values
-      if (hasUnit && slotCards.unit.powerOverlay) {
-        console.log('Unit total labels visible:', slotCards.unit.powerOverlay.totalApText?.visible, slotCards.unit.powerOverlay.totalHpText?.visible);
-        console.log('Unit total labels text:', slotCards.unit.powerOverlay.totalApText?.text, slotCards.unit.powerOverlay.totalHpText?.text);
-      }
-      
-      if (hasPilot && slotCards.pilot.powerOverlay) {
-        console.log('Pilot total labels visible:', slotCards.pilot.powerOverlay.totalApText?.visible, slotCards.pilot.powerOverlay.totalHpText?.visible);
-        console.log('Pilot total labels text:', slotCards.pilot.powerOverlay.totalApText?.text, slotCards.pilot.powerOverlay.totalHpText?.text);
-      }
-    }
-    
-    console.log('=== END DEBUG ===\n');
-  }
 
   // ============ UTILITY METHODS ============
 
