@@ -147,7 +147,9 @@ export default class CardFactory {
       isInZone: zone !== 'hand',
       isPlayerZone: true
     });
-    card.powerOverlay.setTotalLabelsVisibility("hand");
+    if(card.powerOverlay){
+      card.powerOverlay.setTotalLabelsVisibility("hand");
+    }
 
     return card;
   }

@@ -254,7 +254,9 @@ export default class Card extends Phaser.GameObjects.Container {
     this.setInteractive();
 
     // Set up all interaction event handlers
-    this.on('pointerover', this.handlePointerOver, this);
+    if(!this.options.handleOutside){
+      this.on('pointerover', this.handlePointerOver, this);
+    }
     this.on('pointerout', this.handlePointerOut, this);
     this.on('pointerdown', this.handlePointerDown, this);
     
@@ -313,7 +315,9 @@ export default class Card extends Phaser.GameObjects.Container {
   handlePointerOver(pointer, localX, localY, event) {
     
     this.setCursor('pointer');
-    this.emitLocationAwareEvent('hover');
+   // if(!this.options.handleOutside){
+        this.emitLocationAwareEvent('hover');
+   // }
   }
 
   /**

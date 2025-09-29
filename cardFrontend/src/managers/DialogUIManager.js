@@ -840,14 +840,20 @@ export default class DialogUIManager {
       console.warn('No card element provided for interaction setup');
       return;
     }
-    // Determine if this is a slot container (unit+pilot) or regular card
-    const isSlotContainer = cardElement.type === 'Container' && cardElement.slotData;
-
+    const matchSlotData = SlotAreaManager.getSlotFromCarduid(scene.gameStateManager, card.carduid);
+   /*
+    if (matchSlotData) {
+      this._setupSlotContainerInteraction(scene, card, cardElement, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements);
+    }else{
+     
+    }*/
+     this._setupSlotContainerInteraction(scene, card, cardElement, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements);
+    /*
     if (isSlotContainer) {
       this._setupSlotContainerInteraction(scene, card, cardElement, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements);
     } else {
       this._setupRegularCardInteraction(scene, card, cardElement, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements);
-    }
+    }*/
   }
 
   /**
@@ -872,7 +878,7 @@ export default class DialogUIManager {
     };
 
     // Use CardInteractionHelper to set up slot container interaction
-    CardInteractionHelper.setupSlotContainerInteraction(scene, slotContainer, {
+    CardInteractionHelper.setupSlotContainerInteraction(scene,slotContainer, card, {
       width: interactiveWidth,
       height: interactiveHeight,
       unitCard: slotContainer.unitCard,

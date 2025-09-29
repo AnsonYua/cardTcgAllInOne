@@ -107,7 +107,7 @@ export default class CardInteractionHelper {
    * @param {Object} previewOptions.cardData - Card data for single preview
    * @returns {Object} Object with showHover and hideHover functions
    */
-  static createHoverWithPreview(scene, target, hoverOptions = {}, previewOptions = {}) {
+  static createHoverWithPreview(scene, target,card, hoverOptions = {}, previewOptions = {}) {
     const showHover = this.createShowHoverEffect(scene, target, hoverOptions);
     const hideHover = this.createHideHoverEffect(scene, target, hoverOptions);
 
@@ -118,36 +118,7 @@ export default class CardInteractionHelper {
       // Show card preview if CardPreviewManager available
       if (scene.cardPreviewManager) {
         try {
-          const { type, unitCard, pilotCard, cardData } = previewOptions;
-          
-          switch (type) {
-            case 'dual':
-              if (unitCard && pilotCard) {
-                scene.cardPreviewManager.showDualCardPreview(unitCard, pilotCard);
-                console.log('Card interaction dual preview shown');
-              }
-              break;
-            case 'slot':
-              // For slot containers, show dual preview if both unit and pilot are present
-              if (unitCard && pilotCard) {
-                scene.cardPreviewManager.showDualCardPreview(unitCard, pilotCard);
-                console.log('Card interaction slot dual preview shown');
-              } else if (unitCard) {
-                scene.cardPreviewManager.showCardPreview(unitCard.getCardFullData());
-                console.log('Card interaction slot unit preview shown');
-              } else if (pilotCard) {
-                scene.cardPreviewManager.showCardPreview(pilotCard.getCardFullData());
-                console.log('Card interaction slot pilot preview shown');
-              }
-              break;
-            case 'single':
-            default:
-              if (cardData) {
-                scene.cardPreviewManager.showCardPreview(cardData);
-                console.log('Card interaction single preview shown');
-              }
-              break;
-          }
+          scene.cardPreviewManager.showCardPreviewWithZone(card,"card-hover");
         } catch (error) {
           console.warn('Failed to show card preview in hover:', error);
         }
@@ -160,17 +131,7 @@ export default class CardInteractionHelper {
 
       // Hide card preview
       if (scene.cardPreviewManager) {
-        try {
-          const { type } = previewOptions;
-          if (type === 'slot') {
-            scene.cardPreviewManager.hideSlotCardPreview();
-          } else {
-            scene.cardPreviewManager.hideCardPreview();
-          }
-          console.log('Card interaction preview hidden');
-        } catch (error) {
-          console.warn('Failed to hide card preview in hover:', error);
-        }
+        scene.cardPreviewManager.hideCardPreview();
       }
     };
 
@@ -221,7 +182,7 @@ export default class CardInteractionHelper {
    * @param {Function} config.onSelection - Selection handler function
    * @param {Object} config.hoverOptions - Additional hover options (optional)
    */
-  static setupSlotContainerInteraction(scene, slotContainer, config) {
+  static setupSlotContainerInteraction(scene,slotContainer, card, config) {
     const { width, height, unitCard, pilotCard, onSelection, hoverOptions = {} } = config;
 
     // Set up interactive area for the container
@@ -248,8 +209,9 @@ export default class CardInteractionHelper {
     };
 
     const { showHover, hideHover } = this.createHoverWithPreview(
-      scene, 
+      scene,
       slotContainer, 
+      card, 
       combinedHoverOptions, 
       previewOptions
     );

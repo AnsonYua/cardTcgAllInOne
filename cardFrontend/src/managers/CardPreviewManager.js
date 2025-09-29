@@ -153,6 +153,10 @@ export default class CardPreviewManager {
       this.previewCard.destroy();
       this.previewCard = null;
     }
+    if (this.previewPilotCard) {
+      this.previewPilotCard.destroy();
+      this.previewPilotCard = null;
+    }
   }
 
   /**
