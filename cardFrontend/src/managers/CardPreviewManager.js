@@ -30,8 +30,8 @@ export default class CardPreviewManager {
       const slotFieldValue = matchSlotData.slotData?.fieldCardValue || null;
       const unitSource = matchSlotData.slotData?.unit || null;
       const pilotSource = matchSlotData.slotData?.pilot || null;
-      const unitData = unitSource?.cardData || unitSource || null;
-      const pilotData = pilotSource?.cardData || pilotSource || null;
+      const unitData = unitSource || null;
+      const pilotData = pilotSource || null;
       const previewX = this.scene.cardPreviewZone.x;
       const previewY = this.scene.cardPreviewZone.y;
       const zoneLabel = matchSlotData.slotName || 'slot1';
@@ -42,7 +42,7 @@ export default class CardPreviewManager {
 
         this.previewPilotCard = this._createPreviewCard(pilotData, previewX, previewY + 145, 1999, true);
         this.previewPilotCard.fullCardData = pilotData;
-
+        
         applyOverlayPipeline({
           unitCard: this.previewCard,
           pilotCard: this.previewPilotCard,
@@ -55,7 +55,7 @@ export default class CardPreviewManager {
         this.previewCard = this._createPreviewCard(unitData, previewX, previewY, 2000, true);
         this.previewCard.fullCardData = unitData;
         this.previewPilotCard = null;
-
+        
         applyOverlayPipeline({
           unitCard: this.previewCard,
           pilotCard: null,
@@ -64,19 +64,18 @@ export default class CardPreviewManager {
           slotFieldValue,
           zone: zoneLabel
         });
-      } else {
-        this.previewCard = this._createPreviewCard(cardData, previewX, previewY, 2000, false);
       }
       return;
     }
 
-    if (cardData.cardData.cardType == "base") {
+    if (cardData.cardData.cardType == "base" && _zoneType != "card-hover") {
+      console.log("_zoneType1111 ",_zoneType)
       this.previewCard = this._createPreviewCard(cardData, this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y, 2000, false);
       this.previewCard.fullCardData = cardData.cardData || cardData;
       this.previewPilotCard = null;
 
-      const baseData = cardData.cardData || cardData;
-      const slotFieldValue = cardData.fieldCardValue || baseData.fieldCardValue || null;
+      const baseData = cardData;
+      const slotFieldValue = cardData.fieldCardValue;
 
       applyOverlayPipeline({
         unitCard: this.previewCard,

@@ -80,20 +80,7 @@ export default class EnergyAreaManager {
       isInZone: true,
       isPlayerZone: playerType === 'player'
     });
-    
-    // Add hover preview functionality
-    card.on('pointerover', () => {
-      if (this.scene.showCardPreview) {
-        this.scene.showCardPreview(energyCard);
-      }
-    });
-    
-    card.on('pointerout', () => {
-      if (this.scene.hideCardPreview) {
-        this.scene.hideCardPreview();
-      }
-    });
-    
+
     // Add visual indicator for energy card state
     if (energyCard.isRested) {
       card.rotation = Math.PI / 2; // Rotate rested energy cards

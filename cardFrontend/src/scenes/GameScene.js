@@ -510,10 +510,6 @@ export default class GameScene extends Phaser.Scene {
 
   }
 
-  showCardPreview(cardData) {
-    this.cardPreviewManager.showCardPreview(cardData);
-  }
-
   /**
    * Creates a preview card component
    * @param {Object} cardData - The card data to display

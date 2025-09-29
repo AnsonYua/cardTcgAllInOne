@@ -684,8 +684,8 @@ export default class Card extends Phaser.GameObjects.Container {
         cardType: this.cardData?.cardType
       });
       this.add(this.powerOverlay);
-      this.powerOverlay.setBaseStats(this.cardData.ap,this.cardData.hp)
-
+      this.powerOverlay.setBaseStats(this.cardData.ap,this.cardData.hp);
+      this.powerOverlay.setTotalLabelsVisibility("hand");
     }
   }
   

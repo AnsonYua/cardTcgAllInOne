@@ -130,7 +130,7 @@ export default class CardFactory {
       scale = 3.5, 
       depth = 2000, 
       interactive = false,
-      zone = 'slot1',
+      zone = '',
       fieldCardValue = cardData?.fieldCardValue || null
     } = options;
     
@@ -147,6 +147,7 @@ export default class CardFactory {
       isInZone: zone !== 'hand',
       isPlayerZone: true
     });
+    card.powerOverlay.setTotalLabelsVisibility("hand");
 
     return card;
   }

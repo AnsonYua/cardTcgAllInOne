@@ -738,7 +738,7 @@ export default class DialogUIManager {
     });
 
     slotContainer.add(unitCard);
-
+    /*
     applyOverlayPipeline({
       unitCard,
       pilotCard,
@@ -746,7 +746,7 @@ export default class DialogUIManager {
       pilotData: slotTarget.pilot,
       slotFieldValue: slotTarget.fieldCardValue || null,
       zone: slotZone
-    });
+    });*/
 
     // Store references for interaction handling
     slotContainer.unitCard = unitCard;
@@ -912,7 +912,7 @@ export default class DialogUIManager {
       type: 'single',
       cardData: cardDataForPreview
     };
-
+    
     const { showHover, hideHover } = CardInteractionHelper.createHoverWithPreview(
       scene, 
       cardComponent, 
