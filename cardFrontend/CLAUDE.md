@@ -44,7 +44,7 @@ This playbook gives Claude Code the context it needs to work inside `cardFronten
 - Systems (`src/systems/ActionButtonManager.js`, `CardActionRegistry.js`) register context-driven buttons and the allowed actions per card.
 - Handlers (`src/handlers/`) encapsulate burst/deploy logic and call into the backend through `GameApiService`.
 - `GameApiService` wraps the raw `APIManager` (injected from MenuScene) with standardized response handling, UI messaging, and hand refresh behaviour.
-- Utilities include `CardAnimationUtils`, `CardInteractionHelper`, `CardDisplayUtils`, `PowerOverlayCoordinator`, `ItemDataResolver`, and `ZoneMapping`; prefer extending these helpers over inlining logic inside scenes.
+- Utilities include `CardAnimationUtils`, `CardInteractionHelper`, `CardDisplayUtils`, `OverlayStatUtils`, `ItemDataResolver`, and `ZoneMapping`; prefer extending these helpers over inlining logic inside scenes.
 - `src/mock/scenarioLoader.js` can load JSON fixtures from `shared/testScenarios/` for offline testing; keep new fixtures in that shared directory.
 
 ## Data & Event Flow

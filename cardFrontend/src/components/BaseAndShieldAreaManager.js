@@ -1,6 +1,6 @@
 import CardFactory from '../utils/CardFactory.js';
 import { mergeCardZoneData, applyOverlayPipeline } from '../utils/CardDisplayUtils.js';
-import { buildSingleCardTotals } from '../utils/PowerOverlayCoordinator.js';
+import OverlayStatUtils from '../utils/OverlayStatUtils.js';
 export default class BaseAndShieldAreaManager {
   constructor(scene, gameStateManager) {
     this.scene = scene;
@@ -129,7 +129,7 @@ export default class BaseAndShieldAreaManager {
       return;
     }
 
-    const slotFieldValue = buildSingleCardTotals(baseCardData);
+    const slotFieldValue = OverlayStatUtils.buildSingleCardTotals(baseCardData);
 
     // Reuse the same overlay pipeline as slot cards so base previews stay consistent
     applyOverlayPipeline({
@@ -189,7 +189,7 @@ export default class BaseAndShieldAreaManager {
 
     mergeCardZoneData(card, cardData);
 
-    const slotFieldValue = buildSingleCardTotals(cardData);
+    const slotFieldValue = OverlayStatUtils.buildSingleCardTotals(cardData);
 
     applyOverlayPipeline({
       unitCard: card,
@@ -214,7 +214,7 @@ export default class BaseAndShieldAreaManager {
     }
     console.log(`[BaseAndShieldAreaManager] Updating base card total labels for card:`, card.cardData?.id);
     
-    const slotFieldValue = buildSingleCardTotals(card.fullCardData);
+    const slotFieldValue = OverlayStatUtils.buildSingleCardTotals(card.fullCardData);
 
     applyOverlayPipeline({
       unitCard: card,

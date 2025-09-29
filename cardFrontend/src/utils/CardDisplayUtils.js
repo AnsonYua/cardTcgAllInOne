@@ -1,4 +1,4 @@
-import { applySlotOverlaySet, applySlotTotalsVisibility, finalizeSlotOverlayState } from './PowerOverlayCoordinator.js';
+import OverlayStatUtils from './OverlayStatUtils.js';
 
 // Synchronises card/component data with the latest zone payload without recreating sprites.
 // Used by slot/base managers so overlays can be refreshed in-place when the backend sends
@@ -31,7 +31,7 @@ export function applyOverlayPipeline({
   slotFieldValue,
   zone
 }) {
-  const overlayState = applySlotOverlaySet({
+  const overlayState = OverlayStatUtils.applySlotOverlaySet({
     unitCard: unitCard || null,
     pilotCard: pilotCard || null,
     unitData: unitData || null,
@@ -39,12 +39,12 @@ export function applyOverlayPipeline({
     slotFieldValue: slotFieldValue || null
   });
 
-  applySlotTotalsVisibility(unitCard || null, pilotCard || null, {
+  OverlayStatUtils.applySlotTotalsVisibility(unitCard || null, pilotCard || null, {
     unitShowsTotals: overlayState.unitShowsTotals,
     pilotShowsTotals: overlayState.pilotShowsTotals,
     zone: zone || 'slot1'
   });
 
-  finalizeSlotOverlayState(overlayState);
+  OverlayStatUtils.finalizeSlotOverlayState(overlayState);
   return overlayState;
 }
