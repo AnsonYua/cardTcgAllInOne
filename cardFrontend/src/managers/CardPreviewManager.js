@@ -2,7 +2,6 @@
  * CardPreviewManager - Handles all card preview functionality
  * Extracted from GameScene.js to reduce complexity and improve maintainability
  */
-import Card from '../components/Card.js';
 import CardFactory from '../utils/CardFactory.js';
 import { applyOverlayPipeline } from '../utils/CardDisplayUtils.js';
 import SlotAreaManager from '../components/SlotAreaManager.js';
@@ -43,11 +42,6 @@ export default class CardPreviewManager {
 
         this.previewPilotCard = this._createPreviewCard(pilotData, previewX, previewY + 145, 1999, true);
         this.previewPilotCard.fullCardData = pilotData;
-
-        if (this.previewCard?.setOverlayOverrides) {
-          this.previewCard.setOverlayOverrides({ totalsVisible: false });
-          this.previewCard.applyZoneOverlayRules?.();
-        }
 
         applyOverlayPipeline({
           unitCard: this.previewCard,
@@ -187,12 +181,6 @@ export default class CardPreviewManager {
       interactive: false,
       zone: pilotCard.zoneContext?.zoneType || 'slot1'
     });
-
-    if (this.previewCard?.setOverlayOverrides) {
-      this.previewCard.setOverlayOverrides({ totalsVisible: false });
-      this.previewCard.applyZoneOverlayRules?.();
-      console.log('[CardPreviewManager] Hiding total labels on unit preview (pilot present)');
-    }
 
     const unitData = unitCard.getCardFullData();
     const pilotData = pilotCard.getCardFullData();

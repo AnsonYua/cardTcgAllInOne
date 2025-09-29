@@ -43,8 +43,6 @@ export default class Card extends Phaser.GameObjects.Container {
       isPlayerZone: false,
       isInZone: false
     };
-    this.resetOverlayOverrides();
-    
     // Interaction state tracking
     this.isInteractionDisabled = false;
     
@@ -196,44 +194,6 @@ export default class Card extends Phaser.GameObjects.Container {
     }*/
   }
 
-  resetOverlayOverrides() {
-    this.overlayContextOverrides = {
-      totalsVisible: undefined,
-      overlayVisible: undefined,
-      totalsZoneOverride: undefined
-    };
-  }
-
-  setOverlayOverrides(overrides = {}, options = {}) {
-    if (!this.overlayContextOverrides || options.replace) {
-      this.resetOverlayOverrides();
-    }
-
-    const filteredEntries = Object.entries(overrides).filter(([_, value]) => value !== undefined);
-    if (filteredEntries.length === 0) {
-      if (options.apply !== false) {
-        this.applyZoneOverlayRules();
-      }
-      return;
-    }
-
-    this.overlayContextOverrides = {
-      ...this.overlayContextOverrides,
-      ...Object.fromEntries(filteredEntries)
-    };
-
-    if (options.apply !== false) {
-      this.applyZoneOverlayRules();
-    }
-  }
-
-  clearOverlayOverrides(apply = true) {
-    this.resetOverlayOverrides();
-    if (apply) {
-      this.applyZoneOverlayRules();
-    }
-  }
-
   setZoneContext(zoneType = null, options = {}) {
     this.zoneType = zoneType;
     if (typeof options.isPlayerZone === 'boolean') {
@@ -249,46 +209,25 @@ export default class Card extends Phaser.GameObjects.Container {
       isInZone: this.isInZone
     };
 
-    const shouldClear = options.clearOverrides !== false;
-    if (shouldClear) {
-      this.resetOverlayOverrides();
-    }
-
-    const overrides = {
-      totalsVisible: options.totalsVisible,
-      overlayVisible: options.overlayVisible,
-      totalsZoneOverride: options.totalsZoneOverride
-    };
-
-    this.setOverlayOverrides(overrides, { apply: false });
-
-    this.applyZoneOverlayRules();
-  }
-
-  applyZoneOverlayRules() {
-    if (!this.powerOverlay) {
-      return;
-    }
-
-    const zoneType = this.zoneContext?.zoneType || null;
-    const totalsOverride = this.overlayContextOverrides?.totalsVisible;
-    const totalsVisible = typeof totalsOverride === 'boolean'
-      ? totalsOverride
+    const totalsVisible = typeof options.totalsVisible === 'boolean'
+      ? options.totalsVisible
       : this.shouldShowTotalsForZone(zoneType);
 
-    const totalsZoneOverride = this.overlayContextOverrides?.totalsZoneOverride;
-    const totalsZone = totalsZoneOverride || (totalsVisible ? (zoneType || 'slot1') : 'hand');
+    const zoneForTotals = totalsVisible
+      ? (options.totalsZoneOverride || zoneType || 'slot1')
+      : 'hand';
 
-    if (this.powerOverlay.setTotalLabelsVisibility) {
-      this.powerOverlay.setTotalLabelsVisibility(totalsZone);
+    if (this.powerOverlay && this.powerOverlay.setTotalLabelsVisibility) {
+      this.powerOverlay.setTotalLabelsVisibility(zoneForTotals);
     }
 
-    const overlayOverride = this.overlayContextOverrides?.overlayVisible;
-    const overlayVisible = typeof overlayOverride === 'boolean'
-      ? overlayOverride
+    const overlayVisible = typeof options.overlayVisible === 'boolean'
+      ? options.overlayVisible
       : this.shouldShowOverlayForZone(zoneType);
 
-    this.powerOverlay.setOverlayVisible(overlayVisible);
+    if (this.powerOverlay && this.powerOverlay.setOverlayVisible) {
+      this.powerOverlay.setOverlayVisible(overlayVisible);
+    }
   }
 
   createZoneIcons() {
@@ -844,10 +783,12 @@ export default class Card extends Phaser.GameObjects.Container {
 
     try {
       const overrideZone = config.zone || this.zoneContext?.zoneType || 'slot1';
-      this.setOverlayOverrides({
-        totalsVisible: true,
-        totalsZoneOverride: overrideZone
-      });
+      if (this.powerOverlay.setTotalLabelsVisibility) {
+        this.powerOverlay.setTotalLabelsVisibility(overrideZone);
+      }
+      if (this.powerOverlay.setOverlayVisible) {
+        this.powerOverlay.setOverlayVisible(true);
+      }
 
       if (this.powerOverlay.updateTotalStats) {
         this.powerOverlay.updateTotalStats(totalAP, totalHP);

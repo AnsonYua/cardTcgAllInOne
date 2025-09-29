@@ -50,7 +50,6 @@ class OverlayStatUtils {
         totalHP: normalizedSlot.totalHP ?? 0
       };
     }
-
     return null
   }
 
@@ -138,24 +137,6 @@ class OverlayStatUtils {
     };
   }
 
-  static applyOverlayToCard(card, cardData, options = {}) {
-    if (!card || !cardData) {
-      return null;
-    }
-
-    const { slotTotals = null, useSlotTotals = false } = options;
-    const state = this.collectCardOverlayState(card, cardData, {
-      slotTotals,
-      useSlotTotals
-    });
-
-    if (state) {
-      this.setCardTotalsAndStatus(state.card, state.totals, state.baseStats);
-      state.card.applyZoneOverlayRules?.();
-    }
-
-    return state;
-  }
 
   static applySlotOverlaySet({ unitCard, pilotCard, unitData, pilotData, slotFieldValue }) {
     const hasUnit = !!unitCard && !!unitData;
@@ -209,22 +190,18 @@ class OverlayStatUtils {
     const pilotVisible = options.pilotShowsTotals ?? hasPilot;
     const zone = options.zone ?? null;
 
-    if (unitCard?.clearOverlayOverrides && unitCard?.setOverlayOverrides) {
-      unitCard.clearOverlayOverrides(false);
-      unitCard.setOverlayOverrides({
-        totalsVisible: !!unitVisible,
-        totalsZoneOverride: unitVisible ? zone : null
-      }, { apply: false });
-      unitCard.applyZoneOverlayRules?.();
+    if (unitCard) {
+      this.applyTotalsVisibilityToCard(unitCard, {
+        visible: !!unitVisible,
+        zone
+      });
     }
 
-    if (pilotCard?.clearOverlayOverrides && pilotCard?.setOverlayOverrides) {
-      pilotCard.clearOverlayOverrides(false);
-      pilotCard.setOverlayOverrides({
-        totalsVisible: !!pilotVisible,
-        totalsZoneOverride: pilotVisible ? zone : null
-      }, { apply: false });
-      pilotCard.applyZoneOverlayRules?.();
+    if (pilotCard) {
+      this.applyTotalsVisibilityToCard(pilotCard, {
+        visible: !!pilotVisible,
+        zone
+      });
     }
   }
 
@@ -235,12 +212,31 @@ class OverlayStatUtils {
 
     if (slotState.unitState) {
       this.setCardTotalsAndStatus(slotState.unitState.card, slotState.unitState.totals, slotState.unitState.baseStats);
-      slotState.unitState.card.applyZoneOverlayRules?.();
     }
 
     if (slotState.pilotState) {
       this.setCardTotalsAndStatus(slotState.pilotState.card, slotState.pilotState.totals, slotState.pilotState.baseStats);
-      slotState.pilotState.card.applyZoneOverlayRules?.();
+    }
+  }
+
+  static applyTotalsVisibilityToCard(card, { visible, zone }) {
+    if (!card?.powerOverlay) {
+      return;
+    }
+
+    const zoneType = zone ?? card.zoneContext?.zoneType ?? null;
+    const targetZone = visible ? (zoneType || 'slot1') : 'hand';
+
+    if (card.powerOverlay && card.powerOverlay.setTotalLabelsVisibility) {
+      card.powerOverlay.setTotalLabelsVisibility(targetZone);
+    }
+
+    const overlayVisible = card.shouldShowOverlayForZone
+      ? card.shouldShowOverlayForZone(zoneType)
+      : true;
+
+    if (card.powerOverlay && card.powerOverlay.setOverlayVisible) {
+      card.powerOverlay.setOverlayVisible(overlayVisible);
     }
   }
 
