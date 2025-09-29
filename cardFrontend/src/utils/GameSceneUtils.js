@@ -2,93 +2,9 @@
  * Utility class for handling GameScene-related operations
  * Refactored: Dialog UI methods moved to DialogUIManager.js
  */
-import Card from '../components/Card.js';
 import { GAME_CONFIG } from '../config/gameConfig.js';
 
 export default class GameSceneUtils {
-  /**
-   * Updates zones with card data from the backend
-   * @param {Object} zonesData - Zone data from the backend
-   * @param {Object} zones - Zone objects from the scene
-   * @param {Object} scene - The GameScene instance
-   * @param {boolean} isOpponent - Whether these are opponent zones
-   */
-  static updatePlayerZones(zonesData, zones, scene, isOpponent = false) {
-    if (!zonesData || !zones) {
-      console.warn('Missing zone data or zone objects');
-      return;
-    }
-
-    // Process each zone
-    Object.keys(zonesData).forEach(zoneKey => {
-      const zoneData = zonesData[zoneKey];
-      const zoneObject = zones[zoneKey];
-      
-      if (!zoneObject) {
-        console.warn(`Zone object not found for key: ${zoneKey}`);
-        return;
-      }
-
-      // Clear existing cards in the zone (except for special zones)
-      if (zoneObject.cards) {
-        zoneObject.cards.forEach(card => {
-          if (card && card.destroy) {
-            card.destroy();
-          }
-        });
-        zoneObject.cards = [];
-      }
-
-      // Add new cards based on zone data
-      if (zoneData && (zoneData.cards || zoneData.length > 0)) {
-        const cardsToAdd = zoneData.cards || zoneData;
-        cardsToAdd.forEach((cardData, index) => {
-          try {
-            const cardPosition = this.calculateCardPosition(zoneObject, index);
-            const card = new Card(scene, cardPosition.x, cardPosition.y, cardData);
-
-            const zoneType = zoneKey;
-            card.setZonePlacement(zoneType !== 'hand', zoneType, !isOpponent);
-
-            if (card.setFieldCardValue) {
-              const zoneFieldValue = zoneData?.fieldCardValue || cardData?.fieldCardValue || null;
-              const source = zoneType === 'base' || zoneType.startsWith('slot') ? 'slot' : 'card';
-              card.setFieldCardValue(zoneFieldValue, { source });
-            }
-
-            if (zoneObject.cards) {
-              zoneObject.cards.push(card);
-            }
-          } catch (error) {
-            console.error('Error creating card:', error);
-          }
-        });
-      }
-    });
-  }
-
-  /**
-   * Updates all zones for both players
-   * @param {Object} scene - The GameScene instance
-   * @param {Object} gameStateManager - Game state manager
-   */
-  static updateAllZones(scene, gameStateManager) {
-    const gameState = gameStateManager.getGameState();
-    
-    if (gameState.gameEnv && gameState.gameEnv.zones) {
-      // Update player zones
-      if (scene.playerZones && gameState.gameEnv.zones[gameState.playerId]) {
-        this.updatePlayerZones(gameState.gameEnv.zones[gameState.playerId], scene.playerZones, scene, false);
-      }
-      
-      // Update opponent zones
-      const opponentId = Object.keys(gameState.gameEnv.zones).find(id => id !== gameState.playerId);
-      if (opponentId && scene.opponentZones && gameState.gameEnv.zones[opponentId]) {
-        this.updatePlayerZones(gameState.gameEnv.zones[opponentId], scene.opponentZones, scene, true);
-      }
-    }
-  }
-
   /**
    * Checks if a card can be placed in a specific zone
    * @param {Object} card - Card object
@@ -226,22 +142,6 @@ export default class GameSceneUtils {
           countText.setText(newCount.toString());
         }
       }
-    };
-  }
-
-
-
-  /**
-   * Calculate card position within a zone
-   * @param {Object} zone - Zone object
-   * @param {number} index - Card index
-   * @returns {Object} Position {x, y}
-   */
-  static calculateCardPosition(zone, index) {
-    // Simple positioning logic - can be enhanced
-    return {
-      x: zone.x + (index * 5), // Slight offset for stacking effect
-      y: zone.y + (index * 2)
     };
   }
 

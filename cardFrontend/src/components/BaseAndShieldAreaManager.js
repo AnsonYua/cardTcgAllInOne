@@ -1,5 +1,6 @@
 import CardFactory from '../utils/CardFactory.js';
-import { applyOverlayToCard, applySlotTotalsVisibility, buildSingleCardTotals } from '../utils/PowerOverlayCoordinator.js';
+import { mergeCardZoneData, applyOverlayPipeline } from '../utils/CardDisplayUtils.js';
+import { buildSingleCardTotals } from '../utils/PowerOverlayCoordinator.js';
 export default class BaseAndShieldAreaManager {
   constructor(scene, gameStateManager) {
     this.scene = scene;
@@ -79,53 +80,100 @@ export default class BaseAndShieldAreaManager {
   }
 
   updateBaseArea(playerType, baseData, cardArray, shieldCardArray) {
-    // Check if we need to update existing base card or create new one
-    if (baseData && baseData.length > 0 && cardArray.length > 0) {
-      // Update existing base card
-      const existingCard = cardArray[0];
-      const newCardData = baseData[0];
-      
-      console.log("Updating existing base card:", JSON.stringify(newCardData));
-      this.updateExistingBaseCard(existingCard, newCardData);
+    const basePosition = this.resolveBasePosition(playerType, shieldCardArray);
+
+    if (!basePosition) {
+      console.warn(`[BaseAndShieldAreaManager] Base position not found for ${playerType}`);
       return;
     }
-    
-    // Create new base card or remove existing ones
-    cardArray.forEach(card => card.destroy());
-    cardArray.length = 0;
-    console.log("data base "+JSON.stringify(baseData))
-    if(baseData && baseData.length>0){
-      console.log("data base111 "+JSON.stringify(baseData[0]))
-      
-      // Position base card on top of shield card[0] if it exists
-      let x, y;
-      if (shieldCardArray.length > 0) {
-        // Use first shield card position
-        x = shieldCardArray[shieldCardArray.length-1].x;
-        y = shieldCardArray[shieldCardArray.length-1].y;
-        if(playerType ==='player'){
-          y = y - 80
-        }else{
-          y = y + 80
-        }
-      } else {
-        // Fallback to deck position if no shield cards
-        const deckZone = playerType === 'player' ? this.scene.playerZones.leaderDeck : this.scene.opponentZones.leaderDeck;
-        x = deckZone.x;
-        y = deckZone.y;
-      }
-      
-      const card = this.createBaseCard(baseData[0], x, y, 0);
-      cardArray.push(card);
-    }
-    cardArray.forEach(card => card.active = false);
+
+    this.updateBaseAreaComprehensive({
+      playerType,
+      baseData,
+      cardArray,
+      position: basePosition
+    });
   }
 
-  createBaseCard(cardData, x, y, index) {
-    return CardFactory.createBaseCard(this.scene, cardData, x, y, {
-      gameStateManager: this.gameStateManager,
-      scale: 0.9
+  resolveBasePosition(playerType, shieldCardArray) {
+    if (shieldCardArray && shieldCardArray.length > 0) {
+      const anchor = shieldCardArray[shieldCardArray.length - 1];
+      if (anchor) {
+        const offset = playerType === 'player' ? -80 : 80;
+        return { x: anchor.x, y: anchor.y + offset };
+      }
+    }
+
+    const zones = playerType === 'player' ? this.scene.playerZones : this.scene.opponentZones;
+    if (zones?.base) {
+      return { x: zones.base.x, y: zones.base.y };
+    }
+
+    if (zones?.leaderDeck) {
+      return { x: zones.leaderDeck.x, y: zones.leaderDeck.y };
+    }
+
+    return null;
+  }
+
+  updateBaseAreaComprehensive({ playerType, baseData, cardArray, position }) {
+    const baseCardData = baseData?.[0] || null;
+
+    if (!baseCardData) {
+      this.destroyBaseCards(cardArray);
+      return;
+    }
+
+    const baseCard = this.prepareBaseCardInstance({ cardArray, cardData: baseCardData, position, playerType });
+    if (!baseCard) {
+      return;
+    }
+
+    const slotFieldValue = buildSingleCardTotals(baseCardData);
+
+    // Reuse the same overlay pipeline as slot cards so base previews stay consistent
+    applyOverlayPipeline({
+      unitCard: baseCard,
+      pilotCard: null,
+      unitData: baseCardData,
+      pilotData: null,
+      slotFieldValue,
+      zone: 'base'
     });
+
+    cardArray.forEach(card => {
+      if (card) {
+        card.active = false;
+      }
+    });
+  }
+
+  prepareBaseCardInstance({ cardArray, cardData, position }) {
+    const existing = cardArray[0] || null;
+
+    if (!cardData) {
+      this.destroyBaseCards(cardArray);
+      return null;
+    }
+
+    if (!existing) {
+      const created = CardFactory.createBaseCard(this.scene, cardData, position.x, position.y, {
+        gameStateManager: this.gameStateManager,
+        scale: 0.9
+      });
+      cardArray.length = 0;
+      cardArray.push(created);
+      return created;
+    }
+
+    mergeCardZoneData(existing, cardData);
+    existing.setPosition(position.x, position.y);
+    return existing;
+  }
+
+  destroyBaseCards(cardArray) {
+    cardArray.forEach(card => card?.destroy?.());
+    cardArray.length = 0;
   }
 
   /**
@@ -138,23 +186,17 @@ export default class BaseAndShieldAreaManager {
       console.warn('[BaseAndShieldAreaManager] updateExistingBaseCard called with invalid parameters');
       return;
     }
-    // Update the card's full data with new information
-    card.fullCardData = { ...card.fullCardData, ...cardData };
 
-    // Also update the nested cardData if it exists
-    if (card.cardData && cardData.cardData) {
-      card.cardData = { ...card.cardData, ...cardData.cardData };
-    }
+    mergeCardZoneData(card, cardData);
 
-    const totalsField = buildSingleCardTotals(cardData);
+    const slotFieldValue = buildSingleCardTotals(cardData);
 
-    applyOverlayToCard(card, cardData, {
-      slotTotals: totalsField,
-      useSlotTotals: true
-    });
-
-    applySlotTotalsVisibility(card, null, {
-      unitShowsTotals: true,
+    applyOverlayPipeline({
+      unitCard: card,
+      pilotCard: null,
+      unitData: cardData,
+      pilotData: null,
+      slotFieldValue,
       zone: 'base'
     });
   }
@@ -172,15 +214,14 @@ export default class BaseAndShieldAreaManager {
     }
     console.log(`[BaseAndShieldAreaManager] Updating base card total labels for card:`, card.cardData?.id);
     
-    const totalsField = buildSingleCardTotals(card.fullCardData);
+    const slotFieldValue = buildSingleCardTotals(card.fullCardData);
 
-    applyOverlayToCard(card, card.fullCardData, {
-      slotTotals: totalsField,
-      useSlotTotals: true
-    });
-
-    applySlotTotalsVisibility(card, null, {
-      unitShowsTotals: true,
+    applyOverlayPipeline({
+      unitCard: card,
+      pilotCard: null,
+      unitData: card.fullCardData,
+      pilotData: null,
+      slotFieldValue,
       zone: 'base'
     });
   }

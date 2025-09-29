@@ -6,7 +6,7 @@ import Card from '../components/Card.js';
 import CardFactory from '../utils/CardFactory.js';
 import CardInteractionHelper from '../utils/CardInteractionHelper.js';
 import UIGraphicsHelper from '../utils/UIGraphicsHelper.js';
-import { applySlotOverlaySet, applySlotTotalsVisibility, finalizeSlotOverlayState } from '../utils/PowerOverlayCoordinator.js';
+import { applyOverlayPipeline } from '../utils/CardDisplayUtils.js';
 import { getTotalsFromCardData, normalizeFieldCardValue } from '../utils/FieldValueUtils.js';
 
 /**
@@ -739,22 +739,14 @@ export default class DialogUIManager {
 
     slotContainer.add(unitCard);
 
-    const overlayState = applySlotOverlaySet({
+    applyOverlayPipeline({
       unitCard,
       pilotCard,
       unitData: slotTarget.unit,
       pilotData: slotTarget.pilot,
-      slotFieldValue: slotTarget.fieldCardValue || null
-    });
-
-    applySlotTotalsVisibility(unitCard, pilotCard, {
-      unitShowsTotals: overlayState.unitShowsTotals,
-      pilotShowsTotals: overlayState.pilotShowsTotals,
+      slotFieldValue: slotTarget.fieldCardValue || null,
       zone: slotZone
     });
-
-    // Step 3: commit totals and rested status to the dialog cards
-    finalizeSlotOverlayState(overlayState);
 
     // Store references for interaction handling
     slotContainer.unitCard = unitCard;

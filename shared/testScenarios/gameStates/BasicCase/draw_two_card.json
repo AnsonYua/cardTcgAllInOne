@@ -257,14 +257,11 @@
                         "type": "pilot",
                         "scope": "any"
                       },
-                      "effect": {
-                        "action": "designate_pilot",
-                        "parameters": {
-                          "pilotName": "Hayato Kobayashi",
-                          "AP": 1,
-                          "HP": 0
-                        },
-                        "duration": "permanent"
+                      "action": "designate_pilot",
+                      "parameters": {
+                        "pilotName": "Hayato Kobayashi",
+                        "AP": 1,
+                        "HP": 0
                       }
                     }
                   ]
@@ -693,14 +690,11 @@
                         "type": "pilot",
                         "scope": "any"
                       },
-                      "effect": {
-                        "action": "designate_pilot",
-                        "parameters": {
-                          "pilotName": "Kai Shiden",
-                          "AP": 0,
-                          "HP": 1
-                        },
-                        "duration": "permanent"
+                      "action": "designate_pilot",
+                      "parameters": {
+                        "pilotName": "Kai Shiden",
+                        "AP": 0,
+                        "HP": 1
                       }
                     }
                   ]

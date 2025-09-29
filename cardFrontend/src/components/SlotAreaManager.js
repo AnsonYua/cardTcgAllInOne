@@ -1,6 +1,6 @@
 import Card from './Card.js';
 import CardFactory from '../utils/CardFactory.js';
-import { applySlotOverlaySet, applySlotTotalsVisibility, finalizeSlotOverlayState } from '../utils/PowerOverlayCoordinator.js';
+import { mergeCardZoneData, applyOverlayPipeline } from '../utils/CardDisplayUtils.js';
 
 export default class SlotAreaManager {
   constructor(scene, gameStateManager) {
@@ -117,77 +117,41 @@ export default class SlotAreaManager {
 
     if (!existing) {
       console.log(`Creating ${playerType} ${slotName} ${cardType} card:`, cardData.cardId || cardData.id);
-      const created = this.createSlotCard(cardData, x, y, slotName, cardType, playerType);
-      slotCards[cardType] = created;
-      return created;
+      try {
+        const created = CardFactory.createSlotCard(this.scene, cardData, x, y, {
+          slotName,
+          cardType,
+          playerType,
+          gameStateManager: this.gameStateManager,
+          fieldCardValue: cardData?.fieldCardValue || null
+        });
+        slotCards[cardType] = created;
+        console.log(`✅ Created ${cardType} slot card for ${slotName}:`, cardData.cardId || cardData.id);
+        return created;
+      } catch (error) {
+        console.error(`Failed to create ${cardType} slot card for ${slotName}:`, error);
+        return null;
+      }
     }
 
-    this.updateZoneCardData(existing, cardData);
+    mergeCardZoneData(existing, cardData);
     return existing;
-  }
-
-  updateZoneCardData(card, cardData) {
-    if (!card || !cardData) {
-      return;
-    }
-
-    card.fullCardData = { ...card.fullCardData, ...cardData };
-
-    if (card.cardData && cardData.cardData) {
-      card.cardData = { ...card.cardData, ...cardData.cardData };
-    }
-
-    if (card.setRested) {
-      card.setRested(cardData.isRested || false);
-    }
   }
 
   updateSlotPowerOverlays({ slotCards, slotFieldValue, unitData, pilotData, slotName, playerType }) {
     const unitCard = slotCards.unit;
     const pilotCard = slotCards.pilot;
 
-    // Step 1: align card data + base stats without committing totals yet
-    const overlayState = applySlotOverlaySet({
+    // Unified overlay pipeline keeps base stats, totals, and rested flags in sync
+    applyOverlayPipeline({
       unitCard: unitCard && unitData ? unitCard : null,
       pilotCard: pilotCard && pilotData ? pilotCard : null,
       unitData,
       pilotData,
-      slotFieldValue
-    });
-
-    // Step 2: decide which card should display combined totals for the slot
-    applySlotTotalsVisibility(unitCard, pilotCard, {
-      unitShowsTotals: overlayState.unitShowsTotals,
-      pilotShowsTotals: overlayState.pilotShowsTotals,
+      slotFieldValue,
       zone: slotName
     });
-
-    // Step 3: push total AP/HP and rested status into the overlays
-    finalizeSlotOverlayState(overlayState);
   }
-
-
-
-  createSlotCard(cardData, x, y, slotName, cardType = 'unit', playerType = 'player') {
-    try {
-      const card = CardFactory.createSlotCard(this.scene, cardData, x, y, {
-        slotName,
-        cardType,
-        playerType,
-        gameStateManager: this.gameStateManager,
-        fieldCardValue: cardData?.fieldCardValue || null
-      });
-      
-      console.log(`✅ Created ${cardType} slot card for ${slotName}:`, cardData.cardId || cardData.id);
-      return card;
-      
-    } catch (error) {
-      console.error(`Failed to create ${cardType} slot card for ${slotName}:`, error);
-      return null;
-    }
-  }
-
-
   // ============ UTILITY METHODS ============
 
   /**

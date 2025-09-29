@@ -216,7 +216,12 @@ export default class GameScene extends Phaser.Scene {
   
   setupEventListeners() {
 
-    // Card interaction events
+    
+    /*
+    Zone card selection events - consolidated handlers for all slot cards
+    hand card will reach here
+    card in dialog will not reach here
+    */
     this.events.on('card-select', (card) => {
       console.log(`GameScene: card-select event received for card ${card.cardData?.id}`);
 
@@ -234,7 +239,7 @@ export default class GameScene extends Phaser.Scene {
     this.events.on('card-hover', (card) => {
       // Only show preview for hand cards
       if (this.handCardManager.isCardInHand(card)) {
-        this.cardPreviewManager.showCardPreview(card.getCardFullData());
+        this.cardPreviewManager.showCardPreviewWithZone(card.getCardFullData(),"card-hover");
       }
     });
 
@@ -243,7 +248,12 @@ export default class GameScene extends Phaser.Scene {
       this.cardPreviewManager.hideCardPreview();
     });
 
-    // Zone card selection events - consolidated handlers for all slot cards
+    /*
+    Zone card selection events - consolidated handlers for all slot cards
+    base/slot card can will reach here
+    hand card will not reach here
+    card in dialog will not reach here
+    */
     this.events.on('zone-card-select', (card) => {
       console.log(`GameScene: zone-card-select event received for card ${card.cardData?.id}`);
 
@@ -259,7 +269,12 @@ export default class GameScene extends Phaser.Scene {
       console.log(`Cleared selected card state for zone card ${card.cardData?.id}`);
     });
 
-    // Zone card hover events - enhanced for unit+pilot dual preview
+    /*
+     * Fired when a board-card emits hover/unhover (Card.emitLocationAwareEvent with isInZone=true)
+     * - Base / slot cards drive this path
+     * - Hand cards emit the plain card-hover instead
+     * - Dialog cards only reach here if their zone is set to a slot/base
+     */
     this.events.on('zone-card-hover', (card) => {
       console.log('[zone-card-hover] Event triggered for card:', {
         cardId: card.cardData?.id,
@@ -272,12 +287,7 @@ export default class GameScene extends Phaser.Scene {
       });
 
       if (card.isInZone) {
-        try {
-          this.cardPreviewManager.showSlotCardPreview(card);
-        } catch (error) {
-          console.error('[zone-card-hover] Error in showSlotCardPreview, using fallback:', error);
-          this.cardPreviewManager.showCardPreview(card.getCardData());
-        }
+        this.cardPreviewManager.showCardPreviewWithZone(card.getCardFullData(),"zone-card-hover");
       }
 
     });
@@ -375,14 +385,6 @@ export default class GameScene extends Phaser.Scene {
       cardType: cardData.cardType,
       type: cardData.cardType
     }
-  }
-
-  updateZones() {
-    GameSceneUtils.updateAllZones(this, this.gameStateManager);
-  }
-
-  updatePlayerZones(zonesData, zones, isOpponent = false) {
-    GameSceneUtils.updatePlayerZones(zonesData, zones, this, isOpponent);
   }
 
   updateUI() {

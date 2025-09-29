@@ -4,7 +4,7 @@
  */
 import Card from '../components/Card.js';
 import CardFactory from '../utils/CardFactory.js';
-import { applySlotOverlaySet, applySlotTotalsVisibility, finalizeSlotOverlayState } from '../utils/PowerOverlayCoordinator.js';
+import { applyOverlayPipeline } from '../utils/CardDisplayUtils.js';
 
 export default class CardPreviewManager {
   constructor(gameScene) {
@@ -13,7 +13,6 @@ export default class CardPreviewManager {
     this.previewCard = null;
     this.previewPilotCard = null;
   }
-
   /**
    * Show card preview for hand cards - handles both simple and complex slot preview data
    */
@@ -21,8 +20,8 @@ export default class CardPreviewManager {
     // Remove existing preview card if any
     this.hideCardPreview();
     console.log("showCardPreview111", JSON.stringify(cardData));
-
-    if (!this.scene.cardPreviewZone || !cardData) {
+    
+        if (!this.scene.cardPreviewZone || !cardData) {
       return;
     }
 
@@ -34,9 +33,6 @@ export default class CardPreviewManager {
         pilot: cardData.pilot.cardData,
         fieldCardValue: cardData.fieldCardValue || null
       };
-
-      cardData.cardData.isRested = cardData.cardData.isRested;
-      cardData.pilot.cardData.isRested = cardData.cardData.isRested;
 
       const mockUnitCard = {
         cardData: cardData.cardData,
@@ -66,6 +62,8 @@ export default class CardPreviewManager {
         zone: this.previewCard.zoneContext?.zoneType || 'slot1'
       });
     }
+
+
   }
 
   /**
@@ -95,26 +93,8 @@ export default class CardPreviewManager {
 
     console.log('[showSlotCardPreview] Hovering over card:', hoveredCard.cardData?.id, 'cardTypeInSlot:', hoveredCard.cardTypeInSlot, 'isInZone:', hoveredCard.isInZone);
 
-    // Check if SlotAreaManager exists
-    if (!this.scene.slotAreaManager) {
-      console.warn('[showSlotCardPreview] SlotAreaManager not available, using fallback preview');
-      this.showCardPreview(hoveredCard.getCardFullData());
-      return;
-    }
-
-    // Determine if this is a slot card and which slot/player it belongs to
-    const slotInfo = this.getSlotInfoFromCard(hoveredCard);
-    console.log('[showSlotCardPreview] Slot info:', slotInfo);
-
-    if (!slotInfo) {
-      // Not a slot card or couldn't detect slot, use regular preview
-      console.log('[showSlotCardPreview] No slot info found, using fallback preview');
-      this.showCardPreview(hoveredCard.getCardFullData());  // Use full data with current stats
-      return;
-    }
-    
-    // Get both unit and pilot cards from the slot
-    const slotSnapshot = this.scene.slotAreaManager.getSlotOverlaySnapshot(hoveredCard);
+    // Get both unit and pilot cards from the slot (safe if manager not wired yet)
+    const slotSnapshot = this.scene.slotAreaManager?.getSlotOverlaySnapshot(hoveredCard);
     if (!slotSnapshot) {
       console.warn('[showSlotCardPreview] Slot snapshot missing, using fallback');
       this.showCardPreview(hoveredCard.getCardFullData());
@@ -259,25 +239,15 @@ export default class CardPreviewManager {
   }
 
   _applyPreviewOverlay({ unitCard, pilotCard, unitData, pilotData, slotFieldValue, zone }) {
-    // Step 1: align card data and base stats
-    const overlayState = applySlotOverlaySet({
+    // Mirrors slot/base overlay sequencing so previews always match board values
+    return applyOverlayPipeline({
       unitCard: unitCard || null,
       pilotCard: pilotCard || null,
       unitData: unitData || null,
       pilotData: pilotData || null,
-      slotFieldValue: slotFieldValue || null
-    });
-
-    // Step 2: decide which preview should surface combined totals
-    applySlotTotalsVisibility(unitCard || null, pilotCard || null, {
-      unitShowsTotals: overlayState.unitShowsTotals,
-      pilotShowsTotals: overlayState.pilotShowsTotals,
+      slotFieldValue: slotFieldValue || null,
       zone: zone || 'slot1'
     });
-
-    // Step 3: push totals + rested badge into the overlays
-    finalizeSlotOverlayState(overlayState);
-    return overlayState;
   }
 
   /**
