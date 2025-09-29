@@ -6,6 +6,7 @@ import Card from '../components/Card.js';
 import CardFactory from '../utils/CardFactory.js';
 import CardInteractionHelper from '../utils/CardInteractionHelper.js';
 import UIGraphicsHelper from '../utils/UIGraphicsHelper.js';
+import SlotAreaManager from '../components/SlotAreaManager.js';
 import { applyOverlayPipeline } from '../utils/CardDisplayUtils.js';
 import { getTotalsFromCardData, normalizeFieldCardValue } from '../utils/FieldValueUtils.js';
 
@@ -636,6 +637,9 @@ export default class DialogUIManager {
    */
   static _createCardDisplay(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig, originalCard = null) {
     // Check if this is a slot target (unit + pilot combination)
+    const matchSlotData = SlotAreaManager.getSlotFromCarduid(
+                              this.scene.gameStateManager, originalCard.carduid);
+       
     if (originalCard && originalCard.isSlotTarget) {
       return this._createSlotTargetDisplay(scene, cardX, cardsY, cardDisplayConfig, originalCard);
     }
