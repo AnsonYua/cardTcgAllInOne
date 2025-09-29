@@ -224,6 +224,33 @@ export default class SlotAreaManager {
     return null;
   }
 
+  getSlotOverlaySnapshot(hoveredCard) {
+    if (!hoveredCard) {
+      return null;
+    }
+
+    const slotInfo = this.getSlotInfoFromCard(hoveredCard);
+    if (!slotInfo) {
+      return null;
+    }
+
+    const slotCards = this.getSlotCards(slotInfo.playerType, slotInfo.slotName);
+    const slotData = this.gameStateManager
+      ?.getPlayer(slotInfo.playerType === 'player'
+        ? this.gameStateManager.getCurrentPlayerId()
+        : this.gameStateManager.getOpponent())
+      ?.zones?.[slotInfo.slotName] || null;
+
+    const slotFieldValue = slotData?.fieldCardValue || null;
+
+    return {
+      slotInfo,
+      slotCards,
+      slotData,
+      slotFieldValue
+    };
+  }
+
   getSlotCard(playerType, slotName, cardType = 'unit') {
     const cardArray = playerType === 'player' ? this.playerSlotCards : this.opponentSlotCards;
     return cardArray[slotName] ? cardArray[slotName][cardType] : null;
