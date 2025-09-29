@@ -13,10 +13,16 @@ import { getTotalsFromCardData, normalizeFieldCardValue } from '../utils/FieldVa
 /**
  * DialogUIManager - Handles all dialog UI creation, interaction, and management
  * 
+ * Architecture:
+ * - Follows CardPreviewManager pattern for slot detection and card creation
+ * - Uses SlotAreaManager.getSlotFromCarduid() for accurate slot detection
+ * - Leverages CardFactory.createDialogCard() for all card creation
+ * - Applies applyOverlayPipeline() for consistent overlay management
+ * 
  * Features:
  * - Card selection dialog creation and management
  * - Dialog layout and styling
- * - Card display and interaction handling
+ * - Slot-aware card display with unit+pilot support
  * - Pagination and button controls
  * - Hover and selection highlighting
  * - Animation management
@@ -32,7 +38,7 @@ export default class DialogUIManager {
    * {
    *   // REQUIRED: Pre-resolved eligibleCards array
    *   eligibleCards: [
-   *     { type: "slot", cardId, carduid, displayName, cardData, zone, playerId, isSlotTarget, unit, pilot, totalAP, totalHP, selectionIndex },
+   *     { type: "slot", cardId, carduid, displayName, cardData, zone, playerId, unit, pilot, totalAP, totalHP, selectionIndex },
    *     { type: "carduid", cardId, carduid, displayName, cardData, selectionIndex, preSelected }
    *   ],
    *   
@@ -77,24 +83,24 @@ export default class DialogUIManager {
     isAllowCancel=true,
     requireConfirmation,
     ) {
-    // ✅ REFACTORED: Step 1 - Validate and resolve selection
+    // Step 1 - Validate and resolve selection
     const eligibleCards = this._validateAndResolveSelection(selectionId, selection, scene);
     if (!eligibleCards) {
       return { elements: [], cleanup: () => { } };
     }
 
-    // ✅ REFACTORED: Step 2 - Initialize dialog state
+    // Step 2 - Initialize dialog state
     const dialogState = this._initializeDialogState(scene, selection, eligibleCards);
 
-    // ✅ REFACTORED: Step 3 - Create UI components
+    // Step 3 - Create UI components
     const { updateCardDisplay, clearSelections } = this._createUIComponents(scene, selection, dialogState);
 
-    // ✅ REFACTORED: Step 4 - Configure button section
+    // Step 4 - Configure button section
     const updateOKButtonState = this._configureButtonSection(
       selectionId, selection, scene, onConfirm, onCancel, isAllowCancel, requireConfirmation, dialogState
     );
 
-    // ✅ REFACTORED: Step 5 - Finalize dialog setup and create interface
+    // Step 5 - Finalize dialog setup and create interface
     return this._finalizeDialogSetup(scene, dialogState, updateCardDisplay, updateOKButtonState);
   }
 
@@ -632,8 +638,24 @@ export default class DialogUIManager {
   }
 
   /**
-   * Creates card display element (individual card or slot combination)
+   * Creates card display element using CardPreviewManager pattern
+   * 
+   * Architecture:
+   * - Uses SlotAreaManager.getSlotFromCarduid() for slot detection
+   * - Follows showCardPreviewWithZone logic flow exactly
+   * - Creates unit+pilot containers using CardFactory.createDialogCard()
+   * - Applies applyOverlayPipeline() for both single and dual card displays
+   * - Falls back to regular card creation for non-slot cards
+   * 
    * @private
+   * @param {Phaser.Scene} scene - Phaser scene instance
+   * @param {number} cardX - X position for card display
+   * @param {number} cardsY - Y position for card display
+   * @param {string} cardImageId - Card image identifier (legacy, for fallback)
+   * @param {string} displayCardId - Display card identifier (legacy, for fallback)
+   * @param {Object} cardDisplayConfig - Display configuration
+   * @param {Object} originalCard - Original card data with carduid for slot detection
+   * @returns {Card|Container} Card component or container for unit+pilot combinations
    */
   static _createCardDisplay(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig, originalCard = null) {
     // Early return for missing data - follow CardPreviewManager pattern
@@ -652,7 +674,7 @@ export default class DialogUIManager {
       const zoneLabel = matchSlotData.slotName || 'slot1';
 
       if (unitData && pilotData) {
-        // Both unit and pilot - follow showCardPreviewWithZone pattern
+        // Both unit and pilot - create container with individual cards following showCardPreviewWithZone pattern
         const dialogScale = Math.min(
           (cardDisplayConfig.cardDisplayWidth - 16) / 124,
           (cardDisplayConfig.cardDisplayHeight - 16) / 184
@@ -697,7 +719,7 @@ export default class DialogUIManager {
         
         return slotContainer;
       } else if (unitData) {
-        // Unit only in slot - follow showCardPreviewWithZone pattern
+        // Single unit in slot - create individual card following showCardPreviewWithZone pattern
         const dialogScale = Math.min(
           (cardDisplayConfig.cardDisplayWidth - 16) / 124,
           (cardDisplayConfig.cardDisplayHeight - 16) / 184
@@ -832,8 +854,22 @@ export default class DialogUIManager {
 
 
   /**
-   * Setup card interaction based on card type
+   * Setup card interaction using unified slot container interaction
+   * 
+   * NOTE: Currently uses _setupSlotContainerInteraction for all cards
+   * as it handles both slot containers and regular cards properly.
+   * This simplifies the interaction logic and ensures consistency.
+   * 
    * @private
+   * @param {Phaser.Scene} scene - Phaser scene instance
+   * @param {Object} card - Card data object
+   * @param {Card|Container} cardElement - Card component or container
+   * @param {string} displayCardId - Display card identifier
+   * @param {Object} selectionState - Selection state object
+   * @param {number} cardX - X position
+   * @param {number} cardsY - Y position
+   * @param {Object} cardDisplayConfig - Display configuration
+   * @param {Object} dialogElements - Dialog elements
    */
   static _setupCardInteraction(scene, card, cardElement, displayCardId, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements) {
     if (!cardElement) {
@@ -857,8 +893,24 @@ export default class DialogUIManager {
   }
 
   /**
-   * Setup interaction for slot containers (unit + pilot combinations)
+   * Setup interaction for all card elements (both slot containers and regular cards)
+   * 
+   * This method handles interaction for:
+   * - Slot containers with unit+pilot combinations
+   * - Single cards in slots
+   * - Regular cards from hand/other sources
+   * 
+   * Uses CardInteractionHelper for consistent interaction behavior.
+   * 
    * @private
+   * @param {Phaser.Scene} scene - Phaser scene instance
+   * @param {Object} card - Card data object
+   * @param {Card|Container} slotContainer - Card component or container
+   * @param {Object} selectionState - Selection state object
+   * @param {number} cardX - X position
+   * @param {number} cardsY - Y position
+   * @param {Object} cardDisplayConfig - Display configuration
+   * @param {Object} dialogElements - Dialog elements
    */
   static _setupSlotContainerInteraction(scene, card, slotContainer, selectionState, cardX, cardsY, cardDisplayConfig, dialogElements) {
     // Set up proper interactive area for the container - include extra height for total AP/HP labels
@@ -871,7 +923,7 @@ export default class DialogUIManager {
       Phaser.Geom.Rectangle.Contains
     );
 
-    // ✅ REFACTORED: Use CardInteractionHelper for slot container interaction
+    // Use CardInteractionHelper for slot container interaction
     const handleContainerSelection = () => {
       console.log('Slot container selected:', card);
       this._handleCardSelection(card, cardX, cardsY, selectionState, cardDisplayConfig, dialogElements);
@@ -899,7 +951,7 @@ export default class DialogUIManager {
 
     cardComponent.setInteractive();
 
-    // ✅ REFACTORED: Use CardInteractionHelper for regular card interaction
+    // Use CardInteractionHelper for regular card interaction
     
     // Determine card data for preview based on card type
     let cardDataForPreview;
@@ -1052,7 +1104,7 @@ export default class DialogUIManager {
    * @private
    */
   static _createSelectionHighlight(cardX, cardsY, cardDisplayConfig, dialogElements) {
-    // ✅ REFACTORED: Use UIGraphicsHelper for selection highlight
+    // Use UIGraphicsHelper for selection highlight
     const extraHeight = 40; // Match the extra height from card container background
     const adjustedY = cardsY - cardDisplayConfig.cardDisplayHeight / 2 - (extraHeight / 2);
     const highlightWidth = cardDisplayConfig.cardDisplayWidth + 4;
@@ -1064,11 +1116,11 @@ export default class DialogUIManager {
       width: highlightWidth,
       height: highlightHeight,
       color: 0x00ff00,
-      lineWidth: 3, // ✅ FIXED: Match hover highlight line width
-      alpha: 1.0, // Selection highlight is fully visible (intentionally different from hover)
-      radius: 8, // ✅ FIXED: Match hover highlight corner radius
-      depth: 1506, // Keep higher depth for selection (intentionally different)
-      padding: 2 // ✅ FIXED: Match hover highlight padding
+      lineWidth: 3,
+      alpha: 1.0, // Selection highlight is fully visible
+      radius: 8,
+      depth: 1506, // Higher depth for selection visibility
+      padding: 2
     });
 
     // Set fully visible for selection highlight (not animated like hover)
@@ -1164,7 +1216,7 @@ export default class DialogUIManager {
     // ✅ ENHANCED: Calculate button center Y position for both OK and Cancel buttons
     const actualButtonCenterY = buttonY - 17 + buttonHeight / 2; // y - 17 + height/2
     
-    // ✅ CONDITIONAL: Only create OK button if shouldShowOK is true
+    // Only create OK button if shouldShowOK is true
     let okButton = null;
     let okText = null;
     
@@ -1211,11 +1263,11 @@ export default class DialogUIManager {
       okText.setDepth(1503);
     }
 
-    // ✅ ENHANCED: Store button references (may be null if not created)
+    // Store button references (may be null if not created)
     dialogElements.buttonSection.okButton = okButton;
     dialogElements.buttonSection.okText = okText;
 
-    // ✅ CONDITIONAL: Only create cancel button if shouldShowCancel is true
+    // Only create cancel button if shouldShowCancel is true
     if (shouldShowCancel) {
       // ✅ ENHANCED: Use same width as OK button for perfect alignment
       const cancelButtonWidth = buttonWidth; // Same width as OK button for better alignment
@@ -1311,7 +1363,7 @@ export default class DialogUIManager {
     });
 
     cancelButton.on('pointerdown', () => {
-      // ✅ ENHANCED: Call dedicated onCancel callback if provided
+      // Call dedicated onCancel callback if provided
       if (onCancel) {
         console.log('DialogUIManager: Calling dedicated cancel callback');
         onCancel({
@@ -1364,7 +1416,7 @@ export default class DialogUIManager {
     }
   }
 
-  // ✅ REMOVED: _setButtonColor method replaced by UIGraphicsHelper.setButtonColor
+  // Note: Button color management handled by UIGraphicsHelper.setButtonColor
 
   // Add remaining utility methods for pagination, animation, etc.
   static _updatePaginationVisibility(paginationState, dialogElements) {

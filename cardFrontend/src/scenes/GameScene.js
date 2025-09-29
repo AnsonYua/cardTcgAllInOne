@@ -524,12 +524,6 @@ export default class GameScene extends Phaser.Scene {
     this.cardPreviewManager.hideCardPreview();
   }
 
-  /**
-   * Show dual card preview with unit on top and pilot 25px below
-   * @param {Card} unitCard - The unit card
-   * @param {Card} pilotCard - The pilot card  
-   */
-  // showDualCardPreview method moved to CardPreviewManager
 
   /**
    * Hide slot card preview (includes dual preview)
@@ -538,10 +532,6 @@ export default class GameScene extends Phaser.Scene {
     this.cardPreviewManager.hideSlotCardPreview();
   }
 
-
-  showDualCardPreview(unitCard, pilotCard) {
-    this.cardPreviewManager.showDualCardPreview(unitCard, pilotCard);
-  }
 
   _createPreviewCard(cardData, x, y, depth = 2000) {
     return this.cardPreviewManager._createPreviewCard(cardData, x, y, depth);
