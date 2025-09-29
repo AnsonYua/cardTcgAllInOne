@@ -636,12 +636,93 @@ export default class DialogUIManager {
    * @private
    */
   static _createCardDisplay(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig, originalCard = null) {
-    // Check if this is a slot target (unit + pilot combination)
-    const matchSlotData = SlotAreaManager.getSlotFromCarduid(
-                              this.scene.gameStateManager, originalCard.carduid);
-       
-    if (originalCard && originalCard.isSlotTarget) {
-      return this._createSlotTargetDisplay(scene, cardX, cardsY, cardDisplayConfig, originalCard);
+    // Early return for missing data - follow CardPreviewManager pattern
+    if (!originalCard || !scene.gameStateManager) {
+      return this._createFallbackCardImage(scene, cardX, cardsY, cardImageId, displayCardId, cardDisplayConfig);
+    }
+
+    // Follow showCardPreviewWithZone pattern - check slot data from game state
+    const matchSlotData = SlotAreaManager.getSlotFromCarduid(scene.gameStateManager, originalCard.carduid);
+    if (matchSlotData) {
+      const slotFieldValue = matchSlotData.slotData?.fieldCardValue || null;
+      const unitSource = matchSlotData.slotData?.unit || null;  
+      const pilotSource = matchSlotData.slotData?.pilot || null;
+      const unitData = unitSource || null;
+      const pilotData = pilotSource || null;
+      const zoneLabel = matchSlotData.slotName || 'slot1';
+
+      if (unitData && pilotData) {
+        // Both unit and pilot - follow showCardPreviewWithZone pattern
+        const dialogScale = Math.min(
+          (cardDisplayConfig.cardDisplayWidth - 16) / 124,
+          (cardDisplayConfig.cardDisplayHeight - 16) / 184
+        );
+        
+        // Create container for unit+pilot combination following showCardPreviewWithZone pattern
+        const slotContainer = scene.add.container(cardX, cardsY);
+        
+        // Create unit card (positioned at top)
+        const unitY = -20; // Position above center
+        const unitCard = CardFactory.createDialogCard(scene, unitData, 0, unitY, {
+          dialogScale: dialogScale,
+          zone: zoneLabel,
+          fieldCardValue: slotFieldValue,
+          interactive: false  // Container will handle interaction
+        });        
+        // Create pilot card (positioned below unit)
+        const pilotCard = CardFactory.createDialogCard(scene, pilotData, 0, 23, {
+          dialogScale: dialogScale,
+          zone: zoneLabel,
+          fieldCardValue: slotFieldValue,
+          interactive: false  // Container will handle interaction
+        });
+        slotContainer.add(pilotCard);
+        slotContainer.add(unitCard);
+        
+        // Apply overlay pipeline like showCardPreviewWithZone
+        applyOverlayPipeline({
+          unitCard: unitCard,
+          pilotCard: pilotCard,
+          unitData,
+          pilotData,
+          slotFieldValue,
+          zone: zoneLabel
+        });
+        
+        // Store references for interaction handling
+        slotContainer.unitCard = unitCard;
+        slotContainer.pilotCard = pilotCard;
+        slotContainer.slotData = { unit: unitData, pilot: pilotData, fieldCardValue: slotFieldValue };
+        slotContainer.setDepth(1504);
+        
+        return slotContainer;
+      } else if (unitData) {
+        // Unit only in slot - follow showCardPreviewWithZone pattern
+        const dialogScale = Math.min(
+          (cardDisplayConfig.cardDisplayWidth - 16) / 124,
+          (cardDisplayConfig.cardDisplayHeight - 16) / 184
+        );
+        
+        const unitCard = CardFactory.createDialogCard(scene, unitData, cardX, cardsY, {
+          dialogScale: dialogScale,
+          zone: zoneLabel,
+          fieldCardValue: slotFieldValue,
+          interactive: true
+        });
+        
+        // Apply overlay pipeline like showCardPreviewWithZone
+        applyOverlayPipeline({
+          unitCard: unitCard,
+          pilotCard: null,
+          unitData,
+          pilotData: null,
+          slotFieldValue,
+          zone: zoneLabel
+        });
+        
+        return unitCard;
+      }
+      // If matchSlotData exists but no unit/pilot, fall through to regular handling
     }
 
     // Create dialog card using CardFactory
@@ -702,66 +783,6 @@ export default class DialogUIManager {
     return resolved || null;
   }
 
-  /**
-   * Creates display for slot targets (unit + pilot combinations)
-   * @private
-   */
-  static _createSlotTargetDisplay(scene, cardX, cardsY, cardDisplayConfig, slotTarget) {
-    // Calculate scale for slot target display
-    const dialogScale = Math.min(
-      (cardDisplayConfig.cardDisplayWidth - 16) / 124,
-      (cardDisplayConfig.cardDisplayHeight - 16) / 184
-    );
-
-    // Create a container to hold unit and pilot cards with extra height for total AP/HP labels
-    const slotContainer = scene.add.container(cardX, cardsY);
-
-    // Create pilot card if present (positioned below unit with extra spacing)
-    let pilotCard = null;
-    const slotZone = slotTarget.slotName || 'slot1';
-
-    if (slotTarget.pilot) {
-      // ✅ Use CardFactory for consistent pilot card creation
-      pilotCard = CardFactory.createDialogCard(scene, slotTarget.pilot, 0, 23, {
-        dialogScale: dialogScale,
-        interactive: true, // Container will handle interaction
-        zone: slotZone,
-        fieldCardValue: slotTarget.fieldCardValue || slotTarget.pilot?.fieldCardValue || null
-      });
-      slotContainer.add(pilotCard);
-    }
-
-    // Create unit card (always present) - center if no pilot, otherwise position at top with extra spacing
-    const unitY = slotTarget.pilot ? -20 : 0; // Add extra spacing when pilot present
-    // ✅ Use CardFactory for consistent unit card creation
-    const unitCard = CardFactory.createDialogCard(scene, slotTarget.unit, 0, unitY, {
-      dialogScale: dialogScale,
-      interactive: false, // Container will handle interaction
-      zone: slotZone,
-      fieldCardValue: slotTarget.fieldCardValue || slotTarget.unit?.fieldCardValue || null
-    });
-
-    slotContainer.add(unitCard);
-    /*
-    applyOverlayPipeline({
-      unitCard,
-      pilotCard,
-      unitData: slotTarget.unit,
-      pilotData: slotTarget.pilot,
-      slotFieldValue: slotTarget.fieldCardValue || null,
-      zone: slotZone
-    });*/
-
-    // Store references for interaction handling
-    slotContainer.unitCard = unitCard;
-    slotContainer.pilotCard = pilotCard;
-    slotContainer.slotData = slotTarget;
-
-    slotContainer.setDepth(1504);
-
-    console.log(`Created slot target display: ${slotTarget.unit.cardId}${slotTarget.pilot ? ` + ${slotTarget.pilot.cardId}` : ''}`);
-    return slotContainer;
-  }
 
   /**
    * Create fallback card image when Card component fails
