@@ -17,26 +17,33 @@ export interface TemporaryEffect {
     appliedBy: string;                  // Which player applied it
 }
 
+// ✅ CORRECT EffectRule interface matching actual card data structure from st01Card.json
 export interface EffectRule {
-    id: string;
-    type: 'continuous' | 'triggered' | 'restriction';
-    trigger: {
-        event: string;
-        conditions?: any[];
+    effectId: string;
+    type: string;
+    trigger: string;
+    action: string;                 // Direct action property (not nested)
+    parameters?: {
+        [key: string]: any;         // Flexible parameters object
+        AP?: number;                // For designate_pilot effects
+        HP?: number;                // For designate_pilot effects
+        pilotName?: string;         // For designate_pilot effects
+        value?: number;             // For other effects
     };
-    target: {
-        owner: 'self' | 'opponent' | 'both';
-        zones: string[];
-        filters?: any[];
-        requiresSelection?: boolean;
-        selectCount?: number;
-        targetCount?: number;
+    target?: {
+        type?: string;
+        scope?: string;
+        filters?: any;
+        count?: number;
     };
-    effect: {
-        type: string;
-        value: any;
-        [key: string]: any;
+    timing?: {
+        duration?: string;
+        actionTurn?: string;
     };
+    conditions?: any[];
+    sourceConditions?: any[];
+    optional?: boolean;
+    description?: string | string[];
 }
 
 export interface BasicCardData {
@@ -199,13 +206,14 @@ export function createZoneCard(
                 let pilotAP = 0;
                 let pilotHP = 0;
                 
+                // ✅ FIXED: Use correct data structure matching actual card data
                 const designatePilotEffect = cardData.effects?.rules?.find(rule => 
-                    rule.effect?.action === 'designate_pilot'
+                    rule.action === 'designate_pilot'
                 );
                 
-                if (designatePilotEffect && designatePilotEffect.effect?.parameters) {
-                    pilotAP = designatePilotEffect.effect.parameters.AP || 0;
-                    pilotHP = designatePilotEffect.effect.parameters.HP || 0;
+                if (designatePilotEffect && designatePilotEffect.parameters) {
+                    pilotAP = designatePilotEffect.parameters.AP || 0;
+                    pilotHP = designatePilotEffect.parameters.HP || 0;
                     console.log(`🎯 Found designate_pilot effect: AP=${pilotAP}, HP=${pilotHP}`);
                 } else {
                     console.warn(`⚠️ No designate_pilot effect found for command card ${cardId}, using defaults`);

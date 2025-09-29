@@ -39,27 +39,8 @@ export function findEffectByKey(effects: ContinuousEffectsCollection, effectId: 
  */
 export type ContinuousEffectsCollection = StoredContinuousEffect[];
 
-export interface EffectRule {
-    effectId: string;
-    type: string;
-    trigger: string;               // Will be removed when storing
-    conditions: string[];          // Will be removed when storing  
-    timing: string[];
-    target: {
-        type: string;              // Will be removed when storing
-        scope: string;             // Will be removed when storing
-        filters?: {
-            controller?: string;   // Will be removed when storing
-        };
-    };
-    effect: {
-        action: string;
-        parameters: {
-            modifier: string;
-        };
-        duration: string;
-    };
-}
+// ✅ REMOVED: EffectRule interface moved to CardSystem.ts for centralization
+// Import from CardSystem.ts when needed: import { EffectRule } from './CardSystem';
 
 export interface EffectProcessingResult {
     success: boolean;
