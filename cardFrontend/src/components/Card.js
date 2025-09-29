@@ -174,8 +174,9 @@ export default class Card extends Phaser.GameObjects.Container {
   getActiveFieldCardValue() {
     return this.slotFieldCardValue || this.fieldCardValue || null;
   }
-
+  
   setFieldCardValue(fieldCardValue, options = {}) {
+    /*
     const normalizedValue = normalizeFieldCardValue(fieldCardValue);
     const source = options.source || 'card';
 
@@ -192,24 +193,7 @@ export default class Card extends Phaser.GameObjects.Container {
       } else if (this.fullCardData.fieldCardValue) {
         delete this.fullCardData.fieldCardValue;
       }
-    }
-
-    if (options.updateOverlay !== false) {
-      this.refreshOverlayStats(options.isRested);
-    }
-  }
-
-  refreshOverlayStats(isRestedOverride) {
-    if (!this.powerOverlay) {
-      return;
-    }
-
-    const { ap, hp, originalAP, originalHP } = this.getAPandHPFromCardData();
-    const isRested = isRestedOverride ?? this.fullCardData?.isRested ?? this.cardData?.isRested ?? false;
-
-    this.powerOverlay.setBaseStats(originalAP, originalHP);
-    this.powerOverlay.updateTotalStats(ap, hp, isRested);
-    this.applyZoneOverlayRules();
+    }*/
   }
 
   resetOverlayOverrides() {
@@ -575,10 +559,6 @@ export default class Card extends Phaser.GameObjects.Container {
       return;
     }
     
-
-    // Update power overlay for character cards
-    this.updatePowerOverlay();
-    
     // Check if card is disabled by effects
     const isDisabled = this.isCardDisabled();
     
@@ -738,57 +718,6 @@ export default class Card extends Phaser.GameObjects.Container {
     return this.cardData.effects?.rules?.some(rule => rule.action === 'designate_pilot') || false;
   }
 
-  /**
-   * Extract AP and HP values from card data based on card type
-   * @returns {{ap: number, hp: number, originalAP: number, originalHP: number}} Current and original AP/HP values
-   */
-  getAPandHPFromCardData() {
-    /*
-    if (!this.fullCardData) {
-      return { ap: 0, hp: 0, originalAP: 0, originalHP: 0 };
-    }*/
-    const resolvedCardData = this.fullCardData.cardData || this.cardData || {};
-    const { fieldCardValue, totalAP, totalHP, originalAP, originalHP } = resolveFieldCardTotals({
-      slotFieldValue: this.slotFieldCardValue,
-      existingFieldValue: this.fieldCardValue,
-      fullCardData: this.fullCardData,
-      cardData: resolvedCardData
-    });
-    let adjustedOriginalAP = originalAP;
-    let adjustedOriginalHP = originalHP;
-    if (resolvedCardData.cardType === 'command' && this.hasCommandPilotDesignation()) {
-      const designateRule = resolvedCardData.effects?.rules?.find(rule => {
-        const action = rule.effect?.action || rule.action;
-        return action === 'designate_pilot';
-      });
-
-      const params = designateRule?.effect?.parameters || designateRule?.parameters;
-      if (params) {
-        if (typeof params.AP === 'number') {
-          adjustedOriginalAP = params.AP;
-        }
-        if (typeof params.HP === 'number') {
-          adjustedOriginalHP = params.HP;
-        }
-      }
-    }
-
-    const adjustedTotalAP = totalAP ?? adjustedOriginalAP;
-    const adjustedTotalHP = totalHP ?? adjustedOriginalHP;
-
-    if (fieldCardValue) {
-      if (this.slotFieldCardValue) {
-        this.slotFieldCardValue = fieldCardValue;
-      } else {
-        this.fieldCardValue = fieldCardValue;
-        if (this.fullCardData) {
-          this.fullCardData.fieldCardValue = fieldCardValue;
-        }
-      }
-    }
-
-    return { ap: adjustedTotalAP, hp: adjustedTotalHP, originalAP: adjustedOriginalAP, originalHP: adjustedOriginalHP };
-  }
 
   /**
    * Create power overlay component for cards with AP/HP values
@@ -816,85 +745,15 @@ export default class Card extends Phaser.GameObjects.Container {
         cardType: this.cardData?.cardType
       });
       this.add(this.powerOverlay);
-      
-      const isRested = this.fullCardData?.isRested ?? this.cardData?.isRested ?? false;
-      this.refreshOverlayStats(isRested);
+      this.powerOverlay.setBaseStats(this.cardData.ap,this.cardData.hp)
+
     }
   }
   
+
   
-  /**
-   * Update power overlay with current AP and HP values (simplified)
-   */
-  updatePowerOverlay() {
-    // Check if PowerOverlay exists and card should show overlay
-    const shouldShowPowerOverlay = this.powerOverlay && this.cardData && (
-      this.cardData.cardType === 'unit' ||
-      this.cardData.cardType === 'pilot' || 
-      this.cardData.cardType === 'base' ||
-      (this.cardData.cardType === 'command' && this.hasCommandPilotDesignation())
-    );
 
-    if (!shouldShowPowerOverlay) {
-      console.log('[Card] updatePowerOverlay skipped - no overlay or not supported type:', this.cardData?.id, 'type:', this.cardData?.cardType);
-      return;
-    }
-    const isRested = this.fullCardData?.isRested ?? this.cardData?.isRested ?? false;
-    this.refreshOverlayStats(isRested);
-  }
   
-  /**
-   * Set whether the power overlay should be visible
-   * Used when card is placed in/removed from zones
-   * @param {boolean} visible - Whether overlay should be shown
-   * @param {boolean} animate - Whether to animate the change
-   */
-  setPowerOverlayVisible(visible) {
-    console.log('[Card] setPowerOverlayVisible called:', visible, 'for card:', this.cardData?.id, 'powerOverlay exists:', !!this.powerOverlay);
-    if (!this.powerOverlay) {
-      return;
-    }
-
-    if (visible === null || visible === undefined) {
-      this.clearOverlayOverrides();
-      this.applyZoneOverlayRules();
-      return;
-    }
-
-    this.setOverlayOverrides({ overlayVisible: visible });
-
-    if (visible) {
-      this.updatePowerOverlay();
-    }
-  }
-  
-  /**
-   * Enable or disable power overlay background and borders
-   * @param {boolean} showBackground - Whether to show backgrounds and borders
-   */
-  setPowerOverlayBackground(showBackground) {
-    console.log('[Card] setPowerOverlayBackground called:', showBackground, 'for card:', this.cardData?.id);
-    if (this.powerOverlay) {
-      this.powerOverlay.setShowBackground(showBackground);
-    }
-  }
-
-  /**
-   * Update total AP and HP labels (only visible in slot zones)
-   * Convenient wrapper for PowerOverlay.updateTotalStats()
-   * @param {number} totalAP - Total AP value including all effects and modifications
-   * @param {number} totalHP - Total HP value including all effects and modifications
-   */
-  updateTotalLabels(totalAP, totalHP , isRested) {
-    console.log(`[Card] updateTotalLabels called: AP=${totalAP}, HP=${totalHP} for card:`, this.cardData?.id);
-    if (this.powerOverlay && this.powerOverlay.updateTotalStats) {
-      this.powerOverlay.updateTotalStats(totalAP, totalHP,isRested);
-      console.log(`[Card] Total labels updated successfully for card:`, this.cardData?.id);
-      this.applyZoneOverlayRules();
-    } else {
-      console.warn(`[Card] Cannot update total labels - PowerOverlay not available for card:`, this.cardData?.id);
-    }
-  }
 
   /**
    * Set the zone placement status of this card

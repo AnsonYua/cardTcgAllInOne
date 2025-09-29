@@ -321,4 +321,56 @@ export default class SlotAreaManager {
     
     console.log('SlotAreaManager destroyed');
   }
+
+  static getSlotFromCarduid(gameStateManager, carduid) {
+    if (!gameStateManager || !carduid) {
+      return null;
+    }
+
+    const gameState = typeof gameStateManager.getGameState === "function"
+      ? gameStateManager.getGameState()
+      : null;
+    const players = gameState?.gameEnv?.players;
+
+    if (!players) {
+      return null;
+    }
+
+    const targetUid = String(carduid).toLowerCase();
+
+    for (const [playerId, playerData] of Object.entries(players)) {
+      const zones = playerData?.zones;
+      if (!zones) {
+        continue;
+      }
+
+      for (const [slotName, slotPayload] of Object.entries(zones)) {
+        const unitUid = slotPayload?.unit?.carduid;
+        if (unitUid && String(unitUid).toLowerCase() === targetUid) {
+          return {
+            playerId,
+            slotName,
+            cardType: "unit",
+            slotData: slotPayload
+          };
+        }
+        /*
+        const pilotUid = slotPayload?.pilot?.carduid;
+        if (pilotUid && String(pilotUid).toLowerCase() === targetUid) {
+          return {
+            playerId,
+            slotName,
+            cardType: "pilot",
+            slotData: slotPayload
+          };
+        }*/
+      }
+      console.log("afdasdfdsafadsf ",JSON.stringify(zones.base[0]))
+
+    }
+
+    return null;
+  }
+
+
 }

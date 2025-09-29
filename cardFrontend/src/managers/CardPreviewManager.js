@@ -5,12 +5,98 @@
 import Card from '../components/Card.js';
 import CardFactory from '../utils/CardFactory.js';
 import { applyOverlayPipeline } from '../utils/CardDisplayUtils.js';
+import SlotAreaManager from '../components/SlotAreaManager.js';
 
 export default class CardPreviewManager {
   constructor(gameScene) {
     this.scene = gameScene;
     this.gameStateManager = gameScene.gameStateManager;
     this.previewCard = null;
+    this.previewPilotCard = null;
+  }
+
+
+  showCardPreviewWithZone(cardData, _zoneType) {
+    this.hideCardPreview();
+    if (this.previewPilotCard) {
+      this.previewPilotCard.destroy();
+      this.previewPilotCard = null;
+    }
+    if (!this.scene.cardPreviewZone || !cardData) {
+      return;
+    }
+
+    const matchSlotData = SlotAreaManager.getSlotFromCarduid(this.gameStateManager, cardData.carduid);
+    if (matchSlotData) {
+      const slotFieldValue = matchSlotData.slotData?.fieldCardValue || null;
+      const unitSource = matchSlotData.slotData?.unit || null;
+      const pilotSource = matchSlotData.slotData?.pilot || null;
+      const unitData = unitSource?.cardData || unitSource || null;
+      const pilotData = pilotSource?.cardData || pilotSource || null;
+      const previewX = this.scene.cardPreviewZone.x;
+      const previewY = this.scene.cardPreviewZone.y;
+      const zoneLabel = matchSlotData.slotName || 'slot1';
+
+      if (unitData && pilotData) {
+        this.previewCard = this._createPreviewCard(unitData, previewX, previewY, 2000, true);
+        this.previewCard.fullCardData = unitData;
+
+        this.previewPilotCard = this._createPreviewCard(pilotData, previewX, previewY + 145, 1999, true);
+        this.previewPilotCard.fullCardData = pilotData;
+
+        if (this.previewCard?.setOverlayOverrides) {
+          this.previewCard.setOverlayOverrides({ totalsVisible: false });
+          this.previewCard.applyZoneOverlayRules?.();
+        }
+
+        applyOverlayPipeline({
+          unitCard: this.previewCard,
+          pilotCard: this.previewPilotCard,
+          unitData,
+          pilotData,
+          slotFieldValue,
+          zone: zoneLabel
+        });
+      } else if (unitData) {
+        this.previewCard = this._createPreviewCard(unitData, previewX, previewY, 2000, true);
+        this.previewCard.fullCardData = unitData;
+        this.previewPilotCard = null;
+
+        applyOverlayPipeline({
+          unitCard: this.previewCard,
+          pilotCard: null,
+          unitData,
+          pilotData: null,
+          slotFieldValue,
+          zone: zoneLabel
+        });
+      } else {
+        this.previewCard = this._createPreviewCard(cardData, previewX, previewY, 2000, false);
+      }
+      return;
+    }
+
+    if (cardData.cardData.cardType == "base") {
+      this.previewCard = this._createPreviewCard(cardData, this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y, 2000, false);
+      this.previewCard.fullCardData = cardData.cardData || cardData;
+      this.previewPilotCard = null;
+
+      const baseData = cardData.cardData || cardData;
+      const slotFieldValue = cardData.fieldCardValue || baseData.fieldCardValue || null;
+
+      applyOverlayPipeline({
+        unitCard: this.previewCard,
+        pilotCard: null,
+        unitData: baseData,
+        pilotData: null,
+        slotFieldValue,
+        zone: 'base'
+      });
+      return;
+    }
+
+    this.previewCard = this._createPreviewCard(cardData, this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y, 2000, false);
+    this.previewCard.fullCardData = cardData;
     this.previewPilotCard = null;
   }
   /**
@@ -21,7 +107,7 @@ export default class CardPreviewManager {
     this.hideCardPreview();
     console.log("showCardPreview111", JSON.stringify(cardData));
     
-        if (!this.scene.cardPreviewZone || !cardData) {
+    if (!this.scene.cardPreviewZone || !cardData) {
       return;
     }
 
@@ -77,88 +163,6 @@ export default class CardPreviewManager {
   }
 
   /**
-   * Show enhanced preview for slot cards - displays both unit and pilot if present
-   * @param {Card} hoveredCard - The card being hovered over
-   */
-  showSlotCardPreview(hoveredCard) {
-    console.log("adsfadsdsf ",JSON.stringify(hoveredCard.fullCardData))
-    
-    // First, hide any existing preview
-    this.hideSlotCardPreview();
-
-    if (!this.scene.cardPreviewZone || !hoveredCard) {
-      console.warn('[showSlotCardPreview] Missing cardPreviewZone or hoveredCard');
-      return;
-    }
-
-    console.log('[showSlotCardPreview] Hovering over card:', hoveredCard.cardData?.id, 'cardTypeInSlot:', hoveredCard.cardTypeInSlot, 'isInZone:', hoveredCard.isInZone);
-
-    // Get both unit and pilot cards from the slot (safe if manager not wired yet)
-    const slotSnapshot = this.scene.slotAreaManager?.getSlotOverlaySnapshot(hoveredCard);
-    if (!slotSnapshot) {
-      console.warn('[showSlotCardPreview] Slot snapshot missing, using fallback');
-      this.showCardPreview(hoveredCard.getCardFullData());
-      return;
-    }
-
-    const { slotCards, slotData, slotFieldValue } = slotSnapshot;
-    console.log('[showSlotCardPreview] Slot cards:', slotSnapshot.slotInfo.slotName, slotCards);
-
-    const isHoveringUnit = slotCards.unit === hoveredCard;
-    const isHoveringPilot = slotCards.pilot === hoveredCard;
-    console.log('[showSlotCardPreview] Hover detection:', { isHoveringUnit, isHoveringPilot });
-
-    if (slotCards.unit && slotCards.pilot) {
-      if (isHoveringUnit) {
-        console.log('[showSlotCardPreview] Hovering over unit - showing dual preview');
-        this.showDualCardPreview(slotCards.unit, slotCards.pilot, slotData);
-      } else if (isHoveringPilot) {
-        console.log('[showSlotCardPreview] Hovering over pilot - showing pilot only');
-        const pilotData = slotData?.pilot || slotCards.pilot.getCardFullData();
-        // Step 0: prepare preview instance for pilot-only view
-        this.previewCard = this._createPreviewCard(pilotData, this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y, 2000, true);
-        this.previewCard.fullCardData = pilotData;
-
-        // Steps 1-3: align data, decide totals visibility, finalize overlay
-        this._applyPreviewOverlay({
-          unitCard: null,
-          pilotCard: this.previewCard,
-          unitData: null,
-          pilotData,
-          slotFieldValue,
-          zone: this.previewCard.zoneContext?.zoneType || 'slot1'
-        });
-      } else {
-        console.warn('[showSlotCardPreview] Could not determine hovered card type, using fallback');
-        this.showCardPreview(hoveredCard.getCardFullData());
-      }
-    } else if (slotCards.unit || slotCards.pilot) {
-      const singleCard = slotCards.unit || slotCards.pilot;
-      console.log('[showSlotCardPreview] Showing single card preview for:', singleCard.cardData?.id);
-      const singleData = singleCard.getCardFullData();
-      const isUnit = slotCards.unit === singleCard;
-      const zone = isUnit ? 'slot1' : 'hand';
-
-      // Step 0: prepare preview instance for single slot card
-      this.previewCard = this._createPreviewCard(singleData, this.scene.cardPreviewZone.x, this.scene.cardPreviewZone.y, 2000, zone === 'slot1');
-      this.previewCard.fullCardData = singleData;
-
-      // Steps 1-3: align data, decide totals visibility, finalize overlay
-      this._applyPreviewOverlay({
-        unitCard: isUnit ? this.previewCard : null,
-        pilotCard: isUnit ? null : this.previewCard,
-        unitData: isUnit ? singleData : null,
-        pilotData: isUnit ? null : singleData,
-        slotFieldValue,
-        zone: this.previewCard.zoneContext?.zoneType || zone
-      });
-    } else {
-      console.warn('[showSlotCardPreview] No cards found in slot, using fallback');
-      this.showCardPreview(hoveredCard.getCardFullData());
-    }
-  }
-
-  /**
    * Show dual card preview (unit + pilot)
    * @param {Card} unitCard - The unit card  
    * @param {Card} pilotCard - The pilot card  
@@ -209,8 +213,6 @@ export default class CardPreviewManager {
       zone: this.previewPilotCard.zoneContext?.zoneType || 'slot1'
     });
 
-    console.log('[CardPreviewManager] Showing dual preview totals:', overlayState);
-    console.log('Showing dual preview:', unitCard.cardData?.id, '+', pilotCard.cardData?.id);
   }
 
 

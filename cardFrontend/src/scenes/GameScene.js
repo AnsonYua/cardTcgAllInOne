@@ -528,14 +528,6 @@ export default class GameScene extends Phaser.Scene {
     this.cardPreviewManager.hideCardPreview();
   }
 
-  //  method moved to CardPreviewManager
-
-  /**
-   * Show enhanced preview for slot cards - displays both unit and pilot if present
-   * @param {Card} hoveredCard - The card being hovered over
-   */
-  // showSlotCardPreview method moved to CardPreviewManager
-
   /**
    * Show dual card preview with unit on top and pilot 25px below
    * @param {Card} unitCard - The unit card

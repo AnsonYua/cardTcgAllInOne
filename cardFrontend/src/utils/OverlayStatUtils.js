@@ -51,35 +51,7 @@ class OverlayStatUtils {
       };
     }
 
-    const unitTotals = getTotalsFromCardData(unitData);
-    const pilotTotals = getTotalsFromCardData(pilotData);
-
-    const combinedOriginalAP = (unitData?.originalAP ?? unitData?.cardData?.ap ?? 0)
-      + (pilotData?.originalAP ?? pilotData?.cardData?.ap ?? 0);
-    const combinedOriginalHP = (unitData?.originalHP ?? unitData?.cardData?.hp ?? 0)
-      + (pilotData?.originalHP ?? pilotData?.cardData?.hp ?? 0);
-
-    const totalAP = (unitTotals?.totalAP ?? 0) + (pilotTotals?.totalAP ?? 0);
-    const totalHP = (unitTotals?.totalHP ?? 0) + (pilotTotals?.totalHP ?? 0);
-
-    const fallbackField = normalizeFieldCardValue({
-      totalOriginalAP: combinedOriginalAP,
-      totalOriginalHP: combinedOriginalHP,
-      totalTempModifyAP: 0,
-      totalTempModifyHP: 0,
-      totalContinueModifyAP: 0,
-      totalContinueModifyHP: 0,
-      totalDamageReceived: 0,
-      totalAP,
-      totalHP,
-      isRested: slotRested
-    });
-
-    return {
-      field: fallbackField,
-      totalAP,
-      totalHP
-    };
+    return null
   }
 
   static assignCardFieldValues(card, cardData, slotTotals, useSlotTotals) {
@@ -117,21 +89,8 @@ class OverlayStatUtils {
     }
 
     const fallbackTotals = getTotalsFromCardData(cardData);
-
-    if (typeof card?.getAPandHPFromCardData === 'function') {
-      const derived = card.getAPandHPFromCardData();
-      if (derived) {
-        totals.totalAP = typeof derived.ap === 'number' ? derived.ap : fallbackTotals.totalAP;
-        totals.totalHP = typeof derived.hp === 'number' ? derived.hp : fallbackTotals.totalHP;
-      } else {
-        totals.totalAP = fallbackTotals.totalAP;
-        totals.totalHP = fallbackTotals.totalHP;
-      }
-    } else {
-      totals.totalAP = fallbackTotals.totalAP;
-      totals.totalHP = fallbackTotals.totalHP;
-    }
-
+    totals.totalAP = fallbackTotals.totalAP;
+    totals.totalHP = fallbackTotals.totalHP;
     return totals;
   }
 

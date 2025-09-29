@@ -1,5 +1,4 @@
 import Card from '../components/Card.js';
-
 /**
  * CardFactory - Centralized factory for creating cards with context-specific configurations
  * Eliminates duplication across SlotAreaManager, BaseAndShieldAreaManager, CardPreviewManager, etc.
@@ -44,14 +43,6 @@ export default class CardFactory {
     
     // Set up card type identifier
     card.cardTypeInSlot = cardType;
-    
-    // Set up rest state
-    this._setupRestState(card, cardData);
-
-    if (card.setFieldCardValue) {
-      card.setFieldCardValue(fieldCardValue, { source: 'slot' });
-    }
-
     return card;
   }
   
@@ -157,11 +148,6 @@ export default class CardFactory {
       isPlayerZone: true
     });
 
-    if (card.setFieldCardValue) {
-      const source = zone === 'base' || zone.startsWith('slot') ? 'slot' : 'card';
-      card.setFieldCardValue(fieldCardValue, { source });
-    }
-
     return card;
   }
   
@@ -232,7 +218,7 @@ export default class CardFactory {
    * @returns {Card} Created hand card
    */
   static createHandCard(scene, cardData, x, y, options = {}) {
-    const { gameStateManager, scale = 1.1, depth = 0, fieldCardValue = cardData?.fieldCardValue || null } = options;
+    const { gameStateManager, scale = 1.1, depth = 0} = options;
     
     const card = new Card(scene, x, y, cardData, {
       scale,
@@ -247,9 +233,6 @@ export default class CardFactory {
       isPlayerZone: true
     });
 
-    if (card.setFieldCardValue) {
-      card.setFieldCardValue(fieldCardValue, { source: 'card' });
-    }
 
     return card;
   }
