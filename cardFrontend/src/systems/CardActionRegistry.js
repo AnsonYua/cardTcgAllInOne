@@ -69,7 +69,7 @@ export default class CardActionRegistry {
         // Special logic for command cards with pilot designation
         if (cardType === 'command' && cardData) {
             const hasDesignatePilot = cardData.effects?.rules?.some(rule => 
-                rule.effect?.action === 'designate_pilot'
+                rule?.action === 'designate_pilot'
             );
             
             if (hasDesignatePilot) {
