@@ -301,15 +301,19 @@ export default class GameScene extends Phaser.Scene {
 
 
     // Add background click handler for deselecting cards
+    /* temparoialy remove it 
     this.input.on('pointerdown', (pointer, currentlyOver) => {
       // Only deselect if clicking on background (not on a card or zone)
+      console.log("adsfadsfadsfsdfsd pointerdown ",currentlyOver);
+      console.log("adsfadsfadsfsdfsd pointerdown ",this.gameStateManager.getSelectedCard());
       if (currentlyOver.length === 0 && this.gameStateManager.getSelectedCard()) {
         // Completely deselect all cards and clear game state
+        console.log("adsfadsfadsfsdfsd pointerdown111");
         this.deselectAllCards(true);
         // Hide action buttons when clicking background
         this.actionButtonManager.hideDynamicActionButtons();
       }
-    });
+    });*/
   }
 
   updateGameState() {
