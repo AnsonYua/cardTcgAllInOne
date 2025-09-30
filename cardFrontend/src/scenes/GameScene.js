@@ -255,7 +255,7 @@ export default class GameScene extends Phaser.Scene {
     card in dialog will not reach here
     */
     this.events.on('zone-card-select', (card) => {
-      console.log(`GameScene: zone-card-select event received for card ${card.cardData?.id}`);
+      console.log(`GameScene: zone-card-select event received for card ${card?.id}`);
 
       // Use helper method for consistent card selection
       this.selectCard(card, 'zone');
@@ -299,21 +299,6 @@ export default class GameScene extends Phaser.Scene {
       }
     });
 
-
-    // Add background click handler for deselecting cards
-    /* temparoialy remove it 
-    this.input.on('pointerdown', (pointer, currentlyOver) => {
-      // Only deselect if clicking on background (not on a card or zone)
-      console.log("adsfadsfadsfsdfsd pointerdown ",currentlyOver);
-      console.log("adsfadsfadsfsdfsd pointerdown ",this.gameStateManager.getSelectedCard());
-      if (currentlyOver.length === 0 && this.gameStateManager.getSelectedCard()) {
-        // Completely deselect all cards and clear game state
-        console.log("adsfadsfadsfsdfsd pointerdown111");
-        this.deselectAllCards(true);
-        // Hide action buttons when clicking background
-        this.actionButtonManager.hideDynamicActionButtons();
-      }
-    });*/
   }
 
   updateGameState() {
@@ -416,16 +401,24 @@ export default class GameScene extends Phaser.Scene {
   }
 
   /**
-   * Deselect all cards (hand cards and slot cards) and clear zone highlights
+   * Deselect all cards (hand cards, slot cards, and base cards) and clear zone highlights
    * @param {boolean} clearGameState - Whether to also clear the selected card from game state (default: false)
    */
   deselectAllCards(clearGameState = false) {
+    console.log("dafadsfasdfadsdsfds")
     // Deselect all hand cards using HandCardManager
     this.handCardManager.deselectAllHandCards();
 
     // Deselect all slot cards - delegate to SlotAreaManager
     if (this.slotAreaManager) {
       this.slotAreaManager.deselectAllSlotCards();
+    }
+    // ✅ NEW: Deselect all base cards - delegate to BaseAndShieldAreaManager
+    if (this.baseAndShieldAreaManager) {
+      console.log("dafadsfasdfadsdsfds111")
+      this.baseAndShieldAreaManager.deselectAllBaseCards();
+      // Also deselect shield cards for completeness
+      this.baseAndShieldAreaManager.deselectAllShieldCards();
     }
 
     // Optionally clear the selected card from game state

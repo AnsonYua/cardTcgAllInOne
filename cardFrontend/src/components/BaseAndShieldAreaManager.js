@@ -276,10 +276,55 @@ export default class BaseAndShieldAreaManager {
     this.opponentBaseCards.length = 0;
   }
 
+  // ============ SELECTION MANAGEMENT ============
+
+  /**
+   * Deselect all base cards (both player and opponent) silently without animations
+   */
+  deselectAllBaseCards() {
+    // Deselect all player base cards
+    console.log("dafadsfasdfadsdsfds ",JSON.stringify(this.playerBaseCards))
+    this.playerBaseCards.forEach((card, index) => {
+      if (card && card.isSelected) {
+        console.log(`Deselecting player base card ${card.cardData?.id || index}`);
+        card.deselectSilently();
+      }
+    });
+
+    // Deselect all opponent base cards
+    this.opponentBaseCards.forEach((card, index) => {
+      if (card && card.isSelected) {
+        console.log(`Deselecting opponent base card ${card.cardData?.id || index}`);
+        card.deselectSilently();
+      }
+    });
+  }
+
+  /**
+   * Deselect all shield cards (both player and opponent) silently without animations
+   */
+  deselectAllShieldCards() {
+    // Deselect all player shield cards
+    this.playerShieldCards.forEach((card, index) => {
+      if (card && card.isSelected) {
+        console.log(`Deselecting player shield card ${card.cardData?.id || index}`);
+        card.deselectSilently();
+      }
+    });
+
+    // Deselect all opponent shield cards
+    this.opponentShieldCards.forEach((card, index) => {
+      if (card && card.isSelected) {
+        console.log(`Deselecting opponent shield card ${card.cardData?.id || index}`);
+        card.deselectSilently();
+      }
+    });
+  }
+
   // ============ UTILITY METHODS ============
 
   getShieldCardCount(isOpponent = false) {
-    return isOpponent ? this.opponentShieldCards.length : this.playerShieldCards.length;
+    return isOpponent ? this.opponentShieldCards.length : this.playerBaseCards.length;
   }
 
   getBaseCardCount(isOpponent = false) {

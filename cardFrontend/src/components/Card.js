@@ -270,14 +270,15 @@ export default class Card extends Phaser.GameObjects.Container {
     const baseInteraction = this.visible && this.active;
     
     // Cards that should never be clickable
+    // ✅ FIXED: Allow base cards to be clickable in hand, only disable energy/shield cards
     const shouldDisableClick = this.cardData?.cardType === "energy" ||
      this.cardData?.cardType === "shield" || 
-     this.cardData?.cardType === "base" ||
      (this.isInZone && !this.isPlayerZone); // Opponent cards should not be clickable
     
     return {
       // Cards in zones can still be selected for highlighting, even if other interactions are disabled
-      // EXCEPT energy/shield/base cards and opponent cards - they should never be clickable
+      // EXCEPT energy/shield cards and opponent cards - they should never be clickable
+      // ✅ Base cards are now allowed to be clickable in hand
       canInteract: baseInteraction && (!this.isInteractionDisabled || (this.isInZone && !shouldDisableClick)),
       canSelect: !this.options.handleOutside && !shouldDisableClick,
       isInZone: this.isInZone
@@ -334,7 +335,15 @@ export default class Card extends Phaser.GameObjects.Container {
    */
   handlePointerDown(pointer, localX, localY, event) {
     const state = this.getInteractionState();
-    console.log("card clicked here ", this.options.handleOutside)
+    console.log(`🔍 Card ${this.cardData?.id} (${this.cardData?.cardType}) click debug:`, {
+      handleOutside: this.options.handleOutside,
+      canInteract: state.canInteract,
+      canSelect: state.canSelect,
+      isInZone: this.isInZone,
+      visible: this.visible,
+      active: this.active
+    });
+    
     // Early return if card should not handle interaction
     if (this.options.handleOutside) return;
     if (pointer.rightButtonDown()) {
