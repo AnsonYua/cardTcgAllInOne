@@ -60,6 +60,50 @@ export default class Card extends Phaser.GameObjects.Container {
     scene.add.existing(this);
   }
 
+  /**
+   * Calculate the appropriate card texture key based on card type and options
+   * @returns {string} The texture key to use for this card
+   */
+  getCardTextureKey() {
+    // Show actual card image when face up
+    let cardKey = this.options.usePreview ? 
+      `${this.cardData.id}-preview` :  // Use preview version (e.g., "c-1-preview")
+      this.cardData.id;                // Use original version (e.g., "c-1")
+    
+    if(this.cardData.cardType == "shield"){
+      cardKey = `${GAME_CONFIG.imageKey.cardback}-preview`
+    }else if(this.cardData.cardType == "base" && this.fullCardData.carduid == "base_default"){
+      cardKey = this.options.usePreview ? 
+      `${GAME_CONFIG.imageKey.exBase}-preview` :  GAME_CONFIG.imageKey.exBase;     
+    }else if (this.cardData.cardType == "energy"){
+      cardKey = this.options.usePreview ? 
+      `${GAME_CONFIG.imageKey.extraResource}-preview` :  // Use preview version (e.g., "c-1-preview")
+      GAME_CONFIG.imageKey.extraResource  ;  
+      if (!this.fullCardData.isExtraEnergy){
+        cardKey = this.options.usePreview ? 
+        `${GAME_CONFIG.imageKey.resource}-preview` :  // Use preview version (e.g., "c-1-preview")
+        GAME_CONFIG.imageKey.resource;  
+      }  
+    }
+    
+    return cardKey;
+  }
+
+  /**
+   * Apply proper scaling and filtering to the card image
+   */
+  applyCardImageScaling() {
+    if (this.cardImage) {
+      const scaleX = GAME_CONFIG.card.width / this.cardImage.width;
+      const scaleY = GAME_CONFIG.card.height / this.cardImage.height;
+      const scale = Math.min(scaleX, scaleY);
+      this.cardImage.setScale(scale);
+      
+      // Set texture filtering for better quality when scaling
+      this.cardImage.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+    }
+  }
+
   create() {
     console.log(`[Card] 11111:`, JSON.stringify(this.fullCardData));
     // Check if we have a valid card ID
@@ -85,25 +129,7 @@ export default class Card extends Phaser.GameObjects.Container {
       return;
     }
     
-    // Show actual card image when face up
-    let cardKey = this.options.usePreview ? 
-      `${this.cardData.id}-preview` :  // Use preview version (e.g., "c-1-preview")
-      this.cardData.id;                // Use original version (e.g., "c-1")
-    if(this.cardData.cardType == "shield"){
-      cardKey = `${GAME_CONFIG.imageKey.cardback}-preview`
-    }else if(this.cardData.cardType == "base" && this.fullCardData.carduid == "base_default"){
-      cardKey = this.options.usePreview ? 
-      `${GAME_CONFIG.imageKey.exBase}-preview` :  GAME_CONFIG.imageKey.exBase;     
-    }else if (this.cardData.cardType == "energy"){
-      cardKey = this.options.usePreview ? 
-      `${GAME_CONFIG.imageKey.extraResource}-preview` :  // Use preview version (e.g., "c-1-preview")
-      GAME_CONFIG.imageKey.extraResource  ;  
-      if (!this.fullCardData.isExtraEnergy){
-        cardKey = this.options.usePreview ? 
-        `${GAME_CONFIG.imageKey.resource}-preview` :  // Use preview version (e.g., "c-1-preview")
-        GAME_CONFIG.imageKey.resource;  
-      }  
-    }
+    const cardKey = this.getCardTextureKey();
     
     console.log("cardKey111 ", cardKey)
     console.log(`[Card] Trying to load image with key: ${cardKey}`);
@@ -131,19 +157,9 @@ export default class Card extends Phaser.GameObjects.Container {
       this.add(idText);
     }
     this.add(this.cardImage);
-      
     
-    
-    // Scale card image to match game config dimensions with better filtering
-    if (this.cardImage) {
-      const scaleX = GAME_CONFIG.card.width / this.cardImage.width;
-      const scaleY = GAME_CONFIG.card.height / this.cardImage.height;
-      const scale = Math.min(scaleX, scaleY);
-      this.cardImage.setScale(scale);
-      
-      // Set texture filtering for better quality when scaling
-      this.cardImage.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
-    }
+    // Apply scaling and filtering
+    this.applyCardImageScaling();
     
     this.setScale(this.options.scale);
     
@@ -811,6 +827,33 @@ export default class Card extends Phaser.GameObjects.Container {
       console.log(`PowerOverlay total labels configured for card ${this.cardData?.id}`);
     } catch (error) {
       console.error(`Error configuring PowerOverlay total labels for card ${this.cardData?.id}:`, error);
+    }
+  }
+
+  /**
+   * Update the card image when card data changes
+   * This method refreshes the card texture when cardData.id or fullCardData.carduid changes
+   */
+  updateCardImage() {
+    if (!this.cardImage) {
+      console.warn(`[Card] updateCardImage called but no cardImage exists for card ${this.cardData?.id}`);
+      return;
+    }
+
+    const cardKey = this.getCardTextureKey();
+    console.log(`[Card] updateCardImage: Updating card ${this.cardData?.id} image to ${cardKey}`);
+    
+    // Check if the new texture exists
+    if (this.scene.textures.exists(cardKey)) {
+      // Update the texture
+      this.cardImage.setTexture(cardKey);
+      
+      // Apply proper scaling and filtering
+      this.applyCardImageScaling();
+      
+      console.log(`[Card] Successfully updated card image to: ${cardKey}`);
+    } else {
+      console.warn(`[Card] updateCardImage: Texture not found: ${cardKey}, keeping current image`);
     }
   }
 

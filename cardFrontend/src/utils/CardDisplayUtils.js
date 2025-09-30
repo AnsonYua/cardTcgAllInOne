@@ -8,6 +8,10 @@ export function mergeCardZoneData(card, cardData) {
     return;
   }
 
+  // Store old card data to detect changes that require image update
+  const oldCardId = card.cardData?.id;
+  const oldCarduid = card.fullCardData?.carduid;
+
   card.fullCardData = { ...card.fullCardData, ...cardData };
 
   if (card.cardData && cardData.cardData) {
@@ -16,6 +20,19 @@ export function mergeCardZoneData(card, cardData) {
 
   if (card.setRested) {
     card.setRested(cardData.isRested || false);
+  }
+
+  // Check if card ID or carduid changed, indicating the card image should be updated
+  const newCardId = card.cardData?.id;
+  const newCarduid = card.fullCardData?.carduid;
+  
+  if ((oldCardId !== newCardId) || (oldCarduid !== newCarduid)) {
+    console.log(`[mergeCardZoneData] Card image needs update: ID ${oldCardId} → ${newCardId}, carduid ${oldCarduid} → ${newCarduid}`);
+    if (card.updateCardImage && typeof card.updateCardImage === 'function') {
+      card.updateCardImage();
+    } else {
+      console.warn(`[mergeCardZoneData] Card ${newCardId} does not have updateCardImage method`);
+    }
   }
 }
 
