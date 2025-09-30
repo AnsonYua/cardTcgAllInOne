@@ -985,7 +985,6 @@ export class GameEngine {
             const { defendingPlayerId, attackingPlayerId, attackerSlot, shieldCards, attackPower } = event.data;
 
             console.log(`🎯 Processing shield attack - Cards: ${shieldCards.length}, Power: ${attackPower}`);
-
             // Get defending player
             const defender = gameEnv.getPlayer(defendingPlayerId);
             if (!defender) {
@@ -997,15 +996,12 @@ export class GameEngine {
 
             // Process each attacked shield card
             for (const shieldCard of shieldCards) {
-                console.log(`🛡️ Processing shield card: ${shieldCard.carduid}`);
                 const shieldCardId = getCardIdFromUid(shieldCard.carduid);
-
+                console.log(`🛡️ Processing shield card : ${shieldCardId}`);
                 // Check if card has burst effects with BURST_CONDITION trigger
                 const burstEffects = GameEngine.findBurstEffects(shieldCard.cardData);
-
                 if (burstEffects.length > 0) {
-                    console.log(`💥 Found ${burstEffects.length} burst effect(s) on card ${shieldCardId}`);
-
+                    console.log(`💥 Found ${burstEffects.length} burst effect(s) `);
                     // Create choice events for each burst effect requiring user confirmation
                     for (const burstEffect of burstEffects) {
                         console.log(`⚡ Creating choice event for burst effect: ${burstEffect.effectId}`);

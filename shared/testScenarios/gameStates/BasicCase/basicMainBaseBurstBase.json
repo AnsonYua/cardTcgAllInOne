@@ -1109,65 +1109,6 @@
         "deck": {
           "hand": [
             {
-              "carduid": "ST01-011_de0ea6cd-9083-4a7e-a3de-973da0ce052d",
-              "cardId": "ST01-011",
-              "cardData": {
-                "id": "ST01-011",
-                "name": "Suletta Mercury",
-                "cardType": "pilot",
-                "color": "White",
-                "level": 4,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Academy"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 2,
-                "effects": {
-                  "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【Attack】【Once per Turn】Choose 1 of your Resources. Set it as active."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_add_to_hand",
-                      "type": "triggered",
-                      "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
-                      "effect": {
-                        "action": "addToHand",
-                        "duration": "instant"
-                      }
-                    },
-                    {
-                      "effectId": "attack_activate_resource",
-                      "type": "activated",
-                      "timing": [
-                        "ATTACK_PHASE"
-                      ],
-                      "restrictions": [
-                        "once_per_turn"
-                      ],
-                      "target": {
-                        "type": "resource",
-                        "scope": "self",
-                        "count": 1
-                      },
-                      "effect": {
-                        "action": "setActive",
-                        "duration": "instant"
-                      }
-                    }
-                  ]
-                }
-              }
-            },
-            {
               "carduid": "ST01-004_f97620f2-0728-4d6e-a0bb-014fc08bd18c",
               "cardId": "ST01-004",
               "cardData": {
@@ -1733,34 +1674,30 @@
               "originalCardType": "command"
             },
             {
-              "carduid": "ST01-016_344d543e-eea7-49d2-bcf3-f3d406cbf07a",
-              "cardId": "ST01-016",
+              "carduid": "ST01-011_de0ea6cd-9083-4a7e-a3de-973da0ce052d",
+              "cardId": "ST01-011",
               "cardData": {
-                "id": "ST01-016",
-                "name": "Asticassia School of Technology, Earth House",
+                "id": "ST01-011",
+                "name": "Suletta Mercury",
                 "cardType": "shield",
                 "color": "White",
-                "level": 2,
+                "level": 4,
                 "cost": 1,
-                "zone": [
-                  "Space"
-                ],
+                "zone": [],
                 "traits": [
-                  "Academy",
-                  "Stronghold"
+                  "Academy"
                 ],
                 "link": [],
-                "ap": 0,
-                "hp": 5,
+                "ap": 1,
+                "hp": 2,
                 "effects": {
                   "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
-                    "【Activate･Main】Rest this Base：All friendly Link Units get AP+1 during this turn."
+                    "【Burst】Add this card to your hand.",
+                    "【Attack】【Once per Turn】Choose 1 of your Resources. Set it as active."
                   ],
                   "rules": [
                     {
-                      "effectId": "burst_deploy",
+                      "effectId": "burst_add_to_hand",
                       "type": "triggered",
                       "trigger": "BURST_CONDITION",
                       "target": {
@@ -1768,59 +1705,32 @@
                         "scope": "self"
                       },
                       "effect": {
-                        "action": "deploy",
-                        "duration": "instant"
-                      }
-                    },
-                    {
-                      "effectId": "deploy_shield_to_hand",
-                      "type": "triggered",
-                      "trigger": "ENTERS_PLAY",
-                      "target": {
-                        "type": "card",
-                        "scope": "self_shield"
-                      },
-                      "effect": {
                         "action": "addToHand",
-                        "parameters": {
-                          "count": 1,
-                          "from": "shield"
-                        },
                         "duration": "instant"
                       }
                     },
                     {
-                      "effectId": "activate_boost_link_units",
+                      "effectId": "attack_activate_resource",
                       "type": "activated",
                       "timing": [
-                        "MAIN_PHASE"
+                        "ATTACK_PHASE"
                       ],
-                      "cost": {
-                        "tap": "self"
-                      },
+                      "restrictions": [
+                        "once_per_turn"
+                      ],
                       "target": {
-                        "type": "unit",
-                        "scope": "self_all_unit",
-                        "filters": {
-                          "linkStatus": "linked"
-                        }
+                        "type": "resource",
+                        "scope": "self",
+                        "count": 1
                       },
                       "effect": {
-                        "action": "modifyAP",
-                        "parameters": {
-                          "modifier": "+1"
-                        },
-                        "duration": "turn"
+                        "action": "setActive",
+                        "duration": "instant"
                       }
                     }
                   ]
-                },
-                "originalCardType": "base"
-              },
-              "placedAt": 1757854884783,
-              "placedBy": "playerId_2",
-              "isRested": false,
-              "originalCardType": "base"
+                }
+              }
             },
             {
               "carduid": "ST01-002_0faf4a73-374b-4846-ac35-3858e4a2e951",

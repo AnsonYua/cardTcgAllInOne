@@ -96,6 +96,21 @@ export class EffectExecutor {
             for (const target of selectedTargets) {
                 console.log(`➕ Processing addToHand for target: ${target.carduid} in zone ${target.zone}`);
                 
+                // Check if we need to remove card from shield first (based on effect parameters)
+                const parameters = this.getEffectParameters(effect);
+                if (parameters?.from === 'shield') {
+                    console.log(`🛡️ Effect specifies removal from shield - removing ${target.carduid} from shield first`);
+                    
+                    // Remove card from shield first using centralized GameEngine method
+                    const removeResult = GameEngine.RemoveFromShield(gameEnv, sourcePlayerId, target.carduid);
+                    if (!removeResult.success) {
+                        return {
+                            success: false,
+                            error: removeResult.error || `Failed to remove card ${target.carduid} from shield`
+                        };
+                    }
+                }
+                
                 // Use centralized GameEngine.AddToHand method
                 const executionResult = GameEngine.AddToHand(gameEnv, sourcePlayerId, target.carduid, target.cardData);
                 
@@ -107,28 +122,6 @@ export class EffectExecutor {
                 }
                 
                 console.log(`✅ Card ${target.carduid} added to ${sourcePlayerId}'s hand from ${target.zone} zone`);
-                /*
-                checking effect 
-                    checking  
-                    {
-                        "effectId": "deploy_shield_to_hand",
-                        "type": "triggered",
-                        "trigger": "ENTERS_PLAY",
-                        "target": {
-                            "type": "card",
-                            "scope": "self_shield"
-                        },
-                        "action": "addToHand",
-                        "parameters": {
-                            "value": 1,
-                            "from": "shield"
-                        }
-                    },
-                    if parameters.from is from "shield"
-                    call 
-                    const executionResult = GameEngine.removeCardFromShield(gameEnv, sourcePlayerId, target.carduid);
-                    (u can double check if any function/similar function can reuse)
-                */
             }
             return { success: true };
             
