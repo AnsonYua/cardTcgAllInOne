@@ -205,60 +205,81 @@ export class TargetChoiceManager {
         
         console.log(`🔍 Generating targets for config:`, JSON.stringify(targetConfig, null, 2));
         
-        // Determine target player based on scope
-        const targetPlayerIds = this.getTargetPlayerIds(gameEnv, playerId, targetConfig.scope);
         
-        for (const targetPlayerId of targetPlayerIds) {
-            const player = gameEnv.getPlayer(targetPlayerId);
-            if (!player) {
-                console.error(`❌ Target player ${targetPlayerId} not found`);
-                continue;
+        // Handle shield zone targeting for self_shield scope
+        if (targetConfig.scope === 'self_shield') {
+            const player = gameEnv.getPlayer(playerId);
+            if (player) {
+                const shieldCards = player.getShieldCards(); // Use existing Player method
+                console.log(`🛡️ Found ${shieldCards.length} shield cards for player ${playerId}`);
+                
+                for (let i = 0; i < Math.min(shieldCards.length, targetConfig.count); i++) {
+                            const shieldCard = shieldCards[i];
+                            targets.push({
+                                carduid: shieldCard.carduid,
+                                zone: 'shield',
+                                playerId: playerId,
+                                cardData: shieldCard as any
+                            });
+                }
             }
+        }else{
+            // Determine target player based on scope
+            const targetPlayerIds = this.getTargetPlayerIds(gameEnv, playerId, targetConfig.scope);
             
-            console.log(`🎯 Searching player ${targetPlayerId} for valid targets`);
-            
-            // Search specified zones (or all slot zones by default)
-            const zonesToSearch = targetConfig.filters.zone || SLOT_ZONES;
-            
-            for (const slotName of zonesToSearch) {
-                // Use type-safe slot validation
-                const slotResult = SlotZoneUtils.getSlotZone(player.zones, slotName);
-                if (!slotResult.isValid || !slotResult.slot) {
-                    console.log(`⚠️ Skipping invalid slot ${slotName}: ${slotResult.error}`);
+            for (const targetPlayerId of targetPlayerIds) {
+                const player = gameEnv.getPlayer(targetPlayerId);
+                if (!player) {
+                    console.error(`❌ Target player ${targetPlayerId} not found`);
                     continue;
                 }
                 
-                const slotZone = slotResult.slot;
+                console.log(`🎯 Searching player ${targetPlayerId} for valid targets`);
                 
-                // Check unit targets
-                if (targetConfig.type === 'unit' && SlotZoneUtils.hasUnit(slotZone)) {
-                    const unit = SlotZoneUtils.getUnit(slotZone);
-                    if (unit && this.validateTargetFilters(gameEnv , unit, targetConfig.filters || {})) {
-                        targets.push({
-                            carduid: unit.carduid,
-                            zone: slotName,
-                            playerId: targetPlayerId,
-                            cardData: unit.cardData
-                        });
-                        console.log(`✅ Added unit target: ${unit.carduid} in ${slotName}`);
+                // Search specified zones (or all slot zones by default)
+                const zonesToSearch = targetConfig.filters.zone || SLOT_ZONES;
+                
+                for (const slotName of zonesToSearch) {
+                    // Use type-safe slot validation
+                    const slotResult = SlotZoneUtils.getSlotZone(player.zones, slotName);
+                    if (!slotResult.isValid || !slotResult.slot) {
+                        console.log(`⚠️ Skipping invalid slot ${slotName}: ${slotResult.error}`);
+                        continue;
                     }
+                    
+                    const slotZone = slotResult.slot;
+                    
+                    // Check unit targets
+                    if (targetConfig.type === 'unit' && SlotZoneUtils.hasUnit(slotZone)) {
+                        const unit = SlotZoneUtils.getUnit(slotZone);
+                        if (unit && this.validateTargetFilters(gameEnv , unit, targetConfig.filters || {})) {
+                            targets.push({
+                                carduid: unit.carduid,
+                                zone: slotName,
+                                playerId: targetPlayerId,
+                                cardData: unit.cardData
+                            });
+                            console.log(`✅ Added unit target: ${unit.carduid} in ${slotName}`);
+                        }
+                    }
+                    
+                    // Check pilot targets
+                    /*
+                    if (targetConfig.type === 'pilot' && SlotZoneUtils.hasPilot(slotZone)) {
+                        const pilot = SlotZoneUtils.getPilot(slotZone);
+                        if (pilot && this.validateTargetFilters(pilot, targetConfig.filters || {})) {
+                            targets.push({
+                                carduid: pilot.carduid,
+                                zone: slotName,
+                                playerId: targetPlayerId,
+                                cardData: pilot.cardData
+                            });
+                            console.log(`✅ Added pilot target: ${pilot.carduid} in ${slotName}`);
+                        }
+                    }*/
                 }
-                
-                // Check pilot targets
-                /*
-                if (targetConfig.type === 'pilot' && SlotZoneUtils.hasPilot(slotZone)) {
-                    const pilot = SlotZoneUtils.getPilot(slotZone);
-                    if (pilot && this.validateTargetFilters(pilot, targetConfig.filters || {})) {
-                        targets.push({
-                            carduid: pilot.carduid,
-                            zone: slotName,
-                            playerId: targetPlayerId,
-                            cardData: pilot.cardData
-                        });
-                        console.log(`✅ Added pilot target: ${pilot.carduid} in ${slotName}`);
-                    }
-                }*/
             }
+
         }
         
         console.log(`🎯 Generated ${targets.length} valid targets`);
@@ -319,6 +340,10 @@ export class TargetChoiceManager {
      * - If only one target or auto-select scenarios → No choice needed
      */
     private static requiresPlayerChoice(targetConfig: ResolvedTargetConfig, availableTargets: TargetReference[]): boolean {
+        if(targetConfig.scope = "self_shield"){
+            return false;
+        }
+        
         // Multiple target selection always requires choice
         if (targetConfig.count > 1) {
             return availableTargets.length > 0;

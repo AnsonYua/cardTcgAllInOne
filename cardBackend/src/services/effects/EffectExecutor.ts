@@ -6,6 +6,7 @@ import { UnitZoneCard, PilotZoneCard, TemporaryEffect } from '../../models/CardS
 import { EffectDefinition, EffectTiming, TargetReference, TargetScope } from '../EventQueue/interfaces/GameEvent';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { SLOT_ZONES } from '../../config/gameConstants';
+import { GameEngine } from '../GameEngine';
 
 export class EffectExecutor {
 
@@ -30,6 +31,11 @@ export class EffectExecutor {
 
         if (action === 'draw') {
             return this.applyPlayerDrawEffect(gameEnv, sourcePlayerId, effect);
+        }
+
+
+        if (action === 'addToHand') {
+            return this.applyAddToHandEffect(gameEnv, sourcePlayerId, effect,selectedTargets);
         }
 
         const parameters = this.getEffectParameters(effect);
@@ -78,6 +84,62 @@ export class EffectExecutor {
             };
         }
     }
+
+     static applyAddToHandEffect(gameEnv: GameEnvironment, 
+                                 sourcePlayerId: string, 
+                                 effect: EffectDefinition,
+                                 selectedTargets: TargetReference[]): { success: boolean; error?: string } {
+        console.log(`➕ Applying addToHand effect to ${selectedTargets.length} target(s)`);
+        
+        try {
+            // Process each selected target using centralized GameEngine method
+            for (const target of selectedTargets) {
+                console.log(`➕ Processing addToHand for target: ${target.carduid} in zone ${target.zone}`);
+                
+                // Use centralized GameEngine.AddToHand method
+                const executionResult = GameEngine.AddToHand(gameEnv, sourcePlayerId, target.carduid, target.cardData);
+                
+                if (!executionResult.success) {
+                    return {
+                        success: false,
+                        error: executionResult.error || `Failed to add card ${target.carduid} to hand`
+                    };
+                }
+                
+                console.log(`✅ Card ${target.carduid} added to ${sourcePlayerId}'s hand from ${target.zone} zone`);
+                /*
+                checking effect 
+                    checking  
+                    {
+                        "effectId": "deploy_shield_to_hand",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "target": {
+                            "type": "card",
+                            "scope": "self_shield"
+                        },
+                        "action": "addToHand",
+                        "parameters": {
+                            "value": 1,
+                            "from": "shield"
+                        }
+                    },
+                    if parameters.from is from "shield"
+                    call 
+                    const executionResult = GameEngine.removeCardFromShield(gameEnv, sourcePlayerId, target.carduid);
+                    (u can double check if any function/similar function can reuse)
+                */
+            }
+            return { success: true };
+            
+        } catch (error) {
+            console.error(`❌ Error applying addToHand effect:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'AddToHand effect application failed'
+            };
+        }
+     }
 
     static applyPlayerDrawEffect(gameEnv: GameEnvironment, sourcePlayerId: string, effect: EffectDefinition): { success: boolean; error?: string } {
         const parameters = this.getEffectParameters(effect);

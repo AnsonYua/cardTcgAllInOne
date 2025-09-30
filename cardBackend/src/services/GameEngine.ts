@@ -1306,7 +1306,7 @@ export class GameEngine {
             let executionResult: ExecutionResult;
             switch (burstEffect.type) {
                 case 'addToHand':
-                    executionResult = GameEngine.executeBurstAddToHand(gameEnv, playerId, carduid, cardData);
+                    executionResult = GameEngine.AddToHand(gameEnv, playerId, carduid, cardData);
                     break;
 
                 case 'deploy':
@@ -1337,11 +1337,11 @@ export class GameEngine {
     }
 
     /**
-     * Execute addToHand burst effect - move card from shield to hand
+     * Public method to add a card to player's hand - centralized logic for effects
      */
-    private static executeBurstAddToHand(gameEnv: GameEnvironment, playerId: string, carduid: string, cardData: any): ExecutionResult {
-        console.log(`➕ Executing addToHand burst effect for card ${carduid}`);
-
+    public static AddToHand(gameEnv: GameEnvironment, playerId: string, carduid: string, cardData: any): ExecutionResult {
+        console.log(`➕ Adding card ${carduid} to ${playerId}'s hand`);
+        
         const player = gameEnv.getPlayer(playerId);
         if (!player) {
             return {
@@ -1356,8 +1356,25 @@ export class GameEngine {
         }
         player.deck._handUids.push(carduid);
 
-        console.log(`✅ Card ${carduid} (${cardData.name}) added to ${playerId}'s hand`);
+        console.log(`✅ Card ${carduid} (${cardData?.name || 'Unknown'}) added to ${playerId}'s hand`);
         return { success: true };
+    }
+
+    /**
+     * Public method to remove a card from player's shield - centralized logic for effects
+     */
+    public static RemoveFromShield(gameEnv: GameEnvironment, playerId: string, carduid: string): ExecutionResult {
+        console.log(`🛡️ Removing card ${carduid} from ${playerId}'s shield`);
+        
+        const removed = GameEngine.removeFromShieldWithLogging(gameEnv, playerId, carduid);
+        if (removed) {
+            return { success: true };
+        } else {
+            return {
+                success: false,
+                error: `Failed to remove card ${carduid} from ${playerId}'s shield`
+            };
+        }
     }
 
     /**
