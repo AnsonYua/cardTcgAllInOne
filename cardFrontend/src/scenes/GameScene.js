@@ -405,7 +405,10 @@ export default class GameScene extends Phaser.Scene {
    * @param {boolean} clearGameState - Whether to also clear the selected card from game state (default: false)
    */
   deselectAllCards(clearGameState = false) {
-    console.log("dafadsfasdfadsdsfds")
+    console.log("🔍 deselectAllCards called")
+    console.log("🔍 baseAndShieldManager exists:", !!this.baseAndShieldManager)
+    console.log("🔍 baseAndShieldManager type:", typeof this.baseAndShieldManager)
+    
     // Deselect all hand cards using HandCardManager
     this.handCardManager.deselectAllHandCards();
 
@@ -413,12 +416,16 @@ export default class GameScene extends Phaser.Scene {
     if (this.slotAreaManager) {
       this.slotAreaManager.deselectAllSlotCards();
     }
+    
     // ✅ NEW: Deselect all base cards - delegate to BaseAndShieldAreaManager
-    if (this.baseAndShieldAreaManager) {
-      console.log("dafadsfasdfadsdsfds111")
-      this.baseAndShieldAreaManager.deselectAllBaseCards();
+    // ✅ FIXED: Use correct property name (baseAndShieldManager, not baseAndShieldAreaManager)
+    if (this.baseAndShieldManager) {
+      console.log("✅ Calling baseAndShieldManager methods")
+      this.baseAndShieldManager.deselectAllBaseCards();
       // Also deselect shield cards for completeness
-      this.baseAndShieldAreaManager.deselectAllShieldCards();
+      this.baseAndShieldManager.deselectAllShieldCards();
+    } else {
+      console.warn("❌ baseAndShieldManager is not available:", this.baseAndShieldManager)
     }
 
     // Optionally clear the selected card from game state
