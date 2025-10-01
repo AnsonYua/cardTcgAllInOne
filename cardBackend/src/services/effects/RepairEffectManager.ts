@@ -233,37 +233,22 @@ export class RepairEffectManager implements StandardEffectManager {
                         console.log(`🔍 [DEBUG] Effect ${index}: trigger="${effect.trigger}", action="${effect.action}", effectId="${effect.effectId}"`);
                         
                         if (effect.trigger === 'END_OF_TURN' && effect.action === 'heal') {
-                            // Create unique key for this repair action per turn
-                            const repairKey = `${unit.carduid}_${effect.effectId}_turn_${gameEnv.currentTurn}`;
+                            console.log(`🩹 Found repair ability: ${effect.effectId} on ${cardId}`);
                             
-                            console.log(`🔍 [DEBUG] Repair key: ${repairKey}`);
-                            console.log(`🔍 [DEBUG] Already processed: ${this.processedRepairActions.has(repairKey)}`);
-                            console.log(`🔍 [DEBUG] Current turn: ${gameEnv.currentTurn}`);
-                            console.log(`🔍 [DEBUG] Processed actions:`, Array.from(this.processedRepairActions));
+                            const healAmount = effect.parameters?.value ??  0;
+                            console.log(`🔍 [DEBUG] Heal amount: ${healAmount}`);
                             
-                            // Only add if not processed this turn
-                            if (!this.processedRepairActions.has(repairKey)) {
-                                console.log(`🩹 Found repair ability: ${effect.effectId} on ${cardId}`);
-                                
-                                // Mark as processed
-                                this.processedRepairActions.add(repairKey);
-                                console.log(`🔍 [DEBUG] Added to processed actions: ${repairKey}`);
-                                
-                                const healAmount = effect.parameters?.value ??  0;
-                                console.log(`🔍 [DEBUG] Heal amount: ${healAmount}`);
-                                
-                                const repairActionData: RepairEffectEventData = {
-                                    carduid: unit.carduid,
-                                    healAmount
-                                };
+                            const repairActionData: RepairEffectEventData = {
+                                carduid: unit.carduid,
+                                healAmount
+                            };
 
-                                actions.push({
-                                    actionId: `repair_${unit.carduid}_${Date.now()}`,
-                                    type: EventType.TRIGGER_HEALING,
-                                    autoExecute: true,
-                                    data: repairActionData
-                                });
-                            }
+                            actions.push({
+                                actionId: `repair_${unit.carduid}_${Date.now()}`,
+                                type: EventType.TRIGGER_HEALING,
+                                autoExecute: true,
+                                data: repairActionData
+                            });
                         }
                     });
                 } else {
@@ -274,9 +259,6 @@ export class RepairEffectManager implements StandardEffectManager {
             }
         }
         console.log("adsfadsfasdfadsfsddsf ",JSON.stringify(actions))
-        // Clean up old repair actions from previous turns
-        this.cleanupOldRepairActions(gameEnv.currentTurn);
-        console.log("adsfadsfasdfadsfsddsf 1111111",JSON.stringify(actions))
         return actions;
     }
 
@@ -343,19 +325,4 @@ export class RepairEffectManager implements StandardEffectManager {
     // ============ HELPER METHODS ============
 
 
-    /**
-     * Clean up old repair action tracking
-     */
-    private static cleanupOldRepairActions(currentTurn: number): void {
-        console.log(`🧹 [DEBUG] Cleanup: currentTurn=${currentTurn}, processedActions before cleanup:`, Array.from(this.processedRepairActions));
-        const keysToRemove: string[] = [];
-        Array.from(this.processedRepairActions).forEach(key => {
-            if (!key.includes(`_turn_${currentTurn}`)) {
-                keysToRemove.push(key);
-            }
-        });
-        console.log(`🧹 [DEBUG] Keys to remove:`, keysToRemove);
-        keysToRemove.forEach(key => this.processedRepairActions.delete(key));
-        console.log(`🧹 [DEBUG] Processed actions after cleanup:`, Array.from(this.processedRepairActions));
-    }
 }
