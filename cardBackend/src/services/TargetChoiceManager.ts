@@ -83,6 +83,8 @@ export class TargetChoiceManager {
                     affectedTargets: [] 
                 };
             }
+
+            console.log("data 111111111 ",JSON.stringify(this.requiresPlayerChoice(targetConfig, availableTargets)))
             
             // Decision logic: Choice vs Auto-application
             if (this.requiresPlayerChoice(targetConfig, availableTargets)) {
@@ -340,19 +342,21 @@ export class TargetChoiceManager {
      * - If only one target or auto-select scenarios → No choice needed
      */
     private static requiresPlayerChoice(targetConfig: ResolvedTargetConfig, availableTargets: TargetReference[]): boolean {
-        if(targetConfig.scope = "self_shield"){
+        console.log("requiresPlayerChoice 00 " + JSON.stringify(targetConfig))
+        if(targetConfig.scope === "self_shield"){
             return false;
         }
-        
+        console.log("requiresPlayerChoice 11")
         // Multiple target selection always requires choice
         if (targetConfig.count > 1) {
             return availableTargets.length > 0;
         }
-        
+        console.log("requiresPlayerChoice 22")
         // Single target selection requires choice only if multiple options
         if (targetConfig.count === 1) {
             return availableTargets.length > 1;
         }
+        console.log("requiresPlayerChoice 333")
         
         // Zero or negative count - no choice needed
         return false;
