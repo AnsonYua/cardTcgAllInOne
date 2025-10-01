@@ -5,7 +5,7 @@ import { GameEvent, AcknowledgeEventsEvent, PlayCardEvent, PlayCardEventData,
     EventFactory, EventStatus,
      EventPriority, DeployEffectEvent,DeployEffectEventData, TargetChoiceEvent, PairingEffectEvent,
      ConfirmRedrawEvent, GameplayBeginsEvent, ErrorOccurredEvent, BurstEffectChoiceEvent, ShieldCardAttackedEvent,
-     StartGameEvent, JoinGameEvent, NextPlayerTurnEvent, EndTurnEvent, PlayerActionEvent } from './EventQueue/interfaces/GameEvent';
+     StartGameEvent, JoinGameEvent, NextPlayerTurnEvent, EndTurnEvent, PlayerActionEvent, RepairEffectEvent } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase, EventType } from '../models/GameEnums';
 import { EnergyManager } from './EnergyManager';
@@ -16,12 +16,12 @@ import { PlayerCardManager } from './PlayerCardManager';
 import { DeployEffectManager } from './DeployEffectManager';
 import { PairingEffectManager } from './PairingEffectManager';
 import { TargetChoiceManager } from './TargetChoiceManager';
-import { EffectManagerRegistry } from './effects/EffectManagerRegistry';
 import { PhaseTransitionManager } from './effects/PhaseTransitionManager';
 import { GameValidator } from './GameValidator';
 import { UnitZoneCard, PilotZoneCard, CardDatabaseManager } from '../models/CardSystem';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { ContinuousEffectManager } from './ContinuousEffectManager';
+import { RepairEffectManager } from './effects/RepairEffectManager';
 import * as fs from 'fs';
 import * as path from 'path';
 import { getCardIdFromUid } from '../utils/CardUtils';
@@ -96,7 +96,7 @@ export class GameEngine {
                     return GameEngine.executePairingEffect(event as PairingEffectEvent, gameEnv);
 
                 case EventType.TRIGGER_HEALING:
-                    return GameEngine.executeCardEffectTriggered(event, gameEnv);
+                    return GameEngine.executeHealingEffect(event as RepairEffectEvent, gameEnv);
 
                 default:
                     console.log(`🎯 Processing ${event.type} event - delegating to existing game logic`);
@@ -1198,26 +1198,13 @@ export class GameEngine {
 
 
     /**
-     * Execute TRIGGER_HEALING event - handles repair and other healing effects
-      {
-    "id": "state_1758034801142_0.10362686261607723",
-    "type": "TRIGGER_HEALING",
-    "status": "DECLARED",
-    "priority": 1,
-    "timestamp": 1758034801142,
-    "data": {
-      "actionId": "repair_ST01-001_a5fcfa44-d212-4400-8c12-9a58fdbcac84_1758034801142",
-      "description": "Execute repair_2 healing for ST01-001",
-      "affectedCards": ["ST01-001"],
-      "affectedPlayers": ["playerId_2"]
-    }
-  }
-    */
-    private static executeCardEffectTriggered(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
-        console.log(`🎯 Executing effect event: ${event.type} - ${event.id}`);
+     * Execute healing effects directly using RepairEffectManager
+     */
+    public static executeHealingEffect(event: RepairEffectEvent, gameEnv: GameEnvironment): ExecutionResult {
+        console.log(`🩹 Executing healing effect: ${event.id}`);
         
-        // Route to EffectManagerRegistry for all effect execution
-        return EffectManagerRegistry.executeEffect(event, gameEnv);
+        // Call RepairEffectManager directly with properly typed event
+        return RepairEffectManager.executeRepairEffect(event, gameEnv);
     }
 
     /**

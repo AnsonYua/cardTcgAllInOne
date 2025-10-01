@@ -7,6 +7,7 @@ import { RepairEffectEvent, RepairEffectEventData } from '../EventQueue/interfac
 import { StateBasedAction } from '../EventQueue/StateBasedActionEngine';
 import { SLOT_ZONES } from '../../config/gameConstants';
 import { CardDatabaseManager } from '../../models/CardSystem';
+import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 
 // Import standardized interfaces
 import {
@@ -231,7 +232,7 @@ export class RepairEffectManager implements StandardEffectManager {
                                 // Mark as processed
                                 this.processedRepairActions.add(repairKey);
                                 
-                                const healAmount = effect.parameters?.value ?? effect.effect?.parameters?.value ?? 0;
+                                const healAmount = effect.parameters?.value ??  0;
                                 const repairActionData: RepairEffectEventData = {
                                     carduid: unit.carduid,
                                     healAmount
@@ -272,8 +273,25 @@ export class RepairEffectManager implements StandardEffectManager {
                 };
             }
 
-            // Find the card to heal
-            const cardLocation = this.findCardByUid(gameEnv, data.carduid);
+            // Find the card to heal using SlotZoneUtils
+            let cardLocation: { card: any; playerId: string; slot: string } | null = null;
+            
+            // Search across all players using SlotZoneUtils
+            for (const playerId of Object.keys(gameEnv.players)) {
+                const player = gameEnv.players[playerId];
+                if (!player?.zones) continue;
+                
+                const slotResult = SlotZoneUtils.findSlotByCarduid(player.zones, data.carduid);
+                if (slotResult.slotName) {
+                    // Found the card - determine if it's unit or pilot
+                    const card = slotResult.unit?.carduid === data.carduid ? slotResult.unit : slotResult.pilot;
+                    if (card) {
+                        cardLocation = { card, playerId, slot: slotResult.slotName };
+                        break;
+                    }
+                }
+            }
+            
             if (!cardLocation) {
                 return {
                     success: false,
@@ -287,7 +305,7 @@ export class RepairEffectManager implements StandardEffectManager {
             cardLocation.card.damageReceived = currentDamage - healedAmount;
             
             console.log(`✅ Repaired ${data.carduid}: healed ${healedAmount} damage (remaining: ${cardLocation.card.damageReceived})`);
-            
+            console.log("adsfasdfadsdssdsdffdssdf ",JSON.stringify(gameEnv.players))
             return { success: true };
             
         } catch (error) {
@@ -301,26 +319,6 @@ export class RepairEffectManager implements StandardEffectManager {
 
     // ============ HELPER METHODS ============
 
-    /**
-     * Find card by UID across all players and slots
-     */
-    private static findCardByUid(gameEnv: GameEnvironment, carduid: string): { card: any; playerId: string; slot: string } | null {
-        for (const playerId of Object.keys(gameEnv.players)) {
-            const player = gameEnv.players[playerId];
-            if (!player?.zones) continue;
-            
-            for (const slot of SLOT_ZONES) {
-                const slotZone = (player.zones as any)[slot];
-                if (slotZone?.unit?.carduid === carduid) {
-                    return { card: slotZone.unit, playerId, slot };
-                }
-                if (slotZone?.pilot?.carduid === carduid) {
-                    return { card: slotZone.pilot, playerId, slot };
-                }
-            }
-        }
-        return null;
-    }
 
     /**
      * Clean up old repair action tracking

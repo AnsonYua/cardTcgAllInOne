@@ -564,7 +564,7 @@ export class EventFactory {
         faceDown: boolean = false
     ): CardEntersPlayEvent {
         // Import getCardIdFromUid at runtime to avoid circular dependencies
-        const { getCardIdFromUid } = require('../../utils/CardUtils');
+        const { getCardIdFromUid } = require('../../../utils/CardUtils');
         const cardId = getCardIdFromUid(carduid);
         
         return {
@@ -591,7 +591,7 @@ export class EventFactory {
         targets?: string[]
     ): AbilityTriggeredEvent {
         // Import getCardIdFromUid at runtime to avoid circular dependencies
-        const { getCardIdFromUid } = require('../../utils/CardUtils');
+        const { getCardIdFromUid } = require('../../../utils/CardUtils');
         const sourceCardId = getCardIdFromUid(sourceCarduid);
         
         return {
@@ -614,7 +614,7 @@ export class EventFactory {
         targets?: string[]
     ): AbilityActivatedEvent {
         // Import getCardIdFromUid at runtime to avoid circular dependencies
-        const { getCardIdFromUid } = require('../../utils/CardUtils');
+        const { getCardIdFromUid } = require('../../../utils/CardUtils');
         const sourceCardId = getCardIdFromUid(sourceCarduid);
         
         return {
@@ -812,7 +812,7 @@ export class EventFactory {
      */
     static createBurstDeployEvent(playerId: string, carduid: string, cardData: any, burstEffect: any): PlayCardEvent {
         // Import getCardIdFromUid at runtime to avoid circular dependencies
-        const { getCardIdFromUid } = require('../../utils/CardUtils');
+        const { getCardIdFromUid } = require('../../../utils/CardUtils');
         
         // Determine playAs based on card type and burst effect - minimize conversions
         const playAs = (cardData.cardType === 'command' && burstEffect.effect?.action === 'designate_pilot') 

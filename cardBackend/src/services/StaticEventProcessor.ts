@@ -271,7 +271,7 @@ export class StaticEventProcessor {
         console.log('🏛️ Checking for state-based actions...');
         try {
             const stateActions = stateEngine.checkForStateBasedActions();
-            
+            console.log("checking any action ",JSON.stringify(stateActions))
             // Convert state-based actions to events - minimal conversion
             const stateEvents: GameEvent[] = [];
             stateActions.forEach(action => {
