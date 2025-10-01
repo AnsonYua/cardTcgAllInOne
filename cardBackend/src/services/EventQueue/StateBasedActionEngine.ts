@@ -92,7 +92,7 @@ export class StateBasedActionEngine {
                     console.log(`🩹 Checking repair abilities for player ${currentPlayerId}`);
                     const repairActions = EffectManagerRegistry.getRepairActions(this.gameEnv, currentPlayerId);
                     actions.push(...repairActions);
-                    
+                    console.log("adsfadsfsddsfsd ",JSON.stringify(repairActions));
                     // Set the flag to prevent repeated checking
                     currentPlayer.zones.repairAbilitiesCheckedThisCycle = true;
                 } else {

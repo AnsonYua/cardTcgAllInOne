@@ -26,7 +26,6 @@ interface ExecutionResult {
 }
 
 export class RepairEffectManager implements StandardEffectManager {
-    private static processedRepairActions: Set<string> = new Set();
 
     // ============ STANDARDIZED INTERFACE IMPLEMENTATION ============
     
@@ -203,8 +202,11 @@ export class RepairEffectManager implements StandardEffectManager {
     static checkRepairAbilities(gameEnv: GameEnvironment, playerId: string): StateBasedAction[] {
         const actions: StateBasedAction[] = [];
         
+        console.log(`🔍 [DEBUG] Checking repair abilities for player: ${playerId}`);
+        
         const player = gameEnv.players[playerId];
         if (!player || !player.zones) {
+            console.log(`❌ [DEBUG] Player ${playerId} not found or has no zones`);
             return actions;
         }
         
@@ -214,16 +216,30 @@ export class RepairEffectManager implements StandardEffectManager {
             
             if (slotZone?.unit) {
                 const unit = slotZone.unit;
+                console.log(`🔍 [DEBUG] Checking unit in ${slot}: ${unit.carduid} (${unit.cardId})`);
+                
                 // Extract cardId from carduid using established pattern
                 const cardId = getCardIdFromUid(unit.carduid);
+                console.log(`🔍 [DEBUG] Extracted cardId: ${cardId}`);
+                
                 const cardData = CardDatabaseManager.getCardDetails(cardId);
+                console.log(`🔍 [DEBUG] CardData found:`, cardData ? 'YES' : 'NO');
                 
                 if (cardData?.effects?.rules) {
+                    console.log(`🔍 [DEBUG] Card has ${cardData.effects.rules.length} effect rules`);
+                    
                     // Look for repair abilities
-                    cardData.effects.rules.forEach((effect: any) => {
+                    cardData.effects.rules.forEach((effect: any, index: number) => {
+                        console.log(`🔍 [DEBUG] Effect ${index}: trigger="${effect.trigger}", action="${effect.action}", effectId="${effect.effectId}"`);
+                        
                         if (effect.trigger === 'END_OF_TURN' && effect.action === 'heal') {
                             // Create unique key for this repair action per turn
                             const repairKey = `${unit.carduid}_${effect.effectId}_turn_${gameEnv.currentTurn}`;
+                            
+                            console.log(`🔍 [DEBUG] Repair key: ${repairKey}`);
+                            console.log(`🔍 [DEBUG] Already processed: ${this.processedRepairActions.has(repairKey)}`);
+                            console.log(`🔍 [DEBUG] Current turn: ${gameEnv.currentTurn}`);
+                            console.log(`🔍 [DEBUG] Processed actions:`, Array.from(this.processedRepairActions));
                             
                             // Only add if not processed this turn
                             if (!this.processedRepairActions.has(repairKey)) {
@@ -231,8 +247,11 @@ export class RepairEffectManager implements StandardEffectManager {
                                 
                                 // Mark as processed
                                 this.processedRepairActions.add(repairKey);
+                                console.log(`🔍 [DEBUG] Added to processed actions: ${repairKey}`);
                                 
                                 const healAmount = effect.parameters?.value ??  0;
+                                console.log(`🔍 [DEBUG] Heal amount: ${healAmount}`);
+                                
                                 const repairActionData: RepairEffectEventData = {
                                     carduid: unit.carduid,
                                     healAmount
@@ -247,13 +266,17 @@ export class RepairEffectManager implements StandardEffectManager {
                             }
                         }
                     });
+                } else {
+                    console.log(`🔍 [DEBUG] No effects.rules found for ${cardId}`);
                 }
+            } else {
+                console.log(`🔍 [DEBUG] No unit in ${slot}`);
             }
         }
-        
+        console.log("adsfadsfasdfadsfsddsf ",JSON.stringify(actions))
         // Clean up old repair actions from previous turns
         this.cleanupOldRepairActions(gameEnv.currentTurn);
-        
+        console.log("adsfadsfasdfadsfsddsf 1111111",JSON.stringify(actions))
         return actions;
     }
 
@@ -324,12 +347,15 @@ export class RepairEffectManager implements StandardEffectManager {
      * Clean up old repair action tracking
      */
     private static cleanupOldRepairActions(currentTurn: number): void {
+        console.log(`🧹 [DEBUG] Cleanup: currentTurn=${currentTurn}, processedActions before cleanup:`, Array.from(this.processedRepairActions));
         const keysToRemove: string[] = [];
         Array.from(this.processedRepairActions).forEach(key => {
             if (!key.includes(`_turn_${currentTurn}`)) {
                 keysToRemove.push(key);
             }
         });
+        console.log(`🧹 [DEBUG] Keys to remove:`, keysToRemove);
         keysToRemove.forEach(key => this.processedRepairActions.delete(key));
+        console.log(`🧹 [DEBUG] Processed actions after cleanup:`, Array.from(this.processedRepairActions));
     }
 }

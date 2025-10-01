@@ -452,6 +452,13 @@ export class GameEngine {
             gameEnv.currentTurn = currentTurn + 1;
             gameEnv.phase = GamePhase.DRAW_PHASE;
 
+            // Reset repair abilities flag for the new player's turn
+            const newPlayer = gameEnv.players[nextPlayer];
+            if (newPlayer?.zones) {
+                newPlayer.zones.repairAbilitiesCheckedThisCycle = false;
+                console.log(`🔄 Reset repair abilities flag for new player: ${nextPlayer}`);
+            }
+
             // Repair abilities now managed by RepairEffectManager with turn-based tracking
 
             // Unrest current player's cards (via EnergyManager)
