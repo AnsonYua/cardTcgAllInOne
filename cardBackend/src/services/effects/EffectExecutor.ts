@@ -6,7 +6,7 @@ import { UnitZoneCard, PilotZoneCard, TemporaryEffect } from '../../models/CardS
 import { EffectDefinition, EffectTiming, TargetReference, TargetScope } from '../EventQueue/interfaces/GameEvent';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { SLOT_ZONES } from '../../config/gameConstants';
-import { GameEngine } from '../GameEngine';
+import { BurstEffectManager } from '../BurstEffectManager';
 
 export class EffectExecutor {
 
@@ -101,8 +101,8 @@ export class EffectExecutor {
                 if (parameters?.from === 'shield') {
                     console.log(`🛡️ Effect specifies removal from shield - removing ${target.carduid} from shield first`);
                     
-                    // Remove card from shield first using centralized GameEngine method
-                    const removeResult = GameEngine.RemoveFromShield(gameEnv, sourcePlayerId, target.carduid);
+                    // Remove card from shield first using centralized helper
+                    const removeResult = BurstEffectManager.removeCardFromShield(gameEnv, sourcePlayerId, target.carduid);
                     if (!removeResult.success) {
                         return {
                             success: false,
@@ -111,8 +111,8 @@ export class EffectExecutor {
                     }
                 }
                 
-                // Use centralized GameEngine.AddToHand method
-                const executionResult = GameEngine.AddToHand(gameEnv, sourcePlayerId, target.carduid, target.cardData);
+                // Use centralized helper to add card to hand
+                const executionResult = BurstEffectManager.addCardToHand(gameEnv, sourcePlayerId, target.carduid, target.cardData);
                 
                 if (!executionResult.success) {
                     return {

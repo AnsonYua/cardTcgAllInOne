@@ -17,9 +17,7 @@ import { DeployEffectManager } from './DeployEffectManager';
 import { PairingEffectManager } from './PairingEffectManager';
 import { DeployTargetManager } from './DeployTargetManager';
 import { PhaseTransitionManager } from './effects/PhaseTransitionManager';
-import { GameValidator } from './GameValidator';
 import { UnitZoneCard, PilotZoneCard, CardDatabaseManager } from '../models/CardSystem';
-import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { ContinuousEffectManager } from './ContinuousEffectManager';
 import { RepairEffectManager } from './effects/RepairEffectManager';
 import { BlockerEffectManager } from './effects/BlockerEffectManager';
@@ -27,13 +25,11 @@ import { BlockerChoiceManager, BlockerChoiceResult } from './BlockerChoiceManage
 import * as fs from 'fs';
 import * as path from 'path';
 import { getCardIdFromUid } from '../utils/CardUtils';
-
-export interface ExecutionResult {
-    success: boolean;
-    error?: string;
-    acknowledgedCount?: number;
-    requiresSelection?: boolean;
-}
+import { PlayCardPreparationManager, PlayCardPreparationSuccess } from './PlayCardPreparationManager';
+import { GameActionValidator } from './GameActionValidator';
+import { AttackPreparationManager } from './AttackPreparationManager';
+import { BurstEffectManager } from './BurstEffectManager';
+import { ExecutionResult } from './ExecutionResult';
 
 export class GameEngine {
     // ============ MAIN EXECUTION INTERFACE ============
@@ -84,10 +80,10 @@ export class GameEngine {
                     return GameEngine.executePlayerAction(event as PlayerActionEvent, gameEnv);
 
                 case EventType.SHIELD_CARD_ATTACKED:
-                    return GameEngine.executeShieldCardAttacked(event as ShieldCardAttackedEvent, gameEnv);
+                    return BurstEffectManager.processShieldCardAttack(event as ShieldCardAttackedEvent, gameEnv);
 
                 case EventType.BURST_EFFECT_CHOICE:
-                    return GameEngine.executeBurstEffectChoice(event as BurstEffectChoiceEvent, gameEnv);
+                    return BurstEffectManager.processBurstEffectChoice(event as BurstEffectChoiceEvent, gameEnv);
 
                 case EventType.DEPLOY_EFFECT_TRIGGERED:
                     return DeployEffectManager.executeDeployEffect(event as DeployEffectEvent, gameEnv);
@@ -538,9 +534,7 @@ export class GameEngine {
      * - slotName: target slot for deployment
      */
     private static executePlayCard(event: PlayCardEvent, gameEnv: GameEnvironment): ExecutionResult {
-        // Extract playerId from event (preparing for removal from PlayCardEventData)
         const playerId = event.playerId;
-        // Use PlayCardEventData object for other properties
         const eventData: PlayCardEventData = event.data;
         const fromBurst = eventData.fromBurst || false;
 
@@ -554,87 +548,31 @@ export class GameEngine {
         console.log(`🎯 Processing PLAY_CARD event for player: ${playerId}, carduid: ${eventData.carduid}, playAs: ${eventData.playAs}, fromBurst: ${fromBurst}, targetUnit: ${eventData.targetUnit || 'none'}`);
 
         try {
-            // Validate using centralized GameValidator
-            if (!fromBurst) {
-                const turnValidation = GameValidator.validatePlayerTurn(gameEnv, playerId);
-                if (!turnValidation.isValid) {
-                    return {
-                        success: false,
-                        error: turnValidation.error
-                    };
-                }
-            }
-
-            // Validate player and zones using GameValidator
-            const playerValidation = GameValidator.validatePlayerZones(gameEnv, playerId);
-            if (!playerValidation.isValid) {
+            const preparationResult = PlayCardPreparationManager.prepare(gameEnv, playerId, eventData, fromBurst);
+            if (!preparationResult.success) {
                 return {
                     success: false,
-                    error: playerValidation.error
-                };
-            }
-            const player = playerValidation.player!;
-
-            const cardId = getCardIdFromUid(eventData.carduid);
-            const cardData = CardDatabaseManager.getCardDetails(cardId);
-
-            if (!cardData) {
-                return {
-                    success: false,
-                    error: `Card data not found for ${cardId}`
+                    error: preparationResult.error
                 };
             }
 
-            const energyResult = EnergyManager.validateAndPayEnergyForCard(gameEnv, playerId, cardData, { fromBurst });
-            if (!energyResult.success) {
-                return {
-                    success: false,
-                    error: energyResult.error || `Energy payment failed for ${cardId}`
-                };
-            }
-            // Validate card location and remove it (burst cards come from shield, normal cards from hand)
-            if (fromBurst) {
-                // For burst cards, we don't need to validate/remove from hand since they're being deployed from shield
-                console.log(`💥 Burst card deployment: ${eventData.carduid} - skipping hand validation`);
-            } else {
-                // Normal card play - validate in hand and remove using GameValidator
-                const handValidation = GameValidator.validateCardInHand(gameEnv, playerId, eventData.carduid);
-                if (!handValidation.isValid) {
-                    return {
-                        success: false,
-                        error: handValidation.error
-                    };
-                }
+            const {
+                tappedEnergy,
+                rollback
+            } = preparationResult as PlayCardPreparationSuccess;
 
-                if (!PlayerCardManager.removeCardFromHand(gameEnv, playerId, eventData.carduid)) {
-                    return {
-                        success: false,
-                        error: `Failed to remove card ${eventData.carduid} from player ${playerId} hand`
-                    };
-                }
-            }
-
-            // Pass event data directly - no intermediate object creation
             const placementResult = PlayerCardManager.placeCardWithEventData(gameEnv, playerId, eventData);
 
             if (!placementResult.success) {
-                if (energyResult.tapped?.length) {
-                    energyResult.tapped.forEach(card => {
-                        card.isRested = false;
-                    });
-                }
-
-                if (!fromBurst) {
-                    player.deck._handUids.push(eventData.carduid);
-                }
+                rollback();
                 return {
                     success: false,
                     error: placementResult.error
                 };
             }
 
-            if (energyResult.tapped?.length) {
-                eventData.payEnergyCards = energyResult.tapped.map(card => card.carduid);
+            if (tappedEnergy.length > 0) {
+                eventData.payEnergyCards = tappedEnergy.map(card => card.carduid);
             }
 
             // ✅ Card placement successful - Check for Deploy effects (ENTERS_PLAY triggers)
@@ -741,59 +679,6 @@ export class GameEngine {
         }
     }
 
-    private static unitHasAttackRestriction(unit: UnitZoneCard | null, restriction: string): boolean {
-        if (!unit) {
-            return false;
-        }
-
-        const matchesRestriction = (value: any): boolean => {
-            if (!value) {
-                return false;
-            }
-
-            if (typeof value === 'string') {
-                return value === restriction;
-            }
-
-            if (Array.isArray(value)) {
-                return value.some(item => matchesRestriction(item));
-            }
-
-            if (typeof value === 'object') {
-                if (value.restriction || value.restrictions) {
-                    return matchesRestriction(value.restriction || value.restrictions);
-                }
-
-                if (value.type) {
-                    return matchesRestriction(value.type);
-                }
-
-                return Object.values(value).some(item => matchesRestriction(item));
-            }
-
-            return false;
-        };
-
-        if (matchesRestriction((unit as any).attackRestrictions)) {
-            return true;
-        }
-
-        if (matchesRestriction((unit as any).activeRestrictions)) {
-            return true;
-        }
-
-        const cardRules = unit.cardData?.effects?.rules || [];
-        return cardRules.some(rule => {
-            if (rule?.action !== 'restrict_attack') {
-                return false;
-            }
-
-            const parameters = rule.parameters || {};
-            return matchesRestriction(parameters.restriction || parameters.restrictions);
-        });
-    }
-
-
     private static executePlayerAction(event: PlayerActionEvent, gameEnv: GameEnvironment): ExecutionResult {
         const eventData = event.data;
         const fromBurst = eventData.fromBurst || false;
@@ -801,11 +686,11 @@ export class GameEngine {
         console.log(`🗡️ Processing PLAYER_ACTION event for player: ${eventData.playerId}, actionType: ${eventData.actionType}, fromBurst: ${fromBurst}`);
 
         try {
-            // Validate it's the player's turn (skip for burst actions)
-            if (!fromBurst && gameEnv.currentPlayer !== eventData.playerId) {
+            const turnCheck = GameActionValidator.ensureTurn(gameEnv, eventData.playerId, fromBurst);
+            if (!turnCheck.success) {
                 return {
                     success: false,
-                    error: `Not your turn. Current player: ${gameEnv.currentPlayer}`
+                    error: turnCheck.error
                 };
             }
             
@@ -854,54 +739,31 @@ export class GameEngine {
                 targetPlayerId
             } = eventData;
 
-            // Find target slot name using target unit UID
-            const targetSlotResult = SlotZoneUtils.findSlotNameByUnitUid(gameEnv, targetUnitUid);
-            if (!targetSlotResult.found) {
+            const attackPreparation = AttackPreparationManager.prepareUnitAttack(
+                gameEnv,
+                playerId,
+                attackerCarduid,
+                targetPlayerId,
+                targetUnitUid
+            );
+
+            if (!attackPreparation.success) {
                 return {
                     success: false,
-                    error: targetSlotResult.error || `Target unit with UID ${targetUnitUid} not found in any slot`
+                    error: attackPreparation.error
                 };
             }
 
-            const targetSlotName = targetSlotResult.slotName!;
-
-            console.log(`🎯 Found target unit in ${targetSlotName}`);
-            // Get attacker and defender players
-            const attacker = gameEnv.getPlayer(playerId);
-            const defender = gameEnv.getPlayer(targetPlayerId);
-
-            if (!attacker || !defender) {
-                return {
-                    success: false,
-                    error: 'Player not found'
-                };
-            }
-
-            // Find attacker's slot and unit using SlotZoneUtils
-            const attackerSlotResult = SlotZoneUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, attackerCarduid);
-            if (!attackerSlotResult.found) {
-                return {
-                    success: false,
-                    error: attackerSlotResult.error || `Attacking unit with UID ${attackerCarduid} not found in any slot`
-                };
-            }
-
-            const attackerSlot = attackerSlotResult.slotName!;
-            const attackingUnit = attackerSlotResult.unit! as UnitZoneCard;
+            const {
+                attacker,
+                defender,
+                attackerSlot,
+                attackingUnit,
+                targetSlotName,
+                targetUnit
+            } = attackPreparation;
 
             console.log(`⚔️ Found attacking unit in ${attackerSlot}: ${attackingUnit.carduid}`);
-
-            // Find defender's target unit in specified slot
-            const defenderSlot = (defender.zones as any)[targetSlotName];
-            const targetUnit = defenderSlot?.unit as UnitZoneCard;
-
-            if (!targetUnit || targetUnit.carduid !== targetUnitUid) {
-                return {
-                    success: false,
-                    error: `Target unit with UID ${targetUnitUid} not found in slot ${targetSlotName}`
-                };
-            }
-
             console.log(`🎯 Found target unit in ${targetSlotName}: ${targetUnit.carduid}`);
 
             // Calculate attacker and defender stats using centralized slot lookup
@@ -949,42 +811,29 @@ export class GameEngine {
 
         try {
             const { playerId, attackerCarduid } = eventData;
-            const defendingPlayerId = gameEnv.getOpponentId(playerId);
 
-            if (!defendingPlayerId) {
+            const attackPreparation = AttackPreparationManager.prepareBaseAttack(
+                gameEnv,
+                playerId,
+                attackerCarduid
+            );
+
+            if (!attackPreparation.success) {
                 return {
                     success: false,
-                    error: 'Cannot determine defending player'
+                    error: attackPreparation.error
                 };
             }
 
-            // Get attacker and defender players
-            const attacker = gameEnv.getPlayer(playerId);
-            const defender = gameEnv.getPlayer(defendingPlayerId);
+            const {
+                defender,
+                attackerSlot,
+                attackingUnit
+            } = attackPreparation;
 
-            if (!attacker || !defender) {
-                return {
-                    success: false,
-                    error: 'Player not found'
-                };
-            }
-
-            // Find which slot contains the attacking card using SlotZoneUtils
-            const attackerSlotResult = SlotZoneUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, attackerCarduid);
-            if (!attackerSlotResult.found) {
-                return {
-                    success: false,
-                    error: attackerSlotResult.error || `Attacking unit with UID ${attackerCarduid} not found in any slot`
-                };
-            }
-
-            const attackerSlot = attackerSlotResult.slotName!;
-            const attackingUnit = attackerSlotResult.unit!;
-            
             console.log(`⚔️ Found attacking unit in ${attackerSlot}: ${attackingUnit.carduid}`);
 
-            
-            if (GameEngine.unitHasAttackRestriction(attackingUnit as UnitZoneCard, 'cannot_attack_player')) {
+            if (AttackPreparationManager.unitHasAttackRestriction(attackingUnit as UnitZoneCard, 'cannot_attack_player')) {
                 const cardName = attackingUnit.cardData?.name || attackingUnit.cardId || 'Attacking unit';
                 console.warn(`⚠️ ${cardName} (${attackingUnit.carduid}) cannot attack the player due to restriction.`);
                 return {
@@ -993,14 +842,11 @@ export class GameEngine {
                 };
             }
 
-
-            // Calculate total attack power using player-level modifications
             const combinedStats = PlayerCardManager.getCurrentUnitCardInSlotAPandHP(gameEnv, attackingUnit.carduid);
             const totalAttackPower = combinedStats.totalAP;
 
             console.log(`⚔️ Total attack power (with player modifications): ${totalAttackPower}`);
 
-            // Check defender's base area
             const defenderBases = defender.zones.base;
 
             if (defenderBases.length > 0) {
@@ -1017,7 +863,7 @@ export class GameEngine {
                 let baseDestroyed = false;
                 if (remainingHP <= 0) {
                     // Remove from base zone using BaseCardManager
-                    const removed = BaseCardManager.removeBaseCard(gameEnv, defendingPlayerId, baseCard.carduid);
+                    const removed = BaseCardManager.removeBaseCard(gameEnv, defender.id, baseCard.carduid);
                     if (removed) {
                         // Move to trash
                         defender.addTrashCard(baseCard.carduid, baseCard.cardData);
@@ -1033,7 +879,7 @@ export class GameEngine {
                 notificationManager.addNotificationEvent(
                     baseDestroyed ? 'BASE_DESTROYED' : 'BASE_DAMAGED',
                     {
-                        defendingPlayerId,
+                        defendingPlayerId: defender.id,
                         attackingPlayerId: playerId,
                         attackerSlot,
                         damage: totalAttackPower,
@@ -1062,7 +908,7 @@ export class GameEngine {
 
                     // Create shield card attacked event with array support for future multi-card attacks
                     const shieldAttackEvent = EventFactory.createShieldCardAttackedEvent(
-                        defendingPlayerId,
+                        defender.id,
                         playerId,
                         attackerSlot,
                         shieldCardsToAttack,
@@ -1121,197 +967,19 @@ export class GameEngine {
         return cardsToAttack;
     }
 
-    // ============ SHIELD CARD ATTACK EVENT EXECUTION ============
 
-    /**
-     * Execute shield card attacked event - handles card effects processing
-     * This is where burst effects like burst_add_to_hand are processed
-     */
+
+
+
+
+
     private static executeShieldCardAttacked(event: ShieldCardAttackedEvent, gameEnv: GameEnvironment): ExecutionResult {
-        console.log(`🛡️ Executing SHIELD_CARD_ATTACKED event: ${event.id}`);
-
-        try {
-            const { defendingPlayerId, attackingPlayerId, attackerSlot, shieldCards, attackPower } = event.data;
-
-            console.log(`🎯 Processing shield attack - Cards: ${shieldCards.length}, Power: ${attackPower}`);
-            // Get defending player
-            const defender = gameEnv.getPlayer(defendingPlayerId);
-            if (!defender) {
-                return {
-                    success: false,
-                    error: `Defending player ${defendingPlayerId} not found`
-                };
-            }
-
-            // Process each attacked shield card
-            for (const shieldCard of shieldCards) {
-                const shieldCardId = getCardIdFromUid(shieldCard.carduid);
-                console.log(`🛡️ Processing shield card : ${shieldCardId}`);
-                // Check if card has burst effects with BURST_CONDITION trigger
-                const burstEffects = GameEngine.findBurstEffects(shieldCard.cardData);
-                if (burstEffects.length > 0) {
-                    console.log(`💥 Found ${burstEffects.length} burst effect(s) `);
-                    // Create choice events for each burst effect requiring user confirmation
-                    for (const burstEffect of burstEffects) {
-                        console.log(`⚡ Creating choice event for burst effect: ${burstEffect.effectId}`);
-
-                        shieldCard.cardData.cardType = shieldCard.cardData.originalCardType
-                        
-                        const choiceEvent = EventFactory.createBurstEffectChoiceEvent(
-                            defendingPlayerId,
-                            [{
-                                ...shieldCard
-                            }]
-                        );
-
-                        // Enqueue the choice event for processing
-                        gameEnv.enqueueForProcessing(choiceEvent);
-
-                        console.log(`📤 Enqueued burst choice event: ${choiceEvent.id}`);
-                    }
-                } else {
-                    console.log(`📝 No burst effects found on card ${shieldCardId}`);
-
-                    // Move card to trash if no burst effects
-                    console.log(`🗑️ Moving card ${shieldCard.carduid} to trash (no burst effects)`);
-
-                    // Remove card from shield first
-                    const removedFromShield = GameEngine.removeFromShieldWithLogging(gameEnv, defendingPlayerId, shieldCard.carduid);
-                    if (removedFromShield) {
-
-                        // Restore originalCardType before moving to trash (like in burst effects)
-                        let cardDataForTrash = { ...shieldCard.cardData };
-                        GameEngine.restoreCardType(cardDataForTrash);
-
-                        // Move to trash
-                        PlayerCardManager.moveCardToTrash(gameEnv, defendingPlayerId, shieldCard.carduid, shieldCardId, cardDataForTrash);
-                    } else {
-                        console.error(`❌ Failed to remove card ${shieldCard.carduid} from shield before moving to trash`);
-                    }
-                }
-
-            }
-
-            // PLACEHOLDER: For now, just acknowledge the event
-            // Remove this placeholder and implement the real logic based on card effects
-
-            return {
-                success: true
-            };
-
-        } catch (error) {
-            console.error(`❌ Error in executeShieldCardAttacked:`, error);
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : 'Shield card attack execution failed'
-            };
-        }
+        return BurstEffectManager.processShieldCardAttack(event, gameEnv);
     }
 
-    /**
-     * Handle BURST_EFFECT_CHOICE events - these only execute in RESOLVING status
-     * @param event - The burst effect choice event (must be RESOLVING status)
-     * @param gameEnv - Current game environment
-     */
     private static executeBurstEffectChoice(event: BurstEffectChoiceEvent, gameEnv: GameEnvironment): ExecutionResult {
-        console.log(`💥 Executing BURST_EFFECT_CHOICE event: ${event.id} (${event.status})`);
-
-        try {
-            const { playerId, availableTargets, choiceId, userDecision } = event.data;
-            
-            // Get the first (and typically only) target from availableTargets array
-            const target = availableTargets[0];
-            if (!target) {
-                return {
-                    success: false,
-                    error: 'No available targets in burst choice event'
-                };
-            }
-            
-            const { carduid, cardId, cardData } = target;
-
-            // This method should only be called for RESOLVING events
-            if (event.status !== EventStatus.RESOLVING) {
-                console.log(`⚠️ Unexpected event status: ${event.status} (expected RESOLVING)`);
-                return { success: true }; // Skip - should not happen in correct flow
-            }
-
-            console.log(`🚀 User decided: ${userDecision} for burst choice: ${choiceId}`);
-
-            if (userDecision === 'DECLINE') {
-                console.log(`❌ Player declined burst effect - moving card to trash area`);
-
-                // Get the defending player (card owner)
-                const defender = gameEnv.getPlayer(playerId);
-                if (!defender) {
-                    return {
-                        success: false,
-                        error: `Player ${playerId} not found`
-                    };
-                }
-
-                // IMPORTANT: Remove card from shield before moving to trash
-                const removedFromShield = GameEngine.removeFromShieldWithLogging(gameEnv, playerId, target.carduid);
-                if (!removedFromShield) {
-                    console.log(`⚠️ Warning: Card ${carduid} was not found in shield zone, but proceeding with trash move`);
-                }
-
-                // Restore originalCardType before moving to trash (like in ShieldCardManager)
-                let cardDataForTrash = { ...cardData };
-                GameEngine.restoreCardType(cardDataForTrash);
-
-                // Move card to trash area
-                defender.addTrashCard(target.carduid, cardDataForTrash);
-                console.log(`🗑️ Card ${target.cardId} (${target.carduid}) moved to trash area after declining burst effect`);
-
-                return { success: true }; // Processing loop will auto-set RESOLVED
-            }
-
-            if (userDecision === 'ACTIVATE') {
-                // Find the burst effect from cardData
-                const burstEffects = GameEngine.findBurstEffects(cardData);
-                if (burstEffects.length === 0) {
-                    return {
-                        success: false,
-                        error: 'No burst effects found on card'
-                    };
-                }
-                
-                // Use the first burst effect (typically only one per card)
-                const burstEffect = burstEffects[0];
-                
-                // Execute the confirmed burst effect
-                console.log(`⚡ Executing burst effect: ${burstEffect.type}`);
-                const executionResult = GameEngine.executeBurstEffect(gameEnv, playerId, carduid, cardId, cardData, burstEffect);
-
-                if (!executionResult.success) {
-                    return executionResult;
-                }
-
-                console.log(`✅ Burst effect ${burstEffect.type} executed successfully`);
-                return { success: true }; // Processing loop will auto-set RESOLVED
-            }
-
-            // This should never happen if flow is correct
-            return {
-                success: false,
-                error: `Invalid userDecision: ${userDecision}`
-            };
-
-        } catch (error) {
-            console.error(`❌ Error in executeBurstEffectChoice:`, error);
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : 'Burst effect choice execution failed'
-            };
-        }
+        return BurstEffectManager.processBurstEffectChoice(event, gameEnv);
     }
-
-
-
-
-
-
 
     /**
      * Execute Pairing effect triggered by unit+pilot pairing
@@ -1361,56 +1029,12 @@ export class GameEngine {
      * @param cardData - The card data to search for burst effects
      * @returns Array of burst effects with BURST_CONDITION trigger
      */
-    private static findBurstEffects(cardData: any): Array<{ effectId: string; type: string; description: string }> {
-        const burstEffects: Array<{ effectId: string; type: string; description: string }> = [];
-
-        if (!cardData || !cardData.effects || !cardData.effects.rules) {
-            return burstEffects;
-        }
-
-        // Search through card effects for burst triggers
-        for (const effect of cardData.effects.rules) {
-            // Check if effect has trigger with BURST_CONDITION
-            if (effect.trigger && effect.trigger === 'BURST_CONDITION') {
-                // Extract effect type and create description
-                const effectType = effect.effect?.action || effect.type || 'unknown';
-                const description = GameEngine.createBurstEffectDescription(effect, cardData);
-
-                burstEffects.push({
-                    effectId: effect.effectId || `burst_${effectType}_${cardData.cardId || 'unknown'}`,
-                    type: effectType,
-                    description: description
-                });
-
-                console.log(`🔍 Found burst effect: ${effectType} on card ${cardData.cardId}`);
-            }
-        }
-
-        return burstEffects;
-    }
-
     /**
      * Create a human-readable description of a burst effect
      * @param effect - The effect definition
      * @param cardData - The card data
      * @returns Human-readable description string
      */
-    private static createBurstEffectDescription(effect: any, cardData: any): string {
-        const cardName = cardData.name || cardData.cardId || 'Unknown Card';
-        const effectType = effect.effect?.action || effect.type || 'unknown';
-
-        switch (effectType) {
-            case 'burst_add_to_hand':
-                return `【Burst】 ${cardName}: Add this card to your hand`;
-            case 'burst_activate_main':
-                return `【Burst】 ${cardName}: Activate main effect`;
-            case 'burst_deploy':
-                return `【Burst】 ${cardName}: Deploy this card to the field`;
-            default:
-                return `【Burst】 ${cardName}: Activate burst effect (${effectType})`;
-        }
-    }
-
     /**
      * Execute burst effect for confirmed choice
      * @param gameEnv - Current game environment
@@ -1420,154 +1044,6 @@ export class GameEngine {
      * @param cardData - Full card data
      * @param burstEffect - Burst effect configuration
      */
-    static executeBurstEffect(
-        gameEnv: GameEnvironment,
-        playerId: string,
-        carduid: string,
-        cardId: string,
-        cardData: any,
-        burstEffect: any
-    ): ExecutionResult {
-        console.log(`💥 Executing burst effect ${burstEffect.type} for card ${carduid}`);
-
-        try {
-            // Before execution, cardData.cardType should be updated using originalCardType as it always is shield
-            GameEngine.restoreCardType(cardData);
-
-            // Execute based on burst effect type
-            let executionResult: ExecutionResult;
-            switch (burstEffect.type) {
-                case 'addToHand':
-                    executionResult = GameEngine.AddToHand(gameEnv, playerId, carduid, cardData);
-                    break;
-
-                case 'deploy':
-                    executionResult = GameEngine.executeBurstDeploy(gameEnv, playerId, carduid, cardData, burstEffect);
-                    break;
-
-                default:
-                    return {
-                        success: false,
-                        error: `Unknown burst effect type: ${burstEffect.type}`
-                    };
-            }
-
-            // If burst effect executed successfully, remove the card from shield
-            if (executionResult.success) {
-                GameEngine.removeFromShieldWithLogging(gameEnv, playerId, carduid);
-            }
-
-            return executionResult;
-
-        } catch (error) {
-            console.error(`❌ Error executing burst effect:`, error);
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : 'Burst effect execution failed'
-            };
-        }
-    }
-
-    /**
-     * Public method to add a card to player's hand - centralized logic for effects
-     */
-    public static AddToHand(gameEnv: GameEnvironment, playerId: string, carduid: string, cardData: any): ExecutionResult {
-        console.log(`➕ Adding card ${carduid} to ${playerId}'s hand`);
-        
-        const player = gameEnv.getPlayer(playerId);
-        if (!player) {
-            return {
-                success: false,
-                error: `Player ${playerId} not found`
-            };
-        }
-
-        // Add card to hand
-        if (!player.deck._handUids) {
-            player.deck._handUids = [];
-        }
-        player.deck._handUids.push(carduid);
-
-        console.log(`✅ Card ${carduid} (${cardData?.name || 'Unknown'}) added to ${playerId}'s hand`);
-        return { success: true };
-    }
-
-    /**
-     * Public method to remove a card from player's shield - centralized logic for effects
-     */
-    public static RemoveFromShield(gameEnv: GameEnvironment, playerId: string, carduid: string): ExecutionResult {
-        console.log(`🛡️ Removing card ${carduid} from ${playerId}'s shield`);
-        
-        const removed = GameEngine.removeFromShieldWithLogging(gameEnv, playerId, carduid);
-        if (removed) {
-            return { success: true };
-        } else {
-            return {
-                success: false,
-                error: `Failed to remove card ${carduid} from ${playerId}'s shield`
-            };
-        }
-    }
-
-    /**
-     * Execute deploy burst effect - create PLAY_CARD event for deployment
-     */
-    private static executeBurstDeploy(gameEnv: GameEnvironment, playerId: string, carduid: string, cardData: any, burstEffect: any): ExecutionResult {
-        console.log(`🚀 Executing deploy burst effect for card ${carduid}`);
-        try {
-            // Create PLAY_CARD event for deployment using GameEventFactory
-            const playCardEvent = EventFactory.createBurstDeployEvent(playerId, carduid, cardData, burstEffect);
-
-            // Add to processing queue for immediate execution
-            gameEnv.processingQueue.push(playCardEvent);
-
-            console.log(`✅ Deploy PLAY_CARD event created and queued for card ${carduid} (playAs: ${playCardEvent.data.playAs})`);
-            return { success: true };
-
-        } catch (error) {
-            console.error(`❌ Error creating deploy PLAY_CARD event:`, error);
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : 'Deploy event creation failed'
-            };
-        }
-    }
-
-    // ============ HELPER METHODS FOR CODE DEDUPLICATION ============
-
-    /**
-     * Restore card type from originalCardType (centralized logic)
-     * @param cardData - Card data to restore type for
-     * @returns boolean - true if restoration happened, false if no originalCardType
-     */
-    private static restoreCardType(cardData: any): boolean {
-        if (cardData.originalCardType) {
-            console.log(`🔄 Restoring card type: ${cardData.cardType} → ${cardData.originalCardType}`);
-            cardData.cardType = cardData.originalCardType;
-            return true;
-        } else {
-            console.log(`⚠️ Warning: No originalCardType found, keeping current cardType: ${cardData.cardType}`);
-            return false;
-        }
-    }
-
-    /**
-     * Remove card from shield with comprehensive logging
-     * @param gameEnv - Game environment
-     * @param playerId - Player who owns the shield card
-     * @param carduid - Card to remove from shield
-     * @returns boolean - true if successfully removed, false otherwise
-     */
-    private static removeFromShieldWithLogging(gameEnv: GameEnvironment, playerId: string, carduid: string): boolean {
-        const removed = ShieldCardManager.removeShieldCard(gameEnv, playerId, carduid);
-        if (removed) {
-            console.log(`🛡️ Card ${carduid} successfully removed from ${playerId}'s shield`);
-            return true;
-        } else {
-            console.log(`⚠️ Warning: Could not remove card ${carduid} from ${playerId}'s shield`);
-            return false;
-        }
-    }
 
 
 
