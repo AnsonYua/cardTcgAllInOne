@@ -35,7 +35,11 @@ export default class EnergyAreaManager {
     console.log(`${playerType} energy data:`, JSON.stringify(energyData));
     
     if (energyData && energyData.length > 0) {
-      energyData.forEach((energyCard, i) => {
+      const orderedEnergy = playerType === 'player'
+        ? this.orderPlayerEnergyCards(energyData)
+        : energyData;
+
+      orderedEnergy.forEach((energyCard, i) => {
         // Get row2 slot position based on energy card index
         // Player: left to right (normal), Opponent: also left to right (align under slot 1)
         const slotIndex = i;
@@ -49,6 +53,21 @@ export default class EnergyAreaManager {
     }
     cardArray.forEach(card => card.active = false);
 
+  }
+
+  orderPlayerEnergyCards(energyData) {
+    const activeCards = [];
+    const restedCards = [];
+
+    energyData.forEach(card => {
+      if (card.isRested) {
+        restedCards.push(card);
+      } else {
+        activeCards.push(card);
+      }
+    });
+
+    return [...activeCards, ...restedCards];
   }
 
   getRow2SlotPosition(playerType, slotIndex) {

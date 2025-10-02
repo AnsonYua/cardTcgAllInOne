@@ -14,12 +14,14 @@ export interface EnergyValidationResult {
     error?: string;
     requirements: EnergyRequirement;
     availableEnergy: number;
+    totalEnergy: number;
     shouldConsume: boolean;
 }
 
 export interface EnergyPaymentResult {
     success: boolean;
     tapped: EnergyZoneCard[];
+    consumedExtras?: EnergyZoneCard[];
     error?: string;
 }
 
@@ -28,6 +30,7 @@ export interface EnergyCheckResult {
     error?: string;
     tapped: EnergyZoneCard[];
     requirements: EnergyRequirement;
+    consumedExtras?: EnergyZoneCard[];
 }
 
 export class EnergyManager {
@@ -111,9 +114,7 @@ export class EnergyManager {
                 return 0;
             }
 
-            return player.zones.energyArea.reduce((total, energyCard) => {
-                return total + (energyCard.isRested ? 0 : 1); // Each energy card provides 1 energy
-            }, 0);
+            return player.zones.energyArea.length;
         } catch (error) {
             console.error(`❌ Error calculating total energy for ${playerId}:`, error);
             return 0;
@@ -142,7 +143,12 @@ export class EnergyManager {
     /**
      * Tap energy cards to pay cost
      */
-    static tapEnergyForCost(gameEnv: GameEnvironment, playerId: string, cost: number): EnergyPaymentResult {
+    static tapEnergyForCost(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        cost: number,
+        options: EnergyValidationOptions = {}
+    ): EnergyPaymentResult {
         try {
             const player = gameEnv.players[playerId];
             if (!player || !player.zones || !player.zones.energyArea) {
@@ -153,31 +159,58 @@ export class EnergyManager {
                 };
             }
 
-            const availableEnergy = this.getAvailableEnergy(gameEnv, playerId);
-            if (availableEnergy < cost) {
-                console.log(`❌ Insufficient energy: need ${cost}, have ${availableEnergy}`);
+            const activeEnergyCards = player.zones.energyArea.filter(card => !card.isRested);
+            if (activeEnergyCards.length < cost) {
+                console.log(`❌ Insufficient energy: need ${cost}, have ${activeEnergyCards.length}`);
                 return {
                     success: false,
                     tapped: [],
-                    error: `Insufficient energy: need ${cost}, have ${availableEnergy}`
+                    error: `Insufficient energy: need ${cost}, have ${activeEnergyCards.length}`
                 };
             }
 
+            const sortedActive = this.sortEnergyOrder(activeEnergyCards, options);
+
             let remainingCost = cost;
             const tappedCards: EnergyZoneCard[] = [];
-            for (const energyCard of player.zones.energyArea) {
-                if (!energyCard.isRested && remainingCost > 0) {
-                    energyCard.isRested = true;
-                    remainingCost -= 1; // Each energy card provides 1 energy
-                    console.log(`⚡ Tapped 1 energy from ${energyCard.cardId}`);
-                    tappedCards.push(energyCard);
+            const extrasToRemove: EnergyZoneCard[] = [];
+
+            for (const energyCard of sortedActive) {
+                if (remainingCost <= 0) {
+                    break;
+                }
+
+                energyCard.isRested = true;
+                remainingCost -= 1;
+                console.log(`⚡ Tapped 1 energy from ${energyCard.cardId} (extra=${energyCard.isExtraEnergy})`);
+                tappedCards.push(energyCard);
+
+                if (energyCard.isExtraEnergy) {
+                    extrasToRemove.push(energyCard);
                 }
             }
 
+            if (remainingCost > 0) {
+                tappedCards.forEach(card => {
+                    card.isRested = false;
+                });
+
+                return {
+                    success: false,
+                    tapped: tappedCards,
+                    consumedExtras: [],
+                    error: `Failed to tap ${cost} energy`
+                };
+            }
+
+            extrasToRemove.forEach(extraCard => {
+                this.removeEnergyCard(gameEnv, playerId, extraCard.carduid);
+            });
+
             return {
-                success: remainingCost === 0,
+                success: true,
                 tapped: tappedCards,
-                error: remainingCost === 0 ? undefined : `Failed to tap ${cost} energy`
+                consumedExtras: extrasToRemove
             };
         } catch (error) {
             console.error(`❌ Error tapping energy for ${playerId}:`, error);
@@ -218,6 +251,37 @@ export class EnergyManager {
         }
     }
 
+    static sortEnergyOrder(energyCards: EnergyZoneCard[], options: EnergyValidationOptions = {}): EnergyZoneCard[] {
+        if (energyCards.length <= 1) {
+            return [...energyCards];
+        }
+
+        const normalEnergy = energyCards.filter(card => !card.isExtraEnergy);
+        const extraEnergy = energyCards.filter(card => card.isExtraEnergy);
+
+        const orderedNormals = options.fromBurst ? [...normalEnergy] : [...normalEnergy].reverse();
+        const orderedExtras = options.fromBurst ? [...extraEnergy] : [...extraEnergy].reverse();
+
+        return [...orderedNormals, ...orderedExtras];
+    }
+
+    static removeEnergyCard(gameEnv: GameEnvironment, playerId: string, carduid: string): boolean {
+        const player = gameEnv.players[playerId];
+        if (!player?.zones?.energyArea) {
+            return false;
+        }
+
+        const index = player.zones.energyArea.findIndex(card => card.carduid === carduid);
+        if (index === -1) {
+            console.warn(`⚠️ Could not find extra energy ${carduid} in ${playerId}'s energy area for removal`);
+            return false;
+        }
+
+        player.zones.energyArea.splice(index, 1);
+        console.log(`🧪 Extra energy ${carduid} consumed and removed from ${playerId}'s energy area`);
+        return true;
+    }
+
     static validateEnergyForCard(
         gameEnv: GameEnvironment,
         playerId: string,
@@ -225,7 +289,11 @@ export class EnergyManager {
         options: EnergyValidationOptions = {}
     ): EnergyValidationResult {
         const requirements = getEnergyRequirement(cardData);
-        const availableEnergy = this.getAvailableEnergy(gameEnv, playerId);
+        const player = gameEnv.players[playerId];
+        const energyArea = player?.zones?.energyArea || [];
+        const totalEnergy = energyArea.length;
+        const activeEnergyCards = energyArea.filter((card: EnergyZoneCard) => !card.isRested);
+        const availableEnergy = activeEnergyCards.length;
         const shouldConsume = !options.fromBurst && !isEnergyCard(cardData) && requirements.cost > 0;
 
         if (options.fromBurst || isEnergyCard(cardData)) {
@@ -233,16 +301,18 @@ export class EnergyManager {
                 isValid: true,
                 requirements,
                 availableEnergy,
+                totalEnergy,
                 shouldConsume: false
             };
         }
 
-        if (requirements.level > 0 && availableEnergy < requirements.level) {
+        if (requirements.level > 0 && totalEnergy < requirements.level) {
             return {
                 isValid: false,
-                error: `Not enough active energy: require ${requirements.level}, have ${availableEnergy}`,
+                error: `Not enough energy to meet level ${requirements.level} (have ${totalEnergy})`,
                 requirements,
                 availableEnergy,
+                totalEnergy,
                 shouldConsume
             };
         }
@@ -253,6 +323,7 @@ export class EnergyManager {
                 error: `Not enough active energy to pay cost ${requirements.cost} (available ${availableEnergy})`,
                 requirements,
                 availableEnergy,
+                totalEnergy,
                 shouldConsume
             };
         }
@@ -261,19 +332,26 @@ export class EnergyManager {
             isValid: true,
             requirements,
             availableEnergy,
+            totalEnergy,
             shouldConsume
         };
     }
 
-    static payEnergyCost(gameEnv: GameEnvironment, playerId: string, cost: number): EnergyPaymentResult {
+    static payEnergyCost(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        cost: number,
+        options: EnergyValidationOptions = {}
+    ): EnergyPaymentResult {
         if (cost <= 0) {
             return {
                 success: true,
-                tapped: []
+                tapped: [],
+                consumedExtras: []
             };
         }
 
-        return this.tapEnergyForCost(gameEnv, playerId, cost);
+        return this.tapEnergyForCost(gameEnv, playerId, cost, options);
     }
 
     static payEnergyForCard(
@@ -286,11 +364,12 @@ export class EnergyManager {
         if (options.fromBurst || isEnergyCard(cardData) || requirements.cost <= 0) {
             return {
                 success: true,
-                tapped: []
+                tapped: [],
+                consumedExtras: []
             };
         }
 
-        return this.payEnergyCost(gameEnv, playerId, requirements.cost);
+        return this.payEnergyCost(gameEnv, playerId, requirements.cost, options);
     }
 
     static validateAndPayEnergyForCard(
@@ -305,7 +384,8 @@ export class EnergyManager {
                 success: false,
                 error: validation.error,
                 tapped: [],
-                requirements: validation.requirements
+                requirements: validation.requirements,
+                consumedExtras: []
             };
         }
 
@@ -313,24 +393,27 @@ export class EnergyManager {
             return {
                 success: true,
                 tapped: [],
-                requirements: validation.requirements
+                requirements: validation.requirements,
+                consumedExtras: []
             };
         }
 
-        const payment = this.payEnergyCost(gameEnv, playerId, validation.requirements.cost);
+        const payment = this.payEnergyCost(gameEnv, playerId, validation.requirements.cost, options);
         if (!payment.success) {
             return {
                 success: false,
                 error: payment.error,
                 tapped: payment.tapped,
-                requirements: validation.requirements
+                requirements: validation.requirements,
+                consumedExtras: payment.consumedExtras || []
             };
         }
 
         return {
             success: true,
             tapped: payment.tapped,
-            requirements: validation.requirements
+            requirements: validation.requirements,
+            consumedExtras: payment.consumedExtras || []
         };
     }
 }

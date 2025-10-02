@@ -81,7 +81,7 @@ export class PlayCardPreparationManager {
         if (!fromBurst) {
             const handValidation = GameValidator.validateCardInHand(gameEnv, playerId, eventData.carduid);
             if (!handValidation.isValid) {
-                this.rollbackEnergy(energyResult.tapped);
+                this.rollbackEnergy(gameEnv, playerId, energyResult.tapped, energyResult.consumedExtras);
                 return {
                     success: false,
                     error: handValidation.error || 'Card not in hand'
@@ -89,7 +89,7 @@ export class PlayCardPreparationManager {
             }
 
             if (!PlayerCardManager.removeCardFromHand(gameEnv, playerId, eventData.carduid)) {
-                this.rollbackEnergy(energyResult.tapped);
+                this.rollbackEnergy(gameEnv, playerId, energyResult.tapped, energyResult.consumedExtras);
                 return {
                     success: false,
                     error: `Failed to remove card ${eventData.carduid} from hand`
@@ -98,7 +98,7 @@ export class PlayCardPreparationManager {
         }
 
         const rollback = () => {
-            this.rollbackEnergy(energyResult.tapped);
+            this.rollbackEnergy(gameEnv, playerId, energyResult.tapped, energyResult.consumedExtras);
             if (!fromBurst) {
                 const handUids = player.deck._handUids;
                 if (!handUids.includes(eventData.carduid)) {
@@ -118,10 +118,31 @@ export class PlayCardPreparationManager {
         };
     }
 
-    private static rollbackEnergy(tapped: EnergyZoneCard[]): void {
+    private static rollbackEnergy(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        tapped: EnergyZoneCard[],
+        consumedExtras: EnergyZoneCard[] = []
+    ): void {
+        const player = gameEnv.players[playerId];
+        const energyArea = player?.zones?.energyArea;
+        if (!energyArea) {
+            return;
+        }
+
+        const consumedIds = new Set(consumedExtras.map(card => card.carduid));
+
+        consumedExtras.forEach(card => {
+            if (!energyArea.some(existing => existing.carduid === card.carduid)) {
+                card.isRested = false;
+                energyArea.push(card);
+            }
+        });
+
         tapped.forEach(card => {
-            card.isRested = false;
+            if (!consumedIds.has(card.carduid)) {
+                card.isRested = false;
+            }
         });
     }
 }
-
