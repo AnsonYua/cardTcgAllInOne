@@ -159,6 +159,36 @@ export default class GameApiService {
   }
 
   /**
+   * Confirm blocker choice (BLOCKER_CHOICE events) with standardized handling
+   * @param {string} eventId - The blocker choice event ID
+   * @param {Object|null} selectedTarget - Selected blocker target reference or null to decline
+   * @param {Object} sceneContext - Optional scene context for automatic scenario flag handling
+   */
+  async confirmBlockerChoice(eventId, selectedTargets, sceneContext = null) {
+    const gameState = this.gameStateManager.getGameState();
+
+    const response = await this.apiManager.confirmBlockerChoice(
+      gameState.gameId,
+      gameState.playerId,
+      eventId,
+      selectedTargets
+    );
+
+    const hasSelection = Array.isArray(selectedTargets) && selectedTargets.length > 0;
+    const successMessage = hasSelection
+      ? 'Blocker assigned successfully!'
+      : 'Blocker choice declined.';
+
+    return this.handleStandardResponse(
+      response,
+      successMessage,
+      'Failed to resolve blocker choice',
+      true,
+      sceneContext
+    );
+  }
+
+  /**
    * Generic API call wrapper with error handling
    * @param {Function} apiCall - The API call function
    * @param {string} loadingMessage - Message to show while loading

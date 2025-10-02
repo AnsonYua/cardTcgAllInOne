@@ -451,64 +451,125 @@ export default class DialogManager {
    */
   showTargetChoiceDialog(event, onConfirm) {
     console.log('DialogManager: Showing unified target choice dialog:', event);
-    
-    // Extract effect information from TARGET_CHOICE event
-    const { effect, availableTargets } = event.data;
-    const effectDescription = effect?.action || effect?.description || 'Select Target';
-    const isOptional = effect?.optional !== false;
-    const selectCount = (effect?.target && effect.target.count) ? effect.target.count : 1;
-    
-    // Convert backend availableTargets to eligibleCards format
+
+    const eventType = event?.type || 'TARGET_CHOICE';
+    const eventData = event?.data || {};
+    const isBlockerChoice = eventType === 'BLOCKER_CHOICE';
+
+    // Extract effect information when present (standard TARGET_CHOICE flow)
+    const effect = eventData.effect;
+    const availableTargets = Array.isArray(eventData.availableTargets) ? eventData.availableTargets : [];
+    const effectDescriptionRaw = effect?.action || effect?.description || effect?.effectId || 'Select Target';
+    const effectDescription = Array.isArray(effectDescriptionRaw)
+      ? effectDescriptionRaw.join(', ')
+      : effectDescriptionRaw;
+
+    // Blocker choices are always optional – player can decline to block
+    const isOptional = isBlockerChoice ? true : effect?.optional !== false;
+
+    // Blocker selections are limited to a single unit; otherwise fall back to effect target count
+    const selectCount = isBlockerChoice
+      ? 1
+      : (effect?.target && effect.target.count ? effect.target.count : 1);
+
+    // Convert backend available targets into dialog-friendly slot references
     const eligibleCards = availableTargets.map(target => ({
       dialogDisplayType: 'slot',
       playerId: target.playerId,
       zone: target.zone,
-      carduid: target.carduid
+      carduid: target.carduid,
+      cardData: target.cardData,
+      unit: target.unit,
+      pilot: target.pilot
     }));
 
-    // Create selection object using unified format
+    const blockerDescription = 'Select a Blocker to intercept this attack or cancel to allow it to resolve normally.';
+    const selectionIdPrefix = isBlockerChoice ? 'blocker_choice' : 'target_choice';
+
+    // Create selection configuration shared with DialogUIManager
     const targetSelection = {
-      selectionId: `target_choice_${event.id}`,
-      title: this.getTargetChoiceTitle(effect),
-      description: `Effect: ${effectDescription} - Choose a target`,
+      selectionId: `${selectionIdPrefix}_${event.id}`,
+      title: isBlockerChoice ? '🛡️ Choose a Blocker' : this.getTargetChoiceTitle(effect),
+      description: isBlockerChoice ? blockerDescription : `Effect: ${effectDescription} - Choose a target`,
       selectCount,
-      eligibleCards: eligibleCards,
-      dialogType: 'TARGET_CHOICE',
+      eligibleCards,
+      dialogType: isBlockerChoice ? 'BLOCKER_CHOICE' : 'TARGET_CHOICE',
       autoSelectFirst: false
     };
 
-    // Use unified card selection dialog with TARGET_CHOICE API handling
-    return this.showCardSelectionDialog(
-      targetSelection.selectionId, 
-      targetSelection, 
-      async (selectionId, selectedCards) => {
-        if (selectedCards && selectedCards.length > 0) {
-          const selectedTarget = selectedCards[0];
-          console.log('DialogManager: Target selected via unified dialog:', selectedTarget);
-          
-          try {
-            // Call unified TARGET_CHOICE API through GameApiService
-            // Always send as array for consistency, even for single target
-            if (this.scene.gameApiService) {
-              await this.scene.gameApiService.confirmTargetChoice(event.id, [{
+    const handleConfirm = async (selectionId, selectedCards) => {
+      const hasSelection = selectedCards && selectedCards.length > 0;
+
+      if (!hasSelection) {
+        console.log('DialogManager: Target selection cancelled or empty');
+        if (!isBlockerChoice && onConfirm) {
+          onConfirm(null);
+        }
+        return;
+      }
+
+      const selectedTarget = selectedCards[0];
+      console.log('DialogManager: Target selected via unified dialog:', selectedTarget);
+
+      try {
+        if (this.scene.gameApiService) {
+          if (isBlockerChoice) {
+            await this.scene.gameApiService.confirmBlockerChoice(
+              event.id,
+              [{
                 carduid: selectedTarget.carduid,
                 zone: selectedTarget.zone,
                 playerId: selectedTarget.playerId
-              }], this.scene);
+              }],
+              this.scene
+            );
+          } else {
+            await this.scene.gameApiService.confirmTargetChoice(
+              event.id,
+              [{
+                carduid: selectedTarget.carduid,
+                zone: selectedTarget.zone,
+                playerId: selectedTarget.playerId
+              }],
+              this.scene
+            );
+          }
+        } else {
+          console.error('DialogManager: GameApiService not available on scene');
+        }
+      } catch (error) {
+        console.error('DialogManager: Failed to process target choice:', error);
+      }
+
+      if (onConfirm) {
+        onConfirm(selectedTarget);
+      }
+    };
+
+    const handleCancel = isBlockerChoice
+      ? async () => {
+          try {
+            if (this.scene.gameApiService) {
+              await this.scene.gameApiService.confirmBlockerChoice(event.id, [], this.scene);
             } else {
               console.error('DialogManager: GameApiService not available on scene');
             }
           } catch (error) {
-            console.error('DialogManager: Failed to process target choice:', error);
+            console.error('DialogManager: Failed to decline blocker choice:', error);
           }
-          
-          if (onConfirm) onConfirm(selectedTarget);
-        } else {
-          console.log('DialogManager: Target selection cancelled');
-          if (onConfirm) onConfirm(null);
+
+          if (onConfirm) {
+            onConfirm(null);
+          }
         }
-      },
-      null,
+      : null;
+
+    // Use unified card selection dialog with shared TARGET/BLOCKER handler
+    return this.showCardSelectionDialog(
+      targetSelection.selectionId,
+      targetSelection,
+      handleConfirm,
+      handleCancel,
       isOptional
     );
   }

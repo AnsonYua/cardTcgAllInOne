@@ -23,6 +23,12 @@ export default class FrontEventProcessor {
         requiresPlayerMatch: true,
         allowMultiple: false,
         description: 'Unified target selection events (deploy, pairing, activation)'
+      }],
+      ['BLOCKER_CHOICE', {
+        handler: this.handleTargetChoice.bind(this),
+        requiresPlayerMatch: true,
+        allowMultiple: false,
+        description: 'Blocker selection events triggered during attacks'
       }]
       // Future event types can be added here:
       // ['CARD_SELECTION_CHOICE', { ... }],
@@ -120,7 +126,7 @@ export default class FrontEventProcessor {
     
     try {
       const event = events[0];
-      console.log('[FrontEventProcessor] Handling TARGET_CHOICE event:', event);
+      console.log('[FrontEventProcessor] Handling TARGET_CHOICE-compatible event:', event);
       
       this.scene.dialogManager.showTargetChoiceDialog(event);
       return true;

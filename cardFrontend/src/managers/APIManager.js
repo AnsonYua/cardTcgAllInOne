@@ -173,6 +173,23 @@ export default class APIManager {
     });
   }
 
+  /**
+   * Confirm blocker choice (blocker redirect decision)
+   * @param {string} gameId - Game ID
+   * @param {string} playerId - Player ID
+   * @param {string} eventId - Event ID from processingQueue
+   * @param {Object|null} selectedTarget - Selected blocker or null when declining
+   * @returns {Promise<Object>} API response
+   */
+  async confirmBlockerChoice(gameId, playerId, eventId, selectedTargets) {
+    console.log('APIManager: Confirming blocker choice:', { gameId, playerId, eventId, selectedTargets });
+
+    return this.request('/player/confirmBlockerChoice', {
+      method: 'POST',
+      body: JSON.stringify({ gameId, playerId, eventId, selectedTargets })
+    });
+  }
+
   async endTurn(gameId, playerId) {
     return this.request('/player/endTurn', {
       method: 'POST',

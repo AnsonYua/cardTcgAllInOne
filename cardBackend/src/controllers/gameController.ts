@@ -991,6 +991,76 @@ export class GameController {
         }
     }
 
+    /**
+     * Confirm blocker choice decision (BLOCKER_CHOICE events)
+     * POST /api/game/player/confirmBlockerChoice
+     * Body: { gameId, playerId, eventId, selectedTarget | null }
+     */
+    async confirmBlockerChoice(req: GameRequest, res: Response): Promise<void> {
+        try {
+            console.log('🛡️ Processing blocker choice confirmation:', req.body);
+
+            const { gameId, playerId, eventId, selectedTargets } = req.body;
+
+            if (!gameId || !playerId || !eventId) {
+                res.status(400).json({
+                    error: 'gameId, playerId, and eventId are required',
+                    timestamp: new Date().toISOString(),
+                    context: 'confirmBlockerChoice endpoint'
+                });
+                return;
+            }
+
+            const targetsArray = Array.isArray(selectedTargets) ? selectedTargets : [];
+
+            if (targetsArray.length > 1) {
+                res.status(400).json({
+                    error: 'Only one blocker target can be selected',
+                    timestamp: new Date().toISOString(),
+                    context: 'confirmBlockerChoice endpoint'
+                });
+                return;
+            }
+
+            if (targetsArray.length === 1) {
+                const target = targetsArray[0];
+                if (!target?.carduid || !target?.zone || !target?.playerId) {
+                    res.status(400).json({
+                        error: 'Selected blocker must include carduid, zone, and playerId',
+                        timestamp: new Date().toISOString(),
+                        context: 'confirmBlockerChoice endpoint'
+                    });
+                    return;
+                }
+            }
+
+            const result = await this.gameLogic.confirmBlockerChoice(gameId, playerId, eventId, targetsArray);
+
+            if (result.success && result.gameEnv) {
+                res.json({
+                    success: true,
+                    gameId: result.gameId,
+                    gameEnv: result.gameEnv,
+                    message: targetsArray.length > 0 ? 'Blocker assigned successfully' : 'Blocker choice declined'
+                });
+            } else {
+                res.status(400).json({
+                    error: result.error || 'Failed to process blocker choice',
+                    timestamp: new Date().toISOString(),
+                    context: 'confirmBlockerChoice endpoint'
+                });
+            }
+
+        } catch (error) {
+            console.error('❌ Error in confirmBlockerChoice:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'confirmBlockerChoice endpoint'
+            });
+        }
+    }
+
 }
 
 // ============ EXPORT SINGLETON ============

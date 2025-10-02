@@ -10,7 +10,7 @@ import { Request, Response } from 'express';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase, ZoneType, PlayerActionType, EventType } from '../models/GameEnums';
 import { EventFactory, GameEvent, EventStatus, EventPriority } from './EventQueue/index';
-import { BurstEffectChoiceEvent, TargetChoiceEvent } from './EventQueue/interfaces/GameEvent';
+import { BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent } from './EventQueue/interfaces/GameEvent';
 import { PlayerAction } from '../models/EventInterfaces';
 import { StaticEventProcessor } from './StaticEventProcessor';
 
@@ -1104,6 +1104,97 @@ export class GameLogic {
             return {
                 success: false,
                 error: `Failed to confirm target choice: ${error instanceof Error ? error.message : 'Unknown error'}`
+            };
+        }
+    }
+
+    async confirmBlockerChoice(gameId: string, playerId: string, eventId: string, selectedTargets: any[]): Promise<GameLogicResult> {
+        try {
+            console.log(`🛡️ Processing blocker choice confirmation: ${eventId} by player ${playerId}`);
+            console.log('Selected blocker target(s):', selectedTargets);
+
+            const gameEnv = await this.loadGameFromFile(gameId);
+            if (!gameEnv) {
+                return {
+                    success: false,
+                    error: 'Game not found'
+                };
+            }
+
+            const event = gameEnv.processingQueue.find(e => e.id === eventId) as BlockerChoiceEvent | undefined;
+            if (!event) {
+                return {
+                    success: false,
+                    error: 'Blocker choice event not found'
+                };
+            }
+
+            if (event.type !== EventType.BLOCKER_CHOICE) {
+                return {
+                    success: false,
+                    error: 'Event is not a blocker choice'
+                };
+            }
+
+            if (event.playerId && event.playerId !== playerId && event.data.blockingPlayerId !== playerId) {
+                return {
+                    success: false,
+                    error: 'Player not authorized to resolve this blocker choice'
+                };
+            }
+
+            const availableTargets = event.data.availableTargets || [];
+
+            let resolvedTarget = undefined;
+            if (Array.isArray(selectedTargets) && selectedTargets.length > 0) {
+                const chosen = selectedTargets[0];
+                const isValidTarget = availableTargets.some(target =>
+                    target.carduid === chosen.carduid &&
+                    target.zone === chosen.zone &&
+                    target.playerId === chosen.playerId
+                );
+
+                if (!isValidTarget) {
+                    return {
+                        success: false,
+                        error: `Selected blocker ${chosen.carduid} in ${chosen.zone} is not available`
+                    };
+                }
+
+                resolvedTarget = {
+                    carduid: chosen.carduid,
+                    zone: chosen.zone,
+                    playerId: chosen.playerId
+                };
+            }
+
+            event.data.selectedTarget = resolvedTarget;
+
+            event.data.userDecisionMade = true;
+
+            const processingResult = await gameEnv.processEvents();
+            if (!processingResult.success) {
+                return {
+                    success: false,
+                    error: processingResult.error || 'Failed to process blocker choice'
+                };
+            }
+
+            await this.saveGameToFile(gameId, gameEnv);
+
+            console.log('✅ Blocker choice processed successfully');
+
+            return {
+                success: true,
+                gameId,
+                gameEnv
+            };
+
+        } catch (error) {
+            console.error('❌ Error in confirmBlockerChoice:', error);
+            return {
+                success: false,
+                error: `Failed to confirm blocker choice: ${error instanceof Error ? error.message : 'Unknown error'}`
             };
         }
     }

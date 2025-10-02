@@ -164,6 +164,12 @@ router.post('/player/confirmBurstChoice', gameController.confirmBurstChoice.bind
 router.post('/player/confirmTargetChoice', gameController.confirmTargetChoice.bind(gameController));
 
 /**
+ * Confirm blocker choice decision during combat
+ * POST /api/game/player/confirmBlockerChoice
+ */
+router.post('/player/confirmBlockerChoice', gameController.confirmBlockerChoice.bind(gameController));
+
+/**
  * AI player action (placeholder)
  * POST /api/game/player/playerAiAction
  */
