@@ -5,7 +5,7 @@ import { GamePhase, ZoneType, EventType } from './GameEnums';
 import { Player, PlayerZones, SlotZone } from './Player';
 import { ZoneCard } from './CardSystem';
 // EventManager removed - using direct event processing
-import { GameEvent, EventStatus, EventPriority, EventFactory, BurstEffectChoiceEvent, TargetChoiceEvent } from '../services/EventQueue/interfaces/GameEvent';
+import { GameEvent, EventStatus, EventPriority, EventFactory, BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent } from '../services/EventQueue/interfaces/GameEvent';
 import { ProcessingResult, ValidationResult } from './EventInterfaces';
 
 // Forward declaration to avoid circular dependency
@@ -200,6 +200,12 @@ export class GameEnvironment {
                 const targetChoice = nextEvent as TargetChoiceEvent;
                 return !targetChoice.data.userDecisionMade;
             }
+            
+            // For blocker choice events, check if user has already provided input
+            if (nextEvent.type === EventType.BLOCKER_CHOICE) {
+                const blockerChoice = nextEvent as BlockerChoiceEvent;
+                return !blockerChoice.data.userDecisionMade;
+            }
         }
         
         return false;
@@ -211,7 +217,9 @@ export class GameEnvironment {
     public getEventsRequiringConfirmation(): GameEvent[] {
         return this.processingQueue.filter(event => 
             event.status === EventStatus.DECLARED && 
-            event.type === EventType.BURST_EFFECT_CHOICE
+            (event.type === EventType.BURST_EFFECT_CHOICE ||
+             event.type === EventType.TARGET_CHOICE ||
+             event.type === EventType.BLOCKER_CHOICE)
         );
     }
     
@@ -220,9 +228,12 @@ export class GameEnvironment {
      */
     public getCurrentPlayerChoice(): GameEvent | null {
         const nextEvent = this.processingQueue[0];
-        if (nextEvent?.type === EventType.BURST_EFFECT_CHOICE && 
-            nextEvent?.status === EventStatus.DECLARED) {
-            return nextEvent;
+        if (nextEvent?.status === EventStatus.DECLARED) {
+            if (nextEvent.type === EventType.BURST_EFFECT_CHOICE ||
+                nextEvent.type === EventType.TARGET_CHOICE ||
+                nextEvent.type === EventType.BLOCKER_CHOICE) {
+                return nextEvent;
+            }
         }
         return null;
     }
