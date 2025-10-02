@@ -17,7 +17,7 @@ These notes capture the backend shape as of today. Anything that is unclear is f
 - `ContinuousEffectManager.ts`, `DeployEffectManager.ts`, `PairingEffectManager.ts`, `TargetChoiceManager.ts`, `PhaseTransitionManager.ts` – specialized managers for effect normalization, pairing logic, target selection, and phase transitions.
 - `PlayerCardManager.ts` – handles card placement, movement between zones, and stat lookups (`getCurrentUnitCardInSlotAPandHP`).
 - `BaseCardManager.ts`, `EnergyManager.ts`, `ShieldCardManager.ts` – zone-specific helpers.
-- `effects/EffectExecutor.ts` & `effects/EffectManagerRegistry.ts` – shared execution utilities for resolved effects.
+- `effects/EffectExecutor.ts` – shared execution utilities for resolved effects.
 
 ### Models & Utilities
 - `src/models/CardSystem.ts` – canonical definitions for zone cards, card data interfaces, `FieldCardValue`, etc.

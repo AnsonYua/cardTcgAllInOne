@@ -1,9 +1,8 @@
 /**
- * EffectScannerUtils
+ * EffectScannerUtils - Simplified Version
  * 
- * Centralized utility for scanning cards for specific effects across the game.
- * Eliminates code duplication from RepairEffectManager, ContinuousEffectManager, etc.
- * Provides reusable patterns for effect detection and filtering.
+ * Centralized utility for scanning cards for effects with minimal object creation.
+ * Only stores essential data - everything else derived via findSlotByCarduid when needed.
  */
 
 import { GameEnvironment } from '../models/GameEnvironment';
@@ -15,17 +14,10 @@ import { EffectDefinition } from '../services/EventQueue/interfaces/GameEvent';
 
 export interface EffectScanResult {
     carduid: string;
-    cardId: string;
-    zone: string;
-    playerId: string;
-    effect: EffectDefinition;
-    cardData: any;
 }
 
 export interface BlockerUnit {
     carduid: string;
-    zone: string;
-    playerId: string;
     effect: EffectDefinition;
 }
 
@@ -34,8 +26,8 @@ export type EffectFilter = (effect: EffectDefinition) => boolean;
 export class EffectScannerUtils {
     
     /**
-     * Centralized effect scanning across all player slot zones
-     * Reusable pattern for any effect detection needs
+     * Simplified effect scanning - returns only carduids
+     * All other data derived via findSlotByCarduid when needed
      */
     static scanPlayerForEffects(
         gameEnv: GameEnvironment, 
@@ -46,33 +38,30 @@ export class EffectScannerUtils {
         const player = gameEnv.getPlayer(playerId);
         
         if (!player || !player.zones) {
-            console.log(`⚠️ Player ${playerId} not found or has no zones`);
             return results;
         }
 
-        // Scan all slot zones using centralized SLOT_ZONES pattern
+        // Scan all slot zones
         for (const slotName of SLOT_ZONES) {
             const slotResult = SlotZoneUtils.getSlotZone(player.zones, slotName);
-            if (!slotResult.isValid || !slotResult.slot) {
+            if (!slotResult.isValid || !slotResult.slot?.unit) {
                 continue;
             }
 
-            const slot = slotResult.slot;
+            const unit = slotResult.slot.unit;
+            if (!unit?.carduid) continue;
+
+            // Check if unit has matching effects
+            const cardId = getCardIdFromUid(unit.carduid);
+            const cardData = CardDatabaseManager.getCardDetails(cardId);
             
-            // Check unit in slot
-            if (slot.unit) {
-                const unitResults = this.scanCardForEffects(
-                    slot.unit, slotName, playerId, effectFilter
-                );
-                results.push(...unitResults);
-            }
-            
-            // Check pilot in slot
-            if (slot.pilot) {
-                const pilotResults = this.scanCardForEffects(
-                    slot.pilot, slotName, playerId, effectFilter
-                );
-                results.push(...pilotResults);
+            if (!cardData?.effects?.rules) continue;
+
+            for (const effect of cardData.effects.rules) {
+                if (effectFilter(effect)) {
+                    results.push({ carduid: unit.carduid });
+                    break; // Only need to know the card has a matching effect
+                }
             }
         }
         
@@ -80,76 +69,54 @@ export class EffectScannerUtils {
     }
     
     /**
-     * Scan individual card for effects matching filter
-     */
-    private static scanCardForEffects(
-        card: any,
-        zone: string,
-        playerId: string,
-        effectFilter: EffectFilter
-    ): EffectScanResult[] {
-        const results: EffectScanResult[] = [];
-        
-        if (!card?.carduid) {
-            return results;
-        }
-
-        const cardId = getCardIdFromUid(card.carduid);
-        const cardData = CardDatabaseManager.getCardDetails(cardId);
-        
-        if (!cardData?.effects?.rules) {
-            return results;
-        }
-
-        // Apply filter to each effect rule
-        for (const effect of cardData.effects.rules) {
-            if (effectFilter(effect)) {
-                results.push({
-                    carduid: card.carduid,
-                    cardId,
-                    zone,
-                    playerId,
-                    effect,
-                    cardData
-                });
-            }
-        }
-        
-        return results;
-    }
-    
-    /**
-     * Specialized scanner for blocker effects
-     * Used by BlockerEffectManager
+     * Simplified blocker scanner - returns carduid + effect only
+     * Everything else (zone, playerId, etc.) derived via findSlotByCarduid when needed
      */
     static scanForBlockerUnits(gameEnv: GameEnvironment, playerId: string): BlockerUnit[] {
-        const blockerFilter: EffectFilter = (effect) => 
-            effect.effectId === 'blocker' && 
-            effect.trigger === 'ATTACK_REDIRECT';
+        const results: BlockerUnit[] = [];
+        const player = gameEnv.getPlayer(playerId);
+        
+        if (!player || !player.zones) {
+            return results;
+        }
+
+        for (const slotName of SLOT_ZONES) {
+            const slotResult = SlotZoneUtils.getSlotZone(player.zones, slotName);
+            if (!slotResult.isValid || !slotResult.slot?.unit) {
+                continue;
+            }
+
+            const unit = slotResult.slot.unit;
             
-        return this.scanPlayerForEffects(gameEnv, playerId, blockerFilter)
-            .map(result => ({
-                carduid: result.carduid,
-                zone: result.zone,
-                playerId: result.playerId,
-                effect: result.effect
-            }))
-            .filter(blocker => {
-                // Only unrested units can block
-                const player = gameEnv.getPlayer(playerId);
-                if (!player) return false;
-                
-                const slotResult = SlotZoneUtils.getSlotZone(player.zones, blocker.zone);
-                if (!slotResult.isValid || !slotResult.slot) return false;
-                
-                const unit = slotResult.slot.unit;
-                return unit && unit.carduid === blocker.carduid && !unit.isRested;
-            });
+            // Skip rested units and invalid cards
+            if (!unit.carduid || unit.isRested) {
+                continue;
+            }
+
+            // Use cardData from unit directly instead of CardDatabaseManager
+            const cardData = unit.cardData;
+            
+            if (!cardData?.effects?.rules) {
+                continue;
+            }
+
+            // Find blocker effects
+            for (const effect of cardData.effects.rules) {
+                if (effect.trigger === 'ATTACK_REDIRECT') {
+                    results.push({
+                        carduid: unit.carduid,
+                        effect: effect
+                    });
+                    break;
+                }
+            }
+        }
+        
+        return results;
     }
     
     /**
-     * Specialized scanner for repair effects (can replace RepairEffectManager logic)
-     * Demonstrates reusability of the pattern
+     * Specialized scanner for repair effects
      */
     static scanForRepairAbilities(gameEnv: GameEnvironment, playerId: string): EffectScanResult[] {
         const repairFilter: EffectFilter = (effect) => 
@@ -161,7 +128,6 @@ export class EffectScannerUtils {
     
     /**
      * Specialized scanner for continuous effects
-     * Can be used by ContinuousEffectManager
      */
     static scanForContinuousEffects(gameEnv: GameEnvironment, playerId: string): EffectScanResult[] {
         const continuousFilter: EffectFilter = (effect) => 
@@ -173,7 +139,6 @@ export class EffectScannerUtils {
     
     /**
      * Generic scanner for any effect type/trigger combination
-     * Maximum flexibility for future effect types
      */
     static scanForEffectsByType(
         gameEnv: GameEnvironment, 

@@ -441,8 +441,6 @@ export interface BlockerChoiceEventData {
 
 export interface BlockerUnit {
     carduid: string;
-    zone: string;
-    playerId: string;
     effect: EffectDefinition;
 }
 

@@ -3,7 +3,9 @@
 
 import { GameEnvironment } from '../../models/GameEnvironment';
 import { GamePhase, EventType } from '../../models/GameEnums';
-import { EffectManagerRegistry } from '../effects/EffectManagerRegistry';
+import { PhaseTransitionManager } from '../effects/PhaseTransitionManager';
+import { GameStateManager } from '../effects/GameStateManager';
+import { RepairEffectManager } from '../effects/RepairEffectManager';
 
 // ============ STATE-BASED ACTION INTERFACES ============
 
@@ -44,9 +46,9 @@ export class StateBasedActionEngine {
         const actions: StateBasedAction[] = [];
         
         // Check all categories of state-based actions using specialized managers
-        actions.push(...EffectManagerRegistry.getPhaseTransitionActions(this.gameEnv));
+        actions.push(...PhaseTransitionManager.getAllPhaseTransitionActions(this.gameEnv));
         actions.push(...this.checkRepairAbilitiesInEndPhase());
-        actions.push(...EffectManagerRegistry.getGameStateActions(this.gameEnv));
+        actions.push(...GameStateManager.getAllGameStateActions(this.gameEnv));
         
         // Actions processed in order found (no priority sorting needed)
         
@@ -90,7 +92,7 @@ export class StateBasedActionEngine {
                 
                 if (!hasCheckedRepairAbilities) {
                     console.log(`🩹 Checking repair abilities for player ${currentPlayerId}`);
-                    const repairActions = EffectManagerRegistry.getRepairActions(this.gameEnv, currentPlayerId);
+                    const repairActions = RepairEffectManager.checkRepairAbilities(this.gameEnv, currentPlayerId);
                     actions.push(...repairActions);
                     console.log("adsfadsfsddsfsd ",JSON.stringify(repairActions));
                     // Set the flag to prevent repeated checking
@@ -114,7 +116,7 @@ export class StateBasedActionEngine {
      * Check if current game state is legal (delegated to GameStateManager)
      */
     isLegalGameState(): boolean {
-        return EffectManagerRegistry.getGameStateActions(this.gameEnv).length === 0;
+        return GameStateManager.getAllGameStateActions(this.gameEnv).length === 0;
     }
     
     /**

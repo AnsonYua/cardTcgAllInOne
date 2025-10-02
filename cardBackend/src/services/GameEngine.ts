@@ -23,6 +23,7 @@ import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { ContinuousEffectManager } from './ContinuousEffectManager';
 import { RepairEffectManager } from './effects/RepairEffectManager';
 import { BlockerEffectManager } from './effects/BlockerEffectManager';
+import { BlockerChoiceManager, BlockerChoiceResult } from './BlockerChoiceManager';
 import * as fs from 'fs';
 import * as path from 'path';
 import { getCardIdFromUid } from '../utils/CardUtils';
@@ -95,7 +96,7 @@ export class GameEngine {
                     return TargetChoiceManager.executeTargetChoice(event as TargetChoiceEvent, gameEnv);
 
                 case EventType.BLOCKER_CHOICE:
-                    return BlockerEffectManager.executeBlockerChoice(event as BlockerChoiceEvent, gameEnv);
+                    return BlockerChoiceManager.executeBlockerChoice(event as BlockerChoiceEvent, gameEnv);
 
                 case EventType.PAIRING_EFFECT_TRIGGERED:
                     return GameEngine.executePairingEffect(event as PairingEffectEvent, gameEnv);
@@ -662,7 +663,7 @@ export class GameEngine {
 
 
     private static checkAndExecuteBlockerAction(event: PlayerActionEvent, gameEnv: GameEnvironment): ExecutionResult {
-        const eventData = event.data;
+        console.log(`🛡️ Checking for blocker opportunities: ${event.playerId} → ${gameEnv.getOpponentId(event.playerId)}`);
         const attackingPlayerId = event.playerId;
         const defendingPlayerId = gameEnv.getOpponentId(attackingPlayerId);
         
@@ -671,22 +672,35 @@ export class GameEngine {
             return { success: false, error: 'No opponent found' };
         }
         
-        console.log(`🛡️ Checking for blocker opportunities: ${attackingPlayerId} → ${defendingPlayerId}`);
-        
-        // Step 1: Check for available blockers
-        const availableBlockers = BlockerEffectManager.checkForBlockerUnits(gameEnv, defendingPlayerId);
-        
-        if (availableBlockers.length > 0) {
-            // Step 2: Create blocker choice event for defending player
-            BlockerEffectManager.createBlockerChoiceEvent(gameEnv, availableBlockers, event);
-            return { 
-                success: true, 
-                requiresSelection: true 
-            };
+        // Use BlockerChoiceManager following TargetChoiceManager pattern
+        const blockerResult: BlockerChoiceResult = BlockerChoiceManager.processAttackWithBlockerChoice(
+            gameEnv, 
+            event, 
+            defendingPlayerId
+        );
+
+        if (!blockerResult.success) {
+            return { success: false, error: blockerResult.error };
         }
+
+        if (blockerResult.requiresSelection) {
+            return { success: true, requiresSelection: true };
+        } else if (blockerResult.autoBlocked) {
+            return { success: true }; // Attack redirected automatically
+        } else if (blockerResult.normalAttack) {
+            // No blockers available, execute normal attack
+            return this.executeNormalAttackFlow(event, gameEnv);
+        }
+
+        return { success: false, error: 'Unexpected blocker result state' };
+    }
+
+    /**
+     * Execute normal attack flow when no blockers interfere
+     */
+    private static executeNormalAttackFlow(event: PlayerActionEvent, gameEnv: GameEnvironment): ExecutionResult {
+        const eventData = event.data;
         
-        // Step 3: No blockers available, execute normal attack
-        console.log(`🛡️ No blockers available, proceeding with normal attack`);
         switch (eventData.actionType) {
             case 'attackUnit':
                 return GameEngine.handleAttackUnit(eventData, gameEnv);
