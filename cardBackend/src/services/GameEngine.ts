@@ -716,6 +716,58 @@ export class GameEngine {
         }
     }
 
+    private static unitHasAttackRestriction(unit: UnitZoneCard | null, restriction: string): boolean {
+        if (!unit) {
+            return false;
+        }
+
+        const matchesRestriction = (value: any): boolean => {
+            if (!value) {
+                return false;
+            }
+
+            if (typeof value === 'string') {
+                return value === restriction;
+            }
+
+            if (Array.isArray(value)) {
+                return value.some(item => matchesRestriction(item));
+            }
+
+            if (typeof value === 'object') {
+                if (value.restriction || value.restrictions) {
+                    return matchesRestriction(value.restriction || value.restrictions);
+                }
+
+                if (value.type) {
+                    return matchesRestriction(value.type);
+                }
+
+                return Object.values(value).some(item => matchesRestriction(item));
+            }
+
+            return false;
+        };
+
+        if (matchesRestriction((unit as any).attackRestrictions)) {
+            return true;
+        }
+
+        if (matchesRestriction((unit as any).activeRestrictions)) {
+            return true;
+        }
+
+        const cardRules = unit.cardData?.effects?.rules || [];
+        return cardRules.some(rule => {
+            if (rule?.action !== 'restrict_attack') {
+                return false;
+            }
+
+            const parameters = rule.parameters || {};
+            return matchesRestriction(parameters.restriction || parameters.restrictions);
+        });
+    }
+
 
     private static executePlayerAction(event: PlayerActionEvent, gameEnv: GameEnvironment): ExecutionResult {
         const eventData = event.data;
@@ -905,6 +957,16 @@ export class GameEngine {
             const attackingUnit = attackerSlotResult.unit!;
             
             console.log(`⚔️ Found attacking unit in ${attackerSlot}: ${attackingUnit.carduid}`);
+
+            
+            if (GameEngine.unitHasAttackRestriction(attackingUnit as UnitZoneCard, 'cannot_attack_player')) {
+                const cardName = attackingUnit.cardData?.name || attackingUnit.cardId || 'Attacking unit';
+                console.warn(`⚠️ ${cardName} (${attackingUnit.carduid}) cannot attack the player due to restriction.`);
+                return {
+                    success: false,
+                    error: `${cardName} cannot attack the player due to a restriction`
+                };
+            }
 
 
             // Calculate total attack power using player-level modifications

@@ -18,7 +18,7 @@ export default class CardActionRegistry {
         
         // If card is in slot, show slot-specific actions
         if (isInSlot && slotInfo) {
-            return this.getSlotActions(cardType, cardData, slotInfo, currentPhase);
+            return this.getSlotActions(cardType, cardData, slotInfo, currentPhase, gameContext);
         }
         
         // Base actions for card type (hand cards)
@@ -83,20 +83,24 @@ export default class CardActionRegistry {
     /**
      * Get actions for cards that are already placed in slots
      */
-    static getSlotActions(cardType, cardData, slotInfo, currentPhase) {
+    static getSlotActions(cardType, cardData, slotInfo, currentPhase, gameContext = {}) {
         console.log(`🎯 Getting slot actions for ${cardType} in slot ${slotInfo.slotName}, cardType in slot: ${slotInfo.cardType}`);
         
         const actions = [];
-        
-       
+        const ownerId = this.resolveSlotOwnerId(slotInfo, gameContext);
+        const slotData = ownerId && gameContext?.gameEnv?.players?.[ownerId]?.zones?.[slotInfo.slotName];
+        const unitState = slotData?.unit || null;
+
         
         // Card type specific slot actions
         switch (cardType) {
             case 'unit':
-                actions.push(
-                    { action: 'attackUnit', text: '攻擊機體', primary: true },
-                    { action: 'attackShieldArea', text: '攻擊基地/盾', primary: true }
-                );
+                actions.push({ action: 'attackUnit', text: '攻擊機體', primary: true });
+
+                const canAttackPlayer = !this.unitHasRestriction(unitState, 'cannot_attack_player', gameContext);
+                if (canAttackPlayer) {
+                    actions.push({ action: 'attackShieldArea', text: '攻擊基地/盾', primary: true });
+                }
                 break;
                 
             case 'pilot':
@@ -253,5 +257,79 @@ export default class CardActionRegistry {
         
         return allActions.find(action => action.action === actionName) || 
                { action: actionName, text: actionName, color: 0x95a5a6 };
+    }
+
+    static resolveSlotOwnerId(slotInfo, gameContext) {
+        if (!slotInfo || !gameContext) {
+            return null;
+        }
+
+        if (slotInfo.playerType === 'player') {
+            return gameContext.currentPlayerId || null;
+        }
+
+        if (slotInfo.playerType === 'opponent') {
+            return gameContext.opponentId || null;
+        }
+
+        return null;
+    }
+
+    static unitHasRestriction(unitCard, restriction, gameContext) {
+        if (!unitCard) {
+            return false;
+        }
+
+        if (this.restrictionMatches(unitCard.attackRestrictions, restriction)) {
+            return true;
+        }
+
+        if (this.restrictionMatches(unitCard.activeRestrictions, restriction)) {
+            return true;
+        }
+
+        const computedRestrictions = gameContext?.gameEnv?.computedState?.activeRestrictions || {};
+        const computedForUnit = computedRestrictions?.[unitCard.carduid];
+        if (this.restrictionMatches(computedForUnit, restriction)) {
+            return true;
+        }
+
+        const cardRules = unitCard.cardData?.effects?.rules || [];
+        return cardRules.some(rule => {
+            if (!rule || rule.action !== 'restrict_attack') {
+                return false;
+            }
+
+            const parameters = rule.parameters || {};
+            return this.restrictionMatches(parameters.restriction || parameters.restrictions, restriction);
+        });
+    }
+
+    static restrictionMatches(value, restriction) {
+        if (!value) {
+            return false;
+        }
+
+        if (typeof value === 'string') {
+            return value === restriction;
+        }
+
+        if (Array.isArray(value)) {
+            return value.some(item => this.restrictionMatches(item, restriction));
+        }
+
+        if (typeof value === 'object') {
+            if (value.restriction || value.restrictions) {
+                return this.restrictionMatches(value.restriction || value.restrictions, restriction);
+            }
+
+            if (typeof value.type === 'string') {
+                return value.type === restriction;
+            }
+
+            return Object.values(value).some(item => this.restrictionMatches(item, restriction));
+        }
+
+        return false;
     }
 }

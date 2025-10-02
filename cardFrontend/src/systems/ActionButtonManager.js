@@ -44,6 +44,9 @@ export default class ActionButtonManager {
             phase: gameState.gameEnv?.phase || 'MAIN_PHASE',
             baseZoneAvailable: this.gameScene.isBaseZoneAvailable(),
             canPlayNormally: this.gameScene.canPlayCardNormally(selectedCard),
+            currentPlayerId: gameState.playerId,
+            opponentId: this.gameScene.gameStateManager.getOpponent(),
+            gameEnv: gameState.gameEnv,
             // Card location context: use existing selectedCard.isInZone property
             slotInfo: selectedCard.isInZone ? this.gameScene.getSlotInfoFromCard(selectedCard) : null
         };
