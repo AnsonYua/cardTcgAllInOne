@@ -93,7 +93,8 @@
       "Bash(python3:*)",
       "Bash(sed:*)",
       "Bash(__NEW_LINE__ echo \"✅ TypeScript compilation passed (checked earlier)\")",
-      "Bash(__NEW_LINE__ echo \"\")"
+      "Bash(__NEW_LINE__ echo \"\")",
+      "Bash(tsc --noEmit)"
     ],
     "deny": []
   }

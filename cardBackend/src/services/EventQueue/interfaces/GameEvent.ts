@@ -431,6 +431,25 @@ export interface TargetChoiceEvent extends BaseGameEvent<TargetChoiceEventData> 
     type: EventType.TARGET_CHOICE;
 }
 
+export interface BlockerChoiceEventData {
+    originalAttackEvent: PlayerActionEvent;
+    availableBlockers: BlockerUnit[];
+    selectedBlocker?: BlockerUnit;
+    blockingPlayerId: string;
+    userDecisionMade: boolean;
+}
+
+export interface BlockerUnit {
+    carduid: string;
+    zone: string;
+    playerId: string;
+    effect: EffectDefinition;
+}
+
+export interface BlockerChoiceEvent extends BaseGameEvent<BlockerChoiceEventData> {
+    type: EventType.BLOCKER_CHOICE;
+}
+
 export type GameEvent = 
     | AcknowledgeEventsEvent
     | PlayCardEvent
@@ -461,7 +480,8 @@ export type GameEvent =
     | NextPlayerTurnEvent
     | ShieldCardAttackedEvent
     | BurstEffectChoiceEvent
-    | TargetChoiceEvent;
+    | TargetChoiceEvent
+    | BlockerChoiceEvent;
 
 export class EventFactory {
     private static eventIdCounter = 0;
@@ -752,6 +772,30 @@ export class EventFactory {
             playerId,
             timestamp: Date.now(),
             data: eventData    // Pass eventData object directly without reconstruction
+        };
+    }
+    
+    static createBlockerChoiceEvent(params: {
+        blockingPlayerId: string;
+        originalAttackEvent: PlayerActionEvent;
+        availableBlockers: BlockerUnit[];
+    }): BlockerChoiceEvent {
+        const { blockingPlayerId, originalAttackEvent, availableBlockers } = params;
+        const eventData: BlockerChoiceEventData = {
+            originalAttackEvent,
+            availableBlockers,
+            blockingPlayerId,
+            userDecisionMade: false
+        };
+
+        return {
+            id: `blocker_choice_${++this.eventIdCounter}_${Date.now()}`,
+            type: EventType.BLOCKER_CHOICE,
+            status: EventStatus.DECLARED,
+            priority: EventPriority.HIGH,
+            playerId: blockingPlayerId,
+            timestamp: Date.now(),
+            data: eventData
         };
     }
     

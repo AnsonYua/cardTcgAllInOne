@@ -3,11 +3,12 @@
 
 import { GameEnvironment } from '../../models/GameEnvironment';
 import { EventType } from '../../models/GameEnums';
-import { GameEvent, RepairEffectEvent } from '../EventQueue/interfaces/GameEvent';
+import { GameEvent, RepairEffectEvent, BlockerChoiceEvent } from '../EventQueue/interfaces/GameEvent';
 import { StateBasedAction } from '../EventQueue/StateBasedActionEngine';
 import { RepairEffectManager } from './RepairEffectManager';
 import { PhaseTransitionManager } from './PhaseTransitionManager';
 import { GameStateManager } from './GameStateManager';
+import { BlockerEffectManager } from './BlockerEffectManager';
 
 // Import standardized interfaces
 import { 
@@ -148,6 +149,9 @@ export class EffectManagerRegistry {
             case EventType.PHASE_ADVANCE:
             case EventType.NEXT_PLAYER_TURN:
                 return PhaseTransitionManager.executePhaseTransition(event as GameEvent, gameEnv);
+            
+            case EventType.BLOCKER_CHOICE:
+                return BlockerEffectManager.executeBlockerChoice(event as BlockerChoiceEvent, gameEnv);
             
             // TODO: Add other effect types as managers are created
             

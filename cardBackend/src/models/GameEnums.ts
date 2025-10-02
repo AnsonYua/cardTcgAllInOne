@@ -95,5 +95,8 @@ export enum EventType {
     PAIRING_EFFECT_TRIGGERED = 'PAIRING_EFFECT_TRIGGERED',
     
     // Unified target choice system
-    TARGET_CHOICE = 'TARGET_CHOICE'
+    TARGET_CHOICE = 'TARGET_CHOICE',
+    
+    // Blocker choice system
+    BLOCKER_CHOICE = 'BLOCKER_CHOICE'
 }

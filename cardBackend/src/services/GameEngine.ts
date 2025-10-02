@@ -5,7 +5,7 @@ import { GameEvent, AcknowledgeEventsEvent, PlayCardEvent, PlayCardEventData,
     EventFactory, EventStatus,
      EventPriority, DeployEffectEvent,DeployEffectEventData, TargetChoiceEvent, PairingEffectEvent,
      ConfirmRedrawEvent, GameplayBeginsEvent, ErrorOccurredEvent, BurstEffectChoiceEvent, ShieldCardAttackedEvent,
-     StartGameEvent, JoinGameEvent, NextPlayerTurnEvent, EndTurnEvent, PlayerActionEvent, RepairEffectEvent } from './EventQueue/interfaces/GameEvent';
+     StartGameEvent, JoinGameEvent, NextPlayerTurnEvent, EndTurnEvent, PlayerActionEvent, RepairEffectEvent, BlockerChoiceEvent } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase, EventType } from '../models/GameEnums';
 import { EnergyManager } from './EnergyManager';
@@ -22,6 +22,7 @@ import { UnitZoneCard, PilotZoneCard, CardDatabaseManager } from '../models/Card
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { ContinuousEffectManager } from './ContinuousEffectManager';
 import { RepairEffectManager } from './effects/RepairEffectManager';
+import { BlockerEffectManager } from './effects/BlockerEffectManager';
 import * as fs from 'fs';
 import * as path from 'path';
 import { getCardIdFromUid } from '../utils/CardUtils';
@@ -30,6 +31,7 @@ export interface ExecutionResult {
     success: boolean;
     error?: string;
     acknowledgedCount?: number;
+    requiresSelection?: boolean;
 }
 
 export class GameEngine {
@@ -91,6 +93,9 @@ export class GameEngine {
 
                 case EventType.TARGET_CHOICE:
                     return TargetChoiceManager.executeTargetChoice(event as TargetChoiceEvent, gameEnv);
+
+                case EventType.BLOCKER_CHOICE:
+                    return BlockerEffectManager.executeBlockerChoice(event as BlockerChoiceEvent, gameEnv);
 
                 case EventType.PAIRING_EFFECT_TRIGGERED:
                     return GameEngine.executePairingEffect(event as PairingEffectEvent, gameEnv);
@@ -656,7 +661,46 @@ export class GameEngine {
 
 
 
+    private static checkAndExecuteBlockerAction(event: PlayerActionEvent, gameEnv: GameEnvironment): ExecutionResult {
+        const eventData = event.data;
+        const attackingPlayerId = event.playerId;
+        const defendingPlayerId = gameEnv.getOpponentId(attackingPlayerId);
+        
+        if (!defendingPlayerId) {
+            console.error(`❌ No opponent found for attacking player ${attackingPlayerId}`);
+            return { success: false, error: 'No opponent found' };
+        }
+        
+        console.log(`🛡️ Checking for blocker opportunities: ${attackingPlayerId} → ${defendingPlayerId}`);
+        
+        // Step 1: Check for available blockers
+        const availableBlockers = BlockerEffectManager.checkForBlockerUnits(gameEnv, defendingPlayerId);
+        
+        if (availableBlockers.length > 0) {
+            // Step 2: Create blocker choice event for defending player
+            BlockerEffectManager.createBlockerChoiceEvent(gameEnv, availableBlockers, event);
+            return { 
+                success: true, 
+                requiresSelection: true 
+            };
+        }
+        
+        // Step 3: No blockers available, execute normal attack
+        console.log(`🛡️ No blockers available, proceeding with normal attack`);
+        switch (eventData.actionType) {
+            case 'attackUnit':
+                return GameEngine.handleAttackUnit(eventData, gameEnv);
 
+            case 'attackShieldArea':
+                return GameEngine.handleAttackShieldArea(eventData, gameEnv);
+
+            default:
+                return {
+                    success: false,
+                    error: `Unknown actionType: ${eventData.actionType}`
+                };
+        }
+    }
 
 
     private static executePlayerAction(event: PlayerActionEvent, gameEnv: GameEnvironment): ExecutionResult {
@@ -673,14 +717,11 @@ export class GameEngine {
                     error: `Not your turn. Current player: ${gameEnv.currentPlayer}`
                 };
             }
-
-            // Handle different action types
+            
             switch (eventData.actionType) {
                 case 'attackUnit':
-                    return GameEngine.handleAttackUnit(eventData, gameEnv);
-
                 case 'attackShieldArea':
-                    return GameEngine.handleAttackShieldArea(eventData, gameEnv);
+                    return GameEngine.checkAndExecuteBlockerAction(event, gameEnv);
 
                 default:
                     return {
