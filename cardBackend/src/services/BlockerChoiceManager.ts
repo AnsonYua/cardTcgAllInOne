@@ -135,7 +135,7 @@ export class BlockerChoiceManager {
                 // Step 2: Redirect attack target to blocker
                 const redirectedEvent = this.createRedirectedAttackEvent(
                     eventData.originalAttackEvent, 
-                    eventData.selectedTarget.carduid
+                    eventData.selectedTarget
                 );
                 
                 // Step 3: Execute redirected attack through normal pipeline
@@ -243,16 +243,29 @@ export class BlockerChoiceManager {
      */
     private static createRedirectedAttackEvent(
         originalEvent: PlayerActionEvent, 
-        blockerCarduid: string
+        blockerTarget: TargetReference
     ): PlayerActionEvent {
-        console.log(`🎯 Redirecting attack from original target to blocker ${blockerCarduid}`);
-        
+        console.log(`🎯 Redirecting attack from original target to blocker ${blockerTarget.carduid}`);
+
+        const originalData = originalEvent.data || {};
+        const redirectedData: any = {
+            ...originalData,
+            targetCarduid: blockerTarget.carduid
+        };
+
+        if (originalData.actionType === 'attackShieldArea') {
+            redirectedData.actionType = 'attackUnit';
+            redirectedData.targetUnitUid = blockerTarget.carduid;
+            redirectedData.targetPlayerId = blockerTarget.playerId;
+            delete redirectedData.targetSlotName;
+        } else if (originalData.actionType === 'attackUnit') {
+            redirectedData.targetUnitUid = blockerTarget.carduid;
+            redirectedData.targetPlayerId = blockerTarget.playerId;
+        }
+
         return {
             ...originalEvent,
-            data: {
-                ...originalEvent.data,
-                targetCarduid: blockerCarduid  // KEY CHANGE: Redirect to blocker
-            }
+            data: redirectedData
         };
     }
 

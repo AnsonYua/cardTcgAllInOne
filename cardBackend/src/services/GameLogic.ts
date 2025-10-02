@@ -10,7 +10,7 @@ import { Request, Response } from 'express';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase, ZoneType, PlayerActionType, EventType } from '../models/GameEnums';
 import { EventFactory, GameEvent, EventStatus, EventPriority } from './EventQueue/index';
-import { BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent } from './EventQueue/interfaces/GameEvent';
+import { BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent, TargetReference } from './EventQueue/interfaces/GameEvent';
 import { PlayerAction } from '../models/EventInterfaces';
 import { StaticEventProcessor } from './StaticEventProcessor';
 
@@ -1108,7 +1108,7 @@ export class GameLogic {
         }
     }
 
-    async confirmBlockerChoice(gameId: string, playerId: string, eventId: string, selectedTargets: any[]): Promise<GameLogicResult> {
+    async confirmBlockerChoice(gameId: string, playerId: string, eventId: string, selectedTargets: TargetReference[]): Promise<GameLogicResult> {
         try {
             console.log(`🛡️ Processing blocker choice confirmation: ${eventId} by player ${playerId}`);
             console.log('Selected blocker target(s):', selectedTargets);
