@@ -471,8 +471,8 @@ export default class DemoScene extends DemoSceneBasic {
         playerId: opponentPlayerId,
         gameId: gameId,
         attackerCarduid:attackerSlot.unit.carduid,
-        targetCarduid:'ST01-001_a5fcfa44-d212-4400-8c12-9a58fdbcac84'
-
+        targetUnitUid:'ST01-001_a5fcfa44-d212-4400-8c12-9a58fdbcac84',
+        targetPlayerId:'playerId_2'
       };
       
       console.log('Sending attack action:', actionData);

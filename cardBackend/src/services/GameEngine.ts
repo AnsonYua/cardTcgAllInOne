@@ -774,8 +774,7 @@ export class GameEngine {
                 playerId,
                 attackerCarduid,
                 targetUnitUid,
-                targetPlayerId,
-                targetPilotUid
+                targetPlayerId
             } = eventData;
 
             // Find target slot name using target unit UID
@@ -904,8 +903,9 @@ export class GameEngine {
 
             const attackerSlot = attackerSlotResult.slotName!;
             const attackingUnit = attackerSlotResult.unit!;
-
+            
             console.log(`⚔️ Found attacking unit in ${attackerSlot}: ${attackingUnit.carduid}`);
+
 
             // Calculate total attack power using player-level modifications
             const combinedStats = PlayerCardManager.getCurrentUnitCardInSlotAPandHP(gameEnv, attackingUnit.carduid);
