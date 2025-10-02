@@ -2,7 +2,7 @@
 // Pairing effect management - handles PAIRING_COMPLETE triggered effects
 
 import { GameEnvironment } from '../models/GameEnvironment';
-import { TargetChoiceManager } from './TargetChoiceManager';
+import { DeployTargetManager } from './DeployTargetManager';
 import { EffectExecutor } from './effects/EffectExecutor';
 import {
     PlayCardEventData,
@@ -268,9 +268,9 @@ export class PairingEffectManager implements StandardEffectManager {
     ): Promise<{ success: boolean; error?: string; affectedCards: string[] }> {
         
         try {
-            // Use unified TargetChoiceManager for processing
+            // Use unified DeployTargetManager for processing
             const normalizedEffect = ensureEffectDefaults(effect);
-            const result = TargetChoiceManager.processEffectWithTargetChoice(
+            const result = DeployTargetManager.processEffectWithTargetChoice(
                 gameEnv,
                 eventData.playerId,
                 eventData.carduid,
@@ -468,7 +468,7 @@ export class PairingEffectManager implements StandardEffectManager {
                 }
 
                 const sourceCarduid = normalizedEffect.sourceCarduid || eventData.carduid;
-                const choiceResult = TargetChoiceManager.processEffectWithTargetChoice(
+                const choiceResult = DeployTargetManager.processEffectWithTargetChoice(
                     gameEnv,
                     playerId,
                     sourceCarduid,

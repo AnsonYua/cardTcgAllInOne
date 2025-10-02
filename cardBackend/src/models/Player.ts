@@ -225,7 +225,7 @@ export class Player {
     // 2. TEMPORARY EFFECTS (CARD-LEVEL STORAGE)
     // Purpose: Short-term effects that expire (UNTIL_END_OF_TURN, etc.)
     // Storage: Stored directly on individual cards in card.temporaryEffects arrays
-    // Processing: Managed by TargetChoiceManager.ts
+    // Processing: Managed by DeployTargetManager.ts
     // Location: gameEnv.players[id].zones.slotX.unit.temporaryEffects
     // Example: ST01-006 "When Paired" -3 AP effect until end of turn
 

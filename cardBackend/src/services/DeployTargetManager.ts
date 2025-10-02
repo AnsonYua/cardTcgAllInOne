@@ -1,7 +1,7 @@
 /**
- * Unified Target Choice Manager
+ * Deploy Target Manager
  * 
- * Handles all target selection scenarios including:
+ * Handles all deploy target selection scenarios including:
  * - Deploy effects requiring player choice
  * - Pairing effects with multiple eligible targets  
  * - Future effect types requiring target selection
@@ -35,7 +35,7 @@ interface ResolvedTargetConfig {
     filters: TargetFilters;
 }
 
-export interface TargetChoiceResult {
+export interface DeployTargetResult {
     success: boolean;
     error?: string;
     requiresSelection?: boolean;    // true if TARGET_CHOICE event created
@@ -44,7 +44,7 @@ export interface TargetChoiceResult {
 }
 
 
-export class TargetChoiceManager {
+export class DeployTargetManager {
 
     private static readonly DEFAULT_TARGET_TYPE: TargetType = 'unit';
     private static readonly DEFAULT_TARGET_SCOPE: TargetScope = 'opponent';
@@ -63,7 +63,7 @@ export class TargetChoiceManager {
         playerId: string,
         sourceCarduid: string,
         effect: EffectDefinition
-    ): TargetChoiceResult {
+    ): DeployTargetResult {
         const normalizedEffect = ensureEffectDefaults(effect);
         const effectAction = EffectExecutor.getEffectAction(normalizedEffect);
         const effectLabel = normalizedEffect.effectId || effectAction || 'unknown';

@@ -9,7 +9,7 @@ import {
     PlayCardEventData
 } from './EventQueue/interfaces/GameEvent';
 import { EventFactory } from './EventQueue/interfaces/GameEvent';
-import { TargetChoiceManager, TargetChoiceResult } from './TargetChoiceManager';
+import { DeployTargetManager, DeployTargetResult } from './DeployTargetManager';
 import { ensureEffectDefaults, normalizeEffectRule } from '../utils/EffectNormalizationUtils';
 
 export interface ExecutionResult {
@@ -81,7 +81,7 @@ export class DeployEffectManager {
 
         for (const effect of event.data.effects) {
             const normalizedEffect = ensureEffectDefaults(effect);
-            const result: TargetChoiceResult = TargetChoiceManager.processEffectWithTargetChoice(
+            const result: DeployTargetResult = DeployTargetManager.processEffectWithTargetChoice(
                 gameEnv,
                 event.playerId,
                 event.data.carduid,

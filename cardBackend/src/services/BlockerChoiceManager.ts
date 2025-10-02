@@ -1,5 +1,5 @@
 // src/services/BlockerChoiceManager.ts
-// Blocker choice processing system following TargetChoiceManager pattern
+// Blocker choice processing system following DeployTargetManager pattern
 
 import { GameEnvironment } from '../models/GameEnvironment';
 import { 
@@ -27,7 +27,7 @@ export interface ExecutionResult {
 }
 
 /**
- * BlockerChoiceManager handles blocker selection logic following TargetChoiceManager pattern
+ * BlockerChoiceManager handles blocker selection logic following DeployTargetManager pattern
  * Provides unified choice logic for blocker opportunities during attacks
  */
 export class BlockerChoiceManager {
@@ -35,7 +35,7 @@ export class BlockerChoiceManager {
     /**
      * Main entry point: Process attack that may require blocker selection
      * 
-     * Logic (similar to TargetChoiceManager.processEffectWithTargetChoice):
+     * Logic (similar to DeployTargetManager.processEffectWithTargetChoice):
      * - If multiple blockers available → Create BLOCKER_CHOICE event
      * - If no blockers available → Proceed with normal attack
      * - Future: Could support auto-blocking with single blocker
@@ -60,7 +60,7 @@ export class BlockerChoiceManager {
                 };
             }
 
-            // Step 2: Apply choice logic (similar to TargetChoiceManager.requiresPlayerChoice)
+            // Step 2: Apply choice logic (similar to DeployTargetManager.requiresPlayerChoice)
             if (this.requiresPlayerChoice(availableBlockers)) {
                 // Create BLOCKER_CHOICE event for player selection
                 const blockerChoiceEvent = EventFactory.createBlockerChoiceEvent({
@@ -153,7 +153,7 @@ export class BlockerChoiceManager {
 
     /**
      * Determine if player choice is required for blockers
-     * Similar to TargetChoiceManager.requiresPlayerChoice logic
+     * Similar to DeployTargetManager.requiresPlayerChoice logic
      */
     private static requiresPlayerChoice(availableBlockers: BlockerUnit[]): boolean {
         // For now, always offer choice when blockers are available

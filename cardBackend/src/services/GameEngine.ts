@@ -15,7 +15,7 @@ import { GameNotificationManager } from './GameNotificationManager';
 import { PlayerCardManager } from './PlayerCardManager';
 import { DeployEffectManager } from './DeployEffectManager';
 import { PairingEffectManager } from './PairingEffectManager';
-import { TargetChoiceManager } from './TargetChoiceManager';
+import { DeployTargetManager } from './DeployTargetManager';
 import { PhaseTransitionManager } from './effects/PhaseTransitionManager';
 import { GameValidator } from './GameValidator';
 import { UnitZoneCard, PilotZoneCard, CardDatabaseManager } from '../models/CardSystem';
@@ -93,7 +93,7 @@ export class GameEngine {
                     return DeployEffectManager.executeDeployEffect(event as DeployEffectEvent, gameEnv);
 
                 case EventType.TARGET_CHOICE:
-                    return TargetChoiceManager.executeTargetChoice(event as TargetChoiceEvent, gameEnv);
+                    return DeployTargetManager.executeTargetChoice(event as TargetChoiceEvent, gameEnv);
 
                 case EventType.BLOCKER_CHOICE:
                     return BlockerChoiceManager.executeBlockerChoice(event as BlockerChoiceEvent, gameEnv);
@@ -430,7 +430,7 @@ export class GameEngine {
             }
 
             // Clean up temporary effects before ending turn
-            TargetChoiceManager.cleanupExpiredTemporaryEffects(gameEnv, playerId);
+            DeployTargetManager.cleanupExpiredTemporaryEffects(gameEnv, playerId);
 
             // Simply set phase to END_TURN - let state-based actions handle the transition
             gameEnv.phase = GamePhase.END_PHASE;
@@ -672,7 +672,7 @@ export class GameEngine {
             return { success: false, error: 'No opponent found' };
         }
         
-        // Use BlockerChoiceManager following TargetChoiceManager pattern
+        // Use BlockerChoiceManager following DeployTargetManager pattern
         const blockerResult: BlockerChoiceResult = BlockerChoiceManager.processAttackWithBlockerChoice(
             gameEnv, 
             event, 

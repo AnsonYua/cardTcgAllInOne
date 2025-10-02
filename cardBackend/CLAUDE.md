@@ -14,7 +14,7 @@ These notes capture the backend shape as of today. Anything that is unclear is f
 ### Services layer (game logic)
 - `GameEngine.ts` – primary execution engine; processes events, combat, base damage, and integrates effect managers.
 - `GameLogic.ts` – higher-level orchestration (game/session creation, deck setup, state mutations).
-- `ContinuousEffectManager.ts`, `DeployEffectManager.ts`, `PairingEffectManager.ts`, `TargetChoiceManager.ts`, `PhaseTransitionManager.ts` – specialized managers for effect normalization, pairing logic, target selection, and phase transitions.
+- `ContinuousEffectManager.ts`, `DeployEffectManager.ts`, `PairingEffectManager.ts`, `DeployTargetManager.ts`, `PhaseTransitionManager.ts` – specialized managers for effect normalization, pairing logic, target selection, and phase transitions.
 - `PlayerCardManager.ts` – handles card placement, movement between zones, and stat lookups (`getCurrentUnitCardInSlotAPandHP`).
 - `BaseCardManager.ts`, `EnergyManager.ts`, `ShieldCardManager.ts` – zone-specific helpers.
 - `effects/EffectExecutor.ts` – shared execution utilities for resolved effects.

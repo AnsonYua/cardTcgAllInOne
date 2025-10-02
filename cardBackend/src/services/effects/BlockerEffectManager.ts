@@ -7,7 +7,7 @@ import { EffectScannerUtils, BlockerUnit } from '../../utils/EffectScannerUtils'
 /**
  * BlockerEffectManager handles blocker unit detection
  * Uses centralized EffectScannerUtils for effect detection
- * Choice logic moved to BlockerChoiceManager following TargetChoiceManager pattern
+ * Choice logic moved to BlockerChoiceManager following DeployTargetManager pattern
  */
 export class BlockerEffectManager {
 
