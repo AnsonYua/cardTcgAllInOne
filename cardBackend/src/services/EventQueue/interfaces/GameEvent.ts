@@ -433,8 +433,8 @@ export interface TargetChoiceEvent extends BaseGameEvent<TargetChoiceEventData> 
 
 export interface BlockerChoiceEventData {
     originalAttackEvent: PlayerActionEvent;
-    availableBlockers: BlockerUnit[];
-    selectedBlocker?: BlockerUnit;
+    availableTargets: TargetReference[];
+    selectedTarget?: TargetReference;
     blockingPlayerId: string;
     userDecisionMade: boolean;
 }
@@ -776,12 +776,12 @@ export class EventFactory {
     static createBlockerChoiceEvent(params: {
         blockingPlayerId: string;
         originalAttackEvent: PlayerActionEvent;
-        availableBlockers: BlockerUnit[];
+        availableTargets: TargetReference[];
     }): BlockerChoiceEvent {
-        const { blockingPlayerId, originalAttackEvent, availableBlockers } = params;
+        const { blockingPlayerId, originalAttackEvent, availableTargets } = params;
         const eventData: BlockerChoiceEventData = {
             originalAttackEvent,
-            availableBlockers,
+            availableTargets,
             blockingPlayerId,
             userDecisionMade: false
         };

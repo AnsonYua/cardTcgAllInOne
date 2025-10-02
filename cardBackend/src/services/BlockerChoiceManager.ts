@@ -5,7 +5,8 @@ import { GameEnvironment } from '../models/GameEnvironment';
 import { 
     BlockerChoiceEvent, 
     PlayerActionEvent,
-    EventFactory 
+    EventFactory,
+    TargetReference
 } from './EventQueue/interfaces/GameEvent';
 import { BlockerEffectManager } from './effects/BlockerEffectManager';
 import { BlockerUnit } from '../utils/EffectScannerUtils';
@@ -17,7 +18,7 @@ export interface BlockerChoiceResult {
     requiresSelection?: boolean;    // true if BLOCKER_CHOICE event created
     autoBlocked?: boolean;         // true if auto-blocked 
     normalAttack?: boolean;        // true if no blockers, proceed normally
-    affectedBlocker?: BlockerUnit; // for auto-blocked scenario
+    affectedTarget?: TargetReference; // for auto-blocked scenario
 }
 
 export interface ExecutionResult {
@@ -60,19 +61,23 @@ export class BlockerChoiceManager {
                 };
             }
 
-            // Step 2: Apply choice logic (similar to DeployTargetManager.requiresPlayerChoice)
+            // Step 2: Convert blockers to TargetReference format (similar to DeployTargetManager.generateAvailableTargets)
+            // This provides consistent structure with zone, playerId, and cardData for each blocker
+            const blockerTargets = this.convertBlockersToTargetReferences(gameEnv, availableBlockers, defendingPlayerId);
+            
+            // Step 3: Apply choice logic (similar to DeployTargetManager.requiresPlayerChoice)
             if (this.requiresPlayerChoice(availableBlockers)) {
-                // Create BLOCKER_CHOICE event for player selection
+                // Create BLOCKER_CHOICE event for player selection with converted format
                 const blockerChoiceEvent = EventFactory.createBlockerChoiceEvent({
                     blockingPlayerId: defendingPlayerId,
                     originalAttackEvent: attackEvent,
-                    availableBlockers
+                    availableTargets: blockerTargets
                 });
                 
                 // Add to processing queue for game event processing
                 gameEnv.processingQueue.push(blockerChoiceEvent);
                 
-                console.log(`🛡️ Created BLOCKER_CHOICE event ${blockerChoiceEvent.id} with ${availableBlockers.length} blockers`);
+                console.log(`🛡️ Created BLOCKER_CHOICE event ${blockerChoiceEvent.id} with ${blockerTargets.length} blocker targets`);
                 return { 
                     success: true, 
                     requiresSelection: true 
@@ -114,12 +119,12 @@ export class BlockerChoiceManager {
                 };
             }
 
-            if (eventData.selectedBlocker) {
+            if (eventData.selectedTarget) {
                 // Player chose a blocker - redirect attack
-                console.log(`🛡️ Blocker chosen: ${eventData.selectedBlocker.carduid}`);
+                console.log(`🛡️ Blocker chosen: ${eventData.selectedTarget.carduid}`);
                 
                 // Step 1: Pay blocker cost immediately (rest the blocker)
-                const costPaid = this.applyBlockerCost(eventData.selectedBlocker.carduid, gameEnv);
+                const costPaid = this.applyBlockerCost(eventData.selectedTarget.carduid, gameEnv);
                 if (!costPaid) {
                     return { 
                         success: false, 
@@ -130,7 +135,7 @@ export class BlockerChoiceManager {
                 // Step 2: Redirect attack target to blocker
                 const redirectedEvent = this.createRedirectedAttackEvent(
                     eventData.originalAttackEvent, 
-                    eventData.selectedBlocker.carduid
+                    eventData.selectedTarget.carduid
                 );
                 
                 // Step 3: Execute redirected attack through normal pipeline
@@ -149,6 +154,45 @@ export class BlockerChoiceManager {
                 error: error instanceof Error ? error.message : 'Blocker choice execution failed'
             };
         }
+    }
+
+    /**
+     * Convert BlockerUnit[] to TargetReference[] format (similar to DeployTargetManager.generateAvailableTargets)
+     * Uses findSlotByCarduid to derive zone and player information from carduid
+     */
+    private static convertBlockersToTargetReferences(
+        gameEnv: GameEnvironment, 
+        availableBlockers: BlockerUnit[], 
+        defendingPlayerId: string
+    ): TargetReference[] {
+        const targets: TargetReference[] = [];
+        
+        console.log(`🔄 Converting ${availableBlockers.length} blockers to TargetReference format`);
+        
+        for (const blocker of availableBlockers) {
+            // Use findSlotByCarduid to get zone and card data
+            const player = gameEnv.getPlayer(defendingPlayerId);
+            if (!player) {
+                console.error(`❌ Player ${defendingPlayerId} not found for blocker ${blocker.carduid}`);
+                continue;
+            }
+            
+            const slotResult = SlotZoneUtils.findSlotByCarduid(player.zones, blocker.carduid);
+            if (slotResult.slotName && slotResult.unit) {
+                targets.push({
+                    carduid: blocker.carduid,
+                    zone: slotResult.slotName,
+                    playerId: defendingPlayerId,
+                    cardData: slotResult.unit.cardData
+                });
+                console.log(`✅ Converted blocker ${blocker.carduid} in ${slotResult.slotName} to TargetReference`);
+            } else {
+                console.log(`⚠️ Could not find slot for blocker ${blocker.carduid}`);
+            }
+        }
+        
+        console.log(`🔄 Converted ${targets.length} of ${availableBlockers.length} blockers to TargetReference format`);
+        return targets;
     }
 
     /**
