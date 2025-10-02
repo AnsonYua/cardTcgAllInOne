@@ -575,6 +575,23 @@ export class GameEngine {
             }
             const player = playerValidation.player!;
 
+            const cardId = getCardIdFromUid(eventData.carduid);
+            const cardData = CardDatabaseManager.getCardDetails(cardId);
+
+            if (!cardData) {
+                return {
+                    success: false,
+                    error: `Card data not found for ${cardId}`
+                };
+            }
+
+            const energyResult = EnergyManager.validateAndPayEnergyForCard(gameEnv, playerId, cardData, { fromBurst });
+            if (!energyResult.success) {
+                return {
+                    success: false,
+                    error: energyResult.error || `Energy payment failed for ${cardId}`
+                };
+            }
             // Validate card location and remove it (burst cards come from shield, normal cards from hand)
             if (fromBurst) {
                 // For burst cards, we don't need to validate/remove from hand since they're being deployed from shield
@@ -601,7 +618,12 @@ export class GameEngine {
             const placementResult = PlayerCardManager.placeCardWithEventData(gameEnv, playerId, eventData);
 
             if (!placementResult.success) {
-                // Return card to hand if placement failed (but only for normal cards, not burst cards)
+                if (energyResult.tapped?.length) {
+                    energyResult.tapped.forEach(card => {
+                        card.isRested = false;
+                    });
+                }
+
                 if (!fromBurst) {
                     player.deck._handUids.push(eventData.carduid);
                 }
@@ -611,9 +633,12 @@ export class GameEngine {
                 };
             }
 
+            if (energyResult.tapped?.length) {
+                eventData.payEnergyCards = energyResult.tapped.map(card => card.carduid);
+            }
+
             // ✅ Card placement successful - Check for Deploy effects (ENTERS_PLAY triggers)
             console.log(`✅ Card ${eventData.carduid} successfully placed for player ${playerId}`);
-
             // ✅ IMPROVED: Single-step deploy effect processing (consolidated from two-step legacy approach)
             const deployResult = DeployEffectManager.checkAndQueueDeployEffects(eventData,playerId, gameEnv);
             if (!deployResult.success) {

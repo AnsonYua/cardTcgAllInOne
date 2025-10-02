@@ -3,6 +3,32 @@
 
 import { GameEnvironment } from '../models/GameEnvironment';
 import { EnergyCardData, EnergyZoneCard } from '../models/CardSystem';
+import { EnergyRequirement, getEnergyRequirement, isEnergyCard } from '../utils/EnergyUtils';
+
+export interface EnergyValidationOptions {
+    fromBurst?: boolean;
+}
+
+export interface EnergyValidationResult {
+    isValid: boolean;
+    error?: string;
+    requirements: EnergyRequirement;
+    availableEnergy: number;
+    shouldConsume: boolean;
+}
+
+export interface EnergyPaymentResult {
+    success: boolean;
+    tapped: EnergyZoneCard[];
+    error?: string;
+}
+
+export interface EnergyCheckResult {
+    success: boolean;
+    error?: string;
+    tapped: EnergyZoneCard[];
+    requirements: EnergyRequirement;
+}
 
 export class EnergyManager {
     
@@ -116,32 +142,50 @@ export class EnergyManager {
     /**
      * Tap energy cards to pay cost
      */
-    static tapEnergyForCost(gameEnv: GameEnvironment, playerId: string, cost: number): boolean {
+    static tapEnergyForCost(gameEnv: GameEnvironment, playerId: string, cost: number): EnergyPaymentResult {
         try {
             const player = gameEnv.players[playerId];
             if (!player || !player.zones || !player.zones.energyArea) {
-                return false;
+                return {
+                    success: false,
+                    tapped: [],
+                    error: `Player ${playerId} has no energy area`
+                };
             }
 
             const availableEnergy = this.getAvailableEnergy(gameEnv, playerId);
             if (availableEnergy < cost) {
                 console.log(`❌ Insufficient energy: need ${cost}, have ${availableEnergy}`);
-                return false;
+                return {
+                    success: false,
+                    tapped: [],
+                    error: `Insufficient energy: need ${cost}, have ${availableEnergy}`
+                };
             }
 
             let remainingCost = cost;
+            const tappedCards: EnergyZoneCard[] = [];
             for (const energyCard of player.zones.energyArea) {
                 if (!energyCard.isRested && remainingCost > 0) {
                     energyCard.isRested = true;
                     remainingCost -= 1; // Each energy card provides 1 energy
                     console.log(`⚡ Tapped 1 energy from ${energyCard.cardId}`);
+                    tappedCards.push(energyCard);
                 }
             }
 
-            return remainingCost === 0;
+            return {
+                success: remainingCost === 0,
+                tapped: tappedCards,
+                error: remainingCost === 0 ? undefined : `Failed to tap ${cost} energy`
+            };
         } catch (error) {
             console.error(`❌ Error tapping energy for ${playerId}:`, error);
-            return false;
+            return {
+                success: false,
+                tapped: [],
+                error: error instanceof Error ? error.message : 'Tap energy failed'
+            };
         }
     }
 
@@ -172,5 +216,121 @@ export class EnergyManager {
             console.error(`❌ Error untapping energy for ${playerId}:`, error);
             return false;
         }
+    }
+
+    static validateEnergyForCard(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        cardData: any,
+        options: EnergyValidationOptions = {}
+    ): EnergyValidationResult {
+        const requirements = getEnergyRequirement(cardData);
+        const availableEnergy = this.getAvailableEnergy(gameEnv, playerId);
+        const shouldConsume = !options.fromBurst && !isEnergyCard(cardData) && requirements.cost > 0;
+
+        if (options.fromBurst || isEnergyCard(cardData)) {
+            return {
+                isValid: true,
+                requirements,
+                availableEnergy,
+                shouldConsume: false
+            };
+        }
+
+        if (requirements.level > 0 && availableEnergy < requirements.level) {
+            return {
+                isValid: false,
+                error: `Not enough active energy: require ${requirements.level}, have ${availableEnergy}`,
+                requirements,
+                availableEnergy,
+                shouldConsume
+            };
+        }
+
+        if (requirements.cost > 0 && availableEnergy < requirements.cost) {
+            return {
+                isValid: false,
+                error: `Not enough active energy to pay cost ${requirements.cost} (available ${availableEnergy})`,
+                requirements,
+                availableEnergy,
+                shouldConsume
+            };
+        }
+
+        return {
+            isValid: true,
+            requirements,
+            availableEnergy,
+            shouldConsume
+        };
+    }
+
+    static payEnergyCost(gameEnv: GameEnvironment, playerId: string, cost: number): EnergyPaymentResult {
+        if (cost <= 0) {
+            return {
+                success: true,
+                tapped: []
+            };
+        }
+
+        return this.tapEnergyForCost(gameEnv, playerId, cost);
+    }
+
+    static payEnergyForCard(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        cardData: any,
+        options: EnergyValidationOptions = {}
+    ): EnergyPaymentResult {
+        const requirements = getEnergyRequirement(cardData);
+        if (options.fromBurst || isEnergyCard(cardData) || requirements.cost <= 0) {
+            return {
+                success: true,
+                tapped: []
+            };
+        }
+
+        return this.payEnergyCost(gameEnv, playerId, requirements.cost);
+    }
+
+    static validateAndPayEnergyForCard(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        cardData: any,
+        options: EnergyValidationOptions = {}
+    ): EnergyCheckResult {
+        const validation = this.validateEnergyForCard(gameEnv, playerId, cardData, options);
+        if (!validation.isValid) {
+            return {
+                success: false,
+                error: validation.error,
+                tapped: [],
+                requirements: validation.requirements
+            };
+        }
+
+        if (!validation.shouldConsume) {
+            return {
+                success: true,
+                tapped: [],
+                requirements: validation.requirements
+            };
+        }
+
+        const payment = this.payEnergyCost(gameEnv, playerId, validation.requirements.cost);
+        if (!payment.success) {
+            return {
+                success: false,
+                error: payment.error,
+                tapped: payment.tapped,
+                requirements: validation.requirements
+            };
+        }
+
+        return {
+            success: true,
+            tapped: payment.tapped,
+            requirements: validation.requirements
+        };
     }
 }
