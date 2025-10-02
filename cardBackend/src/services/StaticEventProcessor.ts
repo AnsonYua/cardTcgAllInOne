@@ -31,6 +31,8 @@ export class StaticEventProcessor {
         
         console.log(`⚡ Starting event processing - queue size: ${gameEnv.processingQueue.length}`);
         
+        let lastError: string | null = null;
+
         while (gameEnv.processingEnabled && 
                gameEnv.processingQueue.length > 0 && 
                !gameEnv.needsPlayerInput() && 
@@ -88,8 +90,20 @@ export class StaticEventProcessor {
                         event.status = EventStatus.RESOLVED;
                     } else {
                         console.error(`❌ Event execution failed: ${executionResult.error}`);
-                        // Mark as resolved to prevent infinite loop, but log error
+                        lastError = executionResult.error || 'Event execution failed';
+
+                        // Resolve and remove the event immediately to avoid reprocessing
                         event.status = EventStatus.RESOLVED;
+                        const removed = gameEnv.dequeueFromProcessing(event);
+                        if (removed) {
+                            eventsProcessed++;
+                        } else {
+                            console.error(`❌ Failed to remove failed event: ${event.type}`);
+                            gameEnv.processingQueue.shift();
+                            eventsProcessed++;
+                        }
+
+                        break;
                     }
                     
                 } else if (event.status === EventStatus.RESOLVED) {
@@ -140,11 +154,15 @@ export class StaticEventProcessor {
             : undefined;
 
         const result: ProcessingResult = {
-            success: true,
+            success: !lastError,
             eventsProcessed,
             needsPlayerInput: gameEnv.needsPlayerInput(),
             waitingForChoice: typeof waitingForChoice === 'string' ? waitingForChoice : undefined
         };
+
+        if (lastError) {
+            result.error = lastError;
+        }
         
         console.log(`📊 Event processing complete: ${eventsProcessed} events processed (${iterations} iterations)`);
         
