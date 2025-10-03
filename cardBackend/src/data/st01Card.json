@@ -466,12 +466,24 @@
                     },
                     {
                         "effectId": "attack_activate_resource",
-                        "type": "activated",
-                        "timing": [
-                            "ATTACK_PHASE"
-                        ],
+                        "type": "triggered",
+                        "trigger": "ATTACK_PHASE",
+                        "optional": true,
                         "restrictions": [
                             "once_per_turn"
+                        ],
+                        "timing": {
+                            "duration": "instant",
+                            "actionTurn": "YOUR_TURN"
+                        },
+                        "sourceConditions": [
+                            {
+                                "type": "controller",
+                                "value": "self"
+                            },
+                            {
+                                "type": "paired"
+                            }
                         ],
                         "target": {
                             "type": "resource",
