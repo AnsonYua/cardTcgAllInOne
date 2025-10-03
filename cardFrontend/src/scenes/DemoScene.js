@@ -100,8 +100,8 @@ export default class DemoScene extends DemoSceneBasic {
       ];*/
             const testButtonConfigs = [
         {
-          text: 'Menu',
-          onClick: () => this.openMenu(),
+          text: 'Preload',
+          onClick: () => this.preloadResource(),
           options: { enableHover: true }
         },
         {
@@ -302,7 +302,13 @@ export default class DemoScene extends DemoSceneBasic {
     }
   }
 
-
+  preloadResource() {
+    this.isSetScenoria = true;
+    this.showHandArea();
+    this.loadCardResources().then(() => {
+     
+    })
+  }
 
   // Demo mode cleanup
   destroy() {
@@ -392,9 +398,16 @@ export default class DemoScene extends DemoSceneBasic {
         
         // Update game state if returned in response
         if (response.gameEnv) {
-          // Check for hand UID changes and set scenario flag if needed (before state update)
-          this.gameStateManager.checkHandUIDChangesAndSetScenario(response.gameEnv, 'Attack', this.handContainer, { value: this.isSetScenoria });
-  
+          const requiresRefresh = this.gameStateManager.checkHandUIDChangesAndSetScenario(
+            response.gameEnv,
+            'Attack',
+            this.handContainer
+          );
+
+          if (requiresRefresh) {
+            this.isSetScenoria = true;
+          }
+
           this.gameStateManager.updateGameEnv(response.gameEnv);
           this.updateGameState();
         }
@@ -486,9 +499,16 @@ export default class DemoScene extends DemoSceneBasic {
         
         // Update game state if returned in response
         if (response.gameEnv) {
-          // Check for hand UID changes and set scenario flag if needed (before state update)
-          this.gameStateManager.checkHandUIDChangesAndSetScenario(response.gameEnv, 'Attack', this.handContainer, { value: this.isSetScenoria });
-  
+          const requiresRefresh = this.gameStateManager.checkHandUIDChangesAndSetScenario(
+            response.gameEnv,
+            'Attack',
+            this.handContainer
+          );
+
+          if (requiresRefresh) {
+            this.isSetScenoria = true;
+          }
+
           this.gameStateManager.updateGameEnv(response.gameEnv);
           this.updateGameState();
         }

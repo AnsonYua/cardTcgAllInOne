@@ -67,6 +67,7 @@ export default class HandCardManager {
 
     // Create cards
     hand.forEach((cardData, index) => {
+      console.log("sadfadsfdsafdasfdfsdadssdss")
       let processedCardData = cardData;
       const x = startX + (index * cardSpacing);
       const card = new Card(this.scene, x, 0, processedCardData, {

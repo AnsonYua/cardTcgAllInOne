@@ -228,10 +228,7 @@ export default class MenuScene extends Phaser.Scene {
   }
 
   async showJoinGameInput() {
-    const gameId = prompt('🎮 Enter Game ID to join:');
-    if (!gameId) {
-      return; // User cancelled
-    }
+    const gameId = 'sample_play_card' 
     
     const trimmedGameId = gameId.trim();
     if (!trimmedGameId) {
@@ -245,7 +242,7 @@ export default class MenuScene extends Phaser.Scene {
     }
     
     // Always start DemoScene in join mode with the provided gameId
-    const playerId = 'playerId_2';
+    const playerId = 'playerId_1';
     const playerName = this.playerName || 'Player 2';
     
     this.gameStateManager.initializeGame(trimmedGameId, playerId, playerName);

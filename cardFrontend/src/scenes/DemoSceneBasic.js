@@ -55,7 +55,7 @@ export default class DemoSceneBasic extends GameScene {
     try {
       // Perform a single poll manually
       const response = await this.apiManager.getPlayer(gameState.playerId, gameState.gameId);
-      
+      console.log("asdfdsafsdssdfs ", response.gameEnv.players)
       if (response && response.gameEnv) {
         console.log('Polling response received:', response);
         
