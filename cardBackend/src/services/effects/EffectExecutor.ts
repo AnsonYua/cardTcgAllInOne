@@ -316,7 +316,7 @@ export class EffectExecutor {
                 return this.applyRestState(targetCard, true, target);
 
             case 'setActive':
-                return this.applyRestState(targetCard, false, target);
+                return this.applySetActiveEffect(gameEnv, targetCard, target);
 
             default:
                 console.log(`⚠️ Unsupported effect action: ${action}`);
@@ -424,6 +424,35 @@ export class EffectExecutor {
     ): { success: boolean; error?: string } {
         targetCard.isRested = shouldRest;
         console.log(`  😌 ${target.carduid}: ${shouldRest ? 'rested' : 'activated'}`);
+        return { success: true };
+    }
+
+    private static applySetActiveEffect(
+        gameEnv: GameEnvironment,
+        targetCard: UnitZoneCard | PilotZoneCard,
+        target: TargetReference
+    ): { success: boolean; error?: string } {
+        const playerId = target.playerId;
+        if (!playerId) {
+            console.warn('⚠️ setActive effect missing playerId in target reference');
+            return { success: true };
+        }
+
+        const player = gameEnv.players[playerId];
+        const energyArea = player?.zones?.energyArea;
+        if (!energyArea || energyArea.length === 0) {
+            console.log('⚠️ No energy cards available to ready');
+            return { success: true };
+        }
+
+        const restedEnergy = [...energyArea].reverse().find(card => card.isRested);
+        if (!restedEnergy) {
+            console.log('⚠️ No rested energy available to set active');
+            return { success: true };
+        }
+
+        restedEnergy.isRested = false;
+        console.log(`  ⚡ Ready energy ${restedEnergy.carduid}`);
         return { success: true };
     }
 

@@ -114,6 +114,7 @@ export interface ZoneCard {
     placedAt?: number;          // Timestamp when placed
     placedBy?: string;          // Player ID who placed card
     isRested?: boolean;         // Whether the card is rested/tapped (common field)
+    effectUsage?: Record<string, { lastUsedTurn: number }>; // Track once-per-turn usage
 }
 
 export interface UnitZoneCard extends ZoneCard {
@@ -179,7 +180,8 @@ export function createZoneCard(
         cardData,
         placedAt: Date.now(),
         placedBy,
-        isRested: false
+        isRested: false,
+        effectUsage: {}
     };
 
     // Priority: playAs parameter overrides cardData.cardType

@@ -30,6 +30,7 @@ import { GameActionValidator } from './GameActionValidator';
 import { AttackPreparationManager } from './AttackPreparationManager';
 import { BurstEffectManager } from './BurstEffectManager';
 import { ExecutionResult } from './ExecutionResult';
+import { AttackPhaseEffectManager } from './effects/AttackPhaseEffectManager';
 
 export class GameEngine {
     // ============ MAIN EXECUTION INTERFACE ============
@@ -628,13 +629,23 @@ export class GameEngine {
     private static checkAndExecuteBlockerAction(event: PlayerActionEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`🛡️ Checking for blocker opportunities: ${event.playerId} → ${gameEnv.getOpponentId(event.playerId)}`);
         const attackingPlayerId = event.playerId;
+        const eventData = event.data || {};
         const defendingPlayerId = gameEnv.getOpponentId(attackingPlayerId);
-        
+
         if (!defendingPlayerId) {
             console.error(`❌ No opponent found for attacking player ${attackingPlayerId}`);
             return { success: false, error: 'No opponent found' };
         }
-        
+
+        const attackEffectResult = AttackPhaseEffectManager.processAttackPhaseEffects(gameEnv, event);
+
+        if (!attackEffectResult.success) {
+            return {
+                success: false,
+                error: attackEffectResult.error
+            };
+        }
+
         // Use BlockerChoiceManager following DeployTargetManager pattern
         const blockerResult: BlockerChoiceResult = BlockerChoiceManager.processAttackWithBlockerChoice(
             gameEnv, 
