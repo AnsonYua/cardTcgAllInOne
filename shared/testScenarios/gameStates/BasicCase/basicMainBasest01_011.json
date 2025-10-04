@@ -1124,7 +1124,7 @@
                             "cardData": {
                                 "id": "ST01-012",
                                 "name": "Thoroughly Damaged",
-                                "cardType": "shield",
+                                "cardType": "command",
                                 "color": "Blue",
                                 "level": 2,
                                 "cost": 1,

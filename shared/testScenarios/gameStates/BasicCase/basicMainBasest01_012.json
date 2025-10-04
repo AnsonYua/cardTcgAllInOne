@@ -1,13 +1,13 @@
 {
-  "description": "sample_play_card",
-  "gameId": "sample_play_card",
-  "testType": "charcterPlayCard",
-  "category": "",
-  "tags": [
-    "PlayCard"
-  ],
-  "initialGameEnv":{
-        "phase": "DRAW_PHASE",
+    "description": "sample_play_card",
+    "gameId": "sample_play_card",
+    "testType": "charcterPlayCard",
+    "category": "",
+    "tags": [
+        "PlayCard"
+    ],
+    "initialGameEnv": {
+        "phase": "MAIN_PHASE",
         "playerId_1": "playerId_1",
         "playerId_2": "playerId_2",
         "gameStarted": true,
@@ -1456,6 +1456,72 @@
                 "deck": {
                     "hand": [
                         {
+                            "carduid": "ST01-012_fb9ee6db-0bec-4b90-bd6e-649d3d6c33d6",
+                            "cardId": "ST01-012",
+                            "cardData": {
+                                "id": "ST01-012",
+                                "name": "Thoroughly Damaged",
+                                "cardType": "command",
+                                "color": "Blue",
+                                "level": 2,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [
+                                    "Earth Federation",
+                                    "White Base Team"
+                                ],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 1,
+                                "effects": {
+                                    "description": [
+                                        "【Main】Choose 1 rested enemy Unit. Deal 1 damage to it.",
+                                        "【Pilot】[Hayato Kobayashi]"
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "main_damage_rested",
+                                            "type": "activated",
+                                            "timing": [
+                                                "MAIN_PHASE"
+                                            ],
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "filters": {
+                                                    "status": "rested"
+                                                },
+                                                "count": 1
+                                            },
+                                            "effect": {
+                                                "action": "damage",
+                                                "parameters": {
+                                                    "amount": 1
+                                                },
+                                                "duration": "instant"
+                                            }
+                                        },
+                                        {
+                                            "effectId": "pilot_designation",
+                                            "type": "special",
+                                            "trigger": "continuous",
+                                            "target": {
+                                                "type": "pilot",
+                                                "scope": "any"
+                                            },
+                                            "action": "designate_pilot",
+                                            "parameters": {
+                                                "pilotName": "Hayato Kobayashi",
+                                                "AP": 0,
+                                                "HP": 1
+                                            }
+                                        }
+                                    ]
+                                },
+                                "originalCardType": "command"
+                            }
+                        },
+                        {
                             "carduid": "ST01-008_51703d0a-9541-49b5-8b82-998293564235",
                             "cardId": "ST01-008",
                             "cardData": {
@@ -1742,6 +1808,7 @@
                         }
                     ],
                     "handUids": [
+                        "ST01-012_fb9ee6db-0bec-4b90-bd6e-649d3d6c33d6",
                         "ST01-008_51703d0a-9541-49b5-8b82-998293564235",
                         "ST01-004_f02a0c50-214e-41f4-af02-10cdaa460876",
                         "ST01-009_208685cf-f7c9-4c50-b66f-2e125760ac0d",
@@ -3319,254 +3386,254 @@
         ],
         "lastEventId": 0
     },
-  "playerActions": [
-    {
-      "step": 1,
-      "playerId": "playerId_2",
-      "description": "Player 2 selects c-1 with h-2's setPower effect",
-      "action": {
-        "actionType": "SelectCard",
-        "selectionId": "playerId_2_setPower_1753090836037",
-        "cardIds": [
-          "c-1"
-        ]
-      },
-      "expectedResult": {
-        "success": true,
-        "message": "Card selection completed successfully"
-      }
-    }
-  ],
-  "expectedStateChanges": {
-    "players.playerId_1.fieldEffects.activeEffects.length": 4,
-    "zones.playerId_1.left.0.valueOnField": 0,
-    "players.playerId_1.fieldEffects.calculatedPowers.c-1": 0,
-    "playSequence.plays.length": 5,
-    "players.playerId_1.playerPoint": 0
-  },
-  "validationPoints": [
-    {
-      "cardId": "c-1",
-      "zone": "left",
-      "playerId": "playerId_1",
-      "description": "c-1 power should be set to 0 by h-2's setPower effect",
-      "expectedPower": 0,
-      "powerSource": "h-2 setPower effect overrides all other effects including leader boost (+45) and character boost (+10)"
-    }
-  ],
-  "activeEffectsValidation": {
-    "playerId_1": {
-      "requiredEffects": [
+    "playerActions": [
         {
-          "source": "s-1",
-          "type": "powerBoost",
-          "target": {
-            "scope": "SELF",
-            "gameTypes": [
-              "右翼",
-              "愛國者"
-            ]
-          },
-          "value": 45,
-          "description": "Trump leader power boost for 右翼/愛國者 cards"
-        },
-        {
-          "source": "s-1",
-          "type": "setPower",
-          "target": {
-            "scope": "SELF",
-            "gameTypes": [
-              "經濟"
-            ]
-          },
-          "value": 0,
-          "description": "Trump vs Powell conditional economic card nerf"
-        },
-        {
-          "source": "c-1",
-          "type": "powerBoost",
-          "target": {
-            "scope": "SELF",
-            "traits": [
-              "特朗普家族"
-            ]
-          },
-          "value": 10,
-          "description": "c-1 character effect boosting Trump family cards"
-        },
-        {
-          "source": "h-2",
-          "type": "setPower",
-          "target": {
-            "scope": "OPPONENT",
-            "specificCards": [
-              "c-1"
-            ]
-          },
-          "value": 0,
-          "description": "h-2's MAGA effect setting c-1 power to 0 (NEW - should be added)"
-        }
-      ],
-      "totalEffectsCount": 4
-    }
-  },
-  "playSequenceValidation": {
-    "expectedPlays": 5,
-    "newPlayValidation": {
-      "type": "APPLY_SET_POWER",
-      "playerId": "playerId_2",
-      "targetPlayerId": "playerId_1",
-      "sourceCard": "h-2",
-      "selectedCardIds": [
-        "c-1"
-      ],
-      "powerValue": 0,
-      "description": "setPower effect recorded in play sequence for replay consistency"
-    }
-  },
-  "cardDefinitions": {
-    "c-1": {
-      "id": "c-1",
-      "name": "總統特朗普",
-      "cardType": "character",
-      "gameType": "愛國者",
-      "power": 100,
-      "traits": [
-        "特朗普家族"
-      ],
-      "rarity": "legendary"
-    },
-    "h-2": {
-      "id": "h-2",
-      "name": "Make America Great Again",
-      "cardType": "help",
-      "effects": {
-        "description": "選擇對方一張角色卡，原能力值 變成 0",
-        "rules": [
-          {
-            "id": "maga_nerf",
-            "type": "triggered",
-            "trigger": {
-              "event": "onPlay",
-              "conditions": []
+            "step": 1,
+            "playerId": "playerId_2",
+            "description": "Player 2 selects c-1 with h-2's setPower effect",
+            "action": {
+                "actionType": "SelectCard",
+                "selectionId": "playerId_2_setPower_1753090836037",
+                "cardIds": [
+                    "c-1"
+                ]
             },
-            "target": {
-              "owner": "opponent",
-              "zones": [
-                "top",
-                "left",
-                "right"
-              ],
-              "requiresSelection": true,
-              "selectCount": 1,
-              "filters": []
-            },
-            "effect": {
-              "type": "setPower",
-              "value": 0
+            "expectedResult": {
+                "success": true,
+                "message": "Card selection completed successfully"
             }
-          }
-        ]
-      }
-    },
-    "s-1": {
-      "id": "s-1",
-      "name": "特朗普",
-      "cardType": "leader",
-      "gameType": "右翼",
-      "initialPoint": 110,
-      "level": 7,
-      "rarity": "legendary",
-      "zoneCompatibility": {
-        "top": [
-          "右翼",
-          "自由",
-          "經濟"
-        ],
-        "left": [
-          "右翼",
-          "自由",
-          "愛國者"
-        ],
-        "right": [
-          "右翼",
-          "愛國者",
-          "經濟"
-        ]
-      }
-    },
-    "s-2": {
-      "id": "s-2",
-      "name": "拜登",
-      "cardType": "leader",
-      "gameType": "左翼",
-      "initialPoint": 100,
-      "level": 7,
-      "rarity": "legendary",
-      "zoneCompatibility": {
-        "top": [
-          "左翼",
-          "自由",
-          "經濟",
-          "右翼",
-          "愛國者"
-        ],
-        "left": [
-          "左翼",
-          "自由",
-          "經濟",
-          "右翼",
-          "愛國者"
-        ],
-        "right": [
-          "左翼",
-          "自由",
-          "經濟",
-          "右翼",
-          "愛國者"
-        ]
-      }
-    }
-  },
-  "testNotes": {
-    "purpose": "Validate h-2 Make America Great Again setPower effect with fixed implementation",
-    "basedOnRealGameState": "Created from actual user game environment with pending card selection",
-    "keyValidations": [
-      "Card selection workflow completion",
-      "setPower effect properly recorded in activeEffects",
-      "setPower effect added to playSequence for replay consistency",
-      "Power display synchronization (valueOnField = 0)",
-      "Effect overrides multiple existing power modifiers",
-      "Cross-player effect targeting with specificCards",
-      "Turn progression after card selection"
+        }
     ],
-    "powerCalculationFlow": {
-      "before": {
-        "basePower": 100,
-        "trumpLeaderBoost": 45,
-        "characterBoost": 10,
-        "total": 155,
-        "note": "c-1 benefits from both leader and character power boosts"
-      },
-      "after": {
-        "setPowerEffect": 0,
-        "note": "setPower effect overrides ALL other modifiers (priority)",
-        "total": 0
-      }
+    "expectedStateChanges": {
+        "players.playerId_1.fieldEffects.activeEffects.length": 4,
+        "zones.playerId_1.left.0.valueOnField": 0,
+        "players.playerId_1.fieldEffects.calculatedPowers.c-1": 0,
+        "playSequence.plays.length": 5,
+        "players.playerId_1.playerPoint": 0
     },
-    "architecturalFixes": {
-      "playSequenceIntegration": "setPower effects now recorded as APPLY_SET_POWER actions",
-      "effectSimulatorSupport": "Added APPLY_SET_POWER case to executePlayUnified method",
-      "replayConsistency": "Effects survive simulateCardPlaySequence calls",
-      "displaySynchronization": "valueOnField updated to match calculated power"
+    "validationPoints": [
+        {
+            "cardId": "c-1",
+            "zone": "left",
+            "playerId": "playerId_1",
+            "description": "c-1 power should be set to 0 by h-2's setPower effect",
+            "expectedPower": 0,
+            "powerSource": "h-2 setPower effect overrides all other effects including leader boost (+45) and character boost (+10)"
+        }
+    ],
+    "activeEffectsValidation": {
+        "playerId_1": {
+            "requiredEffects": [
+                {
+                    "source": "s-1",
+                    "type": "powerBoost",
+                    "target": {
+                        "scope": "SELF",
+                        "gameTypes": [
+                            "右翼",
+                            "愛國者"
+                        ]
+                    },
+                    "value": 45,
+                    "description": "Trump leader power boost for 右翼/愛國者 cards"
+                },
+                {
+                    "source": "s-1",
+                    "type": "setPower",
+                    "target": {
+                        "scope": "SELF",
+                        "gameTypes": [
+                            "經濟"
+                        ]
+                    },
+                    "value": 0,
+                    "description": "Trump vs Powell conditional economic card nerf"
+                },
+                {
+                    "source": "c-1",
+                    "type": "powerBoost",
+                    "target": {
+                        "scope": "SELF",
+                        "traits": [
+                            "特朗普家族"
+                        ]
+                    },
+                    "value": 10,
+                    "description": "c-1 character effect boosting Trump family cards"
+                },
+                {
+                    "source": "h-2",
+                    "type": "setPower",
+                    "target": {
+                        "scope": "OPPONENT",
+                        "specificCards": [
+                            "c-1"
+                        ]
+                    },
+                    "value": 0,
+                    "description": "h-2's MAGA effect setting c-1 power to 0 (NEW - should be added)"
+                }
+            ],
+            "totalEffectsCount": 4
+        }
     },
-    "testCoverage": {
-      "cardSelectionWorkflow": "Complete selection from trigger to completion",
-      "effectPersistence": "Effects survive turn switching and replay",
-      "crossPlayerEffects": "Effect stored in target player's activeEffects",
-      "prioritySystem": "setPower overrides powerBoost effects",
-      "gameStateIntegrity": "All game state properly updated post-selection"
+    "playSequenceValidation": {
+        "expectedPlays": 5,
+        "newPlayValidation": {
+            "type": "APPLY_SET_POWER",
+            "playerId": "playerId_2",
+            "targetPlayerId": "playerId_1",
+            "sourceCard": "h-2",
+            "selectedCardIds": [
+                "c-1"
+            ],
+            "powerValue": 0,
+            "description": "setPower effect recorded in play sequence for replay consistency"
+        }
     },
-    "realWorldScenario": "Based on user's actual game where c-1 power wasn't updating to 0 after h-2 selection"
-  }
+    "cardDefinitions": {
+        "c-1": {
+            "id": "c-1",
+            "name": "總統特朗普",
+            "cardType": "character",
+            "gameType": "愛國者",
+            "power": 100,
+            "traits": [
+                "特朗普家族"
+            ],
+            "rarity": "legendary"
+        },
+        "h-2": {
+            "id": "h-2",
+            "name": "Make America Great Again",
+            "cardType": "help",
+            "effects": {
+                "description": "選擇對方一張角色卡，原能力值 變成 0",
+                "rules": [
+                    {
+                        "id": "maga_nerf",
+                        "type": "triggered",
+                        "trigger": {
+                            "event": "onPlay",
+                            "conditions": []
+                        },
+                        "target": {
+                            "owner": "opponent",
+                            "zones": [
+                                "top",
+                                "left",
+                                "right"
+                            ],
+                            "requiresSelection": true,
+                            "selectCount": 1,
+                            "filters": []
+                        },
+                        "effect": {
+                            "type": "setPower",
+                            "value": 0
+                        }
+                    }
+                ]
+            }
+        },
+        "s-1": {
+            "id": "s-1",
+            "name": "特朗普",
+            "cardType": "leader",
+            "gameType": "右翼",
+            "initialPoint": 110,
+            "level": 7,
+            "rarity": "legendary",
+            "zoneCompatibility": {
+                "top": [
+                    "右翼",
+                    "自由",
+                    "經濟"
+                ],
+                "left": [
+                    "右翼",
+                    "自由",
+                    "愛國者"
+                ],
+                "right": [
+                    "右翼",
+                    "愛國者",
+                    "經濟"
+                ]
+            }
+        },
+        "s-2": {
+            "id": "s-2",
+            "name": "拜登",
+            "cardType": "leader",
+            "gameType": "左翼",
+            "initialPoint": 100,
+            "level": 7,
+            "rarity": "legendary",
+            "zoneCompatibility": {
+                "top": [
+                    "左翼",
+                    "自由",
+                    "經濟",
+                    "右翼",
+                    "愛國者"
+                ],
+                "left": [
+                    "左翼",
+                    "自由",
+                    "經濟",
+                    "右翼",
+                    "愛國者"
+                ],
+                "right": [
+                    "左翼",
+                    "自由",
+                    "經濟",
+                    "右翼",
+                    "愛國者"
+                ]
+            }
+        }
+    },
+    "testNotes": {
+        "purpose": "Validate h-2 Make America Great Again setPower effect with fixed implementation",
+        "basedOnRealGameState": "Created from actual user game environment with pending card selection",
+        "keyValidations": [
+            "Card selection workflow completion",
+            "setPower effect properly recorded in activeEffects",
+            "setPower effect added to playSequence for replay consistency",
+            "Power display synchronization (valueOnField = 0)",
+            "Effect overrides multiple existing power modifiers",
+            "Cross-player effect targeting with specificCards",
+            "Turn progression after card selection"
+        ],
+        "powerCalculationFlow": {
+            "before": {
+                "basePower": 100,
+                "trumpLeaderBoost": 45,
+                "characterBoost": 10,
+                "total": 155,
+                "note": "c-1 benefits from both leader and character power boosts"
+            },
+            "after": {
+                "setPowerEffect": 0,
+                "note": "setPower effect overrides ALL other modifiers (priority)",
+                "total": 0
+            }
+        },
+        "architecturalFixes": {
+            "playSequenceIntegration": "setPower effects now recorded as APPLY_SET_POWER actions",
+            "effectSimulatorSupport": "Added APPLY_SET_POWER case to executePlayUnified method",
+            "replayConsistency": "Effects survive simulateCardPlaySequence calls",
+            "displaySynchronization": "valueOnField updated to match calculated power"
+        },
+        "testCoverage": {
+            "cardSelectionWorkflow": "Complete selection from trigger to completion",
+            "effectPersistence": "Effects survive turn switching and replay",
+            "crossPlayerEffects": "Effect stored in target player's activeEffects",
+            "prioritySystem": "setPower overrides powerBoost effects",
+            "gameStateIntegrity": "All game state properly updated post-selection"
+        },
+        "realWorldScenario": "Based on user's actual game where c-1 power wasn't updating to 0 after h-2 selection"
+    }
 }

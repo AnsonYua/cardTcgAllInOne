@@ -37,7 +37,7 @@ export default class EnergyAreaManager {
     if (energyData && energyData.length > 0) {
       const orderedEnergy = playerType === 'player'
         ? this.orderPlayerEnergyCards(energyData)
-        : energyData;
+        : this.orderOpponentEnergyCards(energyData);
 
       orderedEnergy.forEach((energyCard, i) => {
         // Get row2 slot position based on energy card index
@@ -56,6 +56,21 @@ export default class EnergyAreaManager {
   }
 
   orderPlayerEnergyCards(energyData) {
+    const activeCards = [];
+    const restedCards = [];
+
+    energyData.forEach(card => {
+      if (card.isRested) {
+        restedCards.push(card);
+      } else {
+        activeCards.push(card);
+      }
+    });
+
+    return [...activeCards, ...restedCards];
+  }
+
+  orderOpponentEnergyCards(energyData) {
     const activeCards = [];
     const restedCards = [];
 
@@ -101,11 +116,9 @@ export default class EnergyAreaManager {
     });
 
     // Add visual indicator for energy card state
-    if (energyCard.isRested) {
-      card.rotation = Math.PI / 2; // Rotate rested energy cards
-    }
-    
-   
+    card.rotation = energyCard.isRested ? Math.PI / 2 : 0;
+
+
     return card;
   }
 
