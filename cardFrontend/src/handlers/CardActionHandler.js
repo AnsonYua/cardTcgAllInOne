@@ -810,6 +810,67 @@ export default class CardActionHandler {
         }
     }
 
+    async handleConfirmBattle() {
+        const gameState = this.gameStateManager.getGameState();
+        const currentBattle = gameState.gameEnv?.currentBattle;
+
+        if (!currentBattle) {
+            this.showErrorMessage('当前没有待确认的战斗');
+            return;
+        }
+
+        const playerId = gameState.playerId;
+        if (!playerId) {
+            this.showErrorMessage('无法确认：缺少玩家信息');
+            return;
+        }
+
+        try {
+            this.setUILoadingState(true);
+            this.gameScene.confirmBattleButton?.disableInteractive();
+
+            const response = await this.gameScene.apiManager.playerAction(playerId, gameState.gameId, {
+                actionType: 'confirmBattle'
+            });
+
+            if (response?.success) {
+                if (response.gameEnv) {
+                    this.gameStateManager.updateGameEnv(response.gameEnv);
+                }
+                this.updateGameState();
+
+                const updatedState = this.gameStateManager.getGameState();
+                const updatedBattle = updatedState.gameEnv?.currentBattle;
+                const confirmations = updatedBattle?.confirmations || {};
+                const opponentId = updatedBattle
+                    ? updatedBattle.attackingPlayerId === playerId
+                        ? updatedBattle.defendingPlayerId
+                        : updatedBattle.attackingPlayerId
+                    : undefined;
+                const playerConfirmed = confirmations[playerId] === true;
+                const opponentConfirmed = opponentId ? confirmations[opponentId] === true : false;
+
+                if (playerConfirmed && opponentConfirmed) {
+                    this.showSuccessMessage('双方已确认，可以结算战斗');
+                } else if (playerConfirmed) {
+                    this.showSuccessMessage('已确认，等待对手完成行动');
+                }
+            } else {
+                const errorMessage = response?.error || '战斗确认失败';
+                console.error('ConfirmBattle failed:', errorMessage);
+                this.showErrorMessage(errorMessage);
+                this.gameScene.confirmBattleButton?.setInteractive({ useHandCursor: true });
+            }
+        } catch (error) {
+            console.error('Error calling confirmBattle API:', error);
+            this.showErrorMessage('网络错误，请稍后重试');
+            this.gameScene.confirmBattleButton?.setInteractive({ useHandCursor: true });
+        } finally {
+            this.setUILoadingState(false);
+            this.gameScene.updateBattlePrompt();
+        }
+    }
+
     async handleResolveBattle() {
         const gameState = this.gameStateManager.getGameState();
         const currentBattle = gameState.gameEnv?.currentBattle;

@@ -155,37 +155,64 @@ export default class GameSceneUIManager {
     promptText.setOrigin(0.5);
     container.add(promptText);
 
-    const button = this.scene.add.rectangle(0, 28, 180, 36, 0x1a37b8, 0.95);
-    button.setInteractive();
-    container.add(button);
+    const confirmButton = this.scene.add.rectangle(-110, 28, 180, 36, 0x1a37b8, 0.95);
+    confirmButton.setInteractive({ useHandCursor: true });
+    container.add(confirmButton);
 
-    const buttonLabel = this.scene.add.text(0, 28, '结束行动步骤', {
+    const confirmLabel = this.scene.add.text(-110, 28, '确认行动完成', {
       fontSize: '16px',
       fontFamily: 'Arial',
       fill: '#ffffff'
     });
-    buttonLabel.setOrigin(0.5);
-    container.add(buttonLabel);
+    confirmLabel.setOrigin(0.5);
+    container.add(confirmLabel);
 
-    button.on('pointerover', () => {
-      button.setFillStyle(0x3b6be0, 1);
+    confirmButton.on('pointerover', () => {
+      confirmButton.setFillStyle(0x3b6be0, 1);
     });
 
-    button.on('pointerout', () => {
-      button.setFillStyle(0x1a37b8, 0.95);
+    confirmButton.on('pointerout', () => {
+      confirmButton.setFillStyle(0x1a37b8, 0.95);
     });
 
-    button.on('pointerdown', () => {
+    confirmButton.on('pointerdown', () => {
+      this.scene.cardActionHandler.handleConfirmBattle();
+    });
+
+    const resolveButton = this.scene.add.rectangle(110, 28, 180, 36, 0x2a8f4e, 0.95);
+    resolveButton.setInteractive({ useHandCursor: true });
+    container.add(resolveButton);
+
+    const resolveLabel = this.scene.add.text(110, 28, '结算战斗', {
+      fontSize: '16px',
+      fontFamily: 'Arial',
+      fill: '#ffffff'
+    });
+    resolveLabel.setOrigin(0.5);
+    container.add(resolveLabel);
+
+    resolveButton.on('pointerover', () => {
+      resolveButton.setFillStyle(0x3db968, 1);
+    });
+
+    resolveButton.on('pointerout', () => {
+      resolveButton.setFillStyle(0x2a8f4e, 0.95);
+    });
+
+    resolveButton.on('pointerdown', () => {
       this.scene.cardActionHandler.handleResolveBattle();
     });
 
     container.setVisible(false);
-    button.disableInteractive();
+    confirmButton.disableInteractive();
+    resolveButton.disableInteractive();
 
     this.scene.battlePromptContainer = container;
     this.scene.battlePromptText = promptText;
-    this.scene.resolveBattleButton = button;
-    this.scene.resolveBattleButtonText = buttonLabel;
+    this.scene.confirmBattleButton = confirmButton;
+    this.scene.confirmBattleButtonText = confirmLabel;
+    this.scene.resolveBattleButton = resolveButton;
+    this.scene.resolveBattleButtonText = resolveLabel;
   }
 
   /**

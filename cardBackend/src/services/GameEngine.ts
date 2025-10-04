@@ -701,6 +701,9 @@ export class GameEngine {
                 case 'useCommandCard':
                     return MainPhaseAbilityManager.executeMainPhaseAbility(gameEnv, event);
 
+                case 'confirmBattle':
+                    return GameEngine.executeBattleConfirmation(event, gameEnv);
+
                 case 'resolveBattle':
                     return BattlePhaseManager.resolveBattle(gameEnv, event.playerId);
 
@@ -735,6 +738,27 @@ export class GameEngine {
     */
     private static executeShieldCardAttacked(event: ShieldCardAttackedEvent, gameEnv: GameEnvironment): ExecutionResult {
         return BurstEffectManager.processShieldCardAttack(event, gameEnv);
+    }
+
+    private static executeBattleConfirmation(event: PlayerActionEvent, gameEnv: GameEnvironment): ExecutionResult {
+        const playerId = event.playerId;
+        if (!playerId) {
+            return { success: false, error: 'confirmBattle action requires playerId' };
+        }
+
+        const result = gameEnv.confirmBattleResolution(playerId);
+        if (!result.success) {
+            return { success: false, error: result.error };
+        }
+
+        const bothConfirmed = gameEnv.haveBothPlayersConfirmedBattle();
+        if (!bothConfirmed) {
+            console.log('🤝 Battle confirmation recorded, awaiting opponent confirmation');
+        }
+
+        return {
+            success: true
+        };
     }
 
     private static executeBurstEffectChoice(event: BurstEffectChoiceEvent, gameEnv: GameEnvironment): ExecutionResult {

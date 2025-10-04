@@ -54,6 +54,13 @@ export class BattlePhaseManager {
             };
         }
 
+        if (!gameEnv.haveBothPlayersConfirmedBattle()) {
+            return {
+                success: false,
+                error: 'Both players must confirm before resolving the battle'
+            };
+        }
+
         context.status = 'RESOLVING';
 
         switch (context.actionType) {

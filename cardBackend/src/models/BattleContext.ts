@@ -17,4 +17,7 @@ export interface BattleContext {
     fromBurst?: boolean;
     status: BattleStatus;
     openedAt: number;
+    confirmations?: {
+        [playerId: string]: boolean;
+    };
 }

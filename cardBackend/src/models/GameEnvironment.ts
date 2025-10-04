@@ -127,7 +127,18 @@ export class GameEnvironment {
     // ============ BATTLE CONTEXT HELPERS ============
 
     public setCurrentBattle(context: BattleContext): void {
-        this.currentBattle = context;
+        const confirmations: Record<string, boolean> = {};
+        if (context.attackingPlayerId) {
+            confirmations[context.attackingPlayerId] = false;
+        }
+        if (context.defendingPlayerId) {
+            confirmations[context.defendingPlayerId] = false;
+        }
+
+        this.currentBattle = {
+            ...context,
+            confirmations
+        };
         console.log(`⚔️ Battle context initialized for ${context.actionType} between ${context.attackingPlayerId} and ${context.defendingPlayerId}`);
     }
 
@@ -140,6 +151,42 @@ export class GameEnvironment {
 
     public hasActiveBattle(): boolean {
         return !!this.currentBattle && this.currentBattle.status === 'ACTION_STEP';
+    }
+
+    public confirmBattleResolution(playerId: string): { success: boolean; error?: string } {
+        const battle = this.currentBattle;
+        if (!battle) {
+            return { success: false, error: 'No active battle to confirm' };
+        }
+
+        if (playerId !== battle.attackingPlayerId && playerId !== battle.defendingPlayerId) {
+            return { success: false, error: 'Player not involved in current battle' };
+        }
+
+        if (!battle.confirmations) {
+            battle.confirmations = {};
+        }
+
+        battle.confirmations[playerId] = true;
+        console.log(`🤝 Battle confirmation recorded for ${playerId}`);
+        return { success: true };
+    }
+
+    public haveBothPlayersConfirmedBattle(): boolean {
+        const battle = this.currentBattle;
+        if (!battle) {
+            return false;
+        }
+
+        const { confirmations, attackingPlayerId, defendingPlayerId } = battle;
+        if (!confirmations) {
+            return false;
+        }
+
+        const attackerConfirmed = attackingPlayerId ? confirmations[attackingPlayerId] === true : false;
+        const defenderConfirmed = defendingPlayerId ? confirmations[defendingPlayerId] === true : false;
+
+        return attackerConfirmed && defenderConfirmed;
     }
     
     
@@ -242,7 +289,11 @@ export class GameEnvironment {
                     ? playerAction.data.actionType
                     : undefined;
 
-                if (actionType === 'resolveBattle' || actionType === 'useCommandCard') {
+                if (
+                    actionType === 'resolveBattle' ||
+                    actionType === 'useCommandCard' ||
+                    actionType === 'confirmBattle'
+                ) {
                     return false;
                 }
             }
@@ -460,6 +511,16 @@ export class GameEnvironment {
         gameEnv.currentBattle = data.currentBattle
             ? (data.currentBattle as BattleContext)
             : undefined;
+        if (gameEnv.currentBattle) {
+            const confirmations: Record<string, boolean> = gameEnv.currentBattle.confirmations || {};
+            if (gameEnv.currentBattle.attackingPlayerId && confirmations[gameEnv.currentBattle.attackingPlayerId] === undefined) {
+                confirmations[gameEnv.currentBattle.attackingPlayerId] = false;
+            }
+            if (gameEnv.currentBattle.defendingPlayerId && confirmations[gameEnv.currentBattle.defendingPlayerId] === undefined) {
+                confirmations[gameEnv.currentBattle.defendingPlayerId] = false;
+            }
+            gameEnv.currentBattle.confirmations = confirmations;
+        }
         
         // Reconstruct players
         if (data.players) {

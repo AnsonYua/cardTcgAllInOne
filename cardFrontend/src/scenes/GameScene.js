@@ -387,24 +387,64 @@ export default class GameScene extends Phaser.Scene {
 
     if (battle && battle.status === 'ACTION_STEP') {
       const isParticipant = battle.attackingPlayerId === playerId || battle.defendingPlayerId === playerId;
-      const promptMessage = isParticipant
-        ? '行动步骤：可以使用指令卡或选择结束战斗'
-        : '行动步骤：等待对手处理';
+      const confirmations = battle.confirmations || {};
+      const playerConfirmed = isParticipant ? confirmations[playerId] === true : false;
+      const opponentId = battle.attackingPlayerId === playerId ? battle.defendingPlayerId : battle.attackingPlayerId;
+      const opponentConfirmed = opponentId ? confirmations[opponentId] === true : false;
+      const bothConfirmed = playerConfirmed && opponentConfirmed;
+
+      let promptMessage;
+      if (isParticipant) {
+        if (bothConfirmed) {
+          promptMessage = '双方已确认，可以结算战斗';
+        } else if (playerConfirmed) {
+          promptMessage = '已确认，等待对手完成行动';
+        } else {
+          promptMessage = '行动步骤：使用指令卡或确认行动完成';
+        }
+      } else {
+        promptMessage = opponentConfirmed ? '对手已确认，等待另一方完成行动' : '行动步骤：等待对手处理';
+      }
 
       this.battlePromptText?.setText(promptMessage);
       this.battlePromptContainer.setVisible(true);
 
       if (isParticipant) {
-        this.resolveBattleButton?.setVisible(true);
-        this.resolveBattleButtonText?.setVisible(true);
-        this.resolveBattleButton?.setInteractive();
+        this.confirmBattleButton?.setVisible(true);
+        this.confirmBattleButtonText?.setVisible(true);
+
+        if (playerConfirmed) {
+          this.confirmBattleButton?.disableInteractive();
+          this.confirmBattleButtonText?.setText('已确认');
+          this.confirmBattleButton?.setFillStyle(0x2a8f4e, 0.85);
+        } else {
+          this.confirmBattleButton?.setInteractive({ useHandCursor: true });
+          this.confirmBattleButton?.setFillStyle(0x1a37b8, 0.95);
+          this.confirmBattleButtonText?.setText('确认行动完成');
+        }
+
+        if (bothConfirmed) {
+          this.resolveBattleButton?.setVisible(true);
+          this.resolveBattleButtonText?.setVisible(true);
+          this.resolveBattleButton?.setInteractive({ useHandCursor: true });
+          this.resolveBattleButton?.setFillStyle(0x2a8f4e, 0.95);
+        } else {
+          this.resolveBattleButton?.setVisible(true);
+          this.resolveBattleButtonText?.setVisible(true);
+          this.resolveBattleButton?.disableInteractive();
+          this.resolveBattleButton?.setFillStyle(0x2a8f4e, 0.4);
+        }
       } else {
+        this.confirmBattleButton?.setVisible(false);
+        this.confirmBattleButtonText?.setVisible(false);
+        this.confirmBattleButton?.disableInteractive();
         this.resolveBattleButton?.setVisible(false);
         this.resolveBattleButtonText?.setVisible(false);
         this.resolveBattleButton?.disableInteractive();
       }
     } else {
       this.battlePromptContainer.setVisible(false);
+      this.confirmBattleButton?.disableInteractive();
       this.resolveBattleButton?.disableInteractive();
     }
   }
