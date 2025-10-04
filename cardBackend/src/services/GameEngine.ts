@@ -31,6 +31,7 @@ import { AttackPreparationManager } from './AttackPreparationManager';
 import { BurstEffectManager } from './BurstEffectManager';
 import { ExecutionResult } from './ExecutionResult';
 import { AttackPhaseEffectManager } from './effects/AttackPhaseEffectManager';
+import { MainPhaseAbilityManager } from './effects/MainPhaseAbilityManager';
 
 export class GameEngine {
     // ============ MAIN EXECUTION INTERFACE ============
@@ -709,6 +710,9 @@ export class GameEngine {
                 case 'attackUnit':
                 case 'attackShieldArea':
                     return GameEngine.checkAndExecuteBlockerAction(event, gameEnv);
+
+                case 'useCommandCard':
+                    return MainPhaseAbilityManager.executeMainPhaseAbility(gameEnv, event);
 
                 default:
                     return {

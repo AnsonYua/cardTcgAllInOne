@@ -577,6 +577,7 @@
                     {
                         "effectId": "main_heal_friendly",
                         "type": "activated",
+                        "trigger": "MAIN_PHASE",
                         "timing": [
                             "MAIN_PHASE"
                         ],

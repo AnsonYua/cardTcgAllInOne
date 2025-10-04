@@ -86,6 +86,19 @@ export class EffectExecutor {
         }
     }
 
+    /**
+     * Wrapper for activated abilities to reuse unified target handling
+     */
+    static executeActivatedEffect(
+        gameEnv: GameEnvironment,
+        effect: EffectDefinition,
+        targets: TargetReference[],
+        sourcePlayerId: string,
+        sourceCarduid: string
+    ): { success: boolean; error?: string } {
+        return this.applyEffectToTargets(gameEnv, effect, targets, sourcePlayerId, sourceCarduid);
+    }
+
      static applyAddToHandEffect(gameEnv: GameEnvironment, 
                                  sourcePlayerId: string, 
                                  effect: EffectDefinition,
