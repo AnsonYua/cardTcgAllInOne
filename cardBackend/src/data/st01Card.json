@@ -577,7 +577,6 @@
                     {
                         "effectId": "main_heal_friendly",
                         "type": "activated",
-                        "trigger": "MAIN_PHASE",
                         "timing": [
                             "MAIN_PHASE"
                         ],
@@ -645,7 +644,7 @@
                         "type": "activated",
                         "timing": [
                             "MAIN_PHASE",
-                            "ANY_TIME"
+                            "ACTION_STEP"
                         ],
                         "target": {
                             "type": "unit",

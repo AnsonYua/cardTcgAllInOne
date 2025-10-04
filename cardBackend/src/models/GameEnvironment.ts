@@ -7,6 +7,7 @@ import { ZoneCard } from './CardSystem';
 // EventManager removed - using direct event processing
 import { GameEvent, EventStatus, EventPriority, EventFactory, BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent } from '../services/EventQueue/interfaces/GameEvent';
 import { ProcessingResult, ValidationResult } from './EventInterfaces';
+import { BattleContext } from './BattleContext';
 
 // Forward declaration to avoid circular dependency
 declare class StaticEventProcessor {
@@ -43,6 +44,7 @@ export class GameEnvironment {
     
     // Object-oriented components
     public players: { [playerId: string]: Player };
+    public currentBattle?: BattleContext;
     
     
     // Unified event system - renamed for clarity
@@ -70,6 +72,7 @@ export class GameEnvironment {
         this.playersReady = {};
         
         this.players = {};
+        this.currentBattle = undefined;
         
         // Initialize event systems
         this.processingQueue = [];
@@ -119,6 +122,24 @@ export class GameEnvironment {
         this.processingQueue.push(event);
         this.sortEventsByPriority();
         console.log(`📋 Event queued for processing: ${event.type} (priority: ${event.priority})`);
+    }
+
+    // ============ BATTLE CONTEXT HELPERS ============
+
+    public setCurrentBattle(context: BattleContext): void {
+        this.currentBattle = context;
+        console.log(`⚔️ Battle context initialized for ${context.actionType} between ${context.attackingPlayerId} and ${context.defendingPlayerId}`);
+    }
+
+    public clearCurrentBattle(): void {
+        if (this.currentBattle) {
+            console.log('🛑 Clearing battle context');
+        }
+        this.currentBattle = undefined;
+    }
+
+    public hasActiveBattle(): boolean {
+        return !!this.currentBattle && this.currentBattle.status === 'ACTION_STEP';
     }
     
     
@@ -207,7 +228,11 @@ export class GameEnvironment {
                 return !blockerChoice.data.userDecisionMade;
             }
         }
-        
+
+        if (this.currentBattle && this.currentBattle.status === 'ACTION_STEP') {
+            return true;
+        }
+
         return false;
     }
     

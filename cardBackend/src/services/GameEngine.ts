@@ -32,6 +32,7 @@ import { BurstEffectManager } from './BurstEffectManager';
 import { ExecutionResult } from './ExecutionResult';
 import { AttackPhaseEffectManager } from './effects/AttackPhaseEffectManager';
 import { MainPhaseAbilityManager } from './effects/MainPhaseAbilityManager';
+import { BattlePhaseManager } from './BattlePhaseManager';
 
 export class GameEngine {
     // ============ MAIN EXECUTION INTERFACE ============
@@ -674,21 +675,7 @@ export class GameEngine {
      * Execute normal attack flow when no blockers interfere
      */
     private static executeNormalAttackFlow(event: PlayerActionEvent, gameEnv: GameEnvironment): ExecutionResult {
-        const eventData = event.data;
-        
-        switch (eventData.actionType) {
-            case 'attackUnit':
-                return GameEngine.handleAttackUnit(eventData, gameEnv);
-
-            case 'attackShieldArea':
-                return GameEngine.handleAttackShieldArea(eventData, gameEnv);
-
-            default:
-                return {
-                    success: false,
-                    error: `Unknown actionType: ${eventData.actionType}`
-                };
-        }
+        return BattlePhaseManager.startBattle(gameEnv, event);
     }
 
     private static executePlayerAction(event: PlayerActionEvent, gameEnv: GameEnvironment): ExecutionResult {
@@ -698,21 +685,25 @@ export class GameEngine {
         console.log(`🗡️ Processing PLAYER_ACTION event for player: ${eventData.playerId}, actionType: ${eventData.actionType}, fromBurst: ${fromBurst}`);
 
         try {
-            const turnCheck = GameActionValidator.ensureTurn(gameEnv, eventData.playerId, fromBurst);
-            if (!turnCheck.success) {
-                return {
-                    success: false,
-                    error: turnCheck.error
-                };
-            }
-            
             switch (eventData.actionType) {
                 case 'attackUnit':
-                case 'attackShieldArea':
+                case 'attackShieldArea': {
+                    const turnCheck = GameActionValidator.ensureTurn(gameEnv, eventData.playerId, fromBurst);
+                    if (!turnCheck.success) {
+                        return {
+                            success: false,
+                            error: turnCheck.error
+                        };
+                    }
+
                     return GameEngine.checkAndExecuteBlockerAction(event, gameEnv);
+                }
 
                 case 'useCommandCard':
                     return MainPhaseAbilityManager.executeMainPhaseAbility(gameEnv, event);
+
+                case 'resolveBattle':
+                    return BattlePhaseManager.resolveBattle(gameEnv, event.playerId);
 
                 default:
                     return {
@@ -743,251 +734,6 @@ export class GameEngine {
         "targetPilotUid": "ST01-013_20d620d9-242e-4aa8-b1b6-6847dff89461"
     }
     */
-    private static handleAttackUnit(eventData: any, gameEnv: GameEnvironment): ExecutionResult {
-        console.log(`⚔️ Processing attackUnit action:`, JSON.stringify(eventData));
-
-        try {
-            const {
-                playerId,
-                attackerCarduid,
-                targetUnitUid,
-                targetPlayerId
-            } = eventData;
-
-            const attackPreparation = AttackPreparationManager.prepareUnitAttack(
-                gameEnv,
-                playerId,
-                attackerCarduid,
-                targetPlayerId,
-                targetUnitUid
-            );
-
-            if (!attackPreparation.success) {
-                return {
-                    success: false,
-                    error: attackPreparation.error
-                };
-            }
-
-            const {
-                attacker,
-                defender,
-                attackerSlot,
-                attackingUnit,
-                targetSlotName,
-                targetUnit
-            } = attackPreparation;
-
-            console.log(`⚔️ Found attacking unit in ${attackerSlot}: ${attackingUnit.carduid}`);
-            console.log(`🎯 Found target unit in ${targetSlotName}: ${targetUnit.carduid}`);
-
-            // Calculate attacker and defender stats using centralized slot lookup
-            const attackerStats = PlayerCardManager.getCurrentUnitCardInSlotAPandHP(gameEnv, attackingUnit.carduid);
-            const defenderStats = PlayerCardManager.getCurrentUnitCardInSlotAPandHP(gameEnv, targetUnit.carduid);
-
-            console.log(`⚔️ Attacker total stats: AP=${attackerStats.totalAP}, HP=${attackerStats.totalHP}`);
-            console.log(`🛡️ Defender total stats: AP=${defenderStats.totalAP}, HP=${defenderStats.totalHP}`);
-
-            // Calculate damage and remaining HP (ensure >= 0)
-            const attackerRemainingHP = Math.max(0, attackerStats.totalHP - defenderStats.totalAP);
-            const defenderRemainingHP = Math.max(0, defenderStats.totalHP - attackerStats.totalAP);
-
-            console.log(`💥 Battle result: Attacker HP: ${attackerStats.totalHP} - ${defenderStats.totalAP} = ${attackerRemainingHP}`);
-            console.log(`💥 Battle result: Defender HP: ${defenderStats.totalHP} - ${attackerStats.totalAP} = ${defenderRemainingHP}`);
-
-            // Handle attacker damage and destruction
-            const attackerDestroyed = GameEngine.handleUnitDamageAndDestruction(
-                gameEnv, playerId, attackerSlot, attackingUnit, 'Attacker',
-                attackerRemainingHP, defenderStats.totalAP
-            );
-
-            // Handle defender damage and destruction
-            const defenderDestroyed = GameEngine.handleUnitDamageAndDestruction(
-                gameEnv, targetPlayerId, targetSlotName, targetUnit, 'Defender',
-                defenderRemainingHP, attackerStats.totalAP
-            );
-
-
-            console.log(`⚔️ Attack completed: Attacker ${attackerDestroyed ? 'DESTROYED' : 'SURVIVED'}, Defender ${defenderDestroyed ? 'DESTROYED' : 'SURVIVED'}`);
-
-            return { success: true };
-
-        } catch (error) {
-            console.error(`❌ Error in handleAttackUnit:`, error);
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : 'Attack unit execution failed'
-            };
-        }
-    }
-
-    private static handleAttackShieldArea(eventData: any, gameEnv: GameEnvironment): ExecutionResult {
-        console.log(`🛡️ Processing attackShieldArea action:`, eventData);
-
-        try {
-            const { playerId, attackerCarduid } = eventData;
-
-            const attackPreparation = AttackPreparationManager.prepareBaseAttack(
-                gameEnv,
-                playerId,
-                attackerCarduid
-            );
-
-            if (!attackPreparation.success) {
-                return {
-                    success: false,
-                    error: attackPreparation.error
-                };
-            }
-
-            const {
-                defender,
-                attackerSlot,
-                attackingUnit
-            } = attackPreparation;
-
-            console.log(`⚔️ Found attacking unit in ${attackerSlot}: ${attackingUnit.carduid}`);
-
-            if (AttackPreparationManager.unitHasAttackRestriction(attackingUnit as UnitZoneCard, 'cannot_attack_player')) {
-                const cardName = attackingUnit.cardData?.name || attackingUnit.cardId || 'Attacking unit';
-                console.warn(`⚠️ ${cardName} (${attackingUnit.carduid}) cannot attack the player due to restriction.`);
-                return {
-                    success: false,
-                    error: `${cardName} cannot attack the player due to a restriction`
-                };
-            }
-
-            const combinedStats = PlayerCardManager.getCurrentUnitCardInSlotAPandHP(gameEnv, attackingUnit.carduid);
-            const totalAttackPower = combinedStats.totalAP;
-
-            console.log(`⚔️ Total attack power (with player modifications): ${totalAttackPower}`);
-
-            const defenderBases = defender.zones.base;
-
-            if (defenderBases.length > 0) {
-                // Base exists - add damage to base[0]
-                const baseCard = defenderBases[0];
-                const currentDamage = baseCard.damageReceived || 0;
-                const newDamage = currentDamage + totalAttackPower;
-                const maxHP = baseCard.originalHP || baseCard.cardData?.hp || 0;
-                const remainingHP = Math.max(0, maxHP - newDamage);
-
-                baseCard.damageReceived = newDamage;
-
-                // Check if base is destroyed (HP = 0) and move to trash
-                let baseDestroyed = false;
-                if (remainingHP <= 0) {
-                    // Remove from base zone using BaseCardManager
-                    const removed = BaseCardManager.removeBaseCard(gameEnv, defender.id, baseCard.carduid);
-                    if (removed) {
-                        // Move to trash
-                        defender.addTrashCard(baseCard.carduid, baseCard.cardData);
-                        baseDestroyed = true;
-                        console.log(`💥 Base card ${baseCard.carduid} destroyed and moved to trash`);
-                    }
-                }
-
-                console.log(`🏰 Base takes ${totalAttackPower} damage (${currentDamage} → ${newDamage}), HP: ${remainingHP}${baseDestroyed ? ' - DESTROYED!' : ''}`);
-
-                // Generate base damage event
-                const notificationManager = GameEngine.getNotificationManager(gameEnv);
-                notificationManager.addNotificationEvent(
-                    baseDestroyed ? 'BASE_DESTROYED' : 'BASE_DAMAGED',
-                    {
-                        defendingPlayerId: defender.id,
-                        attackingPlayerId: playerId,
-                        attackerSlot,
-                        damage: totalAttackPower,
-                        totalDamage: newDamage,
-                        baseHP: remainingHP,
-                        baseDestroyed,
-                        ...(baseDestroyed && {
-                            destroyedCard: {
-                                carduid: baseCard.carduid,
-                                cardId: baseCard.cardId,
-                                name: baseCard.cardData?.name || 'Unknown Base'
-                            }
-                        })
-                    },
-                    false,
-                    'normal'
-                );
-
-            } else {
-                // Base is empty - attack shields
-                if (defender.hasShield() && totalAttackPower >0) {
-                    // Get shield cards to attack - currently top card only, but easily extensible
-                    const shieldCardsToAttack = GameEngine.getShieldCardsToAttack(defender, 1); // Attack 1 card for now
-
-                    console.log(`🛡️ Creating SHIELD_CARD_ATTACKED event for ${shieldCardsToAttack.length} cards`);
-
-                    // Create shield card attacked event with array support for future multi-card attacks
-                    const shieldAttackEvent = EventFactory.createShieldCardAttackedEvent(
-                        defender.id,
-                        playerId,
-                        attackerSlot,
-                        shieldCardsToAttack,
-                        totalAttackPower
-                    );
-
-                    // Add event to the processing queue
-                    gameEnv.enqueueForProcessing(shieldAttackEvent);
-
-                    console.log(`🎯 Shield attack event queued: ${shieldAttackEvent.id}`);
-
-                } else {
-                    return {
-                        success: false,
-                        error: 'No shields to attack'
-                    };
-                }
-            }
-
-            console.log(`✅ AttackShieldArea completed - Total damage: ${totalAttackPower}`);
-            return { success: true };
-
-        } catch (error) {
-            console.error(`❌ Error in handleAttackShieldArea:`, error);
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : 'AttackShieldArea execution failed'
-            };
-        }
-    }
-
-    // ============ SHIELD CARD SELECTION HELPERS ============
-
-    /**
-     * Get shield cards to attack based on attack power or game rules
-     * @param defender - The defending player
-     * @param maxCards - Maximum number of cards to attack (1 for current game, could be 2+ in future)
-     * @returns Array of shield card data to attack
-     */
-    private static getShieldCardsToAttack(defender: any, maxCards: number = 1): Array<{ carduid: string, cardId: string, cardData: any }> {
-        const availableShields = defender.getShieldCards();
-        const cardsToAttack: Array<{ carduid: string, cardId: string, cardData: any }> = [];
-
-        // Current game rule: Attack from top of shield area
-        // Future game rules could attack multiple cards, specific cards, etc.
-        for (let i = 0; i < Math.min(maxCards, availableShields.length); i++) {
-            const shieldCard = availableShields[i];
-            cardsToAttack.push({
-                carduid: shieldCard.carduid,
-                cardId: shieldCard.cardId,
-                cardData: shieldCard.cardData
-            });
-        }
-
-        console.log(`🎯 Selected ${cardsToAttack.length} shield cards to attack (max: ${maxCards})`);
-        return cardsToAttack;
-    }
-
-
-
-
-
-
-
     private static executeShieldCardAttacked(event: ShieldCardAttackedEvent, gameEnv: GameEnvironment): ExecutionResult {
         return BurstEffectManager.processShieldCardAttack(event, gameEnv);
     }

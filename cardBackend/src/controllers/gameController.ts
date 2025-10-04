@@ -364,7 +364,7 @@ export class GameController {
             }
             
             // Validate actionType
-            const validActionTypes = ['attackUnit', 'attackShieldArea', 'useCommandCard'];
+            const validActionTypes = ['attackUnit', 'attackShieldArea', 'useCommandCard', 'resolveBattle'];
             if (!validActionTypes.includes(actionType)) {
                 res.status(400).json({
                     error: `Invalid actionType: ${actionType}. Must be one of: ${validActionTypes.join(', ')}`,

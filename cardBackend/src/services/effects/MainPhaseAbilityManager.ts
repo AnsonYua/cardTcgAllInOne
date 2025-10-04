@@ -12,6 +12,7 @@ import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { EffectExecutor } from './EffectExecutor';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { ExecutionResult } from '../ExecutionResult';
+import { BattlePhaseManager } from '../BattlePhaseManager';
 
 interface MainPhaseAbilityParams {
     playerId: string;
@@ -97,19 +98,7 @@ export class MainPhaseAbilityManager {
         if (!playerId || !carduid) {
             return {
                 success: false,
-                error: 'playerId and carduid are required to activate a main phase ability'
-            };
-        }
-
-        const turnCheck = GameActionValidator.ensureTurn(gameEnv, playerId, Boolean(fromBurst));
-        if (!turnCheck.success) {
-            return turnCheck;
-        }
-
-        if (gameEnv.phase !== GamePhase.MAIN_PHASE && !fromBurst) {
-            return {
-                success: false,
-                error: `Main phase abilities can only be used during MAIN_PHASE (current phase: ${gameEnv.phase})`
+                error: 'playerId and carduid are required to activate a command ability'
             };
         }
 
@@ -131,7 +120,7 @@ export class MainPhaseAbilityManager {
         if (cardData.cardType !== 'command') {
             return {
                 success: false,
-                error: `Main phase ability currently supports command cards only (found ${cardData.cardType || 'unknown'})`
+                error: `Command ability only supported for command cards (found ${cardData.cardType || 'unknown'})`
             };
         }
 
@@ -141,11 +130,41 @@ export class MainPhaseAbilityManager {
                 success: false,
                 error: effectId
                     ? `Effect ${effectId} not found on card ${cardData.id}`
-                    : `No MAIN_PHASE activated effect found on card ${cardData.id}`
+                    : `No activated effect found on card ${cardData.id}`
             };
         }
 
         const normalizedEffect = ensureEffectDefaults({ ...effectToExecute });
+
+        const timingWindows = this.getTimingWindows(normalizedEffect);
+        const actionWindowOpen = BattlePhaseManager.isActionWindowOpen(gameEnv);
+        const allowsActionStep = timingWindows.has('ACTION_STEP') || timingWindows.has('ACTION');
+        const usingActionStep = actionWindowOpen && allowsActionStep;
+
+        if (usingActionStep) {
+            if (!BattlePhaseManager.playerInActiveBattle(gameEnv, playerId)) {
+                return {
+                    success: false,
+                    error: 'Only players involved in the current battle may use ACTION_STEP abilities'
+                };
+            }
+        } else {
+            const turnCheck = GameActionValidator.ensureTurn(gameEnv, playerId, Boolean(fromBurst));
+            if (!turnCheck.success) {
+                return turnCheck;
+            }
+
+            if (!timingWindows.has('MAIN_PHASE') && !allowsActionStep) {
+                console.warn(`⚠️ Ability ${normalizedEffect.effectId || normalizedEffect.action} lacks explicit MAIN_PHASE or ACTION_STEP timing; defaulting to MAIN_PHASE validation`);
+            }
+
+            if (gameEnv.phase !== GamePhase.MAIN_PHASE && !fromBurst) {
+                return {
+                    success: false,
+                    error: `Ability can only be used during MAIN_PHASE (current phase: ${gameEnv.phase})`
+                };
+            }
+        }
 
         const targetResolution = this.resolveTargets(gameEnv, playerId, normalizedEffect, params);
         if (!targetResolution.success || !targetResolution.targets || targetResolution.targets.length === 0) {
@@ -231,6 +250,40 @@ export class MainPhaseAbilityManager {
 
             return false;
         });
+    }
+
+    private static getTimingWindows(effect: EffectDefinition): Set<string> {
+        const windows = new Set<string>();
+        const rawTiming = effect.timing as unknown;
+
+        if (Array.isArray(rawTiming)) {
+            rawTiming.forEach(value => {
+                if (typeof value === 'string') {
+                    windows.add(value.toUpperCase());
+                }
+            });
+        } else if (typeof rawTiming === 'string') {
+            windows.add(rawTiming.toUpperCase());
+        }
+
+        if (rawTiming && typeof rawTiming === 'object') {
+            const timingRecord = rawTiming as Record<string, unknown>;
+            const durationValue = timingRecord['duration'];
+            if (typeof durationValue === 'string') {
+                windows.add(durationValue.toUpperCase());
+            }
+
+            const actionTurnValue = timingRecord['actionTurn'];
+            if (typeof actionTurnValue === 'string') {
+                windows.add(actionTurnValue.toUpperCase());
+            }
+        }
+
+        if (typeof effect.trigger === 'string') {
+            windows.add(effect.trigger.toUpperCase());
+        }
+
+        return windows;
     }
 
     private static resolveTargets(
