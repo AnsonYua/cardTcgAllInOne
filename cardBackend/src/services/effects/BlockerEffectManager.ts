@@ -15,10 +15,25 @@ export class BlockerEffectManager {
      * Check for available blocker units in defending player's zones
      * Delegates to centralized EffectScannerUtils
      */
-    static checkForBlockerUnits(gameEnv: GameEnvironment, defendingPlayerId: string): BlockerUnit[] {
+    static checkForBlockerUnits(
+        gameEnv: GameEnvironment,
+        defendingPlayerId: string,
+        options?: { excludeCarduid?: string }
+    ): BlockerUnit[] {
         console.log(`🛡️ Checking for blocker units for player ${defendingPlayerId}`);
         
-        const blockers = EffectScannerUtils.scanForBlockerUnits(gameEnv, defendingPlayerId);
+        let blockers = EffectScannerUtils.scanForBlockerUnits(gameEnv, defendingPlayerId);
+
+        if (options?.excludeCarduid) {
+            const before = blockers.length;
+            blockers = blockers.filter(blocker => blocker.carduid !== options.excludeCarduid);
+            const removed = before - blockers.length;
+            if (removed > 0) {
+                console.log(
+                    `🛡️ Excluded ${removed} blocker(s) matching current target ${options.excludeCarduid}`
+                );
+            }
+        }
         
         console.log(`🛡️ Found ${blockers.length} available blocker units`);
         return blockers;

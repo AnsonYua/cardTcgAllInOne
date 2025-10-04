@@ -50,9 +50,12 @@ export class BlockerChoiceManager {
 
         try {
             // Step 1: Check for available blockers (delegate to BlockerEffectManager)
-            const availableBlockers = BlockerEffectManager.checkForBlockerUnits(gameEnv, defendingPlayerId);
+            const currentTargetCarduid = this.getCurrentAttackTargetCarduid(attackEvent);
+            const availableBlockers = BlockerEffectManager.checkForBlockerUnits(gameEnv, defendingPlayerId, {
+                excludeCarduid: currentTargetCarduid
+            });
             console.log(`🛡️ Found ${availableBlockers.length} blockers for defending player ${defendingPlayerId}`);
-            
+
             if (availableBlockers.length === 0) {
                 console.log(`🛡️ No blockers available, proceeding with normal attack`);
                 return { 
@@ -267,6 +270,28 @@ export class BlockerChoiceManager {
             ...originalEvent,
             data: redirectedData
         };
+    }
+
+    private static getCurrentAttackTargetCarduid(attackEvent: PlayerActionEvent): string | undefined {
+        if (!attackEvent?.data) {
+            return undefined;
+        }
+
+        const eventData = attackEvent.data;
+
+        if (typeof eventData.targetCarduid === 'string') {
+            return eventData.targetCarduid;
+        }
+
+        if (typeof eventData.targetUnitUid === 'string') {
+            return eventData.targetUnitUid;
+        }
+
+        if (typeof eventData.targetUnitId === 'string') {
+            return eventData.targetUnitId;
+        }
+
+        return undefined;
     }
 
     /**
