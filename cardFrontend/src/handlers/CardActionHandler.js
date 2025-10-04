@@ -65,7 +65,7 @@ export default class CardActionHandler {
             
             // Slot-specific actions for command cards
             case 'useCommand':
-                this.handleUseCommand(selectedCard);
+                this.handleUseCommand(selectedCard, effectData);
                 break;
             case 'commandBonus':
                 this.handleCommandBonus(selectedCard);
@@ -220,6 +220,105 @@ export default class CardActionHandler {
 
     updatePlayerHand() {
         this.gameScene.updatePlayerHand();
+    }
+
+
+    /**
+     * Find the first activated effect on a command card (fallback helper)
+     */
+    findFirstActivatedEffect(cardData) {
+        const rules = Array.isArray(cardData?.effects?.rules) ? cardData.effects.rules : [];
+        return rules.find(rule => rule?.type === 'activated') || null;
+    }
+
+    /**
+     * Construct a normalized payload for command abilities so backend managers
+     * receive the full context without extra conversions.
+     */
+    buildCommandActionPayload(selectedCard, effect, target, gameState) {
+        const carduid = selectedCard.fullCardData?.carduid;
+        const payload = {
+            actionType: 'useCommandCard',
+            carduid,
+            effectId: effect.effectId || effect.action,
+            effectMetadata: {
+                type: effect.type,
+                action: effect.action,
+                optional: Boolean(effect.optional),
+                timing: effect.timing,
+                target: effect.target,
+                parameters: effect.parameters,
+                trigger: effect.trigger
+            }
+        };
+
+        if (target) {
+            const targetEntry = {
+                carduid: target.carduid,
+                zone: target.zone,
+                playerId: target.playerId
+            };
+
+            payload.targetCarduid = target.carduid;
+            payload.targetPlayerId = target.playerId;
+            payload.targets = [targetEntry];
+        }
+
+        const currentBattle = gameState?.gameEnv?.currentBattle;
+        if (currentBattle) {
+            payload.battleContext = {
+                status: currentBattle.status,
+                attackingPlayerId: currentBattle.attackingPlayerId,
+                defendingPlayerId: currentBattle.defendingPlayerId
+            };
+        }
+
+        return payload;
+    }
+
+    /**
+     * Execute useCommandCard action via API
+     */
+    async executeUseCommand(selectedCard, effect, target) {
+        const gameState = this.gameStateManager.getGameState();
+        const playerId = gameState.playerId;
+        const gameId = gameState.gameId;
+        const carduid = selectedCard.fullCardData?.carduid;
+
+        if (!carduid) {
+            this.showErrorMessage('指令卡信息缺失');
+            return;
+        }
+
+        const actionData = this.buildCommandActionPayload(selectedCard, effect, target, gameState);
+
+        try {
+            this.setUILoadingState(true);
+            const response = await this.gameScene.apiManager.playerAction(playerId, gameId, actionData);
+
+            if (response?.success) {
+                console.log('UseCommandCard successful:', response);
+                this.gameStateManager.updateGameEnv(response.gameEnv);
+                this.updateGameState();
+                this.updatePlayerHand();
+                this.gameScene.deselectAllCards(true);
+                const nextBattleState = response.gameEnv?.currentBattle;
+                if (nextBattleState && nextBattleState.status === 'ACTION_STEP') {
+                    this.showSuccessMessage('指令执行成功，战斗仍在行动步骤');
+                } else {
+                    this.showSuccessMessage('指令已使用');
+                }
+            } else {
+                const errorMessage = response?.error || '使用指令失败';
+                console.error('UseCommandCard failed:', errorMessage);
+                this.showErrorMessage(errorMessage);
+            }
+        } catch (error) {
+            console.error('Error calling useCommandCard API:', error);
+            this.showErrorMessage('网络错误，请稍后重试');
+        } finally {
+            this.setUILoadingState(false);
+        }
     }
 
 
@@ -416,10 +515,105 @@ export default class CardActionHandler {
     /**
      * Command card actions in slots
      */
-    handleUseCommand(selectedCard) {
-        console.log('📜 Using command:', selectedCard.fullCardData?.cardData?.id);
-        this.showErrorMessage('使用指令功能开发中...');
-        this.gameScene.actionButtonManager.hide();
+    handleUseCommand(selectedCard, effectData = null) {
+        if (!selectedCard) {
+            this.showErrorMessage('未选中指令卡');
+            return;
+        }
+
+        const carduid = selectedCard.fullCardData?.carduid;
+        const cardData = selectedCard.fullCardData?.cardData;
+
+        if (!carduid || !cardData) {
+            this.showErrorMessage('无法读取指令卡信息');
+            return;
+        }
+
+        const effect = effectData || this.findFirstActivatedEffect(cardData);
+        if (!effect) {
+            this.showErrorMessage('该指令没有可用的效果');
+            return;
+        }
+
+        const targetConfig = effect.target || {};
+        const targetType = (targetConfig.type || '').toLowerCase();
+        const targetScope = (targetConfig.scope || 'self').toLowerCase();
+
+        const gameState = this.gameStateManager.getGameState();
+        const playerId = gameState.playerId;
+        const opponentId = this.gameStateManager.getOpponent();
+
+        const executeWithTarget = (target) => {
+            this.executeUseCommand(selectedCard, effect, target);
+        };
+
+        if (targetType === 'unit') {
+            if (targetScope.startsWith('opponent')) {
+                if (!opponentId) {
+                    this.showErrorMessage('无法找到对手');
+                    return;
+                }
+
+                if (this.gameScene.dialogManager) {
+                    this.gameScene.deselectAllCards(true);
+                    this.gameScene.actionButtonManager.hideDynamicActionButtons();
+                    const dialogId = this.gameScene.dialogManager.showAttackSelectionDialog(
+                        playerId,
+                        opponentId,
+                        selectedCard,
+                        (_card, targetUnit) => {
+                            if (!targetUnit) return;
+                            executeWithTarget({
+                                carduid: targetUnit.carduid || targetUnit.unit?.carduid,
+                                zone: targetUnit.zone || targetUnit.slotName,
+                                playerId: targetUnit.playerId
+                            });
+                        }
+                    );
+
+                    if (!dialogId) {
+                        this.showErrorMessage('没有可选的敌方单位');
+                    }
+                } else {
+                    this.showErrorMessage('目标选择界面不可用');
+                }
+                return;
+            }
+
+            // Default to friendly unit selection
+            if (this.gameScene.dialogManager) {
+                this.gameScene.deselectAllCards(true);
+                this.gameScene.actionButtonManager.hideDynamicActionButtons();
+                const dialogId = this.gameScene.dialogManager.showFriendlyUnitSelectionDialog(
+                    playerId,
+                    {
+                        title: '选择友方单位',
+                        description: '选择要作为目标的我方单位',
+                        emptyMessage: '没有可选择的友方单位'
+                    },
+                    (targetUnit) => {
+                        if (!targetUnit) return;
+                        executeWithTarget({
+                            carduid: targetUnit.carduid || targetUnit.unit?.carduid,
+                            zone: targetUnit.zone || targetUnit.slotName,
+                            playerId: targetUnit.playerId || playerId
+                        });
+                    }
+                );
+
+                if (!dialogId) {
+                    this.showErrorMessage('没有可选的友方单位');
+                }
+            } else {
+                this.showErrorMessage('目标选择界面不可用');
+            }
+            return;
+        }
+
+        // No target required - execute immediately
+        this.gameScene.deselectAllCards(true);
+        this.gameScene.actionButtonManager.hideDynamicActionButtons();
+        this.executeUseCommand(selectedCard, effect, null);
     }
 
     handleCommandBonus(selectedCard) {
@@ -527,7 +721,11 @@ export default class CardActionHandler {
                 console.log('AttackShieldArea successful:', response);
                 this.gameStateManager.updateGameEnv(response.gameEnv);
                 this.updateGameState();
-                this.showSuccessMessage('盾牌区域攻击成功!');
+                if (response.needsPlayerInput) {
+                    this.showSuccessMessage('进入行动步骤，等待指令。');
+                } else {
+                    this.showSuccessMessage('盾牌区域攻击成功!');
+                }
             } else {
                 console.error('AttackShieldArea failed:', response.error);
                 this.showErrorMessage(`攻击失败: ${response.error || '未知错误'}`);
@@ -596,7 +794,11 @@ export default class CardActionHandler {
                 console.log('PlayerAction successful:', response);
                 this.gameStateManager.updateGameEnv(response.gameEnv);
                 this.updateGameState();
-                this.showSuccessMessage(`${actionType} 执行成功!`);
+                if (response.needsPlayerInput) {
+                    this.showSuccessMessage('进入行动步骤，等待指令。');
+                } else {
+                    this.showSuccessMessage(`${actionType} 执行成功!`);
+                }
             } else {
                 console.error('PlayerAction failed:', response.error);
                 this.showErrorMessage(`行动失败: ${response.error || '未知错误'}`);
@@ -605,6 +807,55 @@ export default class CardActionHandler {
         } catch (error) {
             console.error('Error calling playerAction API:', error);
             this.showErrorMessage('网络错误，请稍后重试');
+        }
+    }
+
+    async handleResolveBattle() {
+        const gameState = this.gameStateManager.getGameState();
+        const currentBattle = gameState.gameEnv?.currentBattle;
+
+        if (!currentBattle) {
+            this.showErrorMessage('当前没有待结算的战斗');
+            return;
+        }
+
+        try {
+            this.setUILoadingState(true);
+            this.gameScene.resolveBattleButton?.disableInteractive();
+            const response = await this.gameScene.apiManager.playerAction(
+                gameState.playerId,
+                gameState.gameId,
+                {
+                    actionType: 'resolveBattle',
+                    battleContext: {
+                        status: currentBattle.status,
+                        attackingPlayerId: currentBattle.attackingPlayerId,
+                        defendingPlayerId: currentBattle.defendingPlayerId
+                    }
+                }
+            );
+
+            if (response?.success) {
+                console.log('ResolveBattle successful:', response);
+                this.gameStateManager.updateGameEnv(response.gameEnv);
+                this.updateGameState();
+                const remainingBattle = response.gameEnv?.currentBattle;
+                if (remainingBattle && remainingBattle.status === 'ACTION_STEP') {
+                    this.showSuccessMessage('等待对手完成行动步骤');
+                } else {
+                    this.showSuccessMessage('战斗已结算');
+                }
+            } else {
+                const errorMessage = response?.error || '战斗结算失败';
+                console.error('ResolveBattle failed:', errorMessage);
+                this.showErrorMessage(errorMessage);
+            }
+        } catch (error) {
+            console.error('Error calling resolveBattle API:', error);
+            this.showErrorMessage('网络错误，请稍后重试');
+        } finally {
+            this.setUILoadingState(false);
+            this.gameScene.updateBattlePrompt();
         }
     }
 

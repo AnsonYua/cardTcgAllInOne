@@ -631,7 +631,6 @@ export class GameEngine {
     private static checkAndExecuteBlockerAction(event: PlayerActionEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`🛡️ Checking for blocker opportunities: ${event.playerId} → ${gameEnv.getOpponentId(event.playerId)}`);
         const attackingPlayerId = event.playerId;
-        const eventData = event.data || {};
         const defendingPlayerId = gameEnv.getOpponentId(attackingPlayerId);
 
         if (!defendingPlayerId) {

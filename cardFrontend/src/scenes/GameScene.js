@@ -376,6 +376,39 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
+  updateBattlePrompt() {
+    if (!this.battlePromptContainer) {
+      return;
+    }
+
+    const gameState = this.gameStateManager.getGameState();
+    const battle = gameState.gameEnv?.currentBattle;
+    const playerId = gameState.playerId;
+
+    if (battle && battle.status === 'ACTION_STEP') {
+      const isParticipant = battle.attackingPlayerId === playerId || battle.defendingPlayerId === playerId;
+      const promptMessage = isParticipant
+        ? '行动步骤：可以使用指令卡或选择结束战斗'
+        : '行动步骤：等待对手处理';
+
+      this.battlePromptText?.setText(promptMessage);
+      this.battlePromptContainer.setVisible(true);
+
+      if (isParticipant) {
+        this.resolveBattleButton?.setVisible(true);
+        this.resolveBattleButtonText?.setVisible(true);
+        this.resolveBattleButton?.setInteractive();
+      } else {
+        this.resolveBattleButton?.setVisible(false);
+        this.resolveBattleButtonText?.setVisible(false);
+        this.resolveBattleButton?.disableInteractive();
+      }
+    } else {
+      this.battlePromptContainer.setVisible(false);
+      this.resolveBattleButton?.disableInteractive();
+    }
+  }
+
   updateUI() {
     // Update managers first
     this.baseAndShieldManager.updateAll();
@@ -385,6 +418,9 @@ export default class GameScene extends Phaser.Scene {
 
     // Delegate complex game flow logic to GameFlowManager
     this.gameFlowManager.updateGameFlow();
+
+    // Update battle prompt UI if action step is active
+    this.updateBattlePrompt();
   }
 
   canPlaceCardInZone(card, zoneType) {

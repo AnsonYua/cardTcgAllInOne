@@ -21,6 +21,7 @@ export default class GameSceneUIManager {
     this.createGameInfoDisplay();
     this.createActionButtons();
     this.createHandArea();
+    this.createBattlePromptUI();
 
     // Set phaseText element for UIMessageManager
     this.scene.uiMessageManager.setPhaseTextElement(this.scene.phaseText);
@@ -130,6 +131,61 @@ export default class GameSceneUIManager {
 
     // Initialize dynamic action button system
     this.scene.actionButtonManager.initialize();
+  }
+
+  createBattlePromptUI() {
+    const { width } = this.scene.cameras.main;
+
+    const container = this.scene.add.container(width / 2, 110);
+    container.setDepth(650);
+
+    const bg = this.scene.add.graphics();
+    bg.fillStyle(0x000000, 0.75);
+    bg.fillRoundedRect(-220, -40, 440, 90, 10);
+    bg.lineStyle(2, 0x5ba0f5);
+    bg.strokeRoundedRect(-220, -40, 440, 90, 10);
+    container.add(bg);
+
+    const promptText = this.scene.add.text(0, -10, '行动步骤：等待指令', {
+      fontSize: '18px',
+      fontFamily: 'Arial Bold',
+      fill: '#ffffff',
+      align: 'center'
+    });
+    promptText.setOrigin(0.5);
+    container.add(promptText);
+
+    const button = this.scene.add.rectangle(0, 28, 180, 36, 0x1a37b8, 0.95);
+    button.setInteractive();
+    container.add(button);
+
+    const buttonLabel = this.scene.add.text(0, 28, '结束行动步骤', {
+      fontSize: '16px',
+      fontFamily: 'Arial',
+      fill: '#ffffff'
+    });
+    buttonLabel.setOrigin(0.5);
+    container.add(buttonLabel);
+
+    button.on('pointerover', () => {
+      button.setFillStyle(0x3b6be0, 1);
+    });
+
+    button.on('pointerout', () => {
+      button.setFillStyle(0x1a37b8, 0.95);
+    });
+
+    button.on('pointerdown', () => {
+      this.scene.cardActionHandler.handleResolveBattle();
+    });
+
+    container.setVisible(false);
+    button.disableInteractive();
+
+    this.scene.battlePromptContainer = container;
+    this.scene.battlePromptText = promptText;
+    this.scene.resolveBattleButton = button;
+    this.scene.resolveBattleButtonText = buttonLabel;
   }
 
   /**

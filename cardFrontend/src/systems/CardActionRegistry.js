@@ -23,6 +23,9 @@ export default class CardActionRegistry {
         
         // Base actions for card type (hand cards)
         let actions = this.getBaseActionsForType(cardType, cardData);
+
+        // Inject command ability actions when available
+        actions = this.addCommandAbilityActions(card, actions, gameContext);
         
         // Add effect-based actions
         // actions = this.addEffectBasedActions(actions, effects, currentPhase);
@@ -33,7 +36,7 @@ export default class CardActionRegistry {
         console.log(`📋 Available actions for ${cardData.id}:`, actions.map(a => a.action));
         return actions;
     }
-    
+
     /**
      * Get base actions for each card type
      */
@@ -78,6 +81,104 @@ export default class CardActionRegistry {
         }
         
         return actionMap[cardType] || this.getDefaultActions();
+    }
+
+    static addCommandAbilityActions(card, actions, gameContext) {
+        const cardData = card?.fullCardData?.cardData;
+        if (!cardData || cardData.cardType !== 'command') {
+            return actions;
+        }
+
+        // Only allow command abilities while the card is in hand
+        if (card.isInZone) {
+            return actions;
+        }
+
+        const usableEffects = this.getUsableCommandEffects(cardData, gameContext);
+        if (usableEffects.length === 0) {
+            return actions;
+        }
+
+        const abilityActions = usableEffects.map((effect, index) => ({
+            action: 'useCommand',
+            text: usableEffects.length > 1 && effect.effectId
+                ? `使用指令 (${effect.effectId})`
+                : '使用指令',
+            primary: true,
+            effectData: effect
+        }));
+
+        // Prepend ability buttons so they appear before standard play options
+        return [...abilityActions, ...actions];
+    }
+
+    static getUsableCommandEffects(cardData, gameContext = {}) {
+        const effects = Array.isArray(cardData.effects?.rules) ? cardData.effects.rules : [];
+        if (effects.length === 0) {
+            return [];
+        }
+
+        const gameEnv = gameContext.gameEnv || {};
+        const currentBattle = gameEnv.currentBattle;
+        const isActionWindowOpen = Boolean(currentBattle && currentBattle.status === 'ACTION_STEP');
+        const currentPlayerId = gameContext.currentPlayerId;
+        const isTurnPlayer = currentPlayerId && gameEnv.currentPlayer === currentPlayerId;
+        const currentPhase = (gameContext.phase || 'MAIN_PHASE').toUpperCase();
+
+        const isBattleParticipant = Boolean(
+            isActionWindowOpen &&
+            currentPlayerId &&
+            (currentBattle.attackingPlayerId === currentPlayerId || currentBattle.defendingPlayerId === currentPlayerId)
+        );
+
+        return effects.filter(effect => {
+            if (!effect || effect.type !== 'activated') {
+                return false;
+            }
+
+            const timingWindows = this.getTimingWindows(effect);
+            const allowsActionStep = timingWindows.has('ACTION_STEP') || timingWindows.has('ACTION');
+            const allowsMainPhase = timingWindows.has('MAIN_PHASE') || timingWindows.size === 0;
+
+            if (isActionWindowOpen) {
+                return allowsActionStep && isBattleParticipant;
+            }
+
+            return allowsMainPhase && isTurnPlayer && currentPhase === 'MAIN_PHASE';
+        });
+    }
+
+    static getTimingWindows(effect) {
+        const windows = new Set();
+        const rawTiming = effect?.timing;
+
+        if (Array.isArray(rawTiming)) {
+            rawTiming.forEach(value => {
+                if (typeof value === 'string') {
+                    windows.add(value.toUpperCase());
+                }
+            });
+        } else if (typeof rawTiming === 'string') {
+            windows.add(rawTiming.toUpperCase());
+        }
+
+        if (rawTiming && typeof rawTiming === 'object') {
+            const durationValue = rawTiming.duration;
+            if (typeof durationValue === 'string') {
+                windows.add(durationValue.toUpperCase());
+            }
+
+            const actionTurnValue = rawTiming.actionTurn;
+            if (typeof actionTurnValue === 'string') {
+                windows.add(actionTurnValue.toUpperCase());
+            }
+        }
+
+        if (typeof effect?.trigger === 'string') {
+            windows.add(effect.trigger.toUpperCase());
+        }
+
+        return windows;
     }
 
     /**

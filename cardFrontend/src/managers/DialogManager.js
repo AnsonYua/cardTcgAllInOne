@@ -649,6 +649,41 @@ export default class DialogManager {
     return this._validateAndShowDialog(eligibleCards, 'No valid attack targets found', selectionId, selectionData);
   }
 
+  showFriendlyUnitSelectionDialog(playerId, options = {}, onConfirm) {
+    console.log('DialogManager: Showing friendly unit selection dialog');
+
+    const gameState = this.scene.gameStateManager.getGameState();
+    const playerData = gameState.gameEnv?.players?.[playerId];
+
+    if (!playerData?.zones) {
+      console.error('DialogManager: Player data or zones not found for friendly selection');
+      return null;
+    }
+
+    const eligibleCards = this._createSlotItems(playerData, playerId, (slot) => slot?.unit?.carduid);
+
+    const selectionId = `friendly_unit_${Date.now()}`;
+    const selectionData = this._createSelectionData(
+      playerId,
+      eligibleCards,
+      options.dialogType || 'SELECT_FRIENDLY_UNIT',
+      options.title || '选择友方单位',
+      options.description || '选择要作为目标的我方单位',
+      (selection, selectedCards) => {
+        const cardsArray = Array.isArray(selectedCards) ? selectedCards : [selectedCards];
+        if (cardsArray && cardsArray.length > 0) {
+          const targetCard = cardsArray[0];
+          if (onConfirm) {
+            onConfirm(targetCard);
+          }
+        }
+      }
+    );
+
+    const emptyMessage = options.emptyMessage || '没有可以选择的友方单位';
+    return this._validateAndShowDialog(eligibleCards, emptyMessage, selectionId, selectionData);
+  }
+
   /**
    * Show pilot target selection dialog
    * Specialized method for selecting player units to attach pilots to
