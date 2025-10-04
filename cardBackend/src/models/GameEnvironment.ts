@@ -411,6 +411,7 @@ export class GameEnvironment {
             currentPlayer: this.currentPlayer,
             currentTurn: this.currentTurn,
             playersReady: this.playersReady,
+            currentBattle: this.currentBattle ? { ...this.currentBattle } : null,
             
             players: Object.fromEntries(
                 Object.entries(this.players).map(([id, player]) => [id, player.toJSON()])
@@ -439,6 +440,9 @@ export class GameEnvironment {
         gameEnv.currentPlayer = data.currentPlayer || null;
         gameEnv.currentTurn = data.currentTurn || 0;
         gameEnv.playersReady = data.playersReady || {};
+        gameEnv.currentBattle = data.currentBattle
+            ? (data.currentBattle as BattleContext)
+            : undefined;
         
         // Reconstruct players
         if (data.players) {

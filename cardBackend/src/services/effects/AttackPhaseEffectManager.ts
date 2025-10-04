@@ -3,7 +3,7 @@
 
 import { GameEnvironment } from '../../models/GameEnvironment';
 import { UnitZoneCard, PilotZoneCard, ZoneCard } from '../../models/CardSystem';
-import { EffectDefinition, PlayerActionEvent } from '../EventQueue/interfaces/GameEvent';
+import { EffectDefinition, PlayerActionEvent, TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { ContinuousEffectManager } from '../ContinuousEffectManager';
@@ -176,16 +176,18 @@ export class AttackPhaseEffectManager {
             console.log(`ℹ️ Optional attack effect ${effect.effectId || action} auto-applied for card ${sourceCard.carduid}`);
         }
 
+        const targetReference = this.buildTargetReference(gameEnv, playerId, sourceCard);
+        if (!targetReference) {
+            return {
+                success: false,
+                error: `Unable to resolve attack effect target for card ${sourceCard.carduid}`
+            };
+        }
+
         const result = EffectExecutor.applyEffectToTargets(
             gameEnv,
             effect,
-            [
-                {
-                    carduid: sourceCard.carduid,
-                    zone: SlotZoneUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, sourceCard.carduid).slotName || 'unknown',
-                    playerId
-                }
-            ],
+            [targetReference],
             playerId,
             sourceCard.carduid
         );
@@ -195,5 +197,29 @@ export class AttackPhaseEffectManager {
         }
 
         return { success: true };
+}
+
+    private static buildTargetReference(
+        gameEnv: GameEnvironment,
+        fallbackPlayerId: string,
+        sourceCard: UnitZoneCard | PilotZoneCard
+    ): TargetReference | null {
+        const slotLookup = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, sourceCard.carduid);
+
+        if (!slotLookup.found || !slotLookup.slotName) {
+            return null;
+        }
+
+        const resolvedPlayerId = slotLookup.playerId || fallbackPlayerId;
+
+        if (!resolvedPlayerId) {
+            return null;
+        }
+
+        return {
+            carduid: sourceCard.carduid,
+            zone: slotLookup.slotName,
+            playerId: resolvedPlayerId
+        };
     }
 }
