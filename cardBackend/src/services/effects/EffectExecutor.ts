@@ -55,12 +55,13 @@ export class EffectExecutor {
                     };
                 }
 
-                const applyResult = this.applyEffectToResolvedCard(
-                    resolvedTarget.card as UnitZoneCard | PilotZoneCard,
-                    action,
-                    parameters,
-                    target
-                );
+            const applyResult = this.applyEffectToResolvedCard(
+                gameEnv,
+                resolvedTarget.card as UnitZoneCard | PilotZoneCard,
+                action,
+                parameters,
+                target
+            );
 
                 if (!applyResult.success) {
                     return applyResult;
@@ -296,6 +297,7 @@ export class EffectExecutor {
     }
 
     private static applyEffectToResolvedCard(
+        gameEnv: GameEnvironment,
         targetCard: UnitZoneCard | PilotZoneCard,
         action: string,
         parameters: Record<string, unknown> | undefined,
