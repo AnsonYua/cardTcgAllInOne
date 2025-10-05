@@ -764,7 +764,7 @@ export default class DialogManager {
 
     // Extract deploy effect and target information from event
     const { deployEffect, availableTargets, sourceCarduid, cardId } = event.data;
-    const effectDescription = deployEffect?.effect?.action || 'Select Target';
+    const effectDescription = deployEffect?.action || 'Select Target';
 
     // Convert backend availableTargets to eligibleCards format
     const eligibleCards = availableTargets.map(target => ({

@@ -245,7 +245,7 @@ export class BurstEffectManager {
 
         for (const effect of cardData.effects.rules) {
             if (effect.trigger && effect.trigger === 'BURST_CONDITION') {
-                const effectType = effect.effect?.action || effect.type || 'unknown';
+                const effectType = effect.action || effect.type || 'unknown';
                 const description = this.createBurstEffectDescription(effect, cardData);
 
                 burstEffects.push({
@@ -263,7 +263,7 @@ export class BurstEffectManager {
 
     static createBurstEffectDescription(effect: any, cardData: any): string {
         const cardName = cardData.name || cardData.cardId || 'Unknown Card';
-        const effectType = effect.effect?.action || effect.type || 'unknown';
+        const effectType = effect.action || effect.type || 'unknown';
 
         switch (effectType) {
             case 'burst_add_to_hand':

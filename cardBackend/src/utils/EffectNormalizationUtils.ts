@@ -1,7 +1,6 @@
 import {
     EffectCondition,
     EffectDefinition,
-    EffectDetails,
     EffectSourceCondition,
     EffectSourceConditionObject,
     EffectTiming,
@@ -34,8 +33,6 @@ export function normalizeEffectRule(
     }
 
     const raw = rule as Record<string, unknown>;
-    const effectDetails = normalizeEffectDetails(raw['effect'] as EffectDetails | undefined);
-
     const trigger = resolveTrigger(raw['trigger'], options.defaultTrigger);
     if (options.expectedTriggers && options.expectedTriggers.length > 0) {
         if (!trigger || !options.expectedTriggers.includes(trigger)) {
@@ -43,12 +40,12 @@ export function normalizeEffectRule(
         }
     }
 
-    const action = resolveAction(raw['action'], effectDetails);
+    const action = resolveAction(raw['action']);
     if (options.requireAction && !action) {
         return null;
     }
 
-    const parameters = normalizeEffectParameters(raw, effectDetails);
+    const parameters = normalizeEffectParameters(raw);
     const timing = normalizeEffectTiming(raw['timing']);
     const target = normalizeTargetConfig(raw['target'], {
         scope: options.defaultTargetScope,
@@ -89,10 +86,6 @@ export function normalizeEffectRule(
         sourceConditions
     };
 
-    if (effectDetails) {
-        normalized.effect = effectDetails;
-    }
-
     if (options.includePairedMetadata) {
         return {
             ...normalized,
@@ -105,19 +98,7 @@ export function normalizeEffectRule(
 }
 
 export function ensureEffectDefaults<TEffect extends EffectDefinition>(effect: TEffect): TEffect {
-    const effectDetails = effect.effect;
-    const action = resolveAction(effect.action, effectDetails);
-    const parameters = effect.parameters ?? effectDetails?.parameters;
-
-    if (action === effect.action && parameters === effect.parameters) {
-        return effect;
-    }
-
-    return {
-        ...effect,
-        action,
-        parameters
-    } as TEffect;
+    return effect;
 }
 
 export interface NormalizedSourceCondition extends EffectSourceConditionObject {
@@ -158,41 +139,12 @@ export function normalizeSourceConditions(conditions?: EffectSourceCondition[]):
     return conditions.map((condition) => normalizeSourceCondition(condition));
 }
 
-export function normalizeEffectDetails(effect: EffectDetails | undefined): EffectDetails | undefined {
-    if (!effect || typeof effect !== 'object') {
-        return undefined;
-    }
-
-    if (typeof effect.action !== 'string' || effect.action.length === 0) {
-        return undefined;
-    }
-
-    const normalized: EffectDetails = {
-        action: effect.action
-    };
-
-    if (effect.parameters && typeof effect.parameters === 'object') {
-        normalized.parameters = effect.parameters;
-    }
-
-    if (typeof effect.duration === 'string') {
-        normalized.duration = effect.duration;
-    }
-
-    return normalized;
-}
-
 export function normalizeEffectParameters(
-    rule: Record<string, unknown>,
-    effectDetails?: EffectDetails
+    rule: Record<string, unknown>
 ): Record<string, unknown> | undefined {
     const directParameters = rule['parameters'];
     if (directParameters && typeof directParameters === 'object') {
         return directParameters as Record<string, unknown>;
-    }
-
-    if (effectDetails?.parameters && typeof effectDetails.parameters === 'object') {
-        return effectDetails.parameters;
     }
 
     return undefined;
@@ -341,13 +293,9 @@ function resolveTrigger(triggerValue: unknown, defaultTrigger?: string): string 
     return defaultTrigger;
 }
 
-function resolveAction(actionValue: unknown, effectDetails?: EffectDetails): string | undefined {
+function resolveAction(actionValue: unknown): string | undefined {
     if (typeof actionValue === 'string' && actionValue.length > 0) {
         return actionValue;
-    }
-
-    if (effectDetails && typeof effectDetails.action === 'string' && effectDetails.action.length > 0) {
-        return effectDetails.action;
     }
 
     return undefined;

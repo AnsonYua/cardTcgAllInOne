@@ -452,11 +452,11 @@ export class PlayerCardManager {
             isCommandCardPilot = true;
             // Look for designate_pilot effect
             const designatePilotEffect = pilot.cardData?.effects?.rules?.find((rule: any) =>
-                rule.effect?.action === 'designate_pilot'
+                rule.action === 'designate_pilot'
             );
 
-            if (designatePilotEffect?.effect?.parameters?.pilotName) {
-                pilotNameForMatching = designatePilotEffect.effect.parameters.pilotName;
+            if (designatePilotEffect?.parameters?.pilotName) {
+                pilotNameForMatching = designatePilotEffect.parameters.pilotName as string;
                 console.log(`🎯 Command card as pilot: using designate_pilot.pilotName="${pilotNameForMatching}"`);
             } else {
                 console.warn(`⚠️ Command card played as pilot but no designate_pilot effect found for ${pilot.carduid}`);

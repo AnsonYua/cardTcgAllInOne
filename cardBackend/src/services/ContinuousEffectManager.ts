@@ -580,7 +580,7 @@ export class ContinuousEffectManager {
      */
     static createRegistryEntry(effectRule: EffectDefinition, sourceCard: ZoneCardWithData, sourcePlayerId: string): any {
         const effectAction = EffectExecutor.getEffectAction(effectRule) || 'modifyAP';
-        const parameters = effectRule.parameters || effectRule.effect?.parameters || {};
+        const parameters = effectRule.parameters || {};
         const value = ContinuousEffectManager.getEffectValue(effectAction, parameters);
         
         return {

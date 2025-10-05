@@ -244,23 +244,14 @@ export class EffectExecutor {
      */
     static getEffectAction(effect: EffectDefinition): string | undefined {
         const directAction = typeof effect.action === 'string' ? effect.action : undefined;
-        if (directAction && directAction.length > 0) {
-            return directAction;
-        }
-
-        const nestedAction = effect.effect?.action;
-        if (typeof nestedAction === 'string' && nestedAction.length > 0) {
-            return nestedAction;
-        }
-
-        return undefined;
+        return directAction && directAction.length > 0 ? directAction : undefined;
     }
 
     /**
      * Determine effect parameters
      */
     static getEffectParameters(effect: EffectDefinition): Record<string, unknown> | undefined {
-        return effect.parameters ?? effect.effect?.parameters;
+        return effect.parameters;
     }
 
     /**
@@ -287,7 +278,7 @@ export class EffectExecutor {
             }
 
             const targetCard = resolvedTarget.card as UnitZoneCard | PilotZoneCard;
-            const parameters = effect.parameters || effect.effect?.parameters || {};
+            const parameters = effect.parameters || {};
 
             const parameterValue = parameters['value'];
 

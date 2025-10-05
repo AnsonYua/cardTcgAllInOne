@@ -175,12 +175,6 @@ export interface EffectTiming {
 
 export type EffectCondition = string | Record<string, unknown>;
 
-export interface EffectDetails {
-    action: string;
-    parameters?: Record<string, unknown>;
-    duration?: string;
-}
-
 export type SourceConditionScope = 'source' | 'player' | 'game';
 
 export interface EffectSourceConditionObject {
@@ -203,7 +197,6 @@ export interface EffectDefinition {
     timing?: EffectTiming;
     conditions?: EffectCondition[];
     description?: string | string[];
-    effect?: EffectDetails;
     sourceConditions?: EffectSourceCondition[];
 }
 
@@ -858,7 +851,7 @@ export class EventFactory {
         const { getCardIdFromUid } = require('../../../utils/CardUtils');
         
         // Determine playAs based on card type and burst effect - minimize conversions
-        const playAs = (cardData.cardType === 'command' && burstEffect.effect?.action === 'designate_pilot') 
+        const playAs = (cardData.cardType === 'command' && burstEffect.action === 'designate_pilot') 
             ? 'pilot' 
             : cardData.cardType;
 

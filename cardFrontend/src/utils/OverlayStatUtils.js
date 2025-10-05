@@ -12,11 +12,8 @@ class OverlayStatUtils {
 
     if (nested.cardType === 'command') {
       const rules = nested.effects?.rules || [];
-      const designateRule = rules.find(rule => {
-        const action = rule.action || rule.effect?.action;
-        return action === 'designate_pilot';
-      });
-      const params = designateRule?.parameters || designateRule?.effect?.parameters;
+      const designateRule = rules.find(rule => rule.action === 'designate_pilot');
+      const params = designateRule?.parameters;
       if (params) {
         if (typeof params.AP === 'number') {
           originalAP = params.AP;
