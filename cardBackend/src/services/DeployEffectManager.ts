@@ -10,7 +10,8 @@ import {
 } from './EventQueue/interfaces/GameEvent';
 import { EventFactory } from './EventQueue/interfaces/GameEvent';
 import { DeployTargetManager, DeployTargetResult } from './DeployTargetManager';
-import { ensureEffectDefaults, normalizeEffectRule } from '../utils/EffectNormalizationUtils';
+import { ensureEffectDefaults } from '../utils/EffectNormalizationUtils';
+import { EffectRuleCatalog } from './effects/EffectRuleCatalog';
 
 export interface ExecutionResult {
     success: boolean;
@@ -43,12 +44,11 @@ export class DeployEffectManager {
                 return { success: true, effectsFound: 0 };
             }
 
-            const deployEffects: EffectDefinition[] = [];
-            for (const rule of cardData.effects.rules) {
-                if (rule?.trigger === 'ENTERS_PLAY') {
-                    deployEffects.push(this.normalizeDeployEffect(rule));
-                }
-            }
+            const deployEffects = EffectRuleCatalog.collectEffects(cardData, {
+                trigger: 'ENTERS_PLAY',
+                fallbackEffectId: 'deploy_effect',
+                expectedTriggers: ['ENTERS_PLAY']
+            }).map(effect => ensureEffectDefaults(effect));
 
             if (deployEffects.length === 0) {
                 return { success: true, effectsFound: 0 };
@@ -103,23 +103,4 @@ export class DeployEffectManager {
         return { success: true };
     }
 
-    /**
-     * Normalize raw rule data from card JSON into EffectDefinition shape.
-     */
-    private static normalizeDeployEffect(rule: Record<string, unknown>): EffectDefinition {
-        const normalized = normalizeEffectRule(rule, {
-            fallbackEffectId: 'deploy_effect',
-            expectedTriggers: ['ENTERS_PLAY'],
-            defaultTrigger: 'ENTERS_PLAY'
-        });
-
-        if (!normalized) {
-            return {
-                effectId: 'deploy_effect',
-                trigger: 'ENTERS_PLAY'
-            };
-        }
-
-        return normalized;
-    }
 }

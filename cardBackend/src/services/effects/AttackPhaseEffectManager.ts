@@ -8,6 +8,7 @@ import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { ContinuousEffectManager } from '../ContinuousEffectManager';
 import { EffectExecutor } from './EffectExecutor';
+import { EffectRuleCatalog } from './EffectRuleCatalog';
 
 export interface AttackPhaseEffectResult {
     success: boolean;
@@ -58,9 +59,13 @@ export class AttackPhaseEffectManager {
         let effectsProcessed = 0;
 
         for (const sourceCard of effectSources) {
-            const rules = sourceCard.cardData?.effects?.rules || [];
-            for (const rule of rules) {
-                const effect = rule as TriggeredEffectRule;
+            const attackEffects = EffectRuleCatalog.collectEffects(sourceCard.cardData, {
+                trigger: 'ATTACK_PHASE',
+                fallbackEffectId: 'attack_effect',
+                expectedTriggers: ['ATTACK_PHASE']
+            });
+
+            for (const effect of attackEffects) {
                 if (!this.isAttackPhaseTrigger(effect)) {
                     continue;
                 }

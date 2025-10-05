@@ -15,6 +15,7 @@ import { ShieldCardManager } from './ShieldCardManager';
 import { getCardIdFromUid } from '../utils/CardUtils';
 import { DeployTargetManager } from './DeployTargetManager';
 import { ensureEffectDefaults } from '../utils/EffectNormalizationUtils';
+import { EffectExecutor } from './effects/EffectExecutor';
 
 export interface BurstEffectSummary {
     effectId: string;
@@ -293,22 +294,7 @@ export class BurstEffectManager {
         cardData: any
     ): ExecutionResult {
         console.log(`➕ Adding card ${carduid} to ${playerId}'s hand`);
-
-        const player = gameEnv.getPlayer(playerId);
-        if (!player) {
-            return {
-                success: false,
-                error: `Player ${playerId} not found`
-            };
-        }
-
-        if (!player.deck._handUids) {
-            player.deck._handUids = [];
-        }
-        player.deck._handUids.push(carduid);
-
-        console.log(`✅ Card ${carduid} (${cardData?.name || 'Unknown'}) added to ${playerId}'s hand`);
-        return { success: true };
+        return EffectExecutor.addCardToPlayerHand(gameEnv, playerId, carduid, cardData);
     }
 
     static removeCardFromShield(
@@ -317,16 +303,7 @@ export class BurstEffectManager {
         carduid: string
     ): ExecutionResult {
         console.log(`🛡️ Removing card ${carduid} from ${playerId}'s shield`);
-
-        const removed = this.removeFromShieldWithLogging(gameEnv, playerId, carduid);
-        if (!removed) {
-            return {
-                success: false,
-                error: `Card ${carduid} not found in ${playerId}'s shield`
-            };
-        }
-
-        return { success: true };
+        return EffectExecutor.removeCardFromShield(gameEnv, playerId, carduid);
     }
 
     static findBurstEffects(cardData: any): BurstEffectSummary[] {
@@ -449,13 +426,7 @@ export class BurstEffectManager {
         playerId: string,
         carduid: string
     ): boolean {
-        const removed = ShieldCardManager.removeShieldCard(gameEnv, playerId, carduid);
-        if (removed) {
-            console.log(`🛡️ Card ${carduid} successfully removed from ${playerId}'s shield`);
-            return true;
-        }
-
-        console.log(`⚠️ Warning: Could not remove card ${carduid} from ${playerId}'s shield`);
-        return false;
+        const result = EffectExecutor.removeCardFromShield(gameEnv, playerId, carduid);
+        return result.success;
     }
 }

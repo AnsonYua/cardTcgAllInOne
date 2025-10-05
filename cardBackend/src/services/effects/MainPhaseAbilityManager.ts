@@ -11,10 +11,9 @@ import { EnergyManager, EnergyCheckResult } from '../EnergyManager';
 import { EffectDefinition, PlayerActionEvent, PlayerActionEventData, TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { ensureEffectDefaults, validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 import { EffectExecutor } from './EffectExecutor';
-import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
-import type { SlotSearchResult } from '../../utils/SlotZoneUtils';
 import { ExecutionResult } from '../ExecutionResult';
 import { BattlePhaseManager } from '../BattlePhaseManager';
+import { EffectTargetResolver, ResolvedTargetContext } from './EffectTargetResolver';
 
 interface MainPhaseAbilityParams {
     playerId: string;
@@ -29,12 +28,6 @@ interface TargetResolutionResult {
     success: boolean;
     targets?: TargetReference[];
     error?: string;
-}
-
-interface ResolvedTargetContext {
-    reference: TargetReference;
-    searchResult: SlotSearchResult;
-    requestedPlayerId?: string;
 }
 
 export class MainPhaseAbilityManager {
@@ -293,7 +286,7 @@ export class MainPhaseAbilityManager {
 
         if (Array.isArray(params.targets) && params.targets.length > 0) {
             for (const rawTarget of params.targets) {
-                const resolution = this.resolveSingleTarget(
+                const resolution = EffectTargetResolver.resolveSingleTarget(
                     gameEnv,
                     rawTarget.carduid,
                     rawTarget.zone,
@@ -313,7 +306,7 @@ export class MainPhaseAbilityManager {
                 });
             }
         } else if (typeof params.targetCarduid === 'string' && params.targetCarduid.length > 0) {
-            const resolution = this.resolveSingleTarget(
+            const resolution = EffectTargetResolver.resolveSingleTarget(
                 gameEnv,
                 params.targetCarduid,
                 undefined
@@ -349,58 +342,6 @@ export class MainPhaseAbilityManager {
         }
 
         return { success: true, targets: references };
-    }
-
-    private static resolveSingleTarget(
-        gameEnv: GameEnvironment,
-        targetCarduid: string,
-        providedZone: string | undefined,
-        requestedPlayerId?: string
-    ): { success: true; context: ResolvedTargetContext } | { success: false; error?: string } {
-        if (!targetCarduid) {
-            return {
-                success: false,
-                error: 'Target carduid is required'
-            };
-        }
-
-        const searchResult = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, targetCarduid);
-        if (!searchResult.found || !searchResult.slotName || !searchResult.playerId) {
-            return {
-                success: false,
-                error: `Target ${targetCarduid} not found in any player zones`
-            };
-        }
-
-        if (providedZone && providedZone !== searchResult.slotName) {
-            return {
-                success: false,
-                error: `Target ${targetCarduid} is not in zone ${providedZone}`
-            };
-        }
-
-        if (requestedPlayerId && requestedPlayerId !== searchResult.playerId) {
-            return {
-                success: false,
-                error: `Target ${targetCarduid} is not controlled by player ${requestedPlayerId}`
-            };
-        }
-
-        const resolvedReference: TargetReference = {
-            carduid: targetCarduid,
-            zone: searchResult.slotName,
-            playerId: searchResult.playerId,
-            cardData: (searchResult.card || searchResult.unit || searchResult.pilot)?.cardData
-        };
-
-        return {
-            success: true,
-            context: {
-                reference: resolvedReference,
-                searchResult,
-                requestedPlayerId
-            }
-        };
     }
 
     private static validateResolvedTarget(

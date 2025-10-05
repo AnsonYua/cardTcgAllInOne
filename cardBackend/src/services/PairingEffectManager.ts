@@ -26,7 +26,8 @@ import { getCardIdFromUid } from '../utils/CardUtils';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { getCardTotals } from '../utils/FieldValueCalculator';
 import { eventDataValidator } from '../validators/EventDataValidator';
-import { ensureEffectDefaults, normalizeEffectRule } from '../utils/EffectNormalizationUtils';
+import { ensureEffectDefaults } from '../utils/EffectNormalizationUtils';
+import { EffectRuleCatalog } from './effects/EffectRuleCatalog';
 
 export interface PairingEffectResult {
     success: boolean;
@@ -350,23 +351,28 @@ export class PairingEffectManager implements StandardEffectManager {
         ];
 
         for (const cardInfo of cardsToCheck) {
-            const rawRules = Array.isArray(cardInfo.cardData?.effects?.rules)
-                ? cardInfo.cardData.effects.rules
-                : [];
+            const normalizedEffects = EffectRuleCatalog.collectEffects(cardInfo.cardData, {
+                trigger: 'PAIRING_COMPLETE',
+                fallbackEffectId: 'pairing_effect',
+                expectedTriggers: ['PAIRING_COMPLETE'],
+                requireAction: true,
+                defaultTargetScope: 'self',
+                includePairedMetadata: {
+                    pairedSlot: pairedSlot!,
+                    sourceCarduid: cardInfo.carduid
+                }
+            });
 
-            for (const rawRule of rawRules) {
-                const normalizedEffect = this.normalizePairingRule(rawRule, pairedSlot!, cardInfo.carduid);
-                if (!normalizedEffect) {
+            for (const effect of normalizedEffects) {
+                const pairingEffect = ensureEffectDefaults({ ...effect }) as PairingEffect;
+
+                if (!this.validatePairingConditions(pairingEffect.conditions || [], pairedUnit, pilot, gameEnv)) {
                     continue;
                 }
 
-                if (!this.validatePairingConditions(normalizedEffect.conditions || [], pairedUnit, pilot, gameEnv)) {
-                    continue;
-                }
-
-                pairingEffects.push(normalizedEffect);
+                pairingEffects.push(pairingEffect);
                 const cardId = getCardIdFromUid(cardInfo.carduid);
-                console.log(`🔗 Found pairing effect: ${normalizedEffect.effectId} from ${cardInfo.cardType} ${cardId} in slot ${pairedSlot}`);
+                console.log(`🔗 Found pairing effect: ${pairingEffect.effectId} from ${cardInfo.cardType} ${cardId} in slot ${pairedSlot}`);
             }
         }
 
@@ -386,43 +392,6 @@ export class PairingEffectManager implements StandardEffectManager {
 
         console.log(`🤝 Created Pairing event: ${pairingEvent.id} with ${pairingEffects.length} effects`);
         return pairingEvent;
-    }
-
-    private static normalizePairingRule(rule: unknown, pairedSlot: string, sourceCarduid: string): PairingEffect | null {
-        if (!rule || typeof rule !== 'object') {
-            return null;
-        }
-
-        const raw = rule as Record<string, unknown>;
-        const triggerValue = raw['trigger'];
-        const resolvedTrigger = typeof triggerValue === 'string'
-            ? triggerValue
-            : triggerValue && typeof triggerValue === 'object' && typeof (triggerValue as Record<string, unknown>)['event'] === 'string'
-                ? (triggerValue as Record<string, unknown>)['event'] as string
-                : undefined;
-
-        if (resolvedTrigger !== 'PAIRING_COMPLETE') {
-            return null;
-        }
-
-        const normalized = normalizeEffectRule(raw, {
-            fallbackEffectId: 'pairing_effect',
-            expectedTriggers: ['PAIRING_COMPLETE'],
-            defaultTrigger: 'PAIRING_COMPLETE',
-            requireAction: true,
-            defaultTargetScope: 'self',
-            includePairedMetadata: {
-                pairedSlot,
-                sourceCarduid
-            }
-        }) as PairingEffect | null;
-
-        if (!normalized) {
-            console.log(`⚠️ Skipping pairing rule without actionable effect`);
-            return null;
-        }
-
-        return normalized;
     }
 
     /**

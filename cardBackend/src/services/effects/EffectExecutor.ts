@@ -6,9 +6,23 @@ import { UnitZoneCard, PilotZoneCard, TemporaryEffect } from '../../models/CardS
 import { EffectDefinition, EffectTiming, TargetReference, TargetScope } from '../EventQueue/interfaces/GameEvent';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { SLOT_ZONES } from '../../config/gameConstants';
-import { BurstEffectManager } from '../BurstEffectManager';
+import { ShieldCardManager } from '../ShieldCardManager';
+
+interface EffectActionContext {
+    gameEnv: GameEnvironment;
+    effect: EffectDefinition;
+    selectedTargets: TargetReference[];
+    sourcePlayerId: string;
+    sourceCarduid?: string;
+}
 
 export class EffectExecutor {
+
+    private static readonly ACTION_HANDLERS: Record<string, (context: EffectActionContext) => { success: boolean; error?: string }> = {
+        draw: ({ gameEnv, effect, sourcePlayerId }) => this.applyPlayerDrawEffect(gameEnv, sourcePlayerId, effect),
+        addToHand: ({ gameEnv, effect, selectedTargets, sourcePlayerId }) =>
+            this.applyAddToHandEffect(gameEnv, sourcePlayerId, effect, selectedTargets)
+    };
 
     /**
      * Apply effect to selected targets using unified application logic
@@ -29,13 +43,15 @@ export class EffectExecutor {
             };
         }
 
-        if (action === 'draw') {
-            return this.applyPlayerDrawEffect(gameEnv, sourcePlayerId, effect);
-        }
-
-
-        if (action === 'addToHand') {
-            return this.applyAddToHandEffect(gameEnv, sourcePlayerId, effect,selectedTargets);
+        const handler = this.ACTION_HANDLERS[action];
+        if (handler) {
+            return handler({
+                gameEnv,
+                effect,
+                selectedTargets,
+                sourcePlayerId,
+                sourceCarduid
+            });
         }
 
         const parameters = this.getEffectParameters(effect);
@@ -116,7 +132,7 @@ export class EffectExecutor {
                     console.log(`🛡️ Effect specifies removal from shield - removing ${target.carduid} from shield first`);
                     
                     // Remove card from shield first using centralized helper
-                    const removeResult = BurstEffectManager.removeCardFromShield(gameEnv, sourcePlayerId, target.carduid);
+                    const removeResult = this.removeCardFromShield(gameEnv, sourcePlayerId, target.carduid);
                     if (!removeResult.success) {
                         return {
                             success: false,
@@ -126,7 +142,7 @@ export class EffectExecutor {
                 }
                 
                 // Use centralized helper to add card to hand
-                const executionResult = BurstEffectManager.addCardToHand(gameEnv, sourcePlayerId, target.carduid, target.cardData);
+                const executionResult = this.addCardToPlayerHand(gameEnv, sourcePlayerId, target.carduid, target.cardData);
                 
                 if (!executionResult.success) {
                     return {
@@ -459,6 +475,56 @@ export class EffectExecutor {
 
         restedEnergy.isRested = false;
         console.log(`  ⚡ Ready energy ${restedEnergy.carduid}`);
+        return { success: true };
+    }
+
+    static removeCardFromShield(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        carduid: string
+    ): { success: boolean; error?: string } {
+        const removed = ShieldCardManager.removeShieldCard(gameEnv, playerId, carduid);
+        if (!removed) {
+            console.log(`⚠️ Warning: Could not remove card ${carduid} from ${playerId}'s shield`);
+            return {
+                success: false,
+                error: `Card ${carduid} not found in ${playerId}'s shield`
+            };
+        }
+
+        console.log(`🛡️ Card ${carduid} successfully removed from ${playerId}'s shield`);
+        return { success: true };
+    }
+
+    static addCardToPlayerHand(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        carduid: string,
+        cardData?: Record<string, unknown>
+    ): { success: boolean; error?: string } {
+        const player = gameEnv.getPlayer(playerId);
+        if (!player || !player.deck) {
+            return {
+                success: false,
+                error: `Player ${playerId} not found`
+            };
+        }
+
+        if (!Array.isArray(player.deck._handUids)) {
+            player.deck._handUids = [];
+        }
+
+        if (!player.deck._handUids.includes(carduid)) {
+            player.deck._handUids.push(carduid);
+        }
+
+        if (Array.isArray(player.deck.handUids) && !player.deck.handUids.includes(carduid)) {
+            player.deck.handUids.push(carduid);
+        }
+
+        const cardName = typeof cardData?.name === 'string' ? cardData.name : 'Unknown';
+        console.log(`✅ Card ${carduid} (${cardName}) added to ${playerId}'s hand`);
+
         return { success: true };
     }
 
