@@ -613,12 +613,14 @@ export class EffectExecutor {
 
         const initialCount = card.temporaryEffects.length;
         card.temporaryEffects = card.temporaryEffects.filter(tempEffect => {
-            const shouldExpire = tempEffect.duration === 'UNTIL_END_OF_TURN' &&
-                                 tempEffect.appliedTurn === currentTurn &&
-                                 tempEffect.appliedBy === endingPlayerId;
+            const effectTurn = tempEffect.appliedTurn ?? currentTurn;
+            const shouldExpire = tempEffect.duration === 'UNTIL_END_OF_TURN' && effectTurn <= currentTurn;
 
             if (shouldExpire) {
-                console.log(`⏰ Expiring temporary effect from ${tempEffect.sourceCarduid} on card ${card.carduid}`);
+                const appliedBy = tempEffect.appliedBy ?? 'unknown';
+                console.log(
+                    `⏰ Expiring temporary effect from ${tempEffect.sourceCarduid} applied by ${appliedBy} on card ${card.carduid} (ending player ${endingPlayerId}, effect turn ${effectTurn})`
+                );
                 this.revertTemporaryEffectFromUnit(card, tempEffect);
             }
 
