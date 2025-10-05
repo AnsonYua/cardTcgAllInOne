@@ -5,18 +5,22 @@ import {
     BurstEffectChoiceEvent,
     EventFactory,
     EventStatus,
-    ShieldCardAttackedEvent
+    ShieldCardAttackedEvent,
+    EffectDefinition
 } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { ExecutionResult } from './ExecutionResult';
 import { PlayerCardManager } from './PlayerCardManager';
 import { ShieldCardManager } from './ShieldCardManager';
 import { getCardIdFromUid } from '../utils/CardUtils';
+import { DeployTargetManager } from './DeployTargetManager';
+import { ensureEffectDefaults } from '../utils/EffectNormalizationUtils';
 
 export interface BurstEffectSummary {
     effectId: string;
     type: string;
     description: string;
+    parameters?: Record<string, unknown>;
 }
 
 export class BurstEffectManager {
@@ -171,6 +175,10 @@ export class BurstEffectManager {
                     executionResult = this.executeBurstDeploy(gameEnv, playerId, carduid, cardData, burstEffect);
                     break;
 
+                case 'activate_ability':
+                    executionResult = this.executeBurstActivateAbility(gameEnv, playerId, carduid, cardData, burstEffect);
+                    break;
+
                 default:
                     return {
                         success: false,
@@ -180,6 +188,11 @@ export class BurstEffectManager {
 
             if (executionResult.success) {
                 this.removeFromShieldWithLogging(gameEnv, playerId, carduid);
+
+                if (burstEffect.type === 'activate_ability') {
+                    const cardId = getCardIdFromUid(carduid);
+                    PlayerCardManager.moveCardToTrash(gameEnv, playerId, carduid, cardId, cardData);
+                }
             }
 
             return executionResult;
@@ -191,6 +204,86 @@ export class BurstEffectManager {
                 error: error instanceof Error ? error.message : 'Burst effect execution failed'
             };
         }
+    }
+
+    private static executeBurstActivateAbility(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        carduid: string,
+        cardData: any,
+        burstEffect: any
+    ): ExecutionResult {
+        const abilityType = burstEffect?.parameters?.abilityType || 'main';
+        console.log(`✨ Executing burst ability activation (${abilityType}) for card ${carduid}`);
+
+        const effects = Array.isArray(cardData?.effects?.rules) ? cardData.effects.rules : [];
+        const activatedEffects = effects.filter((rule: EffectDefinition) => rule.type === 'activated');
+
+        if (activatedEffects.length === 0) {
+            return {
+                success: false,
+                error: 'No activated abilities available on this card'
+            };
+        }
+
+        const abilityEffect = this.selectAbilityEffect(activatedEffects, abilityType);
+        if (!abilityEffect) {
+            return {
+                success: false,
+                error: `No ${abilityType} ability found on this card`
+            };
+        }
+
+        const normalizedAbility = ensureEffectDefaults({ ...abilityEffect });
+        const targetResult = DeployTargetManager.processEffectWithTargetChoice(
+            gameEnv,
+            playerId,
+            carduid,
+            normalizedAbility
+        );
+
+        if (!targetResult.success) {
+            return {
+                success: false,
+                error: targetResult.error || 'Failed to resolve burst ability targets'
+            };
+        }
+
+        console.log(`✅ Burst ability ${normalizedAbility.effectId || normalizedAbility.action} queued/applied successfully`);
+        return { success: true };
+    }
+
+    private static selectAbilityEffect(effects: EffectDefinition[], abilityType: string): EffectDefinition | undefined {
+        if (abilityType !== 'main') {
+            return effects[0];
+        }
+
+        const mainPhaseEffect = effects.find(effect => {
+            const timingRecord = effect.timing;
+            if (!timingRecord) {
+                return false;
+            }
+
+            const windows = Array.isArray(timingRecord.windows)
+                ? timingRecord.windows.map(entry => entry.toUpperCase())
+                : [];
+
+            if (windows.includes('MAIN_PHASE')) {
+                return true;
+            }
+
+            if (typeof timingRecord.duration === 'string' && timingRecord.duration.toUpperCase() === 'MAIN_PHASE') {
+                return true;
+            }
+
+            if (typeof timingRecord.actionTurn === 'string' && timingRecord.actionTurn.toUpperCase() === 'ACTION_STEP') {
+                return true;
+            }
+
+            return false;
+        });
+
+        return mainPhaseEffect || effects[0];
     }
 
     static addCardToHand(
@@ -251,7 +344,8 @@ export class BurstEffectManager {
                 burstEffects.push({
                     effectId: effect.effectId || `burst_${effectType}_${cardData.cardId || 'unknown'}`,
                     type: effectType,
-                    description
+                    description,
+                    parameters: effect.parameters
                 });
 
                 console.log(`🔍 Found burst effect: ${effectType} on card ${cardData.cardId}`);
@@ -266,11 +360,11 @@ export class BurstEffectManager {
         const effectType = effect.action || effect.type || 'unknown';
 
         switch (effectType) {
-            case 'burst_add_to_hand':
+            case 'addToHand':
                 return `【Burst】 ${cardName}: Add this card to your hand`;
-            case 'burst_activate_main':
+            case 'activate_ability':
                 return `【Burst】 ${cardName}: Activate main effect`;
-            case 'burst_deploy':
+            case 'deploy':
                 return `【Burst】 ${cardName}: Deploy this card to the field`;
             default:
                 return `【Burst】 ${cardName}: Activate burst effect (${effectType})`;

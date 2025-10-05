@@ -110,7 +110,7 @@ export class MainPhaseAbilityManager {
             };
         }
 
-        if (!PlayerCardManager.validateCardInHand(gameEnv, playerId, carduid)) {
+        if (!fromBurst && !PlayerCardManager.validateCardInHand(gameEnv, playerId, carduid)) {
             return {
                 success: false,
                 error: 'Command abilities currently require the card to be in hand'
@@ -209,12 +209,14 @@ export class MainPhaseAbilityManager {
             };
         }
 
-        const removed = PlayerCardManager.removeCardFromHand(gameEnv, playerId, carduid);
-        if (!removed) {
-            console.warn(`⚠️ Failed to remove command card ${carduid} from hand after ability resolution`);
-        }
+        if (!fromBurst) {
+            const removed = PlayerCardManager.removeCardFromHand(gameEnv, playerId, carduid);
+            if (!removed) {
+                console.warn(`⚠️ Failed to remove command card ${carduid} from hand after ability resolution`);
+            }
 
-        PlayerCardManager.moveCardToTrash(gameEnv, playerId, carduid, cardData.id, cardData);
+            PlayerCardManager.moveCardToTrash(gameEnv, playerId, carduid, cardData.id, cardData);
+        }
 
         return { success: true };
     }
