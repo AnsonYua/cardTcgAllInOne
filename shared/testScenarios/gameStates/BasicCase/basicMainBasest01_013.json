@@ -1546,59 +1546,59 @@
                             "carduid": "ST01-013_51703d0a-9541-49b5-8b82-998293564235",
                             "cardId": "ST01-013",
                             "cardData": {
-                                       "id": "ST01-013",
-                                        "name": "Kai's Resolve",
-                                        "cardType": "command",
-                                        "color": "Blue",
-                                        "level": 3,
-                                        "cost": 1,
-                                        "zone": [],
-                                        "traits": [
-                                            "Earth Federation",
-                                            "White Base Team"
-                                        ],
-                                        "link": [],
-                                        "ap": 1,
-                                        "hp": 0,
-                                        "effects": {
-                                            "description": [
-                                                "【Main】Choose 1 friendly Unit. It recovers 3 HP.",
-                                                "【Pilot】[Kai Shiden]"
+                                "id": "ST01-013",
+                                "name": "Kai's Resolve",
+                                "cardType": "command",
+                                "color": "Blue",
+                                "level": 3,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [
+                                    "Earth Federation",
+                                    "White Base Team"
+                                ],
+                                "link": [],
+                                "ap": 1,
+                                "hp": 0,
+                                "effects": {
+                                    "description": [
+                                        "【Main】Choose 1 friendly Unit. It recovers 3 HP.",
+                                        "【Pilot】[Kai Shiden]"
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "main_heal_friendly",
+                                            "type": "activated",
+                                            "timing": [
+                                                "MAIN_PHASE"
                                             ],
-                                            "rules": [
-                                                {
-                                                    "effectId": "main_heal_friendly",
-                                                    "type": "activated",
-                                                    "timing": [
-                                                        "MAIN_PHASE"
-                                                    ],
-                                                    "target": {
-                                                        "type": "unit",
-                                                        "scope": "self",
-                                                        "count": 1
-                                                    },
-                                                    "action": "heal",
-                                                    "parameters": {
-                                                        "value": 3
-                                                    }
-                                                },
-                                                {
-                                                    "effectId": "pilot_designation",
-                                                    "type": "special",
-                                                    "trigger": "continuous",
-                                                    "target": {
-                                                        "type": "pilot",
-                                                        "scope": "any"
-                                                    },
-                                                    "action": "designate_pilot",
-                                                    "parameters": {
-                                                        "pilotName": "Kai Shiden",
-                                                        "AP": 1,
-                                                        "HP": 0
-                                                    }
-                                                }
-                                            ]
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self",
+                                                "count": 1
+                                            },
+                                            "action": "heal",
+                                            "parameters": {
+                                                "value": 3
+                                            }
+                                        },
+                                        {
+                                            "effectId": "pilot_designation",
+                                            "type": "special",
+                                            "trigger": "continuous",
+                                            "target": {
+                                                "type": "pilot",
+                                                "scope": "any"
+                                            },
+                                            "action": "designate_pilot",
+                                            "parameters": {
+                                                "pilotName": "Kai Shiden",
+                                                "AP": 1,
+                                                "HP": 0
+                                            }
                                         }
+                                    ]
+                                }
                             }
                         },
                         {
@@ -1652,55 +1652,54 @@
                             }
                         },
                         {
-                            "carduid": "ST01-009_208685cf-f7c9-4c50-b66f-2e125760ac0d",
-                            "cardId": "ST01-009",
+                            "carduid": "ST01-014_208685cf-f7c9-4c50-b66f-2e125760ac0d",
+                            "cardId": "ST01-014",
                             "cardData": {
-                                "id": "ST01-009",
-                                "name": "Zowort",
-                                "cardType": "unit",
+                                "id": "ST01-014",
+                                "name": "Unforeseen Incident",
+                                "cardType": "command",
                                 "color": "White",
-                                "level": 2,
-                                "cost": 2,
-                                "zone": [
-                                    "Space",
-                                    "Earth"
-                                ],
-                                "traits": [
-                                    "Academy"
-                                ],
+                                "level": 3,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [],
                                 "link": [],
-                                "ap": 3,
-                                "hp": 2,
+                                "ap": 0,
+                                "hp": 0,
                                 "effects": {
                                     "description": [
-                                        "<Blocker> (Rest this Unit to change the attack target to it.)",
-                                        "This Unit can't choose the enemy player as its attack target."
+                                        "【Burst】Activate this card's 【Main】.",
+                                        "【Main】/【Action】Choose 1 enemy Unit. It gets AP-3 during this turn."
                                     ],
                                     "rules": [
                                         {
-                                            "effectId": "blocker",
-                                            "type": "keyword",
-                                            "trigger": "ATTACK_REDIRECT",
+                                            "effectId": "burst_activate_main",
+                                            "type": "triggered",
+                                            "trigger": "BURST_CONDITION",
                                             "target": {
-                                                "type": "unit",
+                                                "type": "card",
                                                 "scope": "self"
                                             },
-                                            "action": "redirect_attack",
+                                            "action": "activate_ability",
                                             "parameters": {
-                                                "cost": "rest_self"
+                                                "abilityType": "main"
                                             }
                                         },
                                         {
-                                            "effectId": "attack_restriction",
-                                            "type": "static",
-                                            "trigger": "continuous",
+                                            "effectId": "main_action_ap_reduction",
+                                            "type": "activated",
+                                            "timing": [
+                                                "MAIN_PHASE",
+                                                "ACTION_STEP"
+                                            ],
                                             "target": {
                                                 "type": "unit",
-                                                "scope": "self"
+                                                "scope": "opponent",
+                                                "count": 1
                                             },
-                                            "action": "restrict_attack",
+                                            "action": "modifyAP",
                                             "parameters": {
-                                                "restriction": "cannot_attack_player"
+                                                "value": -3
                                             }
                                         }
                                     ]
@@ -1919,7 +1918,7 @@
                         "ST01-012_fb9ee6db-0bec-4b90-bd6e-649d3d6c33d6",
                         "ST01-013_51703d0a-9541-49b5-8b82-998293564235",
                         "ST01-004_f02a0c50-214e-41f4-af02-10cdaa460876",
-                        "ST01-009_208685cf-f7c9-4c50-b66f-2e125760ac0d",
+                        "ST01-014_208685cf-f7c9-4c50-b66f-2e125760ac0d",
                         "ST01-009_b49f4b82-33b8-496e-bc4e-a5f7afa27a93",
                         "ST01-011_4677bc19-1b41-41e6-8754-d48b4b48dbbf",
                         "ST01-007_4a1df7b9-a494-4819-86f1-c89f2ed95ac7",
