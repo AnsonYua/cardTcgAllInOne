@@ -24,8 +24,25 @@ export default class CardActionRegistry {
         // Base actions for card type (hand cards)
         let actions = this.getBaseActionsForType(cardType, cardData);
 
-        // Inject command ability actions when available
-        actions = this.addCommandAbilityActions(card, actions, gameContext);
+        if (cardType === 'command' && !card.isInZone) {
+            const usableEffects = this.getUsableCommandEffects(cardData, gameContext);
+
+            if (usableEffects.length === 0) {
+                actions = actions.filter(action => action.action !== 'playCommand');
+            } else {
+                const primaryEffect = usableEffects[0];
+                actions = actions.map(action => {
+                    if (action.action === 'playCommand') {
+                        return {
+                            ...action,
+                            effectData: primaryEffect,
+                            extraEffects: usableEffects
+                        };
+                    }
+                    return action;
+                });
+            }
+        }
         
         // Add effect-based actions
         // actions = this.addEffectBasedActions(actions, effects, currentPhase);
@@ -81,35 +98,6 @@ export default class CardActionRegistry {
         }
         
         return actionMap[cardType] || this.getDefaultActions();
-    }
-
-    static addCommandAbilityActions(card, actions, gameContext) {
-        const cardData = card?.fullCardData?.cardData;
-        if (!cardData || cardData.cardType !== 'command') {
-            return actions;
-        }
-
-        // Only allow command abilities while the card is in hand
-        if (card.isInZone) {
-            return actions;
-        }
-
-        const usableEffects = this.getUsableCommandEffects(cardData, gameContext);
-        if (usableEffects.length === 0) {
-            return actions;
-        }
-
-        const abilityActions = usableEffects.map((effect, index) => ({
-            action: 'useCommand',
-            text: usableEffects.length > 1 && effect.effectId
-                ? `使用指令 (${effect.effectId})`
-                : '使用指令',
-            primary: true,
-            effectData: effect
-        }));
-
-        // Prepend ability buttons so they appear before standard play options
-        return [...abilityActions, ...actions];
     }
 
     static getUsableCommandEffects(cardData, gameContext = {}) {
@@ -230,7 +218,6 @@ export default class CardActionRegistry {
                     );
                 } else {
                     actions.push(
-                        { action: 'useCommand', text: '使用指令', primary: true },
                         { action: 'commandBonus', text: '指令奖励', primary: false }
                     );
                 }

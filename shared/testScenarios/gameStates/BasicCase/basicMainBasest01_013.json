@@ -1543,45 +1543,62 @@
                             }
                         },
                         {
-                            "carduid": "ST01-008_51703d0a-9541-49b5-8b82-998293564235",
-                            "cardId": "ST01-008",
+                            "carduid": "ST01-013_51703d0a-9541-49b5-8b82-998293564235",
+                            "cardId": "ST01-013",
                             "cardData": {
-                                "id": "ST01-008",
-                                "name": "Demi Trainer",
-                                "cardType": "unit",
-                                "color": "White",
-                                "level": 1,
-                                "cost": 1,
-                                "zone": [
-                                    "Space",
-                                    "Earth"
-                                ],
-                                "traits": [
-                                    "Academy"
-                                ],
-                                "link": [],
-                                "ap": 1,
-                                "hp": 1,
-                                "effects": {
-                                    "description": [
-                                        "<Blocker> (Rest this Unit to change the attack target to it.)"
-                                    ],
-                                    "rules": [
-                                        {
-                                            "effectId": "blocker",
-                                            "type": "keyword",
-                                            "trigger": "ATTACK_REDIRECT",
-                                            "target": {
-                                                "type": "unit",
-                                                "scope": "self"
-                                            },
-                                            "action": "redirect_attack",
-                                            "parameters": {
-                                                "cost": "rest_self"
-                                            }
+                                       "id": "ST01-013",
+                                        "name": "Kai's Resolve",
+                                        "cardType": "command",
+                                        "color": "Blue",
+                                        "level": 3,
+                                        "cost": 1,
+                                        "zone": [],
+                                        "traits": [
+                                            "Earth Federation",
+                                            "White Base Team"
+                                        ],
+                                        "link": [],
+                                        "ap": 1,
+                                        "hp": 0,
+                                        "effects": {
+                                            "description": [
+                                                "【Main】Choose 1 friendly Unit. It recovers 3 HP.",
+                                                "【Pilot】[Kai Shiden]"
+                                            ],
+                                            "rules": [
+                                                {
+                                                    "effectId": "main_heal_friendly",
+                                                    "type": "activated",
+                                                    "timing": [
+                                                        "MAIN_PHASE"
+                                                    ],
+                                                    "target": {
+                                                        "type": "unit",
+                                                        "scope": "self",
+                                                        "count": 1
+                                                    },
+                                                    "action": "heal",
+                                                    "parameters": {
+                                                        "value": 3
+                                                    }
+                                                },
+                                                {
+                                                    "effectId": "pilot_designation",
+                                                    "type": "special",
+                                                    "trigger": "continuous",
+                                                    "target": {
+                                                        "type": "pilot",
+                                                        "scope": "any"
+                                                    },
+                                                    "action": "designate_pilot",
+                                                    "parameters": {
+                                                        "pilotName": "Kai Shiden",
+                                                        "AP": 1,
+                                                        "HP": 0
+                                                    }
+                                                }
+                                            ]
                                         }
-                                    ]
-                                }
                             }
                         },
                         {
@@ -1900,7 +1917,7 @@
                     ],
                     "handUids": [
                         "ST01-012_fb9ee6db-0bec-4b90-bd6e-649d3d6c33d6",
-                        "ST01-008_51703d0a-9541-49b5-8b82-998293564235",
+                        "ST01-013_51703d0a-9541-49b5-8b82-998293564235",
                         "ST01-004_f02a0c50-214e-41f4-af02-10cdaa460876",
                         "ST01-009_208685cf-f7c9-4c50-b66f-2e125760ac0d",
                         "ST01-009_b49f4b82-33b8-496e-bc4e-a5f7afa27a93",

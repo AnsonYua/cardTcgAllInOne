@@ -4,13 +4,15 @@
 import { GameEnvironment } from '../../models/GameEnvironment';
 import { GamePhase } from '../../models/GameEnums';
 import { CardDatabaseManager } from '../../models/CardSystem';
+import type { UnitZoneCard, PilotZoneCard } from '../../models/CardSystem';
 import { GameActionValidator } from '../GameActionValidator';
 import { PlayerCardManager } from '../PlayerCardManager';
 import { EnergyManager, EnergyCheckResult } from '../EnergyManager';
 import { EffectDefinition, PlayerActionEvent, PlayerActionEventData, TargetReference } from '../EventQueue/interfaces/GameEvent';
-import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
+import { ensureEffectDefaults, validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 import { EffectExecutor } from './EffectExecutor';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
+import type { SlotSearchResult } from '../../utils/SlotZoneUtils';
 import { ExecutionResult } from '../ExecutionResult';
 import { BattlePhaseManager } from '../BattlePhaseManager';
 
@@ -27,6 +29,12 @@ interface TargetResolutionResult {
     success: boolean;
     targets?: TargetReference[];
     error?: string;
+}
+
+interface ResolvedTargetContext {
+    reference: TargetReference;
+    searchResult: SlotSearchResult;
+    requestedPlayerId?: string;
 }
 
 export class MainPhaseAbilityManager {
@@ -292,74 +300,244 @@ export class MainPhaseAbilityManager {
         effect: EffectDefinition,
         params: MainPhaseAbilityParams
     ): TargetResolutionResult {
-        const references: TargetReference[] = [];
+        const resolvedContexts: ResolvedTargetContext[] = [];
 
         if (Array.isArray(params.targets) && params.targets.length > 0) {
             for (const rawTarget of params.targets) {
-                const reference = this.resolveSingleTarget(gameEnv, playerId, rawTarget.carduid, rawTarget.zone);
-                if (!reference) {
+                const resolution = this.resolveSingleTarget(
+                    gameEnv,
+                    rawTarget.carduid,
+                    rawTarget.zone,
+                    rawTarget.playerId
+                );
+
+                if (!resolution.success) {
                     return {
                         success: false,
-                        error: `Unable to resolve target ${rawTarget.carduid}`
+                        error: resolution.error || `Unable to resolve target ${rawTarget.carduid}`
                     };
                 }
-                references.push(reference);
-            }
-            return { success: true, targets: references };
-        }
 
-        if (typeof params.targetCarduid === 'string' && params.targetCarduid.length > 0) {
-            const reference = this.resolveSingleTarget(gameEnv, playerId, params.targetCarduid, undefined, effect);
-            if (!reference) {
+                resolvedContexts.push({
+                    ...resolution.context,
+                    requestedPlayerId: rawTarget.playerId
+                });
+            }
+        } else if (typeof params.targetCarduid === 'string' && params.targetCarduid.length > 0) {
+            const resolution = this.resolveSingleTarget(
+                gameEnv,
+                params.targetCarduid,
+                undefined
+            );
+
+            if (!resolution.success) {
                 return {
                     success: false,
-                    error: `Unable to locate target unit ${params.targetCarduid}`
+                    error: resolution.error || `Unable to locate target ${params.targetCarduid}`
                 };
             }
-            references.push(reference);
-            return { success: true, targets: references };
+
+            resolvedContexts.push(resolution.context);
+        } else {
+            return {
+                success: false,
+                error: 'Main phase ability requires explicit targetCarduid or targets array'
+            };
         }
 
-        return {
-            success: false,
-            error: 'Main phase ability requires explicit targetCarduid or targets array'
-        };
+        const references: TargetReference[] = [];
+
+        for (const context of resolvedContexts) {
+            const validation = this.validateResolvedTarget(gameEnv, playerId, effect, context);
+            if (!validation.success) {
+                return {
+                    success: false,
+                    error: validation.error || 'Selected target does not meet effect requirements'
+                };
+            }
+
+            references.push(context.reference);
+        }
+
+        return { success: true, targets: references };
     }
 
     private static resolveSingleTarget(
         gameEnv: GameEnvironment,
-        playerId: string,
         targetCarduid: string,
-        providedZone?: string,
-        effect?: EffectDefinition
-    ): TargetReference | null {
+        providedZone: string | undefined,
+        requestedPlayerId?: string
+    ): { success: true; context: ResolvedTargetContext } | { success: false; error?: string } {
         if (!targetCarduid) {
-            return null;
-        }
-
-        if (providedZone) {
             return {
-                carduid: targetCarduid,
-                zone: providedZone,
-                playerId
+                success: false,
+                error: 'Target carduid is required'
             };
         }
 
-        const targetSearch = SlotZoneUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, targetCarduid);
-        if (!targetSearch.found || !targetSearch.slotName || !targetSearch.unit) {
-            return null;
+        const searchResult = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, targetCarduid);
+        if (!searchResult.found || !searchResult.slotName || !searchResult.playerId) {
+            return {
+                success: false,
+                error: `Target ${targetCarduid} not found in any player zones`
+            };
         }
 
-        if (effect?.target?.type === 'unit' && !targetSearch.unit) {
-            return null;
+        if (providedZone && providedZone !== searchResult.slotName) {
+            return {
+                success: false,
+                error: `Target ${targetCarduid} is not in zone ${providedZone}`
+            };
         }
+
+        if (requestedPlayerId && requestedPlayerId !== searchResult.playerId) {
+            return {
+                success: false,
+                error: `Target ${targetCarduid} is not controlled by player ${requestedPlayerId}`
+            };
+        }
+
+        const resolvedReference: TargetReference = {
+            carduid: targetCarduid,
+            zone: searchResult.slotName,
+            playerId: searchResult.playerId,
+            cardData: (searchResult.card || searchResult.unit || searchResult.pilot)?.cardData
+        };
 
         return {
-            carduid: targetCarduid,
-            zone: targetSearch.slotName,
-            playerId,
-            cardData: targetSearch.unit?.cardData
+            success: true,
+            context: {
+                reference: resolvedReference,
+                searchResult,
+                requestedPlayerId
+            }
         };
+    }
+
+    private static validateResolvedTarget(
+        gameEnv: GameEnvironment,
+        actingPlayerId: string,
+        effect: EffectDefinition,
+        context: ResolvedTargetContext
+    ): { success: boolean; error?: string } {
+        const targetConfig = effect.target;
+        if (!targetConfig) {
+            return { success: true };
+        }
+
+        const card = (context.searchResult.card || context.searchResult.unit || context.searchResult.pilot) as
+            | UnitZoneCard
+            | PilotZoneCard
+            | undefined;
+
+        if (!card) {
+            return {
+                success: false,
+                error: `Unable to resolve card data for target ${context.reference.carduid}`
+            };
+        }
+
+        const actualController = context.reference.playerId;
+        const opponentId = gameEnv.getOpponentId(actingPlayerId);
+
+        if (targetConfig.scope) {
+            const normalizedScope = targetConfig.scope.toString().toUpperCase();
+            if (normalizedScope.startsWith('OPPONENT')) {
+                if (!opponentId || actualController !== opponentId) {
+                    return {
+                        success: false,
+                        error: `Target ${context.reference.carduid} must be controlled by the opponent`
+                    };
+                }
+            } else if (normalizedScope.startsWith('SELF')) {
+                if (actualController !== actingPlayerId) {
+                    return {
+                        success: false,
+                        error: `Target ${context.reference.carduid} must be controlled by the acting player`
+                    };
+                }
+            }
+        }
+
+        const resolvedType = (context.searchResult.type || (context.searchResult.unit ? 'unit' : context.searchResult.pilot ? 'pilot' : '')).toLowerCase();
+
+        if (targetConfig.type) {
+            const expectedType = targetConfig.type.toString().toLowerCase();
+            if (expectedType.includes('unit') && resolvedType !== 'unit') {
+                return {
+                    success: false,
+                    error: `Effect requires a unit target`
+                };
+            }
+            if (expectedType.includes('pilot') && resolvedType !== 'pilot') {
+                return {
+                    success: false,
+                    error: `Effect requires a pilot target`
+                };
+            }
+        }
+
+        const filters = targetConfig.filters || {};
+
+        if (filters.controller) {
+            const normalizedController = filters.controller.toString().toUpperCase();
+            if (normalizedController === 'SELF' && actualController !== actingPlayerId) {
+                return {
+                    success: false,
+                    error: `Target ${context.reference.carduid} does not satisfy controller:self`
+                };
+            }
+            if (normalizedController === 'OPPONENT' && (!opponentId || actualController !== opponentId)) {
+                return {
+                    success: false,
+                    error: `Target ${context.reference.carduid} does not satisfy controller:opponent`
+                };
+            }
+        }
+
+        if (Array.isArray(filters.zone) && filters.zone.length > 0) {
+            const allowedZones = filters.zone.map(zone => zone.toString());
+            if (!allowedZones.includes(context.reference.zone)) {
+                return {
+                    success: false,
+                    error: `Target ${context.reference.carduid} is not located in an allowed zone`
+                };
+            }
+        }
+
+        if (filters.status) {
+            const expectedStatus = filters.status.toString().toLowerCase();
+            const actualStatus = card.isRested ? 'rested' : 'active';
+            if (expectedStatus !== actualStatus) {
+                return {
+                    success: false,
+                    error: `Target ${context.reference.carduid} must be ${expectedStatus}`
+                };
+            }
+        }
+
+        if (filters.hp && resolvedType === 'unit') {
+            const currentHp = PlayerCardManager.getCurrentUnitCardInSlotAPandHP(gameEnv, card.carduid).totalHP;
+            if (!validateComparisonFilter(currentHp, filters.hp)) {
+                return {
+                    success: false,
+                    error: `Target ${context.reference.carduid} does not meet HP requirement (${filters.hp})`
+                };
+            }
+        }
+
+        if (Array.isArray(filters.traits) && filters.traits.length > 0) {
+            const cardTraits = Array.isArray(card.cardData?.traits) ? (card.cardData?.traits as string[]) : [];
+            const matchesTrait = filters.traits.some(requiredTrait => cardTraits.includes(requiredTrait));
+            if (!matchesTrait) {
+                return {
+                    success: false,
+                    error: `Target ${context.reference.carduid} lacks required traits`
+                };
+            }
+        }
+
+        return { success: true };
     }
 
     private static revertEnergyPayment(

@@ -21,16 +21,16 @@ export default class CardActionHandler {
                 this.handleCancelAction();
                 break;
             case 'playUnit':
-                this.handlePlayCardAction(selectedCard, 'unit');
+                this.handlePlayCardAction(selectedCard, 'unit', effectData);
                 break;
             case 'playCommand':
-                this.handlePlayCardAction(selectedCard, 'command');
+                this.handlePlayCardAction(selectedCard, 'command', effectData);
                 break;
             case 'playPilot':
-                this.handlePlayCardAction(selectedCard, 'pilot');
+                this.handlePlayCardAction(selectedCard, 'pilot', effectData);
                 break;
             case 'playBase':
-                this.handlePlayCardAction(selectedCard, 'base');
+                this.handlePlayCardAction(selectedCard, 'base', effectData);
                 break;
             
             // Slot-specific actions for units
@@ -97,7 +97,7 @@ export default class CardActionHandler {
      * @param {Object} selectedCard - The selected card object
      * @param {string} playAs - How to play the card ('unit', 'command', 'pilot', 'base')
      */
-    async handlePlayCardAction(selectedCard, playAs) {
+    async handlePlayCardAction(selectedCard, playAs, effectData = null) {
         const actionName = `${playAs} play`;
         
         if (!this.validateSelectedCard(selectedCard, actionName)) {
@@ -110,6 +110,11 @@ export default class CardActionHandler {
         // Special handling for pilot cards - show unit selection dialog
         if (playAs === 'pilot') {
             this.handlePilotCardSelection(selectedCard);
+            return;
+        }
+
+        if (playAs === 'command') {
+            this.handleUseCommand(selectedCard, effectData || null);
             return;
         }
         
@@ -229,6 +234,41 @@ export default class CardActionHandler {
     findFirstActivatedEffect(cardData) {
         const rules = Array.isArray(cardData?.effects?.rules) ? cardData.effects.rules : [];
         return rules.find(rule => rule?.type === 'activated') || null;
+    }
+
+    /**
+     * Build a slot filter function that applies effect target filters to unit slots
+     */
+    buildUnitSlotFilter(filters = {}) {
+        const normalizedFilters = filters || {};
+        const statusFilter = typeof normalizedFilters.status === 'string'
+            ? normalizedFilters.status.toLowerCase()
+            : null;
+        const traitFilters = Array.isArray(normalizedFilters.traits) ? normalizedFilters.traits : [];
+
+        return (slot) => {
+            const unit = slot?.unit;
+            if (!unit?.carduid) {
+                return false;
+            }
+
+            if (statusFilter) {
+                const currentStatus = unit.isRested ? 'rested' : 'active';
+                if (currentStatus !== statusFilter) {
+                    return false;
+                }
+            }
+
+            if (traitFilters.length > 0) {
+                const unitTraits = Array.isArray(unit.cardData?.traits) ? unit.cardData.traits : [];
+                const hasTrait = traitFilters.some(requiredTrait => unitTraits.includes(requiredTrait));
+                if (!hasTrait) {
+                    return false;
+                }
+            }
+
+            return true;
+        };
     }
 
     /**
@@ -538,6 +578,8 @@ export default class CardActionHandler {
         const targetConfig = effect.target || {};
         const targetType = (targetConfig.type || '').toLowerCase();
         const targetScope = (targetConfig.scope || 'self').toLowerCase();
+        const effectFilters = targetConfig.filters || {};
+        const unitSlotFilter = this.buildUnitSlotFilter(effectFilters);
 
         const gameState = this.gameStateManager.getGameState();
         const playerId = gameState.playerId;
@@ -568,11 +610,24 @@ export default class CardActionHandler {
                                 zone: targetUnit.zone || targetUnit.slotName,
                                 playerId: targetUnit.playerId
                             });
+                        },
+                        {
+                            slotFilter: unitSlotFilter,
+                            title: '选择目标单位',
+                            description: effectFilters.status === 'rested'
+                                ? '请选择1个已休息的敌方单位'
+                                : '选择要作为目标的敌方单位',
+                            emptyMessage: effectFilters.status === 'rested'
+                                ? '没有已休息的敌方单位可选'
+                                : '没有可选的敌方单位'
                         }
                     );
 
                     if (!dialogId) {
-                        this.showErrorMessage('没有可选的敌方单位');
+                        const emptyMessage = effectFilters.status === 'rested'
+                            ? '没有已休息的敌方单位可选'
+                            : '没有可选的敌方单位';
+                        this.showErrorMessage(emptyMessage);
                     }
                 } else {
                     this.showErrorMessage('目标选择界面不可用');
@@ -589,7 +644,10 @@ export default class CardActionHandler {
                     {
                         title: '选择友方单位',
                         description: '选择要作为目标的我方单位',
-                        emptyMessage: '没有可选择的友方单位'
+                        emptyMessage: effectFilters.status === 'rested'
+                            ? '没有已休息的友方单位可选'
+                            : '没有可选择的友方单位',
+                        slotFilter: unitSlotFilter
                     },
                     (targetUnit) => {
                         if (!targetUnit) return;
@@ -602,7 +660,10 @@ export default class CardActionHandler {
                 );
 
                 if (!dialogId) {
-                    this.showErrorMessage('没有可选的友方单位');
+                    const emptyMessage = effectFilters.status === 'rested'
+                        ? '没有已休息的友方单位可选'
+                        : '没有可选择的友方单位';
+                    this.showErrorMessage(emptyMessage);
                 }
             } else {
                 this.showErrorMessage('目标选择界面不可用');

@@ -54,7 +54,9 @@ export default class DialogManager {
           dialogDisplayType: 'slot',
           playerId: playerId,
           zone: slotName,
-          carduid: slot.unit.carduid
+          carduid: slot.unit.carduid,
+          slotName,
+          unit: slot.unit
         });
       }
     }
@@ -609,7 +611,7 @@ export default class DialogManager {
    * @param {Function} onAttackConfirm - Callback when attack target is selected
    * @returns {string} Dialog ID for tracking/cleanup
    */
-  showAttackSelectionDialog(attackerId, opponentId, selectedCard, onAttackConfirm) {
+  showAttackSelectionDialog(attackerId, opponentId, selectedCard, onAttackConfirm, options = {}) {
     console.log('DialogManager: Showing attack target selection dialog');
 
     // Get game state to check which slots actually contain units
@@ -622,18 +624,29 @@ export default class DialogManager {
     }
 
     // Create eligible cards only for slots that actually contain units
-    const eligibleCards = this._createSlotItems(opponentData, opponentId, (slot) => {
-      return slot?.unit?.carduid; // Only slots with units
+    const slotFilter = typeof options.slotFilter === 'function' ? options.slotFilter : null;
+    const eligibleCards = this._createSlotItems(opponentData, opponentId, (slot, slotName) => {
+      if (!slot?.unit?.carduid) {
+        return false;
+      }
+      if (slotFilter && !slotFilter(slot, slotName)) {
+        return false;
+      }
+      return true;
     });
 
     // Create selection data and validate
     const selectionId = `attack_target_${Date.now()}`;
+    const dialogType = options.dialogType || 'SELECT_ATTACK_TARGET';
+    const dialogTitle = options.title || '选择攻击目标';
+    const dialogDescription = options.description || '选择要攻击的对手机体';
+    const emptyMessage = options.emptyMessage || 'No valid attack targets found';
     const selectionData = this._createSelectionData(
       attackerId,
       eligibleCards,
-      "SELECT_ATTACK_TARGET",
-      '选择攻击目标',
-      '选择要攻击的对手机体',
+      dialogType,
+      dialogTitle,
+      dialogDescription,
       (selectionId, selectedCards) => {
         console.log('DialogManager: Attack target selected:', selectionId, selectedCards);
         const cardsArray = Array.isArray(selectedCards) ? selectedCards : [selectedCards];
@@ -646,7 +659,7 @@ export default class DialogManager {
       }
     );
 
-    return this._validateAndShowDialog(eligibleCards, 'No valid attack targets found', selectionId, selectionData);
+    return this._validateAndShowDialog(eligibleCards, emptyMessage, selectionId, selectionData);
   }
 
   showFriendlyUnitSelectionDialog(playerId, options = {}, onConfirm) {
@@ -660,15 +673,28 @@ export default class DialogManager {
       return null;
     }
 
-    const eligibleCards = this._createSlotItems(playerData, playerId, (slot) => slot?.unit?.carduid);
+    const slotFilter = typeof options.slotFilter === 'function' ? options.slotFilter : null;
+    const eligibleCards = this._createSlotItems(playerData, playerId, (slot, slotName) => {
+      if (!slot?.unit?.carduid) {
+        return false;
+      }
+      if (slotFilter && !slotFilter(slot, slotName)) {
+        return false;
+      }
+      return true;
+    });
 
     const selectionId = `friendly_unit_${Date.now()}`;
+    const dialogType = options.dialogType || 'SELECT_FRIENDLY_UNIT';
+    const dialogTitle = options.title || '选择友方单位';
+    const dialogDescription = options.description || '选择要作为目标的我方单位';
+    const emptyMessage = options.emptyMessage || '没有可选择的友方单位';
     const selectionData = this._createSelectionData(
       playerId,
       eligibleCards,
-      options.dialogType || 'SELECT_FRIENDLY_UNIT',
-      options.title || '选择友方单位',
-      options.description || '选择要作为目标的我方单位',
+      dialogType,
+      dialogTitle,
+      dialogDescription,
       (selection, selectedCards) => {
         const cardsArray = Array.isArray(selectedCards) ? selectedCards : [selectedCards];
         if (cardsArray && cardsArray.length > 0) {
@@ -680,7 +706,6 @@ export default class DialogManager {
       }
     );
 
-    const emptyMessage = options.emptyMessage || '没有可以选择的友方单位';
     return this._validateAndShowDialog(eligibleCards, emptyMessage, selectionId, selectionData);
   }
 

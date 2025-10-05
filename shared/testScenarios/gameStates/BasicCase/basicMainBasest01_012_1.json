@@ -721,7 +721,7 @@
                             },
                             "placedAt": 1757865723440,
                             "placedBy": "playerId_1",
-                            "isRested": true,
+                            "isRested": false,
                             "originalAP": 4,
                             "originalHP": 4,
                             "isFirstPlay": true,
