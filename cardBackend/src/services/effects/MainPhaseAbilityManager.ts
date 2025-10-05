@@ -240,42 +240,29 @@ export class MainPhaseAbilityManager {
                 return false;
             }
 
-            const timingValue = effect.timing;
-            if (Array.isArray(timingValue)) {
-                return timingValue.some(value => typeof value === 'string' && value.toUpperCase() === 'MAIN_PHASE');
-            }
-
-            if (typeof timingValue === 'object' && timingValue) {
-                const duration = (timingValue as any).duration;
-                if (typeof duration === 'string' && duration.toUpperCase() === 'MAIN_PHASE') {
-                    return true;
-                }
-            }
-
-            if (typeof effect.trigger === 'string') {
+            const windows = this.getTimingWindows(effect);
+            if (windows.size === 0 && typeof effect.trigger === 'string') {
                 return effect.trigger.toUpperCase() === 'MAIN_PHASE';
             }
 
-            return false;
+            return windows.has('MAIN_PHASE');
         });
     }
 
     private static getTimingWindows(effect: EffectDefinition): Set<string> {
         const windows = new Set<string>();
-        const rawTiming = effect.timing as unknown;
+        const timingRecord = effect.timing as Record<string, unknown> | undefined;
 
-        if (Array.isArray(rawTiming)) {
-            rawTiming.forEach(value => {
-                if (typeof value === 'string') {
-                    windows.add(value.toUpperCase());
-                }
-            });
-        } else if (typeof rawTiming === 'string') {
-            windows.add(rawTiming.toUpperCase());
-        }
+        if (timingRecord && typeof timingRecord === 'object') {
+            const windowValues = timingRecord['windows'];
+            if (Array.isArray(windowValues)) {
+                windowValues.forEach(value => {
+                    if (typeof value === 'string') {
+                        windows.add(value.toUpperCase());
+                    }
+                });
+            }
 
-        if (rawTiming && typeof rawTiming === 'object') {
-            const timingRecord = rawTiming as Record<string, unknown>;
             const durationValue = timingRecord['duration'];
             if (typeof durationValue === 'string') {
                 windows.add(durationValue.toUpperCase());

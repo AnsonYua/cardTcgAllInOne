@@ -168,6 +168,7 @@ export interface TargetReference {
 }
 
 export interface EffectTiming {
+    windows?: string[];
     duration?: string;
     actionTurn?: string;
 }

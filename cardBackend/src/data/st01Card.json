@@ -519,9 +519,11 @@
                     {
                         "effectId": "main_damage_rested",
                         "type": "activated",
-                        "timing": [
-                            "MAIN_PHASE"
-                        ],
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE"
+                            ]
+                        },
                         "target": {
                             "type": "unit",
                             "scope": "opponent",
@@ -577,9 +579,11 @@
                     {
                         "effectId": "main_heal_friendly",
                         "type": "activated",
-                        "timing": [
-                            "MAIN_PHASE"
-                        ],
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE"
+                            ]
+                        },
                         "target": {
                             "type": "unit",
                             "scope": "self",
@@ -642,10 +646,13 @@
                     {
                         "effectId": "main_action_ap_reduction",
                         "type": "activated",
-                        "timing": [
-                            "MAIN_PHASE",
-                            "ACTION_STEP"
-                        ],
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE",
+                                "ACTION_STEP"
+                            ],
+                            "duration": "UNTIL_END_OF_TURN"
+                        },
                         "target": {
                             "type": "unit",
                             "scope": "opponent",
@@ -712,9 +719,11 @@
                     {
                         "effectId": "activate_conditional_token_deploy",
                         "type": "activated",
-                        "timing": [
-                            "MAIN_PHASE"
-                        ],
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE"
+                            ]
+                        },
                         "cost": {
                             "resource": 2,
                             "oncePerTurn": true
@@ -813,9 +822,11 @@
                     {
                         "effectId": "activate_boost_link_units",
                         "type": "activated",
-                        "timing": [
-                            "MAIN_PHASE"
-                        ],
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE"
+                            ]
+                        },
                         "cost": {
                             "tap": "self"
                         },

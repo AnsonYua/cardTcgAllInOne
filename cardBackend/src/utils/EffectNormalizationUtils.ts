@@ -204,14 +204,43 @@ export function normalizeEffectTiming(timingValue: unknown): EffectTiming | unde
     }
 
     const timing = timingValue as Record<string, unknown>;
-    const duration = typeof timing['duration'] === 'string' ? timing['duration'] : undefined;
-    const actionTurn = typeof timing['actionTurn'] === 'string' ? timing['actionTurn'] : undefined;
 
-    if (!duration && !actionTurn) {
+    const windowsValue = timing['windows'];
+    let windows: string[] | undefined;
+
+    if (Array.isArray(windowsValue)) {
+        windows = windowsValue
+            .filter(value => typeof value === 'string' && value.length > 0)
+            .map(value => value as string);
+    } else if (typeof windowsValue === 'string' && windowsValue.length > 0) {
+        windows = [windowsValue];
+    }
+
+    const duration = typeof timing['duration'] === 'string' && timing['duration'].length > 0
+        ? (timing['duration'] as string)
+        : undefined;
+
+    const actionTurn = typeof timing['actionTurn'] === 'string' && timing['actionTurn'].length > 0
+        ? (timing['actionTurn'] as string)
+        : undefined;
+
+    if ((!windows || windows.length === 0) && !duration && !actionTurn) {
         return undefined;
     }
 
-    return { duration, actionTurn };
+    const normalized: EffectTiming = {};
+
+    if (windows && windows.length > 0) {
+        normalized.windows = windows;
+    }
+    if (duration) {
+        normalized.duration = duration;
+    }
+    if (actionTurn) {
+        normalized.actionTurn = actionTurn;
+    }
+
+    return normalized;
 }
 
 interface TargetDefaults {

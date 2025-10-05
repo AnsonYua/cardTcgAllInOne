@@ -37,6 +37,7 @@ export interface EffectRule {
         count?: number;
     };
     timing?: {
+        windows?: string[];
         duration?: string;
         actionTurn?: string;
     };

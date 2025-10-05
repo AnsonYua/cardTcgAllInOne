@@ -140,25 +140,22 @@ export default class CardActionRegistry {
         const windows = new Set();
         const rawTiming = effect?.timing;
 
-        if (Array.isArray(rawTiming)) {
-            rawTiming.forEach(value => {
-                if (typeof value === 'string') {
-                    windows.add(value.toUpperCase());
-                }
-            });
-        } else if (typeof rawTiming === 'string') {
-            windows.add(rawTiming.toUpperCase());
-        }
-
         if (rawTiming && typeof rawTiming === 'object') {
-            const durationValue = rawTiming.duration;
-            if (typeof durationValue === 'string') {
-                windows.add(durationValue.toUpperCase());
+            const windowValues = rawTiming.windows;
+            if (Array.isArray(windowValues)) {
+                windowValues.forEach(value => {
+                    if (typeof value === 'string') {
+                        windows.add(value.toUpperCase());
+                    }
+                });
             }
 
-            const actionTurnValue = rawTiming.actionTurn;
-            if (typeof actionTurnValue === 'string') {
-                windows.add(actionTurnValue.toUpperCase());
+            if (typeof rawTiming.duration === 'string') {
+                windows.add(rawTiming.duration.toUpperCase());
+            }
+
+            if (typeof rawTiming.actionTurn === 'string') {
+                windows.add(rawTiming.actionTurn.toUpperCase());
             }
         }
 
@@ -250,11 +247,14 @@ export default class CardActionRegistry {
         }
         
         // Check for activated effects
-        const activatedEffects = effects.rules.filter(rule => 
-            rule.type === 'activated' && 
-            rule.timing && 
-            rule.timing.includes(currentPhase)
-        );
+        const phaseUpper = typeof currentPhase === 'string' ? currentPhase.toUpperCase() : 'MAIN_PHASE';
+        const activatedEffects = effects.rules.filter(rule => {
+            if (rule.type !== 'activated') {
+                return false;
+            }
+            const windows = this.getTimingWindows(rule);
+            return windows.has(phaseUpper);
+        });
         
         if (activatedEffects.length > 0) {
             // Add activate effect action for each activated effect
@@ -294,9 +294,14 @@ export default class CardActionRegistry {
             switch (action.action) {
                 case 'activate-effect':
                     // Check if we're in the correct phase
-                    return action.effectData && 
-                           action.effectData.timing && 
-                           action.effectData.timing.includes(gameContext.phase);
+                    if (!action.effectData) {
+                        return false;
+                    }
+                    const actionWindows = this.getTimingWindows(action.effectData);
+                    const phaseUpper = typeof gameContext.phase === 'string'
+                        ? gameContext.phase.toUpperCase()
+                        : 'MAIN_PHASE';
+                    return actionWindows.has(phaseUpper);
                            
                 case 'attach-to-unit':
                     // Always show pilot action - CardActionHandler will handle validation
