@@ -844,6 +844,69 @@
                     }
                 ]
             }
+        },        
+        "T-001": {
+            "id": "T-001",
+            "name": "Gundam",
+            "cardType": "unit",
+            "color": "Token",
+            "level": 0,
+            "cost": 0,
+            "zone": [
+                "Space",
+                "Earth"
+            ],
+            "traits": [
+            ],
+            "link": [],
+            "ap": 3,
+            "hp": 3,
+            "effects": {
+                "description": [],
+                "rules": []
+            }
+        },        
+        "T-002": {
+            "id": "T-002",
+            "name": "Guncannon",
+            "cardType": "unit",
+            "color": "Token",
+            "level": 0,
+            "cost": 0,
+            "zone": [
+                "Space",
+                "Earth"
+            ],
+            "traits": [
+            ],
+            "link": [],
+            "ap": 2,
+            "hp": 2,
+            "effects": {
+                "description": [],
+                "rules": []
+            }
+        },        
+        "T-003": {
+            "id": "T-003",
+            "name": "GunTank",
+            "cardType": "unit",
+            "color": "Token",
+            "level": 0,
+            "cost": 0,
+            "zone": [
+                "Space",
+                "Earth"
+            ],
+            "traits": [
+            ],
+            "link": [],
+            "ap": 1,
+            "hp": 1,
+            "effects": {
+                "description": [],
+                "rules": []
+            }
         }
     }
 }
