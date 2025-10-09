@@ -825,10 +825,12 @@
                         "timing": {
                             "windows": [
                                 "MAIN_PHASE"
-                            ]
+                            ],
+                            "duration": "UNTIL_END_OF_TURN"
                         },
                         "cost": {
-                            "tap": "self"
+                            "tap": "self",
+                            "rest": "self"
                         },
                         "target": {
                             "type": "unit",
