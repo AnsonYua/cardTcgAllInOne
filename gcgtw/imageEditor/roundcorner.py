@@ -2,7 +2,14 @@
 # -*- coding: utf-8 -*-
 """
 Round Corner Image Processor for Trading Card Game
-Processes images in the st01 folder to add rounded corners.
+Processes card images in the st01 folder to add rounded corners.
+
+Supported card types:
+- st01-*: Standard set 01 cards
+- T-*: Token cards  
+- R-*: Rare cards
+- EXR-*: Extra rare cards
+- EXB-*: Extra booster cards
 
 For trading card games, recommended corner radius:
 - 8px: Subtle rounded corners (professional)
@@ -85,9 +92,16 @@ def add_rounded_corners(image_path, output_path, radius=10):
         return False
 
 
-def process_st01_folder(base_path, radius=10, output_suffix="_rounded"):
+def process_card_images(base_path, radius=10, output_suffix="_rounded"):
     """
-    Process all images in the st01 folder.
+    Process all card images in the st01 folder that match supported prefixes.
+    
+    Supported filename prefixes:
+    - st01-*: Standard set 01 cards
+    - T-*: Token cards
+    - R-*: Rare cards
+    - EXR-*: Extra rare cards
+    - EXB-*: Extra booster cards
     
     Args:
         base_path: Base path containing st01 folder
@@ -104,16 +118,27 @@ def process_st01_folder(base_path, radius=10, output_suffix="_rounded"):
     output_dir = st01_path / "rounded"
     output_dir.mkdir(exist_ok=True)
     
-    # Find all image files
+    # Define supported prefixes
+    supported_prefixes = ('ST01-', 'T-', 'R-', 'EXR-', 'EXB-')
+    
+    # Find all image files with supported prefixes
     image_extensions = {'.png', '.jpg', '.jpeg', '.bmp', '.gif'}
-    image_files = [f for f in st01_path.iterdir() 
-                   if f.is_file() and f.suffix.lower() in image_extensions]
+    all_files = [f for f in st01_path.iterdir() 
+                 if f.is_file() and f.suffix.lower() in image_extensions]
+    
+    # Filter files by supported prefixes
+    image_files = [f for f in all_files 
+                   if f.name.startswith(supported_prefixes)]
     
     if not image_files:
-        print(f"❌ No image files found in {st01_path}")
+        print(f"❌ No supported card images found in {st01_path}")
+        print(f"🔍 Looking for files starting with: {', '.join(supported_prefixes)}")
+        if all_files:
+            print(f"📝 Found {len(all_files)} image files, but none match supported prefixes")
         return
     
-    print(f"🖼️  Found {len(image_files)} images in st01 folder")
+    print(f"🖼️  Found {len(image_files)} card images in st01 folder")
+    print(f"🔍 Supported prefixes: {', '.join(supported_prefixes)}")
     print(f"🔄 Processing with {radius}px rounded corners...")
     print(f"💾 Output directory: {output_dir}")
     print("-" * 50)
@@ -202,8 +227,8 @@ Examples:
         print("📦 Install with: pip install Pillow")
         sys.exit(1)
     
-    # Process the st01 folder
-    process_st01_folder(base_path, args.radius, args.suffix)
+    # Process the card images
+    process_card_images(base_path, args.radius, args.suffix)
 
 
 if __name__ == "__main__":

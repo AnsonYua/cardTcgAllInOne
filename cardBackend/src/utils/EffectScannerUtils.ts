@@ -11,6 +11,7 @@ import { SLOT_ZONES } from '../config/gameConstants';
 import { SlotZoneUtils } from './SlotZoneUtils';
 import { getCardIdFromUid } from './CardUtils';
 import { EffectDefinition } from '../services/EventQueue/interfaces/GameEvent';
+import { resolveEffectActionFromRule } from './EffectNormalizationUtils';
 
 export interface EffectScanResult {
     carduid: string;
@@ -121,7 +122,7 @@ export class EffectScannerUtils {
     static scanForRepairAbilities(gameEnv: GameEnvironment, playerId: string): EffectScanResult[] {
         const repairFilter: EffectFilter = (effect) => 
             effect.trigger === 'END_OF_TURN' && 
-            effect.action === 'heal';
+            resolveEffectActionFromRule(effect) === 'heal';
             
         return this.scanPlayerForEffects(gameEnv, playerId, repairFilter);
     }
@@ -149,7 +150,7 @@ export class EffectScannerUtils {
     ): EffectScanResult[] {
         const genericFilter: EffectFilter = (effect) => {
             if (trigger && effect.trigger !== trigger) return false;
-            if (action && effect.action !== action) return false;
+            if (action && resolveEffectActionFromRule(effect) !== action) return false;
             if (effectId && effect.effectId !== effectId) return false;
             return true;
         };

@@ -40,7 +40,7 @@ export function normalizeEffectRule(
         }
     }
 
-    const action = resolveAction(raw['action']);
+    const action = resolveEffectActionFromRule(raw);
     if (options.requireAction && !action) {
         return null;
     }
@@ -99,6 +99,52 @@ export function normalizeEffectRule(
 
 export function ensureEffectDefaults<TEffect extends EffectDefinition>(effect: TEffect): TEffect {
     return effect;
+}
+
+export function resolveEffectActionFromRule(rule: unknown): string | undefined {
+    if (!rule || typeof rule !== 'object') {
+        return resolveAction(rule);
+    }
+
+    const raw = rule as Record<string, unknown>;
+
+    const direct = resolveAction(raw['action']);
+    if (direct) {
+        return direct;
+    }
+
+    const nestedEffect = raw['effect'];
+    if (nestedEffect) {
+        const nestedAction = resolveEffectActionFromRule(nestedEffect);
+        if (nestedAction) {
+            return nestedAction;
+        }
+    }
+
+    const legacy = resolveAction(raw['effectAction']);
+    if (legacy) {
+        return legacy;
+    }
+
+    const operation = resolveAction(raw['operation']);
+    if (operation) {
+        return operation;
+    }
+
+    const parameters = raw['parameters'];
+    if (parameters && typeof parameters === 'object') {
+        const parameterAction = resolveAction((parameters as Record<string, unknown>)['action']);
+        if (parameterAction) {
+            return parameterAction;
+        }
+
+        const parameterOperation = resolveAction((parameters as Record<string, unknown>)['operation']);
+        if (parameterOperation) {
+            return parameterOperation;
+        }
+    }
+
+    return undefined;
 }
 
 export interface NormalizedSourceCondition extends EffectSourceConditionObject {

@@ -14,14 +14,15 @@ import { PlayerCardManager } from './PlayerCardManager';
 import { ShieldCardManager } from './ShieldCardManager';
 import { getCardIdFromUid } from '../utils/CardUtils';
 import { DeployTargetManager } from './DeployTargetManager';
-import { ensureEffectDefaults } from '../utils/EffectNormalizationUtils';
+import { ensureEffectDefaults, resolveEffectActionFromRule } from '../utils/EffectNormalizationUtils';
 import { EffectExecutor } from './effects/EffectExecutor';
 
 export interface BurstEffectSummary {
     effectId: string;
-    type: string;
+    type: string; // normalized action identifier (e.g., deploy, addToHand)
     description: string;
     parameters?: Record<string, unknown>;
+    triggerType?: string; // original rule.type for logging/debugging
 }
 
 export class BurstEffectManager {
@@ -315,28 +316,44 @@ export class BurstEffectManager {
 
         for (const effect of cardData.effects.rules) {
             if (effect.trigger && effect.trigger === 'BURST_CONDITION') {
-                const effectType = effect.action || effect.type || 'unknown';
-                const description = this.createBurstEffectDescription(effect, cardData);
+                const effectAction = resolveEffectActionFromRule(effect) || 'unknown';
+                const effectParameters = this.extractBurstParameters(effect);
+                const description = this.createBurstEffectDescription(effect, cardData, effectAction);
 
                 burstEffects.push({
-                    effectId: effect.effectId || `burst_${effectType}_${cardData.cardId || 'unknown'}`,
-                    type: effectType,
+                    effectId: effect.effectId || `burst_${effectAction}_${cardData.cardId || 'unknown'}`,
+                    type: effectAction,
                     description,
-                    parameters: effect.parameters
+                    parameters: effectParameters,
+                    triggerType: effect.type
                 });
 
-                console.log(`🔍 Found burst effect: ${effectType} on card ${cardData.cardId}`);
+                console.log(`🔍 Found burst effect: ${effectAction} (rule.type=${effect.type || 'unknown'}) on card ${cardData.cardId}`);
             }
         }
 
         return burstEffects;
     }
 
-    static createBurstEffectDescription(effect: any, cardData: any): string {
-        const cardName = cardData.name || cardData.cardId || 'Unknown Card';
-        const effectType = effect.action || effect.type || 'unknown';
+    private static extractBurstParameters(effect: any): Record<string, unknown> | undefined {
+        const nested = effect?.effect?.parameters;
+        const direct = effect?.parameters;
 
-        switch (effectType) {
+        if (!nested && !direct) {
+            return undefined;
+        }
+
+        return {
+            ...(typeof nested === 'object' ? nested : undefined),
+            ...(typeof direct === 'object' ? direct : undefined)
+        } as Record<string, unknown>;
+    }
+
+    static createBurstEffectDescription(effect: any, cardData: any, effectAction?: string): string {
+        const cardName = cardData.name || cardData.cardId || 'Unknown Card';
+        const action = effectAction || resolveEffectActionFromRule(effect) || 'unknown';
+
+        switch (action) {
             case 'addToHand':
                 return `【Burst】 ${cardName}: Add this card to your hand`;
             case 'activate_ability':
@@ -344,7 +361,7 @@ export class BurstEffectManager {
             case 'deploy':
                 return `【Burst】 ${cardName}: Deploy this card to the field`;
             default:
-                return `【Burst】 ${cardName}: Activate burst effect (${effectType})`;
+                return `【Burst】 ${cardName}: Activate burst effect (${action})`;
         }
     }
 

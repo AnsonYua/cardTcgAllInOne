@@ -8,6 +8,7 @@ import { StateBasedAction } from '../EventQueue/StateBasedActionEngine';
 import { SLOT_ZONES } from '../../config/gameConstants';
 import { CardDatabaseManager } from '../../models/CardSystem';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
+import { resolveEffectActionFromRule } from '../../utils/EffectNormalizationUtils';
 
 // Import standardized interfaces
 import {
@@ -230,9 +231,10 @@ export class RepairEffectManager implements StandardEffectManager {
                     
                     // Look for repair abilities
                     cardData.effects.rules.forEach((effect: any, index: number) => {
-                        console.log(`🔍 [DEBUG] Effect ${index}: trigger="${effect.trigger}", action="${effect.action}", effectId="${effect.effectId}"`);
+                        const resolvedAction = resolveEffectActionFromRule(effect);
+                        console.log(`🔍 [DEBUG] Effect ${index}: trigger="${effect.trigger}", action="${resolvedAction}", effectId="${effect.effectId}"`);
                         
-                        if (effect.trigger === 'END_OF_TURN' && effect.action === 'heal') {
+                        if (effect.trigger === 'END_OF_TURN' && resolvedAction === 'heal') {
                             console.log(`🩹 Found repair ability: ${effect.effectId} on ${cardId}`);
                             
                             const healAmount = effect.parameters?.value ??  0;
