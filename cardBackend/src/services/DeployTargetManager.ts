@@ -346,6 +346,15 @@ export class DeployTargetManager {
         if(targetConfig.scope === "self_shield"){
             return false;
         }
+
+        const scopeValue = typeof targetConfig.scope === 'string'
+            ? targetConfig.scope.toLowerCase()
+            : '';
+
+        if (scopeValue.includes('all')) {
+            return false;
+        }
+
         console.log("requiresPlayerChoice 11")
         // Multiple target selection always requires choice
         if (targetConfig.count > 1) {

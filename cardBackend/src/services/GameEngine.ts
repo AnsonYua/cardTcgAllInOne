@@ -33,6 +33,7 @@ import { ExecutionResult } from './ExecutionResult';
 import { AttackPhaseEffectManager } from './effects/AttackPhaseEffectManager';
 import { MainPhaseAbilityManager } from './effects/MainPhaseAbilityManager';
 import { BattlePhaseManager } from './BattlePhaseManager';
+import { BaseAbilityManager } from './effects/BaseAbilityManager';
 
 export class GameEngine {
     // ============ MAIN EXECUTION INTERFACE ============
@@ -767,6 +768,9 @@ export class GameEngine {
                 case 'useCommandCard':
                     return MainPhaseAbilityManager.executeMainPhaseAbility(gameEnv, event);
 
+                case 'activateBaseAbility':
+                    return BaseAbilityManager.executeBaseAbility(gameEnv, event);
+
                 case 'confirmBattle':
                     return GameEngine.executeBattleConfirmation(event, gameEnv);
 
@@ -802,6 +806,7 @@ export class GameEngine {
         "targetPilotUid": "ST01-013_20d620d9-242e-4aa8-b1b6-6847dff89461"
     }
     */
+
     private static executeShieldCardAttacked(event: ShieldCardAttackedEvent, gameEnv: GameEnvironment): ExecutionResult {
         return BurstEffectManager.processShieldCardAttack(event, gameEnv);
     }

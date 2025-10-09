@@ -47,7 +47,11 @@ export class DeployEffectManager {
             const deployEffects = EffectRuleCatalog.collectEffects(cardData, {
                 trigger: 'ENTERS_PLAY',
                 fallbackEffectId: 'deploy_effect',
-                expectedTriggers: ['ENTERS_PLAY']
+                expectedTriggers: ['ENTERS_PLAY'],
+                preFilter: (rawRule) => {
+                    const triggerValue = rawRule['trigger'];
+                    return typeof triggerValue === 'string' && triggerValue === 'ENTERS_PLAY';
+                }
             }).map(effect => ensureEffectDefaults(effect));
 
             if (deployEffects.length === 0) {
