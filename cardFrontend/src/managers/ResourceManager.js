@@ -124,8 +124,10 @@ export default class ResourceManager {
       return [];
     }
 
+    // Process regular decks
     Object.entries(deckData.decks).forEach(([deckKey, deck]) => {
       if (deck.cards && Array.isArray(deck.cards)) {
+        this.log(`Processing deck: ${deckKey} with ${deck.cards.length} cards`);
         deck.cards.forEach(cardPath => {
           const imagePath = cardPath.endsWith(this.config.imageExtension) 
             ? cardPath 
