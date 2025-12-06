@@ -18,8 +18,26 @@ console.log('🎮 Starting Custom Trading Card Game Server...');
 // ============ MIDDLEWARE ============
 
 // CORS configuration for cross-origin requests
+const localNetworkOrigin = /^https?:\/\/((10\.\d{1,3}\.\d{1,3}\.\d{1,3})|(192\.168\.\d{1,3}\.\d{1,3})|(172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}))(:\d+)?$/;
+const allowlistedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:8080',
+    'http://localhost:5173'
+];
+
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:8080'],
+    origin: (origin, callback) => {
+        // Allow server-to-server and tools without an Origin header.
+        if (!origin) {
+            return callback(null, true);
+        }
+
+        if (allowlistedOrigins.includes(origin) || localNetworkOrigin.test(origin)) {
+            return callback(null, true);
+        }
+
+        return callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control']
 }));
@@ -99,7 +117,7 @@ function startServer(): Server {
         console.log('🎯 Ready for custom game logic implementation');
 
         // Start the server
-        server = app.listen(PORT, () => {
+        server = app.listen(PORT, '0.0.0.0', () => {
             console.log(`🚀 Custom Trading Card Game Server running on port ${PORT}`);
             console.log(`🌐 Server URL: http://localhost:${PORT}`);
             console.log(`🏥 Health check: http://localhost:${PORT}/api/game/health`);

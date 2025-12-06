@@ -50,11 +50,23 @@ export class BurstEffectManager {
                 if (burstEffects.length > 0) {
                     console.log(`💥 Found ${burstEffects.length} burst effect(s)`);
 
-                    shieldCard.cardData.cardType = shieldCard.cardData.originalCardType;
+                    const cardData = { ...shieldCard.cardData };
+                    cardData.cardType = cardData.originalCardType || cardData.cardType;
+
+                    const formattedTarget = {
+                        ...shieldCard,
+                        cardId: shieldCardId,
+                        cardData,
+                        dialogDisplayType: 'singleCard',
+                        displayName: cardData.name || shieldCardId,
+                        ownerPlayerId: defendingPlayerId,
+                        playerId: defendingPlayerId,
+                        sourceZone: 'shieldArea'
+                    };
 
                     const choiceEvent = EventFactory.createBurstEffectChoiceEvent(
                         defendingPlayerId,
-                        [{ ...shieldCard }]
+                        [formattedTarget]
                     );
 
                     gameEnv.enqueueForProcessing(choiceEvent);
