@@ -258,16 +258,26 @@ export class PlayerCardManager {
      * Note: Command cards can be played as pilots via designate_pilot effect
      */
     private static placeCommandCard(
-        _playerZones: any,
-        _cardData: any,
+        playerZones: any,
+        cardData: any,
         carduid: string,
-        _playerId: string
+        playerId: string
     ): CardPlacementResult {
-        console.log(`🚧 Command card direct placement not supported for ${carduid}`);
+        console.log(`🚧 Command card direct placement not supported for ${carduid}, sending to trash`);
+
+        // Ensure trash area exists
+        if (!playerZones.trashArea) {
+            playerZones.trashArea = [];
+        }
+
+        // Move the command card to trash to acknowledge the play attempt
+        const trashCard = createZoneCard(carduid, cardData.id, cardData, playerId, 'command');
+        playerZones.trashArea.push(trashCard);
+        console.log(`🗑️ Command card ${carduid} moved to trash`);
 
         return {
-            success: false,
-            error: `Command card direct placement not supported for ${carduid}`,
+            success: true,
+            placedZone: 'trashArea',
             isOnLink: false,
             isOnPair: false
         };

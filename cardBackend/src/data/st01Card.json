@@ -578,12 +578,8 @@
                 "rules": [
                     {
                         "effectId": "main_heal_friendly",
-                        "type": "activated",
-                        "timing": {
-                            "windows": [
-                                "MAIN_PHASE"
-                            ]
-                        },
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
                         "target": {
                             "type": "unit",
                             "scope": "self",
