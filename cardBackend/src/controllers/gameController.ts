@@ -828,6 +828,7 @@ export class GameController {
             }
             
             console.log(`🧪 Injecting game state for testing: ${gameId}`);
+            console.log("adfdsad ", JSON.stringify(gameEnv))
             
             // Use GameLogic service method for business logic
             const result = await this.gameLogic.injectGameState(gameId, gameEnv);
