@@ -53,8 +53,8 @@ export default class CardActionHandler {
                 break;
             
             // Slot-specific actions for bases
-            case 'useBaseAbility':
-                this.handleUseBaseAbility(selectedCard);
+            case 'activateBaseAbility':
+                this.handleActivateBaseAbility(selectedCard, effectData);
                 break;
             case 'generateResource':
                 this.handleGenerateResource(selectedCard);
@@ -234,6 +234,37 @@ export default class CardActionHandler {
     findFirstActivatedEffect(cardData) {
         const rules = Array.isArray(cardData?.effects?.rules) ? cardData.effects.rules : [];
         return rules.find(rule => rule?.type === 'activated') || null;
+    }
+
+    isCardRested(card) {
+        if (!card) {
+            return false;
+        }
+
+        const sources = [
+            card.fullCardData?.isRested,
+            card.fullCardData?.cardData?.isRested,
+            card.cardData?.isRested,
+            card.fullCardData?.status,
+            card.cardData?.status
+        ];
+
+        for (const value of sources) {
+            if (typeof value === 'boolean') {
+                return value;
+            }
+            if (typeof value === 'string') {
+                const normalized = value.toLowerCase();
+                if (normalized === 'rested' || normalized === 'tapped') {
+                    return true;
+                }
+                if (normalized === 'active' || normalized === 'ready') {
+                    return false;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -534,10 +565,70 @@ export default class CardActionHandler {
     /**
      * Base-specific actions in slots
      */
-    handleUseBaseAbility(selectedCard) {
-        console.log('🏭 Using base ability:', selectedCard.fullCardData?.cardData?.id);
-        this.showErrorMessage('基地能力功能开发中...');
-        this.gameScene.actionButtonManager.hide();
+    async handleActivateBaseAbility(selectedCard, effectData = null) {
+        if (!selectedCard) {
+            this.showErrorMessage('未选中基地');
+            return;
+        }
+
+        const carduid = selectedCard.fullCardData?.carduid;
+        const cardData = selectedCard.fullCardData?.cardData || selectedCard.cardData;
+
+        if (!carduid || !cardData) {
+            this.showErrorMessage('无法读取基地信息');
+            return;
+        }
+
+        if (this.isCardRested(selectedCard)) {
+            this.showErrorMessage('基地已处于休息状态');
+            return;
+        }
+
+        const effect = effectData || this.findFirstActivatedEffect(cardData);
+        if (!effect) {
+            this.showErrorMessage('该基地没有可发动的能力');
+            return;
+        }
+
+        const gameState = this.gameStateManager.getGameState();
+        const playerId = gameState.playerId;
+        const gameId = gameState.gameId;
+
+        if (!playerId || !gameId) {
+            this.showErrorMessage('缺少玩家或对局信息');
+            return;
+        }
+
+        const actionData = {
+            actionType: 'activateBaseAbility',
+            carduid,
+            effectId: effect.effectId
+        };
+
+        try {
+            this.setUILoadingState(true);
+            this.gameScene.actionButtonManager.hide();
+
+            const response = await this.gameScene.apiManager.playerAction(playerId, gameId, actionData);
+
+            if (response?.success) {
+                if (response.gameEnv) {
+                    this.gameStateManager.updateGameEnv(response.gameEnv);
+                }
+                this.updateGameState();
+                this.showSuccessMessage('基地能力已发动');
+                this.gameScene.deselectAllCards?.(true);
+            } else {
+                const errorMessage = response?.error || '基地能力发动失败';
+                console.error('activateBaseAbility failed:', errorMessage);
+                this.showErrorMessage(errorMessage);
+            }
+        } catch (error) {
+            console.error('Error calling activateBaseAbility API:', error);
+            this.showErrorMessage('网络错误，请稍后重试');
+        } finally {
+            this.setUILoadingState(false);
+        }
     }
 
     handleGenerateResource(selectedCard) {

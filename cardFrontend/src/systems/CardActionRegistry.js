@@ -20,6 +20,10 @@ export default class CardActionRegistry {
         if (isInSlot && slotInfo) {
             return this.getSlotActions(cardType, cardData, slotInfo, currentPhase, gameContext);
         }
+
+        if (cardType === 'base' && card.isInZone) {
+            return this.getBaseZoneActions(card, cardData, currentPhase, gameContext);
+        }
         
         // Base actions for card type (hand cards)
         let actions = this.getBaseActionsForType(cardType, cardData);
@@ -198,12 +202,7 @@ export default class CardActionRegistry {
                 break;
                 
             case 'base':
-                actions.push(
-                    { action: 'useBaseAbility', text: '基地能力', primary: true },
-                    { action: 'generateResource', text: '产生资源', primary: false },
-                    { action: 'upgradeBase', text: '升级基地', primary: false }
-                );
-                break;
+                return this.getBaseZoneActions({ fullCardData: { cardData } }, cardData, currentPhase, gameContext);
                 
             case 'command':
                 // Command cards in slots might have been played as pilots
@@ -236,6 +235,101 @@ export default class CardActionRegistry {
         return actions;
     }
     
+    /**
+     * Get actions for a base card that is already on the field
+     */
+    static getBaseZoneActions(card, cardData, currentPhase, gameContext = {}) {
+        if (!card || !cardData) {
+            return [];
+        }
+
+        const isPlayerZone = card.zoneContext?.isPlayerZone ?? card.isPlayerZone ?? true;
+        if (!isPlayerZone) {
+            return [];
+        }
+
+        const usableEffects = this.getUsableBaseEffects(cardData, gameContext);
+        if (usableEffects.length === 0) {
+            return [];
+        }
+
+        const baseRested = this.isCardRested(card);
+        if (baseRested) {
+            return [];
+        }
+
+        const primaryEffect = usableEffects[0];
+        const actions = [
+            {
+                action: 'activateBaseAbility',
+                text: '发动基地能力',
+                primary: true,
+                effectData: primaryEffect,
+                extraEffects: usableEffects
+            },
+            { action: 'cancel', text: '关闭' }
+        ];
+
+        console.log(`📋 Base zone actions for ${cardData.id}:`, actions.map(a => a.action));
+        return actions;
+    }
+
+    static getUsableBaseEffects(cardData, gameContext = {}) {
+        const effects = Array.isArray(cardData?.effects?.rules) ? cardData.effects.rules : [];
+        if (effects.length === 0) {
+            return [];
+        }
+
+        const gameEnv = gameContext.gameEnv || {};
+        const currentPhase = (gameContext.phase || 'MAIN_PHASE').toUpperCase();
+        const currentPlayerId = gameContext.currentPlayerId;
+        const isTurnPlayer = currentPlayerId && gameEnv.currentPlayer === currentPlayerId;
+
+        if (!isTurnPlayer || currentPhase !== 'MAIN_PHASE') {
+            return [];
+        }
+
+        return effects.filter(effect => {
+            if (!effect || effect.type !== 'activated') {
+                return false;
+            }
+
+            const windows = this.getTimingWindows(effect);
+            return windows.size === 0 || windows.has('MAIN_PHASE');
+        });
+    }
+
+    static isCardRested(card) {
+        if (!card) {
+            return false;
+        }
+
+        const candidates = [
+            card.fullCardData?.isRested,
+            card.fullCardData?.cardData?.isRested,
+            card.cardData?.isRested,
+            card.fullCardData?.status,
+            card.cardData?.status
+        ];
+
+        for (const value of candidates) {
+            if (typeof value === 'boolean') {
+                return value;
+            }
+            if (typeof value === 'string') {
+                const normalized = value.toLowerCase();
+                if (normalized === 'rested' || normalized === 'tapped') {
+                    return true;
+                }
+                if (normalized === 'active' || normalized === 'ready') {
+                    return false;
+                }
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Add actions based on card effects
      */
@@ -343,6 +437,7 @@ export default class CardActionRegistry {
             ...this.getBaseActionsForType('command'),
             ...this.getBaseActionsForType('base'),
             { action: 'activate-effect', text: 'Activate Effect', color: 0xe67e22 },
+            { action: 'activateBaseAbility', text: '发动基地能力', color: 0xe67e22 },
             { action: 'attach-to-unit', text: 'Attach to Unit', color: 0x9b59b6 },
             { action: 'deploy-base', text: 'Deploy Base', color: 0x2ecc71 },
             { action: 'pilot-link', text: 'Pilot Link', color: 0x8e44ad }

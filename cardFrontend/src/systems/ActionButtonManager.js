@@ -73,7 +73,12 @@ export default class ActionButtonManager {
 
         // Get available actions for this specific card
         const availableActions = CardActionRegistry.getAvailableActions(selectedCard, gameContext);
-        
+
+        if (!availableActions || availableActions.length === 0) {
+            this.hide();
+            return;
+        }
+
         // Clear existing buttons
         this.clearButtons();
         

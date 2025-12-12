@@ -11,7 +11,8 @@ import gameRoutes from './src/routes/gameRoutes';
 // ============ SERVER CONFIGURATION ============
 
 const app: Express = express();
-const PORT = process.env.PORT || 8080;
+// Ensure PORT is a number for http.Server.listen overload expectations
+const PORT = parseInt(process.env.PORT || '', 10) || 8080;
 
 console.log('🎮 Starting Custom Trading Card Game Server...');
 

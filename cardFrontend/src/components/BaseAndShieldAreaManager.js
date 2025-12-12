@@ -148,7 +148,7 @@ export default class BaseAndShieldAreaManager {
     });
   }
 
-  prepareBaseCardInstance({ cardArray, cardData, position }) {
+  prepareBaseCardInstance({ cardArray, cardData, position, playerType }) {
     const existing = cardArray[0] || null;
 
     if (!cardData) {
@@ -159,15 +159,18 @@ export default class BaseAndShieldAreaManager {
     if (!existing) {
       const created = CardFactory.createBaseCard(this.scene, cardData, position.x, position.y, {
         gameStateManager: this.gameStateManager,
-        scale: 0.9
+        scale: 0.9,
+        isPlayerZone: playerType === 'player'
       });
       cardArray.length = 0;
       cardArray.push(created);
+      this.configureBaseCardInteraction(created, cardData, playerType);
       return created;
     }
 
     mergeCardZoneData(existing, cardData);
     existing.setPosition(position.x, position.y);
+    this.configureBaseCardInteraction(existing, cardData, playerType);
     return existing;
   }
 
@@ -181,7 +184,7 @@ export default class BaseAndShieldAreaManager {
    * @param {Card} card - Existing base card to update
    * @param {Object} cardData - New card data
    */
-  updateExistingBaseCard(card, cardData) {
+  updateExistingBaseCard(card, cardData, playerType = 'player') {
     if (!card || !cardData) {
       console.warn('[BaseAndShieldAreaManager] updateExistingBaseCard called with invalid parameters');
       return;
@@ -199,6 +202,74 @@ export default class BaseAndShieldAreaManager {
       slotFieldValue,
       zone: 'base'
     });
+
+    this.configureBaseCardInteraction(card, cardData, playerType);
+  }
+
+  configureBaseCardInteraction(card, cardData, playerType) {
+    if (!card) {
+      return;
+    }
+
+    const isPlayerBase = playerType === 'player';
+    const rules = Array.isArray(cardData?.effects?.rules) ? cardData.effects.rules : [];
+    const hasActivatedAbility = rules.some(rule => rule && rule.type === 'activated');
+    const isRested = this.isBaseCardRested(cardData);
+    const shouldEnable = isPlayerBase && hasActivatedAbility && !isRested;
+
+    card.setZonePlacement(true, 'base', isPlayerBase);
+
+    if (shouldEnable) {
+      if (!card._baseInteractionInitialized && typeof card.setupInteraction === 'function') {
+        card.setupInteraction();
+        card._baseInteractionInitialized = true;
+      }
+
+      if (typeof card.setInteractive === 'function') {
+        card.setInteractive(true);
+      }
+
+      card.isInteractionDisabled = false;
+      return;
+    }
+
+    if (typeof card.disableInteractive === 'function') {
+      card.disableInteractive();
+    } else if (typeof card.setInteractive === 'function') {
+      card.setInteractive(false);
+    }
+
+    if (typeof card.disableInteraction === 'function') {
+      card.disableInteraction();
+    }
+
+    card.isInteractionDisabled = true;
+  }
+
+  isBaseCardRested(cardData) {
+    const candidates = [
+      cardData?.isRested,
+      cardData?.cardData?.isRested,
+      cardData?.status,
+      cardData?.cardState?.status
+    ];
+
+    for (const value of candidates) {
+      if (typeof value === 'boolean') {
+        return value;
+      }
+      if (typeof value === 'string') {
+        const normalized = value.toLowerCase();
+        if (normalized === 'rested' || normalized === 'tapped') {
+          return true;
+        }
+        if (normalized === 'active' || normalized === 'ready') {
+          return false;
+        }
+      }
+    }
+
+    return false;
   }
 
 

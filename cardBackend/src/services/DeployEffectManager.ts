@@ -39,11 +39,20 @@ export class DeployEffectManager {
         gameEnv: GameEnvironment
     ): DeployQueueResult {
         try {
+
+            console.log("event Data for play card ", JSON.stringify(eventData))
+
+        
             const cardData = CardDatabaseManager.getCardDetailsFromCarduid(eventData.carduid);
             if (!cardData?.effects?.rules) {
                 return { success: true, effectsFound: 0 };
             }
-
+            
+            // Command cards played as pilots should not trigger command deploy effects
+            if (cardData.cardType === 'command' && eventData.playAs === 'pilot') {
+                console.log("event Data for play card here")
+                return { success: true, effectsFound: 0 };
+            }
             const deployEffects = EffectRuleCatalog.collectEffects(cardData, {
                 trigger: 'ENTERS_PLAY',
                 fallbackEffectId: 'deploy_effect',

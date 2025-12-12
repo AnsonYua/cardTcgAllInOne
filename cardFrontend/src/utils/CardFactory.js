@@ -58,7 +58,12 @@ export default class CardFactory {
    * @returns {Card} Created base card
    */
   static createBaseCard(scene, cardData, x, y, options = {}) {
-    const { gameStateManager, scale = 0.9, fieldCardValue = cardData?.fieldCardValue || null } = options;
+    const {
+      gameStateManager,
+      scale = 0.9,
+      fieldCardValue = cardData?.fieldCardValue || null,
+      isPlayerZone = true
+    } = options;
     
     const card = new Card(scene, x, y, cardData, {
       scale,
@@ -70,11 +75,11 @@ export default class CardFactory {
     card.setDepth(1100);
     
     // Set up zone placement for base cards
-    this._setupZonePlacement(card, 'base', true);
-    
+    this._setupZonePlacement(card, 'base', isPlayerZone);
+
     // Disable interaction for base cards
     this._setupInteraction(card, false);
-    
+
     return card;
   }
   

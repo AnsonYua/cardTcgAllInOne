@@ -33,7 +33,9 @@ export function normalizeEffectRule(
     }
 
     const raw = rule as Record<string, unknown>;
-    const trigger = resolveTrigger(raw['trigger'], options.defaultTrigger);
+    const trigger = resolveTrigger(raw['trigger'], "");
+    console.log("trigger XXXXX ", JSON.stringify(trigger) , " ", JSON.stringify(raw) )
+    console.log("trigger XXXXX222 ", JSON.stringify(options.expectedTriggers))
     if (options.expectedTriggers && options.expectedTriggers.length > 0) {
         if (!trigger || !options.expectedTriggers.includes(trigger)) {
             return null;

@@ -351,6 +351,7 @@ export class PairingEffectManager implements StandardEffectManager {
         ];
 
         for (const cardInfo of cardsToCheck) {
+            /*if it is command (check pilot.cardData) and cardType = pilot , ignore the card effect  */
             const normalizedEffects = EffectRuleCatalog.collectEffects(cardInfo.cardData, {
                 trigger: 'PAIRING_COMPLETE',
                 fallbackEffectId: 'pairing_effect',
@@ -362,6 +363,8 @@ export class PairingEffectManager implements StandardEffectManager {
                     sourceCarduid: cardInfo.carduid
                 }
             });
+
+            console.log("pairing effect here ", JSON.stringify(normalizedEffects))
 
             for (const effect of normalizedEffects) {
                 const pairingEffect = ensureEffectDefaults({ ...effect }) as PairingEffect;
