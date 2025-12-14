@@ -64,9 +64,9 @@ export class DeployEffectManager {
         }).map(effect => ensureEffectDefaults(effect));
 
         if (deployEffects.length === 0) {
-            const fallbackActivatedEffects = this.findActivatedMainActionUntilEotEffects(cardData);
+            const fallbackActivatedEffects = this.findDeployLikeActivatedEffects(cardData, gameEnv, playerId);
             fallbackActivatedEffects.forEach(effect => deployEffects.push(ensureEffectDefaults(effect)));
-
+            console.log("test asdffasd ", JSON.stringify(fallbackActivatedEffects))
             if (deployEffects.length === 0) {
                 return { success: true, effectsFound: 0 };
             }
@@ -122,12 +122,20 @@ export class DeployEffectManager {
     }
 
     /**
-     * Fallback: detect activated effects with a MAIN_PHASE timing window (treated as deploy-like).
+     * Fallback: detect activated effects that should behave like deploy effects.
+     * - Always includes MAIN_PHASE activated abilities.
+     * - Includes ACTION_STEP abilities when the game is currently in an action step.
      */
-    private static findActivatedMainActionUntilEotEffects(cardData: any): EffectDefinition[] {
+    private static findDeployLikeActivatedEffects(
+        cardData: any,
+        gameEnv: GameEnvironment,
+        actingPlayerId: string
+    ): EffectDefinition[] {
         if (!Array.isArray(cardData?.effects?.rules)) {
             return [];
         }
+
+        const inActionStep = gameEnv.currentBattle?.status === 'ACTION_STEP';
 
         return (cardData.effects.rules as EffectDefinition[]).filter(rule => {
             if (!rule || rule.type !== 'activated') {
@@ -139,7 +147,15 @@ export class DeployEffectManager {
                 ? (timing!['windows'] as string[]).map(window => window.toUpperCase())
                 : [];
 
-            return windows.includes('MAIN_PHASE');
+            if (windows.includes('MAIN_PHASE')) {
+                return true;
+            }
+
+            if (windows.includes('ACTION_STEP') && inActionStep) {
+                return true;
+            }
+
+            return false;
         });
     }
 

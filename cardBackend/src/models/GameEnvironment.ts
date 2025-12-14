@@ -5,7 +5,7 @@ import { GamePhase, ZoneType, EventType } from './GameEnums';
 import { Player, PlayerZones, SlotZone } from './Player';
 import { ZoneCard } from './CardSystem';
 // EventManager removed - using direct event processing
-import { GameEvent, EventStatus, EventPriority, EventFactory, BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent, PlayerActionEvent } from '../services/EventQueue/interfaces/GameEvent';
+import { GameEvent, EventStatus, EventPriority, EventFactory, BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent, PlayerActionEvent, PlayCardEvent } from '../services/EventQueue/interfaces/GameEvent';
 import { ProcessingResult, ValidationResult } from './EventInterfaces';
 import { BattleContext } from './BattleContext';
 
@@ -289,11 +289,29 @@ export class GameEnvironment {
                     ? playerAction.data.actionType
                     : undefined;
 
+                /*
+                still return force if it is 
+                when 
+                action.type = PlayCard
+                action.playAs = command
+                */
                 if (
                     actionType === 'resolveBattle' ||
                     actionType === 'useCommandCard' ||
-                    actionType === 'confirmBattle'
+                    actionType === 'confirmBattle'  
                 ) {
+                    return false;
+                }
+            }
+
+            // Allow PLAY_CARD actions (e.g., command cards) to process during ACTION_STEP
+            if (actionableEvent.type === EventType.PLAY_CARD) {
+                const playCardEvent = actionableEvent as PlayCardEvent;
+                const playAs = typeof playCardEvent.data?.playAs === 'string'
+                    ? playCardEvent.data.playAs.toLowerCase()
+                    : '';
+
+                if (playAs === 'command') {
                     return false;
                 }
             }

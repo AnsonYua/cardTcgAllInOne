@@ -36,7 +36,20 @@ export class PlayCardPreparationManager {
         fromBurst: boolean
     ): PlayCardPreparationResult {
 
-        if (!fromBurst) {
+        const isActionStepCommand =
+            eventData.playAs === 'command' && gameEnv.currentBattle?.status === 'ACTION_STEP';
+
+        if (isActionStepCommand) {
+            const { attackingPlayerId, defendingPlayerId } = gameEnv.currentBattle!;
+            if (playerId !== attackingPlayerId && playerId !== defendingPlayerId) {
+                return {
+                    success: false,
+                    error: 'Command cards during ACTION_STEP can only be played by battle participants'
+                };
+            }
+        }
+
+        if (!fromBurst && !isActionStepCommand) {
             const turnValidation = GameValidator.validatePlayerTurn(gameEnv, playerId);
             if (!turnValidation.isValid) {
                 return {
