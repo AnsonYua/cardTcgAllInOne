@@ -53,19 +53,24 @@ export class DeployEffectManager {
                 console.log("event Data for play card here")
                 return { success: true, effectsFound: 0 };
             }
-            const deployEffects = EffectRuleCatalog.collectEffects(cardData, {
-                trigger: 'ENTERS_PLAY',
-                fallbackEffectId: 'deploy_effect',
-                expectedTriggers: ['ENTERS_PLAY'],
-                preFilter: (rawRule) => {
+        const deployEffects = EffectRuleCatalog.collectEffects(cardData, {
+            trigger: 'ENTERS_PLAY',
+            fallbackEffectId: 'deploy_effect',
+            expectedTriggers: ['ENTERS_PLAY'],
+            preFilter: (rawRule) => {
                     const triggerValue = rawRule['trigger'];
                     return typeof triggerValue === 'string' && triggerValue === 'ENTERS_PLAY';
                 }
-            }).map(effect => ensureEffectDefaults(effect));
+        }).map(effect => ensureEffectDefaults(effect));
+
+        if (deployEffects.length === 0) {
+            const fallbackActivatedEffects = this.findActivatedMainActionUntilEotEffects(cardData);
+            fallbackActivatedEffects.forEach(effect => deployEffects.push(ensureEffectDefaults(effect)));
 
             if (deployEffects.length === 0) {
                 return { success: true, effectsFound: 0 };
             }
+        }
 
             const deployEvent = EventFactory.createDeployEffectEvent(playerId, eventData.carduid, deployEffects);
             gameEnv.processingQueue.push(deployEvent);
@@ -114,6 +119,28 @@ export class DeployEffectManager {
         }
 
         return { success: true };
+    }
+
+    /**
+     * Fallback: detect activated effects with a MAIN_PHASE timing window (treated as deploy-like).
+     */
+    private static findActivatedMainActionUntilEotEffects(cardData: any): EffectDefinition[] {
+        if (!Array.isArray(cardData?.effects?.rules)) {
+            return [];
+        }
+
+        return (cardData.effects.rules as EffectDefinition[]).filter(rule => {
+            if (!rule || rule.type !== 'activated') {
+                return false;
+            }
+
+            const timing = rule.timing as Record<string, unknown> | undefined;
+            const windows = Array.isArray(timing?.['windows'])
+                ? (timing!['windows'] as string[]).map(window => window.toUpperCase())
+                : [];
+
+            return windows.includes('MAIN_PHASE');
+        });
     }
 
 }
