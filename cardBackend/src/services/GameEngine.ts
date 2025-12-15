@@ -825,7 +825,19 @@ export class GameEngine {
         const bothConfirmed = gameEnv.haveBothPlayersConfirmedBattle();
         if (!bothConfirmed) {
             console.log('🤝 Battle confirmation recorded, awaiting opponent confirmation');
+            return { success: true };
         }
+
+        console.log('✅ Both players confirmed - auto-resolving battle');
+        const attackerId = gameEnv.currentBattle?.attackingPlayerId;
+        if (!attackerId) {
+            return {
+                success: false,
+                error: 'Cannot auto-resolve battle: attacking player not found'
+            };
+        }
+
+        return BattlePhaseManager.resolveBattle(gameEnv, attackerId);
 
         return {
             success: true

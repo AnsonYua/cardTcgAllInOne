@@ -277,6 +277,11 @@ export class GameEnvironment {
         }
 
         if (this.currentBattle && this.currentBattle.status === 'ACTION_STEP') {
+            const currentPlayerId = this.currentPlayer;
+            const pendingConfirmation =
+                currentPlayerId != null &&
+                this.currentBattle?.confirmations?.[currentPlayerId] === false;
+
             const actionableEvent = this.processingQueue.find(event => event.status !== EventStatus.RESOLVED);
 
             if (!actionableEvent) {
@@ -314,6 +319,11 @@ export class GameEnvironment {
                 if (playAs === 'command') {
                     return false;
                 }
+            }
+
+            // Allow deploy-triggered effects and target choices while the acting player still needs to confirm
+            if (pendingConfirmation && (actionableEvent.type === EventType.DEPLOY_EFFECT_TRIGGERED || actionableEvent.type === EventType.TARGET_CHOICE)) {
+                return false;
             }
 
             return true;
