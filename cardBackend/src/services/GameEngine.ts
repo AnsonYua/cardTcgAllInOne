@@ -204,10 +204,6 @@ export class GameEngine {
                 console.log(`✅ Player ${event.data.playerId} confirmed redraw choice: ${event.data.isRedraw}`);
             }
 
-            // Notify redraw event if needed
-            if (event.data.isRedraw) {
-                GameEngine.getNotificationManager(gameEnv).notifyRedrawEvent(event.data.playerId);
-            }
 
             console.log(`✅ CONFIRM_REDRAW event processed - player ${event.data.playerId} marked as ready`);
             return { success: true };
@@ -226,12 +222,6 @@ export class GameEngine {
         console.log(`💥 Processing error: ${event.data.errorType} - ${event.data.errorReason}`);
 
         try {
-            GameEngine.getNotificationManager(gameEnv).notifyError(
-                event.data.errorType, 
-                event.data.errorReason, 
-                event.data.playerId, 
-                event.data.originalEventType
-            );
 
             console.log(`📨 Error event added: ${event.data.errorReason}`);
             return { success: true };
@@ -385,11 +375,6 @@ export class GameEngine {
 
             // Notify about card drawn (requires acknowledgment)
             const drawnCards = firstPlayer?.deck.handUids.slice(-1) || []; // Get last drawn card UID
-            notificationManager.notifyCardDrawn(
-                firstPlayerId,
-                drawnCards,
-                firstPlayer?.deck.getHandSize() || 0
-            );
 
             console.log(`📨 Created GAMEPLAY_BEGINS and CARD_DRAWN events via GameNotificationManager`);
 
@@ -496,11 +481,6 @@ export class GameEngine {
 
             // Notify about card drawn (requires acknowledgment)
             const drawnCards = firstPlayer?.deck.handUids.slice(-1) || []; // Get last drawn card UID
-            notificationManager.notifyCardDrawn(
-                nextPlayer,
-                drawnCards,
-                firstPlayer?.deck.getHandSize() || 0
-            );
             return { success: true };
 
         } catch (error) {
