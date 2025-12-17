@@ -195,14 +195,6 @@ export class GameEnvironment {
     /**
      * Add notification event to frontend notification queue
      */
-    public enqueueNotification(notification: any): void {
-        if (!this.notificationQueue) {
-            this.notificationQueue = [];
-        }
-        this.notificationQueue.push(notification);
-        console.log(`📨 Notification enqueued: ${notification.type}`);
-    }
-    
     /**
      * Remove specific event from processing queue (safer than shift())
      * @param event - The specific event to remove
