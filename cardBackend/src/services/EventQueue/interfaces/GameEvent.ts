@@ -131,6 +131,7 @@ export interface PlayCardEventData {
     targetUnit?: string;
     fromBurst?: boolean;
     slotName?: string;
+    cardPlayNotificationId?: string;
     [key: string]: unknown;
 }
 
@@ -203,6 +204,7 @@ export interface EffectDefinition {
 export interface DeployEffectEventData {
     carduid: string;
     effects: EffectDefinition[];
+    cardPlayNotificationId?: string;
 }
 
 export interface DeployEffectEvent extends BaseGameEvent<DeployEffectEventData> {
@@ -419,6 +421,7 @@ export interface TargetChoiceEventData {
     availableTargets: TargetReference[];
     selectedTarget?: TargetChoiceSelection;
     selectedTargets?: TargetChoiceSelection[];
+    cardPlayNotificationId?: string;
 }
 
 export interface TargetChoiceEvent extends BaseGameEvent<TargetChoiceEventData> {
@@ -795,12 +798,16 @@ export class EventFactory {
         playerId: string,
         carduid: string,
         deployEffects: EffectDefinition[],
+        cardPlayNotificationId?: string
     ): DeployEffectEvent {
 
         const deployEffectEventData: DeployEffectEventData = {
             carduid,
             effects: deployEffects
         };
+        if (cardPlayNotificationId) {
+            deployEffectEventData.cardPlayNotificationId = cardPlayNotificationId;
+        }
         
         return {
             id: `deploy_${++this.eventIdCounter}_${Date.now()}`,

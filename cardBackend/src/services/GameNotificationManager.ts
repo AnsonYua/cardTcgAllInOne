@@ -79,6 +79,37 @@ export class GameNotificationManager {
         console.log(`📨 Added notification event: ${type} (${eventId}) - Priority: ${priority}, Ack: ${requiresAcknowledgment}`);
         return eventId;
     }
+
+    /**
+     * Update an existing notification payload / metadata (e.g. for completion flags)
+     */
+    updateNotificationEvent(
+        eventId: string,
+        payloadUpdates: Partial<NotificationEventData> = {},
+        metadataUpdates: Partial<GameNotificationEvent['metadata']> = {}
+    ): boolean {
+        if (!this.gameEnv.notificationQueue) {
+            return false;
+        }
+
+        const event = this.gameEnv.notificationQueue.find(evt => evt.id === eventId);
+        if (!event) {
+            return false;
+        }
+
+        event.payload = {
+            ...event.payload,
+            ...payloadUpdates
+        };
+
+        event.metadata = {
+            ...event.metadata,
+            ...metadataUpdates
+        };
+
+        console.log(`🔄 Updated notification event: ${event.type} (${event.id})`);
+        return true;
+    }
     
      /**
      * Notify frontend about card draw (requires acknowledgment)

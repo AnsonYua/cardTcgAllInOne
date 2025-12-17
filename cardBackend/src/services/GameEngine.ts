@@ -555,6 +555,27 @@ export class GameEngine {
                 };
             }
 
+            const notificationManager = GameEngine.getNotificationManager(gameEnv);
+            const cardNotificationPayload = {
+                carduid: eventData.carduid,
+                playerId,
+                playAs: eventData.playAs,
+                reason: eventData.fromBurst ? 'burst' : 'hand',
+                fromBurst: Boolean(eventData.fromBurst),
+                targetUnit: eventData.targetUnit,
+                slotName: eventData.slotName,
+                isCompleted: false,
+                timestamp: Date.now()
+            };
+
+            const notificationId = notificationManager.addNotificationEvent(
+                'CARD_PLAYED',
+                cardNotificationPayload,
+                false,
+                'normal'
+            );
+            eventData.cardPlayNotificationId = notificationId;
+
             if (tappedEnergy.length > 0) {
                 eventData.payEnergyCards = tappedEnergy.map(card => card.carduid);
             }
@@ -562,12 +583,16 @@ export class GameEngine {
             // ✅ Card placement successful - Check for Deploy effects (ENTERS_PLAY triggers)
             console.log(`✅ Card ${eventData.carduid} successfully placed for player ${playerId}`);
             // ✅ IMPROVED: Single-step deploy effect processing (consolidated from two-step legacy approach)
-            const deployResult = DeployEffectManager.checkAndQueueDeployEffects(eventData,playerId, gameEnv);
+            const deployResult = DeployEffectManager.checkAndQueueDeployEffects(eventData, playerId, gameEnv);
             if (!deployResult.success) {
                 console.log(`⚠️ Deploy effect processing error: ${deployResult.error}`);
                 // Continue with execution - deploy effect failure shouldn't block card placement
             } else if (deployResult.effectsFound > 0) {
                 console.log(`✅ Deploy effects processed: ${deployResult.effectsFound} effects queued`);
+            }
+
+            if (deployResult.effectsFound === 0) {
+                notificationManager.updateNotificationEvent(notificationId, { isCompleted: true });
             }
 
             // ✅ IMPROVED: Check for Pairing effects and get event directly (consolidated)

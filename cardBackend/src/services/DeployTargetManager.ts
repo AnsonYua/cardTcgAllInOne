@@ -62,7 +62,8 @@ export class DeployTargetManager {
         gameEnv: GameEnvironment,
         playerId: string,
         sourceCarduid: string,
-        effect: EffectDefinition
+        effect: EffectDefinition,
+        cardPlayNotificationId?: string
     ): DeployTargetResult {
         const normalizedEffect = ensureEffectDefaults(effect);
         const effectAction = EffectExecutor.getEffectAction(normalizedEffect);
@@ -95,6 +96,10 @@ export class DeployTargetManager {
                     effect: normalizedEffect,
                     availableTargets
                 });
+
+                if (cardPlayNotificationId) {
+                    choiceEvent.data.cardPlayNotificationId = cardPlayNotificationId;
+                }
                 
                 // Add to processing queue for game event processing
                 gameEnv.processingQueue.push(choiceEvent);

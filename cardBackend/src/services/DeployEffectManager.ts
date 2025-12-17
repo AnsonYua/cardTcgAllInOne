@@ -12,6 +12,7 @@ import { EventFactory } from './EventQueue/interfaces/GameEvent';
 import { DeployTargetManager, DeployTargetResult } from './DeployTargetManager';
 import { ensureEffectDefaults } from '../utils/EffectNormalizationUtils';
 import { EffectRuleCatalog } from './effects/EffectRuleCatalog';
+import { GameNotificationManager } from './GameNotificationManager';
 
 export interface ExecutionResult {
     success: boolean;
@@ -72,7 +73,12 @@ export class DeployEffectManager {
             }
         }
 
-            const deployEvent = EventFactory.createDeployEffectEvent(playerId, eventData.carduid, deployEffects);
+            const deployEvent = EventFactory.createDeployEffectEvent(
+                playerId,
+                eventData.carduid,
+                deployEffects,
+                eventData.cardPlayNotificationId
+            );
             gameEnv.processingQueue.push(deployEvent);
 
             console.log(`🚀 DeployEffectManager queued ${deployEffects.length} deploy effect(s) for ${eventData.carduid}`);
@@ -96,6 +102,7 @@ export class DeployEffectManager {
         console.log(`🚀 Executing deploy effects for card ${event.data.carduid}`);
 
         const failures: string[] = [];
+        let requiresTargetChoice = false;
 
         for (const effect of event.data.effects) {
             const normalizedEffect = ensureEffectDefaults(effect);
@@ -103,12 +110,16 @@ export class DeployEffectManager {
                 gameEnv,
                 event.playerId,
                 event.data.carduid,
-                normalizedEffect
+                normalizedEffect,
+                event.data.cardPlayNotificationId
             );
 
             if (!result.success && !result.requiresSelection) {
                 const errorMessage = result.error || `Effect ${normalizedEffect.effectId} failed`;
                 failures.push(errorMessage);
+            }
+            if (result.requiresSelection) {
+                requiresTargetChoice = true;
             }
         }
 
@@ -116,6 +127,14 @@ export class DeployEffectManager {
             const combinedError = failures.join('; ');
             console.error(`❌ Deploy effects failed: ${combinedError}`);
             return { success: false, error: combinedError };
+        }
+
+        if (!requiresTargetChoice && event.data.cardPlayNotificationId) {
+            const notificationManager = new GameNotificationManager(gameEnv);
+            notificationManager.updateNotificationEvent(
+                event.data.cardPlayNotificationId,
+                { isCompleted: true }
+            );
         }
 
         return { success: true };

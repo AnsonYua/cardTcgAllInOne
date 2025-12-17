@@ -13,6 +13,7 @@ import { EventFactory, GameEvent, EventStatus, EventPriority } from './EventQueu
 import { BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent, TargetReference } from './EventQueue/interfaces/GameEvent';
 import { PlayerAction } from '../models/EventInterfaces';
 import { StaticEventProcessor } from './StaticEventProcessor';
+import { GameNotificationManager } from './GameNotificationManager';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -1079,6 +1080,12 @@ export class GameLogic {
             
             console.log(`🎯 Event ${eventId} updated with ${selectedTargets.length} selected target(s):`, 
                        selectedTargets.map(t => `${t.carduid} in ${t.zone}`));
+
+            const notificationId = event.data.cardPlayNotificationId;
+            if (notificationId) {
+                const notificationManager = new GameNotificationManager(gameEnv);
+                notificationManager.updateNotificationEvent(notificationId, { isCompleted: true });
+            }
             
             const processingResult = await gameEnv.processEvents();
             if (!processingResult.success) {
