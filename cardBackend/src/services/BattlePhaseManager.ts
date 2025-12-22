@@ -11,8 +11,44 @@ import { AttackPreparationFailure } from './AttackPreparationManager';
 import { UnitZoneCard, PilotZoneCard } from '../models/CardSystem';
 import { GameNotificationManager } from './GameNotificationManager';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
+import { BlockerChoiceManager } from './BlockerChoiceManager';
+import { AttackPhaseEffectManager } from './effects/AttackPhaseEffectManager';
 
 export class BattlePhaseManager {
+    static initiateAttack(gameEnv: GameEnvironment, event: PlayerActionEvent): ExecutionResult {
+        const defendingPlayerId = gameEnv.getOpponentId(event.playerId);
+        if (!defendingPlayerId) {
+            console.error(`❌ No opponent found for attacking player ${event.playerId}`);
+            return { success: false, error: 'No opponent found' };
+        }
+
+        this.recordAttackDeclaration(gameEnv, event, defendingPlayerId);
+
+        const effectsResult = AttackPhaseEffectManager.processAttackPhaseEffects(gameEnv, event);
+        if (!effectsResult.success) {
+            return { success: false, error: effectsResult.error };
+        }
+
+        const blockerResult = BlockerChoiceManager.processAttackWithBlockerChoice(
+            gameEnv,
+            event,
+            defendingPlayerId
+        );
+
+        if (!blockerResult.success) {
+            return { success: false, error: blockerResult.error };
+        }
+
+        if (blockerResult.requiresSelection) {
+            return { success: true, requiresSelection: true };
+        }
+
+        if (blockerResult.normalAttack) {
+            return this.startBattle(gameEnv, event);
+        }
+
+        return { success: true };
+    }
     static startBattle(gameEnv: GameEnvironment, event: PlayerActionEvent): ExecutionResult {
         const eventData = event.data || {};
         const actionType = eventData.actionType;
@@ -129,8 +165,6 @@ export class BattlePhaseManager {
             targetUnit
         } = preparation;
 
-        const gameId = typeof eventData.gameId === 'string' ? eventData.gameId : undefined;
-
         const context: BattleContext = {
             actionType: 'attackUnit',
             attackingPlayerId: playerId,
@@ -146,24 +180,6 @@ export class BattlePhaseManager {
 
         gameEnv.setCurrentBattle(context);
         console.log('⚔️ Action step opened for unit battle');
-
-        const notificationManager = new GameNotificationManager(gameEnv);
-        notificationManager.addNotificationEvent(
-            'UNIT_ATTACK_DECLARED',
-            {
-                gameId,
-                attackingPlayerId: playerId,
-                defendingPlayerId: targetPlayerId,
-                attackerCarduid,
-                attackerName: attackingUnit.cardData?.name || attackingUnit.cardId || 'Unknown Unit',
-                attackerSlot,
-                targetCarduid: targetUnitUid,
-                targetName: targetUnit.cardData?.name || targetUnit.cardId || 'Unknown Unit',
-                targetSlotName,
-                fromBurst: Boolean(eventData.fromBurst),
-                timestamp: Date.now()
-            }
-        );
 
         return {
             success: true,
@@ -442,5 +458,57 @@ export class BattlePhaseManager {
         }
 
         return cardsToAttack;
+    }
+
+    private static recordAttackDeclaration(
+        gameEnv: GameEnvironment,
+        event: PlayerActionEvent,
+        defendingPlayerId: string
+    ): void {
+        const data = event.data || {};
+        if (data.actionType !== 'attackUnit' || data.attackNotificationSent) {
+            return;
+        }
+
+        const attacker = gameEnv.getPlayer(event.playerId);
+        const defender = gameEnv.getPlayer(typeof data.targetPlayerId === 'string' ? data.targetPlayerId : defendingPlayerId);
+
+        if (!attacker || !defender) {
+            return;
+        }
+
+        const attackerSlot = typeof data.attackerCarduid === 'string'
+            ? SlotZoneUtils.findSlotByCarduid(attacker.zones, data.attackerCarduid)
+            : null;
+
+        const targetCarduid = typeof data.targetUnitUid === 'string'
+            ? data.targetUnitUid
+            : typeof data.targetCarduid === 'string'
+                ? data.targetCarduid
+                : undefined;
+
+        const targetSlot = targetCarduid
+            ? SlotZoneUtils.findSlotByCarduid(defender.zones, targetCarduid)
+            : null;
+
+        const notificationManager = new GameNotificationManager(gameEnv);
+        notificationManager.addNotificationEvent(
+            'UNIT_ATTACK_DECLARED',
+            {
+                gameId: typeof data.gameId === 'string' ? data.gameId : undefined,
+                attackingPlayerId: attacker.id,
+                defendingPlayerId,
+                attackerCarduid: typeof data.attackerCarduid === 'string' ? data.attackerCarduid : undefined,
+                attackerName: attackerSlot?.unit?.cardData?.name || attackerSlot?.unit?.cardId || 'Unknown Unit',
+                attackerSlot: attackerSlot?.slotName,
+                targetCarduid,
+                targetName: targetSlot?.unit?.cardData?.name || targetSlot?.unit?.cardId || 'Unknown Unit',
+                targetSlotName: targetSlot?.slotName,
+                fromBurst: Boolean(data.fromBurst),
+                timestamp: Date.now()
+            }
+        );
+
+        data.attackNotificationSent = true;
     }
 }

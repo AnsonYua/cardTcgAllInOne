@@ -20,17 +20,14 @@ import { PhaseTransitionManager } from './effects/PhaseTransitionManager';
 import { UnitZoneCard, PilotZoneCard, CardDatabaseManager } from '../models/CardSystem';
 import { ContinuousEffectManager } from './ContinuousEffectManager';
 import { RepairEffectManager } from './effects/RepairEffectManager';
-import { BlockerEffectManager } from './effects/BlockerEffectManager';
-import { BlockerChoiceManager, BlockerChoiceResult } from './BlockerChoiceManager';
+import { BlockerChoiceManager } from './BlockerChoiceManager';
 import * as fs from 'fs';
 import * as path from 'path';
 import { getCardIdFromUid } from '../utils/CardUtils';
 import { PlayCardPreparationManager, PlayCardPreparationSuccess } from './PlayCardPreparationManager';
 import { GameActionValidator } from './GameActionValidator';
-import { AttackPreparationManager } from './AttackPreparationManager';
 import { BurstEffectManager } from './BurstEffectManager';
 import { ExecutionResult } from './ExecutionResult';
-import { AttackPhaseEffectManager } from './effects/AttackPhaseEffectManager';
 import { MainPhaseAbilityManager } from './effects/MainPhaseAbilityManager';
 import { BattlePhaseManager } from './BattlePhaseManager';
 import { BaseAbilityManager } from './effects/BaseAbilityManager';
@@ -631,58 +628,6 @@ export class GameEngine {
             };
         }
     }
-
-
-
-    private static checkAndExecuteBlockerAction(event: PlayerActionEvent, gameEnv: GameEnvironment): ExecutionResult {
-        console.log(`🛡️ Checking for blocker opportunities: ${event.playerId} → ${gameEnv.getOpponentId(event.playerId)}`);
-        const attackingPlayerId = event.playerId;
-        const defendingPlayerId = gameEnv.getOpponentId(attackingPlayerId);
-
-        if (!defendingPlayerId) {
-            console.error(`❌ No opponent found for attacking player ${attackingPlayerId}`);
-            return { success: false, error: 'No opponent found' };
-        }
-
-        const attackEffectResult = AttackPhaseEffectManager.processAttackPhaseEffects(gameEnv, event);
-
-        if (!attackEffectResult.success) {
-            return {
-                success: false,
-                error: attackEffectResult.error
-            };
-        }
-
-        // Use BlockerChoiceManager following DeployTargetManager pattern
-        const blockerResult: BlockerChoiceResult = BlockerChoiceManager.processAttackWithBlockerChoice(
-            gameEnv, 
-            event, 
-            defendingPlayerId
-        );
-
-        if (!blockerResult.success) {
-            return { success: false, error: blockerResult.error };
-        }
-
-        if (blockerResult.requiresSelection) {
-            return { success: true, requiresSelection: true };
-        } else if (blockerResult.autoBlocked) {
-            return { success: true }; // Attack redirected automatically
-        } else if (blockerResult.normalAttack) {
-            // No blockers available, execute normal attack
-            return this.executeNormalAttackFlow(event, gameEnv);
-        }
-
-        return { success: false, error: 'Unexpected blocker result state' };
-    }
-
-    /**
-     * Execute normal attack flow when no blockers interfere
-     */
-    private static executeNormalAttackFlow(event: PlayerActionEvent, gameEnv: GameEnvironment): ExecutionResult {
-        return BattlePhaseManager.startBattle(gameEnv, event);
-    }
-
     private static executePlayerAction(event: PlayerActionEvent, gameEnv: GameEnvironment): ExecutionResult {
         const eventData = event.data;
         const fromBurst = eventData.fromBurst || false;
@@ -701,7 +646,7 @@ export class GameEngine {
                         };
                     }
 
-                    return GameEngine.checkAndExecuteBlockerAction(event, gameEnv);
+                    return BattlePhaseManager.initiateAttack(gameEnv, event);
                 }
 
                 case 'useCommandCard':
