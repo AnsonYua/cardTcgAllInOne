@@ -2,8 +2,8 @@
 // Blocker choice processing system following DeployTargetManager pattern
 
 import { GameEnvironment } from '../models/GameEnvironment';
-import { 
-    BlockerChoiceEvent, 
+import {
+    BlockerChoiceEvent,
     PlayerActionEvent,
     EventFactory,
     TargetReference
@@ -11,6 +11,8 @@ import {
 import { BlockerEffectManager } from './effects/BlockerEffectManager';
 import { BlockerUnit } from '../utils/EffectScannerUtils';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
+import { BattlePhaseManager } from './BattlePhaseManager';
+import { ExecutionResult } from './ExecutionResult';
 
 export interface BlockerChoiceResult {
     success: boolean;
@@ -19,12 +21,6 @@ export interface BlockerChoiceResult {
     autoBlocked?: boolean;         // true if auto-blocked 
     normalAttack?: boolean;        // true if no blockers, proceed normally
     affectedTarget?: TargetReference; // for auto-blocked scenario
-}
-
-export interface ExecutionResult {
-    success: boolean;
-    error?: string;
-    requiresSelection?: boolean;
 }
 
 /**
@@ -122,9 +118,9 @@ export class BlockerChoiceManager {
                 };
             }
 
-            if (eventData.selectedTarget) {
-                // Player chose a blocker - redirect attack
-                console.log(`🛡️ Blocker chosen: ${eventData.selectedTarget.carduid}`);
+                if (eventData.selectedTarget) {
+                    // Player chose a blocker - redirect attack
+                    console.log(`🛡️ Blocker chosen: ${eventData.selectedTarget.carduid}`);
                 
                 // Step 1: Pay blocker cost immediately (rest the blocker)
                 const costPaid = this.applyBlockerCost(eventData.selectedTarget.carduid, gameEnv);
@@ -142,12 +138,12 @@ export class BlockerChoiceManager {
                 );
                 
                 // Step 3: Execute redirected attack through normal pipeline
-                return this.executeNormalAttack(redirectedEvent.data, gameEnv);
+                return BattlePhaseManager.startBattle(gameEnv, redirectedEvent);
                 
             } else {
                 // Player declined blocking - attack proceeds normally
                 console.log(`🛡️ Blocking declined, attack proceeds to original target`);
-                return this.executeNormalAttack(eventData.originalAttackEvent.data, gameEnv);
+                return BattlePhaseManager.startBattle(gameEnv, eventData.originalAttackEvent);
             }
             
         } catch (error) {
@@ -294,26 +290,4 @@ export class BlockerChoiceManager {
         return undefined;
     }
 
-    /**
-     * Execute normal attack through existing pipeline
-     * Moved from BlockerEffectManager
-     */
-    private static executeNormalAttack(eventData: any, gameEnv: GameEnvironment): ExecutionResult {
-        // Import GameEngine dynamically to avoid circular dependency
-        const { GameEngine } = require('./GameEngine');
-        
-        switch (eventData.actionType) {
-            case 'attackUnit':
-                return GameEngine.handleAttackUnit(eventData, gameEnv);
-                
-            case 'attackShieldArea':
-                return GameEngine.handleAttackShieldArea(eventData, gameEnv);
-                
-            default:
-                return {
-                    success: false,
-                    error: `Unknown actionType: ${eventData.actionType}`
-                };
-        }
-    }
 }

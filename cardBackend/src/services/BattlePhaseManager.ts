@@ -122,6 +122,15 @@ export class BattlePhaseManager {
             };
         }
 
+        const {
+            attackerSlot,
+            attackingUnit,
+            targetSlotName,
+            targetUnit
+        } = preparation;
+
+        const gameId = typeof eventData.gameId === 'string' ? eventData.gameId : undefined;
+
         const context: BattleContext = {
             actionType: 'attackUnit',
             attackingPlayerId: playerId,
@@ -137,6 +146,24 @@ export class BattlePhaseManager {
 
         gameEnv.setCurrentBattle(context);
         console.log('⚔️ Action step opened for unit battle');
+
+        const notificationManager = new GameNotificationManager(gameEnv);
+        notificationManager.addNotificationEvent(
+            'UNIT_ATTACK_DECLARED',
+            {
+                gameId,
+                attackingPlayerId: playerId,
+                defendingPlayerId: targetPlayerId,
+                attackerCarduid,
+                attackerName: attackingUnit.cardData?.name || attackingUnit.cardId || 'Unknown Unit',
+                attackerSlot,
+                targetCarduid: targetUnitUid,
+                targetName: targetUnit.cardData?.name || targetUnit.cardId || 'Unknown Unit',
+                targetSlotName,
+                fromBurst: Boolean(eventData.fromBurst),
+                timestamp: Date.now()
+            }
+        );
 
         return {
             success: true,

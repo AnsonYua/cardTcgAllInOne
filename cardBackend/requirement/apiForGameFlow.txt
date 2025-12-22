@@ -1,0 +1,98 @@
+1.frontend will do auto polling regularly (like every 1 s) to call (api/game/player/playerId_1?gameId=6245da00-b66c-41ed-8cb2-7dc711052aec) , to get the gameEnv to display and update for ui
+
+example
+curl 'http://localhost:8080/api/game/player/playerId_1?gameId=6245da00-b66c-41ed-8cb2-7dc711052aec' \
+  -H 'Accept: */*' \
+  -H 'Accept-Language: zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-CN;q=0.6' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Connection: keep-alive' \
+  -H 'Content-Type: application/json' \
+  -H 'Origin: http://localhost:5173' \
+  -H 'Pragma: no-cache' \
+  -H 'Referer: http://localhost:5173/' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: same-site' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"'
+
+
+2. the gameEnv is like a database describing how the game is look like
+3. after player trigger attack to unit /shield area, it will trigger blocker selection step (if opponent have blocker on field, he/she need to decide if he /she will use the blocker for the attack)
+4.after blocker selection step, it will go to action_step, opponent can play card which have action_step effect.
+5. needsPlayerInput() is sometime used as a gateway to enable user must complete a effect before trigger another effect.
+6. #3,#4 are not necessary related
+
+
+
+
+
+ - Polling loop: Every second call GET /api/game/player/:playerId?gameId=…. If success is true, replace the local gameEnv snapshot completely; never
+    merge partially. If success is false, show the error and pause user actions until the next successful poll.
+  - Queue awareness: After each poll, inspect gameEnv.processingQueue. The first event with status !== 'RESOLVED' determines what the UI should show:
+      - BLOCKER_CHOICE, TARGET_CHOICE, BURST_EFFECT_CHOICE: display the corresponding modal, block all other buttons, and keep prompting until the
+        player submits the required choice via its dedicated API.
+      - PLAYER_ACTION or PLAY_CARD: allow the action only if it matches the exceptions from GameEnvironment.needsPlayerInput() (actionType in
+        resolveBattle, confirmBattle, useCommandCard, or playAs === 'command'), otherwise show “waiting for opponent” and prevent new inputs.
+      - No pending event: normal play controls are enabled.
+  - Battle confirmations: When gameEnv.currentBattle?.status === 'ACTION_STEP':
+      - Show confirm/skip buttons only if gameEnv.currentBattle.confirmations[currentPlayerId] === false and there isn’t a declared choice event ahead
+        of the queue.
+      - Allow command-card plays per the exception logic above. Once both confirmations are true, expect currentBattle to disappear on the next poll.
+  - Submitting actions: For every player action (attack, confirm battle, etc.), call POST /api/game/player/playerAction and optimistically disable the
+    UI until the response arrives. If the API returns an error, surface it and re-enable controls. After a success, wait for the next poll (do not
+    assume local state).
+  - Resolving choices: When the queue head is a choice event, post the decision to its dedicated endpoint (e.g., blocker choice). On success, rely on
+    the next poll to confirm it cleared. If the response says the decision hasn’t been made (userDecisionMade still false), keep the modal open.
+  - Global gating: Never let the user send a new action while the last API call is still pending or while the queue head is a declared choice that
+    hasn’t been resolved. Use the processingQueue snapshot to enforce this consistently.
+  - Status messaging: After each poll, show a concise status derived from the current queue head or battle state (“Waiting for blocker choice”,
+    “Action step open: confirm battle”, “Your turn”). This keeps players informed without guessing the backend state.
+
+  Following these rules keeps the frontend perfectly aligned with the backend’s event queue and prevents conflicting actions.
+
+
+
+
+
+
+   Attack → Blocker → Action Step
+
+  - Player declares an attack by POST /api/game/player/playerAction with actionType: 'attackUnit' or 'attackShieldArea' (src/controllers/
+    gameController.ts:343-410). The controller hands it to GameLogic.playerActionWithAction, which creates a PLAYER_ACTION event and runs the queue
+    (src/services/GameLogic.ts:744-815).
+  - When the queue executes that event, GameEngine.executePlayerAction routes attack actions into checkAndExecuteBlockerAction (src/services/
+    GameEngine.ts:752-772). This does two things:
+      1. Runs attack-phase effects (cancel/modify attack) via AttackPhaseEffectManager.processAttackPhaseEffects.
+      2. Calls BlockerChoiceManager.processAttackWithBlockerChoice to see if the defender has blockers (src/services/GameEngine.ts:637-677, src/
+         services/BlockerChoiceManager.ts:44-105).
+  - If no blockers (BlockerChoiceResult.normalAttack), the engine immediately enters the battle window by calling BattlePhaseManager.startBattle,
+    which sets currentBattle with status: 'ACTION_STEP' and initializes the confirmation flags (src/models/GameEnvironment.ts:129-188, src/services/
+    BattlePhaseManager.ts:114-205). From this point on the frontend sees currentBattle and can show the action-step UI.
+  - If blockers exist, BlockerChoiceManager builds a BLOCKER_CHOICE event (using EventFactory.createBlockerChoiceEvent) and appends it to
+    processingQueue (src/services/EventQueue/interfaces/GameEvent.ts:788-805). needsPlayerInput() returns true because the head event is a declared
+    choice (src/models/GameEnvironment.ts:247-323), so the queue pauses and the frontend’s next poll sees that pending event while currentBattle is
+    still undefined.
+  - The defending player resolves the blocker UI by calling POST /api/game/player/confirmBlockerChoice with { gameId, playerId, eventId,
+    selectedTargets }. The controller validates and calls GameLogic.confirmBlockerChoice (src/controllers/gameController.ts:996-1055, src/services/
+    GameLogic.ts:1118-1204). That method marks userDecisionMade, optionally records the selected blocker, and reruns gameEnv.processEvents(). When
+    BlockerChoiceManager.executeBlockerChoice executes, it either redirects the attack to the chosen blocker or lets it proceed, then the engine
+    finally calls BattlePhaseManager.startBattle, so currentBattle becomes populated.
+  - Once currentBattle exists, both players can play command cards (permitted because needsPlayerInput() returns false unless another explicit choice
+    event appears). Each player then calls POST /api/game/player/playerAction with actionType: 'confirmBattle'. That event runs
+    GameEngine.executeBattleConfirmation, flipping the relevant flag and, after both are true, invoking BattlePhaseManager.resolveBattle to clear
+    currentBattle (src/services/GameEngine.ts:819-845, src/services/BattlePhaseManager.ts:42-118).
+
+  Frontend expectations
+
+  - Poll /api/game/player/:playerId?gameId=... every second and treat the response as the truth.
+  - When processingQueue[0] is a declared BLOCKER_CHOICE, show the blocker modal and block all other actions; no currentBattle should exist yet.
+  - After the blocker event resolves, currentBattle.status === 'ACTION_STEP' appears; show action-step UI, allow command-card plays, and display
+    confirm/skip buttons for whichever currentBattle.confirmations[playerId] is still false.
+  - Always submit player inputs through the dedicated endpoints (playerAction for attacks/confirmations, confirmBlockerChoice for blockers). After
+    each POST, wait for the next poll to reflect the new state.
+
+  This keeps the backend queue and frontend UI in lockstep: attack call → blocker check (possibly emits BLOCKER_CHOICE) → blocker API resolves it →
+  battle action step (currentBattle) → confirm battle APIs → BattlePhaseManager.resolveBattle.

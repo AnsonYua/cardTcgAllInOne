@@ -248,24 +248,28 @@ export class GameEnvironment {
         // Check if first event in queue requires user confirmation
         const nextEvent = this.processingQueue[0];
         
+        console.log("processs Queue  ", JSON.stringify(this.processingQueue))
+        console.log("processs Queue next ", JSON.stringify(nextEvent))
         if (nextEvent?.status === EventStatus.DECLARED) {
+            console.log("processs Queue next 111")
             // For burst choice events, check if user has already provided input
             if (nextEvent.type === EventType.BURST_EFFECT_CHOICE) {
                 const burstChoice = nextEvent as BurstEffectChoiceEvent;
                 return !burstChoice.data.userDecisionMade;
             }
-            
+            console.log("processs Queue next 222")
             // For target choice events, check if user has already provided input
             if (nextEvent.type === EventType.TARGET_CHOICE) {
                 const targetChoice = nextEvent as TargetChoiceEvent;
                 return !targetChoice.data.userDecisionMade;
             }
-            
+            console.log("processs Queue next 333")
             // For blocker choice events, check if user has already provided input
             if (nextEvent.type === EventType.BLOCKER_CHOICE) {
                 const blockerChoice = nextEvent as BlockerChoiceEvent;
                 return !blockerChoice.data.userDecisionMade;
             }
+            console.log("processs Queue next 444")
         }
 
         if (this.currentBattle && this.currentBattle.status === 'ACTION_STEP') {
@@ -279,7 +283,7 @@ export class GameEnvironment {
             if (!actionableEvent) {
                 return false;
             }
-
+            console.log("sadasdfdsf ",JSON.stringify(actionableEvent))
             if (actionableEvent.type === EventType.PLAYER_ACTION) {
                 const playerAction = actionableEvent as PlayerActionEvent;
                 const actionType = typeof playerAction.data?.actionType === 'string'

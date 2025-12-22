@@ -5,7 +5,7 @@ import { GameEvent, AcknowledgeEventsEvent, PlayCardEvent, PlayCardEventData,
     EventFactory, EventStatus,
      EventPriority, DeployEffectEvent,DeployEffectEventData, TargetChoiceEvent, PairingEffectEvent,
      ConfirmRedrawEvent, GameplayBeginsEvent, ErrorOccurredEvent, BurstEffectChoiceEvent, ShieldCardAttackedEvent,
-     StartGameEvent, JoinGameEvent, NextPlayerTurnEvent, EndTurnEvent, PlayerActionEvent, PlayerActionEventData, RepairEffectEvent, BlockerChoiceEvent } from './EventQueue/interfaces/GameEvent';
+     StartGameEvent, JoinGameEvent, NextPlayerTurnEvent, EndTurnEvent, PlayerActionEvent, RepairEffectEvent, BlockerChoiceEvent } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase, EventType } from '../models/GameEnums';
 import { EnergyManager } from './EnergyManager';
@@ -681,72 +681,6 @@ export class GameEngine {
      */
     private static executeNormalAttackFlow(event: PlayerActionEvent, gameEnv: GameEnvironment): ExecutionResult {
         return BattlePhaseManager.startBattle(gameEnv, event);
-    }
-
-    public static handleAttackUnit(eventData: PlayerActionEventData, gameEnv: GameEnvironment): ExecutionResult {
-        const playerId = typeof eventData.playerId === 'string' ? eventData.playerId : undefined;
-        if (!playerId) {
-            return {
-                success: false,
-                error: 'attackUnit requires a valid playerId'
-            };
-        }
-
-        const attackerCarduid = typeof eventData.attackerCarduid === 'string' ? eventData.attackerCarduid : undefined;
-        const targetPlayerId = typeof eventData.targetPlayerId === 'string' ? eventData.targetPlayerId : undefined;
-        const targetUnitUid = typeof eventData.targetUnitUid === 'string' ? eventData.targetUnitUid : undefined;
-
-        const attackData: PlayerActionEventData = {
-            ...eventData,
-            playerId,
-            actionType: 'attackUnit',
-            attackerCarduid,
-            targetPlayerId,
-            targetUnitUid
-        };
-
-        const attackEvent: PlayerActionEvent = {
-            id: `player_action_${Date.now()}_${Math.random()}`,
-            type: EventType.PLAYER_ACTION,
-            status: EventStatus.DECLARED,
-            priority: EventPriority.NORMAL,
-            playerId,
-            timestamp: Date.now(),
-            data: attackData
-        };
-
-        return this.executeNormalAttackFlow(attackEvent, gameEnv);
-    }
-
-    public static handleAttackShieldArea(eventData: PlayerActionEventData, gameEnv: GameEnvironment): ExecutionResult {
-        const playerId = typeof eventData.playerId === 'string' ? eventData.playerId : undefined;
-        if (!playerId) {
-            return {
-                success: false,
-                error: 'attackShieldArea requires a valid playerId'
-            };
-        }
-
-        const attackerCarduid = typeof eventData.attackerCarduid === 'string' ? eventData.attackerCarduid : undefined;
-
-        const attackData: PlayerActionEventData = {
-            ...eventData,
-            playerId,
-            actionType: 'attackShieldArea',
-            attackerCarduid
-        };
-
-        const attackEvent: PlayerActionEvent = {
-            id: `player_action_${Date.now()}_${Math.random()}`,
-            type: EventType.PLAYER_ACTION,
-            status: EventStatus.DECLARED,
-            priority: EventPriority.NORMAL,
-            playerId,
-            timestamp: Date.now(),
-            data: attackData
-        };
-
-        return this.executeNormalAttackFlow(attackEvent, gameEnv);
     }
 
     private static executePlayerAction(event: PlayerActionEvent, gameEnv: GameEnvironment): ExecutionResult {

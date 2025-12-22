@@ -909,6 +909,75 @@
             }
           },
           "slot3": {
+                        "unit": {
+              "carduid": "ST01-009_d0276af7-b917-45ba-8e16-692d241a7360",
+              "cardId": "ST01-009",
+              "cardData": {
+                "id": "ST01-009",
+                "name": "Zowort",
+                "cardType": "unit",
+                "color": "White",
+                "level": 2,
+                "cost": 2,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Academy"
+                ],
+                "link": [],
+                "ap": 3,
+                "hp": 2,
+                "effects": {
+                  "description": [
+                    "<Blocker> (Rest this Unit to change the attack target to it.)",
+                    "This Unit can't choose the enemy player as its attack target."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "blocker",
+                      "type": "keyword",
+                      "trigger": "ATTACK_REDIRECT",
+                      "target": {
+                        "type": "unit",
+                        "scope": "self"
+                      },
+                      "effect": {
+                        "action": "redirect_attack",
+                        "parameters": {
+                          "cost": "rest_self"
+                        },
+                        "duration": "instant"
+                      }
+                    },
+                    {
+                      "effectId": "attack_restriction",
+                      "type": "static",
+                      "trigger": "continuous",
+                      "target": {
+                        "type": "unit",
+                        "scope": "self"
+                      },
+                      "effect": {
+                        "action": "restrict_attack",
+                        "parameters": {
+                          "restriction": "cannot_attack_player"
+                        },
+                        "duration": "permanent"
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 1757865720753,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "originalAP": 3,
+              "originalHP": 2,
+              "isFirstPlay": true,
+              "damageReceived": 0
+            },
             "fieldCardValue": {
               "totalOriginalAP": 0,
               "totalOriginalHP": 0,
