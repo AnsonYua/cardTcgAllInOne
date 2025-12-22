@@ -7,7 +7,8 @@ import { ZoneCard } from './CardSystem';
 // EventManager removed - using direct event processing
 import { GameEvent, EventStatus, EventPriority, EventFactory, BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent, PlayerActionEvent, PlayCardEvent } from '../services/EventQueue/interfaces/GameEvent';
 import { ProcessingResult, ValidationResult } from './EventInterfaces';
-import { BattleContext } from './BattleContext';
+import { BattleContext, ActionStepTargetSummary } from './BattleContext';
+import { EffectScannerUtils } from '../utils/EffectScannerUtils';
 
 // Forward declaration to avoid circular dependency
 declare class StaticEventProcessor {
@@ -139,6 +140,7 @@ export class GameEnvironment {
             ...context,
             confirmations
         };
+        this.refreshBattleActionTargets();
         console.log(`⚔️ Battle context initialized for ${context.actionType} between ${context.attackingPlayerId} and ${context.defendingPlayerId}`);
     }
 
@@ -187,6 +189,50 @@ export class GameEnvironment {
         const defenderConfirmed = defendingPlayerId ? confirmations[defendingPlayerId] === true : false;
 
         return attackerConfirmed && defenderConfirmed;
+    }
+
+    public refreshBattleActionTargets(): void {
+        if (!this.currentBattle) {
+            return;
+        }
+
+        if (this.currentBattle.status !== 'ACTION_STEP') {
+            delete this.currentBattle.actionTargets;
+            return;
+        }
+
+        const { attackingPlayerId, defendingPlayerId } = this.currentBattle;
+        const actionTargets: Record<string, ActionStepTargetSummary[]> = {};
+
+        if (attackingPlayerId) {
+            actionTargets[attackingPlayerId] = EffectScannerUtils.collectActionStepTargets(
+                this,
+                attackingPlayerId
+            );
+        }
+
+        if (defendingPlayerId) {
+            actionTargets[defendingPlayerId] = EffectScannerUtils.collectActionStepTargets(
+                this,
+                defendingPlayerId
+            );
+        }
+
+        this.currentBattle.actionTargets = actionTargets;
+
+        if (!this.currentBattle.confirmations) {
+            this.currentBattle.confirmations = {};
+        }
+
+        const participants = [attackingPlayerId, defendingPlayerId].filter((id): id is string => typeof id === 'string');
+        for (const playerId of participants) {
+            const targets = actionTargets[playerId] || [];
+            if (targets.length === 0) {
+                this.currentBattle.confirmations[playerId] = true;
+            } else if (this.currentBattle.confirmations[playerId] === undefined) {
+                this.currentBattle.confirmations[playerId] = false;
+            }
+        }
     }
     
     
@@ -494,6 +540,9 @@ export class GameEnvironment {
     // ============ SERIALIZATION ============
 
     public toJSON(): any {
+        if (this.currentBattle) {
+            this.refreshBattleActionTargets();
+        }
         return {
             phase: this.phase,
             playerId_1: this.playerId_1,

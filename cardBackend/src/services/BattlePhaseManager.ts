@@ -2,7 +2,7 @@
 // Coordinates battle flow, action step windows, and deferred resolution
 
 import { GameEnvironment } from '../models/GameEnvironment';
-import { BattleContext } from '../models/BattleContext';
+import { BattleContext, ForcedTargetSummary } from '../models/BattleContext';
 import { PlayerActionEvent, PlayerActionEventData, EventFactory } from './EventQueue/interfaces/GameEvent';
 import { ExecutionResult } from './ExecutionResult';
 import { AttackPreparationManager } from './AttackPreparationManager';
@@ -169,13 +169,13 @@ export class BattlePhaseManager {
             actionType: 'attackUnit',
             attackingPlayerId: playerId,
             defendingPlayerId: targetPlayerId,
-            pendingEvent: { ...eventData },
             attackerCarduid,
             targetCarduid: targetUnitUid,
             targetPlayerId,
             status: 'ACTION_STEP',
             fromBurst: Boolean(eventData.fromBurst),
-            openedAt: Date.now()
+            openedAt: Date.now(),
+            forcedTarget: this.extractForcedTarget(eventData)
         };
 
         gameEnv.setCurrentBattle(context);
@@ -227,11 +227,12 @@ export class BattlePhaseManager {
             actionType: 'attackShieldArea',
             attackingPlayerId: playerId,
             defendingPlayerId: opponentId,
-            pendingEvent: { ...eventData },
             attackerCarduid,
             status: 'ACTION_STEP',
             fromBurst: Boolean(eventData.fromBurst),
-            openedAt: Date.now()
+            openedAt: Date.now(),
+            targetPlayerId: opponentId,
+            forcedTarget: this.extractForcedTarget(eventData)
         };
 
         gameEnv.setCurrentBattle(context);
@@ -511,5 +512,22 @@ export class BattlePhaseManager {
 
         data.attackNotificationSent = true;
         data.attackNotificationId = notificationId;
+    }
+
+    private static extractForcedTarget(eventData: PlayerActionEventData): ForcedTargetSummary | undefined {
+        const forcedTarget = eventData?.forcedTarget as ForcedTargetSummary | undefined;
+        if (!forcedTarget || typeof forcedTarget !== 'object') {
+            return undefined;
+        }
+
+        if (typeof forcedTarget.carduid !== 'string') {
+            return undefined;
+        }
+
+        return {
+            carduid: forcedTarget.carduid,
+            playerId: typeof forcedTarget.playerId === 'string' ? forcedTarget.playerId : undefined,
+            zone: typeof forcedTarget.zone === 'string' ? forcedTarget.zone : undefined
+        };
     }
 }

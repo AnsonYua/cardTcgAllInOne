@@ -251,6 +251,11 @@ export class BlockerChoiceManager {
             ...originalData,
             targetCarduid: blockerTarget.carduid
         };
+        redirectedData.forcedTarget = {
+            carduid: blockerTarget.carduid,
+            zone: blockerTarget.zone,
+            playerId: blockerTarget.playerId
+        };
 
         if (originalData.actionType === 'attackShieldArea') {
             redirectedData.actionType = 'attackUnit';

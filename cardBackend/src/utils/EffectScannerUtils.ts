@@ -6,12 +6,14 @@
  */
 
 import { GameEnvironment } from '../models/GameEnvironment';
+import { Player } from '../models/Player';
 import { CardDatabaseManager } from '../models/CardSystem';
 import { SLOT_ZONES } from '../config/gameConstants';
 import { SlotZoneUtils } from './SlotZoneUtils';
 import { getCardIdFromUid } from './CardUtils';
 import { EffectDefinition } from '../services/EventQueue/interfaces/GameEvent';
 import { resolveEffectActionFromRule } from './EffectNormalizationUtils';
+import { ActionStepTargetSummary } from '../models/BattleContext';
 
 export interface EffectScanResult {
     carduid: string;
@@ -156,5 +158,137 @@ export class EffectScannerUtils {
         };
         
         return this.scanPlayerForEffects(gameEnv, playerId, genericFilter);
+    }
+
+    /**
+     * Collect actionable cards for ACTION_STEP timing windows (hand/base/unit/pilot)
+     */
+    static collectActionStepTargets(gameEnv: GameEnvironment, playerId: string): ActionStepTargetSummary[] {
+        const player = gameEnv.getPlayer(playerId);
+        if (!player) {
+            return [];
+        }
+
+        const targets: ActionStepTargetSummary[] = [];
+
+        this.scanHandForActionStepTargets(player, targets);
+        this.scanSlotForActionStepTargets(player, targets);
+        this.scanBaseForActionStepTargets(player, targets);
+
+        return targets;
+    }
+
+    private static scanHandForActionStepTargets(player: Player, targets: ActionStepTargetSummary[]): void {
+        const handCards = player.deck?.hand || [];
+        for (const card of handCards) {
+            this.tryAddActionStepTarget(
+                targets,
+                card.carduid,
+                card.cardData,
+                'hand',
+                'hand'
+            );
+        }
+    }
+
+    private static scanSlotForActionStepTargets(player: Player, targets: ActionStepTargetSummary[]): void {
+        if (!player.zones) {
+            return;
+        }
+
+        for (const slotName of SLOT_ZONES) {
+            const slot = (player.zones as any)[slotName];
+            if (!slot) {
+                continue;
+            }
+
+            if (slot.unit) {
+                this.tryAddActionStepTarget(
+                    targets,
+                    slot.unit.carduid,
+                    slot.unit.cardData,
+                    slotName,
+                    'unit'
+                );
+            }
+
+            if (slot.pilot) {
+                this.tryAddActionStepTarget(
+                    targets,
+                    slot.pilot.carduid,
+                    slot.pilot.cardData,
+                    `${slotName}_pilot`,
+                    'pilot'
+                );
+            }
+        }
+    }
+
+    private static scanBaseForActionStepTargets(player: Player, targets: ActionStepTargetSummary[]): void {
+        const baseCards = player.zones?.base || [];
+        for (const baseCard of baseCards) {
+            this.tryAddActionStepTarget(
+                targets,
+                baseCard.carduid,
+                baseCard.cardData,
+                'base',
+                'base'
+            );
+        }
+    }
+
+    private static tryAddActionStepTarget(
+        targets: ActionStepTargetSummary[],
+        carduid?: string,
+        cardData?: any,
+        location: string = 'unknown',
+        zoneType: 'hand' | 'unit' | 'pilot' | 'base' = 'unit'
+    ): void {
+        if (!carduid || !cardData?.effects?.rules) {
+            return;
+        }
+
+        const effectIds = this.extractActionStepEffectIds(cardData.effects.rules);
+        if (!effectIds.length) {
+            return;
+        }
+
+        targets.push({
+            carduid,
+            cardId: cardData.id || getCardIdFromUid(carduid),
+            cardName: cardData.name,
+            cardType: cardData.cardType,
+            location,
+            zoneType,
+            effectIds
+        });
+    }
+
+    private static extractActionStepEffectIds(effects: EffectDefinition[]): string[] {
+        const actionEffectIds: string[] = [];
+
+        for (const effect of effects) {
+            if (this.effectSupportsActionStep(effect)) {
+                actionEffectIds.push(effect.effectId || effect.action || 'action_step_effect');
+            }
+        }
+
+        return actionEffectIds;
+    }
+
+    private static effectSupportsActionStep(effect: EffectDefinition): boolean {
+        const windows = Array.isArray(effect.timing?.windows)
+            ? effect.timing!.windows!.map(window => typeof window === 'string' ? window.toUpperCase() : window)
+            : [];
+
+        if (windows.includes('ACTION_STEP')) {
+            return true;
+        }
+
+        const actionTurn = typeof effect.timing?.actionTurn === 'string'
+            ? effect.timing.actionTurn.toUpperCase()
+            : undefined;
+
+        return actionTurn === 'ACTION_STEP';
     }
 }
