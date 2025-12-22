@@ -492,7 +492,7 @@ export class BattlePhaseManager {
             : null;
 
         const notificationManager = new GameNotificationManager(gameEnv);
-        notificationManager.addNotificationEvent(
+        const notificationId = notificationManager.addNotificationEvent(
             'UNIT_ATTACK_DECLARED',
             {
                 gameId: typeof data.gameId === 'string' ? data.gameId : undefined,
@@ -510,5 +510,6 @@ export class BattlePhaseManager {
         );
 
         data.attackNotificationSent = true;
+        data.attackNotificationId = notificationId;
     }
 }

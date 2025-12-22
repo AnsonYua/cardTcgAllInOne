@@ -1115,7 +1115,7 @@ export class GameLogic {
         }
     }
 
-    async confirmBlockerChoice(gameId: string, playerId: string, eventId: string, selectedTargets: TargetReference[]): Promise<GameLogicResult> {
+    async confirmBlockerChoice(gameId: string, playerId: string, eventId: string, selectedTargets: TargetReference[], notificationId?: string): Promise<GameLogicResult> {
         try {
             console.log(`🛡️ Processing blocker choice confirmation: ${eventId} by player ${playerId}`);
             console.log('Selected blocker target(s):', selectedTargets);
@@ -1176,8 +1176,24 @@ export class GameLogic {
             }
 
             event.data.selectedTarget = resolvedTarget;
-
             event.data.userDecisionMade = true;
+
+            const rawNotificationId = (typeof notificationId === 'string' && notificationId.length > 0)
+                ? notificationId
+                : event.data.originalAttackEvent?.data?.attackNotificationId;
+
+            const attackNotificationId = typeof rawNotificationId === 'string' && rawNotificationId.length > 0
+                ? rawNotificationId
+                : undefined;
+
+            if (attackNotificationId && resolvedTarget) {
+                const notificationManager = new GameNotificationManager(gameEnv);
+                notificationManager.updateNotificationEvent(attackNotificationId, {
+                    forcedTargetCarduid: resolvedTarget.carduid,
+                    forcedTargetZone: resolvedTarget.zone,
+                    forcedTargetPlayerId: resolvedTarget.playerId
+                });
+            }
 
             const processingResult = await gameEnv.processEvents();
             if (!processingResult.success) {

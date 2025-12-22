@@ -920,7 +920,7 @@ export class GameController {
         try {
             console.log('🎯 Processing target choice confirmation:', req.body);
             
-            const { gameId, playerId, eventId, selectedTargets } = req.body;
+            const { gameId, playerId, eventId, selectedTargets, notificationId } = req.body;
             
             if (!gameId || !playerId || !eventId) {
                 res.status(400).json({
@@ -1001,7 +1001,7 @@ export class GameController {
         try {
             console.log('🛡️ Processing blocker choice confirmation:', req.body);
 
-            const { gameId, playerId, eventId, selectedTargets } = req.body;
+            const { gameId, playerId, eventId, selectedTargets, notificationId } = req.body;
 
             if (!gameId || !playerId || !eventId) {
                 res.status(400).json({
@@ -1035,7 +1035,7 @@ export class GameController {
                 }
             }
 
-            const result = await this.gameLogic.confirmBlockerChoice(gameId, playerId, eventId, targetsArray);
+            const result = await this.gameLogic.confirmBlockerChoice(gameId, playerId, eventId, targetsArray, notificationId);
 
             if (result.success && result.gameEnv) {
                 res.json({
