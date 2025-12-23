@@ -22,12 +22,13 @@ export type BattleStatus = 'ACTION_STEP' | 'RESOLVING';
 
 export interface BattleContext {
     actionType: BattleActionType;
-   attackingPlayerId: string;
+    attackingPlayerId: string;
     defendingPlayerId: string;
     attackerCarduid?: string;
     targetCarduid?: string;
     targetPlayerId?: string;
     fromBurst?: boolean;
+    attackNotificationId?: string;
     forcedTarget?: ForcedTargetSummary;
     actionTargets?: Record<string, ActionStepTargetSummary[]>;
     status: BattleStatus;

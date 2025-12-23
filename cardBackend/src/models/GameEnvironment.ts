@@ -46,6 +46,7 @@ export class GameEnvironment {
     // Object-oriented components
     public players: { [playerId: string]: Player };
     public currentBattle?: BattleContext;
+    private battlePhaseReturnPoint?: GamePhase;
     
     
     // Unified event system - renamed for clarity
@@ -74,6 +75,7 @@ export class GameEnvironment {
         
         this.players = {};
         this.currentBattle = undefined;
+        this.battlePhaseReturnPoint = undefined;
         
         // Initialize event systems
         this.processingQueue = [];
@@ -140,6 +142,7 @@ export class GameEnvironment {
             ...context,
             confirmations
         };
+        this.enterActionStepPhase();
         this.refreshBattleActionTargets();
         console.log(`⚔️ Battle context initialized for ${context.actionType} between ${context.attackingPlayerId} and ${context.defendingPlayerId}`);
     }
@@ -149,6 +152,7 @@ export class GameEnvironment {
             console.log('🛑 Clearing battle context');
         }
         this.currentBattle = undefined;
+        this.resetBattlePhaseState();
     }
 
     public hasActiveBattle(): boolean {
@@ -189,6 +193,33 @@ export class GameEnvironment {
         const defenderConfirmed = defendingPlayerId ? confirmations[defendingPlayerId] === true : false;
 
         return attackerConfirmed && defenderConfirmed;
+    }
+
+    public enterBlockerPhase(): void {
+        this.enterBattleSubPhase(GamePhase.BLOCKER_PHASE);
+    }
+
+    public enterActionStepPhase(): void {
+        this.enterBattleSubPhase(GamePhase.ACTION_STEP_PHASE);
+    }
+
+    private enterBattleSubPhase(phase: GamePhase.BLOCKER_PHASE | GamePhase.ACTION_STEP_PHASE): void {
+        if (!this.battlePhaseReturnPoint && this.phase !== phase) {
+            this.battlePhaseReturnPoint = this.phase;
+        }
+        this.phase = phase;
+    }
+
+    public resetBattlePhaseState(): void {
+        if (this.battlePhaseReturnPoint) {
+            this.phase = this.battlePhaseReturnPoint;
+            this.battlePhaseReturnPoint = undefined;
+            return;
+        }
+
+        if (this.phase === GamePhase.BLOCKER_PHASE || this.phase === GamePhase.ACTION_STEP_PHASE) {
+            this.phase = GamePhase.MAIN_PHASE;
+        }
     }
 
     public refreshBattleActionTargets(): void {
@@ -317,8 +348,8 @@ export class GameEnvironment {
             }
             console.log("processs Queue next 444")
         }
-
-        if (this.currentBattle && this.currentBattle.status === 'ACTION_STEP') {
+        console.log("asfdasfdssdf ",this.phase)
+        if (this.phase == GamePhase.ACTION_STEP_PHASE && this.currentBattle && this.currentBattle.status === 'ACTION_STEP') {
             const currentPlayerId = this.currentPlayer;
             const pendingConfirmation =
                 currentPlayerId != null &&
@@ -566,6 +597,7 @@ export class GameEnvironment {
             // Frontend notification system
             notificationQueue: this.notificationQueue,
             lastEventId: this.lastEventId,
+            battlePhaseReturnPoint: this.battlePhaseReturnPoint,
             
         };
     }
@@ -610,6 +642,7 @@ export class GameEnvironment {
         // Frontend notification system
         gameEnv.notificationQueue = data.notificationQueue || [];
         gameEnv.lastEventId = data.lastEventId || 0;
+        gameEnv.battlePhaseReturnPoint = data.battlePhaseReturnPoint;
         
         return gameEnv;
     }

@@ -77,15 +77,16 @@ export class StaticEventProcessor {
                     }
                     
                     // 4. Ready to resolve
-                    console.log(`🔄 Event ${event.type} transitioning DECLARED → RESOLVING`);
+                    console.log(`🔄 Event 1111 ${event.type} transitioning DECLARED → RESOLVING`);
                     event.status = EventStatus.RESOLVING;
+                    console.log("game Need user Input 1111", gameEnv.needsPlayerInput())
                     
                 } else if (event.status === EventStatus.RESOLVING) {
                     // ============ RESOLVING PHASE ============
-                    console.log(`🔥 Executing event: ${event.type}`);
+                    console.log(`🔥 Executing event123232: ${event.type}`);
                     
                     const executionResult = GameEngine.execute(event, gameEnv);
-                    
+                    console.log(`🔥 Executing event  11111111111: ${executionResult}`);
                     if (executionResult.success) {
                         event.status = EventStatus.RESOLVED;
                     } else {

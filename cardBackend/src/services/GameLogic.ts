@@ -1177,6 +1177,16 @@ export class GameLogic {
 
             event.data.selectedTarget = resolvedTarget;
             event.data.userDecisionMade = true;
+            event.status = EventStatus.DECLARED;
+            console.log('📋 Queue before blocker reorder:', gameEnv.processingQueue.map(evt => evt.id));
+
+            // Ensure the blocker event is processed next by moving it to the front of the queue
+            const removed = gameEnv.dequeueFromProcessing(event);
+            if (removed) {
+                gameEnv.processingQueue.unshift(event);
+            }
+            console.log('📋 Queue after blocker reorder:', gameEnv.processingQueue.map(evt => evt.id));
+            console.log('❓ needsPlayerInput immediately before processing:', gameEnv.needsPlayerInput(), 'front:', gameEnv.processingQueue[0]?.id);
 
             const rawNotificationId = (typeof notificationId === 'string' && notificationId.length > 0)
                 ? notificationId
@@ -1194,7 +1204,7 @@ export class GameLogic {
                     forcedTargetPlayerId: resolvedTarget.playerId
                 });
             }
-
+            console.log("data 1111222333444", JSON.stringify(gameEnv.processingQueue))
             const processingResult = await gameEnv.processEvents();
             if (!processingResult.success) {
                 return {
@@ -1206,7 +1216,7 @@ export class GameLogic {
             await this.saveGameToFile(gameId, gameEnv);
 
             console.log('✅ Blocker choice processed successfully');
-
+            console.log("data 1111222333", JSON.stringify(gameEnv.processingQueue))
             return {
                 success: true,
                 gameId,

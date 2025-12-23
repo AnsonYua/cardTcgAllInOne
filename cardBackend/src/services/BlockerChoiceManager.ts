@@ -75,6 +75,7 @@ export class BlockerChoiceManager {
                 
                 // Add to processing queue for game event processing
                 gameEnv.processingQueue.push(blockerChoiceEvent);
+                gameEnv.enterBlockerPhase();
                 
                 console.log(`🛡️ Created BLOCKER_CHOICE event ${blockerChoiceEvent.id} with ${blockerTargets.length} blocker targets`);
                 return { 

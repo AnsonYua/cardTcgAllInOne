@@ -113,6 +113,40 @@ export class BattlePhaseManager {
         }
     }
 
+    static handleBattleConfirmation(gameEnv: GameEnvironment, playerId: string): ExecutionResult {
+        if (!playerId) {
+            return { success: false, error: 'confirmBattle action requires playerId' };
+        }
+
+        const confirmation = gameEnv.confirmBattleResolution(playerId);
+        if (!confirmation.success) {
+            return { success: false, error: confirmation.error };
+        }
+
+        if (!gameEnv.haveBothPlayersConfirmedBattle()) {
+            console.log('🤝 Battle confirmation recorded, awaiting opponent confirmation');
+            return { success: true };
+        }
+
+        const attackerId = gameEnv.currentBattle?.attackingPlayerId;
+        if (!attackerId) {
+            return {
+                success: false,
+                error: 'Cannot auto-resolve battle: attacking player not found'
+            };
+        }
+
+        const attackNotificationId = gameEnv.currentBattle?.attackNotificationId;
+        if (attackNotificationId) {
+            const notificationManager = new GameNotificationManager(gameEnv);
+            notificationManager.updateNotificationEvent(attackNotificationId, {
+                battleEnd: true
+            });
+        }
+
+        return this.resolveBattle(gameEnv, attackerId);
+    }
+
     static isActionWindowOpen(gameEnv: GameEnvironment): boolean {
         return Boolean(gameEnv.currentBattle && gameEnv.currentBattle.status === 'ACTION_STEP');
     }
@@ -175,7 +209,8 @@ export class BattlePhaseManager {
             status: 'ACTION_STEP',
             fromBurst: Boolean(eventData.fromBurst),
             openedAt: Date.now(),
-            forcedTarget: this.extractForcedTarget(eventData)
+            forcedTarget: this.extractForcedTarget(eventData),
+            attackNotificationId: this.extractAttackNotificationId(eventData)
         };
 
         gameEnv.setCurrentBattle(context);
@@ -232,7 +267,8 @@ export class BattlePhaseManager {
             fromBurst: Boolean(eventData.fromBurst),
             openedAt: Date.now(),
             targetPlayerId: opponentId,
-            forcedTarget: this.extractForcedTarget(eventData)
+            forcedTarget: this.extractForcedTarget(eventData),
+            attackNotificationId: this.extractAttackNotificationId(eventData)
         };
 
         gameEnv.setCurrentBattle(context);
@@ -529,5 +565,12 @@ export class BattlePhaseManager {
             playerId: typeof forcedTarget.playerId === 'string' ? forcedTarget.playerId : undefined,
             zone: typeof forcedTarget.zone === 'string' ? forcedTarget.zone : undefined
         };
+    }
+
+    private static extractAttackNotificationId(eventData: PlayerActionEventData): string | undefined {
+        const id = eventData && typeof (eventData as any).attackNotificationId === 'string'
+            ? (eventData as any).attackNotificationId
+            : undefined;
+        return id;
     }
 }
