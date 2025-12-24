@@ -158,6 +158,55 @@ export class BattlePhaseManager {
         return this.playerInBattle(gameEnv.currentBattle, playerId);
     }
 
+    static handlePostActionStepCardPlay(gameEnv: GameEnvironment, playerId: string): ExecutionResult {
+        const battle = gameEnv.currentBattle;
+        if (!battle || battle.status !== 'ACTION_STEP') {
+            return { success: true };
+        }
+
+        if (!this.playerInBattle(battle, playerId)) {
+            return { success: true };
+        }
+
+        if (!battle.confirmations) {
+            battle.confirmations = {};
+        }
+
+        if (battle.confirmations[playerId] === false) {
+            console.log(`♻️ Resetting confirmation for ${playerId} after card play`);
+        }
+        battle.confirmations[playerId] = false;
+        gameEnv.refreshBattleActionTargets();
+        console.log('🎯 Action targets refreshed after card play:', JSON.stringify(battle.actionTargets || {}));
+
+        if (!gameEnv.haveBothPlayersConfirmedBattle()) {
+            console.log('⏳ Waiting for other player confirmation before resolving battle');
+            return { success: true };
+        }
+
+        const attackerId = battle.attackingPlayerId;
+        if (!attackerId) {
+            return { success: false, error: 'Cannot auto-resolve battle: missing attacker' };
+        }
+
+        const attackNotificationId = battle.attackNotificationId;
+        if (attackNotificationId) {
+            const notificationManager = new GameNotificationManager(gameEnv);
+            notificationManager.updateNotificationEvent(attackNotificationId, {
+                battleEnd: true
+            });
+            console.log(`📣 Attack notification ${attackNotificationId} marked as battleEnd`);
+        }
+
+        const result = this.resolveBattle(gameEnv, attackerId);
+        if (!result.success) {
+            console.error(`❌ Failed to auto-resolve battle after card play: ${result.error}`);
+        } else {
+            console.log('✅ Battle auto-resolved after action step post-play update');
+        }
+        return result;
+    }
+
     private static playerInBattle(context: BattleContext, playerId: string): boolean {
         return context.attackingPlayerId === playerId || context.defendingPlayerId === playerId;
     }

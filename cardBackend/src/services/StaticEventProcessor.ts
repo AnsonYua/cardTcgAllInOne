@@ -40,7 +40,8 @@ export class StaticEventProcessor {
                iterations < maxIterations) {
             
             iterations++; // Increment iteration counter
-            console.log(`⚡ Queue: ${gameEnv.processingQueue.length}, processed: ${eventsProcessed}, iteration: ${iterations}`);
+            console.log(`⚡ Queue iteration ${iterations}: size=${gameEnv.processingQueue.length}, processed=${eventsProcessed}`);
+            console.log('⚡ Queue snapshot:', gameEnv.processingQueue.map(evt => `${evt.type}:${evt.status}`).join(' -> '));
 
             const event = gameEnv.processingQueue[0]; // Peek at next event
             if (!event) break;

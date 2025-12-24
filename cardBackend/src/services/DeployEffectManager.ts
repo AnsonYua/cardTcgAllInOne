@@ -82,7 +82,7 @@ export class DeployEffectManager {
                 deployEffects,
                 eventData.cardPlayNotificationId
             );
-            gameEnv.processingQueue.push(deployEvent);
+            gameEnv.enqueueForProcessing(deployEvent);
 
             console.log(`🚀 DeployEffectManager queued ${deployEffects.length} deploy effect(s) for ${eventData.carduid}`);
             return { success: true, effectsFound: deployEffects.length };

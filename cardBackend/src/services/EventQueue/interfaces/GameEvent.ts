@@ -139,6 +139,14 @@ export interface PlayCardEvent extends BaseGameEvent<PlayCardEventData> {
     type: EventType.PLAY_CARD;
 }
 
+export interface ActionStepPostPlayEventData {
+    actingPlayerId: string;
+}
+
+export interface ActionStepPostPlayEvent extends BaseGameEvent<ActionStepPostPlayEventData> {
+    type: EventType.ACTION_STEP_POST_PLAY;
+}
+
 export interface TargetFilters {
     level?: string;
     hp?: string;
@@ -557,6 +565,22 @@ export class EventFactory {
         };
     }
     
+    static createActionStepPostPlayEvent(
+        playerId: string
+    ): ActionStepPostPlayEvent {
+        return {
+            id: `action_step_post_play_${++this.eventIdCounter}_${Date.now()}`,
+            type: EventType.ACTION_STEP_POST_PLAY,
+            status: EventStatus.DECLARED,
+            priority: EventPriority.LOW,
+            timestamp: Date.now(),
+            playerId,
+            data: {
+                actingPlayerId: playerId
+            }
+        };
+    }
+    
     static createStepBeginEvent(step: string, playerId: string, allowsResponses: boolean = true): StepBeginEvent {
         return {
             id: `step_begin_${++this.eventIdCounter}_${Date.now()}`,
@@ -763,7 +787,7 @@ export class EventFactory {
             id: `target_choice_${++this.eventIdCounter}_${Date.now()}`,
             type: EventType.TARGET_CHOICE,
             status: EventStatus.DECLARED,
-            priority: EventPriority.HIGH,
+            priority: EventPriority.IMMEDIATE,
             playerId,
             timestamp: Date.now(),
             data: eventData    // Pass eventData object directly without reconstruction
@@ -813,7 +837,7 @@ export class EventFactory {
             id: `deploy_${++this.eventIdCounter}_${Date.now()}`,
             type: EventType.DEPLOY_EFFECT_TRIGGERED,
             status: EventStatus.DECLARED,
-            priority: EventPriority.NORMAL,
+            priority: EventPriority.HIGH,
             playerId,
             timestamp: Date.now(),
             data: deployEffectEventData

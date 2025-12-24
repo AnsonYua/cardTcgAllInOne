@@ -100,5 +100,8 @@ export enum EventType {
     TARGET_CHOICE = 'TARGET_CHOICE',
     
     // Blocker choice system
-    BLOCKER_CHOICE = 'BLOCKER_CHOICE'
+    BLOCKER_CHOICE = 'BLOCKER_CHOICE',
+
+    // Action step maintenance
+    ACTION_STEP_POST_PLAY = 'ACTION_STEP_POST_PLAY'
 }

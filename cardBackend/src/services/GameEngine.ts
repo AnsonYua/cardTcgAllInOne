@@ -4,7 +4,7 @@
 import { GameEvent, AcknowledgeEventsEvent, PlayCardEvent,
      DeployEffectEvent, TargetChoiceEvent, PairingEffectEvent, ShieldCardAttackedEvent,
      ConfirmRedrawEvent, GameplayBeginsEvent, ErrorOccurredEvent, BurstEffectChoiceEvent,
-     StartGameEvent, JoinGameEvent, NextPlayerTurnEvent, EndTurnEvent, PlayerActionEvent, RepairEffectEvent, BlockerChoiceEvent } from './EventQueue/interfaces/GameEvent';
+     StartGameEvent, JoinGameEvent, NextPlayerTurnEvent, EndTurnEvent, PlayerActionEvent, RepairEffectEvent, BlockerChoiceEvent, ActionStepPostPlayEvent } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { EventType } from '../models/GameEnums';
 import { GameNotificationManager } from './GameNotificationManager';
@@ -20,6 +20,7 @@ import { GameSetupManager } from './GameSetupManager';
 import { CardPlayExecutor } from './CardPlayExecutor';
 import { TurnManager } from './TurnManager';
 import { PlayerActionExecutor } from './PlayerActionExecutor';
+import { BattlePhaseManager } from './BattlePhaseManager';
 
 export class GameEngine {
     // ============ MAIN EXECUTION INTERFACE ============
@@ -83,6 +84,9 @@ export class GameEngine {
 
                 case EventType.BLOCKER_CHOICE:
                     return BlockerChoiceManager.executeBlockerChoice(event as BlockerChoiceEvent, gameEnv);
+
+                case EventType.ACTION_STEP_POST_PLAY:
+                    return BattlePhaseManager.handlePostActionStepCardPlay(gameEnv, (event as ActionStepPostPlayEvent).playerId);
 
                 case EventType.PAIRING_EFFECT_TRIGGERED:
                     return GameEngine.executePairingEffect(event as PairingEffectEvent, gameEnv);

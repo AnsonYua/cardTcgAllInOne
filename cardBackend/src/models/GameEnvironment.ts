@@ -433,12 +433,20 @@ export class GameEnvironment {
      */
     private sortEventsByPriority(): void {
         this.processingQueue.sort((a, b) => {
-            // Higher priority (lower number) goes first
-            if (a.priority !== b.priority) {
-                return a.priority - b.priority;
+            const priorityA = typeof a.priority === 'number' ? a.priority : EventPriority.NORMAL;
+            const priorityB = typeof b.priority === 'number' ? b.priority : EventPriority.NORMAL;
+
+            if (priorityA !== priorityB) {
+                return priorityA - priorityB;
             }
-            // Earlier timestamp goes first within same priority
-            return a.timestamp - b.timestamp;
+
+            const timestampA = typeof a.timestamp === 'number' ? a.timestamp : 0;
+            const timestampB = typeof b.timestamp === 'number' ? b.timestamp : 0;
+            if (timestampA !== timestampB) {
+                return timestampA - timestampB;
+            }
+
+            return a.id.localeCompare(b.id);
         });
     }
     

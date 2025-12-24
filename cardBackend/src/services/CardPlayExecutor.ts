@@ -1,7 +1,7 @@
 // src/services/CardPlayExecutor.ts
 // Orchestrates PLAY_CARD event handling
 
-import { PlayCardEvent, PlayCardEventData } from './EventQueue/interfaces/GameEvent';
+import { EventFactory, PlayCardEvent, PlayCardEventData } from './EventQueue/interfaces/GameEvent';
 import { ExecutionResult } from './ExecutionResult';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { PlayCardPreparationManager, PlayCardPreparationSuccess } from './PlayCardPreparationManager';
@@ -10,6 +10,7 @@ import { GameNotificationManager } from './GameNotificationManager';
 import { DeployEffectManager } from './DeployEffectManager';
 import { PairingEffectManager } from './PairingEffectManager';
 import { ContinuousEffectManager } from './ContinuousEffectManager';
+import { BattlePhaseManager } from './BattlePhaseManager';
 
 export class CardPlayExecutor {
     static execute(event: PlayCardEvent, gameEnv: GameEnvironment): ExecutionResult {
@@ -71,6 +72,7 @@ export class CardPlayExecutor {
                 eventData.payEnergyCards = tappedEnergy.map(card => card.carduid);
             }
 
+
             const deployResult = DeployEffectManager.checkAndQueueDeployEffects(eventData, playerId, gameEnv);
             if (!deployResult.success) {
                 console.log(`⚠️ Deploy effect processing error: ${deployResult.error}`);
@@ -104,6 +106,14 @@ export class CardPlayExecutor {
                 console.error(`❌ Error processing continuous effects after card placement:`, error);
             }
 
+            if (BattlePhaseManager.isActionWindowOpen(gameEnv) &&
+                BattlePhaseManager.playerInActiveBattle(gameEnv, playerId)) {
+                const postPlayEvent = EventFactory.createActionStepPostPlayEvent(playerId);
+                gameEnv.enqueueForProcessing(postPlayEvent);
+                console.log("data 12312312 ", JSON.stringify(gameEnv.processingQueue))
+                console.log(`📋 Action step post-play event queued: ${postPlayEvent.id}`);
+            }
+
             return { success: true };
         } catch (error) {
             console.error(`❌ Error in CardPlayExecutor.execute:`, error);
@@ -113,4 +123,5 @@ export class CardPlayExecutor {
             };
         }
     }
+
 }

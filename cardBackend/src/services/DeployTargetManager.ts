@@ -102,7 +102,7 @@ export class DeployTargetManager {
                 }
                 
                 // Add to processing queue for game event processing
-                gameEnv.processingQueue.push(choiceEvent);
+                gameEnv.enqueueForProcessing(choiceEvent);
                 
                 console.log(`🎮 Created TARGET_CHOICE event ${choiceEvent.id} with ${availableTargets.length} targets`);
                 return { 
