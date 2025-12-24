@@ -503,7 +503,16 @@ export class BattlePhaseManager {
         defendingPlayerId: string
     ): void {
         const data = event.data || {};
-        if (data.actionType !== 'attackUnit' || data.attackNotificationSent) {
+        const actionType = data.actionType;
+
+        if (data.attackNotificationSent) {
+            return;
+        }
+
+        const isUnitAttack = actionType === 'attackUnit';
+        const isShieldAttack = actionType === 'attackShieldArea';
+
+        if (!isUnitAttack && !isShieldAttack) {
             return;
         }
 
@@ -518,15 +527,39 @@ export class BattlePhaseManager {
             ? SlotZoneUtils.findSlotByCarduid(attacker.zones, data.attackerCarduid)
             : null;
 
-        const targetCarduid = typeof data.targetUnitUid === 'string'
-            ? data.targetUnitUid
-            : typeof data.targetCarduid === 'string'
-                ? data.targetCarduid
-                : undefined;
+        let targetCarduid: string | undefined;
+        let targetSlotName: string | undefined;
+        let targetName: string | undefined;
 
-        const targetSlot = targetCarduid
-            ? SlotZoneUtils.findSlotByCarduid(defender.zones, targetCarduid)
-            : null;
+        if (isUnitAttack) {
+            targetCarduid = typeof data.targetUnitUid === 'string'
+                ? data.targetUnitUid
+                : typeof data.targetCarduid === 'string'
+                    ? data.targetCarduid
+                    : undefined;
+
+            const targetSlot = targetCarduid
+                ? SlotZoneUtils.findSlotByCarduid(defender.zones, targetCarduid)
+                : null;
+
+            targetSlotName = targetSlot?.slotName || undefined;
+            targetName = targetSlot?.unit?.cardData?.name || targetSlot?.unit?.cardId || 'Unknown Unit';
+        } else {
+            const baseCards = defender.zones?.base || [];
+            if (Array.isArray(baseCards) && baseCards.length > 0) {
+                targetSlotName = 'base';
+                targetName = 'Base';
+            } else {
+                const shieldCards = defender.getShieldCards();
+                if (shieldCards.length > 0) {
+                    targetSlotName = 'shieldArea';
+                    targetName = 'Shield Area';
+                } else {
+                    targetSlotName = 'shieldArea';
+                    targetName = 'Shield Area';
+                }
+            }
+        }
 
         const notificationManager = new GameNotificationManager(gameEnv);
         const notificationId = notificationManager.addNotificationEvent(
@@ -539,8 +572,8 @@ export class BattlePhaseManager {
                 attackerName: attackerSlot?.unit?.cardData?.name || attackerSlot?.unit?.cardId || 'Unknown Unit',
                 attackerSlot: attackerSlot?.slotName,
                 targetCarduid,
-                targetName: targetSlot?.unit?.cardData?.name || targetSlot?.unit?.cardId || 'Unknown Unit',
-                targetSlotName: targetSlot?.slotName,
+                targetName,
+                targetSlotName,
                 fromBurst: Boolean(data.fromBurst),
                 timestamp: Date.now()
             }

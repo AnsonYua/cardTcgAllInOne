@@ -13,6 +13,7 @@ import { DeployTargetManager, DeployTargetResult } from './DeployTargetManager';
 import { ensureEffectDefaults } from '../utils/EffectNormalizationUtils';
 import { EffectRuleCatalog } from './effects/EffectRuleCatalog';
 import { GameNotificationManager } from './GameNotificationManager';
+import { GamePhase } from '../models/GameEnums';
 
 export interface ExecutionResult {
     success: boolean;
@@ -54,23 +55,25 @@ export class DeployEffectManager {
                 console.log("event Data for play card here")
                 return { success: true, effectsFound: 0 };
             }
-        const deployEffects = EffectRuleCatalog.collectEffects(cardData, {
+        const deployEffects: EffectDefinition[] = [];
+
+        const triggeredDeployEffects = EffectRuleCatalog.collectEffects(cardData, {
             trigger: 'ENTERS_PLAY',
             fallbackEffectId: 'deploy_effect',
             expectedTriggers: ['ENTERS_PLAY'],
             preFilter: (rawRule) => {
-                    const triggerValue = rawRule['trigger'];
-                    return typeof triggerValue === 'string' && triggerValue === 'ENTERS_PLAY';
-                }
+                const triggerValue = rawRule['trigger'];
+                return typeof triggerValue === 'string' && triggerValue === 'ENTERS_PLAY';
+            }
         }).map(effect => ensureEffectDefaults(effect));
 
+        triggeredDeployEffects.forEach(effect => deployEffects.push(effect));
+
+        const phaseBoundActivatedEffects = this.findDeployLikeActivatedEffects(cardData, gameEnv, playerId);
+        phaseBoundActivatedEffects.forEach(effect => deployEffects.push(ensureEffectDefaults(effect)));
+
         if (deployEffects.length === 0) {
-            const fallbackActivatedEffects = this.findDeployLikeActivatedEffects(cardData, gameEnv, playerId);
-            fallbackActivatedEffects.forEach(effect => deployEffects.push(ensureEffectDefaults(effect)));
-            console.log("test asdffasd ", JSON.stringify(fallbackActivatedEffects))
-            if (deployEffects.length === 0) {
-                return { success: true, effectsFound: 0 };
-            }
+            return { success: true, effectsFound: 0 };
         }
 
             const deployEvent = EventFactory.createDeployEffectEvent(
@@ -141,9 +144,9 @@ export class DeployEffectManager {
     }
 
     /**
-     * Fallback: detect activated effects that should behave like deploy effects.
-     * - Always includes MAIN_PHASE activated abilities.
-     * - Includes ACTION_STEP abilities when the game is currently in an action step.
+     * Phase-aware detection for activated effects that behave like deploy effects.
+     * - Includes MAIN_PHASE abilities only when the game is currently in MAIN_PHASE.
+     * - Includes ACTION_STEP abilities only when the game is currently in ACTION_STEP_PHASE.
      */
     private static findDeployLikeActivatedEffects(
         cardData: any,
@@ -154,7 +157,13 @@ export class DeployEffectManager {
             return [];
         }
 
-        const inActionStep = gameEnv.currentBattle?.status === 'ACTION_STEP';
+        const currentPhase = gameEnv.phase;
+        const inMainPhase = currentPhase === GamePhase.MAIN_PHASE;
+        const inActionStepPhase = currentPhase === GamePhase.ACTION_STEP_PHASE;
+
+        if (!inMainPhase && !inActionStepPhase) {
+            return [];
+        }
 
         return (cardData.effects.rules as EffectDefinition[]).filter(rule => {
             if (!rule || rule.type !== 'activated') {
@@ -166,11 +175,11 @@ export class DeployEffectManager {
                 ? (timing!['windows'] as string[]).map(window => window.toUpperCase())
                 : [];
 
-            if (windows.includes('MAIN_PHASE')) {
+            if (inMainPhase && windows.includes('MAIN_PHASE')) {
                 return true;
             }
 
-            if (windows.includes('ACTION_STEP') && inActionStep) {
+            if (inActionStepPhase && windows.includes('ACTION_STEP')) {
                 return true;
             }
 

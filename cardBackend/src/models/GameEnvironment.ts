@@ -348,60 +348,6 @@ export class GameEnvironment {
             }
             console.log("processs Queue next 444")
         }
-        console.log("asfdasfdssdf ",this.phase)
-        if (this.phase == GamePhase.ACTION_STEP_PHASE && this.currentBattle && this.currentBattle.status === 'ACTION_STEP') {
-            const currentPlayerId = this.currentPlayer;
-            const pendingConfirmation =
-                currentPlayerId != null &&
-                this.currentBattle?.confirmations?.[currentPlayerId] === false;
-
-            const actionableEvent = this.processingQueue.find(event => event.status !== EventStatus.RESOLVED);
-
-            if (!actionableEvent) {
-                return false;
-            }
-            console.log("sadasdfdsf ",JSON.stringify(actionableEvent))
-            if (actionableEvent.type === EventType.PLAYER_ACTION) {
-                const playerAction = actionableEvent as PlayerActionEvent;
-                const actionType = typeof playerAction.data?.actionType === 'string'
-                    ? playerAction.data.actionType
-                    : undefined;
-
-                /*
-                still return force if it is 
-                when 
-                action.type = PlayCard
-                action.playAs = command
-                */
-                if (
-                    actionType === 'resolveBattle' ||
-                    actionType === 'useCommandCard' ||
-                    actionType === 'confirmBattle'  
-                ) {
-                    return false;
-                }
-            }
-
-            // Allow PLAY_CARD actions (e.g., command cards) to process during ACTION_STEP
-            if (actionableEvent.type === EventType.PLAY_CARD) {
-                const playCardEvent = actionableEvent as PlayCardEvent;
-                const playAs = typeof playCardEvent.data?.playAs === 'string'
-                    ? playCardEvent.data.playAs.toLowerCase()
-                    : '';
-
-                if (playAs === 'command') {
-                    return false;
-                }
-            }
-
-            // Allow deploy-triggered effects and target choices while the acting player still needs to confirm
-            if (pendingConfirmation && (actionableEvent.type === EventType.DEPLOY_EFFECT_TRIGGERED || actionableEvent.type === EventType.TARGET_CHOICE)) {
-                return false;
-            }
-
-            return true;
-        }
-
         return false;
     }
     
