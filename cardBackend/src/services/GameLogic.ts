@@ -243,14 +243,78 @@ export class GameLogic {
      */
     public async saveGameToFile(gameId: string, gameEnv: GameEnvironment): Promise<void> {
         const filePath = path.join(this.baseDataPath, `${gameId}.json`);
-        const gameData = gameEnv.toJSON();
         
         // Ensure directory exists
         await fs.promises.mkdir(this.baseDataPath, { recursive: true });
-        
+
+        let existingGameData: any | null = null;
+        if (fs.existsSync(filePath)) {
+            try {
+                const fileContent = await fs.promises.readFile(filePath, 'utf8');
+                existingGameData = JSON.parse(fileContent);
+            } catch (error) {
+                console.warn(`⚠️ Failed to parse existing game file (${filePath}): ${error instanceof Error ? error.message : 'unknown error'}`);
+            }
+        }
+
+        const snapshot = gameEnv.toJSON();
+        const normalizedNewState = this.normalizeStateForComparison(snapshot);
+        const existingVersion = typeof existingGameData?.version === 'number' ? existingGameData.version : 0;
+        let shouldBumpVersion = true;
+
+        if (existingGameData) {
+            const normalizedExistingState = this.normalizeStateForComparison(existingGameData);
+            shouldBumpVersion = normalizedExistingState !== normalizedNewState;
+        }
+
+        if (shouldBumpVersion) {
+            gameEnv.version = Math.max(existingVersion, gameEnv.version) + 1;
+        } else {
+            gameEnv.version = Math.max(existingVersion, gameEnv.version);
+        }
+
+        const gameData = gameEnv.toJSON();
+
         // Save to file
         await fs.promises.writeFile(filePath, JSON.stringify(gameData, null, 2));
-        console.log(`💾 Custom trading card game ${gameId} saved to file`);
+        console.log(`💾 Custom trading card game ${gameId} saved to file (version ${gameEnv.version})`);
+    }
+
+    private normalizeStateForComparison(state: any): string {
+        const cloned = this.deepCloneAndStripVersion(state);
+        const sorted = this.deepSortObject(cloned);
+        return JSON.stringify(sorted);
+    }
+
+    private deepCloneAndStripVersion(value: any): any {
+        if (Array.isArray(value)) {
+            return value.map(item => this.deepCloneAndStripVersion(item));
+        }
+        if (value && typeof value === 'object') {
+            const clone: any = {};
+            for (const [key, entry] of Object.entries(value)) {
+                if (key === 'version') {
+                    continue;
+                }
+                clone[key] = this.deepCloneAndStripVersion(entry);
+            }
+            return clone;
+        }
+        return value;
+    }
+
+    private deepSortObject(value: any): any {
+        if (Array.isArray(value)) {
+            return value.map(item => this.deepSortObject(item));
+        }
+        if (value && typeof value === 'object') {
+            const sorted: any = {};
+            Object.keys(value).sort().forEach(key => {
+                sorted[key] = this.deepSortObject(value[key]);
+            });
+            return sorted;
+        }
+        return value;
     }
 
     /**

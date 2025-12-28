@@ -46,6 +46,7 @@ export class GameEnvironment {
     // Object-oriented components
     public players: { [playerId: string]: Player };
     public currentBattle?: BattleContext;
+    public version: number;
     private battlePhaseReturnPoint?: GamePhase;
     
     
@@ -75,6 +76,7 @@ export class GameEnvironment {
         
         this.players = {};
         this.currentBattle = undefined;
+        this.version = 0;
         this.battlePhaseReturnPoint = undefined;
         
         // Initialize event systems
@@ -529,6 +531,7 @@ export class GameEnvironment {
             this.refreshBattleActionTargets();
         }
         return {
+            version: this.version,
             phase: this.phase,
             playerId_1: this.playerId_1,
             playerId_2: this.playerId_2,
@@ -567,6 +570,7 @@ export class GameEnvironment {
         gameEnv.currentPlayer = data.currentPlayer || null;
         gameEnv.currentTurn = data.currentTurn || 0;
         gameEnv.playersReady = data.playersReady || {};
+        gameEnv.version = typeof data.version === 'number' ? data.version : 0;
         gameEnv.currentBattle = data.currentBattle
             ? (data.currentBattle as BattleContext)
             : undefined;
