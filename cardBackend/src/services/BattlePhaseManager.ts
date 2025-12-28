@@ -135,28 +135,13 @@ export class BattlePhaseManager {
             return { success: false, error: confirmation.error };
         }
 
-        if (!gameEnv.haveBothPlayersConfirmedBattle()) {
-            console.log('🤝 Battle confirmation recorded, awaiting opponent confirmation');
-            return { success: true };
+        const autoResolveResult = this.tryAutoResolveBattle(gameEnv);
+        if (autoResolveResult) {
+            return autoResolveResult;
         }
 
-        const attackerId = gameEnv.currentBattle?.attackingPlayerId;
-        if (!attackerId) {
-            return {
-                success: false,
-                error: 'Cannot auto-resolve battle: attacking player not found'
-            };
-        }
-
-        const attackNotificationId = gameEnv.currentBattle?.attackNotificationId;
-        if (attackNotificationId) {
-            const notificationManager = new GameNotificationManager(gameEnv);
-            notificationManager.updateNotificationEvent(attackNotificationId, {
-                battleEnd: true
-            });
-        }
-
-        return this.resolveBattle(gameEnv, attackerId);
+        console.log('🤝 Battle confirmation recorded, awaiting opponent confirmation');
+        return { success: true };
     }
 
     static isActionWindowOpen(gameEnv: GameEnvironment): boolean {
@@ -191,17 +176,38 @@ export class BattlePhaseManager {
         gameEnv.refreshBattleActionTargets();
         console.log('🎯 Action targets refreshed after card play:', JSON.stringify(battle.actionTargets || {}));
 
+        const autoResolveResult = this.tryAutoResolveBattle(gameEnv);
+        if (autoResolveResult) {
+            return autoResolveResult;
+        }
+
+        console.log('⏳ Waiting for other player confirmation before resolving battle');
+        return { success: true };
+    }
+
+    private static playerInBattle(context: BattleContext, playerId: string): boolean {
+        return context.attackingPlayerId === playerId || context.defendingPlayerId === playerId;
+    }
+
+    private static tryAutoResolveBattle(gameEnv: GameEnvironment): ExecutionResult | null {
+        if (!gameEnv.currentBattle) {
+            return null;
+        }
+
         if (!gameEnv.haveBothPlayersConfirmedBattle()) {
-            console.log('⏳ Waiting for other player confirmation before resolving battle');
-            return { success: true };
+            return null;
         }
 
-        const attackerId = battle.attackingPlayerId;
+        const attackerId = gameEnv.currentBattle.attackingPlayerId;
         if (!attackerId) {
-            return { success: false, error: 'Cannot auto-resolve battle: missing attacker' };
+            console.error('❌ Cannot auto-resolve battle: attacking player not found');
+            return {
+                success: false,
+                error: 'Cannot auto-resolve battle: attacking player not found'
+            };
         }
 
-        const attackNotificationId = battle.attackNotificationId;
+        const attackNotificationId = gameEnv.currentBattle.attackNotificationId;
         if (attackNotificationId) {
             const notificationManager = new GameNotificationManager(gameEnv);
             notificationManager.updateNotificationEvent(attackNotificationId, {
@@ -212,15 +218,11 @@ export class BattlePhaseManager {
 
         const result = this.resolveBattle(gameEnv, attackerId);
         if (!result.success) {
-            console.error(`❌ Failed to auto-resolve battle after card play: ${result.error}`);
+            console.error(`❌ Failed to auto-resolve battle: ${result.error}`);
         } else {
-            console.log('✅ Battle auto-resolved after action step post-play update');
+            console.log('✅ Battle auto-resolved');
         }
         return result;
-    }
-
-    private static playerInBattle(context: BattleContext, playerId: string): boolean {
-        return context.attackingPlayerId === playerId || context.defendingPlayerId === playerId;
     }
 
     private static startUnitBattle(
@@ -276,6 +278,11 @@ export class BattlePhaseManager {
 
         gameEnv.setCurrentBattle(context);
         console.log('⚔️ Action step opened for unit battle');
+
+        const autoResolveResult = this.tryAutoResolveBattle(gameEnv);
+        if (autoResolveResult) {
+            return autoResolveResult;
+        }
 
         return {
             success: true,
@@ -334,6 +341,11 @@ export class BattlePhaseManager {
 
         gameEnv.setCurrentBattle(context);
         console.log('⚔️ Action step opened for shield attack');
+
+        const autoResolveResult = this.tryAutoResolveBattle(gameEnv);
+        if (autoResolveResult) {
+            return autoResolveResult;
+        }
 
         return {
             success: true,

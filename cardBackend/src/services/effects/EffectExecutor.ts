@@ -7,6 +7,7 @@ import { EffectDefinition, EffectTiming, TargetReference, TargetScope } from '..
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { SLOT_ZONES } from '../../config/gameConstants';
 import { ShieldCardManager } from '../ShieldCardManager';
+import { GameNotificationManager } from '../GameNotificationManager';
 
 interface EffectActionContext {
     gameEnv: GameEnvironment;
@@ -326,7 +327,7 @@ export class EffectExecutor {
         switch (action) {
             case 'modifyAP':
             case 'modifyHP':
-                return this.applyModifyStat(targetCard, action, parameters, target);
+                return this.applyModifyStat(gameEnv, targetCard, action, parameters, target);
 
             case 'heal':
                 return this.applyHealToCard(targetCard, parameters, target);
@@ -350,6 +351,7 @@ export class EffectExecutor {
     }
 
     private static applyModifyStat(
+        gameEnv: GameEnvironment,
         targetCard: UnitZoneCard | PilotZoneCard,
         action: 'modifyAP' | 'modifyHP',
         parameters: Record<string, unknown> | undefined,
@@ -368,6 +370,14 @@ export class EffectExecutor {
         (targetCard as any)[property] = previousValue + value;
 
         console.log(`  ⚙️ ${target.carduid}: ${property} ${previousValue} → ${(targetCard as any)[property]} (${value > 0 ? '+' : ''}${value})`);
+        this.notifyCardStatChange(
+            gameEnv,
+            targetCard,
+            target,
+            action,
+            value,
+            (targetCard as any)[property]
+        );
         return { success: true };
     }
 
@@ -437,6 +447,36 @@ export class EffectExecutor {
 
         console.log(`  💥 ${target.carduid}: damage ${previousDamage} → ${newDamage} (HP ${resultingHP}/${maxHP})`);
         return { success: true };
+    }
+
+    private static notifyCardStatChange(
+        gameEnv: GameEnvironment,
+        targetCard: UnitZoneCard | PilotZoneCard,
+        target: TargetReference,
+        action: 'modifyAP' | 'modifyHP',
+        delta: number,
+        modifierValue: number
+    ): void {
+        const notificationManager = new GameNotificationManager(gameEnv);
+        const cardId = targetCard.cardId ?? target.cardData?.cardId;
+        const cardName = target.cardData?.name || targetCard.cardData?.name || 'Unknown Card';
+
+        notificationManager.addNotificationEvent(
+            'CARD_STAT_MODIFIED',
+            {
+                playerId: target.playerId,
+                carduid: target.carduid,
+                cardId,
+                cardName,
+                zone: target.zone,
+                stat: action,
+                delta,
+                modifierValue,
+                timestamp: Date.now()
+            },
+            false,
+            'normal'
+        );
     }
 
     private static applyRestState(
