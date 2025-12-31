@@ -27,3 +27,20 @@ Requirements / amendments:
 2. Add `forcedTarget` (same semantics as the notificationQueue payload: `{ carduid, zone, playerId }`). When a blocker redirects the attack we will populate `forcedTarget` so the frontend can summarise the battle using the forced target instead of `targetCarduid`.
 3. Add `actionTargets.{playerId}` where each entry lists cards (hand, base, pilot, unit only) that contain an `effect.rules[].timing.windows` entry for `"ACTION_STEP"`. The UI will use this list to decide which cards stay clickable during the action window.
 4. add one more logic, if actionTargets.{playerId} = empty , currentBattle.confirmations = true as user have nothing to action.
+
+Additionally, once a blocker choice resolves we now emit a dedicated `REFRESH_TARGET` notification instead of mutating the original attack notification. The payload should copy the attacker/defender/slot metadata from the original `UNIT_ATTACK_DECLARED` event and include the forced-target identifiers so the UI can stay in sync:
+
+```
+{
+    "attackingPlayerId": "string",
+    "defendingPlayerId": "string",
+    "attackerCarduid": "string",
+    "attackerSlot": "slot1",
+    "forcedTargetCarduid": "string",
+    "forcedTargetZone": "slot3",
+    "forcedTargetPlayerId": "string",
+    "sourceNotificationId": "unit_attack_declared_..."
+}
+```
+
+Use the `attackNotificationId` stored on the attack event to look up that original notification, copy the values listed above, and then tack on the forced-target fields before enqueuing `REFRESH_TARGET`.

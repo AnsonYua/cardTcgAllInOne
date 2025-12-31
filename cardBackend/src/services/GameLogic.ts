@@ -1262,11 +1262,25 @@ export class GameLogic {
 
             if (attackNotificationId && resolvedTarget) {
                 const notificationManager = new GameNotificationManager(gameEnv);
-                notificationManager.updateNotificationEvent(attackNotificationId, {
+                const attackNotification = gameEnv.notificationQueue?.find(evt => evt.id === attackNotificationId);
+                const attackPayload = attackNotification?.payload || {};
+                const refreshPayload = {
+                    attackingPlayerId: attackPayload.attackingPlayerId,
+                    defendingPlayerId: attackPayload.defendingPlayerId,
+                    attackerCarduid: attackPayload.attackerCarduid,
+                    attackerSlot: attackPayload.attackerSlot,
                     forcedTargetCarduid: resolvedTarget.carduid,
                     forcedTargetZone: resolvedTarget.zone,
-                    forcedTargetPlayerId: resolvedTarget.playerId
-                });
+                    forcedTargetPlayerId: resolvedTarget.playerId,
+                    sourceNotificationId: attackNotificationId
+                };
+
+                notificationManager.addNotificationEvent(
+                    'REFRESH_TARGET',
+                    refreshPayload,
+                    false,
+                    'normal'
+                );
             }
             console.log("data 1111222333444", JSON.stringify(gameEnv.processingQueue))
             const processingResult = await gameEnv.processEvents();
