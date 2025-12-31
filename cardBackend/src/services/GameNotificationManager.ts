@@ -107,6 +107,10 @@ export class GameNotificationManager {
             ...metadataUpdates
         };
 
+        if (payloadUpdates.isCompleted === true && event.type === 'CARD_PLAYED') {
+            event.type = 'CARD_PLAYED_COMPLETED';
+        }
+
         console.log(`🔄 Updated notification event: ${event.type} (${event.id})`);
         return true;
     }
