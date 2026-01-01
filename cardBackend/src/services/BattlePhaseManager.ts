@@ -279,6 +279,11 @@ export class BattlePhaseManager {
         gameEnv.setCurrentBattle(context);
         console.log('⚔️ Action step opened for unit battle');
 
+        if (attackingUnit && !attackingUnit.isRested) {
+            attackingUnit.isRested = true;
+            console.log(`💤 Attacker ${attackingUnit.carduid} is now rested for attack`);
+        }
+
         const autoResolveResult = this.tryAutoResolveBattle(gameEnv);
         if (autoResolveResult) {
             return autoResolveResult;
@@ -341,6 +346,12 @@ export class BattlePhaseManager {
 
         gameEnv.setCurrentBattle(context);
         console.log('⚔️ Action step opened for shield attack');
+
+        const { attackingUnit } = preparation;
+        if (attackingUnit && !attackingUnit.isRested) {
+            attackingUnit.isRested = true;
+            console.log(`💤 Attacker ${attackingUnit.carduid} is now rested for shield attack`);
+        }
 
         const autoResolveResult = this.tryAutoResolveBattle(gameEnv);
         if (autoResolveResult) {
