@@ -3922,6 +3922,138 @@
                             "isRested": false,
                             "originalHP": 5,
                             "damageReceived": 0
+                        },
+                        {
+                            "carduid": "ST01-012_fba4786e-2dd2-4f90-9698-1cfd0067715f",
+                            "cardId": "ST01-012",
+                            "cardData": {
+                                "id": "ST01-012",
+                                "name": "Thoroughly Damaged",
+                                "cardType": "command",
+                                "color": "Blue",
+                                "level": 2,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [
+                                    "Earth Federation",
+                                    "White Base Team"
+                                ],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 1,
+                                "effects": {
+                                    "description": [
+                                        "【Main】Choose 1 rested enemy Unit. Deal 1 damage to it.",
+                                        "【Pilot】[Hayato Kobayashi]"
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "main_damage_rested",
+                                            "type": "activated",
+                                            "timing": {
+                                                "windows": [
+                                                    "MAIN_PHASE"
+                                                ]
+                                            },
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "filters": {
+                                                    "status": "rested"
+                                                },
+                                                "count": 1
+                                            },
+                                            "action": "damage",
+                                            "parameters": {
+                                                "value": 1
+                                            }
+                                        },
+                                        {
+                                            "effectId": "pilot_designation",
+                                            "type": "special",
+                                            "trigger": "continuous",
+                                            "target": {
+                                                "type": "pilot",
+                                                "scope": "any"
+                                            },
+                                            "action": "designate_pilot",
+                                            "parameters": {
+                                                "pilotName": "Hayato Kobayashi",
+                                                "AP": 0,
+                                                "HP": 1
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1759421361520,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "originalHP": 5,
+                            "damageReceived": 0
+                        },
+                        {
+                            "carduid": "ST01-014_fba4786e-2dd2-4f90-9698-1cfd0067715f",
+                            "cardId": "ST01-014",
+                            "cardData": {
+                                "id": "ST01-014",
+                                "name": "Unforeseen Incident",
+                                "cardType": "command",
+                                "color": "White",
+                                "level": 3,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 0,
+                                "effects": {
+                                    "description": [
+                                        "【Burst】Activate this card's 【Main】.",
+                                        "【Main】/【Action】Choose 1 enemy Unit. It gets AP-3 during this turn."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_activate_main",
+                                            "type": "triggered",
+                                            "trigger": "BURST_CONDITION",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self"
+                                            },
+                                            "action": "activate_ability",
+                                            "parameters": {
+                                                "abilityType": "main"
+                                            }
+                                        },
+                                        {
+                                            "effectId": "main_action_ap_reduction",
+                                            "type": "activated",
+                                            "timing": {
+                                                "windows": [
+                                                    "MAIN_PHASE",
+                                                    "ACTION_STEP"
+                                                ],
+                                                "duration": "UNTIL_END_OF_TURN"
+                                            },
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "count": 1
+                                            },
+                                            "action": "modifyAP",
+                                            "parameters": {
+                                                "value": -3
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1759421361520,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "originalHP": 5,
+                            "damageReceived": 0
                         }
                     ],
                     "repairAbilitiesCheckedThisCycle": false
