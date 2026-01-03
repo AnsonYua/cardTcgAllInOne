@@ -35,7 +35,6 @@ const ZERO_FIELD_VALUE: FieldCardValue = {
     totalDamageReceived: 0,
     totalAP: 0,
     totalHP: 0,
-    isRested: false
 };
 
 function resolveBaseStat(value?: number, fallback?: number): number {
@@ -132,9 +131,6 @@ export function calculateSlotFieldValue(slot: SlotZone | undefined): FieldCardVa
 
     const unitBreakdown = calculateCardBreakdown(slot.unit as UnitZoneCard | undefined);
     const pilotBreakdown = calculateCardBreakdown(slot.pilot as PilotZoneCard | undefined);
-    const unitRested = Boolean(slot.unit?.isRested);
-    const pilotRested = Boolean(slot.pilot?.isRested);
-
     return {
         totalOriginalAP: unitBreakdown.originalAP + pilotBreakdown.originalAP,
         totalOriginalHP: unitBreakdown.originalHP + pilotBreakdown.originalHP,
@@ -145,7 +141,6 @@ export function calculateSlotFieldValue(slot: SlotZone | undefined): FieldCardVa
         totalDamageReceived: unitBreakdown.damage,
         totalAP: unitBreakdown.totalAP + pilotBreakdown.totalAP,
         totalHP: unitBreakdown.totalHP + pilotBreakdown.totalHP,
-        isRested: unitRested || pilotRested
     };
 }
 
@@ -160,8 +155,7 @@ export function calculateBaseFieldValue(card: BaseCard | undefined): FieldCardVa
         totalContinueModifyHP: breakdown.continueHP,
         totalDamageReceived: breakdown.damage,
         totalAP: breakdown.totalAP,
-        totalHP: breakdown.totalHP,
-        isRested: Boolean(card?.isRested)
+        totalHP: breakdown.totalHP
     };
 }
 
