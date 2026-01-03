@@ -9,7 +9,6 @@ import {
     TargetReference
 } from './EventQueue/interfaces/GameEvent';
 import { BlockerEffectManager } from './effects/BlockerEffectManager';
-import { BlockerUnit } from '../utils/EffectScannerUtils';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { BattlePhaseManager } from './BattlePhaseManager';
 import { ExecutionResult } from './ExecutionResult';
@@ -47,12 +46,12 @@ export class BlockerChoiceManager {
         try {
             // Step 1: Check for available blockers (delegate to BlockerEffectManager)
             const currentTargetCarduid = this.getCurrentAttackTargetCarduid(attackEvent);
-            const availableBlockers = BlockerEffectManager.checkForBlockerUnits(gameEnv, defendingPlayerId, {
+            const blockerTargets = BlockerEffectManager.getAvailableBlockerTargets(gameEnv, defendingPlayerId, {
                 excludeCarduid: currentTargetCarduid
             });
-            console.log(`🛡️ Found ${availableBlockers.length} blockers for defending player ${defendingPlayerId}`);
+            console.log(`🛡️ Found ${blockerTargets.length} blockers for defending player ${defendingPlayerId}`);
 
-            if (availableBlockers.length === 0) {
+            if (blockerTargets.length === 0) {
                 console.log(`🛡️ No blockers available, proceeding with normal attack`);
                 return { 
                     success: true, 
@@ -60,12 +59,8 @@ export class BlockerChoiceManager {
                 };
             }
 
-            // Step 2: Convert blockers to TargetReference format (similar to DeployTargetManager.generateAvailableTargets)
-            // This provides consistent structure with zone, playerId, and cardData for each blocker
-            const blockerTargets = this.convertBlockersToTargetReferences(gameEnv, availableBlockers, defendingPlayerId);
-            
-            // Step 3: Apply choice logic (similar to DeployTargetManager.requiresPlayerChoice)
-            if (this.requiresPlayerChoice(availableBlockers)) {
+            // Step 2: Apply choice logic (similar to DeployTargetManager.requiresPlayerChoice)
+            if (this.requiresPlayerChoice(blockerTargets)) {
                 // Create BLOCKER_CHOICE event for player selection with converted format
                 const blockerChoiceEvent = EventFactory.createBlockerChoiceEvent({
                     blockingPlayerId: defendingPlayerId,
@@ -157,52 +152,13 @@ export class BlockerChoiceManager {
     }
 
     /**
-     * Convert BlockerUnit[] to TargetReference[] format (similar to DeployTargetManager.generateAvailableTargets)
-     * Uses findSlotByCarduid to derive zone and player information from carduid
-     */
-    private static convertBlockersToTargetReferences(
-        gameEnv: GameEnvironment, 
-        availableBlockers: BlockerUnit[], 
-        defendingPlayerId: string
-    ): TargetReference[] {
-        const targets: TargetReference[] = [];
-        
-        console.log(`🔄 Converting ${availableBlockers.length} blockers to TargetReference format`);
-        
-        for (const blocker of availableBlockers) {
-            // Use findSlotByCarduid to get zone and card data
-            const player = gameEnv.getPlayer(defendingPlayerId);
-            if (!player) {
-                console.error(`❌ Player ${defendingPlayerId} not found for blocker ${blocker.carduid}`);
-                continue;
-            }
-            
-            const slotResult = SlotZoneUtils.findSlotByCarduid(player.zones, blocker.carduid);
-            if (slotResult.slotName && slotResult.unit) {
-                targets.push({
-                    carduid: blocker.carduid,
-                    zone: slotResult.slotName,
-                    playerId: defendingPlayerId,
-                    cardData: slotResult.unit.cardData
-                });
-                console.log(`✅ Converted blocker ${blocker.carduid} in ${slotResult.slotName} to TargetReference`);
-            } else {
-                console.log(`⚠️ Could not find slot for blocker ${blocker.carduid}`);
-            }
-        }
-        
-        console.log(`🔄 Converted ${targets.length} of ${availableBlockers.length} blockers to TargetReference format`);
-        return targets;
-    }
-
-    /**
      * Determine if player choice is required for blockers
      * Similar to DeployTargetManager.requiresPlayerChoice logic
      */
-    private static requiresPlayerChoice(availableBlockers: BlockerUnit[]): boolean {
+    private static requiresPlayerChoice(availableTargets: TargetReference[]): boolean {
         // For now, always offer choice when blockers are available
         // Future: Could implement auto-blocking for single blocker scenarios
-        return availableBlockers.length > 0;
+        return availableTargets.length > 0;
     }
 
     /**
