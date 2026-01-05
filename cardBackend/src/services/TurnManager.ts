@@ -60,7 +60,7 @@ export class TurnManager {
 
             const firstPlayer = gameEnv.players[nextPlayer];
             if (firstPlayer?.deck) {
-                PlayerCardManager.drawCards(firstPlayer.deck, 1);
+                PlayerCardManager.drawCards(gameEnv, nextPlayer, 1);
                 console.log(`🃏 Drew 1 card for player ${nextPlayer}`);
             }
 

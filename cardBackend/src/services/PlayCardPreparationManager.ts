@@ -9,6 +9,7 @@ import { getCardIdFromUid } from '../utils/CardUtils';
 import { CardDatabaseManager, EnergyZoneCard } from '../models/CardSystem';
 import { EnergyManager, EnergyCheckResult } from './EnergyManager';
 import { PlayerCardManager } from './PlayerCardManager';
+import { EffectExecutor } from './effects/EffectExecutor';
 
 export interface PlayCardPreparationFailure {
     success: false;
@@ -113,10 +114,11 @@ export class PlayCardPreparationManager {
         const rollback = () => {
             this.rollbackEnergy(gameEnv, playerId, energyResult.tapped, energyResult.consumedExtras);
             if (!fromBurst) {
-                const handUids = player.deck._handUids;
-                if (!handUids.includes(eventData.carduid)) {
-                    handUids.push(eventData.carduid);
-                }
+                EffectExecutor.addCardToPlayerHand(gameEnv, playerId, eventData.carduid, cardData, 
+                {
+                    notify: false,
+                    reason: 'rollback'
+                });
             }
         };
 

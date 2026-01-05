@@ -2,7 +2,7 @@
 // Centralized effect application helpers reused by effect managers
 
 import { GameEnvironment } from '../../models/GameEnvironment';
-import { UnitZoneCard, PilotZoneCard, TemporaryEffect } from '../../models/CardSystem';
+import { CardData, UnitZoneCard, PilotZoneCard, TemporaryEffect } from '../../models/CardSystem';
 import { EffectDefinition, EffectTiming, TargetReference, TargetScope } from '../EventQueue/interfaces/GameEvent';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { SLOT_ZONES } from '../../config/gameConstants';
@@ -15,6 +15,14 @@ interface EffectActionContext {
     selectedTargets: TargetReference[];
     sourcePlayerId: string;
     sourceCarduid?: string;
+}
+
+interface AddToHandOptions {
+    eventType?: string;
+    sourceZone?: string;
+    reason?: string;
+    requiresAcknowledgment?: boolean;
+    notify?: boolean;
 }
 
 export class EffectExecutor {
@@ -143,7 +151,15 @@ export class EffectExecutor {
                 }
                 
                 // Use centralized helper to add card to hand
-                const executionResult = this.addCardToPlayerHand(gameEnv, sourcePlayerId, target.carduid, target.cardData);
+                const executionResult = this.addCardToPlayerHand(
+                    gameEnv,
+                    sourcePlayerId,
+                    target.carduid,
+                    target.cardData,
+                    {
+                        sourceZone: target.zone || (parameters?.from as string | undefined)
+                    }
+                );
                 
                 if (!executionResult.success) {
                     return {
@@ -194,7 +210,7 @@ export class EffectExecutor {
                 };
             }
 
-            this.drawCardsIntoHand(player.deck, drawCount);
+            this.drawCardsIntoHand(gameEnv, targetPlayerId, player.deck, drawCount);
         }
 
         console.log(`🃏 Applied draw effect (${drawCount}) to players: ${targetPlayerIds.join(', ')}`);
@@ -540,7 +556,8 @@ export class EffectExecutor {
         gameEnv: GameEnvironment,
         playerId: string,
         carduid: string,
-        cardData?: Record<string, unknown>
+        cardData?: CardData | Record<string, unknown>,
+        options: AddToHandOptions = {}
     ): { success: boolean; error?: string } {
         const player = gameEnv.getPlayer(playerId);
         if (!player || !player.deck) {
@@ -554,16 +571,39 @@ export class EffectExecutor {
             player.deck._handUids = [];
         }
 
+        let added = false;
         if (!player.deck._handUids.includes(carduid)) {
             player.deck._handUids.push(carduid);
+            added = true;
         }
 
         if (Array.isArray(player.deck.handUids) && !player.deck.handUids.includes(carduid)) {
             player.deck.handUids.push(carduid);
+            added = true;
         }
 
         const cardName = typeof cardData?.name === 'string' ? cardData.name : 'Unknown';
         console.log(`✅ Card ${carduid} (${cardName}) added to ${playerId}'s hand`);
+
+        if (added && options.notify !== false) {
+            const notificationManager = new GameNotificationManager(gameEnv);
+            const cardId = (cardData as { id?: string } | undefined)?.id;
+
+            notificationManager.addNotificationEvent(
+                options.eventType || 'CARD_ADDED_TO_HAND',
+                {
+                    playerId,
+                    carduid,
+                    cardId,
+                    cardName,
+                    sourceZone: options.sourceZone,
+                    reason: options.reason,
+                    timestamp: Date.now()
+                },
+                options.requiresAcknowledgment ?? false,
+                'normal'
+            );
+        }
 
         return { success: true };
     }
@@ -612,33 +652,32 @@ export class EffectExecutor {
         return [sourcePlayerId];
     }
 
-    private static drawCardsIntoHand(deck: any, count: number): void {
+    static drawCardsIntoHand(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        deck: any,
+        count: number
+    ): void {
         if (!deck || !Array.isArray(deck.mainDeck)) {
             throw new Error('Deck structure invalid for draw effect');
-        }
-
-        if (!Array.isArray(deck._handUids)) {
-            deck._handUids = Array.isArray(deck.handUids) ? [...deck.handUids] : [];
-        }
-
-        if (!Array.isArray(deck.handUids)) {
-            deck.handUids = Array.isArray(deck._handUids) ? [...deck._handUids] : [];
         }
 
         for (let i = 0; i < count && deck.mainDeck.length > 0; i++) {
             const drawnCard = deck.mainDeck.shift();
             if (!drawnCard) continue;
 
-            if (!deck._handUids.includes(drawnCard)) {
-                deck._handUids.push(drawnCard);
-            }
-
-            if (Array.isArray(deck.handUids) && !deck.handUids.includes(drawnCard)) {
-                deck.handUids.push(drawnCard);
+            const addResult = this.addCardToPlayerHand(gameEnv, playerId, drawnCard, undefined, {
+                eventType: 'CARD_DRAWN',
+                sourceZone: 'deck',
+                reason: 'draw',
+                requiresAcknowledgment: true
+            });
+            if (!addResult.success) {
+                throw new Error(addResult.error || `Failed to add ${drawnCard} to hand`);
             }
         }
 
-        const handSize = Array.isArray(deck.handUids) ? deck.handUids.length : deck._handUids.length;
+        const handSize = Array.isArray(deck.handUids) ? deck.handUids.length : deck._handUids?.length || 0;
         console.log(`🃏 Deck draw complete. Hand size: ${handSize}`);
     }
 

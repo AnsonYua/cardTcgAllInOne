@@ -1127,8 +1127,21 @@ export class ContinuousEffectManager {
                 // Remove from shield area
                 shieldCards.splice(index, 1);
                 
-                // Add to hand using correct _handUids structure
-                player.deck._handUids.push(card.carduid);
+                const addResult = EffectExecutor.addCardToPlayerHand(
+                    this.gameEnv,
+                    this.playerId,
+                    card.carduid,
+                    card.cardData,
+                    {
+                        sourceZone: 'shield'
+                    }
+                );
+                if (!addResult.success) {
+                    return {
+                        success: false,
+                        error: addResult.error || `Failed to add card ${card.carduid} to hand`
+                    };
+                }
                 movedCards.push(card);
             }
         }

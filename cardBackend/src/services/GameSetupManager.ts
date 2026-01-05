@@ -80,7 +80,7 @@ export class GameSetupManager {
                     console.log(`📤 Returned ${currentHand.length} cards to deck`);
 
                     player.deck.mainDeck = this.shuffleDeck(player.deck.mainDeck);
-                    PlayerCardManager.drawCards(player.deck, 5);
+                    PlayerCardManager.drawCards(gameEnv, event.data.playerId, 5);
 
                     console.log(`🔀 Shuffled deck and drew new hand of ${player.deck._handUids.length} cards`);
                 }
@@ -129,7 +129,7 @@ export class GameSetupManager {
 
             const firstPlayer = gameEnv.players[firstPlayerId];
             if (firstPlayer?.deck) {
-                PlayerCardManager.drawCards(firstPlayer.deck, 1);
+                PlayerCardManager.drawCards(gameEnv, firstPlayerId, 1);
                 console.log(`🃏 Drew 1 card for first player ${firstPlayerId}`);
             }
 
@@ -189,8 +189,8 @@ export class GameSetupManager {
         player2.deck._handUids = [];
         player2.deck.mainDeck = shuffledDeck2;
 
-        PlayerCardManager.drawCards(gameEnv.players[playerId1].deck, 5);
-        PlayerCardManager.drawCards(gameEnv.players[playerId2].deck, 5);
+        PlayerCardManager.drawCards(gameEnv, playerId1, 5);
+        PlayerCardManager.drawCards(gameEnv, playerId2, 5);
 
         console.log(`🎯 Game initialized: First player is ${gameEnv.currentPlayer}, hands drawn, redraw available`);
     }

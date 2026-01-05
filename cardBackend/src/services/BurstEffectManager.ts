@@ -307,7 +307,10 @@ export class BurstEffectManager {
         cardData: any
     ): ExecutionResult {
         console.log(`➕ Adding card ${carduid} to ${playerId}'s hand`);
-        return EffectExecutor.addCardToPlayerHand(gameEnv, playerId, carduid, cardData);
+        return EffectExecutor.addCardToPlayerHand(gameEnv, playerId, carduid, cardData, {
+            sourceZone: 'shield',
+            reason: 'burst'
+        });
     }
 
     static removeCardFromShield(

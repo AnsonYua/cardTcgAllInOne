@@ -9,6 +9,7 @@ import { PlayCardEventData } from './EventQueue/interfaces/GameEvent';
 import { v4 as uuidv4 } from 'uuid';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { getSlotTotals } from '../utils/FieldValueCalculator';
+import { EffectExecutor } from './effects/EffectExecutor';
 
 export interface CardPlacementResult {
     success: boolean;
@@ -584,14 +585,28 @@ export class PlayerCardManager {
     /**
      * Draw cards from deck to hand
      */
-    static drawCards(deck: any, count: number): void {
-        for (let i = 0; i < count && deck.mainDeck.length > 0; i++) {
-            const drawnCard = deck.mainDeck.shift();
-            if (drawnCard) {
-                deck.handUids.push(drawnCard);
-            }
+    static drawCards(gameEnv: GameEnvironment, playerId: string, count: number): void {
+        const player = gameEnv.getPlayer(playerId);
+        if (!player?.deck || !Array.isArray(player.deck.mainDeck)) {
+            console.error(`❌ Cannot draw cards - deck not found for player ${playerId}`);
+            return;
         }
-        console.log(`🃏 Drew ${count} cards, hand size: ${deck.handUids.length}`);
+
+        try {
+            const beforeCount = Array.isArray(player.deck.handUids)
+                ? player.deck.handUids.length
+                : player.deck._handUids?.length || 0;
+
+            EffectExecutor.drawCardsIntoHand(gameEnv, playerId, player.deck, count);
+
+            const afterCount = Array.isArray(player.deck.handUids)
+                ? player.deck.handUids.length
+                : player.deck._handUids?.length || 0;
+            const drawnCount = Math.max(0, afterCount - beforeCount);
+            console.log(`🃏 Drew ${drawnCount} cards, hand size: ${afterCount}`);
+        } catch (error) {
+            console.error(`❌ Failed to draw cards for player ${playerId}:`, error);
+        }
     }
 
     /**

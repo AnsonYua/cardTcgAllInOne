@@ -152,14 +152,6 @@ export class PlayerDeck {
         return this._handUids;
     }
 
-    drawCard(): string | null {
-        const carduid = this.mainDeck.pop() || null;
-        if (carduid) {
-            this._handUids.push(carduid);
-        }
-        return carduid;
-    }
-
     getHandSize(): number {
         return this._handUids.length;
     }
@@ -700,10 +692,6 @@ export class Player {
 
     // ============ DECK METHODS ============
 
-
-    public drawCard(): string | null {
-        return this.deck.drawCard();
-    }
 
     public playCardFromHand(carduid: string, zone: string = 'slot1'): boolean {
         return this.deck.playCardFromHand(carduid, zone);
