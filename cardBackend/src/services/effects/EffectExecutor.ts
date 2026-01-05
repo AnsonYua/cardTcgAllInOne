@@ -589,17 +589,22 @@ export class EffectExecutor {
             const notificationManager = new GameNotificationManager(gameEnv);
             const cardId = (cardData as { id?: string } | undefined)?.id;
 
+            const eventType = options.eventType || 'CARD_ADDED_TO_HAND';
+            const payload: Record<string, unknown> = {
+                playerId,
+                carduid,
+                cardId,
+                sourceZone: options.sourceZone,
+                reason: options.reason,
+                timestamp: Date.now()
+            };
+            if (eventType !== 'CARD_DRAWN') {
+                payload.cardName = cardName;
+            }
+
             notificationManager.addNotificationEvent(
-                options.eventType || 'CARD_ADDED_TO_HAND',
-                {
-                    playerId,
-                    carduid,
-                    cardId,
-                    cardName,
-                    sourceZone: options.sourceZone,
-                    reason: options.reason,
-                    timestamp: Date.now()
-                },
+                eventType,
+                payload,
                 options.requiresAcknowledgment ?? false,
                 'normal'
             );

@@ -58,6 +58,9 @@ export class GameEnvironment {
     // Frontend notification system (for frontend polling)
     public notificationQueue?: any[];
     public lastEventId?: number;
+
+    // Phase transition guard to avoid duplicate SBA enqueues
+    public pendingPhaseTransition: EventType | null;
     
     // Card selection system - REMOVED: pendingCardSelections no longer needed
     // Deploy effects now process automatically with smart target selection
@@ -87,6 +90,8 @@ export class GameEnvironment {
         // Initialize frontend notification system
         this.notificationQueue = [];
         this.lastEventId = 0;
+
+        this.pendingPhaseTransition = null;
     }
 
     // ============ PLAYER MANAGEMENT ============
@@ -555,6 +560,7 @@ export class GameEnvironment {
             notificationQueue: this.notificationQueue,
             lastEventId: this.lastEventId,
             battlePhaseReturnPoint: this.battlePhaseReturnPoint,
+            pendingPhaseTransition: this.pendingPhaseTransition,
             
         };
     }
@@ -601,6 +607,7 @@ export class GameEnvironment {
         gameEnv.notificationQueue = data.notificationQueue || [];
         gameEnv.lastEventId = data.lastEventId || 0;
         gameEnv.battlePhaseReturnPoint = data.battlePhaseReturnPoint;
+        gameEnv.pendingPhaseTransition = data.pendingPhaseTransition || null;
         
         return gameEnv;
     }

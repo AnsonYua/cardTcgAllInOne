@@ -26,6 +26,10 @@ export class PhaseTransitionManager {
         if (gameEnv.phase !== GamePhase.REDRAW_PHASE) {
             return actions;
         }
+
+        if (gameEnv.pendingPhaseTransition === EventType.GAMEPLAY_BEGINS) {
+            return actions;
+        }
         
         // Ensure both players exist
         if (!gameEnv.playerId_1 || !gameEnv.playerId_2) {
@@ -45,7 +49,7 @@ export class PhaseTransitionManager {
         
         if (bothPlayersReady && bothPlayersConfirmed) {
             console.log(`🎯 State-based action detected: GAMEPLAY_BEGINS conditions met`);
-            
+            gameEnv.pendingPhaseTransition = EventType.GAMEPLAY_BEGINS;
             actions.push({
                 actionId: `game_start_${Date.now()}`,
                 type: EventType.GAMEPLAY_BEGINS,
@@ -64,6 +68,10 @@ export class PhaseTransitionManager {
         
         // Only check if we're in DRAW_PHASE
         if (gameEnv.phase !== GamePhase.DRAW_PHASE) {
+            return actions;
+        }
+
+        if (gameEnv.pendingPhaseTransition === EventType.PHASE_ADVANCE) {
             return actions;
         }
         
@@ -86,7 +94,7 @@ export class PhaseTransitionManager {
             
             if (!recentDrawToMainAction) {
                 console.log(`🎯 State-based action detected: DRAW_PHASE to MAIN_PHASE transition needed`);
-                
+                gameEnv.pendingPhaseTransition = EventType.PHASE_ADVANCE;
                 actions.push({
                     actionId: `draw_to_main_${Date.now()}`,
                     type: EventType.PHASE_ADVANCE,
@@ -107,6 +115,10 @@ export class PhaseTransitionManager {
         // Check if we're in END_PHASE and need to transition to next player
         if (gameEnv.phase === GamePhase.END_PHASE) {
             console.log(`🔄 END_PHASE detected - checking for next player transition`);
+
+            if (gameEnv.pendingPhaseTransition === EventType.NEXT_PLAYER_TURN) {
+                return actions;
+            }
             
             // Calculate next player
             const nextPlayerId = gameEnv.currentPlayer === gameEnv.playerId_1 
@@ -115,7 +127,7 @@ export class PhaseTransitionManager {
             
             if (nextPlayerId) {
                 console.log(`🎯 State-based action detected: END_PHASE to next player transition (${gameEnv.currentPlayer} → ${nextPlayerId})`);
-                
+                gameEnv.pendingPhaseTransition = EventType.NEXT_PLAYER_TURN;
                 actions.push({
                     actionId: `end_phase_next_player_${Date.now()}`,
                     type: EventType.NEXT_PLAYER_TURN,
@@ -139,6 +151,7 @@ export class PhaseTransitionManager {
         console.log(`🎯 Executing GAMEPLAY_BEGINS event: ${event.id}`);
         
         try {
+            gameEnv.pendingPhaseTransition = null;
             // Transition from REDRAW_PHASE to first player's turn
             gameEnv.phase = GamePhase.DRAW_PHASE;
             console.log(`✅ Game started: phase changed to ${gameEnv.phase}`);
@@ -147,6 +160,7 @@ export class PhaseTransitionManager {
             
         } catch (error) {
             console.error(`❌ Error executing GAMEPLAY_BEGINS:`, error);
+            gameEnv.pendingPhaseTransition = null;
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Game start execution failed'
@@ -167,6 +181,7 @@ export class PhaseTransitionManager {
         console.log(`🎯 Executing PHASE_ADVANCE event: ${event.id}`);
 
         try {
+            gameEnv.pendingPhaseTransition = null;
             const currentPhase = gameEnv.phase;
 
             // Advance from DRAW_PHASE to MAIN_PHASE when appropriate
@@ -183,6 +198,7 @@ export class PhaseTransitionManager {
 
         } catch (error) {
             console.error(`❌ Error executing PHASE_ADVANCE:`, error);
+            gameEnv.pendingPhaseTransition = null;
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Phase advance execution failed'
@@ -197,6 +213,7 @@ export class PhaseTransitionManager {
         console.log(`🎯 Executing NEXT_PLAYER_TURN event: ${event.id}`);
         
         try {
+            gameEnv.pendingPhaseTransition = null;
             const nextPlayer = event.data?.nextPlayer;
             if (!nextPlayer) {
                 return {
@@ -221,6 +238,7 @@ export class PhaseTransitionManager {
             
         } catch (error) {
             console.error(`❌ Error executing NEXT_PLAYER_TURN:`, error);
+            gameEnv.pendingPhaseTransition = null;
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Next player turn execution failed'
