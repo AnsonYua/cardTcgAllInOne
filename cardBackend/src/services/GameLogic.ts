@@ -4,11 +4,10 @@
 import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
 import * as path from 'path';
-import { Request, Response } from 'express';
 
 // Import core models
 import { GameEnvironment } from '../models/GameEnvironment';
-import { GamePhase, ZoneType, PlayerActionType, EventType } from '../models/GameEnums';
+import { PlayerActionType, EventType } from '../models/GameEnums';
 import { EventFactory, GameEvent, EventStatus, EventPriority } from './EventQueue/index';
 import { BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent, TargetReference } from './EventQueue/interfaces/GameEvent';
 import { PlayerAction } from '../models/EventInterfaces';
@@ -348,49 +347,6 @@ export class GameLogic {
         }
     }
 
-    // TODO: Add event processors that will be called by the event queue system
-    // These should be registered with the global event queue to handle specific event types
-    
-    /**
-     * Event processor for CREATE_GAME events
-     * This will be called by the event queue when processing CREATE_GAME events
-     */
-    static async handleStartGameEvent(event: any): Promise<void> {
-        try {
-            // TODO: Process CREATE_GAME event
-            // - Load game from file using event.gameId
-            // - Initialize event processor for the specific game
-            // - Register card triggers from st01Card.json
-            // - Set up initial game state for event-driven processing
-            
-            console.log('📝 TODO: handleStartGameEvent - Implementation needed for queue processing');
-            console.log('📋 Event data:', event);
-            
-        } catch (error) {
-            console.error('❌ Error handling CREATE_GAME event:', error);
-        }
-    }
-
-    /**
-     * Event processor for JOIN_GAME events
-     * This will be called by the event queue when processing JOIN_GAME events
-     */
-    static async handleJoinGameEvent(event: any): Promise<void> {
-        try {
-            // TODO: Process JOIN_GAME event
-            // - Load game from file using event.gameId
-            // - Activate event processing for both players
-            // - Initialize trigger engine with card abilities
-            // - Set up event-driven game flow
-            
-            console.log('📝 TODO: handleJoinGameEvent - Implementation needed for queue processing');
-            console.log('📋 Event data:', event);
-            
-        } catch (error) {
-            console.error('❌ Error handling JOIN_GAME event:', error);
-        }
-    }
-    
     // ============ EVENT CREATION HELPERS ============
     
     /**

@@ -144,10 +144,6 @@ export class GameEngine {
         }
     }
 
-    private static executeBurstEffectChoice(event: BurstEffectChoiceEvent, gameEnv: GameEnvironment): ExecutionResult {
-        return BurstEffectManager.processBurstEffectChoice(event, gameEnv);
-    }
-
     /**
      * Execute Pairing effect triggered by unit+pilot pairing
      */
