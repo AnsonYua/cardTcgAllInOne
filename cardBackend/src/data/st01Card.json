@@ -714,7 +714,8 @@
                     },
                     {
                         "effectId": "activate_conditional_token_deploy",
-                        "type": "activated",
+                        "type": "triggered",
+                        "trigger": "PAY_COST",
                         "timing": {
                             "windows": [
                                 "MAIN_PHASE"
@@ -817,7 +818,8 @@
                     },
                     {
                         "effectId": "activate_boost_link_units",
-                        "type": "activated",
+                        "type": "triggered",
+                        "trigger": "PAY_COST",
                         "timing": {
                             "windows": [
                                 "MAIN_PHASE"
