@@ -81,6 +81,29 @@ export class GameNotificationManager {
     }
 
     /**
+     * Emit a phase change notification (no acknowledgment required).
+     */
+    static emitPhaseChange(
+        gameEnv: GameEnvironment,
+        previousPhase: string,
+        nextPhase: string,
+        playerId?: string | null
+    ): string {
+        const notificationManager = new GameNotificationManager(gameEnv);
+        return notificationManager.addNotificationEvent(
+            'PHASE_CHANGED',
+            {
+                playerId: playerId ?? gameEnv.currentPlayer ?? undefined,
+                previousPhase,
+                nextPhase,
+                currentTurn: gameEnv.currentTurn
+            },
+            false,
+            'normal'
+        );
+    }
+
+    /**
      * Update an existing notification payload / metadata (e.g. for completion flags)
      */
     updateNotificationEvent(

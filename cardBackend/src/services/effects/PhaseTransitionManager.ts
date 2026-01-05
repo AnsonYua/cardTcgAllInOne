@@ -3,9 +3,14 @@
 
 import { GameEnvironment } from '../../models/GameEnvironment';
 import { GamePhase, EventType } from '../../models/GameEnums';
-import { GameEvent, EventStatus, EventPriority, EventFactory, NextPlayerTurnEvent, GameplayBeginsEvent } from '../EventQueue/interfaces/GameEvent';
+import { GameEvent, NextPlayerTurnEvent, EndTurnEvent, StartGameEvent, JoinGameEvent, GameplayBeginsEvent } from '../EventQueue/interfaces/GameEvent';
 import { StateBasedAction } from '../EventQueue/StateBasedActionEngine';
-import { GameNotificationManager } from '../GameNotificationManager';
+import { TurnLifecycleManager } from '../TurnLifecycleManager';
+import { GameSetupManager } from '../GameSetupManager';
+import { EnergyManager } from '../EnergyManager';
+import { ShieldCardManager } from '../ShieldCardManager';
+import { BaseCardManager } from '../BaseCardManager';
+import { PlayerCardManager } from '../PlayerCardManager';
 
 interface ExecutionResult {
     success: boolean;
@@ -85,22 +90,13 @@ export class PhaseTransitionManager {
         console.log(`🔍 DRAW_PHASE check: phase=${gameEnv.phase}, hasUnacknowledgedCardDrawEvent=${hasUnacknowledgedCardDrawEvent}`);
         
         if (!hasUnacknowledgedCardDrawEvent) {
-            // Also check that we haven't already processed a draw_to_main action recently
-            const recentDrawToMainAction = notificationQueue.some(event =>
-                event.type === 'PHASE_CHANGE' && 
-                event.data?.reason?.includes('Auto-advance') &&
-                event.timestamp > (Date.now() - 5000) // Within last 5 seconds
-            );
-            
-            if (!recentDrawToMainAction) {
-                console.log(`🎯 State-based action detected: DRAW_PHASE to MAIN_PHASE transition needed`);
-                gameEnv.pendingPhaseTransition = EventType.PHASE_ADVANCE;
-                actions.push({
-                    actionId: `draw_to_main_${Date.now()}`,
-                    type: EventType.PHASE_ADVANCE,
-                    autoExecute: true
-                });
-            }
+            console.log(`🎯 State-based action detected: DRAW_PHASE to MAIN_PHASE transition needed`);
+            gameEnv.pendingPhaseTransition = EventType.PHASE_ADVANCE;
+            actions.push({
+                actionId: `draw_to_main_${Date.now()}`,
+                type: EventType.PHASE_ADVANCE,
+                autoExecute: true
+            });
         }
         
         return actions;
@@ -144,39 +140,92 @@ export class PhaseTransitionManager {
 
     // ============ EXECUTION METHODS ============
 
-    /**
-     * Execute GAMEPLAY_BEGINS event
-     */
-    static executeGameplayBegins(event: GameplayBeginsEvent, gameEnv: GameEnvironment): ExecutionResult {
-        console.log(`🎯 Executing GAMEPLAY_BEGINS event: ${event.id}`);
-        
+    static executeCreateGame(event: StartGameEvent, gameEnv: GameEnvironment): ExecutionResult {
+        console.log(`🎯 Processing CREATE_GAME event for player: ${event.data.playerId}`);
+
         try {
-            gameEnv.pendingPhaseTransition = null;
-            // Transition from REDRAW_PHASE to first player's turn
-            gameEnv.phase = GamePhase.DRAW_PHASE;
-            console.log(`✅ Game started: phase changed to ${gameEnv.phase}`);
-            
+            gameEnv.playerId_1 = event.data.playerId;
+            gameEnv.updatePhase(GamePhase.WAITING_FOR_PLAYERS, event.data.playerId);
+            gameEnv.gameStarted = false;
+            gameEnv.playersReady = gameEnv.playersReady || {};
+            gameEnv.playersReady[event.data.playerId] = true;
+
+            console.log(`✅ CREATE_GAME event processed - game state initialized for ${event.data.playerId}`);
             return { success: true };
-            
         } catch (error) {
-            console.error(`❌ Error executing GAMEPLAY_BEGINS:`, error);
-            gameEnv.pendingPhaseTransition = null;
+            console.error(`❌ Error in executeCreateGame:`, error);
             return {
                 success: false,
-                error: error instanceof Error ? error.message : 'Game start execution failed'
+                error: error instanceof Error ? error.message : 'CREATE_GAME execution failed'
+            };
+        }
+    }
+
+    static executeJoinGame(event: JoinGameEvent, gameEnv: GameEnvironment): ExecutionResult {
+        console.log(`🎯 Processing JOIN_GAME event for player: ${event.data.playerId}`);
+
+        try {
+            gameEnv.playerId_2 = event.data.playerId;
+            gameEnv.updatePhase(GamePhase.REDRAW_PHASE, event.data.playerId);
+            gameEnv.gameStarted = true;
+            gameEnv.playersReady[event.data.playerId] = true;
+
+            GameSetupManager.initializeGameWithDecks(gameEnv);
+
+            console.log(`✅ JOIN_GAME event processed - second player ${event.data.playerId} added`);
+            return { success: true };
+        } catch (error) {
+            console.error(`❌ Error in executeJoinGame:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'JOIN_GAME execution failed'
             };
         }
     }
 
     /**
-        id: `state_${Date.now()}_${Math.random()}`,
-        type: action.type,
-        status: EventStatus.DECLARED,
-        priority: EventPriority.HIGH,
-        timestamp: Date.now(),
-        // Pass action data directly without field reconstruction
-        data: action.data || {}
+     * Execute GAMEPLAY_BEGINS event
      */
+    static executeGameplayBegins(event: GameplayBeginsEvent, gameEnv: GameEnvironment): ExecutionResult {
+        const { description } = event.data;
+        console.log(`🎯 Processing GAME_START state-based action: ${description}`);
+
+        try {
+            gameEnv.pendingPhaseTransition = null;
+            const firstPlayerId = gameEnv.firstPlayer === 0 ? gameEnv.playerId_1! : gameEnv.playerId_2!;
+            const secondPlayerId = gameEnv.firstPlayer === 0 ? gameEnv.playerId_2! : gameEnv.playerId_1!;
+
+            EnergyManager.addExtraEnergy(gameEnv, secondPlayerId);
+            EnergyManager.addBasicEnergy(gameEnv, firstPlayerId);
+
+            ShieldCardManager.createShieldCardsFromDeck(gameEnv, firstPlayerId);
+            ShieldCardManager.createShieldCardsFromDeck(gameEnv, secondPlayerId);
+
+            BaseCardManager.createBaseCardsFromDeck(gameEnv, firstPlayerId);
+            BaseCardManager.createBaseCardsFromDeck(gameEnv, secondPlayerId);
+
+            gameEnv.currentPlayer = firstPlayerId;
+            gameEnv.updatePhase(GamePhase.DRAW_PHASE, firstPlayerId);
+            console.log(`📋 Advanced to DRAW_PHASE for first player turn`);
+
+            const firstPlayer = gameEnv.players[firstPlayerId];
+            if (firstPlayer?.deck) {
+                PlayerCardManager.drawCards(gameEnv, firstPlayerId, 1);
+                console.log(`🃏 Drew 1 card for first player ${firstPlayerId}`);
+            }
+
+            console.log(`✅ GAMEPLAY_BEGINS event processed - resources allocated, first player set, card drawn`);
+            return { success: true };
+        } catch (error) {
+            console.error(`❌ Error executing GAMEPLAY_BEGINS:`, error);
+            gameEnv.pendingPhaseTransition = null;
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'GAMEPLAY_BEGINS execution failed'
+            };
+        }
+    }
+
     static executePhaseAdvance(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`🎯 Executing PHASE_ADVANCE event: ${event.id}`);
 
@@ -186,7 +235,7 @@ export class PhaseTransitionManager {
 
             // Advance from DRAW_PHASE to MAIN_PHASE when appropriate
             if (currentPhase === GamePhase.DRAW_PHASE) {
-                gameEnv.phase = GamePhase.MAIN_PHASE;
+                gameEnv.updatePhase(GamePhase.MAIN_PHASE);
                 console.log(`✅ Phase advanced: ${currentPhase} → ${gameEnv.phase}`);
 
                 console.log(`📨 Phase change notification enqueued`);
@@ -202,6 +251,38 @@ export class PhaseTransitionManager {
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Phase advance execution failed'
+            };
+        }
+    }
+
+    /**
+     * Execute END_TURN event (enters END_PHASE and queues SBA transitions)
+     */
+    static executeEndTurn(event: EndTurnEvent, gameEnv: GameEnvironment): ExecutionResult {
+        const { playerId, currentTurnNumber } = event.data;
+        const fromBurst = event.data.fromBurst || false;
+
+        console.log(`🏁 Processing END_TURN event for player: ${playerId}, turn: ${currentTurnNumber}, fromBurst: ${fromBurst}`);
+
+        try {
+            if (gameEnv.currentPlayer !== playerId) {
+                return {
+                    success: false,
+                    error: `Not your turn. Current player: ${gameEnv.currentPlayer}`
+                };
+            }
+
+            TurnLifecycleManager.cleanupEndTurn(gameEnv, playerId);
+
+            gameEnv.updatePhase(GamePhase.END_PHASE, playerId);
+            console.log(`🏁 Phase set to END_PHASE - state-based actions will handle next player transition`);
+
+            return { success: true };
+        } catch (error) {
+            console.error(`❌ Error in executeEndTurn:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'END_TURN execution failed'
             };
         }
     }
@@ -225,13 +306,14 @@ export class PhaseTransitionManager {
             // Update current player
             const previousPlayer = gameEnv.currentPlayer;
             gameEnv.currentPlayer = nextPlayer;
-            
+
             // Increment turn counter
             gameEnv.currentTurn = (gameEnv.currentTurn || 0) + 1;
-            
+
             // Start new turn in DRAW_PHASE
-            gameEnv.phase = GamePhase.DRAW_PHASE;
-            
+            gameEnv.updatePhase(GamePhase.DRAW_PHASE, nextPlayer);
+            TurnLifecycleManager.startTurn(gameEnv, nextPlayer);
+
             console.log(`✅ Player turn advanced: ${previousPlayer} → ${nextPlayer} (turn ${gameEnv.currentTurn})`);
             
             return { success: true };
@@ -261,24 +343,5 @@ export class PhaseTransitionManager {
         return actions;
     }
 
-    /**
-     * Route event to appropriate phase transition execution method
-     */
-    static executePhaseTransition(event: GameEvent, gameEnv: GameEnvironment): ExecutionResult {
-        console.log(`🎯 Routing phase transition event: ${event.type}`);
-        
-        switch (event.type) {
-            case EventType.GAMEPLAY_BEGINS:
-                return this.executeGameplayBegins(event as GameplayBeginsEvent, gameEnv);
-            case EventType.PHASE_ADVANCE:
-                return this.executePhaseAdvance(event, gameEnv);
-            case EventType.NEXT_PLAYER_TURN:
-                return this.executeNextPlayerTurn(event as NextPlayerTurnEvent, gameEnv);
-            default:
-                return {
-                    success: false,
-                    error: `Unknown phase transition event type: ${event.type}`
-                };
-        }
-    }
+    // executePhaseTransition removed - GameEngine routes events directly.
 }

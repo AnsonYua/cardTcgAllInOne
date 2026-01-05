@@ -214,18 +214,18 @@ export class GameEnvironment {
         if (!this.battlePhaseReturnPoint && this.phase !== phase) {
             this.battlePhaseReturnPoint = this.phase;
         }
-        this.phase = phase;
+        this.updatePhase(phase);
     }
 
     public resetBattlePhaseState(): void {
         if (this.battlePhaseReturnPoint) {
-            this.phase = this.battlePhaseReturnPoint;
+            this.updatePhase(this.battlePhaseReturnPoint);
             this.battlePhaseReturnPoint = undefined;
             return;
         }
 
         if (this.phase === GamePhase.BLOCKER_PHASE || this.phase === GamePhase.ACTION_STEP_PHASE) {
-            this.phase = GamePhase.MAIN_PHASE;
+            this.updatePhase(GamePhase.MAIN_PHASE);
         }
     }
 
@@ -464,9 +464,23 @@ export class GameEnvironment {
 
     // ============ GAME STATE METHODS ============
 
-    public updatePhase(newPhase: GamePhase): void {
+    public updatePhase(newPhase: GamePhase, playerId?: string | null): void {
+        const previousPhase = this.phase;
+        if (previousPhase === newPhase) {
+            return;
+        }
+
         this.phase = newPhase;
         console.log(`📋 Phase changed to: ${newPhase}`);
+
+        try {
+            const { GameNotificationManager } = require('../services/GameNotificationManager');
+            if (GameNotificationManager?.emitPhaseChange) {
+                GameNotificationManager.emitPhaseChange(this, previousPhase, newPhase, playerId);
+            }
+        } catch (error) {
+            console.error('❌ Failed to emit phase change notification:', error);
+        }
     }
 
     public isGameReady(): boolean {

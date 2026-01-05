@@ -1,67 +1,16 @@
 // src/services/GameSetupManager.ts
-// Handles game creation, joining, redraw confirmations, and gameplay start setup
+// Handles redraw confirmation and deck initialization helpers
 
 import * as fs from 'fs';
 import * as path from 'path';
 import { GameEnvironment } from '../models/GameEnvironment';
-import { GamePhase } from '../models/GameEnums';
 import {
-    ConfirmRedrawEvent,
-    GameplayBeginsEvent,
-    JoinGameEvent,
-    StartGameEvent
+    ConfirmRedrawEvent
 } from './EventQueue/interfaces/GameEvent';
 import { ExecutionResult } from './ExecutionResult';
 import { PlayerCardManager } from './PlayerCardManager';
-import { EnergyManager } from './EnergyManager';
-import { ShieldCardManager } from './ShieldCardManager';
-import { BaseCardManager } from './BaseCardManager';
-import { GameNotificationManager } from './GameNotificationManager';
 
 export class GameSetupManager {
-    static handleCreateGame(event: StartGameEvent, gameEnv: GameEnvironment): ExecutionResult {
-        console.log(`🎯 Processing CREATE_GAME event for player: ${event.data.playerId}`);
-
-        try {
-            gameEnv.playerId_1 = event.data.playerId;
-            gameEnv.phase = GamePhase.WAITING_FOR_PLAYERS;
-            gameEnv.gameStarted = false;
-            gameEnv.playersReady = gameEnv.playersReady || {};
-            gameEnv.playersReady[event.data.playerId] = true;
-
-            console.log(`✅ CREATE_GAME event processed - game state initialized for ${event.data.playerId}`);
-            return { success: true };
-        } catch (error) {
-            console.error(`❌ Error in handleCreateGame:`, error);
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : 'CREATE_GAME execution failed'
-            };
-        }
-    }
-
-    static handleJoinGame(event: JoinGameEvent, gameEnv: GameEnvironment): ExecutionResult {
-        console.log(`🎯 Processing JOIN_GAME event for player: ${event.data.playerId}`);
-
-        try {
-            gameEnv.playerId_2 = event.data.playerId;
-            gameEnv.phase = GamePhase.REDRAW_PHASE;
-            gameEnv.gameStarted = true;
-            gameEnv.playersReady[event.data.playerId] = true;
-
-            this.initializeGameWithDecks(gameEnv, event.data.playerId);
-
-            console.log(`✅ JOIN_GAME event processed - second player ${event.data.playerId} added`);
-            return { success: true };
-        } catch (error) {
-            console.error(`❌ Error in handleJoinGame:`, error);
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : 'JOIN_GAME execution failed'
-            };
-        }
-    }
-
     static handleConfirmRedraw(event: ConfirmRedrawEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`🎯 Processing CONFIRM_REDRAW event for player: ${event.data.playerId}, isRedraw: ${event.data.isRedraw}`);
 
@@ -106,48 +55,7 @@ export class GameSetupManager {
         }
     }
 
-    static handleGameplayBegins(event: GameplayBeginsEvent, gameEnv: GameEnvironment): ExecutionResult {
-        const { description } = event.data;
-        console.log(`🎯 Processing GAME_START state-based action: ${description}`);
-
-        try {
-            const firstPlayerId = gameEnv.firstPlayer === 0 ? gameEnv.playerId_1! : gameEnv.playerId_2!;
-            const secondPlayerId = gameEnv.firstPlayer === 0 ? gameEnv.playerId_2! : gameEnv.playerId_1!;
-
-            EnergyManager.addExtraEnergy(gameEnv, secondPlayerId);
-            EnergyManager.addBasicEnergy(gameEnv, firstPlayerId);
-
-            ShieldCardManager.createShieldCardsFromDeck(gameEnv, firstPlayerId);
-            ShieldCardManager.createShieldCardsFromDeck(gameEnv, secondPlayerId);
-
-            BaseCardManager.createBaseCardsFromDeck(gameEnv, firstPlayerId);
-            BaseCardManager.createBaseCardsFromDeck(gameEnv, secondPlayerId);
-
-            gameEnv.currentPlayer = firstPlayerId;
-            gameEnv.phase = GamePhase.DRAW_PHASE;
-            console.log(`📋 Advanced to DRAW_PHASE for first player turn`);
-
-            const firstPlayer = gameEnv.players[firstPlayerId];
-            if (firstPlayer?.deck) {
-                PlayerCardManager.drawCards(gameEnv, firstPlayerId, 1);
-                console.log(`🃏 Drew 1 card for first player ${firstPlayerId}`);
-            }
-
-            // Placeholder notification support (kept for parity with original implementation)
-            new GameNotificationManager(gameEnv);
-
-            console.log(`✅ GAMEPLAY_BEGINS event processed - resources allocated, first player set, card drawn`);
-            return { success: true };
-        } catch (error) {
-            console.error(`❌ Error in handleGameplayBegins:`, error);
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : 'GAMEPLAY_BEGINS execution failed'
-            };
-        }
-    }
-
-    private static initializeGameWithDecks(gameEnv: GameEnvironment, joinedPlayerId: string): void {
+    static initializeGameWithDecks(gameEnv: GameEnvironment): void {
         console.log('🎮 Initializing game with deck configuration...');
 
         const deckConfigPath = path.join(__dirname, '../data/gcgdecks.json');

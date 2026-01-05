@@ -18,7 +18,6 @@ import { BurstEffectManager } from './BurstEffectManager';
 import { ExecutionResult } from './ExecutionResult';
 import { GameSetupManager } from './GameSetupManager';
 import { CardPlayExecutor } from './CardPlayExecutor';
-import { TurnManager } from './TurnManager';
 import { PlayerActionExecutor } from './PlayerActionExecutor';
 import { BattlePhaseManager } from './BattlePhaseManager';
 
@@ -38,16 +37,16 @@ export class GameEngine {
         try {
             switch (event.type) {
                 case EventType.CREATE_GAME:
-                    return GameSetupManager.handleCreateGame(event as StartGameEvent, gameEnv);
+                    return PhaseTransitionManager.executeCreateGame(event as StartGameEvent, gameEnv);
 
                 case EventType.JOIN_GAME:
-                    return GameSetupManager.handleJoinGame(event as JoinGameEvent, gameEnv);
+                    return PhaseTransitionManager.executeJoinGame(event as JoinGameEvent, gameEnv);
 
                 case EventType.CONFIRM_REDRAW:
                     return GameSetupManager.handleConfirmRedraw(event as ConfirmRedrawEvent, gameEnv);
 
                 case EventType.GAMEPLAY_BEGINS:
-                    return GameSetupManager.handleGameplayBegins(event as GameplayBeginsEvent, gameEnv);
+                    return PhaseTransitionManager.executeGameplayBegins(event as GameplayBeginsEvent, gameEnv);
 
                 case EventType.ERROR_OCCURRED:
                     return GameEngine.executeErrorEvent(event as ErrorOccurredEvent, gameEnv);
@@ -59,10 +58,10 @@ export class GameEngine {
                     return PhaseTransitionManager.executePhaseAdvance(event, gameEnv);
 
                 case EventType.END_TURN:
-                    return TurnManager.handleEndTurn(event as EndTurnEvent, gameEnv);
+                    return PhaseTransitionManager.executeEndTurn(event as EndTurnEvent, gameEnv);
 
                 case EventType.NEXT_PLAYER_TURN:
-                    return TurnManager.handleNextPlayerTurn(event as NextPlayerTurnEvent, gameEnv);
+                    return PhaseTransitionManager.executeNextPlayerTurn(event as NextPlayerTurnEvent, gameEnv);
 
                 case EventType.PLAY_CARD:
                     return CardPlayExecutor.execute(event as PlayCardEvent, gameEnv);
