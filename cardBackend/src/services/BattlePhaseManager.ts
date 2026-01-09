@@ -227,7 +227,7 @@ export class BattlePhaseManager {
 
     private static startUnitBattle(
         gameEnv: GameEnvironment,
-        event: PlayerActionEvent,
+        _event: PlayerActionEvent,
         eventData: PlayerActionEventData
     ): ExecutionResult {
         const { playerId, attackerCarduid, targetPlayerId, targetUnitUid } = eventData;
@@ -254,13 +254,6 @@ export class BattlePhaseManager {
                 error: failure.error
             };
         }
-
-        const {
-            attackerSlot,
-            attackingUnit,
-            targetSlotName,
-            targetUnit
-        } = preparation;
 
         const context: BattleContext = {
             actionType: 'attackUnit',
@@ -292,7 +285,7 @@ export class BattlePhaseManager {
 
     private static startShieldBattle(
         gameEnv: GameEnvironment,
-        event: PlayerActionEvent,
+        _event: PlayerActionEvent,
         eventData: PlayerActionEventData
     ): ExecutionResult {
         const { playerId, attackerCarduid } = eventData;
@@ -510,7 +503,6 @@ export class BattlePhaseManager {
                         }
                     })
                 },
-                false,
                 'normal'
             );
 
@@ -813,7 +805,6 @@ export class BattlePhaseManager {
                 focusTarget: data.focusTarget || null,
                 result: data.result
             },
-            false,
             'normal'
         );
     }

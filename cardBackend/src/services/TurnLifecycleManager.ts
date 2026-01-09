@@ -6,10 +6,12 @@ import { DeployTargetManager } from './DeployTargetManager';
 import { EnergyManager } from './EnergyManager';
 import { PlayerCardManager } from './PlayerCardManager';
 import { ContinuousEffectManager } from './ContinuousEffectManager';
+import { SLOT_ZONES } from '../config/gameConstants';
 
 export class TurnLifecycleManager {
     static cleanupEndTurn(gameEnv: GameEnvironment, playerId: string): void {
         DeployTargetManager.cleanupExpiredTemporaryEffects(gameEnv, playerId);
+        gameEnv.notificationQueue = [];
     }
 
     static startTurn(gameEnv: GameEnvironment, playerId: string): void {
@@ -34,6 +36,28 @@ export class TurnLifecycleManager {
             );
         } catch (error) {
             console.error(`❌ Error processing continuous effects on turn change:`, error);
+        }
+    }
+
+    static readyMainPhase(gameEnv: GameEnvironment, playerId: string): void {
+        const player = gameEnv.players[playerId];
+        if (!player?.zones) return;
+
+        const energyArea = player.zones.energyArea || [];
+        for (const energy of energyArea) {
+            energy.isRested = false;
+        }
+
+        for (const slotName of SLOT_ZONES) {
+            const slot = (player.zones as any)[slotName];
+            if (slot?.unit) {
+                slot.unit.isRested = false;
+            }
+        }
+
+        const bases = player.zones.base || [];
+        for (const base of bases) {
+            base.isRested = false;
         }
     }
 }

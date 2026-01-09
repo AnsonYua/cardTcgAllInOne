@@ -6,20 +6,13 @@ import {
     ZoneCard, 
     UnitZoneCard, 
     PilotZoneCard, 
-    CommandZoneCard, 
     BaseCard,
     EnergyZoneCard,
     CardData,
     createZoneCard,
-    isUnitZoneCard,
-    isPilotZoneCard,
-    isCommandZoneCard,
-    isBaseCard,
-    isEnergyZoneCard,
     CardDatabaseManager,
     FieldCardValue
 } from './CardSystem';
-import { GameEngine } from '../services/GameEngine';
 import { calculateBaseFieldValue, calculateSlotFieldValue } from '../utils/FieldValueCalculator';
 
 // ============ ZONE INTERFACES ============
@@ -161,7 +154,7 @@ export class PlayerDeck {
     }
 
 
-    playCardFromHand(carduid: string, zone: string): boolean {
+    playCardFromHand(carduid: string): boolean {
         const cardIndex = this._handUids.indexOf(carduid);
         if (cardIndex >= 0) {
             this._handUids.splice(cardIndex, 1);
@@ -693,8 +686,8 @@ export class Player {
     // ============ DECK METHODS ============
 
 
-    public playCardFromHand(carduid: string, zone: string = 'slot1'): boolean {
-        return this.deck.playCardFromHand(carduid, zone);
+    public playCardFromHand(carduid: string): boolean {
+        return this.deck.playCardFromHand(carduid);
     }
 
     public getHandSize(): number {

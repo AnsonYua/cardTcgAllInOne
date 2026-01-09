@@ -271,7 +271,7 @@ export class StaticEventProcessor {
     
     // ============ REACTION AND TRIGGER METHODS ============
     
-    private static findTriggeredReactions(event: GameEvent, gameEnv: GameEnvironment, triggerEngine: TriggerEngine): GameEvent[] {
+    private static findTriggeredReactions(event: GameEvent, _gameEnv: GameEnvironment, triggerEngine: TriggerEngine): GameEvent[] {
         console.log(`🔍 Checking for triggered reactions to: ${event.type}`);
         try {
             return triggerEngine.checkTriggeredAbilities(event);
@@ -281,13 +281,13 @@ export class StaticEventProcessor {
         }
     }
     
-    private static checkForReplacementEffects(event: GameEvent, gameEnv: GameEnvironment): GameEvent | null {
+    private static checkForReplacementEffects(event: GameEvent, _gameEnv: GameEnvironment): GameEvent | null {
         // TODO: Implement replacement effects
         console.log(`🔄 Checking replacement effects for: ${event.type}`);
         return null; // No replacement effects for now
     }
     
-    private static checkForStateBasedActions(gameEnv: GameEnvironment, playerId:string,stateEngine: StateBasedActionEngine): GameEvent[] {
+    private static checkForStateBasedActions(_gameEnv: GameEnvironment, playerId: string, stateEngine: StateBasedActionEngine): GameEvent[] {
         console.log('🏛️ Checking for state-based actions...');
         try {
             const stateActions = stateEngine.checkForStateBasedActions();

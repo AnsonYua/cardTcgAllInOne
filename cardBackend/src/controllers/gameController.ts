@@ -3,7 +3,7 @@
 
 import { Request, Response } from 'express';
 import { gameLogic, GameLogic } from '../services/GameLogic';
-import { GamePhase, PlayerActionType, CardPlayType } from '../models/GameEnums';
+import { PlayerActionType, CardPlayType } from '../models/GameEnums';
 import { PlayerAction } from '../models/EventInterfaces';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -237,7 +237,7 @@ export class GameController {
         try {
             console.log('🎮 Processing player action:', req.body);
             
-            const { gameId, playerId, carduid, action } = req.body;
+            const { gameId, playerId, action } = req.body;
             
             if (!gameId || !playerId) {
                 res.status(400).json({
@@ -501,7 +501,7 @@ export class GameController {
      * Get custom card data (st01Card.json)
      * GET /api/game/cards
      */
-    async getCardData(req: Request, res: Response): Promise<void> {
+    async getCardData(_req: Request, res: Response): Promise<void> {
         try {
             console.log('📋 Getting custom card data (st01Card.json)');
             
@@ -540,7 +540,7 @@ export class GameController {
      * Get game resource data (deck data for frontend card preloading)
      * GET /api/game/player/gameResource
      */
-    async getGameResource(req: Request, res: Response): Promise<void> {
+    async getGameResource(_req: Request, res: Response): Promise<void> {
         try {
             console.log('📦 Getting game resource data (deck data)');
             
@@ -728,7 +728,7 @@ export class GameController {
      * Health check endpoint
      * GET /api/game/health
      */
-    async healthCheck(req: Request, res: Response): Promise<void> {
+    async healthCheck(_req: Request, res: Response): Promise<void> {
         try {
             const status = {
                 status: 'healthy',
@@ -920,7 +920,7 @@ export class GameController {
         try {
             console.log('🎯 Processing target choice confirmation:', req.body);
             
-            const { gameId, playerId, eventId, selectedTargets, notificationId } = req.body;
+            const { gameId, playerId, eventId, selectedTargets } = req.body;
             
             if (!gameId || !playerId || !eventId) {
                 res.status(400).json({

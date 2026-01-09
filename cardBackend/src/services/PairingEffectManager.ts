@@ -12,7 +12,6 @@ import {
     PairingEffectDefinition,
     TargetFilters
 } from './EventQueue/interfaces/GameEvent';
-import { EventType } from '../models/GameEnums';
 
 // Import standardized interfaces
 import {
@@ -492,7 +491,7 @@ export class PairingEffectManager implements StandardEffectManager {
     /**
      * Validate a single pairing condition
      */
-    private static validateSinglePairingCondition(condition: EffectCondition, unit: UnitCard, pilot: PilotCard, gameEnv: GameEnvironment): boolean {
+    private static validateSinglePairingCondition(condition: EffectCondition, unit: UnitCard, pilot: PilotCard, _gameEnv: GameEnvironment): boolean {
         console.log(`🔍 Validating condition:`, JSON.stringify(condition));
 
         switch (condition.type) {
@@ -655,53 +654,4 @@ export class PairingEffectManager implements StandardEffectManager {
         }
     }
 
-    /**
-     * Find eligible targets based on target filters
-     */
-    private static findEligibleTargets(player: PlayerZones, target: EffectTarget): (UnitCard & { cardData?: any })[] {
-        const SLOT_ZONES = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'];
-        const eligibleTargets: any[] = [];
-        
-        for (const slotName of SLOT_ZONES) {
-            const slot = player.zones[slotName];
-            if (slot?.unit && target.type === 'unit') {
-                const unit = slot.unit;
-                
-                // Apply filters
-                if (this.matchesFilters(unit, target.filters || {})) {
-                    eligibleTargets.push(unit);
-                }
-            }
-        }
-        
-        console.log(`🎯 Found ${eligibleTargets.length} eligible targets for effect`);
-        return eligibleTargets;
-    }
-    
-    /**
-     * Check if a unit matches the target filters
-     */
-    private static matchesFilters(unit: UnitCard & { cardData?: any }, filters: EffectFilters): boolean {
-        // Level filter
-        if (filters.level) {
-            const unitLevel = unit.cardData?.level || 0;
-            if (!this.compareValues(unitLevel, filters.level.includes('<=') ? '<=' : '>=', 
-                                  parseInt(filters.level.replace(/[^\d]/g, '')) || 0)) {
-                return false;
-            }
-        }
-        
-        // Add more filter types as needed (hp, traits, etc.)
-        
-        return true;
-    }
-
-    /**
-     * Get notification manager (copied from GameEngine to remove dependency)
-     */
-    private static getNotificationManager(gameEnv: GameEnvironment): NotificationManager {
-        // Import dynamically to avoid circular dependencies
-        const { GameNotificationManager } = require('./GameNotificationManager');
-        return new GameNotificationManager(gameEnv);
-    }
 }

@@ -21,7 +21,6 @@ interface AddToHandOptions {
     eventType?: string;
     sourceZone?: string;
     reason?: string;
-    requiresAcknowledgment?: boolean;
     notify?: boolean;
 }
 
@@ -355,7 +354,7 @@ export class EffectExecutor {
                 return this.applyRestState(targetCard, true, target);
 
             case 'setActive':
-                return this.applySetActiveEffect(gameEnv, targetCard, target);
+                return this.applySetActiveEffect(gameEnv, target);
 
             default:
                 console.log(`⚠️ Unsupported effect action: ${action}`);
@@ -490,7 +489,6 @@ export class EffectExecutor {
                 modifierValue,
                 timestamp: Date.now()
             },
-            false,
             'normal'
         );
     }
@@ -507,7 +505,6 @@ export class EffectExecutor {
 
     private static applySetActiveEffect(
         gameEnv: GameEnvironment,
-        targetCard: UnitZoneCard | PilotZoneCard,
         target: TargetReference
     ): { success: boolean; error?: string } {
         const playerId = target.playerId;
@@ -605,7 +602,6 @@ export class EffectExecutor {
             notificationManager.addNotificationEvent(
                 eventType,
                 payload,
-                options.requiresAcknowledgment ?? false,
                 'normal'
             );
         }
@@ -661,25 +657,43 @@ export class EffectExecutor {
         gameEnv: GameEnvironment,
         playerId: string,
         deck: any,
-        count: number
+        count: number,
+        options: { notify?: boolean } = {}
     ): void {
         if (!deck || !Array.isArray(deck.mainDeck)) {
             throw new Error('Deck structure invalid for draw effect');
         }
 
+        const shouldNotify = options.notify !== false;
+        const notifyPerCard = shouldNotify && count === 1;
+        const drawnUids: string[] = [];
+
         for (let i = 0; i < count && deck.mainDeck.length > 0; i++) {
             const drawnCard = deck.mainDeck.shift();
             if (!drawnCard) continue;
+            drawnUids.push(drawnCard);
 
             const addResult = this.addCardToPlayerHand(gameEnv, playerId, drawnCard, undefined, {
                 eventType: 'CARD_DRAWN',
                 sourceZone: 'deck',
                 reason: 'draw',
-                requiresAcknowledgment: true
+                notify: notifyPerCard
             });
             if (!addResult.success) {
                 throw new Error(addResult.error || `Failed to add ${drawnCard} to hand`);
             }
+        }
+
+        if (shouldNotify && !notifyPerCard && drawnUids.length > 0) {
+            const notificationManager = new GameNotificationManager(gameEnv);
+            notificationManager.addNotificationEvent('CARD_DRAWN', {
+                playerId,
+                count: drawnUids.length,
+                carduids: drawnUids,
+                sourceZone: 'deck',
+                reason: 'draw',
+                timestamp: Date.now()
+            });
         }
 
         const handSize = Array.isArray(deck.handUids) ? deck.handUids.length : deck._handUids?.length || 0;

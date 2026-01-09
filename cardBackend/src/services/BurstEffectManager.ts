@@ -11,7 +11,6 @@ import {
 import { GameEnvironment } from '../models/GameEnvironment';
 import { ExecutionResult } from './ExecutionResult';
 import { PlayerCardManager } from './PlayerCardManager';
-import { ShieldCardManager } from './ShieldCardManager';
 import { getCardIdFromUid } from '../utils/CardUtils';
 import { DeployTargetManager } from './DeployTargetManager';
 import { ensureEffectDefaults, resolveEffectActionFromRule } from '../utils/EffectNormalizationUtils';

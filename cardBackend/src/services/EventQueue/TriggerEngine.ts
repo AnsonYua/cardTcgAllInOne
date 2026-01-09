@@ -56,10 +56,8 @@ export interface ContinuousEffect {
 export class TriggerEngine {
     private registeredTriggers: Map<string, RegisteredTrigger[]> = new Map();
     private continuousEffects: ContinuousEffect[] = [];
-    private gameEnv: GameEnvironment;
     
-    constructor(gameEnv: GameEnvironment) {
-        this.gameEnv = gameEnv;
+    constructor(_gameEnv: GameEnvironment) {
         console.log('🎯 TriggerEngine initialized');
     }
     
@@ -226,7 +224,7 @@ export class TriggerEngine {
     /**
      * Initialize triggers for a card entering play
      */
-    initializeCardTriggers(cardId: string, carduid: string, playerId: string): void {
+    initializeCardTriggers(cardId: string, _carduid: string, _playerId: string): void {
         // TODO: Load card data and register its triggered abilities
         console.log(`🎯 Initializing triggers for card: ${cardId}`);
         

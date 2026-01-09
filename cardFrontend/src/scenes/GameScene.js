@@ -969,6 +969,15 @@ export default class GameScene extends Phaser.Scene {
         console.log("card drawn event")
         await CardAnimationUtils.playDrawCardAnimation(this, event);
         break;
+      case 'INIT_HAND':
+      case 'REDRAW_HAND': {
+        this.updateCurrentPlayerHand();
+        const gameEnv = this.gameStateManager.getGameState().gameEnv;
+        if (gameEnv) {
+          this.updateOpponentInfo(gameEnv);
+        }
+        break;
+      }
       case 'PLAYER_REDRAW':
         this.updateCurrentPlayerHand()
         break;

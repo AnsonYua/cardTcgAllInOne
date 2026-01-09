@@ -2,11 +2,10 @@
 // Main GameEnvironment class for custom trading card game
 
 import { GamePhase, ZoneType, EventType } from './GameEnums';
-import { Player, PlayerZones, SlotZone } from './Player';
-import { ZoneCard } from './CardSystem';
+import { Player, PlayerZones } from './Player';
 // EventManager removed - using direct event processing
-import { GameEvent, EventStatus, EventPriority, EventFactory, BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent, PlayerActionEvent, PlayCardEvent } from '../services/EventQueue/interfaces/GameEvent';
-import { ProcessingResult, ValidationResult } from './EventInterfaces';
+import { GameEvent, EventStatus, EventPriority, BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent } from '../services/EventQueue/interfaces/GameEvent';
+import { ProcessingResult } from './EventInterfaces';
 import { BattleContext, ActionStepTargetSummary } from './BattleContext';
 import { EffectScannerUtils } from '../utils/EffectScannerUtils';
 

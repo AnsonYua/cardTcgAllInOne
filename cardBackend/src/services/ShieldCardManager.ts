@@ -3,7 +3,6 @@
 
 import { GameEnvironment } from '../models/GameEnvironment';
 import { ShieldCard, createZoneCard, CardDatabaseManager } from '../models/CardSystem';
-import { GameEngine } from './GameEngine';
 
 export class ShieldCardManager {
     

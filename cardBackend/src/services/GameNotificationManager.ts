@@ -13,7 +13,6 @@ export interface GameNotificationEvent {
         timestamp: number;
         expiresAt: number;
         requiresAcknowledgment: boolean;
-        frontendProcessed: boolean;
         priority: 'low' | 'normal' | 'high' | 'critical';
     };
     payload: NotificationEventData;
@@ -53,7 +52,6 @@ export class GameNotificationManager {
     addNotificationEvent(
         type: string, 
         payload: NotificationEventData, 
-        requiresAcknowledgment: boolean = false,
         priority: 'low' | 'normal' | 'high' | 'critical' = 'normal'
     ): string {
         this.initializeGameEvents();
@@ -67,8 +65,7 @@ export class GameNotificationManager {
             metadata: {
                 timestamp,
                 expiresAt: timestamp + this.EVENT_EXPIRY_MS,
-                requiresAcknowledgment,
-                frontendProcessed: false,
+                requiresAcknowledgment: false,
                 priority
             },
             payload
@@ -76,7 +73,7 @@ export class GameNotificationManager {
         
         this.gameEnv.notificationQueue!.push(notificationEvent);
         
-        console.log(`📨 Added notification event: ${type} (${eventId}) - Priority: ${priority}, Ack: ${requiresAcknowledgment}`);
+        console.log(`📨 Added notification event: ${type} (${eventId}) - Priority: ${priority}, Ack: false`);
         return eventId;
     }
 
@@ -98,7 +95,6 @@ export class GameNotificationManager {
                 nextPhase,
                 currentTurn: gameEnv.currentTurn
             },
-            false,
             'normal'
         );
     }
@@ -152,14 +148,12 @@ export class GameNotificationManager {
         let acknowledgedCount = 0;
         
         this.gameEnv.notificationQueue.forEach(event => {
-            if (eventIds.includes(event.id) && !event.metadata.frontendProcessed) {
-                event.metadata.frontendProcessed = true;
+            if (eventIds.includes(event.id)) {
                 acknowledgedCount++;
                 console.log(`✅ Acknowledged event: ${event.type} (${event.id})`);
             }
         });
         
-        // Clean up only the acknowledged events immediately
         this.cleanupSpecificEvents(eventIds);
         
         return acknowledgedCount;
@@ -177,13 +171,11 @@ export class GameNotificationManager {
         
         this.gameEnv.notificationQueue = this.gameEnv.notificationQueue.filter(event => {
             const isExpired = now > event.metadata.expiresAt;
-            const isProcessed = event.metadata.frontendProcessed;
             
-            if (isExpired || isProcessed) {
-                console.log(`🧹 Cleaned up event: ${event.type} (${event.id}) - ${isExpired ? 'expired' : 'processed'}`);
-                return false;
+            if (isExpired) {
+                console.log(`🧹 Cleaned up event: ${event.type} (${event.id}) - expired`);
             }
-            return true;
+            return !isExpired;
         });
         
         const cleanedCount = initialCount - this.gameEnv.notificationQueue.length;
@@ -204,7 +196,7 @@ export class GameNotificationManager {
         const initialCount = this.gameEnv.notificationQueue.length;
         
         this.gameEnv.notificationQueue = this.gameEnv.notificationQueue.filter(event => {
-            const isSpecificAcknowledged = eventIds.includes(event.id) && event.metadata.frontendProcessed;
+            const isSpecificAcknowledged = eventIds.includes(event.id);
             
             if (isSpecificAcknowledged) {
                 return false;
@@ -230,7 +222,6 @@ export class GameNotificationManager {
         this.cleanupProcessedEvents(); // Clean first
         
         return this.gameEnv.notificationQueue.filter(event => 
-            !event.metadata.frontendProcessed && 
             (event.payload.playerId === playerId || !event.payload.playerId) // Include global events
         );
     }
@@ -243,7 +234,7 @@ export class GameNotificationManager {
         
         this.cleanupProcessedEvents(); // Clean first
         
-        return this.gameEnv.notificationQueue.filter(event => !event.metadata.frontendProcessed);
+        return [...this.gameEnv.notificationQueue];
     }
     
     // ============ UTILITY METHODS ============
@@ -258,7 +249,7 @@ export class GameNotificationManager {
         
         const now = Date.now();
         const total = this.gameEnv.notificationQueue.length;
-        const unprocessed = this.gameEnv.notificationQueue.filter(e => !e.metadata.frontendProcessed).length;
+        const unprocessed = this.gameEnv.notificationQueue.length;
         const expired = this.gameEnv.notificationQueue.filter(e => now > e.metadata.expiresAt).length;
         
         return { total, unprocessed, expired };
@@ -281,13 +272,6 @@ export class GameNotificationManager {
      * Check if there are pending events that require acknowledgment
      */
     hasPendingAcknowledgments(): boolean {
-        if (!this.gameEnv.notificationQueue) return false;
-        
-        this.cleanupProcessedEvents();
-        
-        return this.gameEnv.notificationQueue.some(event => 
-            !event.metadata.frontendProcessed && 
-            event.metadata.requiresAcknowledgment === true
-        );
+        return false;
     }
 }

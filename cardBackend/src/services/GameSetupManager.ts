@@ -9,6 +9,7 @@ import {
 } from './EventQueue/interfaces/GameEvent';
 import { ExecutionResult } from './ExecutionResult';
 import { PlayerCardManager } from './PlayerCardManager';
+import { GameNotificationManager } from './GameNotificationManager';
 
 export class GameSetupManager {
     static handleConfirmRedraw(event: ConfirmRedrawEvent, gameEnv: GameEnvironment): ExecutionResult {
@@ -29,7 +30,12 @@ export class GameSetupManager {
                     console.log(`📤 Returned ${currentHand.length} cards to deck`);
 
                     player.deck.mainDeck = this.shuffleDeck(player.deck.mainDeck);
-                    PlayerCardManager.drawCards(gameEnv, event.data.playerId, 5);
+                    PlayerCardManager.drawCards(gameEnv, event.data.playerId, 5, { notify: false });
+                    const notificationManager = new GameNotificationManager(gameEnv);
+                    notificationManager.addNotificationEvent('REDRAW_HAND', {
+                        playerId: event.data.playerId,
+                        count: 5
+                    });
 
                     console.log(`🔀 Shuffled deck and drew new hand of ${player.deck._handUids.length} cards`);
                 }
@@ -97,8 +103,17 @@ export class GameSetupManager {
         player2.deck._handUids = [];
         player2.deck.mainDeck = shuffledDeck2;
 
-        PlayerCardManager.drawCards(gameEnv, playerId1, 5);
-        PlayerCardManager.drawCards(gameEnv, playerId2, 5);
+        PlayerCardManager.drawCards(gameEnv, playerId1, 5, { notify: false });
+        PlayerCardManager.drawCards(gameEnv, playerId2, 5, { notify: false });
+        const notificationManager = new GameNotificationManager(gameEnv);
+        notificationManager.addNotificationEvent('INIT_HAND', {
+            playerId: playerId1,
+            count: 5
+        });
+        notificationManager.addNotificationEvent('INIT_HAND', {
+            playerId: playerId2,
+            count: 5
+        });
 
         console.log(`🎯 Game initialized: First player is ${gameEnv.currentPlayer}, hands drawn, redraw available`);
     }

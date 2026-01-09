@@ -2,7 +2,6 @@
 // Dedicated manager for game state validation and rule enforcement
 
 import { GameEnvironment } from '../../models/GameEnvironment';
-import { EventType, GamePhase } from '../../models/GameEnums';
 import { StateBasedAction, GameStateViolation } from '../EventQueue/StateBasedActionEngine';
 
 export class GameStateManager {
@@ -44,7 +43,7 @@ export class GameStateManager {
     /**
      * Check hand size limits
      */
-    static checkHandSizeLimits(gameEnv: GameEnvironment): StateBasedAction[] {
+    static checkHandSizeLimits(_gameEnv: GameEnvironment): StateBasedAction[] {
         const actions: StateBasedAction[] = [];
         
         // TODO: Implement hand size limit checking
@@ -63,7 +62,7 @@ export class GameStateManager {
     /**
      * Check resource and energy limits
      */
-    static checkResourceLimits(gameEnv: GameEnvironment): StateBasedAction[] {
+    static checkResourceLimits(_gameEnv: GameEnvironment): StateBasedAction[] {
         const actions: StateBasedAction[] = [];
         
         // TODO: Check energy/resource violations
@@ -114,7 +113,7 @@ export class GameStateManager {
     /**
      * Check for illegal game states and rule violations
      */
-    static checkIllegalGameStates(gameEnv: GameEnvironment): StateBasedAction[] {
+    static checkIllegalGameStates(_gameEnv: GameEnvironment): StateBasedAction[] {
         const actions: StateBasedAction[] = [];
         
         // TODO: Check for game-specific illegal states
@@ -162,7 +161,7 @@ export class GameStateManager {
     /**
      * Find all current game state violations
      */
-    static findGameStateViolations(gameEnv: GameEnvironment): GameStateViolation[] {
+    static findGameStateViolations(_gameEnv: GameEnvironment): GameStateViolation[] {
         const violations: GameStateViolation[] = [];
         
         // TODO: Implement comprehensive game state validation

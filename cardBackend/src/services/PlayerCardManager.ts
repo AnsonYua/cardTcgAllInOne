@@ -2,7 +2,6 @@
 // Player card placement and management system
 
 import { GameEnvironment } from '../models/GameEnvironment';
-import { GameEngine } from './GameEngine';
 import { createZoneCard, UnitZoneCard, PilotZoneCard, BaseCard, CardDatabaseManager } from '../models/CardSystem';
 import { SLOT_ZONES } from '../config/gameConstants';
 import { PlayCardEventData } from './EventQueue/interfaces/GameEvent';
@@ -585,7 +584,12 @@ export class PlayerCardManager {
     /**
      * Draw cards from deck to hand
      */
-    static drawCards(gameEnv: GameEnvironment, playerId: string, count: number): void {
+    static drawCards(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        count: number,
+        options: { notify?: boolean } = {}
+    ): void {
         const player = gameEnv.getPlayer(playerId);
         if (!player?.deck || !Array.isArray(player.deck.mainDeck)) {
             console.error(`❌ Cannot draw cards - deck not found for player ${playerId}`);
@@ -597,7 +601,7 @@ export class PlayerCardManager {
                 ? player.deck.handUids.length
                 : player.deck._handUids?.length || 0;
 
-            EffectExecutor.drawCardsIntoHand(gameEnv, playerId, player.deck, count);
+            EffectExecutor.drawCardsIntoHand(gameEnv, playerId, player.deck, count, options);
 
             const afterCount = Array.isArray(player.deck.handUids)
                 ? player.deck.handUids.length

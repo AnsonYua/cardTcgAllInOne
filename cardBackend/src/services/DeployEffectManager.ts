@@ -69,7 +69,7 @@ export class DeployEffectManager {
 
         triggeredDeployEffects.forEach(effect => deployEffects.push(effect));
 
-        const phaseBoundActivatedEffects = this.findDeployLikeActivatedEffects(cardData, gameEnv, playerId);
+        const phaseBoundActivatedEffects = this.findDeployLikeActivatedEffects(cardData, gameEnv);
         phaseBoundActivatedEffects.forEach(effect => deployEffects.push(ensureEffectDefaults(effect)));
 
         if (deployEffects.length === 0) {
@@ -150,8 +150,7 @@ export class DeployEffectManager {
      */
     private static findDeployLikeActivatedEffects(
         cardData: any,
-        gameEnv: GameEnvironment,
-        actingPlayerId: string
+        gameEnv: GameEnvironment
     ): EffectDefinition[] {
         if (!Array.isArray(cardData?.effects?.rules)) {
             return [];

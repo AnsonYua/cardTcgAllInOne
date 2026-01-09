@@ -63,7 +63,6 @@ export class CardPlayExecutor {
             const notificationId = notificationManager.addNotificationEvent(
                 'CARD_PLAYED',
                 cardNotificationPayload,
-                false,
                 'normal'
             );
             eventData.cardPlayNotificationId = notificationId;

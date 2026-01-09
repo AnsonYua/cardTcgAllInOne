@@ -321,7 +321,7 @@ export class EffectStack {
     
     // ============ HELPER METHODS ============
     
-    private hasOpponentResponses(effect: ActivatedEffect): boolean {
+    private hasOpponentResponses(_effect: ActivatedEffect): boolean {
         // TODO: Check if opponent has valid responses to this effect
         // - Counter abilities
         // - Interrupt effects
@@ -329,12 +329,12 @@ export class EffectStack {
         return false;
     }
     
-    private getAllowedResponses(effect: ActivatedEffect): string[] {
+    private getAllowedResponses(_effect: ActivatedEffect): string[] {
         // TODO: Determine what responses are valid for this effect
         return ['PASS', 'COUNTER', 'INTERRUPT'];
     }
     
-    private processResponse(responseType: string, responseData?: any): void {
+    private processResponse(responseType: string, _responseData?: any): void {
         // TODO: Process player response and add response effects to stack
         console.log(`📨 Processing response: ${responseType}`);
     }

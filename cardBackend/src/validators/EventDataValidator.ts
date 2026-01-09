@@ -3,14 +3,12 @@
 
 import { 
     StandardGameEvent, 
-    StandardEventData, 
-    EffectParameters,
     ValidationResult,
     EventDataValidator as IEventDataValidator,
     isStandardGameEvent,
     isStandardEventData 
 } from '../interfaces/StandardizedInterfaces';
-import { getCardIdFromUid, isValidCardUid } from '../utils/CardUtils';
+import { isValidCardUid } from '../utils/CardUtils';
 
 export class EventDataValidator implements IEventDataValidator {
     

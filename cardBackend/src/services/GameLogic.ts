@@ -201,7 +201,7 @@ export class GameLogic {
      * @param playerId - Player ID
      * @returns Promise<GameLogicResult>
      */
-    async getPlayerGameState(gameId: string, playerId: string): Promise<GameLogicResult> {
+    async getPlayerGameState(gameId: string, _playerId: string): Promise<GameLogicResult> {
         try {
             // Load game from file
             const gameEnv = await this.loadGameFromFile(gameId);
@@ -1234,7 +1234,6 @@ export class GameLogic {
                 notificationManager.addNotificationEvent(
                     'REFRESH_TARGET',
                     refreshPayload,
-                    false,
                     'normal'
                 );
             }

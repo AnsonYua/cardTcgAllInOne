@@ -2,7 +2,7 @@
 // PLACEHOLDER - Custom Trading Card Game Routes
 
 import express, { Request, Response, NextFunction } from 'express';
-import { gameController, GameController } from '../controllers/gameController';
+import { gameController } from '../controllers/gameController';
 import { gameLogic } from '../services/GameLogic';
 
 // ============ TYPE DEFINITIONS ============
@@ -27,7 +27,7 @@ router.get('/health', gameController.healthCheck.bind(gameController));
  * Simple status check
  * GET /api/game/status
  */
-router.get('/status', (req: Request, res: Response) => {
+router.get('/status', (_req: Request, res: Response) => {
     res.status(200).json({ 
         status: 'ok',
         timestamp: new Date().toISOString(),
@@ -108,7 +108,7 @@ router.get('/image/*', gameController.serveImage.bind(gameController));
  * Select card (placeholder for card selection workflows)
  * POST /api/game/player/selectCard
  */
-router.post('/player/selectCard', async (req: Request, res: Response) => {
+router.post('/player/selectCard', async (_req: Request, res: Response) => {
     console.log('🚧 [PLACEHOLDER] selectCard endpoint not implemented');
     res.status(501).json({
         error: 'Card selection not implemented for custom trading card game',
@@ -173,7 +173,7 @@ router.post('/player/confirmBlockerChoice', gameController.confirmBlockerChoice.
  * AI player action (placeholder)
  * POST /api/game/player/playerAiAction
  */
-router.post('/player/playerAiAction', async (req: Request, res: Response) => {
+router.post('/player/playerAiAction', async (_req: Request, res: Response) => {
     console.log('🚧 [PLACEHOLDER] playerAiAction endpoint not implemented');
     res.status(501).json({
         error: 'AI actions not implemented for custom trading card game',
@@ -186,7 +186,7 @@ router.post('/player/playerAiAction', async (req: Request, res: Response) => {
  * Update player score (placeholder)
  * PUT /api/game/player/:playerId/score
  */
-router.put('/player/:playerId/score', async (req: Request, res: Response) => {
+router.put('/player/:playerId/score', async (_req: Request, res: Response) => {
     console.log('🚧 [PLACEHOLDER] score update endpoint not implemented');
     res.status(501).json({
         error: 'Score updating not implemented for custom trading card game',
@@ -209,7 +209,7 @@ router.get('/test/getTestScenario', gameController.getTestScenario.bind(gameCont
  */
 router.post('/test/injectGameState', 
     // Environment check middleware
-    (req: Request, res: Response, next: NextFunction) => {
+    (_req: Request, res: Response, next: NextFunction) => {
         // Allow in development for now, restrict in production
         if (process.env.NODE_ENV === 'production') {
             res.status(403).json({ 
@@ -228,7 +228,7 @@ router.post('/test/injectGameState',
  * Set test case (development only)
  * POST /api/game/test/setCase
  */
-router.post('/test/setCase', async (req: Request, res: Response) => {
+router.post('/test/setCase', async (_req: Request, res: Response) => {
     try {
         if (process.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'development') {
             res.status(403).json({ 

@@ -175,7 +175,7 @@ export class ContinuousEffectManager {
      * Get effect value from unified parameters structure
      * All numeric effects now use 'value' parameter for simplicity
      */
-    static getEffectValue(action: string, parameters: any): number {
+    static getEffectValue(_action: string, parameters: any): number {
         // Unified structure: all numeric effects use 'value' parameter
         return parameters.value || 0;
     }
@@ -602,7 +602,7 @@ export class ContinuousEffectManager {
      */
     static checkIsPaired(card: ZoneCardWithData, gameEnv: GameEnvironment): boolean {
         // Find the card's slot
-        for (const [playerId, player] of Object.entries(gameEnv.players)) {
+        for (const player of Object.values(gameEnv.players)) {
             if (!player.zones) continue;
             
             for (const slotName of SLOT_ZONES) {
@@ -666,7 +666,7 @@ export class ContinuousEffectManager {
             let playerAppliedCount = 0;
             
             // Apply each active effect from player's registry to its targets
-            for (const [effectKey, effectEntry] of Object.entries(player.effectRegistry)) {
+            for (const effectEntry of Object.values(player.effectRegistry)) {
                 const typedEntry = effectEntry as any; // Type assertion for effectRegistry entries
                 if (!typedEntry.active) continue;
                 
@@ -845,7 +845,7 @@ export class ContinuousEffectManager {
     static resetAllCardModifications(gameEnv: GameEnvironment): void {
         console.log(`🔄 Resetting all card modifications to 0`);
         
-        for (const [playerId, player] of Object.entries(gameEnv.players)) {
+        for (const player of Object.values(gameEnv.players)) {
             if (!player.zones) continue;
             
             // Reset modifications for all slot zone cards
@@ -930,13 +930,11 @@ export class ContinuousEffectManager {
 
     private gameEnv: GameEnvironment;
     private playerId: string;
-    private target: any;
     private effect: any;
     
-    constructor(gameEnv: GameEnvironment, playerId: string, target: any, effect: any) {
+    constructor(gameEnv: GameEnvironment, playerId: string, effect: any) {
         this.gameEnv = gameEnv;
         this.playerId = playerId;
-        this.target = target;
         this.effect = effect;
     }
     
@@ -979,13 +977,10 @@ export class ContinuousEffectManager {
         
         console.log(`🃏 Adding ${value} cards to hand from ${from}`);
         
-        // Resolve target cards based on target specification  
-        const targetCards = this.resolveTargetCards();
-        
         // Execute based on "from" parameter
         switch (from) {
             case 'shield':
-                return this.addFromShieldToHand(targetCards, value);
+                return this.addFromShieldToHand(value);
             default:
                 console.log(`⚠️ Unknown addToHand source: ${from} - returning success for placeholder`);
                 return {
@@ -1076,44 +1071,9 @@ export class ContinuousEffectManager {
     // ============ TARGET RESOLUTION METHODS ============
     
     /**
-     * Universal target resolution based on target specification
-     */
-    private resolveTargetCards(): any[] {
-        if (!this.target) {
-            return [];
-        }
-        
-        const { type, scope, filters } = this.target;
-        
-        console.log(`🎯 Resolving targets: type=${type}, scope=${scope}`);
-        
-        switch (scope) {
-            case 'self_shield':
-                return this.getPlayerShieldCards();
-            default:
-                console.log(`⚠️ Unknown target scope: ${scope}`);
-                return [];
-        }
-    }
-    
-    /**
-     * Get player's shield area cards
-     */
-    private getPlayerShieldCards(): any[] {
-        const player = this.gameEnv.players[this.playerId];
-        if (!player || !player.zones) {
-            return [];
-        }
-        
-        const shieldCards = player.zones.shieldArea || [];
-        console.log(`🛡️ Found ${shieldCards.length} shield cards`);
-        return shieldCards;
-    }
-    
-    /**
      * Add cards from shield area to hand
      */
-    private addFromShieldToHand(targetCards: any[], count: number): EffectResult {
+    private addFromShieldToHand(count: number): EffectResult {
         const player = this.gameEnv.players[this.playerId];
         const shieldCards = player.zones.shieldArea || [];
         

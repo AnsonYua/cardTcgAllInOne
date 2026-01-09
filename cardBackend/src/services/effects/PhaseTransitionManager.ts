@@ -80,24 +80,15 @@ export class PhaseTransitionManager {
             return actions;
         }
         
-        // Check if there are no unacknowledged card draw events in the notification queue
-        const notificationQueue = gameEnv.notificationQueue || [];
-        const hasUnacknowledgedCardDrawEvent = notificationQueue.some(event => 
-            event.type === 'CARD_DRAWN' &&
-            event.metadata?.frontendProcessed === false
-        );
-        
-        console.log(`🔍 DRAW_PHASE check: phase=${gameEnv.phase}, hasUnacknowledgedCardDrawEvent=${hasUnacknowledgedCardDrawEvent}`);
-        
-        if (!hasUnacknowledgedCardDrawEvent) {
-            console.log(`🎯 State-based action detected: DRAW_PHASE to MAIN_PHASE transition needed`);
-            gameEnv.pendingPhaseTransition = EventType.PHASE_ADVANCE;
-            actions.push({
-                actionId: `draw_to_main_${Date.now()}`,
-                type: EventType.PHASE_ADVANCE,
-                autoExecute: true
-            });
-        }
+        console.log(`🔍 DRAW_PHASE check: phase=${gameEnv.phase}`);
+
+        console.log(`🎯 State-based action detected: DRAW_PHASE to MAIN_PHASE transition needed`);
+        gameEnv.pendingPhaseTransition = EventType.PHASE_ADVANCE;
+        actions.push({
+            actionId: `draw_to_main_${Date.now()}`,
+            type: EventType.PHASE_ADVANCE,
+            autoExecute: true
+        });
         
         return actions;
     }
@@ -235,9 +226,12 @@ export class PhaseTransitionManager {
 
             // Advance from DRAW_PHASE to MAIN_PHASE when appropriate
             if (currentPhase === GamePhase.DRAW_PHASE) {
+                const currentPlayerId = gameEnv.currentPlayer;
+                if (currentPlayerId) {
+                    TurnLifecycleManager.readyMainPhase(gameEnv, currentPlayerId);
+                }
                 gameEnv.updatePhase(GamePhase.MAIN_PHASE);
                 console.log(`✅ Phase advanced: ${currentPhase} → ${gameEnv.phase}`);
-
                 console.log(`📨 Phase change notification enqueued`);
             } else {
                 console.log(`⚠️ PHASE_ADVANCE called from unexpected phase: ${currentPhase}`);

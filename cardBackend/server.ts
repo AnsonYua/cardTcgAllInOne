@@ -3,7 +3,6 @@
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { Server } from 'http';
-import * as path from 'path';
 
 // Import routes for custom trading card game
 import gameRoutes from './src/routes/gameRoutes';
@@ -53,7 +52,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/game', gameRoutes);
 
 // Root endpoint
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (_req: Request, res: Response) => {
     res.json({
         message: 'Custom Trading Card Game Backend',
         status: 'running',
@@ -74,7 +73,7 @@ app.get('/', (req: Request, res: Response) => {
 // ============ ERROR HANDLING ============
 
 // Global error handling middleware
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
     console.error('🚨 Global error handler caught:', err);
     console.error('🚨 Error stack:', err.stack);
     console.error('🚨 Request URL:', req.url);
@@ -91,7 +90,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 // 404 handler
-app.use((req: Request, res: Response) => {
+app.use((_req: Request, res: Response) => {
     res.status(404).json({ 
         error: 'Route not found',
         timestamp: new Date().toISOString(),

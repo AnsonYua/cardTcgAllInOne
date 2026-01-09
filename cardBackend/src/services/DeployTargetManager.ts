@@ -72,7 +72,6 @@ export class DeployTargetManager {
 
         try {
             const targetConfig = this.resolveTargetConfig(normalizedEffect);
-            const sourceCardId = this.deriveSourceCardId(sourceCarduid);
             // Generate available targets based on config
             const availableTargets = this.generateAvailableTargets(gameEnv, playerId, targetConfig);
             
@@ -320,22 +319,6 @@ export class DeployTargetManager {
             count,
             filters
         };
-    }
-
-    /**
-     * Extract source cardId from composite carduid identifier
-     */
-    private static deriveSourceCardId(sourceCarduid?: string): string | undefined {
-        if (!sourceCarduid) {
-            return undefined;
-        }
-
-        const parts = sourceCarduid.split('_').filter(Boolean);
-        if (parts.length === 0) {
-            return undefined;
-        }
-
-        return parts[parts.length - 1];
     }
 
     /**

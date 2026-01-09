@@ -107,7 +107,7 @@ export class GameEngine {
     }
 
     // ============ EVENT-SPECIFIC EXECUTION METHODS ============
-    private static executeErrorEvent(event: ErrorOccurredEvent, gameEnv: GameEnvironment): ExecutionResult {
+    private static executeErrorEvent(event: ErrorOccurredEvent, _gameEnv: GameEnvironment): ExecutionResult {
         console.log(`💥 Processing error: ${event.data.errorType} - ${event.data.errorReason}`);
 
         try {
