@@ -38,6 +38,9 @@ export class GameEnvironment {
     public playerId_2: string | null;
     public gameStarted: boolean;
     public firstPlayer: number;
+    public firstPlayerChooser: string | null;
+    public firstPlayerDecision: string | null;
+    public hasChosenFirstPlayer: boolean;
     public currentPlayer: string | null;
     public currentTurn: number;
     public playersReady: { [playerId: string]: boolean };
@@ -72,6 +75,9 @@ export class GameEnvironment {
         this.playerId_2 = null;
         this.gameStarted = false;
         this.firstPlayer = 0;
+        this.firstPlayerChooser = null;
+        this.firstPlayerDecision = null;
+        this.hasChosenFirstPlayer = false;
         this.currentPlayer = null;
         this.currentTurn = 0;
         this.playersReady = {};
@@ -555,6 +561,9 @@ export class GameEnvironment {
             playerId_2: this.playerId_2,
             gameStarted: this.gameStarted,
             firstPlayer: this.firstPlayer,
+            firstPlayerChooser: this.firstPlayerChooser,
+            firstPlayerDecision: this.firstPlayerDecision,
+            hasChosenFirstPlayer: this.hasChosenFirstPlayer,
             currentPlayer: this.currentPlayer,
             currentTurn: this.currentTurn,
             playersReady: this.playersReady,
@@ -586,6 +595,9 @@ export class GameEnvironment {
         gameEnv.playerId_2 = data.playerId_2 || null;
         gameEnv.gameStarted = data.gameStarted || false;
         gameEnv.firstPlayer = data.firstPlayer || 0;
+        gameEnv.firstPlayerChooser = data.firstPlayerChooser || null;
+        gameEnv.firstPlayerDecision = data.firstPlayerDecision || null;
+        gameEnv.hasChosenFirstPlayer = data.hasChosenFirstPlayer || false;
         gameEnv.currentPlayer = data.currentPlayer || null;
         gameEnv.currentTurn = data.currentTurn || 0;
         gameEnv.playersReady = data.playersReady || {};

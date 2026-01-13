@@ -49,6 +49,12 @@ router.post('/player/startGame', gameController.startGame.bind(gameController));
  * POST /api/game/player/joinRoom
  */
 router.post('/player/joinRoom', gameController.joinRoom.bind(gameController));
+
+/**
+ * Choose which player goes first
+ * POST /api/game/player/chooseFirstPlayer
+ */
+router.post('/player/chooseFirstPlayer', gameController.chooseFirstPlayer.bind(gameController));
 /**
  * Start ready phase for a player
  * POST /api/game/player/startReady

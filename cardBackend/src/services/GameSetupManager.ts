@@ -85,10 +85,6 @@ export class GameSetupManager {
         console.log(`🎲 Generated ${uniqueDeck1Cards.length} unique cards for player 1`);
         console.log(`🎲 Generated ${uniqueDeck2Cards.length} unique cards for player 2`);
 
-        const firstPlayer = 0;
-        gameEnv.firstPlayer = firstPlayer;
-        gameEnv.currentPlayer = firstPlayer === 0 ? playerId1 : playerId2;
-
         if (!gameEnv.players[playerId1]) {
             gameEnv.addPlayer(playerId1, 'Player 1');
         }

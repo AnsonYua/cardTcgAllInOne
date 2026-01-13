@@ -3,10 +3,11 @@
 
 import { GameEnvironment } from '../../models/GameEnvironment';
 import { GamePhase, EventType } from '../../models/GameEnums';
-import { GameEvent, NextPlayerTurnEvent, EndTurnEvent, StartGameEvent, JoinGameEvent, GameplayBeginsEvent } from '../EventQueue/interfaces/GameEvent';
+import { GameEvent, NextPlayerTurnEvent, EndTurnEvent, StartGameEvent, JoinGameEvent, ChooseFirstPlayerEvent, GameplayBeginsEvent } from '../EventQueue/interfaces/GameEvent';
 import { StateBasedAction } from '../EventQueue/StateBasedActionEngine';
 import { TurnLifecycleManager } from '../TurnLifecycleManager';
 import { GameSetupManager } from '../GameSetupManager';
+import { GameNotificationManager } from '../GameNotificationManager';
 import { EnergyManager } from '../EnergyManager';
 import { ShieldCardManager } from '../ShieldCardManager';
 import { BaseCardManager } from '../BaseCardManager';
@@ -157,11 +158,19 @@ export class PhaseTransitionManager {
 
         try {
             gameEnv.playerId_2 = event.data.playerId;
-            gameEnv.updatePhase(GamePhase.REDRAW_PHASE, event.data.playerId);
+            gameEnv.firstPlayerChooser = Math.random() < 0.5 ? gameEnv.playerId_1 : gameEnv.playerId_2;
+            gameEnv.firstPlayerDecision = null;
+            gameEnv.hasChosenFirstPlayer = false;
+            gameEnv.updatePhase(GamePhase.DECIDE_FIRST_PLAYER_PHASE, event.data.playerId);
             gameEnv.gameStarted = true;
             gameEnv.playersReady[event.data.playerId] = true;
 
-            GameSetupManager.initializeGameWithDecks(gameEnv);
+            const notificationManager = new GameNotificationManager(gameEnv);
+            notificationManager.addNotificationEvent('CHOOSE_FIRST_PLAYER', {
+                chooserId: gameEnv.firstPlayerChooser,
+                playerId_1: gameEnv.playerId_1,
+                playerId_2: gameEnv.playerId_2
+            });
 
             console.log(`✅ JOIN_GAME event processed - second player ${event.data.playerId} added`);
             return { success: true };
@@ -170,6 +179,30 @@ export class PhaseTransitionManager {
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'JOIN_GAME execution failed'
+            };
+        }
+    }
+
+    static executeChooseFirstPlayer(event: ChooseFirstPlayerEvent, gameEnv: GameEnvironment): ExecutionResult {
+        console.log(`🎯 Processing CHOOSE_FIRST_PLAYER event for player: ${event.data.playerId}`);
+
+        try {
+            const chosenId = event.data.chosenFirstPlayerId;
+            gameEnv.firstPlayer = chosenId === gameEnv.playerId_1 ? 0 : 1;
+            gameEnv.currentPlayer = chosenId;
+            gameEnv.firstPlayerDecision = chosenId;
+            gameEnv.hasChosenFirstPlayer = true;
+            gameEnv.updatePhase(GamePhase.REDRAW_PHASE, event.data.playerId);
+
+            GameSetupManager.initializeGameWithDecks(gameEnv);
+
+            console.log(`✅ CHOOSE_FIRST_PLAYER event processed - ${chosenId} will go first`);
+            return { success: true };
+        } catch (error) {
+            console.error(`❌ Error in executeChooseFirstPlayer:`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'CHOOSE_FIRST_PLAYER execution failed'
             };
         }
     }

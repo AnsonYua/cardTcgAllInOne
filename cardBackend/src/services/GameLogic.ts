@@ -8,11 +8,12 @@ import * as path from 'path';
 // Import core models
 import { GameEnvironment } from '../models/GameEnvironment';
 import { PlayerActionType, EventType } from '../models/GameEnums';
-import { EventFactory, GameEvent, EventStatus, EventPriority } from './EventQueue/index';
+import { EventFactory, EventStatus } from './EventQueue/index';
 import { BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent, TargetReference } from './EventQueue/interfaces/GameEvent';
 import { PlayerAction } from '../models/EventInterfaces';
 import { StaticEventProcessor } from './StaticEventProcessor';
 import { GameNotificationManager } from './GameNotificationManager';
+import { processAction } from './actions/ActionProcessor';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -53,6 +54,10 @@ export class GameLogic {
         console.log('🎮 Custom Trading Card Game Logic initialized with nodemon config');
     }
 
+    public async processAction(gameEnv: GameEnvironment, action: PlayerAction): Promise<any> {
+        return processAction(gameEnv, action);
+    }
+
     async createGame(playerId: string): Promise<GameLogicResult> {
         try {
             console.log(`🎮 Creating new custom trading card game for player: ${playerId}`);
@@ -66,7 +71,7 @@ export class GameLogic {
                 gameId
             };
             
-            const actionResult = await this.processAction(gameEnv, startAction);
+            const actionResult = await processAction(gameEnv, startAction);
             console.log('🎮 CREATE_GAME processed:', actionResult);
             // Save game to file system
             await this.saveGameToFile(gameId, gameEnv);
@@ -106,7 +111,7 @@ export class GameLogic {
                 gameId
             };
             
-            const actionResult = await this.processAction(gameEnv, joinAction);
+            const actionResult = await processAction(gameEnv, joinAction);
             console.log('🎮 JOIN_GAME processed:', actionResult);
             
             if (!actionResult.success) {
@@ -132,6 +137,51 @@ export class GameLogic {
             return {
                 success: false,
                 error: `Failed to join game: ${error instanceof Error ? error.message : 'Unknown error'}`
+            };
+        }
+    }
+
+    async chooseFirstPlayer(gameId: string, playerId: string, chosenFirstPlayerId: string): Promise<GameLogicResult> {
+        try {
+            console.log(`🎮 Player ${playerId} choosing first player for game: ${gameId}`);
+
+            const gameEnv = await this.loadGameFromFile(gameId);
+            if (!gameEnv) {
+                return {
+                    success: false,
+                    error: 'Game not found'
+                };
+            }
+
+            const chooseFirstPlayerAction: PlayerAction = {
+                type: PlayerActionType.CHOOSE_FIRST_PLAYER,
+                playerId,
+                gameId,
+                chosenFirstPlayerId
+            };
+
+            const actionResult = await processAction(gameEnv, chooseFirstPlayerAction);
+            console.log('🎮 CHOOSE_FIRST_PLAYER processed:', actionResult);
+
+            if (!actionResult.success) {
+                return {
+                    success: false,
+                    error: actionResult.error || 'Choose first player failed'
+                };
+            }
+
+            await this.saveGameToFile(gameId, gameEnv);
+
+            return {
+                success: true,
+                gameId,
+                gameEnv
+            };
+        } catch (error) {
+            console.error('❌ Error choosing first player:', error);
+            return {
+                success: false,
+                error: `Failed to choose first player: ${error instanceof Error ? error.message : 'Unknown error'}`
             };
         }
     }
@@ -165,7 +215,7 @@ export class GameLogic {
                 isRedraw
             };
             
-            const actionResult = await this.processAction(gameEnv, startReadyAction);
+            const actionResult = await processAction(gameEnv, startReadyAction);
             console.log('🎮 CONFIRM_REDRAW processed:', actionResult);
             
             if (!actionResult.success) {
@@ -347,126 +397,6 @@ export class GameLogic {
         }
     }
 
-    // ============ EVENT CREATION HELPERS ============
-    
-    /**
-     * Convert player action to game event - centralized in GameLogic for cleaner flow
-     */
-    private createEventFromAction(action: PlayerAction): GameEvent | null {
-        console.log("action ",JSON.stringify(action))
-        switch (action.type) {
-            case PlayerActionType.CREATE_GAME:
-                return {
-                    id: action.type.toLowerCase()+`_${Date.now()}_${Math.random()}`,
-                    type: EventType.CREATE_GAME,
-                    status: EventStatus.DECLARED,
-                    priority: EventPriority.HIGH,
-                    timestamp: Date.now(),
-                    playerId: action.playerId,
-                    data: {
-                        playerId: action.playerId,
-                        gameId: action.gameId
-                    }
-                };
-            
-            case PlayerActionType.JOIN_GAME:
-                return {
-                    id: action.type.toLowerCase()+`_${Date.now()}_${Math.random()}`,
-                    type: EventType.JOIN_GAME,
-                    status: EventStatus.DECLARED,
-                    priority: EventPriority.HIGH,
-                    timestamp: Date.now(),
-                    playerId: action.playerId,
-                    data: {
-                        playerId: action.playerId,
-                        gameId: action.gameId
-                    }
-                };
-            
-            case PlayerActionType.CONFIRM_REDRAW:
-                return {
-                    id: `start_ready_${Date.now()}_${Math.random()}`,
-                    type: EventType.CONFIRM_REDRAW,
-                    status: EventStatus.DECLARED,
-                    priority: EventPriority.NORMAL,
-                    timestamp: Date.now(),
-                    playerId: action.playerId,
-                    data: {
-                        playerId: action.playerId,
-                        gameId: action.gameId,
-                        isRedraw: action.isRedraw || false
-                    }
-                };
-                
-            case PlayerActionType.END_TURN:
-                return EventFactory.createEndTurnEvent(
-                    action.playerId,
-                    action.currentTurn || 0
-                );
-                
-            case PlayerActionType.PLAY_CARD:
-                if (!action.gameId || !action.carduid) {
-                    console.warn('⚠️ PLAY_CARD action missing required identifiers', action);
-                    return null;
-                }
-
-                return EventFactory.createPlayCardEvent(
-                    action.playerId,
-                    action.gameId,
-                    action.carduid,
-                    action.playAs || 'unit',
-                    action.targetUnit,
-                    {
-                        fromBurst: action.fromBurst,
-                        cardId: action.cardId,
-                        slotName: action.slotName
-                    }
-                );
-                
-            case PlayerActionType.PLAYER_ACTION:
-                return {
-                    id: `player_action_${Date.now()}_${Math.random()}`,
-                    type: EventType.PLAYER_ACTION,
-                    status: EventStatus.DECLARED,
-                    priority: EventPriority.NORMAL,
-                    timestamp: Date.now(),
-                    playerId: action.playerId,
-                    data: {
-                        ...action // Spread all action data including playerId, gameId, actionType and other parameters
-                    }
-                };
-                
-            default:
-                console.warn(`⚠️ Unknown action type: ${action.type}`);
-                return null;
-        }
-    }
-    
-    /**
-     * Process action through event queue - create event then use direct GameEnvironment processing
-     */
-    async processAction(gameEnv: GameEnvironment, action: PlayerAction): Promise<any> {
-        // Create event in GameLogic
-        const event = this.createEventFromAction(action);
-        console.log("event structure 1111", JSON.stringify(event))
-        if (event) {
-            // Add event to GameEnvironment queue
-            gameEnv.enqueueForProcessing(event);
-            
-            // Process events using direct GameEnvironment method
-            const result = gameEnv.processEvents();
-            
-            // Check if there were validation errors
-            if (!result.success) {
-                return { success: false, error: result.error || 'Event validation failed' };
-            }
-            
-            return result;
-        }
-        
-        return { success: false, error: 'Event creation failed' };
-    }
-    
     /**
      * Get test scenario data for frontend testing
      * @param req - Request object with scenarioPath query parameter
@@ -790,7 +720,7 @@ export class GameLogic {
                 ...actionData // Spread all action data to avoid object conversion
             };
             
-            const actionResult = await this.processAction(gameEnv, playerActionEvent);
+            const actionResult = await processAction(gameEnv, playerActionEvent);
             console.log('🎮 PLAYER_ACTION processed:', actionResult);
             
             if (!actionResult.success) {
@@ -859,7 +789,7 @@ export class GameLogic {
                 targetUnit
             };
             
-            const actionResult = await this.processAction(gameEnv, playCardEvent);
+            const actionResult = await processAction(gameEnv, playCardEvent);
             console.log('🎮 PLAY_CARD processed:', actionResult);
             
             if (!actionResult.success) {

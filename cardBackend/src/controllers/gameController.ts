@@ -138,6 +138,50 @@ export class GameController {
     }
 
     /**
+     * Choose which player goes first
+     * POST /api/game/player/chooseFirstPlayer
+     */
+    async chooseFirstPlayer(req: GameRequest, res: Response): Promise<void> {
+        try {
+            console.log('🔍 chooseFirstPlayer called with body:', req.body);
+
+            const { gameId, playerId, chosenFirstPlayerId } = req.body;
+
+            if (!gameId || !playerId || !chosenFirstPlayerId) {
+                res.status(400).json({
+                    error: 'gameId, playerId, and chosenFirstPlayerId are required',
+                    timestamp: new Date().toISOString(),
+                    context: 'chooseFirstPlayer endpoint'
+                });
+                return;
+            }
+
+            const gameState = await this.gameLogic.chooseFirstPlayer(gameId, playerId, chosenFirstPlayerId);
+
+            if (gameState.success && gameState.gameEnv) {
+                res.json({
+                    success: true,
+                    gameId: gameState.gameId,
+                    gameEnv: gameState.gameEnv
+                });
+            } else {
+                res.status(400).json({
+                    error: gameState.error || 'Failed to choose first player',
+                    timestamp: new Date().toISOString(),
+                    context: 'chooseFirstPlayer endpoint'
+                });
+            }
+        } catch (error) {
+            console.error('❌ Error in chooseFirstPlayer:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'chooseFirstPlayer endpoint'
+            });
+        }
+    }
+
+    /**
      * Start ready phase for a player
      * POST /api/game/player/startReady
      */

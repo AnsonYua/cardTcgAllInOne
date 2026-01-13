@@ -48,6 +48,16 @@ export interface JoinGameEvent extends BaseGameEvent {
     };
 }
 
+export interface ChooseFirstPlayerEventData {
+    playerId: string;
+    gameId: string;
+    chosenFirstPlayerId: string;
+}
+
+export interface ChooseFirstPlayerEvent extends BaseGameEvent<ChooseFirstPlayerEventData> {
+    type: EventType.CHOOSE_FIRST_PLAYER;
+}
+
 export interface ConfirmRedrawEventData {
     playerId: string;
     gameId: string;
@@ -461,6 +471,7 @@ export type GameEvent =
     | PairingEffectEvent
     | PowerBoostEvent
     | ConfirmRedrawEvent
+    | ChooseFirstPlayerEvent
     | GameplayBeginsEvent
     | ErrorOccurredEvent
     | PlayerActionEvent

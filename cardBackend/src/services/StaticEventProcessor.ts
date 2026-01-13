@@ -1,13 +1,14 @@
 // src/services/StaticEventProcessor.ts
 // Static event processor for simplified event system
 
-import { GameEvent, EventStatus, EventPriority, ErrorOccurredEventData, JoinGameEvent, ConfirmRedrawEvent, TargetChoiceEvent } from './EventQueue/interfaces/GameEvent';
-import { ProcessingResult, ValidationResult } from '../models/EventInterfaces';
+import { GameEvent, EventStatus, EventPriority, ErrorOccurredEventData, TargetChoiceEvent } from './EventQueue/interfaces/GameEvent';
+import { ProcessingResult } from '../models/EventInterfaces';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GameEngine } from './GameEngine';
-import { GamePhase, EventType } from '../models/GameEnums';
+import { EventType } from '../models/GameEnums';
 import { TriggerEngine } from './EventQueue/TriggerEngine';
 import { StateBasedActionEngine } from './EventQueue/StateBasedActionEngine';
+import { validateEventExecution } from './validation/EventValidator';
 
 export class StaticEventProcessor {
     // No need for GameEngine instance - all methods are static now
@@ -55,7 +56,7 @@ export class StaticEventProcessor {
                     console.log(`📋 Event declared: ${event.type} - checking for reactions`);
                     
                     // 1. Validation
-                    const validationResult = this.validateEventExecution(event, gameEnv);
+                    const validationResult = validateEventExecution(event, gameEnv);
                     if (!validationResult.isValid) {
                         console.log(`❌ Event ${event.type} failed validation: ${validationResult.reason}`);
                         this.replaceEventWithError(gameEnv, event, validationResult.reason || 'Unknown validation error');
@@ -212,61 +213,6 @@ export class StaticEventProcessor {
         }
         
         return result;
-    }
-    
-    // ============ VALIDATION METHODS ============
-    
-    private static validateEventExecution(event: GameEvent, gameEnv: GameEnvironment): ValidationResult {
-        console.log(`🔍 Validating event: ${event.type}`);
-        
-        switch (event.type) {
-            case EventType.JOIN_GAME:
-                return this.validateJoinGameEvent(event as JoinGameEvent, gameEnv);
-                
-            case EventType.CONFIRM_REDRAW:
-                return this.validateStartReadyEvent(event as ConfirmRedrawEvent, gameEnv);
-                
-                
-            default:
-                // Most events are valid by default
-                return { isValid: true };
-        }
-    }
-    
-    private static validateJoinGameEvent(event: JoinGameEvent, gameEnv: GameEnvironment): ValidationResult {
-        const { playerId } = event.data;
-        
-        // Check if room is available for joining
-        if (gameEnv.phase !== GamePhase.WAITING_FOR_PLAYERS) {
-            return {
-                isValid: false,
-                reason: 'Room is not available for joining'
-            };
-        }
-        
-        // Check if game is full
-        if (gameEnv.playerId_2 && gameEnv.playerId_2 !== playerId) {
-            return {
-                isValid: false,
-                reason: 'Game is full'
-            };
-        }
-        
-        return { isValid: true };
-    }
-    
-    private static validateStartReadyEvent(event: ConfirmRedrawEvent, gameEnv: GameEnvironment): ValidationResult {
-        const { playerId } = event;
-        
-        // Basic validation: Check if player exists in game
-        if (playerId !== gameEnv.playerId_1 && playerId !== gameEnv.playerId_2) {
-            return {
-                isValid: false,
-                reason: 'Player not found in game'
-            };
-        }
-        
-        return { isValid: true };
     }
     
     // ============ REACTION AND TRIGGER METHODS ============

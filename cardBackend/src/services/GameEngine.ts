@@ -3,7 +3,7 @@
 
 import { GameEvent, AcknowledgeEventsEvent, PlayCardEvent,
      DeployEffectEvent, TargetChoiceEvent, PairingEffectEvent, ShieldCardAttackedEvent,
-     ConfirmRedrawEvent, GameplayBeginsEvent, ErrorOccurredEvent, BurstEffectChoiceEvent,
+     ConfirmRedrawEvent, ChooseFirstPlayerEvent, GameplayBeginsEvent, ErrorOccurredEvent, BurstEffectChoiceEvent,
      StartGameEvent, JoinGameEvent, NextPlayerTurnEvent, EndTurnEvent, PlayerActionEvent, RepairEffectEvent, BlockerChoiceEvent, ActionStepPostPlayEvent } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { EventType } from '../models/GameEnums';
@@ -41,6 +41,9 @@ export class GameEngine {
 
                 case EventType.JOIN_GAME:
                     return PhaseTransitionManager.executeJoinGame(event as JoinGameEvent, gameEnv);
+
+                case EventType.CHOOSE_FIRST_PLAYER:
+                    return PhaseTransitionManager.executeChooseFirstPlayer(event as ChooseFirstPlayerEvent, gameEnv);
 
                 case EventType.CONFIRM_REDRAW:
                     return GameSetupManager.handleConfirmRedraw(event as ConfirmRedrawEvent, gameEnv);

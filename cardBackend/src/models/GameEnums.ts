@@ -3,6 +3,7 @@
 
 export enum GamePhase {
     WAITING_FOR_PLAYERS = 'WAITING_FOR_PLAYERS',
+    DECIDE_FIRST_PLAYER_PHASE = 'DECIDE_FIRST_PLAYER_PHASE',
     REDRAW_PHASE = 'REDRAW_PHASE',
     DRAW_PHASE = 'DRAW_PHASE',
     RESOURCE_PHASE = 'RESOURCE_PHASE',
@@ -38,6 +39,7 @@ export enum CardPlayType {
 export enum PlayerActionType {
     CREATE_GAME = 'CREATE_GAME',
     JOIN_GAME = 'JOIN_GAME',
+    CHOOSE_FIRST_PLAYER = 'CHOOSE_FIRST_PLAYER',
     CONFIRM_REDRAW = 'CONFIRM_REDRAW',
     RESOLVE_CHOICE = 'RESOLVE_CHOICE',
     END_TURN = 'END_TURN',
@@ -50,6 +52,7 @@ export enum EventType {
     // Core game events
     CREATE_GAME = PlayerActionType.CREATE_GAME,
     JOIN_GAME = PlayerActionType.JOIN_GAME,
+    CHOOSE_FIRST_PLAYER = PlayerActionType.CHOOSE_FIRST_PLAYER,
     CONFIRM_REDRAW = PlayerActionType.CONFIRM_REDRAW,
     GAMEPLAY_BEGINS = 'GAMEPLAY_BEGINS',
     
