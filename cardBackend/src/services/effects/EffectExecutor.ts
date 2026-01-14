@@ -22,6 +22,7 @@ interface AddToHandOptions {
     sourceZone?: string;
     reason?: string;
     notify?: boolean;
+    drawContext?: string;
 }
 
 export class EffectExecutor {
@@ -597,6 +598,8 @@ export class EffectExecutor {
             };
             if (eventType !== 'CARD_DRAWN') {
                 payload.cardName = cardName;
+            } else if (options.drawContext) {
+                payload.drawContext = options.drawContext;
             }
 
             notificationManager.addNotificationEvent(
@@ -658,7 +661,7 @@ export class EffectExecutor {
         playerId: string,
         deck: any,
         count: number,
-        options: { notify?: boolean } = {}
+        options: { notify?: boolean; drawContext?: string } = {}
     ): void {
         if (!deck || !Array.isArray(deck.mainDeck)) {
             throw new Error('Deck structure invalid for draw effect');
@@ -667,6 +670,7 @@ export class EffectExecutor {
         const shouldNotify = options.notify !== false;
         const notifyPerCard = shouldNotify && count === 1;
         const drawnUids: string[] = [];
+        const drawContext = options.drawContext;
 
         for (let i = 0; i < count && deck.mainDeck.length > 0; i++) {
             const drawnCard = deck.mainDeck.shift();
@@ -677,7 +681,8 @@ export class EffectExecutor {
                 eventType: 'CARD_DRAWN',
                 sourceZone: 'deck',
                 reason: 'draw',
-                notify: notifyPerCard
+                notify: notifyPerCard,
+                drawContext
             });
             if (!addResult.success) {
                 throw new Error(addResult.error || `Failed to add ${drawnCard} to hand`);
@@ -692,6 +697,7 @@ export class EffectExecutor {
                 carduids: drawnUids,
                 sourceZone: 'deck',
                 reason: 'draw',
+                drawContext,
                 timestamp: Date.now()
             });
         }

@@ -17,6 +17,7 @@ export class TurnLifecycleManager {
     static startTurn(gameEnv: GameEnvironment, playerId: string): void {
         const player = gameEnv.players[playerId];
         if (player?.zones) {
+            player.resetTurnStatus();
             player.zones.repairAbilitiesCheckedThisCycle = false;
             console.log(`🔄 Reset repair abilities flag for new player: ${playerId}`);
         }
@@ -25,7 +26,7 @@ export class TurnLifecycleManager {
         EnergyManager.addBasicEnergy(gameEnv, playerId);
 
         if (player?.deck) {
-            PlayerCardManager.drawCards(gameEnv, playerId, 1);
+            PlayerCardManager.drawCards(gameEnv, playerId, 1, { drawContext: 'turn_start' });
             console.log(`🃏 Drew 1 card for player ${playerId}`);
         }
 

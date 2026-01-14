@@ -1,0 +1,3 @@
+looking at src/data/st01Card.json. please look at the card effect in ST01-001. please check if our current implementation also cover the effect, also based on effects.description. please check if the effects.rules is configured correctly. or align with the code. you can suggest any improvement on the configuration.
+
+Also from backend prespective suggest me test scenerioa to cover all effect that i need to run to enable it is working all good. 

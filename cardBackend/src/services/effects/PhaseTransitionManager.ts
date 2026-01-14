@@ -234,7 +234,7 @@ export class PhaseTransitionManager {
 
             const firstPlayer = gameEnv.players[firstPlayerId];
             if (firstPlayer?.deck) {
-                PlayerCardManager.drawCards(gameEnv, firstPlayerId, 1);
+                PlayerCardManager.drawCards(gameEnv, firstPlayerId, 1, { drawContext: 'turn_start' });
                 console.log(`🃏 Drew 1 card for first player ${firstPlayerId}`);
             }
 

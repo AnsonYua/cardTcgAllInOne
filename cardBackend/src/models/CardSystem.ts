@@ -4,6 +4,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+import { initializeUnitTurnState } from '../utils/UnitTurnStateUtils';
 
 // ============ CARD DATA INTERFACES ============
 
@@ -121,7 +122,9 @@ export interface UnitZoneCard extends ZoneCard {
     cardData: UnitCardData;  // Required for units
     originalHP?: number;
     originalAP?: number;
-    isFirstPlay?: boolean;   // Whether this is the unit's first turn on field
+    playedThisTurn?: boolean;   // Whether this unit entered play this turn
+    canAttackOnPlayTurn?: boolean; // Whether the unit may attack on its play turn
+    canAttackThisTurn?: boolean; // Response-only: current attack eligibility
     damageReceived?: number; // Cumulative damage taken this turn
 
     continueModifyAP?: number;   
@@ -189,15 +192,16 @@ export function createZoneCard(
     
     switch (effectiveType) {
         case 'unit':
-            return {
+            const unitCard = {
                 ...baseCard,
                 cardData: cardData as UnitCardData,
                 originalAP: cardData.ap,
                 originalHP: cardData.hp,
                 isRested: false,
-                isFirstPlay: true,
                 damageReceived: 0
             } as UnitZoneCard;
+            initializeUnitTurnState(unitCard);
+            return unitCard;
             
         case 'pilot':
             // Special handling for command cards played as pilots

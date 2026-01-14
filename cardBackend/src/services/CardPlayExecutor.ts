@@ -93,7 +93,7 @@ export class CardPlayExecutor {
             }
 
             if (placementResult.isOnLink) {
-                console.log(`🔗 Link detected - updating linked unit's isFirstPlay status`);
+                console.log(`🔗 Link detected - enabling play-turn attack for linked unit`);
                 PlayerCardManager.handleLinkFormation(gameEnv, playerId, eventData.carduid);
             }
 

@@ -68,6 +68,12 @@ router.post('/player/startReady', gameController.startReady.bind(gameController)
 router.get('/player/gameResource', gameController.getGameResource.bind(gameController));
 
 /**
+ * List available lobby rooms
+ * GET /api/game/lobbylist
+ */
+router.get('/lobbylist', gameController.getLobbyList.bind(gameController));
+
+/**
  * Get player game data
  * GET /api/game/player/:playerId?gameId=...
  */

@@ -14,6 +14,8 @@ import {
     FieldCardValue
 } from './CardSystem';
 import { calculateBaseFieldValue, calculateSlotFieldValue } from '../utils/FieldValueCalculator';
+import { canUnitAttackThisTurn } from '../utils/UnitAttackUtils';
+import { ensureUnitTurnStateDefaults, resetUnitTurnState } from '../utils/UnitTurnStateUtils';
 
 // ============ ZONE INTERFACES ============
 
@@ -533,8 +535,7 @@ export class Player {
             const slotKey = zone as keyof Pick<PlayerZones, 'slot1'|'slot2'|'slot3'|'slot4'|'slot5'|'slot6'>;
             const slotZone = this.zones[slotKey];
             if (slotZone.unit) {
-                slotZone.unit.damageReceived = 0; // Reset damage for new turn
-                slotZone.unit.isFirstPlay = false; // No longer first turn
+                resetUnitTurnState(slotZone.unit);
             }
         });
         
@@ -573,7 +574,7 @@ export class Player {
         const slotKey = zone as keyof Pick<PlayerZones, 'slot1'|'slot2'|'slot3'|'slot4'|'slot5'|'slot6'>;
         const slotZone = this.zones[slotKey];
         
-        return slotZone.unit?.isFirstPlay || false;
+        return slotZone.unit?.playedThisTurn || false;
     }
 
     public applyDamageToUnit(zone: ZoneType, damage: number): boolean {
@@ -739,6 +740,16 @@ export class Player {
         player.isReady = data.isReady || false;
         if (data.zones) {
             player.zones = data.zones;
+            const slotZones = [ZoneType.SLOT1, ZoneType.SLOT2, ZoneType.SLOT3, ZoneType.SLOT4, ZoneType.SLOT5, ZoneType.SLOT6];
+            slotZones.forEach(zone => {
+                const slotKey = zone as keyof Pick<PlayerZones, 'slot1'|'slot2'|'slot3'|'slot4'|'slot5'|'slot6'>;
+                const slotZone = player.zones[slotKey];
+                const unit = slotZone?.unit as any;
+                if (!unit) {
+                    return;
+                }
+                ensureUnitTurnStateDefaults(unit);
+            });
         }
         
         // Restore effect registry
@@ -773,6 +784,12 @@ export class Player {
         const serializeSlot = (slot: SlotZone | undefined): SerializedSlot => {
             const unit = serializeCard(slot?.unit);
             const pilot = serializeCard(slot?.pilot);
+
+            if (unit) {
+                const unitCard = unit as UnitZoneCard;
+                ensureUnitTurnStateDefaults(unitCard);
+                unitCard.canAttackThisTurn = canUnitAttackThisTurn(unitCard);
+            }
 
             return {
                 unit,

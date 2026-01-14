@@ -9,6 +9,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { getSlotTotals } from '../utils/FieldValueCalculator';
 import { EffectExecutor } from './effects/EffectExecutor';
+import { ContinuousEffectManager } from './ContinuousEffectManager';
+import { GameNotificationManager } from './GameNotificationManager';
 
 export interface CardPlacementResult {
     success: boolean;
@@ -522,7 +524,7 @@ export class PlayerCardManager {
     }
 
     /**
-     * Handle link formation - set linked unit's isFirstPlay to false
+     * Handle link formation - allow linked unit to attack on its play turn
      * This method should be called when a link is detected after card placement
      * 
      * @param gameEnv - Game environment
@@ -568,11 +570,12 @@ export class PlayerCardManager {
             const unitCard = slot.unit;
             console.log(`📋 Processing unit ${unitCard.carduid} for link formation`);
 
-            // Set the unit's isFirstPlay to false since it's now linked
-            const previousFirstPlay = unitCard.isFirstPlay;
-            unitCard.isFirstPlay = false;
+            const previousOverride = unitCard.canAttackOnPlayTurn;
+            if (unitCard.playedThisTurn) {
+                unitCard.canAttackOnPlayTurn = true;
+            }
 
-            console.log(`✅ Link formation complete: Unit ${unitCard.carduid} isFirstPlay changed from ${previousFirstPlay} to ${unitCard.isFirstPlay}`);
+            console.log(`✅ Link formation complete: Unit ${unitCard.carduid} canAttackOnPlayTurn changed from ${previousOverride} to ${unitCard.canAttackOnPlayTurn}`);
 
         } catch (error) {
             console.error(`❌ Error handling link formation:`, error);
@@ -588,7 +591,7 @@ export class PlayerCardManager {
         gameEnv: GameEnvironment,
         playerId: string,
         count: number,
-        options: { notify?: boolean } = {}
+        options: { notify?: boolean; drawContext?: string } = {}
     ): void {
         const player = gameEnv.getPlayer(playerId);
         if (!player?.deck || !Array.isArray(player.deck.mainDeck)) {
@@ -597,17 +600,51 @@ export class PlayerCardManager {
         }
 
         try {
-            const beforeCount = Array.isArray(player.deck.handUids)
-                ? player.deck.handUids.length
-                : player.deck._handUids?.length || 0;
+            const beforeHandUids = Array.isArray(player.deck.handUids)
+                ? [...player.deck.handUids]
+                : [...(player.deck._handUids || [])];
+            const beforeCount = beforeHandUids.length;
 
             EffectExecutor.drawCardsIntoHand(gameEnv, playerId, player.deck, count, options);
 
-            const afterCount = Array.isArray(player.deck.handUids)
-                ? player.deck.handUids.length
-                : player.deck._handUids?.length || 0;
+            const afterHandUids = Array.isArray(player.deck.handUids)
+                ? [...player.deck.handUids]
+                : [...(player.deck._handUids || [])];
+            const afterCount = afterHandUids.length;
             const drawnCount = Math.max(0, afterCount - beforeCount);
             console.log(`🃏 Drew ${drawnCount} cards, hand size: ${afterCount}`);
+
+            if (options.notify !== false && options.drawContext && drawnCount > 0) {
+                const notificationManager = new GameNotificationManager(gameEnv);
+                const existingEvents = gameEnv.notificationQueue || [];
+                const previousHandSet = new Set(beforeHandUids);
+                const newCarduids = afterHandUids.filter(carduid => !previousHandSet.has(carduid));
+
+                for (const carduid of newCarduids) {
+                    const alreadyNotified = existingEvents.some(event => {
+                        if (event.type !== 'CARD_DRAWN') {
+                            return false;
+                        }
+                        const payload = event.payload as { carduid?: string; playerId?: string; drawContext?: string };
+                        return (
+                            payload?.carduid === carduid &&
+                            payload?.playerId === playerId &&
+                            payload?.drawContext === options.drawContext
+                        );
+                    });
+
+                    if (!alreadyNotified) {
+                        notificationManager.addNotificationEvent('CARD_DRAWN', {
+                            playerId,
+                            carduid,
+                            sourceZone: 'deck',
+                            reason: 'draw',
+                            timestamp: Date.now(),
+                            drawContext: options.drawContext
+                        });
+                    }
+                }
+            }
         } catch (error) {
             console.error(`❌ Failed to draw cards for player ${playerId}:`, error);
         }
@@ -715,6 +752,31 @@ export class PlayerCardManager {
             console.error(`❌ Error moving ${cardType} to trash:`, error);
             return false;
         }
+    }
+
+    /**
+     * Centralized destroy hook for future expansion (notifications, triggers, etc.).
+     */
+    static destroyUnitInSlot(gameEnv: GameEnvironment, playerId: string, slotName: string, unit: UnitZoneCard): boolean {
+        // TODO: Extend with on-destroy triggers, notifications, and cleanup when effects are added.
+        const destroyed = PlayerCardManager.moveCardToTrashFromSlot(gameEnv, playerId, slotName, unit, 'unit');
+        if (!destroyed) {
+            return false;
+        }
+
+        const player = gameEnv.getPlayer(playerId);
+        if (player?.zones) {
+            const slotResult = SlotZoneUtils.getSlotZone(player.zones, slotName);
+            if (slotResult.isValid && slotResult.slot && SlotZoneUtils.hasPilot(slotResult.slot)) {
+                const pilotCard = SlotZoneUtils.getPilot(slotResult.slot) as PilotZoneCard | null;
+                if (pilotCard) {
+                    PlayerCardManager.moveCardToTrashFromSlot(gameEnv, playerId, slotName, pilotCard, 'pilot');
+                }
+            }
+        }
+
+        ContinuousEffectManager.processAllContinuousEffects(gameEnv);
+        return true;
     }
 
 

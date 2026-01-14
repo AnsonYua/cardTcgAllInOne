@@ -567,20 +567,7 @@ export class BattlePhaseManager {
     ): boolean {
         if (remainingHP <= 0) {
             console.log(`💥 ${role} unit ${unit.carduid} destroyed (took ${damageTaken} damage)`);
-            PlayerCardManager.moveCardToTrashFromSlot(gameEnv, playerId, slotName, unit, 'unit');
-
-            const player = gameEnv.getPlayer(playerId);
-            if (player?.zones) {
-                const slotResult = SlotZoneUtils.getSlotZone(player.zones, slotName);
-                if (slotResult.isValid && slotResult.slot && SlotZoneUtils.hasPilot(slotResult.slot)) {
-                    const pilotCard = SlotZoneUtils.getPilot(slotResult.slot) as PilotZoneCard | null;
-                    if (pilotCard) {
-                        console.log(`🛩️ Attached pilot ${pilotCard.carduid} sent to trash with destroyed unit ${unit.carduid}`);
-                        PlayerCardManager.moveCardToTrashFromSlot(gameEnv, playerId, slotName, pilotCard, 'pilot');
-                    }
-                }
-            }
-            return true;
+            return PlayerCardManager.destroyUnitInSlot(gameEnv, playerId, slotName, unit);
         }
 
         PlayerCardManager.updateUnitDamage(unit, damageTaken);

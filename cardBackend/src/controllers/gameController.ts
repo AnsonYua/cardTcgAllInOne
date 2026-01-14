@@ -5,6 +5,7 @@ import { Request, Response } from 'express';
 import { gameLogic, GameLogic } from '../services/GameLogic';
 import { PlayerActionType, CardPlayType } from '../models/GameEnums';
 import { PlayerAction } from '../models/EventInterfaces';
+import { lobbyManager } from '../services/LobbyManager';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -63,6 +64,13 @@ export class GameController {
                 // TODO: Initialize event queue system for this game
                 // gameState.gameEnv.initializeEventProcessor();
                 // console.log('🎮 Event queue system initialized for game:', gameState.gameId);
+                if (gameState.gameId) {
+                    try {
+                        await lobbyManager.addRoom(gameState.gameId);
+                    } catch (lobbyError) {
+                        console.error('❌ Failed to add lobby room:', lobbyError);
+                    }
+                }
                 res.json({
                     success: true,
                     gameId: gameState.gameId,
@@ -133,6 +141,29 @@ export class GameController {
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
                 context: 'joinRoom endpoint'
+            });
+        }
+    }
+
+    /**
+     * List available lobby rooms and prune expired rooms
+     * GET /api/game/lobbylist
+     */
+    async getLobbyList(_req: Request, res: Response): Promise<void> {
+        try {
+            const rooms = await lobbyManager.pruneExpiredRooms();
+            const sortedRooms = rooms.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+            res.json({
+                success: true,
+                rooms: sortedRooms,
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            console.error('❌ Error in getLobbyList:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'getLobbyList endpoint'
             });
         }
     }
