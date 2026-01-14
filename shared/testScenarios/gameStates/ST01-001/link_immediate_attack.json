@@ -1,12 +1,12 @@
 {
-  "description": "st01-001_pair_ap_boost_turn",
-  "gameId": "st01-001_pair_ap_boost_turn",
-  "testType": "continuousEffect",
+  "description": "st01-001_link_immediate_attack",
+  "gameId": "st01-001_link_immediate_attack",
+  "testType": "link",
   "category": "ST01-001",
   "tags": [
-    "ContinuousEffect",
-    "Pair",
-    "APBoost"
+    "Link",
+    "Attack",
+    "PlayTurn"
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -47,71 +47,6 @@
         "deck": {
           "hand": [
             {
-              "carduid": "ST01-010_00000000-0000-0000-0000-000000000002",
-              "cardId": "ST01-010",
-              "cardData": {
-                "id": "ST01-010",
-                "name": "Amuro Ray",
-                "cardType": "pilot",
-                "color": "Blue",
-                "level": 4,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team",
-                  "Newtype"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "\u3010Burst\u3011Add this card to your hand.",
-                    "\u3010When Paired\u3011Choose 1 enemy Unit with 5 or less HP. Rest it."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_add_to_hand",
-                      "type": "triggered",
-                      "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
-                      "action": "addToHand"
-                    },
-                    {
-                      "effectId": "paired_rest_medium_hp",
-                      "type": "triggered",
-                      "trigger": "PAIRING_COMPLETE",
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "filters": {
-                          "hp": "<=5"
-                        },
-                        "count": 1
-                      },
-                      "action": "rest"
-                    }
-                  ]
-                }
-              }
-            }
-          ],
-          "handUids": [
-            "ST01-010_00000000-0000-0000-0000-000000000002"
-          ],
-          "mainDeck": []
-        },
-        "confirmIsRedraw": false,
-        "isRedraw": false,
-        "playerPoint": 0,
-        "isReady": true,
-        "zones": {
-          "slot1": {
-            "unit": {
               "carduid": "ST01-001_00000000-0000-0000-0000-000000000001",
               "cardId": "ST01-001",
               "cardData": {
@@ -185,51 +120,75 @@
                     }
                   ]
                 }
-              },
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "originalAP": 3,
-              "originalHP": 4,
-              "isFirstPlay": false,
-              "damageReceived": 0
-            }
-          },
-          "slot2": {
-            "unit": {
-              "carduid": "ST01-005_00000000-0000-0000-0000-000000000003",
-              "cardId": "ST01-005",
+              }
+            },
+            {
+              "carduid": "ST01-010_00000000-0000-0000-0000-000000000002",
+              "cardId": "ST01-010",
               "cardData": {
-                "id": "ST01-005",
-                "name": "GM",
-                "cardType": "unit",
+                "id": "ST01-010",
+                "name": "Amuro Ray",
+                "cardType": "pilot",
                 "color": "Blue",
-                "level": 2,
+                "level": 4,
                 "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
+                "zone": [],
                 "traits": [
-                  "Earth Federation"
+                  "Earth Federation",
+                  "White Base Team",
+                  "Newtype"
                 ],
                 "link": [],
                 "ap": 2,
-                "hp": 2,
+                "hp": 1,
                 "effects": {
-                  "description": [],
-                  "rules": []
+                  "description": [
+                    "\u3010Burst\u3011Add this card to your hand.",
+                    "\u3010When Paired\u3011Choose 1 enemy Unit with 5 or less HP. Rest it."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "burst_add_to_hand",
+                      "type": "triggered",
+                      "trigger": "BURST_CONDITION",
+                      "target": {
+                        "type": "card",
+                        "scope": "self"
+                      },
+                      "action": "addToHand"
+                    },
+                    {
+                      "effectId": "paired_rest_medium_hp",
+                      "type": "triggered",
+                      "trigger": "PAIRING_COMPLETE",
+                      "target": {
+                        "type": "unit",
+                        "scope": "opponent",
+                        "filters": {
+                          "hp": "<=5"
+                        },
+                        "count": 1
+                      },
+                      "action": "rest"
+                    }
+                  ]
                 }
-              },
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "originalAP": 2,
-              "originalHP": 2,
-              "isFirstPlay": false,
-              "damageReceived": 0
+              }
             }
-          },
+          ],
+          "handUids": [
+            "ST01-001_00000000-0000-0000-0000-000000000001",
+            "ST01-010_00000000-0000-0000-0000-000000000002"
+          ],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
           "slot3": {},
           "slot4": {},
           "slot5": {},

@@ -1,12 +1,13 @@
 {
-  "description": "st01-001_pair_ap_boost_turn",
-  "gameId": "st01-001_pair_ap_boost_turn",
-  "testType": "continuousEffect",
+  "description": "st01-001_repair_end_opponent_turn",
+  "gameId": "st01-001_repair_end_opponent_turn",
+  "testType": "endPhase",
   "category": "ST01-001",
   "tags": [
-    "ContinuousEffect",
-    "Pair",
-    "APBoost"
+    "Repair",
+    "EndTurn",
+    "OpponentTurn",
+    "SBA"
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -14,7 +15,7 @@
     "playerId_2": "playerId_2",
     "gameStarted": true,
     "firstPlayer": 0,
-    "currentPlayer": "playerId_1",
+    "currentPlayer": "playerId_2",
     "currentTurn": 1,
     "notificationQueue": [
       {
@@ -27,7 +28,7 @@
           "priority": "normal"
         },
         "payload": {
-          "playerId": "playerId_1",
+          "playerId": "playerId_2",
           "carduid": "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c",
           "sourceZone": "deck",
           "reason": "draw",
@@ -45,64 +46,8 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": [
-            {
-              "carduid": "ST01-010_00000000-0000-0000-0000-000000000002",
-              "cardId": "ST01-010",
-              "cardData": {
-                "id": "ST01-010",
-                "name": "Amuro Ray",
-                "cardType": "pilot",
-                "color": "Blue",
-                "level": 4,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team",
-                  "Newtype"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "\u3010Burst\u3011Add this card to your hand.",
-                    "\u3010When Paired\u3011Choose 1 enemy Unit with 5 or less HP. Rest it."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_add_to_hand",
-                      "type": "triggered",
-                      "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
-                      "action": "addToHand"
-                    },
-                    {
-                      "effectId": "paired_rest_medium_hp",
-                      "type": "triggered",
-                      "trigger": "PAIRING_COMPLETE",
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "filters": {
-                          "hp": "<=5"
-                        },
-                        "count": 1
-                      },
-                      "action": "rest"
-                    }
-                  ]
-                }
-              }
-            }
-          ],
-          "handUids": [
-            "ST01-010_00000000-0000-0000-0000-000000000002"
-          ],
+          "hand": [],
+          "handUids": [],
           "mainDeck": []
         },
         "confirmIsRedraw": false,
@@ -192,7 +137,7 @@
               "originalAP": 3,
               "originalHP": 4,
               "isFirstPlay": false,
-              "damageReceived": 0
+              "damageReceived": 1
             }
           },
           "slot2": {
@@ -269,17 +214,6 @@
               "cardData": {
                 "cardType": "energy"
               }
-            },
-            {
-              "carduid": "energy_basic_test_4",
-              "cardId": "energy_basic",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
             }
           ],
           "trashArea": [],
@@ -299,71 +233,7 @@
         "playerPoint": 0,
         "isReady": true,
         "zones": {
-          "slot1": {
-            "unit": {
-              "carduid": "ST01-009_00000000-0000-0000-0000-000000000004",
-              "cardId": "ST01-009",
-              "cardData": {
-                "id": "ST01-009",
-                "name": "Zowort",
-                "cardType": "unit",
-                "color": "White",
-                "level": 2,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Academy"
-                ],
-                "link": [],
-                "ap": 3,
-                "hp": 2,
-                "effects": {
-                  "description": [
-                    "<Blocker> (Rest this Unit to change the attack target to it.)",
-                    "This Unit can't choose the enemy player as its attack target."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "blocker",
-                      "type": "keyword",
-                      "trigger": "ATTACK_REDIRECT",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self"
-                      },
-                      "action": "redirect_attack",
-                      "parameters": {
-                        "cost": "rest_self"
-                      }
-                    },
-                    {
-                      "effectId": "attack_restriction",
-                      "type": "static",
-                      "trigger": "continuous",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self"
-                      },
-                      "action": "restrict_attack",
-                      "parameters": {
-                        "restriction": "cannot_attack_player"
-                      }
-                    }
-                  ]
-                }
-              },
-              "placedAt": 0,
-              "placedBy": "playerId_2",
-              "isRested": false,
-              "originalAP": 3,
-              "originalHP": 2,
-              "isFirstPlay": false,
-              "damageReceived": 0
-            }
-          },
+          "slot1": {},
           "slot2": {},
           "slot3": {},
           "slot4": {},

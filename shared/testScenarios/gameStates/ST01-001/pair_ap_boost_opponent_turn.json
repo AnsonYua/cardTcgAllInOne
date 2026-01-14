@@ -1,12 +1,13 @@
 {
-  "description": "st01-001_pair_ap_boost_turn",
-  "gameId": "st01-001_pair_ap_boost_turn",
+  "description": "st01-001_pair_ap_boost_opponent_turn",
+  "gameId": "st01-001_pair_ap_boost_opponent_turn",
   "testType": "continuousEffect",
   "category": "ST01-001",
   "tags": [
     "ContinuousEffect",
     "Pair",
-    "APBoost"
+    "APBoost",
+    "OpponentTurn"
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -14,7 +15,7 @@
     "playerId_2": "playerId_2",
     "gameStarted": true,
     "firstPlayer": 0,
-    "currentPlayer": "playerId_1",
+    "currentPlayer": "playerId_2",
     "currentTurn": 1,
     "notificationQueue": [
       {
@@ -27,7 +28,7 @@
           "priority": "normal"
         },
         "payload": {
-          "playerId": "playerId_1",
+          "playerId": "playerId_2",
           "carduid": "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c",
           "sourceZone": "deck",
           "reason": "draw",
