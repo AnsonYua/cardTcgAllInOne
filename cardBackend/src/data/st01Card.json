@@ -49,30 +49,25 @@
                         }
                     },
                     {
-                        "effectId": "pair_ap_boost_all",
-                        "type": "static",
-                        "trigger": "continuous",
-                        "sourceConditions": [
-                            {
-                                "type": "paired"
-                            }
-                        ],
-                        "action": "modifyAP",
-                        "parameters": {
-                            "value": 1
-                        },
-                        "timing": {
-                            "duration": "continuous",
-                            "actionTurn": "YOUR_TURN"
-                        },
-                        "target": {
-                            "type": "unit",
-                            "scope": "self_all_unit",
-                            "count": 1,
-                            "filters": {
-                                "controller": "self"
-                            }
+                      "effectId": "pair_ap_boost_all",
+                      "trigger": "continuous",
+                      "sourceConditions": [
+                        {
+                          "type": "paired"
                         }
+                      ],
+                      "action": "modifyAP",
+                      "parameters": {
+                        "value": 1
+                      },
+                      "timing": {
+                        "duration": "continuous",
+                        "actionTurn": "YOUR_TURN"
+                      },
+                      "target": {
+                        "type": "unit",
+                        "scope": "self_all_unit"
+                      }
                     }
                 ]
             }
