@@ -381,7 +381,12 @@ export class BaseAbilityManager {
             return { success: false, error: 'Player zones unavailable for token deploy' };
         }
 
-        player.zones[plan.targetSlot].unit = unitCard;
+        const slotResult = SlotZoneUtils.getSlotZone(player.zones, plan.targetSlot);
+        if (!slotResult.isValid || !slotResult.slot) {
+            return { success: false, error: `Invalid slot ${plan.targetSlot} for token deploy` };
+        }
+
+        slotResult.slot.unit = unitCard;
         console.log(`🪖 Deployed token ${plan.tokenData.name || plan.tokenData.id} to ${plan.targetSlot} (source ${sourceCarduid})`);
         return { success: true };
     }
