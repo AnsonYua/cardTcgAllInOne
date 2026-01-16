@@ -258,7 +258,7 @@ export class DeployTargetManager {
                     // Check unit targets
                     if (targetConfig.type === 'unit' && SlotZoneUtils.hasUnit(slotZone)) {
                         const unit = SlotZoneUtils.getUnit(slotZone);
-                        if (unit && this.validateTargetFilters(gameEnv , unit, targetConfig.filters || {})) {
+                        if (unit && this.validateTargetFilters(gameEnv, unit, targetConfig.filters || {}, targetPlayerId)) {
                             targets.push({
                                 carduid: unit.carduid,
                                 zone: slotName,
@@ -273,7 +273,7 @@ export class DeployTargetManager {
                     /*
                     if (targetConfig.type === 'pilot' && SlotZoneUtils.hasPilot(slotZone)) {
                         const pilot = SlotZoneUtils.getPilot(slotZone);
-                        if (pilot && this.validateTargetFilters(pilot, targetConfig.filters || {})) {
+                        if (pilot && this.validateTargetFilters(gameEnv, pilot, targetConfig.filters || {}, targetPlayerId)) {
                             targets.push({
                                 carduid: pilot.carduid,
                                 zone: slotName,
@@ -403,7 +403,12 @@ export class DeployTargetManager {
     /**
      * Unified target validation with all filter types
      */
-    private static validateTargetFilters(gameEnv: GameEnvironment,card: UnitZoneCard | PilotZoneCard, filters: TargetFilters = {}): boolean {
+    private static validateTargetFilters(
+        gameEnv: GameEnvironment,
+        card: UnitZoneCard | PilotZoneCard,
+        filters: TargetFilters = {},
+        targetPlayerId?: string
+    ): boolean {
         // Level filter (from pairing effects)
         if (filters.level) {
             const cardLevel = card.cardData?.level || 0;
@@ -442,8 +447,65 @@ export class DeployTargetManager {
                 return false;
             }
         }
+
+        if (filters.linkStatus) {
+            const desiredStatus = typeof filters.linkStatus === 'string'
+                ? filters.linkStatus.toLowerCase()
+                : '';
+            const isLinked = this.isUnitLinked(gameEnv, card, targetPlayerId);
+            if (desiredStatus === 'linked' && !isLinked) {
+                console.log(`❌ Card ${card.carduid} failed linkStatus filter: expected linked`);
+                return false;
+            }
+            if (desiredStatus === 'unlinked' && isLinked) {
+                console.log(`❌ Card ${card.carduid} failed linkStatus filter: expected unlinked`);
+                return false;
+            }
+        }
         
         return true;
+    }
+
+    private static isUnitLinked(
+        gameEnv: GameEnvironment,
+        card: UnitZoneCard | PilotZoneCard,
+        targetPlayerId?: string
+    ): boolean {
+        if (!targetPlayerId) {
+            return false;
+        }
+
+        const slotResult = SlotZoneUtils.findSlotNameByUnitUidForPlayer(gameEnv, targetPlayerId, card.carduid);
+        if (!slotResult.found || !slotResult.unit || !slotResult.pilot) {
+            return false;
+        }
+
+        const unitLink = slotResult.unit.cardData?.link;
+        if (!unitLink || !Array.isArray(unitLink) || unitLink.length === 0) {
+            return false;
+        }
+
+        const pilot = slotResult.pilot as PilotZoneCard;
+        let pilotNameForMatching: string | null = null;
+        let pilotTraits: string[] = [];
+
+        if (pilot.playedAs === 'pilot' && pilot.cardData?.cardType === 'command') {
+            const designatePilotEffect = pilot.cardData?.effects?.rules?.find((rule: any) =>
+                rule.action === 'designate_pilot'
+            );
+            if (designatePilotEffect?.parameters?.pilotName) {
+                pilotNameForMatching = designatePilotEffect.parameters.pilotName as string;
+            }
+        } else {
+            pilotNameForMatching = pilot.cardData?.name || null;
+            pilotTraits = pilot.cardData?.traits || [];
+        }
+
+        if (pilotNameForMatching && unitLink.includes(pilotNameForMatching)) {
+            return true;
+        }
+
+        return unitLink.some((linkValue: string) => pilotTraits.includes(linkValue));
     }
 
 }

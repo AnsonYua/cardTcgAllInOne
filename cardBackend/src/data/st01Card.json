@@ -49,25 +49,25 @@
                         }
                     },
                     {
-                      "effectId": "pair_ap_boost_all",
-                      "trigger": "continuous",
-                      "sourceConditions": [
-                        {
-                          "type": "paired"
+                        "effectId": "pair_ap_boost_all",
+                        "trigger": "continuous",
+                        "sourceConditions": [
+                            {
+                                "type": "paired"
+                            }
+                        ],
+                        "action": "modifyAP",
+                        "parameters": {
+                            "value": 1
+                        },
+                        "timing": {
+                            "duration": "continuous",
+                            "actionTurn": "YOUR_TURN"
+                        },
+                        "target": {
+                            "type": "unit",
+                            "scope": "self_all_unit"
                         }
-                      ],
-                      "action": "modifyAP",
-                      "parameters": {
-                        "value": 1
-                      },
-                      "timing": {
-                        "duration": "continuous",
-                        "actionTurn": "YOUR_TURN"
-                      },
-                      "target": {
-                        "type": "unit",
-                        "scope": "self_all_unit"
-                      }
                     }
                 ]
             }
@@ -98,7 +98,6 @@
                 "rules": [
                     {
                         "effectId": "paired_white_base_draw",
-                        "type": "triggered",
                         "trigger": "PAIRING_COMPLETE",
                         "conditions": [
                             {
@@ -113,14 +112,8 @@
                         "parameters": {
                             "value": 1
                         },
-                        "timing": {
-                            "duration": "instant",
-                            "actionTurn": "ANY"
-                        },
                         "target": {
-                            "type": "player",
-                            "scope": "self",
-                            "count": 1
+                            "scope": "self"
                         }
                     }
                 ]
@@ -178,9 +171,7 @@
                 "rules": [
                     {
                         "effectId": "deploy_rest_low_hp",
-                        "type": "triggered",
                         "trigger": "ENTERS_PLAY",
-                        "optional": false,
                         "target": {
                             "type": "unit",
                             "scope": "opponent",
@@ -189,10 +180,7 @@
                             },
                             "count": 1
                         },
-                        "action": "rest",
-                        "timing": {
-                            "actionTurn": "ANY"
-                        }
+                        "action": "rest"
                     }
                 ]
             }
@@ -245,7 +233,6 @@
                 "rules": [
                     {
                         "effectId": "paired_ap_reduction",
-                        "type": "triggered",
                         "trigger": "PAIRING_COMPLETE",
                         "target": {
                             "type": "unit",
@@ -314,7 +301,6 @@
                 "rules": [
                     {
                         "effectId": "blocker",
-                        "type": "keyword",
                         "trigger": "ATTACK_REDIRECT",
                         "target": {
                             "type": "unit",
@@ -353,7 +339,6 @@
                 "rules": [
                     {
                         "effectId": "blocker",
-                        "type": "keyword",
                         "trigger": "ATTACK_REDIRECT",
                         "target": {
                             "type": "unit",
@@ -366,7 +351,6 @@
                     },
                     {
                         "effectId": "attack_restriction",
-                        "type": "static",
                         "trigger": "continuous",
                         "target": {
                             "type": "unit",
@@ -404,7 +388,6 @@
                 "rules": [
                     {
                         "effectId": "burst_add_to_hand",
-                        "type": "triggered",
                         "trigger": "BURST_CONDITION",
                         "target": {
                             "type": "card",
@@ -414,7 +397,6 @@
                     },
                     {
                         "effectId": "paired_rest_medium_hp",
-                        "type": "triggered",
                         "trigger": "PAIRING_COMPLETE",
                         "target": {
                             "type": "unit",
@@ -451,7 +433,6 @@
                 "rules": [
                     {
                         "effectId": "burst_add_to_hand",
-                        "type": "triggered",
                         "trigger": "BURST_CONDITION",
                         "target": {
                             "type": "card",
@@ -463,14 +444,9 @@
                         "effectId": "attack_activate_resource",
                         "type": "triggered",
                         "trigger": "ATTACK_PHASE",
-                        "optional": true,
                         "restrictions": [
                             "once_per_turn"
                         ],
-                        "timing": {
-                            "duration": "instant",
-                            "actionTurn": "YOUR_TURN"
-                        },
                         "sourceConditions": [
                             {
                                 "type": "controller",
@@ -480,11 +456,6 @@
                                 "type": "paired"
                             }
                         ],
-                        "target": {
-                            "type": "resource",
-                            "scope": "self",
-                            "count": 1
-                        },
                         "action": "setActive"
                     }
                 ]
@@ -534,12 +505,6 @@
                     },
                     {
                         "effectId": "pilot_designation",
-                        "type": "special",
-                        "trigger": "continuous",
-                        "target": {
-                            "type": "pilot",
-                            "scope": "any"
-                        },
                         "action": "designate_pilot",
                         "parameters": {
                             "pilotName": "Hayato Kobayashi",
@@ -573,8 +538,12 @@
                 "rules": [
                     {
                         "effectId": "main_heal_friendly",
-                        "type": "triggered",
-                        "trigger": "ENTERS_PLAY",
+                        "type": "activated",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE"
+                            ]
+                        },
                         "target": {
                             "type": "unit",
                             "scope": "self",
@@ -587,12 +556,6 @@
                     },
                     {
                         "effectId": "pilot_designation",
-                        "type": "special",
-                        "trigger": "continuous",
-                        "target": {
-                            "type": "pilot",
-                            "scope": "any"
-                        },
                         "action": "designate_pilot",
                         "parameters": {
                             "pilotName": "Kai Shiden",
@@ -623,12 +586,7 @@
                 "rules": [
                     {
                         "effectId": "burst_activate_main",
-                        "type": "triggered",
                         "trigger": "BURST_CONDITION",
-                        "target": {
-                            "type": "card",
-                            "scope": "self"
-                        },
                         "action": "activate_ability",
                         "parameters": {
                             "abilityType": "main"
@@ -709,8 +667,7 @@
                     },
                     {
                         "effectId": "activate_conditional_token_deploy",
-                        "type": "triggered",
-                        "trigger": "PAY_COST",
+                        "type": "activated",
                         "timing": {
                             "windows": [
                                 "MAIN_PHASE"
@@ -813,8 +770,7 @@
                     },
                     {
                         "effectId": "activate_boost_link_units",
-                        "type": "triggered",
-                        "trigger": "PAY_COST",
+                        "type": "activated",
                         "timing": {
                             "windows": [
                                 "MAIN_PHASE"
@@ -839,7 +795,7 @@
                     }
                 ]
             }
-        },        
+        },
         "T-001": {
             "id": "T-001",
             "name": "Gundam",
@@ -851,8 +807,7 @@
                 "Space",
                 "Earth"
             ],
-            "traits": [
-            ],
+            "traits": [],
             "link": [],
             "ap": 3,
             "hp": 3,
@@ -860,7 +815,7 @@
                 "description": [],
                 "rules": []
             }
-        },        
+        },
         "T-002": {
             "id": "T-002",
             "name": "Guncannon",
@@ -872,8 +827,7 @@
                 "Space",
                 "Earth"
             ],
-            "traits": [
-            ],
+            "traits": [],
             "link": [],
             "ap": 2,
             "hp": 2,
@@ -881,7 +835,7 @@
                 "description": [],
                 "rules": []
             }
-        },        
+        },
         "T-003": {
             "id": "T-003",
             "name": "GunTank",
@@ -893,8 +847,7 @@
                 "Space",
                 "Earth"
             ],
-            "traits": [
-            ],
+            "traits": [],
             "link": [],
             "ap": 1,
             "hp": 1,
