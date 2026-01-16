@@ -1,45 +1,30 @@
 {
   "description": "st01-015_token_deploy_two_units",
   "gameId": "st01-015_token_deploy_two_units",
-  "testType": "main",
+  "testType": "activated",
   "category": "ST01-015",
   "tags": [
-    "Main",
-    "Token",
-    "Units2"
+    "Activate",
+    "TokenDeploy",
+    "BoardState"
   ],
   "initialGameEnv": {
+    "version": 4,
     "phase": "MAIN_PHASE",
     "playerId_1": "playerId_1",
     "playerId_2": "playerId_2",
     "gameStarted": true,
     "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": false,
     "currentPlayer": "playerId_1",
     "currentTurn": 1,
-    "notificationQueue": [
-      {
-        "id": "card_drawn_1768362880422_3bxbxq5uy",
-        "type": "CARD_DRAWN",
-        "metadata": {
-          "timestamp": 1768362880422,
-          "expiresAt": 1768362883422,
-          "requiresAcknowledgment": false,
-          "priority": "normal"
-        },
-        "payload": {
-          "playerId": "playerId_1",
-          "carduid": "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c",
-          "sourceZone": "deck",
-          "reason": "draw",
-          "timestamp": 1768362880422,
-          "drawContext": "turn_start"
-        }
-      }
-    ],
     "playersReady": {
       "playerId_1": true,
       "playerId_2": true
     },
+    "currentBattle": null,
     "players": {
       "playerId_1": {
         "id": "playerId_1",
@@ -70,9 +55,9 @@
                 "hp": 5,
                 "effects": {
                   "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
-                    "【Activate･Main】【Once per Turn】②：Deploy 1 [Gundam]((White Base Team)･AP3･HP3) Unit token if you have no Units in play, deploy 1 [Guncannon]((White Base Team)･AP2･HP2) Unit token if you have only 1 Unit in play, or deploy 1 [Guntank]((White Base Team)･AP1･HP1) Unit token if you have 2 or more Units in play."
+                    "\u3010Burst\u3011Deploy this card.",
+                    "\u3010Deploy\u3011Add 1 of your Shields to your hand.",
+                    "\u3010Activate\uff65Main\u3011\u3010Once per Turn\u3011\u2461\uff1aDeploy 1 [Gundam]((White Base Team)\uff65AP3\uff65HP3) Unit token if you have no Units in play, deploy 1 [Guncannon]((White Base Team)\uff65AP2\uff65HP2) Unit token if you have only 1 Unit in play, or deploy 1 [Guntank]((White Base Team)\uff65AP1\uff65HP1) Unit token if you have 2 or more Units in play."
                   ],
                   "rules": [
                     {
@@ -101,8 +86,7 @@
                     },
                     {
                       "effectId": "activate_conditional_token_deploy",
-                      "type": "triggered",
-                      "trigger": "PAY_COST",
+                      "type": "activated",
                       "timing": {
                         "windows": [
                           "MAIN_PHASE"
@@ -160,7 +144,11 @@
           "handUids": [
             "ST01-015_00000000-0000-0000-0000-000000000002"
           ],
-          "mainDeck": []
+          "mainDeck": [
+            "ST01-003_00000000-0000-0000-0000-000000000121",
+            "ST01-004_00000000-0000-0000-0000-000000000122",
+            "ST01-005_00000000-0000-0000-0000-000000000123"
+          ]
         },
         "confirmIsRedraw": false,
         "isRedraw": false,
@@ -169,7 +157,7 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "ST01-005_00000000-0000-0000-0000-000000000012",
+              "carduid": "ST01-005_00000000-0000-0000-0000-000000000021",
               "cardId": "ST01-005",
               "cardData": {
                 "id": "ST01-005",
@@ -199,12 +187,28 @@
               "originalAP": 2,
               "originalHP": 2,
               "isFirstPlay": false,
-              "damageReceived": 0
+              "damageReceived": 0,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            },
+            "fieldCardValue": {
+              "totalOriginalAP": 2,
+              "totalOriginalHP": 2,
+              "totalTempModifyAP": 0,
+              "totalTempModifyHP": 0,
+              "totalContinueModifyAP": 0,
+              "totalContinueModifyHP": 0,
+              "totalDamageReceived": 0,
+              "totalAP": 2,
+              "totalHP": 2
             }
           },
           "slot2": {
             "unit": {
-              "carduid": "ST01-004_00000000-0000-0000-0000-000000000013",
+              "carduid": "ST01-004_00000000-0000-0000-0000-000000000022",
               "cardId": "ST01-004",
               "cardData": {
                 "id": "ST01-004",
@@ -228,7 +232,7 @@
                 "hp": 3,
                 "effects": {
                   "description": [
-                    "【Deploy】Choose 1 enemy Unit with 2 or less HP. Rest it."
+                    "\u3010Deploy\u3011Choose 1 enemy Unit with 2 or less HP. Rest it."
                   ],
                   "rules": [
                     {
@@ -253,18 +257,82 @@
               "originalAP": 2,
               "originalHP": 3,
               "isFirstPlay": false,
-              "damageReceived": 0
+              "damageReceived": 0,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            },
+            "fieldCardValue": {
+              "totalOriginalAP": 2,
+              "totalOriginalHP": 3,
+              "totalTempModifyAP": 0,
+              "totalTempModifyHP": 0,
+              "totalContinueModifyAP": 0,
+              "totalContinueModifyHP": 0,
+              "totalDamageReceived": 0,
+              "totalAP": 2,
+              "totalHP": 3
             }
           },
-          "slot3": {},
-          "slot4": {},
-          "slot5": {},
-          "slot6": {},
+          "slot3": {
+            "fieldCardValue": {
+              "totalOriginalAP": 0,
+              "totalOriginalHP": 0,
+              "totalTempModifyAP": 0,
+              "totalTempModifyHP": 0,
+              "totalContinueModifyAP": 0,
+              "totalContinueModifyHP": 0,
+              "totalDamageReceived": 0,
+              "totalAP": 0,
+              "totalHP": 0
+            }
+          },
+          "slot4": {
+            "fieldCardValue": {
+              "totalOriginalAP": 0,
+              "totalOriginalHP": 0,
+              "totalTempModifyAP": 0,
+              "totalTempModifyHP": 0,
+              "totalContinueModifyAP": 0,
+              "totalContinueModifyHP": 0,
+              "totalDamageReceived": 0,
+              "totalAP": 0,
+              "totalHP": 0
+            }
+          },
+          "slot5": {
+            "fieldCardValue": {
+              "totalOriginalAP": 0,
+              "totalOriginalHP": 0,
+              "totalTempModifyAP": 0,
+              "totalTempModifyHP": 0,
+              "totalContinueModifyAP": 0,
+              "totalContinueModifyHP": 0,
+              "totalDamageReceived": 0,
+              "totalAP": 0,
+              "totalHP": 0
+            }
+          },
+          "slot6": {
+            "fieldCardValue": {
+              "totalOriginalAP": 0,
+              "totalOriginalHP": 0,
+              "totalTempModifyAP": 0,
+              "totalTempModifyHP": 0,
+              "totalContinueModifyAP": 0,
+              "totalContinueModifyHP": 0,
+              "totalDamageReceived": 0,
+              "totalAP": 0,
+              "totalHP": 0
+            }
+          },
           "base": [],
           "shieldArea": [],
           "energyArea": [
             {
-              "carduid": "energy_basic_test_1",
+              "carduid": "energy_basic_p1_1",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -275,7 +343,7 @@
               }
             },
             {
-              "carduid": "energy_basic_test_2",
+              "carduid": "energy_basic_p1_2",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -286,7 +354,7 @@
               }
             },
             {
-              "carduid": "energy_basic_test_3",
+              "carduid": "energy_basic_p1_3",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -297,7 +365,7 @@
               }
             },
             {
-              "carduid": "energy_basic_test_4",
+              "carduid": "energy_basic_p1_4",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -309,8 +377,9 @@
             }
           ],
           "trashArea": [],
-          "repairAbilitiesCheckedThisCycle": false
-        }
+          "repairAbilitiesCheckedThisCycle": true
+        },
+        "effectRegistry": {}
       },
       "playerId_2": {
         "id": "playerId_2",
@@ -318,26 +387,150 @@
         "deck": {
           "hand": [],
           "handUids": [],
-          "mainDeck": []
+          "mainDeck": [
+            "ST01-003_00000000-0000-0000-0000-000000000221",
+            "ST01-004_00000000-0000-0000-0000-000000000222",
+            "ST01-005_00000000-0000-0000-0000-000000000223"
+          ]
         },
         "confirmIsRedraw": false,
         "isRedraw": false,
         "playerPoint": 0,
         "isReady": true,
         "zones": {
-          "slot1": {},
-          "slot2": {},
-          "slot3": {},
-          "slot4": {},
-          "slot5": {},
-          "slot6": {},
+          "slot1": {
+            "fieldCardValue": {
+              "totalOriginalAP": 0,
+              "totalOriginalHP": 0,
+              "totalTempModifyAP": 0,
+              "totalTempModifyHP": 0,
+              "totalContinueModifyAP": 0,
+              "totalContinueModifyHP": 0,
+              "totalDamageReceived": 0,
+              "totalAP": 0,
+              "totalHP": 0
+            }
+          },
+          "slot2": {
+            "fieldCardValue": {
+              "totalOriginalAP": 0,
+              "totalOriginalHP": 0,
+              "totalTempModifyAP": 0,
+              "totalTempModifyHP": 0,
+              "totalContinueModifyAP": 0,
+              "totalContinueModifyHP": 0,
+              "totalDamageReceived": 0,
+              "totalAP": 0,
+              "totalHP": 0
+            }
+          },
+          "slot3": {
+            "fieldCardValue": {
+              "totalOriginalAP": 0,
+              "totalOriginalHP": 0,
+              "totalTempModifyAP": 0,
+              "totalTempModifyHP": 0,
+              "totalContinueModifyAP": 0,
+              "totalContinueModifyHP": 0,
+              "totalDamageReceived": 0,
+              "totalAP": 0,
+              "totalHP": 0
+            }
+          },
+          "slot4": {
+            "fieldCardValue": {
+              "totalOriginalAP": 0,
+              "totalOriginalHP": 0,
+              "totalTempModifyAP": 0,
+              "totalTempModifyHP": 0,
+              "totalContinueModifyAP": 0,
+              "totalContinueModifyHP": 0,
+              "totalDamageReceived": 0,
+              "totalAP": 0,
+              "totalHP": 0
+            }
+          },
+          "slot5": {
+            "fieldCardValue": {
+              "totalOriginalAP": 0,
+              "totalOriginalHP": 0,
+              "totalTempModifyAP": 0,
+              "totalTempModifyHP": 0,
+              "totalContinueModifyAP": 0,
+              "totalContinueModifyHP": 0,
+              "totalDamageReceived": 0,
+              "totalAP": 0,
+              "totalHP": 0
+            }
+          },
+          "slot6": {
+            "fieldCardValue": {
+              "totalOriginalAP": 0,
+              "totalOriginalHP": 0,
+              "totalTempModifyAP": 0,
+              "totalTempModifyHP": 0,
+              "totalContinueModifyAP": 0,
+              "totalContinueModifyHP": 0,
+              "totalDamageReceived": 0,
+              "totalAP": 0,
+              "totalHP": 0
+            }
+          },
           "base": [],
           "shieldArea": [],
-          "energyArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_p2_1",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_p2_2",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            }
+          ],
           "trashArea": [],
-          "repairAbilitiesCheckedThisCycle": false
+          "repairAbilitiesCheckedThisCycle": true
+        },
+        "effectRegistry": {}
+      }
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_3bxbxq5uy",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
         }
       }
-    }
+    ],
+    "lastEventId": 0
   }
 }
