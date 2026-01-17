@@ -108,7 +108,7 @@ function calculateCardBreakdown(card: UnitZoneCard | PilotZoneCard | BaseCard | 
         ? 0
         : resolveBaseStat('damageReceived' in card ? (card as any).damageReceived : undefined, 0);
 
-    const totalAP = originalAP + continueAP + tempAP;
+    const totalAP = Math.max(0, originalAP + continueAP + tempAP);
     const totalHP = Math.max(0, originalHP + continueHP + tempHP - damageReceived);
 
     return {
