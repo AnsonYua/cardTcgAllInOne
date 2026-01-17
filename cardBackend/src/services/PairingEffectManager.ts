@@ -6,12 +6,12 @@ import { DeployTargetManager } from './DeployTargetManager';
 import { EffectExecutor } from './effects/EffectExecutor';
 import {
     PlayCardEventData,
-    EventFactory,
     PairingEffectEvent,
     PairingEffectEventData,
     PairingEffectDefinition,
     TargetFilters
 } from './EventQueue/interfaces/GameEvent';
+import { EventFactory } from './EventQueue/EventFactory';
 
 // Import standardized interfaces
 import {

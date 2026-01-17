@@ -11,7 +11,6 @@
 
 import { GameEnvironment } from '../models/GameEnvironment';
 import {
-    EventFactory,
     EventStatus,
     EffectDefinition,
     TargetChoiceEvent,
@@ -21,6 +20,7 @@ import {
     TargetScope,
     TargetType
 } from './EventQueue/interfaces/GameEvent';
+import { EventFactory } from './EventQueue/EventFactory';
 import { SLOT_ZONES } from '../config/gameConstants';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { UnitZoneCard, PilotZoneCard } from '../models/CardSystem';

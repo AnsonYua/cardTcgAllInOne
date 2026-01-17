@@ -13,6 +13,7 @@ import { BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent, TargetRe
 import { PlayerAction } from '../models/EventInterfaces';
 import { StaticEventProcessor } from './StaticEventProcessor';
 import { GameNotificationManager } from './GameNotificationManager';
+import { ChoiceNotificationEmitter } from './notifications/ChoiceNotificationEmitter';
 import { processAction } from './actions/ActionProcessor';
 
 // ============ TYPE DEFINITIONS ============
@@ -940,6 +941,14 @@ export class GameLogic {
             (event.data as Record<string, unknown>)['confirmedAt'] = Date.now();
             
             console.log(`🎯 Event ${eventId} updated with user choice: ${confirmed ? 'ACTIVATE' : 'DECLINE'}`);
+            console.log('📋 Queue before burst reorder:', gameEnv.processingQueue.map(evt => evt.id));
+            
+            // Ensure the burst event is processed next by moving it to the front of the queue
+            const removed = gameEnv.dequeueFromProcessing(event);
+            if (removed) {
+                gameEnv.processingQueue.unshift(event);
+            }
+            console.log('📋 Queue after burst reorder:', gameEnv.processingQueue.map(evt => evt.id));
             
             // Process events - the RESOLVING event will be handled by GameEngine
             const processingResult = await gameEnv.processEvents();
@@ -1027,6 +1036,7 @@ export class GameLogic {
             // Update event with user selection
             event.data.selectedTargets = selectedTargets;
             event.data.userDecisionMade = true;
+            ChoiceNotificationEmitter.emitTargetChoiceResolved(gameEnv, event);
             
             console.log(`🎯 Event ${eventId} updated with ${selectedTargets.length} selected target(s):`, 
                        selectedTargets.map(t => `${t.carduid} in ${t.zone}`));
@@ -1127,6 +1137,8 @@ export class GameLogic {
 
             event.data.selectedTarget = resolvedTarget;
             event.data.userDecisionMade = true;
+            event.data.userDecision = resolvedTarget ? 'BLOCK' : 'DECLINE';
+            ChoiceNotificationEmitter.emitBlockerChoiceResolved(gameEnv, event, event.data.userDecision);
             event.status = EventStatus.DECLARED;
             console.log('📋 Queue before blocker reorder:', gameEnv.processingQueue.map(evt => evt.id));
 

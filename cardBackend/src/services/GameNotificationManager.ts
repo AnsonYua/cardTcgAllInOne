@@ -78,6 +78,35 @@ export class GameNotificationManager {
     }
 
     /**
+     * Add a notification event with a caller-supplied ID (for alignment with processingQueue events).
+     */
+    addNotificationEventWithId(
+        eventId: string,
+        type: string,
+        payload: NotificationEventData,
+        priority: 'low' | 'normal' | 'high' | 'critical' = 'normal'
+    ): string {
+        this.initializeGameEvents();
+
+        const timestamp = Date.now();
+        const notificationEvent: GameNotificationEvent = {
+            id: eventId,
+            type,
+            metadata: {
+                timestamp,
+                expiresAt: timestamp + this.EVENT_EXPIRY_MS,
+                requiresAcknowledgment: false,
+                priority
+            },
+            payload
+        };
+
+        this.gameEnv.notificationQueue!.push(notificationEvent);
+        console.log(`📨 Added notification event: ${type} (${eventId}) - Priority: ${priority}, Ack: false`);
+        return eventId;
+    }
+
+    /**
      * Emit a phase change notification (no acknowledgment required).
      */
     static emitPhaseChange(

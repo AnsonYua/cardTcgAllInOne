@@ -8,7 +8,7 @@ import {
     EffectDefinition,
     PlayCardEventData
 } from './EventQueue/interfaces/GameEvent';
-import { EventFactory } from './EventQueue/interfaces/GameEvent';
+import { EventFactory } from './EventQueue/EventFactory';
 import { DeployTargetManager, DeployTargetResult } from './DeployTargetManager';
 import { ensureEffectDefaults } from '../utils/EffectNormalizationUtils';
 import { EffectRuleCatalog } from './effects/EffectRuleCatalog';

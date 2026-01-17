@@ -41,6 +41,6 @@ export {
     DamageDealtEvent,
     StateBasedActionEvent,
     EventStatus,
-    EventPriority,
-    EventFactory 
+    EventPriority
 } from './interfaces/GameEvent';
+export { EventFactory } from './EventFactory';

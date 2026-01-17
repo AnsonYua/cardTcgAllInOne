@@ -1,7 +1,8 @@
 // src/services/CardPlayExecutor.ts
 // Orchestrates PLAY_CARD event handling
 
-import { EventFactory, PlayCardEvent, PlayCardEventData } from './EventQueue/interfaces/GameEvent';
+import { PlayCardEvent, PlayCardEventData } from './EventQueue/interfaces/GameEvent';
+import { EventFactory } from './EventQueue/EventFactory';
 import { ExecutionResult } from './ExecutionResult';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { PlayCardPreparationManager, PlayCardPreparationSuccess } from './PlayCardPreparationManager';

@@ -1,7 +1,8 @@
 // src/services/EventQueue/TriggerEngine.ts
 // Reactive event system for triggered abilities and continuous effects
 
-import { GameEvent, EventFactory } from './interfaces/GameEvent';
+import { GameEvent } from './interfaces/GameEvent';
+import { EventFactory } from './EventFactory';
 import { GameEnvironment } from '../../models/GameEnvironment';
 
 // ============ TRIGGER SYSTEM INTERFACES ============

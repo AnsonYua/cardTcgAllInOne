@@ -3,7 +3,8 @@
 
 import { GameEnvironment } from '../models/GameEnvironment';
 import { BattleContext, ForcedTargetSummary } from '../models/BattleContext';
-import { PlayerActionEvent, PlayerActionEventData, EventFactory } from './EventQueue/interfaces/GameEvent';
+import { PlayerActionEvent, PlayerActionEventData } from './EventQueue/interfaces/GameEvent';
+import { EventFactory } from './EventQueue/EventFactory';
 import { ExecutionResult } from './ExecutionResult';
 import { AttackPreparationManager } from './AttackPreparationManager';
 import { PlayerCardManager } from './PlayerCardManager';

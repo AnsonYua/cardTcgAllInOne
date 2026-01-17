@@ -3,11 +3,11 @@
 
 import {
     BurstEffectChoiceEvent,
-    EventFactory,
     EventStatus,
     ShieldCardAttackedEvent,
     EffectDefinition
 } from './EventQueue/interfaces/GameEvent';
+import { EventFactory } from './EventQueue/EventFactory';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { ExecutionResult } from './ExecutionResult';
 import { PlayerCardManager } from './PlayerCardManager';
@@ -15,6 +15,8 @@ import { getCardIdFromUid } from '../utils/CardUtils';
 import { DeployTargetManager } from './DeployTargetManager';
 import { ensureEffectDefaults, resolveEffectActionFromRule } from '../utils/EffectNormalizationUtils';
 import { EffectExecutor } from './effects/EffectExecutor';
+import { ChoiceNotificationEmitter } from './notifications/ChoiceNotificationEmitter';
+import { BurstChoiceService } from './effects/BurstChoiceService';
 
 export interface BurstEffectSummary {
     effectId: string;
@@ -63,13 +65,7 @@ export class BurstEffectManager {
                         sourceZone: 'shieldArea'
                     };
 
-                    const choiceEvent = EventFactory.createBurstEffectChoiceEvent(
-                        defendingPlayerId,
-                        [formattedTarget]
-                    );
-
-                    gameEnv.enqueueForProcessing(choiceEvent);
-                    console.log(`📤 Enqueued burst choice event: ${choiceEvent.id}`);
+                    BurstChoiceService.enqueueBurstChoice(gameEnv, defendingPlayerId, formattedTarget);
                 } else {
                     console.log(`📝 No burst effects found on card ${shieldCardId}`);
 
@@ -123,12 +119,18 @@ export class BurstEffectManager {
             console.log(`🚀 User decided: ${userDecision} for burst choice: ${choiceId}`);
 
             if (userDecision === 'DECLINE') {
-                return this.handleBurstDecline(gameEnv, playerId, target.carduid, target.cardData, target.cardId);
+                const declineResult = this.handleBurstDecline(gameEnv, playerId, target.carduid, target.cardData, target.cardId);
+                BurstChoiceService.restoreBurstCurrentPlayer(gameEnv, event);
+                if (declineResult.success) {
+                    ChoiceNotificationEmitter.emitBurstChoiceResolved(gameEnv, event, 'DECLINE');
+                }
+                return declineResult;
             }
 
             if (userDecision === 'ACTIVATE') {
                 const burstEffects = this.findBurstEffects(target.cardData);
                 if (burstEffects.length === 0) {
+                    BurstChoiceService.restoreBurstCurrentPlayer(gameEnv, event);
                     return {
                         success: false,
                         error: 'No burst effects found on card'
@@ -145,10 +147,13 @@ export class BurstEffectManager {
                 );
 
                 if (!executionResult.success) {
+                    BurstChoiceService.restoreBurstCurrentPlayer(gameEnv, event);
                     return executionResult;
                 }
 
                 console.log(`✅ Burst effect ${burstEffect.type} executed successfully`);
+                BurstChoiceService.restoreBurstCurrentPlayer(gameEnv, event);
+                ChoiceNotificationEmitter.emitBurstChoiceResolved(gameEnv, event, 'ACTIVATE');
                 return { success: true };
             }
 
@@ -409,6 +414,8 @@ export class BurstEffectManager {
         console.log(`🗑️ Card ${cardId || carduid} moved to trash after decline`);
         return { success: true };
     }
+
+
 
     private static executeBurstDeploy(
         gameEnv: GameEnvironment,

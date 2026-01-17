@@ -5,13 +5,14 @@ import { GameEnvironment } from '../models/GameEnvironment';
 import {
     BlockerChoiceEvent,
     PlayerActionEvent,
-    EventFactory,
     TargetReference
 } from './EventQueue/interfaces/GameEvent';
+import { EventFactory } from './EventQueue/EventFactory';
 import { BlockerEffectManager } from './effects/BlockerEffectManager';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { BattlePhaseManager } from './BattlePhaseManager';
 import { ExecutionResult } from './ExecutionResult';
+import { ChoiceNotificationEmitter } from './notifications/ChoiceNotificationEmitter';
 
 export interface BlockerChoiceResult {
     success: boolean;
@@ -71,6 +72,7 @@ export class BlockerChoiceManager {
                 // Add to processing queue for game event processing
                 gameEnv.processingQueue.push(blockerChoiceEvent);
                 gameEnv.enterBlockerPhase();
+                ChoiceNotificationEmitter.emitBlockerChoiceCreated(gameEnv, blockerChoiceEvent);
                 
                 console.log(`🛡️ Created BLOCKER_CHOICE event ${blockerChoiceEvent.id} with ${blockerTargets.length} blocker targets`);
                 return { 

@@ -62,8 +62,8 @@
                 "hp": 0,
                 "effects": {
                   "description": [
-                    "【Burst】Activate this card's 【Main】.",
-                    "【Main】/【Action】Choose 1 enemy Unit. It gets AP-3 during this turn."
+                    "\u3010Burst\u3011Activate this card's \u3010Main\u3011.",
+                    "\u3010Main\u3011/\u3010Action\u3011Choose 1 enemy Unit. It gets AP-3 during this turn."
                   ],
                   "rules": [
                     {
@@ -107,7 +107,11 @@
           "handUids": [
             "ST01-014_00000000-0000-0000-0000-000000000002"
           ],
-          "mainDeck": []
+          "mainDeck": [
+            "ST01-003_00000000-0000-0000-0000-000000000901",
+            "ST01-004_00000000-0000-0000-0000-000000000902",
+            "ST01-005_00000000-0000-0000-0000-000000000903"
+          ]
         },
         "confirmIsRedraw": false,
         "isRedraw": false,
@@ -190,7 +194,11 @@
         "deck": {
           "hand": [],
           "handUids": [],
-          "mainDeck": []
+          "mainDeck": [
+            "ST01-003_00000000-0000-0000-0000-000000000911",
+            "ST01-004_00000000-0000-0000-0000-000000000912",
+            "ST01-005_00000000-0000-0000-0000-000000000913"
+          ]
         },
         "confirmIsRedraw": false,
         "isRedraw": false,
