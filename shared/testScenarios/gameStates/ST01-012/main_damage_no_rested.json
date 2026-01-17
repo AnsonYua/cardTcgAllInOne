@@ -66,8 +66,8 @@
                 "hp": 1,
                 "effects": {
                   "description": [
-                    "【Main】Choose 1 rested enemy Unit. Deal 1 damage to it.",
-                    "【Pilot】[Hayato Kobayashi]"
+                    "\u3010Main\u3011Choose 1 rested enemy Unit. Deal 1 damage to it.",
+                    "\u3010Pilot\u3011[Hayato Kobayashi]"
                   ],
                   "rules": [
                     {
@@ -136,6 +136,17 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_playerId_1_fix_2",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
               "isExtraEnergy": false,
               "cardData": {
                 "cardType": "energy"

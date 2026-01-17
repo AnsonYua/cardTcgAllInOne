@@ -65,8 +65,8 @@
                 "hp": 2,
                 "effects": {
                   "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【Attack】【Once per Turn】Choose 1 of your Resources. Set it as active."
+                    "\u3010Burst\u3011Add this card to your hand.",
+                    "\u3010Attack\u3011\u3010Once per Turn\u3011Choose 1 of your Resources. Set it as active."
                   ],
                   "rules": [
                     {
@@ -146,7 +146,7 @@
                 "hp": 4,
                 "effects": {
                   "description": [
-                    "【When Paired】Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn."
+                    "\u3010When Paired\u3011Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn."
                   ],
                   "rules": [
                     {
@@ -239,6 +239,28 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_playerId_1_fix_3",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_playerId_1_fix_4",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
               "isExtraEnergy": false,
               "cardData": {
                 "cardType": "energy"

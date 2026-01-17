@@ -65,8 +65,8 @@
                 "hp": 0,
                 "effects": {
                   "description": [
-                    "【Main】Choose 1 friendly Unit. It recovers 3 HP.",
-                    "【Pilot】[Kai Shiden]"
+                    "\u3010Main\u3011Choose 1 friendly Unit. It recovers 3 HP.",
+                    "\u3010Pilot\u3011[Kai Shiden]"
                   ],
                   "rules": [
                     {
@@ -134,7 +134,7 @@
                 "effects": {
                   "description": [
                     "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)",
-                    "【During Pair】During your turn, all your Units get AP+1."
+                    "\u3010During Pair\u3011During your turn, all your Units get AP+1."
                   ],
                   "rules": [
                     {
@@ -201,6 +201,28 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_playerId_1_fix_2",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_playerId_1_fix_3",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
               "isExtraEnergy": false,
               "cardData": {
                 "cardType": "energy"

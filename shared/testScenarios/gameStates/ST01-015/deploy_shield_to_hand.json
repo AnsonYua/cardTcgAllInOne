@@ -289,6 +289,17 @@
               "cardData": {
                 "cardType": "energy"
               }
+            },
+            {
+              "carduid": "energy_basic_playerId_1_fix_3",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
             }
           ],
           "trashArea": [],
