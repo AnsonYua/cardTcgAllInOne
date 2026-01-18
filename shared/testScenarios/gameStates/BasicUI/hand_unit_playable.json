@@ -111,7 +111,8 @@
                       "target": {
                         "type": "unit",
                         "scope": "self_all_unit"
-                      }
+                      },
+                      "type": "continuous"
                     }
                   ]
                 }

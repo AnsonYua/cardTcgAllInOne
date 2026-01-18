@@ -165,7 +165,6 @@
                   "rules": [
                     {
                       "effectId": "blocker",
-                      "type": "keyword",
                       "trigger": "ATTACK_REDIRECT",
                       "target": {
                         "type": "unit",
@@ -174,7 +173,8 @@
                       "action": "redirect_attack",
                       "parameters": {
                         "cost": "rest_self"
-                      }
+                      },
+                      "type": "triggered"
                     }
                   ]
                 }

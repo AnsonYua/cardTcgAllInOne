@@ -73,17 +73,16 @@
                   "rules": [
                     {
                       "effectId": "burst_add_to_hand",
-                      "type": "triggered",
                       "trigger": "BURST_CONDITION",
                       "target": {
                         "type": "card",
                         "scope": "self"
                       },
-                      "action": "addToHand"
+                      "action": "addToHand",
+                      "type": "triggered"
                     },
                     {
                       "effectId": "paired_rest_medium_hp",
-                      "type": "triggered",
                       "trigger": "PAIRING_COMPLETE",
                       "target": {
                         "type": "unit",
@@ -93,7 +92,8 @@
                         },
                         "count": 1
                       },
-                      "action": "rest"
+                      "action": "rest",
+                      "type": "triggered"
                     }
                   ]
                 }
@@ -176,7 +176,8 @@
                       "target": {
                         "type": "unit",
                         "scope": "self_all_unit"
-                      }
+                      },
+                      "type": "continuous"
                     }
                   ]
                 }

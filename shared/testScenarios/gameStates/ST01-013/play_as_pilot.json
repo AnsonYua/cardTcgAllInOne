@@ -72,7 +72,11 @@
                     {
                       "effectId": "main_heal_friendly",
                       "type": "play",
-                      "trigger": "ENTERS_PLAY",
+                      "timing": {
+                        "windows": [
+                          "MAIN_PHASE"
+                        ]
+                      },
                       "target": {
                         "type": "unit",
                         "scope": "self",
@@ -90,7 +94,8 @@
                         "pilotName": "Kai Shiden",
                         "AP": 1,
                         "HP": 0
-                      }
+                      },
+                      "type": "special"
                     }
                   ]
                 }
@@ -173,7 +178,8 @@
                       "target": {
                         "type": "unit",
                         "scope": "self_all_unit"
-                      }
+                      },
+                      "type": "continuous"
                     }
                   ]
                 }

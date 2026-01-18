@@ -78,7 +78,8 @@
                         "type": "card",
                         "scope": "self"
                       },
-                      "action": "addToHand"
+                      "action": "addToHand",
+                      "type": "triggered"
                     },
                     {
                       "effectId": "paired_rest_medium_hp",
@@ -91,7 +92,8 @@
                         },
                         "count": 1
                       },
-                      "action": "rest"
+                      "action": "rest",
+                      "type": "triggered"
                     }
                   ]
                 }
@@ -174,7 +176,8 @@
                       "target": {
                         "type": "unit",
                         "scope": "self_all_unit"
-                      }
+                      },
+                      "type": "continuous"
                     }
                   ]
                 }
@@ -217,7 +220,8 @@
                         "type": "card",
                         "scope": "self"
                       },
-                      "action": "addToHand"
+                      "action": "addToHand",
+                      "type": "triggered"
                     },
                     {
                       "effectId": "attack_activate_resource",
@@ -310,7 +314,8 @@
                         "type": "card",
                         "scope": "self"
                       },
-                      "action": "addToHand"
+                      "action": "addToHand",
+                      "type": "triggered"
                     },
                     {
                       "effectId": "paired_rest_medium_hp",
@@ -323,7 +328,8 @@
                         },
                         "count": 1
                       },
-                      "action": "rest"
+                      "action": "rest",
+                      "type": "triggered"
                     }
                   ]
                 }

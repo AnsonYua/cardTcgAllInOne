@@ -72,7 +72,7 @@
               "cardData": {
                 "id": "ST01-014",
                 "name": "Unforeseen Incident",
-                "cardType": "shield",
+                "cardType": "command",
                 "color": "White",
                 "level": 3,
                 "cost": 1,
@@ -89,16 +89,12 @@
                   "rules": [
                     {
                       "effectId": "burst_activate_main",
-                      "type": "triggered",
                       "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
                       "action": "activate_ability",
                       "parameters": {
                         "abilityType": "main"
-                      }
+                      },
+                      "type": "triggered"
                     },
                     {
                       "effectId": "main_action_ap_reduction",
@@ -121,8 +117,7 @@
                       }
                     }
                   ]
-                },
-                "originalCardType": "command"
+                }
               },
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -261,7 +256,8 @@
                         },
                         "count": 1
                       },
-                      "action": "rest"
+                      "action": "rest",
+                      "type": "triggered"
                     }
                   ]
                 }

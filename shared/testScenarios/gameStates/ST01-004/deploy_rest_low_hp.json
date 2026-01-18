@@ -85,7 +85,8 @@
                         },
                         "count": 1
                       },
-                      "action": "rest"
+                      "action": "rest",
+                      "type": "triggered"
                     }
                   ]
                 }

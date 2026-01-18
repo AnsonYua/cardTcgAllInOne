@@ -85,7 +85,8 @@
                         },
                         "count": 1
                       },
-                      "action": "rest"
+                      "action": "rest",
+                      "type": "triggered"
                     }
                   ]
                 }
@@ -228,7 +229,8 @@
                       "target": {
                         "type": "unit",
                         "scope": "self_all_unit"
-                      }
+                      },
+                      "type": "continuous"
                     }
                   ]
                 }

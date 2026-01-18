@@ -242,8 +242,7 @@
               "cardData": {
                 "id": "ST01-005",
                 "name": "GM",
-                "cardType": "shield",
-                "originalCardType": "unit",
+                "cardType": "unit",
                 "color": "Blue",
                 "level": 2,
                 "cost": 1,

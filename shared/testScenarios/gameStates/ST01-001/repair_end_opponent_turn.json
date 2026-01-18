@@ -104,7 +104,6 @@
                     },
                     {
                       "effectId": "pair_ap_boost_all",
-                      "type": "static",
                       "trigger": "continuous",
                       "sourceConditions": [
                         {
@@ -121,12 +120,9 @@
                       },
                       "target": {
                         "type": "unit",
-                        "scope": "self_all_unit",
-                        "count": 1,
-                        "filters": {
-                          "controller": "self"
-                        }
-                      }
+                        "scope": "self_all_unit"
+                      },
+                      "type": "continuous"
                     }
                   ]
                 }

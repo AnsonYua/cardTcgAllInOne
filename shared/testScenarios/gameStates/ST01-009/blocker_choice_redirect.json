@@ -173,11 +173,11 @@
                       "action": "redirect_attack",
                       "parameters": {
                         "cost": "rest_self"
-                      }
+                      },
+                      "type": "triggered"
                     },
                     {
                       "effectId": "attack_restriction",
-                      "type": "static",
                       "trigger": "continuous",
                       "target": {
                         "type": "unit",
@@ -186,7 +186,8 @@
                       "action": "restrict_attack",
                       "parameters": {
                         "restriction": "cannot_attack_player"
-                      }
+                      },
+                      "type": "continuous"
                     }
                   ]
                 }

@@ -93,18 +93,13 @@
                     },
                     {
                       "effectId": "pilot_designation",
-                      "type": "special",
-                      "trigger": "continuous",
-                      "target": {
-                        "type": "pilot",
-                        "scope": "any"
-                      },
                       "action": "designate_pilot",
                       "parameters": {
                         "pilotName": "Hayato Kobayashi",
                         "AP": 0,
                         "HP": 1
-                      }
+                      },
+                      "type": "special"
                     }
                   ]
                 }

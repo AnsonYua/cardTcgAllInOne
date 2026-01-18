@@ -129,8 +129,7 @@
               "cardData": {
                 "id": "ST01-015",
                 "name": "White Base",
-                "cardType": "shield",
-                "originalCardType": "base",
+                "cardType": "base",
                 "color": "Blue",
                 "level": 3,
                 "cost": 2,

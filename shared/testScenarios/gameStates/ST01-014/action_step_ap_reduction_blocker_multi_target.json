@@ -69,16 +69,12 @@
                   "rules": [
                     {
                       "effectId": "burst_activate_main",
-                      "type": "triggered",
                       "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
                       "action": "activate_ability",
                       "parameters": {
                         "abilityType": "main"
-                      }
+                      },
+                      "type": "triggered"
                     },
                     {
                       "effectId": "main_action_ap_reduction",
@@ -292,7 +288,8 @@
                         },
                         "count": 1
                       },
-                      "action": "rest"
+                      "action": "rest",
+                      "type": "triggered"
                     }
                   ]
                 }

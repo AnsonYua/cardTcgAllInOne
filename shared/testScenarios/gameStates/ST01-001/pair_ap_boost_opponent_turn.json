@@ -74,17 +74,16 @@
                   "rules": [
                     {
                       "effectId": "burst_add_to_hand",
-                      "type": "triggered",
                       "trigger": "BURST_CONDITION",
                       "target": {
                         "type": "card",
                         "scope": "self"
                       },
-                      "action": "addToHand"
+                      "action": "addToHand",
+                      "type": "triggered"
                     },
                     {
                       "effectId": "paired_rest_medium_hp",
-                      "type": "triggered",
                       "trigger": "PAIRING_COMPLETE",
                       "target": {
                         "type": "unit",
@@ -94,7 +93,8 @@
                         },
                         "count": 1
                       },
-                      "action": "rest"
+                      "action": "rest",
+                      "type": "triggered"
                     }
                   ]
                 }
@@ -160,7 +160,6 @@
                     },
                     {
                       "effectId": "pair_ap_boost_all",
-                      "type": "static",
                       "trigger": "continuous",
                       "sourceConditions": [
                         {
@@ -177,12 +176,9 @@
                       },
                       "target": {
                         "type": "unit",
-                        "scope": "self_all_unit",
-                        "count": 1,
-                        "filters": {
-                          "controller": "self"
-                        }
-                      }
+                        "scope": "self_all_unit"
+                      },
+                      "type": "continuous"
                     }
                   ]
                 }
@@ -329,7 +325,6 @@
                   "rules": [
                     {
                       "effectId": "blocker",
-                      "type": "keyword",
                       "trigger": "ATTACK_REDIRECT",
                       "target": {
                         "type": "unit",
@@ -338,11 +333,11 @@
                       "action": "redirect_attack",
                       "parameters": {
                         "cost": "rest_self"
-                      }
+                      },
+                      "type": "triggered"
                     },
                     {
                       "effectId": "attack_restriction",
-                      "type": "static",
                       "trigger": "continuous",
                       "target": {
                         "type": "unit",
@@ -351,7 +346,8 @@
                       "action": "restrict_attack",
                       "parameters": {
                         "restriction": "cannot_attack_player"
-                      }
+                      },
+                      "type": "continuous"
                     }
                   ]
                 }

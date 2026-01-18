@@ -68,16 +68,12 @@
                   "rules": [
                     {
                       "effectId": "burst_activate_main",
-                      "type": "triggered",
                       "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
                       "action": "activate_ability",
                       "parameters": {
                         "abilityType": "main"
-                      }
+                      },
+                      "type": "triggered"
                     },
                     {
                       "effectId": "main_action_ap_reduction",
@@ -216,7 +212,8 @@
                       "target": {
                         "type": "unit",
                         "scope": "self_all_unit"
-                      }
+                      },
+                      "type": "continuous"
                     }
                   ]
                 }
@@ -271,7 +268,8 @@
                       },
                       "target": {
                         "scope": "self"
-                      }
+                      },
+                      "type": "triggered"
                     }
                   ]
                 }
@@ -353,7 +351,8 @@
                         },
                         "count": 1
                       },
-                      "action": "rest"
+                      "action": "rest",
+                      "type": "triggered"
                     }
                   ]
                 }
@@ -437,7 +436,8 @@
                       },
                       "timing": {
                         "duration": "UNTIL_END_OF_TURN"
-                      }
+                      },
+                      "type": "triggered"
                     }
                   ]
                 }
@@ -514,7 +514,8 @@
                       "action": "redirect_attack",
                       "parameters": {
                         "cost": "rest_self"
-                      }
+                      },
+                      "type": "triggered"
                     }
                   ]
                 }
@@ -560,7 +561,8 @@
                       "action": "redirect_attack",
                       "parameters": {
                         "cost": "rest_self"
-                      }
+                      },
+                      "type": "triggered"
                     },
                     {
                       "effectId": "attack_restriction",
@@ -572,7 +574,8 @@
                       "action": "restrict_attack",
                       "parameters": {
                         "restriction": "cannot_attack_player"
-                      }
+                      },
+                      "type": "continuous"
                     }
                   ]
                 }
@@ -614,7 +617,8 @@
                         "type": "card",
                         "scope": "self"
                       },
-                      "action": "addToHand"
+                      "action": "addToHand",
+                      "type": "triggered"
                     },
                     {
                       "effectId": "paired_rest_medium_hp",
@@ -627,7 +631,8 @@
                         },
                         "count": 1
                       },
-                      "action": "rest"
+                      "action": "rest",
+                      "type": "triggered"
                     }
                   ]
                 }
@@ -667,7 +672,8 @@
                         "type": "card",
                         "scope": "self"
                       },
-                      "action": "addToHand"
+                      "action": "addToHand",
+                      "type": "triggered"
                     },
                     {
                       "effectId": "attack_activate_resource",
@@ -747,7 +753,8 @@
                         "pilotName": "Hayato Kobayashi",
                         "AP": 0,
                         "HP": 1
-                      }
+                      },
+                      "type": "special"
                     }
                   ]
                 }
@@ -887,7 +894,8 @@
                       "target": {
                         "type": "unit",
                         "scope": "self_all_unit"
-                      }
+                      },
+                      "type": "continuous"
                     }
                   ]
                 }
@@ -942,7 +950,8 @@
                       },
                       "target": {
                         "scope": "self"
-                      }
+                      },
+                      "type": "triggered"
                     }
                   ]
                 }
@@ -1024,7 +1033,8 @@
                         },
                         "count": 1
                       },
-                      "action": "rest"
+                      "action": "rest",
+                      "type": "triggered"
                     }
                   ]
                 }
@@ -1108,7 +1118,8 @@
                       },
                       "timing": {
                         "duration": "UNTIL_END_OF_TURN"
-                      }
+                      },
+                      "type": "triggered"
                     }
                   ]
                 }
@@ -1185,7 +1196,8 @@
                       "action": "redirect_attack",
                       "parameters": {
                         "cost": "rest_self"
-                      }
+                      },
+                      "type": "triggered"
                     }
                   ]
                 }
@@ -1231,7 +1243,8 @@
                       "action": "redirect_attack",
                       "parameters": {
                         "cost": "rest_self"
-                      }
+                      },
+                      "type": "triggered"
                     },
                     {
                       "effectId": "attack_restriction",
@@ -1243,7 +1256,8 @@
                       "action": "restrict_attack",
                       "parameters": {
                         "restriction": "cannot_attack_player"
-                      }
+                      },
+                      "type": "continuous"
                     }
                   ]
                 }
@@ -1285,7 +1299,8 @@
                         "type": "card",
                         "scope": "self"
                       },
-                      "action": "addToHand"
+                      "action": "addToHand",
+                      "type": "triggered"
                     },
                     {
                       "effectId": "paired_rest_medium_hp",
@@ -1298,7 +1313,8 @@
                         },
                         "count": 1
                       },
-                      "action": "rest"
+                      "action": "rest",
+                      "type": "triggered"
                     }
                   ]
                 }
@@ -1338,7 +1354,8 @@
                         "type": "card",
                         "scope": "self"
                       },
-                      "action": "addToHand"
+                      "action": "addToHand",
+                      "type": "triggered"
                     },
                     {
                       "effectId": "attack_activate_resource",
@@ -1418,7 +1435,8 @@
                         "pilotName": "Hayato Kobayashi",
                         "AP": 0,
                         "HP": 1
-                      }
+                      },
+                      "type": "special"
                     }
                   ]
                 }

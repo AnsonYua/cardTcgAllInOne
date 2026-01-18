@@ -98,7 +98,8 @@
                         "pilotName": "Hayato Kobayashi",
                         "AP": 0,
                         "HP": 1
-                      }
+                      },
+                      "type": "special"
                     }
                   ]
                 }
