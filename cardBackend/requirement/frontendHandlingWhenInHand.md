@@ -58,10 +58,10 @@ Review all card effect,(also with supplement information of test case under requ
     Show Activate button only if:
 
     - Current phase is included in rule.timing.windows
-    - Costs are payable:
-        - rule.cost.resource <= active energy
-        - rule.cost.tap/rest available (e.g., base not rested if rest: "self")
-        - rule.cost.oncePerTurn not yet used
+  - Costs are payable:
+      - rule.cost.resource <= active energy
+      - rule.cost.tap/rest available (e.g., base not rested if rest: "self")
+      - rule.cost.oncePerTurn not yet used
     - If a target exists, there is at least one valid target
 
     If multiple valid targets exist, expect TARGET_CHOICE after activation.
@@ -81,10 +81,11 @@ Review all card effect,(also with supplement information of test case under requ
         - If unit or base: continue.
     2. Collect activated rules:
         - rules.filter(r => r.type === 'activated')
-    3. For each rule, compute canActivate:
-        - phaseOk = rule.timing.windows.includes(gameEnv.phase)
-        - energyOk = !rule.cost?.resource || activeEnergy >= rule.cost.resource
-        - restOk = !(rule.cost?.rest === 'self') || card.isRested === false
+  3. For each rule, compute canActivate:
+      - phaseOk = rule.timing.windows.includes(gameEnv.phase)
+      - energyOk = !rule.cost?.resource || activeEnergy >= rule.cost.resource
+      - restOk = !(rule.cost?.rest === 'self') || card.isRested === false
+        (if the cost requires resting self, hide/disable Activate when the base is already rested)
         - onceOk = !rule.cost?.oncePerTurn || !card.usedThisTurn?.[rule.effectId]
             (use your existing “once per turn” flag location in gameEnv)
         - targetOk = !rule.target || hasValidTargets(rule.target, gameEnv)

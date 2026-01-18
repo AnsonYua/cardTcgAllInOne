@@ -14,6 +14,7 @@ import { PlayerCardManager } from './PlayerCardManager';
 import { getCardIdFromUid } from '../utils/CardUtils';
 import { DeployTargetManager } from './DeployTargetManager';
 import { ensureEffectDefaults, resolveEffectActionFromRule } from '../utils/EffectNormalizationUtils';
+import { isPlayOrActivatedEffect } from '../utils/EffectTypeRouter';
 import { EffectExecutor } from './effects/EffectExecutor';
 import { ChoiceNotificationEmitter } from './notifications/ChoiceNotificationEmitter';
 import { BurstChoiceService } from './effects/BurstChoiceService';
@@ -235,9 +236,7 @@ export class BurstEffectManager {
         console.log(`✨ Executing burst ability activation (${abilityType}) for card ${carduid}`);
 
         const effects = Array.isArray(cardData?.effects?.rules) ? cardData.effects.rules : [];
-        const activatedEffects = effects.filter((rule: EffectDefinition) =>
-            rule.type === 'activated' || rule.type === 'play'
-        );
+        const activatedEffects = effects.filter((rule: EffectDefinition) => isPlayOrActivatedEffect(rule));
 
         if (activatedEffects.length === 0) {
             return {

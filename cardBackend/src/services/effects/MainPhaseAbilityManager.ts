@@ -10,6 +10,7 @@ import { PlayerCardManager } from '../PlayerCardManager';
 import { EnergyManager, EnergyCheckResult } from '../EnergyManager';
 import { EffectDefinition, PlayerActionEvent, PlayerActionEventData, TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { ensureEffectDefaults, validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
+import { isPlayOrActivatedEffect } from '../../utils/EffectTypeRouter';
 import { EffectExecutor } from './EffectExecutor';
 import { ExecutionResult } from '../ExecutionResult';
 import { BattlePhaseManager } from '../BattlePhaseManager';
@@ -227,7 +228,7 @@ export class MainPhaseAbilityManager {
         }
 
         return effects.find(effect => {
-            if (effect.type !== 'play' && effect.type !== 'activated') {
+            if (!isPlayOrActivatedEffect(effect)) {
                 return false;
             }
 

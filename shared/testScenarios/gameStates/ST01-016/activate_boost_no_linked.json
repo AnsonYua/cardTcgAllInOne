@@ -1,0 +1,254 @@
+{
+  "description": "st01-016_activate_boost_no_linked",
+  "gameId": "st01-016_activate_boost_no_linked",
+  "testType": "main",
+  "category": "ST01-016",
+  "tags": [
+    "Activate",
+    "ModifyAP",
+    "NoLinked"
+  ],
+  "initialGameEnv": {
+    "version": 4,
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": false,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "currentBattle": null,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_3bxbxq5uy",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": [
+            "ST01-003_00000000-0000-0000-0000-000000000901",
+            "ST01-004_00000000-0000-0000-0000-000000000902",
+            "ST01-005_00000000-0000-0000-0000-000000000903"
+          ]
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST01-005_unit_0002",
+              "cardId": "ST01-005",
+              "cardData": {
+                "id": "ST01-005",
+                "name": "GM",
+                "cardType": "unit",
+                "color": "Blue",
+                "level": 2,
+                "cost": 1,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Earth Federation"
+                ],
+                "link": [],
+                "ap": 2,
+                "hp": 2,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "originalAP": 2,
+              "originalHP": 2,
+              "isFirstPlay": false,
+              "damageReceived": 0
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [
+            {
+              "carduid": "ST01-016_base_0002",
+              "cardId": "ST01-016",
+              "cardData": {
+                "id": "ST01-016",
+                "name": "Asticassia School of Technology, Earth House",
+                "cardType": "base",
+                "color": "White",
+                "level": 2,
+                "cost": 1,
+                "zone": [
+                  "Space"
+                ],
+                "traits": [
+                  "Academy",
+                  "Stronghold"
+                ],
+                "link": [],
+                "ap": 0,
+                "hp": 5,
+                "effects": {
+                  "description": [
+                    "\u3010Burst\u3011Deploy this card.",
+                    "\u3010Deploy\u3011Add 1 of your Shields to your hand.",
+                    "\u3010Activate\uff65Main\u3011Rest this Base\uff1aAll friendly Link Units get AP+1 during this turn."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "burst_deploy",
+                      "type": "triggered",
+                      "trigger": "BURST_CONDITION",
+                      "target": {
+                        "type": "card",
+                        "scope": "self"
+                      },
+                      "action": "deploy"
+                    },
+                    {
+                      "effectId": "deploy_shield_to_hand",
+                      "type": "triggered",
+                      "trigger": "ENTERS_PLAY",
+                      "target": {
+                        "type": "card",
+                        "scope": "self_shield"
+                      },
+                      "action": "addToHand",
+                      "parameters": {
+                        "value": 1,
+                        "from": "shield"
+                      }
+                    },
+                    {
+                      "effectId": "activate_boost_link_units",
+                      "type": "activated",
+                      "timing": {
+                        "windows": [
+                          "MAIN_PHASE"
+                        ],
+                        "duration": "UNTIL_END_OF_TURN",
+                        "endOnSourceDestroyed": true
+                      },
+                      "cost": {
+                        "rest": "self"
+                      },
+                      "target": {
+                        "type": "unit",
+                        "scope": "self_all_unit",
+                        "filters": {
+                          "linkStatus": "linked"
+                        },
+                        "count": 6
+                      },
+                      "action": "modifyAP",
+                      "parameters": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "effectUsage": {}
+            }
+          ],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_st01_016_1",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_st01_016_2",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": [
+            "ST01-005_00000000-0000-0000-0000-0000000008_001",
+            "ST01-005_00000000-0000-0000-0000-0000000008_002",
+            "ST01-005_00000000-0000-0000-0000-0000000008_003"
+          ]
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

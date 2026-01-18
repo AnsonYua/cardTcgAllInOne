@@ -8,9 +8,10 @@ import { PlayCardEventData } from './EventQueue/interfaces/GameEvent';
 import { v4 as uuidv4 } from 'uuid';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { getSlotTotals } from '../utils/FieldValueCalculator';
-import { EffectExecutor } from './effects/EffectExecutor';
 import { ContinuousEffectManager } from './ContinuousEffectManager';
 import { GameNotificationManager } from './GameNotificationManager';
+import { BaseLifecycleManager } from './BaseLifecycleManager';
+import { EffectExecutor } from './effects/EffectExecutor';
 
 export interface CardPlacementResult {
     success: boolean;
@@ -75,7 +76,8 @@ export class PlayerCardManager {
                                                  playerId);
 
                 case 'base':
-                    return this.placeBaseCard(player.zones, 
+                    return this.placeBaseCard(gameEnv, 
+                                              player.zones, 
                                               fullCardData, 
                                               eventData.carduid, 
                                               playerId);
@@ -141,7 +143,7 @@ export class PlayerCardManager {
                     return this.placeCommandCard(player.zones, fullCardData, carduid, playerId);
 
                 case 'base':
-                    return this.placeBaseCard(player.zones, fullCardData, carduid, playerId);
+                    return this.placeBaseCard(gameEnv, player.zones, fullCardData, carduid, playerId);
 
                 default:
                     return {
@@ -289,6 +291,7 @@ export class PlayerCardManager {
      * Place base card - replaces existing base or places new one
      */
     private static placeBaseCard(
+        gameEnv: GameEnvironment,
         playerZones: any,
         cardData: any,
         carduid: string,
@@ -300,17 +303,7 @@ export class PlayerCardManager {
             // Check if base[0] exists (base zone is an array)
             if (playerZones.base && playerZones.base.length > 0) {
                 const existingBase = playerZones.base[0];
-                console.log(`🏗️ Existing base found: ${existingBase.carduid}, moving to trash`);
-
-                // Move existing base to trash area
-                if (!playerZones.trashArea) {
-                    playerZones.trashArea = [];
-                }
-                playerZones.trashArea.push(existingBase);
-
-                // Clear the base zone
-                playerZones.base = [];
-                console.log(`🗑️ Moved existing base ${existingBase.carduid} to trash`);
+                BaseLifecycleManager.replaceExistingBase(gameEnv, playerId, existingBase);
             }
 
             // Create new base card using proper BaseCard interface from CardSystem

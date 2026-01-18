@@ -16,6 +16,7 @@ export interface TemporaryEffect {
     duration: string;                   // Effect duration
     appliedTurn: number;                // Which turn this was applied
     appliedBy: string;                  // Which player applied it
+    endOnSourceDestroyed?: boolean;     // Remove early if source leaves play
 }
 
 // ✅ CORRECT EffectRule interface matching actual card data structure from st01Card.json

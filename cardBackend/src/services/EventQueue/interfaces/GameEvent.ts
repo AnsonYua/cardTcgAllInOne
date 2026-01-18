@@ -190,6 +190,7 @@ export interface EffectTiming {
     windows?: string[];
     duration?: string;
     actionTurn?: string;
+    endOnSourceDestroyed?: boolean;
 }
 
 export type EffectCondition = string | Record<string, unknown>;

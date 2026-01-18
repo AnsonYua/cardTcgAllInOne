@@ -28,7 +28,7 @@
             "effects": {
                 "description": [
                     "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)",
-                    "\u3010During Pair\u3011During your turn, all your Units get AP+1."
+                    "【During Pair】During your turn, all your Units get AP+1."
                 ],
                 "rules": [
                     {
@@ -94,7 +94,7 @@
             "hp": 3,
             "effects": {
                 "description": [
-                    "\u3010When Paired\uff65(White Base Team) pilot\u3011Draw 1."
+                    "【When Paired･(White Base Team) pilot】Draw 1."
                 ],
                 "rules": [
                     {
@@ -168,7 +168,7 @@
             "hp": 3,
             "effects": {
                 "description": [
-                    "\u3010Deploy\u3011Choose 1 enemy Unit with 2 or less HP. Rest it."
+                    "【Deploy】Choose 1 enemy Unit with 2 or less HP. Rest it."
                 ],
                 "rules": [
                     {
@@ -231,7 +231,7 @@
             "hp": 4,
             "effects": {
                 "description": [
-                    "\u3010When Paired\u3011Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn."
+                    "【When Paired】Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn."
                 ],
                 "rules": [
                     {
@@ -389,8 +389,8 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "\u3010Burst\u3011Add this card to your hand.",
-                    "\u3010When Paired\u3011Choose 1 enemy Unit with 5 or less HP. Rest it."
+                    "【Burst】Add this card to your hand.",
+                    "【When Paired】Choose 1 enemy Unit with 5 or less HP. Rest it."
                 ],
                 "rules": [
                     {
@@ -436,8 +436,8 @@
             "hp": 2,
             "effects": {
                 "description": [
-                    "\u3010Burst\u3011Add this card to your hand.",
-                    "\u3010Attack\u3011\u3010Once per Turn\u3011Choose 1 of your Resources. Set it as active."
+                    "【Burst】Add this card to your hand.",
+                    "【Attack】【Once per Turn】Choose 1 of your Resources. Set it as active."
                 ],
                 "rules": [
                     {
@@ -488,8 +488,8 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "\u3010Main\u3011Choose 1 rested enemy Unit. Deal 1 damage to it.",
-                    "\u3010Pilot\u3011[Hayato Kobayashi]"
+                    "【Main】Choose 1 rested enemy Unit. Deal 1 damage to it.",
+                    "【Pilot】[Hayato Kobayashi]"
                 ],
                 "rules": [
                     {
@@ -543,8 +543,8 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "\u3010Main\u3011Choose 1 friendly Unit. It recovers 3 HP.",
-                    "\u3010Pilot\u3011[Kai Shiden]"
+                    "【Main】Choose 1 friendly Unit. It recovers 3 HP.",
+                    "【Pilot】[Kai Shiden]"
                 ],
                 "rules": [
                     {
@@ -592,8 +592,8 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "\u3010Burst\u3011Activate this card's \u3010Main\u3011.",
-                    "\u3010Main\u3011/\u3010Action\u3011Choose 1 enemy Unit. It gets AP-3 during this turn."
+                    "【Burst】Activate this card's 【Main】.",
+                    "【Main】/【Action】Choose 1 enemy Unit. It gets AP-3 during this turn."
                 ],
                 "rules": [
                     {
@@ -649,9 +649,9 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "\u3010Burst\u3011Deploy this card.",
-                    "\u3010Deploy\u3011Add 1 of your Shields to your hand.",
-                    "\u3010Activate\uff65Main\u3011\u3010Once per Turn\u3011\u2461\uff1aDeploy 1 [Gundam]((White Base Team)\uff65AP3\uff65HP3) Unit token if you have no Units in play, deploy 1 [Guncannon]((White Base Team)\uff65AP2\uff65HP2) Unit token if you have only 1 Unit in play, or deploy 1 [Guntank]((White Base Team)\uff65AP1\uff65HP1) Unit token if you have 2 or more Units in play."
+                    "【Burst】Deploy this card.",
+                    "【Deploy】Add 1 of your Shields to your hand.",
+                    "【Activate･Main】【Once per Turn】②：Deploy 1 [Gundam]((White Base Team)･AP3･HP3) Unit token if you have no Units in play, deploy 1 [Guncannon]((White Base Team)･AP2･HP2) Unit token if you have only 1 Unit in play, or deploy 1 [Guntank]((White Base Team)･AP1･HP1) Unit token if you have 2 or more Units in play."
                 ],
                 "rules": [
                     {
@@ -752,9 +752,9 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "\u3010Burst\u3011Deploy this card.",
-                    "\u3010Deploy\u3011Add 1 of your Shields to your hand.",
-                    "\u3010Activate\uff65Main\u3011Rest this Base\uff1aAll friendly Link Units get AP+1 during this turn."
+                    "【Burst】Deploy this card.",
+                    "【Deploy】Add 1 of your Shields to your hand.",
+                    "【Activate･Main】Rest this Base：All friendly Link Units get AP+1 during this turn."
                 ],
                 "rules": [
                     {
@@ -788,10 +788,10 @@
                             "windows": [
                                 "MAIN_PHASE"
                             ],
-                            "duration": "UNTIL_END_OF_TURN"
+                            "duration": "UNTIL_END_OF_TURN",
+                            "endOnSourceDestroyed": true
                         },
                         "cost": {
-                            "tap": "self",
                             "rest": "self"
                         },
                         "target": {
@@ -799,7 +799,8 @@
                             "scope": "self_all_unit",
                             "filters": {
                                 "linkStatus": "linked"
-                            }
+                            },
+                            "count": 6
                         },
                         "action": "modifyAP",
                         "parameters": {

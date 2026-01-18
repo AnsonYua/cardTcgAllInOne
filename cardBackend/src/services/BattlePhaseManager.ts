@@ -14,6 +14,7 @@ import { GameNotificationManager } from './GameNotificationManager';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { BlockerChoiceManager } from './BlockerChoiceManager';
 import { AttackPhaseEffectManager } from './effects/AttackPhaseEffectManager';
+import { BaseLifecycleManager } from './BaseLifecycleManager';
 import { Player } from '../models/Player';
 import { calculateSlotFieldValue, calculateBaseFieldValue } from '../utils/FieldValueCalculator';
 
@@ -479,9 +480,7 @@ export class BattlePhaseManager {
 
             let baseDestroyed = false;
             if (remainingHP <= 0) {
-                console.log(`🏰 Base destroyed: ${baseCard.carduid}`);
-                PlayerCardManager.moveCardToTrash(gameEnv, defender.id, baseCard.carduid, baseCard.cardId, baseCard.cardData);
-                defender.zones.base = defender.zones.base.filter((card: any) => card.carduid !== baseCard.carduid);
+                BaseLifecycleManager.destroyBase(gameEnv, defender.id, baseCard);
                 baseDestroyed = true;
             }
 
