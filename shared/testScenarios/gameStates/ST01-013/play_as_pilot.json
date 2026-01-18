@@ -65,8 +65,8 @@
                 "hp": 0,
                 "effects": {
                   "description": [
-                    "\u3010Main\u3011Choose 1 friendly Unit. It recovers 3 HP.",
-                    "\u3010Pilot\u3011[Kai Shiden]"
+                    "【Main】Choose 1 friendly Unit. It recovers 3 HP.",
+                    "【Pilot】[Kai Shiden]"
                   ],
                   "rules": [
                     {
@@ -139,7 +139,7 @@
                 "effects": {
                   "description": [
                     "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)",
-                    "\u3010During Pair\u3011During your turn, all your Units get AP+1."
+                    "【During Pair】During your turn, all your Units get AP+1."
                   ],
                   "rules": [
                     {

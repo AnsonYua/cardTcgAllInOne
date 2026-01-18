@@ -126,9 +126,9 @@
                 "hp": 5,
                 "effects": {
                   "description": [
-                    "\u3010Burst\u3011Deploy this card.",
-                    "\u3010Deploy\u3011Add 1 of your Shields to your hand.",
-                    "\u3010Activate\uff65Main\u3011Rest this Base\uff1aAll friendly Link Units get AP+1 during this turn."
+                    "【Burst】Deploy this card.",
+                    "【Deploy】Add 1 of your Shields to your hand.",
+                    "【Activate･Main】Rest this Base：All friendly Link Units get AP+1 during this turn."
                   ],
                   "rules": [
                     {

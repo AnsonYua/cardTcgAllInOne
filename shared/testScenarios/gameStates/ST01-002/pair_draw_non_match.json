@@ -65,8 +65,8 @@
                 "hp": 2,
                 "effects": {
                   "description": [
-                    "\u3010Burst\u3011Add this card to your hand.",
-                    "\u3010Attack\u3011\u3010Once per Turn\u3011Choose 1 of your Resources. Set it as active."
+                    "【Burst】Add this card to your hand.",
+                    "【Attack】【Once per Turn】Choose 1 of your Resources. Set it as active."
                   ],
                   "rules": [
                     {
@@ -131,7 +131,7 @@
                 "hp": 3,
                 "effects": {
                   "description": [
-                    "\u3010Deploy\u3011Choose 1 enemy Unit with 2 or less HP. Rest it."
+                    "【Deploy】Choose 1 enemy Unit with 2 or less HP. Rest it."
                   ],
                   "rules": [
                     {
@@ -184,7 +184,7 @@
                 "hp": 3,
                 "effects": {
                   "description": [
-                    "\u3010When Paired\uff65(White Base Team) pilot\u3011Draw 1."
+                    "【When Paired･(White Base Team) pilot】Draw 1."
                   ],
                   "rules": [
                     {

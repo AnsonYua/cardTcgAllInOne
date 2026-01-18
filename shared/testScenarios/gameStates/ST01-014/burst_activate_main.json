@@ -82,8 +82,8 @@
                 "hp": 0,
                 "effects": {
                   "description": [
-                    "\u3010Burst\u3011Activate this card's \u3010Main\u3011.",
-                    "\u3010Main\u3011/\u3010Action\u3011Choose 1 enemy Unit. It gets AP-3 during this turn."
+                    "【Burst】Activate this card's 【Main】.",
+                    "【Main】/【Action】Choose 1 enemy Unit. It gets AP-3 during this turn."
                   ],
                   "rules": [
                     {

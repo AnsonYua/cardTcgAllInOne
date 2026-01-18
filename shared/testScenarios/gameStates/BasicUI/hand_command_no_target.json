@@ -66,8 +66,8 @@
                 "hp": 1,
                 "effects": {
                   "description": [
-                    "\u3010Main\u3011Choose 1 rested enemy Unit. Deal 1 damage to it.",
-                    "\u3010Pilot\u3011[Hayato Kobayashi]"
+                    "【Main】Choose 1 rested enemy Unit. Deal 1 damage to it.",
+                    "【Pilot】[Hayato Kobayashi]"
                   ],
                   "rules": [
                     {

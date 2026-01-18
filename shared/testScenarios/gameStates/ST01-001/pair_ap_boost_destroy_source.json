@@ -68,8 +68,8 @@
                 "hp": 1,
                 "effects": {
                   "description": [
-                    "\u3010Burst\u3011Add this card to your hand.",
-                    "\u3010When Paired\u3011Choose 1 enemy Unit with 5 or less HP. Rest it."
+                    "【Burst】Add this card to your hand.",
+                    "【When Paired】Choose 1 enemy Unit with 5 or less HP. Rest it."
                   ],
                   "rules": [
                     {
@@ -138,7 +138,7 @@
                 "effects": {
                   "description": [
                     "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)",
-                    "\u3010During Pair\u3011During your turn, all your Units get AP+1."
+                    "【During Pair】During your turn, all your Units get AP+1."
                   ],
                   "rules": [
                     {
@@ -321,7 +321,7 @@
                 "hp": 4,
                 "effects": {
                   "description": [
-                    "\u3010When Paired\u3011Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn."
+                    "【When Paired】Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn."
                   ],
                   "rules": [
                     {
@@ -374,8 +374,8 @@
                 "hp": 2,
                 "effects": {
                   "description": [
-                    "\u3010Burst\u3011Add this card to your hand.",
-                    "\u3010Attack\u3011\u3010Once per Turn\u3011Choose 1 of your Resources. Set it as active."
+                    "【Burst】Add this card to your hand.",
+                    "【Attack】【Once per Turn】Choose 1 of your Resources. Set it as active."
                   ],
                   "rules": [
                     {

@@ -88,7 +88,7 @@
                 "hp": 4,
                 "effects": {
                   "description": [
-                    "\u3010When Paired\u3011Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn."
+                    "【When Paired】Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn."
                   ],
                   "rules": [
                     {
@@ -141,8 +141,8 @@
                 "hp": 2,
                 "effects": {
                   "description": [
-                    "\u3010Burst\u3011Add this card to your hand.",
-                    "\u3010Attack\u3011\u3010Once per Turn\u3011Choose 1 of your Resources. Set it as active."
+                    "【Burst】Add this card to your hand.",
+                    "【Attack】【Once per Turn】Choose 1 of your Resources. Set it as active."
                   ],
                   "rules": [
                     {
@@ -209,9 +209,9 @@
                 "hp": 5,
                 "effects": {
                   "description": [
-                    "\u3010Burst\u3011Deploy this card.",
-                    "\u3010Deploy\u3011Add 1 of your Shields to your hand.",
-                    "\u3010Activate\uff65Main\u3011Rest this Base\uff1aAll friendly Link Units get AP+1 during this turn."
+                    "【Burst】Deploy this card.",
+                    "【Deploy】Add 1 of your Shields to your hand.",
+                    "【Activate･Main】Rest this Base：All friendly Link Units get AP+1 during this turn."
                   ],
                   "rules": [
                     {

@@ -81,8 +81,8 @@
                 "hp": 2,
                 "effects": {
                   "description": [
-                    "\u3010Burst\u3011Add this card to your hand.",
-                    "\u3010Attack\u3011\u3010Once per Turn\u3011Choose 1 of your Resources. Set it as active."
+                    "【Burst】Add this card to your hand.",
+                    "【Attack】【Once per Turn】Choose 1 of your Resources. Set it as active."
                   ],
                   "rules": [
                     {

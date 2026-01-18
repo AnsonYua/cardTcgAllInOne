@@ -82,7 +82,7 @@
                 "effects": {
                   "description": [
                     "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)",
-                    "\u3010During Pair\u3011During your turn, all your Units get AP+1."
+                    "【During Pair】During your turn, all your Units get AP+1."
                   ],
                   "rules": [
                     {
