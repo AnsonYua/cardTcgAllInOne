@@ -124,7 +124,7 @@ export default class CardActionRegistry {
         );
 
         return effects.filter(effect => {
-            if (!effect || effect.type !== 'activated') {
+            if (!effect || (effect.type !== 'play' && effect.type !== 'activated')) {
                 return false;
             }
 
@@ -261,7 +261,7 @@ export default class CardActionRegistry {
         const primaryEffect = usableEffects[0];
         const actions = [
             {
-                action: 'activateBaseAbility',
+                action: 'activateCardAbility',
                 text: '发动基地能力',
                 primary: true,
                 effectData: primaryEffect,
@@ -437,7 +437,7 @@ export default class CardActionRegistry {
             ...this.getBaseActionsForType('command'),
             ...this.getBaseActionsForType('base'),
             { action: 'activate-effect', text: 'Activate Effect', color: 0xe67e22 },
-            { action: 'activateBaseAbility', text: '发动基地能力', color: 0xe67e22 },
+            { action: 'activateCardAbility', text: '发动基地能力', color: 0xe67e22 },
             { action: 'attach-to-unit', text: 'Attach to Unit', color: 0x9b59b6 },
             { action: 'deploy-base', text: 'Deploy Base', color: 0x2ecc71 },
             { action: 'pilot-link', text: 'Pilot Link', color: 0x8e44ad }

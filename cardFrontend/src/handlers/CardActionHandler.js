@@ -53,7 +53,7 @@ export default class CardActionHandler {
                 break;
             
             // Slot-specific actions for bases
-            case 'activateBaseAbility':
+            case 'activateCardAbility':
                 this.handleActivateBaseAbility(selectedCard, effectData);
                 break;
             case 'generateResource':
@@ -600,7 +600,7 @@ export default class CardActionHandler {
         }
 
         const actionData = {
-            actionType: 'activateBaseAbility',
+            actionType: 'activateCardAbility',
             carduid,
             effectId: effect.effectId
         };
@@ -620,11 +620,11 @@ export default class CardActionHandler {
                 this.gameScene.deselectAllCards?.(true);
             } else {
                 const errorMessage = response?.error || '基地能力发动失败';
-                console.error('activateBaseAbility failed:', errorMessage);
+                console.error('activateCardAbility failed:', errorMessage);
                 this.showErrorMessage(errorMessage);
             }
         } catch (error) {
-            console.error('Error calling activateBaseAbility API:', error);
+            console.error('Error calling activateCardAbility API:', error);
             this.showErrorMessage('网络错误，请稍后重试');
         } finally {
             this.setUILoadingState(false);

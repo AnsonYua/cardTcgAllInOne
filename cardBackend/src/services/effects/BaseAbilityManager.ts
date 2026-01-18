@@ -22,7 +22,7 @@ export class BaseAbilityManager {
         console.log(`🏰 Base ability request: player=${actingPlayerId}, fromBurst=${fromBurst}`);
 
         if (!actingPlayerId) {
-            return { success: false, error: 'activateBaseAbility requires playerId' };
+            return { success: false, error: 'activateCardAbility requires playerId' };
         }
 
         const turnCheck = GameActionValidator.ensureTurn(gameEnv, actingPlayerId, fromBurst);
@@ -33,7 +33,7 @@ export class BaseAbilityManager {
         if (!fromBurst && gameEnv.phase !== GamePhase.MAIN_PHASE) {
             return {
                 success: false,
-                error: `activateBaseAbility only available during MAIN_PHASE (current: ${gameEnv.phase})`
+                error: `activateCardAbility only available during MAIN_PHASE (current: ${gameEnv.phase})`
             };
         }
 
@@ -44,7 +44,7 @@ export class BaseAbilityManager {
         if (!baseCarduid) {
             return {
                 success: false,
-                error: 'activateBaseAbility requires carduid'
+                error: 'activateCardAbility requires carduid'
             };
         }
 

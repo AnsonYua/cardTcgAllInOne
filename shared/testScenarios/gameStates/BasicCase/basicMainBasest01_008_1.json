@@ -74,7 +74,7 @@
                 "hp": 3,
                 "effects": {
                   "description": [
-                    "【When Paired･(White Base Team) pilot】Draw 1."
+                    "\u3010When Paired\uff65(White Base Team) pilot\u3011Draw 1."
                   ],
                   "rules": [
                     {
@@ -130,9 +130,9 @@
                 "hp": 5,
                 "effects": {
                   "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
-                    "【Activate･Main】【Once per Turn】②：Deploy 1 [Gundam]((White Base Team)･AP3･HP3) Unit token if you have no Units in play, deploy 1 [Guncannon]((White Base Team)･AP2･HP2) Unit token if you have only 1 Unit in play, or deploy 1 [Guntank]((White Base Team)･AP1･HP1) Unit token if you have 2 or more Units in play."
+                    "\u3010Burst\u3011Deploy this card.",
+                    "\u3010Deploy\u3011Add 1 of your Shields to your hand.",
+                    "\u3010Activate\uff65Main\u3011\u3010Once per Turn\u3011\u2461\uff1aDeploy 1 [Gundam]((White Base Team)\uff65AP3\uff65HP3) Unit token if you have no Units in play, deploy 1 [Guncannon]((White Base Team)\uff65AP2\uff65HP2) Unit token if you have only 1 Unit in play, or deploy 1 [Guntank]((White Base Team)\uff65AP1\uff65HP1) Unit token if you have 2 or more Units in play."
                   ],
                   "rules": [
                     {
@@ -243,9 +243,9 @@
                 "hp": 5,
                 "effects": {
                   "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
-                    "【Activate･Main】Rest this Base：All friendly Link Units get AP+1 during this turn."
+                    "\u3010Burst\u3011Deploy this card.",
+                    "\u3010Deploy\u3011Add 1 of your Shields to your hand.",
+                    "\u3010Activate\uff65Main\u3011Rest this Base\uff1aAll friendly Link Units get AP+1 during this turn."
                   ],
                   "rules": [
                     {
@@ -368,34 +368,34 @@
                 "level": 1,
                 "cost": 1,
                 "zone": [
-                    "Space",
-                    "Earth"
+                  "Space",
+                  "Earth"
                 ],
                 "traits": [
-                    "Academy"
+                  "Academy"
                 ],
                 "link": [],
                 "ap": 1,
                 "hp": 1,
                 "effects": {
-                    "description": [
-                        "<Blocker> (Rest this Unit to change the attack target to it.)"
-                    ],
-                    "rules": [
-                        {
-                            "effectId": "blocker",
-                            "type": "keyword",
-                            "trigger": "ATTACK_REDIRECT",
-                            "target": {
-                                "type": "unit",
-                                "scope": "self"
-                            },
-                            "action": "redirect_attack",
-                            "parameters": {
-                                "cost": "rest_self"
-                            }
-                        }
-                    ]
+                  "description": [
+                    "<Blocker> (Rest this Unit to change the attack target to it.)"
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "blocker",
+                      "type": "keyword",
+                      "trigger": "ATTACK_REDIRECT",
+                      "target": {
+                        "type": "unit",
+                        "scope": "self"
+                      },
+                      "action": "redirect_attack",
+                      "parameters": {
+                        "cost": "rest_self"
+                      }
+                    }
+                  ]
                 }
               },
               "placedAt": 1757865720753,
@@ -503,7 +503,7 @@
                 "hp": 4,
                 "effects": {
                   "description": [
-                    "【When Paired】Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn."
+                    "\u3010When Paired\u3011Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn."
                   ],
                   "rules": [
                     {
@@ -592,13 +592,13 @@
                 "hp": 0,
                 "effects": {
                   "description": [
-                    "【Main】Choose 1 friendly Unit. It recovers 3 HP.",
-                    "【Pilot】[Kai Shiden]"
+                    "\u3010Main\u3011Choose 1 friendly Unit. It recovers 3 HP.",
+                    "\u3010Pilot\u3011[Kai Shiden]"
                   ],
                   "rules": [
                     {
                       "effectId": "main_heal_friendly",
-                      "type": "activated",
+                      "type": "play",
                       "timing": [
                         "MAIN_PHASE"
                       ],
@@ -680,7 +680,7 @@
                 "hp": 3,
                 "effects": {
                   "description": [
-                    "【Deploy】Choose 1 enemy Unit with 2 or less HP. Rest it."
+                    "\u3010Deploy\u3011Choose 1 enemy Unit with 2 or less HP. Rest it."
                   ],
                   "rules": [
                     {
@@ -733,7 +733,7 @@
                 "hp": 4,
                 "effects": {
                   "description": [
-                    "【When Paired】Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn."
+                    "\u3010When Paired\u3011Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn."
                   ],
                   "rules": [
                     {
@@ -852,13 +852,13 @@
                 "hp": 1,
                 "effects": {
                   "description": [
-                    "【Main】Choose 1 rested enemy Unit. Deal 1 damage to it.",
-                    "【Pilot】[Hayato Kobayashi]"
+                    "\u3010Main\u3011Choose 1 rested enemy Unit. Deal 1 damage to it.",
+                    "\u3010Pilot\u3011[Hayato Kobayashi]"
                   ],
                   "rules": [
                     {
                       "effectId": "main_damage_rested",
-                      "type": "activated",
+                      "type": "play",
                       "timing": [
                         "MAIN_PHASE"
                       ],
@@ -989,13 +989,13 @@
                 "hp": 0,
                 "effects": {
                   "description": [
-                    "【Main】Choose 1 friendly Unit. It recovers 3 HP.",
-                    "【Pilot】[Kai Shiden]"
+                    "\u3010Main\u3011Choose 1 friendly Unit. It recovers 3 HP.",
+                    "\u3010Pilot\u3011[Kai Shiden]"
                   ],
                   "rules": [
                     {
                       "effectId": "main_heal_friendly",
-                      "type": "activated",
+                      "type": "play",
                       "timing": [
                         "MAIN_PHASE"
                       ],
@@ -1097,34 +1097,34 @@
               "level": 1,
               "cost": 1,
               "zone": [
-                  "Space",
-                  "Earth"
+                "Space",
+                "Earth"
               ],
               "traits": [
-                  "Academy"
+                "Academy"
               ],
               "link": [],
               "ap": 1,
               "hp": 1,
               "effects": {
-                  "description": [
-                      "<Blocker> (Rest this Unit to change the attack target to it.)"
-                  ],
-                  "rules": [
-                      {
-                          "effectId": "blocker",
-                          "type": "keyword",
-                          "trigger": "ATTACK_REDIRECT",
-                          "target": {
-                              "type": "unit",
-                              "scope": "self"
-                          },
-                          "action": "redirect_attack",
-                          "parameters": {
-                              "cost": "rest_self"
-                          }
-                      }
-                  ]
+                "description": [
+                  "<Blocker> (Rest this Unit to change the attack target to it.)"
+                ],
+                "rules": [
+                  {
+                    "effectId": "blocker",
+                    "type": "keyword",
+                    "trigger": "ATTACK_REDIRECT",
+                    "target": {
+                      "type": "unit",
+                      "scope": "self"
+                    },
+                    "action": "redirect_attack",
+                    "parameters": {
+                      "cost": "rest_self"
+                    }
+                  }
+                ]
               }
             },
             {
@@ -1152,7 +1152,7 @@
                 "hp": 3,
                 "effects": {
                   "description": [
-                    "【Deploy】Choose 1 enemy Unit with 2 or less HP. Rest it."
+                    "\u3010Deploy\u3011Choose 1 enemy Unit with 2 or less HP. Rest it."
                   ],
                   "rules": [
                     {
@@ -1345,8 +1345,8 @@
                 "hp": 2,
                 "effects": {
                   "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【Attack】【Once per Turn】Choose 1 of your Resources. Set it as active."
+                    "\u3010Burst\u3011Add this card to your hand.",
+                    "\u3010Attack\u3011\u3010Once per Turn\u3011Choose 1 of your Resources. Set it as active."
                   ],
                   "rules": [
                     {
@@ -1411,7 +1411,7 @@
                 "effects": {
                   "description": [
                     "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)",
-                    "【During Pair】During your turn, all your Units get AP+1."
+                    "\u3010During Pair\u3011During your turn, all your Units get AP+1."
                   ],
                   "rules": [
                     {
@@ -1480,8 +1480,8 @@
                 "hp": 1,
                 "effects": {
                   "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【When Paired】Choose 1 enemy Unit with 5 or less HP. Rest it."
+                    "\u3010Burst\u3011Add this card to your hand.",
+                    "\u3010When Paired\u3011Choose 1 enemy Unit with 5 or less HP. Rest it."
                   ],
                   "rules": [
                     {
@@ -1538,13 +1538,13 @@
                 "hp": 1,
                 "effects": {
                   "description": [
-                    "【Main】Choose 1 rested enemy Unit. Deal 1 damage to it.",
-                    "【Pilot】[Hayato Kobayashi]"
+                    "\u3010Main\u3011Choose 1 rested enemy Unit. Deal 1 damage to it.",
+                    "\u3010Pilot\u3011[Hayato Kobayashi]"
                   ],
                   "rules": [
                     {
                       "effectId": "main_damage_rested",
-                      "type": "activated",
+                      "type": "play",
                       "timing": [
                         "MAIN_PHASE"
                       ],
@@ -1668,9 +1668,9 @@
                 "hp": 5,
                 "effects": {
                   "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
-                    "【Activate･Main】Rest this Base：All friendly Link Units get AP+1 during this turn."
+                    "\u3010Burst\u3011Deploy this card.",
+                    "\u3010Deploy\u3011Add 1 of your Shields to your hand.",
+                    "\u3010Activate\uff65Main\u3011Rest this Base\uff1aAll friendly Link Units get AP+1 during this turn."
                   ],
                   "rules": [
                     {
@@ -1756,13 +1756,13 @@
                 "hp": 0,
                 "effects": {
                   "description": [
-                    "【Main】Choose 1 friendly Unit. It recovers 3 HP.",
-                    "【Pilot】[Kai Shiden]"
+                    "\u3010Main\u3011Choose 1 friendly Unit. It recovers 3 HP.",
+                    "\u3010Pilot\u3011[Kai Shiden]"
                   ],
                   "rules": [
                     {
                       "effectId": "main_heal_friendly",
-                      "type": "activated",
+                      "type": "play",
                       "timing": [
                         "MAIN_PHASE"
                       ],
@@ -1822,9 +1822,9 @@
                 "hp": 5,
                 "effects": {
                   "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
-                    "【Activate･Main】Rest this Base：All friendly Link Units get AP+1 during this turn."
+                    "\u3010Burst\u3011Deploy this card.",
+                    "\u3010Deploy\u3011Add 1 of your Shields to your hand.",
+                    "\u3010Activate\uff65Main\u3011Rest this Base\uff1aAll friendly Link Units get AP+1 during this turn."
                   ],
                   "rules": [
                     {
@@ -1914,7 +1914,7 @@
                 "hp": 3,
                 "effects": {
                   "description": [
-                    "【When Paired･(White Base Team) pilot】Draw 1."
+                    "\u3010When Paired\uff65(White Base Team) pilot\u3011Draw 1."
                   ],
                   "rules": [
                     {
@@ -2042,9 +2042,9 @@
                 "hp": 5,
                 "effects": {
                   "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
-                    "【Activate･Main】【Once per Turn】②：Deploy 1 [Gundam]((White Base Team)･AP3･HP3) Unit token if you have no Units in play, deploy 1 [Guncannon]((White Base Team)･AP2･HP2) Unit token if you have only 1 Unit in play, or deploy 1 [Guntank]((White Base Team)･AP1･HP1) Unit token if you have 2 or more Units in play."
+                    "\u3010Burst\u3011Deploy this card.",
+                    "\u3010Deploy\u3011Add 1 of your Shields to your hand.",
+                    "\u3010Activate\uff65Main\u3011\u3010Once per Turn\u3011\u2461\uff1aDeploy 1 [Gundam]((White Base Team)\uff65AP3\uff65HP3) Unit token if you have no Units in play, deploy 1 [Guncannon]((White Base Team)\uff65AP2\uff65HP2) Unit token if you have only 1 Unit in play, or deploy 1 [Guntank]((White Base Team)\uff65AP1\uff65HP1) Unit token if you have 2 or more Units in play."
                   ],
                   "rules": [
                     {
@@ -2340,12 +2340,12 @@
           "target": {
             "scope": "SELF",
             "gameTypes": [
-              "右翼",
-              "愛國者"
+              "\u53f3\u7ffc",
+              "\u611b\u570b\u8005"
             ]
           },
           "value": 45,
-          "description": "Trump leader power boost for 右翼/愛國者 cards"
+          "description": "Trump leader power boost for \u53f3\u7ffc/\u611b\u570b\u8005 cards"
         },
         {
           "source": "s-1",
@@ -2353,7 +2353,7 @@
           "target": {
             "scope": "SELF",
             "gameTypes": [
-              "經濟"
+              "\u7d93\u6fdf"
             ]
           },
           "value": 0,
@@ -2365,7 +2365,7 @@
           "target": {
             "scope": "SELF",
             "traits": [
-              "特朗普家族"
+              "\u7279\u6717\u666e\u5bb6\u65cf"
             ]
           },
           "value": 10,
@@ -2404,12 +2404,12 @@
   "cardDefinitions": {
     "c-1": {
       "id": "c-1",
-      "name": "總統特朗普",
+      "name": "\u7e3d\u7d71\u7279\u6717\u666e",
       "cardType": "character",
-      "gameType": "愛國者",
+      "gameType": "\u611b\u570b\u8005",
       "power": 100,
       "traits": [
-        "特朗普家族"
+        "\u7279\u6717\u666e\u5bb6\u65cf"
       ],
       "rarity": "legendary"
     },
@@ -2418,7 +2418,7 @@
       "name": "Make America Great Again",
       "cardType": "help",
       "effects": {
-        "description": "選擇對方一張角色卡，原能力值 變成 0",
+        "description": "\u9078\u64c7\u5c0d\u65b9\u4e00\u5f35\u89d2\u8272\u5361\uff0c\u539f\u80fd\u529b\u503c \u8b8a\u6210 0",
         "rules": [
           {
             "id": "maga_nerf",
@@ -2448,59 +2448,59 @@
     },
     "s-1": {
       "id": "s-1",
-      "name": "特朗普",
+      "name": "\u7279\u6717\u666e",
       "cardType": "leader",
-      "gameType": "右翼",
+      "gameType": "\u53f3\u7ffc",
       "initialPoint": 110,
       "level": 7,
       "rarity": "legendary",
       "zoneCompatibility": {
         "top": [
-          "右翼",
-          "自由",
-          "經濟"
+          "\u53f3\u7ffc",
+          "\u81ea\u7531",
+          "\u7d93\u6fdf"
         ],
         "left": [
-          "右翼",
-          "自由",
-          "愛國者"
+          "\u53f3\u7ffc",
+          "\u81ea\u7531",
+          "\u611b\u570b\u8005"
         ],
         "right": [
-          "右翼",
-          "愛國者",
-          "經濟"
+          "\u53f3\u7ffc",
+          "\u611b\u570b\u8005",
+          "\u7d93\u6fdf"
         ]
       }
     },
     "s-2": {
       "id": "s-2",
-      "name": "拜登",
+      "name": "\u62dc\u767b",
       "cardType": "leader",
-      "gameType": "左翼",
+      "gameType": "\u5de6\u7ffc",
       "initialPoint": 100,
       "level": 7,
       "rarity": "legendary",
       "zoneCompatibility": {
         "top": [
-          "左翼",
-          "自由",
-          "經濟",
-          "右翼",
-          "愛國者"
+          "\u5de6\u7ffc",
+          "\u81ea\u7531",
+          "\u7d93\u6fdf",
+          "\u53f3\u7ffc",
+          "\u611b\u570b\u8005"
         ],
         "left": [
-          "左翼",
-          "自由",
-          "經濟",
-          "右翼",
-          "愛國者"
+          "\u5de6\u7ffc",
+          "\u81ea\u7531",
+          "\u7d93\u6fdf",
+          "\u53f3\u7ffc",
+          "\u611b\u570b\u8005"
         ],
         "right": [
-          "左翼",
-          "自由",
-          "經濟",
-          "右翼",
-          "愛國者"
+          "\u5de6\u7ffc",
+          "\u81ea\u7531",
+          "\u7d93\u6fdf",
+          "\u53f3\u7ffc",
+          "\u611b\u570b\u8005"
         ]
       }
     }

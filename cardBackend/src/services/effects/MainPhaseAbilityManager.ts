@@ -227,7 +227,7 @@ export class MainPhaseAbilityManager {
         }
 
         return effects.find(effect => {
-            if (effect.type !== 'activated') {
+            if (effect.type !== 'play' && effect.type !== 'activated') {
                 return false;
             }
 

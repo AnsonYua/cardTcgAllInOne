@@ -443,7 +443,7 @@ export class GameController {
                 'attackUnit',
                 'attackShieldArea',
                 'useCommandCard',
-                'activateBaseAbility',
+                'activateCardAbility',
                 'resolveBattle',
                 'confirmBattle'
             ];

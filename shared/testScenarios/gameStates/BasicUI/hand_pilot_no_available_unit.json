@@ -1,13 +1,12 @@
 {
-  "description": "st01-001_pair_ap_boost_opponent_turn",
-  "gameId": "st01-001_pair_ap_boost_opponent_turn",
-  "testType": "continuousEffect",
-  "category": "ST01-001",
+  "description": "ui_hand_pilot_no_available_unit",
+  "gameId": "ui_hand_pilot_no_available_unit",
+  "testType": "ui",
+  "category": "BasicUI",
   "tags": [
-    "ContinuousEffect",
-    "Pair",
-    "APBoost",
-    "OpponentTurn"
+    "Hand",
+    "Pilot",
+    "NoAvailableUnit"
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -15,7 +14,7 @@
     "playerId_2": "playerId_2",
     "gameStarted": true,
     "firstPlayer": 0,
-    "currentPlayer": "playerId_2",
+    "currentPlayer": "playerId_1",
     "currentTurn": 1,
     "notificationQueue": [
       {
@@ -28,7 +27,7 @@
           "priority": "normal"
         },
         "payload": {
-          "playerId": "playerId_2",
+          "playerId": "playerId_1",
           "carduid": "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c",
           "sourceZone": "deck",
           "reason": "draw",
@@ -48,7 +47,7 @@
         "deck": {
           "hand": [
             {
-              "carduid": "ST01-010_00000000-0000-0000-0000-000000000002",
+              "carduid": "ST01-010_ui_pilot_0001",
               "cardId": "ST01-010",
               "cardData": {
                 "id": "ST01-010",
@@ -74,7 +73,6 @@
                   "rules": [
                     {
                       "effectId": "burst_add_to_hand",
-                      "type": "triggered",
                       "trigger": "BURST_CONDITION",
                       "target": {
                         "type": "card",
@@ -84,7 +82,6 @@
                     },
                     {
                       "effectId": "paired_rest_medium_hp",
-                      "type": "triggered",
                       "trigger": "PAIRING_COMPLETE",
                       "target": {
                         "type": "unit",
@@ -102,7 +99,7 @@
             }
           ],
           "handUids": [
-            "ST01-010_00000000-0000-0000-0000-000000000002"
+            "ST01-010_ui_pilot_0001"
           ],
           "mainDeck": []
         },
@@ -113,7 +110,7 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "ST01-001_00000000-0000-0000-0000-000000000001",
+              "carduid": "ST01-001_ui_pilot_unit_1",
               "cardId": "ST01-001",
               "cardData": {
                 "id": "ST01-001",
@@ -160,7 +157,6 @@
                     },
                     {
                       "effectId": "pair_ap_boost_all",
-                      "type": "static",
                       "trigger": "continuous",
                       "sourceConditions": [
                         {
@@ -177,11 +173,7 @@
                       },
                       "target": {
                         "type": "unit",
-                        "scope": "self_all_unit",
-                        "count": 1,
-                        "filters": {
-                          "controller": "self"
-                        }
+                        "scope": "self_all_unit"
                       }
                     }
                   ]
@@ -194,11 +186,67 @@
               "originalHP": 4,
               "isFirstPlay": false,
               "damageReceived": 0
+            },
+            "pilot": {
+              "carduid": "ST01-011_ui_pilot_fill_1",
+              "cardId": "ST01-011",
+              "cardData": {
+                "id": "ST01-011",
+                "name": "Suletta Mercury",
+                "cardType": "pilot",
+                "color": "White",
+                "level": 4,
+                "cost": 1,
+                "zone": [],
+                "traits": [
+                  "Academy"
+                ],
+                "link": [],
+                "ap": 1,
+                "hp": 2,
+                "effects": {
+                  "description": [
+                    "\u3010Burst\u3011Add this card to your hand.",
+                    "\u3010Attack\u3011\u3010Once per Turn\u3011Choose 1 of your Resources. Set it as active."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "burst_add_to_hand",
+                      "trigger": "BURST_CONDITION",
+                      "target": {
+                        "type": "card",
+                        "scope": "self"
+                      },
+                      "action": "addToHand"
+                    },
+                    {
+                      "effectId": "attack_activate_resource",
+                      "type": "triggered",
+                      "trigger": "ATTACK_PHASE",
+                      "restrictions": [
+                        "once_per_turn"
+                      ],
+                      "sourceConditions": [
+                        {
+                          "type": "controller",
+                          "value": "self"
+                        },
+                        {
+                          "type": "paired"
+                        }
+                      ],
+                      "action": "setActive"
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1"
             }
           },
           "slot2": {
             "unit": {
-              "carduid": "ST01-005_00000000-0000-0000-0000-000000000003",
+              "carduid": "ST01-005_ui_pilot_unit_2",
               "cardId": "ST01-005",
               "cardData": {
                 "id": "ST01-005",
@@ -229,6 +277,59 @@
               "originalHP": 2,
               "isFirstPlay": false,
               "damageReceived": 0
+            },
+            "pilot": {
+              "carduid": "ST01-010_ui_pilot_fill_2",
+              "cardId": "ST01-010",
+              "cardData": {
+                "id": "ST01-010",
+                "name": "Amuro Ray",
+                "cardType": "pilot",
+                "color": "Blue",
+                "level": 4,
+                "cost": 1,
+                "zone": [],
+                "traits": [
+                  "Earth Federation",
+                  "White Base Team",
+                  "Newtype"
+                ],
+                "link": [],
+                "ap": 2,
+                "hp": 1,
+                "effects": {
+                  "description": [
+                    "\u3010Burst\u3011Add this card to your hand.",
+                    "\u3010When Paired\u3011Choose 1 enemy Unit with 5 or less HP. Rest it."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "burst_add_to_hand",
+                      "trigger": "BURST_CONDITION",
+                      "target": {
+                        "type": "card",
+                        "scope": "self"
+                      },
+                      "action": "addToHand"
+                    },
+                    {
+                      "effectId": "paired_rest_medium_hp",
+                      "trigger": "PAIRING_COMPLETE",
+                      "target": {
+                        "type": "unit",
+                        "scope": "opponent",
+                        "filters": {
+                          "hp": "<=5"
+                        },
+                        "count": 1
+                      },
+                      "action": "rest"
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1"
             }
           },
           "slot3": {},
@@ -239,7 +340,7 @@
           "shieldArea": [],
           "energyArea": [
             {
-              "carduid": "energy_basic_test_1",
+              "carduid": "energy_basic_ui_pilot_1",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -250,7 +351,7 @@
               }
             },
             {
-              "carduid": "energy_basic_test_2",
+              "carduid": "energy_basic_ui_pilot_2",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -261,7 +362,7 @@
               }
             },
             {
-              "carduid": "energy_basic_test_3",
+              "carduid": "energy_basic_ui_pilot_3",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -272,7 +373,7 @@
               }
             },
             {
-              "carduid": "energy_basic_test_4",
+              "carduid": "energy_basic_ui_pilot_4",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -300,71 +401,7 @@
         "playerPoint": 0,
         "isReady": true,
         "zones": {
-          "slot1": {
-            "unit": {
-              "carduid": "ST01-009_00000000-0000-0000-0000-000000000004",
-              "cardId": "ST01-009",
-              "cardData": {
-                "id": "ST01-009",
-                "name": "Zowort",
-                "cardType": "unit",
-                "color": "White",
-                "level": 2,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Academy"
-                ],
-                "link": [],
-                "ap": 3,
-                "hp": 2,
-                "effects": {
-                  "description": [
-                    "<Blocker> (Rest this Unit to change the attack target to it.)",
-                    "This Unit can't choose the enemy player as its attack target."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "blocker",
-                      "type": "keyword",
-                      "trigger": "ATTACK_REDIRECT",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self"
-                      },
-                      "action": "redirect_attack",
-                      "parameters": {
-                        "cost": "rest_self"
-                      }
-                    },
-                    {
-                      "effectId": "attack_restriction",
-                      "type": "static",
-                      "trigger": "continuous",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self"
-                      },
-                      "action": "restrict_attack",
-                      "parameters": {
-                        "restriction": "cannot_attack_player"
-                      }
-                    }
-                  ]
-                }
-              },
-              "placedAt": 0,
-              "placedBy": "playerId_2",
-              "isRested": false,
-              "originalAP": 3,
-              "originalHP": 2,
-              "isFirstPlay": false,
-              "damageReceived": 0
-            }
-          },
+          "slot1": {},
           "slot2": {},
           "slot3": {},
           "slot4": {},

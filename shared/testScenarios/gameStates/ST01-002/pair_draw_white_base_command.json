@@ -73,7 +73,7 @@
                   "rules": [
                     {
                       "effectId": "main_damage_rested",
-                      "type": "activated",
+                      "type": "play",
                       "timing": {
                         "windows": [
                           "MAIN_PHASE"

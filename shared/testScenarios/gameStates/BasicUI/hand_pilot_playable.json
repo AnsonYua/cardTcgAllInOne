@@ -1,11 +1,12 @@
 {
-  "description": "st01-012_play_as_pilot",
-  "gameId": "st01-012_play_as_pilot",
-  "testType": "pilot",
-  "category": "ST01-012",
+  "description": "ui_hand_pilot_playable",
+  "gameId": "ui_hand_pilot_playable",
+  "testType": "ui",
+  "category": "BasicUI",
   "tags": [
+    "Hand",
     "Pilot",
-    "CommandAsPilot"
+    "Playable"
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -46,64 +47,51 @@
         "deck": {
           "hand": [
             {
-              "carduid": "ST01-012_00000000-0000-0000-0000-000000000002",
-              "cardId": "ST01-012",
+              "carduid": "ST01-010_ui_play_pilot_0001",
+              "cardId": "ST01-010",
               "cardData": {
-                "id": "ST01-012",
-                "name": "Thoroughly Damaged",
-                "cardType": "command",
+                "id": "ST01-010",
+                "name": "Amuro Ray",
+                "cardType": "pilot",
                 "color": "Blue",
-                "level": 2,
+                "level": 4,
                 "cost": 1,
                 "zone": [],
                 "traits": [
                   "Earth Federation",
-                  "White Base Team"
+                  "White Base Team",
+                  "Newtype"
                 ],
                 "link": [],
-                "ap": 0,
+                "ap": 2,
                 "hp": 1,
                 "effects": {
                   "description": [
-                    "\u3010Main\u3011Choose 1 rested enemy Unit. Deal 1 damage to it.",
-                    "\u3010Pilot\u3011[Hayato Kobayashi]"
+                    "\u3010Burst\u3011Add this card to your hand.",
+                    "\u3010When Paired\u3011Choose 1 enemy Unit with 5 or less HP. Rest it."
                   ],
                   "rules": [
                     {
-                      "effectId": "main_damage_rested",
-                      "type": "play",
-                      "timing": {
-                        "windows": [
-                          "MAIN_PHASE"
-                        ]
+                      "effectId": "burst_add_to_hand",
+                      "trigger": "BURST_CONDITION",
+                      "target": {
+                        "type": "card",
+                        "scope": "self"
                       },
+                      "action": "addToHand"
+                    },
+                    {
+                      "effectId": "paired_rest_medium_hp",
+                      "trigger": "PAIRING_COMPLETE",
                       "target": {
                         "type": "unit",
                         "scope": "opponent",
                         "filters": {
-                          "status": "rested"
+                          "hp": "<=5"
                         },
                         "count": 1
                       },
-                      "action": "damage",
-                      "parameters": {
-                        "value": 1
-                      }
-                    },
-                    {
-                      "effectId": "pilot_designation",
-                      "type": "special",
-                      "trigger": "continuous",
-                      "target": {
-                        "type": "pilot",
-                        "scope": "any"
-                      },
-                      "action": "designate_pilot",
-                      "parameters": {
-                        "pilotName": "Hayato Kobayashi",
-                        "AP": 0,
-                        "HP": 1
-                      }
+                      "action": "rest"
                     }
                   ]
                 }
@@ -111,7 +99,7 @@
             }
           ],
           "handUids": [
-            "ST01-012_00000000-0000-0000-0000-000000000002"
+            "ST01-010_ui_play_pilot_0001"
           ],
           "mainDeck": []
         },
@@ -122,49 +110,70 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "ST01-006_00000000-0000-0000-0000-000000000001",
-              "cardId": "ST01-006",
+              "carduid": "ST01-001_ui_pilot_target_1",
+              "cardId": "ST01-001",
               "cardData": {
-                "id": "ST01-006",
-                "name": "Gundam Aerial (Permet Score Six)",
+                "id": "ST01-001",
+                "name": "Gundam",
                 "cardType": "unit",
-                "color": "White",
-                "level": 5,
-                "cost": 4,
+                "color": "Blue",
+                "level": 4,
+                "cost": 3,
                 "zone": [
                   "Space",
                   "Earth"
                 ],
                 "traits": [
-                  "Academy"
+                  "Earth Federation",
+                  "White Base Team"
                 ],
                 "link": [
-                  "Suletta Mercury"
+                  "Amuro Ray"
                 ],
-                "ap": 4,
+                "ap": 3,
                 "hp": 4,
                 "effects": {
                   "description": [
-                    "\u3010When Paired\u3011Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn."
+                    "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)",
+                    "\u3010During Pair\u3011During your turn, all your Units get AP+1."
                   ],
                   "rules": [
                     {
-                      "effectId": "paired_ap_reduction",
-                      "trigger": "PAIRING_COMPLETE",
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "filters": {
-                          "level": "<=5"
-                        },
-                        "count": 1
-                      },
-                      "action": "modifyAP",
+                      "effectId": "repair_2",
+                      "type": "keyword",
+                      "trigger": "END_OF_TURN",
+                      "action": "heal",
                       "parameters": {
-                        "value": -3
+                        "value": 2
                       },
                       "timing": {
-                        "duration": "UNTIL_END_OF_TURN"
+                        "duration": "instant"
+                      },
+                      "target": {
+                        "type": "unit",
+                        "scope": "self",
+                        "count": 1
+                      }
+                    },
+                    {
+                      "effectId": "pair_ap_boost_all",
+                      "trigger": "continuous",
+                      "sourceConditions": [
+                        {
+                          "type": "paired"
+                        }
+                      ],
+                      "action": "modifyAP",
+                      "parameters": {
+                        "value": 1
+                      },
+                      "timing": {
+                        "duration": "continuous",
+                        "actionTurn": "YOUR_TURN"
+                      },
+                      "target": {
+                        "type": "unit",
+                        "scope": "self_all_unit"
                       }
                     }
                   ]
@@ -173,7 +182,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "originalAP": 4,
+              "originalAP": 3,
               "originalHP": 4,
               "isFirstPlay": false,
               "damageReceived": 0
@@ -188,7 +197,7 @@
           "shieldArea": [],
           "energyArea": [
             {
-              "carduid": "energy_basic_test_1",
+              "carduid": "energy_basic_ui_pilot_play_1",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -199,7 +208,7 @@
               }
             },
             {
-              "carduid": "energy_basic_test_2",
+              "carduid": "energy_basic_ui_pilot_play_2",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",

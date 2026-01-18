@@ -71,7 +71,7 @@
                   "rules": [
                     {
                       "effectId": "main_heal_friendly",
-                      "type": "triggered",
+                      "type": "play",
                       "trigger": "ENTERS_PLAY",
                       "target": {
                         "type": "unit",

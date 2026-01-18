@@ -1,11 +1,12 @@
 {
-  "description": "st01-009_cannot_attack_player",
-  "gameId": "st01-009_cannot_attack_player",
-  "testType": "restriction",
-  "category": "ST01-009",
+  "description": "ui_hand_command_no_target",
+  "gameId": "ui_hand_command_no_target",
+  "testType": "ui",
+  "category": "BasicUI",
   "tags": [
-    "AttackRestriction",
-    "CannotAttackPlayer"
+    "Hand",
+    "Command",
+    "NoTarget"
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -44,8 +45,69 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": [],
-          "handUids": [],
+          "hand": [
+            {
+              "carduid": "ST01-012_ui_notarget_0001",
+              "cardId": "ST01-012",
+              "cardData": {
+                "id": "ST01-012",
+                "name": "Thoroughly Damaged",
+                "cardType": "command",
+                "color": "Blue",
+                "level": 2,
+                "cost": 1,
+                "zone": [],
+                "traits": [
+                  "Earth Federation",
+                  "White Base Team"
+                ],
+                "link": [],
+                "ap": 0,
+                "hp": 1,
+                "effects": {
+                  "description": [
+                    "\u3010Main\u3011Choose 1 rested enemy Unit. Deal 1 damage to it.",
+                    "\u3010Pilot\u3011[Hayato Kobayashi]"
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "main_damage_rested",
+                      "type": "play",
+                      "timing": {
+                        "windows": [
+                          "MAIN_PHASE"
+                        ]
+                      },
+                      "target": {
+                        "type": "unit",
+                        "scope": "opponent",
+                        "filters": {
+                          "status": "rested"
+                        },
+                        "count": 1
+                      },
+                      "action": "damage",
+                      "parameters": {
+                        "value": 1
+                      }
+                    },
+                    {
+                      "effectId": "pilot_designation",
+                      "action": "designate_pilot",
+                      "parameters": {
+                        "pilotName": "Hayato Kobayashi",
+                        "AP": 0,
+                        "HP": 1
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "handUids": [
+            "ST01-012_ui_notarget_0001"
+          ],
           "mainDeck": []
         },
         "confirmIsRedraw": false,
@@ -53,70 +115,7 @@
         "playerPoint": 0,
         "isReady": true,
         "zones": {
-          "slot1": {
-            "unit": {
-              "carduid": "ST01-009_00000000-0000-0000-0000-000000000004",
-              "cardId": "ST01-009",
-              "cardData": {
-                "id": "ST01-009",
-                "name": "Zowort",
-                "cardType": "unit",
-                "color": "White",
-                "level": 2,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Academy"
-                ],
-                "link": [],
-                "ap": 3,
-                "hp": 2,
-                "effects": {
-                  "description": [
-                    "<Blocker> (Rest this Unit to change the attack target to it.)",
-                    "This Unit can't choose the enemy player as its attack target."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "blocker",
-                      "trigger": "ATTACK_REDIRECT",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self"
-                      },
-                      "action": "redirect_attack",
-                      "parameters": {
-                        "cost": "rest_self"
-                      }
-                    },
-                    {
-                      "effectId": "attack_restriction",
-                      "type": "static",
-                      "trigger": "continuous",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self"
-                      },
-                      "action": "restrict_attack",
-                      "parameters": {
-                        "restriction": "cannot_attack_player"
-                      }
-                    }
-                  ]
-                }
-              },
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "originalAP": 3,
-              "originalHP": 2,
-              "isFirstPlay": false,
-              "damageReceived": 0
-            }
-          },
+          "slot1": {},
           "slot2": {},
           "slot3": {},
           "slot4": {},
@@ -126,7 +125,7 @@
           "shieldArea": [],
           "energyArea": [
             {
-              "carduid": "energy_basic_test_1",
+              "carduid": "energy_basic_ui_cmd_1",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -137,7 +136,7 @@
               }
             },
             {
-              "carduid": "energy_basic_test_2",
+              "carduid": "energy_basic_ui_cmd_2",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -165,7 +164,41 @@
         "playerPoint": 0,
         "isReady": true,
         "zones": {
-          "slot1": {},
+          "slot1": {
+            "unit": {
+              "carduid": "ST01-005_ui_active_0001",
+              "cardId": "ST01-005",
+              "cardData": {
+                "id": "ST01-005",
+                "name": "GM",
+                "cardType": "unit",
+                "color": "Blue",
+                "level": 2,
+                "cost": 1,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Earth Federation"
+                ],
+                "link": [],
+                "ap": 2,
+                "hp": 2,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalAP": 2,
+              "originalHP": 2,
+              "isFirstPlay": false,
+              "damageReceived": 0
+            }
+          },
           "slot2": {},
           "slot3": {},
           "slot4": {},

@@ -235,7 +235,9 @@ export class BurstEffectManager {
         console.log(`✨ Executing burst ability activation (${abilityType}) for card ${carduid}`);
 
         const effects = Array.isArray(cardData?.effects?.rules) ? cardData.effects.rules : [];
-        const activatedEffects = effects.filter((rule: EffectDefinition) => rule.type === 'activated');
+        const activatedEffects = effects.filter((rule: EffectDefinition) =>
+            rule.type === 'activated' || rule.type === 'play'
+        );
 
         if (activatedEffects.length === 0) {
             return {

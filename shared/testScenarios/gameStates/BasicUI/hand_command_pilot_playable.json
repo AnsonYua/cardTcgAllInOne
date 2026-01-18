@@ -1,11 +1,12 @@
 {
-  "description": "st01-009_cannot_attack_player",
-  "gameId": "st01-009_cannot_attack_player",
-  "testType": "restriction",
-  "category": "ST01-009",
+  "description": "ui_hand_command_pilot_playable",
+  "gameId": "ui_hand_command_pilot_playable",
+  "testType": "ui",
+  "category": "BasicUI",
   "tags": [
-    "AttackRestriction",
-    "CannotAttackPlayer"
+    "Hand",
+    "CommandAsPilot",
+    "Playable"
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -44,8 +45,69 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": [],
-          "handUids": [],
+          "hand": [
+            {
+              "carduid": "ST01-012_ui_cmd_pilot_play_0001",
+              "cardId": "ST01-012",
+              "cardData": {
+                "id": "ST01-012",
+                "name": "Thoroughly Damaged",
+                "cardType": "command",
+                "color": "Blue",
+                "level": 2,
+                "cost": 1,
+                "zone": [],
+                "traits": [
+                  "Earth Federation",
+                  "White Base Team"
+                ],
+                "link": [],
+                "ap": 0,
+                "hp": 1,
+                "effects": {
+                  "description": [
+                    "\u3010Main\u3011Choose 1 rested enemy Unit. Deal 1 damage to it.",
+                    "\u3010Pilot\u3011[Hayato Kobayashi]"
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "main_damage_rested",
+                      "type": "play",
+                      "timing": {
+                        "windows": [
+                          "MAIN_PHASE"
+                        ]
+                      },
+                      "target": {
+                        "type": "unit",
+                        "scope": "opponent",
+                        "filters": {
+                          "status": "rested"
+                        },
+                        "count": 1
+                      },
+                      "action": "damage",
+                      "parameters": {
+                        "value": 1
+                      }
+                    },
+                    {
+                      "effectId": "pilot_designation",
+                      "action": "designate_pilot",
+                      "parameters": {
+                        "pilotName": "Hayato Kobayashi",
+                        "AP": 0,
+                        "HP": 1
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "handUids": [
+            "ST01-012_ui_cmd_pilot_play_0001"
+          ],
           "mainDeck": []
         },
         "confirmIsRedraw": false,
@@ -55,15 +117,15 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "ST01-009_00000000-0000-0000-0000-000000000004",
-              "cardId": "ST01-009",
+              "carduid": "ST01-006_ui_cmd_pilot_target_1",
+              "cardId": "ST01-006",
               "cardData": {
-                "id": "ST01-009",
-                "name": "Zowort",
+                "id": "ST01-006",
+                "name": "Gundam Aerial (Permet Score Six)",
                 "cardType": "unit",
                 "color": "White",
-                "level": 2,
-                "cost": 2,
+                "level": 5,
+                "cost": 4,
                 "zone": [
                   "Space",
                   "Earth"
@@ -71,38 +133,33 @@
                 "traits": [
                   "Academy"
                 ],
-                "link": [],
-                "ap": 3,
-                "hp": 2,
+                "link": [
+                  "Suletta Mercury"
+                ],
+                "ap": 4,
+                "hp": 4,
                 "effects": {
                   "description": [
-                    "<Blocker> (Rest this Unit to change the attack target to it.)",
-                    "This Unit can't choose the enemy player as its attack target."
+                    "\u3010When Paired\u3011Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn."
                   ],
                   "rules": [
                     {
-                      "effectId": "blocker",
-                      "trigger": "ATTACK_REDIRECT",
+                      "effectId": "paired_ap_reduction",
+                      "trigger": "PAIRING_COMPLETE",
                       "target": {
                         "type": "unit",
-                        "scope": "self"
+                        "scope": "opponent",
+                        "filters": {
+                          "level": "<=5"
+                        },
+                        "count": 1
                       },
-                      "action": "redirect_attack",
+                      "action": "modifyAP",
                       "parameters": {
-                        "cost": "rest_self"
-                      }
-                    },
-                    {
-                      "effectId": "attack_restriction",
-                      "type": "static",
-                      "trigger": "continuous",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self"
+                        "value": -3
                       },
-                      "action": "restrict_attack",
-                      "parameters": {
-                        "restriction": "cannot_attack_player"
+                      "timing": {
+                        "duration": "UNTIL_END_OF_TURN"
                       }
                     }
                   ]
@@ -111,8 +168,8 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "originalAP": 3,
-              "originalHP": 2,
+              "originalAP": 4,
+              "originalHP": 4,
               "isFirstPlay": false,
               "damageReceived": 0
             }
@@ -126,7 +183,7 @@
           "shieldArea": [],
           "energyArea": [
             {
-              "carduid": "energy_basic_test_1",
+              "carduid": "energy_basic_ui_cmd_pilot_play_1",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -137,7 +194,7 @@
               }
             },
             {
-              "carduid": "energy_basic_test_2",
+              "carduid": "energy_basic_ui_cmd_pilot_play_2",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_1",

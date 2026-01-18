@@ -45,27 +45,56 @@ Review all card effect,(also with supplement information of test case under requ
 
   - cardData.cardType === 'command'
   - player.energy.active >= cardData.cost
-  - Current phase is allowed by any activated rule’s timing.windows (MAIN_PHASE or ACTION_STEP)
+  - Current phase is allowed by any play rule’s timing.windows (MAIN_PHASE or ACTION_STEP)
   - If the command has target filters, there must be at least one valid target; otherwise hide the button.
 
   ———
 
-  ## 2) Field/Base activated abilities (data‑driven)
+    ## 2) Field/Base activated abilities (data‑driven)
 
-  For each effects.rules[] with type === 'activated' on the clicked card:
+  For a card already in zone (slot/base), only consider effects.rules[] with type === 'activated' if the cardType is unit or base.
+  Command cards never show a zone “Activate” button (they resolve on play from hand using type === 'play').
 
-  Show Activate button only if:
+    Show Activate button only if:
 
-  - Current phase is included in timing.windows
-  - Costs are payable:
-      - cost.resource <= active energy
-      - cost.tap/rest available (e.g., base not rested)
-      - cost.oncePerTurn not yet used
-  - If a target exists, there is at least one valid target
+    - Current phase is included in rule.timing.windows
+    - Costs are payable:
+        - rule.cost.resource <= active energy
+        - rule.cost.tap/rest available (e.g., base not rested if rest: "self")
+        - rule.cost.oncePerTurn not yet used
+    - If a target exists, there is at least one valid target
 
-  If multiple valid targets exist, expect TARGET_CHOICE after activation.
+    If multiple valid targets exist, expect TARGET_CHOICE after activation.
 
-  ———
+  Auto‑trigger note:
+  - Effects that are not type === 'activated' (triggered/continuous/keyword/play/special) are automatic and never show an
+    Activate button, even if they have no cost. Example: Deploy/When Paired/Burst/End of Turn effects.
+
+    ———
+
+    ## Frontend handling for zone activated ability
+
+    When a player clicks a slot/basearea card(unit /base card in slot or base area) :
+
+    1. Read cardData.cardType:
+        - If command: do not show zone activate buttons.
+        - If unit or base: continue.
+    2. Collect activated rules:
+        - rules.filter(r => r.type === 'activated')
+    3. For each rule, compute canActivate:
+        - phaseOk = rule.timing.windows.includes(gameEnv.phase)
+        - energyOk = !rule.cost?.resource || activeEnergy >= rule.cost.resource
+        - restOk = !(rule.cost?.rest === 'self') || card.isRested === false
+        - onceOk = !rule.cost?.oncePerTurn || !card.usedThisTurn?.[rule.effectId]
+            (use your existing “once per turn” flag location in gameEnv)
+        - targetOk = !rule.target || hasValidTargets(rule.target, gameEnv)
+    4. Show button only if all are true.
+    5. On click:
+        - Call activateCardAbility (only base zone activation is supported right now).
+        - If targetOk had multiple targets, expect a TARGET_CHOICE event in the queue.
+        - If a unit card ever gets an activated effect, it still must not show a zone Activate button until a backend
+            unit-zone activation endpoint is implemented.
+    ———
 
   ## 3) Attacking (unit in slot)
 
@@ -85,6 +114,11 @@ Review all card effect,(also with supplement information of test case under requ
 
   If restriction is present, hide or disable the “Attack Shield” button.
 
+
+ - unit.isRested check is missing. The requirement says unit.isRested === false and unit.canAttack === true. Current gating only checks canAttackThisTurn and never
+    checks isRested directly (src/phaser/controllers/ActionBarCoordinator.ts, src/phaser/ui/SlotTypes.ts).
+  - Enemy unit presence check is too strict. getOpponentRestedUnitSlots() only returns rested enemy units (unit.isRested === true) in src/phaser/controllers/
+    OpponentResolver.ts. Requirement says “at least one enemy unit” regardless of rested state.
   ———
 
   ## 4) Choice handling (BLOCKER/TARGET/BURST)

@@ -34,8 +34,8 @@ export class PlayerActionExecutor {
                 case 'useCommandCard':
                     return MainPhaseAbilityManager.executeMainPhaseAbility(gameEnv, event);
 
-                case 'activateBaseAbility':
-                    return BaseAbilityManager.executeBaseAbility(gameEnv, event);
+            case 'activateCardAbility':
+                return BaseAbilityManager.executeBaseAbility(gameEnv, event);
 
                 case 'confirmBattle':
                     return BattlePhaseManager.handleBattleConfirmation(gameEnv, event.playerId);
