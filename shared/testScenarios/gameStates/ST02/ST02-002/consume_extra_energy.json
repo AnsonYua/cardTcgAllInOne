@@ -1,0 +1,169 @@
+{
+  "category": "ST02-002", 
+  "gameId": "st02-002_consume_extra_energy", 
+  "description": "st02-002_consume_extra_energy", 
+  "tags": [
+    "ExtraEnergy", 
+    "Consume"
+  ], 
+  "initialGameEnv": {
+    "hasChosenFirstPlayer": false, 
+    "playerId_2": "playerId_2", 
+    "playerId_1": "playerId_1", 
+    "currentPlayer": "playerId_1", 
+    "processingEnabled": true, 
+    "firstPlayerDecision": null, 
+    "gameStarted": true, 
+    "playersReady": {
+      "playerId_2": true, 
+      "playerId_1": true
+    }, 
+    "currentBattle": null, 
+    "players": {
+      "playerId_2": {
+        "zones": {
+          "trashArea": [], 
+          "shieldArea": [], 
+          "base": [], 
+          "repairAbilitiesCheckedThisCycle": false, 
+          "slot1": {}, 
+          "energyArea": [], 
+          "slot3": {}, 
+          "slot2": {}, 
+          "slot5": {}, 
+          "slot4": {}, 
+          "slot6": {}
+        }, 
+        "isReady": true, 
+        "name": "Player 2", 
+        "deck": {
+          "mainDeck": [
+            "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c", 
+            "ST02-007_00000000-0000-0000-0000-000000000801", 
+            "ST02-008_00000000-0000-0000-0000-000000000802", 
+            "ST02-009_00000000-0000-0000-0000-000000000803"
+          ], 
+          "handUids": [], 
+          "hand": []
+        }, 
+        "confirmIsRedraw": false, 
+        "isRedraw": false, 
+        "playerPoint": 0, 
+        "id": "playerId_2"
+      }, 
+      "playerId_1": {
+        "zones": {
+          "trashArea": [], 
+          "shieldArea": [], 
+          "base": [], 
+          "repairAbilitiesCheckedThisCycle": false, 
+          "slot1": {}, 
+          "energyArea": [
+            {
+              "placedBy": "playerId_1", 
+              "carduid": "energy_extra_st02_002_1", 
+              "isExtraEnergy": true, 
+              "placedAt": 0, 
+              "cardData": {
+                "cardType": "energy"
+              }, 
+              "isRested": false, 
+              "cardId": "energy_extra"
+            }, 
+            {
+              "placedBy": "playerId_1", 
+              "carduid": "energy_basic_st02_002_consume_1", 
+              "isExtraEnergy": false, 
+              "placedAt": 0, 
+              "cardData": {
+                "cardType": "energy"
+              }, 
+              "isRested": false, 
+              "cardId": "energy_basic"
+            }
+          ], 
+          "slot3": {}, 
+          "slot2": {}, 
+          "slot5": {}, 
+          "slot4": {}, 
+          "slot6": {}
+        }, 
+        "isReady": true, 
+        "name": "Player 1", 
+        "deck": {
+          "mainDeck": [
+            "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c", 
+            "ST02-007_00000000-0000-0000-0000-000000000901", 
+            "ST02-008_00000000-0000-0000-0000-000000000902"
+          ], 
+          "handUids": [
+            "ST02-007_hand_0001"
+          ], 
+          "hand": [
+            {
+              "cardData": {
+                "name": "Leo", 
+                "zone": [
+                  "Space", 
+                  "Earth"
+                ], 
+                "level": 2, 
+                "color": "Blue", 
+                "hp": 2, 
+                "ap": 2, 
+                "cardType": "unit", 
+                "cost": 2, 
+                "link": [
+                  "OZ Trait"
+                ], 
+                "effects": {
+                  "rules": [], 
+                  "description": []
+                }, 
+                "traits": [
+                  "OZ"
+                ], 
+                "id": "ST02-007"
+              }, 
+              "carduid": "ST02-007_hand_0001", 
+              "cardId": "ST02-007"
+            }
+          ]
+        }, 
+        "confirmIsRedraw": false, 
+        "isRedraw": false, 
+        "playerPoint": 0, 
+        "id": "playerId_1"
+      }
+    }, 
+    "firstPlayerChooser": null, 
+    "version": 4, 
+    "notificationQueue": [
+      {
+        "metadata": {
+          "priority": "normal", 
+          "timestamp": 1768362880422, 
+          "expiresAt": 1768362883422, 
+          "requiresAcknowledgment": false
+        }, 
+        "type": "CARD_DRAWN", 
+        "payload": {
+          "sourceZone": "deck", 
+          "playerId": "playerId_1", 
+          "timestamp": 1768362880422, 
+          "carduid": "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c", 
+          "reason": "draw", 
+          "drawContext": "turn_start"
+        }, 
+        "id": "card_drawn_1768362880422_3bxbxq5uy"
+      }
+    ], 
+    "phase": "MAIN_PHASE", 
+    "processingQueue": [], 
+    "lastEventId": 0, 
+    "firstPlayer": 0, 
+    "maxEventsPerCycle": 50, 
+    "currentTurn": 1
+  }, 
+  "testType": "main"
+}

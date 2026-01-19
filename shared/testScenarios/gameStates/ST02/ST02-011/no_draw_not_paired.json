@@ -1,0 +1,232 @@
+{
+  "category": "ST02-011", 
+  "gameId": "st02-011_no_draw_not_paired", 
+  "description": "st02-011_no_draw_not_paired", 
+  "tags": [
+    "Draw", 
+    "NoPair"
+  ], 
+  "initialGameEnv": {
+    "hasChosenFirstPlayer": false, 
+    "playerId_2": "playerId_2", 
+    "playerId_1": "playerId_1", 
+    "currentPlayer": "playerId_1", 
+    "processingEnabled": true, 
+    "firstPlayerDecision": null, 
+    "gameStarted": true, 
+    "playersReady": {
+      "playerId_2": true, 
+      "playerId_1": true
+    }, 
+    "currentBattle": null, 
+    "players": {
+      "playerId_2": {
+        "zones": {
+          "trashArea": [], 
+          "shieldArea": [], 
+          "base": [], 
+          "repairAbilitiesCheckedThisCycle": false, 
+          "slot1": {
+            "unit": {
+              "originalAP": 1, 
+              "placedBy": "playerId_2", 
+              "continueModifyHP": 0, 
+              "carduid": "ST02-009_defender_0006", 
+              "damageReceived": 0, 
+              "canAttackThisTurn": true, 
+              "placedAt": 0, 
+              "cardData": {
+                "name": "Tragos", 
+                "zone": [
+                  "Earth"
+                ], 
+                "level": 1, 
+                "color": "Blue", 
+                "hp": 1, 
+                "ap": 1, 
+                "cardType": "unit", 
+                "cost": 1, 
+                "link": [], 
+                "effects": {
+                  "rules": [
+                    {
+                      "target": {
+                        "scope": "self", 
+                        "type": "unit"
+                      }, 
+                      "parameters": {
+                        "cost": "rest_self"
+                      }, 
+                      "trigger": "ATTACK_REDIRECT", 
+                      "effectId": "blocker", 
+                      "action": "redirect_attack", 
+                      "type": "triggered"
+                    }
+                  ], 
+                  "description": [
+                    "<Blocker> (Rest this Unit to change the attack target to it.)"
+                  ]
+                }, 
+                "traits": [
+                  "OZ"
+                ], 
+                "id": "ST02-009"
+              }, 
+              "isFirstPlay": false, 
+              "isRested": false, 
+              "cardId": "ST02-009", 
+              "continueModifyAP": 0, 
+              "canAttackOnPlayTurn": false, 
+              "playedThisTurn": false, 
+              "originalHP": 1
+            }
+          }, 
+          "energyArea": [], 
+          "slot3": {}, 
+          "slot2": {}, 
+          "slot5": {}, 
+          "slot4": {}, 
+          "slot6": {}
+        }, 
+        "isReady": true, 
+        "name": "Player 2", 
+        "deck": {
+          "mainDeck": [
+            "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c", 
+            "ST02-007_00000000-0000-0000-0000-000000000801", 
+            "ST02-008_00000000-0000-0000-0000-000000000802", 
+            "ST02-009_00000000-0000-0000-0000-000000000803"
+          ], 
+          "handUids": [], 
+          "hand": []
+        }, 
+        "confirmIsRedraw": false, 
+        "isRedraw": false, 
+        "playerPoint": 0, 
+        "id": "playerId_2"
+      }, 
+      "playerId_1": {
+        "zones": {
+          "trashArea": [], 
+          "shieldArea": [], 
+          "base": [], 
+          "repairAbilitiesCheckedThisCycle": false, 
+          "slot1": {
+            "unit": {
+              "originalAP": 4, 
+              "placedBy": "playerId_1", 
+              "continueModifyHP": 0, 
+              "carduid": "ST02-006_unit_0004", 
+              "damageReceived": 0, 
+              "canAttackThisTurn": true, 
+              "placedAt": 0, 
+              "cardData": {
+                "name": "Tallgeese", 
+                "zone": [
+                  "Space", 
+                  "Earth"
+                ], 
+                "level": 5, 
+                "color": "Blue", 
+                "hp": 4, 
+                "ap": 4, 
+                "cardType": "unit", 
+                "cost": 4, 
+                "link": [
+                  "Zechs Merquise"
+                ], 
+                "effects": {
+                  "rules": [
+                    {
+                      "target": {
+                        "count": 1, 
+                        "scope": "self", 
+                        "type": "unit"
+                      }, 
+                      "timing": {
+                        "windows": [
+                          "MAIN_PHASE"
+                        ]
+                      }, 
+                      "cost": {
+                        "resource": 4, 
+                        "oncePerTurn": true
+                      }, 
+                      "effectId": "activate_set_active", 
+                      "action": "setActive", 
+                      "type": "activated"
+                    }
+                  ], 
+                  "description": [
+                    "【Activate･Main】【Once per Turn】4：Set this Unit as active."
+                  ]
+                }, 
+                "traits": [
+                  "OZ"
+                ], 
+                "id": "ST02-006"
+              }, 
+              "isFirstPlay": false, 
+              "isRested": false, 
+              "cardId": "ST02-006", 
+              "continueModifyAP": 0, 
+              "canAttackOnPlayTurn": false, 
+              "playedThisTurn": false, 
+              "originalHP": 4
+            }
+          }, 
+          "energyArea": [], 
+          "slot3": {}, 
+          "slot2": {}, 
+          "slot5": {}, 
+          "slot4": {}, 
+          "slot6": {}
+        }, 
+        "isReady": true, 
+        "name": "Player 1", 
+        "deck": {
+          "mainDeck": [
+            "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c", 
+            "ST02-007_00000000-0000-0000-0000-000000000901", 
+            "ST02-008_00000000-0000-0000-0000-000000000902"
+          ], 
+          "handUids": [], 
+          "hand": []
+        }, 
+        "confirmIsRedraw": false, 
+        "isRedraw": false, 
+        "playerPoint": 0, 
+        "id": "playerId_1"
+      }
+    }, 
+    "firstPlayerChooser": null, 
+    "version": 4, 
+    "notificationQueue": [
+      {
+        "metadata": {
+          "priority": "normal", 
+          "timestamp": 1768362880422, 
+          "expiresAt": 1768362883422, 
+          "requiresAcknowledgment": false
+        }, 
+        "type": "CARD_DRAWN", 
+        "payload": {
+          "sourceZone": "deck", 
+          "playerId": "playerId_1", 
+          "timestamp": 1768362880422, 
+          "carduid": "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c", 
+          "reason": "draw", 
+          "drawContext": "turn_start"
+        }, 
+        "id": "card_drawn_1768362880422_3bxbxq5uy"
+      }
+    ], 
+    "phase": "MAIN_PHASE", 
+    "processingQueue": [], 
+    "lastEventId": 0, 
+    "firstPlayer": 0, 
+    "maxEventsPerCycle": 50, 
+    "currentTurn": 1
+  }, 
+  "testType": "battle"
+}

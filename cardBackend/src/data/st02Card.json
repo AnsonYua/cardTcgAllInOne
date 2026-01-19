@@ -209,7 +209,7 @@
             "hp": 4,
             "effects": {
                 "description": [
-                    "【Activate･Main】【Once per Turn】①：Set this Unit as active."
+                    "【Activate･Main】【Once per Turn】4：Set this Unit as active."
                 ],
                 "rules": [
                     {
@@ -218,12 +218,12 @@
                         "timing": {
                             "windows": [
                                 "MAIN_PHASE"
-                            ]
-                        },
-                        "cost": {
-                            "resource": 1,
-                            "oncePerTurn": true
-                        },
+                        ]
+                      },
+                      "cost": {
+                          "resource": 4,
+                          "oncePerTurn": true
+                      },
                         "target": {
                             "type": "unit",
                             "scope": "self",

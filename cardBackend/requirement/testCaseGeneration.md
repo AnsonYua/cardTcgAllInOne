@@ -38,10 +38,10 @@ If you are not clear about the game rules do ask me to confirm before you comple
 
 
 
-look at src/data/st01Card.json , looking at card st01-016 and the test case, please review effect.description and effect.rules is properly implemented and any field of effect.rules is meaning less . for reviewing implementation make sure all subflow is correctly included in implementation. also looking at st01Card.json , if other card have similer effect, please align it also. indeed ,not limit to the test case, but please ensure all effect is properly implemented, if you have any question ask me
+look at src/data/st01Card.json , the test case, please review effect.description and effect.rules is properly implemented and any field of effect.rules is meaning less . for reviewing implementation make sure all subflow is correctly included in implementation. also looking at st01Card.json , if other card have similer effect, please align it also. indeed ,not limit to the test case, but please ensure all effect is properly implemented, if you have any question ask me
 
 
-look at src/data/st01Card.json , looking at card st01-015 and the test case, please review
+look at src/data/st01Card.json , and the test case, please review
     effect.description and effect.rules is properly implemented and any field of effect.rules is
   meaning
     less . for reviewing implementation make sure all subflow is correctly included in implementation.
