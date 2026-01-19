@@ -60,6 +60,11 @@ export class GameEnvironment {
     // Frontend notification system (for frontend polling)
     public notificationQueue?: any[];
     public lastEventId?: number;
+    public gameEnded?: boolean;
+    public winnerId?: string | null;
+    public endReason?: string | null;
+    public endedAt?: number | null;
+    public gameEndCallback?: ((payload: { winnerId: string; reason: string; timestamp: number }) => void) | null;
 
     // Phase transition guard to avoid duplicate SBA enqueues
     public pendingPhaseTransition: EventType | null;
@@ -97,6 +102,11 @@ export class GameEnvironment {
         this.lastEventId = 0;
 
         this.pendingPhaseTransition = null;
+        this.gameEnded = false;
+        this.winnerId = null;
+        this.endReason = null;
+        this.endedAt = null;
+        this.gameEndCallback = null;
     }
 
     // ============ PLAYER MANAGEMENT ============

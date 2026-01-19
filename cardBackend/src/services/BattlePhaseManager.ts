@@ -15,6 +15,7 @@ import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { BlockerChoiceManager } from './BlockerChoiceManager';
 import { AttackPhaseEffectManager } from './effects/AttackPhaseEffectManager';
 import { BaseLifecycleManager } from './BaseLifecycleManager';
+import { GameEndManager } from './GameEndManager';
 import { Player } from '../models/Player';
 import { calculateSlotFieldValue, calculateBaseFieldValue } from '../utils/FieldValueCalculator';
 
@@ -542,6 +543,21 @@ export class BattlePhaseManager {
                         attackPower: totalAttackPower
                     }
                 });
+            } else if (totalAttackPower > 0) {
+                const shieldSnapshot = this.buildShieldSnapshot(defender);
+                this.emitBattleResolutionNotification(gameEnv, context, {
+                    attacker: attackerSnapshot,
+                    target: shieldSnapshot,
+                    result: {
+                        targetType: 'shield',
+                        shieldsTargeted: 0,
+                        attackPower: totalAttackPower,
+                        defenderHadNoShields: true,
+                        gameEnded: true
+                    }
+                });
+
+                GameEndManager.endGame(gameEnv, attacker.id, 'no_shields_remaining');
             } else {
                 gameEnv.clearCurrentBattle();
                 return {
