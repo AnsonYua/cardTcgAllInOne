@@ -1,12 +1,13 @@
 {
-  "description": "st01-015_deploy_shield_to_hand",
-  "gameId": "st01-015_deploy_shield_to_hand",
-  "testType": "deploy",
+  "description": "st01-015_token_boost_then_action_step_ap_reduction",
+  "gameId": "st01-015_token_boost_then_action_step_ap_reduction",
+  "testType": "action_step",
   "category": "ST01-015",
   "tags": [
-    "Deploy",
-    "AddToHand",
-    "Shield"
+    "Activate",
+    "Token",
+    "ActionStep",
+    "Stacked"
   ],
   "initialGameEnv": {
     "version": 4,
@@ -25,14 +26,85 @@
       "playerId_2": true
     },
     "currentBattle": null,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_3bxbxq5uy",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
     "players": {
       "playerId_1": {
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": [
+          "hand": [],
+          "handUids": [],
+          "mainDeck": [
+            "ST01-003_00000000-0000-0000-0000-000000000901",
+            "ST01-004_00000000-0000-0000-0000-000000000902",
+            "ST01-005_00000000-0000-0000-0000-000000000903"
+          ]
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "T-001_token_attacker_0001",
+              "cardId": "T-001",
+              "cardData": {
+                "id": "T-001",
+                "name": "Gundam",
+                "cardType": "unit",
+                "color": "Token",
+                "level": 0,
+                "cost": 0,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [],
+                "link": [],
+                "ap": 3,
+                "hp": 3,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "originalAP": 3,
+              "originalHP": 3,
+              "isFirstPlay": false,
+              "damageReceived": 0
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [
             {
-              "carduid": "ST01-015_00000000-0000-0000-0000-000000000002",
+              "carduid": "ST01-015_base_actionstep_0001",
               "cardId": "ST01-015",
               "cardData": {
                 "id": "ST01-015",
@@ -138,16 +210,131 @@
                     }
                   ]
                 }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "effectUsage": {}
+            }
+          ],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_st01_015_as_1",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_st01_015_as_2",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_st01_015_as_3",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_st01_015_as_4",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "ST01-014_actionstep_0001",
+              "cardId": "ST01-014",
+              "cardData": {
+                "id": "ST01-014",
+                "name": "Unforeseen Incident",
+                "cardType": "command",
+                "color": "White",
+                "level": 3,
+                "cost": 1,
+                "zone": [],
+                "traits": [],
+                "link": [],
+                "ap": 0,
+                "hp": 0,
+                "effects": {
+                  "description": [
+                    "【Burst】Activate this card's 【Main】.",
+                    "【Main】/【Action】Choose 1 enemy Unit. It gets AP-3 during this turn."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "burst_activate_main",
+                      "trigger": "BURST_CONDITION",
+                      "action": "activate_ability",
+                      "parameters": {
+                        "abilityType": "main"
+                      },
+                      "type": "triggered"
+                    },
+                    {
+                      "effectId": "main_action_ap_reduction",
+                      "type": "play",
+                      "timing": {
+                        "windows": [
+                          "MAIN_PHASE",
+                          "ACTION_STEP"
+                        ],
+                        "duration": "UNTIL_END_OF_TURN"
+                      },
+                      "target": {
+                        "type": "unit",
+                        "scope": "opponent",
+                        "count": 1
+                      },
+                      "action": "modifyAP",
+                      "parameters": {
+                        "value": -3
+                      }
+                    }
+                  ]
+                }
               }
             }
           ],
           "handUids": [
-            "ST01-015_00000000-0000-0000-0000-000000000002"
+            "ST01-014_actionstep_0001"
           ],
           "mainDeck": [
-            "ST01-003_00000000-0000-0000-0000-000000000131",
-            "ST01-004_00000000-0000-0000-0000-000000000132",
-            "ST01-005_00000000-0000-0000-0000-000000000133"
+            "ST01-005_00000000-0000-0000-0000-000000000801",
+            "ST01-005_00000000-0000-0000-0000-000000000802",
+            "ST01-005_00000000-0000-0000-0000-000000000803"
           ]
         },
         "confirmIsRedraw": false,
@@ -156,89 +343,9 @@
         "isReady": true,
         "zones": {
           "slot1": {
-            "fieldCardValue": {
-              "totalOriginalAP": 0,
-              "totalOriginalHP": 0,
-              "totalTempModifyAP": 0,
-              "totalTempModifyHP": 0,
-              "totalContinueModifyAP": 0,
-              "totalContinueModifyHP": 0,
-              "totalDamageReceived": 0,
-              "totalAP": 0,
-              "totalHP": 0
-            }
-          },
-          "slot2": {
-            "fieldCardValue": {
-              "totalOriginalAP": 0,
-              "totalOriginalHP": 0,
-              "totalTempModifyAP": 0,
-              "totalTempModifyHP": 0,
-              "totalContinueModifyAP": 0,
-              "totalContinueModifyHP": 0,
-              "totalDamageReceived": 0,
-              "totalAP": 0,
-              "totalHP": 0
-            }
-          },
-          "slot3": {
-            "fieldCardValue": {
-              "totalOriginalAP": 0,
-              "totalOriginalHP": 0,
-              "totalTempModifyAP": 0,
-              "totalTempModifyHP": 0,
-              "totalContinueModifyAP": 0,
-              "totalContinueModifyHP": 0,
-              "totalDamageReceived": 0,
-              "totalAP": 0,
-              "totalHP": 0
-            }
-          },
-          "slot4": {
-            "fieldCardValue": {
-              "totalOriginalAP": 0,
-              "totalOriginalHP": 0,
-              "totalTempModifyAP": 0,
-              "totalTempModifyHP": 0,
-              "totalContinueModifyAP": 0,
-              "totalContinueModifyHP": 0,
-              "totalDamageReceived": 0,
-              "totalAP": 0,
-              "totalHP": 0
-            }
-          },
-          "slot5": {
-            "fieldCardValue": {
-              "totalOriginalAP": 0,
-              "totalOriginalHP": 0,
-              "totalTempModifyAP": 0,
-              "totalTempModifyHP": 0,
-              "totalContinueModifyAP": 0,
-              "totalContinueModifyHP": 0,
-              "totalDamageReceived": 0,
-              "totalAP": 0,
-              "totalHP": 0
-            }
-          },
-          "slot6": {
-            "fieldCardValue": {
-              "totalOriginalAP": 0,
-              "totalOriginalHP": 0,
-              "totalTempModifyAP": 0,
-              "totalTempModifyHP": 0,
-              "totalContinueModifyAP": 0,
-              "totalContinueModifyHP": 0,
-              "totalDamageReceived": 0,
-              "totalAP": 0,
-              "totalHP": 0
-            }
-          },
-          "base": [],
-          "shieldArea": [
-            {
-              "carduid": "ST01-005_00000000-0000-0000-0000-000000000301",
+            "unit": {
+              "carduid": "ST01-005_defender_0001",
               "cardId": "ST01-005",
-              "originalCardType": "unit",
               "cardData": {
                 "id": "ST01-005",
                 "name": "GM",
@@ -262,145 +369,19 @@
                 }
               },
               "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false
-            }
-          ],
-          "energyArea": [
-            {
-              "carduid": "energy_basic_p1_1",
-              "cardId": "energy_basic",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
+              "placedBy": "playerId_2",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
-            },
-            {
-              "carduid": "energy_basic_p1_2",
-              "cardId": "energy_basic",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
-            },
-            {
-              "carduid": "energy_basic_playerId_1_fix_3",
-              "cardId": "energy_basic",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": true,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
-            }
-          ],
-          "trashArea": [],
-          "repairAbilitiesCheckedThisCycle": true
-        },
-        "effectRegistry": {}
-      },
-      "playerId_2": {
-        "id": "playerId_2",
-        "name": "Player 2",
-        "deck": {
-          "hand": [],
-          "handUids": [],
-          "mainDeck": [
-            "ST01-003_00000000-0000-0000-0000-000000000231",
-            "ST01-004_00000000-0000-0000-0000-000000000232",
-            "ST01-005_00000000-0000-0000-0000-000000000233"
-          ]
-        },
-        "confirmIsRedraw": false,
-        "isRedraw": false,
-        "playerPoint": 0,
-        "isReady": true,
-        "zones": {
-          "slot1": {
-            "fieldCardValue": {
-              "totalOriginalAP": 0,
-              "totalOriginalHP": 0,
-              "totalTempModifyAP": 0,
-              "totalTempModifyHP": 0,
-              "totalContinueModifyAP": 0,
-              "totalContinueModifyHP": 0,
-              "totalDamageReceived": 0,
-              "totalAP": 0,
-              "totalHP": 0
+              "originalAP": 2,
+              "originalHP": 2,
+              "isFirstPlay": false,
+              "damageReceived": 0
             }
           },
-          "slot2": {
-            "fieldCardValue": {
-              "totalOriginalAP": 0,
-              "totalOriginalHP": 0,
-              "totalTempModifyAP": 0,
-              "totalTempModifyHP": 0,
-              "totalContinueModifyAP": 0,
-              "totalContinueModifyHP": 0,
-              "totalDamageReceived": 0,
-              "totalAP": 0,
-              "totalHP": 0
-            }
-          },
-          "slot3": {
-            "fieldCardValue": {
-              "totalOriginalAP": 0,
-              "totalOriginalHP": 0,
-              "totalTempModifyAP": 0,
-              "totalTempModifyHP": 0,
-              "totalContinueModifyAP": 0,
-              "totalContinueModifyHP": 0,
-              "totalDamageReceived": 0,
-              "totalAP": 0,
-              "totalHP": 0
-            }
-          },
-          "slot4": {
-            "fieldCardValue": {
-              "totalOriginalAP": 0,
-              "totalOriginalHP": 0,
-              "totalTempModifyAP": 0,
-              "totalTempModifyHP": 0,
-              "totalContinueModifyAP": 0,
-              "totalContinueModifyHP": 0,
-              "totalDamageReceived": 0,
-              "totalAP": 0,
-              "totalHP": 0
-            }
-          },
-          "slot5": {
-            "fieldCardValue": {
-              "totalOriginalAP": 0,
-              "totalOriginalHP": 0,
-              "totalTempModifyAP": 0,
-              "totalTempModifyHP": 0,
-              "totalContinueModifyAP": 0,
-              "totalContinueModifyHP": 0,
-              "totalDamageReceived": 0,
-              "totalAP": 0,
-              "totalHP": 0
-            }
-          },
-          "slot6": {
-            "fieldCardValue": {
-              "totalOriginalAP": 0,
-              "totalOriginalHP": 0,
-              "totalTempModifyAP": 0,
-              "totalTempModifyHP": 0,
-              "totalContinueModifyAP": 0,
-              "totalContinueModifyHP": 0,
-              "totalDamageReceived": 0,
-              "totalAP": 0,
-              "totalHP": 0
-            }
-          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
           "base": [],
           "shieldArea": [
             {
@@ -461,7 +442,7 @@
           ],
           "energyArea": [
             {
-              "carduid": "energy_basic_p2_1",
+              "carduid": "energy_basic_st01_014_as_1",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_2",
@@ -472,7 +453,7 @@
               }
             },
             {
-              "carduid": "energy_basic_p2_2",
+              "carduid": "energy_basic_st01_014_as_2",
               "cardId": "energy_basic",
               "placedAt": 0,
               "placedBy": "playerId_2",
@@ -484,34 +465,9 @@
             }
           ],
           "trashArea": [],
-          "repairAbilitiesCheckedThisCycle": true
-        },
-        "effectRegistry": {}
-      }
-    },
-    "processingQueue": [],
-    "processingEnabled": true,
-    "maxEventsPerCycle": 50,
-    "notificationQueue": [
-      {
-        "id": "card_drawn_1768362880422_3bxbxq5uy",
-        "type": "CARD_DRAWN",
-        "metadata": {
-          "timestamp": 1768362880422,
-          "expiresAt": 1768362883422,
-          "requiresAcknowledgment": false,
-          "priority": "normal"
-        },
-        "payload": {
-          "playerId": "playerId_1",
-          "carduid": "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c",
-          "sourceZone": "deck",
-          "reason": "draw",
-          "timestamp": 1768362880422,
-          "drawContext": "turn_start"
+          "repairAbilitiesCheckedThisCycle": false
         }
       }
-    ],
-    "lastEventId": 0
+    }
   }
 }

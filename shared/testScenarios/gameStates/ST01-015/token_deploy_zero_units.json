@@ -382,7 +382,63 @@
             }
           },
           "base": [],
-          "shieldArea": [],
+          "shieldArea": [
+            {
+              "carduid": "ST01-005_opponent_shield_0001",
+              "cardId": "ST01-005",
+              "cardData": {
+                "id": "ST01-005",
+                "name": "GM",
+                "cardType": "unit",
+                "color": "Blue",
+                "level": 2,
+                "cost": 1,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Earth Federation"
+                ],
+                "link": [],
+                "ap": 2,
+                "hp": 2,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              }
+            },
+            {
+              "carduid": "ST01-003_opponent_shield_0002",
+              "cardId": "ST01-003",
+              "cardData": {
+                "id": "ST01-003",
+                "name": "Guncannon",
+                "cardType": "unit",
+                "color": "Blue",
+                "level": 3,
+                "cost": 2,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Earth Federation",
+                  "White Base Team"
+                ],
+                "link": [
+                  "Kai Shiden"
+                ],
+                "ap": 2,
+                "hp": 4,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              }
+            }
+          ],
           "energyArea": [
             {
               "carduid": "energy_basic_p2_1",
