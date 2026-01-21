@@ -28,48 +28,128 @@
           "repairAbilitiesCheckedThisCycle": false, 
           "slot1": {
             "unit": {
-              "originalAP": 4, 
+              "originalAP": 2, 
               "placedBy": "playerId_2", 
               "continueModifyHP": 0, 
-              "carduid": "ST02-004_defender_0004", 
+              "carduid": "ST02-002_defender_0003", 
               "damageReceived": 0, 
               "canAttackThisTurn": true, 
               "placedAt": 0, 
               "cardData": {
-                "name": "Gundam Sandrock", 
+                "id": "ST02-002",
+                "name": "Wing Gundam (Bird Mode)",
+                "cardType": "unit",
+                "color": "Green",
+                "level": 3,
+                "cost": 3,
                 "zone": [
+                  "Space",
                   "Earth"
-                ], 
-                "level": 4, 
-                "color": "Green", 
-                "hp": 3, 
-                "ap": 4, 
-                "cardType": "unit", 
-                "cost": 2, 
-                "link": [
-                  "Quatre Raberba Winner"
-                ], 
-                "effects": {
-                  "rules": [], 
-                  "description": []
-                }, 
+                ],
                 "traits": [
                   "Operation Meteor"
-                ], 
-                "id": "ST02-004"
+                ],
+                "link": [
+                  "Heero Yuy"
+                ],
+                "ap": 2,
+                "hp": 2,
+                "effects": {
+                  "description": [
+                    "【Deploy】Place 1 EX Resource."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "deploy_place_ex_resource",
+                      "type": "triggered",
+                      "trigger": "ENTERS_PLAY",
+                      "action": "addExtraEnergy",
+                      "parameters": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
               }, 
               "isFirstPlay": false, 
               "isRested": false, 
-              "cardId": "ST02-004", 
+              "cardId": "ST02-002", 
               "continueModifyAP": 0, 
               "canAttackOnPlayTurn": false, 
               "playedThisTurn": false, 
-              "originalHP": 3
+              "originalHP": 2
             }
           }, 
           "energyArea": [], 
           "slot3": {}, 
-          "slot2": {}, 
+          "slot2": {
+            "unit": {
+              "originalAP": 3,
+              "placedBy": "playerId_2",
+              "continueModifyHP": 0,
+              "carduid": "ST02-003_defender_0005",
+              "damageReceived": 0,
+              "canAttackThisTurn": true,
+              "placedAt": 0,
+              "cardData": {
+                "name": "Gundam Heavyarms",
+                "zone": [
+                  "Earth"
+                ],
+                "level": 5,
+                "color": "Green",
+                "hp": 4,
+                "ap": 3,
+                "cardType": "unit",
+                "cost": 3,
+                "link": [
+                  "Trowa Barton"
+                ],
+                "effects": {
+                  "rules": [
+                    {
+                      "target": {
+                        "scope": "opponent_all_unit",
+                        "type": "unit",
+                        "filters": {
+                          "level": "<=3"
+                        }
+                      },
+                      "parameters": {
+                        "value": 1
+                      },
+                      "timing": {
+                        "actionTurn": "YOUR_TURN"
+                      },
+                      "trigger": "BATTLE_DESTROY",
+                      "effectId": "paired_battle_damage_splash",
+                      "action": "damage",
+                      "type": "triggered",
+                      "sourceConditions": [
+                        {
+                          "type": "paired"
+                        }
+                      ]
+                    }
+                  ],
+                  "description": [
+                    "【During Pair】During your turn, when this Unit destroys an enemy Unit with battle damage, deal 1 damage to all enemy Units that are Lv.3 or lower."
+                  ]
+                },
+                "traits": [
+                  "Operation Meteor"
+                ],
+                "id": "ST02-003"
+              },
+              "isFirstPlay": false,
+              "isRested": false,
+              "cardId": "ST02-003",
+              "continueModifyAP": 0,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false,
+              "originalHP": 4
+            }
+          }, 
           "slot5": {}, 
           "slot4": {}, 
           "slot6": {}
@@ -78,7 +158,7 @@
         "name": "Player 2", 
         "deck": {
           "mainDeck": [
-            "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c", 
+            "ST02-007_4246f80c-16bc-4841-b2f1-0de546a8d62c", 
             "ST02-007_00000000-0000-0000-0000-000000000801", 
             "ST02-008_00000000-0000-0000-0000-000000000802", 
             "ST02-009_00000000-0000-0000-0000-000000000803"
@@ -178,7 +258,7 @@
         "name": "Player 1", 
         "deck": {
           "mainDeck": [
-            "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c", 
+            "ST02-007_4246f80c-16bc-4841-b2f1-0de546a8d62c", 
             "ST02-007_00000000-0000-0000-0000-000000000901", 
             "ST02-008_00000000-0000-0000-0000-000000000902"
           ], 
@@ -206,7 +286,7 @@
           "sourceZone": "deck", 
           "playerId": "playerId_1", 
           "timestamp": 1768362880422, 
-          "carduid": "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c", 
+          "carduid": "ST02-007_4246f80c-16bc-4841-b2f1-0de546a8d62c", 
           "reason": "draw", 
           "drawContext": "turn_start"
         }, 
