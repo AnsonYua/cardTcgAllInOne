@@ -181,6 +181,22 @@ export class AttackPhaseEffectManager {
             console.log(`ℹ️ Optional attack effect ${effect.effectId || action} auto-applied for card ${sourceCard.carduid}`);
         }
 
+        if (!effect.target && action === 'setActive') {
+            const result = EffectExecutor.applyEffectToTargets(
+                gameEnv,
+                effect,
+                [],
+                playerId,
+                sourceCard.carduid
+            );
+
+            if (!result.success) {
+                return { success: false, error: result.error };
+            }
+
+            return { success: true };
+        }
+
         const targetReference = this.buildTargetReference(gameEnv, playerId, sourceCard);
         if (!targetReference) {
             return {

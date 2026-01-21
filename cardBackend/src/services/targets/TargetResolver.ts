@@ -53,18 +53,25 @@ export class TargetResolver {
 
         console.log(`🔍 Generating targets for config:`, JSON.stringify(targetConfig, null, 2));
 
-        if (targetConfig.scope === 'self_shield') {
-            const player = gameEnv.getPlayer(playerId);
-            if (player) {
+        const scopeValue = typeof targetConfig.scope === 'string' ? targetConfig.scope.toLowerCase() : '';
+        const isShieldScope = scopeValue.includes('shield') || targetConfig.type === 'shield';
+
+        if (isShieldScope) {
+            const targetPlayerIds = this.getTargetPlayerIds(gameEnv, playerId, targetConfig.scope);
+            for (const targetPlayerId of targetPlayerIds) {
+                const player = gameEnv.getPlayer(targetPlayerId);
+                if (!player) {
+                    continue;
+                }
                 const shieldCards = player.getShieldCards();
-                console.log(`🛡️ Found ${shieldCards.length} shield cards for player ${playerId}`);
+                console.log(`🛡️ Found ${shieldCards.length} shield cards for player ${targetPlayerId}`);
 
                 for (let i = 0; i < Math.min(shieldCards.length, targetConfig.count); i++) {
                     const shieldCard = shieldCards[i];
                     targets.push({
                         carduid: shieldCard.carduid,
                         zone: 'shield',
-                        playerId: playerId,
+                        playerId: targetPlayerId,
                         cardData: shieldCard as any
                     });
                 }
@@ -134,6 +141,10 @@ export class TargetResolver {
             case 'self_unit':
             case 'self_shield':
                 return [playerId];
+            case 'opponent_shield': {
+                const opponentId = gameEnv.getOpponentId(playerId);
+                return opponentId ? [opponentId] : [];
+            }
             case 'opponent':
             case 'opponent_unit':
             case 'opponent_all_unit': {

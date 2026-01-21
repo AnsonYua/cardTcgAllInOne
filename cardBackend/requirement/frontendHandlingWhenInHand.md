@@ -50,7 +50,7 @@ Review all card effect,(also with supplement information of test case under requ
 
   ———
 
-    ## 2) Field/Base activated abilities (data‑driven)
+    ## 2) Field/Zone activated abilities (data‑driven)
 
   For a card already in zone (slot/base), only consider effects.rules[] with type === 'activated' if the cardType is unit or base.
   Command cards never show a zone “Activate” button (they resolve on play from hand using type === 'play').
@@ -91,10 +91,8 @@ Review all card effect,(also with supplement information of test case under requ
         - targetOk = !rule.target || hasValidTargets(rule.target, gameEnv)
     4. Show button only if all are true.
     5. On click:
-        - Call activateCardAbility (only base zone activation is supported right now).
+        - Call activateCardAbility (works for base or unit activated abilities).
         - If targetOk had multiple targets, expect a TARGET_CHOICE event in the queue.
-        - If a unit card ever gets an activated effect, it still must not show a zone Activate button until a backend
-            unit-zone activation endpoint is implemented.
     ———
 
   ## 3) Attacking (unit in slot)
@@ -114,6 +112,10 @@ Review all card effect,(also with supplement information of test case under requ
       - parameters.restriction === 'cannot_attack_player'
 
   If restriction is present, hide or disable the “Attack Shield” button.
+
+  Active target override:
+  - If the attacker (or its paired pilot) has an effect rule with action === 'allow_attack_target', and the target meets
+    its parameters (e.g., status === 'active' and level <= 4), allow selecting an active enemy unit.
 
 
  - unit.isRested check is missing. The requirement says unit.isRested === false and unit.canAttack === true. Current gating only checks canAttackThisTurn and never
@@ -156,3 +158,19 @@ Review all card effect,(also with supplement information of test case under requ
   - ST01‑016: base activate in MAIN if not rested; affects linked units.
 
   ———
+
+  # Card‑specific expectations (ST02)
+
+  Use the generic rules above; no hard‑coding required. New effect handling to surface:
+
+  - Breach (grant_breach / damageShield):
+      - If a unit gains breach during the turn, and that unit destroys an enemy unit in battle, backend will apply
+        damageShield automatically. No extra buttons; just reflect shield/base damage in notifications.
+  - ST02‑001: can attack active enemy units with level <= 4 via allow_attack_target (show as valid target when selecting).
+  - ST02‑002: deploy adds extra energy (no manual button after play).
+  - ST02‑003 / ST02‑011: BATTLE_DESTROY triggers fire automatically on battle destroy.
+  - ST02‑006: unit activated ability available via activateCardAbility (show Activate in MAIN when cost/once/rest checks pass).
+  - ST02‑012: grant_breach is a command effect in MAIN; needs target selection if multiple friendly units exist.
+  - ST02‑013: prevent_shield_damage in ACTION_STEP; no target choice (shield scope), apply during battle action step.
+  - ST02‑015: deploy scry effect runs automatically on play.
+  - ST02‑016: deploy conditionalTokenDeploy runs automatically on ENTERS_PLAY if conditions match.

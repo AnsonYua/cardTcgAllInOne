@@ -197,7 +197,7 @@ Examples:
     parser.add_argument(
         '--path', '-p',
         type=str,
-        default='../../cardBackend/src/data/image/st01',
+        default='../../cardBackend/src/data/image/st02',
         help='Path to folder containing images (default: ../../cardBackend/src/data/image/st01)'
     )
     

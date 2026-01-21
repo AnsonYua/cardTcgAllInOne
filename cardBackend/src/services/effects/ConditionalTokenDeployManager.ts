@@ -11,7 +11,7 @@ import { ExecutionResult } from '../ExecutionResult';
 
 export interface ConditionalTokenPlan {
     tokenData: any;
-    targetSlot: string;
+    targetSlots: string[];
 }
 
 export class ConditionalTokenDeployManager {
@@ -26,49 +26,57 @@ export class ConditionalTokenDeployManager {
             return { success: false, error: 'Player zones unavailable for token deploy' };
         }
 
-        const targetSlot = PlayerCardManager.findFirstEmptySlot(player.zones);
-        if (!targetSlot) {
-            return { success: false, error: 'No empty unit slot available for token deploy' };
-        }
-
         const unitsInPlay = SlotZoneUtils.getAllPlayerSlotUnits(gameEnv, playerId).length;
         const conditionEntries = Object.entries(parameters)
             .filter(([key]) => key.startsWith('condition'))
             .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
 
-        let selectedToken: any | null = null;
+        let selectedCondition: Record<string, unknown> | null = null;
+        let fallbackCondition: Record<string, unknown> | null = null;
         for (const [, conditionValue] of conditionEntries) {
             if (!conditionValue || typeof conditionValue !== 'object') {
                 continue;
             }
             const condition = conditionValue as Record<string, unknown>;
-            const unitsRequirement = condition['unitsInPlay'];
             const token = condition['token'];
             if (!token || typeof token !== 'object') {
                 continue;
             }
 
-            if (typeof unitsRequirement === 'number' && unitsInPlay === unitsRequirement) {
-                selectedToken = token;
+            if (!this.conditionMatches(gameEnv, playerId, condition, unitsInPlay)) {
+                continue;
+            }
+
+            if (typeof condition['cardInTrash'] === 'string') {
+                selectedCondition = condition;
                 break;
             }
 
-            if (typeof unitsRequirement === 'string' && validateComparisonFilter(unitsInPlay, unitsRequirement)) {
-                selectedToken = token;
-                break;
+            if (!fallbackCondition) {
+                fallbackCondition = condition;
             }
         }
 
-        if (!selectedToken) {
+        if (!selectedCondition && fallbackCondition) {
+            selectedCondition = fallbackCondition;
+        }
+
+        if (!selectedCondition) {
             return { success: false, error: 'No matching token condition found for board state' };
         }
 
-        const tokenDataResult = this.resolveTokenData(selectedToken as Record<string, unknown>);
+        const tokenDataResult = this.resolveTokenData(selectedCondition['token'] as Record<string, unknown>);
         if (!tokenDataResult.success) {
             return { success: false, error: tokenDataResult.error };
         }
 
-        return { success: true, plan: { tokenData: tokenDataResult.tokenData, targetSlot } };
+        const count = typeof selectedCondition['count'] === 'number' ? (selectedCondition['count'] as number) : 1;
+        const targetSlots = this.findEmptySlots(player.zones, count);
+        if (targetSlots.length < count) {
+            return { success: false, error: 'Not enough empty unit slots available for token deploy' };
+        }
+
+        return { success: true, plan: { tokenData: tokenDataResult.tokenData, targetSlots } };
     }
 
     static executePlan(
@@ -77,22 +85,73 @@ export class ConditionalTokenDeployManager {
         sourceCarduid: string,
         plan: ConditionalTokenPlan
     ): ExecutionResult {
-        const carduid = PlayerCardManager.createUniqueCardId(plan.tokenData.id);
-        const unitCard = createZoneCard(carduid, plan.tokenData.id, plan.tokenData, playerId, 'unit') as UnitZoneCard;
-
         const player = gameEnv.players[playerId];
         if (!player?.zones) {
             return { success: false, error: 'Player zones unavailable for token deploy' };
         }
 
-        const slotResult = SlotZoneUtils.getSlotZone(player.zones, plan.targetSlot);
-        if (!slotResult.isValid || !slotResult.slot) {
-            return { success: false, error: `Invalid slot ${plan.targetSlot} for token deploy` };
+        for (const targetSlot of plan.targetSlots) {
+            const carduid = PlayerCardManager.createUniqueCardId(plan.tokenData.id);
+            const unitCard = createZoneCard(carduid, plan.tokenData.id, plan.tokenData, playerId, 'unit') as UnitZoneCard;
+
+            const slotResult = SlotZoneUtils.getSlotZone(player.zones, targetSlot);
+            if (!slotResult.isValid || !slotResult.slot) {
+                return { success: false, error: `Invalid slot ${targetSlot} for token deploy` };
+            }
+
+            slotResult.slot.unit = unitCard;
+            console.log(`🪖 Deployed token ${plan.tokenData.name || plan.tokenData.id} to ${targetSlot} (source ${sourceCarduid})`);
         }
 
-        slotResult.slot.unit = unitCard;
-        console.log(`🪖 Deployed token ${plan.tokenData.name || plan.tokenData.id} to ${plan.targetSlot} (source ${sourceCarduid})`);
         return { success: true };
+    }
+
+    private static conditionMatches(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        condition: Record<string, unknown>,
+        unitsInPlay: number
+    ): boolean {
+        const unitsRequirement = condition['unitsInPlay'];
+        if (typeof unitsRequirement === 'number' && unitsInPlay !== unitsRequirement) {
+            return false;
+        }
+
+        if (typeof unitsRequirement === 'string' && !validateComparisonFilter(unitsInPlay, unitsRequirement)) {
+            return false;
+        }
+
+        if (condition['selfTurn'] === true && gameEnv.currentPlayer !== playerId) {
+            return false;
+        }
+
+        if (typeof condition['cardInTrash'] === 'string') {
+            const player = gameEnv.players[playerId];
+            const targetCardId = condition['cardInTrash'] as string;
+            const inTrash = player?.zones?.trashArea?.some(card => card.cardId === targetCardId);
+            if (!inTrash) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static findEmptySlots(playerZones: any, count: number): string[] {
+        const slots: string[] = [];
+        for (const slotName of Object.keys(playerZones)) {
+            if (!slotName.startsWith('slot')) {
+                continue;
+            }
+            const slot = playerZones[slotName];
+            if (slot?.unit == null && slot?.pilot == null) {
+                slots.push(slotName);
+                if (slots.length >= count) {
+                    break;
+                }
+            }
+        }
+        return slots;
     }
 
     private static resolveTokenData(

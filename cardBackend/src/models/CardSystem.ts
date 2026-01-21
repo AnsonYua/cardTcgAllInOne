@@ -13,6 +13,7 @@ export interface TemporaryEffect {
     sourceCarduid: string;              // Card that created this effect
     modifyAP?: number;                  // AP modification (optional)
     modifyHP?: number;                  // HP modification (optional)
+    breachValue?: number;               // Breach damage granted (optional)
     duration: string;                   // Effect duration
     appliedTurn: number;                // Which turn this was applied
     appliedBy: string;                  // Which player applied it

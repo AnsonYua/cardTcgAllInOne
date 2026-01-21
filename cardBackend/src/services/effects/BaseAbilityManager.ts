@@ -3,7 +3,7 @@
 
 import { GameEnvironment } from '../../models/GameEnvironment';
 import { GamePhase } from '../../models/GameEnums';
-import { PlayerActionEvent, PlayerActionEventData, EffectDefinition } from '../EventQueue/interfaces/GameEvent';
+import { PlayerActionEvent, PlayerActionEventData, EffectDefinition, TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { GameActionValidator } from '../GameActionValidator';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { DeployTargetManager } from '../DeployTargetManager';
@@ -11,6 +11,7 @@ import { ExecutionResult } from '../ExecutionResult';
 import { EnergyManager } from '../EnergyManager';
 import { EffectExecutor } from './EffectExecutor';
 import { ConditionalTokenDeployManager, ConditionalTokenPlan } from './ConditionalTokenDeployManager';
+import { resolveActivatedAbilitySource } from './ActivatedAbilitySourceResolver';
 
 export class BaseAbilityManager {
 
@@ -50,36 +51,28 @@ export class BaseAbilityManager {
 
         console.log(`🏰 Base ability target carduid=${baseCarduid}, requestedEffectId=${(eventData as any).effectId || 'none'}`);
 
-        const playerState = gameEnv.players[actingPlayerId];
-        if (!playerState?.zones?.base || !Array.isArray(playerState.zones.base)) {
-            return {
-                success: false,
-                error: 'Player does not control a base zone'
-            };
+        const sourceResult = resolveActivatedAbilitySource(gameEnv, actingPlayerId, baseCarduid);
+        if (!sourceResult.success) {
+            return { success: false, error: sourceResult.error };
         }
 
-        const baseCard = playerState.zones.base.find(card => card.carduid === baseCarduid);
-        if (!baseCard) {
-            return {
-                success: false,
-                error: `Base ${baseCarduid} not found for player ${actingPlayerId}`
-            };
-        }
+        const { sourceCard, sourceZone, sourceSlotName } = sourceResult.source;
 
-        console.log(`🏰 Base found: rested=${Boolean(baseCard.isRested)}, effectUsage=${JSON.stringify(baseCard.effectUsage || {})}`);
-
-        if (baseCard.isRested) {
-            return {
-                success: false,
-                error: 'Base is already rested'
-            };
+        if (sourceZone === 'base') {
+            console.log(`🏰 Base found: rested=${Boolean(sourceCard.isRested)}, effectUsage=${JSON.stringify(sourceCard.effectUsage || {})}`);
+            if (sourceCard.isRested) {
+                return {
+                    success: false,
+                    error: 'Base is already rested'
+                };
+            }
         }
 
         const requestedEffectId = typeof (eventData as Record<string, unknown>).effectId === 'string'
             ? ((eventData as Record<string, unknown>).effectId as string)
             : undefined;
 
-        const effectLookup = BaseAbilityManager.findActivatedEffect(baseCard.cardData?.effects?.rules, requestedEffectId);
+        const effectLookup = BaseAbilityManager.findActivatedEffect(sourceCard.cardData?.effects?.rules, requestedEffectId);
         if (!effectLookup.success || !('effect' in effectLookup)) {
             return effectLookup;
         }
@@ -100,7 +93,7 @@ export class BaseAbilityManager {
         const oncePerTurn = costConfig?.['oncePerTurn'] === true;
         console.log(`🏰 Base cost: energy=${energyCost}, oncePerTurn=${oncePerTurn}, restCost=${costConfig?.['rest'] || costConfig?.['tap'] || 'none'}`);
 
-        if (oncePerTurn && BaseAbilityManager.effectUsedThisTurn(baseCard, normalizedEffect.effectId, gameEnv.currentTurn)) {
+        if (oncePerTurn && BaseAbilityManager.effectUsedThisTurn(sourceCard, normalizedEffect.effectId, gameEnv.currentTurn)) {
             return {
                 success: false,
                 error: `Effect ${normalizedEffect.effectId} already used this turn`
@@ -119,7 +112,7 @@ export class BaseAbilityManager {
                 };
             }
             pendingTokenPlan = tokenPlan.plan!;
-            console.log(`🏰 Token plan: slot=${pendingTokenPlan.targetSlot}, token=${pendingTokenPlan.tokenData?.id || pendingTokenPlan.tokenData?.name || 'unknown'}`);
+            console.log(`🏰 Token plan: slots=${pendingTokenPlan.targetSlots.join(', ')}, token=${pendingTokenPlan.tokenData?.id || pendingTokenPlan.tokenData?.name || 'unknown'}`);
         }
 
         if (!fromBurst && energyCost > 0) {
@@ -136,7 +129,13 @@ export class BaseAbilityManager {
         if (costConfig) {
             const requiresRest = costConfig['rest'] === 'self' || costConfig['tap'] === 'self';
             if (requiresRest) {
-                baseCard.isRested = true;
+                if (sourceCard.isRested) {
+                    return {
+                        success: false,
+                        error: 'Card is already rested'
+                    };
+                }
+                sourceCard.isRested = true;
                 baseRestedForCost = true;
             }
         }
@@ -146,7 +145,7 @@ export class BaseAbilityManager {
             energyPayment = EnergyManager.payEnergyCost(gameEnv, actingPlayerId, energyCost);
             if (!energyPayment.success) {
                 if (baseRestedForCost) {
-                    baseCard.isRested = false;
+                    sourceCard.isRested = false;
                 }
                 return {
                     success: false,
@@ -157,19 +156,32 @@ export class BaseAbilityManager {
 
         let abilityResult: ExecutionResult;
         if (action === 'conditionalTokenDeploy') {
-            abilityResult = ConditionalTokenDeployManager.executePlan(gameEnv, actingPlayerId, baseCard.carduid, pendingTokenPlan!);
+            abilityResult = ConditionalTokenDeployManager.executePlan(gameEnv, actingPlayerId, sourceCard.carduid, pendingTokenPlan!);
+        } else if (sourceZone === 'unit' && normalizedEffect.target?.scope === 'self' && normalizedEffect.target?.type === 'unit' && sourceSlotName) {
+            const target: TargetReference = {
+                carduid: sourceCard.carduid,
+                zone: sourceSlotName,
+                playerId: actingPlayerId
+            };
+            abilityResult = EffectExecutor.executeActivatedEffect(
+                gameEnv,
+                normalizedEffect,
+                [target],
+                actingPlayerId,
+                sourceCard.carduid
+            );
         } else {
             abilityResult = DeployTargetManager.processEffectWithTargetChoice(
                 gameEnv,
                 actingPlayerId,
-                baseCard.carduid,
+                sourceCard.carduid,
                 normalizedEffect
             );
         }
 
         if (!abilityResult.success) {
             if (baseRestedForCost) {
-                baseCard.isRested = false;
+                sourceCard.isRested = false;
             }
             if (energyPayment?.tapped) {
                 energyPayment.tapped.forEach(card => {
@@ -180,21 +192,21 @@ export class BaseAbilityManager {
             }
             return {
                 success: false,
-                error: abilityResult.error || 'Base ability failed'
+                error: abilityResult.error || 'Activated ability failed'
             };
         }
 
         if (oncePerTurn) {
-            BaseAbilityManager.markEffectUsed(baseCard, normalizedEffect.effectId, gameEnv.currentTurn);
+            BaseAbilityManager.markEffectUsed(sourceCard, normalizedEffect.effectId, gameEnv.currentTurn);
         }
 
-        console.log(`🏰 Activated base ability ${normalizedEffect.effectId} from ${baseCard.carduid}`);
+        console.log(`🏰 Activated ability ${normalizedEffect.effectId} from ${sourceCard.carduid}`);
         return { success: true };
     }
 
     private static findActivatedEffect(rules: unknown, requestedId?: string): { success: true; effect: EffectDefinition } | ExecutionResult {
         if (!Array.isArray(rules)) {
-            return { success: false, error: 'No activated effect available on base' };
+            return { success: false, error: 'No activated effect available on card' };
         }
 
         const effect = rules.find(rule => {
@@ -212,7 +224,7 @@ export class BaseAbilityManager {
         if (!effect) {
             return {
                 success: false,
-                error: requestedId ? `Effect ${requestedId} not found on base` : 'No activated effect available on base'
+                error: requestedId ? `Effect ${requestedId} not found on card` : 'No activated effect available on card'
             };
         }
 

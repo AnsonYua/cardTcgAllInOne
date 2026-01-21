@@ -17,6 +17,12 @@ export interface ActionStepTargetSummary {
     effectIds: string[];
 }
 
+export interface ShieldDamagePrevention {
+    playerId: string;
+    maxEnemyLevel?: number;
+    sourceCarduid?: string;
+}
+
 export type BattleActionType = 'attackUnit' | 'attackShieldArea';
 export type BattleStatus = 'ACTION_STEP' | 'RESOLVING';
 
@@ -31,6 +37,7 @@ export interface BattleContext {
     attackNotificationId?: string;
     forcedTarget?: ForcedTargetSummary;
     actionTargets?: Record<string, ActionStepTargetSummary[]>;
+    shieldDamagePreventions?: ShieldDamagePrevention[];
     status: BattleStatus;
     openedAt: number;
     confirmations?: {

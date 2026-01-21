@@ -3,12 +3,19 @@
 
 import { GameEnvironment } from '../../models/GameEnvironment';
 import { CardData, UnitZoneCard, PilotZoneCard } from '../../models/CardSystem';
-import { EffectDefinition, EffectTiming, TargetReference, TargetScope } from '../EventQueue/interfaces/GameEvent';
-import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
+import { EffectDefinition, EffectTiming, TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { ShieldCardManager } from '../ShieldCardManager';
 import { EffectStatApplier } from './EffectStatApplier';
 import { EffectTemporaryManager } from './EffectTemporaryManager';
 import { GameNotificationManager } from '../GameNotificationManager';
+import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
+import { applyAddExtraEnergyEffect } from './actions/EffectEnergyActions';
+import { applyScryTopDeckEffect } from './actions/EffectScryActions';
+import { applyGrantBreachEffect } from './actions/EffectBreachActions';
+import { applyPreventShieldDamageEffect, applyDamageShieldEffect } from './actions/EffectShieldActions';
+import { applyConditionalTokenDeployEffect } from './actions/EffectTokenActions';
+import { applySetActiveEffect } from './actions/EffectSetActiveActions';
+import { extractNumericValue, resolvePlayerIdsForScope } from './actions/EffectActionUtils';
 
 interface EffectActionContext {
     gameEnv: GameEnvironment;
@@ -31,7 +38,19 @@ export class EffectExecutor {
     private static readonly ACTION_HANDLERS: Record<string, (context: EffectActionContext) => { success: boolean; error?: string }> = {
         draw: ({ gameEnv, effect, sourcePlayerId }) => this.applyPlayerDrawEffect(gameEnv, sourcePlayerId, effect),
         addToHand: ({ gameEnv, effect, selectedTargets, sourcePlayerId }) =>
-            this.applyAddToHandEffect(gameEnv, sourcePlayerId, effect, selectedTargets)
+            this.applyAddToHandEffect(gameEnv, sourcePlayerId, effect, selectedTargets),
+        addExtraEnergy: ({ gameEnv, effect, sourcePlayerId }) => applyAddExtraEnergyEffect(gameEnv, sourcePlayerId, effect),
+        scry_top_deck: ({ gameEnv, effect, sourcePlayerId }) => applyScryTopDeckEffect(gameEnv, sourcePlayerId, effect),
+        grant_breach: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyGrantBreachEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        prevent_shield_damage: ({ gameEnv, effect, sourcePlayerId, sourceCarduid }) =>
+            applyPreventShieldDamageEffect(gameEnv, sourcePlayerId, sourceCarduid, effect),
+        conditionalTokenDeploy: ({ gameEnv, effect, sourcePlayerId, sourceCarduid }) =>
+            applyConditionalTokenDeployEffect(gameEnv, sourcePlayerId, sourceCarduid, effect),
+        damageShield: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyDamageShieldEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        setActive: ({ gameEnv, effect, selectedTargets, sourcePlayerId }) =>
+            applySetActiveEffect(gameEnv, sourcePlayerId, effect, selectedTargets)
     };
 
     /**
@@ -184,7 +203,7 @@ export class EffectExecutor {
 
     static applyPlayerDrawEffect(gameEnv: GameEnvironment, sourcePlayerId: string, effect: EffectDefinition): { success: boolean; error?: string } {
         const parameters = this.getEffectParameters(effect);
-        const drawCount = this.extractNumericValue(parameters) ?? 1;
+        const drawCount = extractNumericValue(parameters) ?? 1;
 
         if (drawCount <= 0) {
             return {
@@ -193,7 +212,7 @@ export class EffectExecutor {
             };
         }
 
-        const targetPlayerIds = this.resolvePlayerIdsForScope(gameEnv, sourcePlayerId, effect.target?.scope);
+        const targetPlayerIds = resolvePlayerIdsForScope(gameEnv, sourcePlayerId, effect.target?.scope);
         if (targetPlayerIds.length === 0) {
             return {
                 success: false,
@@ -216,6 +235,21 @@ export class EffectExecutor {
 
         console.log(`🃏 Applied draw effect (${drawCount}) to players: ${targetPlayerIds.join(', ')}`);
         return { success: true };
+    }
+
+
+    static actionSupportsNoTargets(action?: string): boolean {
+        if (!action) {
+            return false;
+        }
+
+        return [
+            'draw',
+            'addExtraEnergy',
+            'scry_top_deck',
+            'prevent_shield_damage',
+            'conditionalTokenDeploy'
+        ].includes(action);
     }
 
     /**
@@ -338,49 +372,6 @@ export class EffectExecutor {
         return { success: true };
     }
 
-    private static extractNumericValue(parameters?: Record<string, unknown>): number | undefined {
-        if (!parameters) {
-            return undefined;
-        }
-
-        const rawValue =
-            parameters['value'] ??
-            parameters['amount'] ??
-            parameters['modifier'];
-        if (typeof rawValue === 'number') {
-            return rawValue;
-        }
-
-        if (typeof rawValue === 'string') {
-            const parsed = Number(rawValue);
-            return Number.isNaN(parsed) ? undefined : parsed;
-        }
-
-        return undefined;
-    }
-
-    private static resolvePlayerIdsForScope(
-        gameEnv: GameEnvironment,
-        sourcePlayerId: string,
-        scope: TargetScope | string | undefined
-    ): string[] {
-        if (!scope || scope === 'self' || scope === 'SELF') {
-            return [sourcePlayerId];
-        }
-
-        if (scope === 'opponent' || scope === 'OPPONENT') {
-            const opponentId = gameEnv.getOpponentId(sourcePlayerId);
-            return opponentId ? [opponentId] : [];
-        }
-
-        if (scope === 'any' || scope === 'both') {
-            const opponentId = gameEnv.getOpponentId(sourcePlayerId);
-            return opponentId ? [sourcePlayerId, opponentId] : [sourcePlayerId];
-        }
-
-        // Fallback: treat custom scopes (e.g., self_all_unit) as self to avoid silent failures
-        return [sourcePlayerId];
-    }
 
     static drawCardsIntoHand(
         gameEnv: GameEnvironment,

@@ -5,6 +5,7 @@ import { GameEnvironment } from '../models/GameEnvironment';
 import { Player } from '../models/Player';
 import { UnitZoneCard } from '../models/CardSystem';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
+import { validateComparisonFilter } from '../utils/EffectNormalizationUtils';
 
 export interface AttackPreparationFailure {
     success: false;
@@ -85,12 +86,20 @@ export class AttackPreparationManager {
             };
         }
 
+        const attackingUnit = attackerSlotResult.unit as UnitZoneCard;
+        if (!targetUnit.isRested && !this.canAttackActiveTarget(gameEnv, attackingUnit, targetUnit)) {
+            return {
+                success: false,
+                error: 'Target unit must be rested unless attacker can target active units'
+            };
+        }
+
         return {
             success: true,
             attacker,
             defender,
             attackerSlot: attackerSlotResult.slotName,
-            attackingUnit: attackerSlotResult.unit as UnitZoneCard,
+            attackingUnit,
             targetSlotName: defenderSlotName,
             targetUnit
         };
@@ -141,6 +150,51 @@ export class AttackPreparationManager {
             attackerSlot: attackerSlotResult.slotName,
             attackingUnit: attackerSlotResult.unit as UnitZoneCard
         };
+    }
+
+    private static canAttackActiveTarget(
+        gameEnv: GameEnvironment,
+        attacker: UnitZoneCard,
+        target: UnitZoneCard
+    ): boolean {
+        const effectSources: Array<UnitZoneCard | any> = [attacker];
+
+        const slotLookup = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, attacker.carduid);
+        if (slotLookup.found && slotLookup.playerId && slotLookup.slotName) {
+            const player = gameEnv.getPlayer(slotLookup.playerId);
+            if (player?.zones) {
+                const slotResult = SlotZoneUtils.getSlotZone(player.zones, slotLookup.slotName);
+                if (slotResult.isValid && slotResult.slot?.pilot) {
+                    effectSources.push(slotResult.slot.pilot);
+                }
+            }
+        }
+
+        for (const source of effectSources) {
+            const effects = source.cardData?.effects?.rules || [];
+            for (const rule of effects) {
+                if (!rule || rule.action !== 'allow_attack_target') {
+                    continue;
+                }
+
+                const parameters = rule.parameters || {};
+                const status = typeof parameters.status === 'string' ? parameters.status.toLowerCase() : '';
+                if (status && status !== 'active') {
+                    continue;
+                }
+
+                if (parameters.level) {
+                    const targetLevel = target.cardData?.level || 0;
+                    if (!validateComparisonFilter(targetLevel, parameters.level)) {
+                        continue;
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     static unitHasAttackRestriction(unit: UnitZoneCard | null, restriction: string): boolean {
@@ -195,4 +249,3 @@ export class AttackPreparationManager {
         });
     }
 }
-

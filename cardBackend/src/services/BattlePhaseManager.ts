@@ -9,25 +9,22 @@ import { ExecutionResult } from './ExecutionResult';
 import { AttackPreparationManager } from './AttackPreparationManager';
 import { PlayerCardManager } from './PlayerCardManager';
 import { AttackPreparationFailure } from './AttackPreparationManager';
-import { UnitZoneCard, PilotZoneCard, BaseCard, FieldCardValue } from '../models/CardSystem';
+import { UnitZoneCard } from '../models/CardSystem';
 import { GameNotificationManager } from './GameNotificationManager';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { BlockerChoiceManager } from './BlockerChoiceManager';
 import { AttackPhaseEffectManager } from './effects/AttackPhaseEffectManager';
 import { BaseLifecycleManager } from './BaseLifecycleManager';
 import { GameEndManager } from './GameEndManager';
-import { Player } from '../models/Player';
-import { calculateSlotFieldValue, calculateBaseFieldValue } from '../utils/FieldValueCalculator';
-
-interface BattleParticipantSnapshot {
-    playerId: string;
-    slot?: string;
-    zoneType: 'slot' | 'base' | 'shield';
-    unit?: UnitZoneCard | BaseCard | null;
-    pilot?: PilotZoneCard | null;
-    fieldCardValue?: FieldCardValue;
-    shieldsRemaining?: number;
-}
+import { BattleDestroyEffectManager } from './effects/BattleDestroyEffectManager';
+import {
+    buildSlotSnapshot,
+    buildForcedTargetSnapshot,
+    buildBaseSnapshot,
+    buildShieldSnapshot,
+    emitBattleResolutionNotification
+} from './battle/BattleSnapshotUtils';
+import { getShieldCardsToAttack, isShieldDamagePrevented } from './battle/BattleShieldUtils';
 
 export class BattlePhaseManager {
     static initiateAttack(gameEnv: GameEnvironment, event: PlayerActionEvent): ExecutionResult {
@@ -381,9 +378,9 @@ export class BattlePhaseManager {
             targetUnit
         } = preparation;
 
-        const attackerSnapshot = this.buildSlotSnapshot(attacker, attackerSlot);
-        const originalTargetSnapshot = this.buildSlotSnapshot(defender, targetSlotName);
-        const focusTargetSnapshot = this.buildForcedTargetSnapshot(gameEnv, context.forcedTarget);
+        const attackerSnapshot = buildSlotSnapshot(attacker, attackerSlot);
+        const originalTargetSnapshot = buildSlotSnapshot(defender, targetSlotName);
+        const focusTargetSnapshot = buildForcedTargetSnapshot(gameEnv, context.forcedTarget);
 
         console.log(`⚔️ Resolving unit battle: ${attackingUnit.carduid} vs ${targetUnit.carduid}`);
 
@@ -393,29 +390,60 @@ export class BattlePhaseManager {
         const attackerRemainingHP = Math.max(0, attackerStats.totalHP - defenderStats.totalAP);
         const defenderRemainingHP = Math.max(0, defenderStats.totalHP - attackerStats.totalAP);
 
-        const attackerDestroyed = this.applyBattleDamage(
-            gameEnv,
-            attacker.id,
-            attackerSlot,
-            attackingUnit,
-            'Attacker',
-            attackerRemainingHP,
-            defenderStats.totalAP
-        );
+        const attackerDestroyed = attackerRemainingHP <= 0;
+        const defenderDestroyed = defenderRemainingHP <= 0;
 
-        const defenderDestroyed = this.applyBattleDamage(
-            gameEnv,
-            defender.id,
-            targetSlotName,
-            targetUnit,
-            'Defender',
-            defenderRemainingHP,
-            attackerStats.totalAP
-        );
+        if (attackerDestroyed) {
+            PlayerCardManager.updateUnitDamage(attackingUnit, defenderStats.totalAP);
+        } else {
+            PlayerCardManager.updateUnitDamage(attackingUnit, defenderStats.totalAP);
+        }
+
+        if (defenderDestroyed) {
+            PlayerCardManager.updateUnitDamage(targetUnit, attackerStats.totalAP);
+        } else {
+            PlayerCardManager.updateUnitDamage(targetUnit, attackerStats.totalAP);
+        }
+
+        if (defenderDestroyed) {
+            const battleDestroyResult = BattleDestroyEffectManager.processBattleDestroy(gameEnv, {
+                sourcePlayerId: attacker.id,
+                sourceUnit: attackingUnit,
+                sourceSlot: attackerSlot,
+                destroyedPlayerId: defender.id,
+                destroyedUnit: targetUnit
+            });
+            if (!battleDestroyResult.success) {
+                gameEnv.clearCurrentBattle();
+                return { success: false, error: battleDestroyResult.error || 'Battle destroy effect failed' };
+            }
+        }
+
+        if (attackerDestroyed) {
+            const battleDestroyResult = BattleDestroyEffectManager.processBattleDestroy(gameEnv, {
+                sourcePlayerId: defender.id,
+                sourceUnit: targetUnit,
+                sourceSlot: targetSlotName,
+                destroyedPlayerId: attacker.id,
+                destroyedUnit: attackingUnit
+            });
+            if (!battleDestroyResult.success) {
+                gameEnv.clearCurrentBattle();
+                return { success: false, error: battleDestroyResult.error || 'Battle destroy effect failed' };
+            }
+        }
+
+        if (attackerDestroyed) {
+            PlayerCardManager.destroyUnitInSlot(gameEnv, attacker.id, attackerSlot, attackingUnit);
+        }
+
+        if (defenderDestroyed) {
+            PlayerCardManager.destroyUnitInSlot(gameEnv, defender.id, targetSlotName, targetUnit);
+        }
 
         console.log(`⚔️ Battle resolved: Attacker ${attackerDestroyed ? 'destroyed' : 'survived'}, Defender ${defenderDestroyed ? 'destroyed' : 'survived'}`);
 
-        this.emitBattleResolutionNotification(gameEnv, context, {
+        emitBattleResolutionNotification(gameEnv, context, {
             attacker: attackerSnapshot,
             target: focusTargetSnapshot || originalTargetSnapshot,
             focusTarget: focusTargetSnapshot,
@@ -452,7 +480,7 @@ export class BattlePhaseManager {
         }
 
         const { attacker, defender, attackerSlot, attackingUnit } = preparation;
-        const attackerSnapshot = this.buildSlotSnapshot(attacker, attackerSlot);
+        const attackerSnapshot = buildSlotSnapshot(attacker, attackerSlot);
 
         if (AttackPreparationManager.unitHasAttackRestriction(attackingUnit as UnitZoneCard, 'cannot_attack_player')) {
             const cardName = attackingUnit.cardData?.name || attackingUnit.cardId || 'Attacking unit';
@@ -471,7 +499,7 @@ export class BattlePhaseManager {
 
         if (defenderBases.length > 0) {
             const baseCard = defenderBases[0];
-            const baseSnapshot = this.buildBaseSnapshot(defender, baseCard);
+            const baseSnapshot = buildBaseSnapshot(defender, baseCard);
             const currentDamage = baseCard.damageReceived || 0;
             const newDamage = currentDamage + totalAttackPower;
             const maxHP = baseCard.originalHP || baseCard.cardData?.hp || 0;
@@ -509,7 +537,7 @@ export class BattlePhaseManager {
 
             console.log(`🏰 Base damage applied: ${currentDamage} → ${newDamage} (remaining HP: ${remainingHP}${baseDestroyed ? ' - DESTROYED' : ''})`);
 
-            this.emitBattleResolutionNotification(gameEnv, context, {
+            emitBattleResolutionNotification(gameEnv, context, {
                 attacker: attackerSnapshot,
                 target: baseSnapshot,
                 result: {
@@ -522,7 +550,20 @@ export class BattlePhaseManager {
             });
         } else {
             if (defender.hasShield() && totalAttackPower > 0) {
-                const shieldCardsToAttack = this.getShieldCardsToAttack(defender, 1);
+                if (isShieldDamagePrevented(gameEnv, defender.id, attackingUnit)) {
+                    const shieldSnapshot = buildShieldSnapshot(defender);
+                    emitBattleResolutionNotification(gameEnv, context, {
+                        attacker: attackerSnapshot,
+                        target: shieldSnapshot,
+                        result: {
+                            targetType: 'shield',
+                            shieldsTargeted: 0,
+                            attackPower: totalAttackPower,
+                            damagePrevented: true
+                        }
+                    });
+                } else {
+                const shieldCardsToAttack = getShieldCardsToAttack(defender, 1);
                 const shieldAttackEvent = EventFactory.createShieldCardAttackedEvent(
                     defender.id,
                     playerId,
@@ -533,8 +574,8 @@ export class BattlePhaseManager {
                 gameEnv.enqueueForProcessing(shieldAttackEvent);
                 console.log(`🎯 Shield attack event queued: ${shieldAttackEvent.id}`);
 
-                const shieldSnapshot = this.buildShieldSnapshot(defender);
-                this.emitBattleResolutionNotification(gameEnv, context, {
+                const shieldSnapshot = buildShieldSnapshot(defender);
+                emitBattleResolutionNotification(gameEnv, context, {
                     attacker: attackerSnapshot,
                     target: shieldSnapshot,
                     result: {
@@ -543,9 +584,10 @@ export class BattlePhaseManager {
                         attackPower: totalAttackPower
                     }
                 });
+                }
             } else if (totalAttackPower > 0) {
-                const shieldSnapshot = this.buildShieldSnapshot(defender);
-                this.emitBattleResolutionNotification(gameEnv, context, {
+                const shieldSnapshot = buildShieldSnapshot(defender);
+                emitBattleResolutionNotification(gameEnv, context, {
                     attacker: attackerSnapshot,
                     target: shieldSnapshot,
                     result: {
@@ -572,40 +614,6 @@ export class BattlePhaseManager {
         return { success: true };
     }
 
-    private static applyBattleDamage(
-        gameEnv: GameEnvironment,
-        playerId: string,
-        slotName: string,
-        unit: UnitZoneCard,
-        role: 'Attacker' | 'Defender',
-        remainingHP: number,
-        damageTaken: number
-    ): boolean {
-        if (remainingHP <= 0) {
-            console.log(`💥 ${role} unit ${unit.carduid} destroyed (took ${damageTaken} damage)`);
-            return PlayerCardManager.destroyUnitInSlot(gameEnv, playerId, slotName, unit);
-        }
-
-        PlayerCardManager.updateUnitDamage(unit, damageTaken);
-        console.log(`🩹 ${role} unit ${unit.carduid} survived with ${remainingHP} HP`);
-        return false;
-    }
-
-    private static getShieldCardsToAttack(defender: any, maxCards: number = 1): Array<{ carduid: string; cardId: string; cardData: any }> {
-        const availableShields = defender.getShieldCards();
-        const cardsToAttack: Array<{ carduid: string; cardId: string; cardData: any }> = [];
-
-        for (let i = 0; i < Math.min(maxCards, availableShields.length); i++) {
-            const shieldCard = availableShields[i];
-            cardsToAttack.push({
-                carduid: shieldCard.carduid,
-                cardId: shieldCard.cardId,
-                cardData: shieldCard.cardData
-            });
-        }
-
-        return cardsToAttack;
-    }
 
     private static recordAttackDeclaration(
         gameEnv: GameEnvironment,
@@ -722,100 +730,4 @@ export class BattlePhaseManager {
         return id;
     }
 
-    private static buildSlotSnapshot(player: Player | undefined, slotName?: string): BattleParticipantSnapshot | null {
-        if (!player || !slotName) {
-            return null;
-        }
-
-        const slotResult = SlotZoneUtils.getSlotZone(player.zones, slotName);
-        if (!slotResult.isValid || !slotResult.slot) {
-            return null;
-        }
-
-        const slot = slotResult.slot;
-        return {
-            playerId: player.id,
-            slot: slotName,
-            zoneType: 'slot',
-            unit: this.cloneCard(slot.unit),
-            pilot: this.cloneCard(slot.pilot),
-            fieldCardValue: calculateSlotFieldValue(slot)
-        };
-    }
-
-    private static buildForcedTargetSnapshot(gameEnv: GameEnvironment, forcedTarget?: ForcedTargetSummary): BattleParticipantSnapshot | null {
-        if (!forcedTarget?.playerId || !forcedTarget.zone) {
-            return null;
-        }
-        const player = gameEnv.getPlayer(forcedTarget.playerId);
-        if (!player) {
-            return null;
-        }
-        const snapshot = this.buildSlotSnapshot(player, forcedTarget.zone);
-        if (snapshot) {
-            snapshot.slot = forcedTarget.zone;
-        }
-        return snapshot;
-    }
-
-    private static buildBaseSnapshot(player: Player | undefined, baseCard?: BaseCard): BattleParticipantSnapshot | null {
-        if (!player || !baseCard) {
-            return null;
-        }
-
-        return {
-            playerId: player.id,
-            slot: 'base',
-            zoneType: 'base',
-            unit: this.cloneCard(baseCard),
-            pilot: null,
-            fieldCardValue: calculateBaseFieldValue(baseCard)
-        };
-    }
-
-    private static buildShieldSnapshot(player: Player): BattleParticipantSnapshot {
-        return {
-            playerId: player.id,
-            slot: 'shieldArea',
-            zoneType: 'shield',
-            unit: null,
-            pilot: null,
-            shieldsRemaining: player.getShieldCount()
-        };
-    }
-
-    private static emitBattleResolutionNotification(
-        gameEnv: GameEnvironment,
-        context: BattleContext,
-        data: {
-            attacker?: BattleParticipantSnapshot | null;
-            target?: BattleParticipantSnapshot | null;
-            focusTarget?: BattleParticipantSnapshot | null;
-            result: Record<string, any>;
-        }
-    ): void {
-        const notificationManager = new GameNotificationManager(gameEnv);
-        notificationManager.addNotificationEvent(
-            'BATTLE_RESOLVED',
-            {
-                battleType: context.actionType,
-                attackingPlayerId: context.attackingPlayerId,
-                defendingPlayerId: context.defendingPlayerId,
-                attackNotificationId: context.attackNotificationId,
-                forcedTarget: context.forcedTarget,
-                attacker: data.attacker || null,
-                target: data.target || null,
-                focusTarget: data.focusTarget || null,
-                result: data.result
-            },
-            'normal'
-        );
-    }
-
-    private static cloneCard<T>(card: T | null | undefined): T | null {
-        if (!card) {
-            return null;
-        }
-        return JSON.parse(JSON.stringify(card)) as T;
-    }
 }

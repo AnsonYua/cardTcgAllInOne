@@ -2,6 +2,7 @@ import { GameEnvironment } from '../../models/GameEnvironment';
 import { UnitZoneCard, PilotZoneCard } from '../../models/CardSystem';
 import { TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { EffectNotifier } from './EffectNotifier';
+import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 
 export class EffectStatApplier {
     static applyEffectToResolvedCard(
@@ -147,30 +148,23 @@ export class EffectStatApplier {
     }
 
     static applySetActiveEffect(
-        gameEnv: GameEnvironment,
+        _gameEnv: GameEnvironment,
         target: TargetReference
     ): { success: boolean; error?: string } {
-        const playerId = target.playerId;
-        if (!playerId) {
-            console.warn('⚠️ setActive effect missing playerId in target reference');
+        const resolvedTarget = target as TargetReference;
+        if (!resolvedTarget.carduid) {
             return { success: true };
         }
 
-        const player = gameEnv.players[playerId];
-        const energyArea = player?.zones?.energyArea;
-        if (!energyArea || energyArea.length === 0) {
-            console.log('⚠️ No energy cards available to ready');
+        const searchResult = SlotZoneUtils.findCardByUidAcrossPlayers(_gameEnv, resolvedTarget.carduid);
+        const targetCard = searchResult.card || searchResult.unit || searchResult.pilot;
+        if (!targetCard) {
+            console.warn(`⚠️ setActive target ${resolvedTarget.carduid} not found`);
             return { success: true };
         }
 
-        const restedEnergy = [...energyArea].reverse().find(card => card.isRested);
-        if (!restedEnergy) {
-            console.log('⚠️ No rested energy available to set active');
-            return { success: true };
-        }
-
-        restedEnergy.isRested = false;
-        console.log(`  ⚡ Ready energy ${restedEnergy.carduid}`);
+        targetCard.isRested = false;
+        console.log(`  😌 ${resolvedTarget.carduid}: activated`);
         return { success: true };
     }
 

@@ -54,12 +54,31 @@ export class DeployTargetManager {
         console.log(`🎯 Processing effect ${effectLabel} requiring target selection`);
 
         try {
+            if (EffectExecutor.actionSupportsNoTargets(effectAction)) {
+                const result = EffectExecutor.applyEffectToTargets(gameEnv, normalizedEffect, [], playerId, sourceCarduid);
+                return {
+                    success: result.success,
+                    error: result.error,
+                    autoApplied: true,
+                    affectedTargets: []
+                };
+            }
+
             const targetConfig = TargetResolver.resolveTargetConfig(normalizedEffect);
             // Generate available targets based on config
             const availableTargets = TargetResolver.generateAvailableTargets(gameEnv, playerId, targetConfig);
             
             if (availableTargets.length === 0) {
                 console.log(`⚠️ No eligible targets found for ${effect.effectId}`);
+                if (effectAction === 'damageShield') {
+                    const result = EffectExecutor.applyEffectToTargets(gameEnv, normalizedEffect, [], playerId, sourceCarduid);
+                    return {
+                        success: result.success,
+                        error: result.error,
+                        autoApplied: true,
+                        affectedTargets: []
+                    };
+                }
                 return { 
                     success: true, 
                     autoApplied: true,
@@ -200,7 +219,7 @@ export class DeployTargetManager {
      */
     private static requiresPlayerChoice(targetConfig: ResolvedTargetConfig, availableTargets: TargetReference[]): boolean {
         console.log("requiresPlayerChoice 00 " + JSON.stringify(targetConfig))
-        if(targetConfig.scope === "self_shield"){
+        if (targetConfig.scope === "self_shield" || targetConfig.scope === "opponent_shield") {
             return false;
         }
 

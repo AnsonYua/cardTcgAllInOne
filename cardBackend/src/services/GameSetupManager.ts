@@ -2,7 +2,6 @@
 // Handles redraw confirmation and deck initialization helpers
 
 import * as fs from 'fs';
-import * as path from 'path';
 import { GameEnvironment } from '../models/GameEnvironment';
 import {
     ConfirmRedrawEvent
@@ -10,6 +9,7 @@ import {
 import { ExecutionResult } from './ExecutionResult';
 import { PlayerCardManager } from './PlayerCardManager';
 import { GameNotificationManager } from './GameNotificationManager';
+import { GCG_DECKS_PATH } from '../config/dataPaths';
 
 export class GameSetupManager {
     static handleConfirmRedraw(event: ConfirmRedrawEvent, gameEnv: GameEnvironment): ExecutionResult {
@@ -64,8 +64,7 @@ export class GameSetupManager {
     static initializeGameWithDecks(gameEnv: GameEnvironment): void {
         console.log('🎮 Initializing game with deck configuration...');
 
-        const deckConfigPath = path.join(__dirname, '../data/gcgdecks.json');
-        const deckConfig = JSON.parse(fs.readFileSync(deckConfigPath, 'utf8'));
+        const deckConfig = JSON.parse(fs.readFileSync(GCG_DECKS_PATH, 'utf8'));
 
         const playerId1 = gameEnv.playerId_1!;
         const playerId2 = gameEnv.playerId_2!;

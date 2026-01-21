@@ -6,6 +6,7 @@ import { gameLogic, GameLogic } from '../services/GameLogic';
 import { PlayerActionType, CardPlayType } from '../models/GameEnums';
 import { PlayerAction } from '../models/EventInterfaces';
 import { lobbyManager } from '../services/LobbyManager';
+import { GCG_DECKS_PATH } from '../config/dataPaths';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -626,11 +627,8 @@ export class GameController {
         try {
             console.log('📦 Getting game resource data (deck data)');
             
-            // Build path to gcgdecks.json
-            const deckDataPath = path.join(__dirname, '../data/gcgdecks.json');
-            
             // Check if file exists
-            if (!fs.existsSync(deckDataPath)) {
+            if (!fs.existsSync(GCG_DECKS_PATH)) {
                 res.status(404).json({
                     error: 'Deck data file not found (gcgdecks.json)',
                     timestamp: new Date().toISOString(),
@@ -640,7 +638,7 @@ export class GameController {
             }
             
             // Read and parse the gcgdecks.json file
-            const deckDataContent = await fs.promises.readFile(deckDataPath, 'utf8');
+            const deckDataContent = await fs.promises.readFile(GCG_DECKS_PATH, 'utf8');
             const deckData = JSON.parse(deckDataContent);
             
             console.log('✅ Game resource data loaded successfully');

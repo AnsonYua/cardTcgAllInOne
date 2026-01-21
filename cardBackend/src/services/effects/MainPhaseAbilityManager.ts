@@ -169,7 +169,9 @@ export class MainPhaseAbilityManager {
         }
 
         const targetResolution = this.resolveTargets(gameEnv, playerId, normalizedEffect, params);
-        if (!targetResolution.success || !targetResolution.targets || targetResolution.targets.length === 0) {
+        const action = EffectExecutor.getEffectAction(normalizedEffect);
+        const targetsRequired = !EffectExecutor.actionSupportsNoTargets(action);
+        if (!targetResolution.success || !targetResolution.targets || (targetsRequired && targetResolution.targets.length === 0)) {
             return {
                 success: false,
                 error: targetResolution.error || 'No valid targets provided for ability'
@@ -190,7 +192,7 @@ export class MainPhaseAbilityManager {
         const applyResult = EffectExecutor.executeActivatedEffect(
             gameEnv,
             normalizedEffect,
-            targetResolution.targets,
+            targetResolution.targets || [],
             playerId,
             carduid
         );
@@ -284,6 +286,10 @@ export class MainPhaseAbilityManager {
         params: MainPhaseAbilityParams
     ): TargetResolutionResult {
         const resolvedContexts: ResolvedTargetContext[] = [];
+        const action = EffectExecutor.getEffectAction(effect);
+        if (EffectExecutor.actionSupportsNoTargets(action)) {
+            return { success: true, targets: [] };
+        }
 
         if (Array.isArray(params.targets) && params.targets.length > 0) {
             for (const rawTarget of params.targets) {
