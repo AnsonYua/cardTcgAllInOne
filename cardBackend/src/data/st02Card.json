@@ -218,12 +218,12 @@
                         "timing": {
                             "windows": [
                                 "MAIN_PHASE"
-                        ]
-                      },
-                      "cost": {
-                          "resource": 4,
-                          "oncePerTurn": true
-                      },
+                            ]
+                        },
+                        "cost": {
+                            "resource": 4,
+                            "oncePerTurn": true
+                        },
                         "target": {
                             "type": "unit",
                             "scope": "self",
@@ -727,29 +727,25 @@
                         "effectId": "deploy_conditional_token",
                         "type": "triggered",
                         "trigger": "ENTERS_PLAY",
-                        "conditions": [
-                            "turnCheck",
-                            "cardInTrashCheck"
-                        ],
-	                        "action": "conditionalTokenDeploy",
-	                        "parameters": {
-	                            "condition1": {
-	                                "selfTurn": true,
-	                                "token": {
-	                                    "cardId": "T-005"
-	                                },
-	                                "count": 1
-	                            },
-	                            "condition2": {
-	                                "cardInTrash": "ST02-016",
-	                                "token": {
-	                                    "cardId": "T-004"
-	                                },
-	                                "count": 2
-	                            }
-	                        }
-	                    }
-	                ]
+                        "action": "conditionalTokenDeploy",
+                        "parameters": {
+                            "condition1": {
+                                "selfTurn": true,
+                                "token": {
+                                    "cardId": "T-005"
+                                },
+                                "count": 1
+                            },
+                            "condition2": {
+                                "cardInTrash": "ST02-016",
+                                "token": {
+                                    "cardId": "T-004"
+                                },
+                                "count": 2
+                            }
+                        }
+                    }
+                ]
             }
         },
         "T-004": {

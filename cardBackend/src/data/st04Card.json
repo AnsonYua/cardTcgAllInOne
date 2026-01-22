@@ -47,7 +47,7 @@
                         "effectId": "pair_bounce_low_hp_if_pilot_ge_4",
                         "type": "triggered",
                         "trigger": "PAIRING_COMPLETE",
-                        "action": "return_to_hand",
+                        "action": "returnToHand",
                         "optional": true,
                         "conditions": [
                             {
@@ -328,7 +328,7 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【During Pair】If you have another Link Unit in play, draw 1.",
+                    "【When Paired】If you have another Link Unit in play, draw 1.",
                     "【Destroyed】If you have another Link Unit in play, draw 1."
                 ],
                 "rules": [
@@ -468,9 +468,9 @@
                             "notes": "When Linked window not yet implemented; modeled as a trigger on link completion with a temporary attack-target permission."
                         }
                     }
-	                ]
-	            }
-	        },
+                ]
+            }
+        },
         "ST04-012": {
             "id": "ST04-012",
             "name": "Striker Pack",
@@ -570,7 +570,7 @@
                     {
                         "effectId": "main_action_bounce_low_hp",
                         "type": "play",
-                        "action": "return_to_hand",
+                        "action": "returnToHand",
                         "timing": {
                             "windows": [
                                 "MAIN_PHASE",
