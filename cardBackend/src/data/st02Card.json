@@ -731,35 +731,25 @@
                             "turnCheck",
                             "cardInTrashCheck"
                         ],
-                        "action": "conditionalTokenDeploy",
-                        "parameters": {
-                            "condition1": {
-                                "selfTurn": true,
-                                "token": {
-                                    "name": "Tallgeese",
-                                    "traits": [
-                                        "OZ"
-                                    ],
-                                    "ap": 4,
-                                    "hp": 2
-                                },
-                                "count": 1
-                            },
-                            "condition2": {
-                                "cardInTrash": "ST02-016",
-                                "token": {
-                                    "name": "Leo",
-                                    "traits": [
-                                        "OZ"
-                                    ],
-                                    "ap": 1,
-                                    "hp": 1
-                                },
-                                "count": 2
-                            }
-                        }
-                    }
-                ]
+	                        "action": "conditionalTokenDeploy",
+	                        "parameters": {
+	                            "condition1": {
+	                                "selfTurn": true,
+	                                "token": {
+	                                    "cardId": "T-005"
+	                                },
+	                                "count": 1
+	                            },
+	                            "condition2": {
+	                                "cardInTrash": "ST02-016",
+	                                "token": {
+	                                    "cardId": "T-004"
+	                                },
+	                                "count": 2
+	                            }
+	                        }
+	                    }
+	                ]
             }
         },
         "T-004": {

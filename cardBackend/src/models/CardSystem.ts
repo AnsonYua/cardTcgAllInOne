@@ -26,6 +26,9 @@ export interface EffectRule {
     type: string;
     trigger: string;
     action: string;                 // Direct action property (not nested)
+    cost?: {
+        [key: string]: any;
+    };
     parameters?: {
         [key: string]: any;         // Flexible parameters object
         AP?: number;                // For designate_pilot effects
@@ -38,6 +41,11 @@ export interface EffectRule {
         scope?: string;
         filters?: any;
         count?: number;
+        selection?: {
+            type: string;
+            tieBreaker?: string;
+            [key: string]: any;
+        };
     };
     timing?: {
         windows?: string[];

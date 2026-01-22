@@ -693,44 +693,29 @@
                         "conditions": [
                             "boardStateCheck"
                         ],
-                        "action": "conditionalTokenDeploy",
-                        "parameters": {
-                            "condition1": {
-                                "unitsInPlay": 0,
-                                "token": {
-                                    "name": "Gundam",
-                                    "traits": [
-                                        "White Base Team"
-                                    ],
-                                    "ap": 3,
-                                    "hp": 3
-                                }
-                            },
-                            "condition2": {
-                                "unitsInPlay": 1,
-                                "token": {
-                                    "name": "Guncannon",
-                                    "traits": [
-                                        "White Base Team"
-                                    ],
-                                    "ap": 2,
-                                    "hp": 2
-                                }
-                            },
-                            "condition3": {
-                                "unitsInPlay": ">=2",
-                                "token": {
-                                    "name": "Guntank",
-                                    "traits": [
-                                        "White Base Team"
-                                    ],
-                                    "ap": 1,
-                                    "hp": 1
-                                }
-                            }
-                        }
-                    }
-                ]
+	                        "action": "conditionalTokenDeploy",
+	                        "parameters": {
+	                            "condition1": {
+	                                "unitsInPlay": 0,
+	                                "token": {
+	                                    "cardId": "T-001"
+	                                }
+	                            },
+	                            "condition2": {
+	                                "unitsInPlay": 1,
+	                                "token": {
+	                                    "cardId": "T-002"
+	                                }
+	                            },
+	                            "condition3": {
+	                                "unitsInPlay": ">=2",
+	                                "token": {
+	                                    "cardId": "T-003"
+	                                }
+	                            }
+	                        }
+	                    }
+	                ]
             }
         },
         "ST01-016": {

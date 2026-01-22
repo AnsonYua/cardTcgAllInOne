@@ -26,9 +26,25 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "<Breach 3> (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.) 【During Pair･(Cyber-Newtype) Pilot】When one of your (Titans) Units destroys an enemy shield area card with damage, this Unit recovers 2 HP."
+                    "<Breach 3> (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)",
+                    "【During Pair･(Cyber-Newtype) Pilot】When one of your (Titans) Units destroys an enemy shield area card with damage, this Unit recovers 2 HP."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "breach_3",
+                        "type": "keyword",
+                        "trigger": "BATTLE_DESTROY",
+                        "target": {
+                            "type": "card",
+                            "scope": "opponent_shield",
+                            "count": 1
+                        },
+                        "action": "damageShield",
+                        "parameters": {
+                            "value": 3
+                        }
+                    }
+                ]
             }
         },
         "GD02-002": {
@@ -52,10 +68,24 @@
             "hp": 6,
             "effects": {
                 "description": [
-                    "【During Link】",
-                    "【Once per Turn】During your turn, when one of your Units destroys an enemy Unit with battle damage, set this Unit as active."
+                    "【During Link】【Once per Turn】During your turn, when one of your Units destroys an enemy Unit with battle damage, set this Unit as active."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "link_effect",
+                        "type": "continuous",
+                        "trigger": "continuous",
+                        "sourceConditions": [
+                            {
+                                "type": "linked"
+                            }
+                        ],
+                        "action": "linkCustom",
+                        "parameters": {
+                            "text": "During your turn, when one of your Units destroys an enemy Unit with battle damage, set this Unit as active."
+                        }
+                    }
+                ]
             }
         },
         "GD02-003": {
@@ -79,10 +109,36 @@
             "hp": 2,
             "effects": {
                 "description": [
-                    "【During Pair･Lv.3 or Lower Pilot】",
-                    "【Destroyed】You may discard 1 Unit card. If you do, return the card paired with this Unit to your hand."
+                    "【During Pair･Lv.3 or Lower Pilot】【Destroyed】You may discard 1 Unit card. If you do, return the card paired with this Unit to your hand."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "destroyed_return_paired_to_hand_with_discard",
+                        "type": "triggered",
+                        "trigger": "DESTROYED",
+                        "action": "return_paired_card_to_hand",
+                        "sourceConditions": [
+                            {
+                                "type": "paired"
+                            }
+                        ],
+                        "conditions": [
+                            {
+                                "type": "pairedPilotLevel",
+                                "scope": "source",
+                                "value": "<=3"
+                            }
+                        ],
+                        "optional": true,
+                        "parameters": {
+                            "discardFromHand": {
+                                "cardType": "unit",
+                                "count": 1
+                            },
+                            "notes": "Discard cost + destroyed trigger not yet implemented."
+                        }
+                    }
+                ]
             }
         },
         "GD02-004": {
@@ -108,7 +164,17 @@
                 "description": [
                     "【When Paired】Choose 1 rested enemy Unit with 3 or less HP. It won't be set as active during the start phase of your opponent's next turn."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "pair_effect",
+                        "type": "triggered",
+                        "trigger": "PAIRING_COMPLETE",
+                        "action": "pairCustom",
+                        "parameters": {
+                            "text": "Choose 1 rested enemy Unit with 3 or less HP. It won't be set as active during the start phase of your opponent's next turn."
+                        }
+                    }
+                ]
             }
         },
         "GD02-005": {
@@ -132,10 +198,24 @@
             "hp": 4,
             "effects": {
                 "description": [
-                    "【During Link】",
-                    "【Attack】Choose 1 enemy Unit with 2 or less HP. Rest it."
+                    "【During Link】【Attack】Choose 1 enemy Unit with 2 or less HP. Rest it."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "attack_rest",
+                        "type": "triggered",
+                        "trigger": "ATTACK_PHASE",
+                        "target": {
+                            "type": "unit",
+                            "scope": "opponent",
+                            "filters": {
+                                "hp": "<=2"
+                            },
+                            "count": 1
+                        },
+                        "action": "rest"
+                    }
+                ]
             }
         },
         "GD02-006": {
@@ -161,7 +241,21 @@
                 "description": [
                     "<Blocker> (Rest this Unit to change the attack target to it.) During your turn, this Unit can't receive battle damage from enemy Units that are Lv.2 or lower."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "blocker",
+                        "type": "triggered",
+                        "trigger": "ATTACK_REDIRECT",
+                        "target": {
+                            "type": "unit",
+                            "scope": "self"
+                        },
+                        "action": "redirect_attack",
+                        "parameters": {
+                            "cost": "rest_self"
+                        }
+                    }
+                ]
             }
         },
         "GD02-007": {
@@ -187,7 +281,22 @@
                 "description": [
                     "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "repair_2",
+                        "type": "triggered",
+                        "trigger": "END_OF_TURN",
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "count": 1
+                        },
+                        "action": "heal",
+                        "parameters": {
+                            "value": 2
+                        }
+                    }
+                ]
             }
         },
         "GD02-008": {
@@ -213,7 +322,30 @@
                 "description": [
                     "【When Linked】Choose 1 rested enemy Unit. Deal 1 damage to it."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "linked_damage_rested_enemy_1",
+                        "type": "triggered",
+                        "trigger": "PAIRING_COMPLETE",
+                        "action": "damage",
+                        "sourceConditions": [
+                            {
+                                "type": "linked"
+                            }
+                        ],
+                        "target": {
+                            "type": "unit",
+                            "scope": "opponent",
+                            "filters": {
+                                "status": "rested"
+                            },
+                            "count": 1
+                        },
+                        "parameters": {
+                            "value": 1
+                        }
+                    }
+                ]
             }
         },
         "GD02-009": {
@@ -239,7 +371,28 @@
                 "description": [
                     "【Once per Turn】When this Unit's AP is reduced by an enemy effect, choose 1 rested enemy Unit. Deal 2 damage to it."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "retaliate_when_ap_reduced",
+                        "type": "triggered",
+                        "trigger": "AP_REDUCED_BY_ENEMY_EFFECT",
+                        "restrictions": [
+                            "once_per_turn"
+                        ],
+                        "action": "damage",
+                        "target": {
+                            "type": "unit",
+                            "scope": "opponent",
+                            "filters": {
+                                "status": "rested"
+                            },
+                            "count": 1
+                        },
+                        "parameters": {
+                            "value": 2
+                        }
+                    }
+                ]
             }
         },
         "GD02-010": {
@@ -265,7 +418,20 @@
                 "description": [
                     "【Once per Turn】When this Unit receives enemy effect damage, draw 1."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "draw_when_effect_damage_received",
+                        "type": "triggered",
+                        "trigger": "EFFECT_DAMAGE_RECEIVED",
+                        "restrictions": [
+                            "once_per_turn"
+                        ],
+                        "action": "draw",
+                        "parameters": {
+                            "value": 1
+                        }
+                    }
+                ]
             }
         },
         "GD02-011": {
@@ -288,7 +454,22 @@
                 "description": [
                     "【Activate･Action】Destroy this Unit：Choose 1 enemy Base/enemy Shield this Unit is battling. Deal 6 damage to it."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "activate_effect",
+                        "type": "activated",
+                        "timing": {
+                            "windows": [
+                                "ACTION_STEP"
+                            ]
+                        },
+                        "cost": {},
+                        "action": "activateCustom",
+                        "parameters": {
+                            "text": "Destroy this Unit：Choose 1 enemy Base/enemy Shield this Unit is battling. Deal 6 damage to it."
+                        }
+                    }
+                ]
             }
         },
         "GD02-012": {
@@ -359,7 +540,17 @@
                 "description": [
                     "【Deploy】Choose 1 of your (Titans) Units. It gets AP+1 during this turn."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "Choose 1 of your (Titans) Units. It gets AP+1 during this turn."
+                        }
+                    }
+                ]
             }
         },
         "GD02-015": {
@@ -407,7 +598,17 @@
                 "description": [
                     "【Deploy】Choose 1 of your (Titans) Units. It gets AP+1 during this turn."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "Choose 1 of your (Titans) Units. It gets AP+1 during this turn."
+                        }
+                    }
+                ]
             }
         },
         "GD02-017": {
@@ -433,7 +634,22 @@
                 "description": [
                     "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "repair_2",
+                        "type": "triggered",
+                        "trigger": "END_OF_TURN",
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "count": 1
+                        },
+                        "action": "heal",
+                        "parameters": {
+                            "value": 2
+                        }
+                    }
+                ]
             }
         },
         "GD02-018": {
@@ -457,7 +673,22 @@
                 "description": [
                     "This Unit can't choose the enemy player as its attack target."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "restrict_attack_player",
+                        "type": "continuous",
+                        "trigger": "continuous",
+                        "action": "restrict_attack_target",
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "count": 1
+                        },
+                        "parameters": {
+                            "disallow": "player"
+                        }
+                    }
+                ]
             }
         },
         "GD02-019": {
@@ -507,7 +738,57 @@
                     "【Deploy】Look at the top 5 cards of your deck. You may reveal 1 green (Zeon) Pilot card among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck.",
                     "【During Link】 This Unit gets AP+2."
                 ],
-                "rules": []
+	                "rules": [
+	                    {
+	                        "effectId": "deploy_tutor_green_zeon_pilot_from_top_5",
+	                        "type": "triggered",
+	                        "trigger": "ENTERS_PLAY",
+	                        "action": "tutor_top_deck",
+	                        "parameters": {
+	                            "count": 5,
+	                            "select": {
+	                                "count": 1,
+	                                "optional": true,
+	                                "toZone": "hand",
+	                                "reveal": true,
+	                                "filters": {
+	                                    "cardType": "pilot",
+	                                    "color": "Green",
+	                                    "traitsAny": [
+	                                        "Zeon"
+	                                    ]
+	                                }
+	                            },
+	                            "rest": {
+	                                "toZone": "deck_bottom",
+	                                "order": "random"
+	                            },
+	                            "notes": "Reveal/select-from-top + random bottom not yet implemented."
+	                        }
+	                    },
+	                    {
+	                        "effectId": "link_ap_boost",
+                        "type": "continuous",
+                        "trigger": "continuous",
+                        "sourceConditions": [
+                            {
+                                "type": "linked"
+                            }
+                        ],
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "count": 1
+                        },
+                        "action": "modifyAP",
+                        "parameters": {
+                            "value": 2
+                        },
+                        "timing": {
+                            "duration": "continuous"
+                        }
+                    }
+                ]
             }
         },
         "GD02-021": {
@@ -534,7 +815,17 @@
                 "description": [
                     "【Deploy】You may discard 1 green (Earth Federation) Unit card. If you do, place 1 EX Resource. Then, if you are Lv.7 or higher, draw 1."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "You may discard 1 green (Earth Federation) Unit card. If you do, place 1 EX Resource. Then, if you are Lv.7 or higher, draw 1."
+                        }
+                    }
+                ]
             }
         },
         "GD02-022": {
@@ -560,7 +851,33 @@
                 "description": [
                     "【Once per Turn】When you place an EX Resource, choose 1 of your (AGE System) Units. It gains <Breach 2> during this turn. (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "gain_breach_2_on_ex_resource",
+                        "type": "triggered",
+                        "trigger": "EX_RESOURCE_PLACED",
+                        "restrictions": [
+                            "once_per_turn"
+                        ],
+                        "action": "grant_breach",
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "filters": {
+                                "traits": [
+                                    "AGE System"
+                                ]
+                            },
+                            "count": 1
+                        },
+                        "timing": {
+                            "duration": "UNTIL_END_OF_TURN"
+                        },
+                        "parameters": {
+                            "value": 2
+                        }
+                    }
+                ]
             }
         },
         "GD02-023": {
@@ -587,7 +904,22 @@
                 "description": [
                     "【During Link】While you are Lv.7 or higher, this Unit gains <First Strike>. (While this Unit is attacking, it deals damage before the enemy Unit.)"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "link_effect",
+                        "type": "continuous",
+                        "trigger": "continuous",
+                        "sourceConditions": [
+                            {
+                                "type": "linked"
+                            }
+                        ],
+                        "action": "linkCustom",
+                        "parameters": {
+                            "text": "While you are Lv.7 or higher, this Unit gains <First Strike>. (While this Unit is attacking, it deals damage before the enemy Unit.)"
+                        }
+                    }
+                ]
             }
         },
         "GD02-024": {
@@ -613,7 +945,22 @@
                 "description": [
                     "【During Link】This Unit gains <High-Maneuver>. (This Unit can't be blocked.)"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "link_effect",
+                        "type": "continuous",
+                        "trigger": "continuous",
+                        "sourceConditions": [
+                            {
+                                "type": "linked"
+                            }
+                        ],
+                        "action": "linkCustom",
+                        "parameters": {
+                            "text": "This Unit gains <High-Maneuver>. (This Unit can't be blocked.)"
+                        }
+                    }
+                ]
             }
         },
         "GD02-025": {
@@ -638,7 +985,17 @@
                 "description": [
                     "【Deploy】Look at the top card of your deck. Return it to the top or bottom of your deck."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "Look at the top card of your deck. Return it to the top or bottom of your deck."
+                        }
+                    }
+                ]
             }
         },
         "GD02-026": {
@@ -664,7 +1021,17 @@
                 "description": [
                     "【Deploy】If you are Lv.7 or higher, choose 1 of your (AGE System) Units. It gets AP+2 during this turn."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "If you are Lv.7 or higher, choose 1 of your (AGE System) Units. It gets AP+2 during this turn."
+                        }
+                    }
+                ]
             }
         },
         "GD02-027": {
@@ -691,7 +1058,22 @@
                 "description": [
                     "<Breach 3> (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "breach_3",
+                        "type": "keyword",
+                        "trigger": "BATTLE_DESTROY",
+                        "target": {
+                            "type": "card",
+                            "scope": "opponent_shield",
+                            "count": 1
+                        },
+                        "action": "damageShield",
+                        "parameters": {
+                            "value": 3
+                        }
+                    }
+                ]
             }
         },
         "GD02-028": {
@@ -789,7 +1171,29 @@
                 "description": [
                     "While you are Lv.7 or higher, this Unit gets AP+2."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "ap_boost_if_level_ge_7",
+                        "type": "continuous",
+                        "trigger": "continuous",
+                        "action": "modifyAP",
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "count": 1
+                        },
+                        "conditions": [
+                            {
+                                "type": "playerLevel",
+                                "scope": "self",
+                                "value": ">=7"
+                            }
+                        ],
+                        "parameters": {
+                            "value": 2
+                        }
+                    }
+                ]
             }
         },
         "GD02-032": {
@@ -838,7 +1242,31 @@
                 "description": [
                     "While another friendly (Zeon) Link Unit is in play, this Unit gains <Breach 5>. (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "gain_breach_5_if_another_zeon_link",
+                        "type": "continuous",
+                        "trigger": "continuous",
+                        "action": "grant_breach",
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "count": 1
+                        },
+                        "conditions": [
+                            {
+                                "type": "hasAnotherLinkedUnitWithTrait",
+                                "scope": "self",
+                                "traits": [
+                                    "Zeon"
+                                ]
+                            }
+                        ],
+                        "parameters": {
+                            "value": 5
+                        }
+                    }
+                ]
             }
         },
         "GD02-034": {
@@ -862,7 +1290,34 @@
                 "description": [
                     "【During Pair･Red Pilot】This Unit gets AP+2."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "pair_ap_boost_if_red_pilot",
+                        "type": "continuous",
+                        "trigger": "continuous",
+                        "action": "modifyAP",
+                        "sourceConditions": [
+                            {
+                                "type": "paired"
+                            }
+                        ],
+                        "conditions": [
+                            {
+                                "type": "pairedPilotColor",
+                                "scope": "source",
+                                "value": "Red"
+                            }
+                        ],
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "count": 1
+                        },
+                        "parameters": {
+                            "value": 2
+                        }
+                    }
+                ]
             }
         },
         "GD02-035": {
@@ -886,7 +1341,22 @@
                 "description": [
                     "This Unit can't choose the enemy player as its attack target."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "restrict_attack_player",
+                        "type": "continuous",
+                        "trigger": "continuous",
+                        "action": "restrict_attack_target",
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "count": 1
+                        },
+                        "parameters": {
+                            "disallow": "player"
+                        }
+                    }
+                ]
             }
         },
         "GD02-036": {
@@ -911,10 +1381,61 @@
             "effects": {
                 "description": [
                     "【When Linked】This Unit gains <Suppression> during this turn. (Damage to Shields by an attack is dealt to the first 2 cards simultaneously.)",
-                    "【During Pair･(Neo Zeon) Pilot】",
-                    "【Attack】Choose 1 damaged enemy Unit. Deal 2 damage to it."
+                    "【During Pair･(Neo Zeon) Pilot】【Attack】Choose 1 damaged enemy Unit. Deal 2 damage to it."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "linked_grant_suppression",
+                        "type": "triggered",
+                        "trigger": "PAIRING_COMPLETE",
+                        "action": "grant_keyword",
+                        "sourceConditions": [
+                            {
+                                "type": "linked"
+                            }
+                        ],
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "count": 1
+                        },
+                        "timing": {
+                            "duration": "UNTIL_END_OF_TURN"
+                        },
+                        "parameters": {
+                            "keyword": "Suppression"
+                        }
+                    },
+                    {
+                        "effectId": "pair_attack_damage_damaged_enemy_2",
+                        "type": "triggered",
+                        "trigger": "ATTACK_PHASE",
+                        "action": "damage",
+                        "sourceConditions": [
+                            {
+                                "type": "paired"
+                            }
+                        ],
+                        "conditions": [
+                            {
+                                "type": "pairedPilotTrait",
+                                "scope": "source",
+                                "value": "Neo Zeon"
+                            }
+                        ],
+                        "target": {
+                            "type": "unit",
+                            "scope": "opponent",
+                            "filters": {
+                                "damaged": true
+                            },
+                            "count": 1
+                        },
+                        "parameters": {
+                            "value": 2
+                        }
+                    }
+                ]
             }
         },
         "GD02-037": {
@@ -938,9 +1459,34 @@
             "hp": 4,
             "effects": {
                 "description": [
-                    "<Breach 1> (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.) 【Deploy】If there are 3 or less enemy Shields, choose 1 enemy Unit with 5 or less AP. Deal 2 damage to it."
+                    "<Breach 1> (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)",
+                    "【Deploy】If there are 3 or less enemy Shields, choose 1 enemy Unit with 5 or less AP. Deal 2 damage to it."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "breach_1",
+                        "type": "keyword",
+                        "trigger": "BATTLE_DESTROY",
+                        "target": {
+                            "type": "card",
+                            "scope": "opponent_shield",
+                            "count": 1
+                        },
+                        "action": "damageShield",
+                        "parameters": {
+                            "value": 1
+                        }
+                    },
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "If there are 3 or less enemy Shields, choose 1 enemy Unit with 5 or less AP. Deal 2 damage to it."
+                        }
+                    }
+                ]
             }
         },
         "GD02-038": {
@@ -966,7 +1512,19 @@
                 "description": [
                     "【Deploy】Look at the top 3 cards of your deck. You may deploy 1 (Clan) Unit card that is Lv.4 or lower among them. Return the remaining cards randomly to the bottom of your deck."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "deploy_scry",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "scry_top_deck",
+                        "parameters": {
+                            "count": 3,
+                            "keep": 1,
+                            "bottom": 2
+                        }
+                    }
+                ]
             }
         },
         "GD02-039": {
@@ -992,7 +1550,17 @@
                 "description": [
                     "【When Paired】Choose 1 enemy Unit that is Lv.3 or lower. Deal 1 damage to it."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "pair_effect",
+                        "type": "triggered",
+                        "trigger": "PAIRING_COMPLETE",
+                        "action": "pairCustom",
+                        "parameters": {
+                            "text": "Choose 1 enemy Unit that is Lv.3 or lower. Deal 1 damage to it."
+                        }
+                    }
+                ]
             }
         },
         "GD02-040": {
@@ -1019,7 +1587,31 @@
                     "【Activate･Main】<Support 2> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)",
                     "【Deploy】Choose 1 of your other (New UNE) Units. It can't receive battle damage from enemy Units with 2 or less HP during this turn."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "activate_effect",
+                        "type": "activated",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE"
+                            ]
+                        },
+                        "cost": {},
+                        "action": "activateCustom",
+                        "parameters": {
+                            "text": "<Support 2> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)"
+                        }
+                    },
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "Choose 1 of your other (New UNE) Units. It can't receive battle damage from enemy Units with 2 or less HP during this turn."
+                        }
+                    }
+                ]
             }
         },
         "GD02-041": {
@@ -1045,7 +1637,17 @@
                 "description": [
                     "【Deploy】Choose 1 enemy Unit that is Lv.5 or higher. Deal 2 damage to it."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "Choose 1 enemy Unit that is Lv.5 or higher. Deal 2 damage to it."
+                        }
+                    }
+                ]
             }
         },
         "GD02-042": {
@@ -1071,7 +1673,17 @@
                 "description": [
                     "【Deploy】Choose 1 of your (New UNE) Units. It gains <High-Maneuver> during this turn. (This Unit can't be blocked.)"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "Choose 1 of your (New UNE) Units. It gains <High-Maneuver> during this turn. (This Unit can't be blocked.)"
+                        }
+                    }
+                ]
             }
         },
         "GD02-043": {
@@ -1095,7 +1707,17 @@
                 "description": [
                     "【Deploy】If you have another (New UNE) Unit in play, deploy 1 rested [Daughtress]((New UNE)･AP0･HP1) Unit token."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "If you have another (New UNE) Unit in play, deploy 1 rested [Daughtress]((New UNE)･AP0･HP1) Unit token."
+                        }
+                    }
+                ]
             }
         },
         "GD02-044": {
@@ -1119,7 +1741,17 @@
                 "description": [
                     "【Destroyed】If you have another (New UNE) Unit in play, deploy 1 rested [Daughtress]((New UNE)･AP0･HP1) Unit token."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "destroyed_effect",
+                        "type": "triggered",
+                        "trigger": "DESTROYED",
+                        "action": "destroyedCustom",
+                        "parameters": {
+                            "text": "If you have another (New UNE) Unit in play, deploy 1 rested [Daughtress]((New UNE)･AP0･HP1) Unit token."
+                        }
+                    }
+                ]
             }
         },
         "GD02-045": {
@@ -1143,9 +1775,32 @@
                 "description": [
                     "【Attack】If this Unit has 5 or more AP and it is attacking an enemy Unit, draw 1."
                 ],
-                "rules": []
-            }
-        },
+	                "rules": [
+	                    {
+	                        "effectId": "attack_effect",
+	                        "type": "triggered",
+	                        "trigger": "ATTACK_PHASE",
+	                        "action": "draw",
+	                        "conditions": [
+	                            {
+	                                "type": "sourceAp",
+	                                "scope": "source",
+	                                "value": ">=5"
+	                            },
+	                            {
+	                                "type": "attackTargetCardType",
+	                                "scope": "battle",
+	                                "value": "unit"
+	                            }
+	                        ],
+	                        "parameters": {
+	                            "value": 1,
+	                            "notes": "Requires engine support for detecting the current attack target card type."
+	                        }
+	                    }
+	                ]
+	            }
+	        },
         "GD02-046": {
             "id": "GD02-046",
             "name": "Sayla's Light-Type Guncannon",
@@ -1169,7 +1824,17 @@
                 "description": [
                     "【Deploy】Choose 1 enemy Unit token. Deal 2 damage to it."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "Choose 1 enemy Unit token. Deal 2 damage to it."
+                        }
+                    }
+                ]
             }
         },
         "GD02-047": {
@@ -1193,7 +1858,32 @@
                 "description": [
                     "【Activate･Main】Rest this Unit：Destroy this and choose 1 enemy Unit that is Lv.5 or lower. Deal 1 damage to it."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "activate_damage",
+                        "type": "activated",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE"
+                            ]
+                        },
+                        "cost": {
+                            "rest": "self"
+                        },
+                        "target": {
+                            "type": "unit",
+                            "scope": "opponent",
+                            "filters": {
+                                "level": "<=5"
+                            },
+                            "count": 1
+                        },
+                        "action": "damage",
+                        "parameters": {
+                            "value": 1
+                        }
+                    }
+                ]
             }
         },
         "GD02-048": {
@@ -1241,7 +1931,22 @@
                 "description": [
                     "【Activate･Main】<Support 1> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "activate_effect",
+                        "type": "activated",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE"
+                            ]
+                        },
+                        "cost": {},
+                        "action": "activateCustom",
+                        "parameters": {
+                            "text": "<Support 1> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)"
+                        }
+                    }
+                ]
             }
         },
         "GD02-050": {
@@ -1331,9 +2036,25 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "[Suppression] (Damage to Shields by an attack is dealt to the first 2 cards simultaneously.) 【During Link】During your turn, while there are 7 or more cards in your trash, all your other (Vulture) Units get AP+2."
+                    "[Suppression] (Damage to Shields by an attack is dealt to the first 2 cards simultaneously.)",
+                    "【During Link】During your turn, while there are 7 or more cards in your trash, all your other (Vulture) Units get AP+2."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "link_effect",
+                        "type": "continuous",
+                        "trigger": "continuous",
+                        "sourceConditions": [
+                            {
+                                "type": "linked"
+                            }
+                        ],
+                        "action": "linkCustom",
+                        "parameters": {
+                            "text": "During your turn, while there are 7 or more cards in your trash, all your other (Vulture) Units get AP+2."
+                        }
+                    }
+                ]
             }
         },
         "GD02-054": {
@@ -1360,9 +2081,27 @@
                 "description": [
                     "【Attack】If this Unit is damaged, draw 1."
                 ],
-                "rules": []
-            }
-        },
+	                "rules": [
+	                    {
+	                        "effectId": "attack_effect",
+	                        "type": "triggered",
+	                        "trigger": "ATTACK_PHASE",
+	                        "action": "draw",
+	                        "conditions": [
+	                            {
+	                                "type": "sourceDamaged",
+	                                "scope": "source",
+	                                "value": true
+	                            }
+	                        ],
+	                        "parameters": {
+	                            "value": 1,
+	                            "notes": "Requires engine support for detecting whether the source unit is damaged."
+	                        }
+	                    }
+	                ]
+	            }
+	        },
         "GD02-055": {
             "id": "GD02-055",
             "name": "Gundam Gusion Rebake",
@@ -1385,9 +2124,33 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "<Blocker> (Rest this Unit to change the attack target to it.) 【Deploy】Choose 1 of your Units and 1 enemy Unit. Deal 1 damage to them."
+                    "<Blocker> (Rest this Unit to change the attack target to it.)",
+                    "【Deploy】Choose 1 of your Units and 1 enemy Unit. Deal 1 damage to them."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "blocker",
+                        "type": "triggered",
+                        "trigger": "ATTACK_REDIRECT",
+                        "target": {
+                            "type": "unit",
+                            "scope": "self"
+                        },
+                        "action": "redirect_attack",
+                        "parameters": {
+                            "cost": "rest_self"
+                        }
+                    },
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "Choose 1 of your Units and 1 enemy Unit. Deal 1 damage to them."
+                        }
+                    }
+                ]
             }
         },
         "GD02-056": {
@@ -1411,10 +2174,43 @@
             "hp": 4,
             "effects": {
                 "description": [
-                    "【During Pair･(Vulture) Pilot】",
-                    "【Destroyed】Choose 1 (Vulture) Unit card that is Lv.5 or higher from your trash. Add it to your hand."
+                    "【During Pair･(Vulture) Pilot】【Destroyed】Choose 1 (Vulture) Unit card that is Lv.5 or higher from your trash. Add it to your hand."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "destroyed_add_vulture_unit_from_trash",
+                        "type": "triggered",
+                        "trigger": "DESTROYED",
+                        "action": "addToHand",
+                        "sourceConditions": [
+                            {
+                                "type": "paired"
+                            }
+                        ],
+                        "conditions": [
+                            {
+                                "type": "pairedPilotTrait",
+                                "scope": "source",
+                                "value": "Vulture"
+                            }
+                        ],
+                        "target": {
+                            "type": "card",
+                            "scope": "self_trash",
+                            "filters": {
+                                "cardType": "unit",
+                                "level": ">=5",
+                                "traits": [
+                                    "Vulture"
+                                ]
+                            },
+                            "count": 1
+                        },
+                        "parameters": {
+                            "from": "trash"
+                        }
+                    }
+                ]
             }
         },
         "GD02-057": {
@@ -1439,12 +2235,46 @@
             "hp": 3,
             "effects": {
                 "description": [
-                    "【During Pair】",
-                    "【Attack】You may choose 1 of your other Units. Destroy it. If you do, choose 1 enemy Unit that is Lv.4 or lower. Deal 2 damage to it."
+                    "【During Pair】【Attack】You may choose 1 of your other Units. Destroy it. If you do, choose 1 enemy Unit that is Lv.4 or lower. Deal 2 damage to it."
                 ],
-                "rules": []
-            }
-        },
+	                "rules": [
+	                    {
+	                        "effectId": "attack_effect",
+	                        "type": "triggered",
+	                        "trigger": "ATTACK_PHASE",
+	                        "optional": true,
+	                        "sourceConditions": [
+	                            {
+	                                "type": "paired"
+	                            }
+	                        ],
+	                        "cost": {
+	                            "destroyFriendlyUnit": {
+	                                "target": {
+	                                    "type": "unit",
+	                                    "scope": "self_all_unit",
+	                                    "count": 1
+	                                },
+	                                "excludeSource": true
+	                            }
+	                        },
+	                        "action": "damage",
+	                        "target": {
+	                            "type": "unit",
+	                            "scope": "opponent",
+	                            "filters": {
+	                                "level": "<=4"
+	                            },
+	                            "count": 1
+	                        },
+	                        "parameters": {
+	                            "value": 2,
+	                            "notes": "Destroy-friendly-unit cost not yet implemented; damage only resolves if the cost is paid."
+	                        }
+	                    }
+	                ]
+	            }
+	        },
         "GD02-058": {
             "id": "GD02-058",
             "name": "Ryusei-Go (Graze Custom Ⅱ)",
@@ -1468,7 +2298,17 @@
                 "description": [
                     "【Deploy】Choose 1 of your Units. Deal 1 damage to it. If you do, draw 1. Then, discard 1."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "Choose 1 of your Units. Deal 1 damage to it. If you do, draw 1. Then, discard 1."
+                        }
+                    }
+                ]
             }
         },
         "GD02-059": {
@@ -1494,7 +2334,21 @@
                 "description": [
                     "<Blocker> (Rest this Unit to change the attack target to it.)"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "blocker",
+                        "type": "triggered",
+                        "trigger": "ATTACK_REDIRECT",
+                        "target": {
+                            "type": "unit",
+                            "scope": "self"
+                        },
+                        "action": "redirect_attack",
+                        "parameters": {
+                            "cost": "rest_self"
+                        }
+                    }
+                ]
             }
         },
         "GD02-060": {
@@ -1520,7 +2374,17 @@
                 "description": [
                     "【Deploy】If there are 7 or more cards in your trash, choose 1 enemy Unit that is Lv.4 or lower. Rest it."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "If there are 7 or more cards in your trash, choose 1 enemy Unit that is Lv.4 or lower. Rest it."
+                        }
+                    }
+                ]
             }
         },
         "GD02-061": {
@@ -1545,7 +2409,38 @@
                 "description": [
                     "【When Paired･Purple Pilot】If there are 3 or more (Teiwaz)/(Tekkadan) cards in your trash, choose 1 enemy Unit with 3 or less AP. Rest it."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "pair_rest_low_ap_if_trash_traits",
+                        "type": "triggered",
+                        "trigger": "PAIRING_COMPLETE",
+                        "action": "rest",
+                        "conditions": [
+                            {
+                                "type": "pairedPilotColor",
+                                "scope": "source",
+                                "value": "Purple"
+                            },
+                            {
+                                "type": "cardsInTrashWithTraitsAny",
+                                "scope": "self",
+                                "traits": [
+                                    "Teiwaz",
+                                    "Tekkadan"
+                                ],
+                                "value": ">=3"
+                            }
+                        ],
+                        "target": {
+                            "type": "unit",
+                            "scope": "opponent",
+                            "filters": {
+                                "ap": "<=3"
+                            },
+                            "count": 1
+                        }
+                    }
+                ]
             }
         },
         "GD02-062": {
@@ -1618,7 +2513,33 @@
                 "description": [
                     "During your turn, while there are 7 or more cards in your trash, this Unit can't receive effect damage from enemy Commands."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "prevent_effect_damage_from_commands",
+                        "type": "continuous",
+                        "trigger": "continuous",
+                        "action": "prevent_effect_damage",
+                        "timing": {
+                            "actionTurn": "YOUR_TURN"
+                        },
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "count": 1
+                        },
+                        "conditions": [
+                            {
+                                "type": "cardsInTrash",
+                                "scope": "self",
+                                "value": ">=7"
+                            }
+                        ],
+                        "parameters": {
+                            "sourceCardType": "command",
+                            "sourceController": "opponent"
+                        }
+                    }
+                ]
             }
         },
         "GD02-065": {
@@ -1664,7 +2585,22 @@
                 "description": [
                     "This Unit can't choose the enemy player as its attack target."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "restrict_attack_player",
+                        "type": "continuous",
+                        "trigger": "continuous",
+                        "action": "restrict_attack_target",
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "count": 1
+                        },
+                        "parameters": {
+                            "disallow": "player"
+                        }
+                    }
+                ]
             }
         },
         "GD02-067": {
@@ -1714,7 +2650,17 @@
                 "description": [
                     "【Deploy】Deal 2 damage to this Unit."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "Deal 2 damage to this Unit."
+                        }
+                    }
+                ]
             }
         },
         "GD02-069": {
@@ -1738,11 +2684,26 @@
             "hp": 4,
             "effects": {
                 "description": [
-                    "【During Link】",
-                    "【Activate･Main】",
-                    "【Once per Turn】Choose 1 active friendly Base. Rest it. If you do, set this Unit as active. It can't choose the enemy player as its attack target during this turn."
+                    "【During Link】【Activate･Main】【Once per Turn】Choose 1 active friendly Base. Rest it. If you do, set this Unit as active. It can't choose the enemy player as its attack target during this turn."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "activate_effect",
+                        "type": "activated",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE"
+                            ]
+                        },
+                        "cost": {
+                            "oncePerTurn": true
+                        },
+                        "action": "activateCustom",
+                        "parameters": {
+                            "text": "Choose 1 active friendly Base. Rest it. If you do, set this Unit as active. It can't choose the enemy player as its attack target during this turn."
+                        }
+                    }
+                ]
             }
         },
         "GD02-070": {
@@ -1769,7 +2730,17 @@
                 "description": [
                     "【Deploy】If there are 4 or more (Gjallarhorn) cards in your trash, draw 2. If you do, discard 2."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "If there are 4 or more (Gjallarhorn) cards in your trash, draw 2. If you do, discard 2."
+                        }
+                    }
+                ]
             }
         },
         "GD02-071": {
@@ -1795,7 +2766,17 @@
                 "description": [
                     "【Deploy】If a friendly white Base is in play, you may pair 1 (AEUG) Pilot card from your hand with this Unit."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "If a friendly white Base is in play, you may pair 1 (AEUG) Pilot card from your hand with this Unit."
+                        }
+                    }
+                ]
             }
         },
         "GD02-072": {
@@ -1821,7 +2802,21 @@
                 "description": [
                     "<Blocker> (Rest this Unit to change the attack target to it.) While a friendly white Base is in play, this Unit gains <Repair 1>. (At the end of your turn, this Unit recovers the specified number of HP.)"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "blocker",
+                        "type": "triggered",
+                        "trigger": "ATTACK_REDIRECT",
+                        "target": {
+                            "type": "unit",
+                            "scope": "self"
+                        },
+                        "action": "redirect_attack",
+                        "parameters": {
+                            "cost": "rest_self"
+                        }
+                    }
+                ]
             }
         },
         "GD02-073": {
@@ -1846,7 +2841,25 @@
                 "description": [
                     "During your opponent's turn, the enemy Unit battling this Unit gains <First Strike>. (While this Unit is attacking, it deals damage before the enemy Unit.)"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "grant_first_strike_to_battling_enemy",
+                        "type": "continuous",
+                        "trigger": "continuous",
+                        "action": "grant_keyword_to_battling_enemy",
+                        "timing": {
+                            "actionTurn": "OPPONENT_TURN"
+                        },
+                        "target": {
+                            "type": "unit",
+                            "scope": "battle_opponent",
+                            "count": 1
+                        },
+                        "parameters": {
+                            "keyword": "First Strike"
+                        }
+                    }
+                ]
             }
         },
         "GD02-074": {
@@ -1870,9 +2883,39 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "<High-Maneuver> (This Unit can't be blocked.) 【During Pair】While there are 4 or more Command cards in your trash, this Unit gains <Blocker>. (Rest this Unit to change the attack target to it.)"
+                    "<High-Maneuver> (This Unit can't be blocked.)",
+                    "【During Pair】While there are 4 or more Command cards in your trash, this Unit gains <Blocker>. (Rest this Unit to change the attack target to it.)"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "high_maneuver",
+                        "type": "continuous",
+                        "trigger": "continuous",
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "count": 1
+                        },
+                        "action": "grant_keyword",
+                        "parameters": {
+                            "keyword": "High-Maneuver"
+                        }
+                    },
+                    {
+                        "effectId": "during_pair_effect",
+                        "type": "continuous",
+                        "trigger": "continuous",
+                        "sourceConditions": [
+                            {
+                                "type": "paired"
+                            }
+                        ],
+                        "action": "duringPairCustom",
+                        "parameters": {
+                            "text": "While there are 4 or more Command cards in your trash, this Unit gains <Blocker>. (Rest this Unit to change the attack target to it.)"
+                        }
+                    }
+                ]
             }
         },
         "GD02-075": {
@@ -1898,7 +2941,23 @@
                 "description": [
                     "【Attack】Choose 1 active friendly Base. Rest it. If you do, choose 1 enemy Unit that is Lv.4 or lower. It gets AP-2 during this battle."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "attack_rest",
+                        "type": "triggered",
+                        "trigger": "ATTACK_PHASE",
+                        "target": {
+                            "type": "card",
+                            "scope": "opponent",
+                            "filters": {
+                                "level": "<=4",
+                                "status": "active"
+                            },
+                            "count": 1
+                        },
+                        "action": "rest"
+                    }
+                ]
             }
         },
         "GD02-076": {
@@ -1924,7 +2983,26 @@
                 "description": [
                     "While this Unit has 5 or more AP, it gains <Blocker>. (Rest this Unit to change the attack target to it.)"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "gain_blocker_if_ap_ge_5",
+                        "type": "continuous",
+                        "trigger": "continuous",
+                        "action": "grant_blocker",
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "count": 1
+                        },
+                        "conditions": [
+                            {
+                                "type": "sourceAp",
+                                "scope": "source",
+                                "value": ">=5"
+                            }
+                        ]
+                    }
+                ]
             }
         },
         "GD02-077": {
@@ -1996,7 +3074,21 @@
                 "description": [
                     "<Blocker> (Rest this Unit to change the attack target to it.)"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "blocker",
+                        "type": "triggered",
+                        "trigger": "ATTACK_REDIRECT",
+                        "target": {
+                            "type": "unit",
+                            "scope": "self"
+                        },
+                        "action": "redirect_attack",
+                        "parameters": {
+                            "cost": "rest_self"
+                        }
+                    }
+                ]
             }
         },
         "GD02-080": {
@@ -2044,7 +3136,17 @@
                 "description": [
                     "【Deploy】If a friendly white Base is in play, choose 1 enemy Unit. It gets AP-2 during this turn."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "If a friendly white Base is in play, choose 1 enemy Unit. It gets AP-2 during this turn."
+                        }
+                    }
+                ]
             }
         },
         "GD02-082": {
@@ -2070,7 +3172,28 @@
                 "description": [
                     "While you have another (Gjallarhorn) Unit in play, this Unit gains <Blocker>. (Rest this Unit to change the attack target to it.)"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "gain_blocker_if_another_gjallarhorn_unit",
+                        "type": "continuous",
+                        "trigger": "continuous",
+                        "action": "grant_blocker",
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "count": 1
+                        },
+                        "conditions": [
+                            {
+                                "type": "hasAnotherUnitWithTrait",
+                                "scope": "self",
+                                "traits": [
+                                    "Gjallarhorn"
+                                ]
+                            }
+                        ]
+                    }
+                ]
             }
         },
         "GD02-083": {
@@ -2093,7 +3216,17 @@
                 "description": [
                     "【Destroyed】If it is your opponent's turn, choose 1 of your (Gjallarhorn) Units. Set it as active."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "destroyed_effect",
+                        "type": "triggered",
+                        "trigger": "DESTROYED",
+                        "action": "destroyedCustom",
+                        "parameters": {
+                            "text": "If it is your opponent's turn, choose 1 of your (Gjallarhorn) Units. Set it as active."
+                        }
+                    }
+                ]
             }
         },
         "GD02-084": {
@@ -2138,10 +3271,34 @@
             "effects": {
                 "description": [
                     "【Burst】Add this card to your hand.",
-                    "【During Link】",
-                    "【Once per Turn】During your turn, when this Unit recovers HP, if you have 4 or less cards in your hand, draw 1."
+                    "【During Link】【Once per Turn】During your turn, when this Unit recovers HP, if you have 4 or less cards in your hand, draw 1."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_add_to_hand",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "addToHand"
+                    },
+                    {
+                        "effectId": "link_effect",
+                        "type": "continuous",
+                        "trigger": "continuous",
+                        "sourceConditions": [
+                            {
+                                "type": "linked"
+                            }
+                        ],
+                        "action": "linkCustom",
+                        "parameters": {
+                            "text": "During your turn, when this Unit recovers HP, if you have 4 or less cards in your hand, draw 1."
+                        }
+                    }
+                ]
             }
         },
         "GD02-086": {
@@ -2162,7 +3319,18 @@
                 "description": [
                     "【Burst】Add this card to your hand. While you have another (Titans) Unit in play, this gets AP+1."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_add_to_hand",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "addToHand"
+                    }
+                ]
             }
         },
         "GD02-087": {
@@ -2185,7 +3353,18 @@
                     "【Burst】Add this card to your hand.",
                     "【When Linked】If this is a blue Unit, choose 1 enemy Unit with <Blocker>. Rest it."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_add_to_hand",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "addToHand"
+                    }
+                ]
             }
         },
         "GD02-088": {
@@ -2204,14 +3383,64 @@
             "link": [],
             "ap": 1,
             "hp": 1,
-            "effects": {
-                "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【When Linked】Look at the top 3 cards of your deck. You may reveal 1 green (Earth Federation) Unit card/1 card with \"AGE Device\" in its card name among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck."
-                ],
-                "rules": []
-            }
-        },
+	            "effects": {
+	                "description": [
+	                    "【Burst】Add this card to your hand.",
+	                    "【When Linked】Look at the top 3 cards of your deck. You may reveal 1 green (Earth Federation) Unit card/1 card with \"AGE Device\" in its card name among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck."
+	                ],
+	                "rules": [
+	                    {
+	                        "effectId": "burst_add_to_hand",
+	                        "type": "triggered",
+	                        "trigger": "BURST_CONDITION",
+	                        "target": {
+	                            "type": "card",
+	                            "scope": "self"
+	                        },
+	                        "action": "addToHand"
+	                    },
+	                    {
+	                        "effectId": "linked_tutor_from_top_3",
+	                        "type": "triggered",
+	                        "trigger": "PAIRING_COMPLETE",
+	                        "action": "tutor_top_deck",
+	                        "sourceConditions": [
+	                            {
+	                                "type": "linked"
+	                            }
+	                        ],
+	                        "parameters": {
+	                            "count": 3,
+	                            "select": {
+	                                "count": 1,
+	                                "optional": true,
+	                                "toZone": "hand",
+	                                "reveal": true,
+	                                "filtersAny": [
+	                                    {
+	                                        "cardType": "unit",
+	                                        "color": "Green",
+	                                        "traitsAny": [
+	                                            "Earth Federation"
+	                                        ]
+	                                    },
+	                                    {
+	                                        "nameContainsAny": [
+	                                            "AGE Device"
+	                                        ]
+	                                    }
+	                                ]
+	                            },
+	                            "rest": {
+	                                "toZone": "deck_bottom",
+	                                "order": "random"
+	                            },
+	                            "notes": "Reveal/select-from-top with OR filters + random bottom not yet implemented."
+	                        }
+	                    }
+	                ]
+	            }
+	        },
         "GD02-089": {
             "id": "GD02-089",
             "name": "Lalah Sune",
@@ -2232,7 +3461,27 @@
                     "【Burst】Add this card to your hand.",
                     "【When Paired】Choose 1 of your other (Zeon) Link Units. It gains <Breach 1> during this turn. (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_add_to_hand",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "addToHand"
+                    },
+                    {
+                        "effectId": "pair_effect",
+                        "type": "triggered",
+                        "trigger": "PAIRING_COMPLETE",
+                        "action": "pairCustom",
+                        "parameters": {
+                            "text": "Choose 1 of your other (Zeon) Link Units. It gains <Breach 1> during this turn. (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)"
+                        }
+                    }
+                ]
             }
         },
         "GD02-090": {
@@ -2254,7 +3503,18 @@
                 "description": [
                     "【Burst】Add this card to your hand. While you have another Unit with <High-Maneuver> in play, this Unit gets AP+1."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_add_to_hand",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "addToHand"
+                    }
+                ]
             }
         },
         "GD02-091": {
@@ -2277,7 +3537,27 @@
                     "【Burst】Add this card to your hand.",
                     "【When Paired】If this Unit is red, choose 1 enemy Unit whose Lv. is equal to or lower than this Unit. Deal 1 damage to it."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_add_to_hand",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "addToHand"
+                    },
+                    {
+                        "effectId": "pair_effect",
+                        "type": "triggered",
+                        "trigger": "PAIRING_COMPLETE",
+                        "action": "pairCustom",
+                        "parameters": {
+                            "text": "If this Unit is red, choose 1 enemy Unit whose Lv. is equal to or lower than this Unit. Deal 1 damage to it."
+                        }
+                    }
+                ]
             }
         },
         "GD02-092": {
@@ -2297,12 +3577,49 @@
             "effects": {
                 "description": [
                     "【Burst】Add this card to your hand.",
-                    "【During Link】",
-                    "【Attack】Choose 1 of your (New UNE) Units. It gets AP+2 during this turn."
+                    "【During Link】【Attack】Choose 1 of your (New UNE) Units. It gets AP+2 during this turn."
                 ],
-                "rules": []
-            }
-        },
+                "rules": [
+                    {
+                        "effectId": "burst_add_to_hand",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "addToHand"
+                    },
+	                    {
+	                        "effectId": "attack_effect",
+	                        "type": "triggered",
+	                        "trigger": "ATTACK_PHASE",
+	                        "action": "modifyAP",
+	                        "sourceConditions": [
+	                            {
+	                                "type": "linked"
+	                            }
+	                        ],
+	                        "timing": {
+	                            "duration": "UNTIL_END_OF_TURN"
+	                        },
+	                        "target": {
+	                            "type": "unit",
+	                            "scope": "self_all_unit",
+	                            "filters": {
+	                                "traits": [
+	                                    "New UNE"
+	                                ]
+	                            },
+	                            "count": 1
+	                        },
+	                        "parameters": {
+	                            "value": 2
+	                        }
+	                    }
+	                ]
+	            }
+	        },
         "GD02-093": {
             "id": "GD02-093",
             "name": "Olba Frost",
@@ -2321,7 +3638,18 @@
                 "description": [
                     "【Burst】Add this card to your hand. During your turn, when this Unit destroys an enemy Unit paired with a (Newtype) Pilot with battle damage, draw 1."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_add_to_hand",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "addToHand"
+                    }
+                ]
             }
         },
         "GD02-094": {
@@ -2339,14 +3667,55 @@
             "link": [],
             "ap": 1,
             "hp": 2,
-            "effects": {
-                "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【When Paired】You may discard 1. If you do, look at the top 3 cards of your deck. You may reveal 1 (Vulture) Unit card among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck."
-                ],
-                "rules": []
-            }
-        },
+	            "effects": {
+	                "description": [
+	                    "【Burst】Add this card to your hand.",
+	                    "【When Paired】You may discard 1. If you do, look at the top 3 cards of your deck. You may reveal 1 (Vulture) Unit card among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck."
+	                ],
+	                "rules": [
+                    {
+                        "effectId": "burst_add_to_hand",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "addToHand"
+                    },
+	                    {
+	                        "effectId": "pair_effect",
+	                        "type": "triggered",
+	                        "trigger": "PAIRING_COMPLETE",
+	                        "optional": true,
+	                        "cost": {
+	                            "discardFromHand": 1
+	                        },
+	                        "action": "tutor_top_deck",
+	                        "parameters": {
+	                            "count": 3,
+	                            "select": {
+	                                "count": 1,
+	                                "optional": true,
+	                                "toZone": "hand",
+	                                "reveal": true,
+	                                "filters": {
+	                                    "cardType": "unit",
+	                                    "traitsAny": [
+	                                        "Vulture"
+	                                    ]
+	                                }
+	                            },
+	                            "rest": {
+	                                "toZone": "deck_bottom",
+	                                "order": "random"
+	                            },
+	                            "notes": "Discard-from-hand cost + reveal/select-from-top + random bottom not yet implemented; tutor only resolves if the discard cost is paid."
+	                        }
+	                    }
+	                ]
+	            }
+	        },
         "GD02-095": {
             "id": "GD02-095",
             "name": "Lafter Frankland",
@@ -2366,9 +3735,55 @@
                     "【Burst】Add this card to your hand.",
                     "【Attack】If this Unit is damaged and Lv.5 or lower, it gains <High-Maneuver> during this battle. (This Unit can't be blocked.)"
                 ],
-                "rules": []
-            }
-        },
+                "rules": [
+                    {
+                        "effectId": "burst_add_to_hand",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "addToHand"
+                    },
+	                    {
+	                        "effectId": "attack_effect",
+	                        "type": "triggered",
+	                        "trigger": "ATTACK_PHASE",
+	                        "action": "grant_keyword",
+	                        "sourceConditions": [
+	                            {
+	                                "type": "paired"
+	                            }
+	                        ],
+	                        "conditions": [
+	                            {
+	                                "type": "sourceDamaged",
+	                                "scope": "source",
+	                                "value": true
+	                            },
+	                            {
+	                                "type": "sourceLevel",
+	                                "scope": "source",
+	                                "value": "<=5"
+	                            }
+	                        ],
+	                        "timing": {
+	                            "duration": "UNTIL_END_OF_BATTLE"
+	                        },
+	                        "target": {
+	                            "type": "unit",
+	                            "scope": "self",
+	                            "count": 1
+	                        },
+	                        "parameters": {
+	                            "keyword": "High-Maneuver",
+	                            "notes": "Requires engine support for damaged checks and keyword grants."
+	                        }
+	                    }
+	                ]
+	            }
+	        },
         "GD02-096": {
             "id": "GD02-096",
             "name": "Desil Galette",
@@ -2389,7 +3804,18 @@
                     "【Burst】Add this card to your hand.",
                     "【When Linked】You may choose 1 (Vagan) Unit card that is Lv.2 or lower from your trash. Pay its cost to deploy it."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_add_to_hand",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "addToHand"
+                    }
+                ]
             }
         },
         "GD02-097": {
@@ -2411,7 +3837,18 @@
                 "description": [
                     "【Burst】Add this card to your hand. While there is a friendly white Base in play, this Unit gets AP+2."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_add_to_hand",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "addToHand"
+                    }
+                ]
             }
         },
         "GD02-098": {
@@ -2435,7 +3872,18 @@
                     "【Burst】Add this card to your hand.",
                     "【When Linked】If this is an (AEUG) Unit, draw 1. If you do, discard 1."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_add_to_hand",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "addToHand"
+                    }
+                ]
             }
         },
         "GD02-099": {
@@ -2457,7 +3905,27 @@
                     "【Burst】Add this card to your hand.",
                     "【When Paired】If there are 4 or more (Gjallarhorn) cards in your trash, choose 1 enemy Unit. It gets AP-2 during this turn."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_add_to_hand",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "addToHand"
+                    },
+                    {
+                        "effectId": "pair_effect",
+                        "type": "triggered",
+                        "trigger": "PAIRING_COMPLETE",
+                        "action": "pairCustom",
+                        "parameters": {
+                            "text": "If there are 4 or more (Gjallarhorn) cards in your trash, choose 1 enemy Unit. It gets AP-2 during this turn."
+                        }
+                    }
+                ]
             }
         },
         "GD02-100": {
@@ -2477,7 +3945,30 @@
                     "【Burst】Draw 1.",
                     "【Main】Choose 1 friendly damaged Unit. It recovers 2 HP. Then, draw 1."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_effect",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "action": "burstCustom",
+                        "parameters": {
+                            "text": "Draw 1."
+                        }
+                    },
+                    {
+                        "effectId": "play_effect",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE"
+                            ]
+                        },
+                        "action": "playCustom",
+                        "parameters": {
+                            "text": "Choose 1 friendly damaged Unit. It recovers 2 HP. Then, draw 1."
+                        }
+                    }
+                ]
             }
         },
         "GD02-101": {
@@ -2494,10 +3985,24 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "【Main】/",
-                    "【Action】Choose 1 to 2 enemy Units that are Lv.2 or lower. Rest them."
+                    "【Main】【Action】Choose 1 to 2 enemy Units that are Lv.2 or lower. Rest them."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "play_effect",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE",
+                                "ACTION_STEP"
+                            ]
+                        },
+                        "action": "playCustom",
+                        "parameters": {
+                            "text": "Choose 1 to 2 enemy Units that are Lv.2 or lower. Rest them."
+                        }
+                    }
+                ]
             }
         },
         "GD02-102": {
@@ -2516,11 +4021,46 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "【Main】/",
-                    "【Action】Choose 1 friendly (Titans) Unit. It gets AP+2 during this turn.",
+                    "【Main】【Action】Choose 1 friendly (Titans) Unit. It gets AP+2 during this turn.",
                     "【Pilot】[Mouar Pharaoh]"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "modify_ap",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE",
+                                "ACTION_STEP"
+                            ],
+                            "duration": "UNTIL_END_OF_TURN"
+                        },
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "filters": {
+                                "traits": [
+                                    "Titans"
+                                ]
+                            },
+                            "count": 1
+                        },
+                        "action": "modifyAP",
+                        "parameters": {
+                            "value": 2
+                        }
+                    },
+                    {
+                        "effectId": "pilot_designation",
+                        "type": "special",
+                        "action": "designate_pilot",
+                        "parameters": {
+                            "pilotName": "Mouar Pharaoh",
+                            "AP": 1,
+                            "HP": 0
+                        }
+                    }
+                ]
             }
         },
         "GD02-103": {
@@ -2540,7 +4080,30 @@
                     "【Burst】Choose 1 (Asuno Family) Pilot card from your trash. Add it to your hand.",
                     "【Main】If you have an (AGE System) Unit in play, place 1 EX Resource."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_effect",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "action": "burstCustom",
+                        "parameters": {
+                            "text": "Choose 1 (Asuno Family) Pilot card from your trash. Add it to your hand."
+                        }
+                    },
+                    {
+                        "effectId": "play_effect",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE"
+                            ]
+                        },
+                        "action": "playCustom",
+                        "parameters": {
+                            "text": "If you have an (AGE System) Unit in play, place 1 EX Resource."
+                        }
+                    }
+                ]
             }
         },
         "GD02-104": {
@@ -2559,7 +4122,21 @@
                 "description": [
                     "【Main】Look at the top 3 cards of your deck and return 1 to the top. Return the remaining cards to the bottom of your deck. Then, if you have a (Newtype) Pilot in play, draw 1."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "play_effect",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE"
+                            ]
+                        },
+                        "action": "playCustom",
+                        "parameters": {
+                            "text": "Look at the top 3 cards of your deck and return 1 to the top. Return the remaining cards to the bottom of your deck. Then, if you have a (Newtype) Pilot in play, draw 1."
+                        }
+                    }
+                ]
             }
         },
         "GD02-105": {
@@ -2582,7 +4159,31 @@
                     "【Action】Choose 1 of your Unit tokens. It can't receive battle damage from enemy Units during this battle.",
                     "【Pilot】[Xavier Olivette]"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "play_effect",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "ACTION_STEP"
+                            ]
+                        },
+                        "action": "playCustom",
+                        "parameters": {
+                            "text": "Choose 1 of your Unit tokens. It can't receive battle damage from enemy Units during this battle."
+                        }
+                    },
+                    {
+                        "effectId": "pilot_designation",
+                        "type": "special",
+                        "action": "designate_pilot",
+                        "parameters": {
+                            "pilotName": "Xavier Olivette",
+                            "AP": 1,
+                            "HP": 0
+                        }
+                    }
+                ]
             }
         },
         "GD02-106": {
@@ -2604,7 +4205,31 @@
                     "【Action】During this battle, your shield area cards can't receive damage from enemy Units that are Lv.3 or lower.",
                     "【Pilot】[Woolf Enneacle]"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "play_effect",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "ACTION_STEP"
+                            ]
+                        },
+                        "action": "playCustom",
+                        "parameters": {
+                            "text": "During this battle, your shield area cards can't receive damage from enemy Units that are Lv.3 or lower."
+                        }
+                    },
+                    {
+                        "effectId": "pilot_designation",
+                        "type": "special",
+                        "action": "designate_pilot",
+                        "parameters": {
+                            "pilotName": "Woolf Enneacle",
+                            "AP": 1,
+                            "HP": 0
+                        }
+                    }
+                ]
             }
         },
         "GD02-107": {
@@ -2624,7 +4249,30 @@
                     "【Burst】Choose 1 enemy Unit. Deal 1 damage to it.",
                     "【Main】Deal 1 damage to all enemy Units other than Link Units."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_effect",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "action": "burstCustom",
+                        "parameters": {
+                            "text": "Choose 1 enemy Unit. Deal 1 damage to it."
+                        }
+                    },
+                    {
+                        "effectId": "play_effect",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE"
+                            ]
+                        },
+                        "action": "playCustom",
+                        "parameters": {
+                            "text": "Deal 1 damage to all enemy Units other than Link Units."
+                        }
+                    }
+                ]
             }
         },
         "GD02-108": {
@@ -2643,7 +4291,21 @@
                 "description": [
                     "【Main】Choose 1 friendly (Clan) Unit. During this turn, it may choose an active enemy Unit that is Lv.4 or lower as its attack target."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "play_effect",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE"
+                            ]
+                        },
+                        "action": "playCustom",
+                        "parameters": {
+                            "text": "Choose 1 friendly (Clan) Unit. During this turn, it may choose an active enemy Unit that is Lv.4 or lower as its attack target."
+                        }
+                    }
+                ]
             }
         },
         "GD02-109": {
@@ -2663,11 +4325,40 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Main】/",
-                    "【Action】Choose 1 enemy Unit. Deal 1 damage to it.",
+                    "【Main】【Action】Choose 1 enemy Unit. Deal 1 damage to it.",
                     "【Pilot】[Shiiko Sugai]"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "damage",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE",
+                                "ACTION_STEP"
+                            ]
+                        },
+                        "target": {
+                            "type": "unit",
+                            "scope": "opponent",
+                            "count": 1
+                        },
+                        "action": "damage",
+                        "parameters": {
+                            "value": 1
+                        }
+                    },
+                    {
+                        "effectId": "pilot_designation",
+                        "type": "special",
+                        "action": "designate_pilot",
+                        "parameters": {
+                            "pilotName": "Shiiko Sugai",
+                            "AP": 1,
+                            "HP": 1
+                        }
+                    }
+                ]
             }
         },
         "GD02-110": {
@@ -2686,7 +4377,21 @@
                 "description": [
                     "【Main】Choose 1 Unit card that is Lv.5 or lower from your trash. Pay its cost to deploy it."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "play_effect",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE"
+                            ]
+                        },
+                        "action": "playCustom",
+                        "parameters": {
+                            "text": "Choose 1 Unit card that is Lv.5 or lower from your trash. Pay its cost to deploy it."
+                        }
+                    }
+                ]
             }
         },
         "GD02-111": {
@@ -2706,7 +4411,30 @@
                     "【Burst】Choose 1 enemy Unit that is Lv.3 or lower. Deal 2 damage to it.",
                     "【Main】Choose 6 purple Unit cards from your trash. Exile them from the game. If you do, choose 1 enemy Unit. Destroy it."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_effect",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "action": "burstCustom",
+                        "parameters": {
+                            "text": "Choose 1 enemy Unit that is Lv.3 or lower. Deal 2 damage to it."
+                        }
+                    },
+                    {
+                        "effectId": "play_effect",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE"
+                            ]
+                        },
+                        "action": "playCustom",
+                        "parameters": {
+                            "text": "Choose 6 purple Unit cards from your trash. Exile them from the game. If you do, choose 1 enemy Unit. Destroy it."
+                        }
+                    }
+                ]
             }
         },
         "GD02-112": {
@@ -2726,7 +4454,30 @@
                     "【Burst】Draw 1.",
                     "【Main】Choose 1 purple Pilot card from your trash. Add it to your hand."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_effect",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "action": "burstCustom",
+                        "parameters": {
+                            "text": "Draw 1."
+                        }
+                    },
+                    {
+                        "effectId": "play_effect",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE"
+                            ]
+                        },
+                        "action": "playCustom",
+                        "parameters": {
+                            "text": "Choose 1 purple Pilot card from your trash. Add it to your hand."
+                        }
+                    }
+                ]
             }
         },
         "GD02-113": {
@@ -2745,11 +4496,35 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Main】/",
-                    "【Action】If a friendly (Teiwaz) Link Unit is in play, choose 1 enemy Unit with 2 or less AP. Destroy it.",
+                    "【Main】【Action】If a friendly (Teiwaz) Link Unit is in play, choose 1 enemy Unit with 2 or less AP. Destroy it.",
                     "【Pilot】[Amida Arca]"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "play_effect",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE",
+                                "ACTION_STEP"
+                            ]
+                        },
+                        "action": "playCustom",
+                        "parameters": {
+                            "text": "If a friendly (Teiwaz) Link Unit is in play, choose 1 enemy Unit with 2 or less AP. Destroy it."
+                        }
+                    },
+                    {
+                        "effectId": "pilot_designation",
+                        "type": "special",
+                        "action": "designate_pilot",
+                        "parameters": {
+                            "pilotName": "Amida Arca",
+                            "AP": 1,
+                            "HP": 1
+                        }
+                    }
+                ]
             }
         },
         "GD02-114": {
@@ -2769,11 +4544,41 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "【Main】/",
-                    "【Action】Choose 1 damaged friendly Unit. It gets AP+2 during this turn.",
+                    "【Main】【Action】Choose 1 damaged friendly Unit. It gets AP+2 during this turn.",
                     "【Pilot】[Norba Shino]"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "modify_ap",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE",
+                                "ACTION_STEP"
+                            ],
+                            "duration": "UNTIL_END_OF_TURN"
+                        },
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "count": 1
+                        },
+                        "action": "modifyAP",
+                        "parameters": {
+                            "value": 2
+                        }
+                    },
+                    {
+                        "effectId": "pilot_designation",
+                        "type": "special",
+                        "action": "designate_pilot",
+                        "parameters": {
+                            "pilotName": "Norba Shino",
+                            "AP": 1,
+                            "HP": 0
+                        }
+                    }
+                ]
             }
         },
         "GD02-115": {
@@ -2792,11 +4597,46 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Main】/",
-                    "【Action】Choose 1 friendly (Vulture) Unit. It gets AP+2 during this turn.",
+                    "【Main】【Action】Choose 1 friendly (Vulture) Unit. It gets AP+2 during this turn.",
                     "【Pilot】[Witz Sou]"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "modify_ap",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE",
+                                "ACTION_STEP"
+                            ],
+                            "duration": "UNTIL_END_OF_TURN"
+                        },
+                        "target": {
+                            "type": "unit",
+                            "scope": "self",
+                            "filters": {
+                                "traits": [
+                                    "Vulture"
+                                ]
+                            },
+                            "count": 1
+                        },
+                        "action": "modifyAP",
+                        "parameters": {
+                            "value": 2
+                        }
+                    },
+                    {
+                        "effectId": "pilot_designation",
+                        "type": "special",
+                        "action": "designate_pilot",
+                        "parameters": {
+                            "pilotName": "Witz Sou",
+                            "AP": 0,
+                            "HP": 1
+                        }
+                    }
+                ]
             }
         },
         "GD02-116": {
@@ -2818,7 +4658,31 @@
                     "【Main】If there are 7 or more cards in your trash, choose 1 friendly (Vulture) Unit. During this turn, it may choose an active enemy Unit that is Lv.4 or lower as its attack target.",
                     "【Pilot】[Roybea Loy]"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "play_effect",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE"
+                            ]
+                        },
+                        "action": "playCustom",
+                        "parameters": {
+                            "text": "If there are 7 or more cards in your trash, choose 1 friendly (Vulture) Unit. During this turn, it may choose an active enemy Unit that is Lv.4 or lower as its attack target."
+                        }
+                    },
+                    {
+                        "effectId": "pilot_designation",
+                        "type": "special",
+                        "action": "designate_pilot",
+                        "parameters": {
+                            "pilotName": "Roybea Loy",
+                            "AP": 1,
+                            "HP": 0
+                        }
+                    }
+                ]
             }
         },
         "GD02-117": {
@@ -2838,7 +4702,30 @@
                     "【Burst】Choose 1 (AEUG) Base card from your trash. Add it to your hand.",
                     "【Main】Draw 3. Then, discard 2."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_effect",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "action": "burstCustom",
+                        "parameters": {
+                            "text": "Choose 1 (AEUG) Base card from your trash. Add it to your hand."
+                        }
+                    },
+                    {
+                        "effectId": "draw",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "MAIN_PHASE"
+                            ]
+                        },
+                        "action": "draw",
+                        "parameters": {
+                            "value": 3
+                        }
+                    }
+                ]
             }
         },
         "GD02-118": {
@@ -2860,7 +4747,36 @@
                     "【Action】Choose 1 enemy Unit with 4 or less HP battling a friendly Unit with <Blocker>. Return it to its owner's hand.",
                     "【Pilot】[Ein Dalton]"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "bounce",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "ACTION_STEP"
+                            ]
+                        },
+                        "target": {
+                            "type": "unit",
+                            "scope": "opponent",
+                            "filters": {
+                                "hp": "<=4"
+                            },
+                            "count": 1
+                        },
+                        "action": "return_to_hand"
+                    },
+                    {
+                        "effectId": "pilot_designation",
+                        "type": "special",
+                        "action": "designate_pilot",
+                        "parameters": {
+                            "pilotName": "Ein Dalton",
+                            "AP": 1,
+                            "HP": 0
+                        }
+                    }
+                ]
             }
         },
         "GD02-119": {
@@ -2882,7 +4798,42 @@
                     "【Action】If you have a (Gjallarhorn) Link Unit in play, choose 1 enemy Unit. It gets AP-3 during this battle.",
                     "【Pilot】[Carta Issue]"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "modify_ap",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "ACTION_STEP"
+                            ],
+                            "duration": "UNTIL_END_OF_TURN"
+                        },
+                        "target": {
+                            "type": "unit",
+                            "scope": "opponent",
+                            "filters": {
+                                "traits": [
+                                    "Gjallarhorn"
+                                ]
+                            },
+                            "count": 1
+                        },
+                        "action": "modifyAP",
+                        "parameters": {
+                            "value": -3
+                        }
+                    },
+                    {
+                        "effectId": "pilot_designation",
+                        "type": "special",
+                        "action": "designate_pilot",
+                        "parameters": {
+                            "pilotName": "Carta Issue",
+                            "AP": 1,
+                            "HP": 0
+                        }
+                    }
+                ]
             }
         },
         "GD02-120": {
@@ -2904,7 +4855,31 @@
                     "【Action】Choose 1 of your (AEUG) Units/Bases. It recovers 2 HP.",
                     "【Pilot】[Fa Yuiry]"
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "play_effect",
+                        "type": "play",
+                        "timing": {
+                            "windows": [
+                                "ACTION_STEP"
+                            ]
+                        },
+                        "action": "playCustom",
+                        "parameters": {
+                            "text": "Choose 1 of your (AEUG) Units/Bases. It recovers 2 HP."
+                        }
+                    },
+                    {
+                        "effectId": "pilot_designation",
+                        "type": "special",
+                        "action": "designate_pilot",
+                        "parameters": {
+                            "pilotName": "Fa Yuiry",
+                            "AP": 0,
+                            "HP": 1
+                        }
+                    }
+                ]
             }
         },
         "GD02-121": {
@@ -2930,7 +4905,27 @@
                     "【Burst】Deploy this card.",
                     "【Deploy】Add 1 of your Shields to your hand. Then, choose 1 friendly blue Unit. It recovers 2 HP."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_deploy",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "deploy"
+                    },
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "Add 1 of your Shields to your hand. Then, choose 1 friendly blue Unit. It recovers 2 HP."
+                        }
+                    }
+                ]
             }
         },
         "GD02-122": {
@@ -2955,7 +4950,27 @@
                     "【Burst】Deploy this card.",
                     "【Deploy】Add 1 of your Shields to your hand. Then, choose 1 rested enemy Unit that is Lv.4 or lower. Deal 1 damage to it."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_deploy",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "deploy"
+                    },
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "Add 1 of your Shields to your hand. Then, choose 1 rested enemy Unit that is Lv.4 or lower. Deal 1 damage to it."
+                        }
+                    }
+                ]
             }
         },
         "GD02-123": {
@@ -2981,7 +4996,27 @@
                     "【Burst】Deploy this card.",
                     "【Deploy】Add 1 of your Shields to your hand. Then, choose 1 friendly Unit token. During this turn, it may choose an active enemy Unit with 5 or less AP as its attack target."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_deploy",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "deploy"
+                    },
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "Add 1 of your Shields to your hand. Then, choose 1 friendly Unit token. During this turn, it may choose an active enemy Unit with 5 or less AP as its attack target."
+                        }
+                    }
+                ]
             }
         },
         "GD02-124": {
@@ -3007,7 +5042,27 @@
                     "【Burst】Deploy this card.",
                     "【Deploy】Add 1 of your Shields to your hand. During your turn, while you are Lv.7 or higher, all friendly green (Earth Federation) Units get AP+1."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_deploy",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "deploy"
+                    },
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "Add 1 of your Shields to your hand. During your turn, while you are Lv.7 or higher, all friendly green (Earth Federation) Units get AP+1."
+                        }
+                    }
+                ]
             }
         },
         "GD02-125": {
@@ -3032,7 +5087,27 @@
                     "【Burst】Deploy this card.",
                     "【Deploy】Add 1 of your Shields to your hand. Then, if it is your turn, you may discard 1 red card. If you do, draw 1."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_deploy",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "deploy"
+                    },
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "Add 1 of your Shields to your hand. Then, if it is your turn, you may discard 1 red card. If you do, draw 1."
+                        }
+                    }
+                ]
             }
         },
         "GD02-126": {
@@ -3058,7 +5133,36 @@
                     "【Deploy】Add 1 of your Shields to your hand.",
                     "【Destroyed】Choose 1 enemy Unit that is Lv.4 or lower. Deal 1 damage to it."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_deploy",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "deploy"
+                    },
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "Add 1 of your Shields to your hand."
+                        }
+                    },
+                    {
+                        "effectId": "destroyed_effect",
+                        "type": "triggered",
+                        "trigger": "DESTROYED",
+                        "action": "destroyedCustom",
+                        "parameters": {
+                            "text": "Choose 1 enemy Unit that is Lv.4 or lower. Deal 1 damage to it."
+                        }
+                    }
+                ]
             }
         },
         "GD02-127": {
@@ -3084,7 +5188,36 @@
                     "【Deploy】Add 1 of your Shields to your hand.",
                     "【Destroyed】Place the top 2 cards of your deck into your trash."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_deploy",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "deploy"
+                    },
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "Add 1 of your Shields to your hand."
+                        }
+                    },
+                    {
+                        "effectId": "destroyed_effect",
+                        "type": "triggered",
+                        "trigger": "DESTROYED",
+                        "action": "destroyedCustom",
+                        "parameters": {
+                            "text": "Place the top 2 cards of your deck into your trash."
+                        }
+                    }
+                ]
             }
         },
         "GD02-128": {
@@ -3109,7 +5242,27 @@
                     "【Burst】Deploy this card.",
                     "【Deploy】Add 1 of your Shields to your hand. Then, if it is your turn and a friendly (Teiwaz) Link Unit is in play, choose 1 enemy Unit with 2 or less AP. Destroy it."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_deploy",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "deploy"
+                    },
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "Add 1 of your Shields to your hand. Then, if it is your turn and a friendly (Teiwaz) Link Unit is in play, choose 1 enemy Unit with 2 or less AP. Destroy it."
+                        }
+                    }
+                ]
             }
         },
         "GD02-129": {
@@ -3135,7 +5288,27 @@
                     "【Burst】Deploy this card.",
                     "【Deploy】Add 1 of your Shields to your hand. This Base can't receive enemy effect damage."
                 ],
-                "rules": []
+                "rules": [
+                    {
+                        "effectId": "burst_deploy",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "deploy"
+                    },
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "Add 1 of your Shields to your hand. This Base can't receive enemy effect damage."
+                        }
+                    }
+                ]
             }
         },
         "GD02-130": {
@@ -3160,6 +5333,48 @@
                     "【Burst】Deploy this card.",
                     "【Deploy】Add 1 of your Shields to your hand. Then, if a friendly (Gjallarhorn) Unit is in play, choose 1 enemy Unit. It gets AP-2 during this turn."
                 ],
+                "rules": [
+                    {
+                        "effectId": "burst_deploy",
+                        "type": "triggered",
+                        "trigger": "BURST_CONDITION",
+                        "target": {
+                            "type": "card",
+                            "scope": "self"
+                        },
+                        "action": "deploy"
+                    },
+                    {
+                        "effectId": "deploy_effect",
+                        "type": "triggered",
+                        "trigger": "ENTERS_PLAY",
+                        "action": "deployCustom",
+                        "parameters": {
+                            "text": "Add 1 of your Shields to your hand. Then, if a friendly (Gjallarhorn) Unit is in play, choose 1 enemy Unit. It gets AP-2 during this turn."
+                        }
+                    }
+                ]
+            }
+        },
+        "T-012": {
+            "id": "T-012",
+            "name": "Daughtress",
+            "cardType": "unit",
+            "color": "Token",
+            "level": 0,
+            "cost": 0,
+            "zone": [
+                "Space",
+                "Earth"
+            ],
+            "traits": [
+                "New UNE"
+            ],
+            "link": [],
+            "ap": 0,
+            "hp": 1,
+            "effects": {
+                "description": [],
                 "rules": []
             }
         }

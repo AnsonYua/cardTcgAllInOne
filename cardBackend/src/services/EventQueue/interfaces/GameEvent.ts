@@ -177,6 +177,11 @@ export interface EffectTargetConfig {
     count?: number;
     filters?: TargetFilters;
     zone?: string[];
+    selection?: {
+        type: string;
+        tieBreaker?: string;
+        [key: string]: unknown;
+    };
 }
 
 export interface TargetReference {
@@ -213,6 +218,7 @@ export interface EffectDefinition {
     optional?: boolean;
     target?: EffectTargetConfig;
     action?: string;
+    cost?: Record<string, unknown>;
     parameters?: Record<string, unknown>;
     timing?: EffectTiming;
     conditions?: EffectCondition[];

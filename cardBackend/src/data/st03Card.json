@@ -56,7 +56,7 @@
                     {
                         "effectId": "shield_destroy_damage_2",
                         "type": "triggered",
-                        "trigger": "SHIELD_CARD_DESTROYED",
+                        "trigger": "DEFENSE_AREA_BATTLE_DAMAGE",
                         "action": "damage",
                         "timing": {
                             "actionTurn": "YOUR_TURN"
@@ -69,7 +69,11 @@
                         "parameters": {
                             "value": 2,
                             "source": "battle_damage",
-                            "notes": "No engine trigger for destroying shield-area cards with battle damage yet."
+                            "defenseAreas": [
+                                "shield",
+                                "base"
+                            ],
+                            "notes": "Triggers when this Unit deals battle damage to a card in the opponent's shield area or to an enemy Base (Base does not need to be destroyed). Engine trigger not implemented yet."
                         }
                     }
                 ]
@@ -242,26 +246,36 @@
                     "【Destroyed】Look at the top 3 cards of your deck. You may reveal 1 Zeon/Neo Zeon Unit card among them and add it to your hand. Return the rest to the bottom of your deck in random order."
                 ],
                 "rules": [
-                    {
-                        "effectId": "destroyed_tutor_zeon_unit_from_top_3",
-                        "type": "triggered",
-                        "trigger": "DESTROYED",
-                        "action": "tutor_top_deck",
-                        "parameters": {
-                            "lookCount": 3,
-                            "cardType": "unit",
-                            "allowedTraitsAny": [
-                                "Zeon",
-                                "Neo Zeon"
-                            ],
-                            "toZone": "hand",
-                            "bottomOrder": "random",
-                            "notes": "Destroyed trigger + reveal/tutor + random bottom not yet implemented."
-                        }
-                    }
-                ]
-            }
-        },
+	                    {
+	                        "effectId": "destroyed_tutor_zeon_unit_from_top_3",
+	                        "type": "triggered",
+	                        "trigger": "DESTROYED",
+	                        "action": "tutor_top_deck",
+	                        "parameters": {
+	                            "count": 3,
+	                            "select": {
+	                                "count": 1,
+	                                "optional": true,
+	                                "toZone": "hand",
+	                                "reveal": true,
+	                                "filters": {
+	                                    "cardType": "unit",
+	                                    "traitsAny": [
+	                                        "Zeon",
+	                                        "Neo Zeon"
+	                                    ]
+	                                }
+	                            },
+	                            "rest": {
+	                                "toZone": "deck_bottom",
+	                                "order": "random"
+	                            },
+	                            "notes": "Destroyed trigger + reveal/select-from-top + random bottom not yet implemented."
+	                        }
+	                    }
+	                ]
+	            }
+	        },
         "ST03-007": {
             "id": "ST03-007",
             "name": "Zaku I",

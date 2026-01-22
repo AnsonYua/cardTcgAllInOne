@@ -452,21 +452,25 @@
                     {
                         "effectId": "attack_active_low_level_5",
                         "action": "allow_attack_target",
-                        "trigger": "continuous",
-                        "type": "continuous",
+                        "trigger": "PAIRING_COMPLETE",
+                        "type": "triggered",
                         "sourceConditions": [
                             {
-                                "type": "paired"
+                                "type": "linked"
                             }
                         ],
+                        "timing": {
+                            "duration": "UNTIL_END_OF_TURN"
+                        },
                         "parameters": {
                             "status": "active",
-                            "level": "<=5"
+                            "level": "<=5",
+                            "notes": "When Linked window not yet implemented; modeled as a trigger on link completion with a temporary attack-target permission."
                         }
                     }
-                ]
-            }
-        },
+	                ]
+	            }
+	        },
         "ST04-012": {
             "id": "ST04-012",
             "name": "Striker Pack",

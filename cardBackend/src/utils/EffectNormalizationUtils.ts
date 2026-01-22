@@ -34,8 +34,6 @@ export function normalizeEffectRule(
 
     const raw = rule as Record<string, unknown>;
     const trigger = resolveTrigger(raw['trigger'], "");
-    console.log("trigger XXXXX ", JSON.stringify(trigger) , " ", JSON.stringify(raw) )
-    console.log("trigger XXXXX222 ", JSON.stringify(options.expectedTriggers))
     if (options.expectedTriggers && options.expectedTriggers.length > 0) {
         if (!trigger || !options.expectedTriggers.includes(trigger)) {
             return null;
@@ -48,6 +46,7 @@ export function normalizeEffectRule(
     }
 
     const parameters = normalizeEffectParameters(raw);
+    const cost = normalizeEffectCost(raw['cost']);
     const timing = normalizeEffectTiming(raw['timing']);
     const target = normalizeTargetConfig(raw['target'], {
         scope: options.defaultTargetScope,
@@ -81,6 +80,7 @@ export function normalizeEffectRule(
         optional,
         target,
         action,
+        cost,
         parameters,
         timing,
         conditions,
@@ -198,6 +198,14 @@ export function normalizeEffectParameters(
     return undefined;
 }
 
+export function normalizeEffectCost(costValue: unknown): Record<string, unknown> | undefined {
+    if (!costValue || typeof costValue !== 'object') {
+        return undefined;
+    }
+
+    return costValue as Record<string, unknown>;
+}
+
 export function normalizeEffectTiming(timingValue: unknown): EffectTiming | undefined {
     if (!timingValue || typeof timingValue !== 'object') {
         return undefined;
@@ -289,6 +297,19 @@ export function normalizeTargetConfig(
     }
     if (zone && zone.length > 0) {
         normalized.zone = zone;
+    }
+
+    const selectionValue = target['selection'];
+    if (selectionValue && typeof selectionValue === 'object') {
+        const selection = selectionValue as Record<string, unknown>;
+        const selectionType = resolveString(selection['type']);
+        if (selectionType) {
+            normalized.selection = {
+                ...selection,
+                type: selectionType,
+                ...(typeof selection['tieBreaker'] === 'string' ? { tieBreaker: selection['tieBreaker'] } : {})
+            };
+        }
     }
 
     if (Object.keys(normalized).length === 0) {
