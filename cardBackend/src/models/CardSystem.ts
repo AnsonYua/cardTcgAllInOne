@@ -14,6 +14,7 @@ export interface TemporaryEffect {
     modifyAP?: number;                  // AP modification (optional)
     modifyHP?: number;                  // HP modification (optional)
     breachValue?: number;               // Breach damage granted (optional)
+    grantedKeywords?: string[];         // Keywords granted (optional)
     duration: string;                   // Effect duration
     appliedTurn: number;                // Which turn this was applied
     appliedBy: string;                  // Which player applied it
@@ -420,11 +421,24 @@ export class CardDatabaseManager {
     private static ensureCardDatabaseLoaded(): void {
         if (!CardDatabaseManager.cardDatabase) {
             try {
-                const cardDataPath = path.join(__dirname, '../data/st01Card.json');
-                const cardFileData = JSON.parse(fs.readFileSync(cardDataPath, 'utf8'));
-                // Extract cards from nested structure
-                CardDatabaseManager.cardDatabase = cardFileData.cards || cardFileData;
-                console.log('📚 Card database loaded into global storage');
+                const dataDir = path.join(__dirname, '../data');
+                const files = fs.readdirSync(dataDir)
+                    .filter(filename => /^(st|gd)\d{2}Card\.json$/i.test(filename))
+                    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+                const merged: Record<string, any> = {};
+                for (const filename of files) {
+                    const cardDataPath = path.join(dataDir, filename);
+                    const raw = JSON.parse(fs.readFileSync(cardDataPath, 'utf8'));
+                    const cards = raw?.cards || raw;
+                    if (!cards || typeof cards !== 'object') {
+                        continue;
+                    }
+                    Object.assign(merged, cards);
+                }
+
+                CardDatabaseManager.cardDatabase = merged;
+                console.log(`📚 Card database loaded into global storage (${Object.keys(merged).length} cards)`);
             } catch (error) {
                 console.error('❌ Failed to load card database:', error);
                 CardDatabaseManager.cardDatabase = {};

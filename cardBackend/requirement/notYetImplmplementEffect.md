@@ -5,14 +5,8 @@ These items need implementation or explicit mapping so that all card effects can
 
 ## ST Actions with no handler
 
-- `choose_one_then_deploy_token` (e.g., `ST04-012` in `st04Card.json`)
-- `deploy_from_hand` (e.g., `ST03-010` in `st03Card.json`)
-- `draw_if_moved_cards_match_traits` (e.g., `ST07-001` in `st07Card.json`)
-- `draw_then_discard` (e.g., `ST04-002` in `st04Card.json`)
-- `grant_keyword` (e.g., `ST06-001` in `st06Card.json`)
 - `modifyCost` (e.g., `ST08-001` in `st08Card.json`)
 - `modifyLevel` (e.g., `ST08-001` in `st08Card.json`)
-- `moveTopDeckToTrash` (e.g., `ST07-001` in `st07Card.json`)
 - `prevent_battle_damage` (e.g., `ST06-013` in `st06Card.json`)
 - `prevent_damage` (e.g., `ST07-015` in `st07Card.json`)
 - `prevent_set_active_next_turn` (e.g., `ST08-009` in `st08Card.json`)
@@ -23,13 +17,9 @@ These items need implementation or explicit mapping so that all card effects can
 ## GD Actions with no handler
 
 - `applyStatusEffect` (e.g., `GD03-120` in `gd03Card.json`)
-- `deploy_from_hand` (e.g., `GD01-028` in `gd01Card.json`)
 - `deploy_from_top_deck` (e.g., `GD01-045` in `gd01Card.json`)
-- `draw_then_discard` (e.g., `GD01-074` in `gd01Card.json`)
 - `exileFromTrash` (e.g., `GD02-111` in `gd02Card.json`)
-- `grant_keyword` (e.g., `GD01-001` in `gd01Card.json`)
 - `modifyCost` (e.g., `GD01-016` in `gd01Card.json`)
-- `moveTopDeckToTrash` (e.g., `GD02-127` in `gd02Card.json`)
 - `pair_from_trash` (e.g., `GD01-023` in `gd01Card.json`)
 - `prevent_battle_damage` (e.g., `GD02-006` in `gd02Card.json`)
 - `prevent_damage` (e.g., `GD02-064` in `gd02Card.json`)
@@ -49,13 +39,10 @@ These items need implementation or explicit mapping so that all card effects can
 - `battleDestroyEvent` (e.g., `GD02-002` in `gd02Card.json`)
 - `battleOpponentLevel` (e.g., `GD01-063` in `gd01Card.json`)
 - `cardsInPlay` (e.g., `ST07-004` in `st07Card.json`)
-- `cardsInTrash` (e.g., `ST07-001` in `st07Card.json`)
-- `cardsInTrashWithTraitsAny` (e.g., `GD02-061` in `gd02Card.json`)
 - `hasAnotherLinkedUnit` (e.g., `ST04-009` in `st04Card.json`)
 - `hasAnotherLinkedUnitWithTrait` (e.g., `GD02-033` in `gd02Card.json`)
 - `hasAnotherUnitWithTrait` (e.g., `GD01-007` in `gd01Card.json`)
 - `noPairedPilot` (e.g., `GD01-023` in `gd01Card.json`)
-- `noUnitTokenWithTrait` (e.g., `ST04-012` in `st04Card.json`)
 - `opponentHandSize` (e.g., `GD01-097` in `gd01Card.json`)
 - `pairedPilotColor` (e.g., `GD02-034` in `gd02Card.json`)
 - `pairedPilotLevel` (e.g., `ST04-001` in `st04Card.json`)
@@ -73,7 +60,6 @@ These items need implementation or explicit mapping so that all card effects can
 - `sourceStatus` (e.g., `GD03-070` in `gd03Card.json`)
 - `unitsInPlayWithFilter` (e.g., `ST06-014` in `st06Card.json`)
 - `unitsInPlayWithStatus` (e.g., `GD01-047` in `gd01Card.json`)
-- `unitsInPlayWithTrait` (e.g., `ST06-001` in `st06Card.json`)
 
 ## Source condition types with no reference in services
 

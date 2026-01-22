@@ -1,0 +1,334 @@
+{
+  "description": "st03-010_deploy_from_hand_deploy_st03_005",
+  "gameId": "st03-010_deploy_from_hand_deploy_st03_005",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "ST03-010",
+    "deploy_from_hand",
+    "Pairing"
+  ],
+  "notes": [
+    "Action: Player A (playerId_1) plays ST03-010 from hand as a pilot onto ST03-006 in slot2 (PAIRING_COMPLETE).",
+    "Expect: ST03-010 leaves hand and is now the pilot in slot2; a deploy-from-hand choice is created that includes ST03-005 from hand.",
+    "Action: Player A resolves deploy_from_hand and selects ST03-005 from hand to deploy.",
+    "Expect: ST03-005 moves from hand to slot1; hand size decreases by 1; slot1 now contains ST03-005.",
+    "Assumption: deploy_from_hand deploys ST03-005 without paying its normal cost, and auto-fills the first empty unit slot (slot1)."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_3bxbxq5uy",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "ST03-008_draw_0001",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "ST03-010_action_0001",
+              "cardId": "ST03-010",
+              "cardData": {
+                "id": "ST03-010",
+                "name": "Full Frontal",
+                "cardType": "pilot",
+                "color": "Red",
+                "level": 6,
+                "cost": 1,
+                "zone": [],
+                "traits": [
+                  "Neo Zeon",
+                  "Cyber-Newtype"
+                ],
+                "link": [],
+                "ap": 2,
+                "hp": 2,
+                "effects": {
+                  "description": [
+                    "【Burst】Add this card to your hand.",
+                    "【When Paired】You may deploy 1 Neo Zeon/Zeon Unit card that is Lv.4 or lower from your hand."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "burst_add_to_hand",
+                      "trigger": "BURST_CONDITION",
+                      "target": {
+                        "type": "card",
+                        "scope": "self"
+                      },
+                      "action": "addToHand",
+                      "type": "triggered"
+                    },
+                    {
+                      "effectId": "pair_deploy_unit_from_hand",
+                      "type": "triggered",
+                      "trigger": "PAIRING_COMPLETE",
+                      "action": "deploy_from_hand",
+                      "optional": true,
+                      "parameters": {
+                        "maxLevel": 4,
+                        "allowedTraitsAny": [
+                          "Neo Zeon",
+                          "Zeon"
+                        ],
+                        "notes": "Deploying a unit from hand as a pairing trigger is not implemented."
+                      },
+                      "target": {
+                        "type": "unit",
+                        "scope": "self_hand",
+                        "filters": {
+                          "level": "<=4",
+                          "traits": [
+                            "Neo Zeon",
+                            "Zeon"
+                          ]
+                        },
+                        "count": 1
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "carduid": "ST03-005_action_0001",
+              "cardId": "ST03-005",
+              "cardData": {
+                "id": "ST03-005",
+                "name": "Dra-C (Sleeves)",
+                "cardType": "unit",
+                "color": "Red",
+                "level": 1,
+                "cost": 1,
+                "zone": [
+                  "Space"
+                ],
+                "traits": [
+                  "Neo Zeon"
+                ],
+                "link": [],
+                "ap": 1,
+                "hp": 2,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              }
+            }
+          ],
+          "handUids": [
+            "ST03-010_action_0001",
+            "ST03-005_action_0001"
+          ],
+          "mainDeck": [
+            "ST03-008_draw_0001"
+          ]
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {
+            "unit": {
+              "carduid": "ST03-006_unit_0001",
+              "cardId": "ST03-006",
+              "cardData": {
+                "id": "ST03-006",
+                "name": "Char’s Zaku II",
+                "cardType": "unit",
+                "color": "Green",
+                "level": 3,
+                "cost": 2,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Zeon"
+                ],
+                "link": [
+                  "Char Aznable"
+                ],
+                "ap": 3,
+                "hp": 2,
+                "effects": {
+                  "description": [
+                    "【Destroyed】Look at the top 3 cards of your deck. You may reveal 1 Zeon/Neo Zeon Unit card among them and add it to your hand. Return the rest to the bottom of your deck in random order."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "destroyed_tutor_zeon_unit_from_top_3",
+                      "type": "triggered",
+                      "trigger": "DESTROYED",
+                      "action": "tutor_top_deck",
+                      "parameters": {
+                        "count": 3,
+                        "select": {
+                          "count": 1,
+                          "optional": true,
+                          "toZone": "hand",
+                          "reveal": true,
+                          "filters": {
+                            "cardType": "unit",
+                            "traitsAny": [
+                              "Zeon",
+                              "Neo Zeon"
+                            ]
+                          }
+                        },
+                        "rest": {
+                          "toZone": "deck_bottom",
+                          "order": "random"
+                        },
+                        "notes": "Destroyed trigger + reveal/select-from-top + random bottom not yet implemented."
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "originalAP": 3,
+              "originalHP": 2,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_st03_010_a_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST03-007_unit_0001",
+              "cardId": "ST03-007",
+              "cardData": {
+                "id": "ST03-007",
+                "name": "Zaku I",
+                "cardType": "unit",
+                "color": "Green",
+                "level": 1,
+                "cost": 1,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Zeon"
+                ],
+                "link": [],
+                "ap": 1,
+                "hp": 2,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalAP": 1,
+              "originalHP": 2,
+              "isFirstPlay": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
+

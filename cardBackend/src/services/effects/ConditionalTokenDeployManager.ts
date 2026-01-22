@@ -5,7 +5,6 @@ import { GameEnvironment } from '../../models/GameEnvironment';
 import { EffectDefinition } from '../EventQueue/interfaces/GameEvent';
 import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 import { CardDatabaseManager, createZoneCard, UnitZoneCard } from '../../models/CardSystem';
-import { SLOT_ZONES } from '../../config/gameConstants';
 import { PlayerCardManager } from '../PlayerCardManager';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { ExecutionResult } from '../ExecutionResult';
@@ -54,7 +53,7 @@ export class ConditionalTokenDeployManager {
         if (!player?.zones) {
             return [];
         }
-        return this.collectEmptySlots(player.zones);
+        return SlotZoneUtils.getEmptySlotNames(player.zones);
     }
 
     static buildPlan(
@@ -184,7 +183,7 @@ export class ConditionalTokenDeployManager {
     }
 
     private static findEmptySlots(playerZones: any, count: number): string[] {
-        const slots = this.collectEmptySlots(playerZones);
+        const slots = SlotZoneUtils.getEmptySlotNames(playerZones);
         return slots.slice(0, Math.max(0, count));
     }
 
@@ -252,14 +251,4 @@ export class ConditionalTokenDeployManager {
         };
     }
 
-    private static collectEmptySlots(playerZones: any): string[] {
-        const slots: string[] = [];
-        for (const slotName of SLOT_ZONES) {
-            const slot = playerZones[slotName as keyof typeof playerZones] as any;
-            if (slot?.unit == null && slot?.pilot == null) {
-                slots.push(slotName);
-            }
-        }
-        return slots;
-    }
 }

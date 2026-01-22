@@ -1020,25 +1020,17 @@ export class GameController {
                 return;
             }
 
-            // Validate that we have at least one target
-            if (selectedTargets.length === 0) {
-                res.status(400).json({
-                    error: 'At least one target must be selected',
-                    timestamp: new Date().toISOString(),
-                    context: 'confirmTargetChoice endpoint'
-                });
-                return;
-            }
-
             // Validate each target structure
-            for (const target of selectedTargets) {
-                if (!target.carduid || !target.zone || !target.playerId) {
-                    res.status(400).json({
-                        error: 'Each target must include carduid, zone, and playerId',
-                        timestamp: new Date().toISOString(),
-                        context: 'confirmTargetChoice endpoint'
-                    });
-                    return;
+            if (selectedTargets.length > 0) {
+                for (const target of selectedTargets) {
+                    if (!target.carduid || !target.zone || !target.playerId) {
+                        res.status(400).json({
+                            error: 'Each target must include carduid, zone, and playerId',
+                            timestamp: new Date().toISOString(),
+                            context: 'confirmTargetChoice endpoint'
+                        });
+                        return;
+                    }
                 }
             }
             

@@ -25,6 +25,7 @@ import {
     emitBattleResolutionNotification
 } from './battle/BattleSnapshotUtils';
 import { getShieldCardsToAttack, isShieldDamagePrevented } from './battle/BattleShieldUtils';
+import { KeywordUtils } from '../utils/KeywordUtils';
 
 export class BattlePhaseManager {
     static initiateAttack(gameEnv: GameEnvironment, event: PlayerActionEvent): ExecutionResult {
@@ -387,22 +388,40 @@ export class BattlePhaseManager {
         const attackerStats = PlayerCardManager.getCurrentUnitCardInSlotAPandHP(gameEnv, attackingUnit.carduid);
         const defenderStats = PlayerCardManager.getCurrentUnitCardInSlotAPandHP(gameEnv, targetUnit.carduid);
 
-        const attackerRemainingHP = Math.max(0, attackerStats.totalHP - defenderStats.totalAP);
-        const defenderRemainingHP = Math.max(0, defenderStats.totalHP - attackerStats.totalAP);
+        const attackerHasFirstStrike = KeywordUtils.hasKeyword(attackingUnit as UnitZoneCard, 'First Strike');
 
-        const attackerDestroyed = attackerRemainingHP <= 0;
-        const defenderDestroyed = defenderRemainingHP <= 0;
+        let attackerDestroyed = false;
+        let defenderDestroyed = false;
+        let attackerDamageTaken = 0;
+        let defenderDamageTaken = 0;
 
-        if (attackerDestroyed) {
-            PlayerCardManager.updateUnitDamage(attackingUnit, defenderStats.totalAP);
+        if (attackerHasFirstStrike) {
+            defenderDamageTaken = attackerStats.totalAP;
+            PlayerCardManager.updateUnitDamage(targetUnit, defenderDamageTaken);
+
+            const defenderRemainingHP = Math.max(0, defenderStats.totalHP - defenderDamageTaken);
+            defenderDestroyed = defenderRemainingHP <= 0;
+
+            if (!defenderDestroyed) {
+                attackerDamageTaken = defenderStats.totalAP;
+                PlayerCardManager.updateUnitDamage(attackingUnit, attackerDamageTaken);
+                const attackerRemainingHP = Math.max(0, attackerStats.totalHP - attackerDamageTaken);
+                attackerDestroyed = attackerRemainingHP <= 0;
+            } else {
+                attackerDestroyed = attackerStats.totalHP <= 0;
+            }
         } else {
-            PlayerCardManager.updateUnitDamage(attackingUnit, defenderStats.totalAP);
-        }
+            attackerDamageTaken = defenderStats.totalAP;
+            defenderDamageTaken = attackerStats.totalAP;
 
-        if (defenderDestroyed) {
-            PlayerCardManager.updateUnitDamage(targetUnit, attackerStats.totalAP);
-        } else {
-            PlayerCardManager.updateUnitDamage(targetUnit, attackerStats.totalAP);
+            const attackerRemainingHP = Math.max(0, attackerStats.totalHP - attackerDamageTaken);
+            const defenderRemainingHP = Math.max(0, defenderStats.totalHP - defenderDamageTaken);
+
+            attackerDestroyed = attackerRemainingHP <= 0;
+            defenderDestroyed = defenderRemainingHP <= 0;
+
+            PlayerCardManager.updateUnitDamage(attackingUnit, attackerDamageTaken);
+            PlayerCardManager.updateUnitDamage(targetUnit, defenderDamageTaken);
         }
 
         if (defenderDestroyed) {
@@ -451,8 +470,9 @@ export class BattlePhaseManager {
                 targetType: 'unit',
                 attackerDestroyed,
                 defenderDestroyed,
-                attackerDamageTaken: defenderStats.totalAP,
-                defenderDamageTaken: attackerStats.totalAP
+                attackerDamageTaken,
+                defenderDamageTaken,
+                attackerHasFirstStrike
             }
         });
 

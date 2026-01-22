@@ -103,8 +103,7 @@
                         "action": "draw_then_discard",
                         "parameters": {
                             "draw": 1,
-                            "discard": 1,
-                            "notes": "Draw-then-discard sequencing not yet implemented."
+                            "discard": 1
                         }
                     }
                 ]
@@ -540,8 +539,7 @@
                                     },
                                     "count": 1
                                 }
-                            ],
-                            "notes": "Choice + token deploy selection not yet implemented."
+                            ]
                         }
                     }
                 ]

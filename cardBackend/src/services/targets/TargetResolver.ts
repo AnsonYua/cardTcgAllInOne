@@ -5,6 +5,8 @@ import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { UnitZoneCard, PilotZoneCard } from '../../models/CardSystem';
 import { normalizeTargetConfig, validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 import { PlayerCardManager } from '../PlayerCardManager';
+import { HandTargetResolver } from './HandTargetResolver';
+import { EnergyTargetResolver } from './EnergyTargetResolver';
 
 export interface ResolvedTargetConfig {
     type: TargetType;
@@ -55,6 +57,8 @@ export class TargetResolver {
 
         const scopeValue = typeof targetConfig.scope === 'string' ? targetConfig.scope.toLowerCase() : '';
         const isShieldScope = scopeValue.includes('shield') || targetConfig.type === 'shield';
+        const isHandScope = scopeValue.includes('hand');
+        const isEnergyScope = targetConfig.type === 'energy' || scopeValue.includes('resource') || scopeValue.includes('energy');
 
         if (isShieldScope) {
             const targetPlayerIds = this.getTargetPlayerIds(gameEnv, playerId, targetConfig.scope);
@@ -76,6 +80,12 @@ export class TargetResolver {
                     });
                 }
             }
+        } else if (isHandScope) {
+            const targetPlayerIds = this.getTargetPlayerIds(gameEnv, playerId, targetConfig.scope);
+            targets.push(...HandTargetResolver.generateHandTargets(gameEnv, targetPlayerIds, targetConfig));
+        } else if (isEnergyScope) {
+            const targetPlayerIds = this.getTargetPlayerIds(gameEnv, playerId, targetConfig.scope);
+            targets.push(...EnergyTargetResolver.generateEnergyTargets(gameEnv, targetPlayerIds, targetConfig));
         } else {
             const targetPlayerIds = this.getTargetPlayerIds(gameEnv, playerId, targetConfig.scope);
 
@@ -140,6 +150,8 @@ export class TargetResolver {
             case 'self_all':
             case 'self_unit':
             case 'self_shield':
+            case 'self_hand':
+            case 'self_resource':
                 return [playerId];
             case 'opponent_shield': {
                 const opponentId = gameEnv.getOpponentId(playerId);

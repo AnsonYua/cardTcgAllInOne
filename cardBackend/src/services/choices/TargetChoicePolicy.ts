@@ -1,0 +1,36 @@
+// src/services/choices/TargetChoicePolicy.ts
+
+import type { EffectDefinition, TargetReference } from '../EventQueue/interfaces/GameEvent';
+import type { ResolvedTargetConfig } from '../targets/TargetResolver';
+
+export class TargetChoicePolicy {
+    static requiresChoice(
+        targetConfig: ResolvedTargetConfig,
+        availableTargets: TargetReference[],
+        effect: EffectDefinition
+    ): boolean {
+        if (targetConfig.scope === 'self_shield' || targetConfig.scope === 'opponent_shield') {
+            return false;
+        }
+
+        const scopeValue = typeof targetConfig.scope === 'string' ? targetConfig.scope.toLowerCase() : '';
+        if (scopeValue.includes('all')) {
+            return false;
+        }
+
+        if (targetConfig.count <= 0) {
+            return false;
+        }
+
+        if (effect.optional === true) {
+            return availableTargets.length > 0;
+        }
+
+        if (targetConfig.count > 1) {
+            return availableTargets.length > 0;
+        }
+
+        return availableTargets.length > 1;
+    }
+}
+

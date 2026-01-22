@@ -17,11 +17,13 @@ import {
     TargetChoiceSelection,
     TargetReference
 } from './EventQueue/interfaces/GameEvent';
-import { EventFactory } from './EventQueue/EventFactory';
 import { EffectExecutor } from './effects/EffectExecutor';
 import { ensureEffectDefaults } from '../utils/EffectNormalizationUtils';
-import { TargetResolver, ResolvedTargetConfig } from './targets/TargetResolver';
+import { TargetResolver } from './targets/TargetResolver';
 import { TokenChoiceManager } from './effects/TokenChoiceManager';
+import { TargetChoicePolicy } from './choices/TargetChoicePolicy';
+import { DrawThenDiscardManager } from './effects/DrawThenDiscardManager';
+import { ChoiceEventScheduler } from './choices/ChoiceEventScheduler';
 
 export interface DeployTargetResult {
     success: boolean;
@@ -64,6 +66,15 @@ export class DeployTargetManager {
                     cardPlayNotificationId
                 );
             }
+            if (effectAction === 'draw_then_discard') {
+                return DrawThenDiscardManager.processDrawThenDiscardEffect(
+                    gameEnv,
+                    playerId,
+                    sourceCarduid,
+                    normalizedEffect,
+                    cardPlayNotificationId
+                );
+            }
             if (EffectExecutor.actionSupportsNoTargets(effectAction)) {
                 const result = EffectExecutor.applyEffectToTargets(gameEnv, normalizedEffect, [], playerId, sourceCarduid);
                 return {
@@ -96,26 +107,31 @@ export class DeployTargetManager {
                 };
             }
 
-            console.log("data 111111111 ",JSON.stringify(this.requiresPlayerChoice(targetConfig, availableTargets)))
+            if (effectAction === 'grant_keyword' && targetConfig.count === 1) {
+                const sourceTarget = availableTargets.find(target => target.carduid === sourceCarduid);
+                if (sourceTarget) {
+                    const result = EffectExecutor.applyEffectToTargets(gameEnv, normalizedEffect, [sourceTarget], playerId, sourceCarduid);
+                    return {
+                        success: result.success,
+                        error: result.error,
+                        autoApplied: true,
+                        affectedTargets: result.success ? [sourceTarget] : []
+                    };
+                }
+            }
             
             // Decision logic: Choice vs Auto-application
-            if (this.requiresPlayerChoice(targetConfig, availableTargets)) {
-                // Create TARGET_CHOICE event for player selection - pass objects directly
-                const choiceEvent = EventFactory.createTargetChoiceEvent({
+            const requiresChoice = TargetChoicePolicy.requiresChoice(targetConfig, availableTargets, normalizedEffect);
+            if (requiresChoice) {
+                ChoiceEventScheduler.enqueueTargetChoice(gameEnv, {
                     playerId,
                     sourceCarduid,
                     effect: normalizedEffect,
-                    availableTargets
+                    availableTargets,
+                    cardPlayNotificationId
                 });
-
-                if (cardPlayNotificationId) {
-                    choiceEvent.data.cardPlayNotificationId = cardPlayNotificationId;
-                }
                 
-                // Add to processing queue for game event processing
-                gameEnv.enqueueForProcessing(choiceEvent);
-                
-                console.log(`🎮 Created TARGET_CHOICE event ${choiceEvent.id} with ${availableTargets.length} targets`);
+                console.log(`🎮 Created TARGET_CHOICE event with ${availableTargets.length} targets`);
                 return { 
                     success: true, 
                     requiresSelection: true 
@@ -163,18 +179,12 @@ export class DeployTargetManager {
                 eventData.selectedTargets ??
                 (eventData.selectedTarget ? [eventData.selectedTarget] : undefined);
 
-            if (!selectedTargets) {
-                return {
-                    success: false,
-                    error: 'No targets selected for effect'
-                };
-            }
-
-            if (selectedTargets.length === 0) {
-                return {
-                    success: false,
-                    error: 'No targets selected for effect'
-                };
+            if (!selectedTargets || selectedTargets.length === 0) {
+                const normalizedEffect = ensureEffectDefaults(eventData.effect);
+                if (normalizedEffect.optional === true) {
+                    return { success: true };
+                }
+                return { success: false, error: 'No targets selected for effect' };
             }
 
             const normalizedTargets: TargetReference[] = selectedTargets.map((selection) => ({
@@ -210,52 +220,7 @@ export class DeployTargetManager {
         }
     }
 
-    /**
-     * Determine if player choice is required
-     * 
-     * Logic:
-     * - If count=1 and multiple targets available → Requires choice
-     * - If count>1 → Always requires choice (select multiple)
-     * - If only one target or auto-select scenarios → No choice needed
-     */
-
-    /**
-     * Determine if player choice is required
-     * 
-     * Logic:
-     * - If count=1 and multiple targets available → Requires choice
-     * - If count>1 → Always requires choice (select multiple)
-     * - If only one target or auto-select scenarios → No choice needed
-     */
-    private static requiresPlayerChoice(targetConfig: ResolvedTargetConfig, availableTargets: TargetReference[]): boolean {
-        console.log("requiresPlayerChoice 00 " + JSON.stringify(targetConfig))
-        if (targetConfig.scope === "self_shield" || targetConfig.scope === "opponent_shield") {
-            return false;
-        }
-
-        const scopeValue = typeof targetConfig.scope === 'string'
-            ? targetConfig.scope.toLowerCase()
-            : '';
-
-        if (scopeValue.includes('all')) {
-            return false;
-        }
-
-        console.log("requiresPlayerChoice 11")
-        // Multiple target selection always requires choice
-        if (targetConfig.count > 1) {
-            return availableTargets.length > 0;
-        }
-        console.log("requiresPlayerChoice 22")
-        // Single target selection requires choice only if multiple options
-        if (targetConfig.count === 1) {
-            return availableTargets.length > 1;
-        }
-        console.log("requiresPlayerChoice 333")
-        
-        // Zero or negative count - no choice needed
-        return false;
-    }
+    // Choice requirement logic lives in TargetChoicePolicy.
     
     /**
      * Clean up expired temporary effects at end of turn

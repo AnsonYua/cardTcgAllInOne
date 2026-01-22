@@ -142,6 +142,25 @@ export class SlotZoneUtils {
     }
 
     /**
+     * Get all empty slot zone names for a player.
+     */
+    static getEmptySlotNames(playerZones: any): string[] {
+        const empty: string[] = [];
+
+        for (const zoneName of SLOT_ZONES) {
+            const result = this.getSlotZone(playerZones, zoneName);
+            if (!result.isValid || !result.slot) {
+                continue;
+            }
+            if (this.isEmpty(result.slot)) {
+                empty.push(zoneName);
+            }
+        }
+
+        return empty;
+    }
+
+    /**
      * Get unit from slot with type safety
      */
     static getUnit(slot: SlotZone): any | null {

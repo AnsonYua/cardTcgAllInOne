@@ -15,6 +15,10 @@ import { applyGrantBreachEffect } from './actions/EffectBreachActions';
 import { applyPreventShieldDamageEffect, applyDamageShieldEffect } from './actions/EffectShieldActions';
 import { applyConditionalTokenDeployEffect } from './actions/EffectTokenActions';
 import { applySetActiveEffect } from './actions/EffectSetActiveActions';
+import { applyDeployFromHandEffect } from './actions/EffectDeployFromHandActions';
+import { applySequenceEffect } from './actions/EffectSequenceActions';
+import { applyDiscardFromHandEffect } from './actions/EffectDiscardActions';
+import { applyGrantKeywordEffect } from './actions/EffectKeywordActions';
 import { extractNumericValue, resolvePlayerIdsForScope } from './actions/EffectActionUtils';
 
 interface EffectActionContext {
@@ -47,6 +51,14 @@ export class EffectExecutor {
             applyPreventShieldDamageEffect(gameEnv, sourcePlayerId, sourceCarduid, effect),
         conditionalTokenDeploy: ({ gameEnv, effect, sourcePlayerId, sourceCarduid }) =>
             applyConditionalTokenDeployEffect(gameEnv, sourcePlayerId, sourceCarduid, effect),
+        deploy_from_hand: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyDeployFromHandEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        discardFromHand: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyDiscardFromHandEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        grant_keyword: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyGrantKeywordEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        sequence: ({ gameEnv, effect, sourcePlayerId, sourceCarduid }) =>
+            applySequenceEffect(gameEnv, sourcePlayerId, sourceCarduid, effect),
         damageShield: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyDamageShieldEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         setActive: ({ gameEnv, effect, selectedTargets, sourcePlayerId }) =>
@@ -248,7 +260,8 @@ export class EffectExecutor {
             'addExtraEnergy',
             'scry_top_deck',
             'prevent_shield_damage',
-            'conditionalTokenDeploy'
+            'conditionalTokenDeploy',
+            'sequence'
         ].includes(action);
     }
 

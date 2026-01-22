@@ -5,10 +5,9 @@ import { GameEnvironment } from '../../models/GameEnvironment';
 import { EffectDefinition, EventStatus, TokenChoiceEvent, TokenChoiceOption } from '../EventQueue/interfaces/GameEvent';
 import { ConditionalTokenDeployManager, ConditionalTokenPlan } from './ConditionalTokenDeployManager';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
-import { EventFactory } from '../EventQueue/EventFactory';
-import { ChoiceNotificationEmitter } from '../notifications/ChoiceNotificationEmitter';
 import { ExecutionResult } from '../ExecutionResult';
 import { GameNotificationManager } from '../GameNotificationManager';
+import { ChoiceEventScheduler } from '../choices/ChoiceEventScheduler';
 
 export interface TokenChoiceResult {
     success: boolean;
@@ -98,19 +97,13 @@ export class TokenChoiceManager {
                 : { success: false, error: execution.error };
         }
 
-        const choiceEvent = EventFactory.createTokenChoiceEvent({
+        ChoiceEventScheduler.enqueueTokenChoice(gameEnv, {
             playerId,
             sourceCarduid,
             effect: normalizedEffect,
-            availableChoices
+            availableChoices,
+            cardPlayNotificationId
         });
-
-        if (cardPlayNotificationId) {
-            (choiceEvent.data as any).cardPlayNotificationId = cardPlayNotificationId;
-        }
-
-        gameEnv.enqueueForProcessing(choiceEvent);
-        ChoiceNotificationEmitter.emitTokenChoiceCreated(gameEnv, choiceEvent as TokenChoiceEvent);
         return { success: true, requiresSelection: true };
     }
 

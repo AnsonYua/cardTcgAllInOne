@@ -1,7 +1,6 @@
 import { GameEnvironment } from '../../../models/GameEnvironment';
 import { EffectDefinition, TargetReference } from '../../EventQueue/interfaces/GameEvent';
-import { UnitZoneCard, PilotZoneCard } from '../../../models/CardSystem';
-import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
+import { TargetCardResolver } from '../../targets/TargetCardResolver';
 
 export function applySetActiveEffect(
     gameEnv: GameEnvironment,
@@ -14,7 +13,7 @@ export function applySetActiveEffect(
     }
 
     for (const target of selectedTargets) {
-        const resolvedTarget = SlotZoneUtils.resolveTargetReference(gameEnv, target);
+        const resolvedTarget = TargetCardResolver.resolve(gameEnv, target);
         if (!resolvedTarget) {
             return {
                 success: false,
@@ -22,8 +21,7 @@ export function applySetActiveEffect(
             };
         }
 
-        const targetCard = resolvedTarget.card as UnitZoneCard | PilotZoneCard;
-        targetCard.isRested = false;
+        resolvedTarget.card.isRested = false;
         console.log(`  😌 ${target.carduid}: activated`);
     }
 

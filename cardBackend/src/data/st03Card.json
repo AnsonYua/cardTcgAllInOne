@@ -422,8 +422,7 @@
                             "allowedTraitsAny": [
                                 "Neo Zeon",
                                 "Zeon"
-                            ],
-                            "notes": "Deploying a unit from hand as a pairing trigger is not implemented."
+                            ]
                         },
                         "target": {
                             "type": "unit",

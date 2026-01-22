@@ -54,9 +54,7 @@
                             "scope": "self_resource",
                             "count": 1
                         },
-                        "parameters": {
-                            "notes": "Design placeholder: requires engine support for selecting/resting resources (energy cards)."
-                        }
+                        "parameters": {}
                     },
                     {
                         "effectId": "pair_mill_2_then_draw_if_cb_milled",
@@ -69,8 +67,7 @@
                                     "action": "moveTopDeckToTrash",
                                     "parameters": {
                                         "count": 2,
-                                        "reveal": false,
-                                        "notes": "Design placeholder: mill/move top cards to trash not yet implemented."
+                                        "reveal": false
                                     }
                                 },
                                 {
@@ -80,7 +77,7 @@
                                         "traitsAny": [
                                             "CB"
                                         ],
-                                        "notes": "Design placeholder: conditional follow-up based on milled cards."
+                                        "notes": "Conditional follow-up based on cards moved by the previous step."
                                     }
                                 }
                             ]

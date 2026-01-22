@@ -9,12 +9,13 @@ import * as path from 'path';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { PlayerActionType, EventType } from '../models/GameEnums';
 import { EventFactory, EventStatus } from './EventQueue/index';
-import { BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent, TargetReference, TokenChoiceEvent } from './EventQueue/interfaces/GameEvent';
+import { BurstEffectChoiceEvent, BlockerChoiceEvent, TargetReference } from './EventQueue/interfaces/GameEvent';
 import { PlayerAction } from '../models/EventInterfaces';
 import { StaticEventProcessor } from './StaticEventProcessor';
 import { GameNotificationManager } from './GameNotificationManager';
 import { ChoiceNotificationEmitter } from './notifications/ChoiceNotificationEmitter';
 import { processAction } from './actions/ActionProcessor';
+import { ChoiceConfirmationService } from './choices/ChoiceConfirmationService';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -988,91 +989,16 @@ export class GameLogic {
      * @param selectedTargets Array of selected target objects with carduid, zone, playerId
      */
     async confirmTargetChoice(gameId: string, playerId: string, eventId: string, selectedTargets: any[]): Promise<GameLogicResult> {
-        try {
-            console.log(`🎯 Processing target choice confirmation: ${eventId} by player ${playerId}`);
-            console.log(`Selected targets:`, selectedTargets);
-            
-            // Load game environment
-            const gameEnv = await this.loadGameFromFile(gameId);
-            if (!gameEnv) {
-                return {
-                    success: false,
-                    error: 'Game not found'
-                };
-            }
-
-            // Find the target choice event
-            const event = gameEnv.processingQueue.find(e => e.id === eventId) as TargetChoiceEvent | undefined;
-            if (!event) {
-                return {
-                    success: false,
-                    error: 'Target choice event not found'
-                };
-            }
-
-            if (event.type !== EventType.TARGET_CHOICE) {
-                return {
-                    success: false,
-                    error: 'Event is not a target choice'
-                };
-            }
-
-            // Validate that all selected targets are in the available targets
-            const availableTargets = event.data.availableTargets || [];
-            for (const selectedTarget of selectedTargets) {
-                const isValidTarget = availableTargets.some((target: any) => 
-                    target.carduid === selectedTarget.carduid && 
-                    target.zone === selectedTarget.zone && 
-                    target.playerId === selectedTarget.playerId
-                );
-                if (!isValidTarget) {
-                    return {
-                        success: false,
-                        error: `Selected target ${selectedTarget.carduid} in ${selectedTarget.zone} is not in available targets list`
-                    };
-                }
-            }
-
-            // Update event with user selection
-            event.data.selectedTargets = selectedTargets;
-            event.data.userDecisionMade = true;
-            ChoiceNotificationEmitter.emitTargetChoiceResolved(gameEnv, event);
-            
-            console.log(`🎯 Event ${eventId} updated with ${selectedTargets.length} selected target(s):`, 
-                       selectedTargets.map(t => `${t.carduid} in ${t.zone}`));
-
-            const notificationId = event.data.cardPlayNotificationId;
-            if (notificationId) {
-                const notificationManager = new GameNotificationManager(gameEnv);
-                notificationManager.updateNotificationEvent(notificationId, { isCompleted: true });
-            }
-            
-            const processingResult = await gameEnv.processEvents();
-            if (!processingResult.success) {
-                return {
-                    success: false,
-                    error: processingResult.error || 'Failed to process target choice'
-                };
-            }
-
-            // Save game state
-            await this.saveGameToFile(gameId, gameEnv);
-            
-            console.log(`✅ Target choice confirmed and processed successfully (${selectedTargets.length} target${selectedTargets.length > 1 ? 's' : ''})`);
-            
-            return {
-                success: true,
-                gameId: gameId,
-                gameEnv: gameEnv
-            };
-            
-        } catch (error) {
-            console.error('❌ Error in confirmTargetChoice:', error);
-            return {
-                success: false,
-                error: `Failed to confirm target choice: ${error instanceof Error ? error.message : 'Unknown error'}`
-            };
-        }
+        return ChoiceConfirmationService.confirmTargetChoice(
+            {
+                loadGameFromFile: this.loadGameFromFile.bind(this),
+                saveGameToFile: this.saveGameToFile.bind(this)
+            },
+            gameId,
+            playerId,
+            eventId,
+            selectedTargets
+        );
     }
 
     /**
@@ -1083,75 +1009,16 @@ export class GameLogic {
      * @param selectedChoiceIndex Index of the selected token choice
      */
     async confirmTokenChoice(gameId: string, playerId: string, eventId: string, selectedChoiceIndex: number): Promise<GameLogicResult> {
-        try {
-            console.log(`🎯 Processing token choice confirmation: ${eventId} by player ${playerId}`);
-
-            const gameEnv = await this.loadGameFromFile(gameId);
-            if (!gameEnv) {
-                return {
-                    success: false,
-                    error: 'Game not found'
-                };
-            }
-
-            const event = gameEnv.processingQueue.find(e => e.id === eventId) as TokenChoiceEvent | undefined;
-            if (!event) {
-                return {
-                    success: false,
-                    error: 'Token choice event not found'
-                };
-            }
-
-            if (event.type !== EventType.TOKEN_CHOICE) {
-                return {
-                    success: false,
-                    error: 'Event is not a token choice'
-                };
-            }
-
-            const availableChoices = event.data.availableChoices || [];
-            const selectedChoice = availableChoices.find((choice: any) => choice.index === selectedChoiceIndex);
-            if (!selectedChoice) {
-                return {
-                    success: false,
-                    error: 'Selected token choice is not available'
-                };
-            }
-
-            event.data.selectedChoiceIndex = selectedChoiceIndex;
-            event.data.userDecisionMade = true;
-            ChoiceNotificationEmitter.emitTokenChoiceResolved(gameEnv, event);
-
-            const notificationId = event.data.cardPlayNotificationId;
-            if (notificationId) {
-                const notificationManager = new GameNotificationManager(gameEnv);
-                notificationManager.updateNotificationEvent(notificationId, { isCompleted: true });
-            }
-
-            const processingResult = await gameEnv.processEvents();
-            if (!processingResult.success) {
-                return {
-                    success: false,
-                    error: processingResult.error || 'Failed to process token choice'
-                };
-            }
-
-            await this.saveGameToFile(gameId, gameEnv);
-
-            console.log(`✅ Token choice confirmed and processed successfully (index ${selectedChoiceIndex})`);
-            return {
-                success: true,
-                gameId: gameId,
-                gameEnv: gameEnv
-            };
-
-        } catch (error) {
-            console.error('❌ Error in confirmTokenChoice:', error);
-            return {
-                success: false,
-                error: `Failed to confirm token choice: ${error instanceof Error ? error.message : 'Unknown error'}`
-            };
-        }
+        return ChoiceConfirmationService.confirmTokenChoice(
+            {
+                loadGameFromFile: this.loadGameFromFile.bind(this),
+                saveGameToFile: this.saveGameToFile.bind(this)
+            },
+            gameId,
+            playerId,
+            eventId,
+            selectedChoiceIndex
+        );
     }
 
     async confirmBlockerChoice(gameId: string, playerId: string, eventId: string, selectedTargets: TargetReference[], notificationId?: string): Promise<GameLogicResult> {
