@@ -1,0 +1,16 @@
+CardName,Code,Level,Cost,Color,Type,Abilities,Zone,Trait,Link,AP/HP,Source Title
+Gundam Exia,ST07-001,5,4,Purple,UNIT,"At the end of your turn, if there are 7 or more (CB) cards in your trash, choose 1 of your Resources. Set it as active. 【When Paired】Place the top 2 cards of your deck into your trash. If you place a (CB) card with this effect, draw 1.",Space Earth,(CB) (GN Drive),[Setsuna F. Seiei],4/4,Mobile Suit Gundam 00
+Gundam Exia,ST07-002,4,2,Purple,UNIT,-,Space Earth,(CB) (GN Drive),[Setsuna F. Seiei],4/3,Mobile Suit Gundam 00
+Gundam Virtue,ST07-003,5,3,Purple,UNIT,-,Space Earth,(CB) (GN Drive),[Tieria Erde],5/4,Mobile Suit Gundam 00
+Gundam Virtue,ST07-004,3,2,Purple,UNIT,"While you have a (CB) Pilot in play, this Unit gains <Blocker>. (Rest this Unit to change the attack target to it.)",Space Earth,(CB) (GN Drive),[Tieria Erde],3/3,Mobile Suit Gundam 00
+Gundam Dynames,ST07-005,4,3,Green,UNIT,"During your turn, when this Unit destroys an enemy Unit with battle damage, this Unit recovers 2 HP. 【During Link】This Unit gets AP+2.",Space Earth,(CB) (GN Drive),[Lockon Stratos],2/4,Mobile Suit Gundam 00
+Gundam Dynames,ST07-006,3,2,Green,UNIT,-,Space Earth,(CB) (GN Drive),[Lockon Stratos],3/3,Mobile Suit Gundam 00
+Gundam Kyrios,ST07-007,3,2,Green,UNIT,"During your turn, while you have a (CB) Pilot in play, this Unit gets AP+2.",Space Earth,(CB) (GN Drive),[Allelujah Haptism] / [Hallelujah Haptism],2/3,Mobile Suit Gundam 00
+Gundam Kyrios (Flight Mode),ST07-008,2,2,Green,UNIT,-,Space Earth,(CB) (GN Drive),[Allelujah Haptism] / [Hallelujah Haptism],3/1,Mobile Suit Gundam 00
+Setsuna F. Seiei,ST07-009,4,1,Purple,PILOT,"【Burst】Add this card to your hand. 【Attack】This Unit gets AP+1 during this turn. If there are 7 or more (CB) cards in your trash, all your (CB) Units get AP+1 instead.",-,(CB),-,+2/+1,Mobile Suit Gundam 00
+Tieria Erde,ST07-010,4,1,Purple,PILOT,"【Burst】Add this card to your hand. 【Destroyed】If it is your opponent's turn and this is a (CB) Unit, draw 1.",-,(CB) (Innovade),-,+1/+1,Mobile Suit Gundam 00
+Lockon Stratos (Neil),ST07-011,4,1,Green,PILOT,"【Burst】Add this card to your hand. 【When Paired】If this is a (CB) Unit, it may choose an active enemy Unit whose Lv. is equal to or lower than this Unit as its attack target during this turn.",-,(CB),-,+1/+2,Mobile Suit Gundam 00
+Allelujah Haptism,ST07-012,3,1,Green,PILOT,"【Burst】Add this card to your hand. During your turn, while you have a (CB) Link Unit in play, this Unit can't receive battle damage from enemy Units with 3 or less AP.",-,(CB) (Super Soldier),-,+1/+1,Mobile Suit Gundam 00
+Armed Intervention,ST07-013,4,1,Purple,COMMAND,【Burst】Draw 1. 【Action】Choose 1 rested friendly (CB) Unit. Change the attack target of the battling enemy Unit to it.,-,-,-,-/-,Mobile Suit Gundam 00
+Tactical Visionary,ST07-014,1,1,Green,COMMAND,【Main】Look at the top 3 cards of your deck. You may reveal 1 (CB) Unit card/Pilot card among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck.,-,-,-,-/-,Mobile Suit Gundam 00
+Ptolemaios,ST07-015,2,1,Purple,BASE,"【Burst】Deploy this card. 【Deploy】Add 1 of your Shields to your hand. While a rested friendly (CB) Unit is in play, this Base can't receive damage from enemy Units that are Lv.3 or lower, other than Unit tokens.",Space,(CB) (Warship),-,-/5,Mobile Suit Gundam 00
