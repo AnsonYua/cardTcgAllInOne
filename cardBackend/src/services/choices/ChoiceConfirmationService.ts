@@ -5,7 +5,7 @@ import { EventType } from '../../models/GameEnums';
 import { GameNotificationManager } from '../GameNotificationManager';
 import { ChoiceNotificationEmitter } from '../notifications/ChoiceNotificationEmitter';
 import type { GameEnvironment } from '../../models/GameEnvironment';
-import type { TargetChoiceEvent, TargetReference, TokenChoiceEvent } from '../EventQueue/interfaces/GameEvent';
+import type { TargetChoiceEvent, TargetReference, TokenChoiceEvent, OptionChoiceEvent } from '../EventQueue/interfaces/GameEvent';
 import type { GameLogicResult } from '../GameLogic';
 
 export interface ChoiceConfirmationPersistence {
@@ -149,6 +149,56 @@ export class ChoiceConfirmationService {
             return {
                 success: false,
                 error: `Failed to confirm token choice: ${error instanceof Error ? error.message : 'Unknown error'}`
+            };
+        }
+    }
+
+    static async confirmOptionChoice(
+        persistence: ChoiceConfirmationPersistence,
+        gameId: string,
+        playerId: string,
+        eventId: string,
+        selectedOptionIndex: number
+    ): Promise<GameLogicResult> {
+        try {
+            const gameEnv = await persistence.loadGameFromFile(gameId);
+            if (!gameEnv) {
+                return { success: false, error: 'Game not found' };
+            }
+
+            const event = gameEnv.processingQueue.find(e => e.id === eventId) as OptionChoiceEvent | undefined;
+            if (!event) {
+                return { success: false, error: 'Option choice event not found' };
+            }
+
+            if (event.type !== EventType.OPTION_CHOICE) {
+                return { success: false, error: 'Event is not an option choice' };
+            }
+
+            if (event.playerId !== playerId) {
+                return { success: false, error: 'Player is not authorized to resolve this event' };
+            }
+
+            const availableOptions = event.data.availableOptions || [];
+            const selectedOption = availableOptions.find((opt: any) => opt.index === selectedOptionIndex);
+            if (!selectedOption) {
+                return { success: false, error: 'Selected option is not available' };
+            }
+
+            event.data.selectedOptionIndex = selectedOptionIndex;
+            event.data.userDecisionMade = true;
+            ChoiceNotificationEmitter.emitOptionChoiceResolved(gameEnv, event);
+
+            return await this.processAndPersist(
+                persistence,
+                gameId,
+                gameEnv,
+                event.data.cardPlayNotificationId
+            );
+        } catch (error) {
+            return {
+                success: false,
+                error: `Failed to confirm option choice: ${error instanceof Error ? error.message : 'Unknown error'}`
             };
         }
     }

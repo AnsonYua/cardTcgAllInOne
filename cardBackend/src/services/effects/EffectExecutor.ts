@@ -19,7 +19,12 @@ import { applyDeployFromHandEffect } from './actions/EffectDeployFromHandActions
 import { applySequenceEffect } from './actions/EffectSequenceActions';
 import { applyDiscardFromHandEffect } from './actions/EffectDiscardActions';
 import { applyGrantKeywordEffect } from './actions/EffectKeywordActions';
+import { applyPreventBattleDamageEffect } from './actions/EffectBattleDamagePreventionActions';
+import { applyPreventSetActiveNextTurnEffect } from './actions/EffectActivationLockActions';
+import { applyReturnToHandEffect } from './actions/EffectReturnToHandActions';
 import { extractNumericValue, resolvePlayerIdsForScope } from './actions/EffectActionUtils';
+import { HandZoneManager } from '../zones/HandZoneManager';
+import type { AddToHandOptions } from '../zones/HandZoneManager';
 
 interface EffectActionContext {
     gameEnv: GameEnvironment;
@@ -27,14 +32,6 @@ interface EffectActionContext {
     selectedTargets: TargetReference[];
     sourcePlayerId: string;
     sourceCarduid?: string;
-}
-
-interface AddToHandOptions {
-    eventType?: string;
-    sourceZone?: string;
-    reason?: string;
-    notify?: boolean;
-    drawContext?: string;
 }
 
 export class EffectExecutor {
@@ -62,7 +59,13 @@ export class EffectExecutor {
         damageShield: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyDamageShieldEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         setActive: ({ gameEnv, effect, selectedTargets, sourcePlayerId }) =>
-            applySetActiveEffect(gameEnv, sourcePlayerId, effect, selectedTargets)
+            applySetActiveEffect(gameEnv, sourcePlayerId, effect, selectedTargets),
+        prevent_battle_damage: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyPreventBattleDamageEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        prevent_set_active_next_turn: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyPreventSetActiveNextTurnEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        returnToHand: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyReturnToHandEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets)
     };
 
     /**
@@ -272,6 +275,10 @@ export class EffectExecutor {
         EffectTemporaryManager.cleanupExpiredTemporaryEffects(gameEnv, endingPlayerId);
     }
 
+    static cleanupEndOfBattleTemporaryEffects(gameEnv: GameEnvironment, carduids: string[]): number {
+        return EffectTemporaryManager.cleanupEndOfBattleTemporaryEffects(gameEnv, carduids);
+    }
+
     /**
      * Apply a direct stat modification to a single card without building a full target reference.
      */
@@ -330,59 +337,13 @@ export class EffectExecutor {
         cardData?: CardData | Record<string, unknown>,
         options: AddToHandOptions = {}
     ): { success: boolean; error?: string } {
-        const player = gameEnv.getPlayer(playerId);
-        if (!player || !player.deck) {
-            return {
-                success: false,
-                error: `Player ${playerId} not found`
-            };
-        }
-
-        if (!Array.isArray(player.deck._handUids)) {
-            player.deck._handUids = [];
-        }
-
-        let added = false;
-        if (!player.deck._handUids.includes(carduid)) {
-            player.deck._handUids.push(carduid);
-            added = true;
-        }
-
-        if (Array.isArray(player.deck.handUids) && !player.deck.handUids.includes(carduid)) {
-            player.deck.handUids.push(carduid);
-            added = true;
-        }
-
-        const cardName = typeof cardData?.name === 'string' ? cardData.name : 'Unknown';
-        console.log(`✅ Card ${carduid} (${cardName}) added to ${playerId}'s hand`);
-
-        if (added && options.notify !== false) {
-            const notificationManager = new GameNotificationManager(gameEnv);
-            const cardId = (cardData as { id?: string } | undefined)?.id;
-
-            const eventType = options.eventType || 'CARD_ADDED_TO_HAND';
-            const payload: Record<string, unknown> = {
-                playerId,
-                carduid,
-                cardId,
-                sourceZone: options.sourceZone,
-                reason: options.reason,
-                timestamp: Date.now()
-            };
-            if (eventType !== 'CARD_DRAWN') {
-                payload.cardName = cardName;
-            } else if (options.drawContext) {
-                payload.drawContext = options.drawContext;
-            }
-
-            notificationManager.addNotificationEvent(
-                eventType,
-                payload,
-                'normal'
-            );
-        }
-
-        return { success: true };
+        return HandZoneManager.addCardToHand(gameEnv, playerId, carduid, cardData, {
+            eventType: options.eventType,
+            sourceZone: options.sourceZone,
+            reason: options.reason,
+            notify: options.notify,
+            drawContext: options.drawContext
+        });
     }
 
 

@@ -105,7 +105,7 @@ export class EffectScannerUtils {
 
             // Find blocker effects
             for (const effect of cardData.effects.rules) {
-                if (effect.trigger === 'ATTACK_REDIRECT') {
+                if (effect.trigger === 'ATTACK_REDIRECT' && resolveEffectActionFromRule(effect) === 'redirect_attack') {
                     results.push({
                         carduid: unit.carduid,
                         effect: effect

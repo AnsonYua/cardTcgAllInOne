@@ -4,7 +4,7 @@
 import { GamePhase, ZoneType, EventType } from './GameEnums';
 import { Player, PlayerZones } from './Player';
 // EventManager removed - using direct event processing
-import { GameEvent, EventStatus, EventPriority, BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent, TokenChoiceEvent } from '../services/EventQueue/interfaces/GameEvent';
+import { GameEvent, EventStatus, EventPriority, BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent, TokenChoiceEvent, OptionChoiceEvent } from '../services/EventQueue/interfaces/GameEvent';
 import { ProcessingResult } from './EventInterfaces';
 import { BattleContext, ActionStepTargetSummary } from './BattleContext';
 import { EffectScannerUtils } from '../utils/EffectScannerUtils';
@@ -373,6 +373,10 @@ export class GameEnvironment {
                 const tokenChoice = nextEvent as TokenChoiceEvent;
                 return !tokenChoice.data.userDecisionMade;
             }
+            if (nextEvent.type === EventType.OPTION_CHOICE) {
+                const optionChoice = nextEvent as OptionChoiceEvent;
+                return !optionChoice.data.userDecisionMade;
+            }
             console.log("processs Queue next 444")
         }
         return false;
@@ -387,7 +391,8 @@ export class GameEnvironment {
             (event.type === EventType.BURST_EFFECT_CHOICE ||
              event.type === EventType.TARGET_CHOICE ||
              event.type === EventType.BLOCKER_CHOICE ||
-             event.type === EventType.TOKEN_CHOICE)
+             event.type === EventType.TOKEN_CHOICE ||
+             event.type === EventType.OPTION_CHOICE)
         );
     }
     
@@ -400,7 +405,8 @@ export class GameEnvironment {
             if (nextEvent.type === EventType.BURST_EFFECT_CHOICE ||
                 nextEvent.type === EventType.TARGET_CHOICE ||
                 nextEvent.type === EventType.BLOCKER_CHOICE ||
-                nextEvent.type === EventType.TOKEN_CHOICE) {
+                nextEvent.type === EventType.TOKEN_CHOICE ||
+                nextEvent.type === EventType.OPTION_CHOICE) {
                 return nextEvent;
             }
         }

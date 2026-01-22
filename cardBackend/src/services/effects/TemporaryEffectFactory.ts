@@ -49,5 +49,21 @@ export class TemporaryEffectFactory {
             grantedKeywords: [keyword]
         };
     }
-}
 
+    static createBattleDamagePrevention(
+        gameEnv: GameEnvironment,
+        sourcePlayerId: string,
+        sourceCarduid: string,
+        effect: EffectDefinition,
+        prevention: { from?: string; enemyLevel?: string; maxEnemyAp?: number }
+    ): TemporaryEffect {
+        return {
+            ...this.createBase(gameEnv, sourcePlayerId, sourceCarduid, effect),
+            preventBattleDamage: {
+                from: prevention.from,
+                enemyLevel: prevention.enemyLevel,
+                maxEnemyAp: prevention.maxEnemyAp
+            }
+        };
+    }
+}

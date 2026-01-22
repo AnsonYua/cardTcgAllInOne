@@ -2,7 +2,7 @@
 // Centralizes "enqueue + notify" for choice events so the frontend can drive from notificationQueue.
 
 import { GameEnvironment } from '../../models/GameEnvironment';
-import { TargetChoiceEvent, TargetReference, EffectDefinition, TokenChoiceEvent, TokenChoiceOption } from '../EventQueue/interfaces/GameEvent';
+import { TargetChoiceEvent, TargetReference, EffectDefinition, TokenChoiceEvent, TokenChoiceOption, OptionChoiceEvent, OptionChoiceOption } from '../EventQueue/interfaces/GameEvent';
 import { EventFactory } from '../EventQueue/EventFactory';
 import { ChoiceNotificationEmitter } from '../notifications/ChoiceNotificationEmitter';
 
@@ -58,5 +58,32 @@ export class ChoiceEventScheduler {
         ChoiceNotificationEmitter.emitTokenChoiceCreated(gameEnv, choiceEvent);
         return choiceEvent;
     }
-}
 
+    static enqueueOptionChoice(
+        gameEnv: GameEnvironment,
+        params: {
+            playerId: string;
+            sourceCarduid: string;
+            effect: EffectDefinition;
+            availableOptions: OptionChoiceOption[];
+            context?: Record<string, unknown>;
+            cardPlayNotificationId?: string;
+        }
+    ): OptionChoiceEvent {
+        const choiceEvent = EventFactory.createOptionChoiceEvent({
+            playerId: params.playerId,
+            sourceCarduid: params.sourceCarduid,
+            effect: params.effect,
+            availableOptions: params.availableOptions,
+            context: params.context
+        });
+
+        if (params.cardPlayNotificationId) {
+            (choiceEvent.data as any).cardPlayNotificationId = params.cardPlayNotificationId;
+        }
+
+        gameEnv.enqueueForProcessing(choiceEvent);
+        ChoiceNotificationEmitter.emitOptionChoiceCreated(gameEnv, choiceEvent);
+        return choiceEvent;
+    }
+}

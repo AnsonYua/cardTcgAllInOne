@@ -165,7 +165,13 @@ export class DeployEffectManager {
         }
 
         return (cardData.effects.rules as EffectDefinition[]).filter(rule => {
-            if (!rule || rule.type !== 'activated') {
+            if (!rule) {
+                return false;
+            }
+
+            const isActivated = rule.type === 'activated';
+            const isPlayEffect = rule.type === 'play' && cardData?.cardType === 'command';
+            if (!isActivated && !isPlayEffect) {
                 return false;
             }
 

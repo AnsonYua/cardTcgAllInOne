@@ -4,6 +4,7 @@ import { CardDatabaseManager } from '../../models/CardSystem';
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
+import { LinkUtils } from '../../utils/LinkUtils';
 
 export class ConditionEvaluators {
     static cardsInTrashWithTraitsAny(
@@ -82,6 +83,14 @@ export class ConditionEvaluators {
                 return total;
             }
 
+            const cardTypeFilter = filters['cardType'];
+            if (typeof cardTypeFilter === 'string') {
+                const cardType = typeof cardData.cardType === 'string' ? cardData.cardType : '';
+                if (cardType !== cardTypeFilter) {
+                    return total;
+                }
+            }
+
             const levelFilter = filters['level'];
             if (typeof levelFilter === 'string') {
                 const cardLevel = typeof cardData.level === 'number' ? cardData.level : 0;
@@ -109,6 +118,23 @@ export class ConditionEvaluators {
                 }
             }
 
+            const colorNotFilter = filters['colorNot'];
+            if (typeof colorNotFilter === 'string') {
+                const color = typeof cardData.color === 'string' ? cardData.color : '';
+                if (color === colorNotFilter) {
+                    return total;
+                }
+            }
+
+            const isLinkUnitFilter = filters['isLinkUnit'];
+            if (typeof isLinkUnitFilter === 'boolean') {
+                const pilot = unitResult?.pilot;
+                const linked = LinkUtils.isLinkedPair(unit, pilot);
+                if (isLinkUnitFilter !== linked) {
+                    return total;
+                }
+            }
+
             return total + 1;
         }, 0);
 
@@ -119,5 +145,33 @@ export class ConditionEvaluators {
             return validateComparisonFilter(matchingCount, value);
         }
         return true;
+    }
+
+    static evaluateUnitsInPlayWithFilterCondition(
+        gameEnv: GameEnvironment,
+        rootPlayerId: string,
+        condition: Record<string, unknown>
+    ): boolean {
+        const scope = typeof condition.scope === 'string' ? condition.scope.toLowerCase() : 'self';
+        let scopedPlayerId: string | null = rootPlayerId;
+
+        if (scope === 'opponent') {
+            scopedPlayerId = gameEnv.getOpponentId(rootPlayerId);
+        }
+
+        if (!scopedPlayerId) {
+            return false;
+        }
+
+        const filters = condition.filters && typeof condition.filters === 'object'
+            ? (condition.filters as Record<string, unknown>)
+            : {};
+
+        return ConditionEvaluators.unitsInPlayWithFilter(
+            gameEnv,
+            scopedPlayerId,
+            filters,
+            condition.value
+        );
     }
 }

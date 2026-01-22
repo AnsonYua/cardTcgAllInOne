@@ -50,15 +50,15 @@
                                 "value": "==0"
                             }
                         ],
-                        "parameters": {
-                            "value": -1,
-                            "scaling": {
-                                "type": "COUNT_UNITS_IN_PLAY",
-                                "scope": "opponent_all_unit"
-                            },
-                            "notes": "Design placeholder: also has Lv.-1 per enemy Unit; modeled only as cost reduction + separate modifyLevel rule."
-                        }
-                    },
+	                        "parameters": {
+	                            "value": -1,
+	                            "scaling": {
+	                                "type": "COUNT_UNITS_IN_PLAY",
+	                                "scope": "opponent_all_unit"
+	                            },
+	                            "notes": "Implemented: cost decreases by 1 per enemy Unit in play while you control no Lv.6+ units."
+	                        }
+	                    },
                     {
                         "effectId": "hand_level_minus_1_per_enemy_unit_if_no_friendly_ge_6",
                         "type": "continuous",
@@ -79,15 +79,15 @@
                                 "value": "==0"
                             }
                         ],
-                        "parameters": {
-                            "value": -1,
-                            "scaling": {
-                                "type": "COUNT_UNITS_IN_PLAY",
-                                "scope": "opponent_all_unit"
-                            },
-                            "notes": "Design placeholder: requires engine support for dynamic level modification in hand."
-                        }
-                    },
+	                        "parameters": {
+	                            "value": -1,
+	                            "scaling": {
+	                                "type": "COUNT_UNITS_IN_PLAY",
+	                                "scope": "opponent_all_unit"
+	                            },
+	                            "notes": "Implemented: level decreases by 1 per enemy Unit in play while you control no Lv.6+ units."
+	                        }
+	                    },
                     {
                         "effectId": "pair_damage_highest_level_enemy_3",
                         "type": "triggered",

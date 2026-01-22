@@ -165,6 +165,42 @@ export class EffectTemporaryManager {
         return initialCount - card.temporaryEffects.length;
     }
 
+    static cleanupEndOfBattleTemporaryEffects(
+        gameEnv: GameEnvironment,
+        carduids: string[]
+    ): number {
+        if (!Array.isArray(carduids) || carduids.length === 0) {
+            return 0;
+        }
+
+        let removedCount = 0;
+
+        for (const carduid of carduids) {
+            const resolved = SlotZoneUtils.getCardByUid(gameEnv, carduid) as UnitZoneCard | PilotZoneCard | null;
+            if (!resolved || !Array.isArray((resolved as any).temporaryEffects)) {
+                continue;
+            }
+
+            const card = resolved as UnitZoneCard | PilotZoneCard;
+            const before = card.temporaryEffects?.length || 0;
+            card.temporaryEffects = (card.temporaryEffects || []).filter(tempEffect => {
+                const shouldExpire = tempEffect.duration === 'UNTIL_END_OF_BATTLE';
+                if (shouldExpire) {
+                    this.revertTemporaryEffectFromUnit(card, tempEffect);
+                }
+                return !shouldExpire;
+            });
+
+            removedCount += Math.max(0, before - (card.temporaryEffects?.length || 0));
+        }
+
+        if (removedCount > 0) {
+            console.log(`⏳ Expired ${removedCount} UNTIL_END_OF_BATTLE temporary effect(s)`);
+        }
+
+        return removedCount;
+    }
+
     private static revertTemporaryEffectFromUnit(card: UnitZoneCard | PilotZoneCard, tempEffect: TemporaryEffect): void {
         if (tempEffect.modifyAP !== undefined) {
             const currentAP = (card as any).modifyAP || 0;

@@ -15,10 +15,23 @@ export interface TemporaryEffect {
     modifyHP?: number;                  // HP modification (optional)
     breachValue?: number;               // Breach damage granted (optional)
     grantedKeywords?: string[];         // Keywords granted (optional)
+    preventBattleDamage?: {
+        from?: string;
+        enemyLevel?: string;
+        maxEnemyAp?: number;
+    };
     duration: string;                   // Effect duration
     appliedTurn: number;                // Which turn this was applied
     appliedBy: string;                  // Which player applied it
     endOnSourceDestroyed?: boolean;     // Remove early if source leaves play
+}
+
+export interface ActivationLockEffect {
+    kind: 'prevent_set_active_next_turn';
+    sourceCarduid: string;
+    appliedBy: string;
+    appliedTurn: number;
+    remainingStartPhases: number;
 }
 
 // ✅ CORRECT EffectRule interface matching actual card data structure from st01Card.json
@@ -143,6 +156,8 @@ export interface UnitZoneCard extends ZoneCard {
 
     // NEW: Temporary effects applied to this unit
     temporaryEffects?: TemporaryEffect[];  // Effects that expire at end of turn
+
+    activationLocks?: ActivationLockEffect[];
 }
 
 export interface PilotZoneCard extends ZoneCard {

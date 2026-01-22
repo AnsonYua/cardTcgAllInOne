@@ -802,11 +802,11 @@
                             "from": "shield"
                         }
                     },
-                    {
-                        "effectId": "prevent_damage_from_enemy_units_le_3_if_rested_cb_unit_in_play",
-                        "type": "continuous",
-                        "trigger": "continuous",
-                        "action": "prevent_damage",
+	                    {
+	                        "effectId": "prevent_damage_from_enemy_units_le_3_if_rested_cb_unit_in_play",
+	                        "type": "continuous",
+	                        "trigger": "continuous",
+	                        "action": "prevent_damage",
                         "conditions": [
                             {
                                 "type": "unitsInPlayWithFilter",
@@ -827,12 +827,12 @@
                             "scope": "self",
                             "count": 1
                         },
-                        "parameters": {
-                            "from": "enemy_units",
-                            "enemyLevel": "<=3",
-                            "notes": "Design placeholder: requires engine support for base damage prevention filters (enemy level <=3, exclude tokens)."
-                        }
-                    }
+	                        "parameters": {
+	                            "from": "enemy_units",
+	                            "enemyLevel": "<=3",
+	                            "notes": "Engine: implemented during base attack resolution; prevents base damage from non-token enemy units with level <=3 while condition holds."
+	                        }
+	                    }
                 ]
             }
         }

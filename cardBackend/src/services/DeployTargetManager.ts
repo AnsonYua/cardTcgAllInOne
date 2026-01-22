@@ -25,6 +25,7 @@ import { TargetChoicePolicy } from './choices/TargetChoicePolicy';
 import { DrawThenDiscardManager } from './effects/DrawThenDiscardManager';
 import { ChoiceEventScheduler } from './choices/ChoiceEventScheduler';
 import { TargetSelectionUtils } from './targets/TargetSelectionUtils';
+import { TutorTopDeckManager } from './effects/TutorTopDeckManager';
 
 export interface DeployTargetResult {
     success: boolean;
@@ -76,6 +77,15 @@ export class DeployTargetManager {
                     cardPlayNotificationId
                 );
             }
+            if (effectAction === 'tutor_top_deck') {
+                return TutorTopDeckManager.processTutorTopDeckEffect(
+                    gameEnv,
+                    playerId,
+                    sourceCarduid,
+                    normalizedEffect,
+                    cardPlayNotificationId
+                );
+            }
             if (EffectExecutor.actionSupportsNoTargets(effectAction)) {
                 const result = EffectExecutor.applyEffectToTargets(gameEnv, normalizedEffect, [], playerId, sourceCarduid);
                 return {
@@ -91,7 +101,7 @@ export class DeployTargetManager {
             let availableTargets = TargetResolver.generateAvailableTargets(gameEnv, playerId, targetConfig);
             availableTargets = TargetSelectionUtils.applySelection(
                 availableTargets,
-                normalizedEffect.target?.selection as any
+                normalizedEffect.target?.selection
             );
             
             if (availableTargets.length === 0) {

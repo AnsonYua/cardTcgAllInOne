@@ -7,6 +7,8 @@ import { EnergyManager } from './EnergyManager';
 import { PlayerCardManager } from './PlayerCardManager';
 import { ContinuousEffectManager } from './ContinuousEffectManager';
 import { SLOT_ZONES } from '../config/gameConstants';
+import { GameNotificationManager } from './GameNotificationManager';
+import { ActivationLockManager } from './statusEffects/ActivationLockManager';
 
 export class TurnLifecycleManager {
     static cleanupEndTurn(gameEnv: GameEnvironment, playerId: string): void {
@@ -19,6 +21,7 @@ export class TurnLifecycleManager {
         if (player?.zones) {
             player.resetTurnStatus();
             player.zones.repairAbilitiesCheckedThisCycle = false;
+            player.zones.endTurnEffectsCheckedThisCycle = false;
             console.log(`🔄 Reset repair abilities flag for new player: ${playerId}`);
         }
 
@@ -49,16 +52,37 @@ export class TurnLifecycleManager {
             energy.isRested = false;
         }
 
+        const { preventedUnits, preventedUnitUids } = ActivationLockManager.consumePreventSetActiveNextTurnLocks(
+            gameEnv,
+            playerId
+        );
+
         for (const slotName of SLOT_ZONES) {
             const slot = (player.zones as any)[slotName];
             if (slot?.unit) {
-                slot.unit.isRested = false;
+                const unit = slot.unit;
+                if (!preventedUnitUids.has(unit.carduid)) {
+                    unit.isRested = false;
+                }
             }
         }
 
         const bases = player.zones.base || [];
         for (const base of bases) {
             base.isRested = false;
+        }
+
+        if (preventedUnits.length > 0) {
+            const notificationManager = new GameNotificationManager(gameEnv);
+            notificationManager.addNotificationEvent(
+                'PREVENT_SET_ACTIVE_NEXT_TURN_APPLIED',
+                {
+                    playerId,
+                    units: preventedUnits,
+                    timestamp: Date.now()
+                },
+                'normal'
+            );
         }
     }
 }

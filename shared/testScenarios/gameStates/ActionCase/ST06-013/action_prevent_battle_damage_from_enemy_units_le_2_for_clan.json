@@ -1,0 +1,318 @@
+{
+    "category": "ActionCase",
+    "description": "st06-013_action_prevent_battle_damage_from_enemy_units_le_2_for_clan",
+    "gameId": "st06-013_action_prevent_battle_damage_from_enemy_units_le_2_for_clan",
+    "initialGameEnv": {
+        "currentBattle": {
+            "actionType": "attackUnit",
+            "attackingPlayerId": "playerId_1",
+            "defendingPlayerId": "playerId_2",
+            "attackerCarduid": "ST06-002_attacker_0001",
+            "targetPlayerId": "playerId_2",
+            "targetCarduid": "ST06-004_defender_lv2_0001",
+            "status": "ACTION_STEP",
+            "fromBurst": false,
+            "openedAt": 1768362880422,
+            "confirmations": {
+                "playerId_1": false,
+                "playerId_2": false
+            }
+        },
+        "currentPlayer": "playerId_1",
+        "currentTurn": 1,
+        "firstPlayer": 0,
+        "gameStarted": true,
+        "hasChosenFirstPlayer": true,
+        "lastEventId": 0,
+        "maxEventsPerCycle": 50,
+        "notificationQueue": [
+            {
+                "id": "card_drawn_1768362880422_3bxbxq5uy",
+                "type": "CARD_DRAWN",
+                "metadata": {
+                    "timestamp": 1768362880422,
+                    "expiresAt": 1768362883422,
+                    "requiresAcknowledgment": false,
+                    "priority": "normal"
+                },
+                "payload": {
+                    "playerId": "playerId_1",
+                    "carduid": "ST06-013_in_hand_0001",
+                    "sourceZone": "deck",
+                    "reason": "draw",
+                    "timestamp": 1768362880422,
+                    "drawContext": "turn_start"
+                }
+            }
+        ],
+        "pendingPhaseTransition": null,
+        "phase": "ACTION_STEP_PHASE",
+        "playerId_1": "playerId_1",
+        "playerId_2": "playerId_2",
+        "players": {
+            "playerId_1": {
+                "confirmIsRedraw": false,
+                "deck": {
+                    "hand": [
+                        {
+                            "cardData": {
+                                "id": "ST06-013",
+                                "name": "Fierce Unity",
+                                "cardType": "command",
+                                "color": "Green",
+                                "level": 3,
+                                "cost": 1,
+                                "traits": [
+                                    "Clan"
+                                ],
+                                "effects": {
+                                    "description": [
+                                        "【Action】Choose 1 to 2 friendly (Clan) Units. During this turn, they can't receive battle damage from enemy Units that are Lv.2 or lower.",
+                                        "【Pilot】[Ortega (GQ)]"
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "action_prevent_battle_damage_from_enemy_units_le_2_for_clan",
+                                            "type": "play",
+                                            "timing": {
+                                                "windows": [
+                                                    "ACTION_STEP"
+                                                ],
+                                                "duration": "UNTIL_END_OF_TURN"
+                                            },
+                                            "action": "prevent_battle_damage",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self_all_unit",
+                                                "filters": {
+                                                    "traits": [
+                                                        "Clan"
+                                                    ]
+                                                },
+                                                "count": 2
+                                            },
+                                            "parameters": {
+                                                "from": "enemy_units",
+                                                "enemyLevel": "<=2"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "ap": 1,
+                                "hp": 0,
+                                "link": [],
+                                "zone": []
+                            },
+                            "cardId": "ST06-013",
+                            "carduid": "ST06-013_in_hand_0001"
+                        }
+                    ],
+                    "handUids": [
+                        "ST06-013_in_hand_0001"
+                    ],
+                    "mainDeck": []
+                },
+                "id": "playerId_1",
+                "isReady": true,
+                "isRedraw": false,
+                "name": "Player 1",
+                "playerPoint": 0,
+                "zones": {
+                    "base": [],
+                    "energyArea": [
+                        {
+                            "cardData": {
+                                "cardType": "energy"
+                            },
+                            "cardId": "energy_basic",
+                            "carduid": "energy_basic_st06_013_a_0001",
+                            "isExtraEnergy": false,
+                            "isRested": false,
+                            "placedAt": 0,
+                            "placedBy": "playerId_1"
+                        }
+                    ],
+                    "repairAbilitiesCheckedThisCycle": false,
+                    "endTurnEffectsCheckedThisCycle": false,
+                    "shieldArea": [],
+                    "slot1": {
+                        "unit": {
+                            "cardId": "ST06-002",
+                            "carduid": "ST06-002_attacker_0001",
+                            "cardData": {
+                                "id": "ST06-002",
+                                "name": "GQuuuuuuX (Omega Psycommu)",
+                                "cardType": "unit",
+                                "color": "Red",
+                                "level": 4,
+                                "cost": 3,
+                                "ap": 4,
+                                "hp": 2,
+                                "traits": [
+                                    "Clan"
+                                ],
+                                "link": [
+                                    "Amate Yuzuriha (Machu)"
+                                ],
+                                "effects": {
+                                    "description": [],
+                                    "rules": []
+                                },
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ]
+                            },
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "damageReceived": 0,
+                            "modifyAP": 0,
+                            "modifyHP": 0,
+                            "continueModifyAP": 0,
+                            "continueModifyHP": 0,
+                            "originalAP": 4,
+                            "originalHP": 2,
+                            "playedThisTurn": false,
+                            "canAttackOnPlayTurn": false,
+                            "canAttackThisTurn": true,
+                            "isFirstPlay": false
+                        }
+                    },
+                    "slot2": {
+                        "unit": {
+                            "cardId": "ST06-003",
+                            "carduid": "ST06-003_support_0001",
+                            "cardData": {
+                                "id": "ST06-003",
+                                "name": "Gaia’s Rick Dom (GQ)",
+                                "cardType": "unit",
+                                "color": "Red",
+                                "level": 2,
+                                "cost": 2,
+                                "ap": 2,
+                                "hp": 2,
+                                "traits": [
+                                    "Clan"
+                                ],
+                                "link": [
+                                    "Gaia"
+                                ],
+                                "effects": {
+                                    "description": [],
+                                    "rules": []
+                                },
+                                "zone": [
+                                    "Space"
+                                ]
+                            },
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "damageReceived": 0,
+                            "modifyAP": 0,
+                            "modifyHP": 0,
+                            "continueModifyAP": 0,
+                            "continueModifyHP": 0,
+                            "originalAP": 2,
+                            "originalHP": 2,
+                            "playedThisTurn": false,
+                            "canAttackOnPlayTurn": false,
+                            "canAttackThisTurn": true,
+                            "isFirstPlay": false
+                        }
+                    },
+                    "slot3": {},
+                    "slot4": {},
+                    "slot5": {},
+                    "slot6": {},
+                    "trashArea": []
+                }
+            },
+            "playerId_2": {
+                "confirmIsRedraw": false,
+                "deck": {
+                    "hand": [],
+                    "handUids": [],
+                    "mainDeck": []
+                },
+                "id": "playerId_2",
+                "isReady": true,
+                "isRedraw": false,
+                "name": "Player 2",
+                "playerPoint": 0,
+                "zones": {
+                    "base": [],
+                    "energyArea": [],
+                    "repairAbilitiesCheckedThisCycle": false,
+                    "endTurnEffectsCheckedThisCycle": false,
+                    "shieldArea": [],
+                    "slot1": {
+                        "unit": {
+                            "cardId": "ST06-004",
+                            "carduid": "ST06-004_defender_lv2_0001",
+                            "cardData": {
+                                "id": "ST06-004",
+                                "name": "Gelgoog (GQ)",
+                                "cardType": "unit",
+                                "color": "Red",
+                                "level": 2,
+                                "cost": 1,
+                                "ap": 2,
+                                "hp": 2,
+                                "traits": [
+                                    "Zeon"
+                                ],
+                                "effects": {
+                                    "description": [],
+                                    "rules": []
+                                },
+                                "link": [],
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ]
+                            },
+                            "placedAt": 0,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "damageReceived": 0,
+                            "modifyAP": 0,
+                            "modifyHP": 0,
+                            "continueModifyAP": 0,
+                            "continueModifyHP": 0,
+                            "originalAP": 2,
+                            "originalHP": 2,
+                            "playedThisTurn": false,
+                            "canAttackOnPlayTurn": false,
+                            "canAttackThisTurn": true,
+                            "isFirstPlay": false
+                        }
+                    },
+                    "slot2": {},
+                    "slot3": {},
+                    "slot4": {},
+                    "slot5": {},
+                    "slot6": {},
+                    "trashArea": []
+                }
+            }
+        },
+        "playersReady": {
+            "playerId_1": true,
+            "playerId_2": true
+        },
+        "processingEnabled": true,
+        "processingQueue": [],
+        "version": 0
+    },
+    "notes": [
+        "Action: Player A plays ST06-013 during ACTION_STEP and selects 1 or 2 friendly (Clan) Units.",
+        "Expect: A TARGET_CHOICE notification is emitted for Player A (processingQueue also contains TARGET_CHOICE).",
+        "Action: Player A selects ST06-002 (and optionally ST06-003).",
+        "Expect: A BATTLE_DAMAGE_PREVENTION_GRANTED notification is emitted and selected unit(s) gain battle damage prevention vs enemy Lv.2 or lower until end of turn.",
+        "Action: Battle resolves with ST06-002 attacking an enemy Lv.2 unit.",
+        "Expect: AttackerDamageTaken is 0 (attackerDamagePrevented true) when the enemy is Lv.2 or lower."
+    ]
+}
+

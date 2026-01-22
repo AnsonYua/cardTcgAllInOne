@@ -1021,6 +1021,19 @@ export class GameLogic {
         );
     }
 
+    async confirmOptionChoice(gameId: string, playerId: string, eventId: string, selectedOptionIndex: number): Promise<GameLogicResult> {
+        return ChoiceConfirmationService.confirmOptionChoice(
+            {
+                loadGameFromFile: this.loadGameFromFile.bind(this),
+                saveGameToFile: this.saveGameToFile.bind(this)
+            },
+            gameId,
+            playerId,
+            eventId,
+            selectedOptionIndex
+        );
+    }
+
     async confirmBlockerChoice(gameId: string, playerId: string, eventId: string, selectedTargets: TargetReference[], notificationId?: string): Promise<GameLogicResult> {
         try {
             console.log(`🛡️ Processing blocker choice confirmation: ${eventId} by player ${playerId}`);

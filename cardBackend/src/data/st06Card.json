@@ -585,9 +585,9 @@
                     "【Pilot】[Ortega (GQ)]"
                 ],
                 "rules": [
-                    {
-                        "effectId": "action_prevent_battle_damage_from_enemy_units_le_2_for_clan",
-                        "type": "play",
+	                    {
+	                        "effectId": "action_prevent_battle_damage_from_enemy_units_le_2_for_clan",
+	                        "type": "play",
                         "timing": {
                             "windows": [
                                 "ACTION_STEP"
@@ -605,12 +605,12 @@
                             },
                             "count": 2
                         },
-                        "parameters": {
-                            "from": "enemy_units",
-                            "enemyLevel": "<=2",
-                            "notes": "Design placeholder: requires engine support for preventing battle damage based on enemy unit level."
-                        }
-                    },
+	                        "parameters": {
+	                            "from": "enemy_units",
+	                            "enemyLevel": "<=2",
+	                            "notes": "Engine: implemented via prevent_battle_damage temporary effect and battle-resolution checks."
+	                        }
+	                    },
                     {
                         "effectId": "pilot_designation",
                         "type": "special",

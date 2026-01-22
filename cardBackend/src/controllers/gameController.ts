@@ -1121,6 +1121,61 @@ export class GameController {
     }
 
     /**
+     * Confirm generic option choice (OPTION_CHOICE)
+     * POST /api/game/player/confirmOptionChoice
+     * Body: { gameId, playerId, eventId, selectedOptionIndex }
+     */
+    async confirmOptionChoice(req: GameRequest, res: Response): Promise<void> {
+        try {
+            console.log('🎯 Processing option choice confirmation:', req.body);
+
+            const { gameId, playerId, eventId, selectedOptionIndex } = req.body;
+
+            if (!gameId || !playerId || !eventId) {
+                res.status(400).json({
+                    error: 'gameId, playerId, and eventId are required',
+                    timestamp: new Date().toISOString(),
+                    context: 'confirmOptionChoice endpoint'
+                });
+                return;
+            }
+
+            if (typeof selectedOptionIndex !== 'number') {
+                res.status(400).json({
+                    error: 'selectedOptionIndex must be a number',
+                    timestamp: new Date().toISOString(),
+                    context: 'confirmOptionChoice endpoint'
+                });
+                return;
+            }
+
+            const result = await this.gameLogic.confirmOptionChoice(gameId, playerId, eventId, selectedOptionIndex);
+
+            if (result.success && result.gameEnv) {
+                res.json({
+                    success: true,
+                    gameId: result.gameId,
+                    gameEnv: result.gameEnv,
+                    message: `Option choice successful (index ${selectedOptionIndex})`
+                });
+            } else {
+                res.status(400).json({
+                    error: result.error || 'Failed to process option choice',
+                    timestamp: new Date().toISOString(),
+                    context: 'confirmOptionChoice endpoint'
+                });
+            }
+        } catch (error) {
+            console.error('❌ Error in confirmOptionChoice:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'confirmOptionChoice endpoint'
+            });
+        }
+    }
+
+    /**
      * Confirm blocker choice decision (BLOCKER_CHOICE events)
      * POST /api/game/player/confirmBlockerChoice
      * Body: { gameId, playerId, eventId, selectedTarget | null }

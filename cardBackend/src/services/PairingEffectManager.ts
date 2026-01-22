@@ -27,6 +27,8 @@ import { getCardTotals } from '../utils/FieldValueCalculator';
 import { eventDataValidator } from '../validators/EventDataValidator';
 import { ensureEffectDefaults } from '../utils/EffectNormalizationUtils';
 import { EffectRuleCatalog } from './effects/EffectRuleCatalog';
+import { PairingConditionEvaluator } from './conditions/PairingConditionEvaluator';
+import { ContinuousEffectManager } from './ContinuousEffectManager';
 
 export interface PairingEffectResult {
     success: boolean;
@@ -368,7 +370,20 @@ export class PairingEffectManager implements StandardEffectManager {
             for (const effect of normalizedEffects) {
                 const pairingEffect = ensureEffectDefaults({ ...effect }) as PairingEffect;
 
-                if (!this.validatePairingConditions(pairingEffect.conditions || [], pairedUnit, pilot, gameEnv)) {
+                const sourceCard = cardInfo.cardType === 'unit' ? (pairedUnit as any) : (pilot as any);
+                if (pairingEffect.sourceConditions && pairingEffect.sourceConditions.length > 0) {
+                    const satisfied = ContinuousEffectManager.sourceConditionsMet(
+                        pairingEffect as any,
+                        sourceCard,
+                        gameEnv,
+                        playerId
+                    );
+                    if (!satisfied) {
+                        continue;
+                    }
+                }
+
+                if (!this.validatePairingConditions(pairingEffect.conditions || [], pairedUnit, pilot, gameEnv, playerId)) {
                     continue;
                 }
 
@@ -474,14 +489,20 @@ export class PairingEffectManager implements StandardEffectManager {
     /**
      * Validate pairing effect conditions (trait matching, etc.)
      */
-    private static validatePairingConditions(conditions: EffectCondition[], unit: UnitCard, pilot: PilotCard, gameEnv: GameEnvironment): boolean {
+    private static validatePairingConditions(
+        conditions: EffectCondition[],
+        unit: UnitCard,
+        pilot: PilotCard,
+        gameEnv: GameEnvironment,
+        playerId: string
+    ): boolean {
         if (!conditions || conditions.length === 0) {
-            return true; // No conditions means effect always triggers
+            return true;
         }
 
         for (const condition of conditions) {
-            if (!this.validateSinglePairingCondition(condition, unit, pilot, gameEnv)) {
-                return false; // All conditions must pass
+            if (!this.validateSinglePairingCondition(condition, unit, pilot, gameEnv, playerId)) {
+                return false;
             }
         }
 
@@ -491,7 +512,13 @@ export class PairingEffectManager implements StandardEffectManager {
     /**
      * Validate a single pairing condition
      */
-    private static validateSinglePairingCondition(condition: EffectCondition, unit: UnitCard, pilot: PilotCard, _gameEnv: GameEnvironment): boolean {
+    private static validateSinglePairingCondition(
+        condition: EffectCondition,
+        unit: UnitCard,
+        pilot: PilotCard,
+        gameEnv: GameEnvironment,
+        playerId: string
+    ): boolean {
         console.log(`🔍 Validating condition:`, JSON.stringify(condition));
 
         switch (condition.type) {
@@ -502,8 +529,25 @@ export class PairingEffectManager implements StandardEffectManager {
             case 'powerThreshold':
                 return this.validatePowerThreshold(condition, unit, pilot);
             default:
-                console.log(`⚠️ Unknown condition type: ${condition.type}`);
-                return false;
+                if (!gameEnv || !playerId) {
+                    console.log(`⚠️ Unknown condition type: ${condition.type}`);
+                    return false;
+                }
+
+                const resolved = PairingConditionEvaluator.evaluate(
+                    gameEnv,
+                    playerId,
+                    condition as unknown as Record<string, unknown>,
+                    unit as unknown as any,
+                    pilot as unknown as any
+                );
+
+                if (resolved === null) {
+                    console.log(`⚠️ Unknown condition type: ${condition.type}`);
+                    return false;
+                }
+
+                return resolved;
         }
     }
 

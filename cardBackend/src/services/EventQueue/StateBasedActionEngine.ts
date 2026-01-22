@@ -6,6 +6,7 @@ import { GamePhase, EventType } from '../../models/GameEnums';
 import { PhaseTransitionManager } from '../effects/PhaseTransitionManager';
 import { GameStateManager } from '../effects/GameStateManager';
 import { RepairEffectManager } from '../effects/RepairEffectManager';
+import { EndTurnTriggeredEffectManager } from '../effects/EndTurnTriggeredEffectManager';
 
 // ============ STATE-BASED ACTION INTERFACES ============
 
@@ -46,8 +47,15 @@ export class StateBasedActionEngine {
         const actions: StateBasedAction[] = [];
         
         // Check all categories of state-based actions using specialized managers
-        actions.push(...PhaseTransitionManager.getAllPhaseTransitionActions(this.gameEnv));
-        actions.push(...this.checkRepairAbilitiesInEndPhase());
+        // END_PHASE ordering matters: end-of-turn effects should be queued before NEXT_PLAYER_TURN.
+        if (this.gameEnv.phase === GamePhase.END_PHASE) {
+            actions.push(...this.checkRepairAbilitiesInEndPhase());
+            actions.push(...this.checkEndTurnTriggeredEffectsInEndPhase());
+            actions.push(...PhaseTransitionManager.getAllPhaseTransitionActions(this.gameEnv));
+        } else {
+            actions.push(...PhaseTransitionManager.getAllPhaseTransitionActions(this.gameEnv));
+        }
+
         actions.push(...GameStateManager.getAllGameStateActions(this.gameEnv));
         
         // Actions processed in order found (no priority sorting needed)
@@ -103,6 +111,38 @@ export class StateBasedActionEngine {
             }
         }
         
+        return actions;
+    }
+
+    private checkEndTurnTriggeredEffectsInEndPhase(): StateBasedAction[] {
+        const actions: StateBasedAction[] = [];
+
+        if (this.gameEnv.phase !== GamePhase.END_PHASE) {
+            return actions;
+        }
+
+        const currentPlayerId = this.gameEnv.currentPlayer;
+        if (!currentPlayerId) {
+            return actions;
+        }
+
+        const currentPlayer = this.gameEnv.players[currentPlayerId];
+        if (!currentPlayer) {
+            return actions;
+        }
+
+        if (!currentPlayer.zones) {
+            currentPlayer.initializeZones();
+        }
+
+        const hasChecked = currentPlayer.zones.endTurnEffectsCheckedThisCycle || false;
+        if (hasChecked) {
+            return actions;
+        }
+
+        const endTurnActions = EndTurnTriggeredEffectManager.checkEndTurnTriggeredEffects(this.gameEnv, currentPlayerId);
+        actions.push(...endTurnActions);
+        currentPlayer.zones.endTurnEffectsCheckedThisCycle = true;
         return actions;
     }
     

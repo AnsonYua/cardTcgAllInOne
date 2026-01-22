@@ -37,6 +37,7 @@ export interface PlayerZones {
     energyArea: EnergyZoneCard[];  // Energy cards for resource management
     trashArea: ZoneCard[];     // Discarded/destroyed cards
     repairAbilitiesCheckedThisCycle?: boolean;
+    endTurnEffectsCheckedThisCycle?: boolean;
 }
 
 // ============ ZONE UTILITY FUNCTIONS ============
@@ -95,6 +96,7 @@ export interface SerializedPlayerZones {
     energyArea: EnergyZoneCard[];
     trashArea: ZoneCard[];
     repairAbilitiesCheckedThisCycle?: boolean;
+    endTurnEffectsCheckedThisCycle?: boolean;
 }
 
 export function hasContinuousModifiers(card: ZoneCard): card is ZoneCard & ContinuousModifiers {
@@ -241,7 +243,8 @@ export class Player {
             shieldArea: [],
             energyArea: [],
             trashArea: [],
-            repairAbilitiesCheckedThisCycle: false
+            repairAbilitiesCheckedThisCycle: false,
+            endTurnEffectsCheckedThisCycle: false
         };
     }
 
@@ -541,6 +544,7 @@ export class Player {
         
         // Reset repair abilities flag for new turn
         this.zones.repairAbilitiesCheckedThisCycle = false;
+        this.zones.endTurnEffectsCheckedThisCycle = false;
     }
 
     public getAllUnits(): UnitZoneCard[] {
@@ -809,7 +813,8 @@ export class Player {
             shieldArea: this.zones.shieldArea.map((card) => serializeCard(card) ?? card),
             energyArea: this.zones.energyArea.map((card) => serializeCard(card) ?? card),
             trashArea: this.zones.trashArea.map((card) => serializeCard(card) ?? card),
-            repairAbilitiesCheckedThisCycle: this.zones.repairAbilitiesCheckedThisCycle
+            repairAbilitiesCheckedThisCycle: this.zones.repairAbilitiesCheckedThisCycle,
+            endTurnEffectsCheckedThisCycle: this.zones.endTurnEffectsCheckedThisCycle
         };
     }
 

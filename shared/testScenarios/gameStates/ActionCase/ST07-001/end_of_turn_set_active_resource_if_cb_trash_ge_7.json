@@ -1,0 +1,276 @@
+{
+    "category": "ActionCase",
+    "description": "st07-001_end_of_turn_set_active_resource_if_cb_trash_ge_7",
+    "gameId": "st07-001_end_of_turn_set_active_resource_if_cb_trash_ge_7",
+    "initialGameEnv": {
+        "currentBattle": null,
+        "currentPlayer": "playerId_1",
+        "currentTurn": 1,
+        "firstPlayer": 0,
+        "firstPlayerChooser": null,
+        "firstPlayerDecision": null,
+        "gameStarted": true,
+        "hasChosenFirstPlayer": true,
+        "lastEventId": 0,
+        "maxEventsPerCycle": 50,
+        "notificationQueue": [
+            {
+                "id": "card_drawn_1768362880422_3bxbxq5uy",
+                "type": "CARD_DRAWN",
+                "metadata": {
+                    "timestamp": 1768362880422,
+                    "expiresAt": 1768362883422,
+                    "requiresAcknowledgment": false,
+                    "priority": "normal"
+                },
+                "payload": {
+                    "playerId": "playerId_1",
+                    "carduid": "ST07-002_draw_0001",
+                    "sourceZone": "deck",
+                    "reason": "draw",
+                    "timestamp": 1768362880422,
+                    "drawContext": "turn_start"
+                }
+            }
+        ],
+        "pendingPhaseTransition": null,
+        "phase": "END_PHASE",
+        "playerId_1": "playerId_1",
+        "playerId_2": "playerId_2",
+        "players": {
+            "playerId_1": {
+                "confirmIsRedraw": false,
+                "deck": {
+                    "hand": [],
+                    "handUids": [],
+                    "mainDeck": []
+                },
+                "id": "playerId_1",
+                "isReady": true,
+                "isRedraw": false,
+                "name": "Player 1",
+                "playerPoint": 0,
+                "zones": {
+                    "base": [],
+                    "energyArea": [
+                        {
+                            "cardData": {
+                                "cardType": "energy"
+                            },
+                            "cardId": "energy_basic",
+                            "carduid": "energy_basic_st07_001_a_0001",
+                            "isExtraEnergy": false,
+                            "isRested": true,
+                            "placedAt": 0,
+                            "placedBy": "playerId_1"
+                        },
+                        {
+                            "cardData": {
+                                "cardType": "energy"
+                            },
+                            "cardId": "energy_basic",
+                            "carduid": "energy_basic_st07_001_a_0002",
+                            "isExtraEnergy": false,
+                            "isRested": true,
+                            "placedAt": 0,
+                            "placedBy": "playerId_1"
+                        }
+                    ],
+                    "repairAbilitiesCheckedThisCycle": false,
+                    "endTurnEffectsCheckedThisCycle": false,
+                    "shieldArea": [],
+                    "slot1": {
+                        "unit": {
+                            "canAttackOnPlayTurn": false,
+                            "canAttackThisTurn": true,
+                            "cardData": {
+                                "ap": 4,
+                                "cardType": "unit",
+                                "color": "Purple",
+                                "cost": 4,
+                                "effects": {
+                                    "description": [
+                                        "At the end of your turn, if there are 7 or more (CB) cards in your trash, choose 1 of your Resources. Set it as active.",
+                                        "【When Paired】Place the top 2 cards of your deck into your trash. If you placed a (CB) card with this effect, draw 1."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "action": "setActive",
+                                            "conditions": [
+                                                {
+                                                    "scope": "self",
+                                                    "traitsAny": [
+                                                        "CB"
+                                                    ],
+                                                    "type": "cardsInTrash",
+                                                    "value": ">=7"
+                                                }
+                                            ],
+                                            "effectId": "end_of_turn_set_active_resource_if_cb_trash_ge_7",
+                                            "parameters": {},
+                                            "target": {
+                                                "count": 1,
+                                                "scope": "self_resource",
+                                                "type": "energy"
+                                            },
+                                            "timing": {
+                                                "actionTurn": "YOUR_TURN"
+                                            },
+                                            "trigger": "END_OF_TURN",
+                                            "type": "triggered"
+                                        }
+                                    ]
+                                },
+                                "hp": 4,
+                                "id": "ST07-001",
+                                "level": 5,
+                                "link": [
+                                    "Setsuna F. Seiei"
+                                ],
+                                "name": "Gundam Exia",
+                                "traits": [
+                                    "CB",
+                                    "GN Drive"
+                                ],
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ]
+                            },
+                            "cardId": "ST07-001",
+                            "carduid": "ST07-001_unit_0001",
+                            "continueModifyAP": 0,
+                            "continueModifyHP": 0,
+                            "damageReceived": 0,
+                            "isFirstPlay": false,
+                            "isRested": false,
+                            "originalAP": 4,
+                            "originalHP": 4,
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "playedThisTurn": false
+                        }
+                    },
+                    "slot2": {},
+                    "slot3": {},
+                    "slot4": {},
+                    "slot5": {},
+                    "slot6": {},
+                    "trashArea": [
+                        {
+                            "cardId": "ST07-001",
+                            "carduid": "ST07-001_trash_cb_0001",
+                            "cardData": {
+                                "id": "ST07-001",
+                                "traits": [
+                                    "CB"
+                                ]
+                            }
+                        },
+                        {
+                            "cardId": "ST07-001",
+                            "carduid": "ST07-001_trash_cb_0002",
+                            "cardData": {
+                                "id": "ST07-001",
+                                "traits": [
+                                    "CB"
+                                ]
+                            }
+                        },
+                        {
+                            "cardId": "ST07-001",
+                            "carduid": "ST07-001_trash_cb_0003",
+                            "cardData": {
+                                "id": "ST07-001",
+                                "traits": [
+                                    "CB"
+                                ]
+                            }
+                        },
+                        {
+                            "cardId": "ST07-001",
+                            "carduid": "ST07-001_trash_cb_0004",
+                            "cardData": {
+                                "id": "ST07-001",
+                                "traits": [
+                                    "CB"
+                                ]
+                            }
+                        },
+                        {
+                            "cardId": "ST07-001",
+                            "carduid": "ST07-001_trash_cb_0005",
+                            "cardData": {
+                                "id": "ST07-001",
+                                "traits": [
+                                    "CB"
+                                ]
+                            }
+                        },
+                        {
+                            "cardId": "ST07-001",
+                            "carduid": "ST07-001_trash_cb_0006",
+                            "cardData": {
+                                "id": "ST07-001",
+                                "traits": [
+                                    "CB"
+                                ]
+                            }
+                        },
+                        {
+                            "cardId": "ST07-001",
+                            "carduid": "ST07-001_trash_cb_0007",
+                            "cardData": {
+                                "id": "ST07-001",
+                                "traits": [
+                                    "CB"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            "playerId_2": {
+                "confirmIsRedraw": false,
+                "deck": {
+                    "hand": [],
+                    "handUids": [],
+                    "mainDeck": []
+                },
+                "id": "playerId_2",
+                "isReady": true,
+                "isRedraw": false,
+                "name": "Player 2",
+                "playerPoint": 0,
+                "zones": {
+                    "base": [],
+                    "energyArea": [],
+                    "repairAbilitiesCheckedThisCycle": false,
+                    "endTurnEffectsCheckedThisCycle": false,
+                    "shieldArea": [],
+                    "slot1": {},
+                    "slot2": {},
+                    "slot3": {},
+                    "slot4": {},
+                    "slot5": {},
+                    "slot6": {},
+                    "trashArea": []
+                }
+            }
+        },
+        "playersReady": {
+            "playerId_1": true,
+            "playerId_2": true
+        },
+        "processingEnabled": true,
+        "processingQueue": [],
+        "version": 0
+    },
+    "notes": [
+        "Action: Player A enters END_PHASE with 7+ (CB) cards in trash and ST07-001 in play.",
+        "Expect: A TARGET_CHOICE notification is emitted for Player A to choose 1 energy to set active.",
+        "Action: Player A confirms TARGET_CHOICE selecting one of the rested energy cards.",
+        "Expect: Selected energy card isRested becomes false and a CARD_SET_ACTIVE notification is emitted."
+    ]
+}
+

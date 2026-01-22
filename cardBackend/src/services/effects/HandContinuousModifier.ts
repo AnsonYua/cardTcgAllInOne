@@ -2,9 +2,9 @@
 
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { EffectDefinition } from '../EventQueue/interfaces/GameEvent';
-import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { ConditionEvaluators } from '../conditions/ConditionEvaluators';
+import { EffectScalingUtils } from './EffectScalingUtils';
 
 export class HandContinuousModifier {
     static applyModifiersForHandCardPlay(
@@ -43,7 +43,11 @@ export class HandContinuousModifier {
             const baseValue = typeof normalizedRule.parameters?.value === 'number'
                 ? normalizedRule.parameters.value
                 : 0;
-            const scalingFactor = this.resolveScalingFactor(gameEnv, playerId, normalizedRule.parameters?.scaling);
+            const scalingFactor = EffectScalingUtils.resolveScalingFactor(
+                gameEnv,
+                playerId,
+                normalizedRule.parameters?.scaling
+            );
             const delta = baseValue * scalingFactor;
 
             if (normalizedRule.action === 'modifyCost') {
@@ -86,23 +90,10 @@ export class HandContinuousModifier {
                 continue;
             }
 
-            const scope = typeof typedCondition.scope === 'string' ? typedCondition.scope.toLowerCase() : 'self';
-            let scopedPlayerId: string | null = playerId;
-            if (scope === 'opponent') {
-                scopedPlayerId = gameEnv.getOpponentId(playerId);
-            }
-            if (!scopedPlayerId) {
-                return false;
-            }
-
-            const filters = typedCondition.filters && typeof typedCondition.filters === 'object'
-                ? (typedCondition.filters as Record<string, unknown>)
-                : {};
-            const ok = ConditionEvaluators.unitsInPlayWithFilter(
+            const ok = ConditionEvaluators.evaluateUnitsInPlayWithFilterCondition(
                 gameEnv,
-                scopedPlayerId,
-                filters,
-                typedCondition.value
+                playerId,
+                typedCondition
             );
             if (!ok) {
                 return false;
@@ -111,41 +102,4 @@ export class HandContinuousModifier {
 
         return true;
     }
-
-    private static resolveScalingFactor(
-        gameEnv: GameEnvironment,
-        playerId: string,
-        scaling: unknown
-    ): number {
-        if (!scaling || typeof scaling !== 'object') {
-            return 1;
-        }
-
-        const typedScaling = scaling as Record<string, unknown>;
-        const scalingType = typeof typedScaling.type === 'string' ? typedScaling.type : '';
-        if (scalingType !== 'COUNT_UNITS_IN_PLAY') {
-            return 1;
-        }
-
-        const scope = typeof typedScaling.scope === 'string' ? typedScaling.scope : '';
-        const normalizedScope = scope.toLowerCase();
-        if (normalizedScope.startsWith('opponent')) {
-            const opponentId = gameEnv.getOpponentId(playerId);
-            if (!opponentId) {
-                return 0;
-            }
-            return SlotZoneUtils.getAllPlayerSlotUnits(gameEnv, opponentId).length;
-        }
-
-        if (normalizedScope.startsWith('self')) {
-            return SlotZoneUtils.getAllPlayerSlotUnits(gameEnv, playerId).length;
-        }
-
-        if (normalizedScope === 'any') {
-            return Object.keys(gameEnv.players).reduce((total, id) => total + SlotZoneUtils.getAllPlayerSlotUnits(gameEnv, id).length, 0);
-        }
-
-        return 1;
-    }
 }
-

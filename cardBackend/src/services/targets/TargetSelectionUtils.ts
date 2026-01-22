@@ -1,17 +1,11 @@
 // src/services/targets/TargetSelectionUtils.ts
 
-import type { TargetReference } from '../EventQueue/interfaces/GameEvent';
-
-export type TargetSelectionConfig = {
-    type: string;
-    tieBreaker?: string;
-    [key: string]: unknown;
-};
+import type { EffectTargetConfig, TargetReference } from '../EventQueue/interfaces/GameEvent';
 
 export class TargetSelectionUtils {
     static applySelection(
         targets: TargetReference[],
-        selection: TargetSelectionConfig | undefined
+        selection: EffectTargetConfig['selection'] | undefined
     ): TargetReference[] {
         if (!selection || !selection.type) {
             return targets;
@@ -44,4 +38,3 @@ export class TargetSelectionUtils {
         });
     }
 }
-

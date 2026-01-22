@@ -2,7 +2,6 @@ import { GameEnvironment } from '../../models/GameEnvironment';
 import { UnitZoneCard, PilotZoneCard } from '../../models/CardSystem';
 import { TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { EffectNotifier } from './EffectNotifier';
-import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 
 export class EffectStatApplier {
     static applyEffectToResolvedCard(
@@ -25,9 +24,6 @@ export class EffectStatApplier {
 
             case 'rest':
                 return this.applyRestState(targetCard, true, target);
-
-            case 'setActive':
-                return this.applySetActiveEffect(gameEnv, target);
 
             default:
                 console.log(`⚠️ Unsupported effect action: ${action}`);
@@ -144,27 +140,6 @@ export class EffectStatApplier {
     ): { success: boolean; error?: string } {
         targetCard.isRested = shouldRest;
         console.log(`  😌 ${target.carduid}: ${shouldRest ? 'rested' : 'activated'}`);
-        return { success: true };
-    }
-
-    static applySetActiveEffect(
-        _gameEnv: GameEnvironment,
-        target: TargetReference
-    ): { success: boolean; error?: string } {
-        const resolvedTarget = target as TargetReference;
-        if (!resolvedTarget.carduid) {
-            return { success: true };
-        }
-
-        const searchResult = SlotZoneUtils.findCardByUidAcrossPlayers(_gameEnv, resolvedTarget.carduid);
-        const targetCard = searchResult.card || searchResult.unit || searchResult.pilot;
-        if (!targetCard) {
-            console.warn(`⚠️ setActive target ${resolvedTarget.carduid} not found`);
-            return { success: true };
-        }
-
-        targetCard.isRested = false;
-        console.log(`  😌 ${resolvedTarget.carduid}: activated`);
         return { success: true };
     }
 

@@ -2,7 +2,7 @@
 // Centralized notification helpers for choice-based UI flows
 
 import { GameEnvironment } from '../../models/GameEnvironment';
-import { BlockerChoiceEvent, BurstEffectChoiceEvent, TargetChoiceEvent, TokenChoiceEvent } from '../EventQueue/interfaces/GameEvent';
+import { BlockerChoiceEvent, BurstEffectChoiceEvent, TargetChoiceEvent, TokenChoiceEvent, OptionChoiceEvent } from '../EventQueue/interfaces/GameEvent';
 import { GameNotificationManager } from '../GameNotificationManager';
 
 export class ChoiceNotificationEmitter {
@@ -85,6 +85,24 @@ export class ChoiceNotificationEmitter {
         const notificationManager = new GameNotificationManager(gameEnv);
         const resolvedId = `${event.id}_resolved`;
         notificationManager.addNotificationEventWithId(resolvedId, 'TOKEN_CHOICE_RESOLVED', {
+            playerId: event.playerId,
+            eventId: event.id,
+            choiceId: event.data?.choiceId
+        }, 'normal');
+    }
+
+    static emitOptionChoiceCreated(gameEnv: GameEnvironment, event: OptionChoiceEvent): void {
+        const notificationManager = new GameNotificationManager(gameEnv);
+        notificationManager.addNotificationEventWithId(event.id, 'OPTION_CHOICE', {
+            playerId: event.playerId,
+            event
+        }, 'high');
+    }
+
+    static emitOptionChoiceResolved(gameEnv: GameEnvironment, event: OptionChoiceEvent): void {
+        const notificationManager = new GameNotificationManager(gameEnv);
+        const resolvedId = `${event.id}_resolved`;
+        notificationManager.addNotificationEventWithId(resolvedId, 'OPTION_CHOICE_RESOLVED', {
             playerId: event.playerId,
             eventId: event.id,
             choiceId: event.data?.choiceId

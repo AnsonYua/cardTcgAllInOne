@@ -7,6 +7,7 @@ import { ZoneCard, CardDatabaseManager } from '../models/CardSystem';
 import { EffectProcessingResult } from '../models/ContinuousEffectStore';
 import { SLOT_ZONES } from '../config/gameConstants';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
+import { LinkUtils } from '../utils/LinkUtils';
 import { EffectExecutor } from './effects/EffectExecutor';
 import {
     ensureEffectDefaults,
@@ -15,6 +16,7 @@ import {
 } from '../utils/EffectNormalizationUtils';
 import { EffectDefinition } from './EventQueue/interfaces/GameEvent';
 import { ConditionEvaluators } from './conditions/ConditionEvaluators';
+import { evaluateCardsInPlayCondition } from './conditions/CardsInPlayCondition';
 
 export interface EffectResult {
     success: boolean;
@@ -369,25 +371,22 @@ export class ContinuousEffectManager {
                     return false;
                 }
 
-                const playerScope = typeof typedCondition.scope === 'string'
-                    ? typedCondition.scope.toLowerCase()
-                    : 'self';
-                let scopedPlayerId: string | null = cardOwnerPlayerId;
-                if (playerScope === 'opponent') {
-                    scopedPlayerId = gameEnv.getOpponentId(cardOwnerPlayerId);
-                }
-                if (!scopedPlayerId) {
+                return ConditionEvaluators.evaluateUnitsInPlayWithFilterCondition(
+                    gameEnv,
+                    cardOwnerPlayerId,
+                    typedCondition
+                );
+            }
+
+            case 'cardsInPlay': {
+                if (!cardOwnerPlayerId) {
                     return false;
                 }
 
-                const filters = typedCondition.filters && typeof typedCondition.filters === 'object'
-                    ? (typedCondition.filters as Record<string, unknown>)
-                    : {};
-                return ConditionEvaluators.unitsInPlayWithFilter(
+                return evaluateCardsInPlayCondition(
                     gameEnv,
-                    scopedPlayerId,
-                    filters,
-                    typedCondition.value
+                    cardOwnerPlayerId,
+                    typedCondition
                 );
             }
 
@@ -522,34 +521,9 @@ export class ContinuousEffectManager {
         for (const slotName of SLOT_ZONES) {
             const slot = (player.zones as any)[slotName];
             if (slot?.unit && slot?.pilot) {
-                if (ContinuousEffectManager.detectLink(slot.unit, slot.pilot)) {
+                if (LinkUtils.isLinkedPair(slot.unit, slot.pilot)) {
                     return true; // Found at least one linked pair
                 }
-            }
-        }
-        
-        return false;
-    }
-
-    /**
-     * Detect if unit and pilot form a link (unit.link matches pilot.name or traits)
-     */
-    private static detectLink(unit: any, pilot: any): boolean {
-        if (!unit?.cardData?.link || !pilot?.cardData) return false;
-        
-        const unitLink = unit.cardData.link;
-        const pilotName = pilot.cardData.name;
-        const pilotTraits = pilot.cardData.traits || [];
-        
-        // Check if unit's link matches pilot's name
-        if (pilotName && unitLink.includes(pilotName)) {
-            return true;
-        }
-        
-        // Check if unit's link matches any of pilot's traits
-        for (const linkValue of unitLink) {
-            if (pilotTraits.includes(linkValue)) {
-                return true;
             }
         }
         
@@ -737,7 +711,7 @@ export class ContinuousEffectManager {
                 }
 
                 if (slot.unit && slot.pilot) {
-                    return ContinuousEffectManager.detectLink(slot.unit, slot.pilot);
+                    return LinkUtils.isLinkedPair(slot.unit, slot.pilot);
                 }
 
                 return false;

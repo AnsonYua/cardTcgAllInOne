@@ -5,6 +5,8 @@ import { GameEnvironment } from '../../models/GameEnvironment';
 import { EffectScannerUtils, BlockerUnit } from '../../utils/EffectScannerUtils';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { TargetReference } from '../EventQueue/interfaces/GameEvent';
+import { ConditionEvaluators } from '../conditions/ConditionEvaluators';
+import { evaluateCardsInPlayCondition } from '../conditions/CardsInPlayCondition';
 
 /**
  * BlockerEffectManager handles blocker unit detection
@@ -25,6 +27,7 @@ export class BlockerEffectManager {
         console.log(`🛡️ Checking for blocker units for player ${defendingPlayerId}`);
         
         let blockers = EffectScannerUtils.scanForBlockerUnits(gameEnv, defendingPlayerId);
+        blockers = blockers.filter(blocker => this.conditionsSatisfied(gameEnv, defendingPlayerId, blocker.effect?.conditions));
 
         if (options?.excludeCarduid) {
             const before = blockers.length;
@@ -111,5 +114,47 @@ export class BlockerEffectManager {
     static getBlockerDescription(blocker: BlockerUnit): string {
         const cost = blocker.effect.parameters?.cost || 'rest_self';
         return `Blocker (${cost}): Rest this unit to redirect attack to it`;
+    }
+
+    private static conditionsSatisfied(
+        gameEnv: GameEnvironment,
+        defendingPlayerId: string,
+        conditions: unknown
+    ): boolean {
+        if (!Array.isArray(conditions) || conditions.length === 0) {
+            return true;
+        }
+
+        return conditions.every((condition: any) => {
+            if (!condition || typeof condition !== 'object') {
+                return true;
+            }
+
+            const type = typeof condition.type === 'string' ? condition.type : '';
+            switch (type) {
+                case 'cardsInPlay':
+                    return evaluateCardsInPlayCondition(gameEnv, defendingPlayerId, condition);
+                case 'unitsInPlayWithFilter':
+                    return ConditionEvaluators.evaluateUnitsInPlayWithFilterCondition(gameEnv, defendingPlayerId, condition);
+                case 'unitsInPlayWithTrait':
+                    return ConditionEvaluators.unitsInPlayWithTrait(
+                        gameEnv,
+                        defendingPlayerId,
+                        Array.isArray(condition.traits) ? condition.traits : [],
+                        condition.value
+                    );
+                case 'cardsInTrash':
+                case 'cardsInTrashWithTraitsAny':
+                    return ConditionEvaluators.cardsInTrashWithTraitsAny(
+                        gameEnv,
+                        defendingPlayerId,
+                        Array.isArray(condition.traitsAny) ? condition.traitsAny : [],
+                        condition.value
+                    );
+                default:
+                    console.log(`⚠️ Blocker condition type not supported: ${type}`);
+                    return true;
+            }
+        });
     }
 }

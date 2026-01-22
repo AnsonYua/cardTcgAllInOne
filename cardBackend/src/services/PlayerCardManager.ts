@@ -12,6 +12,7 @@ import { ContinuousEffectManager } from './ContinuousEffectManager';
 import { GameNotificationManager } from './GameNotificationManager';
 import { BaseLifecycleManager } from './BaseLifecycleManager';
 import { EffectExecutor } from './effects/EffectExecutor';
+import { LinkUtils } from '../utils/LinkUtils';
 
 export interface CardPlacementResult {
     success: boolean;
@@ -437,61 +438,7 @@ export class PlayerCardManager {
             return false;
         }
 
-        // Try to get link from unit card (check both direct property and cardData)
-        const unit = slot.unit;
-        const pilot = slot.pilot;
-
-        // Get unit's link field - check direct property first, then cardData
-        const unitLink = unit.cardData?.link;
-        if (!unitLink || !Array.isArray(unitLink) || unitLink.length === 0) {
-            return false;
-        }
-
-        // Determine pilot name for matching - handle both regular pilots and command cards with designate_pilot effect
-        let pilotNameForMatching: string | null = null;
-        let pilotTraits: string[] = [];
-        let isCommandCardPilot = false;
-
-        // Check if this is a command card played as pilot
-        if (pilot.playedAs === 'pilot' && pilot.cardData?.cardType === 'command') {
-            isCommandCardPilot = true;
-            // Look for designate_pilot effect
-            const designatePilotEffect = pilot.cardData?.effects?.rules?.find((rule: any) =>
-                rule.action === 'designate_pilot'
-            );
-
-            if (designatePilotEffect?.parameters?.pilotName) {
-                pilotNameForMatching = designatePilotEffect.parameters.pilotName as string;
-                console.log(`🎯 Command card as pilot: using designate_pilot.pilotName="${pilotNameForMatching}"`);
-            } else {
-                console.warn(`⚠️ Command card played as pilot but no designate_pilot effect found for ${pilot.carduid}`);
-            }
-        } else {
-            // Regular pilot card - use name and traits
-            pilotNameForMatching = pilot.cardData?.name || null;
-            pilotTraits = pilot.cardData?.traits || [];
-        }
-
-        console.log(`🔗 Checking link: unit.link=${JSON.stringify(unitLink)}, pilotName="${pilotNameForMatching}", pilotTraits=${JSON.stringify(pilotTraits)}, isCommandCardPilot=${isCommandCardPilot}`);
-
-        // Check if unit's link matches pilot name (including designate_pilot name)
-        if (pilotNameForMatching && unitLink.includes(pilotNameForMatching)) {
-            console.log(`✅ Link found: unit.link includes pilot name "${pilotNameForMatching}" ${isCommandCardPilot ? '(from designate_pilot effect)' : ''}`);
-            return true;
-        }
-
-        // For regular pilot cards, also check traits
-        if (!isCommandCardPilot) {
-            for (const linkValue of unitLink) {
-                if (pilotTraits.includes(linkValue)) {
-                    console.log(`✅ Link found: unit.link "${linkValue}" matches pilot trait`);
-                    return true;
-                }
-            }
-        }
-
-        console.log(`❌ No link found between unit and pilot`);
-        return false;
+        return LinkUtils.isLinkedPair(slot.unit, slot.pilot);
     }
 
     /**

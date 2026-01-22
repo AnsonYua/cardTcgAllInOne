@@ -59,6 +59,7 @@ export enum EventType {
     // Card events
     CARD_ENTERS_PLAY = 'CARD_ENTERS_PLAY',
     TRIGGER_HEALING = 'TRIGGER_HEALING',
+    TRIGGER_END_OF_TURN_EFFECT = 'TRIGGER_END_OF_TURN_EFFECT',
     
     // Player events
     PLAYER_CHOICE_RESOLVED = 'PLAYER_CHOICE_RESOLVED',
@@ -107,6 +108,9 @@ export enum EventType {
 
     // Token choice system
     TOKEN_CHOICE = 'TOKEN_CHOICE',
+
+    // Generic option choice system
+    OPTION_CHOICE = 'OPTION_CHOICE',
 
     // Action step maintenance
     ACTION_STEP_POST_PLAY = 'ACTION_STEP_POST_PLAY'

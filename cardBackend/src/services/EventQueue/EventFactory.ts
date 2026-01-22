@@ -33,6 +33,8 @@ import {
     TargetReference,
     TokenChoiceOption,
     TokenChoiceEvent,
+    OptionChoiceEvent,
+    OptionChoiceOption,
     TurnEndEvent,
     TurnStartEvent
 } from './interfaces/GameEvent';
@@ -343,6 +345,35 @@ export class EventFactory {
             timestamp: Date.now(),
             data: eventData
         };
+    }
+
+    static createOptionChoiceEvent(params: {
+        playerId: string;
+        sourceCarduid: string;
+        effect: EffectDefinition;
+        availableOptions: OptionChoiceOption[];
+        context?: Record<string, unknown>;
+    }): OptionChoiceEvent {
+        const { playerId, sourceCarduid, effect, availableOptions, context } = params;
+        const effectKey = effect?.effectId || effect?.action || 'effect';
+        const eventData = {
+            choiceId: `option_choice_${effectKey}_${Date.now()}`,
+            userDecisionMade: false,
+            sourceCarduid,
+            effect,
+            availableOptions,
+            context
+        };
+
+        return {
+            id: `option_choice_${++this.eventIdCounter}_${Date.now()}`,
+            type: EventType.OPTION_CHOICE,
+            status: EventStatus.DECLARED,
+            priority: EventPriority.IMMEDIATE,
+            playerId,
+            timestamp: Date.now(),
+            data: eventData
+        } as OptionChoiceEvent;
     }
 
     static createBlockerChoiceEvent(params: {

@@ -26,6 +26,9 @@ import {
 } from './battle/BattleSnapshotUtils';
 import { getShieldCardsToAttack, isShieldDamagePrevented } from './battle/BattleShieldUtils';
 import { KeywordUtils } from '../utils/KeywordUtils';
+import { EffectExecutor } from './effects/EffectExecutor';
+import { BattleDamagePreventionUtils } from './battle/BattleDamagePreventionUtils';
+import { BattleBaseDamagePreventionUtils } from './battle/BattleBaseDamagePreventionUtils';
 
 export class BattlePhaseManager {
     static initiateAttack(gameEnv: GameEnvironment, event: PlayerActionEvent): ExecutionResult {
@@ -394,9 +397,19 @@ export class BattlePhaseManager {
         let defenderDestroyed = false;
         let attackerDamageTaken = 0;
         let defenderDamageTaken = 0;
+        let attackerDamagePrevented = false;
+        let defenderDamagePrevented = false;
 
         if (attackerHasFirstStrike) {
             defenderDamageTaken = attackerStats.totalAP;
+            defenderDamagePrevented = BattleDamagePreventionUtils.isBattleDamagePrevented(
+                targetUnit as UnitZoneCard,
+                attackingUnit as UnitZoneCard,
+                attackerStats.totalAP
+            );
+            if (defenderDamagePrevented) {
+                defenderDamageTaken = 0;
+            }
             PlayerCardManager.updateUnitDamage(targetUnit, defenderDamageTaken);
 
             const defenderRemainingHP = Math.max(0, defenderStats.totalHP - defenderDamageTaken);
@@ -404,6 +417,14 @@ export class BattlePhaseManager {
 
             if (!defenderDestroyed) {
                 attackerDamageTaken = defenderStats.totalAP;
+                attackerDamagePrevented = BattleDamagePreventionUtils.isBattleDamagePrevented(
+                    attackingUnit as UnitZoneCard,
+                    targetUnit as UnitZoneCard,
+                    defenderStats.totalAP
+                );
+                if (attackerDamagePrevented) {
+                    attackerDamageTaken = 0;
+                }
                 PlayerCardManager.updateUnitDamage(attackingUnit, attackerDamageTaken);
                 const attackerRemainingHP = Math.max(0, attackerStats.totalHP - attackerDamageTaken);
                 attackerDestroyed = attackerRemainingHP <= 0;
@@ -413,6 +434,24 @@ export class BattlePhaseManager {
         } else {
             attackerDamageTaken = defenderStats.totalAP;
             defenderDamageTaken = attackerStats.totalAP;
+
+            attackerDamagePrevented = BattleDamagePreventionUtils.isBattleDamagePrevented(
+                attackingUnit as UnitZoneCard,
+                targetUnit as UnitZoneCard,
+                defenderStats.totalAP
+            );
+            if (attackerDamagePrevented) {
+                attackerDamageTaken = 0;
+            }
+
+            defenderDamagePrevented = BattleDamagePreventionUtils.isBattleDamagePrevented(
+                targetUnit as UnitZoneCard,
+                attackingUnit as UnitZoneCard,
+                attackerStats.totalAP
+            );
+            if (defenderDamagePrevented) {
+                defenderDamageTaken = 0;
+            }
 
             const attackerRemainingHP = Math.max(0, attackerStats.totalHP - attackerDamageTaken);
             const defenderRemainingHP = Math.max(0, defenderStats.totalHP - defenderDamageTaken);
@@ -472,10 +511,13 @@ export class BattlePhaseManager {
                 defenderDestroyed,
                 attackerDamageTaken,
                 defenderDamageTaken,
-                attackerHasFirstStrike
+                attackerHasFirstStrike,
+                attackerDamagePrevented,
+                defenderDamagePrevented
             }
         });
 
+        EffectExecutor.cleanupEndOfBattleTemporaryEffects(gameEnv, [attackingUnit.carduid, targetUnit.carduid]);
         gameEnv.clearCurrentBattle();
         return { success: true };
     }
@@ -521,7 +563,16 @@ export class BattlePhaseManager {
             const baseCard = defenderBases[0];
             const baseSnapshot = buildBaseSnapshot(defender, baseCard);
             const currentDamage = baseCard.damageReceived || 0;
-            const newDamage = currentDamage + totalAttackPower;
+            const baseDamagePrevented = isFinite(totalAttackPower)
+                ? BattleBaseDamagePreventionUtils.isBaseDamagePreventedFromEnemyUnit(
+                    gameEnv,
+                    defender.id,
+                    baseCard,
+                    attackingUnit as UnitZoneCard
+                )
+                : false;
+            const appliedDamage = baseDamagePrevented ? 0 : totalAttackPower;
+            const newDamage = currentDamage + appliedDamage;
             const maxHP = baseCard.originalHP || baseCard.cardData?.hp || 0;
             const remainingHP = Math.max(0, maxHP - newDamage);
 
@@ -534,28 +585,45 @@ export class BattlePhaseManager {
             }
 
             const notificationManager = new GameNotificationManager(gameEnv);
-            notificationManager.addNotificationEvent(
-                baseDestroyed ? 'BASE_DESTROYED' : 'BASE_DAMAGED',
-                {
-                    defendingPlayerId: defender.id,
-                    attackingPlayerId: playerId,
-                    attackerSlot,
-                    damage: totalAttackPower,
-                    totalDamage: newDamage,
-                    baseHP: remainingHP,
-                    baseDestroyed,
-                    ...(baseDestroyed && {
-                        destroyedCard: {
-                            carduid: baseCard.carduid,
-                            cardId: baseCard.cardId,
-                            name: baseCard.cardData?.name || 'Unknown Base'
-                        }
-                    })
-                },
-                'normal'
-            );
+            if (baseDamagePrevented) {
+                notificationManager.addNotificationEvent(
+                    'BASE_DAMAGE_PREVENTED',
+                    {
+                        defendingPlayerId: defender.id,
+                        attackingPlayerId: playerId,
+                        attackerSlot,
+                        damage: totalAttackPower,
+                        prevented: true,
+                        timestamp: Date.now()
+                    },
+                    'normal'
+                );
+            } else {
+                notificationManager.addNotificationEvent(
+                    baseDestroyed ? 'BASE_DESTROYED' : 'BASE_DAMAGED',
+                    {
+                        defendingPlayerId: defender.id,
+                        attackingPlayerId: playerId,
+                        attackerSlot,
+                        damage: totalAttackPower,
+                        totalDamage: newDamage,
+                        baseHP: remainingHP,
+                        baseDestroyed,
+                        ...(baseDestroyed && {
+                            destroyedCard: {
+                                carduid: baseCard.carduid,
+                                cardId: baseCard.cardId,
+                                name: baseCard.cardData?.name || 'Unknown Base'
+                            }
+                        })
+                    },
+                    'normal'
+                );
+            }
 
-            console.log(`🏰 Base damage applied: ${currentDamage} → ${newDamage} (remaining HP: ${remainingHP}${baseDestroyed ? ' - DESTROYED' : ''})`);
+            console.log(
+                `🏰 Base damage applied: ${currentDamage} → ${newDamage} (remaining HP: ${remainingHP}${baseDestroyed ? ' - DESTROYED' : ''}${baseDamagePrevented ? ' - PREVENTED' : ''})`
+            );
 
             emitBattleResolutionNotification(gameEnv, context, {
                 attacker: attackerSnapshot,
@@ -563,9 +631,10 @@ export class BattlePhaseManager {
                 result: {
                     targetType: 'base',
                     baseDestroyed,
-                    damageApplied: totalAttackPower,
+                    damageApplied: appliedDamage,
                     totalDamage: newDamage,
-                    remainingHP
+                    remainingHP,
+                    damagePrevented: baseDamagePrevented
                 }
             });
         } else {

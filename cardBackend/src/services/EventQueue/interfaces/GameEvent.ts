@@ -326,6 +326,15 @@ export interface RepairEffectEvent extends BaseGameEvent<RepairEffectEventData> 
     type: EventType.TRIGGER_HEALING;
 }
 
+export interface EndTurnTriggeredEffectEventData {
+    sourceCarduid: string;
+    effect: EffectDefinition;
+}
+
+export interface EndTurnTriggeredEffectEvent extends BaseGameEvent<EndTurnTriggeredEffectEventData> {
+    type: EventType.TRIGGER_END_OF_TURN_EFFECT;
+}
+
 // ============ COMBAT EVENTS ============
 
 export interface AttackDeclaredEvent extends BaseGameEvent {
@@ -476,6 +485,27 @@ export interface TokenChoiceEvent extends BaseGameEvent<TokenChoiceEventData> {
     type: EventType.TOKEN_CHOICE;
 }
 
+export interface OptionChoiceOption {
+    index: number;
+    label: string;
+    payload?: Record<string, unknown>;
+}
+
+export interface OptionChoiceEventData {
+    choiceId: string;
+    userDecisionMade: boolean;
+    sourceCarduid: string;
+    effect: EffectDefinition;
+    availableOptions: OptionChoiceOption[];
+    selectedOptionIndex?: number;
+    context?: Record<string, unknown>;
+    cardPlayNotificationId?: string;
+}
+
+export interface OptionChoiceEvent extends BaseGameEvent<OptionChoiceEventData> {
+    type: EventType.OPTION_CHOICE;
+}
+
 export interface BlockerChoiceEventData {
     originalAttackEvent: PlayerActionEvent;
     availableTargets: TargetReference[];
@@ -528,4 +558,5 @@ export type GameEvent =
     | BurstEffectChoiceEvent
     | TargetChoiceEvent
     | TokenChoiceEvent
+    | OptionChoiceEvent
     | BlockerChoiceEvent;

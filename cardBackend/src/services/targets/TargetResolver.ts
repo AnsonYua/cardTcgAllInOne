@@ -7,6 +7,7 @@ import { normalizeTargetConfig, validateComparisonFilter } from '../../utils/Eff
 import { PlayerCardManager } from '../PlayerCardManager';
 import { HandTargetResolver } from './HandTargetResolver';
 import { EnergyTargetResolver } from './EnergyTargetResolver';
+import { LinkUtils } from '../../utils/LinkUtils';
 
 export interface ResolvedTargetConfig {
     type: TargetType;
@@ -253,31 +254,6 @@ export class TargetResolver {
             return false;
         }
 
-        const unitLink = slotResult.unit.cardData?.link;
-        if (!unitLink || !Array.isArray(unitLink) || unitLink.length === 0) {
-            return false;
-        }
-
-        const pilot = slotResult.pilot as PilotZoneCard;
-        let pilotNameForMatching: string | null = null;
-        let pilotTraits: string[] = [];
-
-        if (pilot.playedAs === 'pilot' && pilot.cardData?.cardType === 'command') {
-            const designatePilotEffect = pilot.cardData?.effects?.rules?.find((rule: any) =>
-                rule.action === 'designate_pilot'
-            );
-            if (designatePilotEffect?.parameters?.pilotName) {
-                pilotNameForMatching = designatePilotEffect.parameters.pilotName as string;
-            }
-        } else {
-            pilotNameForMatching = pilot.cardData?.name || null;
-            pilotTraits = pilot.cardData?.traits || [];
-        }
-
-        if (pilotNameForMatching && unitLink.includes(pilotNameForMatching)) {
-            return true;
-        }
-
-        return unitLink.some((linkValue: string) => pilotTraits.includes(linkValue));
+        return LinkUtils.isLinkedPair(slotResult.unit, slotResult.pilot);
     }
 }
