@@ -104,6 +104,10 @@ export class BaseAbilityManager {
         console.log(`🏰 Base action=${action || 'none'}, currentTurn=${gameEnv.currentTurn}, phase=${gameEnv.phase}`);
         let pendingTokenPlan: ConditionalTokenPlan | null = null;
         if (action === 'conditionalTokenDeploy') {
+            if (!ConditionalTokenDeployManager.conditionsSatisfied(normalizedEffect, gameEnv, actingPlayerId)) {
+                console.log('🏰 Token deploy conditions not met; skipping effect');
+                return { success: true };
+            }
             const tokenPlan = ConditionalTokenDeployManager.buildPlan(gameEnv, actingPlayerId, normalizedEffect);
             if (!tokenPlan.success) {
                 return {

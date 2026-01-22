@@ -5,9 +5,11 @@ import { GameEnvironment } from '../../models/GameEnvironment';
 import { EffectDefinition } from '../EventQueue/interfaces/GameEvent';
 import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 import { CardDatabaseManager, createZoneCard, UnitZoneCard } from '../../models/CardSystem';
+import { SLOT_ZONES } from '../../config/gameConstants';
 import { PlayerCardManager } from '../PlayerCardManager';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { ExecutionResult } from '../ExecutionResult';
+import { ContinuousEffectManager } from '../ContinuousEffectManager';
 
 export interface ConditionalTokenPlan {
     tokenData: any;
@@ -15,11 +17,55 @@ export interface ConditionalTokenPlan {
 }
 
 export class ConditionalTokenDeployManager {
+    static conditionsSatisfied(
+        effect: EffectDefinition,
+        gameEnv: GameEnvironment,
+        playerId: string
+    ): boolean {
+        return ContinuousEffectManager.validateEffectConditions(effect, gameEnv, playerId);
+    }
+
+    static buildPlanForTokenChoice(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        token: Record<string, unknown>,
+        count: number
+    ): { success: true; plan: ConditionalTokenPlan } | { success: false; error: string } {
+        const player = gameEnv.players[playerId];
+        if (!player?.zones) {
+            return { success: false, error: 'Player zones unavailable for token deploy' };
+        }
+
+        const tokenDataResult = this.resolveTokenData(token);
+        if (!tokenDataResult.success) {
+            return { success: false, error: tokenDataResult.error };
+        }
+
+        const targetSlots = this.findEmptySlots(player.zones, count);
+        if (targetSlots.length < count) {
+            return { success: false, error: 'Not enough empty unit slots available for token deploy' };
+        }
+
+        return { success: true, plan: { tokenData: tokenDataResult.tokenData, targetSlots } };
+    }
+
+    static getEmptyUnitSlots(gameEnv: GameEnvironment, playerId: string): string[] {
+        const player = gameEnv.players[playerId];
+        if (!player?.zones) {
+            return [];
+        }
+        return this.collectEmptySlots(player.zones);
+    }
+
     static buildPlan(
         gameEnv: GameEnvironment,
         playerId: string,
         effect: EffectDefinition
     ): { success: true; plan: ConditionalTokenPlan } | { success: false; error: string } {
+        if (!this.conditionsSatisfied(effect, gameEnv, playerId)) {
+            return { success: false, error: 'Conditions not met for token deploy' };
+        }
+
         const parameters = effect.parameters || {};
         const player = gameEnv.players[playerId];
         if (!player?.zones) {
@@ -138,23 +184,11 @@ export class ConditionalTokenDeployManager {
     }
 
     private static findEmptySlots(playerZones: any, count: number): string[] {
-        const slots: string[] = [];
-        for (const slotName of Object.keys(playerZones)) {
-            if (!slotName.startsWith('slot')) {
-                continue;
-            }
-            const slot = playerZones[slotName];
-            if (slot?.unit == null && slot?.pilot == null) {
-                slots.push(slotName);
-                if (slots.length >= count) {
-                    break;
-                }
-            }
-        }
-        return slots;
+        const slots = this.collectEmptySlots(playerZones);
+        return slots.slice(0, Math.max(0, count));
     }
 
-    private static resolveTokenData(
+    static resolveTokenData(
         token: Record<string, unknown>
     ): { success: true; tokenData: any } | { success: false; error: string } {
         const tokenCardId = typeof token['cardId'] === 'string'
@@ -216,5 +250,16 @@ export class ConditionalTokenDeployManager {
                 hp: overrideHp ?? baseTokenData.hp
             }
         };
+    }
+
+    private static collectEmptySlots(playerZones: any): string[] {
+        const slots: string[] = [];
+        for (const slotName of SLOT_ZONES) {
+            const slot = playerZones[slotName as keyof typeof playerZones] as any;
+            if (slot?.unit == null && slot?.pilot == null) {
+                slots.push(slotName);
+            }
+        }
+        return slots;
     }
 }

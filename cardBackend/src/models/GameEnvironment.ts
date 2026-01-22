@@ -4,7 +4,7 @@
 import { GamePhase, ZoneType, EventType } from './GameEnums';
 import { Player, PlayerZones } from './Player';
 // EventManager removed - using direct event processing
-import { GameEvent, EventStatus, EventPriority, BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent } from '../services/EventQueue/interfaces/GameEvent';
+import { GameEvent, EventStatus, EventPriority, BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent, TokenChoiceEvent } from '../services/EventQueue/interfaces/GameEvent';
 import { ProcessingResult } from './EventInterfaces';
 import { BattleContext, ActionStepTargetSummary } from './BattleContext';
 import { EffectScannerUtils } from '../utils/EffectScannerUtils';
@@ -368,6 +368,11 @@ export class GameEnvironment {
                 const blockerChoice = nextEvent as BlockerChoiceEvent;
                 return !blockerChoice.data.userDecisionMade;
             }
+            // For token choice events, check if user has already provided input
+            if (nextEvent.type === EventType.TOKEN_CHOICE) {
+                const tokenChoice = nextEvent as TokenChoiceEvent;
+                return !tokenChoice.data.userDecisionMade;
+            }
             console.log("processs Queue next 444")
         }
         return false;
@@ -381,7 +386,8 @@ export class GameEnvironment {
             event.status === EventStatus.DECLARED && 
             (event.type === EventType.BURST_EFFECT_CHOICE ||
              event.type === EventType.TARGET_CHOICE ||
-             event.type === EventType.BLOCKER_CHOICE)
+             event.type === EventType.BLOCKER_CHOICE ||
+             event.type === EventType.TOKEN_CHOICE)
         );
     }
     
@@ -393,7 +399,8 @@ export class GameEnvironment {
         if (nextEvent?.status === EventStatus.DECLARED) {
             if (nextEvent.type === EventType.BURST_EFFECT_CHOICE ||
                 nextEvent.type === EventType.TARGET_CHOICE ||
-                nextEvent.type === EventType.BLOCKER_CHOICE) {
+                nextEvent.type === EventType.BLOCKER_CHOICE ||
+                nextEvent.type === EventType.TOKEN_CHOICE) {
                 return nextEvent;
             }
         }

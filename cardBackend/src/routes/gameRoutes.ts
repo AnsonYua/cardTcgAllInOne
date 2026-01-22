@@ -182,6 +182,12 @@ router.post('/player/confirmTargetChoice', gameController.confirmTargetChoice.bi
 router.post('/player/confirmBlockerChoice', gameController.confirmBlockerChoice.bind(gameController));
 
 /**
+ * Confirm token choice decision
+ * POST /api/game/player/confirmTokenChoice
+ */
+router.post('/player/confirmTokenChoice', gameController.confirmTokenChoice.bind(gameController));
+
+/**
  * AI player action (placeholder)
  * POST /api/game/player/playerAiAction
  */

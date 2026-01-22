@@ -455,6 +455,27 @@ export interface TargetChoiceEvent extends BaseGameEvent<TargetChoiceEventData> 
     type: EventType.TARGET_CHOICE;
 }
 
+export interface TokenChoiceOption {
+    index: number;
+    token: Record<string, unknown>;
+    count: number;
+    tokenData?: Record<string, unknown>;
+}
+
+export interface TokenChoiceEventData {
+    choiceId: string;
+    userDecisionMade: boolean;
+    sourceCarduid: string;
+    effect: EffectDefinition;
+    availableChoices: TokenChoiceOption[];
+    selectedChoiceIndex?: number;
+    cardPlayNotificationId?: string;
+}
+
+export interface TokenChoiceEvent extends BaseGameEvent<TokenChoiceEventData> {
+    type: EventType.TOKEN_CHOICE;
+}
+
 export interface BlockerChoiceEventData {
     originalAttackEvent: PlayerActionEvent;
     availableTargets: TargetReference[];
@@ -506,4 +527,5 @@ export type GameEvent =
     | ShieldCardAttackedEvent
     | BurstEffectChoiceEvent
     | TargetChoiceEvent
+    | TokenChoiceEvent
     | BlockerChoiceEvent;

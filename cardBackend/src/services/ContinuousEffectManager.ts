@@ -319,10 +319,44 @@ export class ContinuousEffectManager {
                         return true;
                 }
 
+            case 'noUnitTokenWithTrait': {
+                const traitValue = typedCondition.value;
+                const traits = Array.isArray(traitValue)
+                    ? traitValue.filter(item => typeof item === 'string')
+                    : typeof traitValue === 'string'
+                        ? [traitValue]
+                        : [];
+                return ContinuousEffectManager.noUnitTokenWithTraits(gameEnv, cardOwnerPlayerId, traits);
+            }
+
             default:
                 console.log(`⚠️ Unknown structured condition: ${type}`);
                 return true;
         }
+    }
+
+    private static noUnitTokenWithTraits(
+        gameEnv: GameEnvironment,
+        playerId: string | null,
+        traits: string[]
+    ): boolean {
+        if (!playerId || traits.length === 0) {
+            return true;
+        }
+
+        const units = SlotZoneUtils.getAllPlayerSlotUnits(gameEnv, playerId);
+        return !units.some(unitResult => {
+            const cardData = unitResult?.unit?.cardData;
+            if (!cardData) {
+                return false;
+            }
+            const isToken = cardData.color === 'Token' || (typeof cardData.id === 'string' && cardData.id.startsWith('T-'));
+            if (!isToken) {
+                return false;
+            }
+            const unitTraits = Array.isArray(cardData.traits) ? cardData.traits : [];
+            return traits.some(trait => unitTraits.includes(trait));
+        });
     }
 
     /**

@@ -31,6 +31,8 @@ import {
     TargetChoiceEvent,
     TargetChoiceEventData,
     TargetReference,
+    TokenChoiceOption,
+    TokenChoiceEvent,
     TurnEndEvent,
     TurnStartEvent
 } from './interfaces/GameEvent';
@@ -324,6 +326,33 @@ export class EventFactory {
         return {
             id: `target_choice_${++this.eventIdCounter}_${Date.now()}`,
             type: EventType.TARGET_CHOICE,
+            status: EventStatus.DECLARED,
+            priority: EventPriority.IMMEDIATE,
+            playerId,
+            timestamp: Date.now(),
+            data: eventData
+        };
+    }
+
+    static createTokenChoiceEvent(params: {
+        playerId: string;
+        sourceCarduid: string;
+        effect: EffectDefinition;
+        availableChoices: TokenChoiceOption[];
+    }): TokenChoiceEvent {
+        const { playerId, sourceCarduid, effect, availableChoices } = params;
+        const effectKey = effect?.effectId || effect?.action || 'effect';
+        const eventData = {
+            choiceId: `token_choice_${effectKey}_${Date.now()}`,
+            userDecisionMade: false,
+            sourceCarduid,
+            effect,
+            availableChoices
+        };
+
+        return {
+            id: `token_choice_${++this.eventIdCounter}_${Date.now()}`,
+            type: EventType.TOKEN_CHOICE,
             status: EventStatus.DECLARED,
             priority: EventPriority.IMMEDIATE,
             playerId,

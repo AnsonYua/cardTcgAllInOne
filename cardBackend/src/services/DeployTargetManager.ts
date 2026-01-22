@@ -21,6 +21,7 @@ import { EventFactory } from './EventQueue/EventFactory';
 import { EffectExecutor } from './effects/EffectExecutor';
 import { ensureEffectDefaults } from '../utils/EffectNormalizationUtils';
 import { TargetResolver, ResolvedTargetConfig } from './targets/TargetResolver';
+import { TokenChoiceManager } from './effects/TokenChoiceManager';
 
 export interface DeployTargetResult {
     success: boolean;
@@ -54,6 +55,15 @@ export class DeployTargetManager {
         console.log(`🎯 Processing effect ${effectLabel} requiring target selection`);
 
         try {
+            if (effectAction === 'choose_one_then_deploy_token') {
+                return TokenChoiceManager.processTokenChoiceEffect(
+                    gameEnv,
+                    playerId,
+                    sourceCarduid,
+                    normalizedEffect,
+                    cardPlayNotificationId
+                );
+            }
             if (EffectExecutor.actionSupportsNoTargets(effectAction)) {
                 const result = EffectExecutor.applyEffectToTargets(gameEnv, normalizedEffect, [], playerId, sourceCarduid);
                 return {

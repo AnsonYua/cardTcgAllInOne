@@ -1,0 +1,1 @@
+Review the change you currently made, please see if there if any refactoring /restructure so that can have a good architecture, a good architecture mean code is modularized, centerized and there is class is clear with no duplicated role. a single file will not contain too many code. also help me clear up unused code.

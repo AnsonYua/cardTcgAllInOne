@@ -4,7 +4,7 @@
 import { GameEvent, AcknowledgeEventsEvent, PlayCardEvent,
      DeployEffectEvent, TargetChoiceEvent, PairingEffectEvent, ShieldCardAttackedEvent,
      ConfirmRedrawEvent, ChooseFirstPlayerEvent, GameplayBeginsEvent, ErrorOccurredEvent, BurstEffectChoiceEvent,
-     StartGameEvent, JoinGameEvent, NextPlayerTurnEvent, EndTurnEvent, PlayerActionEvent, RepairEffectEvent, BlockerChoiceEvent, ActionStepPostPlayEvent } from './EventQueue/interfaces/GameEvent';
+     StartGameEvent, JoinGameEvent, NextPlayerTurnEvent, EndTurnEvent, PlayerActionEvent, RepairEffectEvent, BlockerChoiceEvent, ActionStepPostPlayEvent, TokenChoiceEvent } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { EventType } from '../models/GameEnums';
 import { GameNotificationManager } from './GameNotificationManager';
@@ -20,6 +20,7 @@ import { GameSetupManager } from './GameSetupManager';
 import { CardPlayExecutor } from './CardPlayExecutor';
 import { PlayerActionExecutor } from './PlayerActionExecutor';
 import { BattlePhaseManager } from './BattlePhaseManager';
+import { TokenChoiceManager } from './effects/TokenChoiceManager';
 
 export class GameEngine {
     // ============ MAIN EXECUTION INTERFACE ============
@@ -83,6 +84,9 @@ export class GameEngine {
 
                 case EventType.TARGET_CHOICE:
                     return DeployTargetManager.executeTargetChoice(event as TargetChoiceEvent, gameEnv);
+
+                case EventType.TOKEN_CHOICE:
+                    return TokenChoiceManager.executeTokenChoice(event as TokenChoiceEvent, gameEnv);
 
                 case EventType.BLOCKER_CHOICE:
                     return BlockerChoiceManager.executeBlockerChoice(event as BlockerChoiceEvent, gameEnv);
