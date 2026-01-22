@@ -3,6 +3,7 @@ import { UnitZoneCard, PilotZoneCard, TemporaryEffect } from '../../models/CardS
 import { EffectDefinition, TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { SLOT_ZONES } from '../../config/gameConstants';
+import { TemporaryEffectFactory } from './TemporaryEffectFactory';
 
 export class EffectTemporaryManager {
     static createTemporaryEffect(
@@ -21,18 +22,12 @@ export class EffectTemporaryManager {
             }
 
             const targetCard = resolvedTarget.card as UnitZoneCard | PilotZoneCard;
-            const parameters = effect.parameters || {};
-            const parameterValue = parameters['value'];
-
-            const tempEffect: TemporaryEffect = {
+            const tempEffect: TemporaryEffect = TemporaryEffectFactory.createStatModifier(
+                gameEnv,
+                sourcePlayerId,
                 sourceCarduid,
-                modifyAP: effect.action === 'modifyAP' && typeof parameterValue === 'number' ? parameterValue : undefined,
-                modifyHP: effect.action === 'modifyHP' && typeof parameterValue === 'number' ? parameterValue : undefined,
-                duration: effect.timing?.duration || 'UNTIL_END_OF_TURN',
-                appliedTurn: gameEnv.currentTurn,
-                appliedBy: sourcePlayerId,
-                endOnSourceDestroyed: effect.timing?.endOnSourceDestroyed === true
-            };
+                effect
+            );
 
             if (!targetCard.temporaryEffects) {
                 targetCard.temporaryEffects = [];

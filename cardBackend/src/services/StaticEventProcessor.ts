@@ -1,7 +1,7 @@
 // src/services/StaticEventProcessor.ts
 // Static event processor for simplified event system
 
-import { GameEvent, EventStatus, EventPriority, ErrorOccurredEventData, TargetChoiceEvent } from './EventQueue/interfaces/GameEvent';
+import { GameEvent, EventStatus, EventPriority, ErrorOccurredEventData } from './EventQueue/interfaces/GameEvent';
 import { ProcessingResult } from '../models/EventInterfaces';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GameEngine } from './GameEngine';
@@ -79,16 +79,23 @@ export class StaticEventProcessor {
                     }
                     
                     // 4. Ready to resolve
-                    console.log(`🔄 Event 1111 ${event.type} transitioning DECLARED → RESOLVING`);
+                    console.log(`🔄 Event ${event.type} transitioning DECLARED → RESOLVING`);
                     event.status = EventStatus.RESOLVING;
-                    console.log("game Need user Input 1111", gameEnv.needsPlayerInput())
                     
                 } else if (event.status === EventStatus.RESOLVING) {
                     // ============ RESOLVING PHASE ============
-                    console.log(`🔥 Executing event123232: ${event.type}`);
+                    console.log(`🔥 Executing event: ${event.type}`);
+
+                    if (event.type === EventType.ERROR_OCCURRED) {
+                        const errorData = event.data as ErrorOccurredEventData;
+                        if (errorData?.errorReason) {
+                            lastError = errorData.errorReason;
+                        } else {
+                            lastError = 'An error occurred';
+                        }
+                    }
                     
                     const executionResult = GameEngine.execute(event, gameEnv);
-                    console.log(`🔥 Executing event  11111111111: ${executionResult}`);
                     if (executionResult.success) {
                         event.status = EventStatus.RESOLVED;
                     } else {
@@ -129,6 +136,10 @@ export class StaticEventProcessor {
                         // Fallback to prevent infinite loop
                         gameEnv.processingQueue.shift();
                         eventsProcessed++;
+                    }
+
+                    if (event.type === EventType.ERROR_OCCURRED && lastError) {
+                        break;
                     }
                 }
 
@@ -191,28 +202,7 @@ export class StaticEventProcessor {
         gameEnv.enqueueForProcessing(event);
         
         // Process the queue
-        const result = this.processQueue(gameEnv);
-        
-        // Check if any error events were generated
-        if (gameEnv.notificationQueue) {
-            const recentErrors = gameEnv.notificationQueue.filter(evt => 
-                evt.type === EventType.ERROR_OCCURRED && 
-                evt.timestamp > (Date.now() - 1000)
-            );
-            
-            if (recentErrors.length > 0) {
-                const latestError = recentErrors[recentErrors.length - 1];
-                const errorData = latestError.data as ErrorOccurredEventData;
-                return {
-                    success: false,
-                    eventsProcessed: result.eventsProcessed,
-                    needsPlayerInput: result.needsPlayerInput,
-                    error: typeof errorData.errorReason === 'string' ? errorData.errorReason : 'Validation failed'
-                };
-            }
-        }
-        
-        return result;
+        return this.processQueue(gameEnv);
     }
     
     // ============ REACTION AND TRIGGER METHODS ============
@@ -316,44 +306,6 @@ export class StaticEventProcessor {
         };
         
         gameEnv.enqueueForProcessing(errorEvent);
-    }
-    
-    // ============ UTILITY METHODS ============
-    
-    /**
-     * Handle player choice resolution
-     */
-    public static async resolvePlayerChoice(gameEnv: GameEnvironment, selectionId: string, choices: string[]): Promise<ProcessingResult> {
-        console.log(`🎯 Resolving player choice: ${selectionId}`);
-        
-        // Find pending choice event
-        const choiceEvent = gameEnv.getCurrentPlayerChoice() as TargetChoiceEvent | null;
-        if (!choiceEvent || choiceEvent.data.choiceId !== selectionId) {
-            return {
-                success: false,
-                eventsProcessed: 0,
-                needsPlayerInput: false,
-                error: 'No matching player choice found'
-            };
-        }
-
-        // Generate choice resolution event
-        const resolveEvent: GameEvent = {
-            id: `choice_resolved_${Date.now()}_${Math.random()}`,
-            type: EventType.PLAYER_CHOICE_RESOLVED,
-            status: EventStatus.DECLARED,
-            priority: EventPriority.IMMEDIATE,
-            playerId: choiceEvent.playerId,
-            timestamp: Date.now(),
-            data: { choiceId: selectionId, choices, playerId: choiceEvent.playerId }
-        };
-        
-        // Mark choice event as resolved and add resolution event
-        choiceEvent.status = EventStatus.RESOLVED;
-        gameEnv.enqueueForProcessing(resolveEvent);
-        
-        // Continue processing
-        return this.processQueue(gameEnv);
     }
     
     /**

@@ -10,11 +10,11 @@ import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { EffectExecutor } from './effects/EffectExecutor';
 import {
     ensureEffectDefaults,
-    validateComparisonFilter,
     normalizeSourceConditions,
     NormalizedSourceCondition
 } from '../utils/EffectNormalizationUtils';
 import { EffectDefinition } from './EventQueue/interfaces/GameEvent';
+import { ConditionEvaluators } from './conditions/ConditionEvaluators';
 
 export interface EffectResult {
     success: boolean;
@@ -336,36 +336,15 @@ export class ContinuousEffectManager {
                 if (!playerId) {
                     return false;
                 }
-
-                const player = gameEnv.getPlayer(playerId) || gameEnv.players[playerId];
-                const trash = player?.zones?.trashArea;
-                if (!Array.isArray(trash)) {
-                    return false;
-                }
-
                 const traitsAny = Array.isArray(typedCondition.traitsAny)
                     ? typedCondition.traitsAny.filter(item => typeof item === 'string')
                     : [];
-
-                const matchingCount = trash.reduce((total: number, card: any) => {
-                    const cardData = card?.cardData
-                        || (typeof card?.cardId === 'string' ? CardDatabaseManager.getCardDetails(card.cardId) : null);
-                    const traits = Array.isArray(cardData?.traits) ? cardData.traits : [];
-                    if (traitsAny.length === 0) {
-                        return total + 1;
-                    }
-                    const matches = traitsAny.some((trait: string) => traits.includes(trait));
-                    return matches ? total + 1 : total;
-                }, 0);
-
-                const valueFilter = typedCondition.value;
-                if (typeof valueFilter === 'number') {
-                    return matchingCount === valueFilter;
-                }
-                if (typeof valueFilter === 'string') {
-                    return validateComparisonFilter(matchingCount, valueFilter);
-                }
-                return true;
+                return ConditionEvaluators.cardsInTrashWithTraitsAny(
+                    gameEnv,
+                    playerId,
+                    traitsAny,
+                    typedCondition.value
+                );
             }
 
             case 'unitsInPlayWithTrait': {
@@ -377,26 +356,39 @@ export class ContinuousEffectManager {
                 const traits = Array.isArray(typedCondition.traits)
                     ? typedCondition.traits.filter(item => typeof item === 'string')
                     : [];
+                return ConditionEvaluators.unitsInPlayWithTrait(
+                    gameEnv,
+                    playerId,
+                    traits,
+                    typedCondition.value
+                );
+            }
 
-                if (traits.length === 0) {
-                    return true;
+            case 'unitsInPlayWithFilter': {
+                if (!cardOwnerPlayerId) {
+                    return false;
                 }
 
-                const units = SlotZoneUtils.getAllPlayerSlotUnits(gameEnv, playerId);
-                const matchingCount = units.reduce((total: number, unitResult: any) => {
-                    const cardTraits = Array.isArray(unitResult?.unit?.cardData?.traits) ? unitResult.unit.cardData.traits : [];
-                    const matches = traits.some((trait: string) => cardTraits.includes(trait));
-                    return matches ? total + 1 : total;
-                }, 0);
+                const playerScope = typeof typedCondition.scope === 'string'
+                    ? typedCondition.scope.toLowerCase()
+                    : 'self';
+                let scopedPlayerId: string | null = cardOwnerPlayerId;
+                if (playerScope === 'opponent') {
+                    scopedPlayerId = gameEnv.getOpponentId(cardOwnerPlayerId);
+                }
+                if (!scopedPlayerId) {
+                    return false;
+                }
 
-                const valueFilter = typedCondition.value;
-                if (typeof valueFilter === 'number') {
-                    return matchingCount === valueFilter;
-                }
-                if (typeof valueFilter === 'string') {
-                    return validateComparisonFilter(matchingCount, valueFilter);
-                }
-                return true;
+                const filters = typedCondition.filters && typeof typedCondition.filters === 'object'
+                    ? (typedCondition.filters as Record<string, unknown>)
+                    : {};
+                return ConditionEvaluators.unitsInPlayWithFilter(
+                    gameEnv,
+                    scopedPlayerId,
+                    filters,
+                    typedCondition.value
+                );
             }
 
             default:

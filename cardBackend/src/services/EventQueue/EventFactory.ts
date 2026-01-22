@@ -40,22 +40,6 @@ import {
 export class EventFactory {
     private static eventIdCounter = 0;
 
-    static createChoiceResolvedEvent(
-        selectionId: string,
-        choices: string[],
-        playerId: string
-    ): BaseGameEvent {
-        return {
-            id: `choice_resolved_${++this.eventIdCounter}_${Date.now()}`,
-            type: EventType.PLAYER_CHOICE_RESOLVED,
-            status: EventStatus.DECLARED,
-            priority: EventPriority.IMMEDIATE,
-            playerId,
-            timestamp: Date.now(),
-            data: { selectionId, choices, playerId }
-        };
-    }
-
     // ============ GAME FLOW EVENT FACTORIES ============
 
     static createTurnStartEvent(playerId: string, turnNumber: number, phase: string): TurnStartEvent {

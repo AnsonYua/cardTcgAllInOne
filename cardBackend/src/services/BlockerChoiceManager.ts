@@ -70,7 +70,7 @@ export class BlockerChoiceManager {
                 });
                 
                 // Add to processing queue for game event processing
-                gameEnv.processingQueue.push(blockerChoiceEvent);
+                gameEnv.enqueueForProcessing(blockerChoiceEvent);
                 gameEnv.enterBlockerPhase();
                 ChoiceNotificationEmitter.emitBlockerChoiceCreated(gameEnv, blockerChoiceEvent);
                 

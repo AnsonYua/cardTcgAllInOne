@@ -4,7 +4,7 @@ import { GameEnvironment } from '../../../models/GameEnvironment';
 import { EffectDefinition, TargetReference } from '../../EventQueue/interfaces/GameEvent';
 import { GameNotificationManager } from '../../GameNotificationManager';
 import { TargetCardResolver } from '../../targets/TargetCardResolver';
-import type { TemporaryEffect } from '../../../models/CardSystem';
+import { TemporaryEffectFactory } from '../TemporaryEffectFactory';
 
 export function applyGrantKeywordEffect(
     gameEnv: GameEnvironment,
@@ -25,8 +25,6 @@ export function applyGrantKeywordEffect(
         return { success: true };
     }
 
-    const duration = effect.timing?.duration || 'UNTIL_END_OF_TURN';
-
     for (const target of selectedTargets) {
         const resolved = TargetCardResolver.resolve(gameEnv, target);
         if (!resolved) {
@@ -42,14 +40,13 @@ export function applyGrantKeywordEffect(
             targetCard.temporaryEffects = [];
         }
 
-        const tempEffect: TemporaryEffect = {
-            sourceCarduid: sourceCarduid || 'unknown',
-            grantedKeywords: [keyword],
-            duration,
-            appliedTurn: gameEnv.currentTurn,
-            appliedBy: sourcePlayerId,
-            endOnSourceDestroyed: effect.timing?.endOnSourceDestroyed === true
-        };
+        const tempEffect = TemporaryEffectFactory.createGrantedKeyword(
+            gameEnv,
+            sourcePlayerId,
+            sourceCarduid || 'unknown',
+            effect,
+            keyword
+        );
 
         targetCard.temporaryEffects.push(tempEffect);
 
@@ -59,11 +56,10 @@ export function applyGrantKeywordEffect(
             sourceCarduid,
             targetCarduid: target.carduid,
             keyword,
-            duration,
+            duration: effect.timing?.duration || 'UNTIL_END_OF_TURN',
             timestamp: Date.now()
         }, 'normal');
     }
 
     return { success: true };
 }
-

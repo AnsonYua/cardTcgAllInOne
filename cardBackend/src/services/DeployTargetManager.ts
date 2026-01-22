@@ -24,6 +24,7 @@ import { TokenChoiceManager } from './effects/TokenChoiceManager';
 import { TargetChoicePolicy } from './choices/TargetChoicePolicy';
 import { DrawThenDiscardManager } from './effects/DrawThenDiscardManager';
 import { ChoiceEventScheduler } from './choices/ChoiceEventScheduler';
+import { TargetSelectionUtils } from './targets/TargetSelectionUtils';
 
 export interface DeployTargetResult {
     success: boolean;
@@ -87,7 +88,11 @@ export class DeployTargetManager {
 
             const targetConfig = TargetResolver.resolveTargetConfig(normalizedEffect);
             // Generate available targets based on config
-            const availableTargets = TargetResolver.generateAvailableTargets(gameEnv, playerId, targetConfig);
+            let availableTargets = TargetResolver.generateAvailableTargets(gameEnv, playerId, targetConfig);
+            availableTargets = TargetSelectionUtils.applySelection(
+                availableTargets,
+                normalizedEffect.target?.selection as any
+            );
             
             if (availableTargets.length === 0) {
                 console.log(`⚠️ No eligible targets found for ${effect.effectId}`);

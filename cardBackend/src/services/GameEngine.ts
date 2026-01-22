@@ -114,10 +114,19 @@ export class GameEngine {
     }
 
     // ============ EVENT-SPECIFIC EXECUTION METHODS ============
-    private static executeErrorEvent(event: ErrorOccurredEvent, _gameEnv: GameEnvironment): ExecutionResult {
+    private static executeErrorEvent(event: ErrorOccurredEvent, gameEnv: GameEnvironment): ExecutionResult {
         console.log(`💥 Processing error: ${event.data.errorType} - ${event.data.errorReason}`);
 
         try {
+            const notificationManager = GameEngine.getNotificationManager(gameEnv);
+            notificationManager.addNotificationEventWithId(event.id, 'ERROR_OCCURRED', {
+                playerId: event.playerId,
+                errorType: event.data.errorType,
+                errorReason: event.data.errorReason,
+                originalEventType: event.data.originalEventType,
+                originalEventId: event.data.originalEventId,
+                timestamp: Date.now()
+            }, 'high');
 
             console.log(`📨 Error event added: ${event.data.errorReason}`);
             return { success: true };

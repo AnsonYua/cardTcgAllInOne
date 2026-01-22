@@ -10,6 +10,7 @@ import { CardDatabaseManager, EnergyZoneCard } from '../models/CardSystem';
 import { EnergyManager, EnergyCheckResult } from './EnergyManager';
 import { PlayerCardManager } from './PlayerCardManager';
 import { EffectExecutor } from './effects/EffectExecutor';
+import { HandContinuousModifier } from './effects/HandContinuousModifier';
 
 export interface PlayCardPreparationFailure {
     success: false;
@@ -78,10 +79,16 @@ export class PlayCardPreparationManager {
             };
         }
 
+        const cardDataForEnergy = HandContinuousModifier.applyModifiersForHandCardPlay(
+            gameEnv,
+            playerId,
+            cardData
+        );
+
         const energyResult: EnergyCheckResult = EnergyManager.validateAndPayEnergyForCard(
             gameEnv,
             playerId,
-            cardData,
+            cardDataForEnergy,
             { fromBurst }
         );
 
