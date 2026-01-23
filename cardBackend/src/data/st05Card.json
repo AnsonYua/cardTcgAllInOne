@@ -47,7 +47,7 @@
                                     },
                                     "parameters": {
                                         "value": 1,
-                                        "notes": "Choose 'one of your other Units' is not enforced yet; engine should prevent selecting the source."
+                                        "excludeSource": true
                                     }
                                 },
                                 {
@@ -85,11 +85,11 @@
                             }
                         ],
                         "timing": {
-                            "duration": "continuous"
+                            "duration": "continuous",
+                            "endOnSourceDestroyed": true
                         },
                         "parameters": {
-                            "keyword": "Suppression",
-                            "notes": "Suppression keyword not yet implemented."
+                            "keyword": "Suppression"
                         }
                     }
                 ]

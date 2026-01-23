@@ -2,6 +2,7 @@
 // Centralized helper for discovering and normalizing effect definitions on card data
 
 import { EffectDefinition } from '../EventQueue/interfaces/GameEvent';
+import { CardDataResolver } from './CardDataResolver';
 import { normalizeEffectRule } from '../../utils/EffectNormalizationUtils';
 
 export interface EffectCollectionOptions {
@@ -32,8 +33,10 @@ export class EffectRuleCatalog {
      * Returns an empty array when no matching rules are found or normalization fails.
      */
     static collectEffects(cardData: any, options: EffectCollectionOptions): EffectDefinition[] {
-        const rules = Array.isArray(cardData?.effects?.rules)
-            ? (cardData.effects.rules as unknown[])
+        const resolvedCardData = CardDataResolver.resolveWithEffectRules(cardData);
+
+        const rules = Array.isArray(resolvedCardData?.effects?.rules)
+            ? (resolvedCardData.effects.rules as unknown[])
             : [];
 
         if (rules.length === 0) {

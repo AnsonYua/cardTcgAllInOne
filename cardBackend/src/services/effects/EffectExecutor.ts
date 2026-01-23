@@ -7,7 +7,6 @@ import { EffectDefinition, EffectTiming, TargetReference } from '../EventQueue/i
 import { ShieldCardManager } from '../ShieldCardManager';
 import { EffectStatApplier } from './EffectStatApplier';
 import { EffectTemporaryManager } from './EffectTemporaryManager';
-import { GameNotificationManager } from '../GameNotificationManager';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { applyAddExtraEnergyEffect } from './actions/EffectEnergyActions';
 import { applyScryTopDeckEffect } from './actions/EffectScryActions';
@@ -15,16 +14,25 @@ import { applyGrantBreachEffect } from './actions/EffectBreachActions';
 import { applyPreventShieldDamageEffect, applyDamageShieldEffect } from './actions/EffectShieldActions';
 import { applyConditionalTokenDeployEffect } from './actions/EffectTokenActions';
 import { applySetActiveEffect } from './actions/EffectSetActiveActions';
+import { applySetActiveThenRestrictAttackEffect } from './actions/EffectSetActiveThenRestrictAttackActions';
+import { applyRestrictAttackEffect } from './actions/EffectRestrictAttackActions';
 import { applyDeployFromHandEffect } from './actions/EffectDeployFromHandActions';
 import { applySequenceEffect } from './actions/EffectSequenceActions';
 import { applyDiscardFromHandEffect } from './actions/EffectDiscardActions';
+import { applyMoveFromHandToDeckBottom, applyMoveFromTrashToDeck } from './actions/EffectDeckActions';
+import { applyExileFromTrashEffect } from './actions/EffectExileActions';
+import { applyDestroyEffect } from './actions/EffectDestroyActions';
 import { applyGrantKeywordEffect } from './actions/EffectKeywordActions';
 import { applyPreventBattleDamageEffect } from './actions/EffectBattleDamagePreventionActions';
 import { applyPreventSetActiveNextTurnEffect } from './actions/EffectActivationLockActions';
 import { applyReturnToHandEffect } from './actions/EffectReturnToHandActions';
+import { applyPairFromTrashEffect } from './actions/EffectPairActions';
+import { applyRestEffect } from './actions/EffectRestActions';
+import { applyDamageEffect } from './actions/EffectDamageActions';
 import { extractNumericValue, resolvePlayerIdsForScope } from './actions/EffectActionUtils';
 import { HandZoneManager } from '../zones/HandZoneManager';
 import type { AddToHandOptions } from '../zones/HandZoneManager';
+import { EffectDrawTriggerDispatcher } from './EffectDrawTriggerDispatcher';
 
 interface EffectActionContext {
     gameEnv: GameEnvironment;
@@ -37,10 +45,11 @@ interface EffectActionContext {
 export class EffectExecutor {
 
     private static readonly ACTION_HANDLERS: Record<string, (context: EffectActionContext) => { success: boolean; error?: string }> = {
-        draw: ({ gameEnv, effect, sourcePlayerId }) => this.applyPlayerDrawEffect(gameEnv, sourcePlayerId, effect),
+        draw: ({ gameEnv, effect, sourcePlayerId, sourceCarduid }) => this.applyPlayerDrawEffect(gameEnv, sourcePlayerId, effect, sourceCarduid),
         addToHand: ({ gameEnv, effect, selectedTargets, sourcePlayerId }) =>
             this.applyAddToHandEffect(gameEnv, sourcePlayerId, effect, selectedTargets),
-        addExtraEnergy: ({ gameEnv, effect, sourcePlayerId }) => applyAddExtraEnergyEffect(gameEnv, sourcePlayerId, effect),
+        addExtraEnergy: ({ gameEnv, effect, sourcePlayerId, sourceCarduid }) =>
+            applyAddExtraEnergyEffect(gameEnv, sourcePlayerId, sourceCarduid, effect),
         scry_top_deck: ({ gameEnv, effect, sourcePlayerId }) => applyScryTopDeckEffect(gameEnv, sourcePlayerId, effect),
         grant_breach: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyGrantBreachEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
@@ -50,8 +59,18 @@ export class EffectExecutor {
             applyConditionalTokenDeployEffect(gameEnv, sourcePlayerId, sourceCarduid, effect),
         deploy_from_hand: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyDeployFromHandEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        restrict_attack: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyRestrictAttackEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         discardFromHand: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyDiscardFromHandEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        moveFromHandToDeckBottom: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyMoveFromHandToDeckBottom(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        moveFromTrashToDeck: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyMoveFromTrashToDeck(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        exileFromTrash: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyExileFromTrashEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        destroy: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyDestroyEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         grant_keyword: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyGrantKeywordEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         sequence: ({ gameEnv, effect, sourcePlayerId, sourceCarduid }) =>
@@ -60,12 +79,20 @@ export class EffectExecutor {
             applyDamageShieldEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         setActive: ({ gameEnv, effect, selectedTargets, sourcePlayerId }) =>
             applySetActiveEffect(gameEnv, sourcePlayerId, effect, selectedTargets),
+        setActive_then_restrict_attack: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applySetActiveThenRestrictAttackEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         prevent_battle_damage: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyPreventBattleDamageEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         prevent_set_active_next_turn: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyPreventSetActiveNextTurnEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         returnToHand: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
-            applyReturnToHandEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets)
+            applyReturnToHandEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        pair_from_trash: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyPairFromTrashEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        rest: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyRestEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        damage: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyDamageEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets)
     };
 
     /**
@@ -115,13 +142,13 @@ export class EffectExecutor {
                     };
                 }
 
-            const applyResult = EffectStatApplier.applyEffectToResolvedCard(
-                gameEnv,
-                resolvedTarget.card as UnitZoneCard | PilotZoneCard,
-                action,
-                parameters,
-                target
-            );
+                const applyResult = EffectStatApplier.applyEffectToResolvedCard(
+                    gameEnv,
+                    resolvedTarget.card as UnitZoneCard | PilotZoneCard,
+                    action,
+                    parameters,
+                    target
+                );
 
                 if (!applyResult.success) {
                     return applyResult;
@@ -216,7 +243,12 @@ export class EffectExecutor {
         }
      }
 
-    static applyPlayerDrawEffect(gameEnv: GameEnvironment, sourcePlayerId: string, effect: EffectDefinition): { success: boolean; error?: string } {
+    static applyPlayerDrawEffect(
+        gameEnv: GameEnvironment,
+        sourcePlayerId: string,
+        effect: EffectDefinition,
+        sourceCarduid?: string
+    ): { success: boolean; error?: string } {
         const parameters = this.getEffectParameters(effect);
         const drawCount = extractNumericValue(parameters) ?? 1;
 
@@ -245,7 +277,14 @@ export class EffectExecutor {
                 };
             }
 
-            this.drawCardsIntoHand(gameEnv, targetPlayerId, player.deck, drawCount);
+            const drawContext = sourceCarduid
+                ? `effect_draw:${sourceCarduid}`
+                : `effect_draw:${effect.effectId}`;
+
+            this.drawCardsIntoHand(gameEnv, targetPlayerId, player.deck, drawCount, {
+                drawContext,
+                sourceCarduid
+            });
         }
 
         console.log(`🃏 Applied draw effect (${drawCount}) to players: ${targetPlayerIds.join(', ')}`);
@@ -352,14 +391,14 @@ export class EffectExecutor {
         playerId: string,
         deck: any,
         count: number,
-        options: { notify?: boolean; drawContext?: string } = {}
+        options: { notify?: boolean; drawContext?: string; sourceCarduid?: string } = {}
     ): void {
         if (!deck || !Array.isArray(deck.mainDeck)) {
             throw new Error('Deck structure invalid for draw effect');
         }
 
         const shouldNotify = options.notify !== false;
-        const notifyPerCard = shouldNotify && count === 1;
+        const notifyPerCard = shouldNotify;
         const drawnUids: string[] = [];
         const drawContext = options.drawContext;
 
@@ -380,18 +419,13 @@ export class EffectExecutor {
             }
         }
 
-        if (shouldNotify && !notifyPerCard && drawnUids.length > 0) {
-            const notificationManager = new GameNotificationManager(gameEnv);
-            notificationManager.addNotificationEvent('CARD_DRAWN', {
-                playerId,
-                count: drawnUids.length,
-                carduids: drawnUids,
-                sourceZone: 'deck',
-                reason: 'draw',
-                drawContext,
-                timestamp: Date.now()
-            });
-        }
+        EffectDrawTriggerDispatcher.dispatchEffectDrawIfNeeded({
+            gameEnv,
+            playerId,
+            drawnCarduids: drawnUids,
+            drawContext,
+            sourceCarduid: options.sourceCarduid
+        });
 
         const handSize = Array.isArray(deck.handUids) ? deck.handUids.length : deck._handUids?.length || 0;
         console.log(`🃏 Deck draw complete. Hand size: ${handSize}`);

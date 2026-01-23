@@ -1,0 +1,270 @@
+{
+  "description": "gd03-041_deploy_damage_all_bases_3",
+  "gameId": "gd03-041_deploy_damage_all_bases_3",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD03-041",
+    "ENTERS_PLAY",
+    "damage",
+    "base",
+    "all"
+  ],
+  "notes": [
+    "Setup: Both players have a base in play (base_default) with originalHP=5.",
+    "Setup: Player A has GD03-041 in hand and 6 active energy during MAIN_PHASE.",
+    "Action: Player A plays GD03-041 into an empty unit slot (ENTERS_PLAY).",
+    "Expect: Both bases take 3 damage (notificationQueue includes BASE_DAMAGED for each base)."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd03041",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "GD03-041_draw_0001",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "GD03-041_hand_0001",
+              "cardId": "GD03-041",
+              "cardData": {
+                "ap": 5,
+                "name": "Patulia",
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "level": 7,
+                "color": "Red",
+                "hp": 6,
+                "traits": [
+                  "SRA"
+                ],
+                "cardType": "unit",
+                "cost": 6,
+                "link": [
+                  "Carris Nautilus"
+                ],
+                "effects": {
+                  "rules": [
+                    {
+                      "action": "sequence",
+                      "type": "triggered",
+                      "trigger": "ENTERS_PLAY",
+                      "effectId": "deploy_effect",
+                      "parameters": {
+                        "text": "Deal 3 damage to all Bases.",
+                        "version": 1,
+                        "steps": [
+                          {
+                            "action": "damage",
+                            "target": {
+                              "scope": "all",
+                              "type": "base"
+                            },
+                            "parameters": {
+                              "value": 3
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "description": [
+                    "【Deploy】Deal 3 damage to all Bases."
+                  ]
+                },
+                "id": "GD03-041"
+              }
+            }
+          ],
+          "handUids": [
+            "GD03-041_hand_0001"
+          ],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [
+            {
+              "carduid": "base_default",
+              "cardId": "base_default",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "cardData": {
+                "cardType": "base"
+              },
+              "originalHP": 5,
+              "damageReceived": 0
+            }
+          ],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd03041_a_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_gd03041_a_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_gd03041_a_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_gd03041_a_0004",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_gd03041_a_0005",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            },
+            {
+              "carduid": "energy_basic_gd03041_a_0006",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        },
+        "effectRegistry": {},
+        "delayedTriggers": []
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [
+            {
+              "carduid": "base_default",
+              "cardId": "base_default",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "cardData": {
+                "cardType": "base"
+              },
+              "originalHP": 5,
+              "damageReceived": 0
+            }
+          ],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        },
+        "effectRegistry": {},
+        "delayedTriggers": []
+      }
+    }
+  }
+}
+

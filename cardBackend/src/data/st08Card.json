@@ -535,7 +535,7 @@
                     {
                         "effectId": "grant_high_maneuver_on_effect_draw_if_blue_unit",
                         "type": "triggered",
-                        "trigger": "CUSTOM",
+                        "trigger": "EFFECT_DRAW",
                         "action": "grant_keyword",
                         "timing": {
                             "duration": "UNTIL_END_OF_TURN"

@@ -1138,7 +1138,6 @@ export class GameLogic {
                     'normal'
                 );
             }
-            console.log("data 1111222333444", JSON.stringify(gameEnv.processingQueue))
             const processingResult = await gameEnv.processEvents();
             if (!processingResult.success) {
                 return {
@@ -1148,9 +1147,8 @@ export class GameLogic {
             }
 
             await this.saveGameToFile(gameId, gameEnv);
-
             console.log('✅ Blocker choice processed successfully');
-            console.log("data 1111222333", JSON.stringify(gameEnv.processingQueue))
+            
             return {
                 success: true,
                 gameId,

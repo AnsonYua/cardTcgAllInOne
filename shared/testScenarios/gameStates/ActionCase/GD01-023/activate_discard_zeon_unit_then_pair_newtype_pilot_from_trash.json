@@ -1,0 +1,251 @@
+{
+  "description": "gd01-023_activate_discard_zeon_unit_then_pair_newtype_pilot_from_trash",
+  "gameId": "gd01-023_activate_discard_zeon_unit_then_pair_newtype_pilot_from_trash",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD01-023",
+    "activateCardAbility",
+    "discardFromHand",
+    "pair_from_trash",
+    "TARGET_CHOICE"
+  ],
+  "notes": [
+    "Setup: Player A MAIN_PHASE. GD01-023 is in slot1 with no paired pilot. Player A hand has 2 Zeon/Neo Zeon Unit cards so discard cost requires a choice. Player A trash contains GD01-087 (Newtype pilot, level 3).",
+    "Action (manual): Player A uses activateCardAbility on GD01-023 (carduid=GD01-023_unit_0001, effectId=activate_effect).",
+    "Expect: A TARGET_CHOICE is enqueued for discardFromHand cost (processingQueue) and TARGET_CHOICE notification is appended (notificationQueue).",
+    "Action (manual): Player A resolves TARGET_CHOICE selecting ST03-006_hand_0001 to discard.",
+    "Expect: CARD_DISCARDED_FROM_HAND is appended; then pair_from_trash resolves and GD01-087 moves from trash to slot1 as pilot (PILOT_PAIRED_FROM_TRASH notification)."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd01023_seed",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "GD01-000_draw_0023",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "ST03-006_hand_0001",
+              "cardId": "ST03-006",
+              "cardData": {
+                "id": "ST03-006",
+                "name": "Char’s Zaku II",
+                "cardType": "unit",
+                "color": "Green",
+                "level": 3,
+                "cost": 2,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Zeon"
+                ],
+                "link": [
+                  "Char Aznable"
+                ],
+                "ap": 3,
+                "hp": 2,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              }
+            },
+            {
+              "carduid": "GD01-052_hand_0002",
+              "cardId": "GD01-052",
+              "cardData": {
+                "id": "GD01-052",
+                "name": "Geara Zulu (Guards Type)",
+                "cardType": "unit",
+                "color": "Red",
+                "level": 4,
+                "cost": 3,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Neo Zeon"
+                ],
+                "link": [],
+                "ap": 2,
+                "hp": 3,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              }
+            }
+          ],
+          "handUids": [
+            "ST03-006_hand_0001",
+            "GD01-052_hand_0002"
+          ],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD01-023_unit_0001",
+              "cardId": "GD01-023",
+              "cardData": {
+                "id": "GD01-023",
+                "name": "Char's Gelgoog",
+                "cardType": "unit",
+                "color": "Green",
+                "level": 4,
+                "cost": 4,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Zeon"
+                ],
+                "link": [
+                  "Char Aznable"
+                ],
+                "ap": 4,
+                "hp": 3,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 3,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [
+            {
+              "carduid": "GD01-087_trash_0001",
+              "cardId": "GD01-087",
+              "cardData": {
+                "id": "GD01-087",
+                "name": "Sayla Mass",
+                "cardType": "pilot",
+                "color": "Blue",
+                "level": 3,
+                "cost": 1,
+                "zone": [],
+                "traits": [
+                  "Earth Federation",
+                  "White Base Team",
+                  "Newtype"
+                ],
+                "link": [],
+                "ap": 1,
+                "hp": 1,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isFirstPlay": false
+            }
+          ],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
+

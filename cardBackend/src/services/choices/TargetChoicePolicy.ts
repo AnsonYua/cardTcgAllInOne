@@ -2,6 +2,7 @@
 
 import type { EffectDefinition, TargetReference } from '../EventQueue/interfaces/GameEvent';
 import type { ResolvedTargetConfig } from '../targets/TargetResolver';
+import { TargetCountUtils } from '../targets/TargetCountUtils';
 
 export class TargetChoicePolicy {
     static requiresChoice(
@@ -9,6 +10,17 @@ export class TargetChoicePolicy {
         availableTargets: TargetReference[],
         effect: EffectDefinition
     ): boolean {
+        const selectionType = typeof effect.target?.selection?.type === 'string'
+            ? effect.target.selection.type.toLowerCase()
+            : '';
+        if (selectionType === 'player_choice') {
+            return TargetCountUtils.hasMeaningfulChoice(
+                availableTargets.length,
+                effect.target?.count,
+                effect.optional === true
+            );
+        }
+
         if (targetConfig.scope === 'self_shield' || targetConfig.scope === 'opponent_shield') {
             return false;
         }
@@ -33,4 +45,3 @@ export class TargetChoicePolicy {
         return availableTargets.length > 1;
     }
 }
-

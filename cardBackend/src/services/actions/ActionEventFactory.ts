@@ -3,7 +3,7 @@
 
 import { PlayerActionType, EventType } from '../../models/GameEnums';
 import { PlayerAction } from '../../models/EventInterfaces';
-import { EventFactory, EventStatus, EventPriority } from '../EventQueue';
+import { EventFactory, EventPriority, EventStatus } from '../EventQueue';
 import { GameEvent } from '../EventQueue/interfaces/GameEvent';
 
 export const createEventFromAction = (action: PlayerAction): GameEvent | null => {
@@ -11,62 +11,50 @@ export const createEventFromAction = (action: PlayerAction): GameEvent | null =>
 
     switch (action.type) {
         case PlayerActionType.CREATE_GAME:
-            return {
-                id: action.type.toLowerCase() + `_${Date.now()}_${Math.random()}`,
-                type: EventType.CREATE_GAME,
-                status: EventStatus.DECLARED,
-                priority: EventPriority.HIGH,
-                timestamp: Date.now(),
-                playerId: action.playerId,
-                data: {
-                    playerId: action.playerId,
-                    gameId: action.gameId
-                }
-            };
+            if (!action.gameId) {
+                console.warn('⚠️ CREATE_GAME action missing gameId', action);
+                return null;
+            }
+            return EventFactory.createStartGameEvent(action.playerId, action.gameId);
 
         case PlayerActionType.JOIN_GAME:
-            return {
-                id: action.type.toLowerCase() + `_${Date.now()}_${Math.random()}`,
-                type: EventType.JOIN_GAME,
-                status: EventStatus.DECLARED,
-                priority: EventPriority.HIGH,
-                timestamp: Date.now(),
-                playerId: action.playerId,
-                data: {
-                    playerId: action.playerId,
-                    gameId: action.gameId
-                }
-            };
+            if (!action.gameId) {
+                console.warn('⚠️ JOIN_GAME action missing gameId', action);
+                return null;
+            }
+            return EventFactory.createJoinGameEvent(action.playerId, action.gameId);
 
         case PlayerActionType.CHOOSE_FIRST_PLAYER:
-            return {
-                id: action.type.toLowerCase() + `_${Date.now()}_${Math.random()}`,
-                type: EventType.CHOOSE_FIRST_PLAYER,
-                status: EventStatus.DECLARED,
-                priority: EventPriority.NORMAL,
-                timestamp: Date.now(),
-                playerId: action.playerId,
-                data: {
+            if (!action.gameId || !action.chosenFirstPlayerId) {
+                console.warn('⚠️ CHOOSE_FIRST_PLAYER action missing required identifiers', action);
+                return null;
+            }
+            return EventFactory.createBaseEvent(
+                EventType.CHOOSE_FIRST_PLAYER,
+                action.playerId,
+                {
                     playerId: action.playerId,
                     gameId: action.gameId,
                     chosenFirstPlayerId: action.chosenFirstPlayerId
-                }
-            };
+                },
+                { status: EventStatus.DECLARED, priority: EventPriority.NORMAL }
+            );
 
         case PlayerActionType.CONFIRM_REDRAW:
-            return {
-                id: `start_ready_${Date.now()}_${Math.random()}`,
-                type: EventType.CONFIRM_REDRAW,
-                status: EventStatus.DECLARED,
-                priority: EventPriority.NORMAL,
-                timestamp: Date.now(),
-                playerId: action.playerId,
-                data: {
+            if (!action.gameId) {
+                console.warn('⚠️ CONFIRM_REDRAW action missing gameId', action);
+                return null;
+            }
+            return EventFactory.createBaseEvent(
+                EventType.CONFIRM_REDRAW,
+                action.playerId,
+                {
                     playerId: action.playerId,
                     gameId: action.gameId,
                     isRedraw: action.isRedraw || false
-                }
-            };
+                },
+                { status: EventStatus.DECLARED, priority: EventPriority.NORMAL }
+            );
 
         case PlayerActionType.END_TURN:
             return EventFactory.createEndTurnEvent(
@@ -94,17 +82,11 @@ export const createEventFromAction = (action: PlayerAction): GameEvent | null =>
             );
 
         case PlayerActionType.PLAYER_ACTION:
-            return {
-                id: `player_action_${Date.now()}_${Math.random()}`,
-                type: EventType.PLAYER_ACTION,
-                status: EventStatus.DECLARED,
-                priority: EventPriority.NORMAL,
-                timestamp: Date.now(),
-                playerId: action.playerId,
-                data: {
-                    ...action
-                }
-            };
+            if (typeof action.actionType !== 'string' || action.actionType.length === 0) {
+                console.warn('⚠️ PLAYER_ACTION missing actionType', action);
+                return null;
+            }
+            return EventFactory.createPlayerActionEvent(action.playerId, action.actionType, { ...action });
 
         default:
             console.warn(`⚠️ Unknown action type: ${action.type}`);

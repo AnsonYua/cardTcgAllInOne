@@ -16,6 +16,7 @@ import {
 import { calculateBaseFieldValue, calculateSlotFieldValue } from '../utils/FieldValueCalculator';
 import { canUnitAttackThisTurn } from '../utils/UnitAttackUtils';
 import { ensureUnitTurnStateDefaults, resetUnitTurnState } from '../utils/UnitTurnStateUtils';
+import type { DelayedTrigger } from './DelayedTrigger';
 
 // ============ ZONE INTERFACES ============
 
@@ -210,6 +211,11 @@ export class Player {
     // Example: Leader power boosts, pairing bonuses that last while conditions are met
     // Storage: gameEnv.players[id].effectRegistry
     public effectRegistry: { [effectKey: string]: any } = {};
+
+    // 3. DELAYED TRIGGERS (PLAYER-LEVEL STORAGE)
+    // Purpose: "During this turn, if X happens..." effects registered by commands/abilities.
+    // Lifecycle: Registered when resolving an effect, removed when duration expires.
+    public delayedTriggers: DelayedTrigger[] = [];
     
     // 2. TEMPORARY EFFECTS (CARD-LEVEL STORAGE)
     // Purpose: Short-term effects that expire (UNTIL_END_OF_TURN, etc.)
@@ -226,6 +232,7 @@ export class Player {
         this.isReady = false;
         this.deck = new PlayerDeck();
         this.effectRegistry = {};
+        this.delayedTriggers = [];
         this.initializeZones();
     }
 
@@ -729,7 +736,8 @@ export class Player {
             isReady: this.isReady,
             zones: serializedZones,
             // fieldEffects removed - not currently implemented
-            effectRegistry: this.effectRegistry
+            effectRegistry: this.effectRegistry,
+            delayedTriggers: this.delayedTriggers
         };
     }
 
@@ -758,6 +766,7 @@ export class Player {
         
         // Restore effect registry
         player.effectRegistry = data.effectRegistry || {};
+        player.delayedTriggers = Array.isArray(data.delayedTriggers) ? data.delayedTriggers : [];
         
         // Legacy effects structure removed - no longer needed
         // effectRegistry is now the primary effects system

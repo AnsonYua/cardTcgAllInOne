@@ -9,10 +9,14 @@ import {
 } from './EventQueue/interfaces/GameEvent';
 import { EventFactory } from './EventQueue/EventFactory';
 import { BlockerEffectManager } from './effects/BlockerEffectManager';
-import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { BattlePhaseManager } from './BattlePhaseManager';
 import { ExecutionResult } from './ExecutionResult';
 import { ChoiceNotificationEmitter } from './notifications/ChoiceNotificationEmitter';
+import { applyRestEffect } from './effects/actions/EffectRestActions';
+import { TargetCardResolver } from './targets/TargetCardResolver';
+import { BattleNotificationEmitter } from './notifications/BattleNotificationEmitter';
+import { SlotZoneUtils } from '../utils/SlotZoneUtils';
+import { KeywordUtils } from '../utils/KeywordUtils';
 
 export interface BlockerChoiceResult {
     success: boolean;
@@ -45,6 +49,15 @@ export class BlockerChoiceManager {
         console.log(`🛡️ Processing attack with blocker choice for player ${defendingPlayerId}`);
 
         try {
+            const attackerCarduid = this.getAttackerCarduid(attackEvent);
+            if (attackerCarduid) {
+                const attackerCard = SlotZoneUtils.getCardByUid(gameEnv, attackerCarduid);
+                if (attackerCard && KeywordUtils.isUnblockable(attackerCard as any)) {
+                    console.log(`🛡️ Skipping blocker step: attacker ${attackerCarduid} has High-Maneuver`);
+                    return { success: true, normalAttack: true };
+                }
+            }
+
             // Step 1: Check for available blockers (delegate to BlockerEffectManager)
             const currentTargetCarduid = this.getCurrentAttackTargetCarduid(attackEvent);
             const blockerTargets = BlockerEffectManager.getAvailableBlockerTargets(gameEnv, defendingPlayerId, {
@@ -116,33 +129,44 @@ export class BlockerChoiceManager {
                 };
             }
 
-                if (eventData.selectedTarget) {
-                    // Player chose a blocker - redirect attack
-                    console.log(`🛡️ Blocker chosen: ${eventData.selectedTarget.carduid}`);
-                
+            if (eventData.selectedTarget) {
+                // Player chose a blocker - redirect attack
+                console.log(`🛡️ Blocker chosen: ${eventData.selectedTarget.carduid}`);
+                ChoiceNotificationEmitter.emitBlockerChoiceResolved(gameEnv, event, 'BLOCK');
+
                 // Step 1: Pay blocker cost immediately (rest the blocker)
-                const costPaid = this.applyBlockerCost(eventData.selectedTarget.carduid, gameEnv);
+                const costPaid = this.applyBlockerCost(eventData.selectedTarget, gameEnv);
                 if (!costPaid) {
-                    return { 
-                        success: false, 
+                    return {
+                        success: false,
                         error: 'Failed to rest blocker unit - unit may already be rested or not found'
                     };
                 }
-                
+
                 // Step 2: Redirect attack target to blocker
                 const redirectedEvent = this.createRedirectedAttackEvent(
-                    eventData.originalAttackEvent, 
+                    eventData.originalAttackEvent,
                     eventData.selectedTarget
                 );
-                
+
+                BattleNotificationEmitter.emitAttackRedirected(gameEnv, {
+                    blockingPlayerId: eventData.blockingPlayerId,
+                    attackerPlayerId: redirectedEvent.playerId,
+                    attackerCarduid: this.getAttackerCarduid(redirectedEvent),
+                    fromTargetCarduid: this.getCurrentAttackTargetCarduid(eventData.originalAttackEvent),
+                    toTargetCarduid: eventData.selectedTarget.carduid,
+                    blockerCarduid: eventData.selectedTarget.carduid,
+                    timestamp: Date.now()
+                });
+
                 // Step 3: Execute redirected attack through normal pipeline
                 return BattlePhaseManager.startBattle(gameEnv, redirectedEvent);
-                
-            } else {
-                // Player declined blocking - attack proceeds normally
-                console.log(`🛡️ Blocking declined, attack proceeds to original target`);
-                return BattlePhaseManager.startBattle(gameEnv, eventData.originalAttackEvent);
             }
+
+            // Player declined blocking - attack proceeds normally
+            console.log(`🛡️ Blocking declined, attack proceeds to original target`);
+            ChoiceNotificationEmitter.emitBlockerChoiceResolved(gameEnv, event, 'DECLINE');
+            return BattlePhaseManager.startBattle(gameEnv, eventData.originalAttackEvent);
             
         } catch (error) {
             console.error(`❌ Error in executeBlockerChoice:`, error);
@@ -167,32 +191,35 @@ export class BlockerChoiceManager {
      * Apply blocker cost - rest the blocker unit immediately
      * Moved from BlockerEffectManager
      */
-    private static applyBlockerCost(blockerCarduid: string, gameEnv: GameEnvironment): boolean {
-        console.log(`💤 Applying blocker cost: resting ${blockerCarduid}`);
-        
-        // Find the blocker unit across all players
-        for (const playerId of Object.keys(gameEnv.players)) {
-            const player = gameEnv.getPlayer(playerId);
-            if (!player || !player.zones) continue;
-            
-            const slotResult = SlotZoneUtils.findSlotByCarduid(player.zones, blockerCarduid);
-            if (slotResult.slotName) {
-                const unit = slotResult.unit;
-                if (unit && unit.carduid === blockerCarduid) {
-                    if (unit.isRested) {
-                        console.log(`⚠️ Blocker ${blockerCarduid} is already rested`);
-                        return false;
-                    }
-                    
-                    unit.isRested = true;
-                    console.log(`✅ Blocker ${blockerCarduid} has been rested as cost`);
-                    return true;
-                }
-            }
+    private static applyBlockerCost(blockerTarget: TargetReference, gameEnv: GameEnvironment): boolean {
+        console.log(`💤 Applying blocker cost: resting ${blockerTarget.carduid}`);
+
+        const resolved = TargetCardResolver.resolve(gameEnv, blockerTarget);
+        if (!resolved || (resolved.kind !== 'unit' && resolved.kind !== 'pilot')) {
+            console.log(`❌ Blocker ${blockerTarget.carduid} not found for cost payment`);
+            return false;
         }
-        
-        console.log(`❌ Blocker ${blockerCarduid} not found for cost payment`);
-        return false;
+
+        if (resolved.card.isRested) {
+            console.log(`⚠️ Blocker ${blockerTarget.carduid} is already rested`);
+            return false;
+        }
+
+        const restResult = applyRestEffect(
+            gameEnv,
+            blockerTarget.playerId,
+            blockerTarget.carduid,
+            null,
+            [blockerTarget]
+        );
+
+        if (!restResult.success) {
+            console.log(`❌ Failed to rest blocker ${blockerTarget.carduid}: ${restResult.error ?? 'unknown error'}`);
+            return false;
+        }
+
+        console.log(`✅ Blocker ${blockerTarget.carduid} has been rested as cost`);
+        return true;
     }
 
     /**
@@ -252,6 +279,11 @@ export class BlockerChoiceManager {
         }
 
         return undefined;
+    }
+
+    private static getAttackerCarduid(attackEvent: PlayerActionEvent): string | undefined {
+        const attacker = (attackEvent as any)?.data?.attackerCarduid;
+        return typeof attacker === 'string' ? attacker : undefined;
     }
 
 }

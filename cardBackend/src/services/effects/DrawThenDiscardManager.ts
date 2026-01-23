@@ -12,6 +12,7 @@ export interface DrawThenDiscardResult {
     error?: string;
     requiresSelection?: boolean;
     autoApplied?: boolean;
+    choiceEventId?: string;
 }
 
 export class DrawThenDiscardManager {
@@ -65,7 +66,7 @@ export class DrawThenDiscardManager {
             }
         } as any);
 
-        ChoiceEventScheduler.enqueueTargetChoice(gameEnv, {
+        const choiceEvent = ChoiceEventScheduler.enqueueTargetChoice(gameEnv, {
             playerId,
             sourceCarduid,
             effect: discardEffect,
@@ -73,6 +74,6 @@ export class DrawThenDiscardManager {
             cardPlayNotificationId
         });
 
-        return { success: true, requiresSelection: true };
+        return { success: true, requiresSelection: true, choiceEventId: choiceEvent.id };
     }
 }

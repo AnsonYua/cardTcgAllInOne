@@ -8,6 +8,7 @@ import { GameActionValidator } from './GameActionValidator';
 import { BattlePhaseManager } from './BattlePhaseManager';
 import { MainPhaseAbilityManager } from './effects/MainPhaseAbilityManager';
 import { BaseAbilityManager } from './effects/BaseAbilityManager';
+import { SequenceContinuationManager } from './effects/SequenceContinuationManager';
 
 export class PlayerActionExecutor {
     static execute(event: PlayerActionEvent, gameEnv: GameEnvironment): ExecutionResult {
@@ -36,6 +37,9 @@ export class PlayerActionExecutor {
 
             case 'activateCardAbility':
                 return BaseAbilityManager.executeBaseAbility(gameEnv, event);
+
+                case 'continueSequence':
+                    return SequenceContinuationManager.continueSequence(gameEnv, event);
 
                 case 'confirmBattle':
                     return BattlePhaseManager.handleBattleConfirmation(gameEnv, event.playerId);

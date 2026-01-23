@@ -155,6 +155,9 @@
                         "target": {
                             "type": "unit",
                             "scope": "self_all_unit",
+                            "selection": {
+                                "type": "player_choice"
+                            },
                             "count": 1
                         },
                         "parameters": {
@@ -492,7 +495,13 @@
                                     "Clan"
                                 ]
                             },
-                            "count": 2
+                            "selection": {
+                                "type": "player_choice"
+                            },
+                            "count": {
+                                "min": 1,
+                                "max": 2
+                            }
                         },
                         "parameters": {
                             "value": 2,

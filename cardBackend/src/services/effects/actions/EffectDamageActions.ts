@@ -1,0 +1,120 @@
+import { GameEnvironment } from '../../../models/GameEnvironment';
+import type { BaseCard, PilotZoneCard, UnitZoneCard } from '../../../models/CardSystem';
+import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
+import { BaseLifecycleManager } from '../../BaseLifecycleManager';
+import { GameNotificationManager } from '../../GameNotificationManager';
+import { EffectDefinition, TargetReference } from '../../EventQueue/interfaces/GameEvent';
+import { TargetCardResolver } from '../../targets/TargetCardResolver';
+import { EffectDamagePreventionUtils } from '../EffectDamagePreventionUtils';
+import { EffectStatApplier } from '../EffectStatApplier';
+import { extractNumericValue } from './EffectActionUtils';
+
+export function applyDamageEffect(
+    gameEnv: GameEnvironment,
+    sourcePlayerId: string,
+    sourceCarduid: string | undefined,
+    effect: EffectDefinition,
+    selectedTargets: TargetReference[]
+): { success: boolean; error?: string } {
+    const damageValue = extractNumericValue(effect.parameters) ?? 0;
+    if (damageValue <= 0) {
+        return { success: true };
+    }
+
+    const attackerSlot = sourceCarduid
+        ? SlotZoneUtils.findSlotNameByUnitUidForPlayer(gameEnv, sourcePlayerId, sourceCarduid).slotName
+        : undefined;
+
+    for (const target of selectedTargets) {
+        const resolvedTarget = TargetCardResolver.resolve(gameEnv, target);
+        if (!resolvedTarget) {
+            return { success: false, error: `Target card ${target.carduid} not found in zone ${target.zone}` };
+        }
+
+        if (resolvedTarget.kind === 'base') {
+            const baseCard = resolvedTarget.card as BaseCard;
+            const currentDamage = baseCard.damageReceived || 0;
+            const newDamage = currentDamage + damageValue;
+            const maxHP = baseCard.originalHP || baseCard.cardData?.hp || 0;
+            const remainingHP = Math.max(0, maxHP - newDamage);
+
+            baseCard.damageReceived = newDamage;
+
+            let baseDestroyed = false;
+            if (remainingHP <= 0) {
+                BaseLifecycleManager.destroyBase(gameEnv, target.playerId, baseCard);
+                baseDestroyed = true;
+            }
+
+            const notificationManager = new GameNotificationManager(gameEnv);
+            notificationManager.addNotificationEvent(
+                baseDestroyed ? 'BASE_DESTROYED' : 'BASE_DAMAGED',
+                {
+                    defendingPlayerId: target.playerId,
+                    attackingPlayerId: sourcePlayerId,
+                    attackerSlot,
+                    damage: damageValue,
+                    totalDamage: newDamage,
+                    baseHP: remainingHP,
+                    baseDestroyed,
+                    ...(baseDestroyed && {
+                        destroyedCard: {
+                            carduid: baseCard.carduid,
+                            cardId: baseCard.cardId,
+                            name: baseCard.cardData?.name || 'Unknown Base'
+                        }
+                    })
+                },
+                'normal'
+            );
+
+            continue;
+        }
+
+        if (resolvedTarget.kind !== 'unit' && resolvedTarget.kind !== 'pilot') {
+            return {
+                success: false,
+                error: `damage effect does not support target zone ${target.zone}`
+            };
+        }
+
+        const prevention = EffectDamagePreventionUtils.isEffectDamagePrevented({
+            targetCard: resolvedTarget.card,
+            target,
+            sourcePlayerId,
+            sourceCarduid
+        });
+
+        if (prevention.prevented) {
+            const notificationManager = new GameNotificationManager(gameEnv);
+            notificationManager.addNotificationEvent(
+                'EFFECT_DAMAGE_PREVENTED',
+                {
+                    playerId: target.playerId,
+                    targetCarduid: target.carduid,
+                    sourcePlayerId,
+                    sourceCarduid,
+                    preventedBySourceCarduid: prevention.preventedBySourceCarduid,
+                    effectId: effect.effectId,
+                    timestamp: Date.now()
+                },
+                'normal'
+            );
+            continue;
+        }
+
+        const applyResult = EffectStatApplier.applyEffectToResolvedCard(
+            gameEnv,
+            resolvedTarget.card as UnitZoneCard | PilotZoneCard,
+            'damage',
+            effect.parameters,
+            target
+        );
+        if (!applyResult.success) {
+            return applyResult;
+        }
+    }
+
+    return { success: true };
+}
+

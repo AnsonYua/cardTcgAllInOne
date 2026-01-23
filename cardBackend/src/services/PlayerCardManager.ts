@@ -2,17 +2,17 @@
 // Player card placement and management system
 
 import { GameEnvironment } from '../models/GameEnvironment';
-import { createZoneCard, UnitZoneCard, PilotZoneCard, BaseCard, CardDatabaseManager } from '../models/CardSystem';
+import { createZoneCard, CardDatabaseManager, type BaseCard, type PilotZoneCard, type UnitZoneCard } from '../models/CardSystem';
 import { SLOT_ZONES } from '../config/gameConstants';
 import { PlayCardEventData } from './EventQueue/interfaces/GameEvent';
 import { v4 as uuidv4 } from 'uuid';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { getSlotTotals } from '../utils/FieldValueCalculator';
-import { ContinuousEffectManager } from './ContinuousEffectManager';
-import { GameNotificationManager } from './GameNotificationManager';
 import { BaseLifecycleManager } from './BaseLifecycleManager';
 import { EffectExecutor } from './effects/EffectExecutor';
 import { LinkUtils } from '../utils/LinkUtils';
+import { UnitRestrictionUtils } from './restrictions/UnitRestrictionUtils';
+import { UnitSlotDestructionFlow } from './destruction/UnitSlotDestructionFlow';
 
 export interface CardPlacementResult {
     success: boolean;
@@ -222,14 +222,21 @@ export class PlayerCardManager {
             };
         }
 
-        // Use local utility to find target unit slot - minimize object destructuring
-        const slotResult = PlayerCardManager.findSlotByCarduid({ zones: playerZones }, targetUnit);
-        const targetZone = slotResult.slot;
+        const slotResult = SlotZoneUtils.findSlotByCarduid(playerZones, targetUnit);
+        const targetZone = slotResult.slotName;
 
         if (!targetZone) {
             return {
                 success: false,
                 error: `Target unit ${targetUnit} not found in slots for pilot ${carduid}`
+            };
+        }
+
+        const existingUnit = playerZones[targetZone]?.unit;
+        if (UnitRestrictionUtils.cannotBePairedWithPilot(existingUnit as any)) {
+            return {
+                success: false,
+                error: `Target unit ${targetUnit} cannot be paired with a pilot`
             };
         }
 
@@ -540,68 +547,15 @@ export class PlayerCardManager {
         }
 
         try {
-            const beforeHandUids = Array.isArray(player.deck.handUids)
-                ? [...player.deck.handUids]
-                : [...(player.deck._handUids || [])];
-            const beforeCount = beforeHandUids.length;
-
             EffectExecutor.drawCardsIntoHand(gameEnv, playerId, player.deck, count, options);
 
-            const afterHandUids = Array.isArray(player.deck.handUids)
-                ? [...player.deck.handUids]
-                : [...(player.deck._handUids || [])];
-            const afterCount = afterHandUids.length;
-            const drawnCount = Math.max(0, afterCount - beforeCount);
-            console.log(`🃏 Drew ${drawnCount} cards, hand size: ${afterCount}`);
-
-            if (options.notify !== false && options.drawContext && drawnCount > 0) {
-                const notificationManager = new GameNotificationManager(gameEnv);
-                const existingEvents = gameEnv.notificationQueue || [];
-                const previousHandSet = new Set(beforeHandUids);
-                const newCarduids = afterHandUids.filter(carduid => !previousHandSet.has(carduid));
-
-                for (const carduid of newCarduids) {
-                    const alreadyNotified = existingEvents.some(event => {
-                        if (event.type !== 'CARD_DRAWN') {
-                            return false;
-                        }
-                        const payload = event.payload as { carduid?: string; playerId?: string; drawContext?: string };
-                        return (
-                            payload?.carduid === carduid &&
-                            payload?.playerId === playerId &&
-                            payload?.drawContext === options.drawContext
-                        );
-                    });
-
-                    if (!alreadyNotified) {
-                        notificationManager.addNotificationEvent('CARD_DRAWN', {
-                            playerId,
-                            carduid,
-                            sourceZone: 'deck',
-                            reason: 'draw',
-                            timestamp: Date.now(),
-                            drawContext: options.drawContext
-                        });
-                    }
-                }
-            }
+            const handUids = Array.isArray(player.deck.handUids)
+                ? player.deck.handUids
+                : (player.deck._handUids || []);
+            console.log(`🃏 Drew ${count} card(s), hand size: ${handUids.length}`);
         } catch (error) {
             console.error(`❌ Failed to draw cards for player ${playerId}:`, error);
         }
-    }
-
-    /**
-     * Find which slot contains a specific card UID
-     */
-    static findSlotByCarduid(player: any, carduid: string): { slot: string | null, unit: UnitZoneCard | null } {
-        for (const slot of SLOT_ZONES) {
-            const slotZone = (player.zones as any)[slot];
-            if (slotZone?.unit?.carduid === carduid) {
-                return { slot, unit: slotZone.unit as UnitZoneCard };
-            }
-        }
-        
-        return { slot: null, unit: null };
     }
 
     /**
@@ -686,6 +640,8 @@ export class PlayerCardManager {
                 }
             }
 
+            EffectExecutor.removeTemporaryEffectsFromSource(gameEnv, card.carduid);
+
             console.log(`🗑️ ${cardType.charAt(0).toUpperCase() + cardType.slice(1)} ${card.carduid} moved to trash from ${slotName}`);
             return true;
         } catch (error) {
@@ -695,28 +651,12 @@ export class PlayerCardManager {
     }
 
     /**
-     * Centralized destroy hook for future expansion (notifications, triggers, etc.).
+     * Centralized destroy hook (DESTROYED triggers + move to trash + refresh continuous effects).
      */
     static destroyUnitInSlot(gameEnv: GameEnvironment, playerId: string, slotName: string, unit: UnitZoneCard): boolean {
-        // TODO: Extend with on-destroy triggers, notifications, and cleanup when effects are added.
-        const destroyed = PlayerCardManager.moveCardToTrashFromSlot(gameEnv, playerId, slotName, unit, 'unit');
-        if (!destroyed) {
-            return false;
-        }
-
-        const player = gameEnv.getPlayer(playerId);
-        if (player?.zones) {
-            const slotResult = SlotZoneUtils.getSlotZone(player.zones, slotName);
-            if (slotResult.isValid && slotResult.slot && SlotZoneUtils.hasPilot(slotResult.slot)) {
-                const pilotCard = SlotZoneUtils.getPilot(slotResult.slot) as PilotZoneCard | null;
-                if (pilotCard) {
-                    PlayerCardManager.moveCardToTrashFromSlot(gameEnv, playerId, slotName, pilotCard, 'pilot');
-                }
-            }
-        }
-
-        ContinuousEffectManager.processAllContinuousEffects(gameEnv);
-        return true;
+        return UnitSlotDestructionFlow.destroyUnitInSlot(gameEnv, playerId, slotName, unit, {
+            moveCardToTrashFromSlot: PlayerCardManager.moveCardToTrashFromSlot
+        });
     }
 
 

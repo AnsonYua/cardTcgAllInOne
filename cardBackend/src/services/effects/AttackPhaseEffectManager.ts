@@ -3,17 +3,25 @@
 
 import { GameEnvironment } from '../../models/GameEnvironment';
 import { UnitZoneCard, PilotZoneCard, ZoneCard } from '../../models/CardSystem';
-import { EffectDefinition, PlayerActionEvent, TargetReference } from '../EventQueue/interfaces/GameEvent';
+import { EffectDefinition, PlayerActionEvent } from '../EventQueue/interfaces/GameEvent';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { ContinuousEffectManager } from '../ContinuousEffectManager';
 import { EffectExecutor } from './EffectExecutor';
 import { EffectRuleCatalog } from './EffectRuleCatalog';
+import { DrawThenDiscardManager } from './DrawThenDiscardManager';
+import { AttackResumeScheduler } from '../battle/AttackResumeScheduler';
+import { DeployTargetManager } from '../DeployTargetManager';
+import { AttackConditionEvaluator } from './attack/AttackConditionEvaluator';
+import { AttackEffectUsageTracker } from './attack/AttackEffectUsageTracker';
+import { AttackCostFlowInterceptor } from '../costs/AttackCostFlowInterceptor';
 
 export interface AttackPhaseEffectResult {
     success: boolean;
     error?: string;
     effectsProcessed?: number;
+    requiresSelection?: boolean;
+    consumed?: boolean;
 }
 
 type TriggeredEffectRule = EffectDefinition & {
@@ -57,6 +65,7 @@ export class AttackPhaseEffectManager {
         }
 
         let effectsProcessed = 0;
+        let requiresSelection = false;
 
         for (const sourceCard of effectSources) {
             const attackEffects = EffectRuleCatalog.collectEffects(sourceCard.cardData, {
@@ -76,6 +85,15 @@ export class AttackPhaseEffectManager {
                     continue;
                 }
 
+                if (!AttackConditionEvaluator.conditionsSatisfied(normalizedEffect, {
+                    gameEnv,
+                    playerId,
+                    attackEvent: event,
+                    sourceSlot: slotZone?.slot
+                })) {
+                    continue;
+                }
+
                 if (!this.restrictionsAllowUse(effect, sourceCard, gameEnv.currentTurn)) {
                     continue;
                 }
@@ -83,6 +101,7 @@ export class AttackPhaseEffectManager {
                 const applyResult = this.applyAttackEffect(
                     gameEnv,
                     playerId,
+                    event,
                     sourceCard,
                     normalizedEffect
                 );
@@ -91,16 +110,27 @@ export class AttackPhaseEffectManager {
                     return applyResult;
                 }
 
-                this.markEffectUsed(
-                    sourceCard,
-                    normalizedEffect.effectId || normalizedEffect.action || 'attack_effect',
-                    gameEnv.currentTurn
-                );
-                effectsProcessed++;
+                if (applyResult.consumed !== false) {
+                    this.markEffectUsed(
+                        sourceCard,
+                        normalizedEffect.effectId || normalizedEffect.action || 'attack_effect',
+                        gameEnv.currentTurn
+                    );
+                    effectsProcessed++;
+                }
+
+                if (applyResult.requiresSelection) {
+                    requiresSelection = true;
+                    break;
+                }
+            }
+
+            if (requiresSelection) {
+                break;
             }
         }
 
-        return { success: true, effectsProcessed };
+        return { success: true, effectsProcessed, ...(requiresSelection ? { requiresSelection: true } : {}) };
     }
 
     private static isAttackPhaseTrigger(effect: EffectDefinition): boolean {
@@ -144,9 +174,10 @@ export class AttackPhaseEffectManager {
         currentTurn: number
     ): boolean {
         const restrictions = effect.restrictions || [];
-        if (restrictions.includes('once_per_turn')) {
-            const usage = card.effectUsage?.[effect.effectId];
-            if (usage && usage.lastUsedTurn === currentTurn) {
+        const oncePerTurn = restrictions.includes('once_per_turn') || (effect.cost && (effect.cost as any).oncePerTurn === true);
+        if (oncePerTurn) {
+            const effectId = effect.effectId;
+            if (effectId && AttackEffectUsageTracker.hasEffectBeenUsedThisTurn(card, effectId, currentTurn)) {
                 console.log(`⚠️ Effect ${effect.effectId} already used this turn for card ${card.carduid}`);
                 return false;
             }
@@ -156,15 +187,13 @@ export class AttackPhaseEffectManager {
     }
 
     private static markEffectUsed(card: ZoneCard, effectId: string, currentTurn: number): void {
-        if (!card.effectUsage) {
-            card.effectUsage = {};
-        }
-        card.effectUsage[effectId] = { lastUsedTurn: currentTurn };
+        AttackEffectUsageTracker.markEffectUsed(card, effectId, currentTurn);
     }
 
     private static applyAttackEffect(
         gameEnv: GameEnvironment,
         playerId: string,
+        attackEvent: PlayerActionEvent,
         sourceCard: UnitZoneCard | PilotZoneCard,
         effect: EffectDefinition
     ): AttackPhaseEffectResult {
@@ -178,69 +207,59 @@ export class AttackPhaseEffectManager {
         }
 
         if (effect.optional) {
-            console.log(`ℹ️ Optional attack effect ${effect.effectId || action} auto-applied for card ${sourceCard.carduid}`);
+            console.log(`ℹ️ Optional attack effect ${effect.effectId || action} available for card ${sourceCard.carduid}`);
         }
 
-        if (!effect.target && action === 'setActive') {
-            const result = EffectExecutor.applyEffectToTargets(
-                gameEnv,
-                effect,
-                [],
-                playerId,
-                sourceCard.carduid
-            );
+        const costIntercept = AttackCostFlowInterceptor.intercept(gameEnv, playerId, attackEvent, sourceCard, effect);
+        if (costIntercept.handled) {
+            return costIntercept.success
+                ? { success: true, ...(costIntercept.requiresSelection ? { requiresSelection: true } : {}), ...(costIntercept.consumed !== undefined ? { consumed: costIntercept.consumed } : {}) }
+                : { success: false, error: costIntercept.error || 'Attack cost flow failed' };
+        }
 
+        if (action === 'draw_then_discard') {
+            const result = DrawThenDiscardManager.processDrawThenDiscardEffect(
+                gameEnv,
+                playerId,
+                sourceCard.carduid,
+                effect
+            );
             if (!result.success) {
                 return { success: false, error: result.error };
+            }
+
+            if (result.requiresSelection && result.choiceEventId) {
+                AttackResumeScheduler.enqueueResumeAttackAfterChoice(gameEnv, attackEvent, result.choiceEventId);
+                return { success: true, requiresSelection: true };
             }
 
             return { success: true };
         }
 
-        const targetReference = this.buildTargetReference(gameEnv, playerId, sourceCard);
-        if (!targetReference) {
-            return {
-                success: false,
-                error: `Unable to resolve attack effect target for card ${sourceCard.carduid}`
-            };
+        if (EffectExecutor.actionSupportsNoTargets(action)) {
+            const result = EffectExecutor.applyEffectToTargets(gameEnv, effect, [], playerId, sourceCard.carduid);
+            return result.success ? { success: true } : { success: false, error: result.error };
         }
 
-        const result = EffectExecutor.applyEffectToTargets(
+        const result = DeployTargetManager.processEffectWithTargetChoice(
             gameEnv,
-            effect,
-            [targetReference],
             playerId,
-            sourceCard.carduid
+            sourceCard.carduid,
+            effect,
+            typeof (attackEvent.data as any)?.attackNotificationId === 'string'
+                ? ((attackEvent.data as any).attackNotificationId as string)
+                : undefined
         );
 
         if (!result.success) {
             return { success: false, error: result.error };
         }
 
+        if (result.requiresSelection && result.choiceEventId) {
+            AttackResumeScheduler.enqueueResumeAttackAfterChoice(gameEnv, attackEvent, result.choiceEventId);
+            return { success: true, requiresSelection: true };
+        }
+
         return { success: true };
-}
-
-    private static buildTargetReference(
-        gameEnv: GameEnvironment,
-        fallbackPlayerId: string,
-        sourceCard: UnitZoneCard | PilotZoneCard
-    ): TargetReference | null {
-        const slotLookup = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, sourceCard.carduid);
-
-        if (!slotLookup.found || !slotLookup.slotName) {
-            return null;
-        }
-
-        const resolvedPlayerId = slotLookup.playerId || fallbackPlayerId;
-
-        if (!resolvedPlayerId) {
-            return null;
-        }
-
-        return {
-            carduid: sourceCard.carduid,
-            zone: slotLookup.slotName,
-            playerId: resolvedPlayerId
-        };
     }
 }

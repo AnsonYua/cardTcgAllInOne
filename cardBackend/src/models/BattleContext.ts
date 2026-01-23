@@ -19,6 +19,8 @@ export interface ActionStepTargetSummary {
 
 export interface ShieldDamagePrevention {
     playerId: string;
+    from?: string;
+    enemyLevelFilter?: string;
     maxEnemyLevel?: number;
     sourceCarduid?: string;
 }

@@ -272,10 +272,13 @@ export class PairingEffectManager implements StandardEffectManager {
         try {
             // Use unified DeployTargetManager for processing
             const normalizedEffect = ensureEffectDefaults(effect);
+            const sourceCarduid = typeof (normalizedEffect as any).sourceCarduid === 'string'
+                ? ((normalizedEffect as any).sourceCarduid as string)
+                : eventData.carduid;
             const result = DeployTargetManager.processEffectWithTargetChoice(
                 gameEnv,
                 eventData.playerId,
-                eventData.carduid,
+                sourceCarduid,
                 normalizedEffect
             );
             

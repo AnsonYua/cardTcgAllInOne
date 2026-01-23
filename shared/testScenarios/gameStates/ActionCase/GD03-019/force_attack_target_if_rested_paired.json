@@ -1,0 +1,299 @@
+{
+  "description": "gd03-019_force_attack_target_if_rested_paired",
+  "gameId": "gd03-019_force_attack_target_if_rested_paired",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD03-019",
+    "require_attack_target_if_available",
+    "ForcedTarget"
+  ],
+  "notes": [
+    "Setup: Defender has GD03-019 in slot1, paired with a pilot, and GD03-019 is rested.",
+    "Action: Attacker declares attackUnit targeting defender slot2 (not GD03-019).",
+    "Expect: Backend forces target to defender GD03-019 (slot1) because it is an eligible forced target; notification ATTACK_TARGET_FORCED is emitted.",
+    "Expect: Battle proceeds against GD03-019 (currentBattle.targetCarduid becomes GD03-019_unit_0001 after attack declaration)."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd03019",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "GD03-000_draw_0001",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST03-008_attacker_0001",
+              "cardId": "ST03-008",
+              "cardData": {
+                "id": "ST03-008",
+                "name": "Zaku II",
+                "cardType": "unit",
+                "color": "Green",
+                "level": 2,
+                "cost": 1,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Zeon"
+                ],
+                "link": [],
+                "ap": 1,
+                "hp": 2,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "originalAP": 1,
+              "originalHP": 2,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD03-019_unit_0001",
+              "cardId": "GD03-019",
+              "cardData": {
+                "id": "GD03-019",
+                "name": "Gundam AGE-2 Normal",
+                "cardType": "unit",
+                "color": "Green",
+                "level": 5,
+                "cost": 4,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Earth Federation",
+                  "AGE System"
+                ],
+                "link": [
+                  "Asemu Asuno"
+                ],
+                "ap": 4,
+                "hp": 4,
+                "effects": {
+                  "description": [
+                    "【During Pair】Enemy Units choose this rested Unit as their attack target if possible when attacking.",
+                    "【When Linked】Place 1 EX Resource."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "during_pair_effect",
+                      "type": "continuous",
+                      "trigger": "continuous",
+                      "action": "sequence",
+                      "parameters": {
+                        "version": 1,
+                        "steps": [
+                          {
+                            "action": "require_attack_target_if_available",
+                            "timing": {
+                              "duration": "continuous"
+                            },
+                            "parameters": {
+                              "candidateTarget": {
+                                "type": "unit",
+                                "scope": "self",
+                                "filters": {
+                                  "status": "rested"
+                                }
+                              },
+                              "chooser": "DEFENDER"
+                            }
+                          }
+                        ]
+                      },
+                      "sourceConditions": [
+                        {
+                          "type": "paired"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": true,
+              "originalAP": 4,
+              "originalHP": 4,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false
+            },
+            "pilot": {
+              "carduid": "GD03-098_pilot_0001",
+              "cardId": "GD03-098",
+              "cardData": {
+                "id": "GD03-098",
+                "name": "Graham Aker",
+                "cardType": "pilot",
+                "color": "White",
+                "level": 4,
+                "cost": 1,
+                "zone": [],
+                "traits": [
+                  "Superpower Bloc",
+                  "UN"
+                ],
+                "link": [],
+                "ap": 2,
+                "hp": 1,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalAP": 2,
+              "originalHP": 1,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "ST03-007_unit_defender_0002",
+              "cardId": "ST03-007",
+              "cardData": {
+                "id": "ST03-007",
+                "name": "Zaku I",
+                "cardType": "unit",
+                "color": "Green",
+                "level": 1,
+                "cost": 1,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Zeon"
+                ],
+                "link": [],
+                "ap": 1,
+                "hp": 2,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalAP": 1,
+              "originalHP": 2,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
+

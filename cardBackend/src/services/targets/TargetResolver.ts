@@ -8,6 +8,12 @@ import { PlayerCardManager } from '../PlayerCardManager';
 import { HandTargetResolver } from './HandTargetResolver';
 import { EnergyTargetResolver } from './EnergyTargetResolver';
 import { LinkUtils } from '../../utils/LinkUtils';
+import { TrashTargetResolver } from './TrashTargetResolver';
+import { TargetFilterUtils } from './TargetFilterUtils';
+import { BaseTargetResolver } from './BaseTargetResolver';
+import { TargetNumericFilterUtils } from './TargetNumericFilterUtils';
+import { TargetCountUtils } from './TargetCountUtils';
+import { TargetKeywordFilterUtils } from './TargetKeywordFilterUtils';
 
 export interface ResolvedTargetConfig {
     type: TargetType;
@@ -30,10 +36,7 @@ export class TargetResolver {
 
         const type = (normalizedTarget?.type as TargetType) || this.DEFAULT_TARGET_TYPE;
         const scope = (normalizedTarget?.scope as TargetScope) || this.DEFAULT_TARGET_SCOPE;
-        const countValue = normalizedTarget?.count;
-        const count = typeof countValue === 'number' && countValue > 0
-            ? countValue
-            : this.DEFAULT_TARGET_COUNT;
+        const count = TargetCountUtils.resolveMaxCount(normalizedTarget?.count, this.DEFAULT_TARGET_COUNT);
         const filters: TargetFilters = normalizedTarget?.filters ? { ...normalizedTarget.filters } : {};
         if (normalizedTarget?.zone) {
             filters.zone = normalizedTarget.zone;
@@ -60,6 +63,8 @@ export class TargetResolver {
         const isShieldScope = scopeValue.includes('shield') || targetConfig.type === 'shield';
         const isHandScope = scopeValue.includes('hand');
         const isEnergyScope = targetConfig.type === 'energy' || scopeValue.includes('resource') || scopeValue.includes('energy');
+        const isTrashScope = scopeValue.includes('trash');
+        const isBaseScope = targetConfig.type === 'base' || scopeValue.includes('base');
 
         if (isShieldScope) {
             const targetPlayerIds = this.getTargetPlayerIds(gameEnv, playerId, targetConfig.scope);
@@ -71,7 +76,7 @@ export class TargetResolver {
                 const shieldCards = player.getShieldCards();
                 console.log(`🛡️ Found ${shieldCards.length} shield cards for player ${targetPlayerId}`);
 
-                for (let i = 0; i < Math.min(shieldCards.length, targetConfig.count); i++) {
+                for (let i = 0; i < shieldCards.length; i++) {
                     const shieldCard = shieldCards[i];
                     targets.push({
                         carduid: shieldCard.carduid,
@@ -84,9 +89,15 @@ export class TargetResolver {
         } else if (isHandScope) {
             const targetPlayerIds = this.getTargetPlayerIds(gameEnv, playerId, targetConfig.scope);
             targets.push(...HandTargetResolver.generateHandTargets(gameEnv, targetPlayerIds, targetConfig));
+        } else if (isTrashScope) {
+            const targetPlayerIds = this.getTargetPlayerIds(gameEnv, playerId, targetConfig.scope);
+            targets.push(...TrashTargetResolver.generateTrashTargets(gameEnv, targetPlayerIds, targetConfig));
         } else if (isEnergyScope) {
             const targetPlayerIds = this.getTargetPlayerIds(gameEnv, playerId, targetConfig.scope);
             targets.push(...EnergyTargetResolver.generateEnergyTargets(gameEnv, targetPlayerIds, targetConfig));
+        } else if (isBaseScope) {
+            const targetPlayerIds = this.getTargetPlayerIds(gameEnv, playerId, targetConfig.scope);
+            targets.push(...BaseTargetResolver.generateBaseTargets(gameEnv, targetPlayerIds, targetConfig));
         } else {
             const targetPlayerIds = this.getTargetPlayerIds(gameEnv, playerId, targetConfig.scope);
 
@@ -122,20 +133,6 @@ export class TargetResolver {
                             console.log(`✅ Added unit target: ${unit.carduid} in ${slotName}`);
                         }
                     }
-
-                    /*
-                    if (targetConfig.type === 'pilot' && SlotZoneUtils.hasPilot(slotZone)) {
-                        const pilot = SlotZoneUtils.getPilot(slotZone);
-                        if (pilot && this.validateTargetFilters(gameEnv, pilot, targetConfig.filters || {}, targetPlayerId)) {
-                            targets.push({
-                                carduid: pilot.carduid,
-                                zone: slotName,
-                                playerId: targetPlayerId,
-                                cardData: pilot.cardData
-                            });
-                            console.log(`✅ Added pilot target: ${pilot.carduid} in ${slotName}`);
-                        }
-                    }*/
                 }
             }
         }
@@ -145,40 +142,23 @@ export class TargetResolver {
     }
 
     private static getTargetPlayerIds(gameEnv: GameEnvironment, playerId: string, scope: TargetScope): string[] {
-        switch (scope) {
-            case 'self':
-            case 'self_all_unit':
-            case 'self_all':
-            case 'self_unit':
-            case 'self_shield':
-            case 'self_hand':
-            case 'self_resource':
-                return [playerId];
-            case 'opponent_shield': {
-                const opponentId = gameEnv.getOpponentId(playerId);
-                return opponentId ? [opponentId] : [];
-            }
-            case 'opponent':
-            case 'opponent_unit':
-            case 'opponent_all_unit': {
-                const opponentId = gameEnv.getOpponentId(playerId);
-                return opponentId ? [opponentId] : [];
-            }
-            case 'any':
-                return Object.keys(gameEnv.players);
-            default:
-                if (typeof scope === 'string') {
-                    if (scope.startsWith('self')) {
-                        return [playerId];
-                    }
-                    if (scope.startsWith('opponent')) {
-                        const opponent = gameEnv.getOpponentId(playerId);
-                        return opponent ? [opponent] : [];
-                    }
-                }
-                console.log(`⚠️ Unknown target scope: ${scope}`);
-                return [];
+        const scopeValue = typeof scope === 'string' ? scope.toLowerCase() : '';
+
+        if (scopeValue === 'any' || scopeValue === 'all' || scopeValue.startsWith('any')) {
+            return Object.keys(gameEnv.players);
         }
+
+        if (scopeValue.startsWith('self')) {
+            return [playerId];
+        }
+
+        if (scopeValue.startsWith('opponent')) {
+            const opponentId = gameEnv.getOpponentId(playerId);
+            return opponentId ? [opponentId] : [];
+        }
+
+        console.log(`⚠️ Unknown target scope: ${scope}`);
+        return [];
     }
 
     private static validateTargetFilters(
@@ -187,6 +167,21 @@ export class TargetResolver {
         filters: TargetFilters = {},
         targetPlayerId?: string
     ): boolean {
+        const excludeCarduids = Array.isArray(filters.excludeCarduids)
+            ? filters.excludeCarduids.filter((id): id is string => typeof id === 'string')
+            : [];
+        if (excludeCarduids.length > 0 && excludeCarduids.includes(card.carduid)) {
+            return false;
+        }
+
+        if (filters.ap !== undefined) {
+            const apResult = TargetNumericFilterUtils.evaluateApFilter(gameEnv, card, filters.ap);
+            if (!apResult.ok) {
+                console.log(`❌ Card ${card.carduid} failed AP filter: ${filters.ap} (actual ${apResult.actual})`);
+                return false;
+            }
+        }
+
         if (filters.level) {
             const cardLevel = card.cardData?.level || 0;
             if (!validateComparisonFilter(cardLevel, filters.level)) {
@@ -211,13 +206,22 @@ export class TargetResolver {
             }
         }
 
-        if (filters.traits && filters.traits.length > 0) {
-            const cardTraits = card.cardData?.traits || [];
-            const hasRequiredTrait = filters.traits.some((requiredTrait: string) =>
-                cardTraits.some((cardTrait: string) => cardTrait === requiredTrait)
-            );
-            if (!hasRequiredTrait) {
-                console.log(`❌ Card ${card.carduid} failed trait filter: required ${filters.traits}, has ${cardTraits}`);
+        const cardColor = typeof (card.cardData as any)?.color === 'string' ? ((card.cardData as any).color as string) : undefined;
+        const colorResult = TargetFilterUtils.validateColorFilter(cardColor, filters);
+        if (!colorResult.ok) {
+            console.log(`❌ Card ${card.carduid} failed color filter: ${colorResult.reason ?? 'unknown'}`);
+            return false;
+        }
+
+        const hasTraitFilters =
+            (Array.isArray(filters.traits) && filters.traits.length > 0) ||
+            (Array.isArray(filters.traitsAny) && filters.traitsAny.length > 0) ||
+            (Array.isArray(filters.traitsAll) && filters.traitsAll.length > 0);
+        if (hasTraitFilters) {
+            const cardTraits = Array.isArray(card.cardData?.traits) ? card.cardData.traits : [];
+            const traitResult = TargetFilterUtils.validateTraitFilters(cardTraits, filters);
+            if (!traitResult.ok) {
+                console.log(`❌ Card ${card.carduid} failed trait filter: ${traitResult.reason}`);
                 return false;
             }
         }
@@ -235,6 +239,12 @@ export class TargetResolver {
                 console.log(`❌ Card ${card.carduid} failed linkStatus filter: expected unlinked`);
                 return false;
             }
+        }
+
+        const keywordResult = TargetKeywordFilterUtils.validateKeywordFilters(card, filters);
+        if (!keywordResult.ok) {
+            console.log(`❌ Card ${card.carduid} failed keyword filter: ${keywordResult.reason ?? 'unknown'}`);
+            return false;
         }
 
         return true;

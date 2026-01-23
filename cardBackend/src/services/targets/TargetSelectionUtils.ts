@@ -3,6 +3,16 @@
 import type { EffectTargetConfig, TargetReference } from '../EventQueue/interfaces/GameEvent';
 
 export class TargetSelectionUtils {
+    static excludeCarduid(
+        targets: TargetReference[],
+        excludedCarduid: string | undefined
+    ): TargetReference[] {
+        if (!excludedCarduid) {
+            return targets;
+        }
+        return targets.filter(target => target.carduid !== excludedCarduid);
+    }
+
     static applySelection(
         targets: TargetReference[],
         selection: EffectTargetConfig['selection'] | undefined

@@ -4,7 +4,7 @@
 import { GameEvent, AcknowledgeEventsEvent, PlayCardEvent,
      DeployEffectEvent, TargetChoiceEvent, PairingEffectEvent, ShieldCardAttackedEvent,
      ConfirmRedrawEvent, ChooseFirstPlayerEvent, GameplayBeginsEvent, ErrorOccurredEvent, BurstEffectChoiceEvent,
-     StartGameEvent, JoinGameEvent, NextPlayerTurnEvent, EndTurnEvent, PlayerActionEvent, RepairEffectEvent, BlockerChoiceEvent, ActionStepPostPlayEvent, TokenChoiceEvent, EndTurnTriggeredEffectEvent, OptionChoiceEvent } from './EventQueue/interfaces/GameEvent';
+     StartGameEvent, JoinGameEvent, NextPlayerTurnEvent, EndTurnEvent, PlayerActionEvent, RepairEffectEvent, BlockerChoiceEvent, ActionStepPostPlayEvent, TokenChoiceEvent, EndTurnTriggeredEffectEvent, OptionChoiceEvent, EffectDrawTriggeredEvent } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { EventType } from '../models/GameEnums';
 import { GameNotificationManager } from './GameNotificationManager';
@@ -23,6 +23,7 @@ import { BattlePhaseManager } from './BattlePhaseManager';
 import { TokenChoiceManager } from './effects/TokenChoiceManager';
 import { EndTurnTriggeredEffectManager } from './effects/EndTurnTriggeredEffectManager';
 import { OptionChoiceManager } from './effects/OptionChoiceManager';
+import { EffectDrawTriggeredEffectManager } from './effects/EffectDrawTriggeredEffectManager';
 
 export class GameEngine {
     // ============ MAIN EXECUTION INTERFACE ============
@@ -107,6 +108,9 @@ export class GameEngine {
 
                 case EventType.TRIGGER_END_OF_TURN_EFFECT:
                     return EndTurnTriggeredEffectManager.executeEndTurnTriggeredEffect(event as EndTurnTriggeredEffectEvent, gameEnv);
+
+                case EventType.TRIGGER_EFFECT_DRAW:
+                    return EffectDrawTriggeredEffectManager.executeEffectDrawTriggeredEvent(event as EffectDrawTriggeredEvent, gameEnv);
 
                 default:
                     console.log(`🎯 Processing ${event.type} event - delegating to existing game logic`);

@@ -3,11 +3,12 @@
 
 import { GameEnvironment } from '../models/GameEnvironment';
 import { GamePhase } from '../models/GameEnums';
-import { ZoneCard, CardDatabaseManager } from '../models/CardSystem';
+import { ZoneCard } from '../models/CardSystem';
 import { EffectProcessingResult } from '../models/ContinuousEffectStore';
 import { SLOT_ZONES } from '../config/gameConstants';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { LinkUtils } from '../utils/LinkUtils';
+import { ContinuousActionRegistry } from './effects/continuous/ContinuousActionRegistry';
 import { EffectExecutor } from './effects/EffectExecutor';
 import {
     ensureEffectDefaults,
@@ -17,6 +18,13 @@ import {
 import { EffectDefinition } from './EventQueue/interfaces/GameEvent';
 import { ConditionEvaluators } from './conditions/ConditionEvaluators';
 import { evaluateCardsInPlayCondition } from './conditions/CardsInPlayCondition';
+import { BattleConditionEvaluator } from './conditions/BattleConditionEvaluator';
+import { ContinuousConditionalEffectExpander } from './effects/continuous/ContinuousConditionalEffectExpander';
+import { ContinuousStatChangeNotifier } from './effects/continuous/ContinuousStatChangeNotifier';
+import { ContinuousSequenceEffectExpander } from './effects/continuous/ContinuousSequenceEffectExpander';
+import { SourceTraitConditionEvaluator } from './conditions/SourceTraitConditionEvaluator';
+import { ContinuousRegistryTargetResolver } from './effects/continuous/ContinuousRegistryTargetResolver';
+import { ContinuousScopeUtils } from './effects/continuous/ContinuousScopeUtils';
 
 export interface EffectResult {
     success: boolean;
@@ -42,105 +50,12 @@ type ZoneCardWithData = ZoneCard & {
 };
 
 export class ContinuousEffectManager {
-    
     /**
-     * Static method to execute repair effects from StateBasedActionEngine
+     * Extract trigger type from effect rule.
+     * Supports both legacy string triggers and structured { event: ... } forms.
      */
-    static executeRepairEffect(gameEnv: GameEnvironment, repairData: any): EffectResult {
-        // Handle both data structures: direct fields or nested in data
-        const eventData = repairData.data || repairData;
-        const cardId = eventData.cardId || (repairData.affectedCards && repairData.affectedCards[0]);
-        const carduid = eventData.carduid;
-        const playerId = eventData.playerId || (repairData.affectedPlayers && repairData.affectedPlayers[0]);
-        const healAmount = eventData.healAmount || 2; // Default to 2 for repair_2
-        
-        console.log(`🩹 Static repair execution: ${healAmount} HP for ${cardId} (${carduid || 'unknown UID'})`);
-        
-        // Find the target unit
-        const player = gameEnv.players[playerId];
-        if (!player || !player.zones) {
-            return {
-                success: false,
-                error: 'Player not found'
-            };
-        }
-        
-        // Find unit in slot zones
-        let targetUnit = null;
-        
-        for (const slot of SLOT_ZONES) {
-            const slotZone = (player.zones as any)[slot];
-            if (slotZone?.unit) {
-                // First try to match by carduid if available
-                if (carduid && slotZone.unit.carduid === carduid) {
-                    targetUnit = slotZone.unit;
-                    break;
-                }
-                // Fallback to matching by cardId
-                else if (cardId && slotZone.unit.cardId === cardId) {
-                    targetUnit = slotZone.unit;
-                    break;
-                }
-            }
-        }
-        
-        if (!targetUnit) {
-            console.log(`❌ Could not find target unit with cardId: ${cardId}, carduid: ${carduid} for player: ${playerId}`);
-            return {
-                success: false,
-                error: `Target unit not found (cardId: ${cardId}, carduid: ${carduid})`
-            };
-        }
-        
-        // Get card data to check max HP
-        const cardData = ContinuousEffectManager.getStaticCardData(cardId);
-        if (!cardData) {
-            return {
-                success: false,
-                error: 'Card data not found'
-            };
-        }
-        
-        const maxHP = cardData.hp || targetUnit.originalHP || 0;
-        const currentDamage = targetUnit.damageReceived || 0;
-        const currentHP = Math.max(0, maxHP - currentDamage);
-
-        const healAmountClamped = Math.max(0, healAmount);
-        const actualHealing = Math.min(healAmountClamped, currentDamage);
-        const newDamage = currentDamage - actualHealing;
-        const newHP = Math.max(0, maxHP - newDamage);
-
-        if (actualHealing > 0) {
-            targetUnit.damageReceived = newDamage;
-
-            console.log(`✅ Repaired ${cardId} for ${actualHealing} HP (${currentHP} → ${newHP}/${maxHP})`);
-
-            return {
-                success: true,
-                message: `Repaired ${cardId} for ${actualHealing} HP`,
-                affectedCards: [targetUnit]
-            };
-        } else {
-            console.log(`ℹ️ ${cardId} already at max HP (${currentHP}/${maxHP}) - no repair needed`);
-            
-            return {
-                success: true,
-                message: `${cardId} already at max HP - no repair needed`,
-                affectedCards: []
-            };
-        }
-    }
-    
-    /**
-     * Static helper to get card data
-     */
-    private static getStaticCardData(cardId: string): any {
-        try {
-            return CardDatabaseManager.getCardDetails(cardId);
-        } catch (error) {
-            console.error(`❌ Error loading card data for ${cardId}:`, error);
-            return null;
-        }
+    static extractTrigger(rule: any): string {
+        return typeof rule?.trigger === 'string' ? rule.trigger : rule?.trigger?.event || '';
     }
 
     // ============================================================================
@@ -285,6 +200,32 @@ export class ContinuousEffectManager {
         const scope = (typedCondition.scope as string) || 'player';
 
         switch (type) {
+            case 'playerLevel':
+                return cardOwnerPlayerId
+                    ? ConditionEvaluators.playerLevel(gameEnv, cardOwnerPlayerId, scope, typedCondition.value)
+                    : false;
+
+            case 'pairedPilotColor': {
+                const sourceCarduid = typeof (sourceCard as any)?.carduid === 'string'
+                    ? (sourceCard as any).carduid
+                    : '';
+                return ConditionEvaluators.pairedPilotColor(gameEnv, sourceCarduid, typedCondition.value);
+            }
+
+            case 'pairedUnitColor': {
+                const sourceCarduid = typeof (sourceCard as any)?.carduid === 'string'
+                    ? (sourceCard as any).carduid
+                    : '';
+                return ConditionEvaluators.pairedUnitColor(gameEnv, sourceCarduid, typedCondition.value);
+            }
+
+            case 'pairedUnitTrait': {
+                const sourceCarduid = typeof (sourceCard as any)?.carduid === 'string'
+                    ? (sourceCard as any).carduid
+                    : '';
+                return ConditionEvaluators.pairedUnitTrait(gameEnv, sourceCarduid, typedCondition.value);
+            }
+
             case 'paired':
             case 'isPaired':
                 if (scope === 'source') {
@@ -322,6 +263,11 @@ export class ContinuousEffectManager {
                         return true;
                 }
 
+            case 'opponentHandSize':
+                return cardOwnerPlayerId
+                    ? ConditionEvaluators.opponentHandSize(gameEnv, cardOwnerPlayerId, scope, typedCondition.value)
+                    : false;
+
             case 'noUnitTokenWithTrait': {
                 const traitValue = typedCondition.value;
                 const traits = Array.isArray(traitValue)
@@ -340,11 +286,21 @@ export class ContinuousEffectManager {
                 }
                 const traitsAny = Array.isArray(typedCondition.traitsAny)
                     ? typedCondition.traitsAny.filter(item => typeof item === 'string')
-                    : [];
-                return ConditionEvaluators.cardsInTrashWithTraitsAny(
+                    : Array.isArray((typedCondition as any).traits)
+                        ? (typedCondition as any).traits.filter((item: unknown) => typeof item === 'string')
+                        : [];
+
+                const filters: Record<string, unknown> = {
+                    traitsAny
+                };
+                if (typeof (typedCondition as any).cardType === 'string') {
+                    filters.cardType = (typedCondition as any).cardType;
+                }
+
+                return ConditionEvaluators.cardsInTrashWithFilter(
                     gameEnv,
                     playerId,
-                    traitsAny,
+                    filters,
                     typedCondition.value
                 );
             }
@@ -378,6 +334,17 @@ export class ContinuousEffectManager {
                 );
             }
 
+            case 'unitsInPlay': {
+                if (!cardOwnerPlayerId) {
+                    return false;
+                }
+                return ConditionEvaluators.evaluateUnitsInPlayCondition(
+                    gameEnv,
+                    cardOwnerPlayerId,
+                    typedCondition
+                );
+            }
+
             case 'cardsInPlay': {
                 if (!cardOwnerPlayerId) {
                     return false;
@@ -388,6 +355,103 @@ export class ContinuousEffectManager {
                     cardOwnerPlayerId,
                     typedCondition
                 );
+            }
+
+            case 'sourceTrait': {
+                const value = typedCondition.value;
+                const trait = typeof value === 'string' ? value : '';
+                const sourceCarduid = typeof (sourceCard as any)?.carduid === 'string'
+                    ? (sourceCard as any).carduid
+                    : '';
+                if (!sourceCarduid || !trait) {
+                    return false;
+                }
+                return SourceTraitConditionEvaluator.sourceHasTrait(gameEnv, sourceCarduid, trait);
+            }
+
+            case 'hasAnotherLinkedUnit': {
+                if (!cardOwnerPlayerId) {
+                    return false;
+                }
+                const exclude = typeof (sourceCard as any)?.carduid === 'string'
+                    ? (sourceCard as any).carduid
+                    : undefined;
+                return ConditionEvaluators.hasAnotherLinkedUnit(gameEnv, cardOwnerPlayerId, exclude);
+            }
+
+            case 'hasAnotherLinkedUnitWithTrait': {
+                if (!cardOwnerPlayerId) {
+                    return false;
+                }
+                const traitsAny = Array.isArray((typedCondition as any).traits)
+                    ? (typedCondition as any).traits.filter((t: unknown) => typeof t === 'string')
+                    : Array.isArray((typedCondition as any).traitsAny)
+                        ? (typedCondition as any).traitsAny.filter((t: unknown) => typeof t === 'string')
+                        : [];
+                const exclude = typeof (sourceCard as any)?.carduid === 'string'
+                    ? (sourceCard as any).carduid
+                    : undefined;
+                return ConditionEvaluators.hasAnotherLinkedUnitWithTrait(gameEnv, cardOwnerPlayerId, traitsAny, exclude);
+            }
+
+            case 'noPairedPilot': {
+                if (scope === 'source') {
+                    return sourceCard ? !ContinuousEffectManager.checkIsPaired(sourceCard, gameEnv) : false;
+                }
+                return true;
+            }
+
+            case 'battleOpponentLevel': {
+                if (!sourceCard || !cardOwnerPlayerId) {
+                    return false;
+                }
+                return BattleConditionEvaluator.evaluateBattleOpponentLevel(
+                    gameEnv,
+                    sourceCard.carduid,
+                    typedCondition.value
+                );
+            }
+
+            case 'sourceStatus': {
+                if (scope !== 'source') {
+                    return true;
+                }
+                if (!sourceCard) {
+                    return false;
+                }
+
+                const statusRaw =
+                    (typedCondition.status as string | undefined) ??
+                    (typedCondition.value as string | undefined);
+                const desired = typeof statusRaw === 'string' ? statusRaw.toLowerCase() : '';
+                if (!desired) {
+                    return true;
+                }
+
+                const isRested = (sourceCard as any)?.isRested === true;
+                if (desired === 'rested') {
+                    return isRested;
+                }
+                if (desired === 'active') {
+                    return !isRested;
+                }
+
+                console.log(`⚠️ Unknown sourceStatus value: ${desired}`);
+                return true;
+            }
+
+            case 'sourceDamaged': {
+                if (scope !== 'source') {
+                    return true;
+                }
+                if (!sourceCard) {
+                    return false;
+                }
+                const expected = typeof typedCondition.value === 'boolean' ? typedCondition.value : true;
+                const damaged = typeof (sourceCard as any).damageReceived === 'number'
+                    ? (sourceCard as any).damageReceived > 0
+                    : false;
+                return damaged === expected;
             }
 
             default:
@@ -449,10 +513,6 @@ export class ContinuousEffectManager {
         gameEnv: GameEnvironment,
         cardOwnerPlayerId: string | null
     ): boolean {
-        if (!card?.cardData?.effects?.rules?.length) {
-            return false;
-        }
-
         const normalizedConditions = normalizeSourceConditions(effectRule.sourceConditions);
         if (normalizedConditions.length === 0) {
             return true;
@@ -632,12 +692,38 @@ export class ContinuousEffectManager {
             if (!ContinuousEffectManager.validateEffectConditions(effectRule, gameEnv, playerId, card)) {
                 continue;
             }
+
+            const normalizedEffect = ensureEffectDefaults(effectRule);
+            const effectAction = EffectExecutor.getEffectAction(normalizedEffect) || 'modifyAP';
+            if (effectAction === 'conditional') {
+                ContinuousConditionalEffectExpander.addToRegistry({
+                    gameEnv,
+                    player,
+                    sourceCard: card,
+                    sourcePlayerId: playerId,
+                    effectRule: normalizedEffect,
+                    validateEffectConditions: ContinuousEffectManager.validateEffectConditions,
+                    createRegistryEntry: ContinuousEffectManager.createRegistryEntry
+                });
+                continue;
+            }
+            if (effectAction === 'sequence') {
+                ContinuousSequenceEffectExpander.addToRegistry({
+                    gameEnv,
+                    player,
+                    sourceCard: card,
+                    sourcePlayerId: playerId,
+                    effectRule: normalizedEffect,
+                    validateEffectConditions: ContinuousEffectManager.validateEffectConditions,
+                    createRegistryEntry: ContinuousEffectManager.createRegistryEntry
+                });
+                continue;
+            }
             
             const effectKey = `${effectRule.effectId}_${card.carduid}`;
             
             // Add effect to player's registry if not already present
             if (!player.effectRegistry[effectKey]) {
-                const normalizedEffect = ensureEffectDefaults(effectRule);
                 const registryEntry = ContinuousEffectManager.createRegistryEntry(normalizedEffect, card, playerId);
                 player.effectRegistry[effectKey] = registryEntry;
                 console.log(`  ➕ Added effect ${effectRule.effectId} from ${card.cardId} to player ${playerId} registry`);
@@ -763,27 +849,37 @@ export class ContinuousEffectManager {
                 )) {
                     continue;
                 }
-                console.log("adsdsadsfsd " ,JSON.stringify(typedEntry))
                 const targets = ContinuousEffectManager.resolveRegistryTargets(typedEntry, gameEnv);
                 
                 const numericValue = typeof typedEntry.value === 'number' ? typedEntry.value : 0;
                 const action = typedEntry.action;
 
-                for (const target of targets) {
-                    if (typeof action !== 'string') {
-                        console.log('⚠️ Registry effect missing action, skipping');
-                        continue;
-                    }
-
-                    const applied = EffectExecutor.applyContinueCardEffect(target, action, numericValue);
-                    if (!applied) {
-                        continue;
-                    }
-
-                    playerAppliedCount++;
-                    totalAppliedCount++;
+                if (typeof action !== 'string') {
+                    console.log('⚠️ Registry effect missing action, skipping');
+                    continue;
                 }
-                
+
+                const continuousApplied = ContinuousActionRegistry.apply(gameEnv, action, {
+                    sourceCarduid: typedEntry.sourceCarduid,
+                    sourcePlayerId: typedEntry.sourcePlayerId,
+                    effectData: typedEntry.effectData as EffectDefinition
+                }, targets);
+
+                if (typeof continuousApplied === 'number') {
+                    playerAppliedCount += continuousApplied;
+                    totalAppliedCount += continuousApplied;
+                } else {
+                    for (const target of targets) {
+                        const applied = EffectExecutor.applyContinueCardEffect(target, action, numericValue);
+                        if (!applied) {
+                            continue;
+                        }
+
+                        playerAppliedCount++;
+                        totalAppliedCount++;
+                    }
+                }
+
                 if (targets.length > 0) {
                     console.log(`  ⚡ Applied ${typedEntry.effectId} from player ${playerId} to ${targets.length} targets`);
                 }
@@ -801,23 +897,63 @@ export class ContinuousEffectManager {
      * Resolve targets for a registry effect
      */
     static resolveRegistryTargets(effectEntry: any, gameEnv: GameEnvironment): any[] {
-        const scope = effectEntry.scope;
+        const scope = ContinuousScopeUtils.normalizeScope(effectEntry.scope);
         const sourcePlayerId = effectEntry.sourcePlayerId;
         
         switch (scope) {
-            case 'self_all_unit':
-                return ContinuousEffectManager.getAllPlayerUnitsInSlot(sourcePlayerId, gameEnv);
+            case 'self_all_unit': {
+                const units = ContinuousEffectManager.getAllPlayerUnitsInSlot(sourcePlayerId, gameEnv);
+                return ContinuousEffectManager.applyTargetFilters(units, effectEntry.effectData?.target);
+            }
+            case 'self_all_shield': {
+                const player = gameEnv.players[sourcePlayerId];
+                const shields = Array.isArray(player?.zones?.shieldArea) ? player.zones.shieldArea : [];
+                return shields.map((card: any) => ({
+                    ...card,
+                    zone: 'shield',
+                    playerId: sourcePlayerId
+                }));
+            }
             case 'opponent_all':
                 const opponentId = ContinuousEffectManager.getOpponentId(sourcePlayerId, gameEnv);
-                return ContinuousEffectManager.getAllPlayerUnitsInSlot(opponentId, gameEnv);
+                return ContinuousEffectManager.applyTargetFilters(
+                    ContinuousEffectManager.getAllPlayerUnitsInSlot(opponentId, gameEnv),
+                    effectEntry.effectData?.target
+                );
             case 'self':
-                // Get the source card itself
-                const sourceCard = SlotZoneUtils.getCardByUid(gameEnv, effectEntry.sourceCarduid) as ZoneCardWithData | null;
-                return sourceCard ? [sourceCard] : [];
+                return ContinuousRegistryTargetResolver.resolveSelf(effectEntry, gameEnv);
+            case 'battle_opponent': {
+                const targets = ContinuousRegistryTargetResolver.resolveBattleOpponent(effectEntry, gameEnv);
+                return ContinuousEffectManager.applyTargetFilters(targets, effectEntry.effectData?.target);
+            }
             default:
                 console.log(`⚠️ Unknown scope: ${scope}`);
                 return [];
         }
+    }
+
+    private static applyTargetFilters(targets: any[], targetConfig: any): any[] {
+        if (!Array.isArray(targets) || targets.length === 0) {
+            return [];
+        }
+
+        const filters = targetConfig?.filters && typeof targetConfig.filters === 'object' ? targetConfig.filters : null;
+        if (!filters) {
+            return targets;
+        }
+
+        const traitsFilter = Array.isArray(filters.traits)
+            ? filters.traits.filter((t: unknown) => typeof t === 'string')
+            : [];
+
+        if (traitsFilter.length === 0) {
+            return targets;
+        }
+
+        return targets.filter(card => {
+            const traits = Array.isArray(card?.cardData?.traits) ? card.cardData.traits : [];
+            return traitsFilter.every((trait: string) => traits.includes(trait));
+        });
     }
 
     /**
@@ -835,6 +971,7 @@ export class ContinuousEffectManager {
             if (!sourceCard) {
                 effectsToRemove.push(effectKey);
                 console.log(`  🗑️ Removing effect ${typedEntry.effectId} from player ${playerId} - source card no longer in field`);
+                EffectExecutor.removeTemporaryEffectsFromSource(gameEnv, typedEntry.sourceCarduid);
                 continue;
             }
 
@@ -846,6 +983,7 @@ export class ContinuousEffectManager {
             )) {
                 effectsToRemove.push(effectKey);
                 console.log(`  🗑️ Removing effect ${typedEntry.effectId} from player ${playerId} - source no longer valid`);
+                EffectExecutor.removeTemporaryEffectsFromSource(gameEnv, typedEntry.sourceCarduid);
                 continue;
             }
 
@@ -857,6 +995,7 @@ export class ContinuousEffectManager {
             )) {
                 effectsToRemove.push(effectKey);
                 console.log(`  🗑️ Removing effect ${typedEntry.effectId} from player ${playerId} - conditions no longer met`);
+                EffectExecutor.removeTemporaryEffectsFromSource(gameEnv, typedEntry.sourceCarduid);
                 continue;
             }
         }
@@ -882,6 +1021,8 @@ export class ContinuousEffectManager {
         console.log(`🔄 Processing continuous effects (SOURCE-BASED REGISTRY)`);
         
         try {
+            const snapshotBefore = ContinuousStatChangeNotifier.capture(gameEnv);
+
             // STEP 1: Reset all cards' modifications to 0
             ContinuousEffectManager.resetAllCardModifications(gameEnv);
             
@@ -890,6 +1031,8 @@ export class ContinuousEffectManager {
             
             // STEP 3: Apply registry effects to all valid targets (replaces old Phase 2)
             ContinuousEffectManager.applyRegistryToTargets(gameEnv);
+
+            ContinuousStatChangeNotifier.notify(gameEnv, snapshotBefore);
             
             // Count total effects across all players
             let totalEffects = 0;
@@ -939,249 +1082,11 @@ export class ContinuousEffectManager {
         console.log(`✅ All card modifications reset to 0`);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     /**
      * Get opponent player ID
      */
     private static getOpponentId(playerId: string, gameEnv: GameEnvironment): string {
         const playerIds = Object.keys(gameEnv.players);
-        return playerIds.find(id => id !== playerId) || '';
-    }
-
-
-
-    // ============================================================================
-    // STATIC UTILITY METHODS
-    // ============================================================================
-
-    /**
-     * Extract trigger type from effect rule
-     */
-    static extractTrigger(rule: any): string {
-        return typeof rule.trigger === 'string' ? rule.trigger : rule.trigger?.event || '';
-    }
-
-    /**
-     * Extract conditions array from effect rule
-     */
-    static extractConditions(rule: any): string[] {
-        return rule.conditions || rule.trigger?.conditions || [];
-    }
-
-    /**
-     * Extract target scope from effect rule
-     */
-    static extractTargetScope(rule: any): string {
-        return rule.target?.scope || rule.target?.owner || 'self';
-    }
-
-    /**
-     * Extract effect ID from effect rule
-     */
-    static extractEffectId(rule: any): string {
-        return rule.effectId || rule.id || 'unknown_effect';
-    }
-
-    // ============================================================================
-    // INSTANCE METHODS AND PROPERTIES
-    // ============================================================================
-
-    private gameEnv: GameEnvironment;
-    private playerId: string;
-    private effect: any;
-    
-    constructor(gameEnv: GameEnvironment, playerId: string, effect: any) {
-        this.gameEnv = gameEnv;
-        this.playerId = playerId;
-        this.effect = effect;
-    }
-    
-    /**
-     * Main execution method - handles any effect action
-     */
-    execute(): EffectResult {
-        const { action } = this.effect;
-        
-        console.log(`🎯 ContinuousEffectManager executing: ${action} for player ${this.playerId}`);
-        
-        try {
-            switch (action) {
-                case 'addToHand':
-                    return this.executeAddToHand();
-                case 'heal':
-                    return this.executeHeal();
-                default:
-                    console.log(`⚠️ Unknown effect action: ${action} - returning success for placeholder`);
-                    return {
-                        success: true,
-                        message: `Effect action ${action} not yet implemented`
-                    };
-            }
-        } catch (error) {
-            console.error(`❌ ContinuousEffectManager execution failed:`, error);
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : 'Effect execution failed'
-            };
-        }
-    }
-    
-    /**
-     * Handle addToHand effects - universal for any "from" source
-     */
-    private executeAddToHand(): EffectResult {
-        const { parameters } = this.effect;
-        const { value = 1, from } = parameters;
-        
-        console.log(`🃏 Adding ${value} cards to hand from ${from}`);
-        
-        // Execute based on "from" parameter
-        switch (from) {
-            case 'shield':
-                return this.addFromShieldToHand(value);
-            default:
-                console.log(`⚠️ Unknown addToHand source: ${from} - returning success for placeholder`);
-                return {
-                    success: true,
-                    message: `AddToHand source ${from} not yet implemented`
-                };
-        }
-    }
-    
-    /**
-     * Handle heal effects - repair abilities
-     */
-    private executeHeal(): EffectResult {
-        const { parameters } = this.effect;
-        const { value = 2 } = parameters;
-        
-        console.log(`🩹 Executing heal for ${value} HP on player ${this.playerId}`);
-        
-        // For repair_2, target is self - find the unit that needs healing
-        const targetUnit = this.findTargetUnit();
-        if (!targetUnit) {
-            return {
-                success: false,
-                error: 'Target unit not found for healing'
-            };
-        }
-        
-        // Get card data to check max HP
-        const cardData = this.getCardData(targetUnit.cardId);
-        if (!cardData) {
-            return {
-                success: false,
-                error: 'Card data not found for healing'
-            };
-        }
-        
-        const maxHP = cardData.hp || targetUnit.originalHP || 0;
-        const currentDamage = targetUnit.damageReceived || 0;
-        const currentHP = Math.max(0, maxHP - currentDamage);
-
-        const healAmountClamped = Math.max(0, value);
-        const actualHealing = Math.min(healAmountClamped, currentDamage);
-        const newDamage = currentDamage - actualHealing;
-        const newHP = Math.max(0, maxHP - newDamage);
-        
-        if (actualHealing > 0) {
-            targetUnit.damageReceived = newDamage;
-
-            console.log(`✅ Healed ${targetUnit.cardId} for ${actualHealing} HP (${currentHP} → ${newHP}/${maxHP})`);
-            
-            return {
-                success: true,
-                message: `Healed ${targetUnit.cardId} for ${actualHealing} HP`,
-                affectedCards: [targetUnit]
-            };
-        } else {
-            console.log(`ℹ️ ${targetUnit.cardId} already at max HP (${currentHP}/${maxHP}) - no healing applied`);
-            
-            return {
-                success: true,
-                message: `${targetUnit.cardId} already at max HP - no healing applied`,
-                affectedCards: []
-            };
-        }
-    }
-    
-    /**
-     * Find the target unit for healing (self-targeting repair abilities)
-     */
-    private findTargetUnit(): any {
-        // This method will be called with specific card UID context from StateBasedActionEngine
-        // For now, return null - will be enhanced when integrated
-        return null;
-    }
-    
-    /**
-     * Get card data helper
-     */
-    private getCardData(cardId: string): any {
-        try {
-            return CardDatabaseManager.getCardDetails(cardId);
-        } catch (error) {
-            console.error(`❌ Error loading card data for ${cardId}:`, error);
-            return null;
-        }
-    }
-    
-    // ============ TARGET RESOLUTION METHODS ============
-    
-    /**
-     * Add cards from shield area to hand
-     */
-    private addFromShieldToHand(count: number): EffectResult {
-        const player = this.gameEnv.players[this.playerId];
-        const shieldCards = player.zones.shieldArea || [];
-        
-        const cardsToMove = shieldCards.slice(0, count);
-        const movedCards = [];
-        
-        for (const card of cardsToMove) {
-            // Move from shield to hand
-            const index = shieldCards.indexOf(card);
-            if (index > -1) {
-                // Remove from shield area
-                shieldCards.splice(index, 1);
-                
-                const addResult = EffectExecutor.addCardToPlayerHand(
-                    this.gameEnv,
-                    this.playerId,
-                    card.carduid,
-                    card.cardData,
-                    {
-                        sourceZone: 'shield'
-                    }
-                );
-                if (!addResult.success) {
-                    return {
-                        success: false,
-                        error: addResult.error || `Failed to add card ${card.carduid} to hand`
-                    };
-                }
-                movedCards.push(card);
-            }
-        }
-        
-        console.log(`🛡️➡️🃏 Moved ${movedCards.length} cards from shield to hand`);
-        
-        return {
-            success: true,
-            message: `Moved ${movedCards.length} cards from shield to hand`,
-            affectedCards: movedCards
-        };
+        return playerIds.find((id) => id !== playerId) || '';
     }
 }

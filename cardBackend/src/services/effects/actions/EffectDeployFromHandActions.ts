@@ -1,9 +1,10 @@
 // src/services/effects/actions/EffectDeployFromHandActions.ts
 
 import { GameEnvironment } from '../../../models/GameEnvironment';
-import { CardDatabaseManager, createZoneCard, UnitZoneCard } from '../../../models/CardSystem';
+import { CardDatabaseManager } from '../../../models/CardSystem';
 import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
 import { EffectDefinition, TargetReference } from '../../EventQueue/interfaces/GameEvent';
+import { UnitDeployService } from '../../deploy/UnitDeployService';
 
 export function applyDeployFromHandEffect(
     gameEnv: GameEnvironment,
@@ -51,15 +52,20 @@ export function applyDeployFromHandEffect(
         }
 
         const destinationSlot = emptySlots[i];
-        const slotResult = SlotZoneUtils.getSlotZone(player.zones, destinationSlot);
-        if (!slotResult.isValid || !slotResult.slot) {
-            return { success: false, error: `Invalid destination slot ${destinationSlot}` };
-        }
-
-        const unitCard = createZoneCard(targetCarduid, cardId, cardData, sourcePlayerId, 'unit') as UnitZoneCard;
-        slotResult.slot.unit = unitCard;
-
         console.log(`🚀 Deployed ${cardId} from hand to ${destinationSlot} (source ${sourceCarduid || 'unknown'})`);
+        const deployResult = UnitDeployService.deployUnitCardToSlot(gameEnv, {
+            playerId: sourcePlayerId,
+            destinationSlot,
+            carduid: targetCarduid,
+            cardId,
+            cardData,
+            sourceCarduid,
+            fromZone: 'hand',
+            notificationType: 'CARD_DEPLOYED_FROM_HAND'
+        });
+        if (!deployResult.success) {
+            return { success: false, error: deployResult.error || 'Failed to deploy unit from hand' };
+        }
     }
 
     return { success: true };

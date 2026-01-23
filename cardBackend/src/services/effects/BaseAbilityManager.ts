@@ -9,9 +9,13 @@ import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { DeployTargetManager } from '../DeployTargetManager';
 import { ExecutionResult } from '../ExecutionResult';
 import { EnergyManager } from '../EnergyManager';
+import { GameNotificationManager } from '../GameNotificationManager';
 import { EffectExecutor } from './EffectExecutor';
 import { ConditionalTokenDeployManager, ConditionalTokenPlan } from './ConditionalTokenDeployManager';
 import { resolveActivatedAbilitySource } from './ActivatedAbilitySourceResolver';
+import { ContinuousEffectManager } from '../ContinuousEffectManager';
+import { CardDataResolver } from './CardDataResolver';
+import { PairFromTrashActivatedAbility } from './PairFromTrashActivatedAbility';
 
 export class BaseAbilityManager {
 
@@ -72,7 +76,8 @@ export class BaseAbilityManager {
             ? ((eventData as Record<string, unknown>).effectId as string)
             : undefined;
 
-        const effectLookup = BaseAbilityManager.findActivatedEffect(sourceCard.cardData?.effects?.rules, requestedEffectId);
+        const resolvedCardData = CardDataResolver.resolveWithEffectRules(sourceCard.cardData);
+        const effectLookup = BaseAbilityManager.findActivatedEffect(resolvedCardData?.effects?.rules, requestedEffectId);
         if (!effectLookup.success || !('effect' in effectLookup)) {
             return effectLookup;
         }
@@ -89,9 +94,18 @@ export class BaseAbilityManager {
 
         const costConfig = (effectDefinition as unknown as { cost?: Record<string, unknown> }).cost;
         let baseRestedForCost = false;
+        let restNotificationPending: { playerId: string; carduid: string; zone: string } | null = null;
         const energyCost = typeof costConfig?.['resource'] === 'number' ? (costConfig!['resource'] as number) : 0;
         const oncePerTurn = costConfig?.['oncePerTurn'] === true;
-        console.log(`🏰 Base cost: energy=${energyCost}, oncePerTurn=${oncePerTurn}, restCost=${costConfig?.['rest'] || costConfig?.['tap'] || 'none'}`);
+        const restSelf = costConfig?.['restSelf'] === true;
+        console.log(`🏰 Base cost: energy=${energyCost}, oncePerTurn=${oncePerTurn}, restCost=${restSelf ? 'restSelf' : costConfig?.['rest'] || costConfig?.['tap'] || 'none'}`);
+
+        if (!ContinuousEffectManager.validateEffectConditions(normalizedEffect, gameEnv, actingPlayerId, sourceCard as any)) {
+            return {
+                success: false,
+                error: `Effect ${normalizedEffect.effectId} conditions are not met`
+            };
+        }
 
         if (oncePerTurn && BaseAbilityManager.effectUsedThisTurn(sourceCard, normalizedEffect.effectId, gameEnv.currentTurn)) {
             return {
@@ -131,7 +145,7 @@ export class BaseAbilityManager {
         }
 
         if (costConfig) {
-            const requiresRest = costConfig['rest'] === 'self' || costConfig['tap'] === 'self';
+            const requiresRest = restSelf || costConfig['rest'] === 'self' || costConfig['tap'] === 'self';
             if (requiresRest) {
                 if (sourceCard.isRested) {
                     return {
@@ -141,6 +155,18 @@ export class BaseAbilityManager {
                 }
                 sourceCard.isRested = true;
                 baseRestedForCost = true;
+                const restZone = sourceZone === 'base' ? 'base' : sourceSlotName;
+                if (!restZone) {
+                    return {
+                        success: false,
+                        error: 'Failed to determine zone for rested card notification'
+                    };
+                }
+                restNotificationPending = {
+                    playerId: actingPlayerId,
+                    carduid: sourceCard.carduid,
+                    zone: restZone
+                };
             }
         }
 
@@ -158,8 +184,35 @@ export class BaseAbilityManager {
             }
         }
 
+        if (restNotificationPending) {
+            const notificationManager = new GameNotificationManager(gameEnv);
+            notificationManager.addNotificationEvent('CARD_RESTED', {
+                playerId: restNotificationPending.playerId,
+                carduid: restNotificationPending.carduid,
+                zone: restNotificationPending.zone,
+                timestamp: Date.now()
+            });
+        }
+
         let abilityResult: ExecutionResult;
-        if (action === 'conditionalTokenDeploy') {
+
+        const pairFromTrashResult = PairFromTrashActivatedAbility.tryExecuteWithDiscardCost(
+            gameEnv,
+            actingPlayerId,
+            sourceCard.carduid,
+            normalizedEffect,
+            costConfig
+        );
+        if (pairFromTrashResult.handled) {
+            if (!pairFromTrashResult.success) {
+                abilityResult = { success: false, error: pairFromTrashResult.error };
+            } else {
+                abilityResult = {
+                    success: true,
+                    ...(pairFromTrashResult.requiresSelection ? { requiresSelection: true } : {})
+                };
+            }
+        } else if (action === 'conditionalTokenDeploy') {
             abilityResult = ConditionalTokenDeployManager.executePlan(gameEnv, actingPlayerId, sourceCard.carduid, pendingTokenPlan!);
         } else if (sourceZone === 'unit' && normalizedEffect.target?.scope === 'self' && normalizedEffect.target?.type === 'unit' && sourceSlotName) {
             const target: TargetReference = {
@@ -200,12 +253,14 @@ export class BaseAbilityManager {
             };
         }
 
+        const requiresSelection = (abilityResult as any)?.requiresSelection === true;
+
         if (oncePerTurn) {
             BaseAbilityManager.markEffectUsed(sourceCard, normalizedEffect.effectId, gameEnv.currentTurn);
         }
 
         console.log(`🏰 Activated ability ${normalizedEffect.effectId} from ${sourceCard.carduid}`);
-        return { success: true };
+        return requiresSelection ? { success: true, requiresSelection: true } : { success: true };
     }
 
     private static findActivatedEffect(rules: unknown, requestedId?: string): { success: true; effect: EffectDefinition } | ExecutionResult {

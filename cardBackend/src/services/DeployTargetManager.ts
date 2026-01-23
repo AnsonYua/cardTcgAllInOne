@@ -20,21 +20,19 @@ import {
 import { EffectExecutor } from './effects/EffectExecutor';
 import { ensureEffectDefaults } from '../utils/EffectNormalizationUtils';
 import { TargetResolver } from './targets/TargetResolver';
-import { TokenChoiceManager } from './effects/TokenChoiceManager';
 import { TargetChoicePolicy } from './choices/TargetChoicePolicy';
-import { DrawThenDiscardManager } from './effects/DrawThenDiscardManager';
 import { ChoiceEventScheduler } from './choices/ChoiceEventScheduler';
+import { TargetSelectionPipeline } from './targets/TargetSelectionPipeline';
+import { EffectActionRouter } from './effects/EffectActionRouter';
+import { CostReplacementManager } from './costs/CostReplacementManager';
+import { TargetScopeResolverRegistry } from './targets/TargetScopeResolverRegistry';
+import { TargetCountUtils } from './targets/TargetCountUtils';
+import { CostFlowInterceptor } from './costs/CostFlowInterceptor';
+import { TargetChoiceContextHandlerRegistry } from './choices/TargetChoiceContextHandlerRegistry';
 import { TargetSelectionUtils } from './targets/TargetSelectionUtils';
-import { TutorTopDeckManager } from './effects/TutorTopDeckManager';
+import type { DeployTargetResult } from './DeployTargetResult';
 
-export interface DeployTargetResult {
-    success: boolean;
-    error?: string;
-    requiresSelection?: boolean;    // true if TARGET_CHOICE event created
-    autoApplied?: boolean;         // true if effect auto-applied (single target)
-    affectedTargets?: TargetReference[];
-}
-
+export type { DeployTargetResult } from './DeployTargetResult';
 
 export class DeployTargetManager {
 
@@ -59,32 +57,26 @@ export class DeployTargetManager {
         console.log(`🎯 Processing effect ${effectLabel} requiring target selection`);
 
         try {
-            if (effectAction === 'choose_one_then_deploy_token') {
-                return TokenChoiceManager.processTokenChoiceEffect(
-                    gameEnv,
-                    playerId,
-                    sourceCarduid,
-                    normalizedEffect,
-                    cardPlayNotificationId
-                );
+            const intercepted = CostFlowInterceptor.intercept(
+                gameEnv,
+                playerId,
+                sourceCarduid,
+                normalizedEffect,
+                cardPlayNotificationId
+            );
+            if (intercepted) {
+                return intercepted;
             }
-            if (effectAction === 'draw_then_discard') {
-                return DrawThenDiscardManager.processDrawThenDiscardEffect(
-                    gameEnv,
-                    playerId,
-                    sourceCarduid,
-                    normalizedEffect,
-                    cardPlayNotificationId
-                );
-            }
-            if (effectAction === 'tutor_top_deck') {
-                return TutorTopDeckManager.processTutorTopDeckEffect(
-                    gameEnv,
-                    playerId,
-                    sourceCarduid,
-                    normalizedEffect,
-                    cardPlayNotificationId
-                );
+
+            const routedResult = EffectActionRouter.tryProcessEffectAction(
+                gameEnv,
+                playerId,
+                sourceCarduid,
+                normalizedEffect,
+                cardPlayNotificationId
+            );
+            if (routedResult) {
+                return routedResult;
             }
             if (EffectExecutor.actionSupportsNoTargets(effectAction)) {
                 const result = EffectExecutor.applyEffectToTargets(gameEnv, normalizedEffect, [], playerId, sourceCarduid);
@@ -98,10 +90,28 @@ export class DeployTargetManager {
 
             const targetConfig = TargetResolver.resolveTargetConfig(normalizedEffect);
             // Generate available targets based on config
-            let availableTargets = TargetResolver.generateAvailableTargets(gameEnv, playerId, targetConfig);
-            availableTargets = TargetSelectionUtils.applySelection(
-                availableTargets,
-                normalizedEffect.target?.selection
+            let availableTargets = TargetScopeResolverRegistry.resolve(gameEnv, sourceCarduid, normalizedEffect);
+            if (!availableTargets) {
+                availableTargets = TargetResolver.generateAvailableTargets(gameEnv, playerId, targetConfig);
+            }
+            availableTargets = TargetSelectionPipeline.apply(availableTargets, normalizedEffect, sourceCarduid);
+
+            const excludePairedUnit = normalizedEffect.parameters?.excludePairedUnit === true;
+            const pairedSlot = typeof (normalizedEffect as any).pairedSlot === 'string' ? ((normalizedEffect as any).pairedSlot as string) : '';
+            if (excludePairedUnit && pairedSlot) {
+                const player = gameEnv.getPlayer(playerId);
+                const pairedUnitCarduid = player?.zones && (player.zones as any)[pairedSlot]?.unit?.carduid;
+                if (typeof pairedUnitCarduid === 'string' && pairedUnitCarduid.length > 0) {
+                    availableTargets = TargetSelectionUtils.excludeCarduid(availableTargets, pairedUnitCarduid);
+                }
+            }
+
+            availableTargets = CostReplacementManager.augmentRestBaseTargets(
+                gameEnv,
+                playerId,
+                sourceCarduid,
+                normalizedEffect,
+                availableTargets
             );
             
             if (availableTargets.length === 0) {
@@ -122,23 +132,10 @@ export class DeployTargetManager {
                 };
             }
 
-            if (effectAction === 'grant_keyword' && targetConfig.count === 1) {
-                const sourceTarget = availableTargets.find(target => target.carduid === sourceCarduid);
-                if (sourceTarget) {
-                    const result = EffectExecutor.applyEffectToTargets(gameEnv, normalizedEffect, [sourceTarget], playerId, sourceCarduid);
-                    return {
-                        success: result.success,
-                        error: result.error,
-                        autoApplied: true,
-                        affectedTargets: result.success ? [sourceTarget] : []
-                    };
-                }
-            }
-            
             // Decision logic: Choice vs Auto-application
             const requiresChoice = TargetChoicePolicy.requiresChoice(targetConfig, availableTargets, normalizedEffect);
             if (requiresChoice) {
-                ChoiceEventScheduler.enqueueTargetChoice(gameEnv, {
+                const choiceEvent = ChoiceEventScheduler.enqueueTargetChoice(gameEnv, {
                     playerId,
                     sourceCarduid,
                     effect: normalizedEffect,
@@ -149,12 +146,16 @@ export class DeployTargetManager {
                 console.log(`🎮 Created TARGET_CHOICE event with ${availableTargets.length} targets`);
                 return { 
                     success: true, 
-                    requiresSelection: true 
+                    requiresSelection: true,
+                    choiceEventId: choiceEvent.id
                 };
                 
             } else {
                 // Auto-apply to single target or all targets (based on count)
-                const targetsToApply = availableTargets.slice(0, targetConfig.count);
+                const scopeValue = typeof targetConfig.scope === 'string' ? targetConfig.scope.toLowerCase() : '';
+                const targetsToApply = scopeValue.includes('all')
+                    ? availableTargets
+                    : availableTargets.slice(0, targetConfig.count);
                 const result = EffectExecutor.applyEffectToTargets(gameEnv, normalizedEffect, targetsToApply, playerId, sourceCarduid);
                 
                 console.log(`🤖 Auto-applied ${effect.effectId} to ${targetsToApply.length} target(s)`);
@@ -194,12 +195,26 @@ export class DeployTargetManager {
                 eventData.selectedTargets ??
                 (eventData.selectedTarget ? [eventData.selectedTarget] : undefined);
 
+            const normalizedEffect = ensureEffectDefaults(eventData.effect);
+            const selectionType = typeof normalizedEffect.target?.selection?.type === 'string'
+                ? normalizedEffect.target.selection.type.toLowerCase()
+                : '';
+
             if (!selectedTargets || selectedTargets.length === 0) {
-                const normalizedEffect = ensureEffectDefaults(eventData.effect);
                 if (normalizedEffect.optional === true) {
                     return { success: true };
                 }
                 return { success: false, error: 'No targets selected for effect' };
+            }
+
+            if (selectionType === 'player_choice') {
+                const validation = TargetCountUtils.validateSelectedCount(
+                    selectedTargets.length,
+                    normalizedEffect.target?.count
+                );
+                if (!validation.ok) {
+                    return { success: false, error: validation.error };
+                }
             }
 
             const normalizedTargets: TargetReference[] = selectedTargets.map((selection) => ({
@@ -209,7 +224,13 @@ export class DeployTargetManager {
             }));
 
             // Apply effect to selected targets - pass eventData object directly to minimize conversions
-            const normalizedEffect = ensureEffectDefaults(eventData.effect);
+            const contextResult = TargetChoiceContextHandlerRegistry.tryHandle(gameEnv, event, normalizedTargets);
+            if (contextResult.handled) {
+                return contextResult.success
+                    ? { success: true }
+                    : { success: false, error: contextResult.error || 'TARGET_CHOICE context handler failed' };
+            }
+
             const result = EffectExecutor.applyEffectToTargets(
                 gameEnv,
                 normalizedEffect,

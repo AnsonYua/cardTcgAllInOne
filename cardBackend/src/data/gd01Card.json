@@ -40,20 +40,18 @@
               "scope": "self_all_unit",
               "filters": {
                 "traits": [
-                  "White Base Team",
-                  "At the end of your turn, this Unit recovers the specified number of HP."
+                  "White Base Team"
                 ]
-              },
-              "count": 6
+              }
             },
             "action": "grant_keyword",
             "parameters": {
               "value": 1,
-              "traits": [
-                "White Base Team",
-                "At the end of your turn, this Unit recovers the specified number of HP."
-              ],
               "keyword": "Repair"
+            },
+            "timing": {
+              "duration": "continuous",
+              "endOnSourceDestroyed": true
             }
           },
           {
@@ -61,6 +59,12 @@
             "type": "triggered",
             "trigger": "PAIRING_COMPLETE",
             "action": "draw",
+            "conditions": [
+              {
+                "type": "unitsInPlay",
+                "value": ">=3"
+              }
+            ],
             "parameters": {
               "value": 1
             }
@@ -457,11 +461,10 @@
             "trigger": "ENTERS_PLAY",
             "target": {
               "type": "unit",
-              "scope": "self",
+              "scope": "self_all_unit",
               "filters": {
                 "traits": [
-                  "White Base Team",
-                  "This Unit can't be blocked."
+                  "White Base Team"
                 ]
               },
               "count": 1
@@ -1874,11 +1877,11 @@
           "【When Paired･(Cyber-Newtype)/(Newtype) Pilot】Choose 1 to 2 enemy Units. Deal 1 damage to them."
         ],
         "rules": [
-          {
-            "effectId": "pair_damage_1_to_1_or_2",
-            "type": "triggered",
-            "trigger": "PAIRING_COMPLETE",
-            "action": "damage",
+      {
+        "effectId": "pair_damage_1_to_1_or_2",
+        "type": "triggered",
+        "trigger": "PAIRING_COMPLETE",
+        "action": "damage",
             "sourceConditions": [
               {
                 "type": "paired"
@@ -1893,16 +1896,22 @@
                   "Newtype"
                 ]
               }
-            ],
-            "target": {
-              "type": "unit",
-              "scope": "opponent_all_unit",
-              "count": 2
-            },
-            "parameters": {
-              "value": 1
-            }
+        ],
+        "target": {
+          "type": "unit",
+          "scope": "opponent",
+          "count": {
+            "min": 1,
+            "max": 2
+          },
+          "selection": {
+            "type": "player_choice"
           }
+        },
+        "parameters": {
+          "value": 1
+        }
+      }
         ]
       }
     },
@@ -2803,6 +2812,37 @@
             "parameters": {
               "cost": "rest_self"
             }
+          },
+          {
+            "effectId": "paired_on_pilot_pairing_reduce_enemy_ap_2",
+            "type": "triggered",
+            "trigger": "PAIRING_COMPLETE_GLOBAL",
+            "restrictions": [
+              "once_per_turn"
+            ],
+            "sourceConditions": [
+              {
+                "type": "paired",
+                "scope": "source"
+              }
+            ],
+            "timing": {
+              "actionTurn": "YOUR_TURN",
+              "duration": "UNTIL_END_OF_TURN"
+            },
+            "action": "modifyAP",
+            "target": {
+              "type": "unit",
+              "scope": "opponent",
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
+            },
+            "parameters": {
+              "value": -2,
+              "pairedUnitColor": "White"
+            }
           }
         ]
       }
@@ -3028,6 +3068,9 @@
                   "target": {
                     "type": "unit",
                     "scope": "self_all_unit",
+                    "selection": {
+                      "type": "player_choice"
+                    },
                     "filters": {
                       "color": "White",
                       "keywords": [
@@ -4163,29 +4206,29 @@
             "action": "sequence",
             "parameters": {
               "steps": [
-                {
-                  "action": "setActive",
-                  "target": {
-                    "type": "unit",
-                    "scope": "self",
-                    "count": 1
-                  }
-                },
-                {
-                  "action": "restrict_attack",
-                  "timing": {
-                    "duration": "UNTIL_END_OF_TURN"
-                  },
-                  "target": {
-                    "type": "unit",
-                    "scope": "self",
-                    "count": 1
-                  },
-                  "parameters": {
-                    "disallow": true,
-                    "notes": "Design placeholder: requires engine support for a temporary 'can't attack' restriction."
-                  }
+              {
+                "action": "setActive",
+                "target": {
+                  "type": "unit",
+                  "scope": "source_paired_unit",
+                  "count": 1
                 }
+              },
+              {
+                "action": "restrict_attack",
+                "timing": {
+                  "duration": "UNTIL_END_OF_TURN"
+                },
+                "target": {
+                  "type": "unit",
+                  "scope": "source_paired_unit",
+                  "count": 1
+                },
+                "parameters": {
+                  "disallow": true,
+                  "notes": "Design placeholder: requires engine support for a temporary 'can't attack' restriction."
+                }
+              }
               ]
             }
           }

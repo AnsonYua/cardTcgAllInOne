@@ -3,11 +3,12 @@
 import { GameEnvironment } from '../../../models/GameEnvironment';
 import { CardDatabaseManager, createZoneCard } from '../../../models/CardSystem';
 import { EffectDefinition, TargetReference } from '../../EventQueue/interfaces/GameEvent';
+import { GameNotificationManager } from '../../GameNotificationManager';
 
 export function applyDiscardFromHandEffect(
     gameEnv: GameEnvironment,
     sourcePlayerId: string,
-    _sourceCarduid: string | undefined,
+    sourceCarduid: string | undefined,
     _effect: EffectDefinition,
     selectedTargets: TargetReference[]
 ): { success: boolean; error?: string } {
@@ -19,6 +20,8 @@ export function applyDiscardFromHandEffect(
     if (!player?.deck || !player?.zones) {
         return { success: false, error: 'Player not found for discardFromHand' };
     }
+
+    const notificationManager = new GameNotificationManager(gameEnv);
 
     for (const target of selectedTargets) {
         if (target.playerId !== sourcePlayerId) {
@@ -39,8 +42,17 @@ export function applyDiscardFromHandEffect(
         const zoneCard = createZoneCard(target.carduid, cardId, cardData as any, sourcePlayerId);
         player.zones.trashArea.push(zoneCard);
         console.log(`🗑️ Discarded ${cardId} from hand to trash`);
+
+        notificationManager.addNotificationEvent('CARD_DISCARDED_FROM_HAND', {
+            playerId: sourcePlayerId,
+            carduid: target.carduid,
+            cardId,
+            fromZone: 'hand',
+            toZone: 'trash',
+            sourceCarduid,
+            timestamp: Date.now()
+        });
     }
 
     return { success: true };
 }
-

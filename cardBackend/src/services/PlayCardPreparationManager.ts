@@ -11,6 +11,10 @@ import { EnergyManager, EnergyCheckResult } from './EnergyManager';
 import { PlayerCardManager } from './PlayerCardManager';
 import { EffectExecutor } from './effects/EffectExecutor';
 import { HandContinuousModifier } from './effects/HandContinuousModifier';
+import { GameNotificationManager } from './GameNotificationManager';
+import { SlotZoneUtils } from '../utils/SlotZoneUtils';
+import { UnitRestrictionUtils } from './restrictions/UnitRestrictionUtils';
+import { RestrictionNotificationEmitter } from './restrictions/RestrictionNotificationEmitter';
 
 export interface PlayCardPreparationFailure {
     success: false;
@@ -79,11 +83,53 @@ export class PlayCardPreparationManager {
             };
         }
 
+        if (eventData.playAs === 'pilot') {
+            const targetUid = typeof eventData.targetUnit === 'string' ? eventData.targetUnit : '';
+            const slotResult = targetUid ? SlotZoneUtils.findSlotByCarduid(player.zones, targetUid) : { slotName: null, unit: null };
+            if (!slotResult.unit) {
+                return {
+                    success: false,
+                    error: `Target unit ${eventData.targetUnit || ''} not found for pilot play`
+                };
+            }
+
+            if (UnitRestrictionUtils.cannotBePairedWithPilot(slotResult.unit as any)) {
+                RestrictionNotificationEmitter.emitPairingBlocked(gameEnv, {
+                    playerId,
+                    pilotCarduid: eventData.carduid,
+                    targetUnitCarduid: targetUid,
+                    reason: 'restrict_pairing'
+                });
+                return {
+                    success: false,
+                    error: 'Target unit cannot be paired with a pilot'
+                };
+            }
+        }
+
         const cardDataForEnergy = HandContinuousModifier.applyModifiersForHandCardPlay(
             gameEnv,
             playerId,
             cardData
         );
+
+        if (cardDataForEnergy && (cardDataForEnergy.cost !== cardData.cost || cardDataForEnergy.level !== cardData.level)) {
+            const notificationManager = new GameNotificationManager(gameEnv);
+            notificationManager.addNotificationEvent(
+                'HAND_CARD_MODIFIERS_APPLIED',
+                {
+                    playerId,
+                    carduid: eventData.carduid,
+                    cardId,
+                    baseCost: cardData.cost,
+                    effectiveCost: cardDataForEnergy.cost,
+                    baseLevel: cardData.level,
+                    effectiveLevel: cardDataForEnergy.level,
+                    timestamp: Date.now()
+                },
+                'normal'
+            );
+        }
 
         const energyResult: EnergyCheckResult = EnergyManager.validateAndPayEnergyForCard(
             gameEnv,

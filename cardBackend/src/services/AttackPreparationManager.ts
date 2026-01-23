@@ -6,6 +6,8 @@ import { Player } from '../models/Player';
 import { UnitZoneCard } from '../models/CardSystem';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { validateComparisonFilter } from '../utils/EffectNormalizationUtils';
+import { getSlotTotals } from '../utils/FieldValueCalculator';
+import { AllowAttackTargetRuleEvaluator } from './attack/AllowAttackTargetRuleEvaluator';
 
 export interface AttackPreparationFailure {
     success: false;
@@ -87,6 +89,13 @@ export class AttackPreparationManager {
         }
 
         const attackingUnit = attackerSlotResult.unit as UnitZoneCard;
+        if (this.unitHasAttackRestriction(attackingUnit, 'cannot_attack')) {
+            const cardName = attackingUnit.cardData?.name || attackingUnit.cardId || 'Attacking unit';
+            return {
+                success: false,
+                error: `${cardName} cannot attack during this turn due to a restriction`
+            };
+        }
         if (!targetUnit.isRested && !this.canAttackActiveTarget(gameEnv, attackingUnit, targetUnit)) {
             return {
                 success: false,
@@ -143,6 +152,15 @@ export class AttackPreparationManager {
             };
         }
 
+        if (this.unitHasAttackRestriction(attackerSlotResult.unit as UnitZoneCard, 'cannot_attack')) {
+            const attackingUnit = attackerSlotResult.unit as UnitZoneCard;
+            const cardName = attackingUnit.cardData?.name || attackingUnit.cardId || 'Attacking unit';
+            return {
+                success: false,
+                error: `${cardName} cannot attack during this turn due to a restriction`
+            };
+        }
+
         return {
             success: true,
             attacker,
@@ -159,6 +177,12 @@ export class AttackPreparationManager {
     ): boolean {
         const effectSources: Array<UnitZoneCard | any> = [attacker];
 
+        const lookup = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, attacker.carduid);
+        const attackerSlot = (lookup.found && lookup.playerId && lookup.slotName)
+            ? (gameEnv.players[lookup.playerId]?.zones as any)?.[lookup.slotName]
+            : undefined;
+        const attackerSlotTotals = getSlotTotals(attackerSlot);
+
         const slotLookup = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, attacker.carduid);
         if (slotLookup.found && slotLookup.playerId && slotLookup.slotName) {
             const player = gameEnv.getPlayer(slotLookup.playerId);
@@ -174,6 +198,11 @@ export class AttackPreparationManager {
             const effects = source.cardData?.effects?.rules || [];
             for (const rule of effects) {
                 if (!rule || rule.action !== 'allow_attack_target') {
+                    continue;
+                }
+
+                // Optional condition support (e.g. GD03-042: source AP >= 5)
+                if (!AllowAttackTargetRuleEvaluator.conditionsSatisfied(rule.conditions, attackerSlotTotals)) {
                     continue;
                 }
 

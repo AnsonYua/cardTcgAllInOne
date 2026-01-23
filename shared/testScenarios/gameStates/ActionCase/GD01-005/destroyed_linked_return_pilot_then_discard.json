@@ -1,0 +1,316 @@
+{
+  "description": "gd01-005_destroyed_linked_return_pilot_then_discard",
+  "gameId": "gd01-005_destroyed_linked_return_pilot_then_discard",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD01-005",
+    "DESTROYED",
+    "linked",
+    "returnToHand",
+    "discard"
+  ],
+  "notes": [
+    "Action: Player A attacks and destroys Player B's linked GD01-005 (unit+pilot in slot1).",
+    "Expect: On DESTROYED (linked), GD01-005 returns its paired pilot (GD01-088) to Player B hand, then Player B discards 1 card from hand (TARGET_CHOICE created)."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd01005",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "GD01-000_draw_0001",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD01-002_attacker_0001",
+              "cardId": "GD01-002",
+              "cardData": {
+                "id": "GD01-002",
+                "name": "Unicorn Gundam (Destroy Mode)",
+                "cardType": "unit",
+                "color": "Blue",
+                "level": 7,
+                "cost": 6,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Civilian"
+                ],
+                "link": [
+                  "Banagher Links"
+                ],
+                "ap": 5,
+                "hp": 4,
+                "effects": {
+                  "description": [
+                    "When playing this card from your hand, you may destroy 1 of your Link Units with \"Unicorn Mode\" in its card name that is Lv.5. If you do, play this card as if it has 0 Lv. and cost.",
+                    "【Attack】Choose 1 enemy Unit. Rest it."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "attack_rest",
+                      "type": "triggered",
+                      "trigger": "ATTACK_PHASE",
+                      "target": {
+                        "type": "unit",
+                        "scope": "opponent",
+                        "count": 1
+                      },
+                      "action": "rest"
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "originalAP": 5,
+              "originalHP": 4,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "GD01-010_discard_0001",
+              "cardId": "GD01-010",
+              "cardData": {
+                "id": "GD01-010",
+                "name": "GM",
+                "cardType": "unit",
+                "color": "Blue",
+                "level": 1,
+                "cost": 1,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Earth Federation"
+                ],
+                "link": [],
+                "ap": 1,
+                "hp": 1,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              }
+            }
+          ],
+          "handUids": [
+            "GD01-010_discard_0001"
+          ],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD01-005_unit_0001",
+              "cardId": "GD01-005",
+              "cardData": {
+                "id": "GD01-005",
+                "name": "Unicorn Gundam (Unicorn Mode)",
+                "cardType": "unit",
+                "color": "Blue",
+                "level": 5,
+                "cost": 4,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Civilian"
+                ],
+                "link": [
+                  "Banagher Links"
+                ],
+                "ap": 4,
+                "hp": 3,
+                "effects": {
+                  "description": [
+                    "【During Link】【Destroyed】Return this Unit's paired Pilot to its owner's hand. Then, discard 1."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "during_link_destroyed_return_paired_pilot_then_discard",
+                      "type": "triggered",
+                      "trigger": "DESTROYED",
+                      "sourceConditions": [
+                        {
+                          "type": "linked"
+                        }
+                      ],
+                      "action": "sequence",
+                      "parameters": {
+                        "steps": [
+                          {
+                            "action": "returnToHand",
+                            "target": {
+                              "type": "card",
+                              "scope": "source_paired_pilot",
+                              "count": 1
+                            }
+                          },
+                          {
+                            "action": "discard",
+                            "parameters": {
+                              "value": 1
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalAP": 4,
+              "originalHP": 3,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false
+            },
+            "pilot": {
+              "carduid": "GD01-088_pilot_0001",
+              "cardId": "GD01-088",
+              "cardData": {
+                "id": "GD01-088",
+                "name": "Banagher Links",
+                "cardType": "pilot",
+                "color": "Blue",
+                "level": 5,
+                "cost": 1,
+                "zone": [],
+                "traits": [
+                  "Civilian",
+                  "Newtype"
+                ],
+                "link": [],
+                "ap": 2,
+                "hp": 2,
+                "effects": {
+                  "description": [
+                    "【Burst】Add this card to your hand.",
+                    "【When Linked】Draw 1."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "burst_add_to_hand",
+                      "type": "triggered",
+                      "trigger": "BURST_CONDITION",
+                      "target": {
+                        "type": "card",
+                        "scope": "self"
+                      },
+                      "action": "addToHand"
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalAP": 2,
+              "originalHP": 2,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
+

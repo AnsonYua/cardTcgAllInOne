@@ -1,0 +1,178 @@
+{
+  "description": "gd02-007_repair_2_end_of_turn",
+  "gameId": "gd02-007_repair_2_end_of_turn",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD02-007",
+    "Repair",
+    "END_PHASE",
+    "END_OF_TURN",
+    "heal"
+  ],
+  "notes": [
+    "Setup: Player A has GD02-007 in slot1 with damageReceived=2. It is END_PHASE and currentPlayer is playerId_1.",
+    "Action: Process END_PHASE state-based actions (repair check).",
+    "Expect: TRIGGER_HEALING is enqueued into processingQueue; when processed it heals 2 and emits CARD_HEALED in notificationQueue for playerId_1."
+  ],
+  "initialGameEnv": {
+    "phase": "END_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd02007",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "GD02-007_draw_seed_0001",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD02-007_unit_0001",
+              "cardId": "GD02-007",
+              "cardData": {
+                "id": "GD02-007",
+                "name": "Psycho Gundam (MA Mode)",
+                "cardType": "unit",
+                "color": "Blue",
+                "level": 5,
+                "cost": 3,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Titans"
+                ],
+                "link": [
+                  "Cyber-Newtype"
+                ],
+                "ap": 3,
+                "hp": 4,
+                "effects": {
+                  "description": [
+                    "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)"
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "repair_2",
+                      "type": "triggered",
+                      "trigger": "END_OF_TURN",
+                      "target": {
+                        "type": "unit",
+                        "scope": "self",
+                        "count": 1
+                      },
+                      "action": "heal",
+                      "parameters": {
+                        "value": 2
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 2,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 4,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
+

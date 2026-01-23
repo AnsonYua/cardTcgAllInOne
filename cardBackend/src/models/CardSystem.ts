@@ -15,10 +15,15 @@ export interface TemporaryEffect {
     modifyHP?: number;                  // HP modification (optional)
     breachValue?: number;               // Breach damage granted (optional)
     grantedKeywords?: string[];         // Keywords granted (optional)
+    keywordValues?: Record<string, number>; // Keyword numeric values (optional, e.g. Repair 1)
     preventBattleDamage?: {
         from?: string;
         enemyLevel?: string;
         maxEnemyAp?: number;
+    };
+    preventEffectDamage?: {
+        sourceCardType?: string;
+        sourceController?: string;
     };
     duration: string;                   // Effect duration
     appliedTurn: number;                // Which turn this was applied

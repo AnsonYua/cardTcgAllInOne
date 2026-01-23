@@ -1,0 +1,256 @@
+{
+  "description": "gd02-033_gain_breach_5_if_another_zeon_link",
+  "gameId": "gd02-033_gain_breach_5_if_another_zeon_link",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD02-033",
+    "continuous",
+    "grant_breach",
+    "hasAnotherLinkedUnitWithTrait",
+    "Zeon"
+  ],
+  "notes": [
+    "Setup: Player A has GD02-033 in slot1. Player A also has another linked Unit+Pilot pair in slot2 and that linked unit has trait Zeon (so condition is satisfied).",
+    "Expect: After continuous effects are processed, GD02-033 has a CONTINUOUS breachValue=5 temporaryEffect sourced from itself, and notificationQueue includes KEYWORD_GRANTED with keyword=Breach,value=5 for playerId_1.",
+    "This fixture is for harnesses that load a state then run processing/refresh (e.g. via any action that triggers ContinuousEffectManager.processAllContinuousEffects)."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd02033",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "GD02-001_draw_seed_0001",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD02-033_unit_0001",
+              "cardId": "GD02-033",
+              "cardData": {
+                "id": "GD02-033",
+                "name": "Kikeroga (MA Mode) (GQ)",
+                "cardType": "unit",
+                "color": "Green",
+                "level": 5,
+                "cost": 4,
+                "zone": [
+                  "Space"
+                ],
+                "traits": [
+                  "Zeon"
+                ],
+                "link": [
+                  "Challia Bull"
+                ],
+                "ap": 3,
+                "hp": 4,
+                "effects": {
+                  "description": [
+                    "While another friendly (Zeon) Link Unit is in play, this Unit gains <Breach 5>."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "gain_breach_5_if_another_zeon_link",
+                      "type": "continuous",
+                      "trigger": "continuous",
+                      "action": "grant_breach",
+                      "target": {
+                        "type": "unit",
+                        "scope": "self",
+                        "count": 1
+                      },
+                      "conditions": [
+                        {
+                          "type": "hasAnotherLinkedUnitWithTrait",
+                          "scope": "self",
+                          "traits": [
+                            "Zeon"
+                          ]
+                        }
+                      ],
+                      "parameters": {
+                        "value": 5
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 4,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "GD02-032_unit_0001",
+              "cardId": "GD02-032",
+              "cardData": {
+                "id": "GD02-032",
+                "name": "White Gundam",
+                "cardType": "unit",
+                "color": "Green",
+                "level": 3,
+                "cost": 2,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Zeon"
+                ],
+                "link": [
+                  "Char Aznable"
+                ],
+                "ap": 3,
+                "hp": 3,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 3,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            },
+            "pilot": {
+              "carduid": "GD02-010_pilot_0001",
+              "cardId": "GD02-010",
+              "cardData": {
+                "id": "GD02-010",
+                "name": "Char Aznable",
+                "cardType": "pilot",
+                "color": "Green",
+                "level": 4,
+                "cost": 1,
+                "zone": [],
+                "traits": [
+                  "Zeon"
+                ],
+                "link": [],
+                "ap": 2,
+                "hp": 1,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isFirstPlay": false
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
+

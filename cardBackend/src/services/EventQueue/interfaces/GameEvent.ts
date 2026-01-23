@@ -162,6 +162,11 @@ export interface TargetFilters {
     hp?: string;
     status?: string;
     traits?: string[];
+    traitsAny?: string[];
+    traitsAll?: string[];
+    keywords?: string[];
+    color?: string | string[];
+    excludeCarduids?: string[];
     zone?: string[];
     controller?: string;
     [key: string]: unknown;
@@ -335,6 +340,17 @@ export interface EndTurnTriggeredEffectEvent extends BaseGameEvent<EndTurnTrigge
     type: EventType.TRIGGER_END_OF_TURN_EFFECT;
 }
 
+export interface EffectDrawTriggeredEventData {
+    drawnPlayerId: string;
+    drawnCarduids: string[];
+    drawContext?: string;
+    sourceCarduid?: string;
+}
+
+export interface EffectDrawTriggeredEvent extends BaseGameEvent<EffectDrawTriggeredEventData> {
+    type: EventType.TRIGGER_EFFECT_DRAW;
+}
+
 // ============ COMBAT EVENTS ============
 
 export interface AttackDeclaredEvent extends BaseGameEvent {
@@ -457,6 +473,7 @@ export interface TargetChoiceEventData {
     availableTargets: TargetReference[];
     selectedTarget?: TargetChoiceSelection;
     selectedTargets?: TargetChoiceSelection[];
+    context?: Record<string, unknown>;
     cardPlayNotificationId?: string;
 }
 
@@ -516,11 +533,6 @@ export interface BlockerChoiceEventData {
     userDecision?: 'BLOCK' | 'DECLINE';
 }
 
-export interface BlockerUnit {
-    carduid: string;
-    effect: EffectDefinition;
-}
-
 export interface BlockerChoiceEvent extends BaseGameEvent<BlockerChoiceEventData> {
     type: EventType.BLOCKER_CHOICE;
 }
@@ -530,6 +542,8 @@ export type GameEvent =
     | PlayCardEvent
     | DeployEffectEvent
     | RepairEffectEvent
+    | EndTurnTriggeredEffectEvent
+    | EffectDrawTriggeredEvent
     | PairingEffectEvent
     | PowerBoostEvent
     | ConfirmRedrawEvent

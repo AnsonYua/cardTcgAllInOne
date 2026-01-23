@@ -9,7 +9,8 @@
     "First Strike"
   ],
   "notes": [
-    "Action: Player A forms a linked pair with ST06-001 while having another Clan unit in play.",
+    "Setup: Player A is in MAIN_PHASE with ST06-001 in slot1 and another (Clan) Unit in slot2. Player A has ST06-009 in hand and at least 1 active energy.",
+    "Action (manual): Player A plays ST06-009 as a pilot onto ST06-001 (PAIRING_COMPLETE + linked).",
     "Expect: ST06-001 gains First Strike until end of turn (KEYWORD_GRANTED notification).",
     "Action: Player A attacks an enemy unit where simultaneous damage would normally trade.",
     "Expect: With First Strike, defender is destroyed first and does not deal damage back (attacker survives)."
@@ -42,7 +43,7 @@
         },
         "payload": {
           "playerId": "playerId_1",
-          "carduid": "ST06-002_draw_0001",
+          "carduid": "ST06-009_draw_0001",
           "sourceZone": "deck",
           "reason": "draw",
           "timestamp": 1768362880422,
@@ -59,10 +60,37 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": [],
-          "handUids": [],
+          "hand": [
+            {
+              "carduid": "ST06-009_action_0001",
+              "cardId": "ST06-009",
+              "cardData": {
+                "id": "ST06-009",
+                "name": "Amate Yuzuriha (Machu)",
+                "cardType": "pilot",
+                "color": "Red",
+                "level": 4,
+                "cost": 1,
+                "zone": [],
+                "traits": [
+                  "Clan",
+                  "Newtype"
+                ],
+                "link": [],
+                "ap": 2,
+                "hp": 1,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              }
+            }
+          ],
+          "handUids": [
+            "ST06-009_action_0001"
+          ],
           "mainDeck": [
-            "ST06-002_draw_0001"
+            "ST06-009_draw_0001"
           ]
         },
         "confirmIsRedraw": false,
@@ -107,34 +135,6 @@
               "isFirstPlay": false,
               "canAttackOnPlayTurn": false,
               "playedThisTurn": false
-            },
-            "pilot": {
-              "carduid": "ST04-010_pilot_for_link_0001",
-              "cardId": "ST04-010",
-              "cardData": {
-                "id": "ST04-010",
-                "name": "Kira Yamato",
-                "cardType": "pilot",
-                "color": "White",
-                "level": 4,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Alliance",
-                  "Coordinator"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 1,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "playedAs": "pilot"
             }
           },
           "slot2": {
@@ -182,7 +182,19 @@
           "slot6": {},
           "base": [],
           "shieldArea": [],
-          "energyArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_st06001_a_0001",
+              "cardId": "energy_basic",
+              "cardData": {
+                "cardType": "energy"
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
           "trashArea": [],
           "repairAbilitiesCheckedThisCycle": false
         }
@@ -254,4 +266,3 @@
     }
   }
 }
-

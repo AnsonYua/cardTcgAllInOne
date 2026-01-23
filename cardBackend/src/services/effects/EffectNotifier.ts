@@ -32,4 +32,33 @@ export class EffectNotifier {
             'normal'
         );
     }
+
+    static notifyCardDamageApplied(
+        gameEnv: GameEnvironment,
+        targetCard: UnitZoneCard | PilotZoneCard,
+        target: TargetReference,
+        damage: number,
+        resultingHP: number,
+        maxHP: number
+    ): void {
+        const notificationManager = new GameNotificationManager(gameEnv);
+        const cardId = targetCard.cardId ?? target.cardData?.cardId;
+        const cardName = target.cardData?.name || targetCard.cardData?.name || 'Unknown Card';
+
+        notificationManager.addNotificationEvent(
+            'CARD_DAMAGED',
+            {
+                playerId: target.playerId,
+                carduid: target.carduid,
+                cardId,
+                cardName,
+                zone: target.zone,
+                damage,
+                resultingHP,
+                maxHP,
+                timestamp: Date.now()
+            },
+            'normal'
+        );
+    }
 }

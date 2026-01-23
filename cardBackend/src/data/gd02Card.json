@@ -4189,26 +4189,27 @@
             "effectId": "pair_effect",
             "type": "triggered",
             "trigger": "PAIRING_COMPLETE",
-            "action": "sequence",
+            "action": "grant_breach",
+            "timing": {
+              "duration": "UNTIL_END_OF_TURN"
+            },
             "parameters": {
-              "text": "Choose 1 of your other (Zeon) Link Units. It gains <Breach 1> during this turn. (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)",
-              "version": 1,
-              "steps": [
-                {
-                  "action": "grant_keyword",
-                  "timing": {
-                    "duration": "CONTINUOUS"
-                  },
-                  "target": {
-                    "type": "unit",
-                    "scope": "self",
-                    "count": 1
-                  },
-                  "parameters": {
-                    "keyword": "Breach 1"
-                  }
-                }
-              ]
+              "value": 1,
+              "excludePairedUnit": true
+            },
+            "target": {
+              "type": "unit",
+              "scope": "self",
+              "count": 1,
+              "filters": {
+                "traitsAny": [
+                  "Zeon"
+                ],
+                "linkStatus": "linked"
+              },
+              "selection": {
+                "type": "player_choice"
+              }
             }
           }
         ]

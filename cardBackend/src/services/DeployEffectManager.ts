@@ -9,7 +9,8 @@ import {
     PlayCardEventData
 } from './EventQueue/interfaces/GameEvent';
 import { EventFactory } from './EventQueue/EventFactory';
-import { DeployTargetManager, DeployTargetResult } from './DeployTargetManager';
+import { DeployTargetManager } from './DeployTargetManager';
+import type { DeployTargetResult } from './DeployTargetResult';
 import { ensureEffectDefaults } from '../utils/EffectNormalizationUtils';
 import { EffectRuleCatalog } from './effects/EffectRuleCatalog';
 import { GameNotificationManager } from './GameNotificationManager';
@@ -41,10 +42,6 @@ export class DeployEffectManager {
         gameEnv: GameEnvironment
     ): DeployQueueResult {
         try {
-
-            console.log("event Data for play card ", JSON.stringify(eventData))
-
-        
             const cardData = CardDatabaseManager.getCardDetailsFromCarduid(eventData.carduid);
             if (!cardData?.effects?.rules) {
                 return { success: true, effectsFound: 0 };
@@ -52,7 +49,6 @@ export class DeployEffectManager {
             
             // Command cards played as pilots should not trigger command deploy effects
             if (cardData.cardType === 'command' && eventData.playAs === 'pilot') {
-                console.log("event Data for play card here")
                 return { success: true, effectsFound: 0 };
             }
         const deployEffects: EffectDefinition[] = [];

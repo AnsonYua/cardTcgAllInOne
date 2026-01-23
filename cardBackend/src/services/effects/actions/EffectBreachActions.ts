@@ -3,6 +3,7 @@ import { EffectDefinition, TargetReference } from '../../EventQueue/interfaces/G
 import { UnitZoneCard, PilotZoneCard } from '../../../models/CardSystem';
 import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
 import { extractNumericValue } from './EffectActionUtils';
+import { KeywordNotifier } from '../KeywordNotifier';
 
 export function applyGrantBreachEffect(
     gameEnv: GameEnvironment,
@@ -30,16 +31,26 @@ export function applyGrantBreachEffect(
             targetCard.temporaryEffects = [];
         }
 
+        const duration = effect.timing?.duration || 'UNTIL_END_OF_TURN';
         targetCard.temporaryEffects.push({
             sourceCarduid: sourceCarduid || 'unknown',
             breachValue,
-            duration: effect.timing?.duration || 'UNTIL_END_OF_TURN',
+            duration,
             appliedTurn: gameEnv.currentTurn,
             appliedBy: sourcePlayerId,
             endOnSourceDestroyed: effect.timing?.endOnSourceDestroyed === true
         });
 
         console.log(`🛡️ Granted Breach ${breachValue} to ${target.carduid} (source ${sourceCarduid || 'unknown'})`);
+
+        KeywordNotifier.notifyGranted(gameEnv, {
+            playerId: target.playerId,
+            sourceCarduid,
+            targetCarduid: target.carduid,
+            keyword: 'Breach',
+            value: breachValue,
+            duration
+        });
     }
 
     return { success: true };

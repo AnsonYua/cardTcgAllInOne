@@ -45,5 +45,11 @@ export class DeckZoneManager {
         deck.push(...extracted);
         return extracted;
     }
-}
 
+    static shuffle(deck: string[]): void {
+        if (!Array.isArray(deck) || deck.length <= 1) {
+            return;
+        }
+        shuffleInPlace(deck);
+    }
+}

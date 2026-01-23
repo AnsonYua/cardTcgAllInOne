@@ -75,7 +75,11 @@ export class EnergyManager {
     /**
      * Add extra energy card to player (isExtraEnergy=true)
      */
-    static addExtraEnergy(gameEnv: GameEnvironment, playerId: string): boolean {
+    static addExtraEnergy(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        options: { rested?: boolean } = {}
+    ): boolean {
         try {
             const player = gameEnv.players[playerId];
             if (!player || !player.zones) {
@@ -89,7 +93,7 @@ export class EnergyManager {
                 cardId: 'energy_extra',
                 placedAt: Date.now(),
                 placedBy: playerId,
-                isRested: false,
+                isRested: options.rested === true,
                 isExtraEnergy: true,
                 cardData : this.newEnergyCardData()
             };

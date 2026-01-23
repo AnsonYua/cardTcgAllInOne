@@ -5,6 +5,7 @@ import { BaseLifecycleManager } from '../../BaseLifecycleManager';
 import { EventFactory } from '../../EventQueue/EventFactory';
 import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
 import { extractNumericValue } from './EffectActionUtils';
+import { isShieldDamagePreventedByAttackerLevel } from '../../battle/BattleShieldUtils';
 
 export function applyPreventShieldDamageEffect(
     gameEnv: GameEnvironment,
@@ -28,6 +29,8 @@ export function applyPreventShieldDamageEffect(
     battle.shieldDamagePreventions.push({
         playerId: sourcePlayerId,
         maxEnemyLevel,
+        enemyLevelFilter: typeof maxLevelRaw === 'string' ? maxLevelRaw : undefined,
+        from: 'enemy_units',
         sourceCarduid
     });
 
@@ -109,7 +112,11 @@ export function applyDamageShieldEffect(
             continue;
         }
 
-        const prevented = isShieldDamagePrevented(gameEnv, targetPlayerId, sourceCarduid);
+        const attackerCard = sourceCarduid ? SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, sourceCarduid) : null;
+        const attackerLevel = attackerCard?.card?.cardData?.level
+            ?? attackerCard?.unit?.cardData?.level
+            ?? 0;
+        const prevented = isShieldDamagePreventedByAttackerLevel(gameEnv, targetPlayerId, attackerLevel);
         if (prevented) {
             console.log(`🛡️ Shield damage prevented for ${targetPlayerId}`);
             continue;
@@ -135,34 +142,4 @@ export function applyDamageShieldEffect(
     }
 
     return { success: true };
-}
-
-function isShieldDamagePrevented(
-    gameEnv: GameEnvironment,
-    defendingPlayerId: string,
-    sourceCarduid?: string
-): boolean {
-    const battle = gameEnv.currentBattle;
-    if (!battle?.shieldDamagePreventions || battle.shieldDamagePreventions.length === 0) {
-        return false;
-    }
-
-    if (!sourceCarduid) {
-        return false;
-    }
-
-    const attackerCard = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, sourceCarduid);
-    const attackerLevel = attackerCard?.card?.cardData?.level
-        ?? attackerCard?.unit?.cardData?.level
-        ?? 0;
-
-    return battle.shieldDamagePreventions.some(prevention => {
-        if (prevention.playerId !== defendingPlayerId) {
-            return false;
-        }
-        if (typeof prevention.maxEnemyLevel === 'number' && prevention.maxEnemyLevel > 0) {
-            return attackerLevel <= prevention.maxEnemyLevel;
-        }
-        return true;
-    });
 }

@@ -20,10 +20,7 @@ export class EffectStatApplier {
                 return this.applyHealToCard(targetCard, parameters, target);
 
             case 'damage':
-                return this.applyDamageToCard(targetCard, parameters, target);
-
-            case 'rest':
-                return this.applyRestState(targetCard, true, target);
+                return this.applyDamageToCard(gameEnv, targetCard, parameters, target);
 
             default:
                 console.log(`⚠️ Unsupported effect action: ${action}`);
@@ -101,6 +98,7 @@ export class EffectStatApplier {
     }
 
     static applyDamageToCard(
+        gameEnv: GameEnvironment,
         targetCard: UnitZoneCard | PilotZoneCard,
         parameters: Record<string, unknown> | undefined,
         target: TargetReference
@@ -130,16 +128,14 @@ export class EffectStatApplier {
         const resultingHP = Math.max(0, maxHP - newDamage);
 
         console.log(`  💥 ${target.carduid}: damage ${previousDamage} → ${newDamage} (HP ${resultingHP}/${maxHP})`);
-        return { success: true };
-    }
-
-    static applyRestState(
-        targetCard: UnitZoneCard | PilotZoneCard,
-        shouldRest: boolean,
-        target: TargetReference
-    ): { success: boolean; error?: string } {
-        targetCard.isRested = shouldRest;
-        console.log(`  😌 ${target.carduid}: ${shouldRest ? 'rested' : 'activated'}`);
+        EffectNotifier.notifyCardDamageApplied(
+            gameEnv,
+            targetCard,
+            target,
+            value,
+            resultingHP,
+            maxHP
+        );
         return { success: true };
     }
 

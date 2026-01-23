@@ -4,11 +4,12 @@
 import { GameEnvironment } from '../../models/GameEnvironment';
 import { EffectDefinition } from '../EventQueue/interfaces/GameEvent';
 import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
-import { CardDatabaseManager, createZoneCard, UnitZoneCard } from '../../models/CardSystem';
+import { CardDatabaseManager } from '../../models/CardSystem';
 import { PlayerCardManager } from '../PlayerCardManager';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { ExecutionResult } from '../ExecutionResult';
 import { ContinuousEffectManager } from '../ContinuousEffectManager';
+import { UnitDeployService } from '../deploy/UnitDeployService';
 
 export interface ConditionalTokenPlan {
     tokenData: any;
@@ -137,15 +138,21 @@ export class ConditionalTokenDeployManager {
 
         for (const targetSlot of plan.targetSlots) {
             const carduid = PlayerCardManager.createUniqueCardId(plan.tokenData.id);
-            const unitCard = createZoneCard(carduid, plan.tokenData.id, plan.tokenData, playerId, 'unit') as UnitZoneCard;
-
-            const slotResult = SlotZoneUtils.getSlotZone(player.zones, targetSlot);
-            if (!slotResult.isValid || !slotResult.slot) {
-                return { success: false, error: `Invalid slot ${targetSlot} for token deploy` };
-            }
-
-            slotResult.slot.unit = unitCard;
             console.log(`🪖 Deployed token ${plan.tokenData.name || plan.tokenData.id} to ${targetSlot} (source ${sourceCarduid})`);
+
+            const deployResult = UnitDeployService.deployUnitCardToSlot(gameEnv, {
+                playerId,
+                destinationSlot: targetSlot,
+                carduid,
+                cardId: plan.tokenData.id,
+                cardData: plan.tokenData,
+                sourceCarduid,
+                fromZone: 'token',
+                notificationType: 'TOKEN_DEPLOYED'
+            });
+            if (!deployResult.success) {
+                return { success: false, error: deployResult.error || 'Failed to deploy token' };
+            }
         }
 
         return { success: true };

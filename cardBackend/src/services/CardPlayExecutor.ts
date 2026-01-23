@@ -8,10 +8,11 @@ import { GameEnvironment } from '../models/GameEnvironment';
 import { PlayCardPreparationManager, PlayCardPreparationSuccess } from './PlayCardPreparationManager';
 import { PlayerCardManager } from './PlayerCardManager';
 import { GameNotificationManager } from './GameNotificationManager';
-import { DeployEffectManager } from './DeployEffectManager';
 import { PairingEffectManager } from './PairingEffectManager';
-import { ContinuousEffectManager } from './ContinuousEffectManager';
 import { BattlePhaseManager } from './BattlePhaseManager';
+import { CardEnteredPlayManager } from './CardEnteredPlayManager';
+import { PairingGlobalEffectManager } from './effects/PairingGlobalEffectManager';
+import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 
 export class CardPlayExecutor {
     static execute(event: PlayCardEvent, gameEnv: GameEnvironment): ExecutionResult {
@@ -73,14 +74,20 @@ export class CardPlayExecutor {
             }
 
 
-            const deployResult = DeployEffectManager.checkAndQueueDeployEffects(eventData, playerId, gameEnv);
-            if (!deployResult.success) {
-                console.log(`⚠️ Deploy effect processing error: ${deployResult.error}`);
-            } else if (deployResult.effectsFound > 0) {
-                console.log(`✅ Deploy effects processed: ${deployResult.effectsFound} effects queued`);
+            const enteredPlay = CardEnteredPlayManager.handleCardEnteredPlay(gameEnv, playerId, {
+                carduid: eventData.carduid,
+                playAs: eventData.playAs,
+                slotName: placementResult.placedZone || eventData.slotName,
+                cardPlayNotificationId: notificationId
+            });
+
+            if (!enteredPlay.success) {
+                console.log(`⚠️ CardEnteredPlayManager error: ${enteredPlay.error}`);
+            } else if (enteredPlay.deployEffectsQueued > 0) {
+                console.log(`✅ Deploy effects processed: ${enteredPlay.deployEffectsQueued} effects queued`);
             }
 
-            if (deployResult.effectsFound === 0) {
+            if (enteredPlay.deployEffectsQueued === 0) {
                 notificationManager.updateNotificationEvent(notificationId, { isCompleted: true });
             }
 
@@ -88,8 +95,27 @@ export class CardPlayExecutor {
                 console.log(`🤝 Pairing detected - checking for pairing effects`);
                 const pairingEvent = PairingEffectManager.checkForPairingEffectsEvent(eventData, gameEnv, playerId);
                 if (pairingEvent) {
-                    gameEnv.processingQueue.push(pairingEvent);
+                    gameEnv.enqueueForProcessing(pairingEvent);
                     console.log(`📋 Pairing event queued: ${pairingEvent.id}`);
+                }
+
+                const pairedSlotName = placementResult.placedZone || eventData.slotName;
+                let pairedUnitColor: string | undefined;
+                const player = gameEnv.getPlayer(playerId);
+                if (pairedSlotName && player?.zones) {
+                    const slotResult = SlotZoneUtils.getSlotZone(player.zones, pairedSlotName);
+                    if (slotResult.isValid) {
+                        pairedUnitColor = slotResult.slot?.unit?.cardData?.color;
+                    }
+                }
+
+                const globalResult = PairingGlobalEffectManager.enqueueGlobalPairingTriggeredEffects(gameEnv, playerId, {
+                    pairedUnitColor
+                });
+                if (!globalResult.success) {
+                    console.log(`⚠️ Global pairing effect error: ${globalResult.error}`);
+                } else if ((globalResult.effectsQueued || 0) > 0) {
+                    console.log(`🌐 Global pairing effects queued: ${globalResult.effectsQueued}`);
                 }
             }
 
@@ -98,19 +124,14 @@ export class CardPlayExecutor {
                 PlayerCardManager.handleLinkFormation(gameEnv, playerId, eventData.carduid);
             }
 
-            console.log(`🔄 Processing continuous effects after card placement${placementResult.isOnPair ? ` (${placementResult.isOnLink ? 'Link' : 'Pair'} created)` : ''}`);
-            try {
-                const result = ContinuousEffectManager.processAllContinuousEffects(gameEnv);
-                console.log(`✅ Continuous effects processed: ${result.effectsProcessed} processed, ${result.effectsActivated} activated, ${result.effectsDeactivated} deactivated`);
-            } catch (error) {
-                console.error(`❌ Error processing continuous effects after card placement:`, error);
-            }
+            console.log(
+                `🔄 Card entered play processed${placementResult.isOnPair ? ` (${placementResult.isOnLink ? 'Link' : 'Pair'} created)` : ''}`
+            );
 
             if (BattlePhaseManager.isActionWindowOpen(gameEnv) &&
                 BattlePhaseManager.playerInActiveBattle(gameEnv, playerId)) {
                 const postPlayEvent = EventFactory.createActionStepPostPlayEvent(playerId);
                 gameEnv.enqueueForProcessing(postPlayEvent);
-                console.log("data 12312312 ", JSON.stringify(gameEnv.processingQueue))
                 console.log(`📋 Action step post-play event queued: ${postPlayEvent.id}`);
             }
 

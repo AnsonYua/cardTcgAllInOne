@@ -3,10 +3,10 @@
 
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { PilotZoneCard, UnitZoneCard } from '../../models/CardSystem';
-import { SLOT_ZONES } from '../../config/gameConstants';
+import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 import { ConditionEvaluators } from './ConditionEvaluators';
-import { LinkUtils } from '../../utils/LinkUtils';
+import { CardTraitUtils } from '../../utils/CardTraitUtils';
 
 export class PairingConditionEvaluator {
     static evaluate(
@@ -36,8 +36,7 @@ export class PairingConditionEvaluator {
                 if (!required) {
                     return false;
                 }
-                const pilotTraits = Array.isArray(pilot.cardData?.traits) ? pilot.cardData.traits : [];
-                return pilotTraits.includes(required);
+                return CardTraitUtils.hasTrait(pilot.cardData, required);
             }
 
             case 'pairedPilotTraitAny': {
@@ -49,8 +48,7 @@ export class PairingConditionEvaluator {
                 if (values.length === 0) {
                     return false;
                 }
-                const pilotTraits = Array.isArray(pilot.cardData?.traits) ? pilot.cardData.traits : [];
-                return values.some((trait: string) => pilotTraits.includes(trait));
+                return CardTraitUtils.hasAnyTrait(pilot.cardData, values);
             }
 
             case 'pairedPilotColor': {
@@ -67,8 +65,7 @@ export class PairingConditionEvaluator {
                 if (!required) {
                     return false;
                 }
-                const unitTraits = Array.isArray(unit.cardData?.traits) ? unit.cardData.traits : [];
-                return unitTraits.includes(required);
+                return CardTraitUtils.hasTrait(unit.cardData, required);
             }
 
             case 'unitsInPlayWithTrait': {
@@ -76,6 +73,18 @@ export class PairingConditionEvaluator {
                     ? (condition as any).traits.filter((t: unknown) => typeof t === 'string')
                     : [];
                 return ConditionEvaluators.unitsInPlayWithTrait(gameEnv, playerId, traits, condition.value);
+            }
+
+            case 'unitsInPlay': {
+                const units = SlotZoneUtils.getAllPlayerSlotUnits(gameEnv, playerId);
+                const count = Array.isArray(units) ? units.length : 0;
+                if (typeof condition.value === 'number') {
+                    return count === condition.value;
+                }
+                if (typeof condition.value === 'string') {
+                    return validateComparisonFilter(count, condition.value);
+                }
+                return true;
             }
 
             case 'cardsInTrashWithTraitsAny': {
@@ -93,27 +102,7 @@ export class PairingConditionEvaluator {
             }
 
             case 'hasAnotherLinkedUnit': {
-                const player = gameEnv.getPlayer(playerId);
-                if (!player?.zones) {
-                    return false;
-                }
-
-                for (const slotName of SLOT_ZONES) {
-                    const slot = (player.zones as any)[slotName];
-                    if (!slot?.unit || !slot?.pilot) {
-                        continue;
-                    }
-
-                    if (slot.unit.carduid === unit.carduid) {
-                        continue;
-                    }
-
-                    if (LinkUtils.isLinkedPair(slot.unit, slot.pilot)) {
-                        return true;
-                    }
-                }
-
-                return false;
+                return ConditionEvaluators.hasAnotherLinkedUnit(gameEnv, playerId, unit.carduid);
             }
 
             default:
@@ -121,4 +110,3 @@ export class PairingConditionEvaluator {
         }
     }
 }
-

@@ -1,0 +1,307 @@
+{
+  "description": "st04-009_destroyed_draw_if_another_link_unit",
+  "gameId": "st04-009_destroyed_draw_if_another_link_unit",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "ST04-009",
+    "DESTROYED",
+    "hasAnotherLinkedUnit",
+    "draw"
+  ],
+  "notes": [
+    "Setup: Player A has ST04-009 in slot1 and also has another linked Unit+Pilot pair in slot2 (so hasAnotherLinkedUnit is true even if slot1 is linked). Player A deck has at least 1 card remaining.",
+    "Action: Destroy ST04-009 (e.g. battle destruction or destroy effect).",
+    "Expect: ST04-009 DESTROYED trigger resolves and draws 1 (CARD_DRAWN notification for playerId_1) before the card is moved to trash."
+  ],
+  "initialGameEnv": {
+    "phase": "DAMAGE_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_2",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_st04009_destroyed",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_2",
+          "carduid": "ST04-003_draw_seed_0001",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": {
+      "actionType": "attackUnit",
+      "attackingPlayerId": "playerId_2",
+      "defendingPlayerId": "playerId_1",
+      "attackerCarduid": "ST04-006_attacker_0001",
+      "targetPlayerId": "playerId_1",
+      "targetCarduid": "ST04-009_unit_0001",
+      "status": "DAMAGE_PHASE",
+      "fromBurst": false,
+      "openedAt": 1768362880422,
+      "confirmations": {
+        "playerId_1": true,
+        "playerId_2": true
+      }
+    },
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": [
+            "ST04-002_draw_0001"
+          ]
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST04-009_unit_0001",
+              "cardId": "ST04-009",
+              "cardData": {
+                "id": "ST04-009",
+                "name": "Miguel’s Ginn",
+                "cardType": "unit",
+                "color": "Red",
+                "level": 2,
+                "cost": 2,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "ZAFT"
+                ],
+                "link": [
+                  "Miguel Ayman"
+                ],
+                "ap": 3,
+                "hp": 1,
+                "effects": {
+                  "description": [
+                    "【When Paired】If you have another Link Unit in play, draw 1.",
+                    "【Destroyed】If you have another Link Unit in play, draw 1."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "destroyed_draw_if_another_link_unit",
+                      "type": "triggered",
+                      "trigger": "DESTROYED",
+                      "action": "draw",
+                      "conditions": [
+                        {
+                          "type": "hasAnotherLinkedUnit",
+                          "scope": "self"
+                        }
+                      ],
+                      "parameters": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 1,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "ST04-001_unit_0001",
+              "cardId": "ST04-001",
+              "cardData": {
+                "id": "ST04-001",
+                "name": "Aile Strike Gundam",
+                "cardType": "unit",
+                "color": "White",
+                "level": 5,
+                "cost": 4,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Earth Alliance"
+                ],
+                "link": [
+                  "Kira Yamato"
+                ],
+                "ap": 4,
+                "hp": 4,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 4,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            },
+            "pilot": {
+              "carduid": "ST04-010_pilot_0001",
+              "cardId": "ST04-010",
+              "cardData": {
+                "id": "ST04-010",
+                "name": "Kira Yamato",
+                "cardType": "pilot",
+                "color": "White",
+                "level": 4,
+                "cost": 1,
+                "zone": [],
+                "traits": [
+                  "Earth Alliance",
+                  "Coordinator"
+                ],
+                "link": [],
+                "ap": 1,
+                "hp": 1,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isFirstPlay": false
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST04-006_attacker_0001",
+              "cardId": "ST04-006",
+              "cardData": {
+                "id": "ST04-006",
+                "name": "Ginn",
+                "cardType": "unit",
+                "color": "Red",
+                "level": 3,
+                "cost": 2,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "ZAFT"
+                ],
+                "link": [],
+                "ap": 4,
+                "hp": 2,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 2,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
+

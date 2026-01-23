@@ -9,10 +9,16 @@ import { ContinuousEffectManager } from './ContinuousEffectManager';
 import { SLOT_ZONES } from '../config/gameConstants';
 import { GameNotificationManager } from './GameNotificationManager';
 import { ActivationLockManager } from './statusEffects/ActivationLockManager';
+import { AttackRestrictionManager } from './statusEffects/AttackRestrictionManager';
+import { DelayedTriggerManager } from './effects/DelayedTriggerManager';
+import { UnitRestrictionUtils } from './restrictions/UnitRestrictionUtils';
+import { RestrictionNotificationEmitter } from './restrictions/RestrictionNotificationEmitter';
 
 export class TurnLifecycleManager {
     static cleanupEndTurn(gameEnv: GameEnvironment, playerId: string): void {
         DeployTargetManager.cleanupExpiredTemporaryEffects(gameEnv, playerId);
+        DelayedTriggerManager.cleanupEndOfTurn(gameEnv, playerId);
+        AttackRestrictionManager.cleanupEndOfTurn(gameEnv, playerId);
         gameEnv.notificationQueue = [];
     }
 
@@ -57,10 +63,16 @@ export class TurnLifecycleManager {
             playerId
         );
 
+        const restrictedUnitUids: string[] = [];
+
         for (const slotName of SLOT_ZONES) {
             const slot = (player.zones as any)[slotName];
             if (slot?.unit) {
                 const unit = slot.unit;
+                if (UnitRestrictionUtils.cannotBeSetActive(unit as any)) {
+                    restrictedUnitUids.push(unit.carduid);
+                    continue;
+                }
                 if (!preventedUnitUids.has(unit.carduid)) {
                     unit.isRested = false;
                 }
@@ -83,6 +95,15 @@ export class TurnLifecycleManager {
                 },
                 'normal'
             );
+        }
+
+        if (restrictedUnitUids.length > 0) {
+            RestrictionNotificationEmitter.emitSetActiveBlocked(gameEnv, {
+                playerId,
+                carduids: restrictedUnitUids,
+                reason: 'restrict_set_active',
+                source: 'READY_MAIN_PHASE'
+            });
         }
     }
 }

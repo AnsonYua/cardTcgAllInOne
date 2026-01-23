@@ -29,8 +29,29 @@ import { KeywordUtils } from '../utils/KeywordUtils';
 import { EffectExecutor } from './effects/EffectExecutor';
 import { BattleDamagePreventionUtils } from './battle/BattleDamagePreventionUtils';
 import { BattleBaseDamagePreventionUtils } from './battle/BattleBaseDamagePreventionUtils';
+import { ForcedAttackTargetManager } from './battle/ForcedAttackTargetManager';
+import { ContinuousEffectManager } from './ContinuousEffectManager';
 
 export class BattlePhaseManager {
+    private static openBattleAndRefreshContinuous(gameEnv: GameEnvironment, context: BattleContext, label: string): void {
+        gameEnv.setCurrentBattle(context);
+        console.log(`⚔️ Action step opened for ${label}`);
+        try {
+            ContinuousEffectManager.processAllContinuousEffects(gameEnv);
+        } catch (error) {
+            console.error(`❌ Error processing continuous effects after opening ${label}:`, error);
+        }
+    }
+
+    private static clearBattleAndRefreshContinuous(gameEnv: GameEnvironment, reason: string): void {
+        gameEnv.clearCurrentBattle();
+        try {
+            ContinuousEffectManager.processAllContinuousEffects(gameEnv);
+        } catch (error) {
+            console.error(`❌ Error processing continuous effects after closing battle (${reason}):`, error);
+        }
+    }
+
     static initiateAttack(gameEnv: GameEnvironment, event: PlayerActionEvent): ExecutionResult {
         const defendingPlayerId = gameEnv.getOpponentId(event.playerId);
         if (!defendingPlayerId) {
@@ -38,11 +59,30 @@ export class BattlePhaseManager {
             return { success: false, error: 'No opponent found' };
         }
 
-        this.recordAttackDeclaration(gameEnv, event, defendingPlayerId);
+        const forcedTargetResult = ForcedAttackTargetManager.enforceIfNeeded(gameEnv, event, defendingPlayerId);
+        if (!forcedTargetResult.success) {
+            return { success: false, error: forcedTargetResult.error };
+        }
+        if (forcedTargetResult.requiresSelection) {
+            return { success: true, requiresSelection: true };
+        }
 
-        const effectsResult = AttackPhaseEffectManager.processAttackPhaseEffects(gameEnv, event);
-        if (!effectsResult.success) {
-            return { success: false, error: effectsResult.error };
+        const skipAttackDeclaration = event.data?.skipAttackDeclaration === true;
+        const skipAttackPhaseEffects = event.data?.skipAttackPhaseEffects === true;
+
+        if (!skipAttackDeclaration) {
+            this.recordAttackDeclaration(gameEnv, event, defendingPlayerId);
+        }
+
+        if (!skipAttackPhaseEffects) {
+            const effectsResult = AttackPhaseEffectManager.processAttackPhaseEffects(gameEnv, event);
+            if (!effectsResult.success) {
+                return { success: false, error: effectsResult.error };
+            }
+
+            if (effectsResult.requiresSelection) {
+                return { success: true, requiresSelection: true };
+            }
         }
 
         const blockerResult = BlockerChoiceManager.processAttackWithBlockerChoice(
@@ -273,8 +313,7 @@ export class BattlePhaseManager {
             attackNotificationId: this.extractAttackNotificationId(eventData)
         };
 
-        gameEnv.setCurrentBattle(context);
-        console.log('⚔️ Action step opened for unit battle');
+        this.openBattleAndRefreshContinuous(gameEnv, context, 'unit battle');
 
         const autoResolveResult = this.tryAutoResolveBattle(gameEnv);
         if (autoResolveResult) {
@@ -336,8 +375,7 @@ export class BattlePhaseManager {
             attackNotificationId: this.extractAttackNotificationId(eventData)
         };
 
-        gameEnv.setCurrentBattle(context);
-        console.log('⚔️ Action step opened for shield attack');
+        this.openBattleAndRefreshContinuous(gameEnv, context, 'shield attack');
 
         const autoResolveResult = this.tryAutoResolveBattle(gameEnv);
         if (autoResolveResult) {
@@ -365,7 +403,7 @@ export class BattlePhaseManager {
         );
 
         if (!preparation.success) {
-            gameEnv.clearCurrentBattle();
+            this.clearBattleAndRefreshContinuous(gameEnv, 'unit_preparation_failed');
             const failure = preparation as AttackPreparationFailure;
             return {
                 success: false,
@@ -472,7 +510,7 @@ export class BattlePhaseManager {
                 destroyedUnit: targetUnit
             });
             if (!battleDestroyResult.success) {
-                gameEnv.clearCurrentBattle();
+                this.clearBattleAndRefreshContinuous(gameEnv, 'battle_destroy_effect_failed_defender');
                 return { success: false, error: battleDestroyResult.error || 'Battle destroy effect failed' };
             }
         }
@@ -486,7 +524,7 @@ export class BattlePhaseManager {
                 destroyedUnit: attackingUnit
             });
             if (!battleDestroyResult.success) {
-                gameEnv.clearCurrentBattle();
+                this.clearBattleAndRefreshContinuous(gameEnv, 'battle_destroy_effect_failed_attacker');
                 return { success: false, error: battleDestroyResult.error || 'Battle destroy effect failed' };
             }
         }
@@ -518,7 +556,7 @@ export class BattlePhaseManager {
         });
 
         EffectExecutor.cleanupEndOfBattleTemporaryEffects(gameEnv, [attackingUnit.carduid, targetUnit.carduid]);
-        gameEnv.clearCurrentBattle();
+        this.clearBattleAndRefreshContinuous(gameEnv, 'unit_resolved');
         return { success: true };
     }
 
@@ -533,7 +571,7 @@ export class BattlePhaseManager {
         );
 
         if (!preparation.success) {
-            gameEnv.clearCurrentBattle();
+            this.clearBattleAndRefreshContinuous(gameEnv, 'shield_preparation_failed');
             const failure = preparation as AttackPreparationFailure;
             return {
                 success: false,
@@ -547,7 +585,7 @@ export class BattlePhaseManager {
         if (AttackPreparationManager.unitHasAttackRestriction(attackingUnit as UnitZoneCard, 'cannot_attack_player')) {
             const cardName = attackingUnit.cardData?.name || attackingUnit.cardId || 'Attacking unit';
             console.warn(`⚠️ ${cardName} (${attackingUnit.carduid}) cannot attack the player due to restriction.`);
-            gameEnv.clearCurrentBattle();
+            this.clearBattleAndRefreshContinuous(gameEnv, 'shield_attack_restricted');
             return {
                 success: false,
                 error: `${cardName} cannot attack the player due to a restriction`
@@ -652,7 +690,9 @@ export class BattlePhaseManager {
                         }
                     });
                 } else {
-                const shieldCardsToAttack = getShieldCardsToAttack(defender, 1);
+                const attackerHasSuppression = KeywordUtils.hasKeyword(attackingUnit as UnitZoneCard, 'Suppression');
+                const shieldsToAttackCount = attackerHasSuppression ? 2 : 1;
+                const shieldCardsToAttack = getShieldCardsToAttack(defender, shieldsToAttackCount);
                 const shieldAttackEvent = EventFactory.createShieldCardAttackedEvent(
                     defender.id,
                     playerId,
@@ -690,7 +730,7 @@ export class BattlePhaseManager {
 
                 GameEndManager.endGame(gameEnv, attacker.id, 'no_shields_remaining');
             } else {
-                gameEnv.clearCurrentBattle();
+                this.clearBattleAndRefreshContinuous(gameEnv, 'shield_no_shields');
                 return {
                     success: false,
                     error: 'No shields to attack'
@@ -699,7 +739,7 @@ export class BattlePhaseManager {
         }
 
         console.log(`✅ Shield/base attack resolved - Total damage: ${totalAttackPower}`);
-        gameEnv.clearCurrentBattle();
+        this.clearBattleAndRefreshContinuous(gameEnv, 'shield_resolved');
         return { success: true };
     }
 

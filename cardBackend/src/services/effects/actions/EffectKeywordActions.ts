@@ -2,9 +2,9 @@
 
 import { GameEnvironment } from '../../../models/GameEnvironment';
 import { EffectDefinition, TargetReference } from '../../EventQueue/interfaces/GameEvent';
-import { GameNotificationManager } from '../../GameNotificationManager';
 import { TargetCardResolver } from '../../targets/TargetCardResolver';
 import { TemporaryEffectFactory } from '../TemporaryEffectFactory';
+import { KeywordNotifier } from '../KeywordNotifier';
 
 export function applyGrantKeywordEffect(
     gameEnv: GameEnvironment,
@@ -16,6 +16,7 @@ export function applyGrantKeywordEffect(
     const keyword = typeof effect.parameters?.keyword === 'string'
         ? effect.parameters.keyword
         : undefined;
+    const keywordValue = typeof effect.parameters?.value === 'number' ? effect.parameters.value : undefined;
 
     if (!keyword) {
         return { success: false, error: 'grant_keyword requires parameters.keyword' };
@@ -50,15 +51,14 @@ export function applyGrantKeywordEffect(
 
         targetCard.temporaryEffects.push(tempEffect);
 
-        const notificationManager = new GameNotificationManager(gameEnv);
-        notificationManager.addNotificationEvent('KEYWORD_GRANTED', {
+        KeywordNotifier.notifyGranted(gameEnv, {
             playerId: target.playerId,
             sourceCarduid,
             targetCarduid: target.carduid,
             keyword,
-            duration: effect.timing?.duration || 'UNTIL_END_OF_TURN',
-            timestamp: Date.now()
-        }, 'normal');
+            ...(typeof keywordValue === 'number' ? { value: keywordValue } : {}),
+            duration: effect.timing?.duration || 'UNTIL_END_OF_TURN'
+        });
     }
 
     return { success: true };

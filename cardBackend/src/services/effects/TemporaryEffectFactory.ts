@@ -44,9 +44,24 @@ export class TemporaryEffectFactory {
         effect: EffectDefinition,
         keyword: string
     ): TemporaryEffect {
+        const value = typeof effect.parameters?.value === 'number' ? effect.parameters.value : undefined;
         return {
             ...this.createBase(gameEnv, sourcePlayerId, sourceCarduid, effect),
-            grantedKeywords: [keyword]
+            grantedKeywords: [keyword],
+            ...(typeof value === 'number' ? { keywordValues: { [keyword]: value } } : {})
+        };
+    }
+
+    static createGrantedBreach(
+        gameEnv: GameEnvironment,
+        sourcePlayerId: string,
+        sourceCarduid: string,
+        effect: EffectDefinition,
+        breachValue: number
+    ): TemporaryEffect {
+        return {
+            ...this.createBase(gameEnv, sourcePlayerId, sourceCarduid, effect),
+            breachValue
         };
     }
 
@@ -63,6 +78,22 @@ export class TemporaryEffectFactory {
                 from: prevention.from,
                 enemyLevel: prevention.enemyLevel,
                 maxEnemyAp: prevention.maxEnemyAp
+            }
+        };
+    }
+
+    static createEffectDamagePrevention(
+        gameEnv: GameEnvironment,
+        sourcePlayerId: string,
+        sourceCarduid: string,
+        effect: EffectDefinition,
+        prevention: { sourceCardType?: string; sourceController?: string }
+    ): TemporaryEffect {
+        return {
+            ...this.createBase(gameEnv, sourcePlayerId, sourceCarduid, effect),
+            preventEffectDamage: {
+                sourceCardType: prevention.sourceCardType,
+                sourceController: prevention.sourceController
             }
         };
     }

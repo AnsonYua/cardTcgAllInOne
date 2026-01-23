@@ -2,10 +2,12 @@ import { GameEnvironment } from '../models/GameEnvironment';
 import { BaseCard } from '../models/CardSystem';
 import { PlayerCardManager } from './PlayerCardManager';
 import { EffectExecutor } from './effects/EffectExecutor';
+import { DestroyedTriggeredEffectManager } from './effects/DestroyedTriggeredEffectManager';
 
 export class BaseLifecycleManager {
     static destroyBase(gameEnv: GameEnvironment, playerId: string, baseCard: BaseCard): void {
         console.log(`🏰 Base destroyed: ${baseCard.carduid}`);
+        DestroyedTriggeredEffectManager.processDestroyedCard(gameEnv, playerId, baseCard);
         PlayerCardManager.moveCardToTrash(gameEnv, playerId, baseCard.carduid, baseCard.cardId, baseCard.cardData);
         const player = gameEnv.getPlayer(playerId);
         if (player?.zones?.base) {

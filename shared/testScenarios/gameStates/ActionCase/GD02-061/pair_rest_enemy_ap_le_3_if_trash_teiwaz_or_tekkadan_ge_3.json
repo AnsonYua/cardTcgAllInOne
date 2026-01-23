@@ -1,0 +1,419 @@
+{
+  "description": "gd02-061_pair_rest_enemy_ap_le_3_if_trash_teiwaz_or_tekkadan_ge_3",
+  "gameId": "gd02-061_pair_rest_enemy_ap_le_3_if_trash_teiwaz_or_tekkadan_ge_3",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD02-061",
+    "PAIRING_COMPLETE",
+    "pairedPilotColor",
+    "cardsInTrashWithTraitsAny",
+    "rest",
+    "ap_filter"
+  ],
+  "notes": [
+    "Setup: Player A has GD02-061 in slot1. Player A trash has 3+ (Teiwaz)/(Tekkadan) cards. Player B has 3 units: two with AP<=3 and one with AP>3.",
+    "Action: Player A pairs a Purple pilot onto GD02-061 (PAIRING_COMPLETE).",
+    "Expect: A TARGET_CHOICE is created for selecting 1 enemy unit with AP<=3 (multiple valid targets); on resolve, that unit becomes rested and CARD_RESTED is emitted.",
+    "Frontend: drives choice from notificationQueue TARGET_CHOICE (playerId_1), then confirmTargetChoice to resolve."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd02061",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "GD02-061_draw_0001",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "GD02-095_pilot_0001",
+              "cardId": "GD02-095",
+              "cardData": {
+                "id": "GD02-095",
+                "name": "Lafter Frankland",
+                "cardType": "pilot",
+                "color": "Purple",
+                "level": 4,
+                "cost": 1,
+                "zone": [],
+                "traits": [
+                  "Teiwaz"
+                ],
+                "link": [],
+                "ap": 2,
+                "hp": 1,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              }
+            }
+          ],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD02-061_unit_0001",
+              "cardId": "GD02-061",
+              "cardData": {
+                "id": "GD02-061",
+                "name": "Hyakuri",
+                "cardType": "unit",
+                "color": "Purple",
+                "level": 4,
+                "cost": 2,
+                "zone": [
+                  "Space"
+                ],
+                "traits": [
+                  "Teiwaz"
+                ],
+                "link": [
+                  "Teiwaz"
+                ],
+                "ap": 3,
+                "hp": 3,
+                "effects": {
+                  "description": [
+                    "【When Paired･Purple Pilot】If there are 3 or more (Teiwaz)/(Tekkadan) cards in your trash, choose 1 enemy Unit with 3 or less AP. Rest it."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "pair_rest_low_ap_if_trash_traits",
+                      "type": "triggered",
+                      "trigger": "PAIRING_COMPLETE",
+                      "action": "rest",
+                      "conditions": [
+                        {
+                          "type": "pairedPilotColor",
+                          "scope": "source",
+                          "value": "Purple"
+                        },
+                        {
+                          "type": "cardsInTrashWithTraitsAny",
+                          "scope": "self",
+                          "traits": [
+                            "Teiwaz",
+                            "Tekkadan"
+                          ],
+                          "value": ">=3"
+                        }
+                      ],
+                      "target": {
+                        "type": "unit",
+                        "scope": "opponent",
+                        "filters": {
+                          "ap": "<=3"
+                        },
+                        "count": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 3,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [
+            {
+              "carduid": "GD02-054_trash_0001",
+              "cardId": "GD02-054",
+              "cardData": {
+                "id": "GD02-054",
+                "name": "Gundam Barbatos 1st Form",
+                "cardType": "unit",
+                "color": "Purple",
+                "level": 3,
+                "cost": 2,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Tekkadan",
+                  "Gundam Frame"
+                ],
+                "link": [
+                  "Mikazuki Augus"
+                ],
+                "ap": 3,
+                "hp": 2,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              }
+            },
+            {
+              "carduid": "GD02-055_trash_0002",
+              "cardId": "GD02-055",
+              "cardData": {
+                "id": "GD02-055",
+                "name": "Gundam Gusion Rebake",
+                "cardType": "unit",
+                "color": "Purple",
+                "level": 5,
+                "cost": 4,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Tekkadan",
+                  "Gundam Frame"
+                ],
+                "link": [
+                  "Akihiro Altland"
+                ],
+                "ap": 3,
+                "hp": 5,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              }
+            },
+            {
+              "carduid": "GD02-058_trash_0003",
+              "cardId": "GD02-058",
+              "cardData": {
+                "id": "GD02-058",
+                "name": "Ryusei-Go (Graze Custom Ⅱ)",
+                "cardType": "unit",
+                "color": "Purple",
+                "level": 3,
+                "cost": 2,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Tekkadan"
+                ],
+                "link": [
+                  "Tekkadan"
+                ],
+                "ap": 2,
+                "hp": 2,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              }
+            }
+          ],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD02-200_enemy_low_ap_0001",
+              "cardId": "GD02-200",
+              "cardData": {
+                "id": "GD02-200",
+                "name": "Enemy Low AP Placeholder",
+                "cardType": "unit",
+                "color": "Blue",
+                "level": 3,
+                "cost": 2,
+                "zone": [
+                  "Space"
+                ],
+                "traits": [],
+                "link": [],
+                "ap": 3,
+                "hp": 3,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 3,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "GD02-202_enemy_low_ap_0002",
+              "cardId": "GD02-202",
+              "cardData": {
+                "id": "GD02-202",
+                "name": "Enemy Low AP Placeholder 2",
+                "cardType": "unit",
+                "color": "Blue",
+                "level": 2,
+                "cost": 2,
+                "zone": [
+                  "Space"
+                ],
+                "traits": [],
+                "link": [],
+                "ap": 2,
+                "hp": 2,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 2,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot3": {
+            "unit": {
+              "carduid": "GD02-201_enemy_high_ap_0001",
+              "cardId": "GD02-201",
+              "cardData": {
+                "id": "GD02-201",
+                "name": "Enemy High AP Placeholder",
+                "cardType": "unit",
+                "color": "Blue",
+                "level": 4,
+                "cost": 3,
+                "zone": [
+                  "Space"
+                ],
+                "traits": [],
+                "link": [],
+                "ap": 4,
+                "hp": 4,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 4,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

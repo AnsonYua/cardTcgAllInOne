@@ -5,11 +5,10 @@ import { GameEnvironment } from '../../models/GameEnvironment';
 import { EffectDefinition } from '../EventQueue/interfaces/GameEvent';
 import { UnitZoneCard, PilotZoneCard } from '../../models/CardSystem';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
-import { EffectRuleCatalog } from './EffectRuleCatalog';
-import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
-import { ContinuousEffectManager } from '../ContinuousEffectManager';
-import { DeployTargetManager } from '../DeployTargetManager';
 import { EffectExecutor } from './EffectExecutor';
+import { DelayedTriggerManager } from './DelayedTriggerManager';
+import { TriggeredEffectProcessor } from './TriggeredEffectProcessor';
+import { BattleDestroyGlobalEffectManager } from './BattleDestroyGlobalEffectManager';
 
 export interface BattleDestroyContext {
     sourcePlayerId: string;
@@ -34,41 +33,34 @@ export class BattleDestroyEffectManager {
         }
 
         for (const sourceCard of effectSources) {
-            const effects = EffectRuleCatalog.collectEffects(sourceCard.cardData, {
+            const processed = TriggeredEffectProcessor.processForSourceCard(gameEnv, sourcePlayerId, sourceCard as any, {
                 trigger: 'BATTLE_DESTROY',
+                expectedTriggers: ['BATTLE_DESTROY'],
                 fallbackEffectId: 'battle_destroy',
-                expectedTriggers: ['BATTLE_DESTROY']
+                defaultTargetScope: 'self'
             });
 
-            for (const effect of effects) {
-                const normalized = ensureEffectDefaults({ ...effect });
-
-                if (!ContinuousEffectManager.sourceConditionsMet(normalized, sourceCard as any, gameEnv, sourcePlayerId)) {
-                    continue;
-                }
-
-                if (!ContinuousEffectManager.validateEffectConditions(normalized, gameEnv, sourcePlayerId, sourceCard as any)) {
-                    continue;
-                }
-
-                const action = EffectExecutor.getEffectAction(normalized);
-                if (!action) {
-                    continue;
-                }
-
-                const result = EffectExecutor.actionSupportsNoTargets(action)
-                    ? EffectExecutor.applyEffectToTargets(gameEnv, normalized, [], sourcePlayerId, sourceCard.carduid)
-                    : DeployTargetManager.processEffectWithTargetChoice(
-                          gameEnv,
-                          sourcePlayerId,
-                          sourceCard.carduid,
-                          normalized
-                      );
-
-                if (!result.success) {
-                    return { success: false, error: result.error || `Failed to apply ${normalized.effectId}` };
-                }
+            if (!processed.success) {
+                return { success: false, error: processed.error };
             }
+        }
+
+        const globalResult = BattleDestroyGlobalEffectManager.processGlobalBattleDestroyEffects(gameEnv, {
+            sourcePlayerId: context.sourcePlayerId,
+            destroyedPlayerId: context.destroyedPlayerId,
+            sourceUnit: context.sourceUnit,
+            destroyedUnit: context.destroyedUnit
+        });
+        if (!globalResult.success) {
+            return { success: false, error: globalResult.error };
+        }
+
+        const delayedResult = DelayedTriggerManager.handleBattleDestroy(gameEnv, context);
+        if (!delayedResult.success) {
+            return {
+                success: false,
+                error: delayedResult.error || 'Failed to resolve delayed trigger(s) on battle destroy'
+            };
         }
 
         const breachValue = this.getTemporaryBreachValue(sourceUnit);

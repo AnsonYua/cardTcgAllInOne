@@ -20,6 +20,9 @@ import {
 } from '../../interfaces/StandardizedInterfaces';
 import { getCardIdFromUid } from '../../utils/CardUtils';
 import { eventDataValidator } from '../../validators/EventDataValidator';
+import { KeywordUtils } from '../../utils/KeywordUtils';
+import { GameNotificationManager } from '../GameNotificationManager';
+import { SourceStatConditionEvaluator } from '../conditions/SourceStatConditionEvaluator';
 
 interface ExecutionResult {
     success: boolean;
@@ -202,12 +205,9 @@ export class RepairEffectManager implements StandardEffectManager {
      */
     static checkRepairAbilities(gameEnv: GameEnvironment, playerId: string): StateBasedAction[] {
         const actions: StateBasedAction[] = [];
-        
-        console.log(`🔍 [DEBUG] Checking repair abilities for player: ${playerId}`);
-        
+
         const player = gameEnv.players[playerId];
         if (!player || !player.zones) {
-            console.log(`❌ [DEBUG] Player ${playerId} not found or has no zones`);
             return actions;
         }
         
@@ -217,51 +217,114 @@ export class RepairEffectManager implements StandardEffectManager {
             
             if (slotZone?.unit) {
                 const unit = slotZone.unit;
-                console.log(`🔍 [DEBUG] Checking unit in ${slot}: ${unit.carduid} (${unit.cardId})`);
+                const currentDamage = typeof unit.damageReceived === 'number' ? unit.damageReceived : 0;
+                if (currentDamage <= 0) {
+                    continue;
+                }
                 
                 // Extract cardId from carduid using established pattern
                 const cardId = getCardIdFromUid(unit.carduid);
-                console.log(`🔍 [DEBUG] Extracted cardId: ${cardId}`);
                 
                 const cardData = CardDatabaseManager.getCardDetails(cardId);
-                console.log(`🔍 [DEBUG] CardData found:`, cardData ? 'YES' : 'NO');
                 
                 if (cardData?.effects?.rules) {
-                    console.log(`🔍 [DEBUG] Card has ${cardData.effects.rules.length} effect rules`);
-                    
                     // Look for repair abilities
                     cardData.effects.rules.forEach((effect: any, index: number) => {
                         const resolvedAction = resolveEffectActionFromRule(effect);
-                        console.log(`🔍 [DEBUG] Effect ${index}: trigger="${effect.trigger}", action="${resolvedAction}", effectId="${effect.effectId}"`);
                         
                         if (effect.trigger === 'END_OF_TURN' && resolvedAction === 'heal') {
-                            console.log(`🩹 Found repair ability: ${effect.effectId} on ${cardId}`);
+                            if (!RepairEffectManager.areEndOfTurnHealConditionsMet(gameEnv, unit.carduid, effect)) {
+                                return;
+                            }
                             
                             const healAmount = effect.parameters?.value ??  0;
-                            console.log(`🔍 [DEBUG] Heal amount: ${healAmount}`);
-                            
-                            const repairActionData: RepairEffectEventData = {
-                                carduid: unit.carduid,
-                                healAmount
-                            };
+                            if (typeof healAmount !== 'number' || healAmount <= 0) {
+                                return;
+                            }
 
-                            actions.push({
-                                actionId: `repair_${unit.carduid}_${Date.now()}`,
-                                type: EventType.TRIGGER_HEALING,
-                                autoExecute: true,
-                                data: repairActionData
-                            });
+                            const effectLabel = typeof effect.effectId === 'string' && effect.effectId.length > 0
+                                ? effect.effectId
+                                : `rule_${index}`;
+                            actions.push(
+                                RepairEffectManager.createRepairAction(
+                                    `repair_${effectLabel}_${unit.carduid}`,
+                                    unit.carduid,
+                                    healAmount
+                                )
+                            );
+
+                            console.log(`🩹 Queued end-of-turn heal ${healAmount} for ${unit.carduid} (${effectLabel})`);
                         }
                     });
-                } else {
-                    console.log(`🔍 [DEBUG] No effects.rules found for ${cardId}`);
                 }
-            } else {
-                console.log(`🔍 [DEBUG] No unit in ${slot}`);
+
+                const repairValue = KeywordUtils.getKeywordValue(unit, 'Repair');
+                if (typeof repairValue === 'number' && repairValue > 0) {
+                    actions.push(
+                        RepairEffectManager.createRepairAction(
+                            `repair_keyword_${unit.carduid}`,
+                            unit.carduid,
+                            repairValue
+                        )
+                    );
+                    console.log(`🩹 Queued Repair ${repairValue} keyword heal for ${unit.carduid}`);
+                }
             }
         }
-        console.log("adsfadsfasdfadsfsddsf ",JSON.stringify(actions))
         return actions;
+    }
+
+    private static createRepairAction(actionIdPrefix: string, carduid: string, healAmount: number): StateBasedAction {
+        const repairActionData: RepairEffectEventData = {
+            carduid,
+            healAmount
+        };
+
+        return {
+            actionId: `${actionIdPrefix}_${Date.now()}`,
+            type: EventType.TRIGGER_HEALING,
+            autoExecute: true,
+            data: repairActionData
+        };
+    }
+
+    private static areEndOfTurnHealConditionsMet(
+        gameEnv: GameEnvironment,
+        sourceUnitCarduid: string,
+        effectRule: any
+    ): boolean {
+        const conditions = Array.isArray(effectRule?.conditions) ? effectRule.conditions : [];
+        if (conditions.length === 0) {
+            return true;
+        }
+
+        for (const condition of conditions) {
+            if (!condition || typeof condition !== 'object') {
+                continue;
+            }
+
+            const type = typeof (condition as any).type === 'string' ? ((condition as any).type as string) : '';
+            const value = (condition as any).value;
+
+            if (type === 'sourceHP') {
+                if (!SourceStatConditionEvaluator.sourceHpMatches(gameEnv, sourceUnitCarduid, value)) {
+                    return false;
+                }
+                continue;
+            }
+
+            if (type === 'sourceAp' || type === 'sourceAP') {
+                if (!SourceStatConditionEvaluator.sourceApMatches(gameEnv, sourceUnitCarduid, value)) {
+                    return false;
+                }
+                continue;
+            }
+
+            console.warn(`⚠️ Unsupported END_OF_TURN heal condition type: ${type}`);
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -308,11 +371,28 @@ export class RepairEffectManager implements StandardEffectManager {
 
             // Apply healing
             const currentDamage = cardLocation.card.damageReceived || 0;
+            if (currentDamage <= 0) {
+                return { success: true };
+            }
             const healedAmount = Math.min(data.healAmount, currentDamage);
             cardLocation.card.damageReceived = currentDamage - healedAmount;
             
             console.log(`✅ Repaired ${data.carduid}: healed ${healedAmount} damage (remaining: ${cardLocation.card.damageReceived})`);
-            console.log("adsfasdfadsdssdsdffdssdf ",JSON.stringify(gameEnv.players))
+
+            if (healedAmount <= 0) {
+                return { success: true };
+            }
+
+            const notificationManager = new GameNotificationManager(gameEnv);
+            notificationManager.addNotificationEvent('CARD_HEALED', {
+                playerId: cardLocation.playerId,
+                carduid: data.carduid,
+                healAmount: healedAmount,
+                remainingDamage: cardLocation.card.damageReceived || 0,
+                reason: 'repair',
+                timestamp: Date.now()
+            }, 'normal');
+
             return { success: true };
             
         } catch (error) {

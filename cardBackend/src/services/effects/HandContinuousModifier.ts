@@ -81,20 +81,11 @@ export class HandContinuousModifier {
 
         for (const condition of conditions) {
             if (!condition || typeof condition !== 'object') {
-                continue;
+                return false;
             }
 
             const typedCondition = condition as Record<string, unknown>;
-            const type = typeof typedCondition.type === 'string' ? typedCondition.type : '';
-            if (type !== 'unitsInPlayWithFilter') {
-                continue;
-            }
-
-            const ok = ConditionEvaluators.evaluateUnitsInPlayWithFilterCondition(
-                gameEnv,
-                playerId,
-                typedCondition
-            );
+            const ok = ConditionEvaluators.evaluateHandContinuousCondition(gameEnv, playerId, typedCondition);
             if (!ok) {
                 return false;
             }

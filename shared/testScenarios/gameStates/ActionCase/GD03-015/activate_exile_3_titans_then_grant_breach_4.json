@@ -1,0 +1,221 @@
+{
+  "description": "gd03-015_activate_exile_3_titans_then_grant_breach_4",
+  "gameId": "gd03-015_activate_exile_3_titans_then_grant_breach_4",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD03-015",
+    "activateCardAbility",
+    "exileFromTrash",
+    "Titans",
+    "TARGET_CHOICE",
+    "CARDS_EXILED_FROM_TRASH",
+    "grant_breach",
+    "KEYWORD_GRANTED"
+  ],
+  "notes": [
+    "Setup: Player A is in MAIN_PHASE with GD03-015 in slot1 (active). Player A trash has at least 3 (Titans) cards to pay the exileFromTrash cost.",
+    "Action (manual): Player A uses activateCardAbility on GD03-015 (carduid=GD03-015_unit_0001, effectId=activate_effect).",
+    "Expect: Because exileFromTrash cost requires selecting 3 cards, TARGET_CHOICE is enqueued to processingQueue and a TARGET_CHOICE notification is appended to notificationQueue (frontend-driven).",
+    "Action (manual): Player A resolves TARGET_CHOICE selecting exactly 3 (Titans) cards from trash.",
+    "Expect: Selected cards are removed from trashArea and CARDS_EXILED_FROM_TRASH is appended to notificationQueue.",
+    "Expect: Follow-up effect resolves and GD03-015_unit_0001 gains Breach 4 until end of turn; KEYWORD_GRANTED is appended to notificationQueue (keyword=Breach, value=4, duration=UNTIL_END_OF_TURN)."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd03015_seed",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "GD03-000_draw_0015",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD03-015_unit_0001",
+              "cardId": "GD03-015",
+              "cardData": {
+                "id": "GD03-015",
+                "name": "Baund Doc",
+                "cardType": "unit",
+                "color": "Blue",
+                "level": 6,
+                "cost": 5,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Titans"
+                ],
+                "link": [
+                  "Jerid Messa"
+                ],
+                "ap": 4,
+                "hp": 5,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 5,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "GD03-000_shield_0001",
+              "cardId": "GD03-000",
+              "cardData": {
+                "id": "GD03-000",
+                "cardType": "unit"
+              }
+            }
+          ],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd03015_a_0001",
+              "cardId": "energy_basic",
+              "cardData": {
+                "cardType": "energy"
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [
+            {
+              "carduid": "GD03-014_trash_0001",
+              "cardId": "GD03-014",
+              "cardData": {
+                "id": "GD03-014",
+                "cardType": "unit",
+                "traits": [
+                  "Titans"
+                ]
+              }
+            },
+            {
+              "carduid": "GD03-014_trash_0002",
+              "cardId": "GD03-014",
+              "cardData": {
+                "id": "GD03-014",
+                "cardType": "unit",
+                "traits": [
+                  "Titans"
+                ]
+              }
+            },
+            {
+              "carduid": "GD03-014_trash_0003",
+              "cardId": "GD03-014",
+              "cardData": {
+                "id": "GD03-014",
+                "cardType": "unit",
+                "traits": [
+                  "Titans"
+                ]
+              }
+            }
+          ],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

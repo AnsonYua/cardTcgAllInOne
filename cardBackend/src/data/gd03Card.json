@@ -435,26 +435,19 @@
             "effectId": "during_pair_effect",
             "type": "continuous",
             "trigger": "continuous",
-            "action": "sequence",
+            "action": "grant_keyword",
+            "target": {
+              "type": "unit",
+              "scope": "self",
+              "count": 1
+            },
             "parameters": {
-              "text": "This Unit gains <Repair 2>. (At the end of your turn, this Unit recovers the specified number of HP.)",
-              "version": 1,
-              "steps": [
-                {
-                  "action": "grant_keyword",
-                  "timing": {
-                    "duration": "CONTINUOUS"
-                  },
-                  "target": {
-                    "type": "unit",
-                    "scope": "self",
-                    "count": 1
-                  },
-                  "parameters": {
-                    "keyword": "Repair 2"
-                  }
-                }
-              ]
+              "keyword": "Repair",
+              "value": 2
+            },
+            "timing": {
+              "duration": "CONTINUOUS",
+              "endOnSourceDestroyed": true
             },
             "sourceConditions": [
               {
@@ -772,31 +765,27 @@
             "timing": {
               "windows": [
                 "MAIN_PHASE"
-              ]
+              ],
+              "duration": "UNTIL_END_OF_TURN"
             },
             "cost": {
-              "oncePerTurn": true
+              "oncePerTurn": true,
+              "exileFromTrash": {
+                "scope": "self_trash",
+                "traitsAny": [
+                  "Titans"
+                ],
+                "count": 3
+              }
             },
-            "action": "sequence",
+            "action": "grant_breach",
+            "target": {
+              "type": "unit",
+              "scope": "self",
+              "count": 1
+            },
             "parameters": {
-              "text": "Exile 3 (Titans) cards from your trash: This Unit gains <Breach 4> during this turn. (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)",
-              "version": 1,
-              "steps": [
-                {
-                  "action": "grant_keyword",
-                  "timing": {
-                    "duration": "CONTINUOUS"
-                  },
-                  "target": {
-                    "type": "unit",
-                    "scope": "self",
-                    "count": 1
-                  },
-                  "parameters": {
-                    "keyword": "Breach 4"
-                  }
-                }
-              ]
+              "value": 4
             }
           }
         ]

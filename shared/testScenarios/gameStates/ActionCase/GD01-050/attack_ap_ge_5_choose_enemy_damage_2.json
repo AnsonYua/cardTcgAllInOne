@@ -1,0 +1,271 @@
+{
+  "description": "gd01-050_attack_ap_ge_5_choose_enemy_damage_2",
+  "gameId": "gd01-050_attack_ap_ge_5_choose_enemy_damage_2",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD01-050",
+    "ATTACK_PHASE",
+    "sourceAp",
+    "attackTargetCardType",
+    "damage",
+    "TARGET_CHOICE"
+  ],
+  "notes": [
+    "Setup: Player A declares an attackUnit with GD01-050 (LaGOWE) and totalAP>=5 (via modifyAP=3). Player B has 2 units in play so the effect requires a target choice.",
+    "Action (manual): Player A initiates attackUnit targeting Player B slot1 unit.",
+    "Expect: AttackPhaseEffectManager triggers GD01-050 and creates TARGET_CHOICE (processingQueue + notificationQueue).",
+    "Action (manual): Player A resolves TARGET_CHOICE selecting Player B slot2 unit.",
+    "Expect: Selected unit receives 2 damage (CARD_DAMAGED) and attack resumes after the choice event."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd01050",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "GD01-000_draw_0050",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD01-050_attacker_0001",
+              "cardId": "GD01-050",
+              "cardData": {
+                "id": "GD01-050",
+                "name": "LaGOWE",
+                "cardType": "unit",
+                "color": "Red",
+                "level": 3,
+                "cost": 2,
+                "zone": [
+                  "Earth"
+                ],
+                "traits": [
+                  "ZAFT"
+                ],
+                "link": [
+                  "ZAFT"
+                ],
+                "ap": 2,
+                "hp": 3,
+                "effects": {
+                  "description": [
+                    "【Attack】If this Unit has 5 or more AP and it is attacking an enemy Unit, choose 1 enemy Unit. Deal 2 damage to it."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "attack_effect",
+                      "type": "triggered",
+                      "trigger": "ATTACK_PHASE",
+                      "action": "damage",
+                      "conditions": [
+                        {
+                          "type": "sourceAp",
+                          "scope": "source",
+                          "value": ">=5"
+                        },
+                        {
+                          "type": "attackTargetCardType",
+                          "scope": "battle",
+                          "value": "unit"
+                        }
+                      ],
+                      "target": {
+                        "type": "unit",
+                        "scope": "opponent",
+                        "count": 1
+                      },
+                      "parameters": {
+                        "value": 2
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 3,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 3,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": true,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD01-052_defender_0001",
+              "cardId": "GD01-052",
+              "cardData": {
+                "id": "GD01-052",
+                "name": "Geara Zulu (Guards Type)",
+                "cardType": "unit",
+                "color": "Red",
+                "level": 4,
+                "cost": 3,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Neo Zeon"
+                ],
+                "link": [],
+                "ap": 2,
+                "hp": 3,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 3,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "GD01-022_defender_0002",
+              "cardId": "GD01-022",
+              "cardData": {
+                "id": "GD01-022",
+                "name": "Cancer",
+                "cardType": "unit",
+                "color": "Blue",
+                "level": 2,
+                "cost": 2,
+                "zone": [
+                  "Earth"
+                ],
+                "traits": [
+                  "OZ"
+                ],
+                "link": [],
+                "ap": 2,
+                "hp": 3,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 3,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
+
