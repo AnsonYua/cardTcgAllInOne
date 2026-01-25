@@ -2,6 +2,8 @@ import { GameEnvironment } from '../../models/GameEnvironment';
 import { UnitZoneCard, PilotZoneCard } from '../../models/CardSystem';
 import { TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { EffectNotifier } from './EffectNotifier';
+import { GameNotificationManager } from '../GameNotificationManager';
+import { extractNumericValue } from './actions/EffectActionUtils';
 
 export class EffectStatApplier {
     static applyEffectToResolvedCard(
@@ -17,7 +19,7 @@ export class EffectStatApplier {
                 return this.applyModifyStat(gameEnv, targetCard, action, parameters, target);
 
             case 'heal':
-                return this.applyHealToCard(targetCard, parameters, target);
+                return this.applyHealToCard(gameEnv, targetCard, parameters, target);
 
             case 'damage':
                 return this.applyDamageToCard(gameEnv, targetCard, parameters, target);
@@ -38,7 +40,7 @@ export class EffectStatApplier {
         parameters: Record<string, unknown> | undefined,
         target: TargetReference
     ): { success: boolean; error?: string } {
-        const value = this.extractNumericValue(parameters);
+        const value = extractNumericValue(parameters);
         if (value === undefined) {
             return {
                 success: false,
@@ -63,11 +65,12 @@ export class EffectStatApplier {
     }
 
     static applyHealToCard(
+        gameEnv: GameEnvironment,
         targetCard: UnitZoneCard | PilotZoneCard,
         parameters: Record<string, unknown> | undefined,
         target: TargetReference
     ): { success: boolean; error?: string } {
-        const value = this.extractNumericValue(parameters);
+        const value = extractNumericValue(parameters);
         if (value === undefined) {
             return {
                 success: false,
@@ -92,8 +95,25 @@ export class EffectStatApplier {
         (targetCard as any).damageReceived = newDamage;
 
         const resultingHP = Math.max(0, maxHP - newDamage);
+        const healed = Math.max(0, previousDamage - newDamage);
 
         console.log(`  🩹 ${target.carduid}: damage ${previousDamage} → ${newDamage} (HP ${resultingHP}/${maxHP})`);
+
+        if (healed > 0) {
+            const notificationManager = new GameNotificationManager(gameEnv);
+            notificationManager.addNotificationEvent(
+                'CARD_HEALED',
+                {
+                    playerId: target.playerId,
+                    carduid: target.carduid,
+                    healAmount: healed,
+                    remainingDamage: newDamage,
+                    reason: 'heal',
+                    timestamp: Date.now()
+                },
+                'normal'
+            );
+        }
         return { success: true };
     }
 
@@ -103,7 +123,7 @@ export class EffectStatApplier {
         parameters: Record<string, unknown> | undefined,
         target: TargetReference
     ): { success: boolean; error?: string } {
-        const value = this.extractNumericValue(parameters);
+        const value = extractNumericValue(parameters);
         if (value === undefined) {
             return {
                 success: false,
@@ -137,26 +157,5 @@ export class EffectStatApplier {
             maxHP
         );
         return { success: true };
-    }
-
-    private static extractNumericValue(parameters?: Record<string, unknown>): number | undefined {
-        if (!parameters) {
-            return undefined;
-        }
-
-        const rawValue =
-            parameters['value'] ??
-            parameters['amount'] ??
-            parameters['modifier'];
-        if (typeof rawValue === 'number') {
-            return rawValue;
-        }
-
-        if (typeof rawValue === 'string') {
-            const parsed = Number(rawValue);
-            return Number.isNaN(parsed) ? undefined : parsed;
-        }
-
-        return undefined;
     }
 }

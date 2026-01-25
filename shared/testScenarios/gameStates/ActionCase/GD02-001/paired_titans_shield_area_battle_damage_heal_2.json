@@ -1,0 +1,239 @@
+{
+  "description": "gd02-001_paired_titans_shield_area_battle_damage_heal_2",
+  "gameId": "gd02-001_paired_titans_shield_area_battle_damage_heal_2",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD02-001",
+    "SHIELD_AREA_CARD_DAMAGED",
+    "pairedPilotTrait",
+    "Cyber-Newtype",
+    "Titans",
+    "heal"
+  ],
+  "notes": [
+    "Setup: Player A has GD02-001 (Psycho Gundam) paired with a (Cyber-Newtype) pilot (GD02-085) in slot1. Player A also has another (Titans) unit in slot2.",
+    "Action (manual): Player A's (Titans) unit deals battle damage to Player B's shield (or base).",
+    "Expect: TRIGGER_SHIELD_AREA_CARD_DAMAGED is enqueued + SHIELD_AREA_CARD_DAMAGED notification emitted; GD02-001 trigger resolves and heals 2 (CARD_HEALED notification) if damaged.",
+    "Also ensure Breach 3 (keyword) still works via BATTLE_DESTROY → damageShield."
+  ],
+  "initialGameEnv": {
+    "phase": "ATTACK_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 3,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd02001_seed",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "GD02-000_draw_seed_0001",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD02-001_unit_0001",
+              "cardId": "GD02-001",
+              "cardData": {
+                "id": "GD02-001",
+                "cardType": "unit",
+                "traits": [
+                  "Titans"
+                ],
+                "ap": 4,
+                "hp": 5,
+                "effects": {
+                  "rules": [
+                    {
+                      "effectId": "breach_3",
+                      "type": "keyword",
+                      "trigger": "BATTLE_DESTROY",
+                      "target": {
+                        "type": "card",
+                        "scope": "opponent_shield",
+                        "count": 1
+                      },
+                      "action": "damageShield",
+                      "parameters": {
+                        "value": 3
+                      }
+                    },
+                    {
+                      "effectId": "paired_titans_shield_damage_heal_2",
+                      "type": "triggered",
+                      "trigger": "SHIELD_AREA_CARD_DAMAGED",
+                      "sourceConditions": [
+                        {
+                          "type": "paired"
+                        }
+                      ],
+                      "conditions": [
+                        {
+                          "type": "pairedPilotTrait",
+                          "scope": "source",
+                          "value": "Cyber-Newtype"
+                        },
+                        {
+                          "type": "shieldAreaCardDamagedByBattleDamage",
+                          "scope": "opponent",
+                          "sourceUnitScope": "self",
+                          "sourceUnitFilters": {
+                            "traits": [
+                              "Titans"
+                            ]
+                          }
+                        }
+                      ],
+                      "target": {
+                        "type": "unit",
+                        "scope": "self",
+                        "count": 1
+                      },
+                      "action": "heal",
+                      "parameters": {
+                        "value": 2
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isFirstPlay": false,
+              "playedThisTurn": false,
+              "damageReceived": 2
+            },
+            "pilot": {
+              "carduid": "GD02-085_pilot_0001",
+              "cardId": "GD02-085",
+              "cardData": {
+                "id": "GD02-085",
+                "cardType": "pilot",
+                "traits": [
+                  "Titans",
+                  "Cyber-Newtype"
+                ]
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "GD02-007_titans_attacker_0001",
+              "cardId": "GD02-007",
+              "cardData": {
+                "id": "GD02-007",
+                "cardType": "unit",
+                "traits": [
+                  "Titans"
+                ],
+                "ap": 3,
+                "hp": 4
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isFirstPlay": false,
+              "playedThisTurn": false,
+              "damageReceived": 0
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "GD02-999_shield_0001",
+              "cardId": "GD02-999",
+              "cardData": {
+                "id": "GD02-999",
+                "cardType": "unit"
+              }
+            }
+          ],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
+

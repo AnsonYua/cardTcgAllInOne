@@ -212,6 +212,13 @@ export class ContinuousEffectManager {
                 return ConditionEvaluators.pairedPilotColor(gameEnv, sourceCarduid, typedCondition.value);
             }
 
+            case 'pairedPilotTrait': {
+                const sourceCarduid = typeof (sourceCard as any)?.carduid === 'string'
+                    ? (sourceCard as any).carduid
+                    : '';
+                return ConditionEvaluators.pairedPilotTrait(gameEnv, sourceCarduid, typedCondition.value);
+            }
+
             case 'pairedUnitColor': {
                 const sourceCarduid = typeof (sourceCard as any)?.carduid === 'string'
                     ? (sourceCard as any).carduid

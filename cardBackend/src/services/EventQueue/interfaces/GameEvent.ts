@@ -351,6 +351,31 @@ export interface EffectDrawTriggeredEvent extends BaseGameEvent<EffectDrawTrigge
     type: EventType.TRIGGER_EFFECT_DRAW;
 }
 
+export interface ExResourcePlacedTriggeredEventData {
+    placedPlayerId: string;
+    placedCarduids: string[];
+    sourceCarduid?: string;
+    reason?: string;
+}
+
+export interface ExResourcePlacedTriggeredEvent extends BaseGameEvent<ExResourcePlacedTriggeredEventData> {
+    type: EventType.TRIGGER_EX_RESOURCE_PLACED;
+}
+
+export interface ShieldAreaCardDamagedTriggeredEventData {
+    attackingPlayerId: string;
+    attackerSlot: string;
+    defendingPlayerId: string;
+    defenseArea: 'shield' | 'base';
+    damagedCarduid?: string;
+    damageSource: 'battle';
+    sourceCarduid?: string;
+}
+
+export interface ShieldAreaCardDamagedTriggeredEvent extends BaseGameEvent<ShieldAreaCardDamagedTriggeredEventData> {
+    type: EventType.TRIGGER_SHIELD_AREA_CARD_DAMAGED;
+}
+
 // ============ COMBAT EVENTS ============
 
 export interface AttackDeclaredEvent extends BaseGameEvent {
@@ -544,6 +569,8 @@ export type GameEvent =
     | RepairEffectEvent
     | EndTurnTriggeredEffectEvent
     | EffectDrawTriggeredEvent
+    | ExResourcePlacedTriggeredEvent
+    | ShieldAreaCardDamagedTriggeredEvent
     | PairingEffectEvent
     | PowerBoostEvent
     | ConfirmRedrawEvent

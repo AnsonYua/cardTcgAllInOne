@@ -18,6 +18,9 @@ import { isPlayOrActivatedEffect } from '../utils/EffectTypeRouter';
 import { EffectExecutor } from './effects/EffectExecutor';
 import { ChoiceNotificationEmitter } from './notifications/ChoiceNotificationEmitter';
 import { BurstChoiceService } from './effects/BurstChoiceService';
+import { EffectTimingWindowUtils } from '../utils/EffectTimingWindowUtils';
+import { DefenseAreaBattleDamageTriggeredEffectManager } from './effects/DefenseAreaBattleDamageTriggeredEffectManager';
+import { ShieldAreaCardDamagedTriggerDispatcher } from './effects/ShieldAreaCardDamagedTriggerDispatcher';
 
 export interface BurstEffectSummary {
     effectId: string;
@@ -33,7 +36,7 @@ export class BurstEffectManager {
         console.log(`🛡️ Executing SHIELD_CARD_ATTACKED event: ${event.id}`);
 
         try {
-            const { defendingPlayerId, shieldCards } = event.data;
+            const { defendingPlayerId, shieldCards, attackingPlayerId, attackerSlot } = event.data;
             const defender = gameEnv.getPlayer(defendingPlayerId);
 
             if (!defender) {
@@ -63,7 +66,13 @@ export class BurstEffectManager {
                         displayName: cardData.name || shieldCardId,
                         ownerPlayerId: defendingPlayerId,
                         playerId: defendingPlayerId,
-                        sourceZone: 'shieldArea'
+                        sourceZone: 'shieldArea',
+                        attackContext: attackingPlayerId && attackerSlot
+                            ? {
+                                attackingPlayerId,
+                                attackerSlot
+                            }
+                            : undefined
                     };
 
                     BurstChoiceService.enqueueBurstChoice(gameEnv, defendingPlayerId, formattedTarget);
@@ -81,6 +90,25 @@ export class BurstEffectManager {
                             shieldCardId,
                             cardDataForTrash
                         );
+
+                        if (attackingPlayerId && attackerSlot) {
+                            const triggerResult = DefenseAreaBattleDamageTriggeredEffectManager.handleShieldCardDestroyed(gameEnv, {
+                                attackingPlayerId,
+                                attackerSlot
+                            });
+                            if (!triggerResult.success) {
+                                return { success: false, error: triggerResult.error || 'Failed to process DEFENSE_AREA_BATTLE_DAMAGE triggers' };
+                            }
+
+                            ShieldAreaCardDamagedTriggerDispatcher.dispatch({
+                                gameEnv,
+                                attackingPlayerId,
+                                attackerSlot,
+                                defendingPlayerId,
+                                defenseArea: 'shield',
+                                damagedCarduid: shieldCard.carduid
+                            });
+                        }
                     } else {
                         console.error(`❌ Failed to remove card ${shieldCard.carduid} from shield before trashing`);
                     }
@@ -124,6 +152,7 @@ export class BurstEffectManager {
                 BurstChoiceService.restoreBurstCurrentPlayer(gameEnv, event);
                 if (declineResult.success) {
                     ChoiceNotificationEmitter.emitBurstChoiceResolved(gameEnv, event, 'DECLINE');
+                    this.maybeTriggerDefenseAreaBattleDamageFromBurstTarget(gameEnv, target);
                 }
                 return declineResult;
             }
@@ -155,6 +184,7 @@ export class BurstEffectManager {
                 console.log(`✅ Burst effect ${burstEffect.type} executed successfully`);
                 BurstChoiceService.restoreBurstCurrentPlayer(gameEnv, event);
                 ChoiceNotificationEmitter.emitBurstChoiceResolved(gameEnv, event, 'ACTIVATE');
+                this.maybeTriggerDefenseAreaBattleDamageFromBurstTarget(gameEnv, target);
                 return { success: true };
             }
 
@@ -283,11 +313,7 @@ export class BurstEffectManager {
                 return false;
             }
 
-            const windows = Array.isArray(timingRecord.windows)
-                ? timingRecord.windows.map(entry => entry.toUpperCase())
-                : [];
-
-            if (windows.includes('MAIN_PHASE')) {
+            if (EffectTimingWindowUtils.includesWindow(effect, 'MAIN_PHASE')) {
                 return true;
             }
 
@@ -467,5 +493,29 @@ export class BurstEffectManager {
     ): boolean {
         const result = EffectExecutor.removeCardFromShield(gameEnv, playerId, carduid);
         return result.success;
+    }
+
+    private static maybeTriggerDefenseAreaBattleDamageFromBurstTarget(gameEnv: GameEnvironment, target: any): void {
+        const context = target?.attackContext;
+        if (!context || typeof context.attackingPlayerId !== 'string' || typeof context.attackerSlot !== 'string') {
+            return;
+        }
+
+        const triggerResult = DefenseAreaBattleDamageTriggeredEffectManager.handleShieldCardDestroyed(gameEnv, {
+            attackingPlayerId: context.attackingPlayerId,
+            attackerSlot: context.attackerSlot
+        });
+        if (!triggerResult.success) {
+            console.error(triggerResult.error || 'Failed to process DEFENSE_AREA_BATTLE_DAMAGE triggers');
+        }
+
+        ShieldAreaCardDamagedTriggerDispatcher.dispatch({
+            gameEnv,
+            attackingPlayerId: context.attackingPlayerId,
+            attackerSlot: context.attackerSlot,
+            defendingPlayerId: typeof target?.ownerPlayerId === 'string' ? target.ownerPlayerId : '',
+            defenseArea: 'shield',
+            damagedCarduid: typeof target?.carduid === 'string' ? target.carduid : undefined
+        });
     }
 }

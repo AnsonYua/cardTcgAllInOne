@@ -59,8 +59,8 @@
       "playerId_1": {
         "id": "playerId_1",
         "name": "Player 1",
-        "deck": {
-          "hand": [
+      "deck": {
+        "hand": [
             {
               "carduid": "ST06-009_action_0001",
               "cardId": "ST06-009",
@@ -86,13 +86,11 @@
               }
             }
           ],
-          "handUids": [
-            "ST06-009_action_0001"
-          ],
-          "mainDeck": [
-            "ST06-009_draw_0001"
-          ]
-        },
+        "handUids": [
+          "ST06-009_action_0001"
+        ],
+        "mainDeck": []
+      },
         "confirmIsRedraw": false,
         "isRedraw": false,
         "playerPoint": 0,
@@ -182,19 +180,52 @@
           "slot6": {},
           "base": [],
           "shieldArea": [],
-          "energyArea": [
-            {
-              "carduid": "energy_basic_st06001_a_0001",
-              "cardId": "energy_basic",
-              "cardData": {
-                "cardType": "energy"
-              },
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "isExtraEnergy": false
-            }
-          ],
+      "energyArea": [
+        {
+          "carduid": "energy_basic_st06001_a_0001",
+          "cardId": "energy_basic",
+          "cardData": {
+            "cardType": "energy"
+          },
+          "placedAt": 0,
+          "placedBy": "playerId_1",
+          "isRested": false,
+          "isExtraEnergy": false
+        },
+        {
+          "carduid": "energy_basic_st06001_a_0002",
+          "cardId": "energy_basic",
+          "cardData": {
+            "cardType": "energy"
+          },
+          "placedAt": 0,
+          "placedBy": "playerId_1",
+          "isRested": false,
+          "isExtraEnergy": false
+        },
+        {
+          "carduid": "energy_basic_st06001_a_0003",
+          "cardId": "energy_basic",
+          "cardData": {
+            "cardType": "energy"
+          },
+          "placedAt": 0,
+          "placedBy": "playerId_1",
+          "isRested": false,
+          "isExtraEnergy": false
+        },
+        {
+          "carduid": "energy_basic_st06001_a_0004",
+          "cardId": "energy_basic",
+          "cardData": {
+            "cardType": "energy"
+          },
+          "placedAt": 0,
+          "placedBy": "playerId_1",
+          "isRested": false,
+          "isExtraEnergy": false
+        }
+      ],
           "trashArea": [],
           "repairAbilitiesCheckedThisCycle": false
         }

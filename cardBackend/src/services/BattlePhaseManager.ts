@@ -31,6 +31,9 @@ import { BattleDamagePreventionUtils } from './battle/BattleDamagePreventionUtil
 import { BattleBaseDamagePreventionUtils } from './battle/BattleBaseDamagePreventionUtils';
 import { ForcedAttackTargetManager } from './battle/ForcedAttackTargetManager';
 import { ContinuousEffectManager } from './ContinuousEffectManager';
+import { AttackResumeScheduler } from './battle/AttackResumeScheduler';
+import { DefenseAreaBattleDamageTriggeredEffectManager } from './effects/DefenseAreaBattleDamageTriggeredEffectManager';
+import { ShieldAreaCardDamagedTriggerDispatcher } from './effects/ShieldAreaCardDamagedTriggerDispatcher';
 
 export class BattlePhaseManager {
     private static openBattleAndRefreshContinuous(gameEnv: GameEnvironment, context: BattleContext, label: string): void {
@@ -81,6 +84,14 @@ export class BattlePhaseManager {
             }
 
             if (effectsResult.requiresSelection) {
+                return { success: true, requiresSelection: true };
+            }
+
+            if (gameEnv.needsPlayerInput()) {
+                const choiceEvent = gameEnv.getCurrentPlayerChoice();
+                if (choiceEvent?.id) {
+                    AttackResumeScheduler.enqueueResumeAttackAfterChoice(gameEnv, event, choiceEvent.id);
+                }
                 return { success: true, requiresSelection: true };
             }
         }
@@ -555,7 +566,7 @@ export class BattlePhaseManager {
             }
         });
 
-        EffectExecutor.cleanupEndOfBattleTemporaryEffects(gameEnv, [attackingUnit.carduid, targetUnit.carduid]);
+        EffectExecutor.cleanupEndOfBattleTemporaryEffects(gameEnv, SlotZoneUtils.getAllUnitAndPilotCarduids(gameEnv));
         this.clearBattleAndRefreshContinuous(gameEnv, 'unit_resolved');
         return { success: true };
     }
@@ -662,6 +673,26 @@ export class BattlePhaseManager {
             console.log(
                 `🏰 Base damage applied: ${currentDamage} → ${newDamage} (remaining HP: ${remainingHP}${baseDestroyed ? ' - DESTROYED' : ''}${baseDamagePrevented ? ' - PREVENTED' : ''})`
             );
+
+            if (appliedDamage > 0 && !baseDamagePrevented) {
+                const triggerResult = DefenseAreaBattleDamageTriggeredEffectManager.handleBaseDamaged(gameEnv, {
+                    attackingPlayerId: playerId,
+                    attackerSlot
+                });
+                if (!triggerResult.success) {
+                    this.clearBattleAndRefreshContinuous(gameEnv, 'base_damage_trigger_failed');
+                    return { success: false, error: triggerResult.error || 'Failed to process DEFENSE_AREA_BATTLE_DAMAGE triggers' };
+                }
+
+                ShieldAreaCardDamagedTriggerDispatcher.dispatch({
+                    gameEnv,
+                    attackingPlayerId: playerId,
+                    attackerSlot,
+                    defendingPlayerId: defender.id,
+                    defenseArea: 'base',
+                    damagedCarduid: baseCard.carduid
+                });
+            }
 
             emitBattleResolutionNotification(gameEnv, context, {
                 attacker: attackerSnapshot,

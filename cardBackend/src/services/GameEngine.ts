@@ -4,7 +4,7 @@
 import { GameEvent, AcknowledgeEventsEvent, PlayCardEvent,
      DeployEffectEvent, TargetChoiceEvent, PairingEffectEvent, ShieldCardAttackedEvent,
      ConfirmRedrawEvent, ChooseFirstPlayerEvent, GameplayBeginsEvent, ErrorOccurredEvent, BurstEffectChoiceEvent,
-     StartGameEvent, JoinGameEvent, NextPlayerTurnEvent, EndTurnEvent, PlayerActionEvent, RepairEffectEvent, BlockerChoiceEvent, ActionStepPostPlayEvent, TokenChoiceEvent, EndTurnTriggeredEffectEvent, OptionChoiceEvent, EffectDrawTriggeredEvent } from './EventQueue/interfaces/GameEvent';
+     StartGameEvent, JoinGameEvent, NextPlayerTurnEvent, EndTurnEvent, PlayerActionEvent, RepairEffectEvent, BlockerChoiceEvent, ActionStepPostPlayEvent, TokenChoiceEvent, EndTurnTriggeredEffectEvent, OptionChoiceEvent, EffectDrawTriggeredEvent, ExResourcePlacedTriggeredEvent, ShieldAreaCardDamagedTriggeredEvent } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { EventType } from '../models/GameEnums';
 import { GameNotificationManager } from './GameNotificationManager';
@@ -24,6 +24,8 @@ import { TokenChoiceManager } from './effects/TokenChoiceManager';
 import { EndTurnTriggeredEffectManager } from './effects/EndTurnTriggeredEffectManager';
 import { OptionChoiceManager } from './effects/OptionChoiceManager';
 import { EffectDrawTriggeredEffectManager } from './effects/EffectDrawTriggeredEffectManager';
+import { ExResourcePlacedTriggeredEffectManager } from './effects/ExResourcePlacedTriggeredEffectManager';
+import { ShieldAreaCardDamagedTriggeredEffectManager } from './effects/ShieldAreaCardDamagedTriggeredEffectManager';
 
 export class GameEngine {
     // ============ MAIN EXECUTION INTERFACE ============
@@ -111,6 +113,12 @@ export class GameEngine {
 
                 case EventType.TRIGGER_EFFECT_DRAW:
                     return EffectDrawTriggeredEffectManager.executeEffectDrawTriggeredEvent(event as EffectDrawTriggeredEvent, gameEnv);
+
+                case EventType.TRIGGER_EX_RESOURCE_PLACED:
+                    return ExResourcePlacedTriggeredEffectManager.executeExResourcePlacedTriggeredEvent(event as ExResourcePlacedTriggeredEvent, gameEnv);
+
+                case EventType.TRIGGER_SHIELD_AREA_CARD_DAMAGED:
+                    return ShieldAreaCardDamagedTriggeredEffectManager.executeShieldAreaCardDamagedTriggeredEvent(event as ShieldAreaCardDamagedTriggeredEvent, gameEnv);
 
                 default:
                     console.log(`🎯 Processing ${event.type} event - delegating to existing game logic`);

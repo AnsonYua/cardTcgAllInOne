@@ -9,6 +9,7 @@ import { EffectRuleCatalog } from './EffectRuleCatalog';
 import { EffectExecutor } from './EffectExecutor';
 import { ContinuousEffectManager } from '../ContinuousEffectManager';
 import { DeployTargetManager } from '../DeployTargetManager';
+import { EffectUsageTracker } from './EffectUsageTracker';
 
 type SourceCard = UnitZoneCard | PilotZoneCard | BaseCard;
 
@@ -22,6 +23,7 @@ export class TriggeredEffectProcessor {
             expectedTriggers: string[];
             fallbackEffectId: string;
             defaultTargetScope?: string;
+            preFilter?: (rawRule: Record<string, unknown>) => boolean;
             cardPlayNotificationId?: string;
             includePairedMetadata?: {
                 pairedSlot: string;
@@ -35,11 +37,25 @@ export class TriggeredEffectProcessor {
             expectedTriggers: config.expectedTriggers,
             requireAction: true,
             defaultTargetScope: config.defaultTargetScope || 'self',
-            includePairedMetadata: config.includePairedMetadata
+            includePairedMetadata: config.includePairedMetadata,
+            preFilter: config.preFilter
         });
 
         for (const effectRule of collected) {
             const normalized = ensureEffectDefaults({ ...effectRule }) as EffectDefinition;
+            const restrictions = Array.isArray((normalized as any).restrictions)
+                ? ((normalized as any).restrictions as unknown[]).filter((value): value is string => typeof value === 'string')
+                : [];
+            const oncePerTurn = restrictions.includes('once_per_turn') || (normalized.cost && (normalized.cost as any).oncePerTurn === true);
+            const usageKey = oncePerTurn
+                ? EffectUsageTracker.getUsageKey(normalized, config.fallbackEffectId || config.trigger)
+                : null;
+
+            if (oncePerTurn && usageKey) {
+                if (!EffectUsageTracker.canUseOncePerTurn(sourceCard as any, usageKey, gameEnv.currentTurn)) {
+                    continue;
+                }
+            }
 
             if (!ContinuousEffectManager.sourceConditionsMet(normalized, sourceCard as any, gameEnv, sourcePlayerId)) {
                 continue;
@@ -66,6 +82,10 @@ export class TriggeredEffectProcessor {
 
             if (!result.success) {
                 return { success: false, error: result.error || `Failed to apply triggered effect ${normalized.effectId}` };
+            }
+
+            if (oncePerTurn && usageKey) {
+                EffectUsageTracker.markUsedThisTurn(sourceCard as any, usageKey, gameEnv.currentTurn);
             }
 
             if ((result as any).requiresSelection) {

@@ -8,6 +8,10 @@ import {
     type DeployEffectEventData,
     type EffectDrawTriggeredEvent,
     type EffectDrawTriggeredEventData,
+    type ExResourcePlacedTriggeredEvent,
+    type ExResourcePlacedTriggeredEventData,
+    type ShieldAreaCardDamagedTriggeredEvent,
+    type ShieldAreaCardDamagedTriggeredEventData,
     type EffectDefinition,
     type PairingEffectDefinition,
     type PairingEffectEvent,
@@ -72,6 +76,36 @@ export const createEffectDrawTriggeredEvent = (
     return {
         id: nextCounterEventId('effect_draw'),
         type: EventType.TRIGGER_EFFECT_DRAW,
+        status: EventStatus.DECLARED,
+        priority: EventPriority.HIGH,
+        playerId,
+        timestamp: Date.now(),
+        data
+    };
+};
+
+export const createExResourcePlacedTriggeredEvent = (
+    playerId: string,
+    data: ExResourcePlacedTriggeredEventData
+): ExResourcePlacedTriggeredEvent => {
+    return {
+        id: nextCounterEventId('ex_resource'),
+        type: EventType.TRIGGER_EX_RESOURCE_PLACED,
+        status: EventStatus.DECLARED,
+        priority: EventPriority.HIGH,
+        playerId,
+        timestamp: Date.now(),
+        data
+    };
+};
+
+export const createShieldAreaCardDamagedTriggeredEvent = (
+    playerId: string,
+    data: ShieldAreaCardDamagedTriggeredEventData
+): ShieldAreaCardDamagedTriggeredEvent => {
+    return {
+        id: nextCounterEventId('shield_area_damaged'),
+        type: EventType.TRIGGER_SHIELD_AREA_CARD_DAMAGED,
         status: EventStatus.DECLARED,
         priority: EventPriority.HIGH,
         playerId,

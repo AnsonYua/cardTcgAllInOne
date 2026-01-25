@@ -2,6 +2,7 @@
     "category": "ActionCase",
     "description": "st07-001_end_of_turn_set_active_resource_if_cb_trash_ge_7",
     "gameId": "st07-001_end_of_turn_set_active_resource_if_cb_trash_ge_7",
+    "testType": "action",
     "initialGameEnv": {
         "currentBattle": null,
         "currentPlayer": "playerId_1",
@@ -273,4 +274,3 @@
         "Expect: Selected energy card isRested becomes false and a CARD_SET_ACTIVE notification is emitted."
     ]
 }
-

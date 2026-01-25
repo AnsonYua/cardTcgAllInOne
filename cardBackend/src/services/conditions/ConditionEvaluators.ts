@@ -215,6 +215,19 @@ export class ConditionEvaluators {
         return PairedSlotConditionEvaluator.pairedPilotColor(gameEnv, sourceCarduid, expected);
     }
 
+    static pairedPilotTrait(
+        gameEnv: GameEnvironment,
+        sourceCarduid: string,
+        value: unknown
+    ): boolean {
+        const expected = typeof value === 'string' ? value : '';
+        if (!expected || !sourceCarduid) {
+            return false;
+        }
+
+        return PairedSlotConditionEvaluator.pairedPilotTrait(gameEnv, sourceCarduid, expected);
+    }
+
     static pairedUnitColor(
         gameEnv: GameEnvironment,
         sourceCarduid: string,

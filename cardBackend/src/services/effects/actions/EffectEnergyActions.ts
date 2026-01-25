@@ -3,6 +3,7 @@ import { EffectDefinition } from '../../EventQueue/interfaces/GameEvent';
 import { EnergyManager } from '../../EnergyManager';
 import { extractNumericValue } from './EffectActionUtils';
 import { GameNotificationManager } from '../../GameNotificationManager';
+import { ExResourcePlacedTriggerDispatcher } from '../ExResourcePlacedTriggerDispatcher';
 
 export function applyAddExtraEnergyEffect(
     gameEnv: GameEnvironment,
@@ -56,6 +57,14 @@ export function applyAddExtraEnergyEffect(
             },
             'normal'
         );
+
+        ExResourcePlacedTriggerDispatcher.dispatchIfNeeded({
+            gameEnv,
+            playerId: sourcePlayerId,
+            placedCarduids: addedCarduids,
+            sourceCarduid,
+            reason: 'addExtraEnergy'
+        });
     }
 
     return { success: true };

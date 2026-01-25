@@ -18,6 +18,7 @@ type UnitDeployParams = {
     cardData: any;
     sourceCarduid?: string;
     fromZone?: string;
+    isRested?: boolean;
     notificationType: string;
     notificationExtra?: Record<string, unknown>;
 };
@@ -48,6 +49,9 @@ export class UnitDeployService {
             params.playerId,
             'unit'
         ) as UnitZoneCard;
+        if (params.isRested === true) {
+            unitCard.isRested = true;
+        }
         slotResult.slot.unit = unitCard;
 
         const notificationManager = new GameNotificationManager(gameEnv);
@@ -61,6 +65,7 @@ export class UnitDeployService {
                 fromZone: params.fromZone,
                 toZone: params.destinationSlot,
                 timestamp: Date.now(),
+                ...(params.isRested === true ? { isRested: true } : {}),
                 ...(params.notificationExtra || {})
             },
             'normal'
@@ -78,4 +83,3 @@ export class UnitDeployService {
         return { success: true };
     }
 }
-

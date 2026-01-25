@@ -20,6 +20,8 @@ import type {
     PairingEffectDefinition,
     PairingEffectEvent,
     EffectDrawTriggeredEvent,
+    ExResourcePlacedTriggeredEvent,
+    ShieldAreaCardDamagedTriggeredEvent,
     PlayCardEvent,
     PlayCardEventData,
     PlayerActionEvent,
@@ -59,7 +61,7 @@ import {
     createOptionChoiceEvent,
     createBlockerChoiceEvent
 } from './factories/ChoiceEventFactories';
-import { createDeployEffectEvent, createEffectDrawTriggeredEvent, createPairingEffectEvent, createShieldCardAttackedEvent } from './factories/EffectEventFactories';
+import { createDeployEffectEvent, createEffectDrawTriggeredEvent, createExResourcePlacedTriggeredEvent, createPairingEffectEvent, createShieldAreaCardDamagedTriggeredEvent, createShieldCardAttackedEvent } from './factories/EffectEventFactories';
 import { generateEventId, createBaseEvent } from './factories/EventIdUtils';
 
 export class EventFactory {
@@ -223,6 +225,42 @@ export class EventFactory {
             drawnPlayerId: params.drawnPlayerId,
             drawnCarduids: params.drawnCarduids,
             drawContext: params.drawContext,
+            sourceCarduid: params.sourceCarduid
+        });
+    }
+
+    static createExResourcePlacedTriggeredEvent(params: {
+        playerId: string;
+        placedPlayerId: string;
+        placedCarduids: string[];
+        sourceCarduid?: string;
+        reason?: string;
+    }): ExResourcePlacedTriggeredEvent {
+        return createExResourcePlacedTriggeredEvent(params.playerId, {
+            placedPlayerId: params.placedPlayerId,
+            placedCarduids: params.placedCarduids,
+            sourceCarduid: params.sourceCarduid,
+            reason: params.reason
+        });
+    }
+
+    static createShieldAreaCardDamagedTriggeredEvent(params: {
+        playerId: string;
+        attackingPlayerId: string;
+        attackerSlot: string;
+        defendingPlayerId: string;
+        defenseArea: 'shield' | 'base';
+        damagedCarduid?: string;
+        damageSource: 'battle';
+        sourceCarduid?: string;
+    }): ShieldAreaCardDamagedTriggeredEvent {
+        return createShieldAreaCardDamagedTriggeredEvent(params.playerId, {
+            attackingPlayerId: params.attackingPlayerId,
+            attackerSlot: params.attackerSlot,
+            defendingPlayerId: params.defendingPlayerId,
+            defenseArea: params.defenseArea,
+            damagedCarduid: params.damagedCarduid,
+            damageSource: params.damageSource,
             sourceCarduid: params.sourceCarduid
         });
     }

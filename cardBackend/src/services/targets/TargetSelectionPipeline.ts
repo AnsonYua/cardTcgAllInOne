@@ -2,10 +2,12 @@
 // Centralizes common target-list post-processing (e.g. excludeSource, selection rules).
 
 import type { EffectDefinition, TargetReference } from '../EventQueue/interfaces/GameEvent';
+import type { GameEnvironment } from '../../models/GameEnvironment';
 import { TargetSelectionUtils } from './TargetSelectionUtils';
 
 export class TargetSelectionPipeline {
     static apply(
+        gameEnv: GameEnvironment,
         targets: TargetReference[],
         effect: EffectDefinition,
         sourceCarduid: string
@@ -17,8 +19,7 @@ export class TargetSelectionPipeline {
             result = TargetSelectionUtils.excludeCarduid(result, sourceCarduid);
         }
 
-        result = TargetSelectionUtils.applySelection(result, effect.target?.selection);
+        result = TargetSelectionUtils.applySelection(gameEnv, result, effect.target?.selection);
         return result;
     }
 }
-

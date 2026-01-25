@@ -9,8 +9,8 @@ import type { EffectDefinition, EndTurnTriggeredEffectEvent } from '../EventQueu
 import { EffectRuleCatalog } from './EffectRuleCatalog';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { EffectExecutor } from './EffectExecutor';
-import { ContinuousEffectManager } from '../ContinuousEffectManager';
 import { DeployTargetManager } from '../DeployTargetManager';
+import { EffectEligibilityEvaluator } from './EffectEligibilityEvaluator';
 
 export class EndTurnTriggeredEffectManager {
     static checkEndTurnTriggeredEffects(
@@ -45,12 +45,12 @@ export class EndTurnTriggeredEffectManager {
                         continue;
                     }
 
-                    if (!ContinuousEffectManager.validateEffectConditions(
-                        normalizedEffect,
+                    if (!EffectEligibilityEvaluator.shouldExecute({
                         gameEnv,
-                        playerId,
-                        sourceCard
-                    )) {
+                        sourcePlayerId: playerId,
+                        sourceCard,
+                        effect: normalizedEffect
+                    })) {
                         continue;
                     }
 
@@ -92,4 +92,3 @@ export class EndTurnTriggeredEffectManager {
         return { success: true };
     }
 }
-

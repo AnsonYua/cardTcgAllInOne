@@ -246,11 +246,16 @@
                                     "Clan"
                                 ]
                             },
-                            "count": 2
+                            "selection": {
+                                "type": "player_choice"
+                            },
+                            "count": {
+                                "min": 1,
+                                "max": 2
+                            }
                         },
                         "parameters": {
-                            "value": 2,
-                            "notes": "Represents 'choose 1 to 2' as selecting up to 2; engine should allow fewer targets."
+                            "value": 2
                         }
                     }
                 ]

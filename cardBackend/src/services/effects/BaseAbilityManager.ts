@@ -2,7 +2,6 @@
 // Handles activated abilities originating from base cards
 
 import { GameEnvironment } from '../../models/GameEnvironment';
-import { GamePhase } from '../../models/GameEnums';
 import { PlayerActionEvent, PlayerActionEventData, EffectDefinition, TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { GameActionValidator } from '../GameActionValidator';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
@@ -16,6 +15,7 @@ import { resolveActivatedAbilitySource } from './ActivatedAbilitySourceResolver'
 import { ContinuousEffectManager } from '../ContinuousEffectManager';
 import { CardDataResolver } from './CardDataResolver';
 import { PairFromTrashActivatedAbility } from './PairFromTrashActivatedAbility';
+import { EffectTimingWindowUtils } from '../../utils/EffectTimingWindowUtils';
 
 export class BaseAbilityManager {
 
@@ -33,13 +33,6 @@ export class BaseAbilityManager {
         const turnCheck = GameActionValidator.ensureTurn(gameEnv, actingPlayerId, fromBurst);
         if (!turnCheck.success) {
             return turnCheck;
-        }
-
-        if (!fromBurst && gameEnv.phase !== GamePhase.MAIN_PHASE) {
-            return {
-                success: false,
-                error: `activateCardAbility only available during MAIN_PHASE (current: ${gameEnv.phase})`
-            };
         }
 
         const baseCarduid = typeof (eventData as Record<string, unknown>).carduid === 'string'
@@ -85,15 +78,15 @@ export class BaseAbilityManager {
         const effectDefinition = effectLookup.effect;
         const normalizedEffect = ensureEffectDefaults({ ...effectDefinition });
         console.log(`🏰 Base effect resolved: effectId=${normalizedEffect.effectId}, type=${normalizedEffect.type || 'none'}, action=${normalizedEffect.action || 'none'}`);
-        if (!fromBurst && !BaseAbilityManager.allowsMainPhase(normalizedEffect)) {
+        if (!fromBurst && !EffectTimingWindowUtils.allowsPhase(normalizedEffect, gameEnv.phase, { defaultToMainPhaseWhenMissing: true })) {
             return {
                 success: false,
-                error: `Effect ${normalizedEffect.effectId} cannot be activated during MAIN_PHASE`
+                error: `Effect ${normalizedEffect.effectId} cannot be activated during ${gameEnv.phase}`
             };
         }
 
         const costConfig = (effectDefinition as unknown as { cost?: Record<string, unknown> }).cost;
-        let baseRestedForCost = false;
+        let sourceRestedForCost = false;
         let restNotificationPending: { playerId: string; carduid: string; zone: string } | null = null;
         const energyCost = typeof costConfig?.['resource'] === 'number' ? (costConfig!['resource'] as number) : 0;
         const oncePerTurn = costConfig?.['oncePerTurn'] === true;
@@ -154,7 +147,7 @@ export class BaseAbilityManager {
                     };
                 }
                 sourceCard.isRested = true;
-                baseRestedForCost = true;
+                sourceRestedForCost = true;
                 const restZone = sourceZone === 'base' ? 'base' : sourceSlotName;
                 if (!restZone) {
                     return {
@@ -174,7 +167,7 @@ export class BaseAbilityManager {
         if (!fromBurst && energyCost > 0) {
             energyPayment = EnergyManager.payEnergyCost(gameEnv, actingPlayerId, energyCost);
             if (!energyPayment.success) {
-                if (baseRestedForCost) {
+                if (sourceRestedForCost) {
                     sourceCard.isRested = false;
                 }
                 return {
@@ -237,7 +230,7 @@ export class BaseAbilityManager {
         }
 
         if (!abilityResult.success) {
-            if (baseRestedForCost) {
+            if (sourceRestedForCost) {
                 sourceCard.isRested = false;
             }
             if (energyPayment?.tapped) {
@@ -295,19 +288,6 @@ export class BaseAbilityManager {
         }
 
         return { success: true, effect };
-    }
-
-    private static allowsMainPhase(effect: EffectDefinition): boolean {
-        const timingRecord = effect.timing as Record<string, unknown> | undefined;
-        const windows = Array.isArray(timingRecord?.['windows'])
-            ? (timingRecord!['windows'] as string[]).map(window => window.toUpperCase())
-            : [];
-
-        if (windows.length === 0) {
-            return true;
-        }
-
-        return windows.includes('MAIN_PHASE');
     }
 
     private static effectUsedThisTurn(baseCard: any, effectId: string, currentTurn: number): boolean {

@@ -1,6 +1,8 @@
 // src/services/targets/TargetSelectionUtils.ts
 
 import type { EffectTargetConfig, TargetReference } from '../EventQueue/interfaces/GameEvent';
+import type { GameEnvironment } from '../../models/GameEnvironment';
+import { PlayerCardManager } from '../PlayerCardManager';
 
 export class TargetSelectionUtils {
     static excludeCarduid(
@@ -14,6 +16,7 @@ export class TargetSelectionUtils {
     }
 
     static applySelection(
+        gameEnv: GameEnvironment,
         targets: TargetReference[],
         selection: EffectTargetConfig['selection'] | undefined
     ): TargetReference[] {
@@ -24,6 +27,8 @@ export class TargetSelectionUtils {
         switch (selection.type) {
             case 'HIGHEST_LEVEL':
                 return this.filterHighestLevelTargets(targets);
+            case 'LOWEST_HP':
+                return this.filterLowestHpTargets(gameEnv, targets);
             default:
                 return targets;
         }
@@ -45,6 +50,39 @@ export class TargetSelectionUtils {
         return targets.filter(target => {
             const level = typeof target.cardData?.level === 'number' ? target.cardData.level : 0;
             return level === highestLevel;
+        });
+    }
+
+    private static filterLowestHpTargets(gameEnv: GameEnvironment, targets: TargetReference[]): TargetReference[] {
+        if (targets.length <= 1) {
+            return targets;
+        }
+
+        let lowestHp = Infinity;
+        const hpByCarduid = new Map<string, number>();
+
+        for (const target of targets) {
+            const carduid = target?.carduid;
+            if (!carduid) {
+                continue;
+            }
+
+            const computed = PlayerCardManager.getCurrentUnitCardInSlotAPandHP(gameEnv, carduid).totalHP;
+            const fallback = typeof target.cardData?.hp === 'number' ? target.cardData.hp : 0;
+            const hp = computed > 0 ? computed : fallback;
+            hpByCarduid.set(carduid, hp);
+            if (hp < lowestHp) {
+                lowestHp = hp;
+            }
+        }
+
+        if (!Number.isFinite(lowestHp)) {
+            return targets;
+        }
+
+        return targets.filter(target => {
+            const hp = hpByCarduid.get(target.carduid);
+            return typeof hp === 'number' ? hp === lowestHp : false;
         });
     }
 }

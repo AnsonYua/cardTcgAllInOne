@@ -2217,8 +2217,8 @@
         "New UNE"
       ],
       "link": [
-        "Shagia Frost]",
-        "[Olba Frost"
+        "Shagia Frost",
+        "Olba Frost"
       ],
       "ap": 3,
       "hp": 5,
@@ -3360,7 +3360,10 @@
           {
             "effectId": "effect",
             "type": "triggered",
-            "trigger": "CUSTOM",
+            "trigger": "EFFECT_DAMAGE_RECEIVED",
+            "restrictions": [
+              "once_per_turn"
+            ],
             "action": "conditionalTokenDeploy",
             "timing": {
               "actionTurn": "YOUR_TURN"
@@ -3372,11 +3375,7 @@
                 },
                 "count": 1,
                 "rested": true
-              },
-              "restrictions": [
-                "once_per_turn"
-              ],
-              "notes": "Requires engine support for triggering on EFFECT_DAMAGE_RECEIVED and enforcing once-per-turn usage."
+              }
             }
           }
         ]

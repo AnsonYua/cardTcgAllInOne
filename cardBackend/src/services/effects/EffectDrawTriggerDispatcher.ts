@@ -2,8 +2,8 @@
 // Centralized helper for "When you draw with an effect" triggers.
 
 import type { GameEnvironment } from '../../models/GameEnvironment';
-import { GameNotificationManager } from '../GameNotificationManager';
 import { EventFactory } from '../EventQueue/EventFactory';
+import { TriggerDispatchUtils } from './TriggerDispatchUtils';
 
 export class EffectDrawTriggerDispatcher {
     static dispatchEffectDrawIfNeeded(params: {
@@ -28,10 +28,11 @@ export class EffectDrawTriggerDispatcher {
             sourceCarduid
         });
 
-        gameEnv.enqueueForProcessing(triggerEvent);
-
-        const notificationManager = new GameNotificationManager(gameEnv);
-        notificationManager.addNotificationEventWithId(triggerEvent.id, 'EFFECT_DRAW_TRIGGERED', {
+        TriggerDispatchUtils.enqueueAndNotify({
+            gameEnv,
+            triggerEvent,
+            notificationType: 'EFFECT_DRAW_TRIGGERED',
+            payload: {
             playerId,
             drawnPlayerId: playerId,
             drawnCarduids,
@@ -39,7 +40,7 @@ export class EffectDrawTriggerDispatcher {
             drawContext,
             sourceCarduid,
             timestamp: Date.now()
+            }
         });
     }
 }
-

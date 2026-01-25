@@ -59,7 +59,7 @@ export class DestroyFriendlyUnitCostFlow {
 
         const targetConfig = TargetResolver.resolveTargetConfig(costEffect);
         let availableTargets = TargetResolver.generateAvailableTargets(gameEnv, playerId, targetConfig);
-        availableTargets = TargetSelectionPipeline.apply(availableTargets, costEffect, sourceCarduid);
+        availableTargets = TargetSelectionPipeline.apply(gameEnv, availableTargets, costEffect, sourceCarduid);
 
         if (availableTargets.length === 0) {
             return { success: true };

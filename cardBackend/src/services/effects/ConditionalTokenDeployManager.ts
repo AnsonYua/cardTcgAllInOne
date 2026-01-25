@@ -14,6 +14,7 @@ import { UnitDeployService } from '../deploy/UnitDeployService';
 export interface ConditionalTokenPlan {
     tokenData: any;
     targetSlots: string[];
+    rested?: boolean;
 }
 
 export class ConditionalTokenDeployManager {
@@ -117,12 +118,13 @@ export class ConditionalTokenDeployManager {
         }
 
         const count = typeof selectedCondition['count'] === 'number' ? (selectedCondition['count'] as number) : 1;
+        const rested = selectedCondition['rested'] === true;
         const targetSlots = this.findEmptySlots(player.zones, count);
         if (targetSlots.length < count) {
             return { success: false, error: 'Not enough empty unit slots available for token deploy' };
         }
 
-        return { success: true, plan: { tokenData: tokenDataResult.tokenData, targetSlots } };
+        return { success: true, plan: { tokenData: tokenDataResult.tokenData, targetSlots, ...(rested ? { rested: true } : {}) } };
     }
 
     static executePlan(
@@ -148,7 +150,8 @@ export class ConditionalTokenDeployManager {
                 cardData: plan.tokenData,
                 sourceCarduid,
                 fromZone: 'token',
-                notificationType: 'TOKEN_DEPLOYED'
+                notificationType: 'TOKEN_DEPLOYED',
+                ...(plan.rested ? { isRested: true } : {})
             });
             if (!deployResult.success) {
                 return { success: false, error: deployResult.error || 'Failed to deploy token' };

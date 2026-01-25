@@ -30,6 +30,10 @@ import { TargetCountUtils } from './targets/TargetCountUtils';
 import { CostFlowInterceptor } from './costs/CostFlowInterceptor';
 import { TargetChoiceContextHandlerRegistry } from './choices/TargetChoiceContextHandlerRegistry';
 import { TargetSelectionUtils } from './targets/TargetSelectionUtils';
+import { StatChangeTriggeredEffectCollector } from './effects/StatChangeTriggeredEffectCollector';
+import { EffectUsageTracker } from './effects/EffectUsageTracker';
+import { extractNumericValue } from './effects/actions/EffectActionUtils';
+import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import type { DeployTargetResult } from './DeployTargetResult';
 
 export type { DeployTargetResult } from './DeployTargetResult';
@@ -94,7 +98,7 @@ export class DeployTargetManager {
             if (!availableTargets) {
                 availableTargets = TargetResolver.generateAvailableTargets(gameEnv, playerId, targetConfig);
             }
-            availableTargets = TargetSelectionPipeline.apply(availableTargets, normalizedEffect, sourceCarduid);
+            availableTargets = TargetSelectionPipeline.apply(gameEnv, availableTargets, normalizedEffect, sourceCarduid);
 
             const excludePairedUnit = normalizedEffect.parameters?.excludePairedUnit === true;
             const pairedSlot = typeof (normalizedEffect as any).pairedSlot === 'string' ? ((normalizedEffect as any).pairedSlot as string) : '';
@@ -157,6 +161,12 @@ export class DeployTargetManager {
                     ? availableTargets
                     : availableTargets.slice(0, targetConfig.count);
                 const result = EffectExecutor.applyEffectToTargets(gameEnv, normalizedEffect, targetsToApply, playerId, sourceCarduid);
+                if (result.success) {
+                    const triggerResult = this.maybeTriggerApReducedByEnemyEffects(gameEnv, playerId, normalizedEffect, targetsToApply);
+                    if (!triggerResult.success) {
+                        return { success: false, error: triggerResult.error || 'AP reduced trigger failed' };
+                    }
+                }
                 
                 console.log(`🤖 Auto-applied ${effect.effectId} to ${targetsToApply.length} target(s)`);
                 return {
@@ -244,6 +254,11 @@ export class DeployTargetManager {
                 return result;
             }
 
+            const triggerResult = this.maybeTriggerApReducedByEnemyEffects(gameEnv, event.playerId, normalizedEffect, normalizedTargets);
+            if (!triggerResult.success) {
+                return { success: false, error: triggerResult.error || 'AP reduced trigger failed' };
+            }
+
             console.log(`✅ Successfully applied ${normalizedEffect.effectId} to ${selectedTargets.length} selected target(s)`);
             return { success: true };
 
@@ -264,6 +279,64 @@ export class DeployTargetManager {
      */
     static cleanupExpiredTemporaryEffects(gameEnv: GameEnvironment, endingPlayerId: string): void {
         EffectExecutor.cleanupExpiredTemporaryEffects(gameEnv, endingPlayerId);
+    }
+
+    private static maybeTriggerApReducedByEnemyEffects(
+        gameEnv: GameEnvironment,
+        sourcePlayerId: string,
+        effect: EffectDefinition,
+        appliedTargets: TargetReference[]
+    ): { success: boolean; error?: string } {
+        const effectAction = EffectExecutor.getEffectAction(effect);
+        if (effectAction !== 'modifyAP') {
+            return { success: true };
+        }
+
+        const value = extractNumericValue(effect.parameters);
+        if (value === undefined || value >= 0) {
+            return { success: true };
+        }
+
+        for (const target of appliedTargets) {
+            if (!target?.carduid || !target?.playerId) {
+                continue;
+            }
+
+            if (target.playerId === sourcePlayerId) {
+                continue;
+            }
+
+            const collected = StatChangeTriggeredEffectCollector.collectApReducedByEnemyEffect(gameEnv, {
+                targetCarduid: target.carduid,
+                targetPlayerId: target.playerId,
+                sourcePlayerId
+            });
+            if (!collected.success) {
+                return { success: false, error: collected.error };
+            }
+
+            for (const triggered of collected.effects) {
+                const triggeredResult = this.processEffectWithTargetChoice(
+                    gameEnv,
+                    target.playerId,
+                    target.carduid,
+                    triggered.effect
+                );
+
+                if (!triggeredResult.success) {
+                    return { success: false, error: triggeredResult.error || 'Failed to apply AP_REDUCED_BY_ENEMY_EFFECT effect' };
+                }
+
+                if (triggered.oncePerTurn && triggered.usageKey) {
+                    const resolvedTarget = SlotZoneUtils.getCardByUid(gameEnv, target.carduid) as any;
+                    if (resolvedTarget) {
+                        EffectUsageTracker.markUsedThisTurn(resolvedTarget, triggered.usageKey, gameEnv.currentTurn);
+                    }
+                }
+            }
+        }
+
+        return { success: true };
     }
 
 }

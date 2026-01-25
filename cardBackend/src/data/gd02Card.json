@@ -543,7 +543,8 @@
             ],
             "action": "draw",
             "parameters": {
-              "value": 1
+              "value": 1,
+              "damageSource": "ENEMY"
             }
           }
         ]

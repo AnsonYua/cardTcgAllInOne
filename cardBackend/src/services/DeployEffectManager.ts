@@ -15,6 +15,9 @@ import { ensureEffectDefaults } from '../utils/EffectNormalizationUtils';
 import { EffectRuleCatalog } from './effects/EffectRuleCatalog';
 import { GameNotificationManager } from './GameNotificationManager';
 import { GamePhase } from '../models/GameEnums';
+import { EffectTimingWindowUtils } from '../utils/EffectTimingWindowUtils';
+import { SlotZoneUtils } from '../utils/SlotZoneUtils';
+import { EffectEligibilityEvaluator } from './effects/EffectEligibilityEvaluator';
 
 export interface ExecutionResult {
     success: boolean;
@@ -51,26 +54,27 @@ export class DeployEffectManager {
             if (cardData.cardType === 'command' && eventData.playAs === 'pilot') {
                 return { success: true, effectsFound: 0 };
             }
-        const deployEffects: EffectDefinition[] = [];
+            
+            const deployEffects: EffectDefinition[] = [];
 
-        const triggeredDeployEffects = EffectRuleCatalog.collectEffects(cardData, {
-            trigger: 'ENTERS_PLAY',
-            fallbackEffectId: 'deploy_effect',
-            expectedTriggers: ['ENTERS_PLAY'],
-            preFilter: (rawRule) => {
-                const triggerValue = rawRule['trigger'];
-                return typeof triggerValue === 'string' && triggerValue === 'ENTERS_PLAY';
+            const triggeredDeployEffects = EffectRuleCatalog.collectEffects(cardData, {
+                trigger: 'ENTERS_PLAY',
+                fallbackEffectId: 'deploy_effect',
+                expectedTriggers: ['ENTERS_PLAY'],
+                preFilter: (rawRule) => {
+                    const triggerValue = rawRule['trigger'];
+                    return typeof triggerValue === 'string' && triggerValue === 'ENTERS_PLAY';
+                }
+            }).map(effect => ensureEffectDefaults(effect));
+
+            triggeredDeployEffects.forEach(effect => deployEffects.push(effect));
+
+            const phaseBoundActivatedEffects = this.findDeployLikeActivatedEffects(cardData, gameEnv);
+            phaseBoundActivatedEffects.forEach(effect => deployEffects.push(ensureEffectDefaults(effect)));
+
+            if (deployEffects.length === 0) {
+                return { success: true, effectsFound: 0 };
             }
-        }).map(effect => ensureEffectDefaults(effect));
-
-        triggeredDeployEffects.forEach(effect => deployEffects.push(effect));
-
-        const phaseBoundActivatedEffects = this.findDeployLikeActivatedEffects(cardData, gameEnv);
-        phaseBoundActivatedEffects.forEach(effect => deployEffects.push(ensureEffectDefaults(effect)));
-
-        if (deployEffects.length === 0) {
-            return { success: true, effectsFound: 0 };
-        }
 
             const deployEvent = EventFactory.createDeployEffectEvent(
                 playerId,
@@ -103,8 +107,21 @@ export class DeployEffectManager {
         const failures: string[] = [];
         let requiresTargetChoice = false;
 
+        const sourceLookup = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, event.data.carduid);
+        const sourceCard = sourceLookup.found ? (sourceLookup.card || sourceLookup.unit || sourceLookup.pilot) : null;
+
         for (const effect of event.data.effects) {
             const normalizedEffect = ensureEffectDefaults(effect);
+
+            if (!EffectEligibilityEvaluator.shouldExecute({
+                gameEnv,
+                sourcePlayerId: event.playerId,
+                sourceCard,
+                effect: normalizedEffect
+            })) {
+                continue;
+            }
+
             const result: DeployTargetResult = DeployTargetManager.processEffectWithTargetChoice(
                 gameEnv,
                 event.playerId,
@@ -171,16 +188,11 @@ export class DeployEffectManager {
                 return false;
             }
 
-            const timing = rule.timing as Record<string, unknown> | undefined;
-            const windows = Array.isArray(timing?.['windows'])
-                ? (timing!['windows'] as string[]).map(window => window.toUpperCase())
-                : [];
-
-            if (inMainPhase && windows.includes('MAIN_PHASE')) {
+            if (inMainPhase && EffectTimingWindowUtils.allowsPhase(rule, GamePhase.MAIN_PHASE)) {
                 return true;
             }
 
-            if (inActionStepPhase && windows.includes('ACTION_STEP')) {
+            if (inActionStepPhase && EffectTimingWindowUtils.allowsPhase(rule, GamePhase.ACTION_STEP_PHASE)) {
                 return true;
             }
 

@@ -1,0 +1,715 @@
+{
+  "created_at": "2026-01-25T13:27:34.182449+00:00",
+  "endpoint": "https://api.302.ai/302/submit/qwen-image-edit-plus",
+  "config": {
+    "prompt": "remove the watermark SAMPLE in the image",
+    "negative_prompt": "blurry, ugly",
+    "width": 600,
+    "height": 838,
+    "num_inference_steps": 30,
+    "guidance_scale": 4.0,
+    "output_format": "png"
+  },
+  "items": [
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST05-001.webp",
+      "submitted_at": "2026-01-25T13:27:34.718390+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "f41ad738-291a-4ebf-beff-a8c46379594c",
+      "status": "IN_QUEUE",
+      "response": {
+        "logs": null,
+        "metrics": {},
+        "queue_position": 65,
+        "request_id": "f41ad738-291a-4ebf-beff-a8c46379594c",
+        "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T16:00:30.670099+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260126/f564587c8ba6a56ccfa6f01aa164fce0.png",
+              "width": 864,
+              "height": 1216,
+              "content_type": "image/png"
+            }
+          ],
+          "timings": {
+            "inference": 5.182256892323494
+          },
+          "seed": 1775297616,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "prompt": "remove the watermark SAMPLE in the image"
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260126/f564587c8ba6a56ccfa6f01aa164fce0.png",
+            "path": "302/ST05/ST05-001.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1575491,
+            "sha256": "a801b944f8d23299aa2a8026beda8e255a61a8eefdf62a174127d3c8d7c7fa93"
+          }
+        ]
+      }
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST05-002.webp",
+      "submitted_at": "2026-01-25T13:27:35.164306+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "5d6bc69d-d834-49be-a700-5e8a06209e3c",
+      "status": "IN_QUEUE",
+      "response": {
+        "logs": null,
+        "metrics": {},
+        "queue_position": 66,
+        "request_id": "5d6bc69d-d834-49be-a700-5e8a06209e3c",
+        "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T15:42:56.968062+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260125/49d6bd707f2a12c2357a43fb1646290a.png",
+              "width": 864,
+              "height": 1216,
+              "content_type": "image/png"
+            }
+          ],
+          "timings": {
+            "inference": 5.035926470067352
+          },
+          "seed": 829457347,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "prompt": "remove the watermark SAMPLE in the image"
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260125/49d6bd707f2a12c2357a43fb1646290a.png",
+            "path": "302/ST05/ST05-002.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1353157,
+            "sha256": "4ed59be7a929529a63266c1b9706c6636bbd8ee71bc2f4350c555be8914cdbbd"
+          }
+        ]
+      }
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST05-003.webp",
+      "submitted_at": "2026-01-25T13:27:35.686373+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "e511f821-1ee3-4d40-bfd4-cadfe25250d1",
+      "status": "IN_QUEUE",
+      "response": {
+        "logs": null,
+        "metrics": {},
+        "queue_position": 67,
+        "request_id": "e511f821-1ee3-4d40-bfd4-cadfe25250d1",
+        "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T15:46:40.764062+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260125/1c39f941dabf18a3b786172b4d73c83e.png",
+              "width": 864,
+              "height": 1216,
+              "content_type": "image/png"
+            }
+          ],
+          "timings": {
+            "inference": 5.069705125992186
+          },
+          "seed": 307477425,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "prompt": "remove the watermark SAMPLE in the image"
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260125/1c39f941dabf18a3b786172b4d73c83e.png",
+            "path": "302/ST05/ST05-003.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1132345,
+            "sha256": "e841539d93b12972596327417238c2569b18295f56270c3cb2b49d2bd7a0242f"
+          }
+        ]
+      }
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST05-004.webp",
+      "submitted_at": "2026-01-25T13:27:36.091305+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "51463ff1-e06e-4351-bc3e-7635fbd83d95",
+      "status": "IN_QUEUE",
+      "response": {
+        "logs": null,
+        "metrics": {},
+        "queue_position": 68,
+        "request_id": "51463ff1-e06e-4351-bc3e-7635fbd83d95",
+        "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T15:47:34.039591+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260125/4a2448628b7b2b69a57ce72b267a5171.png",
+              "width": 864,
+              "height": 1216,
+              "content_type": "image/png"
+            }
+          ],
+          "timings": {
+            "inference": 4.978825967991725
+          },
+          "seed": 3231813610,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "prompt": "remove the watermark SAMPLE in the image"
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260125/4a2448628b7b2b69a57ce72b267a5171.png",
+            "path": "302/ST05/ST05-004.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1159875,
+            "sha256": "9d131b004c00382cbf70a6c967c7b0ae9ef5ef920e90e3e2aa05e0079420c0b9"
+          }
+        ]
+      }
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST05-005.webp",
+      "submitted_at": "2026-01-25T13:27:36.608063+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "7dbcb209-c444-45a7-a2cb-f6977facbfea",
+      "status": "IN_QUEUE",
+      "response": {
+        "logs": null,
+        "metrics": {},
+        "queue_position": 69,
+        "request_id": "7dbcb209-c444-45a7-a2cb-f6977facbfea",
+        "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T15:15:02.001527+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260125/eb75985d0e23bc7a89effc586f9d9282.png",
+              "width": 864,
+              "height": 1216,
+              "content_type": "image/png"
+            }
+          ],
+          "timings": {
+            "inference": 5.0353977754712105
+          },
+          "seed": 2458198468,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "prompt": "remove the watermark SAMPLE in the image"
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260125/eb75985d0e23bc7a89effc586f9d9282.png",
+            "path": "302/ST05/ST05-005.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1230134,
+            "sha256": "863aa0687a8ada122613b284c47e0c1554f44c3874361e16be1b9b822c9c2680"
+          }
+        ]
+      }
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST05-006.webp",
+      "submitted_at": "2026-01-25T13:27:37.114335+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "0cb069b6-c318-4ada-bee2-99f86bb14d9a",
+      "status": "IN_QUEUE",
+      "response": {
+        "logs": null,
+        "metrics": {},
+        "queue_position": 70,
+        "request_id": "0cb069b6-c318-4ada-bee2-99f86bb14d9a",
+        "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T15:18:29.736664+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260125/d6600cf34e5942d07d0439dd13b94872.png",
+              "width": 864,
+              "height": 1216,
+              "content_type": "image/png"
+            }
+          ],
+          "timings": {
+            "inference": 7.128556936979294
+          },
+          "seed": 3481539824,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "prompt": "remove the watermark SAMPLE in the image"
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260125/d6600cf34e5942d07d0439dd13b94872.png",
+            "path": "302/ST05/ST05-006.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 976510,
+            "sha256": "09fc636048c31efa83ce590084c718a228a01ebf3afac3fda069f1849c77ecfc"
+          }
+        ]
+      }
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST05-007.webp",
+      "submitted_at": "2026-01-25T13:27:37.464948+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "8bfe710b-5680-49d5-bd98-c725a92147a9",
+      "status": "IN_QUEUE",
+      "response": {
+        "logs": null,
+        "metrics": {},
+        "queue_position": 71,
+        "request_id": "8bfe710b-5680-49d5-bd98-c725a92147a9",
+        "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T15:48:23.808438+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260125/b1525dd11611ef1a0fedb913a5357298.png",
+              "width": 864,
+              "height": 1216,
+              "content_type": "image/png"
+            }
+          ],
+          "timings": {
+            "inference": 5.031683137989603
+          },
+          "seed": 535681935,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "prompt": "remove the watermark SAMPLE in the image"
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260125/b1525dd11611ef1a0fedb913a5357298.png",
+            "path": "302/ST05/ST05-007.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1487298,
+            "sha256": "76fe717c9bf9383de7efbf627b087f9eadeea648d98fa0d3783aee7af0d6ca08"
+          }
+        ]
+      }
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST05-008.webp",
+      "submitted_at": "2026-01-25T13:27:37.825708+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "8e3af4a9-6eae-4b31-97d9-7a5fe88aacd2",
+      "status": "IN_QUEUE",
+      "response": {
+        "logs": null,
+        "metrics": {},
+        "queue_position": 72,
+        "request_id": "8e3af4a9-6eae-4b31-97d9-7a5fe88aacd2",
+        "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T16:04:14.299009+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260126/86239162e069a81d251359af08d482af.png",
+              "width": 864,
+              "height": 1216,
+              "content_type": "image/png"
+            }
+          ],
+          "timings": {
+            "inference": 5.179262608056888
+          },
+          "seed": 1505553529,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "prompt": "remove the watermark SAMPLE in the image"
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260126/86239162e069a81d251359af08d482af.png",
+            "path": "302/ST05/ST05-008.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1164817,
+            "sha256": "2713727c7fe47206f5831fcf9c4e5a989bb78e26bc8094ab3e2cdfc3996226b6"
+          }
+        ]
+      }
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST05-009.webp",
+      "submitted_at": "2026-01-25T13:27:38.290606+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "3b22242c-df9a-434b-ba08-9b56c64386f1",
+      "status": "IN_QUEUE",
+      "response": {
+        "logs": null,
+        "metrics": {},
+        "queue_position": 73,
+        "request_id": "3b22242c-df9a-434b-ba08-9b56c64386f1",
+        "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T15:54:42.310453+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260125/ebcdc4f8aaaac02de802e3314ace7e7d.png",
+              "width": 864,
+              "height": 1216,
+              "content_type": "image/png"
+            }
+          ],
+          "timings": {
+            "inference": 5.044627861992922
+          },
+          "seed": 1014167853,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "prompt": "remove the watermark SAMPLE in the image"
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260125/ebcdc4f8aaaac02de802e3314ace7e7d.png",
+            "path": "302/ST05/ST05-009.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1137802,
+            "sha256": "fb4e033119fbed04deef405a4f098d3ab5d64b5fecde403dd1484cc2f4dac3a6"
+          }
+        ]
+      }
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST05-010.webp",
+      "submitted_at": "2026-01-25T13:27:38.657239+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "a0a2f58f-0697-411b-a233-4c7c99aae0ee",
+      "status": "IN_QUEUE",
+      "response": {
+        "logs": null,
+        "metrics": {},
+        "queue_position": 74,
+        "request_id": "a0a2f58f-0697-411b-a233-4c7c99aae0ee",
+        "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T16:06:03.626710+00:00",
+        "ok": false,
+        "http_status": 422,
+        "response": {
+          "error": {
+            "err_code": -10021,
+            "message": "The content could not be processed because it contained material flagged by a content checker",
+            "message_cn": "内容因包含被内容检查器标记的材料而无法处理",
+            "message_jp": "コンテンツチェッカーによってフラグ付けされた材料が含まれているため、コンテンツを処理できませんでした",
+            "type": "api_error"
+          }
+        },
+        "downloaded": [],
+        "note": "not_ready"
+      }
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST05-011.webp",
+      "submitted_at": "2026-01-25T13:27:39.061794+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "6e7caa49-7524-41a0-9db0-becebece35e7",
+      "status": "IN_QUEUE",
+      "response": {
+        "logs": null,
+        "metrics": {},
+        "queue_position": 75,
+        "request_id": "6e7caa49-7524-41a0-9db0-becebece35e7",
+        "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T16:06:04.038331+00:00",
+        "ok": false,
+        "http_status": 422,
+        "response": {
+          "error": {
+            "err_code": -10021,
+            "message": "The content could not be processed because it contained material flagged by a content checker",
+            "message_cn": "内容因包含被内容检查器标记的材料而无法处理",
+            "message_jp": "コンテンツチェッカーによってフラグ付けされた材料が含まれているため、コンテンツを処理できませんでした",
+            "type": "api_error"
+          }
+        },
+        "downloaded": [],
+        "note": "not_ready"
+      }
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST05-012.webp",
+      "submitted_at": "2026-01-25T13:27:39.415207+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "943b9186-11ca-4702-879a-49b77de312ba",
+      "status": "IN_QUEUE",
+      "response": {
+        "logs": null,
+        "metrics": {},
+        "queue_position": 76,
+        "request_id": "943b9186-11ca-4702-879a-49b77de312ba",
+        "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T15:32:11.288443+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260125/9d9682f231229a4b807f4a483f772022.png",
+              "width": 864,
+              "height": 1216,
+              "content_type": "image/png"
+            }
+          ],
+          "timings": {
+            "inference": 5.02250085095875
+          },
+          "seed": 4058501095,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "prompt": "remove the watermark SAMPLE in the image"
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260125/9d9682f231229a4b807f4a483f772022.png",
+            "path": "302/ST05/ST05-012.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1266043,
+            "sha256": "e7f21117f6d7d59bba1b420a8c69a29c4509761b1cec8b25e90f4093d07a41f6"
+          }
+        ]
+      }
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST05-013.webp",
+      "submitted_at": "2026-01-25T13:27:39.760010+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "8e95bb81-46d6-4632-b7ef-ebdb724d298c",
+      "status": "IN_QUEUE",
+      "response": {
+        "logs": null,
+        "metrics": {},
+        "queue_position": 78,
+        "request_id": "8e95bb81-46d6-4632-b7ef-ebdb724d298c",
+        "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T16:06:04.346811+00:00",
+        "ok": false,
+        "http_status": 422,
+        "response": {
+          "error": {
+            "err_code": -10021,
+            "message": "The content could not be processed because it contained material flagged by a content checker",
+            "message_cn": "内容因包含被内容检查器标记的材料而无法处理",
+            "message_jp": "コンテンツチェッカーによってフラグ付けされた材料が含まれているため、コンテンツを処理できませんでした",
+            "type": "api_error"
+          }
+        },
+        "downloaded": [],
+        "note": "not_ready"
+      }
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST05-014.webp",
+      "submitted_at": "2026-01-25T13:27:40.212976+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "5dabebe3-1bce-4386-b870-f3c76d4577aa",
+      "status": "IN_QUEUE",
+      "response": {
+        "logs": null,
+        "metrics": {},
+        "queue_position": 79,
+        "request_id": "5dabebe3-1bce-4386-b870-f3c76d4577aa",
+        "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T15:33:46.729942+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260125/14382b3eafc2b51f7cc2c8981a3e60d9.png",
+              "width": 864,
+              "height": 1216,
+              "content_type": "image/png"
+            }
+          ],
+          "timings": {
+            "inference": 4.999008910031989
+          },
+          "seed": 2450631339,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "prompt": "remove the watermark SAMPLE in the image"
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260125/14382b3eafc2b51f7cc2c8981a3e60d9.png",
+            "path": "302/ST05/ST05-014.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1330776,
+            "sha256": "f2dff913bef8cda584bac0ab122a314318649b29ba3af4ea66a73fa8a8bad03f"
+          }
+        ]
+      }
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST05-015.webp",
+      "submitted_at": "2026-01-25T13:27:40.604518+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "cd24ee05-fcdc-4505-a6f4-96e4e589bd09",
+      "status": "IN_QUEUE",
+      "response": {
+        "logs": null,
+        "metrics": {},
+        "queue_position": 80,
+        "request_id": "cd24ee05-fcdc-4505-a6f4-96e4e589bd09",
+        "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T15:56:40.267627+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260125/42135e3a279b0b1d9a075bb49c05f735.png",
+              "content_type": "image/png",
+              "file_size": 0,
+              "width": 864,
+              "height": 1216
+            }
+          ],
+          "seed": 763109526,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "debug_latents": null,
+          "debug_per_pass_latents": null
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260125/42135e3a279b0b1d9a075bb49c05f735.png",
+            "path": "302/ST05/ST05-015.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1147937,
+            "sha256": "61d8d4401fcb6611819c6ffaa13c0bae97b381a618c168bfcb60e74a8c13102a"
+          }
+        ]
+      }
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST05-016.webp",
+      "submitted_at": "2026-01-25T14:54:08.062769+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "94bc34c8-6a58-4457-8988-10904c8ec6b9",
+      "status": "IN_QUEUE",
+      "response": {
+        "logs": null,
+        "metrics": {},
+        "queue_position": 0,
+        "request_id": "94bc34c8-6a58-4457-8988-10904c8ec6b9",
+        "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T16:06:04.693557+00:00",
+        "ok": false,
+        "http_status": 422,
+        "response": {
+          "error": {
+            "err_code": -10021,
+            "message": "The content could not be processed because it contained material flagged by a content checker",
+            "message_cn": "内容因包含被内容检查器标记的材料而无法处理",
+            "message_jp": "コンテンツチェッカーによってフラグ付けされた材料が含まれているため、コンテンツを処理できませんでした",
+            "type": "api_error"
+          }
+        },
+        "downloaded": [],
+        "note": "not_ready"
+      }
+    }
+  ],
+  "updated_at": "2026-01-25T16:04:14.299062+00:00"
+}

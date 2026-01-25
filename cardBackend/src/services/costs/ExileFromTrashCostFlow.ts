@@ -70,7 +70,7 @@ export class ExileFromTrashCostFlow {
 
         const targetConfig = TargetResolver.resolveTargetConfig(costEffect);
         let availableTargets = TargetResolver.generateAvailableTargets(gameEnv, playerId, targetConfig);
-        availableTargets = TargetSelectionPipeline.apply(availableTargets, costEffect, sourceCarduid);
+        availableTargets = TargetSelectionPipeline.apply(gameEnv, availableTargets, costEffect, sourceCarduid);
 
         if (availableTargets.length < requiredCount) {
             return { success: true, kind: 'insufficientTargets' };

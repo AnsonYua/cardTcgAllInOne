@@ -103,6 +103,12 @@ export enum EventType {
     // Effect draw trigger events
     TRIGGER_EFFECT_DRAW = 'TRIGGER_EFFECT_DRAW',
 
+    // EX resource trigger events
+    TRIGGER_EX_RESOURCE_PLACED = 'TRIGGER_EX_RESOURCE_PLACED',
+
+    // Shield/base battle damage trigger events
+    TRIGGER_SHIELD_AREA_CARD_DAMAGED = 'TRIGGER_SHIELD_AREA_CARD_DAMAGED',
+
     // Unified target choice system
     TARGET_CHOICE = 'TARGET_CHOICE',
     
