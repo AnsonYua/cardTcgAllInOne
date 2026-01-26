@@ -1,0 +1,832 @@
+{
+  "created_at": "2026-01-26T17:32:25.099417+00:00",
+  "endpoint": "https://api.302.ai/aliyun/api/v1/services/aigc/multimodal-generation/generation",
+  "model": "qwen-image-edit-plus-2025-12-15",
+  "parameters": {
+    "n": 1,
+    "size": "864*1216",
+    "negative_prompt": "",
+    "prompt_extend": true,
+    "watermark": false
+  },
+  "items": [
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-001.webp",
+      "submitted_at": "2026-01-26T17:32:25.647075+00:00",
+      "ok": false,
+      "http_status": 401,
+      "request_id": null,
+      "response": {
+        "error": {
+          "err_code": -10002,
+          "message": "Invalid API Key, for details please view 302.AI",
+          "message_cn": "无效的API KEY，更多请访问 302.AI",
+          "message_jp": "無効なAPIキーです。詳細は 302.AI をご覧ください。  ",
+          "type": "api_error"
+        }
+      },
+      "downloaded": []
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-001.webp",
+      "submitted_at": "2026-01-26T17:33:05.279161+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "d71cc6fb-3ed4-407e-8d64-4642c54c26ab",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/7a/20260127/82a15263/3fb45a20-d928-4a48-8762-d7b23cd478fe-1.png?Expires=1770054578&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=SyF2dGzDZA7HRxt2t%2B8vmybRuTs%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "d71cc6fb-3ed4-407e-8d64-4642c54c26ab"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/7a/20260127/82a15263/3fb45a20-d928-4a48-8762-d7b23cd478fe-1.png?Expires=1770054578&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=SyF2dGzDZA7HRxt2t%2B8vmybRuTs%3D",
+          "path": "302/T/T-001.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1431354,
+          "sha256": "a071dfc1787b5a4cf2eb8722ac018866b18f87ce9b252f4f35c0c6cd2b651b7b"
+        }
+      ]
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-002.webp",
+      "submitted_at": "2026-01-26T17:33:20.996038+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "c5905f87-e8de-4d23-9775-1dc37439e044",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/d6/20260127/82a15263/94077e58-b37d-4800-be9a-f5a4695ac34f-1.png?Expires=1770054594&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=GVbyO6IrbmFTUGObLIohRr2wMoM%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "c5905f87-e8de-4d23-9775-1dc37439e044"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/d6/20260127/82a15263/94077e58-b37d-4800-be9a-f5a4695ac34f-1.png?Expires=1770054594&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=GVbyO6IrbmFTUGObLIohRr2wMoM%3D",
+          "path": "302/T/T-002.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1290750,
+          "sha256": "2009377a59efae709c47db1be130bca71aef931410156e0da66cf48d71fefb93"
+        }
+      ]
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-003.webp",
+      "submitted_at": "2026-01-26T17:33:38.561764+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "b67e20fe-4153-49e6-89bc-59027c0082bf",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/0f/20260127/82a15263/e0244231-8f55-4273-acab-e1646c5ce95f-1.png?Expires=1770054612&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=qqiXN7uNE0cPGegTTdC4Q%2Bxm48Q%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "b67e20fe-4153-49e6-89bc-59027c0082bf"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/0f/20260127/82a15263/e0244231-8f55-4273-acab-e1646c5ce95f-1.png?Expires=1770054612&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=qqiXN7uNE0cPGegTTdC4Q%2Bxm48Q%3D",
+          "path": "302/T/T-003.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1270492,
+          "sha256": "364639e56957c85507f3c652ae3a95cd0410b284fe034f9432e4fd4a0cab7dad"
+        }
+      ]
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-004.webp",
+      "submitted_at": "2026-01-26T17:33:52.004747+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "5777db4b-0006-4663-8303-26d86c884edd",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/6c/20260127/82a15263/141c88a7-b21e-430b-af01-f85875471743-1.png?Expires=1770054625&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=hjKhOJMGR0O6gCTZua7x%2BvlBbec%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "5777db4b-0006-4663-8303-26d86c884edd"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/6c/20260127/82a15263/141c88a7-b21e-430b-af01-f85875471743-1.png?Expires=1770054625&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=hjKhOJMGR0O6gCTZua7x%2BvlBbec%3D",
+          "path": "302/T/T-004.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1601864,
+          "sha256": "957cd037e55545ba5c95bd4c55e6f6c6d456e30122f38cda78ae19e3a5f0cc95"
+        }
+      ]
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-005.webp",
+      "submitted_at": "2026-01-26T17:34:05.807196+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "f5e08e3c-ea9c-4a1c-8727-cfc708dcb5da",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/bc/20260127/82a15263/606a9848-ad20-4205-8b8f-b822a199b17b-1.png?Expires=1770054639&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=GMBaHl2iTYF5AG0%2B26%2FbRaAEGOY%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "f5e08e3c-ea9c-4a1c-8727-cfc708dcb5da"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/bc/20260127/82a15263/606a9848-ad20-4205-8b8f-b822a199b17b-1.png?Expires=1770054639&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=GMBaHl2iTYF5AG0%2B26%2FbRaAEGOY%3D",
+          "path": "302/T/T-005.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1499777,
+          "sha256": "12cd6fff18b2d94ae129a2a3ce9b579d719d4b68197ba2a5f6859f7abc038c12"
+        }
+      ]
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-006.webp",
+      "submitted_at": "2026-01-26T17:34:19.836472+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "fab144e3-85c5-4fef-a1da-24c4ceb3df3a",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/08/20260127/82a15263/ba9f9ea4-782d-47b0-9fe4-d432a755481f-1.png?Expires=1770054653&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=TLsQrhb6wqh52TNe%2B3xxxbYu5Ws%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "fab144e3-85c5-4fef-a1da-24c4ceb3df3a"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/08/20260127/82a15263/ba9f9ea4-782d-47b0-9fe4-d432a755481f-1.png?Expires=1770054653&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=TLsQrhb6wqh52TNe%2B3xxxbYu5Ws%3D",
+          "path": "302/T/T-006.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1621013,
+          "sha256": "e8deba0d8d7dc96c81616a5e7b23b3753dfeb372d84457be1f4b6674c398194c"
+        }
+      ]
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-007.webp",
+      "submitted_at": "2026-01-26T17:34:37.035808+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "fac72766-b15c-46bc-b2d5-c50c4b437d01",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/46/20260127/82a15263/c2e8fa33-fed6-4bc1-a50a-84d92d6199c5-1.png?Expires=1770054669&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=PYZIWdlHLKYxGUul1lKm3H62i70%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "fac72766-b15c-46bc-b2d5-c50c4b437d01"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/46/20260127/82a15263/c2e8fa33-fed6-4bc1-a50a-84d92d6199c5-1.png?Expires=1770054669&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=PYZIWdlHLKYxGUul1lKm3H62i70%3D",
+          "path": "302/T/T-007.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1402039,
+          "sha256": "2a26d2c1265b33b04131a3a50b2be9120392e9d480126e6fa585be2a4d480412"
+        }
+      ]
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-008.webp",
+      "submitted_at": "2026-01-26T17:34:51.167010+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "988b1277-a9c6-495c-a539-6b4ee7069ed4",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/56/20260127/82a15263/587a94ca-94a2-4e20-a275-55395857c3c5-1.png?Expires=1770054684&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=Bzia%2BRPKYdyAic789oKugCJCJ3c%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "988b1277-a9c6-495c-a539-6b4ee7069ed4"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/56/20260127/82a15263/587a94ca-94a2-4e20-a275-55395857c3c5-1.png?Expires=1770054684&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=Bzia%2BRPKYdyAic789oKugCJCJ3c%3D",
+          "path": "302/T/T-008.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1477347,
+          "sha256": "4f546035ec308fd744512686e90c63863f25f1e73868f2410e8ea7be490fbe42"
+        }
+      ]
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-009.webp",
+      "submitted_at": "2026-01-26T17:35:04.815697+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "df753ea2-8edc-4a88-a87b-0e557ab07dc0",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/0d/20260127/82a15263/3b4e458a-20cd-49b0-8d17-38967ae15c92-1.png?Expires=1770054698&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=bYCv0IvtIwrNdY%2FNa03Qlqz4faY%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "df753ea2-8edc-4a88-a87b-0e557ab07dc0"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/0d/20260127/82a15263/3b4e458a-20cd-49b0-8d17-38967ae15c92-1.png?Expires=1770054698&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=bYCv0IvtIwrNdY%2FNa03Qlqz4faY%3D",
+          "path": "302/T/T-009.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1443936,
+          "sha256": "98dcc4446b16edcfe4fd9e9e2a6588747ffff0fc6355a89eff6083835e820cd1"
+        }
+      ]
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-010.webp",
+      "submitted_at": "2026-01-26T17:35:20.853083+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "e2e43281-b8ec-4fc4-abaf-cc8be1f1674c",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/f7/20260127/82a15263/07b1d482-d7e6-405d-8fcf-7cfffaabb088-1.png?Expires=1770054714&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=8uDRRw2RlDxfPOYWkyD%2Fca73b7k%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "e2e43281-b8ec-4fc4-abaf-cc8be1f1674c"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/f7/20260127/82a15263/07b1d482-d7e6-405d-8fcf-7cfffaabb088-1.png?Expires=1770054714&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=8uDRRw2RlDxfPOYWkyD%2Fca73b7k%3D",
+          "path": "302/T/T-010.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1424849,
+          "sha256": "85a26c0dbdafb31bc3268c822f33a13b3d8a23336e8d951370c9ce5c0fb5d1ca"
+        }
+      ]
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-011.webp",
+      "submitted_at": "2026-01-26T17:35:35.226156+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "ed7bf2ce-ae52-4b4d-839f-61e87a448c35",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/1c/20260127/82a15263/61faca13-956e-4e08-8698-43a4e7fae97f-1.png?Expires=1770054728&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=ebEoMn57KMVfJ30p8uE0vdBgv0k%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "ed7bf2ce-ae52-4b4d-839f-61e87a448c35"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/1c/20260127/82a15263/61faca13-956e-4e08-8698-43a4e7fae97f-1.png?Expires=1770054728&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=ebEoMn57KMVfJ30p8uE0vdBgv0k%3D",
+          "path": "302/T/T-011.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1478743,
+          "sha256": "4a7cc57216fdba6066ccb05515ec7fab66171ac3b4be86ee984c758db6be07c4"
+        }
+      ]
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-012.webp",
+      "submitted_at": "2026-01-26T17:35:49.895394+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "7849d4f6-d0a4-4449-a045-a039555128a9",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/00/20260127/82a15263/7f3c813e-a29e-4da8-8e8c-dc7bb9047600-1.png?Expires=1770054743&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=mRar9aIq%2BDHQ%2FuoCdNDybB1ej8A%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "7849d4f6-d0a4-4449-a045-a039555128a9"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/00/20260127/82a15263/7f3c813e-a29e-4da8-8e8c-dc7bb9047600-1.png?Expires=1770054743&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=mRar9aIq%2BDHQ%2FuoCdNDybB1ej8A%3D",
+          "path": "302/T/T-012.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1433207,
+          "sha256": "01ad56b75d839a87fd9ade28eba4c62d2e94182d977f3b2df3d22f9d1c88d870"
+        }
+      ]
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-013.webp",
+      "submitted_at": "2026-01-26T17:36:04.038793+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "6943a7d0-9290-4753-9667-7fc0f2aac91b",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/bf/20260127/82a15263/637e262b-a9fc-46bc-9950-82ff47e359e1-1.png?Expires=1770054757&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=1tuP5E1Z9xzRvkU8OCwhWR%2BuLWk%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "6943a7d0-9290-4753-9667-7fc0f2aac91b"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/bf/20260127/82a15263/637e262b-a9fc-46bc-9950-82ff47e359e1-1.png?Expires=1770054757&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=1tuP5E1Z9xzRvkU8OCwhWR%2BuLWk%3D",
+          "path": "302/T/T-013.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1389246,
+          "sha256": "efd3ccc830cc593ff334b92adf10948971f2b570e1a372e084b4ce291e142c38"
+        }
+      ]
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-014.webp",
+      "submitted_at": "2026-01-26T17:36:17.665857+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "97733874-399d-49f1-9c92-e9fb3bbe3f00",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/0b/20260127/82a15263/849f289a-4eba-459f-bc10-64588b7ea37d-1.png?Expires=1770054771&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=sCGsMRMVkJ64%2FrC22Q1b%2BRVP8rs%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "97733874-399d-49f1-9c92-e9fb3bbe3f00"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/0b/20260127/82a15263/849f289a-4eba-459f-bc10-64588b7ea37d-1.png?Expires=1770054771&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=sCGsMRMVkJ64%2FrC22Q1b%2BRVP8rs%3D",
+          "path": "302/T/T-014.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1262478,
+          "sha256": "a823fa61f18b988a646aae848d42934e849bb5523427cb73aefa98d3723ee143"
+        }
+      ]
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-015.webp",
+      "submitted_at": "2026-01-26T17:36:31.610705+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "ee9520ee-d49c-4f57-a559-c51b93118afe",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/f5/20260127/82a15263/644f5220-1002-481b-b422-2dca48d42bf1-1.png?Expires=1770054785&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=4EI9H7hYfZEV6diu4x00O7P1EDE%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "ee9520ee-d49c-4f57-a559-c51b93118afe"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/f5/20260127/82a15263/644f5220-1002-481b-b422-2dca48d42bf1-1.png?Expires=1770054785&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=4EI9H7hYfZEV6diu4x00O7P1EDE%3D",
+          "path": "302/T/T-015.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1470331,
+          "sha256": "0e61e62469f3cfd5dad2ec5ecfa9b3c274d1d4dd7f4ef5acc3b0b0b7ad27369c"
+        }
+      ]
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-016.webp",
+      "submitted_at": "2026-01-26T17:36:46.508632+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "9e24e6a6-80d8-4997-84da-a40d8680e784",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/f7/20260127/82a15263/1e77e903-5506-4400-9c38-7a8b93739377-1.png?Expires=1770054799&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=wdRrEDcHFapASD7aDj%2BkEbXSXwc%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "9e24e6a6-80d8-4997-84da-a40d8680e784"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/f7/20260127/82a15263/1e77e903-5506-4400-9c38-7a8b93739377-1.png?Expires=1770054799&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=wdRrEDcHFapASD7aDj%2BkEbXSXwc%3D",
+          "path": "302/T/T-016.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1370396,
+          "sha256": "7435f562587b171045f3aec5fde9dc5b3c2ae51a2a2b11d22f801ebb4f87c3f6"
+        }
+      ]
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-017.webp",
+      "submitted_at": "2026-01-26T17:36:59.943379+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "2a66d120-b368-424d-a622-2b229f4d6cfa",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/9f/20260127/82a15263/bdac4500-3fc8-407d-ba89-a647c1e9460f-1.png?Expires=1770054813&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=UO5B0M5nPIU345pOSBxqxpY3i0I%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "2a66d120-b368-424d-a622-2b229f4d6cfa"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/9f/20260127/82a15263/bdac4500-3fc8-407d-ba89-a647c1e9460f-1.png?Expires=1770054813&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=UO5B0M5nPIU345pOSBxqxpY3i0I%3D",
+          "path": "302/T/T-017.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1469648,
+          "sha256": "6f67360a871c26ab3bfd45d0c899c4d211e69e9d8d8fc4ea008c73caa2aeefe1"
+        }
+      ]
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-018.webp",
+      "submitted_at": "2026-01-26T17:37:15.404193+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "e76e324b-2b80-405a-9d29-0cb63f4d3b30",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/a3/20260127/82a15263/eed902ce-1e4e-4256-9f62-f1f8072d4ce3-1.png?Expires=1770054829&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=MO%2BSlPdC6pViVNotmzl3AXmuw6g%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "e76e324b-2b80-405a-9d29-0cb63f4d3b30"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/a3/20260127/82a15263/eed902ce-1e4e-4256-9f62-f1f8072d4ce3-1.png?Expires=1770054829&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=MO%2BSlPdC6pViVNotmzl3AXmuw6g%3D",
+          "path": "302/T/T-018.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1455191,
+          "sha256": "30fb94f808d71fd49f81861e559959de6be177740f1c0ff5cb3de7157940a619"
+        }
+      ]
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-019.webp",
+      "submitted_at": "2026-01-26T17:37:29.832163+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "5814c605-ef11-4864-8c4a-19828f224c60",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/dc/20260127/82a15263/f508a2e6-70d1-4013-a404-81a7e32d4e08-1.png?Expires=1770054843&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=UdXlWeOiQ4bGTc%2Bs3ctHvJwtfYY%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "5814c605-ef11-4864-8c4a-19828f224c60"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/dc/20260127/82a15263/f508a2e6-70d1-4013-a404-81a7e32d4e08-1.png?Expires=1770054843&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=UdXlWeOiQ4bGTc%2Bs3ctHvJwtfYY%3D",
+          "path": "302/T/T-019.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1516095,
+          "sha256": "3a704517f64e60550368a723281f3b96c0980b450bc1faa08721c2ece8cea2a8"
+        }
+      ]
+    },
+    {
+      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/T-020.webp",
+      "submitted_at": "2026-01-26T17:37:44.462746+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "c38f6551-fee5-47ad-9f99-411056aa598a",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/4e/20260127/82a15263/a47877e9-a948-458f-9cbe-936e912383ed-1.png?Expires=1770054857&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=3Mdmn37NhSLpOcAYDUZDTA%2F1cAQ%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "c38f6551-fee5-47ad-9f99-411056aa598a"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/4e/20260127/82a15263/a47877e9-a948-458f-9cbe-936e912383ed-1.png?Expires=1770054857&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=3Mdmn37NhSLpOcAYDUZDTA%2F1cAQ%3D",
+          "path": "302/T/T-020.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1312362,
+          "sha256": "ad54a14dd1fdaffdf82dd3019015f1d97e78313d96f799321327f9ddcefc8910"
+        }
+      ]
+    }
+  ],
+  "updated_at": "2026-01-26T17:37:44.462761+00:00"
+}
