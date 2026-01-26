@@ -552,14 +552,36 @@
         "status": "IN_QUEUE"
       },
       "result": {
-        "fetched_at": "2026-01-25T16:22:18.885480+00:00",
-        "ok": false,
-        "http_status": 0,
+        "fetched_at": "2026-01-25T17:32:42.131482+00:00",
+        "ok": true,
+        "http_status": 200,
         "response": {
-          "error": "TimeoutError: The read operation timed out"
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260126/bfe28f33783f6e2bb8741af0038bf6be.png",
+              "content_type": "image/png",
+              "file_size": 0,
+              "width": 864,
+              "height": 1216
+            }
+          ],
+          "seed": 4041375665,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "debug_latents": null,
+          "debug_per_pass_latents": null
         },
-        "downloaded": [],
-        "note": "not_ready"
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260126/bfe28f33783f6e2bb8741af0038bf6be.png",
+            "path": "302/GD01/GD01-012.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1131806,
+            "sha256": "02a8936036e882e735b84cf726129db176e84097d0b981b87a1519d191a4c084"
+          }
+        ]
       }
     },
     {
@@ -577,14 +599,37 @@
         "status": "IN_QUEUE"
       },
       "result": {
-        "fetched_at": "2026-01-25T16:26:24.662203+00:00",
-        "ok": false,
-        "http_status": 0,
+        "fetched_at": "2026-01-25T17:33:23.022863+00:00",
+        "ok": true,
+        "http_status": 200,
         "response": {
-          "error": "TimeoutError: The read operation timed out"
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260126/de315a3d6aa554b626ca8a9ad5d26c2c.png",
+              "width": 864,
+              "height": 1216,
+              "content_type": "image/png"
+            }
+          ],
+          "timings": {
+            "inference": 4.985337407095358
+          },
+          "seed": 133792510,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "prompt": "remove the watermark SAMPLE in the image"
         },
-        "downloaded": [],
-        "note": "not_ready"
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260126/de315a3d6aa554b626ca8a9ad5d26c2c.png",
+            "path": "302/GD01/GD01-013.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1159133,
+            "sha256": "444bc9a12fc796853d1fa0fa2efc9d3839d2a6477dc331782d2abc6da907d038"
+          }
+        ]
       }
     },
     {
@@ -1031,7 +1076,7 @@
         "status": "IN_QUEUE"
       },
       "result": {
-        "fetched_at": "2026-01-25T16:33:56.414613+00:00",
+        "fetched_at": "2026-01-26T12:48:05.670719+00:00",
         "ok": false,
         "http_status": 422,
         "response": {
@@ -1158,7 +1203,7 @@
         "status": "IN_QUEUE"
       },
       "result": {
-        "fetched_at": "2026-01-25T16:34:57.995395+00:00",
+        "fetched_at": "2026-01-26T12:48:06.738876+00:00",
         "ok": false,
         "http_status": 422,
         "response": {
@@ -4283,7 +4328,7 @@
         "status": "IN_QUEUE"
       },
       "result": {
-        "fetched_at": "2026-01-25T17:13:12.684619+00:00",
+        "fetched_at": "2026-01-26T12:48:08.003561+00:00",
         "ok": false,
         "http_status": 422,
         "response": {
@@ -4837,7 +4882,7 @@
         "status": "IN_QUEUE"
       },
       "result": {
-        "fetched_at": "2026-01-25T17:19:27.122418+00:00",
+        "fetched_at": "2026-01-26T12:48:09.130046+00:00",
         "ok": false,
         "http_status": 422,
         "response": {
@@ -5153,7 +5198,7 @@
         "status": "IN_QUEUE"
       },
       "result": {
-        "fetched_at": "2026-01-25T17:22:21.702015+00:00",
+        "fetched_at": "2026-01-26T12:48:09.746098+00:00",
         "ok": false,
         "http_status": 422,
         "response": {
@@ -5231,7 +5276,7 @@
         "status": "IN_QUEUE"
       },
       "result": {
-        "fetched_at": "2026-01-25T17:22:43.487980+00:00",
+        "fetched_at": "2026-01-26T12:48:10.666563+00:00",
         "ok": false,
         "http_status": 422,
         "response": {
@@ -5406,7 +5451,7 @@
         "status": "IN_QUEUE"
       },
       "result": {
-        "fetched_at": "2026-01-25T17:24:08.534781+00:00",
+        "fetched_at": "2026-01-26T12:48:11.694005+00:00",
         "ok": false,
         "http_status": 422,
         "response": {
@@ -5530,6 +5575,39 @@
         "queue_position": 65,
         "request_id": "01e24162-8da4-4c5b-8c1c-57c7cbcbf36c",
         "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T17:24:56.381644+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260126/ff4c62026eaddd0b9f782ce847808c11.png",
+              "width": 864,
+              "height": 1216,
+              "content_type": "image/png"
+            }
+          ],
+          "timings": {
+            "inference": 5.003206601017155
+          },
+          "seed": 464781204,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "prompt": "remove the watermark SAMPLE in the image"
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260126/ff4c62026eaddd0b9f782ce847808c11.png",
+            "path": "302/GD01/GD01-120.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1033442,
+            "sha256": "bc46d5a82f11f27ae3ef2c768af8130d7417818479a73318548368c0fe3a7d23"
+          }
+        ]
       }
     },
     {
@@ -5545,6 +5623,38 @@
         "queue_position": 66,
         "request_id": "98eabb48-b19a-4301-b3f0-f05a65d3400c",
         "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T17:25:07.722147+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260126/5da3bfdda91a5d37b27750cf968653a9.png",
+              "content_type": "image/png",
+              "file_size": 0,
+              "width": 864,
+              "height": 1216
+            }
+          ],
+          "seed": 2049931915,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "debug_latents": null,
+          "debug_per_pass_latents": null
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260126/5da3bfdda91a5d37b27750cf968653a9.png",
+            "path": "302/GD01/GD01-121.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1267836,
+            "sha256": "0687ec495bd7c5826ae1f28ea263e75c4e971ac273126036764c68403fec5ba7"
+          }
+        ]
       }
     },
     {
@@ -5560,6 +5670,39 @@
         "queue_position": 67,
         "request_id": "3102cd0c-9a6c-462e-9045-b4e8271619fd",
         "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T17:25:22.329548+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260126/d2f90c2b82790d822953194d552a5990.png",
+              "width": 864,
+              "height": 1216,
+              "content_type": "image/png"
+            }
+          ],
+          "timings": {
+            "inference": 5.161083095008507
+          },
+          "seed": 2439692177,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "prompt": "remove the watermark SAMPLE in the image"
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260126/d2f90c2b82790d822953194d552a5990.png",
+            "path": "302/GD01/GD01-122.png",
+            "ok": false,
+            "http_status": 403,
+            "headers": {},
+            "bytes": 16
+          }
+        ]
       }
     },
     {
@@ -5575,6 +5718,39 @@
         "queue_position": 68,
         "request_id": "56425d6d-ada2-4fcf-a288-33732cc613c1",
         "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T17:25:51.573691+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260126/10b4acb466ebe303d4a5e055f961eac4.png",
+              "width": 864,
+              "height": 1216,
+              "content_type": "image/png"
+            }
+          ],
+          "timings": {
+            "inference": 6.955995053984225
+          },
+          "seed": 4121795762,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "prompt": "remove the watermark SAMPLE in the image"
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260126/10b4acb466ebe303d4a5e055f961eac4.png",
+            "path": "302/GD01/GD01-123.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1374577,
+            "sha256": "2c1a42133b25a2ce10fa194879f9c91f816df2e758a5177b49e90fa9a7a8e89c"
+          }
+        ]
       }
     },
     {
@@ -5590,6 +5766,39 @@
         "queue_position": 69,
         "request_id": "e49274af-18de-4d04-8013-1ac7496d791b",
         "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T17:27:08.150938+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260126/2bfae79803bebd91553f7215452e42b3.png",
+              "width": 864,
+              "height": 1216,
+              "content_type": "image/png"
+            }
+          ],
+          "timings": {
+            "inference": 4.9748272355645895
+          },
+          "seed": 2511731955,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "prompt": "remove the watermark SAMPLE in the image"
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260126/2bfae79803bebd91553f7215452e42b3.png",
+            "path": "302/GD01/GD01-124.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1498557,
+            "sha256": "4f032362d9a9c7046a1f268ae2414a8ec74671c2ddec086b0a27ba444a6aadc9"
+          }
+        ]
       }
     },
     {
@@ -5605,6 +5814,39 @@
         "queue_position": 70,
         "request_id": "0f91a3fa-364d-430e-be67-1b6b57cdc7c9",
         "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T17:27:52.183182+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260126/08bdc193a5d3536ccd7587fbbf176e21.png",
+              "width": 864,
+              "height": 1216,
+              "content_type": "image/png"
+            }
+          ],
+          "timings": {
+            "inference": 4.98310481896624
+          },
+          "seed": 3512507653,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "prompt": "remove the watermark SAMPLE in the image"
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260126/08bdc193a5d3536ccd7587fbbf176e21.png",
+            "path": "302/GD01/GD01-125.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1151484,
+            "sha256": "62bd8e33696b2adbe08b367256928c91a13b72e73b6431af04c347083fac8dce"
+          }
+        ]
       }
     },
     {
@@ -5620,6 +5862,39 @@
         "queue_position": 71,
         "request_id": "e890d141-a291-43ab-98d6-b730c5059bf0",
         "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T17:28:22.713972+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260126/29d15d4135f4dfc0e56cf95c18514279.png",
+              "width": 864,
+              "height": 1216,
+              "content_type": "image/png"
+            }
+          ],
+          "timings": {
+            "inference": 6.886684235185385
+          },
+          "seed": 521947197,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "prompt": "remove the watermark SAMPLE in the image"
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260126/29d15d4135f4dfc0e56cf95c18514279.png",
+            "path": "302/GD01/GD01-126.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1011598,
+            "sha256": "cf1ec1db63ed4a0315ee7e75a532d4c65864919303fb850af11c7f3878128df6"
+          }
+        ]
       }
     },
     {
@@ -5635,6 +5910,38 @@
         "queue_position": 72,
         "request_id": "b49b61b8-2e6a-4e27-b5f5-fcfdacaa2e2d",
         "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T17:28:46.590179+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260126/b7ce1f8ef5cc463a2c5f9e887ac7484a.png",
+              "content_type": "image/png",
+              "file_size": 0,
+              "width": 864,
+              "height": 1216
+            }
+          ],
+          "seed": 3950131003,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "debug_latents": null,
+          "debug_per_pass_latents": null
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260126/b7ce1f8ef5cc463a2c5f9e887ac7484a.png",
+            "path": "302/GD01/GD01-127.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1284740,
+            "sha256": "ac6f47a87af8fd035b05d11826559126e5b8480d156561c96d1ce0aa9f35fd69"
+          }
+        ]
       }
     },
     {
@@ -5650,6 +5957,39 @@
         "queue_position": 73,
         "request_id": "a4a72165-ba3e-4d21-a1ad-9730c53838b0",
         "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T17:29:02.452963+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260126/d54ba7dfe7d95e7909ad5886776c3347.png",
+              "width": 864,
+              "height": 1216,
+              "content_type": "image/png"
+            }
+          ],
+          "timings": {
+            "inference": 5.0805700539494865
+          },
+          "seed": 1810716211,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "prompt": "remove the watermark SAMPLE in the image"
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260126/d54ba7dfe7d95e7909ad5886776c3347.png",
+            "path": "302/GD01/GD01-128.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1121704,
+            "sha256": "2886871823e7b644c1f198429e5a7b928bad144deb37f19b935b73faafaf4fa7"
+          }
+        ]
       }
     },
     {
@@ -5665,6 +6005,38 @@
         "queue_position": 74,
         "request_id": "244aff23-67fc-4d5a-ad38-6f4b36d2407b",
         "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T17:29:11.571099+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260126/dfede0d9c4f47f6e02bf899e0c5347b1.png",
+              "content_type": "image/png",
+              "file_size": 0,
+              "width": 864,
+              "height": 1216
+            }
+          ],
+          "seed": 2395286171,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "debug_latents": null,
+          "debug_per_pass_latents": null
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260126/dfede0d9c4f47f6e02bf899e0c5347b1.png",
+            "path": "302/GD01/GD01-129.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1386064,
+            "sha256": "3a147764dfe6f336194607e43a847dbfd05b0978fa685a5c9eeb6225606bb428"
+          }
+        ]
       }
     },
     {
@@ -5680,8 +6052,41 @@
         "queue_position": 75,
         "request_id": "a7ee5370-4a45-44d7-990b-5c651cb2b1d0",
         "status": "IN_QUEUE"
+      },
+      "result": {
+        "fetched_at": "2026-01-25T17:30:24.916112+00:00",
+        "ok": true,
+        "http_status": 200,
+        "response": {
+          "images": [
+            {
+              "url": "https://file.302.ai/gpt/imgs/20260126/b7fd426ddab80f9ee5ce1a3cfee6abb8.png",
+              "width": 864,
+              "height": 1216,
+              "content_type": "image/png"
+            }
+          ],
+          "timings": {
+            "inference": 4.987789203063585
+          },
+          "seed": 3047402848,
+          "has_nsfw_concepts": [
+            false
+          ],
+          "prompt": "remove the watermark SAMPLE in the image"
+        },
+        "downloaded": [
+          {
+            "url": "https://file.302.ai/gpt/imgs/20260126/b7fd426ddab80f9ee5ce1a3cfee6abb8.png",
+            "path": "302/GD01/GD01-130.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1117275,
+            "sha256": "ef1f221b6597ca8891df2adfb22e0a722b92c7139860ebea6ddcab5a5f7fef83"
+          }
+        ]
       }
     }
   ],
-  "updated_at": "2026-01-25T17:24:36.300115+00:00"
+  "updated_at": "2026-01-25T17:33:23.022937+00:00"
 }
