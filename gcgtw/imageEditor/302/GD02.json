@@ -410,104 +410,230 @@
     {
       "image_url": "https://www.gundam-gcg.com/en/images/cards/card/GD02-011.webp",
       "submitted_at": "2026-01-25T16:33:14.811009+00:00",
-      "ok": false,
-      "http_status": 401,
-      "request_id": null,
+      "ok": true,
+      "http_status": 200,
+      "request_id": "808055c7-e642-4d45-adaf-4e41e22117c5",
       "response": {
-        "error": {
-          "err_code": -10004,
-          "message": "Insufficient account balance. Create your own tool, for details please view 302.AI",
-          "message_cn": "账户余额不足，创建属于自己的工具，更多请访问 302.AI",
-          "message_jp": "アカウント残高が不足しています。独自のツールを作成するには、302.AI をご覧ください。",
-          "type": "api_error"
-        }
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/d9/20260127/82a15263/89ce928b-1fda-4dfc-a152-15ceb1135cf3-1.png?Expires=1770051277&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=IctNH0WjoXI5WZiFikmJEKMX%2B3c%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "808055c7-e642-4d45-adaf-4e41e22117c5"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/d9/20260127/82a15263/89ce928b-1fda-4dfc-a152-15ceb1135cf3-1.png?Expires=1770051277&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=IctNH0WjoXI5WZiFikmJEKMX%2B3c%3D",
+          "path": "302/GD02/GD02-011.png",
+          "skipped": true
+        }
+      ],
+      "fixed_at": "2026-01-26T16:38:01.883882+00:00"
     },
     {
       "image_url": "https://www.gundam-gcg.com/en/images/cards/card/GD02-012.webp",
       "submitted_at": "2026-01-25T16:33:15.147745+00:00",
-      "ok": false,
-      "http_status": 401,
-      "request_id": null,
+      "ok": true,
+      "http_status": 200,
+      "request_id": "b9193cbe-977a-47ec-8a87-185026343b9d",
       "response": {
-        "error": {
-          "err_code": -10004,
-          "message": "Insufficient account balance. Create your own tool, for details please view 302.AI",
-          "message_cn": "账户余额不足，创建属于自己的工具，更多请访问 302.AI",
-          "message_jp": "アカウント残高が不足しています。独自のツールを作成するには、302.AI をご覧ください。",
-          "type": "api_error"
-        }
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/96/20260127/82a15263/fdb32300-3e22-4027-86ae-0bac8a0953d0-1.png?Expires=1770051290&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=5UAFXsexTuxin9rA9Bb5QDv0acQ%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "b9193cbe-977a-47ec-8a87-185026343b9d"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/96/20260127/82a15263/fdb32300-3e22-4027-86ae-0bac8a0953d0-1.png?Expires=1770051290&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=5UAFXsexTuxin9rA9Bb5QDv0acQ%3D",
+          "path": "302/GD02/GD02-012.png",
+          "skipped": true
+        }
+      ],
+      "fixed_at": "2026-01-26T16:38:14.171740+00:00"
     },
     {
       "image_url": "https://www.gundam-gcg.com/en/images/cards/card/GD02-013.webp",
       "submitted_at": "2026-01-25T16:33:15.560149+00:00",
-      "ok": false,
-      "http_status": 401,
-      "request_id": null,
+      "ok": true,
+      "http_status": 200,
+      "request_id": "302adf78-f920-46a4-a415-8d1339c5e815",
       "response": {
-        "error": {
-          "err_code": -10004,
-          "message": "Insufficient account balance. Create your own tool, for details please view 302.AI",
-          "message_cn": "账户余额不足，创建属于自己的工具，更多请访问 302.AI",
-          "message_jp": "アカウント残高が不足しています。独自のツールを作成するには、302.AI をご覧ください。",
-          "type": "api_error"
-        }
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/ca/20260127/82a15263/26ee181e-a9f2-4d6e-a914-dee8549bed9e-1.png?Expires=1770051303&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=Mc8e4xxZ1Ipr4OHArnm3yDHhe5c%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "302adf78-f920-46a4-a415-8d1339c5e815"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/ca/20260127/82a15263/26ee181e-a9f2-4d6e-a914-dee8549bed9e-1.png?Expires=1770051303&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=Mc8e4xxZ1Ipr4OHArnm3yDHhe5c%3D",
+          "path": "302/GD02/GD02-013.png",
+          "skipped": true
+        }
+      ],
+      "fixed_at": "2026-01-26T16:38:27.894531+00:00"
     },
     {
       "image_url": "https://www.gundam-gcg.com/en/images/cards/card/GD02-014.webp",
       "submitted_at": "2026-01-25T16:33:15.968661+00:00",
-      "ok": false,
-      "http_status": 401,
-      "request_id": null,
+      "ok": true,
+      "http_status": 200,
+      "request_id": "499b88e5-0077-4b21-bac4-b2dcc74cbf33",
       "response": {
-        "error": {
-          "err_code": -10004,
-          "message": "Insufficient account balance. Create your own tool, for details please view 302.AI",
-          "message_cn": "账户余额不足，创建属于自己的工具，更多请访问 302.AI",
-          "message_jp": "アカウント残高が不足しています。独自のツールを作成するには、302.AI をご覧ください。",
-          "type": "api_error"
-        }
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/c8/20260127/82a15263/d9fb8348-3f49-4c69-85b9-90790fb14125-1.png?Expires=1770051316&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=IHAwROM4SRXRR1heLJGq9r2vpYc%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "499b88e5-0077-4b21-bac4-b2dcc74cbf33"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/c8/20260127/82a15263/d9fb8348-3f49-4c69-85b9-90790fb14125-1.png?Expires=1770051316&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=IHAwROM4SRXRR1heLJGq9r2vpYc%3D",
+          "path": "302/GD02/GD02-014.png",
+          "skipped": true
+        }
+      ],
+      "fixed_at": "2026-01-26T16:38:40.404170+00:00"
     },
     {
       "image_url": "https://www.gundam-gcg.com/en/images/cards/card/GD02-015.webp",
       "submitted_at": "2026-01-25T16:33:16.384206+00:00",
-      "ok": false,
-      "http_status": 401,
-      "request_id": null,
+      "ok": true,
+      "http_status": 200,
+      "request_id": "6215dca7-e403-47ce-837b-0c6f20667654",
       "response": {
-        "error": {
-          "err_code": -10004,
-          "message": "Insufficient account balance. Create your own tool, for details please view 302.AI",
-          "message_cn": "账户余额不足，创建属于自己的工具，更多请访问 302.AI",
-          "message_jp": "アカウント残高が不足しています。独自のツールを作成するには、302.AI をご覧ください。",
-          "type": "api_error"
-        }
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/9a/20260127/82a15263/633f897b-2e8f-4aa6-9044-43e4ef6bbe42-1.png?Expires=1770051327&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=u4EI%2FkbWyJ4bpuDHfMQwfaafLR0%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "6215dca7-e403-47ce-837b-0c6f20667654"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/9a/20260127/82a15263/633f897b-2e8f-4aa6-9044-43e4ef6bbe42-1.png?Expires=1770051327&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=u4EI%2FkbWyJ4bpuDHfMQwfaafLR0%3D",
+          "path": "302/GD02/GD02-015.png",
+          "skipped": true
+        }
+      ],
+      "fixed_at": "2026-01-26T16:38:51.716166+00:00"
     },
     {
       "image_url": "https://www.gundam-gcg.com/en/images/cards/card/GD02-016.webp",
       "submitted_at": "2026-01-25T16:33:16.738274+00:00",
-      "ok": false,
-      "http_status": 401,
-      "request_id": null,
+      "ok": true,
+      "http_status": 200,
+      "request_id": "fc1a41c1-4e44-4e1f-b903-77b34d1ceb4d",
       "response": {
-        "error": {
-          "err_code": -10004,
-          "message": "Insufficient account balance. Create your own tool, for details please view 302.AI",
-          "message_cn": "账户余额不足，创建属于自己的工具，更多请访问 302.AI",
-          "message_jp": "アカウント残高が不足しています。独自のツールを作成するには、302.AI をご覧ください。",
-          "type": "api_error"
-        }
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/6c/20260127/82a15263/75d8738c-68bf-4c5f-b3b6-02e31ca936b5-1.png?Expires=1770051338&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=mbVDFz4L52sU8AgswXUq5FQuguw%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "fc1a41c1-4e44-4e1f-b903-77b34d1ceb4d"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/6c/20260127/82a15263/75d8738c-68bf-4c5f-b3b6-02e31ca936b5-1.png?Expires=1770051338&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=mbVDFz4L52sU8AgswXUq5FQuguw%3D",
+          "path": "302/GD02/GD02-016.png",
+          "skipped": true
+        }
+      ],
+      "fixed_at": "2026-01-26T16:39:03.224631+00:00"
     },
     {
       "image_url": "https://www.gundam-gcg.com/en/images/cards/card/GD02-011.webp",
@@ -5310,5 +5436,5 @@
       ]
     }
   ],
-  "updated_at": "2026-01-25T17:07:36.573748+00:00"
+  "updated_at": "2026-01-26T16:39:03.224647+00:00"
 }

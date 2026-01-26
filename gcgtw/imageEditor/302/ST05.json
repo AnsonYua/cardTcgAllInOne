@@ -472,7 +472,47 @@
         },
         "downloaded": [],
         "note": "not_ready"
-      }
+      },
+      "alibaba_fallback": {
+        "submitted_at": "2026-01-26T16:41:03.275510+00:00",
+        "ok": true,
+        "http_status": 200,
+        "request_id": "95e9a3d9-1632-4b2c-b8bc-4ec62b80db75",
+        "response": {
+          "output": {
+            "choices": [
+              {
+                "finish_reason": "stop",
+                "message": {
+                  "content": [
+                    {
+                      "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/db/20260127/82a15263/4442aee7-b130-4346-98f4-90090a469c6d-1.png?Expires=1770051455&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=%2FT08lklLM5yxMAeLvUZY4EGf3p8%3D"
+                    }
+                  ],
+                  "role": "assistant"
+                }
+              }
+            ]
+          },
+          "usage": {
+            "height": 1216,
+            "image_count": 1,
+            "width": 864
+          },
+          "request_id": "95e9a3d9-1632-4b2c-b8bc-4ec62b80db75"
+        },
+        "downloaded": [
+          {
+            "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/db/20260127/82a15263/4442aee7-b130-4346-98f4-90090a469c6d-1.png?Expires=1770051455&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=%2FT08lklLM5yxMAeLvUZY4EGf3p8%3D",
+            "path": "302/ST05/ST05-010.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1216707,
+            "sha256": "6dd7c6a311b8ffb9ebf96ad55c480e0d3672465748a9e5e4cc8fa4d33939f055"
+          }
+        ]
+      },
+      "fixed_at": "2026-01-26T16:41:03.275728+00:00"
     },
     {
       "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST05-011.webp",
@@ -503,7 +543,47 @@
         },
         "downloaded": [],
         "note": "not_ready"
-      }
+      },
+      "alibaba_fallback": {
+        "submitted_at": "2026-01-26T16:41:16.926830+00:00",
+        "ok": true,
+        "http_status": 200,
+        "request_id": "35b6e661-4be7-4040-91a1-3f4bf37e20d1",
+        "response": {
+          "output": {
+            "choices": [
+              {
+                "finish_reason": "stop",
+                "message": {
+                  "content": [
+                    {
+                      "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/6e/20260127/82a15263/6d8f38b8-27ad-4265-a34c-7bcfcb881ff1-1.png?Expires=1770051470&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=hr2e8VPNmkuUHxhSjS%2FwvVnQ1c8%3D"
+                    }
+                  ],
+                  "role": "assistant"
+                }
+              }
+            ]
+          },
+          "usage": {
+            "height": 1216,
+            "image_count": 1,
+            "width": 864
+          },
+          "request_id": "35b6e661-4be7-4040-91a1-3f4bf37e20d1"
+        },
+        "downloaded": [
+          {
+            "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/6e/20260127/82a15263/6d8f38b8-27ad-4265-a34c-7bcfcb881ff1-1.png?Expires=1770051470&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=hr2e8VPNmkuUHxhSjS%2FwvVnQ1c8%3D",
+            "path": "302/ST05/ST05-011.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1448766,
+            "sha256": "06fef96e38ebee7eb85f4065eca120aa1f031ae7094024c1f377ad73d39a10f6"
+          }
+        ]
+      },
+      "fixed_at": "2026-01-26T16:41:16.927042+00:00"
     },
     {
       "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST05-012.webp",
@@ -582,7 +662,47 @@
         },
         "downloaded": [],
         "note": "not_ready"
-      }
+      },
+      "alibaba_fallback": {
+        "submitted_at": "2026-01-26T16:41:31.140038+00:00",
+        "ok": true,
+        "http_status": 200,
+        "request_id": "24123617-ffdd-4996-a7df-18f11ecc420e",
+        "response": {
+          "output": {
+            "choices": [
+              {
+                "finish_reason": "stop",
+                "message": {
+                  "content": [
+                    {
+                      "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/f4/20260127/82a15263/ac5ba44f-04b3-48a1-9928-ecee2e8c8c4c-1.png?Expires=1770051484&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=UMAMpcMx%2BpUIk0FTg6lqIQt7Vw0%3D"
+                    }
+                  ],
+                  "role": "assistant"
+                }
+              }
+            ]
+          },
+          "usage": {
+            "height": 1216,
+            "image_count": 1,
+            "width": 864
+          },
+          "request_id": "24123617-ffdd-4996-a7df-18f11ecc420e"
+        },
+        "downloaded": [
+          {
+            "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/f4/20260127/82a15263/ac5ba44f-04b3-48a1-9928-ecee2e8c8c4c-1.png?Expires=1770051484&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=UMAMpcMx%2BpUIk0FTg6lqIQt7Vw0%3D",
+            "path": "302/ST05/ST05-013.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1493319,
+            "sha256": "8e15bf08e24b596e99b0bfeee6e9e1170c39380642100eff5a2ec9c3010b1fb1"
+          }
+        ]
+      },
+      "fixed_at": "2026-01-26T16:41:31.140100+00:00"
     },
     {
       "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST05-014.webp",
@@ -678,38 +798,7 @@
           }
         ]
       }
-    },
-    {
-      "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST05-016.webp",
-      "submitted_at": "2026-01-25T14:54:08.062769+00:00",
-      "ok": true,
-      "http_status": 200,
-      "request_id": "94bc34c8-6a58-4457-8988-10904c8ec6b9",
-      "status": "IN_QUEUE",
-      "response": {
-        "logs": null,
-        "metrics": {},
-        "queue_position": 0,
-        "request_id": "94bc34c8-6a58-4457-8988-10904c8ec6b9",
-        "status": "IN_QUEUE"
-      },
-      "result": {
-        "fetched_at": "2026-01-25T16:06:04.693557+00:00",
-        "ok": false,
-        "http_status": 422,
-        "response": {
-          "error": {
-            "err_code": -10021,
-            "message": "The content could not be processed because it contained material flagged by a content checker",
-            "message_cn": "内容因包含被内容检查器标记的材料而无法处理",
-            "message_jp": "コンテンツチェッカーによってフラグ付けされた材料が含まれているため、コンテンツを処理できませんでした",
-            "type": "api_error"
-          }
-        },
-        "downloaded": [],
-        "note": "not_ready"
-      }
     }
   ],
-  "updated_at": "2026-01-25T16:04:14.299062+00:00"
+  "updated_at": "2026-01-26T16:41:32.449144+00:00"
 }

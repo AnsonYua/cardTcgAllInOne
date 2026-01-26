@@ -520,7 +520,47 @@
         },
         "downloaded": [],
         "note": "not_ready"
-      }
+      },
+      "alibaba_fallback": {
+        "submitted_at": "2026-01-26T16:40:33.960428+00:00",
+        "ok": true,
+        "http_status": 200,
+        "request_id": "5bbf1769-a29a-47a1-83c4-3e4658e366cc",
+        "response": {
+          "output": {
+            "choices": [
+              {
+                "finish_reason": "stop",
+                "message": {
+                  "content": [
+                    {
+                      "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/e4/20260127/82a15263/a0ad50bc-5a6a-4afb-a66f-93db3aa97521-1.png?Expires=1770051427&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=HLYGCvoQOi0wxitoEA8%2FzH2aLWE%3D"
+                    }
+                  ],
+                  "role": "assistant"
+                }
+              }
+            ]
+          },
+          "usage": {
+            "height": 1216,
+            "image_count": 1,
+            "width": 864
+          },
+          "request_id": "5bbf1769-a29a-47a1-83c4-3e4658e366cc"
+        },
+        "downloaded": [
+          {
+            "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/e4/20260127/82a15263/a0ad50bc-5a6a-4afb-a66f-93db3aa97521-1.png?Expires=1770051427&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=HLYGCvoQOi0wxitoEA8%2FzH2aLWE%3D",
+            "path": "302/ST04/ST04-011.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1401206,
+            "sha256": "4d90d135e489a3dc8077bf92165cf57ae15306d9a24d09ef51340361244cfbd7"
+          }
+        ]
+      },
+      "fixed_at": "2026-01-26T16:40:33.960529+00:00"
     },
     {
       "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST04-012.webp",
@@ -712,7 +752,47 @@
             "bytes": 16
           }
         ]
-      }
+      },
+      "alibaba_fallback": {
+        "submitted_at": "2026-01-26T16:40:48.630620+00:00",
+        "ok": true,
+        "http_status": 200,
+        "request_id": "f19f8ccb-798e-4ace-b483-4df503dc78a7",
+        "response": {
+          "output": {
+            "choices": [
+              {
+                "finish_reason": "stop",
+                "message": {
+                  "content": [
+                    {
+                      "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/4d/20260127/82a15263/f9612d59-1ed2-4fb2-a312-f74dd0265488-1.png?Expires=1770051442&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=AIOlsszHJJglwsbljx%2F3jbKJ8r0%3D"
+                    }
+                  ],
+                  "role": "assistant"
+                }
+              }
+            ]
+          },
+          "usage": {
+            "height": 1216,
+            "image_count": 1,
+            "width": 864
+          },
+          "request_id": "f19f8ccb-798e-4ace-b483-4df503dc78a7"
+        },
+        "downloaded": [
+          {
+            "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/4d/20260127/82a15263/f9612d59-1ed2-4fb2-a312-f74dd0265488-1.png?Expires=1770051442&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=AIOlsszHJJglwsbljx%2F3jbKJ8r0%3D",
+            "path": "302/ST04/ST04-015.png",
+            "ok": true,
+            "http_status": 200,
+            "bytes": 1440016,
+            "sha256": "fc2ff4320cb1812a47c9684dae68dfecf4fa005b452661a1dfb946ec1976ff25"
+          }
+        ]
+      },
+      "fixed_at": "2026-01-26T16:40:48.630712+00:00"
     },
     {
       "image_url": "https://www.gundam-gcg.com/en/images/cards/card/ST04-016.webp",
@@ -763,5 +843,5 @@
       }
     }
   ],
-  "updated_at": "2026-01-25T15:56:14.270873+00:00"
+  "updated_at": "2026-01-26T16:40:48.630717+00:00"
 }
