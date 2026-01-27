@@ -27,7 +27,7 @@
             "effects": {
                 "description": [
                     "While you have no Units that are Lv.6 or higher in play, this card in your hand gets Lv.-1 and cost -1 for each enemy Unit in play.",
-                    "【When Paired】Choose 1 enemy Unit with the highest Lv. Deal 3 damage to it."
+                    "[When Paired]Choose 1 enemy Unit with the highest Lv. Deal 3 damage to it."
                 ],
                 "rules": [
                     {
@@ -130,7 +130,7 @@
             "hp": 4,
             "effects": {
                 "description": [
-                    "【Deploy】Choose 1 enemy Unit. Deal 1 damage to it."
+                    "[Deploy]Choose 1 enemy Unit. Deal 1 damage to it."
                 ],
                 "rules": [
                     {
@@ -195,7 +195,7 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Attack】If this Unit is attacking an enemy Unit, choose 1 enemy Unit. Deal 1 damage to it."
+                    "[Attack]If this Unit is attacking an enemy Unit, choose 1 enemy Unit. Deal 1 damage to it."
                 ],
                 "rules": [
                     {
@@ -266,7 +266,7 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "【During Pair】【Attack】【Once per Turn】If this Unit is attacking the enemy player, reveal 1 (Earth Federation) Unit card from your hand. Return it to the bottom of your deck. If you do, draw 2."
+                    "[During Pair][Attack][Once per Turn]If this Unit is attacking the enemy player, reveal 1 (Earth Federation) Unit card from your hand. Return it to the bottom of your deck. If you do, draw 2."
                 ],
                 "rules": [
                     {
@@ -399,7 +399,7 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Deploy】Choose 1 rested enemy Unit that is Lv.2 or lower. It won't be set as active during the start phase of your opponent's next turn."
+                    "[Deploy]Choose 1 rested enemy Unit that is Lv.2 or lower. It won't be set as active during the start phase of your opponent's next turn."
                 ],
                 "rules": [
                     {
@@ -454,8 +454,8 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【When Paired】If this is a (Mafty) Unit, choose 1 of your (Mafty) Units. During this turn, it may choose a damaged active enemy Unit as its attack target."
+                    "[Burst]Add this card to your hand.",
+                    "[When Paired]If this is a (Mafty) Unit, choose 1 of your (Mafty) Units. During this turn, it may choose a damaged active enemy Unit as its attack target."
                 ],
                 "rules": [
                     {
@@ -518,7 +518,7 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Burst】Add this card to your hand.",
+                    "[Burst]Add this card to your hand.",
                     "When you draw with an effect, if this is a blue Unit, it gains <High-Maneuver> during this turn. (This Unit can't be blocked.)"
                 ],
                 "rules": [
@@ -576,8 +576,8 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "【Main】Choose 1 friendly Link Unit. It gains <Breach 1> during this turn. (When this Unit's attack destroys an enemy Unit, deal 1 damage to the first card in that opponent's shield area.)",
-                    "【Pilot】[Gawman Nobile]"
+                    "[Main]Choose 1 friendly Link Unit. It gains <Breach 1> during this turn. (When this Unit's attack destroys an enemy Unit, deal 1 damage to the first card in that opponent's shield area.)",
+                    "[Pilot][Gawman Nobile]"
                 ],
                 "rules": [
                     {
@@ -627,7 +627,7 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "【Main】【Action】Choose 1 enemy Unit. Deal 1 damage to it. If a friendly (Mafty) Link Unit is in play, deal 2 damage instead."
+                    "[Main][Action]Choose 1 enemy Unit. Deal 1 damage to it. If a friendly (Mafty) Link Unit is in play, deal 2 damage instead."
                 ],
                 "rules": [
                     {
@@ -711,8 +711,8 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand. Then, choose 1 of your Units. It gets AP+2 during this turn."
+                    "[Burst]Deploy this card.",
+                    "[Deploy]Add 1 of your Shields to your hand. Then, choose 1 of your Units. It gets AP+2 during this turn."
                 ],
                 "rules": [
                     {
@@ -782,9 +782,9 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
-                    "[Activate/Main]【Once per Turn】(2):Choose 1 of your Units. It recovers 2 HP."
+                    "[Burst]Deploy this card.",
+                    "[Deploy]Add 1 of your Shields to your hand.",
+                    "[Activate/Main][Once per Turn](2):Choose 1 of your Units. It recovers 2 HP."
                 ],
                 "rules": [
                     {

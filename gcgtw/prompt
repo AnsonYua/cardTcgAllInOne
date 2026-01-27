@@ -1,5 +1,7 @@
 if cardType = unit, print the text  within a box starting from (81,907) width 692 , hieght 141.if there is 2 array in description , secondary text
   should be in next line
+if cardType = character, print the text  within a box starting from (75,1042) width 591 , hieght 150.if there is 2 array in description , secondary text
+  should be in next line
 
 
 write a python reading /Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/data/st01Card.json, if cardType = unit,  looking at
@@ -9,3 +11,14 @@ write a python reading /Users/hello/Desktop/card/unity/cardGameRevamp/cardBacken
 
 
 python st01_effect_box.py --no-fit --font-size 28 --stroke-width 3  --stroke-fill "#FFFFFF" --overwrite --bold --line-height-mult 1.2 --draw-box --box-fill #FFFFFF80
+
+
+python3 optimize_ready_to_use.py --format jpeg --quality 80 --max-dim 600
+
+
+ python st01_effect_box.py --set ST02 \
+    --no-fit --font-size 28 \
+    --stroke-width 3 --stroke-fill "#FFFFFF" \
+    --bold --line-height-mult 1.2 \
+    --draw-box --box-fill "#FFFFFF80" \
+    --overwrite

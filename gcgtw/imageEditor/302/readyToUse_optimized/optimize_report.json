@@ -1,5 +1,5 @@
 {
-  "started_at": "2026-01-27T16:10:43.303498+00:00",
+  "started_at": "2026-01-27T16:26:29.068134+00:00",
   "in_dir": "302/readyToUse",
   "out_dir": "302/readyToUse_optimized",
   "format": "jpeg",
@@ -10,252 +10,252 @@
   "strip_color_mgmt": true,
   "items": [
     {
-      "src": "302/readyToUse/ST01/ST01-001.png",
-      "dst": "302/readyToUse_optimized/ST01/ST01-001.jpeg",
-      "rel": "ST01/ST01-001.png",
+      "src": "302/readyToUse/ST02/ST02-001.png",
+      "dst": "302/readyToUse_optimized/ST02/ST02-001.jpeg",
+      "rel": "ST02/ST02-001.png",
       "before": {
-        "bytes": 1604578,
+        "bytes": 1585057,
         "width": 864,
         "height": 1216
       },
       "after": {
-        "bytes": 214278,
+        "bytes": 217196,
         "width": 863,
         "height": 1216
       }
     },
     {
-      "src": "302/readyToUse/ST01/ST01-002.png",
-      "dst": "302/readyToUse_optimized/ST01/ST01-002.jpeg",
-      "rel": "ST01/ST01-002.png",
+      "src": "302/readyToUse/ST02/ST02-002.png",
+      "dst": "302/readyToUse_optimized/ST02/ST02-002.jpeg",
+      "rel": "ST02/ST02-002.png",
       "before": {
-        "bytes": 1502528,
+        "bytes": 1426289,
         "width": 864,
         "height": 1216
       },
       "after": {
-        "bytes": 210427,
+        "bytes": 195692,
         "width": 863,
         "height": 1216
       }
     },
     {
-      "src": "302/readyToUse/ST01/ST01-003.png",
-      "dst": "302/readyToUse_optimized/ST01/ST01-003.jpeg",
-      "rel": "ST01/ST01-003.png",
+      "src": "302/readyToUse/ST02/ST02-003.png",
+      "dst": "302/readyToUse_optimized/ST02/ST02-003.jpeg",
+      "rel": "ST02/ST02-003.png",
       "before": {
-        "bytes": 1351005,
+        "bytes": 1469299,
         "width": 864,
         "height": 1216
       },
       "after": {
-        "bytes": 190865,
+        "bytes": 215357,
         "width": 863,
         "height": 1216
       }
     },
     {
-      "src": "302/readyToUse/ST01/ST01-004.png",
-      "dst": "302/readyToUse_optimized/ST01/ST01-004.jpeg",
-      "rel": "ST01/ST01-004.png",
+      "src": "302/readyToUse/ST02/ST02-004.png",
+      "dst": "302/readyToUse_optimized/ST02/ST02-004.jpeg",
+      "rel": "ST02/ST02-004.png",
       "before": {
-        "bytes": 1315689,
+        "bytes": 1533243,
         "width": 864,
         "height": 1216
       },
       "after": {
-        "bytes": 177980,
+        "bytes": 224153,
         "width": 863,
         "height": 1216
       }
     },
     {
-      "src": "302/readyToUse/ST01/ST01-005.png",
-      "dst": "302/readyToUse_optimized/ST01/ST01-005.jpeg",
-      "rel": "ST01/ST01-005.png",
+      "src": "302/readyToUse/ST02/ST02-005.png",
+      "dst": "302/readyToUse_optimized/ST02/ST02-005.jpeg",
+      "rel": "ST02/ST02-005.png",
       "before": {
-        "bytes": 1496143,
+        "bytes": 1439354,
         "width": 864,
         "height": 1216
       },
       "after": {
-        "bytes": 215193,
+        "bytes": 198945,
         "width": 863,
         "height": 1216
       }
     },
     {
-      "src": "302/readyToUse/ST01/ST01-006.png",
-      "dst": "302/readyToUse_optimized/ST01/ST01-006.jpeg",
-      "rel": "ST01/ST01-006.png",
+      "src": "302/readyToUse/ST02/ST02-006.png",
+      "dst": "302/readyToUse_optimized/ST02/ST02-006.jpeg",
+      "rel": "ST02/ST02-006.png",
       "before": {
-        "bytes": 1790478,
+        "bytes": 1615988,
         "width": 864,
         "height": 1216
       },
       "after": {
-        "bytes": 273048,
+        "bytes": 233627,
         "width": 863,
         "height": 1216
       }
     },
     {
-      "src": "302/readyToUse/ST01/ST01-007.png",
-      "dst": "302/readyToUse_optimized/ST01/ST01-007.jpeg",
-      "rel": "ST01/ST01-007.png",
+      "src": "302/readyToUse/ST02/ST02-007.png",
+      "dst": "302/readyToUse_optimized/ST02/ST02-007.jpeg",
+      "rel": "ST02/ST02-007.png",
       "before": {
-        "bytes": 1331031,
+        "bytes": 1574138,
         "width": 864,
         "height": 1216
       },
       "after": {
-        "bytes": 184829,
+        "bytes": 213582,
         "width": 863,
         "height": 1216
       }
     },
     {
-      "src": "302/readyToUse/ST01/ST01-008.png",
-      "dst": "302/readyToUse_optimized/ST01/ST01-008.jpeg",
-      "rel": "ST01/ST01-008.png",
+      "src": "302/readyToUse/ST02/ST02-008.png",
+      "dst": "302/readyToUse_optimized/ST02/ST02-008.jpeg",
+      "rel": "ST02/ST02-008.png",
       "before": {
-        "bytes": 1371686,
+        "bytes": 1434592,
         "width": 864,
         "height": 1216
       },
       "after": {
-        "bytes": 192985,
+        "bytes": 209801,
         "width": 863,
         "height": 1216
       }
     },
     {
-      "src": "302/readyToUse/ST01/ST01-009.png",
-      "dst": "302/readyToUse_optimized/ST01/ST01-009.jpeg",
-      "rel": "ST01/ST01-009.png",
+      "src": "302/readyToUse/ST02/ST02-009.png",
+      "dst": "302/readyToUse_optimized/ST02/ST02-009.jpeg",
+      "rel": "ST02/ST02-009.png",
       "before": {
-        "bytes": 1345124,
+        "bytes": 1306471,
         "width": 864,
         "height": 1216
       },
       "after": {
-        "bytes": 181626,
+        "bytes": 192141,
         "width": 863,
         "height": 1216
       }
     },
     {
-      "src": "302/readyToUse/ST01/ST01-010.png",
-      "dst": "302/readyToUse_optimized/ST01/ST01-010.jpeg",
-      "rel": "ST01/ST01-010.png",
+      "src": "302/readyToUse/ST02/ST02-010.png",
+      "dst": "302/readyToUse_optimized/ST02/ST02-010.jpeg",
+      "rel": "ST02/ST02-010.png",
       "before": {
-        "bytes": 1361116,
+        "bytes": 1405397,
         "width": 864,
         "height": 1216
       },
       "after": {
-        "bytes": 207054,
+        "bytes": 206278,
         "width": 863,
         "height": 1216
       }
     },
     {
-      "src": "302/readyToUse/ST01/ST01-011.png",
-      "dst": "302/readyToUse_optimized/ST01/ST01-011.jpeg",
-      "rel": "ST01/ST01-011.png",
+      "src": "302/readyToUse/ST02/ST02-011.png",
+      "dst": "302/readyToUse_optimized/ST02/ST02-011.jpeg",
+      "rel": "ST02/ST02-011.png",
       "before": {
-        "bytes": 178379,
+        "bytes": 1319508,
         "width": 864,
         "height": 1216
       },
       "after": {
-        "bytes": 173312,
+        "bytes": 178681,
         "width": 863,
         "height": 1216
       }
     },
     {
-      "src": "302/readyToUse/ST01/ST01-012.png",
-      "dst": "302/readyToUse_optimized/ST01/ST01-012.jpeg",
-      "rel": "ST01/ST01-012.png",
+      "src": "302/readyToUse/ST02/ST02-012.png",
+      "dst": "302/readyToUse_optimized/ST02/ST02-012.jpeg",
+      "rel": "ST02/ST02-012.png",
       "before": {
-        "bytes": 225159,
+        "bytes": 1240751,
         "width": 864,
         "height": 1216
       },
       "after": {
-        "bytes": 201257,
+        "bytes": 175399,
         "width": 863,
         "height": 1216
       }
     },
     {
-      "src": "302/readyToUse/ST01/ST01-013.png",
-      "dst": "302/readyToUse_optimized/ST01/ST01-013.jpeg",
-      "rel": "ST01/ST01-013.png",
+      "src": "302/readyToUse/ST02/ST02-013.png",
+      "dst": "302/readyToUse_optimized/ST02/ST02-013.jpeg",
+      "rel": "ST02/ST02-013.png",
       "before": {
-        "bytes": 199525,
+        "bytes": 1309505,
         "width": 864,
         "height": 1216
       },
       "after": {
-        "bytes": 174952,
+        "bytes": 189082,
         "width": 863,
         "height": 1216
       }
     },
     {
-      "src": "302/readyToUse/ST01/ST01-014.png",
-      "dst": "302/readyToUse_optimized/ST01/ST01-014.jpeg",
-      "rel": "ST01/ST01-014.png",
+      "src": "302/readyToUse/ST02/ST02-014.png",
+      "dst": "302/readyToUse_optimized/ST02/ST02-014.jpeg",
+      "rel": "ST02/ST02-014.png",
       "before": {
-        "bytes": 1283171,
+        "bytes": 1456931,
         "width": 864,
         "height": 1216
       },
       "after": {
-        "bytes": 163391,
+        "bytes": 208178,
         "width": 863,
         "height": 1216
       }
     },
     {
-      "src": "302/readyToUse/ST01/ST01-015.png",
-      "dst": "302/readyToUse_optimized/ST01/ST01-015.jpeg",
-      "rel": "ST01/ST01-015.png",
+      "src": "302/readyToUse/ST02/ST02-015.png",
+      "dst": "302/readyToUse_optimized/ST02/ST02-015.jpeg",
+      "rel": "ST02/ST02-015.png",
       "before": {
-        "bytes": 1520310,
+        "bytes": 1348726,
         "width": 864,
         "height": 1216
       },
       "after": {
-        "bytes": 230865,
+        "bytes": 216797,
         "width": 863,
         "height": 1216
       }
     },
     {
-      "src": "302/readyToUse/ST01/ST01-016.png",
-      "dst": "302/readyToUse_optimized/ST01/ST01-016.jpeg",
-      "rel": "ST01/ST01-016.png",
+      "src": "302/readyToUse/ST02/ST02-016.png",
+      "dst": "302/readyToUse_optimized/ST02/ST02-016.jpeg",
+      "rel": "ST02/ST02-016.png",
       "before": {
-        "bytes": 1281775,
+        "bytes": 1319853,
         "width": 864,
         "height": 1216
       },
       "after": {
-        "bytes": 192365,
+        "bytes": 184707,
         "width": 863,
         "height": 1216
       }
     }
   ],
-  "finished_at": "2026-01-27T16:10:44.634639+00:00",
+  "finished_at": "2026-01-27T16:26:30.420576+00:00",
   "summary": {
     "processed": 16,
-    "skipped": 0,
+    "skipped": 16,
     "errors": 0,
-    "total_before_bytes": 19157697,
-    "total_after_bytes": 3184427
+    "total_before_bytes": 22785102,
+    "total_after_bytes": 3259616
   }
 }

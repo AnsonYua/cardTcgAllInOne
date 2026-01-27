@@ -26,7 +26,7 @@
             "hp": 4,
             "effects": {
                 "description": [
-                    "【During Pair】This Unit gains <High-Maneuver> (This Unit can’t be blocked).",
+                    "[During Pair]This Unit gains <High-Maneuver> (This Unit can’t be blocked).",
                     "During your turn, when this Unit destroys an enemy shield-area card with battle damage, choose 1 enemy Unit. Deal 2 damage to it."
                 ],
                 "rules": [
@@ -243,7 +243,7 @@
             "hp": 2,
             "effects": {
                 "description": [
-                    "【Destroyed】Look at the top 3 cards of your deck. You may reveal 1 Zeon/Neo Zeon Unit card among them and add it to your hand. Return the rest to the bottom of your deck in random order."
+                    "[Destroyed]Look at the top 3 cards of your deck. You may reveal 1 Zeon/Neo Zeon Unit card among them and add it to your hand. Return the rest to the bottom of your deck in random order."
                 ],
                 "rules": [
 	                    {
@@ -317,7 +317,7 @@
             "hp": 2,
             "effects": {
                 "description": [
-                    "【Attack】This Unit gets AP+2 during this turn."
+                    "[Attack]This Unit gets AP+2 during this turn."
                 ],
                 "rules": [
                     {
@@ -360,7 +360,7 @@
             "hp": 3,
             "effects": {
                 "description": [
-                    "【Deploy】Deploy 1 rested Zaku II (Zeon: AP 1 · HP 1) Unit token."
+                    "[Deploy]Deploy 1 rested Zaku II (Zeon: AP 1 · HP 1) Unit token."
                 ],
                 "rules": [
                     {
@@ -397,8 +397,8 @@
             "hp": 2,
             "effects": {
                 "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【When Paired】You may deploy 1 Neo Zeon/Zeon Unit card that is Lv.4 or lower from your hand."
+                    "[Burst]Add this card to your hand.",
+                    "[When Paired]You may deploy 1 Neo Zeon/Zeon Unit card that is Lv.4 or lower from your hand."
                 ],
                 "rules": [
                     {
@@ -457,8 +457,8 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【Attack】During this turn, this Unit gets AP+1 and, if it is a Link Unit, gains <High-Maneuver> (can’t be blocked)."
+                    "[Burst]Add this card to your hand.",
+                    "[Attack]During this turn, this Unit gets AP+1 and, if it is a Link Unit, gains <High-Maneuver> (can’t be blocked)."
                 ],
                 "rules": [
                     {
@@ -530,8 +530,8 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "【Main】/【Action】Choose 1 friendly Unit; it gets AP+2 during this turn.",
-                    "【Pilot】[Angelo Sauper]"
+                    "[Main]/[Action]Choose 1 friendly Unit; it gets AP+2 during this turn.",
+                    "[Pilot][Angelo Sauper]"
                 ],
                 "rules": [
                     {
@@ -581,8 +581,8 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "【Burst】Activate this card’s 【Main】.",
-                    "【Main】/【Action】Choose 1 enemy Unit. Deal 2 damage to it."
+                    "[Burst]Activate this card’s [Main].",
+                    "[Main]/[Action]Choose 1 enemy Unit. Deal 2 damage to it."
                 ],
                 "rules": [
                     {
@@ -632,8 +632,8 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Action】Choose 1 friendly Unit. It can’t receive battle damage from enemy Units with 2 or less AP during this battle.",
-                    "【Pilot】[Ramba Ral]"
+                    "[Action]Choose 1 friendly Unit. It can’t receive battle damage from enemy Units with 2 or less AP during this battle.",
+                    "[Pilot][Ramba Ral]"
                 ],
                 "rules": [
                     {
@@ -688,8 +688,8 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand. Then choose 1 enemy Unit with ≤5 AP and deal 1 damage to it."
+                    "[Burst]Deploy this card.",
+                    "[Deploy]Add 1 of your Shields to your hand. Then choose 1 enemy Unit with ≤5 AP and deal 1 damage to it."
                 ],
                 "rules": [
                     {
@@ -755,9 +755,9 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
-                    "【Deploy】If it is your turn, deploy 1 rested Char’s Zaku II (Zeon: AP 3 · HP 1) Unit token."
+                    "[Burst]Deploy this card.",
+                    "[Deploy]Add 1 of your Shields to your hand.",
+                    "[Deploy]If it is your turn, deploy 1 rested Char’s Zaku II (Zeon: AP 3 · HP 1) Unit token."
                 ],
                 "rules": [
                     {

@@ -26,7 +26,7 @@
             "hp": 4,
             "effects": {
                 "description": [
-                    "【When Linked】If you have another (Clan) Unit in play, this Unit gains <First Strike> during this turn. (While this Unit is attacking, it deals damage before the enemy Unit.)"
+                    "[When Linked]If you have another (Clan) Unit in play, this Unit gains <First Strike> during this turn. (While this Unit is attacking, it deals damage before the enemy Unit.)"
                 ],
                 "rules": [
                     {
@@ -86,7 +86,7 @@
             "hp": 2,
             "effects": {
                 "description": [
-                    "【Deploy】If you have another (Clan) Unit in play, choose 1 enemy Unit. Deal 1 damage to it."
+                    "[Deploy]If you have another (Clan) Unit in play, choose 1 enemy Unit. Deal 1 damage to it."
                 ],
                 "rules": [
                     {
@@ -213,7 +213,7 @@
             "effects": {
                 "description": [
                     "<Breach 1> (When this Unit's attack destroys an enemy Unit, deal 1 damage to the first card in that opponent's shield area.)",
-                    "【Attack】Choose 1 to 2 friendly (Clan) Units. They get AP+2 during this turn."
+                    "[Attack]Choose 1 to 2 friendly (Clan) Units. They get AP+2 during this turn."
                 ],
                 "rules": [
                     {
@@ -281,7 +281,7 @@
             "hp": 2,
             "effects": {
                 "description": [
-                    "【Deploy】Choose 1 of your other (Clan) Units. During this turn, that Unit may choose an active enemy Unit with 3 or less AP as its attack target."
+                    "[Deploy]Choose 1 of your other (Clan) Units. During this turn, that Unit may choose an active enemy Unit with 3 or less AP as its attack target."
                 ],
                 "rules": [
                     {
@@ -350,8 +350,8 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【When Linked】Look at the top card of your deck. If it is a (Clan) card, you may reveal it and add it to your hand. Otherwise, put that card on the bottom of your deck."
+                    "[Burst]Add this card to your hand.",
+                    "[When Linked]Look at the top card of your deck. If it is a (Clan) card, you may reveal it and add it to your hand. Otherwise, put that card on the bottom of your deck."
                 ],
                 "rules": [
                     {
@@ -414,8 +414,8 @@
             "hp": 2,
             "effects": {
                 "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【During Link】【Attack】If you have a (Clan) Unit in play, look at the top card of your deck and return it to the top or bottom of your deck."
+                    "[Burst]Add this card to your hand.",
+                    "[During Link][Attack]If you have a (Clan) Unit in play, look at the top card of your deck and return it to the top or bottom of your deck."
                 ],
                 "rules": [
                     {
@@ -477,8 +477,8 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "【Main】【Action】Choose 1 to 2 friendly (Clan) Units. They get AP+2 during this turn.",
-                    "【Pilot】[Gaia (GQ)]"
+                    "[Main][Action]Choose 1 to 2 friendly (Clan) Units. They get AP+2 during this turn.",
+                    "[Pilot][Gaia (GQ)]"
                 ],
                 "rules": [
                     {
@@ -540,7 +540,7 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "【Main】Look at the top 3 cards of your deck. You may reveal 1 (Clan) Unit card or Pilot card among them and add it to your hand. Return the rest to the bottom of your deck in random order."
+                    "[Main]Look at the top 3 cards of your deck. You may reveal 1 (Clan) Unit card or Pilot card among them and add it to your hand. Return the rest to the bottom of your deck in random order."
                 ],
                 "rules": [
                     {
@@ -595,8 +595,8 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "【Action】Choose 1 to 2 friendly (Clan) Units. During this turn, they can't receive battle damage from enemy Units that are Lv.2 or lower.",
-                    "【Pilot】[Ortega (GQ)]"
+                    "[Action]Choose 1 to 2 friendly (Clan) Units. During this turn, they can't receive battle damage from enemy Units that are Lv.2 or lower.",
+                    "[Pilot][Ortega (GQ)]"
                 ],
                 "rules": [
 	                    {
@@ -657,8 +657,8 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
+                    "[Burst]Deploy this card.",
+                    "[Deploy]Add 1 of your Shields to your hand.",
                     "[Activate/Main]Rest this Base: If a friendly (Clan) Link Unit is in play, choose 1 friendly Unit. It gets AP+2 during this turn."
                 ],
                 "rules": [
@@ -741,9 +741,9 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
-                    "【Once per Turn】When a friendly (Clan) Unit links, it gains <Breach 3> during this turn. (When this Unit's attack destroys an enemy Unit, deal 3 damage to the first card in that opponent's shield area.)"
+                    "[Burst]Deploy this card.",
+                    "[Deploy]Add 1 of your Shields to your hand.",
+                    "[Once per Turn]When a friendly (Clan) Unit links, it gains <Breach 3> during this turn. (When this Unit's attack destroys an enemy Unit, deal 3 damage to the first card in that opponent's shield area.)"
                 ],
                 "rules": [
                     {

@@ -1,14 +1,14 @@
 """
-Render ST01 base/command card effects text onto existing card images.
+Render card effects text onto existing card images (ST01/ST02/etc).
 
 Reads:
-  /Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/data/st01Card.json
+  /Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/data/<set>Card.json
 
 Finds:
-  images under ./302/ST01 (by default), e.g. ST01-001.png
+  images under ./302/<SET>/ (configurable)
 
 Writes:
-  annotated images to ./302/ST01_effectBox/ (by default)
+  annotated images to ./302/<SET>_effectBox/ (configurable)
 
 Text layout:
   - base/command: box top-left (81, 907), width=692, height=141
@@ -31,6 +31,8 @@ import sys
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
+
+SUPPORTED_INPUT_EXTS = ["png", "jpg", "jpeg"]
 
 UNIT_BOX_X = 54
 UNIT_BOX_Y = 854
@@ -57,6 +59,11 @@ COMMAND_NO_PILOT_BOX_X = 81
 COMMAND_NO_PILOT_BOX_Y = 960
 COMMAND_NO_PILOT_BOX_W = 692
 COMMAND_NO_PILOT_BOX_H = 151
+
+CHARACTER_BOX_X = 75
+CHARACTER_BOX_Y = 1042
+CHARACTER_BOX_W = 591
+CHARACTER_BOX_H = 150
 
 
 def _try_import_pillow():
@@ -241,7 +248,7 @@ def _iter_cards(cards: Dict[str, Any]) -> Iterable[Tuple[str, Dict[str, Any]]]:
     for code, card in cards.items():
         if not isinstance(card, dict):
             continue
-        if card.get("cardType") in {"unit", "base", "command"}:
+        if card.get("cardType") in {"unit", "base", "command", "pilot"}:
             yield code, card
 
 
@@ -256,6 +263,14 @@ def _has_designate_pilot(card: Dict[str, Any]) -> bool:
         if isinstance(r, dict) and r.get("action") == "designate_pilot":
             return True
     return False
+
+
+def _find_src_image(images_dir: str, code: str) -> Optional[str]:
+    for ext in SUPPORTED_INPUT_EXTS:
+        p = os.path.join(images_dir, f"{code}.{ext}")
+        if os.path.exists(p):
+            return p
+    return None
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
@@ -276,13 +291,19 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             )
         Image, ImageDraw, ImageFont = pillow
 
+    default_set = "ST01"
+    default_json = f"/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/data/{default_set.lower()}Card.json"
+    default_images_dir = os.path.join("302", default_set)
+    default_out_dir = os.path.join("302", f"{default_set}_effectBox")
+
     p = argparse.ArgumentParser()
+    p.add_argument("--set", help="e.g. ST02 (auto-sets --json/--images-dir/--out-dir if left as defaults)")
     p.add_argument(
         "--json",
-        default="/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/data/st01Card.json",
+        default=default_json,
     )
-    p.add_argument("--images-dir", default=os.path.join("302", "ST01"))
-    p.add_argument("--out-dir", default=os.path.join("302", "ST01_effectBox"))
+    p.add_argument("--images-dir", default=default_images_dir)
+    p.add_argument("--out-dir", default=default_out_dir)
     p.add_argument("--font", help="optional font path (ttf/ttc)")
     p.add_argument("--font-size", type=int, default=20, help="starting font size (auto-shrinks to fit unless --no-fit)")
     p.add_argument("--min-font-size", type=int, default=12, help="minimum font size when auto-fitting")
@@ -340,6 +361,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         help="command box when no designate_pilot (x,y,w,h)",
     )
     p.add_argument(
+        "--pilot-box",
+        default=f"{CHARACTER_BOX_X},{CHARACTER_BOX_Y},{CHARACTER_BOX_W},{CHARACTER_BOX_H}",
+        help="character box as x,y,w,h",
+    )
+    p.add_argument(
         "--move-empty-description",
         action=argparse.BooleanOptionalAction,
         default=False,
@@ -348,6 +374,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     p.add_argument("--overwrite", action="store_true")
     p.add_argument("--dry-run", action="store_true")
     args = p.parse_args(argv)
+
+    if args.set:
+        set_code = str(args.set).strip().upper()
+        if args.json == default_json:
+            args.json = f"/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/data/{set_code.lower()}Card.json"
+        if args.images_dir == default_images_dir:
+            args.images_dir = os.path.join("302", set_code)
+        if args.out_dir == default_out_dir:
+            args.out_dir = os.path.join("302", f"{set_code}_effectBox")
 
     def parse_box(s: str) -> Tuple[int, int, int, int]:
         parts = [p.strip() for p in s.split(",")]
@@ -361,6 +396,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         base_box = parse_box(args.base_box)
         command_box_with_pilot = parse_box(args.command_box_with_pilot)
         command_box_no_pilot = parse_box(args.command_box_no_pilot)
+        pilot_box = parse_box(args.pilot_box)
     except ValueError as e:
         print(f"Argument error: {e}", file=sys.stderr)
         return 2
@@ -388,10 +424,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         else:
             desc = ""
 
-        src_img = os.path.join(args.images_dir, f"{code}.png")
-        if not os.path.exists(src_img):
+        src_img = _find_src_image(args.images_dir, code)
+        if not src_img:
             missing_images += 1
-            print(f"[MISS_IMG] {src_img}", file=sys.stderr)
+            tried = ", ".join([f"{code}.{e}" for e in SUPPORTED_INPUT_EXTS])
+            print(f"[MISS_IMG] {code} (tried: {tried})", file=sys.stderr)
             continue
 
         dst_img = os.path.join(args.out_dir, f"{code}.png")
@@ -406,9 +443,21 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 print(f"[DRY] {code}: description=[] -> {action}")
             else:
                 if args.move_empty_description:
-                    shutil.move(src_img, dst_img)
+                    # Only a true move when the source is already PNG; otherwise convert+delete.
+                    if src_img.lower().endswith(".png"):
+                        shutil.move(src_img, dst_img)
+                    else:
+                        ensure_pillow()
+                        assert Image is not None
+                        Image.open(src_img).convert("RGBA").save(dst_img, "PNG", optimize=True)
+                        os.remove(src_img)
                 else:
-                    shutil.copy2(src_img, dst_img)
+                    if src_img.lower().endswith(".png"):
+                        shutil.copy2(src_img, dst_img)
+                    else:
+                        ensure_pillow()
+                        assert Image is not None
+                        Image.open(src_img).convert("RGBA").save(dst_img, "PNG", optimize=True)
             processed += 1
             continue
 
@@ -417,7 +466,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             if args.dry_run:
                 print(f"[DRY] {code}: no effects -> copy")
             else:
-                shutil.copy2(src_img, dst_img)
+                if src_img.lower().endswith(".png"):
+                    shutil.copy2(src_img, dst_img)
+                else:
+                    ensure_pillow()
+                    assert Image is not None
+                    Image.open(src_img).convert("RGBA").save(dst_img, "PNG", optimize=True)
             processed += 1
             continue
 
@@ -444,6 +498,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             x0, y0, box_w, box_h = (
                 command_box_with_pilot if _has_designate_pilot(card) else command_box_no_pilot
             )
+        elif card_type == "pilot":
+            x0, y0, box_w, box_h = pilot_box
         else:
             x0, y0, box_w, box_h = base_box
         x1, y1 = x0 + box_w, y0 + box_h

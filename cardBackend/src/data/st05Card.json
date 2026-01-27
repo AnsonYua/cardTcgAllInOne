@@ -27,7 +27,7 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "【Deploy】Choose 1 of your other Units. Deal 1 damage to it. If you do, it gets AP+1 during this turn.",
+                    "[Deploy]Choose 1 of your other Units. Deal 1 damage to it. If you do, it gets AP+1 during this turn.",
                     "While this Unit is damaged, it gains <Suppression>. (Damage to Shields by an attack is dealt to the first 2 cards simultaneously.)"
                 ],
                 "rules": [
@@ -258,7 +258,7 @@
             "hp": 4,
             "effects": {
                 "description": [
-                    "【Destroyed】Choose 1 enemy Unit with 4 or less AP. Rest it."
+                    "[Destroyed]Choose 1 enemy Unit with 4 or less AP. Rest it."
                 ],
                 "rules": [
                     {
@@ -322,7 +322,7 @@
             "effects": {
                 "description": [
                     "<Blocker> (Rest this Unit to change the attack target to it.)",
-                    "【When Paired】Choose 1 enemy Unit that is Lv.3 or lower. It gets AP-2 during this turn."
+                    "[When Paired]Choose 1 enemy Unit that is Lv.3 or lower. It gets AP-2 during this turn."
                 ],
                 "rules": [
                     {
@@ -440,8 +440,8 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【When Paired】Choose 1 of your Units and 1 enemy Unit. Deal 1 damage to each."
+                    "[Burst]Add this card to your hand.",
+                    "[When Paired]Choose 1 of your Units and 1 enemy Unit. Deal 1 damage to each."
                 ],
                 "rules": [
                     {
@@ -507,8 +507,8 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【During Link】During your turn, when this Unit destroys an enemy Unit with battle damage, choose 1 (Tekkadan) Unit card that is Lv.2 or lower from your trash. Add it to your hand."
+                    "[Burst]Add this card to your hand.",
+                    "[During Link]During your turn, when this Unit destroys an enemy Unit with battle damage, choose 1 (Tekkadan) Unit card that is Lv.2 or lower from your trash. Add it to your hand."
                 ],
                 "rules": [
                     {
@@ -571,8 +571,8 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【When Paired】If you have 2 or more other (Gjallarhorn)/(Tekkadan) Units, choose 1 enemy Unit with 3 or less HP. Rest it."
+                    "[Burst]Add this card to your hand.",
+                    "[When Paired]If you have 2 or more other (Gjallarhorn)/(Tekkadan) Units, choose 1 enemy Unit with 3 or less HP. Rest it."
                 ],
                 "rules": [
                     {
@@ -630,7 +630,7 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "【Main】【Action】Choose 1 of your Units. Deal 1 damage to it. It gets AP+3 during this turn."
+                    "[Main][Action]Choose 1 of your Units. Deal 1 damage to it. It gets AP+3 during this turn."
                 ],
                 "rules": [
                     {
@@ -691,8 +691,8 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "【Burst】Choose 1 enemy Unit. Deal 1 damage to it.",
-                    "【Main】Choose 1 enemy Unit that is Lv.3 or lower. Destroy it."
+                    "[Burst]Choose 1 enemy Unit. Deal 1 damage to it.",
+                    "[Main]Choose 1 enemy Unit that is Lv.3 or lower. Destroy it."
                 ],
                 "rules": [
                     {
@@ -749,8 +749,8 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
+                    "[Burst]Deploy this card.",
+                    "[Deploy]Add 1 of your Shields to your hand.",
                     "[Activate/Main]Rest this Base: Choose 1 of your damaged Units. It gets AP+2 during this turn."
                 ],
                 "rules": [

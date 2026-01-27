@@ -28,7 +28,7 @@
             "effects": {
                 "description": [
                     "At the end of your turn, if there are 7 or more (CB) cards in your trash, choose 1 of your Resources. Set it as active.",
-                    "【When Paired】Place the top 2 cards of your deck into your trash. If you placed a (CB) card with this effect, draw 1."
+                    "[When Paired]Place the top 2 cards of your deck into your trash. If you placed a (CB) card with this effect, draw 1."
                 ],
                 "rules": [
                     {
@@ -212,7 +212,7 @@
             "effects": {
                 "description": [
                     "During your turn, when this Unit destroys an enemy Unit with battle damage, it recovers 2 HP.",
-                    "【During Link】This Unit gets AP+2."
+                    "[During Link]This Unit gets AP+2."
                 ],
                 "rules": [
                     {
@@ -382,8 +382,8 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【Attack】This Unit gets AP+1 during this turn. If there are 7 or more (CB) cards in your trash, all your (CB) Units get AP+1 instead."
+                    "[Burst]Add this card to your hand.",
+                    "[Attack]This Unit gets AP+1 during this turn. If there are 7 or more (CB) cards in your trash, all your (CB) Units get AP+1 instead."
                 ],
                 "rules": [
                     {
@@ -483,8 +483,8 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【Destroyed】If it is your opponent's turn and this is a (CB) Unit, draw 1."
+                    "[Burst]Add this card to your hand.",
+                    "[Destroyed]If it is your opponent's turn and this is a (CB) Unit, draw 1."
                 ],
                 "rules": [
                     {
@@ -541,8 +541,8 @@
             "hp": 2,
             "effects": {
                 "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【When Paired】If this is a (CB) Unit, it may choose an active enemy Unit whose Lv. is equal to or lower than this Unit as its attack target during this turn."
+                    "[Burst]Add this card to your hand.",
+                    "[When Paired]If this is a (CB) Unit, it may choose an active enemy Unit whose Lv. is equal to or lower than this Unit as its attack target during this turn."
                 ],
                 "rules": [
                     {
@@ -597,7 +597,7 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Burst】Add this card to your hand.",
+                    "[Burst]Add this card to your hand.",
                     "During your turn, while you have a (CB) Link Unit in play, this Unit can't receive battle damage from enemy Units with 3 or less AP."
                 ],
                 "rules": [
@@ -661,8 +661,8 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "【Burst】Draw 1.",
-                    "【Action】Choose 1 rested friendly (CB) Unit. Change the attack target of the battling enemy Unit to it."
+                    "[Burst]Draw 1.",
+                    "[Action]Choose 1 rested friendly (CB) Unit. Change the attack target of the battling enemy Unit to it."
                 ],
                 "rules": [
                     {
@@ -715,7 +715,7 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "【Main】Look at the top 3 cards of your deck. You may reveal 1 (CB) Unit card or Pilot card among them and add it to your hand. Return the rest to the bottom of your deck in random order."
+                    "[Main]Look at the top 3 cards of your deck. You may reveal 1 (CB) Unit card or Pilot card among them and add it to your hand. Return the rest to the bottom of your deck in random order."
                 ],
                 "rules": [
                     {
@@ -773,8 +773,8 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
+                    "[Burst]Deploy this card.",
+                    "[Deploy]Add 1 of your Shields to your hand.",
                     "While a rested friendly (CB) Unit is in play, this Base can't receive damage from enemy Units that are Lv.3 or lower, other than Unit tokens."
                 ],
                 "rules": [

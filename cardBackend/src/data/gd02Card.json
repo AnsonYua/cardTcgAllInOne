@@ -27,7 +27,7 @@
       "effects": {
         "description": [
           "<Breach 3> (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)",
-          "【During Pair-(Cyber-Newtype) Pilot】When one of your (Titans) Units destroys an enemy shield area card with damage, this Unit recovers 2 HP."
+          "[During Pair-(Cyber-Newtype) Pilot]When one of your (Titans) Units destroys an enemy shield area card with damage, this Unit recovers 2 HP."
         ],
         "rules": [
           {
@@ -106,7 +106,7 @@
       "hp": 6,
       "effects": {
         "description": [
-          "【During Link】【Once per Turn】During your turn, when one of your Units destroys an enemy Unit with battle damage, set this Unit as active."
+          "[During Link][Once per Turn]During your turn, when one of your Units destroys an enemy Unit with battle damage, set this Unit as active."
         ],
         "rules": [
           {
@@ -171,7 +171,7 @@
       "hp": 2,
       "effects": {
         "description": [
-          "【During Pair-Lv.3 or Lower Pilot】【Destroyed】You may discard 1 Unit card. If you do, return the card paired with this Unit to your hand."
+          "[During Pair-Lv.3 or Lower Pilot][Destroyed]You may discard 1 Unit card. If you do, return the card paired with this Unit to your hand."
         ],
         "rules": [
           {
@@ -229,7 +229,7 @@
       "hp": 3,
       "effects": {
         "description": [
-          "【When Paired】Choose 1 rested enemy Unit with 3 or less HP. It won't be set as active during the start phase of your opponent's next turn."
+          "[When Paired]Choose 1 rested enemy Unit with 3 or less HP. It won't be set as active during the start phase of your opponent's next turn."
         ],
         "rules": [
           {
@@ -294,7 +294,7 @@
       "hp": 4,
       "effects": {
         "description": [
-          "【During Link】【Attack】Choose 1 enemy Unit with 2 or less HP. Rest it."
+          "[During Link][Attack]Choose 1 enemy Unit with 2 or less HP. Rest it."
         ],
         "rules": [
           {
@@ -435,7 +435,7 @@
       "hp": 3,
       "effects": {
         "description": [
-          "【When Linked】Choose 1 rested enemy Unit. Deal 1 damage to it."
+          "[When Linked]Choose 1 rested enemy Unit. Deal 1 damage to it."
         ],
         "rules": [
           {
@@ -484,7 +484,7 @@
       "hp": 5,
       "effects": {
         "description": [
-          "【Once per Turn】When this Unit's AP is reduced by an enemy effect, choose 1 rested enemy Unit. Deal 2 damage to it."
+          "[Once per Turn]When this Unit's AP is reduced by an enemy effect, choose 1 rested enemy Unit. Deal 2 damage to it."
         ],
         "rules": [
           {
@@ -531,7 +531,7 @@
       "hp": 4,
       "effects": {
         "description": [
-          "【Once per Turn】When this Unit receives enemy effect damage, draw 1."
+          "[Once per Turn]When this Unit receives enemy effect damage, draw 1."
         ],
         "rules": [
           {
@@ -568,7 +568,7 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Activate-Action】Destroy this Unit:Choose 1 enemy Base/enemy Shield this Unit is battling. Deal 6 damage to it."
+          "[Activate-Action]Destroy this Unit:Choose 1 enemy Base/enemy Shield this Unit is battling. Deal 6 damage to it."
         ],
         "rules": [
           {
@@ -677,7 +677,7 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Deploy】Choose 1 of your (Titans) Units. It gets AP+1 during this turn."
+          "[Deploy]Choose 1 of your (Titans) Units. It gets AP+1 during this turn."
         ],
         "rules": [
           {
@@ -760,7 +760,7 @@
       "hp": 2,
       "effects": {
         "description": [
-          "【Deploy】Choose 1 of your (Titans) Units. It gets AP+1 during this turn."
+          "[Deploy]Choose 1 of your (Titans) Units. It gets AP+1 during this turn."
         ],
         "rules": [
           {
@@ -924,8 +924,8 @@
       "hp": 4,
       "effects": {
         "description": [
-          "【Deploy】Look at the top 5 cards of your deck. You may reveal 1 green (Zeon) Pilot card among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck.",
-          "【During Link】 This Unit gets AP+2."
+          "[Deploy]Look at the top 5 cards of your deck. You may reveal 1 green (Zeon) Pilot card among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck.",
+          "[During Link] This Unit gets AP+2."
         ],
         "rules": [
           {
@@ -1002,7 +1002,7 @@
       "hp": 2,
       "effects": {
         "description": [
-          "【Deploy】You may discard 1 green (Earth Federation) Unit card. If you do, place 1 EX Resource. Then, if you are Lv.7 or higher, draw 1."
+          "[Deploy]You may discard 1 green (Earth Federation) Unit card. If you do, place 1 EX Resource. Then, if you are Lv.7 or higher, draw 1."
         ],
         "rules": [
           {
@@ -1048,7 +1048,7 @@
       "hp": 3,
       "effects": {
         "description": [
-          "【Once per Turn】When you place an EX Resource, choose 1 of your (AGE System) Units. It gains <Breach 2> during this turn. (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)"
+          "[Once per Turn]When you place an EX Resource, choose 1 of your (AGE System) Units. It gains <Breach 2> during this turn. (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)"
         ],
         "rules": [
           {
@@ -1101,7 +1101,7 @@
       "hp": 4,
       "effects": {
         "description": [
-          "【During Link】While you are Lv.7 or higher, this Unit gains <First Strike>. (While this Unit is attacking, it deals damage before the enemy Unit.)"
+          "[During Link]While you are Lv.7 or higher, this Unit gains <First Strike>. (While this Unit is attacking, it deals damage before the enemy Unit.)"
         ],
         "rules": [
           {
@@ -1166,7 +1166,7 @@
       "hp": 4,
       "effects": {
         "description": [
-          "【During Link】This Unit gains <High-Maneuver>. (This Unit can't be blocked.)"
+          "[During Link]This Unit gains <High-Maneuver>. (This Unit can't be blocked.)"
         ],
         "rules": [
           {
@@ -1223,7 +1223,7 @@
       "hp": 4,
       "effects": {
         "description": [
-          "【Deploy】Look at the top card of your deck. Return it to the top or bottom of your deck."
+          "[Deploy]Look at the top card of your deck. Return it to the top or bottom of your deck."
         ],
         "rules": [
           {
@@ -1271,7 +1271,7 @@
       "hp": 2,
       "effects": {
         "description": [
-          "【Deploy】If you are Lv.7 or higher, choose 1 of your (AGE System) Units. It gets AP+2 during this turn."
+          "[Deploy]If you are Lv.7 or higher, choose 1 of your (AGE System) Units. It gets AP+2 during this turn."
         ],
         "rules": [
           {
@@ -1572,7 +1572,7 @@
       "hp": 3,
       "effects": {
         "description": [
-          "【During Pair-Red Pilot】This Unit gets AP+2."
+          "[During Pair-Red Pilot]This Unit gets AP+2."
         ],
         "rules": [
           {
@@ -1664,8 +1664,8 @@
       "hp": 5,
       "effects": {
         "description": [
-          "【When Linked】This Unit gains <Suppression> during this turn. (Damage to Shields by an attack is dealt to the first 2 cards simultaneously.)",
-          "【During Pair-(Neo Zeon) Pilot】【Attack】Choose 1 damaged enemy Unit. Deal 2 damage to it."
+          "[When Linked]This Unit gains <Suppression> during this turn. (Damage to Shields by an attack is dealt to the first 2 cards simultaneously.)",
+          "[During Pair-(Neo Zeon) Pilot][Attack]Choose 1 damaged enemy Unit. Deal 2 damage to it."
         ],
         "rules": [
           {
@@ -1744,7 +1744,7 @@
       "effects": {
         "description": [
           "<Breach 1> (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)",
-          "【Deploy】If there are 3 or less enemy Shields, choose 1 enemy Unit with 5 or less AP. Deal 2 damage to it."
+          "[Deploy]If there are 3 or less enemy Shields, choose 1 enemy Unit with 5 or less AP. Deal 2 damage to it."
         ],
         "rules": [
           {
@@ -1822,7 +1822,7 @@
       "hp": 4,
       "effects": {
         "description": [
-          "【Deploy】Look at the top 3 cards of your deck. You may deploy 1 (Clan) Unit card that is Lv.4 or lower among them. Return the remaining cards randomly to the bottom of your deck."
+          "[Deploy]Look at the top 3 cards of your deck. You may deploy 1 (Clan) Unit card that is Lv.4 or lower among them. Return the remaining cards randomly to the bottom of your deck."
         ],
         "rules": [
           {
@@ -1860,7 +1860,7 @@
       "hp": 3,
       "effects": {
         "description": [
-          "【When Paired】Choose 1 enemy Unit that is Lv.3 or lower. Deal 1 damage to it."
+          "[When Paired]Choose 1 enemy Unit that is Lv.3 or lower. Deal 1 damage to it."
         ],
         "rules": [
           {
@@ -1917,7 +1917,7 @@
       "effects": {
         "description": [
           "[Activate/Main]<Support 2> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)",
-          "【Deploy】Choose 1 of your other (New UNE) Units. It can't receive battle damage from enemy Units with 2 or less HP during this turn."
+          "[Deploy]Choose 1 of your other (New UNE) Units. It can't receive battle damage from enemy Units with 2 or less HP during this turn."
         ],
         "rules": [
           {
@@ -2017,7 +2017,7 @@
       "hp": 3,
       "effects": {
         "description": [
-          "【Deploy】Choose 1 enemy Unit that is Lv.5 or higher. Deal 2 damage to it."
+          "[Deploy]Choose 1 enemy Unit that is Lv.5 or higher. Deal 2 damage to it."
         ],
         "rules": [
           {
@@ -2073,7 +2073,7 @@
       "hp": 2,
       "effects": {
         "description": [
-          "【Deploy】Choose 1 of your (New UNE) Units. It gains <High-Maneuver> during this turn. (This Unit can't be blocked.)"
+          "[Deploy]Choose 1 of your (New UNE) Units. It gains <High-Maneuver> during this turn. (This Unit can't be blocked.)"
         ],
         "rules": [
           {
@@ -2124,7 +2124,7 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Deploy】If you have another (New UNE) Unit in play, deploy 1 rested [Daughtress]((New UNE)-AP0-HP1) Unit token."
+          "[Deploy]If you have another (New UNE) Unit in play, deploy 1 rested [Daughtress]((New UNE)-AP0-HP1) Unit token."
         ],
         "rules": [
           {
@@ -2166,7 +2166,7 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Destroyed】If you have another (New UNE) Unit in play, deploy 1 rested [Daughtress]((New UNE)-AP0-HP1) Unit token."
+          "[Destroyed]If you have another (New UNE) Unit in play, deploy 1 rested [Daughtress]((New UNE)-AP0-HP1) Unit token."
         ],
         "rules": [
           {
@@ -2208,7 +2208,7 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Attack】If this Unit has 5 or more AP and it is attacking an enemy Unit, draw 1."
+          "[Attack]If this Unit has 5 or more AP and it is attacking an enemy Unit, draw 1."
         ],
         "rules": [
           {
@@ -2257,7 +2257,7 @@
       "hp": 4,
       "effects": {
         "description": [
-          "【Deploy】Choose 1 enemy Unit token. Deal 2 damage to it."
+          "[Deploy]Choose 1 enemy Unit token. Deal 2 damage to it."
         ],
         "rules": [
           {
@@ -2504,7 +2504,7 @@
       "effects": {
         "description": [
           "[Suppression] (Damage to Shields by an attack is dealt to the first 2 cards simultaneously.)",
-          "【During Link】During your turn, while there are 7 or more cards in your trash, all your other (Vulture) Units get AP+2."
+          "[During Link]During your turn, while there are 7 or more cards in your trash, all your other (Vulture) Units get AP+2."
         ],
         "rules": [
           {
@@ -2556,7 +2556,7 @@
       "hp": 2,
       "effects": {
         "description": [
-          "【Attack】If this Unit is damaged, draw 1."
+          "[Attack]If this Unit is damaged, draw 1."
         ],
         "rules": [
           {
@@ -2602,7 +2602,7 @@
       "effects": {
         "description": [
           "<Blocker> (Rest this Unit to change the attack target to it.)",
-          "【Deploy】Choose 1 of your Units and 1 enemy Unit. Deal 1 damage to them."
+          "[Deploy]Choose 1 of your Units and 1 enemy Unit. Deal 1 damage to them."
         ],
         "rules": [
           {
@@ -2682,7 +2682,7 @@
       "hp": 4,
       "effects": {
         "description": [
-          "【During Pair-(Vulture) Pilot】【Destroyed】Choose 1 (Vulture) Unit card that is Lv.5 or higher from your trash. Add it to your hand."
+          "[During Pair-(Vulture) Pilot][Destroyed]Choose 1 (Vulture) Unit card that is Lv.5 or higher from your trash. Add it to your hand."
         ],
         "rules": [
           {
@@ -2743,7 +2743,7 @@
       "hp": 3,
       "effects": {
         "description": [
-          "【During Pair】【Attack】You may choose 1 of your other Units. Destroy it. If you do, choose 1 enemy Unit that is Lv.4 or lower. Deal 2 damage to it."
+          "[During Pair][Attack]You may choose 1 of your other Units. Destroy it. If you do, choose 1 enemy Unit that is Lv.4 or lower. Deal 2 damage to it."
         ],
         "rules": [
           {
@@ -2804,7 +2804,7 @@
       "hp": 2,
       "effects": {
         "description": [
-          "【Deploy】Choose 1 of your Units. Deal 1 damage to it. If you do, draw 1. Then, discard 1."
+          "[Deploy]Choose 1 of your Units. Deal 1 damage to it. If you do, draw 1. Then, discard 1."
         ],
         "rules": [
           {
@@ -2904,7 +2904,7 @@
       "hp": 4,
       "effects": {
         "description": [
-          "【Deploy】If there are 7 or more cards in your trash, choose 1 enemy Unit that is Lv.4 or lower. Rest it."
+          "[Deploy]If there are 7 or more cards in your trash, choose 1 enemy Unit that is Lv.4 or lower. Rest it."
         ],
         "rules": [
           {
@@ -2963,7 +2963,7 @@
       "hp": 3,
       "effects": {
         "description": [
-          "【When Paired-Purple Pilot】If there are 3 or more (Teiwaz)/(Tekkadan) cards in your trash, choose 1 enemy Unit with 3 or less AP. Rest it."
+          "[When Paired-Purple Pilot]If there are 3 or more (Teiwaz)/(Tekkadan) cards in your trash, choose 1 enemy Unit with 3 or less AP. Rest it."
         ],
         "rules": [
           {
@@ -3204,7 +3204,7 @@
       "hp": 5,
       "effects": {
         "description": [
-          "【Deploy】Deal 2 damage to this Unit."
+          "[Deploy]Deal 2 damage to this Unit."
         ],
         "rules": [
           {
@@ -3254,7 +3254,7 @@
       "hp": 4,
       "effects": {
         "description": [
-          "【During Link】[Activate/Main]【Once per Turn】Choose 1 active friendly Base. Rest it. If you do, set this Unit as active. It can't choose the enemy player as its attack target during this turn."
+          "[During Link][Activate/Main][Once per Turn]Choose 1 active friendly Base. Rest it. If you do, set this Unit as active. It can't choose the enemy player as its attack target during this turn."
         ],
         "rules": [
           {
@@ -3324,7 +3324,7 @@
       "hp": 4,
       "effects": {
         "description": [
-          "【Deploy】If there are 4 or more (Gjallarhorn) cards in your trash, draw 2. If you do, discard 2."
+          "[Deploy]If there are 4 or more (Gjallarhorn) cards in your trash, draw 2. If you do, discard 2."
         ],
         "rules": [
           {
@@ -3370,7 +3370,7 @@
       "hp": 4,
       "effects": {
         "description": [
-          "【Deploy】If a friendly white Base is in play, you may pair 1 (AEUG) Pilot card from your hand with this Unit."
+          "[Deploy]If a friendly white Base is in play, you may pair 1 (AEUG) Pilot card from your hand with this Unit."
         ],
         "rules": [
           {
@@ -3504,7 +3504,7 @@
       "effects": {
         "description": [
           "<High-Maneuver> (This Unit can't be blocked.)",
-          "【During Pair】While there are 4 or more Command cards in your trash, this Unit gains <Blocker>. (Rest this Unit to change the attack target to it.)"
+          "[During Pair]While there are 4 or more Command cards in your trash, this Unit gains <Blocker>. (Rest this Unit to change the attack target to it.)"
         ],
         "rules": [
           {
@@ -3576,7 +3576,7 @@
       "hp": 3,
       "effects": {
         "description": [
-          "【Attack】Choose 1 active friendly Base. Rest it. If you do, choose 1 enemy Unit that is Lv.4 or lower. It gets AP-2 during this battle."
+          "[Attack]Choose 1 active friendly Base. Rest it. If you do, choose 1 enemy Unit that is Lv.4 or lower. It gets AP-2 during this battle."
         ],
         "rules": [
           {
@@ -3774,7 +3774,7 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Deploy】If a friendly white Base is in play, choose 1 enemy Unit. It gets AP-2 during this turn."
+          "[Deploy]If a friendly white Base is in play, choose 1 enemy Unit. It gets AP-2 during this turn."
         ],
         "rules": [
           {
@@ -3871,7 +3871,7 @@
       "hp": 2,
       "effects": {
         "description": [
-          "【Destroyed】If it is your opponent's turn, choose 1 of your (Gjallarhorn) Units. Set it as active."
+          "[Destroyed]If it is your opponent's turn, choose 1 of your (Gjallarhorn) Units. Set it as active."
         ],
         "rules": [
           {
@@ -3952,8 +3952,8 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Burst】Add this card to your hand.",
-          "【During Link】【Once per Turn】During your turn, when this Unit recovers HP, if you have 4 or less cards in your hand, draw 1."
+          "[Burst]Add this card to your hand.",
+          "[During Link][Once per Turn]During your turn, when this Unit recovers HP, if you have 4 or less cards in your hand, draw 1."
         ],
         "rules": [
           {
@@ -4031,7 +4031,7 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Burst】Add this card to your hand. While you have another (Titans) Unit in play, this gets AP+1."
+          "[Burst]Add this card to your hand. While you have another (Titans) Unit in play, this gets AP+1."
         ],
         "rules": [
           {
@@ -4064,8 +4064,8 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Burst】Add this card to your hand.",
-          "【When Linked】If this is a blue Unit, choose 1 enemy Unit with <Blocker>. Rest it."
+          "[Burst]Add this card to your hand.",
+          "[When Linked]If this is a blue Unit, choose 1 enemy Unit with <Blocker>. Rest it."
         ],
         "rules": [
           {
@@ -4099,8 +4099,8 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Burst】Add this card to your hand.",
-          "【When Linked】Look at the top 3 cards of your deck. You may reveal 1 green (Earth Federation) Unit card/1 card with \"AGE Device\" in its card name among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck."
+          "[Burst]Add this card to your hand.",
+          "[When Linked]Look at the top 3 cards of your deck. You may reveal 1 green (Earth Federation) Unit card/1 card with \"AGE Device\" in its card name among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck."
         ],
         "rules": [
           {
@@ -4172,8 +4172,8 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Burst】Add this card to your hand.",
-          "【When Paired】Choose 1 of your other (Zeon) Link Units. It gains <Breach 1> during this turn. (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)"
+          "[Burst]Add this card to your hand.",
+          "[When Paired]Choose 1 of your other (Zeon) Link Units. It gains <Breach 1> during this turn. (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)"
         ],
         "rules": [
           {
@@ -4233,7 +4233,7 @@
       "hp": 2,
       "effects": {
         "description": [
-          "【Burst】Add this card to your hand. While you have another Unit with <High-Maneuver> in play, this Unit gets AP+1."
+          "[Burst]Add this card to your hand. While you have another Unit with <High-Maneuver> in play, this Unit gets AP+1."
         ],
         "rules": [
           {
@@ -4266,8 +4266,8 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Burst】Add this card to your hand.",
-          "【When Paired】If this Unit is red, choose 1 enemy Unit whose Lv. is equal to or lower than this Unit. Deal 1 damage to it."
+          "[Burst]Add this card to your hand.",
+          "[When Paired]If this Unit is red, choose 1 enemy Unit whose Lv. is equal to or lower than this Unit. Deal 1 damage to it."
         ],
         "rules": [
           {
@@ -4341,8 +4341,8 @@
       "hp": 2,
       "effects": {
         "description": [
-          "【Burst】Add this card to your hand.",
-          "【During Link】【Attack】Choose 1 of your (New UNE) Units. It gets AP+2 during this turn."
+          "[Burst]Add this card to your hand.",
+          "[During Link][Attack]Choose 1 of your (New UNE) Units. It gets AP+2 during this turn."
         ],
         "rules": [
           {
@@ -4401,7 +4401,7 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Burst】Add this card to your hand. During your turn, when this Unit destroys an enemy Unit paired with a (Newtype) Pilot with battle damage, draw 1."
+          "[Burst]Add this card to your hand. During your turn, when this Unit destroys an enemy Unit paired with a (Newtype) Pilot with battle damage, draw 1."
         ],
         "rules": [
           {
@@ -4434,8 +4434,8 @@
       "hp": 2,
       "effects": {
         "description": [
-          "【Burst】Add this card to your hand.",
-          "【When Paired】You may discard 1. If you do, look at the top 3 cards of your deck. You may reveal 1 (Vulture) Unit card among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck."
+          "[Burst]Add this card to your hand.",
+          "[When Paired]You may discard 1. If you do, look at the top 3 cards of your deck. You may reveal 1 (Vulture) Unit card among them and add it to your hand. Return the remaining cards randomly to the bottom of your deck."
         ],
         "rules": [
           {
@@ -4497,8 +4497,8 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Burst】Add this card to your hand.",
-          "【Attack】If this Unit is damaged and Lv.5 or lower, it gains <High-Maneuver> during this battle. (This Unit can't be blocked.)"
+          "[Burst]Add this card to your hand.",
+          "[Attack]If this Unit is damaged and Lv.5 or lower, it gains <High-Maneuver> during this battle. (This Unit can't be blocked.)"
         ],
         "rules": [
           {
@@ -4566,8 +4566,8 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Burst】Add this card to your hand.",
-          "【When Linked】You may choose 1 (Vagan) Unit card that is Lv.2 or lower from your trash. Pay its cost to deploy it."
+          "[Burst]Add this card to your hand.",
+          "[When Linked]You may choose 1 (Vagan) Unit card that is Lv.2 or lower from your trash. Pay its cost to deploy it."
         ],
         "rules": [
           {
@@ -4600,7 +4600,7 @@
       "hp": 2,
       "effects": {
         "description": [
-          "【Burst】Add this card to your hand. While there is a friendly white Base in play, this Unit gets AP+2."
+          "[Burst]Add this card to your hand. While there is a friendly white Base in play, this Unit gets AP+2."
         ],
         "rules": [
           {
@@ -4634,8 +4634,8 @@
       "effects": {
         "description": [
           "This card's name is also treated as [Char Aznable].",
-          "【Burst】Add this card to your hand.",
-          "【When Linked】If this is an (AEUG) Unit, draw 1. If you do, discard 1."
+          "[Burst]Add this card to your hand.",
+          "[When Linked]If this is an (AEUG) Unit, draw 1. If you do, discard 1."
         ],
         "rules": [
           {
@@ -4667,8 +4667,8 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Burst】Add this card to your hand.",
-          "【When Paired】If there are 4 or more (Gjallarhorn) cards in your trash, choose 1 enemy Unit. It gets AP-2 during this turn."
+          "[Burst]Add this card to your hand.",
+          "[When Paired]If there are 4 or more (Gjallarhorn) cards in your trash, choose 1 enemy Unit. It gets AP-2 during this turn."
         ],
         "rules": [
           {
@@ -4744,8 +4744,8 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Burst】Draw 1.",
-          "【Main】Choose 1 friendly damaged Unit. It recovers 2 HP. Then, draw 1."
+          "[Burst]Draw 1.",
+          "[Main]Choose 1 friendly damaged Unit. It recovers 2 HP. Then, draw 1."
         ],
         "rules": [
           {
@@ -4822,7 +4822,7 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Main】【Action】Choose 1 to 2 enemy Units that are Lv.2 or lower. Rest them."
+          "[Main][Action]Choose 1 to 2 enemy Units that are Lv.2 or lower. Rest them."
         ],
         "rules": [
           {
@@ -4878,8 +4878,8 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Main】【Action】Choose 1 friendly (Titans) Unit. It gets AP+2 during this turn.",
-          "【Pilot】[Mouar Pharaoh]"
+          "[Main][Action]Choose 1 friendly (Titans) Unit. It gets AP+2 during this turn.",
+          "[Pilot][Mouar Pharaoh]"
         ],
         "rules": [
           {
@@ -4934,8 +4934,8 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Burst】Choose 1 (Asuno Family) Pilot card from your trash. Add it to your hand.",
-          "【Main】If you have an (AGE System) Unit in play, place 1 EX Resource."
+          "[Burst]Choose 1 (Asuno Family) Pilot card from your trash. Add it to your hand.",
+          "[Main]If you have an (AGE System) Unit in play, place 1 EX Resource."
         ],
         "rules": [
           {
@@ -5030,7 +5030,7 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Main】Look at the top 3 cards of your deck and return 1 to the top. Return the remaining cards to the bottom of your deck. Then, if you have a (Newtype) Pilot in play, draw 1."
+          "[Main]Look at the top 3 cards of your deck and return 1 to the top. Return the remaining cards to the bottom of your deck. Then, if you have a (Newtype) Pilot in play, draw 1."
         ],
         "rules": [
           {
@@ -5104,8 +5104,8 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Action】Choose 1 of your Unit tokens. It can't receive battle damage from enemy Units during this battle.",
-          "【Pilot】[Xavier Olivette]"
+          "[Action]Choose 1 of your Unit tokens. It can't receive battle damage from enemy Units during this battle.",
+          "[Pilot][Xavier Olivette]"
         ],
         "rules": [
           {
@@ -5160,8 +5160,8 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Action】During this battle, your shield area cards can't receive damage from enemy Units that are Lv.3 or lower.",
-          "【Pilot】[Woolf Enneacle]"
+          "[Action]During this battle, your shield area cards can't receive damage from enemy Units that are Lv.3 or lower.",
+          "[Pilot][Woolf Enneacle]"
         ],
         "rules": [
           {
@@ -5221,8 +5221,8 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Burst】Choose 1 enemy Unit. Deal 1 damage to it.",
-          "【Main】Deal 1 damage to all enemy Units other than Link Units."
+          "[Burst]Choose 1 enemy Unit. Deal 1 damage to it.",
+          "[Main]Deal 1 damage to all enemy Units other than Link Units."
         ],
         "rules": [
           {
@@ -5297,7 +5297,7 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Main】Choose 1 friendly (Clan) Unit. During this turn, it may choose an active enemy Unit that is Lv.4 or lower as its attack target."
+          "[Main]Choose 1 friendly (Clan) Unit. During this turn, it may choose an active enemy Unit that is Lv.4 or lower as its attack target."
         ],
         "rules": [
           {
@@ -5359,8 +5359,8 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Main】【Action】Choose 1 enemy Unit. Deal 1 damage to it.",
-          "【Pilot】[Shiiko Sugai]"
+          "[Main][Action]Choose 1 enemy Unit. Deal 1 damage to it.",
+          "[Pilot][Shiiko Sugai]"
         ],
         "rules": [
           {
@@ -5409,7 +5409,7 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Main】Choose 1 Unit card that is Lv.5 or lower from your trash. Pay its cost to deploy it."
+          "[Main]Choose 1 Unit card that is Lv.5 or lower from your trash. Pay its cost to deploy it."
         ],
         "rules": [
           {
@@ -5463,8 +5463,8 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Burst】Choose 1 enemy Unit that is Lv.3 or lower. Deal 2 damage to it.",
-          "【Main】Choose 6 purple Unit cards from your trash. Exile them from the game. If you do, choose 1 enemy Unit. Destroy it."
+          "[Burst]Choose 1 enemy Unit that is Lv.3 or lower. Deal 2 damage to it.",
+          "[Main]Choose 6 purple Unit cards from your trash. Exile them from the game. If you do, choose 1 enemy Unit. Destroy it."
         ],
         "rules": [
           {
@@ -5569,8 +5569,8 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Burst】Draw 1.",
-          "【Main】Choose 1 purple Pilot card from your trash. Add it to your hand."
+          "[Burst]Draw 1.",
+          "[Main]Choose 1 purple Pilot card from your trash. Add it to your hand."
         ],
         "rules": [
           {
@@ -5644,8 +5644,8 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Main】【Action】If a friendly (Teiwaz) Link Unit is in play, choose 1 enemy Unit with 2 or less AP. Destroy it.",
-          "【Pilot】[Amida Arca]"
+          "[Main][Action]If a friendly (Teiwaz) Link Unit is in play, choose 1 enemy Unit with 2 or less AP. Destroy it.",
+          "[Pilot][Amida Arca]"
         ],
         "rules": [
           {
@@ -5730,8 +5730,8 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Main】【Action】Choose 1 damaged friendly Unit. It gets AP+2 during this turn.",
-          "【Pilot】[Norba Shino]"
+          "[Main][Action]Choose 1 damaged friendly Unit. It gets AP+2 during this turn.",
+          "[Pilot][Norba Shino]"
         ],
         "rules": [
           {
@@ -5783,8 +5783,8 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Main】【Action】Choose 1 friendly (Vulture) Unit. It gets AP+2 during this turn.",
-          "【Pilot】[Witz Sou]"
+          "[Main][Action]Choose 1 friendly (Vulture) Unit. It gets AP+2 during this turn.",
+          "[Pilot][Witz Sou]"
         ],
         "rules": [
           {
@@ -5841,8 +5841,8 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Main】If there are 7 or more cards in your trash, choose 1 friendly (Vulture) Unit. During this turn, it may choose an active enemy Unit that is Lv.4 or lower as its attack target.",
-          "【Pilot】[Roybea Loy]"
+          "[Main]If there are 7 or more cards in your trash, choose 1 friendly (Vulture) Unit. During this turn, it may choose an active enemy Unit that is Lv.4 or lower as its attack target.",
+          "[Pilot][Roybea Loy]"
         ],
         "rules": [
           {
@@ -5895,8 +5895,8 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Burst】Choose 1 (AEUG) Base card from your trash. Add it to your hand.",
-          "【Main】Draw 3. Then, discard 2."
+          "[Burst]Choose 1 (AEUG) Base card from your trash. Add it to your hand.",
+          "[Main]Draw 3. Then, discard 2."
         ],
         "rules": [
           {
@@ -5964,8 +5964,8 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Action】Choose 1 enemy Unit with 4 or less HP battling a friendly Unit with <Blocker>. Return it to its owner's hand.",
-          "【Pilot】[Ein Dalton]"
+          "[Action]Choose 1 enemy Unit with 4 or less HP battling a friendly Unit with <Blocker>. Return it to its owner's hand.",
+          "[Pilot][Ein Dalton]"
         ],
         "rules": [
           {
@@ -6015,8 +6015,8 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Action】If you have a (Gjallarhorn) Link Unit in play, choose 1 enemy Unit. It gets AP-3 during this battle.",
-          "【Pilot】[Carta Issue]"
+          "[Action]If you have a (Gjallarhorn) Link Unit in play, choose 1 enemy Unit. It gets AP-3 during this battle.",
+          "[Pilot][Carta Issue]"
         ],
         "rules": [
           {
@@ -6072,8 +6072,8 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Action】Choose 1 of your (AEUG) Units/Bases. It recovers 2 HP.",
-          "【Pilot】[Fa Yuiry]"
+          "[Action]Choose 1 of your (AEUG) Units/Bases. It recovers 2 HP.",
+          "[Pilot][Fa Yuiry]"
         ],
         "rules": [
           {
@@ -6148,8 +6148,8 @@
       "hp": 5,
       "effects": {
         "description": [
-          "【Burst】Deploy this card.",
-          "【Deploy】Add 1 of your Shields to your hand. Then, choose 1 friendly blue Unit. It recovers 2 HP."
+          "[Burst]Deploy this card.",
+          "[Deploy]Add 1 of your Shields to your hand. Then, choose 1 friendly blue Unit. It recovers 2 HP."
         ],
         "rules": [
           {
@@ -6228,8 +6228,8 @@
       "hp": 5,
       "effects": {
         "description": [
-          "【Burst】Deploy this card.",
-          "【Deploy】Add 1 of your Shields to your hand. Then, choose 1 rested enemy Unit that is Lv.4 or lower. Deal 1 damage to it."
+          "[Burst]Deploy this card.",
+          "[Deploy]Add 1 of your Shields to your hand. Then, choose 1 rested enemy Unit that is Lv.4 or lower. Deal 1 damage to it."
         ],
         "rules": [
           {
@@ -6310,8 +6310,8 @@
       "hp": 5,
       "effects": {
         "description": [
-          "【Burst】Deploy this card.",
-          "【Deploy】Add 1 of your Shields to your hand. Then, choose 1 friendly Unit token. During this turn, it may choose an active enemy Unit with 5 or less AP as its attack target."
+          "[Burst]Deploy this card.",
+          "[Deploy]Add 1 of your Shields to your hand. Then, choose 1 friendly Unit token. During this turn, it may choose an active enemy Unit with 5 or less AP as its attack target."
         ],
         "rules": [
           {
@@ -6384,8 +6384,8 @@
       "hp": 5,
       "effects": {
         "description": [
-          "【Burst】Deploy this card.",
-          "【Deploy】Add 1 of your Shields to your hand. During your turn, while you are Lv.7 or higher, all friendly green (Earth Federation) Units get AP+1."
+          "[Burst]Deploy this card.",
+          "[Deploy]Add 1 of your Shields to your hand. During your turn, while you are Lv.7 or higher, all friendly green (Earth Federation) Units get AP+1."
         ],
         "rules": [
           {
@@ -6484,8 +6484,8 @@
       "hp": 5,
       "effects": {
         "description": [
-          "【Burst】Deploy this card.",
-          "【Deploy】Add 1 of your Shields to your hand. Then, if it is your turn, you may discard 1 red card. If you do, draw 1."
+          "[Burst]Deploy this card.",
+          "[Deploy]Add 1 of your Shields to your hand. Then, if it is your turn, you may discard 1 red card. If you do, draw 1."
         ],
         "rules": [
           {
@@ -6539,9 +6539,9 @@
       "hp": 5,
       "effects": {
         "description": [
-          "【Burst】Deploy this card.",
-          "【Deploy】Add 1 of your Shields to your hand.",
-          "【Destroyed】Choose 1 enemy Unit that is Lv.4 or lower. Deal 1 damage to it."
+          "[Burst]Deploy this card.",
+          "[Deploy]Add 1 of your Shields to your hand.",
+          "[Destroyed]Choose 1 enemy Unit that is Lv.4 or lower. Deal 1 damage to it."
         ],
         "rules": [
           {
@@ -6632,9 +6632,9 @@
       "hp": 5,
       "effects": {
         "description": [
-          "【Burst】Deploy this card.",
-          "【Deploy】Add 1 of your Shields to your hand.",
-          "【Destroyed】Place the top 2 cards of your deck into your trash."
+          "[Burst]Deploy this card.",
+          "[Deploy]Add 1 of your Shields to your hand.",
+          "[Destroyed]Place the top 2 cards of your deck into your trash."
         ],
         "rules": [
           {
@@ -6715,8 +6715,8 @@
       "hp": 5,
       "effects": {
         "description": [
-          "【Burst】Deploy this card.",
-          "【Deploy】Add 1 of your Shields to your hand. Then, if it is your turn and a friendly (Teiwaz) Link Unit is in play, choose 1 enemy Unit with 2 or less AP. Destroy it."
+          "[Burst]Deploy this card.",
+          "[Deploy]Add 1 of your Shields to your hand. Then, if it is your turn and a friendly (Teiwaz) Link Unit is in play, choose 1 enemy Unit with 2 or less AP. Destroy it."
         ],
         "rules": [
           {
@@ -6818,8 +6818,8 @@
       "hp": 5,
       "effects": {
         "description": [
-          "【Burst】Deploy this card.",
-          "【Deploy】Add 1 of your Shields to your hand. This Base can't receive enemy effect damage."
+          "[Burst]Deploy this card.",
+          "[Deploy]Add 1 of your Shields to your hand. This Base can't receive enemy effect damage."
         ],
         "rules": [
           {
@@ -6894,8 +6894,8 @@
       "hp": 5,
       "effects": {
         "description": [
-          "【Burst】Deploy this card.",
-          "【Deploy】Add 1 of your Shields to your hand. Then, if a friendly (Gjallarhorn) Unit is in play, choose 1 enemy Unit. It gets AP-2 during this turn."
+          "[Burst]Deploy this card.",
+          "[Deploy]Add 1 of your Shields to your hand. Then, if a friendly (Gjallarhorn) Unit is in play, choose 1 enemy Unit. It gets AP-2 during this turn."
         ],
         "rules": [
           {

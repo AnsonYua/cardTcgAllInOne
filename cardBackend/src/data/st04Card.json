@@ -27,7 +27,7 @@
             "effects": {
                 "description": [
                     "<Blocker> (Rest this Unit to change the attack target to it.)",
-                    "【When Paired】If paired with a Lv.4 or higher Pilot, choose 1 enemy Unit with 4 or less HP and return it to its owner’s hand."
+                    "[When Paired]If paired with a Lv.4 or higher Pilot, choose 1 enemy Unit with 4 or less HP and return it to its owner’s hand."
                 ],
                 "rules": [
                     {
@@ -93,7 +93,7 @@
             "hp": 3,
             "effects": {
                 "description": [
-                    "【Deploy】Draw 1 card, then discard 1."
+                    "[Deploy]Draw 1 card, then discard 1."
                 ],
                 "rules": [
                     {
@@ -212,7 +212,7 @@
             "hp": 3,
             "effects": {
                 "description": [
-                    "【Attack】If this Unit has 5 or more AP, choose 1 enemy Unit that is Lv.5 or higher; deal 3 damage to it."
+                    "[Attack]If this Unit has 5 or more AP, choose 1 enemy Unit that is Lv.5 or higher; deal 3 damage to it."
                 ],
                 "rules": [
                     {
@@ -327,8 +327,8 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【When Paired】If you have another Link Unit in play, draw 1.",
-                    "【Destroyed】If you have another Link Unit in play, draw 1."
+                    "[When Paired]If you have another Link Unit in play, draw 1.",
+                    "[Destroyed]If you have another Link Unit in play, draw 1."
                 ],
                 "rules": [
                     {
@@ -383,8 +383,8 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【Attack】Choose 1 enemy Unit; it gets AP–2 during this battle."
+                    "[Burst]Add this card to your hand.",
+                    "[Attack]Choose 1 enemy Unit; it gets AP–2 during this battle."
                 ],
                 "rules": [
                     {
@@ -434,8 +434,8 @@
             "hp": 2,
             "effects": {
                 "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【When Linked】During this turn, this Unit may choose an active enemy Unit that is Lv.5 or lower as its attack target."
+                    "[Burst]Add this card to your hand.",
+                    "[When Linked]During this turn, this Unit may choose an active enemy Unit that is Lv.5 or lower as its attack target."
                 ],
                 "rules": [
                     {
@@ -484,8 +484,8 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "【Burst】If you have no (Earth Alliance) Unit tokens in play, deploy 1 Aile Strike Gundam Unit token (AP 3 / HP 3, <Blocker>).",
-                    "【Main】If you have no (Earth Alliance) Unit tokens in play, deploy 1 Sword Strike Gundam Unit token (AP 4 / HP 2, <Blocker>) or 1 Launcher Strike Gundam Unit token (AP 2 / HP 4, <Blocker>)."
+                    "[Burst]If you have no (Earth Alliance) Unit tokens in play, deploy 1 Aile Strike Gundam Unit token (AP 3 / HP 3, <Blocker>).",
+                    "[Main]If you have no (Earth Alliance) Unit tokens in play, deploy 1 Sword Strike Gundam Unit token (AP 4 / HP 2, <Blocker>) or 1 Launcher Strike Gundam Unit token (AP 2 / HP 4, <Blocker>)."
                 ],
                 "rules": [
                     {
@@ -561,8 +561,8 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "【Main】/【Action】Choose 1 enemy Unit with 3 or less HP; return it to its owner’s hand.",
-                    "【Pilot】[Mu La Flaga]"
+                    "[Main]/[Action]Choose 1 enemy Unit with 3 or less HP; return it to its owner’s hand.",
+                    "[Pilot][Mu La Flaga]"
                 ],
                 "rules": [
                     {
@@ -617,8 +617,8 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Main】/【Action】Choose 1 friendly Unit that is Lv.2 or lower; it gains <First Strike> during this turn (it deals damage before the enemy Unit).",
-                    "【Pilot】[Miguel Ayman]"
+                    "[Main]/[Action]Choose 1 friendly Unit that is Lv.2 or lower; it gains <First Strike> during this turn (it deals damage before the enemy Unit).",
+                    "[Pilot][Miguel Ayman]"
                 ],
                 "rules": [
                     {
@@ -678,9 +678,9 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
-                    "[Activate/Main]【Once per Turn】(2):Choose 1 friendly Unit with <Blocker>; set it as active (it cannot attack this turn)."
+                    "[Burst]Deploy this card.",
+                    "[Deploy]Add 1 of your Shields to your hand.",
+                    "[Activate/Main][Once per Turn](2):Choose 1 friendly Unit with <Blocker>; set it as active (it cannot attack this turn)."
                 ],
                 "rules": [
                     {
@@ -748,8 +748,8 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
+                    "[Burst]Deploy this card.",
+                    "[Deploy]Add 1 of your Shields to your hand.",
                     "[Activate/Main]Rest this Base; choose 1 friendly Unit; it gets AP+1 during this turn."
                 ],
                 "rules": [

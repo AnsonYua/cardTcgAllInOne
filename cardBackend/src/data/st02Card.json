@@ -78,7 +78,7 @@
             "hp": 2,
             "effects": {
                 "description": [
-                    "【Deploy】Place 1 EX Resource."
+                    "[Deploy]Place 1 EX Resource."
                 ],
                 "rules": [
                     {
@@ -113,7 +113,7 @@
             "hp": 4,
             "effects": {
                 "description": [
-                    "【During Pair】During your turn, when this Unit destroys an enemy Unit with battle damage, deal 1 damage to all enemy Units that are Lv.3 or lower."
+                    "[During Pair]During your turn, when this Unit destroys an enemy Unit with battle damage, deal 1 damage to all enemy Units that are Lv.3 or lower."
                 ],
                 "rules": [
                     {
@@ -209,7 +209,7 @@
             "hp": 4,
             "effects": {
                 "description": [
-                    "【Activate･Main】【Once per Turn】4：Set this Unit as active."
+                    "[Activate/Main][Once per Turn](4):Set this Unit as active."
                 ],
                 "rules": [
                     {
@@ -348,8 +348,8 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【During Link】This Unit gets AP+1 and HP+1."
+                    "[Burst]Add this card to your hand.",
+                    "[During Link]This Unit gets AP+1 and HP+1."
                 ],
                 "rules": [
                     {
@@ -423,8 +423,8 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【During Link】During your turn, when this Unit destroys an enemy Unit with battle damage, draw 1."
+                    "[Burst]Add this card to your hand.",
+                    "[During Link]During your turn, when this Unit destroys an enemy Unit with battle damage, draw 1."
                 ],
                 "rules": [
                     {
@@ -477,8 +477,8 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Main】Choose 1 of your Units; it gains <Breach 3> during this turn.",
-                    "【Pilot】[Trowa Barton]"
+                    "[Main]Choose 1 of your Units; it gains <Breach 3> during this turn.",
+                    "[Pilot][Trowa Barton]"
                 ],
                 "rules": [
                     {
@@ -529,8 +529,8 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Action】During this battle, your shield-area cards can't receive damage from enemy Units that are Lv.4 or lower.",
-                    "【Pilot】[Quatre Raberba Winner]"
+                    "[Action]During this battle, your shield-area cards can't receive damage from enemy Units that are Lv.4 or lower.",
+                    "[Pilot][Quatre Raberba Winner]"
                 ],
                 "rules": [
                     {
@@ -578,8 +578,8 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "【Burst】Activate this card's 【Main】.",
-                    "【Main】/【Action】Choose 1 enemy Unit with 5 or less HP and rest it."
+                    "[Burst]Activate this card's [Main].",
+                    "[Main]/[Action]Choose 1 enemy Unit with 5 or less HP and rest it."
                 ],
                 "rules": [
                     {
@@ -632,9 +632,9 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
-                    "【Deploy】Look at the top 2 cards of your deck and return 1 to the top and 1 to the bottom."
+                    "[Burst]Deploy this card.",
+                    "[Deploy]Add 1 of your Shields to your hand.",
+                    "[Deploy]Look at the top 2 cards of your deck and return 1 to the top and 1 to the bottom."
                 ],
                 "rules": [
                     {
@@ -694,9 +694,9 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
-                    "【Deploy】If it's your turn, deploy 1 Tallgeese (OZ･AP4･HP2) Unit token. If a \"Corsica Base\" is in your trash, deploy 2 Leo (OZ･AP1･HP1) Unit tokens instead."
+                    "[Burst]Deploy this card.",
+                    "[Deploy]Add 1 of your Shields to your hand.",
+                    "[Deploy]If it's your turn, deploy 1 Tallgeese (OZ/AP4/HP2) Unit token. If a \"Corsica Base\" is in your trash, deploy 2 Leo (OZ/AP1/HP1) Unit tokens instead."
                 ],
                 "rules": [
                     {
