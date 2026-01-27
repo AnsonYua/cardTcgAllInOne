@@ -165,7 +165,7 @@
             "hp": 2,
             "effects": {
                 "description": [
-                    "【Activate･Main】Rest this Unit: Choose 1 of your Units. Deal 1 damage to it. It gets AP+1 during this turn."
+                    "[Activate/Main]Rest this Unit: Choose 1 of your Units. Deal 1 damage to it. It gets AP+1 during this turn."
                 ],
                 "rules": [
                     {
@@ -751,7 +751,7 @@
                 "description": [
                     "【Burst】Deploy this card.",
                     "【Deploy】Add 1 of your Shields to your hand.",
-                    "【Activate･Main】Rest this Base: Choose 1 of your damaged Units. It gets AP+2 during this turn."
+                    "[Activate/Main]Rest this Base: Choose 1 of your damaged Units. It gets AP+2 during this turn."
                 ],
                 "rules": [
                     {

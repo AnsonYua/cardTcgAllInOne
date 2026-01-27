@@ -136,7 +136,7 @@
             "hp": 2,
             "effects": {
                 "description": [
-                    "【Activate･Main】<Support 1> (Rest this Unit. 1 other friendly Unit gets AP+1 during this turn.)"
+                    "[Activate/Main]<Support 1> (Rest this Unit. 1 other friendly Unit gets AP+1 during this turn.)"
                 ],
                 "rules": [
                     {
@@ -659,7 +659,7 @@
                 "description": [
                     "【Burst】Deploy this card.",
                     "【Deploy】Add 1 of your Shields to your hand.",
-                    "【Activate･Main】Rest this Base: If a friendly (Clan) Link Unit is in play, choose 1 friendly Unit. It gets AP+2 during this turn."
+                    "[Activate/Main]Rest this Base: If a friendly (Clan) Link Unit is in play, choose 1 friendly Unit. It gets AP+2 during this turn."
                 ],
                 "rules": [
                     {

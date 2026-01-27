@@ -27,7 +27,7 @@
       "effects": {
         "description": [
           "<Breach 3> (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)",
-          "【During Pair･(Cyber-Newtype) Pilot】When one of your (Titans) Units destroys an enemy shield area card with damage, this Unit recovers 2 HP."
+          "【During Pair-(Cyber-Newtype) Pilot】When one of your (Titans) Units destroys an enemy shield area card with damage, this Unit recovers 2 HP."
         ],
         "rules": [
           {
@@ -171,7 +171,7 @@
       "hp": 2,
       "effects": {
         "description": [
-          "【During Pair･Lv.3 or Lower Pilot】【Destroyed】You may discard 1 Unit card. If you do, return the card paired with this Unit to your hand."
+          "【During Pair-Lv.3 or Lower Pilot】【Destroyed】You may discard 1 Unit card. If you do, return the card paired with this Unit to your hand."
         ],
         "rules": [
           {
@@ -568,7 +568,7 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Activate･Action】Destroy this Unit：Choose 1 enemy Base/enemy Shield this Unit is battling. Deal 6 damage to it."
+          "【Activate-Action】Destroy this Unit:Choose 1 enemy Base/enemy Shield this Unit is battling. Deal 6 damage to it."
         ],
         "rules": [
           {
@@ -582,7 +582,7 @@
             "cost": {},
             "action": "sequence",
             "parameters": {
-              "text": "Destroy this Unit：Choose 1 enemy Base/enemy Shield this Unit is battling. Deal 6 damage to it.",
+              "text": "Destroy this Unit:Choose 1 enemy Base/enemy Shield this Unit is battling. Deal 6 damage to it.",
               "version": 1,
               "steps": [
                 {
@@ -1572,7 +1572,7 @@
       "hp": 3,
       "effects": {
         "description": [
-          "【During Pair･Red Pilot】This Unit gets AP+2."
+          "【During Pair-Red Pilot】This Unit gets AP+2."
         ],
         "rules": [
           {
@@ -1665,7 +1665,7 @@
       "effects": {
         "description": [
           "【When Linked】This Unit gains <Suppression> during this turn. (Damage to Shields by an attack is dealt to the first 2 cards simultaneously.)",
-          "【During Pair･(Neo Zeon) Pilot】【Attack】Choose 1 damaged enemy Unit. Deal 2 damage to it."
+          "【During Pair-(Neo Zeon) Pilot】【Attack】Choose 1 damaged enemy Unit. Deal 2 damage to it."
         ],
         "rules": [
           {
@@ -1916,7 +1916,7 @@
       "hp": 3,
       "effects": {
         "description": [
-          "【Activate･Main】<Support 2> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)",
+          "[Activate/Main]<Support 2> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)",
           "【Deploy】Choose 1 of your other (New UNE) Units. It can't receive battle damage from enemy Units with 2 or less HP during this turn."
         ],
         "rules": [
@@ -2124,7 +2124,7 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Deploy】If you have another (New UNE) Unit in play, deploy 1 rested [Daughtress]((New UNE)･AP0･HP1) Unit token."
+          "【Deploy】If you have another (New UNE) Unit in play, deploy 1 rested [Daughtress]((New UNE)-AP0-HP1) Unit token."
         ],
         "rules": [
           {
@@ -2166,7 +2166,7 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Destroyed】If you have another (New UNE) Unit in play, deploy 1 rested [Daughtress]((New UNE)･AP0･HP1) Unit token."
+          "【Destroyed】If you have another (New UNE) Unit in play, deploy 1 rested [Daughtress]((New UNE)-AP0-HP1) Unit token."
         ],
         "rules": [
           {
@@ -2300,7 +2300,7 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Activate･Main】Rest this Unit：Destroy this and choose 1 enemy Unit that is Lv.5 or lower. Deal 1 damage to it."
+          "[Activate/Main]Rest this Unit:Destroy this and choose 1 enemy Unit that is Lv.5 or lower. Deal 1 damage to it."
         ],
         "rules": [
           {
@@ -2373,7 +2373,7 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Activate･Main】<Support 1> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)"
+          "[Activate/Main]<Support 1> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)"
         ],
         "rules": [
           {
@@ -2682,7 +2682,7 @@
       "hp": 4,
       "effects": {
         "description": [
-          "【During Pair･(Vulture) Pilot】【Destroyed】Choose 1 (Vulture) Unit card that is Lv.5 or higher from your trash. Add it to your hand."
+          "【During Pair-(Vulture) Pilot】【Destroyed】Choose 1 (Vulture) Unit card that is Lv.5 or higher from your trash. Add it to your hand."
         ],
         "rules": [
           {
@@ -2963,7 +2963,7 @@
       "hp": 3,
       "effects": {
         "description": [
-          "【When Paired･Purple Pilot】If there are 3 or more (Teiwaz)/(Tekkadan) cards in your trash, choose 1 enemy Unit with 3 or less AP. Rest it."
+          "【When Paired-Purple Pilot】If there are 3 or more (Teiwaz)/(Tekkadan) cards in your trash, choose 1 enemy Unit with 3 or less AP. Rest it."
         ],
         "rules": [
           {
@@ -3254,7 +3254,7 @@
       "hp": 4,
       "effects": {
         "description": [
-          "【During Link】【Activate･Main】【Once per Turn】Choose 1 active friendly Base. Rest it. If you do, set this Unit as active. It can't choose the enemy player as its attack target during this turn."
+          "【During Link】[Activate/Main]【Once per Turn】Choose 1 active friendly Base. Rest it. If you do, set this Unit as active. It can't choose the enemy player as its attack target during this turn."
         ],
         "rules": [
           {

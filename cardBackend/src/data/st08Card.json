@@ -784,7 +784,7 @@
                 "description": [
                     "【Burst】Deploy this card.",
                     "【Deploy】Add 1 of your Shields to your hand.",
-                    "【Activate･Main】【Once per Turn】②：Choose 1 of your Units. It recovers 2 HP."
+                    "[Activate/Main]【Once per Turn】(2):Choose 1 of your Units. It recovers 2 HP."
                 ],
                 "rules": [
                     {

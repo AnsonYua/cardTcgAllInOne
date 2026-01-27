@@ -680,7 +680,7 @@
                 "description": [
                     "【Burst】Deploy this card.",
                     "【Deploy】Add 1 of your Shields to your hand.",
-                    "【Activate･Main】【Once per Turn】②：Choose 1 friendly Unit with <Blocker>; set it as active (it cannot attack this turn)."
+                    "[Activate/Main]【Once per Turn】(2):Choose 1 friendly Unit with <Blocker>; set it as active (it cannot attack this turn)."
                 ],
                 "rules": [
                     {
@@ -750,7 +750,7 @@
                 "description": [
                     "【Burst】Deploy this card.",
                     "【Deploy】Add 1 of your Shields to your hand.",
-                    "【Activate･Main】Rest this Base; choose 1 friendly Unit; it gets AP+1 during this turn."
+                    "[Activate/Main]Rest this Base; choose 1 friendly Unit; it gets AP+1 during this turn."
                 ],
                 "rules": [
                     {

@@ -1,0 +1,11 @@
+if cardType = unit, print the text  within a box starting from (81,907) width 692 , hieght 141.if there is 2 array in description , secondary text
+  should be in next line
+
+
+write a python reading /Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/data/st01Card.json, if cardType = unit,  looking at
+  each card effects."description": , and get the card image in folder /Users/hello/Desktop/card/unity/cardGameRevamp/gcgtw/imageEditor/302/
+  ST01. then print the text  within a box starting from (81,907) width 692 , hieght 141.if there is 2 array in description , secondary text
+  should be in next line
+
+
+python st01_effect_box.py --no-fit --font-size 28 --stroke-width 3  --stroke-fill "#FFFFFF" --overwrite --bold --line-height-mult 1.2 --draw-box --box-fill #FFFFFF80

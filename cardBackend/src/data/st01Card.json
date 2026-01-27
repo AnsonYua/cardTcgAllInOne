@@ -28,7 +28,7 @@
             "effects": {
                 "description": [
                     "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)",
-                    "【During Pair】During your turn, all your Units get AP+1."
+                    "[During Pair]During your turn, all your Units get AP+1."
                 ],
                 "rules": [
                     {
@@ -94,7 +94,7 @@
             "hp": 3,
             "effects": {
                 "description": [
-                    "【When Paired･(White Base Team) pilot】Draw 1."
+                    "[When Paired (White Base Team) pilot]Draw 1."
                 ],
                 "rules": [
                     {
@@ -168,7 +168,7 @@
             "hp": 3,
             "effects": {
                 "description": [
-                    "【Deploy】Choose 1 enemy Unit with 2 or less HP. Rest it."
+                    "[Deploy]Choose 1 enemy Unit with 2 or less HP. Rest it."
                 ],
                 "rules": [
                     {
@@ -231,7 +231,7 @@
             "hp": 4,
             "effects": {
                 "description": [
-                    "【When Paired】Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn."
+                    "[When Paired]Choose 1 enemy Unit that is Lv.5 or lower. It gets AP-3 during this turn."
                 ],
                 "rules": [
                     {
@@ -389,8 +389,8 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【When Paired】Choose 1 enemy Unit with 5 or less HP. Rest it."
+                    "[Burst]Add this card to your hand.",
+                    "[When Paired]Choose 1 enemy Unit with 5 or less HP. Rest it."
                 ],
                 "rules": [
                     {
@@ -436,8 +436,8 @@
             "hp": 2,
             "effects": {
                 "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【Attack】【Once per Turn】Choose 1 of your Resources. Set it as active."
+                    "[Burst]Add this card to your hand.",
+                    "[Attack][Once per Turn]Choose 1 of your Resources. Set it as active."
                 ],
                 "rules": [
                     {
@@ -488,8 +488,8 @@
             "hp": 1,
             "effects": {
                 "description": [
-                    "【Main】Choose 1 rested enemy Unit. Deal 1 damage to it.",
-                    "【Pilot】[Hayato Kobayashi]"
+                    "[Main]Choose 1 rested enemy Unit. Deal 1 damage to it.",
+                    "[Pilot][Hayato Kobayashi]"
                 ],
                 "rules": [
                     {
@@ -543,8 +543,8 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "【Main】Choose 1 friendly Unit. It recovers 3 HP.",
-                    "【Pilot】[Kai Shiden]"
+                    "[Main]Choose 1 friendly Unit. It recovers 3 HP.",
+                    "[Pilot][Kai Shiden]"
                 ],
                 "rules": [
                     {
@@ -592,8 +592,8 @@
             "hp": 0,
             "effects": {
                 "description": [
-                    "【Burst】Activate this card's 【Main】.",
-                    "【Main】/【Action】Choose 1 enemy Unit. It gets AP-3 during this turn."
+                    "[Burst]Activate this card's [Main].",
+                    "[Main]/[Action]Choose 1 enemy Unit. It gets AP-3 during this turn."
                 ],
                 "rules": [
                     {
@@ -649,9 +649,9 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
-                    "【Activate･Main】【Once per Turn】②：Deploy 1 [Gundam]((White Base Team)･AP3･HP3) Unit token if you have no Units in play, deploy 1 [Guncannon]((White Base Team)･AP2･HP2) Unit token if you have only 1 Unit in play, or deploy 1 [Guntank]((White Base Team)･AP1･HP1) Unit token if you have 2 or more Units in play."
+                    "[Burst]Deploy this card.",
+                    "[Deploy]Add 1 of your Shields to your hand.",
+                    "[Activate/Main][Once per Turn](2):Deploy 1 [Gundam]((White Base Team)-AP3-HP3) Unit token if you have no Units in play, deploy 1 [Guncannon]((White Base Team)-AP2-HP2) Unit token if you have only 1 Unit in play, or deploy 1 [Guntank]((White Base Team)-AP1-HP1) Unit token if you have 2 or more Units in play."
                 ],
                 "rules": [
                     {
@@ -734,9 +734,9 @@
             "hp": 5,
             "effects": {
                 "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
-                    "【Activate･Main】Rest this Base：All friendly Link Units get AP+1 during this turn."
+                    "[Burst]Deploy this card.",
+                    "[Deploy]Add 1 of your Shields to your hand.",
+                    "[Activate/Main]Rest this Base:All friendly Link Units get AP+1 during this turn."
                 ],
                 "rules": [
                     {

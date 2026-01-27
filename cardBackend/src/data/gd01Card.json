@@ -633,7 +633,7 @@
       "hp": 3,
       "effects": {
         "description": [
-          "【During Link】【Activate･Action】【Once per Turn】Choose 1 Unit. It recovers 1 HP."
+          "【During Link】【Activate-Action】【Once per Turn】Choose 1 Unit. It recovers 1 HP."
         ],
         "rules": [
           {
@@ -961,7 +961,7 @@
       "hp": 3,
       "effects": {
         "description": [
-          "【Activate･Main】Discard 1 (Zeon)/(Neo Zeon) Unit card：If a Pilot is not paired with this Unit, choose 1 (Newtype) Pilot card that is Lv.3 or lower from your trash. Pair it with this Unit."
+          "[Activate/Main]Discard 1 (Zeon)/(Neo Zeon) Unit card:If a Pilot is not paired with this Unit, choose 1 (Newtype) Pilot card that is Lv.3 or lower from your trash. Pair it with this Unit."
         ],
         "rules": [
           {
@@ -1089,7 +1089,7 @@
       "hp": 4,
       "effects": {
         "description": [
-          "【When Paired･(Operation Meteor) Pilot】Place 1 rested Resource. Then, this Unit gains <First Strike> during this turn. (While this Unit is attacking, it deals damage before the enemy Unit.)"
+          "【When Paired-(Operation Meteor) Pilot】Place 1 rested Resource. Then, this Unit gains <First Strike> during this turn. (While this Unit is attacking, it deals damage before the enemy Unit.)"
         ],
         "rules": [
           {
@@ -1167,7 +1167,7 @@
       "hp": 2,
       "effects": {
         "description": [
-          "【During Pair】【Destroyed】Deploy 1 rested [Char's Zaku Ⅱ]((Zeon)･AP3･HP1) Unit token."
+          "【During Pair】【Destroyed】Deploy 1 rested [Char's Zaku Ⅱ]((Zeon)-AP3-HP1) Unit token."
         ],
         "rules": [
           {
@@ -1440,7 +1440,7 @@
       "hp": 3,
       "effects": {
         "description": [
-          "【When Paired･(Zeon) Pilot】Choose 1 enemy Unit with <Blocker> that is Lv.2 or lower. Destroy it."
+          "【When Paired-(Zeon) Pilot】Choose 1 enemy Unit with <Blocker> that is Lv.2 or lower. Destroy it."
         ],
         "rules": [
           {
@@ -1874,7 +1874,7 @@
       "hp": 4,
       "effects": {
         "description": [
-          "【When Paired･(Cyber-Newtype)/(Newtype) Pilot】Choose 1 to 2 enemy Units. Deal 1 damage to them."
+          "【When Paired-(Cyber-Newtype)/(Newtype) Pilot】Choose 1 to 2 enemy Units. Deal 1 damage to them."
         ],
         "rules": [
       {
@@ -1989,8 +1989,8 @@
       "hp": 4,
       "effects": {
         "description": [
-          "【Activate･Main】<Support 3> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)",
-          "【During Pair･(Coordinator) Pilot】【Once per Turn】When you use this Unit's <Support> to increase a (ZAFT) Unit's AP, set this Unit as active."
+          "[Activate/Main]<Support 3> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)",
+          "【During Pair-(Coordinator) Pilot】【Once per Turn】When you use this Unit's <Support> to increase a (ZAFT) Unit's AP, set this Unit as active."
         ],
         "rules": [
           {
@@ -2091,7 +2091,7 @@
       "hp": 1,
       "effects": {
         "description": [
-          "【Activate･Main】<Support 1> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)",
+          "[Activate/Main]<Support 1> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)",
           "【Deploy】Look at the top card of your deck. If it is a (Zeon)/(Neo Zeon) Unit card, you may reveal it and add it to your hand. Return any remaining card to the bottom of your deck."
         ],
         "rules": [
@@ -2333,7 +2333,7 @@
       "hp": 2,
       "effects": {
         "description": [
-          "【Activate･Main】【Once per Turn】①：Choose 1 enemy Unit with 2 or less AP. Deal 1 damage to it."
+          "[Activate/Main]【Once per Turn】①:Choose 1 enemy Unit with 2 or less AP. Deal 1 damage to it."
         ],
         "rules": [
           {
@@ -2430,7 +2430,7 @@
       "hp": 3,
       "effects": {
         "description": [
-          "【Activate･Main】<Support 2> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)"
+          "[Activate/Main]<Support 2> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)"
         ],
         "rules": [
           {
@@ -2542,7 +2542,7 @@
       "hp": 2,
       "effects": {
         "description": [
-          "【Activate･Action】【Once per Turn】①：Choose 1 Unit that is Lv.4 or higher. It gets AP+1 during this battle."
+          "【Activate-Action】【Once per Turn】①:Choose 1 Unit that is Lv.4 or higher. It gets AP+1 during this battle."
         ],
         "rules": [
           {
@@ -2654,7 +2654,7 @@
       "hp": 2,
       "effects": {
         "description": [
-          "【Activate･Main】<Support 1> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)"
+          "[Activate/Main]<Support 1> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)"
         ],
         "rules": [
           {
@@ -2868,7 +2868,7 @@
       "hp": 5,
       "effects": {
         "description": [
-          "【Deploy】Deploy 1 [Fatum-00]((Triple Ship Alliance)･AP2･HP2･<Blocker>) Unit token.",
+          "【Deploy】Deploy 1 [Fatum-00]((Triple Ship Alliance)-AP2-HP2-<Blocker>) Unit token.",
           "【During Pair】【Attack】Choose 1 of your (Triple Ship Alliance) Unit tokens. It may attack on the turn it is deployed."
         ],
         "rules": [
@@ -3045,7 +3045,7 @@
       "hp": 2,
       "effects": {
         "description": [
-          "【Activate･Main】【Once per Turn】①：Choose 1 of your rested white Units with <Blocker>. Set it as active. It can't attack during this turn."
+          "[Activate/Main]【Once per Turn】①:Choose 1 of your rested white Units with <Blocker>. Set it as active. It can't attack during this turn."
         ],
         "rules": [
           {
@@ -3661,7 +3661,7 @@
       "hp": 3,
       "effects": {
         "description": [
-          "【During Pair】【Activate･Action】【Once per Turn】②：Choose 1 enemy Unit. It gets AP-1 during this battle."
+          "【During Pair】【Activate-Action】【Once per Turn】(2):Choose 1 enemy Unit. It gets AP-1 during this battle."
         ],
         "rules": [
           {
@@ -4172,7 +4172,7 @@
       "effects": {
         "description": [
           "【Burst】Add this card to your hand.",
-          "【Activate･Main】【Once per Turn】If your opponent has 8 or more cards in their hand, set this Unit as active. It can't attack during this turn."
+          "[Activate/Main]【Once per Turn】If your opponent has 8 or more cards in their hand, set this Unit as active. It can't attack during this turn."
         ],
         "rules": [
           {
@@ -4252,7 +4252,7 @@
       "effects": {
         "description": [
           "【Burst】Add this card to your hand.",
-          "【Activate･Action】【Once per Turn】If an enemy Unit with 1 or less AP is in play, this Unit recovers 1 HP."
+          "【Activate-Action】【Once per Turn】If an enemy Unit with 1 or less AP is in play, this Unit recovers 1 HP."
         ],
         "rules": [
           {
@@ -4638,7 +4638,7 @@
       "hp": 0,
       "effects": {
         "description": [
-          "【Main】Deploy 2 [Zaku Ⅱ]((Zeon)･AP1･HP1) Unit tokens.",
+          "【Main】Deploy 2 [Zaku Ⅱ]((Zeon)-AP1-HP1) Unit tokens.",
           "【Pilot】[Dozle Zabi]"
         ],
         "rules": [
@@ -5629,7 +5629,7 @@
         "description": [
           "【Burst】Deploy this card.",
           "【Deploy】Add 1 of your Shields to your hand.",
-          "【Activate･Main】Rest this Base：Choose 1 friendly Unit. It recovers 1 HP."
+          "[Activate/Main]Rest this Base:Choose 1 friendly Unit. It recovers 1 HP."
         ],
         "rules": [
           {
@@ -5831,7 +5831,7 @@
         "description": [
           "【Burst】Deploy this card.",
           "【Deploy】Add 1 of your Shields to your hand.",
-          "【Activate･Action】Rest this Base：Choose 1 friendly (ZAFT) Unit with 5 or more AP. It gains <Breach 3> during this battle. (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)"
+          "【Activate-Action】Rest this Base:Choose 1 friendly (ZAFT) Unit with 5 or more AP. It gains <Breach 3> during this battle. (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)"
         ],
         "rules": [
           {
@@ -6032,7 +6032,7 @@
         "description": [
           "【Burst】Deploy this card.",
           "【Deploy】Add 1 of your Shields to your hand.",
-          "【Activate･Main】Rest this Base：If a friendly (Academy) Unit is in play, choose 1 enemy Unit. It gets AP-1 during this turn."
+          "[Activate/Main]Rest this Base:If a friendly (Academy) Unit is in play, choose 1 enemy Unit. It gets AP-1 during this turn."
         ],
         "rules": [
           {
