@@ -25,7 +25,7 @@ export default class ResourceManager {
       timeout: GAME_CONFIG.api.timeout || 10000,
       
       // Image formats and suffixes
-      imageExtension: '.png',
+      imageExtension: '.jpeg',
       previewSuffix: '-preview',
       
       // Performance settings

@@ -18,11 +18,15 @@ Run a range:
   API_302_TOKEN=... python3 alibaba_api.py --param-a GD02 --b-start 1 --b-end 10 --text "increase sharpness slightly" --out-name GD02.json
 
   API_302_TOKEN=sk-bmNvnq1tleywOOjOhYZyDfyuAbJ77BGjLsLxVkeTT4bAFh0R python3 alibaba_api.py --param-a GD02 --b-start 1 --b-end 16 --text "remove watermark SAMPLE in the image" --out-name 302/GD02.json --images-dir 302/GD02
+
+
+  API_302_TOKEN=sk-bmNvnq1tleywOOjOhYZyDfyuAbJ77BGjLsLxVkeTT4bAFh0R python3 alibaba_api.py --local-dir 302/ST01-backup --param-a ST01 --b-start 1 --b-end 16 --text "remove the text card effect and label below the title " --out-name ST01.json
 """
 
 from __future__ import annotations
 
 import argparse
+import base64
 import datetime as dt
 import hashlib
 import json
@@ -36,6 +40,7 @@ from urllib.parse import urlparse
 ENDPOINT = "https://api.302.ai/aliyun/api/v1/services/aigc/multimodal-generation/generation"
 DEFAULT_MODEL = "qwen-image-edit-plus-2025-12-15"
 DEFAULT_URL_TEMPLATE = "https://www.gundam-gcg.com/en/images/cards/card/{paramA}-{paramB}.webp"
+DEFAULT_LOCAL_EXTS = ["png", "jpg", "jpeg", "webp"]
 
 
 def _utc_now_iso() -> str:
@@ -221,8 +226,14 @@ def _guess_ext_from_url(url: str, fallback: str = "png") -> str:
     return fallback
 
 
-def _basename_from_input_image_url(image_url: str) -> str:
-    last = image_url.rsplit("/", 1)[-1]
+def _basename_from_input_ref(image_ref: str) -> str:
+    if os.path.exists(image_ref):
+        last = os.path.basename(image_ref)
+        if "." in last:
+            last = last.rsplit(".", 1)[0]
+        return last or "image"
+
+    last = image_ref.rsplit("/", 1)[-1]
     last = last.split("?", 1)[0]
     if "." in last:
         last = last.rsplit(".", 1)[0]
@@ -274,10 +285,75 @@ def _reject_watermark_removal(text: str) -> None:
         )
 
 
+def _is_http_url(s: str) -> bool:
+    return s.startswith("http://") or s.startswith("https://")
+
+
+def _mime_from_ext(path: str) -> str:
+    ext = os.path.splitext(path)[1].lower()
+    if ext == ".png":
+        return "image/png"
+    if ext in {".jpg", ".jpeg"}:
+        return "image/jpeg"
+    if ext == ".webp":
+        return "image/webp"
+    # default: works for most cases
+    return "application/octet-stream"
+
+
+def _image_value_from_ref(image_ref: str) -> str:
+    """
+    Return value for the request JSON `content[].image`.
+    - If it's an http(s) URL, return as-is.
+    - If it's a local file path, encode as data URI: data:<mime>;base64,<...>
+    """
+    if _is_http_url(image_ref):
+        return image_ref
+
+    if not os.path.exists(image_ref):
+        raise FileNotFoundError(image_ref)
+
+    mime = _mime_from_ext(image_ref)
+    with open(image_ref, "rb") as f:
+        b64 = base64.b64encode(f.read()).decode("ascii")
+    return f"data:{mime};base64,{b64}"
+
+
+def _parse_exts_csv(s: str) -> List[str]:
+    parts = [p.strip().lstrip(".").lower() for p in s.split(",") if p.strip()]
+    return [p for p in parts if p]
+
+
+def _resolve_local_paths(
+    *,
+    local_dir: str,
+    bases: Sequence[str],
+    exts: Sequence[str],
+) -> Tuple[List[str], List[str]]:
+    """
+    For each base like 'ST01-001', find the first file existing in local_dir with allowed exts.
+    Returns (paths, missing_bases).
+    """
+    paths: List[str] = []
+    missing: List[str] = []
+    for base in bases:
+        found = None
+        for ext in exts:
+            cand = os.path.join(local_dir, f"{base}.{ext}")
+            if os.path.exists(cand):
+                found = cand
+                break
+        if found:
+            paths.append(found)
+        else:
+            missing.append(base)
+    return paths, missing
+
+
 def submit_one(
     *,
     token: str,
-    image_url: str,
+    image_ref: str,
     text: str,
     model: str,
     n: int,
@@ -294,6 +370,7 @@ def submit_one(
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
     }
+    image_value = _image_value_from_ref(image_ref)
     payload: Dict[str, Any] = {
         "model": model,
         "input": {
@@ -301,7 +378,7 @@ def submit_one(
                 {
                     "role": "user",
                     "content": [
-                        {"image": image_url},
+                        {"image": image_value},
                         {"text": text},
                     ],
                 }
@@ -372,6 +449,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     p.add_argument("--b-values", help="comma-separated explicit paramB values (e.g. 001,002,016)")
     p.add_argument("--image-url", action="append", default=[], help="repeatable")
     p.add_argument("--image-url-file", help="text file with one URL per line")
+    p.add_argument(
+        "--local-dir",
+        help="If set, read images from this local folder instead of using remote URLs (expects files like ST01-001.png).",
+    )
+    p.add_argument(
+        "--local-exts",
+        default="png,jpg,jpeg,webp",
+        help="comma-separated extensions to try when --local-dir is used (default: png,jpg,jpeg,webp)",
+    )
 
     # API auth + behavior
     p.add_argument("--token", help="or set env API_302_TOKEN")
@@ -421,7 +507,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         image_urls.extend(_load_image_urls_from_file(args.image_url_file))
 
     if image_urls:
-        urls = list(dict.fromkeys(image_urls))
+        # Can be actual URLs OR local paths when --local-dir is set.
+        refs = list(dict.fromkeys(image_urls))
+        if args.local_dir:
+            resolved: List[str] = []
+            for r in refs:
+                if _is_http_url(r) or os.path.isabs(r):
+                    resolved.append(r)
+                else:
+                    resolved.append(os.path.join(args.local_dir, r))
+            refs = resolved
     else:
         b_values = _parse_csv(args.b_values) if args.b_values else None
         try:
@@ -440,6 +535,23 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         except ValueError as e:
             print(f"Argument error: {e}", file=sys.stderr)
             return 2
+        refs = urls
+
+    # If local mode, convert generated URLs (or bases) into local paths.
+    if args.local_dir and not image_urls:
+        local_dir = args.local_dir
+        exts = _parse_exts_csv(args.local_exts) or DEFAULT_LOCAL_EXTS
+        bases = []
+        for r in refs:
+            if os.path.exists(r):
+                bases.append(os.path.splitext(os.path.basename(r))[0])
+            else:
+                # URL -> base from URL filename
+                bases.append(_basename_from_input_ref(r))
+        local_paths, missing = _resolve_local_paths(local_dir=local_dir, bases=bases, exts=exts)
+        if missing:
+            _log(f"[WARN] missing local files for: {', '.join(missing[:20])}{'...' if len(missing) > 20 else ''}", quiet=args.quiet)
+        refs = local_paths
 
     out_name = args.out_name or (f"{args.param_a}.json" if args.param_a else None)
     if not out_name:
@@ -477,19 +589,26 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     _log(f"[OUT] json={out_path} images_dir={images_dir}", quiet=args.quiet)
 
-    for idx, image_url in enumerate(urls, start=1):
-        existing_item = next((it for it in items if isinstance(it, dict) and it.get("image_url") == image_url), None)
+    for idx, image_ref in enumerate(refs, start=1):
+        existing_item = next(
+            (
+                it
+                for it in items
+                if isinstance(it, dict) and it.get("image_url") == image_ref
+            ),
+            None,
+        )
         if args.resume and isinstance(existing_item, dict) and _already_downloaded(existing_item):
             skipped += 1
-            _log(f"[SKIP] {idx}/{len(urls)} already downloaded: {image_url}", quiet=args.quiet)
+            _log(f"[SKIP] {idx}/{len(refs)} already downloaded: {image_ref}", quiet=args.quiet)
             continue
 
-        base_name = _basename_from_input_image_url(image_url)
-        _log(f"[REQ] {idx}/{len(urls)} image={image_url}", quiet=args.quiet)
+        base_name = _basename_from_input_ref(image_ref)
+        _log(f"[REQ] {idx}/{len(refs)} image={image_ref}", quiet=args.quiet)
 
         if args.dry_run:
             item = {
-                "image_url": image_url,
+                "image_url": image_ref,
                 "submitted_at": _utc_now_iso(),
                 "ok": True,
                 "http_status": 200,
@@ -505,7 +624,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
         result = submit_one(
             token=token,
-            image_url=image_url,
+            image_ref=image_ref,
             text=args.text,
             model=args.model,
             n=args.n,
@@ -580,7 +699,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             _log(f"[OK]   saved bytes={len(data)} sha256={sha256[:10]}...", quiet=args.quiet)
 
         item = {
-            "image_url": image_url,
+            "image_url": image_ref,
             "submitted_at": _utc_now_iso(),
             "ok": bool(result.get("ok")),
             "http_status": result.get("http_status"),
