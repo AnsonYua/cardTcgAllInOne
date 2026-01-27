@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-01-27T11:45:29.110268+00:00",
+  "created_at": "2026-01-27T16:37:15.389466+00:00",
   "endpoint": "https://api.302.ai/aliyun/api/v1/services/aigc/multimodal-generation/generation",
   "model": "qwen-image-edit-plus-2025-12-15",
   "parameters": {
@@ -12,191 +12,644 @@
   "items": [
     {
       "image_url": "302/ST04-withTxt/ST04-001.png",
-      "submitted_at": "2026-01-27T11:45:34.116924+00:00",
-      "ok": false,
-      "http_status": 0,
-      "request_id": null,
+      "submitted_at": "2026-01-27T16:37:38.577725+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "7b18f88b-f690-4209-9b60-0593164a69b1",
       "response": {
-        "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/7e/20260128/82a15263/8fcc312c-d655-490a-9cd4-455fe3f68eb1-1.png?Expires=1770137649&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=YofEQfH%2FR4CGIq5IGDXFovDpGzk%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "7b18f88b-f690-4209-9b60-0593164a69b1"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/7e/20260128/82a15263/8fcc312c-d655-490a-9cd4-455fe3f68eb1-1.png?Expires=1770137649&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=YofEQfH%2FR4CGIq5IGDXFovDpGzk%3D",
+          "path": "302/ST04/ST04-001.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1692261,
+          "sha256": "e79a3df81d875b3d4be883472a363c30d6c5ab773d00cd09da0055de3724ccc1"
+        }
+      ]
     },
     {
       "image_url": "302/ST04-withTxt/ST04-002.png",
-      "submitted_at": "2026-01-27T11:45:38.717636+00:00",
-      "ok": false,
-      "http_status": 0,
-      "request_id": null,
+      "submitted_at": "2026-01-27T16:37:58.314085+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "a2aee90f-0281-4fe7-aedf-aeeccd499156",
       "response": {
-        "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/0e/20260128/82a15263/c4a5e52e-6de4-4ff1-9905-37b486c16913-1.png?Expires=1770137670&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=nfZRwPeerSoMjkv%2B8V8xuRHwUP0%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "a2aee90f-0281-4fe7-aedf-aeeccd499156"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/0e/20260128/82a15263/c4a5e52e-6de4-4ff1-9905-37b486c16913-1.png?Expires=1770137670&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=nfZRwPeerSoMjkv%2B8V8xuRHwUP0%3D",
+          "path": "302/ST04/ST04-002.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1415407,
+          "sha256": "13e1e19c3cc9a3c642da83ff746a581a9515c5cbec2701d9b5c7f1c990e0ed0e"
+        }
+      ]
     },
     {
       "image_url": "302/ST04-withTxt/ST04-003.png",
-      "submitted_at": "2026-01-27T11:45:43.664084+00:00",
-      "ok": false,
-      "http_status": 0,
-      "request_id": null,
+      "submitted_at": "2026-01-27T16:38:19.612811+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "c8f5fb0d-0742-4523-9f2e-c4624180c493",
       "response": {
-        "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/a3/20260128/82a15263/a88516f5-a513-4bc3-b58f-ca2a123a3ca6-1.png?Expires=1770137692&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=FGgbPP0b5acFThuuc%2FFr%2BAyGSJU%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "c8f5fb0d-0742-4523-9f2e-c4624180c493"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/a3/20260128/82a15263/a88516f5-a513-4bc3-b58f-ca2a123a3ca6-1.png?Expires=1770137692&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=FGgbPP0b5acFThuuc%2FFr%2BAyGSJU%3D",
+          "path": "302/ST04/ST04-003.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1500107,
+          "sha256": "c92b66ef7bfc106bfc5d6d093270b9564ff4ec3f80a24e4d78e37dbee7a25ccd"
+        }
+      ]
     },
     {
       "image_url": "302/ST04-withTxt/ST04-004.png",
-      "submitted_at": "2026-01-27T11:45:48.538435+00:00",
-      "ok": false,
-      "http_status": 0,
-      "request_id": null,
+      "submitted_at": "2026-01-27T16:38:39.926599+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "3a6d53a3-45f6-4cba-9b5d-b402c5fd2472",
       "response": {
-        "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/db/20260128/82a15263/951bfd73-1a48-4b70-bcdd-3dbf253f06bb-1.png?Expires=1770137712&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=WVbuiP6YkyOk4vJLS%2Bgeo2PFZr0%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "3a6d53a3-45f6-4cba-9b5d-b402c5fd2472"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/db/20260128/82a15263/951bfd73-1a48-4b70-bcdd-3dbf253f06bb-1.png?Expires=1770137712&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=WVbuiP6YkyOk4vJLS%2Bgeo2PFZr0%3D",
+          "path": "302/ST04/ST04-004.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1302077,
+          "sha256": "99032e509e2076bea179b4e2c2998c851a00a865e3a1f99654d8e5f79fa9023c"
+        }
+      ]
     },
     {
       "image_url": "302/ST04-withTxt/ST04-005.png",
-      "submitted_at": "2026-01-27T11:45:53.434974+00:00",
-      "ok": false,
-      "http_status": 0,
-      "request_id": null,
+      "submitted_at": "2026-01-27T16:39:00.899139+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "8a99940f-79e2-46d3-9c4d-ed5c3c3c5298",
       "response": {
-        "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/57/20260128/82a15263/a35e763e-bc51-4bf2-ba2a-e6c8f7695ba4-1.png?Expires=1770137732&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=3ebRJhDpxwdJp4DaQW7usZxMXsA%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "8a99940f-79e2-46d3-9c4d-ed5c3c3c5298"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/57/20260128/82a15263/a35e763e-bc51-4bf2-ba2a-e6c8f7695ba4-1.png?Expires=1770137732&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=3ebRJhDpxwdJp4DaQW7usZxMXsA%3D",
+          "path": "302/ST04/ST04-005.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1394581,
+          "sha256": "ffec61613d7bd85e31f9c5aecb118c1d2f49c2f2279897221b15a3adafceb16c"
+        }
+      ]
     },
     {
       "image_url": "302/ST04-withTxt/ST04-006.png",
-      "submitted_at": "2026-01-27T11:45:58.582416+00:00",
-      "ok": false,
-      "http_status": 0,
-      "request_id": null,
+      "submitted_at": "2026-01-27T16:39:22.708612+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "5f4935a3-91c4-49fc-8856-e6108eeda1b9",
       "response": {
-        "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/92/20260128/82a15263/2130b66d-dc90-4413-a940-0246025cf446-1.png?Expires=1770137754&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=luD9yZ7CAtzrkyhes2PIvdSrX9Y%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "5f4935a3-91c4-49fc-8856-e6108eeda1b9"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/92/20260128/82a15263/2130b66d-dc90-4413-a940-0246025cf446-1.png?Expires=1770137754&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=luD9yZ7CAtzrkyhes2PIvdSrX9Y%3D",
+          "path": "302/ST04/ST04-006.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1555108,
+          "sha256": "7bc276d53e87842e77ff504f1dcaf7cd9d8bd86fd954e9774a1e51475caf5cca"
+        }
+      ]
     },
     {
       "image_url": "302/ST04-withTxt/ST04-007.png",
-      "submitted_at": "2026-01-27T11:46:03.495924+00:00",
-      "ok": false,
-      "http_status": 0,
-      "request_id": null,
+      "submitted_at": "2026-01-27T16:39:44.023511+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "f39f22ec-f6bf-4d79-b276-f10004ebca78",
       "response": {
-        "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/9d/20260128/82a15263/f4d24c59-ad39-48f3-a3ab-c16a4e391218-1.png?Expires=1770137776&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=Ne6VuAbVPf2CrUjAmVfwEjwaiPA%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "f39f22ec-f6bf-4d79-b276-f10004ebca78"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/9d/20260128/82a15263/f4d24c59-ad39-48f3-a3ab-c16a4e391218-1.png?Expires=1770137776&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=Ne6VuAbVPf2CrUjAmVfwEjwaiPA%3D",
+          "path": "302/ST04/ST04-007.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1412515,
+          "sha256": "735647e0e0e23bd97fb9bbdacfc1cad5c7cdec94431a900a2e68e068e2e3d976"
+        }
+      ]
     },
     {
       "image_url": "302/ST04-withTxt/ST04-008.png",
-      "submitted_at": "2026-01-27T11:46:08.844374+00:00",
-      "ok": false,
-      "http_status": 0,
-      "request_id": null,
+      "submitted_at": "2026-01-27T16:40:05.699742+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "32ef426e-46dc-4bfb-bcfa-c9cf925e8dd6",
       "response": {
-        "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/f7/20260128/82a15263/6d86b0bc-731a-428e-b883-acb8985f8e9e-1.png?Expires=1770137797&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=MUAAuVf%2BKUp4qFgVaurIoDZ0gSA%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "32ef426e-46dc-4bfb-bcfa-c9cf925e8dd6"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/f7/20260128/82a15263/6d86b0bc-731a-428e-b883-acb8985f8e9e-1.png?Expires=1770137797&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=MUAAuVf%2BKUp4qFgVaurIoDZ0gSA%3D",
+          "path": "302/ST04/ST04-008.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1475863,
+          "sha256": "6bbcd97f2d71323d1fbdd457619a49e2ee1a563a6a3b25d92c3d4b3a71d2de9c"
+        }
+      ]
     },
     {
       "image_url": "302/ST04-withTxt/ST04-009.png",
-      "submitted_at": "2026-01-27T11:46:13.503544+00:00",
-      "ok": false,
-      "http_status": 0,
-      "request_id": null,
+      "submitted_at": "2026-01-27T16:40:29.806717+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "c4bd6785-f32c-4229-94f6-7e29023fb7d8",
       "response": {
-        "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/dc/20260128/82a15263/3755ed2d-2500-4426-b9be-d8c7e5fb2d29-1.png?Expires=1770137819&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=1CQ4xlXiFrrrUi4LrlGsbvoYNvI%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "c4bd6785-f32c-4229-94f6-7e29023fb7d8"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/dc/20260128/82a15263/3755ed2d-2500-4426-b9be-d8c7e5fb2d29-1.png?Expires=1770137819&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=1CQ4xlXiFrrrUi4LrlGsbvoYNvI%3D",
+          "path": "302/ST04/ST04-009.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1553682,
+          "sha256": "97bba643ee49e863a57dc23fa512d92d2f66393165a1bac5a476e06f2699f083"
+        }
+      ]
     },
     {
       "image_url": "302/ST04-withTxt/ST04-010.png",
-      "submitted_at": "2026-01-27T11:46:18.426100+00:00",
-      "ok": false,
-      "http_status": 0,
-      "request_id": null,
+      "submitted_at": "2026-01-27T16:40:50.670648+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "9b1ff0be-3c0b-47da-a7ec-c2d0918aecc9",
       "response": {
-        "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/ed/20260128/82a15263/9c78fc15-a3d1-495e-8feb-46dddd70d39c-1.png?Expires=1770137842&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=1jj%2Fxzj4yWdhSapbvxxUohj2qxw%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "9b1ff0be-3c0b-47da-a7ec-c2d0918aecc9"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/ed/20260128/82a15263/9c78fc15-a3d1-495e-8feb-46dddd70d39c-1.png?Expires=1770137842&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=1jj%2Fxzj4yWdhSapbvxxUohj2qxw%3D",
+          "path": "302/ST04/ST04-010.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1327728,
+          "sha256": "d7cda08d92a05e098078a183cd57d64b7ca544244b1036acc0892f0462aacd57"
+        }
+      ]
     },
     {
       "image_url": "302/ST04-withTxt/ST04-011.png",
-      "submitted_at": "2026-01-27T11:46:23.074585+00:00",
-      "ok": false,
-      "http_status": 0,
-      "request_id": null,
+      "submitted_at": "2026-01-27T16:41:13.132223+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "393ca9a8-69a9-402e-a82a-e67051f3fcfc",
       "response": {
-        "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/2f/20260128/82a15263/3a14fca5-24b6-4067-ba27-861e10561135-1.png?Expires=1770137865&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=0YSfcB1CpHG00zh6zFL%2BTD%2BwxiY%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "393ca9a8-69a9-402e-a82a-e67051f3fcfc"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/2f/20260128/82a15263/3a14fca5-24b6-4067-ba27-861e10561135-1.png?Expires=1770137865&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=0YSfcB1CpHG00zh6zFL%2BTD%2BwxiY%3D",
+          "path": "302/ST04/ST04-011.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1337318,
+          "sha256": "6ede9c3d36be59f8328ab88102d2cabe9d2e31a2b5b76cd1c08a1f6a0f3d24bc"
+        }
+      ]
     },
     {
       "image_url": "302/ST04-withTxt/ST04-012.png",
-      "submitted_at": "2026-01-27T11:46:27.804651+00:00",
-      "ok": false,
-      "http_status": 0,
-      "request_id": null,
+      "submitted_at": "2026-01-27T16:41:33.769580+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "d12e9743-5c04-475f-8bb4-a6eb3808cdf4",
       "response": {
-        "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/a1/20260128/82a15263/784ba6fc-151b-427d-9a54-3b9c3cfa099b-1.png?Expires=1770137885&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=T1IgWILN3Umbp9kWuLNHc4LCaIE%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "d12e9743-5c04-475f-8bb4-a6eb3808cdf4"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/a1/20260128/82a15263/784ba6fc-151b-427d-9a54-3b9c3cfa099b-1.png?Expires=1770137885&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=T1IgWILN3Umbp9kWuLNHc4LCaIE%3D",
+          "path": "302/ST04/ST04-012.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1246068,
+          "sha256": "2028e9c2ecadb8da16234b17ae7af103adf4fee54feb861a7cdda7baa1d18c3a"
+        }
+      ]
     },
     {
       "image_url": "302/ST04-withTxt/ST04-013.png",
-      "submitted_at": "2026-01-27T11:46:32.557125+00:00",
-      "ok": false,
-      "http_status": 0,
-      "request_id": null,
+      "submitted_at": "2026-01-27T16:41:56.097079+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "827c6f91-0901-4462-9ccd-03020a5d4361",
       "response": {
-        "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/b6/20260128/82a15263/63714efe-f29f-4021-aaeb-a08aef01bd22-1.png?Expires=1770137907&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=NARLTvMlBIKzWrT9SCr7gOmHW1I%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "827c6f91-0901-4462-9ccd-03020a5d4361"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/b6/20260128/82a15263/63714efe-f29f-4021-aaeb-a08aef01bd22-1.png?Expires=1770137907&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=NARLTvMlBIKzWrT9SCr7gOmHW1I%3D",
+          "path": "302/ST04/ST04-013.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1385858,
+          "sha256": "18b69007b2cef7b28e6877930a23aaf2934d301fa6c6b9cf0e7fbb405f326f41"
+        }
+      ]
     },
     {
       "image_url": "302/ST04-withTxt/ST04-014.png",
-      "submitted_at": "2026-01-27T11:46:37.337143+00:00",
-      "ok": false,
-      "http_status": 0,
-      "request_id": null,
+      "submitted_at": "2026-01-27T16:42:20.372580+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "87d6c34e-6b9b-4e9b-a9c9-8d02fe7562c2",
       "response": {
-        "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/6e/20260128/82a15263/3466006b-630c-41a3-b9df-eb9d0cd2398a-1.png?Expires=1770137932&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=zZ7IBF%2BnmkvDyPIVsLznXfpzFfw%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "87d6c34e-6b9b-4e9b-a9c9-8d02fe7562c2"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/6e/20260128/82a15263/3466006b-630c-41a3-b9df-eb9d0cd2398a-1.png?Expires=1770137932&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=zZ7IBF%2BnmkvDyPIVsLznXfpzFfw%3D",
+          "path": "302/ST04/ST04-014.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1434829,
+          "sha256": "7ad2c595e88216a067f45dcecf10f5430e41fcddf0c8533c943d4557ea75c9d6"
+        }
+      ]
     },
     {
       "image_url": "302/ST04-withTxt/ST04-015.png",
-      "submitted_at": "2026-01-27T11:46:41.882244+00:00",
-      "ok": false,
-      "http_status": 0,
-      "request_id": null,
+      "submitted_at": "2026-01-27T16:42:41.558458+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "c51029fa-9afb-4d22-9ff8-12c1c6ffd6ab",
       "response": {
-        "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/7c/20260128/82a15263/85e51585-7274-486c-947c-397f937636db-1.png?Expires=1770137954&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=L5xUpDr1Be%2BDVCKNREzRrMv7FQE%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "c51029fa-9afb-4d22-9ff8-12c1c6ffd6ab"
       },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/7c/20260128/82a15263/85e51585-7274-486c-947c-397f937636db-1.png?Expires=1770137954&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=L5xUpDr1Be%2BDVCKNREzRrMv7FQE%3D",
+          "path": "302/ST04/ST04-015.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1356582,
+          "sha256": "248e95cc8e61f0117d8783900e6b0ced7de5759e90bec533af9c6295ae45e0bb"
+        }
+      ]
     },
     {
       "image_url": "302/ST04-withTxt/ST04-016.png",
-      "submitted_at": "2026-01-27T11:46:46.463598+00:00",
-      "ok": false,
-      "http_status": 0,
-      "request_id": null,
+      "submitted_at": "2026-01-27T16:43:05.983194+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "47a3d733-3fbb-4d22-88c5-75eed7de9d6d",
       "response": {
-        "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/8c/20260128/82a15263/f82549da-20ae-47b7-9694-507cfca07a8a-1.png?Expires=1770137977&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=5tUp0Tr8t%2FCM8aMfkFEakvaZUWQ%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "47a3d733-3fbb-4d22-88c5-75eed7de9d6d"
       },
-      "downloaded": []
-    },
-    {
-      "image_url": "302/ST04-withTxt/ST04-001.png",
-      "submitted_at": "2026-01-27T11:47:36.515161+00:00",
-      "ok": false,
-      "http_status": 0,
-      "request_id": null,
-      "response": {
-        "error": "URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
-      },
-      "downloaded": []
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/8c/20260128/82a15263/f82549da-20ae-47b7-9694-507cfca07a8a-1.png?Expires=1770137977&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=5tUp0Tr8t%2FCM8aMfkFEakvaZUWQ%3D",
+          "path": "302/ST04/ST04-016.png",
+          "ok": true,
+          "http_status": 200,
+          "bytes": 1500140,
+          "sha256": "778c82fe22e06f28eea5e36e3da83c27b347b35267575c37966aa075ae0fda16"
+        }
+      ]
     }
   ],
-  "updated_at": "2026-01-27T11:47:36.515177+00:00"
+  "updated_at": "2026-01-27T16:43:05.983235+00:00"
 }
