@@ -1,36 +1,321 @@
 {
-  "started_at": "2026-01-27T16:49:48.466128+00:00",
+  "started_at": "2026-01-28T04:01:27.360918+00:00",
   "in_dir": "302/readyToUse",
   "out_dir": "302/readyToUse_optimized",
   "format": "jpeg",
-  "quality": 80,
+  "quality": 85,
   "scale": 1.0,
-  "max_dim": 600,
+  "max_dim": 800,
   "optimize_for_sharing": true,
   "strip_color_mgmt": true,
   "items": [
     {
-      "src": "302/readyToUse/ST02/ST02-011.png",
-      "dst": "302/readyToUse_optimized/ST02/ST02-011.jpeg",
-      "rel": "ST02/ST02-011.png",
+      "src": "302/readyToUse/T/T-001.png",
+      "dst": "302/readyToUse_optimized/T/T-001.jpeg",
+      "rel": "T/T-001.png",
       "before": {
-        "bytes": 1690295,
+        "bytes": 1431354,
         "width": 864,
-        "height": 1184
+        "height": 1216
       },
       "after": {
-        "bytes": 181611,
+        "bytes": 249549,
+        "width": 863,
+        "height": 1216
+      }
+    },
+    {
+      "src": "302/readyToUse/T/T-002.png",
+      "dst": "302/readyToUse_optimized/T/T-002.jpeg",
+      "rel": "T/T-002.png",
+      "before": {
+        "bytes": 1290750,
         "width": 864,
-        "height": 1184
+        "height": 1216
+      },
+      "after": {
+        "bytes": 214088,
+        "width": 863,
+        "height": 1216
+      }
+    },
+    {
+      "src": "302/readyToUse/T/T-003.png",
+      "dst": "302/readyToUse_optimized/T/T-003.jpeg",
+      "rel": "T/T-003.png",
+      "before": {
+        "bytes": 1270492,
+        "width": 864,
+        "height": 1216
+      },
+      "after": {
+        "bytes": 200248,
+        "width": 863,
+        "height": 1216
+      }
+    },
+    {
+      "src": "302/readyToUse/T/T-004.png",
+      "dst": "302/readyToUse_optimized/T/T-004.jpeg",
+      "rel": "T/T-004.png",
+      "before": {
+        "bytes": 1601864,
+        "width": 864,
+        "height": 1216
+      },
+      "after": {
+        "bytes": 292592,
+        "width": 863,
+        "height": 1216
+      }
+    },
+    {
+      "src": "302/readyToUse/T/T-005.png",
+      "dst": "302/readyToUse_optimized/T/T-005.jpeg",
+      "rel": "T/T-005.png",
+      "before": {
+        "bytes": 1499777,
+        "width": 864,
+        "height": 1216
+      },
+      "after": {
+        "bytes": 266825,
+        "width": 863,
+        "height": 1216
+      }
+    },
+    {
+      "src": "302/readyToUse/T/T-006.png",
+      "dst": "302/readyToUse_optimized/T/T-006.jpeg",
+      "rel": "T/T-006.png",
+      "before": {
+        "bytes": 1621013,
+        "width": 864,
+        "height": 1216
+      },
+      "after": {
+        "bytes": 301714,
+        "width": 863,
+        "height": 1216
+      }
+    },
+    {
+      "src": "302/readyToUse/T/T-007.png",
+      "dst": "302/readyToUse_optimized/T/T-007.jpeg",
+      "rel": "T/T-007.png",
+      "before": {
+        "bytes": 1402039,
+        "width": 864,
+        "height": 1216
+      },
+      "after": {
+        "bytes": 239241,
+        "width": 863,
+        "height": 1216
+      }
+    },
+    {
+      "src": "302/readyToUse/T/T-008.png",
+      "dst": "302/readyToUse_optimized/T/T-008.jpeg",
+      "rel": "T/T-008.png",
+      "before": {
+        "bytes": 1477347,
+        "width": 864,
+        "height": 1216
+      },
+      "after": {
+        "bytes": 265911,
+        "width": 863,
+        "height": 1216
+      }
+    },
+    {
+      "src": "302/readyToUse/T/T-009.png",
+      "dst": "302/readyToUse_optimized/T/T-009.jpeg",
+      "rel": "T/T-009.png",
+      "before": {
+        "bytes": 1443936,
+        "width": 864,
+        "height": 1216
+      },
+      "after": {
+        "bytes": 252466,
+        "width": 863,
+        "height": 1216
+      }
+    },
+    {
+      "src": "302/readyToUse/T/T-010.png",
+      "dst": "302/readyToUse_optimized/T/T-010.jpeg",
+      "rel": "T/T-010.png",
+      "before": {
+        "bytes": 1424849,
+        "width": 864,
+        "height": 1216
+      },
+      "after": {
+        "bytes": 254206,
+        "width": 863,
+        "height": 1216
+      }
+    },
+    {
+      "src": "302/readyToUse/T/T-011.png",
+      "dst": "302/readyToUse_optimized/T/T-011.jpeg",
+      "rel": "T/T-011.png",
+      "before": {
+        "bytes": 1478743,
+        "width": 864,
+        "height": 1216
+      },
+      "after": {
+        "bytes": 261945,
+        "width": 863,
+        "height": 1216
+      }
+    },
+    {
+      "src": "302/readyToUse/T/T-012.png",
+      "dst": "302/readyToUse_optimized/T/T-012.jpeg",
+      "rel": "T/T-012.png",
+      "before": {
+        "bytes": 1433207,
+        "width": 864,
+        "height": 1216
+      },
+      "after": {
+        "bytes": 254028,
+        "width": 863,
+        "height": 1216
+      }
+    },
+    {
+      "src": "302/readyToUse/T/T-013.png",
+      "dst": "302/readyToUse_optimized/T/T-013.jpeg",
+      "rel": "T/T-013.png",
+      "before": {
+        "bytes": 1389246,
+        "width": 864,
+        "height": 1216
+      },
+      "after": {
+        "bytes": 236479,
+        "width": 863,
+        "height": 1216
+      }
+    },
+    {
+      "src": "302/readyToUse/T/T-014.png",
+      "dst": "302/readyToUse_optimized/T/T-014.jpeg",
+      "rel": "T/T-014.png",
+      "before": {
+        "bytes": 1262478,
+        "width": 864,
+        "height": 1216
+      },
+      "after": {
+        "bytes": 209224,
+        "width": 863,
+        "height": 1216
+      }
+    },
+    {
+      "src": "302/readyToUse/T/T-015.png",
+      "dst": "302/readyToUse_optimized/T/T-015.jpeg",
+      "rel": "T/T-015.png",
+      "before": {
+        "bytes": 1470331,
+        "width": 864,
+        "height": 1216
+      },
+      "after": {
+        "bytes": 257474,
+        "width": 863,
+        "height": 1216
+      }
+    },
+    {
+      "src": "302/readyToUse/T/T-016.png",
+      "dst": "302/readyToUse_optimized/T/T-016.jpeg",
+      "rel": "T/T-016.png",
+      "before": {
+        "bytes": 1370396,
+        "width": 864,
+        "height": 1216
+      },
+      "after": {
+        "bytes": 242978,
+        "width": 863,
+        "height": 1216
+      }
+    },
+    {
+      "src": "302/readyToUse/T/T-017.png",
+      "dst": "302/readyToUse_optimized/T/T-017.jpeg",
+      "rel": "T/T-017.png",
+      "before": {
+        "bytes": 1469648,
+        "width": 864,
+        "height": 1216
+      },
+      "after": {
+        "bytes": 269590,
+        "width": 863,
+        "height": 1216
+      }
+    },
+    {
+      "src": "302/readyToUse/T/T-018.png",
+      "dst": "302/readyToUse_optimized/T/T-018.jpeg",
+      "rel": "T/T-018.png",
+      "before": {
+        "bytes": 1455191,
+        "width": 864,
+        "height": 1216
+      },
+      "after": {
+        "bytes": 251379,
+        "width": 863,
+        "height": 1216
+      }
+    },
+    {
+      "src": "302/readyToUse/T/T-019.png",
+      "dst": "302/readyToUse_optimized/T/T-019.jpeg",
+      "rel": "T/T-019.png",
+      "before": {
+        "bytes": 1516095,
+        "width": 864,
+        "height": 1216
+      },
+      "after": {
+        "bytes": 294787,
+        "width": 863,
+        "height": 1216
+      }
+    },
+    {
+      "src": "302/readyToUse/T/T-020.png",
+      "dst": "302/readyToUse_optimized/T/T-020.jpeg",
+      "rel": "T/T-020.png",
+      "before": {
+        "bytes": 1312362,
+        "width": 864,
+        "height": 1216
+      },
+      "after": {
+        "bytes": 231060,
+        "width": 863,
+        "height": 1216
       }
     }
   ],
-  "finished_at": "2026-01-27T16:49:48.548633+00:00",
+  "finished_at": "2026-01-28T04:01:29.126834+00:00",
   "summary": {
-    "processed": 1,
-    "skipped": 31,
+    "processed": 20,
+    "skipped": 515,
     "errors": 0,
-    "total_before_bytes": 1690295,
-    "total_after_bytes": 181611
+    "total_before_bytes": 28621118,
+    "total_after_bytes": 5045784
   }
 }

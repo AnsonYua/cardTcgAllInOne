@@ -1,0 +1,52 @@
+{
+  "created_at": "2026-01-27T17:25:59.569302+00:00",
+  "endpoint": "https://api.302.ai/aliyun/api/v1/services/aigc/multimodal-generation/generation",
+  "model": "qwen-image-edit-plus-2025-12-15",
+  "parameters": {
+    "n": 1,
+    "size": "864*1216",
+    "negative_prompt": "",
+    "prompt_extend": true,
+    "watermark": false
+  },
+  "items": [
+    {
+      "image_url": "302/test/test-001.png",
+      "submitted_at": "2026-01-27T17:26:13.077075+00:00",
+      "ok": true,
+      "http_status": 200,
+      "request_id": "7a881f4d-066c-423e-8fb0-5b26cb3249fb",
+      "response": {
+        "output": {
+          "choices": [
+            {
+              "finish_reason": "stop",
+              "message": {
+                "content": [
+                  {
+                    "image": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/64/20260128/82a15263/2ab5280c-6e01-4527-ba65-4e3b6c69174b-1.png?Expires=1770140568&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=Dt%2Ff759Ho9shHRMpopor%2FLbl9ic%3D"
+                  }
+                ],
+                "role": "assistant"
+              }
+            }
+          ]
+        },
+        "usage": {
+          "height": 1216,
+          "image_count": 1,
+          "width": 864
+        },
+        "request_id": "7a881f4d-066c-423e-8fb0-5b26cb3249fb"
+      },
+      "downloaded": [
+        {
+          "url": "https://dashscope-result-sh.oss-cn-shanghai.aliyuncs.com/7d/64/20260128/82a15263/2ab5280c-6e01-4527-ba65-4e3b6c69174b-1.png?Expires=1770140568&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=Dt%2Ff759Ho9shHRMpopor%2FLbl9ic%3D",
+          "path": "302/test/test-001.png",
+          "skipped": true
+        }
+      ]
+    }
+  ],
+  "updated_at": "2026-01-27T17:26:13.077117+00:00"
+}
