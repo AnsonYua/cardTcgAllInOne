@@ -1,0 +1,4 @@
+i have a single image in /singleimage folder, i want to run resize->optimze (resize to 657 X 912 )->round corner and generate preview. 85 compression , file extension in jpeg format, round corner 10 , then generate preview with size 194x273
+
+try make use of resize_images.py ,optimize_ready_to_use,py , roundcorner.py   generate_previews.sh
+to give me a sh script
