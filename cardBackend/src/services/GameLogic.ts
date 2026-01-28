@@ -535,6 +535,10 @@ export class GameLogic {
             
             // Convert to GameEnvironment class
             const gameEnv = GameEnvironment.fromJSON(gameData);
+
+            // Ensure cardData is present for any persisted cards so effect engines (continuous/triggered)
+            // can read card definitions after a server restart.
+            this.hydrateGameEnvCardData(gameEnv);
             
             console.log(`📂 Custom trading card game ${gameId} loaded from file`);
             return gameEnv;
