@@ -75,47 +75,6 @@
             "unit": {
               "carduid": "GD02-007_unit_0001",
               "cardId": "GD02-007",
-              "cardData": {
-                "id": "GD02-007",
-                "name": "Psycho Gundam (MA Mode)",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 5,
-                "cost": 3,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Titans"
-                ],
-                "link": [
-                  "Cyber-Newtype"
-                ],
-                "ap": 3,
-                "hp": 4,
-                "effects": {
-                  "description": [
-                    "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)"
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "repair_2",
-                      "type": "triggered",
-                      "trigger": "END_OF_TURN",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self",
-                        "count": 1
-                      },
-                      "action": "heal",
-                      "parameters": {
-                        "value": 2
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -175,4 +134,3 @@
     }
   }
 }
-

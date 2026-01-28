@@ -79,27 +79,6 @@
             "unit": {
               "carduid": "GD03-019_unit_0001",
               "cardId": "GD03-019",
-              "cardData": {
-                "id": "GD03-019",
-                "name": "Gundam AGE-2 Normal",
-                "cardType": "unit",
-                "color": "Green",
-                "level": 5,
-                "cost": 4,
-                "traits": [
-                  "Earth Federation",
-                  "AGE System"
-                ],
-                "link": [
-                  "Asemu Asuno"
-                ],
-                "ap": 4,
-                "hp": 4,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -119,25 +98,6 @@
             "pilot": {
               "carduid": "GD03-088_pilot_0001",
               "cardId": "GD03-088",
-              "cardData": {
-                "id": "GD03-088",
-                "name": "Asemu Asuno",
-                "cardType": "pilot",
-                "color": "Green",
-                "level": 4,
-                "cost": 1,
-                "traits": [
-                  "Earth Federation",
-                  "Asuno Family"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 1,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -179,7 +139,10 @@
           "slot6": {},
           "base": [],
           "shieldArea": [
-            { "carduid": "GD03-001_shield_0001", "cardId": "GD03-001", "cardData": { "id": "GD03-001", "cardType": "unit" } }
+            {
+              "carduid": "GD03-001_shield_0001",
+              "cardId": "GD03-001"
+            }
           ],
           "energyArea": [],
           "trashArea": [],
@@ -190,4 +153,3 @@
     }
   }
 }
-

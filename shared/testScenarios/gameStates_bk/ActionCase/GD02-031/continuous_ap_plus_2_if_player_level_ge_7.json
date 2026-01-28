@@ -1,0 +1,179 @@
+{
+  "description": "gd02-031_continuous_ap_plus_2_if_player_level_ge_7",
+  "gameId": "gd02-031_continuous_ap_plus_2_if_player_level_ge_7",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD02-031",
+    "continuous",
+    "playerLevel",
+    "modifyAP"
+  ],
+  "notes": [
+    "Setup: Player A is Lv.7 (playerPoint = 7). Player A has GD02-031 in slot1.",
+    "Action: Process continuous effects.",
+    "Expect: GD02-031 has continueModifyAP = +2 and frontend receives CARD_STAT_MODIFIED notification (stat=modifyAP, source=continuous)."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd02031_seed",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "GD02-000_draw_0001",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 7,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD02-031_unit_0001",
+              "cardId": "GD02-031",
+              "cardData": {
+                "id": "GD02-031",
+                "name": "Gundam AGE-1 Titus",
+                "cardType": "unit",
+                "color": "Green",
+                "level": 4,
+                "cost": 2,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Earth Federation",
+                  "AGE System"
+                ],
+                "link": [
+                  "Flit Asuno"
+                ],
+                "ap": 2,
+                "hp": 4,
+                "effects": {
+                  "description": [
+                    "While you are Lv.7 or higher, this Unit gets AP+2."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "ap_boost_if_level_ge_7",
+                      "type": "continuous",
+                      "trigger": "continuous",
+                      "action": "modifyAP",
+                      "target": {
+                        "type": "unit",
+                        "scope": "self",
+                        "count": 1
+                      },
+                      "conditions": [
+                        {
+                          "type": "playerLevel",
+                          "scope": "self",
+                          "value": ">=7"
+                        }
+                      ],
+                      "parameters": {
+                        "value": 2
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isFirstPlay": false,
+              "playedThisTurn": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
+

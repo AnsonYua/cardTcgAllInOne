@@ -1,0 +1,348 @@
+{
+  "description": "st06-014_activate_restSelf_ap_plus_2_if_clan_link_unit",
+  "gameId": "st06-014_activate_restSelf_ap_plus_2_if_clan_link_unit",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "ST06-014",
+    "activateCardAbility",
+    "restSelf",
+    "unitsInPlayWithFilter",
+    "isLinkUnit",
+    "modifyAP",
+    "TARGET_CHOICE"
+  ],
+  "notes": [
+    "Setup: Player A is in MAIN_PHASE with ST06-014 in base zone (active). Player A has a (Clan) Link Unit in slot1 (ST06-001 + ST06-009 linked). Player A also has another Unit in slot2 to target. Player A has at least 1 shield card.",
+    "Action (manual): Player A uses activateCardAbility on ST06-014 effectId=activate_ap_plus_2_if_clan_link_unit_in_play.",
+    "Expect: BaseAbilityManager pays restSelf cost by resting the base and emits CARD_RESTED in notificationQueue for (playerId=A, carduid=ST06-014_base_0001, zone=base).",
+    "Expect: Because target scope is self_all_unit count=1 and multiple units exist, TARGET_CHOICE is enqueued to processingQueue and a TARGET_CHOICE notification is appended to notificationQueue (frontend-driven).",
+    "Action (manual): Player A resolves TARGET_CHOICE selecting slot2 unit.",
+    "Expect: Selected unit gets AP+2 until end of turn and CARD_STAT_MODIFIED (stat=modifyAP, delta=2) is appended to notificationQueue."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_st06014_seed",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "ST06-000_draw_0014",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST06-001_unit_0001",
+              "cardId": "ST06-001",
+              "cardData": {
+                "id": "ST06-001",
+                "name": "GQuuuuuuX (Omega Psycommu)",
+                "cardType": "unit",
+                "color": "Red",
+                "level": 5,
+                "cost": 3,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Clan"
+                ],
+                "link": [
+                  "Amate Yuzuriha (Machu)"
+                ],
+                "ap": 4,
+                "hp": 4,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 4,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            },
+            "pilot": {
+              "carduid": "ST06-009_pilot_0001",
+              "cardId": "ST06-009",
+              "cardData": {
+                "id": "ST06-009",
+                "name": "Amate Yuzuriha (Machu)",
+                "cardType": "pilot",
+                "color": "Red",
+                "level": 4,
+                "cost": 1,
+                "zone": [],
+                "traits": [
+                  "Clan",
+                  "Newtype"
+                ],
+                "link": [],
+                "ap": 2,
+                "hp": 1,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 1,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "ST06-008_unit_0002",
+              "cardId": "ST06-008",
+              "cardData": {
+                "id": "ST06-008",
+                "name": "Sugai’s Gelgoog (GQ)",
+                "cardType": "unit",
+                "color": "Green",
+                "level": 3,
+                "cost": 2,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Clan"
+                ],
+                "link": [],
+                "ap": 3,
+                "hp": 3,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 3,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [
+            {
+              "carduid": "ST06-014_base_0001",
+              "cardId": "ST06-014",
+              "cardData": {
+                "id": "ST06-014",
+                "name": "Clan Battle",
+                "cardType": "base",
+                "color": "Red",
+                "level": 3,
+                "cost": 1,
+                "zone": [
+                  "Space"
+                ],
+                "traits": [
+                  "Clan",
+                  "Stronghold"
+                ],
+                "link": [],
+                "ap": 0,
+                "hp": 5,
+                "effects": {
+                  "description": [],
+                  "rules": [
+                    {
+                      "effectId": "activate_ap_plus_2_if_clan_link_unit_in_play",
+                      "type": "activated",
+                      "timing": {
+                        "duration": "UNTIL_END_OF_TURN"
+                      },
+                      "cost": {
+                        "restSelf": true
+                      },
+                      "conditions": [
+                        {
+                          "type": "unitsInPlayWithFilter",
+                          "scope": "self",
+                          "filters": {
+                            "traits": [
+                              "Clan"
+                            ],
+                            "isLinkUnit": true
+                          },
+                          "value": ">=1"
+                        }
+                      ],
+                      "action": "modifyAP",
+                      "target": {
+                        "type": "unit",
+                        "scope": "self_all_unit",
+                        "count": 1
+                      },
+                      "parameters": {
+                        "value": 2
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 0,
+              "originalHP": 5,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": false,
+              "isFirstPlay": false
+            }
+          ],
+          "shieldArea": [
+            {
+              "carduid": "ST06-001_shield_0001",
+              "cardId": "ST06-001",
+              "cardData": {
+                "id": "ST06-001",
+                "name": "GQuuuuuuX (Omega Psycommu)",
+                "cardType": "unit",
+                "color": "Red",
+                "level": 5,
+                "cost": 3,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Clan"
+                ],
+                "link": [
+                  "Amate Yuzuriha (Machu)"
+                ],
+                "ap": 4,
+                "hp": 4,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              }
+            }
+          ],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
+

@@ -90,49 +90,6 @@
             "unit": {
               "carduid": "ST04-009_unit_0001",
               "cardId": "ST04-009",
-              "cardData": {
-                "id": "ST04-009",
-                "name": "Miguel’s Ginn",
-                "cardType": "unit",
-                "color": "Red",
-                "level": 2,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "ZAFT"
-                ],
-                "link": [
-                  "Miguel Ayman"
-                ],
-                "ap": 3,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "【When Paired】If you have another Link Unit in play, draw 1.",
-                    "【Destroyed】If you have another Link Unit in play, draw 1."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "destroyed_draw_if_another_link_unit",
-                      "type": "triggered",
-                      "trigger": "DESTROYED",
-                      "action": "draw",
-                      "conditions": [
-                        {
-                          "type": "hasAnotherLinkedUnit",
-                          "scope": "self"
-                        }
-                      ],
-                      "parameters": {
-                        "value": 1
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -153,30 +110,6 @@
             "unit": {
               "carduid": "ST04-001_unit_0001",
               "cardId": "ST04-001",
-              "cardData": {
-                "id": "ST04-001",
-                "name": "Aile Strike Gundam",
-                "cardType": "unit",
-                "color": "White",
-                "level": 5,
-                "cost": 4,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Alliance"
-                ],
-                "link": [
-                  "Kira Yamato"
-                ],
-                "ap": 4,
-                "hp": 4,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -195,26 +128,6 @@
             "pilot": {
               "carduid": "ST04-010_pilot_0001",
               "cardId": "ST04-010",
-              "cardData": {
-                "id": "ST04-010",
-                "name": "Kira Yamato",
-                "cardType": "pilot",
-                "color": "White",
-                "level": 4,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Alliance",
-                  "Coordinator"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 1,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -250,28 +163,6 @@
             "unit": {
               "carduid": "ST04-006_attacker_0001",
               "cardId": "ST04-006",
-              "cardData": {
-                "id": "ST04-006",
-                "name": "Ginn",
-                "cardType": "unit",
-                "color": "Red",
-                "level": 3,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "ZAFT"
-                ],
-                "link": [],
-                "ap": 4,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -304,4 +195,3 @@
     }
   }
 }
-

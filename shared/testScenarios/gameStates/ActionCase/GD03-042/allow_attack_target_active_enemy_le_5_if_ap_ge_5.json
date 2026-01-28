@@ -74,50 +74,6 @@
             "unit": {
               "carduid": "GD03-042_unit_0001",
               "cardId": "GD03-042",
-              "cardData": {
-                "id": "GD03-042",
-                "name": "Duel Gundam (Assault Shroud)",
-                "cardType": "unit",
-                "color": "Red",
-                "level": 5,
-                "cost": 3,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "ZAFT"
-                ],
-                "link": [
-                  "Yzak Jule"
-                ],
-                "ap": 3,
-                "hp": 4,
-                "effects": {
-                  "description": [
-                    "While this Unit has 5 or more AP, it may choose an active enemy Unit that is Lv.5 or lower as its attack target."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "allow_attack_target_active_enemy_low_level_if_ap_ge_5",
-                      "type": "continuous",
-                      "trigger": "continuous",
-                      "action": "allow_attack_target",
-                      "conditions": [
-                        {
-                          "type": "sourceAP",
-                          "scope": "source",
-                          "value": ">=5"
-                        }
-                      ],
-                      "parameters": {
-                        "status": "active",
-                        "level": "<=5"
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -130,27 +86,6 @@
             "pilot": {
               "carduid": "ST01-010_pilot_0001",
               "cardId": "ST01-010",
-              "cardData": {
-                "id": "ST01-010",
-                "name": "Amuro Ray",
-                "cardType": "pilot",
-                "color": "Blue",
-                "level": 4,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team",
-                  "Newtype"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 1,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -187,28 +122,6 @@
             "unit": {
               "carduid": "GD01-084_enemy_0001",
               "cardId": "GD01-084",
-              "cardData": {
-                "id": "GD01-084",
-                "name": "Beguir-Pente",
-                "cardType": "unit",
-                "color": "White",
-                "level": 2,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Academy"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 3,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -235,4 +148,3 @@
     }
   }
 }
-

@@ -67,11 +67,7 @@
           "hand": [
             {
               "carduid": "GD01-087_pilot_hand_0001",
-              "cardId": "GD01-087",
-              "cardData": {
-                "id": "GD01-087",
-                "cardType": "pilot"
-              }
+              "cardId": "GD01-087"
             }
           ],
           "handUids": [
@@ -88,59 +84,6 @@
             "unit": {
               "carduid": "GD03-043_unit_0001",
               "cardId": "GD03-043",
-              "cardData": {
-                "id": "GD03-043",
-                "name": "Messer Type-F02",
-                "cardType": "unit",
-                "color": "Red",
-                "level": 4,
-                "cost": 3,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Mafty"
-                ],
-                "link": [
-                  "Mafty"
-                ],
-                "ap": 3,
-                "hp": 2,
-                "effects": {
-                  "description": [
-                    "【When Paired】Choose 1 enemy Unit. Deal 1 damage to it."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "pair_effect",
-                      "type": "triggered",
-                      "trigger": "PAIRING_COMPLETE",
-                      "action": "sequence",
-                      "parameters": {
-                        "text": "Choose 1 enemy Unit. Deal 1 damage to it.",
-                        "version": 1,
-                        "steps": [
-                          {
-                            "action": "damage",
-                            "target": {
-                              "type": "unit",
-                              "scope": "opponent",
-                              "count": 1,
-                              "selection": {
-                                "type": "player_choice"
-                              }
-                            },
-                            "parameters": {
-                              "value": 1
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -162,9 +105,6 @@
             {
               "carduid": "energy_basic_gd03043_a_0001",
               "cardId": "energy_basic",
-              "cardData": {
-                "cardType": "energy"
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -193,10 +133,6 @@
             "unit": {
               "carduid": "GD01-084_enemy_0001",
               "cardId": "GD01-084",
-              "cardData": {
-                "id": "GD01-084",
-                "cardType": "unit"
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -223,4 +159,3 @@
     }
   }
 }
-

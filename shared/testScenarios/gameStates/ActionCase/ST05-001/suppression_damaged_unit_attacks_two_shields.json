@@ -77,14 +77,6 @@
             "unit": {
               "carduid": "ST05-001_unit_0001",
               "cardId": "ST05-001",
-              "cardData": {
-                "id": "ST05-001",
-                "cardType": "unit",
-                "traits": [
-                  "Tekkadan",
-                  "Gundam Frame"
-                ]
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -137,18 +129,15 @@
           "shieldArea": [
             {
               "carduid": "ST05-000_shield_0001",
-              "cardId": "ST05-000",
-              "cardData": { "id": "ST05-000", "cardType": "unit" }
+              "cardId": "ST05-000"
             },
             {
               "carduid": "ST05-000_shield_0002",
-              "cardId": "ST05-000",
-              "cardData": { "id": "ST05-000", "cardType": "unit" }
+              "cardId": "ST05-000"
             },
             {
               "carduid": "ST05-000_shield_0003",
-              "cardId": "ST05-000",
-              "cardData": { "id": "ST05-000", "cardType": "unit" }
+              "cardId": "ST05-000"
             }
           ],
           "energyArea": [],
@@ -160,4 +149,3 @@
     }
   }
 }
-

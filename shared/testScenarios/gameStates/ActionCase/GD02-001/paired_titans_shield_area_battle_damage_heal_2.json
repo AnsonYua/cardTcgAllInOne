@@ -77,69 +77,6 @@
             "unit": {
               "carduid": "GD02-001_unit_0001",
               "cardId": "GD02-001",
-              "cardData": {
-                "id": "GD02-001",
-                "cardType": "unit",
-                "traits": [
-                  "Titans"
-                ],
-                "ap": 4,
-                "hp": 5,
-                "effects": {
-                  "rules": [
-                    {
-                      "effectId": "breach_3",
-                      "type": "keyword",
-                      "trigger": "BATTLE_DESTROY",
-                      "target": {
-                        "type": "card",
-                        "scope": "opponent_shield",
-                        "count": 1
-                      },
-                      "action": "damageShield",
-                      "parameters": {
-                        "value": 3
-                      }
-                    },
-                    {
-                      "effectId": "paired_titans_shield_damage_heal_2",
-                      "type": "triggered",
-                      "trigger": "SHIELD_AREA_CARD_DAMAGED",
-                      "sourceConditions": [
-                        {
-                          "type": "paired"
-                        }
-                      ],
-                      "conditions": [
-                        {
-                          "type": "pairedPilotTrait",
-                          "scope": "source",
-                          "value": "Cyber-Newtype"
-                        },
-                        {
-                          "type": "shieldAreaCardDamagedByBattleDamage",
-                          "scope": "opponent",
-                          "sourceUnitScope": "self",
-                          "sourceUnitFilters": {
-                            "traits": [
-                              "Titans"
-                            ]
-                          }
-                        }
-                      ],
-                      "target": {
-                        "type": "unit",
-                        "scope": "self",
-                        "count": 1
-                      },
-                      "action": "heal",
-                      "parameters": {
-                        "value": 2
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -150,14 +87,6 @@
             "pilot": {
               "carduid": "GD02-085_pilot_0001",
               "cardId": "GD02-085",
-              "cardData": {
-                "id": "GD02-085",
-                "cardType": "pilot",
-                "traits": [
-                  "Titans",
-                  "Cyber-Newtype"
-                ]
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -168,15 +97,6 @@
             "unit": {
               "carduid": "GD02-007_titans_attacker_0001",
               "cardId": "GD02-007",
-              "cardData": {
-                "id": "GD02-007",
-                "cardType": "unit",
-                "traits": [
-                  "Titans"
-                ],
-                "ap": 3,
-                "hp": 4
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -220,11 +140,7 @@
           "shieldArea": [
             {
               "carduid": "GD02-999_shield_0001",
-              "cardId": "GD02-999",
-              "cardData": {
-                "id": "GD02-999",
-                "cardType": "unit"
-              }
+              "cardId": "GD02-999"
             }
           ],
           "energyArea": [],
@@ -236,4 +152,3 @@
     }
   }
 }
-

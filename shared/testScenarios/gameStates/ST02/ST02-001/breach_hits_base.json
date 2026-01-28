@@ -1,309 +1,158 @@
 {
-  "category": "ST02-001", 
-  "gameId": "st02-001_breach_hits_base", 
-  "description": "st02-001_breach_hits_base", 
+  "category": "ST02-001",
+  "gameId": "st02-001_breach_hits_base",
+  "description": "st02-001_breach_hits_base",
   "tags": [
-    "Breach", 
+    "Breach",
     "Base"
-  ], 
+  ],
   "initialGameEnv": {
-    "hasChosenFirstPlayer": false, 
-    "playerId_2": "playerId_2", 
-    "playerId_1": "playerId_1", 
-    "currentPlayer": "playerId_1", 
-    "processingEnabled": true, 
-    "firstPlayerDecision": null, 
-    "gameStarted": true, 
+    "hasChosenFirstPlayer": false,
+    "playerId_2": "playerId_2",
+    "playerId_1": "playerId_1",
+    "currentPlayer": "playerId_1",
+    "processingEnabled": true,
+    "firstPlayerDecision": null,
+    "gameStarted": true,
     "playersReady": {
-      "playerId_2": true, 
+      "playerId_2": true,
       "playerId_1": true
-    }, 
-    "currentBattle": null, 
+    },
+    "currentBattle": null,
     "players": {
       "playerId_2": {
         "zones": {
-          "trashArea": [], 
-          "shieldArea": [], 
+          "trashArea": [],
+          "shieldArea": [],
           "base": [
             {
-              "placedBy": "playerId_2", 
-              "effectUsage": {}, 
-              "carduid": "ST02-015_base_0001", 
-              "placedAt": 0, 
-              "cardData": {
-                "name": "Saint Gabriel Institute", 
-                "zone": [
-                  "Earth"
-                ], 
-                "level": 2, 
-                "color": "Green", 
-                "hp": 5, 
-                "ap": 0, 
-                "cardType": "base", 
-                "cost": 2, 
-                "link": [], 
-                "effects": {
-                  "rules": [
-                    {
-                      "action": "deploy", 
-                      "effectId": "burst_deploy", 
-                      "trigger": "BURST_CONDITION", 
-                      "type": "triggered", 
-                      "target": {
-                        "scope": "self", 
-                        "type": "card"
-                      }
-                    }, 
-                    {
-                      "target": {
-                        "scope": "self_shield", 
-                        "type": "card"
-                      }, 
-                      "parameters": {
-                        "from": "shield", 
-                        "value": 1
-                      }, 
-                      "trigger": "ENTERS_PLAY", 
-                      "effectId": "deploy_shield_to_hand", 
-                      "action": "addToHand", 
-                      "type": "triggered"
-                    }, 
-                    {
-                      "action": "scry_top_deck", 
-                      "effectId": "deploy_scry_two", 
-                      "trigger": "ENTERS_PLAY", 
-                      "type": "triggered", 
-                      "parameters": {
-                        "count": 2, 
-                        "keep": 1, 
-                        "bottom": 1
-                      }
-                    }
-                  ], 
-                  "description": [
-                    "【Burst】Deploy this card.", 
-                    "【Deploy】Add 1 of your Shields to your hand.", 
-                    "【Deploy】Look at the top 2 cards of your deck and return 1 to the top and 1 to the bottom."
-                  ]
-                }, 
-                "traits": [
-                  "Academy", 
-                  "Stronghold"
-                ], 
-                "id": "ST02-015"
-              }, 
-              "isRested": false, 
+              "placedBy": "playerId_2",
+              "effectUsage": {},
+              "carduid": "ST02-015_base_0001",
+              "placedAt": 0,
+              "isRested": false,
               "cardId": "ST02-015"
             }
-          ], 
-          "repairAbilitiesCheckedThisCycle": false, 
+          ],
+          "repairAbilitiesCheckedThisCycle": false,
           "slot1": {
             "unit": {
-              "originalAP": 1, 
-              "placedBy": "playerId_2", 
-              "continueModifyHP": 0, 
-              "carduid": "ST02-009_defender_0001", 
-              "damageReceived": 0, 
-              "canAttackThisTurn": true, 
-              "placedAt": 0, 
-              "cardData": {
-                "name": "Tragos", 
-                "zone": [
-                  "Earth"
-                ], 
-                "level": 1, 
-                "color": "Blue", 
-                "hp": 1, 
-                "ap": 1, 
-                "cardType": "unit", 
-                "cost": 1, 
-                "link": [], 
-                "effects": {
-                  "rules": [
-                    {
-                      "target": {
-                        "scope": "self", 
-                        "type": "unit"
-                      }, 
-                      "parameters": {
-                        "cost": "rest_self"
-                      }, 
-                      "trigger": "ATTACK_REDIRECT", 
-                      "effectId": "blocker", 
-                      "action": "redirect_attack", 
-                      "type": "triggered"
-                    }
-                  ], 
-                  "description": [
-                    "<Blocker> (Rest this Unit to change the attack target to it.)"
-                  ]
-                }, 
-                "traits": [
-                  "OZ"
-                ], 
-                "id": "ST02-009"
-              }, 
-              "isFirstPlay": false, 
-              "isRested": false, 
-              "cardId": "ST02-009", 
-              "continueModifyAP": 0, 
-              "canAttackOnPlayTurn": false, 
-              "playedThisTurn": false, 
+              "originalAP": 1,
+              "placedBy": "playerId_2",
+              "continueModifyHP": 0,
+              "carduid": "ST02-009_defender_0001",
+              "damageReceived": 0,
+              "canAttackThisTurn": true,
+              "placedAt": 0,
+              "isFirstPlay": false,
+              "isRested": false,
+              "cardId": "ST02-009",
+              "continueModifyAP": 0,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false,
               "originalHP": 1
             }
-          }, 
-          "energyArea": [], 
-          "slot3": {}, 
-          "slot2": {}, 
-          "slot5": {}, 
-          "slot4": {}, 
+          },
+          "energyArea": [],
+          "slot3": {},
+          "slot2": {},
+          "slot5": {},
+          "slot4": {},
           "slot6": {}
-        }, 
-        "isReady": true, 
-        "name": "Player 2", 
+        },
+        "isReady": true,
+        "name": "Player 2",
         "deck": {
           "mainDeck": [
-            "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c", 
-            "ST02-007_00000000-0000-0000-0000-000000000801", 
-            "ST02-008_00000000-0000-0000-0000-000000000802", 
+            "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c",
+            "ST02-007_00000000-0000-0000-0000-000000000801",
+            "ST02-008_00000000-0000-0000-0000-000000000802",
             "ST02-009_00000000-0000-0000-0000-000000000803"
-          ], 
-          "handUids": [], 
+          ],
+          "handUids": [],
           "hand": []
-        }, 
-        "confirmIsRedraw": false, 
-        "isRedraw": false, 
-        "playerPoint": 0, 
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
         "id": "playerId_2"
-      }, 
+      },
       "playerId_1": {
         "zones": {
-          "trashArea": [], 
-          "shieldArea": [], 
-          "base": [], 
-          "repairAbilitiesCheckedThisCycle": false, 
+          "trashArea": [],
+          "shieldArea": [],
+          "base": [],
+          "repairAbilitiesCheckedThisCycle": false,
           "slot1": {
             "unit": {
-              "originalAP": 4, 
-              "placedBy": "playerId_1", 
-              "continueModifyHP": 0, 
-              "carduid": "ST02-001_attacker_0001", 
-              "damageReceived": 0, 
-              "canAttackThisTurn": true, 
-              "placedAt": 0, 
-              "cardData": {
-                "name": "Wing Gundam", 
-                "zone": [
-                  "Space", 
-                  "Earth"
-                ], 
-                "level": 6, 
-                "color": "Green", 
-                "hp": 5, 
-                "ap": 4, 
-                "cardType": "unit", 
-                "cost": 4, 
-                "link": [
-                  "Heero Yuy"
-                ], 
-                "effects": {
-                  "rules": [
-                    {
-                      "target": {
-                        "count": 1, 
-                        "scope": "opponent_shield", 
-                        "type": "card"
-                      }, 
-                      "parameters": {
-                        "value": 5
-                      }, 
-                      "trigger": "BATTLE_DESTROY", 
-                      "effectId": "breach_5", 
-                      "action": "damageShield", 
-                      "type": "keyword"
-                    }, 
-                    {
-                      "action": "allow_attack_target", 
-                      "effectId": "attack_active_low_level", 
-                      "trigger": "continuous", 
-                      "type": "continuous", 
-                      "parameters": {
-                        "status": "active", 
-                        "level": "<=4"
-                      }
-                    }
-                  ], 
-                  "description": [
-                    "<Breach 5> (When this Unit's attack destroys an enemy Unit, deal 5 damage to the first card in that opponent's shield area.)", 
-                    "This Unit may choose an active enemy Unit that is Lv.4 or lower as its attack target."
-                  ]
-                }, 
-                "traits": [
-                  "Operation Meteor"
-                ], 
-                "id": "ST02-001"
-              }, 
-              "isFirstPlay": false, 
-              "isRested": false, 
-              "cardId": "ST02-001", 
-              "continueModifyAP": 0, 
-              "canAttackOnPlayTurn": false, 
-              "playedThisTurn": false, 
+              "originalAP": 4,
+              "placedBy": "playerId_1",
+              "continueModifyHP": 0,
+              "carduid": "ST02-001_attacker_0001",
+              "damageReceived": 0,
+              "canAttackThisTurn": true,
+              "placedAt": 0,
+              "isFirstPlay": false,
+              "isRested": false,
+              "cardId": "ST02-001",
+              "continueModifyAP": 0,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false,
               "originalHP": 5
             }
-          }, 
-          "energyArea": [], 
-          "slot3": {}, 
-          "slot2": {}, 
-          "slot5": {}, 
-          "slot4": {}, 
+          },
+          "energyArea": [],
+          "slot3": {},
+          "slot2": {},
+          "slot5": {},
+          "slot4": {},
           "slot6": {}
-        }, 
-        "isReady": true, 
-        "name": "Player 1", 
+        },
+        "isReady": true,
+        "name": "Player 1",
         "deck": {
           "mainDeck": [
-            "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c", 
-            "ST02-007_00000000-0000-0000-0000-000000000901", 
+            "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c",
+            "ST02-007_00000000-0000-0000-0000-000000000901",
             "ST02-008_00000000-0000-0000-0000-000000000902"
-          ], 
-          "handUids": [], 
+          ],
+          "handUids": [],
           "hand": []
-        }, 
-        "confirmIsRedraw": false, 
-        "isRedraw": false, 
-        "playerPoint": 0, 
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
         "id": "playerId_1"
       }
-    }, 
-    "firstPlayerChooser": null, 
-    "version": 4, 
+    },
+    "firstPlayerChooser": null,
+    "version": 4,
     "notificationQueue": [
       {
         "metadata": {
-          "priority": "normal", 
-          "timestamp": 1768362880422, 
-          "expiresAt": 1768362883422, 
+          "priority": "normal",
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
           "requiresAcknowledgment": false
-        }, 
-        "type": "CARD_DRAWN", 
+        },
+        "type": "CARD_DRAWN",
         "payload": {
-          "sourceZone": "deck", 
-          "playerId": "playerId_1", 
-          "timestamp": 1768362880422, 
-          "carduid": "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c", 
-          "reason": "draw", 
+          "sourceZone": "deck",
+          "playerId": "playerId_1",
+          "timestamp": 1768362880422,
+          "carduid": "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c",
+          "reason": "draw",
           "drawContext": "turn_start"
-        }, 
+        },
         "id": "card_drawn_1768362880422_3bxbxq5uy"
       }
-    ], 
-    "phase": "MAIN_PHASE", 
-    "processingQueue": [], 
-    "lastEventId": 0, 
-    "firstPlayer": 0, 
-    "maxEventsPerCycle": 50, 
+    ],
+    "phase": "MAIN_PHASE",
+    "processingQueue": [],
+    "lastEventId": 0,
+    "firstPlayer": 0,
+    "maxEventsPerCycle": 50,
     "currentTurn": 1
-  }, 
+  },
   "testType": "battle"
 }

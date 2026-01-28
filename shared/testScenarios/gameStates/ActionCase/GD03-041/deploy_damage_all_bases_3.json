@@ -66,56 +66,7 @@
           "hand": [
             {
               "carduid": "GD03-041_hand_0001",
-              "cardId": "GD03-041",
-              "cardData": {
-                "ap": 5,
-                "name": "Patulia",
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "level": 7,
-                "color": "Red",
-                "hp": 6,
-                "traits": [
-                  "SRA"
-                ],
-                "cardType": "unit",
-                "cost": 6,
-                "link": [
-                  "Carris Nautilus"
-                ],
-                "effects": {
-                  "rules": [
-                    {
-                      "action": "sequence",
-                      "type": "triggered",
-                      "trigger": "ENTERS_PLAY",
-                      "effectId": "deploy_effect",
-                      "parameters": {
-                        "text": "Deal 3 damage to all Bases.",
-                        "version": 1,
-                        "steps": [
-                          {
-                            "action": "damage",
-                            "target": {
-                              "scope": "all",
-                              "type": "base"
-                            },
-                            "parameters": {
-                              "value": 3
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  ],
-                  "description": [
-                    "【Deploy】Deal 3 damage to all Bases."
-                  ]
-                },
-                "id": "GD03-041"
-              }
+              "cardId": "GD03-041"
             }
           ],
           "handUids": [
@@ -141,9 +92,6 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "cardData": {
-                "cardType": "base"
-              },
               "originalHP": 5,
               "damageReceived": 0
             }
@@ -156,10 +104,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_gd03041_a_0002",
@@ -167,10 +112,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_gd03041_a_0003",
@@ -178,10 +120,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_gd03041_a_0004",
@@ -189,10 +128,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_gd03041_a_0005",
@@ -200,10 +136,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_gd03041_a_0006",
@@ -211,10 +144,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [],
@@ -249,9 +179,6 @@
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
-              "cardData": {
-                "cardType": "base"
-              },
               "originalHP": 5,
               "damageReceived": 0
             }
@@ -267,4 +194,3 @@
     }
   }
 }
-

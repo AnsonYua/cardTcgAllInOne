@@ -90,49 +90,6 @@
             "unit": {
               "carduid": "ST07-005_attacker_0001",
               "cardId": "ST07-005",
-              "cardData": {
-                "id": "ST07-005",
-                "name": "Gundam Dynames",
-                "cardType": "unit",
-                "color": "Green",
-                "level": 4,
-                "cost": 3,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "CB",
-                  "GN Drive"
-                ],
-                "link": [
-                  "Lockon Stratos"
-                ],
-                "ap": 2,
-                "hp": 4,
-                "effects": {
-                  "description": [],
-                  "rules": [
-                    {
-                      "effectId": "battle_destroy_heal_2_on_your_turn",
-                      "type": "triggered",
-                      "trigger": "BATTLE_DESTROY",
-                      "timing": {
-                        "actionTurn": "YOUR_TURN"
-                      },
-                      "action": "heal",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self",
-                        "count": 1
-                      },
-                      "parameters": {
-                        "value": 2
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -180,31 +137,6 @@
             "unit": {
               "carduid": "ST07-002_defender_0001",
               "cardId": "ST07-002",
-              "cardData": {
-                "id": "ST07-002",
-                "name": "Gundam Exia",
-                "cardType": "unit",
-                "color": "Purple",
-                "level": 4,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "CB",
-                  "GN Drive"
-                ],
-                "link": [
-                  "Setsuna F. Seiei"
-                ],
-                "ap": 1,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": true,

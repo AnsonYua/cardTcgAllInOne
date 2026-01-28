@@ -74,45 +74,6 @@
             "unit": {
               "carduid": "GD01-002_attacker_0001",
               "cardId": "GD01-002",
-              "cardData": {
-                "id": "GD01-002",
-                "name": "Unicorn Gundam (Destroy Mode)",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 7,
-                "cost": 6,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Civilian"
-                ],
-                "link": [
-                  "Banagher Links"
-                ],
-                "ap": 5,
-                "hp": 4,
-                "effects": {
-                  "description": [
-                    "When playing this card from your hand, you may destroy 1 of your Link Units with \"Unicorn Mode\" in its card name that is Lv.5. If you do, play this card as if it has 0 Lv. and cost.",
-                    "【Attack】Choose 1 enemy Unit. Rest it."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "attack_rest",
-                      "type": "triggered",
-                      "trigger": "ATTACK_PHASE",
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "count": 1
-                      },
-                      "action": "rest"
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -145,29 +106,7 @@
           "hand": [
             {
               "carduid": "GD01-010_discard_0001",
-              "cardId": "GD01-010",
-              "cardData": {
-                "id": "GD01-010",
-                "name": "GM",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 1,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 1,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              }
+              "cardId": "GD01-010"
             }
           ],
           "handUids": [
@@ -184,62 +123,6 @@
             "unit": {
               "carduid": "GD01-005_unit_0001",
               "cardId": "GD01-005",
-              "cardData": {
-                "id": "GD01-005",
-                "name": "Unicorn Gundam (Unicorn Mode)",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 5,
-                "cost": 4,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Civilian"
-                ],
-                "link": [
-                  "Banagher Links"
-                ],
-                "ap": 4,
-                "hp": 3,
-                "effects": {
-                  "description": [
-                    "【During Link】【Destroyed】Return this Unit's paired Pilot to its owner's hand. Then, discard 1."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "during_link_destroyed_return_paired_pilot_then_discard",
-                      "type": "triggered",
-                      "trigger": "DESTROYED",
-                      "sourceConditions": [
-                        {
-                          "type": "linked"
-                        }
-                      ],
-                      "action": "sequence",
-                      "parameters": {
-                        "steps": [
-                          {
-                            "action": "returnToHand",
-                            "target": {
-                              "type": "card",
-                              "scope": "source_paired_pilot",
-                              "count": 1
-                            }
-                          },
-                          {
-                            "action": "discard",
-                            "parameters": {
-                              "value": 1
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -255,40 +138,6 @@
             "pilot": {
               "carduid": "GD01-088_pilot_0001",
               "cardId": "GD01-088",
-              "cardData": {
-                "id": "GD01-088",
-                "name": "Banagher Links",
-                "cardType": "pilot",
-                "color": "Blue",
-                "level": 5,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Civilian",
-                  "Newtype"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 2,
-                "effects": {
-                  "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【When Linked】Draw 1."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_add_to_hand",
-                      "type": "triggered",
-                      "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
-                      "action": "addToHand"
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -313,4 +162,3 @@
     }
   }
 }
-

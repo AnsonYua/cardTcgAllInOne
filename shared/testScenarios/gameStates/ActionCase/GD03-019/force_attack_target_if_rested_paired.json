@@ -74,28 +74,6 @@
             "unit": {
               "carduid": "ST03-008_attacker_0001",
               "cardId": "ST03-008",
-              "cardData": {
-                "id": "ST03-008",
-                "name": "Zaku II",
-                "cardType": "unit",
-                "color": "Green",
-                "level": 2,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Zeon"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -138,67 +116,6 @@
             "unit": {
               "carduid": "GD03-019_unit_0001",
               "cardId": "GD03-019",
-              "cardData": {
-                "id": "GD03-019",
-                "name": "Gundam AGE-2 Normal",
-                "cardType": "unit",
-                "color": "Green",
-                "level": 5,
-                "cost": 4,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation",
-                  "AGE System"
-                ],
-                "link": [
-                  "Asemu Asuno"
-                ],
-                "ap": 4,
-                "hp": 4,
-                "effects": {
-                  "description": [
-                    "【During Pair】Enemy Units choose this rested Unit as their attack target if possible when attacking.",
-                    "【When Linked】Place 1 EX Resource."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "during_pair_effect",
-                      "type": "continuous",
-                      "trigger": "continuous",
-                      "action": "sequence",
-                      "parameters": {
-                        "version": 1,
-                        "steps": [
-                          {
-                            "action": "require_attack_target_if_available",
-                            "timing": {
-                              "duration": "continuous"
-                            },
-                            "parameters": {
-                              "candidateTarget": {
-                                "type": "unit",
-                                "scope": "self",
-                                "filters": {
-                                  "status": "rested"
-                                }
-                              },
-                              "chooser": "DEFENDER"
-                            }
-                          }
-                        ]
-                      },
-                      "sourceConditions": [
-                        {
-                          "type": "paired"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": true,
@@ -214,26 +131,6 @@
             "pilot": {
               "carduid": "GD03-098_pilot_0001",
               "cardId": "GD03-098",
-              "cardData": {
-                "id": "GD03-098",
-                "name": "Graham Aker",
-                "cardType": "pilot",
-                "color": "White",
-                "level": 4,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Superpower Bloc",
-                  "UN"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 1,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -247,28 +144,6 @@
             "unit": {
               "carduid": "ST03-007_unit_defender_0002",
               "cardId": "ST03-007",
-              "cardData": {
-                "id": "ST03-007",
-                "name": "Zaku I",
-                "cardType": "unit",
-                "color": "Green",
-                "level": 1,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Zeon"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -296,4 +171,3 @@
     }
   }
 }
-

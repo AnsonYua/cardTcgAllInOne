@@ -64,30 +64,7 @@
           "hand": [
             {
               "carduid": "ST04-010_pilot_for_exia_0001",
-              "cardId": "ST04-010",
-              "cardData": {
-                "id": "ST04-010",
-                "name": "Kira Yamato",
-                "cardType": "pilot",
-                "color": "White",
-                "level": 4,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Alliance",
-                  "Coordinator"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【Attack】Choose 1 enemy Unit; it gets AP–2 during this battle."
-                  ],
-                  "rules": []
-                }
-              }
+              "cardId": "ST04-010"
             }
           ],
           "handUids": [
@@ -108,58 +85,6 @@
             "unit": {
               "carduid": "ST07-001_unit_0001",
               "cardId": "ST07-001",
-              "cardData": {
-                "id": "ST07-001",
-                "name": "Gundam Exia",
-                "cardType": "unit",
-                "color": "Purple",
-                "level": 5,
-                "cost": 4,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "CB",
-                  "GN Drive"
-                ],
-                "link": [
-                  "Setsuna F. Seiei"
-                ],
-                "ap": 4,
-                "hp": 4,
-                "effects": {
-                  "description": [],
-                  "rules": [
-                    {
-                      "effectId": "pair_mill_2_then_draw_if_cb_milled",
-                      "type": "triggered",
-                      "trigger": "PAIRING_COMPLETE",
-                      "action": "sequence",
-                      "parameters": {
-                        "steps": [
-                          {
-                            "action": "moveTopDeckToTrash",
-                            "parameters": {
-                              "count": 2,
-                              "reveal": false
-                            }
-                          },
-                          {
-                            "action": "draw_if_moved_cards_match_traits",
-                            "parameters": {
-                              "value": 1,
-                              "traitsAny": [
-                                "CB"
-                              ]
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -188,10 +113,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [],
@@ -227,4 +149,3 @@
     }
   }
 }
-

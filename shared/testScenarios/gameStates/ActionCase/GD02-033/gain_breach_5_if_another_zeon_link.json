@@ -75,55 +75,6 @@
             "unit": {
               "carduid": "GD02-033_unit_0001",
               "cardId": "GD02-033",
-              "cardData": {
-                "id": "GD02-033",
-                "name": "Kikeroga (MA Mode) (GQ)",
-                "cardType": "unit",
-                "color": "Green",
-                "level": 5,
-                "cost": 4,
-                "zone": [
-                  "Space"
-                ],
-                "traits": [
-                  "Zeon"
-                ],
-                "link": [
-                  "Challia Bull"
-                ],
-                "ap": 3,
-                "hp": 4,
-                "effects": {
-                  "description": [
-                    "While another friendly (Zeon) Link Unit is in play, this Unit gains <Breach 5>."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "gain_breach_5_if_another_zeon_link",
-                      "type": "continuous",
-                      "trigger": "continuous",
-                      "action": "grant_breach",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self",
-                        "count": 1
-                      },
-                      "conditions": [
-                        {
-                          "type": "hasAnotherLinkedUnitWithTrait",
-                          "scope": "self",
-                          "traits": [
-                            "Zeon"
-                          ]
-                        }
-                      ],
-                      "parameters": {
-                        "value": 5
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -144,30 +95,6 @@
             "unit": {
               "carduid": "GD02-032_unit_0001",
               "cardId": "GD02-032",
-              "cardData": {
-                "id": "GD02-032",
-                "name": "White Gundam",
-                "cardType": "unit",
-                "color": "Green",
-                "level": 3,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Zeon"
-                ],
-                "link": [
-                  "Char Aznable"
-                ],
-                "ap": 3,
-                "hp": 3,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -186,25 +113,6 @@
             "pilot": {
               "carduid": "GD02-010_pilot_0001",
               "cardId": "GD02-010",
-              "cardData": {
-                "id": "GD02-010",
-                "name": "Char Aznable",
-                "cardType": "pilot",
-                "color": "Green",
-                "level": 4,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Zeon"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 1,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -253,4 +161,3 @@
     }
   }
 }
-

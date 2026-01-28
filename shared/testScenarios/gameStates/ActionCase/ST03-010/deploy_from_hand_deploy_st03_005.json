@@ -65,93 +65,11 @@
           "hand": [
             {
               "carduid": "ST03-010_action_0001",
-              "cardId": "ST03-010",
-              "cardData": {
-                "id": "ST03-010",
-                "name": "Full Frontal",
-                "cardType": "pilot",
-                "color": "Red",
-                "level": 6,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Neo Zeon",
-                  "Cyber-Newtype"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 2,
-                "effects": {
-                  "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【When Paired】You may deploy 1 Neo Zeon/Zeon Unit card that is Lv.4 or lower from your hand."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_add_to_hand",
-                      "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
-                      "action": "addToHand",
-                      "type": "triggered"
-                    },
-                    {
-                      "effectId": "pair_deploy_unit_from_hand",
-                      "type": "triggered",
-                      "trigger": "PAIRING_COMPLETE",
-                      "action": "deploy_from_hand",
-                      "optional": true,
-                      "parameters": {
-                        "maxLevel": 4,
-                        "allowedTraitsAny": [
-                          "Neo Zeon",
-                          "Zeon"
-                        ],
-                        "notes": "Deploying a unit from hand as a pairing trigger is not implemented."
-                      },
-                      "target": {
-                        "type": "unit",
-                        "scope": "self_hand",
-                        "filters": {
-                          "level": "<=4",
-                          "traits": [
-                            "Neo Zeon",
-                            "Zeon"
-                          ]
-                        },
-                        "count": 1
-                      }
-                    }
-                  ]
-                }
-              }
+              "cardId": "ST03-010"
             },
             {
               "carduid": "ST03-005_action_0001",
-              "cardId": "ST03-005",
-              "cardData": {
-                "id": "ST03-005",
-                "name": "Dra-C (Sleeves)",
-                "cardType": "unit",
-                "color": "Red",
-                "level": 1,
-                "cost": 1,
-                "zone": [
-                  "Space"
-                ],
-                "traits": [
-                  "Neo Zeon"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              }
+              "cardId": "ST03-005"
             }
           ],
           "handUids": [
@@ -172,60 +90,6 @@
             "unit": {
               "carduid": "ST03-006_unit_0001",
               "cardId": "ST03-006",
-              "cardData": {
-                "id": "ST03-006",
-                "name": "Char’s Zaku II",
-                "cardType": "unit",
-                "color": "Green",
-                "level": 3,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Zeon"
-                ],
-                "link": [
-                  "Char Aznable"
-                ],
-                "ap": 3,
-                "hp": 2,
-                "effects": {
-                  "description": [
-                    "【Destroyed】Look at the top 3 cards of your deck. You may reveal 1 Zeon/Neo Zeon Unit card among them and add it to your hand. Return the rest to the bottom of your deck in random order."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "destroyed_tutor_zeon_unit_from_top_3",
-                      "type": "triggered",
-                      "trigger": "DESTROYED",
-                      "action": "tutor_top_deck",
-                      "parameters": {
-                        "count": 3,
-                        "select": {
-                          "count": 1,
-                          "optional": true,
-                          "toZone": "hand",
-                          "reveal": true,
-                          "filters": {
-                            "cardType": "unit",
-                            "traitsAny": [
-                              "Zeon",
-                              "Neo Zeon"
-                            ]
-                          }
-                        },
-                        "rest": {
-                          "toZone": "deck_bottom",
-                          "order": "random"
-                        },
-                        "notes": "Destroyed trigger + reveal/select-from-top + random bottom not yet implemented."
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -253,10 +117,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [],
@@ -280,28 +141,6 @@
             "unit": {
               "carduid": "ST03-007_unit_0001",
               "cardId": "ST03-007",
-              "cardData": {
-                "id": "ST03-007",
-                "name": "Zaku I",
-                "cardType": "unit",
-                "color": "Green",
-                "level": 1,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Zeon"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -331,4 +170,3 @@
     }
   }
 }
-

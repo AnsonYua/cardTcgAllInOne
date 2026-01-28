@@ -1,0 +1,220 @@
+{
+  "description": "gd02-073_opponent_turn_grant_first_strike_to_battling_enemy",
+  "gameId": "gd02-073_opponent_turn_grant_first_strike_to_battling_enemy",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD02-073",
+    "continuous",
+    "OPPONENT_TURN",
+    "battle_opponent",
+    "grant_keyword",
+    "First Strike"
+  ],
+  "notes": [
+    "Setup: Player A controls GD02-073 in slot1. CurrentPlayer is Player B (opponent turn).",
+    "Action: Player B attacks GD02-073 with a unit that normally would trade in battle (AP 4 / HP 4).",
+    "Expect: When the unit battle opens, GD02-073's continuous effect grants <First Strike> to the enemy unit battling it (notificationQueue KEYWORD_GRANTED; duration UNTIL_END_OF_BATTLE).",
+    "Expect: Battle ordering uses attacker First Strike."
+  ],
+  "initialGameEnv": {
+    "phase": "ATTACK_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_2",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd02073",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_2",
+          "carduid": "GD02-073_draw_0001",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD02-073_defender_0001",
+              "cardId": "GD02-073",
+              "cardData": {
+                "id": "GD02-073",
+                "name": "Carta's Graze Ritter (Ground Type)",
+                "cardType": "unit",
+                "color": "White",
+                "level": 4,
+                "cost": 3,
+                "zone": [
+                  "Earth"
+                ],
+                "traits": [
+                  "Gjallarhorn"
+                ],
+                "link": [
+                  "Carta Issue"
+                ],
+                "ap": 5,
+                "hp": 4,
+                "effects": {
+                  "description": [
+                    "During your opponent's turn, the enemy Unit battling this Unit gains <First Strike>. (While this Unit is attacking, it deals damage before the enemy Unit.)"
+                  ],
+                  "rules": [
+                    {
+                      "target": {
+                        "count": 1,
+                        "scope": "battle_opponent",
+                        "type": "unit"
+                      },
+                      "parameters": {
+                        "keyword": "First Strike"
+                      },
+                      "timing": {
+                        "actionTurn": "OPPONENT_TURN"
+                      },
+                      "trigger": "continuous",
+                      "effectId": "grant_first_strike_to_battling_enemy",
+                      "action": "grant_keyword",
+                      "type": "continuous"
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "originalAP": 5,
+              "originalHP": 4,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "damageReceived": 0,
+              "temporaryEffects": []
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        },
+        "effectRegistry": {},
+        "delayedTriggers": []
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST01-001_attacker_0001",
+              "cardId": "ST01-001",
+              "cardData": {
+                "id": "ST01-001",
+                "name": "Gundam",
+                "cardType": "unit",
+                "color": "Blue",
+                "level": 4,
+                "cost": 3,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Earth Federation",
+                  "White Base Team"
+                ],
+                "link": [
+                  "Amuro Ray"
+                ],
+                "ap": 4,
+                "hp": 4,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalAP": 4,
+              "originalHP": 4,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "damageReceived": 0,
+              "temporaryEffects": []
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        },
+        "effectRegistry": {},
+        "delayedTriggers": []
+      }
+    }
+  }
+}
+

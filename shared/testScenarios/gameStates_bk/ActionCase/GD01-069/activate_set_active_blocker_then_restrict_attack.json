@@ -1,0 +1,335 @@
+{
+  "description": "gd01-069_activate_set_active_blocker_then_restrict_attack",
+  "gameId": "gd01-069_activate_set_active_blocker_then_restrict_attack",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD01-069",
+    "activated",
+    "sequence",
+    "setActive",
+    "restrict_attack",
+    "player_choice"
+  ],
+  "notes": [
+    "Setup: Player A has GD01-069 in slot1 and 1 active energy during MAIN_PHASE.",
+    "Setup: Player A has two rested White units with <Blocker> in play (slot2 and slot3) to force a TARGET_CHOICE.",
+    "Action: Player A activates GD01-069 effectId=activate_effect.",
+    "Expect: A TARGET_CHOICE is created for Player A to choose 1 rested White <Blocker> unit to set active (processingQueue + notificationQueue).",
+    "Action: Player A confirms the TARGET_CHOICE selecting slot2.",
+    "Expect: slot2 unit is set active (CARD_SET_ACTIVE) and gains cannot_attack until end of turn (ATTACK_RESTRICTION_APPLIED)."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd01069",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "GD01-069_draw_0001",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD01-069_unit_0001",
+              "cardId": "GD01-069",
+              "cardData": {
+                "id": "GD01-069",
+                "name": "Strike Rouge",
+                "cardType": "unit",
+                "color": "White",
+                "level": 3,
+                "cost": 2,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Triple Ship Alliance"
+                ],
+                "link": [
+                  "Orb"
+                ],
+                "ap": 3,
+                "hp": 2,
+                "effects": {
+                  "description": [
+                    "【Activate･Main】【Once per Turn】①：Choose 1 of your rested white Units with <Blocker>. Set it as active. It can't attack during this turn."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "activate_effect",
+                      "type": "activated",
+                      "timing": {
+                        "windows": [
+                          "MAIN_PHASE"
+                        ]
+                      },
+                      "cost": {
+                        "resource": 1,
+                        "oncePerTurn": true
+                      },
+                      "action": "sequence",
+                      "parameters": {
+                        "steps": [
+                          {
+                            "action": "setActive",
+                            "target": {
+                              "type": "unit",
+                              "scope": "self_all_unit",
+                              "selection": {
+                                "type": "player_choice"
+                              },
+                              "filters": {
+                                "color": "White",
+                                "keywords": [
+                                  "Blocker"
+                                ],
+                                "status": "rested"
+                              },
+                              "count": 1
+                            }
+                          },
+                          {
+                            "action": "restrict_attack",
+                            "timing": {
+                              "duration": "UNTIL_END_OF_TURN"
+                            },
+                            "target": {
+                              "type": "unit",
+                              "scope": "previous_target",
+                              "count": 1
+                            },
+                            "parameters": {
+                              "disallow": true
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "originalAP": 3,
+              "originalHP": 2,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "damageReceived": 0,
+              "temporaryEffects": []
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "ST01-008_blocker_rested_0002",
+              "cardId": "ST01-008",
+              "cardData": {
+                "id": "ST01-008",
+                "name": "Demi Trainer",
+                "cardType": "unit",
+                "color": "White",
+                "level": 2,
+                "cost": 2,
+                "zone": [
+                  "Earth"
+                ],
+                "traits": [
+                  "Earth House"
+                ],
+                "link": [
+                  "Chuatury Panlunch"
+                ],
+                "ap": 2,
+                "hp": 3,
+                "effects": {
+                  "description": [
+                    "<Blocker> (Rest this Unit to change the attack target to it.)"
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "blocker",
+                      "trigger": "ATTACK_REDIRECT",
+                      "target": {
+                        "type": "unit",
+                        "scope": "self"
+                      },
+                      "action": "redirect_attack",
+                      "parameters": {
+                        "cost": "rest_self"
+                      },
+                      "type": "triggered"
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "originalAP": 2,
+              "originalHP": 3,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "damageReceived": 0,
+              "temporaryEffects": []
+            }
+          },
+          "slot3": {
+            "unit": {
+              "carduid": "ST01-009_blocker_rested_0003",
+              "cardId": "ST01-009",
+              "cardData": {
+                "id": "ST01-009",
+                "name": "Zowort",
+                "cardType": "unit",
+                "color": "White",
+                "level": 3,
+                "cost": 2,
+                "zone": [
+                  "Earth"
+                ],
+                "traits": [
+                  "Grassley Defense Systems"
+                ],
+                "link": [
+                  "Guel Jeturk"
+                ],
+                "ap": 3,
+                "hp": 2,
+                "effects": {
+                  "description": [
+                    "<Blocker> (Rest this Unit to change the attack target to it.)"
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "blocker",
+                      "trigger": "ATTACK_REDIRECT",
+                      "target": {
+                        "type": "unit",
+                        "scope": "self"
+                      },
+                      "action": "redirect_attack",
+                      "parameters": {
+                        "cost": "rest_self"
+                      },
+                      "type": "triggered"
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "originalAP": 3,
+              "originalHP": 2,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "damageReceived": 0,
+              "temporaryEffects": []
+            }
+          },
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd01069_a_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        },
+        "effectRegistry": {},
+        "delayedTriggers": []
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        },
+        "effectRegistry": {},
+        "delayedTriggers": []
+      }
+    }
+  }
+}
+

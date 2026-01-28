@@ -1,0 +1,215 @@
+{
+  "description": "t-021_restrictions_cannot_set_active_or_pair",
+  "gameId": "t-021_restrictions_cannot_set_active_or_pair",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "T-021",
+    "restrict_set_active",
+    "restrict_pairing"
+  ],
+  "notes": [
+    "Setup: Player A has T-021 (Ad Balloon) rested in slot1. Player A has ST03-010 in hand and enough energy.",
+    "Action (manual): Player A tries to play ST03-010 as a pilot targeting T-021 in slot1.",
+    "Expect: The action is rejected; notificationQueue contains PAIRING_BLOCKED for playerId_1; T-021 remains without a pilot.",
+    "Action (manual): When READY_MAIN_PHASE runs, T-021 should remain rested (CARD_SET_ACTIVE_BLOCKED emitted with source=READY_MAIN_PHASE)."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_t021",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "GD03-000_draw_t021",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "ST03-010_pilot_in_hand_0001",
+              "cardId": "ST03-010",
+              "cardData": {
+                "id": "ST03-010",
+                "name": "Full Frontal",
+                "cardType": "pilot",
+                "color": "Red",
+                "level": 6,
+                "cost": 1,
+                "zone": [],
+                "traits": [
+                  "Neo Zeon",
+                  "Cyber-Newtype"
+                ],
+                "link": [],
+                "ap": 0,
+                "hp": 0,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              }
+            }
+          ],
+          "handUids": [
+            "ST03-010_pilot_in_hand_0001"
+          ],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "T-021_unit_0001",
+              "cardId": "T-021",
+              "cardData": {
+                "id": "T-021",
+                "name": "Ad Balloon",
+                "cardType": "unit",
+                "color": "Token",
+                "level": 0,
+                "cost": 0,
+                "zone": [
+                  "Earth"
+                ],
+                "traits": [
+                  "Civilian"
+                ],
+                "link": [],
+                "ap": 0,
+                "hp": 1,
+                "effects": {
+                  "description": [
+                    "This Unit can't be set as active or paired with a Pilot."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "cannot_be_set_active",
+                      "type": "continuous",
+                      "trigger": "continuous",
+                      "action": "restrict_set_active",
+                      "target": {
+                        "type": "unit",
+                        "scope": "self",
+                        "count": 1
+                      },
+                      "parameters": {
+                        "disallow": true
+                      }
+                    },
+                    {
+                      "effectId": "cannot_be_paired_with_pilot",
+                      "type": "continuous",
+                      "trigger": "continuous",
+                      "action": "restrict_pairing",
+                      "target": {
+                        "type": "unit",
+                        "scope": "self",
+                        "count": 1
+                      },
+                      "parameters": {
+                        "disallow": true
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_t021_a_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
+

@@ -57,28 +57,6 @@
             "unit": {
               "carduid": "ST01-005_00000000-0000-0000-0000-000000000001",
               "cardId": "ST01-005",
-              "cardData": {
-                "id": "ST01-005",
-                "name": "GM",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 2,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -102,10 +80,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_test_2",
@@ -113,10 +88,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [],
@@ -140,28 +112,6 @@
             "unit": {
               "carduid": "ST01-005_00000000-0000-0000-0000-000000000002",
               "cardId": "ST01-005",
-              "cardData": {
-                "id": "ST01-005",
-                "name": "GM",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 2,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,

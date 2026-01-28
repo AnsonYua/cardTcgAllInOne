@@ -76,70 +76,6 @@
             "unit": {
               "carduid": "GD02-023_unit_0001",
               "cardId": "GD02-023",
-              "cardData": {
-                "id": "GD02-023",
-                "name": "Gundam AGE-1 Spallow",
-                "cardType": "unit",
-                "color": "Green",
-                "level": 4,
-                "cost": 3,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation",
-                  "AGE System"
-                ],
-                "link": [
-                  "Flit Asuno"
-                ],
-                "ap": 3,
-                "hp": 4,
-                "effects": {
-                  "description": [
-                    "【During Link】While you are Lv.7 or higher, this Unit gains <First Strike>."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "link_effect",
-                      "type": "continuous",
-                      "trigger": "continuous",
-                      "sourceConditions": [
-                        {
-                          "type": "linked"
-                        }
-                      ],
-                      "action": "conditional",
-                      "parameters": {
-                        "if": [
-                          {
-                            "type": "playerLevel",
-                            "scope": "self",
-                            "value": ">=7"
-                          }
-                        ],
-                        "then": [
-                          {
-                            "action": "grant_keyword",
-                            "timing": {
-                              "duration": "CONTINUOUS"
-                            },
-                            "target": {
-                              "type": "unit",
-                              "scope": "self",
-                              "count": 1
-                            },
-                            "parameters": {
-                              "keyword": "First Strike"
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -158,27 +94,6 @@
             "pilot": {
               "carduid": "GD02-088_pilot_0001",
               "cardId": "GD02-088",
-              "cardData": {
-                "id": "GD02-088",
-                "name": "Flit Asuno",
-                "cardType": "pilot",
-                "color": "Green",
-                "level": 3,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Federation",
-                  "Asuno Family",
-                  "X-Rounder"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 1,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -228,4 +143,3 @@
     }
   }
 }
-

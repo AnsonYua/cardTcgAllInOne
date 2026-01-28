@@ -105,46 +105,6 @@
             "unit": {
               "carduid": "GD02-010_unit_0001",
               "cardId": "GD02-010",
-              "cardData": {
-                "id": "GD02-010",
-                "name": "Raider Gundam",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 5,
-                "cost": 3,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Alliance"
-                ],
-                "link": [
-                  "Biological CPU"
-                ],
-                "ap": 4,
-                "hp": 4,
-                "effects": {
-                  "description": [
-                    "【Once per Turn】When this Unit receives enemy effect damage, draw 1."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "draw_when_effect_damage_received",
-                      "type": "triggered",
-                      "trigger": "EFFECT_DAMAGE_RECEIVED",
-                      "restrictions": [
-                        "once_per_turn"
-                      ],
-                      "action": "draw",
-                      "parameters": {
-                        "value": 1,
-                        "damageSource": "ENEMY"
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -169,4 +129,3 @@
     }
   }
 }
-

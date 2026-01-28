@@ -44,82 +44,7 @@
           "hand": [
             {
               "carduid": "ST04-012_action_0001",
-              "cardId": "ST04-012",
-              "cardData": {
-                "id": "ST04-012",
-                "name": "Striker Pack",
-                "cardType": "command",
-                "color": "White",
-                "level": 4,
-                "cost": 2,
-                "zone": [],
-                "traits": [],
-                "link": [],
-                "ap": 0,
-                "hp": 0,
-                "effects": {
-                  "description": [
-                    "【Burst】If you have no (Earth Alliance) Unit tokens in play, deploy 1 Aile Strike Gundam Unit token (AP 3 / HP 3, <Blocker>).",
-                    "【Main】If you have no (Earth Alliance) Unit tokens in play, deploy 1 Sword Strike Gundam Unit token (AP 4 / HP 2, <Blocker>) or 1 Launcher Strike Gundam Unit token (AP 2 / HP 4, <Blocker>)."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_deploy_aile_strike_token_if_none",
-                      "type": "triggered",
-                      "trigger": "BURST_CONDITION",
-                      "action": "conditionalTokenDeploy",
-                      "conditions": [
-                        {
-                          "type": "noUnitTokenWithTrait",
-                          "scope": "self",
-                          "value": "Earth Alliance"
-                        }
-                      ],
-                      "parameters": {
-                        "condition1": {
-                          "token": {
-                            "cardId": "T-008"
-                          },
-                          "count": 1
-                        }
-                      }
-                    },
-                    {
-                      "effectId": "main_deploy_strike_tokens_if_none",
-                      "type": "play",
-                      "action": "choose_one_then_deploy_token",
-                      "timing": {
-                        "windows": [
-                          "MAIN_PHASE"
-                        ]
-                      },
-                      "conditions": [
-                        {
-                          "type": "noUnitTokenWithTrait",
-                          "scope": "self",
-                          "value": "Earth Alliance"
-                        }
-                      ],
-                      "parameters": {
-                        "choices": [
-                          {
-                            "token": {
-                              "cardId": "T-010"
-                            },
-                            "count": 1
-                          },
-                          {
-                            "token": {
-                              "cardId": "T-009"
-                            },
-                            "count": 1
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              }
+              "cardId": "ST04-012"
             }
           ],
           "handUids": [
@@ -136,57 +61,6 @@
             "pilot": {
               "carduid": "ST04-010_pilot_0001",
               "cardId": "ST04-010",
-              "cardData": {
-                "id": "ST04-010",
-                "name": "Kira Yamato",
-                "cardType": "pilot",
-                "color": "White",
-                "level": 4,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Alliance",
-                  "Coordinator"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【Attack】Choose 1 enemy Unit; it gets AP–2 during this battle."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_add_to_hand",
-                      "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
-                      "action": "addToHand",
-                      "type": "triggered"
-                    },
-                    {
-                      "effectId": "attack_reduce_enemy_ap",
-                      "type": "triggered",
-                      "trigger": "ATTACK_PHASE",
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "count": 1
-                      },
-                      "action": "modifyAP",
-                      "parameters": {
-                        "value": -2
-                      },
-                      "timing": {
-                        "duration": "UNTIL_END_OF_BATTLE"
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -202,298 +76,23 @@
           "shieldArea": [
             {
               "carduid": "ST04-013_shield_a_0001",
-              "cardId": "ST04-013",
-              "cardData": {
-                "id": "ST04-013",
-                "name": "Hawk of Endymion",
-                "cardType": "command",
-                "color": "White",
-                "level": 2,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Alliance"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 0,
-                "effects": {
-                  "description": [
-                    "【Main】/【Action】Choose 1 enemy Unit with 3 or less HP; return it to its owner’s hand.",
-                    "【Pilot】[Mu La Flaga]"
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "main_action_bounce_low_hp",
-                      "type": "play",
-                      "action": "returnToHand",
-                      "timing": {
-                        "windows": [
-                          "MAIN_PHASE",
-                          "ACTION_STEP"
-                        ]
-                      },
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "filters": {
-                          "hp": "<=3"
-                        },
-                        "count": 1
-                      },
-                      "parameters": {
-                        "notes": "Return-to-hand not yet implemented."
-                      }
-                    },
-                    {
-                      "effectId": "pilot_designation",
-                      "action": "designate_pilot",
-                      "parameters": {
-                        "pilotName": "Mu La Flaga",
-                        "AP": 1,
-                        "HP": 0
-                      },
-                      "type": "special"
-                    }
-                  ]
-                }
-              }
+              "cardId": "ST04-013"
             },
             {
               "carduid": "ST04-013_shield_a_0002",
-              "cardId": "ST04-013",
-              "cardData": {
-                "id": "ST04-013",
-                "name": "Hawk of Endymion",
-                "cardType": "command",
-                "color": "White",
-                "level": 2,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Alliance"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 0,
-                "effects": {
-                  "description": [
-                    "【Main】/【Action】Choose 1 enemy Unit with 3 or less HP; return it to its owner’s hand.",
-                    "【Pilot】[Mu La Flaga]"
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "main_action_bounce_low_hp",
-                      "type": "play",
-                      "action": "returnToHand",
-                      "timing": {
-                        "windows": [
-                          "MAIN_PHASE",
-                          "ACTION_STEP"
-                        ]
-                      },
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "filters": {
-                          "hp": "<=3"
-                        },
-                        "count": 1
-                      },
-                      "parameters": {
-                        "notes": "Return-to-hand not yet implemented."
-                      }
-                    },
-                    {
-                      "effectId": "pilot_designation",
-                      "action": "designate_pilot",
-                      "parameters": {
-                        "pilotName": "Mu La Flaga",
-                        "AP": 1,
-                        "HP": 0
-                      },
-                      "type": "special"
-                    }
-                  ]
-                }
-              }
+              "cardId": "ST04-013"
             },
             {
               "carduid": "ST04-013_shield_a_0003",
-              "cardId": "ST04-013",
-              "cardData": {
-                "id": "ST04-013",
-                "name": "Hawk of Endymion",
-                "cardType": "command",
-                "color": "White",
-                "level": 2,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Alliance"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 0,
-                "effects": {
-                  "description": [
-                    "【Main】/【Action】Choose 1 enemy Unit with 3 or less HP; return it to its owner’s hand.",
-                    "【Pilot】[Mu La Flaga]"
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "main_action_bounce_low_hp",
-                      "type": "play",
-                      "action": "returnToHand",
-                      "timing": {
-                        "windows": [
-                          "MAIN_PHASE",
-                          "ACTION_STEP"
-                        ]
-                      },
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "filters": {
-                          "hp": "<=3"
-                        },
-                        "count": 1
-                      },
-                      "parameters": {
-                        "notes": "Return-to-hand not yet implemented."
-                      }
-                    },
-                    {
-                      "effectId": "pilot_designation",
-                      "action": "designate_pilot",
-                      "parameters": {
-                        "pilotName": "Mu La Flaga",
-                        "AP": 1,
-                        "HP": 0
-                      },
-                      "type": "special"
-                    }
-                  ]
-                }
-              }
+              "cardId": "ST04-013"
             },
             {
               "carduid": "ST04-013_shield_a_0004",
-              "cardId": "ST04-013",
-              "cardData": {
-                "id": "ST04-013",
-                "name": "Hawk of Endymion",
-                "cardType": "command",
-                "color": "White",
-                "level": 2,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Alliance"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 0,
-                "effects": {
-                  "description": [
-                    "【Main】/【Action】Choose 1 enemy Unit with 3 or less HP; return it to its owner’s hand.",
-                    "【Pilot】[Mu La Flaga]"
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "main_action_bounce_low_hp",
-                      "type": "play",
-                      "action": "returnToHand",
-                      "timing": {
-                        "windows": [
-                          "MAIN_PHASE",
-                          "ACTION_STEP"
-                        ]
-                      },
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "filters": {
-                          "hp": "<=3"
-                        },
-                        "count": 1
-                      },
-                      "parameters": {
-                        "notes": "Return-to-hand not yet implemented."
-                      }
-                    },
-                    {
-                      "effectId": "pilot_designation",
-                      "action": "designate_pilot",
-                      "parameters": {
-                        "pilotName": "Mu La Flaga",
-                        "AP": 1,
-                        "HP": 0
-                      },
-                      "type": "special"
-                    }
-                  ]
-                }
-              }
+              "cardId": "ST04-013"
             },
             {
               "carduid": "ST04-013_shield_a_0005",
-              "cardId": "ST04-013",
-              "cardData": {
-                "id": "ST04-013",
-                "name": "Hawk of Endymion",
-                "cardType": "command",
-                "color": "White",
-                "level": 2,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Alliance"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 0,
-                "effects": {
-                  "description": [
-                    "【Main】/【Action】Choose 1 enemy Unit with 3 or less HP; return it to its owner’s hand.",
-                    "【Pilot】[Mu La Flaga]"
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "main_action_bounce_low_hp",
-                      "type": "play",
-                      "action": "returnToHand",
-                      "timing": {
-                        "windows": [
-                          "MAIN_PHASE",
-                          "ACTION_STEP"
-                        ]
-                      },
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "filters": {
-                          "hp": "<=3"
-                        },
-                        "count": 1
-                      },
-                      "parameters": {
-                        "notes": "Return-to-hand not yet implemented."
-                      }
-                    },
-                    {
-                      "effectId": "pilot_designation",
-                      "action": "designate_pilot",
-                      "parameters": {
-                        "pilotName": "Mu La Flaga",
-                        "AP": 1,
-                        "HP": 0
-                      },
-                      "type": "special"
-                    }
-                  ]
-                }
-              }
+              "cardId": "ST04-013"
             }
           ],
           "energyArea": [
@@ -503,10 +102,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_st04_012_a_0002",
@@ -514,10 +110,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [],
@@ -541,59 +134,6 @@
             "pilot": {
               "carduid": "ST04-011_pilot_0001",
               "cardId": "ST04-011",
-              "cardData": {
-                "id": "ST04-011",
-                "name": "Athrun Zala",
-                "cardType": "pilot",
-                "color": "Red",
-                "level": 4,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "ZAFT",
-                  "Coordinator"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 2,
-                "effects": {
-                  "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【When Linked】During this turn, this Unit may choose an active enemy Unit that is Lv.5 or lower as its attack target."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_add_to_hand",
-                      "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
-                      "action": "addToHand",
-                      "type": "triggered"
-                    },
-                    {
-                      "effectId": "attack_active_low_level_5",
-                      "action": "allow_attack_target",
-                      "trigger": "PAIRING_COMPLETE",
-                      "type": "triggered",
-                      "sourceConditions": [
-                        {
-                          "type": "linked"
-                        }
-                      ],
-                      "timing": {
-                        "duration": "UNTIL_END_OF_TURN"
-                      },
-                      "parameters": {
-                        "status": "active",
-                        "level": "<=5",
-                        "notes": "When Linked window not yet implemented; modeled as a trigger on link completion with a temporary attack-target permission."
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -635,10 +175,7 @@
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_st04_012_b_0002",
@@ -646,10 +183,7 @@
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [],
@@ -659,4 +193,3 @@
     }
   }
 }
-

@@ -78,58 +78,6 @@
             "unit": {
               "carduid": "GD02-022_unit_0001",
               "cardId": "GD02-022",
-              "cardData": {
-                "id": "GD02-022",
-                "name": "G-Exes",
-                "cardType": "unit",
-                "color": "Green",
-                "level": 3,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation"
-                ],
-                "link": [
-                  "Woolf Enneacle"
-                ],
-                "ap": 2,
-                "hp": 3,
-                "effects": {
-                  "description": [
-                    "【Once per Turn】When you place an EX Resource, choose 1 of your (AGE System) Units. It gains <Breach 2> during this turn."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "gain_breach_2_on_ex_resource",
-                      "type": "triggered",
-                      "trigger": "EX_RESOURCE_PLACED",
-                      "restrictions": [
-                        "once_per_turn"
-                      ],
-                      "action": "grant_breach",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self",
-                        "filters": {
-                          "traits": [
-                            "AGE System"
-                          ]
-                        },
-                        "count": 1
-                      },
-                      "timing": {
-                        "duration": "UNTIL_END_OF_TURN"
-                      },
-                      "parameters": {
-                        "value": 2
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -142,15 +90,6 @@
             "unit": {
               "carduid": "GD02-023_age_unit_0001",
               "cardId": "GD02-023",
-              "cardData": {
-                "id": "GD02-023",
-                "cardType": "unit",
-                "traits": [
-                  "AGE System"
-                ],
-                "ap": 3,
-                "hp": 4
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -163,15 +102,6 @@
             "unit": {
               "carduid": "GD02-023_age_unit_0002",
               "cardId": "GD02-023",
-              "cardData": {
-                "id": "GD02-023",
-                "cardType": "unit",
-                "traits": [
-                  "AGE System"
-                ],
-                "ap": 3,
-                "hp": 4
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -221,4 +151,3 @@
     }
   }
 }
-

@@ -16,6 +16,7 @@ import { GameNotificationManager } from './GameNotificationManager';
 import { ChoiceNotificationEmitter } from './notifications/ChoiceNotificationEmitter';
 import { processAction } from './actions/ActionProcessor';
 import { ChoiceConfirmationService } from './choices/ChoiceConfirmationService';
+import { CardDatabaseManager } from '../models/CardSystem';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -50,10 +51,145 @@ export interface PlayerActionResult {
 
 export class GameLogic {
     private baseDataPath: string;
+    private static cardDataById: Record<string, any> | null = null;
+    private static readonly CARD_DATA_FILES: readonly string[] = [
+        'gd01Card.json',
+        'gd02Card.json',
+        'gd03Card.json',
+        'st01Card.json',
+        'st02Card.json',
+        'st03Card.json',
+        'st04Card.json',
+        'st05Card.json',
+        'st06Card.json',
+        'st07Card.json',
+        'st08Card.json'
+    ];
 
     constructor() {
         this.baseDataPath = path.join(__dirname, '../gameData');
+        GameLogic.ensureCardDataLoaded();
         console.log('🎮 Custom Trading Card Game Logic initialized with nodemon config');
+    }
+
+    private static ensureCardDataLoaded(): void {
+        if (GameLogic.cardDataById) {
+            return;
+        }
+
+        // Prefer the existing global card DB, but also fulfill the requirement to read from src/data on server start.
+        // This is resilient for both ts-node dev runs and compiled dist runs (as long as src/data exists in the runtime cwd).
+        const merged: Record<string, any> = {};
+
+        try {
+            const dataDirCandidates = [
+                path.join(process.cwd(), 'src', 'data'),
+                path.join(__dirname, '../data')
+            ];
+            const dataDir = dataDirCandidates.find(candidate => fs.existsSync(candidate));
+
+            if (!dataDir) {
+                console.warn('⚠️ Card data directory not found; falling back to CardDatabaseManager');
+                Object.assign(merged, CardDatabaseManager.getAllCards());
+                GameLogic.cardDataById = merged;
+                return;
+            }
+
+            for (const filename of GameLogic.CARD_DATA_FILES) {
+                const filePath = path.join(dataDir, filename);
+                if (!fs.existsSync(filePath)) {
+                    console.warn(`⚠️ Card data file missing: ${filePath}`);
+                    continue;
+                }
+
+                const raw = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+                const cards = raw?.cards ?? raw;
+
+                if (Array.isArray(cards)) {
+                    for (const entry of cards) {
+                        const cardId = entry?.cardId || entry?.id;
+                        if (typeof cardId === 'string' && entry && typeof entry === 'object') {
+                            merged[cardId] = entry;
+                        }
+                    }
+                    continue;
+                }
+
+                if (cards && typeof cards === 'object') {
+                    for (const [cardId, entry] of Object.entries(cards)) {
+                        if (entry && typeof entry === 'object') {
+                            merged[cardId] = entry;
+                        }
+                    }
+                }
+            }
+
+            if (Object.keys(merged).length === 0) {
+                Object.assign(merged, CardDatabaseManager.getAllCards());
+            }
+
+            GameLogic.cardDataById = merged;
+            console.log(`📚 GameLogic card data cache ready (${Object.keys(merged).length} cards)`);
+        } catch (error) {
+            console.error('❌ Failed to build GameLogic card data cache:', error);
+            GameLogic.cardDataById = CardDatabaseManager.getAllCards() || {};
+        }
+    }
+
+    private static getCardData(cardId: string | undefined | null): any | null {
+        if (!cardId) {
+            return null;
+        }
+        GameLogic.ensureCardDataLoaded();
+        return GameLogic.cardDataById?.[cardId] ?? null;
+    }
+
+    private hydrateGameEnvCardData(gameEnv: GameEnvironment): void {
+        GameLogic.ensureCardDataLoaded();
+
+        for (const player of Object.values(gameEnv.players || {})) {
+            // Normalize legacy saved state: deck.hand sometimes gets persisted instead of deck.handUids.
+            const deckAny = (player as any)?.deck;
+            if (deckAny && Array.isArray(deckAny._handUids) && deckAny._handUids.some((v: any) => typeof v !== 'string')) {
+                deckAny._handUids = deckAny._handUids
+                    .map((v: any) => (typeof v === 'string' ? v : v?.carduid))
+                    .filter((v: any) => typeof v === 'string');
+            }
+
+            const zones: any = (player as any)?.zones;
+            if (!zones) {
+                continue;
+            }
+
+            const hydrateCard = (card: any): void => {
+                if (!card || typeof card !== 'object') {
+                    return;
+                }
+                const cardId = card.cardId;
+                const cardData = GameLogic.getCardData(cardId);
+                if (cardData) {
+                    card.cardData = cardData;
+                }
+            };
+
+            const slotNames = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5', 'slot6'];
+            for (const slotName of slotNames) {
+                const slot = zones[slotName];
+                hydrateCard(slot?.unit);
+                hydrateCard(slot?.pilot);
+            }
+
+            const arrayZones = ['base', 'shieldArea', 'energyArea', 'trashArea'];
+            for (const zoneName of arrayZones) {
+                const list = zones[zoneName];
+                if (!Array.isArray(list)) {
+                    continue;
+                }
+                for (const card of list) {
+                    hydrateCard(card);
+                }
+            }
+        }
     }
 
     public async processAction(gameEnv: GameEnvironment, action: PlayerAction): Promise<any> {
@@ -263,7 +399,17 @@ export class GameLogic {
                     error: 'Game not found'
                 };
             }
-            
+            /**
+             * when start /restart server , read 
+             * cardBackend/src/data/gd01Card.json cardBackend/src/data/gd02Card.json cardBackend/src/data/gd03Card.json cardBackend/src/data/st01Card.json cardBackend/src/data/st02Card.json cardBackend/src/data/st03Card.json cardBackend/src/data/st04Card.json cardBackend/src/data/st05Card.json cardBackend/src/data/st06Card.json cardBackend/src/data/st07Card.json cardBackend/src/data/st08Card.json
+             * and store them in a variable.
+             * 
+             * 
+             * after get the gameEnv,for each card in gameEnv, no matter in base/shield/unit/pilot/hand
+             * use cardId to look for the cardData in above variable and add/update cardData to the card
+             * 
+             */
+            this.hydrateGameEnvCardData(gameEnv);
             // TODO: Add custom game state validation for your trading card game
             // - Check player exists
             // - Apply game-specific state filters

@@ -65,57 +65,6 @@
             {
               "carduid": "ST01-011_00000000-0000-0000-0000-000000000009",
               "cardId": "ST01-011",
-              "cardData": {
-                "id": "ST01-011",
-                "name": "Suletta Mercury",
-                "cardType": "pilot",
-                "color": "White",
-                "level": 4,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Academy"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 2,
-                "effects": {
-                  "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【Attack】【Once per Turn】Choose 1 of your Resources. Set it as active."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_add_to_hand",
-                      "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
-                      "action": "addToHand",
-                      "type": "triggered"
-                    },
-                    {
-                      "effectId": "attack_activate_resource",
-                      "type": "triggered",
-                      "trigger": "ATTACK_PHASE",
-                      "restrictions": [
-                        "once_per_turn"
-                      ],
-                      "sourceConditions": [
-                        {
-                          "type": "controller",
-                          "value": "self"
-                        },
-                        {
-                          "type": "paired"
-                        }
-                      ],
-                      "action": "setActive"
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -129,10 +78,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [],
@@ -156,28 +102,6 @@
             "unit": {
               "carduid": "ST01-005_00000000-0000-0000-0000-000000000010",
               "cardId": "ST01-005",
-              "cardData": {
-                "id": "ST01-005",
-                "name": "GM",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 2,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -201,10 +125,7 @@
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [],

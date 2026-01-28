@@ -77,54 +77,6 @@
             "unit": {
               "carduid": "GD01-047_unit_0001",
               "cardId": "GD01-047",
-              "cardData": {
-                "id": "GD01-047",
-                "name": "Shamblo",
-                "cardType": "unit",
-                "color": "Red",
-                "level": 8,
-                "cost": 7,
-                "zone": [
-                  "Earth"
-                ],
-                "traits": [
-                  "Zeon"
-                ],
-                "link": [
-                  "Newtype",
-                  "Cyber-Newtype"
-                ],
-                "ap": 6,
-                "hp": 5,
-                "effects": {
-                  "description": [],
-                  "rules": [
-                    {
-                      "effectId": "attack_effect",
-                      "type": "triggered",
-                      "trigger": "ATTACK_PHASE",
-                      "action": "damage",
-                      "conditions": [
-                        {
-                          "type": "unitsInPlayWithStatus",
-                          "scope": "self",
-                          "status": "rested",
-                          "excludeSource": true,
-                          "value": ">=2"
-                        }
-                      ],
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "count": 1
-                      },
-                      "parameters": {
-                        "value": 3
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -145,28 +97,6 @@
             "unit": {
               "carduid": "GD01-048_rest_0002",
               "cardId": "GD01-048",
-              "cardData": {
-                "id": "GD01-048",
-                "name": "Zaku I Sniper Type",
-                "cardType": "unit",
-                "color": "Red",
-                "level": 2,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Zeon"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": true,
@@ -187,28 +117,6 @@
             "unit": {
               "carduid": "GD01-052_rest_0003",
               "cardId": "GD01-052",
-              "cardData": {
-                "id": "GD01-052",
-                "name": "Geara Zulu (Guards Type)",
-                "cardType": "unit",
-                "color": "Red",
-                "level": 4,
-                "cost": 3,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Neo Zeon"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 3,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": true,
@@ -253,27 +161,6 @@
             "unit": {
               "carduid": "GD01-022_defender_0001",
               "cardId": "GD01-022",
-              "cardData": {
-                "id": "GD01-022",
-                "name": "Cancer",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 2,
-                "cost": 2,
-                "zone": [
-                  "Earth"
-                ],
-                "traits": [
-                  "OZ"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 3,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -294,28 +181,6 @@
             "unit": {
               "carduid": "GD01-052_defender_0002",
               "cardId": "GD01-052",
-              "cardData": {
-                "id": "GD01-052",
-                "name": "Geara Zulu (Guards Type)",
-                "cardType": "unit",
-                "color": "Red",
-                "level": 4,
-                "cost": 3,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Neo Zeon"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 3,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -347,4 +212,3 @@
     }
   }
 }
-

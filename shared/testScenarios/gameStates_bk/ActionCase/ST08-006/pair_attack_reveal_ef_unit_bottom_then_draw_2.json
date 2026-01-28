@@ -1,0 +1,286 @@
+{
+  "description": "st08-006_pair_attack_reveal_ef_unit_bottom_then_draw_2",
+  "gameId": "st08-006_pair_attack_reveal_ef_unit_bottom_then_draw_2",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "ST08-006",
+    "ATTACK_PHASE",
+    "moveFromHandToDeckBottom",
+    "draw",
+    "TARGET_CHOICE"
+  ],
+  "notes": [
+    "Setup: Player A MAIN_PHASE. ST08-006 is in slot1 and is paired with any pilot. Player A has 2 Earth Federation unit cards in hand so the reveal+bottom cost requires a TARGET_CHOICE. Player A deck has at least 2 cards to draw. Player B has at least 1 shield card.",
+    "Action (manual): Player A initiates attackShieldArea with attackerCarduid=ST08-006_unit_0001.",
+    "Expect: AttackPhaseEffectManager triggers ST08-006 because it is paired and attacking the player; TARGET_CHOICE is enqueued for the moveFromHandToDeckBottom cost and notificationQueue receives TARGET_CHOICE.",
+    "Action (manual): Player A resolves TARGET_CHOICE selecting ST08-007_hand_0001 to reveal+move to deck bottom.",
+    "Expect: HAND_CARDS_REVEALED and CARDS_MOVED_TO_DECK_BOTTOM are appended, then Player A draws 2 (two CARD_DRAWN notifications)."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_st08006_seed",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "ST08-000_draw_0006",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "ST08-007_hand_0001",
+              "cardId": "ST08-007",
+              "cardData": {
+                "id": "ST08-007",
+                "name": "Penelope",
+                "cardType": "unit",
+                "color": "Blue",
+                "level": 5,
+                "cost": 3,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Earth Federation"
+                ],
+                "link": [
+                  "Lane Aim"
+                ],
+                "ap": 5,
+                "hp": 4,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              }
+            },
+            {
+              "carduid": "ST08-008_hand_0002",
+              "cardId": "ST08-008",
+              "cardData": {
+                "id": "ST08-008",
+                "name": "Gustav Karl Type-00",
+                "cardType": "unit",
+                "color": "Blue",
+                "level": 3,
+                "cost": 3,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Earth Federation"
+                ],
+                "link": [],
+                "ap": 3,
+                "hp": 4,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              }
+            }
+          ],
+          "handUids": [
+            "ST08-007_hand_0001",
+            "ST08-008_hand_0002"
+          ],
+          "mainDeck": [
+            "ST03-006_draw_0001",
+            "ST03-007_draw_0002",
+            "ST03-008_draw_0003"
+          ]
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST08-006_unit_0001",
+              "cardId": "ST08-006",
+              "cardData": {
+                "id": "ST08-006",
+                "name": "Penelope",
+                "cardType": "unit",
+                "color": "Blue",
+                "level": 7,
+                "cost": 6,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Earth Federation"
+                ],
+                "link": [
+                  "Lane Aim"
+                ],
+                "ap": 5,
+                "hp": 5,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 5,
+              "originalHP": 5,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            },
+            "pilot": {
+              "carduid": "ST04-010_pilot_for_pair_0001",
+              "cardId": "ST04-010",
+              "cardData": {
+                "id": "ST04-010",
+                "name": "Kira Yamato",
+                "cardType": "pilot",
+                "color": "White",
+                "level": 4,
+                "cost": 1,
+                "zone": [],
+                "traits": [
+                  "Earth Alliance",
+                  "Coordinator"
+                ],
+                "link": [],
+                "ap": 1,
+                "hp": 1,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            {
+              "carduid": "ST03-001_shield_0001",
+              "cardId": "ST03-001",
+              "cardData": {
+                "id": "ST03-001",
+                "name": "Gundam Exia",
+                "cardType": "unit",
+                "color": "Red",
+                "level": 4,
+                "cost": 3,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Celestial Being"
+                ],
+                "link": [
+                  "Setsuna F. Seiei"
+                ],
+                "ap": 3,
+                "hp": 3,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isFirstPlay": false
+            }
+          ],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
+

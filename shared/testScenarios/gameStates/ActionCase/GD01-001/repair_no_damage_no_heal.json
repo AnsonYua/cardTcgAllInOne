@@ -75,18 +75,6 @@
             "unit": {
               "carduid": "GD01-001_unit_0001",
               "cardId": "GD01-001",
-              "cardData": {
-                "id": "GD01-001",
-                "cardType": "unit",
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team"
-                ],
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -138,4 +126,3 @@
     }
   }
 }
-

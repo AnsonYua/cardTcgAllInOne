@@ -63,84 +63,6 @@
             "unit": {
               "carduid": "GD03-049_unit_0001",
               "cardId": "GD03-049",
-              "cardData": {
-                "id": "GD03-049",
-                "name": "Gundam Exia (Trans-Am)",
-                "cardType": "unit",
-                "color": "Purple",
-                "level": 7,
-                "cost": 6,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "CB",
-                  "GN Drive"
-                ],
-                "link": [
-                  "Setsuna F. Seiei"
-                ],
-                "ap": 6,
-                "hp": 4,
-                "effects": {
-                  "description": [],
-                  "rules": [
-                    {
-                      "effectId": "suppression_2",
-                      "type": "continuous",
-                      "trigger": "continuous",
-                      "action": "grant_keyword",
-                      "timing": {
-                        "duration": "continuous"
-                      },
-                      "target": {
-                        "type": "unit",
-                        "scope": "self",
-                        "count": 1
-                      },
-                      "parameters": {
-                        "keyword": "Suppression",
-                        "value": 2
-                      }
-                    },
-                    {
-                      "effectId": "shield_destroyed_destroy_lowest_hp_if_cb_trash_ge_10",
-                      "type": "triggered",
-                      "trigger": "DEFENSE_AREA_BATTLE_DAMAGE",
-                      "action": "destroy",
-                      "timing": {
-                        "actionTurn": "YOUR_TURN"
-                      },
-                      "conditions": [
-                        {
-                          "type": "cardsInTrashWithTraitsAny",
-                          "scope": "self",
-                          "traits": [
-                            "CB"
-                          ],
-                          "value": ">=10"
-                        }
-                      ],
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "count": 1,
-                        "selection": {
-                          "type": "LOWEST_HP",
-                          "tieBreaker": "CONTROLLER_CHOICE"
-                        }
-                      },
-                      "parameters": {
-                        "source": "battle_damage",
-                        "defenseAreas": [
-                          "shield"
-                        ]
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -172,16 +94,46 @@
           "shieldArea": [],
           "energyArea": [],
           "trashArea": [
-            { "carduid": "cb_trash_0001", "cardId": "GD03-000", "cardData": { "traits": ["CB"] } },
-            { "carduid": "cb_trash_0002", "cardId": "GD03-000", "cardData": { "traits": ["CB"] } },
-            { "carduid": "cb_trash_0003", "cardId": "GD03-000", "cardData": { "traits": ["CB"] } },
-            { "carduid": "cb_trash_0004", "cardId": "GD03-000", "cardData": { "traits": ["CB"] } },
-            { "carduid": "cb_trash_0005", "cardId": "GD03-000", "cardData": { "traits": ["CB"] } },
-            { "carduid": "cb_trash_0006", "cardId": "GD03-000", "cardData": { "traits": ["CB"] } },
-            { "carduid": "cb_trash_0007", "cardId": "GD03-000", "cardData": { "traits": ["CB"] } },
-            { "carduid": "cb_trash_0008", "cardId": "GD03-000", "cardData": { "traits": ["CB"] } },
-            { "carduid": "cb_trash_0009", "cardId": "GD03-000", "cardData": { "traits": ["CB"] } },
-            { "carduid": "cb_trash_0010", "cardId": "GD03-000", "cardData": { "traits": ["CB"] } }
+            {
+              "carduid": "cb_trash_0001",
+              "cardId": "GD03-000"
+            },
+            {
+              "carduid": "cb_trash_0002",
+              "cardId": "GD03-000"
+            },
+            {
+              "carduid": "cb_trash_0003",
+              "cardId": "GD03-000"
+            },
+            {
+              "carduid": "cb_trash_0004",
+              "cardId": "GD03-000"
+            },
+            {
+              "carduid": "cb_trash_0005",
+              "cardId": "GD03-000"
+            },
+            {
+              "carduid": "cb_trash_0006",
+              "cardId": "GD03-000"
+            },
+            {
+              "carduid": "cb_trash_0007",
+              "cardId": "GD03-000"
+            },
+            {
+              "carduid": "cb_trash_0008",
+              "cardId": "GD03-000"
+            },
+            {
+              "carduid": "cb_trash_0009",
+              "cardId": "GD03-000"
+            },
+            {
+              "carduid": "cb_trash_0010",
+              "cardId": "GD03-000"
+            }
           ]
         }
       },
@@ -199,20 +151,6 @@
             "unit": {
               "carduid": "defender_low_hp_0001",
               "cardId": "GD03-000",
-              "cardData": {
-                "id": "GD03-000",
-                "name": "Enemy Unit (Low HP)",
-                "cardType": "unit",
-                "color": "Red",
-                "level": 2,
-                "cost": 1,
-                "zone": ["Space"],
-                "traits": [],
-                "link": [],
-                "ap": 2,
-                "hp": 3,
-                "effects": { "description": [], "rules": [] }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -228,20 +166,6 @@
             "unit": {
               "carduid": "defender_high_hp_0001",
               "cardId": "GD03-000",
-              "cardData": {
-                "id": "GD03-000",
-                "name": "Enemy Unit (High HP)",
-                "cardType": "unit",
-                "color": "Red",
-                "level": 2,
-                "cost": 1,
-                "zone": ["Space"],
-                "traits": [],
-                "link": [],
-                "ap": 2,
-                "hp": 3,
-                "effects": { "description": [], "rules": [] }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -261,13 +185,7 @@
           "shieldArea": [
             {
               "carduid": "shield_0001",
-              "cardId": "GD03-000",
-              "cardData": {
-                "id": "GD03-000",
-                "name": "Shield Card",
-                "cardType": "command",
-                "effects": { "description": [], "rules": [] }
-              }
+              "cardId": "GD03-000"
             }
           ],
           "energyArea": [],
@@ -277,4 +195,3 @@
     }
   }
 }
-

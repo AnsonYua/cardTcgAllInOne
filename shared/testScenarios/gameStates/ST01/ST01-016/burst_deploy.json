@@ -72,110 +72,11 @@
           "shieldArea": [
             {
               "carduid": "ST01-016_shield_0001",
-              "cardId": "ST01-016",
-              "cardData": {
-                "id": "ST01-016",
-                "name": "Asticassia School of Technology, Earth House",
-                "cardType": "base",
-                "color": "White",
-                "level": 2,
-                "cost": 1,
-                "zone": [
-                  "Space"
-                ],
-                "traits": [
-                  "Academy",
-                  "Stronghold"
-                ],
-                "link": [],
-                "ap": 0,
-                "hp": 5,
-                "effects": {
-                  "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
-                    "【Activate･Main】Rest this Base：All friendly Link Units get AP+1 during this turn."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_deploy",
-                      "type": "triggered",
-                      "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
-                      "action": "deploy"
-                    },
-                    {
-                      "effectId": "deploy_shield_to_hand",
-                      "type": "triggered",
-                      "trigger": "ENTERS_PLAY",
-                      "target": {
-                        "type": "card",
-                        "scope": "self_shield"
-                      },
-                      "action": "addToHand",
-                      "parameters": {
-                        "value": 1,
-                        "from": "shield"
-                      }
-                    },
-                    {
-                      "effectId": "activate_boost_link_units",
-                      "type": "activated",
-                      "timing": {
-                        "windows": [
-                          "MAIN_PHASE"
-                        ],
-                        "duration": "UNTIL_END_OF_TURN",
-                        "endOnSourceDestroyed": true
-                      },
-                      "cost": {
-                        "rest": "self"
-                      },
-                      "target": {
-                        "type": "unit",
-                        "scope": "self_all_unit",
-                        "filters": {
-                          "linkStatus": "linked"
-                        },
-                        "count": 6
-                      },
-                      "action": "modifyAP",
-                      "parameters": {
-                        "value": 1
-                      }
-                    }
-                  ]
-                }
-              }
+              "cardId": "ST01-016"
             },
             {
               "carduid": "ST01-005_shield_extra_0001",
-              "cardId": "ST01-005",
-              "cardData": {
-                "id": "ST01-005",
-                "name": "GM",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 2,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              }
+              "cardId": "ST01-005"
             }
           ],
           "energyArea": [],
@@ -204,28 +105,6 @@
             "unit": {
               "carduid": "ST01-005_attacker_0001",
               "cardId": "ST01-005",
-              "cardData": {
-                "id": "ST01-005",
-                "name": "GM",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 2,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,

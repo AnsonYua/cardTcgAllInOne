@@ -48,55 +48,7 @@
           "hand": [
             {
               "carduid": "ST01-002_ui_level_0001",
-              "cardId": "ST01-002",
-              "cardData": {
-                "id": "ST01-002",
-                "name": "Gundam(MA Form)",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 5,
-                "cost": 3,
-                "zone": [
-                  "Space"
-                ],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team"
-                ],
-                "link": [
-                  "Amuro Ray"
-                ],
-                "ap": 4,
-                "hp": 3,
-                "effects": {
-                  "description": [
-                    "【When Paired･(White Base Team) pilot】Draw 1."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "paired_white_base_draw",
-                      "trigger": "PAIRING_COMPLETE",
-                      "conditions": [
-                        {
-                          "type": "traitMatch",
-                          "target": "pilot",
-                          "traits": [
-                            "White Base Team"
-                          ]
-                        }
-                      ],
-                      "action": "draw",
-                      "parameters": {
-                        "value": 1
-                      },
-                      "target": {
-                        "scope": "self"
-                      },
-                      "type": "triggered"
-                    }
-                  ]
-                }
-              }
+              "cardId": "ST01-002"
             }
           ],
           "handUids": [
@@ -124,10 +76,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_ui_lvl_2",
@@ -135,10 +84,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_ui_lvl_3",
@@ -146,10 +92,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_ui_lvl_4",
@@ -157,10 +100,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [],

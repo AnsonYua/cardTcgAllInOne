@@ -58,74 +58,6 @@
             "unit": {
               "carduid": "ST01-001_00000000-0000-0000-0000-000000000001",
               "cardId": "ST01-001",
-              "cardData": {
-                "id": "ST01-001",
-                "name": "Gundam",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 4,
-                "cost": 3,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team"
-                ],
-                "link": [
-                  "Amuro Ray"
-                ],
-                "ap": 3,
-                "hp": 4,
-                "effects": {
-                  "description": [
-                    "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)",
-                    "【During Pair】During your turn, all your Units get AP+1."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "repair_2",
-                      "type": "keyword",
-                      "trigger": "END_OF_TURN",
-                      "action": "heal",
-                      "parameters": {
-                        "value": 2
-                      },
-                      "timing": {
-                        "duration": "instant"
-                      },
-                      "target": {
-                        "type": "unit",
-                        "scope": "self",
-                        "count": 1
-                      }
-                    },
-                    {
-                      "effectId": "pair_ap_boost_all",
-                      "trigger": "continuous",
-                      "sourceConditions": [
-                        {
-                          "type": "paired"
-                        }
-                      ],
-                      "action": "modifyAP",
-                      "parameters": {
-                        "value": 1
-                      },
-                      "timing": {
-                        "duration": "continuous",
-                        "actionTurn": "YOUR_TURN"
-                      },
-                      "target": {
-                        "type": "unit",
-                        "scope": "self_all_unit"
-                      },
-                      "type": "continuous"
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -139,28 +71,6 @@
             "unit": {
               "carduid": "ST01-005_00000000-0000-0000-0000-000000000003",
               "cardId": "ST01-005",
-              "cardData": {
-                "id": "ST01-005",
-                "name": "GM",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 2,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -183,10 +93,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_test_2",
@@ -194,10 +101,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_test_3",
@@ -205,10 +109,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [],

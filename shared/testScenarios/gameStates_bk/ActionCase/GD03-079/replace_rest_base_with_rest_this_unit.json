@@ -1,0 +1,301 @@
+{
+  "description": "gd03-079_replace_rest_base_with_rest_this_unit",
+  "gameId": "gd03-079_replace_rest_base_with_rest_this_unit",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD03-079",
+    "replace_cost",
+    "rest",
+    "base"
+  ],
+  "notes": [
+    "Action: Player A declares an attack; attacker has an ATTACK_PHASE effect that would rest a friendly Base (rest action targeting base scope self).",
+    "Expect: The target choice includes BOTH the friendly base AND GD03-079 (replacement option: rest this unit instead).",
+    "Action: Player A selects GD03-079 as the rest target.",
+    "Expect: GD03-079 becomes rested and a CARD_RESTED notification is emitted; the Base remains active (not rested)."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd03079",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "GD03-079_in_hand_draw_0001",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "CUSTOM-RESTBASE-001_attacker_0001",
+              "cardId": "CUSTOM-RESTBASE-001",
+              "cardData": {
+                "id": "CUSTOM-RESTBASE-001",
+                "name": "Custom Rest-Base Attacker",
+                "cardType": "unit",
+                "color": "White",
+                "level": 3,
+                "cost": 0,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "AEUG"
+                ],
+                "link": [],
+                "ap": 3,
+                "hp": 3,
+                "effects": {
+                  "description": [
+                    "【Attack】Rest 1 friendly Base."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "attack_rest_friendly_base",
+                      "type": "triggered",
+                      "trigger": "ATTACK_PHASE",
+                      "action": "rest",
+                      "target": {
+                        "type": "base",
+                        "scope": "self",
+                        "count": 1,
+                        "selection": {
+                          "type": "player_choice"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "originalAP": 3,
+              "originalHP": 3,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "GD03-079_unit_0001",
+              "cardId": "GD03-079",
+              "cardData": {
+                "id": "GD03-079",
+                "name": "G-Defenser",
+                "cardType": "unit",
+                "color": "White",
+                "level": 3,
+                "cost": 2,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "AEUG"
+                ],
+                "link": [
+                  "AEUG"
+                ],
+                "ap": 3,
+                "hp": 2,
+                "effects": {
+                  "description": [
+                    "When you rest your Base with one of your Units' effects, you may rest this Unit instead."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "replace_rest_base_with_rest_this_unit",
+                      "type": "continuous",
+                      "trigger": "continuous",
+                      "optional": true,
+                      "action": "replace_cost",
+                      "parameters": {
+                        "replace": {
+                          "from": {
+                            "type": "rest",
+                            "target": "friendly_base",
+                            "source": "friendly_unit_effect"
+                          },
+                          "to": {
+                            "type": "rest",
+                            "target": "self"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "originalAP": 3,
+              "originalHP": 2,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [
+            {
+              "carduid": "GD03-132_base_0001",
+              "cardId": "GD03-132",
+              "cardData": {
+                "id": "GD03-132",
+                "name": "Radish",
+                "cardType": "base",
+                "color": "White",
+                "level": 2,
+                "cost": 1,
+                "zone": [],
+                "traits": [
+                  "White Base"
+                ],
+                "link": [],
+                "ap": 0,
+                "hp": 5,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "originalHP": 5,
+              "damageReceived": 0
+            }
+          ],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST03-007_unit_0001",
+              "cardId": "ST03-007",
+              "cardData": {
+                "id": "ST03-007",
+                "name": "Zaku I",
+                "cardType": "unit",
+                "color": "Green",
+                "level": 1,
+                "cost": 1,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Zeon"
+                ],
+                "link": [],
+                "ap": 1,
+                "hp": 2,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalAP": 1,
+              "originalHP": 2,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
+

@@ -80,31 +80,6 @@
             "unit": {
               "carduid": "GD03-008_unit_0001",
               "cardId": "GD03-008",
-              "cardData": {
-                "id": "GD03-008",
-                "name": "Bolinoak Sammahn",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 4,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Titans",
-                  "Jupitris"
-                ],
-                "link": [
-                  "Jupitris"
-                ],
-                "ap": 3,
-                "hp": 3,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -123,13 +98,6 @@
             "pilot": {
               "carduid": "GD03-000_pilot_0001",
               "cardId": "GD03-000",
-              "cardData": {
-                "id": "GD03-000",
-                "cardType": "pilot",
-                "traits": [
-                  "Jupitris"
-                ]
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -189,4 +157,3 @@
     }
   }
 }
-

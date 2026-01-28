@@ -90,28 +90,6 @@
             "unit": {
               "carduid": "GD01-002_attacker_0001",
               "cardId": "GD01-002",
-              "cardData": {
-                "id": "GD01-002",
-                "name": "Unicorn Gundam (Destroy Mode)",
-                "cardType": "unit",
-                "color": "Green",
-                "level": 6,
-                "cost": 4,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation"
-                ],
-                "link": [],
-                "ap": 4,
-                "hp": 3,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -132,69 +110,6 @@
             "unit": {
               "carduid": "GD02-002_epyon_0001",
               "cardId": "GD02-002",
-              "cardData": {
-                "id": "GD02-002",
-                "name": "Gundam Epyon",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 8,
-                "cost": 7,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "White Fang"
-                ],
-                "link": [
-                  "Zechs Merquise"
-                ],
-                "ap": 6,
-                "hp": 6,
-                "effects": {
-                  "description": [
-                    "【During Link】【Once per Turn】During your turn, when one of your Units destroys an enemy Unit with battle damage, set this Unit as active."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "link_effect",
-                      "type": "triggered",
-                      "trigger": "BATTLE_DESTROY",
-                      "sourceConditions": [
-                        {
-                          "type": "linked"
-                        }
-                      ],
-                      "timing": {
-                        "actionTurn": "YOUR_TURN"
-                      },
-                      "restrictions": [
-                        "once_per_turn"
-                      ],
-                      "conditions": [
-                        {
-                          "type": "battleDestroyEvent",
-                          "scope": "event",
-                          "sourceController": "self",
-                          "sourceCardType": "unit",
-                          "destroyedController": "opponent",
-                          "destroyedCardType": "unit",
-                          "damageType": "battle"
-                        }
-                      ],
-                      "target": {
-                        "type": "unit",
-                        "scope": "self",
-                        "count": 1
-                      },
-                      "action": "setActive",
-                      "parameters": {
-                        "text": "During your turn, when one of your Units destroys an enemy Unit with battle damage, set this Unit as active."
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": true,
@@ -213,25 +128,6 @@
             "pilot": {
               "carduid": "ST02-011_pilot_0001",
               "cardId": "ST02-011",
-              "cardData": {
-                "id": "ST02-011",
-                "name": "Zechs Merquise",
-                "cardType": "pilot",
-                "color": "Blue",
-                "level": 5,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "OZ"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 1,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -266,27 +162,6 @@
             "unit": {
               "carduid": "GD01-022_defender_0001",
               "cardId": "GD01-022",
-              "cardData": {
-                "id": "GD01-022",
-                "name": "Cancer",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 2,
-                "cost": 2,
-                "zone": [
-                  "Earth"
-                ],
-                "traits": [
-                  "OZ"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 1,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -318,4 +193,3 @@
     }
   }
 }
-

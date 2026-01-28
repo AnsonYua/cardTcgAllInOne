@@ -78,55 +78,6 @@
             "unit": {
               "carduid": "GD03-061_unit_0001",
               "cardId": "GD03-061",
-              "cardData": {
-                "id": "GD03-061",
-                "name": "Gundam Barbatos 6th Form",
-                "cardType": "unit",
-                "color": "Purple",
-                "level": 6,
-                "cost": 5,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Tekkadan",
-                  "Gundam Frame"
-                ],
-                "link": [
-                  "Mikazuki Augus"
-                ],
-                "ap": 5,
-                "hp": 4,
-                "effects": {
-                  "description": [
-                    "While this Unit has 1 HP, it gains <Repair 3>. (At the end of your turn, this Unit recovers the specified number of HP.)"
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "repair_3_if_hp_eq_1",
-                      "type": "keyword",
-                      "trigger": "END_OF_TURN",
-                      "action": "heal",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self",
-                        "count": 1
-                      },
-                      "conditions": [
-                        {
-                          "type": "sourceHP",
-                          "scope": "source",
-                          "value": "==1"
-                        }
-                      ],
-                      "parameters": {
-                        "value": 3
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,

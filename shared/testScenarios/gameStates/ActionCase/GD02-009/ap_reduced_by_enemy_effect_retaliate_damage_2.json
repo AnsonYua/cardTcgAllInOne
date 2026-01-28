@@ -77,30 +77,6 @@
             "unit": {
               "carduid": "ST04-001_attacker_0001",
               "cardId": "ST04-001",
-              "cardData": {
-                "id": "ST04-001",
-                "name": "Strike Gundam",
-                "cardType": "unit",
-                "color": "White",
-                "level": 4,
-                "cost": 3,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Alliance"
-                ],
-                "link": [
-                  "Kira Yamato"
-                ],
-                "ap": 3,
-                "hp": 3,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -120,44 +96,6 @@
             "pilot": {
               "carduid": "ST04-010_pilot_0001",
               "cardId": "ST04-010",
-              "cardData": {
-                "id": "ST04-010",
-                "name": "Kira Yamato",
-                "cardType": "pilot",
-                "color": "White",
-                "level": 4,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Alliance",
-                  "Coordinator"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 1,
-                "effects": {
-                  "description": [],
-                  "rules": [
-                    {
-                      "effectId": "attack_reduce_enemy_ap",
-                      "type": "triggered",
-                      "trigger": "ATTACK_PHASE",
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "count": 1
-                      },
-                      "action": "modifyAP",
-                      "parameters": {
-                        "value": -2
-                      },
-                      "timing": {
-                        "duration": "UNTIL_END_OF_BATTLE"
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -179,22 +117,6 @@
             "unit": {
               "carduid": "ST04-002_rested_0002",
               "cardId": "ST04-002",
-              "cardData": {
-                "id": "ST04-002",
-                "name": "M1 Astray",
-                "cardType": "unit",
-                "level": 2,
-                "cost": 1,
-                "traits": [
-                  "Earth Alliance"
-                ],
-                "ap": 2,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": true,
@@ -216,22 +138,6 @@
             "unit": {
               "carduid": "ST04-003_rested_0003",
               "cardId": "ST04-003",
-              "cardData": {
-                "id": "ST04-003",
-                "name": "Mebius",
-                "cardType": "unit",
-                "level": 2,
-                "cost": 1,
-                "traits": [
-                  "Earth Alliance"
-                ],
-                "ap": 1,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": true,
@@ -277,51 +183,6 @@
             "unit": {
               "carduid": "GD02-009_unit_0001",
               "cardId": "GD02-009",
-              "cardData": {
-                "id": "GD02-009",
-                "name": "Calamity Gundam",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 5,
-                "cost": 3,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Alliance"
-                ],
-                "link": [
-                  "Biological CPU"
-                ],
-                "ap": 3,
-                "hp": 5,
-                "effects": {
-                  "description": [],
-                  "rules": [
-                    {
-                      "effectId": "retaliate_when_ap_reduced",
-                      "type": "triggered",
-                      "trigger": "AP_REDUCED_BY_ENEMY_EFFECT",
-                      "restrictions": [
-                        "once_per_turn"
-                      ],
-                      "action": "damage",
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "filters": {
-                          "status": "rested"
-                        },
-                        "count": 1
-                      },
-                      "parameters": {
-                        "value": 2
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -355,4 +216,3 @@
     }
   }
 }
-

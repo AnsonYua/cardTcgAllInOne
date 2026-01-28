@@ -81,30 +81,6 @@
             "unit": {
               "carduid": "GD03-015_unit_0001",
               "cardId": "GD03-015",
-              "cardData": {
-                "id": "GD03-015",
-                "name": "Baund Doc",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 6,
-                "cost": 5,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Titans"
-                ],
-                "link": [
-                  "Jerid Messa"
-                ],
-                "ap": 4,
-                "hp": 5,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -130,20 +106,13 @@
           "shieldArea": [
             {
               "carduid": "GD03-000_shield_0001",
-              "cardId": "GD03-000",
-              "cardData": {
-                "id": "GD03-000",
-                "cardType": "unit"
-              }
+              "cardId": "GD03-000"
             }
           ],
           "energyArea": [
             {
               "carduid": "energy_basic_gd03015_a_0001",
               "cardId": "energy_basic",
-              "cardData": {
-                "cardType": "energy"
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -153,36 +122,15 @@
           "trashArea": [
             {
               "carduid": "GD03-014_trash_0001",
-              "cardId": "GD03-014",
-              "cardData": {
-                "id": "GD03-014",
-                "cardType": "unit",
-                "traits": [
-                  "Titans"
-                ]
-              }
+              "cardId": "GD03-014"
             },
             {
               "carduid": "GD03-014_trash_0002",
-              "cardId": "GD03-014",
-              "cardData": {
-                "id": "GD03-014",
-                "cardType": "unit",
-                "traits": [
-                  "Titans"
-                ]
-              }
+              "cardId": "GD03-014"
             },
             {
               "carduid": "GD03-014_trash_0003",
-              "cardId": "GD03-014",
-              "cardData": {
-                "id": "GD03-014",
-                "cardType": "unit",
-                "traits": [
-                  "Titans"
-                ]
-              }
+              "cardId": "GD03-014"
             }
           ],
           "repairAbilitiesCheckedThisCycle": false,

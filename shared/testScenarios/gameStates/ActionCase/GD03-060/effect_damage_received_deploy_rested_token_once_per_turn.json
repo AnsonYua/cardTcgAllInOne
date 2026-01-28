@@ -63,51 +63,6 @@
             "unit": {
               "carduid": "GD03-060_unit_0001",
               "cardId": "GD03-060",
-              "cardData": {
-                "id": "GD03-060",
-                "name": "CGS Mobile Worker (Commander Type)",
-                "cardType": "unit",
-                "color": "Purple",
-                "level": 2,
-                "cost": 2,
-                "zone": [
-                  "Earth"
-                ],
-                "traits": [
-                  "Tekkadan"
-                ],
-                "link": [],
-                "ap": 0,
-                "hp": 2,
-                "effects": {
-                  "description": [
-                    "【Once per Turn】During your turn, when this Unit receives effect damage, deploy 1 rested [CGS Mobile Worker]((Tekkadan)･AP1･HP1) Unit token."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "effect",
-                      "type": "triggered",
-                      "trigger": "EFFECT_DAMAGE_RECEIVED",
-                      "restrictions": [
-                        "once_per_turn"
-                      ],
-                      "action": "conditionalTokenDeploy",
-                      "timing": {
-                        "actionTurn": "YOUR_TURN"
-                      },
-                      "parameters": {
-                        "condition1": {
-                          "token": {
-                            "cardId": "T-015"
-                          },
-                          "count": 1,
-                          "rested": true
-                        }
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -155,4 +110,3 @@
     }
   }
 }
-

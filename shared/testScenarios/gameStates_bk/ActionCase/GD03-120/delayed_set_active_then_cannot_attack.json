@@ -1,0 +1,382 @@
+{
+  "description": "gd03-120_delayed_set_active_then_cannot_attack",
+  "gameId": "gd03-120_delayed_set_active_then_cannot_attack",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD03-120",
+    "DelayedTrigger",
+    "BATTLE_DESTROY",
+    "setActive_then_restrict_attack"
+  ],
+  "notes": [
+    "Action: Player A plays GD03-120 from hand during MAIN_PHASE (as a command).",
+    "Expect: A delayed trigger is registered for UNTIL_END_OF_TURN (notification DELAYED_TRIGGER_REGISTERED).",
+    "Action: Player A attacks with GD03-082 (slot1) into Player B ST03-007 (slot1) and destroys it via battle damage.",
+    "Expect: Delayed trigger fires (notification DELAYED_TRIGGER_FIRED) and a TARGET_CHOICE is created for 1 rested friendly (Superpower Bloc)/(UN) unit.",
+    "Action: Player A selects GD03-083 (slot2) for the choice.",
+    "Expect: GD03-083 is set active and gains an attack restriction (cannot_attack) until end of turn; notifications CARD_SET_ACTIVE + ATTACK_RESTRICTION_APPLIED are emitted."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd03120",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "GD03-999_draw_0001",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "GD03-120_action_0001",
+              "cardId": "GD03-120",
+              "cardData": {
+                "id": "GD03-120",
+                "name": "Immortal Colasour",
+                "cardType": "command",
+                "color": "White",
+                "level": 2,
+                "cost": 1,
+                "zone": [],
+                "traits": [
+                  "Superpower Bloc",
+                  "UN"
+                ],
+                "link": [],
+                "ap": 1,
+                "hp": 0,
+                "effects": {
+                  "description": [
+                    "【Main】During this turn, if a friendly (Superpower Bloc)/(UN) Unit destroys an enemy Unit with battle damage, choose 1 rested friendly (Superpower Bloc)/(UN) Unit. Set it as active. It can't attack during this turn.",
+                    "【Pilot】[Patrick Colasour]"
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "play_effect",
+                      "type": "play",
+                      "timing": {
+                        "windows": [
+                          "MAIN_PHASE"
+                        ]
+                      },
+                      "action": "sequence",
+                      "parameters": {
+                        "version": 1,
+                        "steps": [
+                          {
+                            "action": "registerDelayedTrigger",
+                            "parameters": {
+                              "duration": "UNTIL_END_OF_TURN",
+                              "trigger": {
+                                "type": "BATTLE_DESTROY",
+                                "attackerController": "self",
+                                "attackerTraitsAny": [
+                                  "Superpower Bloc",
+                                  "UN"
+                                ]
+                              },
+                              "then": [
+                                {
+                                  "action": "setActive",
+                                  "target": {
+                                    "type": "unit",
+                                    "scope": "self_all_unit",
+                                    "count": 1,
+                                    "selection": {
+                                      "type": "player_choice"
+                                    },
+                                    "filters": {
+                                      "traitsAny": [
+                                        "Superpower Bloc",
+                                        "UN"
+                                      ],
+                                      "status": "rested"
+                                    }
+                                  }
+                                },
+                                {
+                                  "action": "applyStatusEffect",
+                                  "timing": {
+                                    "duration": "UNTIL_END_OF_TURN"
+                                  },
+                                  "target": {
+                                    "type": "unit",
+                                    "scope": "self",
+                                    "count": 1
+                                  },
+                                  "parameters": {
+                                    "restriction": "cannot_attack"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "handUids": [
+            "GD03-120_action_0001"
+          ],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD03-082_unit_0001",
+              "cardId": "GD03-082",
+              "cardData": {
+                "id": "GD03-082",
+                "name": "Union Flag",
+                "cardType": "unit",
+                "color": "White",
+                "level": 3,
+                "cost": 2,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Superpower Bloc"
+                ],
+                "link": [],
+                "ap": 4,
+                "hp": 1,
+                "effects": {
+                  "description": [
+                    "While you have 2 or more (Superpower Bloc)/(UN) Units in play, this card in your hand gets cost -1."
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "hand_cost_reduction_1_if_sb_or_un_ge_2",
+                      "type": "continuous",
+                      "trigger": "continuous",
+                      "action": "modifyCost",
+                      "conditions": [
+                        {
+                          "type": "unitsInPlayWithTrait",
+                          "scope": "self",
+                          "traits": [
+                            "Superpower Bloc",
+                            "UN"
+                          ],
+                          "value": ">=2"
+                        }
+                      ],
+                      "target": {
+                        "type": "card",
+                        "scope": "self_hand",
+                        "count": 1
+                      },
+                      "parameters": {
+                        "value": -1
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "originalAP": 4,
+              "originalHP": 1,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "GD03-083_unit_0001",
+              "cardId": "GD03-083",
+              "cardData": {
+                "id": "GD03-083",
+                "name": "AEU Hellion",
+                "cardType": "unit",
+                "color": "White",
+                "level": 1,
+                "cost": 1,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Superpower Bloc"
+                ],
+                "link": [],
+                "ap": 1,
+                "hp": 1,
+                "effects": {
+                  "description": [
+                    "<Blocker> (Rest this Unit to change the attack target to it.)"
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "blocker",
+                      "type": "triggered",
+                      "trigger": "ATTACK_REDIRECT",
+                      "target": {
+                        "type": "unit",
+                        "scope": "self"
+                      },
+                      "action": "redirect_attack",
+                      "parameters": {
+                        "cost": "rest_self"
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "originalAP": 1,
+              "originalHP": 1,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_gd03_120_a_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST03-007_unit_0001",
+              "cardId": "ST03-007",
+              "cardData": {
+                "id": "ST03-007",
+                "name": "Zaku I",
+                "cardType": "unit",
+                "color": "Green",
+                "level": 1,
+                "cost": 1,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Zeon"
+                ],
+                "link": [],
+                "ap": 1,
+                "hp": 2,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalAP": 1,
+              "originalHP": 2,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true,
+              "canAttackOnPlayTurn": false,
+              "playedThisTurn": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
+

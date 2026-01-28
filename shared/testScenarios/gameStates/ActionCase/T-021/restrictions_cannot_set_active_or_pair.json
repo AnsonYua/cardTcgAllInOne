@@ -64,27 +64,7 @@
           "hand": [
             {
               "carduid": "ST03-010_pilot_in_hand_0001",
-              "cardId": "ST03-010",
-              "cardData": {
-                "id": "ST03-010",
-                "name": "Full Frontal",
-                "cardType": "pilot",
-                "color": "Red",
-                "level": 6,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Neo Zeon",
-                  "Cyber-Newtype"
-                ],
-                "link": [],
-                "ap": 0,
-                "hp": 0,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              }
+              "cardId": "ST03-010"
             }
           ],
           "handUids": [
@@ -101,58 +81,6 @@
             "unit": {
               "carduid": "T-021_unit_0001",
               "cardId": "T-021",
-              "cardData": {
-                "id": "T-021",
-                "name": "Ad Balloon",
-                "cardType": "unit",
-                "color": "Token",
-                "level": 0,
-                "cost": 0,
-                "zone": [
-                  "Earth"
-                ],
-                "traits": [
-                  "Civilian"
-                ],
-                "link": [],
-                "ap": 0,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "This Unit can't be set as active or paired with a Pilot."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "cannot_be_set_active",
-                      "type": "continuous",
-                      "trigger": "continuous",
-                      "action": "restrict_set_active",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self",
-                        "count": 1
-                      },
-                      "parameters": {
-                        "disallow": true
-                      }
-                    },
-                    {
-                      "effectId": "cannot_be_paired_with_pilot",
-                      "type": "continuous",
-                      "trigger": "continuous",
-                      "action": "restrict_pairing",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self",
-                        "count": 1
-                      },
-                      "parameters": {
-                        "disallow": true
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": true,
@@ -173,10 +101,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [],
@@ -212,4 +137,3 @@
     }
   }
 }
-

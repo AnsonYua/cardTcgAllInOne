@@ -74,55 +74,6 @@
             "unit": {
               "carduid": "GD02-031_unit_0001",
               "cardId": "GD02-031",
-              "cardData": {
-                "id": "GD02-031",
-                "name": "Gundam AGE-1 Titus",
-                "cardType": "unit",
-                "color": "Green",
-                "level": 4,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation",
-                  "AGE System"
-                ],
-                "link": [
-                  "Flit Asuno"
-                ],
-                "ap": 2,
-                "hp": 4,
-                "effects": {
-                  "description": [
-                    "While you are Lv.7 or higher, this Unit gets AP+2."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "ap_boost_if_level_ge_7",
-                      "type": "continuous",
-                      "trigger": "continuous",
-                      "action": "modifyAP",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self",
-                        "count": 1
-                      },
-                      "conditions": [
-                        {
-                          "type": "playerLevel",
-                          "scope": "self",
-                          "value": ">=7"
-                        }
-                      ],
-                      "parameters": {
-                        "value": 2
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -176,4 +127,3 @@
     }
   }
 }
-

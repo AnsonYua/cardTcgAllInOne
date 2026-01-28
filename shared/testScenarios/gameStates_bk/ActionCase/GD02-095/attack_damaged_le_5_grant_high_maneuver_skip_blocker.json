@@ -1,0 +1,294 @@
+{
+  "description": "gd02-095_attack_damaged_le_5_grant_high_maneuver_skip_blocker",
+  "gameId": "gd02-095_attack_damaged_le_5_grant_high_maneuver_skip_blocker",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD02-095",
+    "ATTACK_PHASE",
+    "sourceDamaged",
+    "sourceLevel",
+    "grant_keyword",
+    "High-Maneuver",
+    "BLOCKER_CHOICE"
+  ],
+  "notes": [
+    "Setup: Player A slot1 has a Lv.3 Unit with damageReceived>0 and a paired pilot GD02-095. Player B has a Blocker unit (GD02-006) in play.",
+    "Action (manual): Player A initiates attackUnit with attackerCarduid=A_slot1_unit, targeting Player B slot1 unit.",
+    "Expect: AttackPhaseEffectManager processes GD02-095 ATTACK_PHASE rule; conditions pass (sourceDamaged=true, sourceLevel<=5) and KEYWORD_GRANTED(keyword=High-Maneuver,duration=UNTIL_END_OF_BATTLE) is appended to notificationQueue.",
+    "Expect: BlockerChoiceManager detects High-Maneuver on attacker and does NOT enqueue BLOCKER_CHOICE into processingQueue (defender cannot block)."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd02095_seed",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "GD02-000_draw_0095",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD02-054_unit_0001",
+              "cardId": "GD02-054",
+              "cardData": {
+                "id": "GD02-054",
+                "name": "Gundam Barbatos 1st Form",
+                "cardType": "unit",
+                "color": "Purple",
+                "level": 3,
+                "cost": 2,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Tekkadan",
+                  "Gundam Frame"
+                ],
+                "link": [
+                  "Mikazuki Augus"
+                ],
+                "ap": 3,
+                "hp": 2,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 1,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 2,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            },
+            "pilot": {
+              "carduid": "GD02-095_pilot_0001",
+              "cardId": "GD02-095",
+              "cardData": {
+                "id": "GD02-095",
+                "name": "Lafter Frankland",
+                "cardType": "pilot",
+                "color": "Purple",
+                "level": 4,
+                "cost": 1,
+                "zone": [],
+                "traits": [
+                  "Teiwaz"
+                ],
+                "link": [],
+                "ap": 2,
+                "hp": 1,
+                "effects": {
+                  "description": [],
+                  "rules": [
+                    {
+                      "effectId": "attack_effect",
+                      "type": "triggered",
+                      "trigger": "ATTACK_PHASE",
+                      "action": "grant_keyword",
+                      "sourceConditions": [
+                        {
+                          "type": "paired"
+                        }
+                      ],
+                      "conditions": [
+                        {
+                          "type": "sourceDamaged",
+                          "scope": "source",
+                          "value": true
+                        },
+                        {
+                          "type": "sourceLevel",
+                          "scope": "source",
+                          "value": "<=5"
+                        }
+                      ],
+                      "timing": {
+                        "duration": "UNTIL_END_OF_BATTLE"
+                      },
+                      "target": {
+                        "type": "unit",
+                        "scope": "self",
+                        "count": 1
+                      },
+                      "parameters": {
+                        "keyword": "High-Maneuver"
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 1,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD02-006_unit_0001",
+              "cardId": "GD02-006",
+              "cardData": {
+                "id": "GD02-006",
+                "name": "Forbidden Gundam",
+                "cardType": "unit",
+                "color": "Blue",
+                "level": 5,
+                "cost": 3,
+                "zone": [
+                  "Space",
+                  "Earth"
+                ],
+                "traits": [
+                  "Earth Alliance"
+                ],
+                "link": [
+                  "Biological CPU"
+                ],
+                "ap": 4,
+                "hp": 4,
+                "effects": {
+                  "description": [],
+                  "rules": [
+                    {
+                      "effectId": "blocker",
+                      "type": "triggered",
+                      "trigger": "ATTACK_REDIRECT",
+                      "target": {
+                        "type": "unit",
+                        "scope": "self"
+                      },
+                      "action": "redirect_attack",
+                      "parameters": {
+                        "cost": "rest_self"
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 4,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
+

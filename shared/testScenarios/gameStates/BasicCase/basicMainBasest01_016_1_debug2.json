@@ -28,364 +28,27 @@
           "hand": [
             {
               "carduid": "ST01-012_b3f38213-3805-408b-b6f8-9a38c774ae87",
-              "cardId": "ST01-012",
-              "cardData": {
-                "id": "ST01-012",
-                "name": "Thoroughly Damaged",
-                "cardType": "command",
-                "color": "Blue",
-                "level": 2,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team"
-                ],
-                "link": [],
-                "ap": 0,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "\u3010Main\u3011Choose 1 rested enemy Unit. Deal 1 damage to it.",
-                    "\u3010Pilot\u3011[Hayato Kobayashi]"
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "main_damage_rested",
-                      "type": "play",
-                      "timing": {
-                        "windows": [
-                          "MAIN_PHASE"
-                        ]
-                      },
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "filters": {
-                          "status": "rested"
-                        },
-                        "count": 1
-                      },
-                      "action": "damage",
-                      "parameters": {
-                        "value": 1
-                      }
-                    },
-                    {
-                      "effectId": "pilot_designation",
-                      "type": "special",
-                      "trigger": "continuous",
-                      "target": {
-                        "type": "pilot",
-                        "scope": "any"
-                      },
-                      "action": "designate_pilot",
-                      "parameters": {
-                        "pilotName": "Hayato Kobayashi",
-                        "AP": 0,
-                        "HP": 1
-                      }
-                    }
-                  ]
-                }
-              }
+              "cardId": "ST01-012"
             },
             {
               "carduid": "ST01-010_f6cfd431-105e-40b6-8d1a-173dd4cb1219",
-              "cardId": "ST01-010",
-              "cardData": {
-                "id": "ST01-010",
-                "name": "Amuro Ray",
-                "cardType": "pilot",
-                "color": "Blue",
-                "level": 4,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team",
-                  "Newtype"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "\u3010Burst\u3011Add this card to your hand.",
-                    "\u3010When Paired\u3011Choose 1 enemy Unit with 5 or less HP. Rest it."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_add_to_hand",
-                      "type": "triggered",
-                      "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
-                      "action": "addToHand"
-                    },
-                    {
-                      "effectId": "paired_rest_medium_hp",
-                      "type": "triggered",
-                      "trigger": "PAIRING_COMPLETE",
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "filters": {
-                          "hp": "<=5"
-                        },
-                        "count": 1
-                      },
-                      "action": "rest"
-                    }
-                  ]
-                }
-              }
+              "cardId": "ST01-010"
             },
             {
               "carduid": "ST01-002_53bc24a8-377a-49a1-8292-0bd0808cfe80",
-              "cardId": "ST01-002",
-              "cardData": {
-                "id": "ST01-002",
-                "name": "Gundam(MA Form)",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 5,
-                "cost": 3,
-                "zone": [
-                  "Space"
-                ],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team"
-                ],
-                "link": [
-                  "Amuro Ray"
-                ],
-                "ap": 4,
-                "hp": 3,
-                "effects": {
-                  "description": [
-                    "\u3010When Paired\uff65(White Base Team) pilot\u3011Draw 1."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "paired_white_base_draw",
-                      "type": "triggered",
-                      "trigger": "PAIRING_COMPLETE",
-                      "conditions": [
-                        {
-                          "type": "traitMatch",
-                          "target": "pilot",
-                          "traits": [
-                            "White Base Team"
-                          ]
-                        }
-                      ],
-                      "action": "draw",
-                      "parameters": {
-                        "value": 1
-                      },
-                      "timing": {
-                        "duration": "instant",
-                        "actionTurn": "ANY"
-                      },
-                      "target": {
-                        "type": "player",
-                        "scope": "self",
-                        "count": 1
-                      }
-                    }
-                  ]
-                }
-              }
+              "cardId": "ST01-002"
             },
             {
               "carduid": "ST01-010_4fd05b72-b7b2-4463-9572-4a4c7f4b483b",
-              "cardId": "ST01-010",
-              "cardData": {
-                "id": "ST01-010",
-                "name": "Amuro Ray",
-                "cardType": "pilot",
-                "color": "Blue",
-                "level": 4,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team",
-                  "Newtype"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "\u3010Burst\u3011Add this card to your hand.",
-                    "\u3010When Paired\u3011Choose 1 enemy Unit with 5 or less HP. Rest it."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_add_to_hand",
-                      "type": "triggered",
-                      "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
-                      "action": "addToHand"
-                    },
-                    {
-                      "effectId": "paired_rest_medium_hp",
-                      "type": "triggered",
-                      "trigger": "PAIRING_COMPLETE",
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "filters": {
-                          "hp": "<=5"
-                        },
-                        "count": 1
-                      },
-                      "action": "rest"
-                    }
-                  ]
-                }
-              }
+              "cardId": "ST01-010"
             },
             {
               "carduid": "ST01-013_79b95d47-69e5-4199-bb13-9f1d8a702f4a",
-              "cardId": "ST01-013",
-              "cardData": {
-                "id": "ST01-013",
-                "name": "Kai's Resolve",
-                "cardType": "command",
-                "color": "Blue",
-                "level": 3,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 0,
-                "effects": {
-                  "description": [
-                    "\u3010Main\u3011Choose 1 friendly Unit. It recovers 3 HP.",
-                    "\u3010Pilot\u3011[Kai Shiden]"
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "main_heal_friendly",
-                      "type": "play",
-                      "trigger": "ENTERS_PLAY",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self",
-                        "count": 1
-                      },
-                      "action": "heal",
-                      "parameters": {
-                        "value": 3
-                      }
-                    },
-                    {
-                      "effectId": "pilot_designation",
-                      "type": "special",
-                      "trigger": "continuous",
-                      "target": {
-                        "type": "pilot",
-                        "scope": "any"
-                      },
-                      "action": "designate_pilot",
-                      "parameters": {
-                        "pilotName": "Kai Shiden",
-                        "AP": 1,
-                        "HP": 0
-                      }
-                    }
-                  ]
-                }
-              }
+              "cardId": "ST01-013"
             },
             {
               "carduid": "ST01-001_5f389d92-9349-4a87-a28e-7ba7672db432",
-              "cardId": "ST01-001",
-              "cardData": {
-                "id": "ST01-001",
-                "name": "Gundam",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 4,
-                "cost": 3,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team"
-                ],
-                "link": [
-                  "Amuro Ray"
-                ],
-                "ap": 3,
-                "hp": 4,
-                "effects": {
-                  "description": [
-                    "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)",
-                    "\u3010During Pair\u3011During your turn, all your Units get AP+1."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "repair_2",
-                      "type": "keyword",
-                      "trigger": "END_OF_TURN",
-                      "action": "heal",
-                      "parameters": {
-                        "value": 2
-                      },
-                      "timing": {
-                        "duration": "instant"
-                      },
-                      "target": {
-                        "type": "unit",
-                        "scope": "self",
-                        "count": 1
-                      }
-                    },
-                    {
-                      "effectId": "pair_ap_boost_all",
-                      "type": "static",
-                      "trigger": "continuous",
-                      "sourceConditions": [
-                        {
-                          "type": "paired"
-                        }
-                      ],
-                      "action": "modifyAP",
-                      "parameters": {
-                        "value": 1
-                      },
-                      "timing": {
-                        "duration": "continuous",
-                        "actionTurn": "YOUR_TURN"
-                      },
-                      "target": {
-                        "type": "unit",
-                        "scope": "self_all_unit",
-                        "count": 1,
-                        "filters": {
-                          "controller": "self"
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
+              "cardId": "ST01-001"
             }
           ],
           "handUids": [
@@ -444,44 +107,6 @@
             "unit": {
               "carduid": "ST01-008_1617f0b4-cd5a-46f4-9de5-9ad9ed13c10f",
               "cardId": "ST01-008",
-              "cardData": {
-                "id": "ST01-008",
-                "name": "Demi Trainer",
-                "cardType": "unit",
-                "color": "White",
-                "level": 1,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Academy"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "<Blocker> (Rest this Unit to change the attack target to it.)"
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "blocker",
-                      "type": "keyword",
-                      "trigger": "ATTACK_REDIRECT",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self"
-                      },
-                      "action": "redirect_attack",
-                      "parameters": {
-                        "cost": "rest_self"
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 1768051004395,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -509,28 +134,6 @@
             "unit": {
               "carduid": "ST01-005_04c25dfb-3134-4041-ab14-ac59f4fd3acb",
               "cardId": "ST01-005",
-              "cardData": {
-                "id": "ST01-005",
-                "name": "GM",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 2,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 1768051022558,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -610,9 +213,6 @@
             {
               "carduid": "base_default",
               "cardId": "base_default",
-              "cardData": {
-                "cardType": "base"
-              },
               "placedAt": 1768050998026,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -636,59 +236,6 @@
             {
               "carduid": "ST01-009_65fee3e2-4a79-4340-85cc-1aa87027aba6",
               "cardId": "ST01-009",
-              "cardData": {
-                "id": "ST01-009",
-                "name": "Zowort",
-                "cardType": "shield",
-                "color": "White",
-                "level": 2,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Academy"
-                ],
-                "link": [],
-                "ap": 3,
-                "hp": 2,
-                "effects": {
-                  "description": [
-                    "<Blocker> (Rest this Unit to change the attack target to it.)",
-                    "This Unit can't choose the enemy player as its attack target."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "blocker",
-                      "type": "keyword",
-                      "trigger": "ATTACK_REDIRECT",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self"
-                      },
-                      "action": "redirect_attack",
-                      "parameters": {
-                        "cost": "rest_self"
-                      }
-                    },
-                    {
-                      "effectId": "attack_restriction",
-                      "type": "static",
-                      "trigger": "continuous",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self"
-                      },
-                      "action": "restrict_attack",
-                      "parameters": {
-                        "restriction": "cannot_attack_player"
-                      }
-                    }
-                  ]
-                },
-                "originalCardType": "unit"
-              },
               "placedAt": 1768050998026,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -698,45 +245,6 @@
             {
               "carduid": "ST01-008_47a04754-3e7a-4170-bdfe-1e7d0717462f",
               "cardId": "ST01-008",
-              "cardData": {
-                "id": "ST01-008",
-                "name": "Demi Trainer",
-                "cardType": "shield",
-                "color": "White",
-                "level": 1,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Academy"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "<Blocker> (Rest this Unit to change the attack target to it.)"
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "blocker",
-                      "type": "keyword",
-                      "trigger": "ATTACK_REDIRECT",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self"
-                      },
-                      "action": "redirect_attack",
-                      "parameters": {
-                        "cost": "rest_self"
-                      }
-                    }
-                  ]
-                },
-                "originalCardType": "unit"
-              },
               "placedAt": 1768050998026,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -746,56 +254,6 @@
             {
               "carduid": "ST01-010_3cbfb160-53c5-42c8-81c4-975cb4666869",
               "cardId": "ST01-010",
-              "cardData": {
-                "id": "ST01-010",
-                "name": "Amuro Ray",
-                "cardType": "shield",
-                "color": "Blue",
-                "level": 4,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team",
-                  "Newtype"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "\u3010Burst\u3011Add this card to your hand.",
-                    "\u3010When Paired\u3011Choose 1 enemy Unit with 5 or less HP. Rest it."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_add_to_hand",
-                      "type": "triggered",
-                      "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
-                      "action": "addToHand"
-                    },
-                    {
-                      "effectId": "paired_rest_medium_hp",
-                      "type": "triggered",
-                      "trigger": "PAIRING_COMPLETE",
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "filters": {
-                          "hp": "<=5"
-                        },
-                        "count": 1
-                      },
-                      "action": "rest"
-                    }
-                  ]
-                },
-                "originalCardType": "pilot"
-              },
               "placedAt": 1768050998026,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -805,61 +263,6 @@
             {
               "carduid": "ST01-002_514f7fbe-24e3-4f6d-bc67-5319f41cbf32",
               "cardId": "ST01-002",
-              "cardData": {
-                "id": "ST01-002",
-                "name": "Gundam(MA Form)",
-                "cardType": "shield",
-                "color": "Blue",
-                "level": 5,
-                "cost": 3,
-                "zone": [
-                  "Space"
-                ],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team"
-                ],
-                "link": [
-                  "Amuro Ray"
-                ],
-                "ap": 4,
-                "hp": 3,
-                "effects": {
-                  "description": [
-                    "\u3010When Paired\uff65(White Base Team) pilot\u3011Draw 1."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "paired_white_base_draw",
-                      "type": "triggered",
-                      "trigger": "PAIRING_COMPLETE",
-                      "conditions": [
-                        {
-                          "type": "traitMatch",
-                          "target": "pilot",
-                          "traits": [
-                            "White Base Team"
-                          ]
-                        }
-                      ],
-                      "action": "draw",
-                      "parameters": {
-                        "value": 1
-                      },
-                      "timing": {
-                        "duration": "instant",
-                        "actionTurn": "ANY"
-                      },
-                      "target": {
-                        "type": "player",
-                        "scope": "self",
-                        "count": 1
-                      }
-                    }
-                  ]
-                },
-                "originalCardType": "unit"
-              },
               "placedAt": 1768050998026,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -869,60 +272,6 @@
             {
               "carduid": "ST01-013_822910eb-fd08-465e-9aaa-18f8b87e5ea9",
               "cardId": "ST01-013",
-              "cardData": {
-                "id": "ST01-013",
-                "name": "Kai's Resolve",
-                "cardType": "shield",
-                "color": "Blue",
-                "level": 3,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 0,
-                "effects": {
-                  "description": [
-                    "\u3010Main\u3011Choose 1 friendly Unit. It recovers 3 HP.",
-                    "\u3010Pilot\u3011[Kai Shiden]"
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "main_heal_friendly",
-                      "type": "play",
-                      "trigger": "ENTERS_PLAY",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self",
-                        "count": 1
-                      },
-                      "action": "heal",
-                      "parameters": {
-                        "value": 3
-                      }
-                    },
-                    {
-                      "effectId": "pilot_designation",
-                      "type": "special",
-                      "trigger": "continuous",
-                      "target": {
-                        "type": "pilot",
-                        "scope": "any"
-                      },
-                      "action": "designate_pilot",
-                      "parameters": {
-                        "pilotName": "Kai Shiden",
-                        "AP": 1,
-                        "HP": 0
-                      }
-                    }
-                  ]
-                },
-                "originalCardType": "command"
-              },
               "placedAt": 1768050998026,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -932,31 +281,6 @@
             {
               "carduid": "ST01-007_5bd3f75b-aa5b-48ea-98fd-db18053abdfc",
               "cardId": "ST01-007",
-              "cardData": {
-                "id": "ST01-007",
-                "name": "Gundam Aerial (Bit on Form)",
-                "cardType": "shield",
-                "color": "White",
-                "level": 4,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Academy"
-                ],
-                "link": [
-                  "Suletta Mercury"
-                ],
-                "ap": 3,
-                "hp": 4,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                },
-                "originalCardType": "unit"
-              },
               "placedAt": 1768050998026,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -971,10 +295,7 @@
               "placedAt": 1768050998026,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_1768051015041_0.30597024632255376",
@@ -982,10 +303,7 @@
               "placedAt": 1768051015041,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_1768051032765_0.21324250718981608",
@@ -993,10 +311,7 @@
               "placedAt": 1768051032765,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [],
@@ -1011,286 +326,27 @@
           "hand": [
             {
               "carduid": "ST01-007_27e25243-9f1e-4774-ad35-6a181e708a78",
-              "cardId": "ST01-007",
-              "cardData": {
-                "id": "ST01-007",
-                "name": "Gundam Aerial (Bit on Form)",
-                "cardType": "unit",
-                "color": "White",
-                "level": 4,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Academy"
-                ],
-                "link": [
-                  "Suletta Mercury"
-                ],
-                "ap": 3,
-                "hp": 4,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              }
+              "cardId": "ST01-007"
             },
             {
               "carduid": "ST01-009_95044ecf-3b26-495f-bf8b-b23c667e1aa6",
-              "cardId": "ST01-009",
-              "cardData": {
-                "id": "ST01-009",
-                "name": "Zowort",
-                "cardType": "unit",
-                "color": "White",
-                "level": 2,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Academy"
-                ],
-                "link": [],
-                "ap": 3,
-                "hp": 2,
-                "effects": {
-                  "description": [
-                    "<Blocker> (Rest this Unit to change the attack target to it.)",
-                    "This Unit can't choose the enemy player as its attack target."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "blocker",
-                      "type": "keyword",
-                      "trigger": "ATTACK_REDIRECT",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self"
-                      },
-                      "action": "redirect_attack",
-                      "parameters": {
-                        "cost": "rest_self"
-                      }
-                    },
-                    {
-                      "effectId": "attack_restriction",
-                      "type": "static",
-                      "trigger": "continuous",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self"
-                      },
-                      "action": "restrict_attack",
-                      "parameters": {
-                        "restriction": "cannot_attack_player"
-                      }
-                    }
-                  ]
-                }
-              }
+              "cardId": "ST01-009"
             },
             {
               "carduid": "ST01-007_b7a7c73d-89fc-4995-895e-fa76b7667643",
-              "cardId": "ST01-007",
-              "cardData": {
-                "id": "ST01-007",
-                "name": "Gundam Aerial (Bit on Form)",
-                "cardType": "unit",
-                "color": "White",
-                "level": 4,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Academy"
-                ],
-                "link": [
-                  "Suletta Mercury"
-                ],
-                "ap": 3,
-                "hp": 4,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              }
+              "cardId": "ST01-007"
             },
             {
               "carduid": "ST01-005_125cd06b-ec77-497b-aa07-dbedb26bf095",
-              "cardId": "ST01-005",
-              "cardData": {
-                "id": "ST01-005",
-                "name": "GM",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 2,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              }
+              "cardId": "ST01-005"
             },
             {
               "carduid": "ST01-016_1289defa-300c-4d25-b529-0c31615013a0",
-              "cardId": "ST01-016",
-              "cardData": {
-                "id": "ST01-016",
-                "name": "Asticassia School of Technology, Earth House",
-                "cardType": "base",
-                "color": "White",
-                "level": 2,
-                "cost": 1,
-                "zone": [
-                  "Space"
-                ],
-                "traits": [
-                  "Academy",
-                  "Stronghold"
-                ],
-                "link": [],
-                "ap": 0,
-                "hp": 5,
-                "effects": {
-                  "description": [
-                    "\u3010Burst\u3011Deploy this card.",
-                    "\u3010Deploy\u3011Add 1 of your Shields to your hand.",
-                    "\u3010Activate\uff65Main\u3011Rest this Base\uff1aAll friendly Link Units get AP+1 during this turn."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_deploy",
-                      "type": "triggered",
-                      "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
-                      "action": "deploy"
-                    },
-                    {
-                      "effectId": "deploy_shield_to_hand",
-                      "type": "triggered",
-                      "trigger": "ENTERS_PLAY",
-                      "target": {
-                        "type": "card",
-                        "scope": "self_shield"
-                      },
-                      "action": "addToHand",
-                      "parameters": {
-                        "value": 1,
-                        "from": "shield"
-                      }
-                    },
-                    {
-                      "effectId": "activate_boost_link_units",
-                      "type": "triggered",
-                      "trigger": "PAY_COST",
-                      "timing": {
-                        "windows": [
-                          "MAIN_PHASE"
-                        ],
-                        "duration": "UNTIL_END_OF_TURN"
-                      },
-                      "cost": {
-                        "tap": "self",
-                        "rest": "self"
-                      },
-                      "target": {
-                        "type": "unit",
-                        "scope": "self_all_unit",
-                        "filters": {
-                          "linkStatus": "linked"
-                        }
-                      },
-                      "action": "modifyAP",
-                      "parameters": {
-                        "value": 1
-                      }
-                    }
-                  ]
-                }
-              }
+              "cardId": "ST01-016"
             },
             {
               "carduid": "ST01-012_ba7d46d7-dd84-49b4-996d-94b6e04cc800",
-              "cardId": "ST01-012",
-              "cardData": {
-                "id": "ST01-012",
-                "name": "Thoroughly Damaged",
-                "cardType": "command",
-                "color": "Blue",
-                "level": 2,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team"
-                ],
-                "link": [],
-                "ap": 0,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "\u3010Main\u3011Choose 1 rested enemy Unit. Deal 1 damage to it.",
-                    "\u3010Pilot\u3011[Hayato Kobayashi]"
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "main_damage_rested",
-                      "type": "play",
-                      "timing": {
-                        "windows": [
-                          "MAIN_PHASE"
-                        ]
-                      },
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "filters": {
-                          "status": "rested"
-                        },
-                        "count": 1
-                      },
-                      "action": "damage",
-                      "parameters": {
-                        "value": 1
-                      }
-                    },
-                    {
-                      "effectId": "pilot_designation",
-                      "type": "special",
-                      "trigger": "continuous",
-                      "target": {
-                        "type": "pilot",
-                        "scope": "any"
-                      },
-                      "action": "designate_pilot",
-                      "parameters": {
-                        "pilotName": "Hayato Kobayashi",
-                        "AP": 0,
-                        "HP": 1
-                      }
-                    }
-                  ]
-                }
-              }
+              "cardId": "ST01-012"
             }
           ],
           "handUids": [
@@ -1350,44 +406,6 @@
             "unit": {
               "carduid": "ST01-008_c3793119-e504-4dd4-811b-8fcd34d0d174",
               "cardId": "ST01-008",
-              "cardData": {
-                "id": "ST01-008",
-                "name": "Demi Trainer",
-                "cardType": "unit",
-                "color": "White",
-                "level": 1,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Academy"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "<Blocker> (Rest this Unit to change the attack target to it.)"
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "blocker",
-                      "type": "keyword",
-                      "trigger": "ATTACK_REDIRECT",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self"
-                      },
-                      "action": "redirect_attack",
-                      "parameters": {
-                        "cost": "rest_self"
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 1768051013015,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -1480,9 +498,6 @@
             {
               "carduid": "base_default",
               "cardId": "base_default",
-              "cardData": {
-                "cardType": "base"
-              },
               "placedAt": 1768050998026,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -1506,68 +521,6 @@
             {
               "carduid": "ST01-011_e453a0fb-7a22-4172-86a3-95f86a606d25",
               "cardId": "ST01-011",
-              "cardData": {
-                "id": "ST01-011",
-                "name": "Suletta Mercury",
-                "cardType": "shield",
-                "color": "White",
-                "level": 4,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Academy"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 2,
-                "effects": {
-                  "description": [
-                    "\u3010Burst\u3011Add this card to your hand.",
-                    "\u3010Attack\u3011\u3010Once per Turn\u3011Choose 1 of your Resources. Set it as active."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_add_to_hand",
-                      "type": "triggered",
-                      "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
-                      "action": "addToHand"
-                    },
-                    {
-                      "effectId": "attack_activate_resource",
-                      "type": "triggered",
-                      "trigger": "ATTACK_PHASE",
-                      "optional": true,
-                      "restrictions": [
-                        "once_per_turn"
-                      ],
-                      "timing": {
-                        "duration": "instant",
-                        "actionTurn": "YOUR_TURN"
-                      },
-                      "sourceConditions": [
-                        {
-                          "type": "controller",
-                          "value": "self"
-                        },
-                        {
-                          "type": "paired"
-                        }
-                      ],
-                      "target": {
-                        "type": "resource",
-                        "scope": "self",
-                        "count": 1
-                      },
-                      "action": "setActive"
-                    }
-                  ]
-                },
-                "originalCardType": "pilot"
-              },
               "placedAt": 1768050998026,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -1577,29 +530,6 @@
             {
               "carduid": "ST01-005_124477a8-ea3a-4d68-bdf0-f5f322416bb4",
               "cardId": "ST01-005",
-              "cardData": {
-                "id": "ST01-005",
-                "name": "GM",
-                "cardType": "shield",
-                "color": "Blue",
-                "level": 2,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                },
-                "originalCardType": "unit"
-              },
               "placedAt": 1768050998026,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -1609,61 +539,6 @@
             {
               "carduid": "ST01-002_e681b53c-e6e8-458b-922a-bfafb7dc5533",
               "cardId": "ST01-002",
-              "cardData": {
-                "id": "ST01-002",
-                "name": "Gundam(MA Form)",
-                "cardType": "shield",
-                "color": "Blue",
-                "level": 5,
-                "cost": 3,
-                "zone": [
-                  "Space"
-                ],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team"
-                ],
-                "link": [
-                  "Amuro Ray"
-                ],
-                "ap": 4,
-                "hp": 3,
-                "effects": {
-                  "description": [
-                    "\u3010When Paired\uff65(White Base Team) pilot\u3011Draw 1."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "paired_white_base_draw",
-                      "type": "triggered",
-                      "trigger": "PAIRING_COMPLETE",
-                      "conditions": [
-                        {
-                          "type": "traitMatch",
-                          "target": "pilot",
-                          "traits": [
-                            "White Base Team"
-                          ]
-                        }
-                      ],
-                      "action": "draw",
-                      "parameters": {
-                        "value": 1
-                      },
-                      "timing": {
-                        "duration": "instant",
-                        "actionTurn": "ANY"
-                      },
-                      "target": {
-                        "type": "player",
-                        "scope": "self",
-                        "count": 1
-                      }
-                    }
-                  ]
-                },
-                "originalCardType": "unit"
-              },
               "placedAt": 1768050998026,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -1673,29 +548,6 @@
             {
               "carduid": "ST01-005_6b43f268-f31e-41fb-b92d-ee56deaec1d3",
               "cardId": "ST01-005",
-              "cardData": {
-                "id": "ST01-005",
-                "name": "GM",
-                "cardType": "shield",
-                "color": "Blue",
-                "level": 2,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                },
-                "originalCardType": "unit"
-              },
               "placedAt": 1768050998026,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -1705,56 +557,6 @@
             {
               "carduid": "ST01-010_99940521-c97a-4919-bbc3-5f5d96906fd2",
               "cardId": "ST01-010",
-              "cardData": {
-                "id": "ST01-010",
-                "name": "Amuro Ray",
-                "cardType": "shield",
-                "color": "Blue",
-                "level": 4,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team",
-                  "Newtype"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "\u3010Burst\u3011Add this card to your hand.",
-                    "\u3010When Paired\u3011Choose 1 enemy Unit with 5 or less HP. Rest it."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_add_to_hand",
-                      "type": "triggered",
-                      "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
-                      "action": "addToHand"
-                    },
-                    {
-                      "effectId": "paired_rest_medium_hp",
-                      "type": "triggered",
-                      "trigger": "PAIRING_COMPLETE",
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "filters": {
-                          "hp": "<=5"
-                        },
-                        "count": 1
-                      },
-                      "action": "rest"
-                    }
-                  ]
-                },
-                "originalCardType": "pilot"
-              },
               "placedAt": 1768050998026,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -1764,113 +566,6 @@
             {
               "carduid": "ST01-015_66088098-7d25-4faf-b417-0bac410971a2",
               "cardId": "ST01-015",
-              "cardData": {
-                "id": "ST01-015",
-                "name": "White Base",
-                "cardType": "shield",
-                "color": "Blue",
-                "level": 3,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team",
-                  "Warship"
-                ],
-                "link": [],
-                "ap": 0,
-                "hp": 5,
-                "effects": {
-                  "description": [
-                    "\u3010Burst\u3011Deploy this card.",
-                    "\u3010Deploy\u3011Add 1 of your Shields to your hand.",
-                    "\u3010Activate\uff65Main\u3011\u3010Once per Turn\u3011\u2461\uff1aDeploy 1 [Gundam]((White Base Team)\uff65AP3\uff65HP3) Unit token if you have no Units in play, deploy 1 [Guncannon]((White Base Team)\uff65AP2\uff65HP2) Unit token if you have only 1 Unit in play, or deploy 1 [Guntank]((White Base Team)\uff65AP1\uff65HP1) Unit token if you have 2 or more Units in play."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_deploy",
-                      "type": "triggered",
-                      "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
-                      "action": "deploy"
-                    },
-                    {
-                      "effectId": "deploy_shield_to_hand",
-                      "type": "triggered",
-                      "trigger": "ENTERS_PLAY",
-                      "target": {
-                        "type": "card",
-                        "scope": "self_shield"
-                      },
-                      "action": "addToHand",
-                      "parameters": {
-                        "value": 1,
-                        "from": "shield"
-                      }
-                    },
-                    {
-                      "effectId": "activate_conditional_token_deploy",
-                      "type": "triggered",
-                      "trigger": "PAY_COST",
-                      "timing": {
-                        "windows": [
-                          "MAIN_PHASE"
-                        ]
-                      },
-                      "cost": {
-                        "resource": 2,
-                        "oncePerTurn": true
-                      },
-                      "conditions": [
-                        "boardStateCheck"
-                      ],
-                      "action": "conditionalTokenDeploy",
-                      "parameters": {
-                        "condition1": {
-                          "unitsInPlay": 0,
-                          "token": {
-                            "name": "Gundam",
-                            "traits": [
-                              "White Base Team"
-                            ],
-                            "ap": 3,
-                            "hp": 3
-                          }
-                        },
-                        "condition2": {
-                          "unitsInPlay": 1,
-                          "token": {
-                            "name": "Guncannon",
-                            "traits": [
-                              "White Base Team"
-                            ],
-                            "ap": 2,
-                            "hp": 2
-                          }
-                        },
-                        "condition3": {
-                          "unitsInPlay": ">=2",
-                          "token": {
-                            "name": "Guntank",
-                            "traits": [
-                              "White Base Team"
-                            ],
-                            "ap": 1,
-                            "hp": 1
-                          }
-                        }
-                      }
-                    }
-                  ]
-                },
-                "originalCardType": "base"
-              },
               "placedAt": 1768050998026,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -1885,10 +580,7 @@
               "placedAt": 1768050998026,
               "placedBy": "playerId_2",
               "isRested": false,
-              "isExtraEnergy": true,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": true
             },
             {
               "carduid": "energy_basic_1768051007044_0.5135561780780715",
@@ -1896,10 +588,7 @@
               "placedAt": 1768051007044,
               "placedBy": "playerId_2",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_1768051025629_0.03163613804583654",
@@ -1907,10 +596,7 @@
               "placedAt": 1768051025629,
               "placedBy": "playerId_2",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [],
@@ -2036,12 +722,12 @@
           "target": {
             "scope": "SELF",
             "gameTypes": [
-              "\u53f3\u7ffc",
-              "\u611b\u570b\u8005"
+              "右翼",
+              "愛國者"
             ]
           },
           "value": 45,
-          "description": "Trump leader power boost for \u53f3\u7ffc/\u611b\u570b\u8005 cards"
+          "description": "Trump leader power boost for 右翼/愛國者 cards"
         },
         {
           "source": "s-1",
@@ -2049,7 +735,7 @@
           "target": {
             "scope": "SELF",
             "gameTypes": [
-              "\u7d93\u6fdf"
+              "經濟"
             ]
           },
           "value": 0,
@@ -2061,7 +747,7 @@
           "target": {
             "scope": "SELF",
             "traits": [
-              "\u7279\u6717\u666e\u5bb6\u65cf"
+              "特朗普家族"
             ]
           },
           "value": 10,
@@ -2100,12 +786,12 @@
   "cardDefinitions": {
     "c-1": {
       "id": "c-1",
-      "name": "\u7e3d\u7d71\u7279\u6717\u666e",
+      "name": "總統特朗普",
       "cardType": "character",
-      "gameType": "\u611b\u570b\u8005",
+      "gameType": "愛國者",
       "power": 100,
       "traits": [
-        "\u7279\u6717\u666e\u5bb6\u65cf"
+        "特朗普家族"
       ],
       "rarity": "legendary"
     },
@@ -2114,7 +800,7 @@
       "name": "Make America Great Again",
       "cardType": "help",
       "effects": {
-        "description": "\u9078\u64c7\u5c0d\u65b9\u4e00\u5f35\u89d2\u8272\u5361\uff0c\u539f\u80fd\u529b\u503c \u8b8a\u6210 0",
+        "description": "選擇對方一張角色卡，原能力值 變成 0",
         "rules": [
           {
             "id": "maga_nerf",
@@ -2144,59 +830,59 @@
     },
     "s-1": {
       "id": "s-1",
-      "name": "\u7279\u6717\u666e",
+      "name": "特朗普",
       "cardType": "leader",
-      "gameType": "\u53f3\u7ffc",
+      "gameType": "右翼",
       "initialPoint": 110,
       "level": 7,
       "rarity": "legendary",
       "zoneCompatibility": {
         "top": [
-          "\u53f3\u7ffc",
-          "\u81ea\u7531",
-          "\u7d93\u6fdf"
+          "右翼",
+          "自由",
+          "經濟"
         ],
         "left": [
-          "\u53f3\u7ffc",
-          "\u81ea\u7531",
-          "\u611b\u570b\u8005"
+          "右翼",
+          "自由",
+          "愛國者"
         ],
         "right": [
-          "\u53f3\u7ffc",
-          "\u611b\u570b\u8005",
-          "\u7d93\u6fdf"
+          "右翼",
+          "愛國者",
+          "經濟"
         ]
       }
     },
     "s-2": {
       "id": "s-2",
-      "name": "\u62dc\u767b",
+      "name": "拜登",
       "cardType": "leader",
-      "gameType": "\u5de6\u7ffc",
+      "gameType": "左翼",
       "initialPoint": 100,
       "level": 7,
       "rarity": "legendary",
       "zoneCompatibility": {
         "top": [
-          "\u5de6\u7ffc",
-          "\u81ea\u7531",
-          "\u7d93\u6fdf",
-          "\u53f3\u7ffc",
-          "\u611b\u570b\u8005"
+          "左翼",
+          "自由",
+          "經濟",
+          "右翼",
+          "愛國者"
         ],
         "left": [
-          "\u5de6\u7ffc",
-          "\u81ea\u7531",
-          "\u7d93\u6fdf",
-          "\u53f3\u7ffc",
-          "\u611b\u570b\u8005"
+          "左翼",
+          "自由",
+          "經濟",
+          "右翼",
+          "愛國者"
         ],
         "right": [
-          "\u5de6\u7ffc",
-          "\u81ea\u7531",
-          "\u7d93\u6fdf",
-          "\u53f3\u7ffc",
-          "\u611b\u570b\u8005"
+          "左翼",
+          "自由",
+          "經濟",
+          "右翼",
+          "愛國者"
         ]
       }
     }

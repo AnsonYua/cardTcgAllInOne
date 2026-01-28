@@ -66,85 +66,7 @@
           "hand": [
             {
               "carduid": "GD01-048_action_0001",
-              "cardId": "GD01-048",
-              "cardData": {
-                "id": "GD01-048",
-                "name": "Zaku I Sniper Type",
-                "cardType": "unit",
-                "color": "Red",
-                "level": 2,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Zeon"
-                ],
-                "link": [
-                  "Zeon"
-                ],
-                "ap": 0,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "【Activate･Main】<Support 1> (Rest this Unit. 1 other friendly Unit gets AP+(specified amount) during this turn.)",
-                    "【Deploy】Look at the top card of your deck. If it is a (Zeon)/(Neo Zeon) Unit card, you may reveal it and add it to your hand. Return any remaining card to the bottom of your deck."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "activate_support_1",
-                      "type": "activated",
-                      "timing": {
-                        "windows": [
-                          "MAIN_PHASE"
-                        ],
-                        "duration": "UNTIL_END_OF_TURN"
-                      },
-                      "cost": {
-                        "rest": "self"
-                      },
-                      "target": {
-                        "type": "unit",
-                        "scope": "self",
-                        "count": 1
-                      },
-                      "action": "modifyAP",
-                      "parameters": {
-                        "value": 1,
-                        "excludeSource": true
-                      }
-                    },
-                    {
-                      "effectId": "deploy_effect",
-                      "type": "triggered",
-                      "trigger": "ENTERS_PLAY",
-                      "action": "tutor_top_deck",
-                      "parameters": {
-                        "count": 1,
-                        "select": {
-                          "count": 1,
-                          "optional": true,
-                          "toZone": "hand",
-                          "reveal": true,
-                          "filters": {
-                            "cardType": "unit",
-                            "traitsAny": [
-                              "Zeon",
-                              "Neo Zeon"
-                            ]
-                          }
-                        },
-                        "rest": {
-                          "toZone": "deck_bottom",
-                          "order": "preserve"
-                        },
-                        "notes": "Reveal/select-from-top not yet implemented."
-                      }
-                    }
-                  ]
-                }
-              }
+              "cardId": "GD01-048"
             }
           ],
           "handUids": [
@@ -175,10 +97,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_gd01_048_a_0002",
@@ -186,10 +105,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [],
@@ -225,4 +141,3 @@
     }
   }
 }
-

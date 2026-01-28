@@ -76,56 +76,6 @@
             "unit": {
               "carduid": "GD01-063_attacker_0001",
               "cardId": "GD01-063",
-              "cardData": {
-                "id": "GD01-063",
-                "name": "ZnO",
-                "cardType": "unit",
-                "color": "Red",
-                "level": 2,
-                "cost": 2,
-                "zone": [
-                  "Earth"
-                ],
-                "traits": [
-                  "ZAFT"
-                ],
-                "link": [
-                  "ZAFT"
-                ],
-                "ap": 2,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "During your turn, while this Unit is battling an enemy Unit that is Lv.2 or lower, it gains <First Strike>. (While this Unit is attacking, it deals damage before the enemy Unit.)"
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "first_strike_vs_low_level_during_your_turn",
-                      "type": "continuous",
-                      "trigger": "continuous",
-                      "action": "grant_keyword",
-                      "timing": {
-                        "actionTurn": "YOUR_TURN"
-                      },
-                      "target": {
-                        "type": "unit",
-                        "scope": "self",
-                        "count": 1
-                      },
-                      "conditions": [
-                        {
-                          "type": "battleOpponentLevel",
-                          "scope": "battle",
-                          "value": "<=2"
-                        }
-                      ],
-                      "parameters": {
-                        "keyword": "First Strike"
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -171,27 +121,6 @@
             "unit": {
               "carduid": "GD01-022_defender_0001",
               "cardId": "GD01-022",
-              "cardData": {
-                "id": "GD01-022",
-                "name": "Cancer",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 2,
-                "cost": 2,
-                "zone": [
-                  "Earth"
-                ],
-                "traits": [
-                  "OZ"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 3,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -223,4 +152,3 @@
     }
   }
 }
-

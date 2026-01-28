@@ -4,6 +4,7 @@
 import type { GameEnvironment } from '../../../models/GameEnvironment';
 import { SLOT_ZONES } from '../../../config/gameConstants';
 import { GameNotificationManager } from '../../GameNotificationManager';
+import { calculateSlotFieldValue } from '../../../utils/FieldValueCalculator';
 
 type StatSnapshot = Map<string, { ap: number; hp: number }>;
 
@@ -58,6 +59,7 @@ export class ContinuousStatChangeNotifier {
                     const nextHP = typeof card.continueModifyHP === 'number' ? card.continueModifyHP : 0;
 
                     if (prev.ap !== nextAP) {
+                        const fieldCardValue = calculateSlotFieldValue(slot);
                         notificationManager.addNotificationEvent('CARD_STAT_MODIFIED', {
                             playerId: player.id,
                             carduid,
@@ -67,12 +69,14 @@ export class ContinuousStatChangeNotifier {
                             stat: 'modifyAP',
                             delta: nextAP - prev.ap,
                             modifierValue: nextAP,
+                            displayValue: fieldCardValue.totalAP ?? 0,
                             source: 'continuous',
                             timestamp: Date.now()
                         });
                     }
 
                     if (prev.hp !== nextHP) {
+                        const fieldCardValue = calculateSlotFieldValue(slot);
                         notificationManager.addNotificationEvent('CARD_STAT_MODIFIED', {
                             playerId: player.id,
                             carduid,
@@ -82,6 +86,7 @@ export class ContinuousStatChangeNotifier {
                             stat: 'modifyHP',
                             delta: nextHP - prev.hp,
                             modifierValue: nextHP,
+                            displayValue: fieldCardValue.totalHP ?? 0,
                             source: 'continuous',
                             timestamp: Date.now()
                         });
@@ -91,4 +96,3 @@ export class ContinuousStatChangeNotifier {
         }
     }
 }
-

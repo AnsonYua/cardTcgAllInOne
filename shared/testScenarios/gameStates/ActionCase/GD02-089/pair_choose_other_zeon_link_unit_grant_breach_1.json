@@ -66,26 +66,7 @@
           "hand": [
             {
               "carduid": "GD02-089_hand_0001",
-              "cardId": "GD02-089",
-              "cardData": {
-                "id": "GD02-089",
-                "name": "Lalah Sune",
-                "cardType": "pilot",
-                "color": "Green",
-                "level": 3,
-                "cost": 1,
-                "traits": [
-                  "Zeon",
-                  "Newtype"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 1,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              }
+              "cardId": "GD02-089"
             }
           ],
           "handUids": [
@@ -102,7 +83,6 @@
             "unit": {
               "carduid": "GD02-001_unit_0001",
               "cardId": "GD02-001",
-              "cardData": { "id": "GD02-001", "cardType": "unit", "level": 3, "cost": 2, "traits": [ "Zeon" ], "ap": 2, "hp": 3, "effects": { "description": [], "rules": [] } },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -124,7 +104,6 @@
             "unit": {
               "carduid": "GD02-002_link_unit_0002",
               "cardId": "GD02-002",
-              "cardData": { "id": "GD02-002", "name": "Zeon Unit", "cardType": "unit", "color": "Green", "level": 3, "cost": 2, "traits": [ "Zeon" ], "link": [ "Zeon Pilot" ], "ap": 3, "hp": 3, "effects": { "description": [], "rules": [] } },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -144,7 +123,6 @@
             "pilot": {
               "carduid": "GD02-003_link_pilot_0002",
               "cardId": "GD02-003",
-              "cardData": { "id": "GD02-003", "name": "Zeon Pilot", "cardType": "pilot", "color": "Green", "level": 3, "cost": 1, "traits": [ "Zeon" ], "link": [], "ap": 1, "hp": 1, "effects": { "description": [], "rules": [] } },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -159,7 +137,11 @@
           "base": [],
           "shieldArea": [],
           "energyArea": [
-            { "carduid": "GD02-999_energy_0001", "cardId": "GD02-999", "cardData": { "id": "GD02-999", "cardType": "energy" }, "isRested": false }
+            {
+              "carduid": "GD02-999_energy_0001",
+              "cardId": "GD02-999",
+              "isRested": false
+            }
           ],
           "trashArea": [],
           "repairAbilitiesCheckedThisCycle": false,
@@ -169,7 +151,11 @@
       "playerId_2": {
         "id": "playerId_2",
         "name": "Player 2",
-        "deck": { "hand": [], "handUids": [], "mainDeck": [] },
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
         "confirmIsRedraw": false,
         "isRedraw": false,
         "playerPoint": 0,
@@ -182,7 +168,12 @@
           "slot5": {},
           "slot6": {},
           "base": [],
-          "shieldArea": [ { "carduid": "GD02-010_shield_0001", "cardId": "GD02-010", "cardData": { "id": "GD02-010", "cardType": "unit" } } ],
+          "shieldArea": [
+            {
+              "carduid": "GD02-010_shield_0001",
+              "cardId": "GD02-010"
+            }
+          ],
           "energyArea": [],
           "trashArea": [],
           "repairAbilitiesCheckedThisCycle": false,
@@ -192,4 +183,3 @@
     }
   }
 }
-

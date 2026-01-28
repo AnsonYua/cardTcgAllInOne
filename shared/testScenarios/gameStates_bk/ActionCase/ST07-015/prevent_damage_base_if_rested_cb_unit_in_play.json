@@ -1,0 +1,274 @@
+{
+    "category": "ActionCase",
+    "description": "st07-015_prevent_damage_base_if_rested_cb_unit_in_play",
+    "gameId": "st07-015_prevent_damage_base_if_rested_cb_unit_in_play",
+    "initialGameEnv": {
+        "currentBattle": {
+            "actionType": "attackShieldArea",
+            "attackingPlayerId": "playerId_2",
+            "defendingPlayerId": "playerId_1",
+            "attackerCarduid": "ST07-002_attacker_0001",
+            "targetPlayerId": "playerId_1",
+            "status": "ACTION_STEP",
+            "fromBurst": false,
+            "openedAt": 1768362880422,
+            "confirmations": {
+                "playerId_1": false,
+                "playerId_2": false
+            }
+        },
+        "currentPlayer": "playerId_2",
+        "currentTurn": 1,
+        "firstPlayer": 0,
+        "gameStarted": true,
+        "hasChosenFirstPlayer": true,
+        "lastEventId": 0,
+        "maxEventsPerCycle": 50,
+        "notificationQueue": [
+            {
+                "id": "card_drawn_1768362880422_3bxbxq5uy",
+                "type": "CARD_DRAWN",
+                "metadata": {
+                    "timestamp": 1768362880422,
+                    "expiresAt": 1768362883422,
+                    "requiresAcknowledgment": false,
+                    "priority": "normal"
+                },
+                "payload": {
+                    "playerId": "playerId_2",
+                    "carduid": "ST07-002_draw_0001",
+                    "sourceZone": "deck",
+                    "reason": "draw",
+                    "timestamp": 1768362880422,
+                    "drawContext": "turn_start"
+                }
+            }
+        ],
+        "pendingPhaseTransition": null,
+        "phase": "ACTION_STEP_PHASE",
+        "playerId_1": "playerId_1",
+        "playerId_2": "playerId_2",
+        "players": {
+            "playerId_1": {
+                "confirmIsRedraw": false,
+                "deck": {
+                    "hand": [],
+                    "handUids": [],
+                    "mainDeck": []
+                },
+                "id": "playerId_1",
+                "isReady": true,
+                "isRedraw": false,
+                "name": "Player 1",
+                "playerPoint": 0,
+                "zones": {
+                    "base": [
+                        {
+                            "cardData": {
+                                "id": "ST07-015",
+                                "name": "Ptolemaios",
+                                "cardType": "base",
+                                "color": "Purple",
+                                "level": 2,
+                                "cost": 1,
+                                "zone": [
+                                    "Space"
+                                ],
+                                "traits": [
+                                    "CB",
+                                    "Warship"
+                                ],
+                                "ap": 0,
+                                "hp": 5,
+                                "effects": {
+                                    "description": [
+                                        "【Burst】Deploy this card.",
+                                        "【Deploy】Add 1 of your Shields to your hand.",
+                                        "While a rested friendly (CB) Unit is in play, this Base can't receive damage from enemy Units that are Lv.3 or lower, other than Unit tokens."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "prevent_damage_from_enemy_units_le_3_if_rested_cb_unit_in_play",
+                                            "type": "continuous",
+                                            "trigger": "continuous",
+                                            "action": "prevent_damage",
+                                            "conditions": [
+                                                {
+                                                    "type": "unitsInPlayWithFilter",
+                                                    "scope": "self",
+                                                    "filters": {
+                                                        "traits": [
+                                                            "CB"
+                                                        ],
+                                                        "status": "rested",
+                                                        "cardType": "unit",
+                                                        "colorNot": "Token"
+                                                    },
+                                                    "value": ">=1"
+                                                }
+                                            ],
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self",
+                                                "count": 1
+                                            },
+                                            "parameters": {
+                                                "from": "enemy_units",
+                                                "enemyLevel": "<=3"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "cardId": "ST07-015",
+                            "carduid": "ST07-015_base_0001",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "damageReceived": 0,
+                            "originalHP": 5
+                        }
+                    ],
+                    "energyArea": [],
+                    "repairAbilitiesCheckedThisCycle": false,
+                    "endTurnEffectsCheckedThisCycle": false,
+                    "shieldArea": [],
+                    "slot1": {
+                        "unit": {
+                            "cardId": "ST07-001",
+                            "carduid": "ST07-001_rested_cb_0001",
+                            "cardData": {
+                                "id": "ST07-001",
+                                "name": "Gundam Exia",
+                                "cardType": "unit",
+                                "color": "Purple",
+                                "level": 5,
+                                "cost": 4,
+                                "ap": 4,
+                                "hp": 4,
+                                "traits": [
+                                    "CB",
+                                    "GN Drive"
+                                ],
+                                "link": [
+                                    "Setsuna F. Seiei"
+                                ],
+                                "effects": {
+                                    "description": [],
+                                    "rules": []
+                                },
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ]
+                            },
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": true,
+                            "damageReceived": 0,
+                            "modifyAP": 0,
+                            "modifyHP": 0,
+                            "continueModifyAP": 0,
+                            "continueModifyHP": 0,
+                            "originalAP": 4,
+                            "originalHP": 4,
+                            "playedThisTurn": false,
+                            "canAttackOnPlayTurn": false,
+                            "canAttackThisTurn": true,
+                            "isFirstPlay": false
+                        }
+                    },
+                    "slot2": {},
+                    "slot3": {},
+                    "slot4": {},
+                    "slot5": {},
+                    "slot6": {},
+                    "trashArea": []
+                }
+            },
+            "playerId_2": {
+                "confirmIsRedraw": false,
+                "deck": {
+                    "hand": [],
+                    "handUids": [],
+                    "mainDeck": []
+                },
+                "id": "playerId_2",
+                "isReady": true,
+                "isRedraw": false,
+                "name": "Player 2",
+                "playerPoint": 0,
+                "zones": {
+                    "base": [],
+                    "energyArea": [],
+                    "repairAbilitiesCheckedThisCycle": false,
+                    "endTurnEffectsCheckedThisCycle": false,
+                    "shieldArea": [],
+                    "slot1": {
+                        "unit": {
+                            "cardId": "ST07-002",
+                            "carduid": "ST07-002_attacker_0001",
+                            "cardData": {
+                                "id": "ST07-002",
+                                "name": "Gundam Exia",
+                                "cardType": "unit",
+                                "color": "Purple",
+                                "level": 3,
+                                "cost": 2,
+                                "ap": 4,
+                                "hp": 3,
+                                "traits": [
+                                    "CB",
+                                    "GN Drive"
+                                ],
+                                "link": [
+                                    "Setsuna F. Seiei"
+                                ],
+                                "effects": {
+                                    "description": [],
+                                    "rules": []
+                                },
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ]
+                            },
+                            "placedAt": 0,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "damageReceived": 0,
+                            "modifyAP": 0,
+                            "modifyHP": 0,
+                            "continueModifyAP": 0,
+                            "continueModifyHP": 0,
+                            "originalAP": 4,
+                            "originalHP": 3,
+                            "playedThisTurn": false,
+                            "canAttackOnPlayTurn": false,
+                            "canAttackThisTurn": true,
+                            "isFirstPlay": false
+                        }
+                    },
+                    "slot2": {},
+                    "slot3": {},
+                    "slot4": {},
+                    "slot5": {},
+                    "slot6": {},
+                    "trashArea": []
+                }
+            }
+        },
+        "playersReady": {
+            "playerId_1": true,
+            "playerId_2": true
+        },
+        "processingEnabled": true,
+        "processingQueue": [],
+        "version": 0
+    },
+    "notes": [
+        "Action: Player B attacks Player A's base (ST07-015) with a non-token enemy unit of level 3.",
+        "Expect: Base damage is prevented (BASE_DAMAGE_PREVENTED notification; BATTLE_RESOLVED includes damagePrevented=true and damageApplied=0)."
+    ]
+}
+

@@ -59,28 +59,6 @@
             "unit": {
               "carduid": "ST01-005_00000000-0000-0000-0000-000000000001",
               "cardId": "ST01-005",
-              "cardData": {
-                "id": "ST01-005",
-                "name": "GM",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 2,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -104,10 +82,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_test_2",
@@ -115,10 +90,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [],
@@ -142,44 +114,6 @@
             "unit": {
               "carduid": "ST01-008_00000000-0000-0000-0000-000000000002",
               "cardId": "ST01-008",
-              "cardData": {
-                "id": "ST01-008",
-                "name": "Demi Trainer",
-                "cardType": "unit",
-                "color": "White",
-                "level": 1,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Academy"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "<Blocker> (Rest this Unit to change the attack target to it.)"
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "blocker",
-                      "trigger": "ATTACK_REDIRECT",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self"
-                      },
-                      "action": "redirect_attack",
-                      "parameters": {
-                        "cost": "rest_self"
-                      },
-                      "type": "triggered"
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -193,44 +127,6 @@
             "unit": {
               "carduid": "ST01-008_00000000-0000-0000-0000-000000000003",
               "cardId": "ST01-008",
-              "cardData": {
-                "id": "ST01-008",
-                "name": "Demi Trainer",
-                "cardType": "unit",
-                "color": "White",
-                "level": 1,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Academy"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "<Blocker> (Rest this Unit to change the attack target to it.)"
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "blocker",
-                      "trigger": "ATTACK_REDIRECT",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self"
-                      },
-                      "action": "redirect_attack",
-                      "parameters": {
-                        "cost": "rest_self"
-                      },
-                      "type": "triggered"
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -244,28 +140,6 @@
             "unit": {
               "carduid": "ST01-005_00000000-0000-0000-0000-000000000004",
               "cardId": "ST01-005",
-              "cardData": {
-                "id": "ST01-005",
-                "name": "GM",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 2,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,

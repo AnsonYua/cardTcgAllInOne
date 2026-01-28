@@ -83,26 +83,6 @@
             "unit": {
               "carduid": "GD01-003_unit_0001",
               "cardId": "GD01-003",
-              "cardData": {
-                "id": "GD01-003",
-                "name": "Unicorn Gundam 02 Banshee (Destroy Mode)",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 6,
-                "cost": 4,
-                "traits": [
-                  "Earth Federation"
-                ],
-                "link": [
-                  "Marida Cruz"
-                ],
-                "ap": 5,
-                "hp": 4,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -121,25 +101,6 @@
             "pilot": {
               "carduid": "GD01-093_pilot_for_pair_0001",
               "cardId": "GD01-093",
-              "cardData": {
-                "id": "GD01-093",
-                "name": "Marida Cruz",
-                "cardType": "pilot",
-                "color": "Red",
-                "level": 4,
-                "cost": 1,
-                "traits": [
-                  "Neo Zeon",
-                  "Cyber-Newtype"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 1,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -155,19 +116,58 @@
           "shieldArea": [],
           "energyArea": [],
           "trashArea": [
-            { "carduid": "GD01-020_trash_0001", "cardId": "GD01-020", "cardData": { "id": "GD01-020", "cardType": "unit" } },
-            { "carduid": "GD01-021_trash_0002", "cardId": "GD01-021", "cardData": { "id": "GD01-021", "cardType": "unit" } },
-            { "carduid": "GD01-022_trash_0003", "cardId": "GD01-022", "cardData": { "id": "GD01-022", "cardType": "unit" } },
-            { "carduid": "GD01-023_trash_0004", "cardId": "GD01-023", "cardData": { "id": "GD01-023", "cardType": "unit" } },
-            { "carduid": "GD01-024_trash_0005", "cardId": "GD01-024", "cardData": { "id": "GD01-024", "cardType": "unit" } },
-            { "carduid": "GD01-025_trash_0006", "cardId": "GD01-025", "cardData": { "id": "GD01-025", "cardType": "unit" } },
-            { "carduid": "GD01-026_trash_0007", "cardId": "GD01-026", "cardData": { "id": "GD01-026", "cardType": "unit" } },
-            { "carduid": "GD01-027_trash_0008", "cardId": "GD01-027", "cardData": { "id": "GD01-027", "cardType": "unit" } },
-            { "carduid": "GD01-028_trash_0009", "cardId": "GD01-028", "cardData": { "id": "GD01-028", "cardType": "unit" } },
-            { "carduid": "GD01-029_trash_0010", "cardId": "GD01-029", "cardData": { "id": "GD01-029", "cardType": "unit" } },
-            { "carduid": "GD01-030_trash_0011", "cardId": "GD01-030", "cardData": { "id": "GD01-030", "cardType": "unit" } },
-            { "carduid": "GD01-031_trash_0012", "cardId": "GD01-031", "cardData": { "id": "GD01-031", "cardType": "unit" } },
-            { "carduid": "GD01-032_trash_0013", "cardId": "GD01-032", "cardData": { "id": "GD01-032", "cardType": "unit" } }
+            {
+              "carduid": "GD01-020_trash_0001",
+              "cardId": "GD01-020"
+            },
+            {
+              "carduid": "GD01-021_trash_0002",
+              "cardId": "GD01-021"
+            },
+            {
+              "carduid": "GD01-022_trash_0003",
+              "cardId": "GD01-022"
+            },
+            {
+              "carduid": "GD01-023_trash_0004",
+              "cardId": "GD01-023"
+            },
+            {
+              "carduid": "GD01-024_trash_0005",
+              "cardId": "GD01-024"
+            },
+            {
+              "carduid": "GD01-025_trash_0006",
+              "cardId": "GD01-025"
+            },
+            {
+              "carduid": "GD01-026_trash_0007",
+              "cardId": "GD01-026"
+            },
+            {
+              "carduid": "GD01-027_trash_0008",
+              "cardId": "GD01-027"
+            },
+            {
+              "carduid": "GD01-028_trash_0009",
+              "cardId": "GD01-028"
+            },
+            {
+              "carduid": "GD01-029_trash_0010",
+              "cardId": "GD01-029"
+            },
+            {
+              "carduid": "GD01-030_trash_0011",
+              "cardId": "GD01-030"
+            },
+            {
+              "carduid": "GD01-031_trash_0012",
+              "cardId": "GD01-031"
+            },
+            {
+              "carduid": "GD01-032_trash_0013",
+              "cardId": "GD01-032"
+            }
           ],
           "repairAbilitiesCheckedThisCycle": false,
           "endTurnEffectsCheckedThisCycle": false
@@ -194,7 +194,10 @@
           "slot6": {},
           "base": [],
           "shieldArea": [
-            { "carduid": "GD01-040_shield_0001", "cardId": "GD01-040", "cardData": { "id": "GD01-040", "cardType": "unit" } }
+            {
+              "carduid": "GD01-040_shield_0001",
+              "cardId": "GD01-040"
+            }
           ],
           "energyArea": [],
           "trashArea": [],
@@ -205,4 +208,3 @@
     }
   }
 }
-

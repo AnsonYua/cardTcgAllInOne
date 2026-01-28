@@ -77,51 +77,6 @@
             "unit": {
               "carduid": "GD03-070_unit_0001",
               "cardId": "GD03-070",
-              "cardData": {
-                "id": "GD03-070",
-                "name": "Freedom Gundam",
-                "cardType": "unit",
-                "color": "White",
-                "level": 6,
-                "cost": 5,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Triple Ship Alliance"
-                ],
-                "link": [
-                  "Kira Yamato"
-                ],
-                "ap": 4,
-                "hp": 5,
-                "effects": {
-                  "description": [],
-                  "rules": [
-                    {
-                      "effectId": "prevent_shields_battle_damage_from_enemy_units_while_rested",
-                      "type": "continuous",
-                      "trigger": "continuous",
-                      "action": "prevent_battle_damage",
-                      "conditions": [
-                        {
-                          "type": "sourceStatus",
-                          "scope": "source",
-                          "status": "rested"
-                        }
-                      ],
-                      "target": {
-                        "type": "card",
-                        "scope": "self_all_shield"
-                      },
-                      "parameters": {
-                        "from": "enemy_units"
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": true,
@@ -147,29 +102,7 @@
           "shieldArea": [
             {
               "carduid": "GD03-001_shield_0001",
-              "cardId": "GD03-001",
-              "cardData": {
-                "id": "GD03-001",
-                "name": "Gundam NT-1",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 5,
-                "cost": 4,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation"
-                ],
-                "link": [],
-                "ap": 4,
-                "hp": 4,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              }
+              "cardId": "GD03-001"
             }
           ],
           "energyArea": [],
@@ -195,26 +128,6 @@
             "unit": {
               "carduid": "GD03-002_attacker_0001",
               "cardId": "GD03-002",
-              "cardData": {
-                "id": "GD03-002",
-                "name": "Banshee",
-                "cardType": "unit",
-                "color": "Red",
-                "level": 6,
-                "cost": 5,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [],
-                "link": [],
-                "ap": 5,
-                "hp": 5,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -247,4 +160,3 @@
     }
   }
 }
-

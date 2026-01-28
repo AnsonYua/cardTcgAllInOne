@@ -75,31 +75,6 @@
             "unit": {
               "carduid": "ST07-008_unit_0001",
               "cardId": "ST07-008",
-              "cardData": {
-                "id": "ST07-008",
-                "name": "GN-X",
-                "cardType": "unit",
-                "color": "Purple",
-                "level": 4,
-                "cost": 3,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "CB",
-                  "GN Drive"
-                ],
-                "link": [
-                  "Setsuna F. Seiei"
-                ],
-                "ap": 4,
-                "hp": 4,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -113,105 +88,6 @@
             "pilot": {
               "carduid": "ST07-009_pilot_0001",
               "cardId": "ST07-009",
-              "cardData": {
-                "id": "ST07-009",
-                "name": "Setsuna F. Seiei",
-                "cardType": "pilot",
-                "color": "Purple",
-                "level": 4,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "CB"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【Attack】This Unit gets AP+1 during this turn. If there are 7 or more (CB) cards in your trash, all your (CB) Units get AP+1 instead."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_add_to_hand",
-                      "type": "triggered",
-                      "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
-                      "action": "addToHand"
-                    },
-                    {
-                      "effectId": "attack_ap_plus_1_branch_cb_trash_ge_7",
-                      "type": "triggered",
-                      "trigger": "ATTACK_PHASE",
-                      "sourceConditions": [
-                        {
-                          "type": "paired"
-                        }
-                      ],
-                      "action": "conditional",
-                      "parameters": {
-                        "branches": [
-                          {
-                            "conditions": [
-                              {
-                                "type": "cardsInTrash",
-                                "scope": "self",
-                                "traitsAny": [
-                                  "CB"
-                                ],
-                                "value": ">=7"
-                              }
-                            ],
-                            "steps": [
-                              {
-                                "action": "modifyAP",
-                                "timing": {
-                                  "duration": "UNTIL_END_OF_TURN"
-                                },
-                                "target": {
-                                  "type": "unit",
-                                  "scope": "self_all_unit",
-                                  "filters": {
-                                    "traits": [
-                                      "CB"
-                                    ]
-                                  }
-                                },
-                                "parameters": {
-                                  "value": 1
-                                }
-                              }
-                            ]
-                          },
-                          {
-                            "conditions": [],
-                            "steps": [
-                              {
-                                "action": "modifyAP",
-                                "timing": {
-                                  "duration": "UNTIL_END_OF_TURN"
-                                },
-                                "target": {
-                                  "type": "unit",
-                                  "scope": "source_paired_unit",
-                                  "count": 1
-                                },
-                                "parameters": {
-                                  "value": 1
-                                }
-                              }
-                            ]
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -226,31 +102,6 @@
             "unit": {
               "carduid": "ST07-001_cb_unit_0002",
               "cardId": "ST07-001",
-              "cardData": {
-                "id": "ST07-001",
-                "name": "Gundam Exia",
-                "cardType": "unit",
-                "color": "Purple",
-                "level": 5,
-                "cost": 4,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "CB",
-                  "GN Drive"
-                ],
-                "link": [
-                  "Setsuna F. Seiei"
-                ],
-                "ap": 4,
-                "hp": 4,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -272,14 +123,7 @@
           "trashArea": [
             {
               "carduid": "ST07-008_trash_0001",
-              "cardId": "ST07-008",
-              "cardData": {
-                "id": "ST07-008",
-                "cardType": "unit",
-                "traits": [
-                  "CB"
-                ]
-              }
+              "cardId": "ST07-008"
             }
           ],
           "repairAbilitiesCheckedThisCycle": false,
@@ -320,4 +164,3 @@
     }
   }
 }
-

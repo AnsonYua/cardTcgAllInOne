@@ -33,112 +33,7 @@
           "hand": [
             {
               "carduid": "ST01-015_00000000-0000-0000-0000-000000000002",
-              "cardId": "ST01-015",
-              "cardData": {
-                "id": "ST01-015",
-                "name": "White Base",
-                "cardType": "base",
-                "color": "Blue",
-                "level": 3,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team",
-                  "Warship"
-                ],
-                "link": [],
-                "ap": 0,
-                "hp": 5,
-                "effects": {
-                  "description": [
-                    "【Burst】Deploy this card.",
-                    "【Deploy】Add 1 of your Shields to your hand.",
-                    "【Activate･Main】【Once per Turn】②：Deploy 1 [Gundam]((White Base Team)･AP3･HP3) Unit token if you have no Units in play, deploy 1 [Guncannon]((White Base Team)･AP2･HP2) Unit token if you have only 1 Unit in play, or deploy 1 [Guntank]((White Base Team)･AP1･HP1) Unit token if you have 2 or more Units in play."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_deploy",
-                      "type": "triggered",
-                      "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
-                      "action": "deploy"
-                    },
-                    {
-                      "effectId": "deploy_shield_to_hand",
-                      "type": "triggered",
-                      "trigger": "ENTERS_PLAY",
-                      "target": {
-                        "type": "card",
-                        "scope": "self_shield"
-                      },
-                      "action": "addToHand",
-                      "parameters": {
-                        "value": 1,
-                        "from": "shield"
-                      }
-                    },
-                    {
-                      "effectId": "activate_conditional_token_deploy",
-                      "type": "activated",
-                      "timing": {
-                        "windows": [
-                          "MAIN_PHASE"
-                        ]
-                      },
-                      "cost": {
-                        "resource": 2,
-                        "oncePerTurn": true
-                      },
-                      "conditions": [
-                        "boardStateCheck"
-                      ],
-                      "action": "conditionalTokenDeploy",
-                      "parameters": {
-                        "condition1": {
-                          "unitsInPlay": 0,
-                          "token": {
-                            "name": "Gundam",
-                            "traits": [
-                              "White Base Team"
-                            ],
-                            "ap": 3,
-                            "hp": 3
-                          }
-                        },
-                        "condition2": {
-                          "unitsInPlay": 1,
-                          "token": {
-                            "name": "Guncannon",
-                            "traits": [
-                              "White Base Team"
-                            ],
-                            "ap": 2,
-                            "hp": 2
-                          }
-                        },
-                        "condition3": {
-                          "unitsInPlay": ">=2",
-                          "token": {
-                            "name": "Guntank",
-                            "traits": [
-                              "White Base Team"
-                            ],
-                            "ap": 1,
-                            "hp": 1
-                          }
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
+              "cardId": "ST01-015"
             }
           ],
           "handUids": [
@@ -159,28 +54,6 @@
             "unit": {
               "carduid": "ST01-005_00000000-0000-0000-0000-000000000021",
               "cardId": "ST01-005",
-              "cardData": {
-                "id": "ST01-005",
-                "name": "GM",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 2,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -210,48 +83,6 @@
             "unit": {
               "carduid": "ST01-004_00000000-0000-0000-0000-000000000022",
               "cardId": "ST01-004",
-              "cardData": {
-                "id": "ST01-004",
-                "name": "Guntank",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 3,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team"
-                ],
-                "link": [
-                  "Hayato Kobayashi"
-                ],
-                "ap": 2,
-                "hp": 3,
-                "effects": {
-                  "description": [
-                    "【Deploy】Choose 1 enemy Unit with 2 or less HP. Rest it."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "deploy_rest_low_hp",
-                      "trigger": "ENTERS_PLAY",
-                      "target": {
-                        "type": "unit",
-                        "scope": "opponent",
-                        "filters": {
-                          "hp": "<=2"
-                        },
-                        "count": 1
-                      },
-                      "action": "rest",
-                      "type": "triggered"
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -338,10 +169,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_p1_2",
@@ -349,10 +177,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_p1_3",
@@ -360,10 +185,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_p1_4",
@@ -371,10 +193,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [],
@@ -481,58 +300,11 @@
           "shieldArea": [
             {
               "carduid": "ST01-005_opponent_shield_0001",
-              "cardId": "ST01-005",
-              "cardData": {
-                "id": "ST01-005",
-                "name": "GM",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 2,
-                "cost": 1,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 2,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              }
+              "cardId": "ST01-005"
             },
             {
               "carduid": "ST01-003_opponent_shield_0002",
-              "cardId": "ST01-003",
-              "cardData": {
-                "id": "ST01-003",
-                "name": "Guncannon",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 3,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Federation",
-                  "White Base Team"
-                ],
-                "link": [
-                  "Kai Shiden"
-                ],
-                "ap": 2,
-                "hp": 4,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              }
+              "cardId": "ST01-003"
             }
           ],
           "energyArea": [
@@ -542,10 +314,7 @@
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_p2_2",
@@ -553,10 +322,7 @@
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [],

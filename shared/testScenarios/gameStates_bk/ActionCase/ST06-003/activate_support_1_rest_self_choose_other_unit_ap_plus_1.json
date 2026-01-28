@@ -1,0 +1,264 @@
+{
+  "description": "st06-003_activate_support_1_rest_self_choose_other_unit_ap_plus_1",
+  "gameId": "st06-003_activate_support_1_rest_self_choose_other_unit_ap_plus_1",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "ST06-003",
+    "activateCardAbility",
+    "restSelf",
+    "modifyAP",
+    "TARGET_CHOICE"
+  ],
+  "notes": [
+    "Setup: Player A is currentPlayer in MAIN_PHASE with ST06-003 in slot1 (active) and at least 1 other friendly Unit in play (slot2/slot3).",
+    "Action (manual): Player A uses activateCardAbility on ST06-003 effectId=activate_support_1.",
+    "Expect: BaseAbilityManager pays rest cost by resting ST06-003 and emits CARD_RESTED in notificationQueue for (playerId=A, carduid=ST06-003_unit_0001, zone=slot1).",
+    "Expect: Because target selection is player_choice count=1 among multiple eligible units and excludeSource=true, TARGET_CHOICE is enqueued to processingQueue and a TARGET_CHOICE notification is appended to notificationQueue (frontend-driven).",
+    "Action (manual): Player A resolves TARGET_CHOICE selecting slot2 unit.",
+    "Expect: Selected unit gets AP+1 until end of turn and CARD_STAT_MODIFIED (stat=modifyAP, delta=1) is appended to notificationQueue."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_st06003_seed",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "ST06-000_draw_0003",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST06-003_unit_0001",
+              "cardId": "ST06-003",
+              "cardData": {
+                "id": "ST06-003",
+                "name": "Gaia’s Rick Dom (GQ)",
+                "cardType": "unit",
+                "color": "Red",
+                "level": 2,
+                "cost": 2,
+                "zone": [
+                  "Space"
+                ],
+                "traits": [
+                  "Clan"
+                ],
+                "link": [
+                  "Gaia"
+                ],
+                "ap": 2,
+                "hp": 2,
+                "effects": {
+                  "description": [
+                    "【Activate･Main】<Support 1> (Rest this Unit. 1 other friendly Unit gets AP+1 during this turn.)"
+                  ],
+                  "rules": [
+                    {
+                      "effectId": "activate_support_1",
+                      "type": "activated",
+                      "timing": {
+                        "windows": [
+                          "MAIN_PHASE"
+                        ],
+                        "duration": "UNTIL_END_OF_TURN"
+                      },
+                      "cost": {
+                        "rest": "self"
+                      },
+                      "action": "modifyAP",
+                      "target": {
+                        "type": "unit",
+                        "scope": "self_all_unit",
+                        "selection": {
+                          "type": "player_choice"
+                        },
+                        "count": 1
+                      },
+                      "parameters": {
+                        "value": 1,
+                        "excludeSource": true
+                      }
+                    }
+                  ]
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 2,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "temporaryEffects": []
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "ST06-004_unit_0002",
+              "cardId": "ST06-004",
+              "cardData": {
+                "id": "ST06-004",
+                "name": "Gelgoog (GQ)",
+                "cardType": "unit"
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 2,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "temporaryEffects": []
+            }
+          },
+          "slot3": {
+            "unit": {
+              "carduid": "ST06-005_unit_0003",
+              "cardId": "ST06-005",
+              "cardData": {
+                "id": "ST06-005",
+                "name": "Red Gundam",
+                "cardType": "unit",
+                "traits": [
+                  "Clan"
+                ]
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 4,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "temporaryEffects": []
+            }
+          },
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_st06_003_a_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            }
+          ],
+          "shieldArea": [
+            {
+              "carduid": "ST06-012_shield_a_0001",
+              "cardId": "ST06-012",
+              "cardData": {
+                "cardType": "command"
+              }
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": []
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "energyArea": [],
+          "shieldArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": []
+        }
+      }
+    }
+  }
+}
+

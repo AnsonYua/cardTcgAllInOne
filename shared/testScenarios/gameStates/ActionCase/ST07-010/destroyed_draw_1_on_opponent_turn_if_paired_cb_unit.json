@@ -77,31 +77,6 @@
             "unit": {
               "carduid": "ST07-002_unit_0001",
               "cardId": "ST07-002",
-              "cardData": {
-                "id": "ST07-002",
-                "name": "Gundam Exia",
-                "cardType": "unit",
-                "color": "Purple",
-                "level": 4,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "CB",
-                  "GN Drive"
-                ],
-                "link": [
-                  "Setsuna F. Seiei"
-                ],
-                "ap": 4,
-                "hp": 3,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -112,64 +87,6 @@
             "pilot": {
               "carduid": "ST07-010_pilot_0001",
               "cardId": "ST07-010",
-              "cardData": {
-                "id": "ST07-010",
-                "name": "Tieria Erde",
-                "cardType": "pilot",
-                "color": "Purple",
-                "level": 4,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "CB",
-                  "Innovade"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【Destroyed】If it is your opponent's turn and this is a (CB) Unit, draw 1."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_add_to_hand",
-                      "type": "triggered",
-                      "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
-                      "action": "addToHand"
-                    },
-                    {
-                      "effectId": "destroyed_draw_1_on_opponent_turn_if_cb_unit",
-                      "type": "triggered",
-                      "trigger": "DESTROYED",
-                      "timing": {
-                        "actionTurn": "OPPONENT_TURN"
-                      },
-                      "sourceConditions": [
-                        {
-                          "type": "paired"
-                        }
-                      ],
-                      "conditions": [
-                        {
-                          "type": "pairedUnitTrait",
-                          "scope": "source",
-                          "value": "CB"
-                        }
-                      ],
-                      "action": "draw",
-                      "parameters": {
-                        "value": 1
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -219,4 +136,3 @@
     }
   }
 }
-

@@ -77,28 +77,6 @@
             "unit": {
               "carduid": "GD01-090_unit_0001",
               "cardId": "GD01-090",
-              "cardData": {
-                "id": "GD01-090",
-                "name": "Demi Trainer",
-                "cardType": "unit",
-                "color": "White",
-                "level": 3,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Academy"
-                ],
-                "link": [],
-                "ap": 2,
-                "hp": 3,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": true,
@@ -112,85 +90,6 @@
             "pilot": {
               "carduid": "GD01-097_pilot_0001",
               "cardId": "GD01-097",
-              "cardData": {
-                "id": "GD01-097",
-                "name": "Guel Jeturk",
-                "cardType": "pilot",
-                "color": "White",
-                "level": 3,
-                "cost": 1,
-                "zone": [],
-                "traits": [
-                  "Academy"
-                ],
-                "link": [],
-                "ap": 1,
-                "hp": 1,
-                "effects": {
-                  "description": [
-                    "【Burst】Add this card to your hand.",
-                    "【Activate・Main】【Once per Turn】If your opponent has 8 or more cards in their hand, set this Unit as active. It can't attack during this turn."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "burst_add_to_hand",
-                      "type": "triggered",
-                      "trigger": "BURST_CONDITION",
-                      "target": {
-                        "type": "card",
-                        "scope": "self"
-                      },
-                      "action": "addToHand"
-                    },
-                    {
-                      "effectId": "activate_effect",
-                      "type": "activated",
-                      "timing": {
-                        "windows": [
-                          "MAIN_PHASE"
-                        ]
-                      },
-                      "cost": {
-                        "oncePerTurn": true
-                      },
-                      "conditions": [
-                        {
-                          "type": "opponentHandSize",
-                          "scope": "opponent",
-                          "value": ">=8"
-                        }
-                      ],
-                      "action": "sequence",
-                      "parameters": {
-                        "steps": [
-                          {
-                            "action": "setActive",
-                            "target": {
-                              "type": "unit",
-                              "scope": "source_paired_unit",
-                              "count": 1
-                            }
-                          },
-                          {
-                            "action": "restrict_attack",
-                            "timing": {
-                              "duration": "UNTIL_END_OF_TURN"
-                            },
-                            "target": {
-                              "type": "unit",
-                              "scope": "source_paired_unit",
-                              "count": 1
-                            },
-                            "parameters": {
-                              "disallow": true
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -215,14 +114,38 @@
         "name": "Player 2",
         "deck": {
           "hand": [
-            { "carduid": "GD01-001_hand_b_0001", "cardId": "GD01-001", "cardData": { "id": "GD01-001", "cardType": "unit" } },
-            { "carduid": "GD01-002_hand_b_0002", "cardId": "GD01-002", "cardData": { "id": "GD01-002", "cardType": "unit" } },
-            { "carduid": "GD01-003_hand_b_0003", "cardId": "GD01-003", "cardData": { "id": "GD01-003", "cardType": "unit" } },
-            { "carduid": "GD01-004_hand_b_0004", "cardId": "GD01-004", "cardData": { "id": "GD01-004", "cardType": "unit" } },
-            { "carduid": "GD01-005_hand_b_0005", "cardId": "GD01-005", "cardData": { "id": "GD01-005", "cardType": "unit" } },
-            { "carduid": "GD01-006_hand_b_0006", "cardId": "GD01-006", "cardData": { "id": "GD01-006", "cardType": "unit" } },
-            { "carduid": "GD01-007_hand_b_0007", "cardId": "GD01-007", "cardData": { "id": "GD01-007", "cardType": "unit" } },
-            { "carduid": "GD01-008_hand_b_0008", "cardId": "GD01-008", "cardData": { "id": "GD01-008", "cardType": "unit" } }
+            {
+              "carduid": "GD01-001_hand_b_0001",
+              "cardId": "GD01-001"
+            },
+            {
+              "carduid": "GD01-002_hand_b_0002",
+              "cardId": "GD01-002"
+            },
+            {
+              "carduid": "GD01-003_hand_b_0003",
+              "cardId": "GD01-003"
+            },
+            {
+              "carduid": "GD01-004_hand_b_0004",
+              "cardId": "GD01-004"
+            },
+            {
+              "carduid": "GD01-005_hand_b_0005",
+              "cardId": "GD01-005"
+            },
+            {
+              "carduid": "GD01-006_hand_b_0006",
+              "cardId": "GD01-006"
+            },
+            {
+              "carduid": "GD01-007_hand_b_0007",
+              "cardId": "GD01-007"
+            },
+            {
+              "carduid": "GD01-008_hand_b_0008",
+              "cardId": "GD01-008"
+            }
           ],
           "handUids": [
             "GD01-001_hand_b_0001",
@@ -258,4 +181,3 @@
     }
   }
 }
-

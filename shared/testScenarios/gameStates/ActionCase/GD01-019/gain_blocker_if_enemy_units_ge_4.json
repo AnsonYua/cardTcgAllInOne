@@ -75,24 +75,6 @@
             "unit": {
               "carduid": "GD01-019_unit_0001",
               "cardId": "GD01-019",
-              "cardData": {
-                "id": "GD01-019",
-                "name": "Byarlant Custom",
-                "cardType": "unit",
-                "color": "Blue",
-                "level": 4,
-                "cost": 2,
-                "traits": [
-                  "Earth Federation"
-                ],
-                "link": [],
-                "ap": 3,
-                "hp": 4,
-                "effects": {
-                  "description": [],
-                  "rules": []
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -137,22 +119,73 @@
         "isReady": true,
         "zones": {
           "slot1": {
-            "unit": { "carduid": "GD01-020_enemy_0001", "cardId": "GD01-020", "cardData": { "id": "GD01-020", "cardType": "unit" }, "isRested": false, "damageReceived": 0, "modifyAP": 0, "modifyHP": 0, "continueModifyAP": 0, "continueModifyHP": 0, "originalAP": 3, "originalHP": 3, "canAttackThisTurn": true }
+            "unit": {
+              "carduid": "GD01-020_enemy_0001",
+              "cardId": "GD01-020",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 3,
+              "canAttackThisTurn": true
+            }
           },
           "slot2": {
-            "unit": { "carduid": "GD01-021_enemy_0002", "cardId": "GD01-021", "cardData": { "id": "GD01-021", "cardType": "unit" }, "isRested": false, "damageReceived": 0, "modifyAP": 0, "modifyHP": 0, "continueModifyAP": 0, "continueModifyHP": 0, "originalAP": 1, "originalHP": 2, "canAttackThisTurn": true }
+            "unit": {
+              "carduid": "GD01-021_enemy_0002",
+              "cardId": "GD01-021",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 1,
+              "originalHP": 2,
+              "canAttackThisTurn": true
+            }
           },
           "slot3": {
-            "unit": { "carduid": "GD01-022_enemy_0003", "cardId": "GD01-022", "cardData": { "id": "GD01-022", "cardType": "unit" }, "isRested": false, "damageReceived": 0, "modifyAP": 0, "modifyHP": 0, "continueModifyAP": 0, "continueModifyHP": 0, "originalAP": 2, "originalHP": 2, "canAttackThisTurn": true }
+            "unit": {
+              "carduid": "GD01-022_enemy_0003",
+              "cardId": "GD01-022",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 2,
+              "canAttackThisTurn": true
+            }
           },
           "slot4": {
-            "unit": { "carduid": "GD01-023_enemy_0004", "cardId": "GD01-023", "cardData": { "id": "GD01-023", "cardType": "unit" }, "isRested": false, "damageReceived": 0, "modifyAP": 0, "modifyHP": 0, "continueModifyAP": 0, "continueModifyHP": 0, "originalAP": 2, "originalHP": 3, "canAttackThisTurn": true }
+            "unit": {
+              "carduid": "GD01-023_enemy_0004",
+              "cardId": "GD01-023",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 3,
+              "canAttackThisTurn": true
+            }
           },
           "slot5": {},
           "slot6": {},
           "base": [],
           "shieldArea": [
-            { "carduid": "GD01-040_shield_0001", "cardId": "GD01-040", "cardData": { "id": "GD01-040", "cardType": "unit" } }
+            {
+              "carduid": "GD01-040_shield_0001",
+              "cardId": "GD01-040"
+            }
           ],
           "energyArea": [],
           "trashArea": [],
@@ -163,4 +196,3 @@
     }
   }
 }
-

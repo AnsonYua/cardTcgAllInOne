@@ -79,83 +79,6 @@
             "unit": {
               "carduid": "GD01-069_unit_0001",
               "cardId": "GD01-069",
-              "cardData": {
-                "id": "GD01-069",
-                "name": "Strike Rouge",
-                "cardType": "unit",
-                "color": "White",
-                "level": 3,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Triple Ship Alliance"
-                ],
-                "link": [
-                  "Orb"
-                ],
-                "ap": 3,
-                "hp": 2,
-                "effects": {
-                  "description": [
-                    "【Activate･Main】【Once per Turn】①：Choose 1 of your rested white Units with <Blocker>. Set it as active. It can't attack during this turn."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "activate_effect",
-                      "type": "activated",
-                      "timing": {
-                        "windows": [
-                          "MAIN_PHASE"
-                        ]
-                      },
-                      "cost": {
-                        "resource": 1,
-                        "oncePerTurn": true
-                      },
-                      "action": "sequence",
-                      "parameters": {
-                        "steps": [
-                          {
-                            "action": "setActive",
-                            "target": {
-                              "type": "unit",
-                              "scope": "self_all_unit",
-                              "selection": {
-                                "type": "player_choice"
-                              },
-                              "filters": {
-                                "color": "White",
-                                "keywords": [
-                                  "Blocker"
-                                ],
-                                "status": "rested"
-                              },
-                              "count": 1
-                            }
-                          },
-                          {
-                            "action": "restrict_attack",
-                            "timing": {
-                              "duration": "UNTIL_END_OF_TURN"
-                            },
-                            "target": {
-                              "type": "unit",
-                              "scope": "previous_target",
-                              "count": 1
-                            },
-                            "parameters": {
-                              "disallow": true
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -171,45 +94,6 @@
             "unit": {
               "carduid": "ST01-008_blocker_rested_0002",
               "cardId": "ST01-008",
-              "cardData": {
-                "id": "ST01-008",
-                "name": "Demi Trainer",
-                "cardType": "unit",
-                "color": "White",
-                "level": 2,
-                "cost": 2,
-                "zone": [
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth House"
-                ],
-                "link": [
-                  "Chuatury Panlunch"
-                ],
-                "ap": 2,
-                "hp": 3,
-                "effects": {
-                  "description": [
-                    "<Blocker> (Rest this Unit to change the attack target to it.)"
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "blocker",
-                      "trigger": "ATTACK_REDIRECT",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self"
-                      },
-                      "action": "redirect_attack",
-                      "parameters": {
-                        "cost": "rest_self"
-                      },
-                      "type": "triggered"
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": true,
@@ -225,45 +109,6 @@
             "unit": {
               "carduid": "ST01-009_blocker_rested_0003",
               "cardId": "ST01-009",
-              "cardData": {
-                "id": "ST01-009",
-                "name": "Zowort",
-                "cardType": "unit",
-                "color": "White",
-                "level": 3,
-                "cost": 2,
-                "zone": [
-                  "Earth"
-                ],
-                "traits": [
-                  "Grassley Defense Systems"
-                ],
-                "link": [
-                  "Guel Jeturk"
-                ],
-                "ap": 3,
-                "hp": 2,
-                "effects": {
-                  "description": [
-                    "<Blocker> (Rest this Unit to change the attack target to it.)"
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "blocker",
-                      "trigger": "ATTACK_REDIRECT",
-                      "target": {
-                        "type": "unit",
-                        "scope": "self"
-                      },
-                      "action": "redirect_attack",
-                      "parameters": {
-                        "cost": "rest_self"
-                      },
-                      "type": "triggered"
-                    }
-                  ]
-                }
-              },
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": true,
@@ -287,10 +132,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [],
@@ -332,4 +174,3 @@
     }
   }
 }
-

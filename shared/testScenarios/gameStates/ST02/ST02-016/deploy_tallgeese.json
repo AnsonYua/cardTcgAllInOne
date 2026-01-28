@@ -1,243 +1,147 @@
 {
-  "category": "ST02-016", 
-  "gameId": "st02-016_deploy_tallgeese", 
-  "description": "st02-016_deploy_tallgeese", 
+  "category": "ST02-016",
+  "gameId": "st02-016_deploy_tallgeese",
+  "description": "st02-016_deploy_tallgeese",
   "tags": [
-    "Deploy", 
+    "Deploy",
     "Token"
-  ], 
+  ],
   "initialGameEnv": {
-    "hasChosenFirstPlayer": false, 
-    "playerId_2": "playerId_2", 
-    "playerId_1": "playerId_1", 
-    "currentPlayer": "playerId_1", 
-    "processingEnabled": true, 
-    "firstPlayerDecision": null, 
-    "gameStarted": true, 
+    "hasChosenFirstPlayer": false,
+    "playerId_2": "playerId_2",
+    "playerId_1": "playerId_1",
+    "currentPlayer": "playerId_1",
+    "processingEnabled": true,
+    "firstPlayerDecision": null,
+    "gameStarted": true,
     "playersReady": {
-      "playerId_2": true, 
+      "playerId_2": true,
       "playerId_1": true
-    }, 
-    "currentBattle": null, 
+    },
+    "currentBattle": null,
     "players": {
       "playerId_2": {
         "zones": {
-          "trashArea": [], 
-          "shieldArea": [], 
-          "base": [], 
-          "repairAbilitiesCheckedThisCycle": false, 
-          "slot1": {}, 
-          "energyArea": [], 
-          "slot3": {}, 
-          "slot2": {}, 
-          "slot5": {}, 
-          "slot4": {}, 
+          "trashArea": [],
+          "shieldArea": [],
+          "base": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "slot1": {},
+          "energyArea": [],
+          "slot3": {},
+          "slot2": {},
+          "slot5": {},
+          "slot4": {},
           "slot6": {}
-        }, 
-        "isReady": true, 
-        "name": "Player 2", 
+        },
+        "isReady": true,
+        "name": "Player 2",
         "deck": {
           "mainDeck": [
-            "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c", 
-            "ST02-007_00000000-0000-0000-0000-000000000801", 
-            "ST02-008_00000000-0000-0000-0000-000000000802", 
+            "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c",
+            "ST02-007_00000000-0000-0000-0000-000000000801",
+            "ST02-008_00000000-0000-0000-0000-000000000802",
             "ST02-009_00000000-0000-0000-0000-000000000803"
-          ], 
-          "handUids": [], 
+          ],
+          "handUids": [],
           "hand": []
-        }, 
-        "confirmIsRedraw": false, 
-        "isRedraw": false, 
-        "playerPoint": 0, 
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
         "id": "playerId_2"
-      }, 
+      },
       "playerId_1": {
         "zones": {
-          "trashArea": [], 
-          "shieldArea": [], 
-          "base": [], 
-          "repairAbilitiesCheckedThisCycle": false, 
-          "slot1": {}, 
+          "trashArea": [],
+          "shieldArea": [],
+          "base": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "slot1": {},
           "energyArea": [
             {
-              "placedBy": "playerId_1", 
-              "carduid": "energy_basic_st02_016_1", 
-              "isExtraEnergy": false, 
-              "placedAt": 0, 
-              "cardData": {
-                "cardType": "energy"
-              }, 
-              "isRested": false, 
+              "placedBy": "playerId_1",
+              "carduid": "energy_basic_st02_016_1",
+              "isExtraEnergy": false,
+              "placedAt": 0,
+              "isRested": false,
               "cardId": "energy_basic"
-            }, 
+            },
             {
-              "placedBy": "playerId_1", 
-              "carduid": "energy_basic_st02_016_2", 
-              "isExtraEnergy": false, 
-              "placedAt": 0, 
-              "cardData": {
-                "cardType": "energy"
-              }, 
-              "isRested": false, 
+              "placedBy": "playerId_1",
+              "carduid": "energy_basic_st02_016_2",
+              "isExtraEnergy": false,
+              "placedAt": 0,
+              "isRested": false,
               "cardId": "energy_basic"
-            }, 
+            },
             {
-              "placedBy": "playerId_1", 
-              "carduid": "energy_basic_st02_016_3", 
-              "isExtraEnergy": false, 
-              "placedAt": 0, 
-              "cardData": {
-                "cardType": "energy"
-              }, 
-              "isRested": false, 
+              "placedBy": "playerId_1",
+              "carduid": "energy_basic_st02_016_3",
+              "isExtraEnergy": false,
+              "placedAt": 0,
+              "isRested": false,
               "cardId": "energy_basic"
             }
-          ], 
-          "slot3": {}, 
-          "slot2": {}, 
-          "slot5": {}, 
-          "slot4": {}, 
+          ],
+          "slot3": {},
+          "slot2": {},
+          "slot5": {},
+          "slot4": {},
           "slot6": {}
-        }, 
-        "isReady": true, 
-        "name": "Player 1", 
+        },
+        "isReady": true,
+        "name": "Player 1",
         "deck": {
           "mainDeck": [
-            "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c", 
-            "ST02-007_00000000-0000-0000-0000-000000000901", 
+            "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c",
+            "ST02-007_00000000-0000-0000-0000-000000000901",
             "ST02-008_00000000-0000-0000-0000-000000000902"
-          ], 
+          ],
           "handUids": [
             "ST02-016_hand_0001"
-          ], 
+          ],
           "hand": [
             {
-              "cardData": {
-                "name": "Corsica Base", 
-                "zone": [
-                  "Earth"
-                ], 
-                "level": 3, 
-                "color": "Blue", 
-                "hp": 5, 
-                "ap": 0, 
-                "cardType": "base", 
-                "cost": 3, 
-                "link": [], 
-                "effects": {
-                  "rules": [
-                    {
-                      "action": "deploy", 
-                      "effectId": "burst_deploy", 
-                      "trigger": "BURST_CONDITION", 
-                      "type": "triggered", 
-                      "target": {
-                        "scope": "self", 
-                        "type": "card"
-                      }
-                    }, 
-                    {
-                      "target": {
-                        "scope": "self_shield", 
-                        "type": "card"
-                      }, 
-                      "parameters": {
-                        "from": "shield", 
-                        "value": 1
-                      }, 
-                      "trigger": "ENTERS_PLAY", 
-                      "effectId": "deploy_shield_to_hand", 
-                      "action": "addToHand", 
-                      "type": "triggered"
-                    }, 
-                    {
-                      "parameters": {
-                        "condition2": {
-                          "cardInTrash": "ST02-016", 
-                          "count": 2, 
-                          "token": {
-                            "traits": [
-                              "OZ"
-                            ], 
-                            "hp": 1, 
-                            "name": "Leo", 
-                            "ap": 1
-                          }
-                        }, 
-                        "condition1": {
-                          "count": 1, 
-                          "token": {
-                            "traits": [
-                              "OZ"
-                            ], 
-                            "hp": 2, 
-                            "name": "Tallgeese", 
-                            "ap": 4
-                          }, 
-                          "selfTurn": true
-                        }
-                      }, 
-                      "type": "triggered", 
-                      "trigger": "ENTERS_PLAY", 
-                      "effectId": "deploy_conditional_token", 
-                      "action": "conditionalTokenDeploy", 
-                      "conditions": [
-                        "turnCheck", 
-                        "cardInTrashCheck"
-                      ]
-                    }
-                  ], 
-                  "description": [
-                    "【Burst】Deploy this card.", 
-                    "【Deploy】Add 1 of your Shields to your hand.", 
-                    "【Deploy】If it's your turn, deploy 1 Tallgeese (OZ･AP4･HP2) Unit token. If a \"Corsica Base\" is in your trash, deploy 2 Leo (OZ･AP1･HP1) Unit tokens instead."
-                  ]
-                }, 
-                "traits": [
-                  "OZ", 
-                  "Stronghold"
-                ], 
-                "id": "ST02-016"
-              }, 
-              "carduid": "ST02-016_hand_0001", 
+              "carduid": "ST02-016_hand_0001",
               "cardId": "ST02-016"
             }
           ]
-        }, 
-        "confirmIsRedraw": false, 
-        "isRedraw": false, 
-        "playerPoint": 0, 
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
         "id": "playerId_1"
       }
-    }, 
-    "firstPlayerChooser": null, 
-    "version": 4, 
+    },
+    "firstPlayerChooser": null,
+    "version": 4,
     "notificationQueue": [
       {
         "metadata": {
-          "priority": "normal", 
-          "timestamp": 1768362880422, 
-          "expiresAt": 1768362883422, 
+          "priority": "normal",
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
           "requiresAcknowledgment": false
-        }, 
-        "type": "CARD_DRAWN", 
+        },
+        "type": "CARD_DRAWN",
         "payload": {
-          "sourceZone": "deck", 
-          "playerId": "playerId_1", 
-          "timestamp": 1768362880422, 
-          "carduid": "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c", 
-          "reason": "draw", 
+          "sourceZone": "deck",
+          "playerId": "playerId_1",
+          "timestamp": 1768362880422,
+          "carduid": "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c",
+          "reason": "draw",
           "drawContext": "turn_start"
-        }, 
+        },
         "id": "card_drawn_1768362880422_3bxbxq5uy"
       }
-    ], 
-    "phase": "MAIN_PHASE", 
-    "processingQueue": [], 
-    "lastEventId": 0, 
-    "firstPlayer": 0, 
-    "maxEventsPerCycle": 50, 
+    ],
+    "phase": "MAIN_PHASE",
+    "processingQueue": [],
+    "lastEventId": 0,
+    "firstPlayer": 0,
+    "maxEventsPerCycle": 50,
     "currentTurn": 1
-  }, 
+  },
   "testType": "deploy"
 }

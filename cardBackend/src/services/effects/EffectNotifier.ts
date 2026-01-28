@@ -2,6 +2,7 @@ import { GameEnvironment } from '../../models/GameEnvironment';
 import { UnitZoneCard, PilotZoneCard } from '../../models/CardSystem';
 import { TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { GameNotificationManager } from '../GameNotificationManager';
+import { calculateSlotFieldValue } from '../../utils/FieldValueCalculator';
 
 export class EffectNotifier {
     static notifyCardStatChange(
@@ -15,6 +16,12 @@ export class EffectNotifier {
         const notificationManager = new GameNotificationManager(gameEnv);
         const cardId = targetCard.cardId ?? target.cardData?.cardId;
         const cardName = target.cardData?.name || targetCard.cardData?.name || 'Unknown Card';
+        const targetPlayer = gameEnv.players?.[target.playerId];
+        const isSlotZone = typeof target.zone === 'string' && /^slot\\d+$/.test(target.zone);
+        const fieldCardValue =
+            isSlotZone && targetPlayer ? calculateSlotFieldValue((targetPlayer.zones as any)[target.zone]) : undefined;
+        const displayValue =
+            action === 'modifyAP' ? fieldCardValue?.totalAP ?? 0 : fieldCardValue?.totalHP ?? 0;
 
         notificationManager.addNotificationEvent(
             'CARD_STAT_MODIFIED',
@@ -27,6 +34,7 @@ export class EffectNotifier {
                 stat: action,
                 delta,
                 modifierValue,
+                displayValue,
                 timestamp: Date.now()
             },
             'normal'

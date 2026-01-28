@@ -1,0 +1,166 @@
+{
+  "description": "gd01-019_gain_blocker_if_enemy_units_ge_4",
+  "gameId": "gd01-019_gain_blocker_if_enemy_units_ge_4",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "GD01-019",
+    "continuous",
+    "unitsInPlay",
+    "grant_keyword",
+    "Blocker"
+  ],
+  "notes": [
+    "Setup: Player A MAIN_PHASE with GD01-019 in slot1. Player B has 4 units in play (slots 1-4).",
+    "Action (manual): Player A initiates attackShieldArea with attackerCarduid=GD01-019_unit_0001.",
+    "Expect: When the battle action-step opens, continuous effects are refreshed and GD01-019 gains Blocker (KEYWORD_GRANTED in notificationQueue, keyword=Blocker, duration=CONTINUOUS)."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd01019_seed",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "GD01-000_draw_0019",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD01-019_unit_0001",
+              "cardId": "GD01-019",
+              "cardData": {
+                "id": "GD01-019",
+                "name": "Byarlant Custom",
+                "cardType": "unit",
+                "color": "Blue",
+                "level": 4,
+                "cost": 2,
+                "traits": [
+                  "Earth Federation"
+                ],
+                "link": [],
+                "ap": 3,
+                "hp": 4,
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 4,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "temporaryEffects": []
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": { "carduid": "GD01-020_enemy_0001", "cardId": "GD01-020", "cardData": { "id": "GD01-020", "cardType": "unit" }, "isRested": false, "damageReceived": 0, "modifyAP": 0, "modifyHP": 0, "continueModifyAP": 0, "continueModifyHP": 0, "originalAP": 3, "originalHP": 3, "canAttackThisTurn": true }
+          },
+          "slot2": {
+            "unit": { "carduid": "GD01-021_enemy_0002", "cardId": "GD01-021", "cardData": { "id": "GD01-021", "cardType": "unit" }, "isRested": false, "damageReceived": 0, "modifyAP": 0, "modifyHP": 0, "continueModifyAP": 0, "continueModifyHP": 0, "originalAP": 1, "originalHP": 2, "canAttackThisTurn": true }
+          },
+          "slot3": {
+            "unit": { "carduid": "GD01-022_enemy_0003", "cardId": "GD01-022", "cardData": { "id": "GD01-022", "cardType": "unit" }, "isRested": false, "damageReceived": 0, "modifyAP": 0, "modifyHP": 0, "continueModifyAP": 0, "continueModifyHP": 0, "originalAP": 2, "originalHP": 2, "canAttackThisTurn": true }
+          },
+          "slot4": {
+            "unit": { "carduid": "GD01-023_enemy_0004", "cardId": "GD01-023", "cardData": { "id": "GD01-023", "cardType": "unit" }, "isRested": false, "damageReceived": 0, "modifyAP": 0, "modifyHP": 0, "continueModifyAP": 0, "continueModifyHP": 0, "originalAP": 2, "originalHP": 3, "canAttackThisTurn": true }
+          },
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [
+            { "carduid": "GD01-040_shield_0001", "cardId": "GD01-040", "cardData": { "id": "GD01-040", "cardType": "unit" } }
+          ],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
+

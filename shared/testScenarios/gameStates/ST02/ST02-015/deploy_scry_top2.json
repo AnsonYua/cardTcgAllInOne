@@ -1,236 +1,144 @@
 {
-  "category": "ST02-015", 
-  "gameId": "st02-015_deploy_scry_top2", 
-  "description": "st02-015_deploy_scry_top2", 
+  "category": "ST02-015",
+  "gameId": "st02-015_deploy_scry_top2",
+  "description": "st02-015_deploy_scry_top2",
   "tags": [
-    "Deploy", 
+    "Deploy",
     "Scry"
-  ], 
+  ],
   "initialGameEnv": {
-    "hasChosenFirstPlayer": false, 
-    "playerId_2": "playerId_2", 
-    "playerId_1": "playerId_1", 
-    "currentPlayer": "playerId_1", 
-    "processingEnabled": true, 
-    "firstPlayerDecision": null, 
-    "gameStarted": true, 
+    "hasChosenFirstPlayer": false,
+    "playerId_2": "playerId_2",
+    "playerId_1": "playerId_1",
+    "currentPlayer": "playerId_1",
+    "processingEnabled": true,
+    "firstPlayerDecision": null,
+    "gameStarted": true,
     "playersReady": {
-      "playerId_2": true, 
+      "playerId_2": true,
       "playerId_1": true
-    }, 
-    "currentBattle": null, 
+    },
+    "currentBattle": null,
     "players": {
       "playerId_2": {
         "zones": {
-          "trashArea": [], 
-          "shieldArea": [], 
-          "base": [], 
-          "repairAbilitiesCheckedThisCycle": false, 
-          "slot1": {}, 
-          "energyArea": [], 
-          "slot3": {}, 
-          "slot2": {}, 
-          "slot5": {}, 
-          "slot4": {}, 
+          "trashArea": [],
+          "shieldArea": [],
+          "base": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "slot1": {},
+          "energyArea": [],
+          "slot3": {},
+          "slot2": {},
+          "slot5": {},
+          "slot4": {},
           "slot6": {}
-        }, 
-        "isReady": true, 
-        "name": "Player 2", 
+        },
+        "isReady": true,
+        "name": "Player 2",
         "deck": {
           "mainDeck": [
-            "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c", 
-            "ST02-007_00000000-0000-0000-0000-000000000801", 
-            "ST02-008_00000000-0000-0000-0000-000000000802", 
+            "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c",
+            "ST02-007_00000000-0000-0000-0000-000000000801",
+            "ST02-008_00000000-0000-0000-0000-000000000802",
             "ST02-009_00000000-0000-0000-0000-000000000803"
-          ], 
-          "handUids": [], 
+          ],
+          "handUids": [],
           "hand": []
-        }, 
-        "confirmIsRedraw": false, 
-        "isRedraw": false, 
-        "playerPoint": 0, 
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
         "id": "playerId_2"
-      }, 
+      },
       "playerId_1": {
         "zones": {
-          "trashArea": [], 
+          "trashArea": [],
           "shieldArea": [
             {
-              "cardData": {
-                "name": "Leo", 
-                "zone": [
-                  "Space", 
-                  "Earth"
-                ], 
-                "level": 2, 
-                "color": "Blue", 
-                "hp": 2, 
-                "ap": 2, 
-                "cardType": "unit", 
-                "cost": 2, 
-                "link": [
-                  "OZ Trait"
-                ], 
-                "effects": {
-                  "rules": [], 
-                  "description": []
-                }, 
-                "traits": [
-                  "OZ"
-                ], 
-                "id": "ST02-007"
-              }, 
-              "carduid": "ST02-007_shield_0007", 
+              "carduid": "ST02-007_shield_0007",
               "cardId": "ST02-007"
             }
-          ], 
-          "base": [], 
-          "repairAbilitiesCheckedThisCycle": false, 
-          "slot1": {}, 
+          ],
+          "base": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "slot1": {},
           "energyArea": [
             {
-              "placedBy": "playerId_1", 
-              "carduid": "energy_basic_st02_015_1", 
-              "isExtraEnergy": false, 
-              "placedAt": 0, 
-              "cardData": {
-                "cardType": "energy"
-              }, 
-              "isRested": false, 
+              "placedBy": "playerId_1",
+              "carduid": "energy_basic_st02_015_1",
+              "isExtraEnergy": false,
+              "placedAt": 0,
+              "isRested": false,
               "cardId": "energy_basic"
-            }, 
+            },
             {
-              "placedBy": "playerId_1", 
-              "carduid": "energy_basic_st02_015_2", 
-              "isExtraEnergy": false, 
-              "placedAt": 0, 
-              "cardData": {
-                "cardType": "energy"
-              }, 
-              "isRested": false, 
+              "placedBy": "playerId_1",
+              "carduid": "energy_basic_st02_015_2",
+              "isExtraEnergy": false,
+              "placedAt": 0,
+              "isRested": false,
               "cardId": "energy_basic"
             }
-          ], 
-          "slot3": {}, 
-          "slot2": {}, 
-          "slot5": {}, 
-          "slot4": {}, 
+          ],
+          "slot3": {},
+          "slot2": {},
+          "slot5": {},
+          "slot4": {},
           "slot6": {}
-        }, 
-        "isReady": true, 
-        "name": "Player 1", 
+        },
+        "isReady": true,
+        "name": "Player 1",
         "deck": {
           "mainDeck": [
-            "ST02-007_top_0001", 
-            "ST02-008_top_0002", 
+            "ST02-007_top_0001",
+            "ST02-008_top_0002",
             "ST02-009_tail_0003"
-          ], 
+          ],
           "handUids": [
             "ST02-015_hand_0001"
-          ], 
+          ],
           "hand": [
             {
-              "cardData": {
-                "name": "Saint Gabriel Institute", 
-                "zone": [
-                  "Earth"
-                ], 
-                "level": 2, 
-                "color": "Green", 
-                "hp": 5, 
-                "ap": 0, 
-                "cardType": "base", 
-                "cost": 2, 
-                "link": [], 
-                "effects": {
-                  "rules": [
-                    {
-                      "action": "deploy", 
-                      "effectId": "burst_deploy", 
-                      "trigger": "BURST_CONDITION", 
-                      "type": "triggered", 
-                      "target": {
-                        "scope": "self", 
-                        "type": "card"
-                      }
-                    }, 
-                    {
-                      "target": {
-                        "scope": "self_shield", 
-                        "type": "card"
-                      }, 
-                      "parameters": {
-                        "from": "shield", 
-                        "value": 1
-                      }, 
-                      "trigger": "ENTERS_PLAY", 
-                      "effectId": "deploy_shield_to_hand", 
-                      "action": "addToHand", 
-                      "type": "triggered"
-                    }, 
-                    {
-                      "action": "scry_top_deck", 
-                      "effectId": "deploy_scry_two", 
-                      "trigger": "ENTERS_PLAY", 
-                      "type": "triggered", 
-                      "parameters": {
-                        "count": 2, 
-                        "keep": 1, 
-                        "bottom": 1
-                      }
-                    }
-                  ], 
-                  "description": [
-                    "【Burst】Deploy this card.", 
-                    "【Deploy】Add 1 of your Shields to your hand.", 
-                    "【Deploy】Look at the top 2 cards of your deck and return 1 to the top and 1 to the bottom."
-                  ]
-                }, 
-                "traits": [
-                  "Academy", 
-                  "Stronghold"
-                ], 
-                "id": "ST02-015"
-              }, 
-              "carduid": "ST02-015_hand_0001", 
+              "carduid": "ST02-015_hand_0001",
               "cardId": "ST02-015"
             }
           ]
-        }, 
-        "confirmIsRedraw": false, 
-        "isRedraw": false, 
-        "playerPoint": 0, 
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
         "id": "playerId_1"
       }
-    }, 
-    "firstPlayerChooser": null, 
-    "version": 4, 
+    },
+    "firstPlayerChooser": null,
+    "version": 4,
     "notificationQueue": [
       {
         "metadata": {
-          "priority": "normal", 
-          "timestamp": 1768362880422, 
-          "expiresAt": 1768362883422, 
+          "priority": "normal",
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
           "requiresAcknowledgment": false
-        }, 
-        "type": "CARD_DRAWN", 
+        },
+        "type": "CARD_DRAWN",
         "payload": {
-          "sourceZone": "deck", 
-          "playerId": "playerId_1", 
-          "timestamp": 1768362880422, 
-          "carduid": "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c", 
-          "reason": "draw", 
+          "sourceZone": "deck",
+          "playerId": "playerId_1",
+          "timestamp": 1768362880422,
+          "carduid": "ST01-004_4246f80c-16bc-4841-b2f1-0de546a8d62c",
+          "reason": "draw",
           "drawContext": "turn_start"
-        }, 
+        },
         "id": "card_drawn_1768362880422_3bxbxq5uy"
       }
-    ], 
-    "phase": "MAIN_PHASE", 
-    "processingQueue": [], 
-    "lastEventId": 0, 
-    "firstPlayer": 0, 
-    "maxEventsPerCycle": 50, 
+    ],
+    "phase": "MAIN_PHASE",
+    "processingQueue": [],
+    "lastEventId": 0,
+    "firstPlayer": 0,
+    "maxEventsPerCycle": 50,
     "currentTurn": 1
-  }, 
+  },
   "testType": "deploy"
 }

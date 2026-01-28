@@ -64,44 +64,7 @@
           "hand": [
             {
               "carduid": "ST04-002_unit_in_hand_0001",
-              "cardId": "ST04-002",
-              "cardData": {
-                "id": "ST04-002",
-                "name": "Strike Gundam",
-                "cardType": "unit",
-                "color": "White",
-                "level": 4,
-                "cost": 2,
-                "zone": [
-                  "Space",
-                  "Earth"
-                ],
-                "traits": [
-                  "Earth Alliance"
-                ],
-                "link": [
-                  "Kira Yamato"
-                ],
-                "ap": 3,
-                "hp": 3,
-                "effects": {
-                  "description": [
-                    "【Deploy】Draw 1 card, then discard 1."
-                  ],
-                  "rules": [
-                    {
-                      "effectId": "deploy_draw_then_discard",
-                      "type": "triggered",
-                      "trigger": "ENTERS_PLAY",
-                      "action": "draw_then_discard",
-                      "parameters": {
-                        "draw": 1,
-                        "discard": 1
-                      }
-                    }
-                  ]
-                }
-              }
+              "cardId": "ST04-002"
             }
           ],
           "handUids": [
@@ -131,10 +94,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             },
             {
               "carduid": "energy_basic_st04_002_a_0002",
@@ -142,10 +102,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "isExtraEnergy": false,
-              "cardData": {
-                "cardType": "energy"
-              }
+              "isExtraEnergy": false
             }
           ],
           "trashArea": [],
@@ -181,4 +138,3 @@
     }
   }
 }
-
