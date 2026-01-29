@@ -84,8 +84,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "ST05-000_unit_0001",
-              "cardId": "ST05-000",
+              "carduid": "ST05-003_unit_0001",
+              "cardId": "ST05-003",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -102,7 +102,26 @@
               "isFirstPlay": false
             }
           },
-          "slot2": {},
+          "slot2": {
+            "unit": {
+              "carduid": "ST05-005_unit_000122",
+              "cardId": "ST05-005",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 3,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
           "slot3": {},
           "slot4": {},
           "slot5": {},
@@ -110,6 +129,38 @@
           "base": [],
           "shieldArea": [],
           "energyArea": [
+            {
+              "carduid": "energy_basic_st05001_a_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_st05001_a_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_st05001_a_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_st05001_a_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
             {
               "carduid": "energy_basic_st05001_a_0001",
               "cardId": "energy_basic",
@@ -170,12 +221,12 @@
           "base": [],
           "shieldArea": [
             {
-              "carduid": "ST05-000_shield_0001",
-              "cardId": "ST05-000"
+              "carduid": "ST05-002_shield_0001",
+              "cardId": "ST05-002"
             },
             {
-              "carduid": "ST05-000_shield_0002",
-              "cardId": "ST05-000"
+              "carduid": "ST05-003_shield_0002",
+              "cardId": "ST05-003"
             }
           ],
           "energyArea": [],

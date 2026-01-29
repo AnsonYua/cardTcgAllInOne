@@ -367,7 +367,7 @@
                         "trigger": "continuous",
                         "sourceConditions": [
                             {
-                                "type": "paired"
+                                "type": "linked"
                             }
                         ],
                         "action": "modifyAP",
@@ -388,7 +388,7 @@
                         "trigger": "continuous",
                         "sourceConditions": [
                             {
-                                "type": "paired"
+                                "type": "linked"
                             }
                         ],
                         "action": "modifyHP",

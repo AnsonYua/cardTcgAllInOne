@@ -80,7 +80,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "damageReceived": 1,
+              "damageReceived": 0,
               "modifyAP": 0,
               "modifyHP": 0,
               "continueModifyAP": 0,

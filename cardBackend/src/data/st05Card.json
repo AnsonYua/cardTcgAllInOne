@@ -43,7 +43,10 @@
                                     "target": {
                                         "type": "unit",
                                         "scope": "self_all_unit",
-                                        "count": 1
+                                        "count": 1,
+                                        "selection": {
+                                            "type": "player_choice"
+                                        }
                                     },
                                     "parameters": {
                                         "value": 1,

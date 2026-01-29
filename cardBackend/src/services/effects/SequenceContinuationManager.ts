@@ -24,6 +24,19 @@ export class SequenceContinuationManager {
         });
 
         const ctxRaw = typeof sequence.ctx === 'object' && sequence.ctx ? (sequence.ctx as Record<string, unknown>) : {};
+        const previousTargetsRaw = Array.isArray(ctxRaw.previousTargets) ? (ctxRaw.previousTargets as any[]) : [];
+        const previousTargets = previousTargetsRaw
+            .filter((entry): entry is { carduid: string; zone: string; playerId: string } => {
+                if (!entry || typeof entry !== 'object') {
+                    return false;
+                }
+                const carduid = (entry as any).carduid;
+                const zone = (entry as any).zone;
+                const playerId = (entry as any).playerId;
+                return typeof carduid === 'string' && typeof zone === 'string' && typeof playerId === 'string';
+            })
+            .map(entry => ({ carduid: entry.carduid, zone: entry.zone, playerId: entry.playerId }));
+
         const continuationPayload: SequenceContinuationPayload = {
             steps,
             ctx: {
@@ -31,7 +44,8 @@ export class SequenceContinuationManager {
                 resolvedStepIds: Array.isArray(ctxRaw.resolvedStepIds)
                     ? (ctxRaw.resolvedStepIds as unknown[]).filter((id): id is string => typeof id === 'string')
                     : [],
-                sequenceEffectId: typeof ctxRaw.sequenceEffectId === 'string' ? (ctxRaw.sequenceEffectId as string) : undefined
+                sequenceEffectId: typeof ctxRaw.sequenceEffectId === 'string' ? (ctxRaw.sequenceEffectId as string) : undefined,
+                previousTargets
             }
         };
 
