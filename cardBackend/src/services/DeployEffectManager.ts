@@ -69,8 +69,10 @@ export class DeployEffectManager {
 
             triggeredDeployEffects.forEach(effect => deployEffects.push(effect));
 
-            const phaseBoundActivatedEffects = this.findDeployLikeActivatedEffects(cardData, gameEnv);
-            phaseBoundActivatedEffects.forEach(effect => deployEffects.push(ensureEffectDefaults(effect)));
+            // NOTE: Activated abilities must be triggered manually by the player (e.g. via PLAYER_ACTION).
+            // Do not auto-queue `type: activated` effects just because the card was played during MAIN_PHASE.
+            const playEffects = this.findPlayEffectsExecutableOnPlay(cardData, gameEnv);
+            playEffects.forEach(effect => deployEffects.push(ensureEffectDefaults(effect)));
 
             if (deployEffects.length === 0) {
                 return { success: true, effectsFound: 0 };
@@ -157,11 +159,10 @@ export class DeployEffectManager {
     }
 
     /**
-     * Phase-aware detection for activated effects that behave like deploy effects.
-     * - Includes MAIN_PHASE abilities only when the game is currently in MAIN_PHASE.
-     * - Includes ACTION_STEP abilities only when the game is currently in ACTION_STEP_PHASE.
+     * Phase-aware detection for immediate "play" effects (command cards).
+     * Activated abilities are intentionally excluded (they require a manual trigger + cost payment).
      */
-    private static findDeployLikeActivatedEffects(
+    private static findPlayEffectsExecutableOnPlay(
         cardData: any,
         gameEnv: GameEnvironment
     ): EffectDefinition[] {
@@ -182,9 +183,8 @@ export class DeployEffectManager {
                 return false;
             }
 
-            const isActivated = rule.type === 'activated';
             const isPlayEffect = rule.type === 'play' && cardData?.cardType === 'command';
-            if (!isActivated && !isPlayEffect) {
+            if (!isPlayEffect) {
                 return false;
             }
 

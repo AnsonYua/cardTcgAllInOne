@@ -147,35 +147,6 @@
           "base": [],
           "shieldArea": [],
           "energyArea": [
-                        {
-              "carduid": "energy_basic_p1_1",
-              "cardId": "energy_basic",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "isExtraEnergy": false
-            },            {
-              "carduid": "energy_basic_p1_1",
-              "cardId": "energy_basic",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "isExtraEnergy": false
-            },            {
-              "carduid": "energy_basic_p1_1",
-              "cardId": "energy_basic",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "isExtraEnergy": false
-            },            {
-              "carduid": "energy_basic_p1_1",
-              "cardId": "energy_basic",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "isExtraEnergy": false
-            },
             {
               "carduid": "energy_basic_p1_1",
               "cardId": "energy_basic",

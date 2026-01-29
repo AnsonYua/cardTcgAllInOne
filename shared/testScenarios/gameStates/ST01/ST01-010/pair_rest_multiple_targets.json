@@ -158,8 +158,32 @@
               "damageReceived": 0
             }
           },
-          "slot3": {},
-          "slot4": {},
+          "slot3": {
+            "unit": {
+              "carduid": "ST01-003_00000000-0000-0000-0000-000000000004",
+              "cardId": "ST01-003",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalAP": 3,
+              "originalHP": 2,
+              "isFirstPlay": false,
+              "damageReceived": 0
+            }
+          },
+          "slot4": {
+            "unit": {
+              "carduid": "ST01-004_00000000-0000-0000-0000-000000000004",
+              "cardId": "ST01-004",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalAP": 3,
+              "originalHP": 2,
+              "isFirstPlay": false,
+              "damageReceived": 0
+            }
+          },
           "slot5": {},
           "slot6": {},
           "base": [],

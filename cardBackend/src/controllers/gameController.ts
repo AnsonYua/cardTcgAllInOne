@@ -7,8 +7,10 @@ import { PlayerActionType, CardPlayType } from '../models/GameEnums';
 import { PlayerAction } from '../models/EventInterfaces';
 import { lobbyManager } from '../services/LobbyManager';
 import { GCG_DECKS_PATH } from '../config/dataPaths';
+import { CardDatabaseManager } from '../models/CardSystem';
 import * as fs from 'fs';
 import * as path from 'path';
+import { json } from 'stream/consumers';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -37,6 +39,155 @@ export class GameController {
     constructor() {
         this.gameLogic = gameLogic;
         console.log('🎮 Custom Trading Card Game Controller initialized');
+    }
+
+    private static toSetFolderFromCardId(cardId: string): string | null {
+        if (typeof cardId !== 'string' || cardId.length === 0) {
+            return null;
+        }
+
+        const match = cardId.match(/^(ST|GD)(\d{2})-/i);
+        if (match) {
+            return `${match[1].toLowerCase()}${match[2]}`;
+        }
+
+        return null;
+    }
+
+    private static toCardResourcePath(cardId: string, folderHint?: string): string | null {
+        if (typeof cardId !== 'string' || cardId.length === 0) {
+            return null;
+        }
+
+        // Example: ST03-003 -> st03/ST03-003
+        const folder = GameController.toSetFolderFromCardId(cardId);
+        if (folder) {
+            return `${folder}/${cardId}`;
+        }
+
+        // Tokens must follow the set folder of the card that references/created them.
+        if (/^T-\d+$/i.test(cardId)) {
+            if (typeof folderHint === 'string' && folderHint.length > 0) {
+                return `${folderHint}/${cardId}`;
+            }
+            return null;
+        }
+
+        return null;
+    }
+
+    private static findTokenFolderInDeckLists(tokenId: string, resourcePaths: string[]): string | null {
+        for (const entry of resourcePaths) {
+            if (typeof entry !== 'string') {
+                continue;
+            }
+            if (entry.endsWith(`/${tokenId}`)) {
+                const folder = entry.split('/')[0];
+                return folder || null;
+            }
+        }
+        return null;
+    }
+
+    private static collectCardIdsFromGameEnv(gameEnv: any): Set<string> {
+        const result = new Set<string>();
+        const visited = new Set<any>();
+        const isSupportedCardId = (cardId: string): boolean =>
+            /^(ST|GD)\d{2}-\d{3}$/i.test(cardId) || /^T-\d+$/i.test(cardId);
+
+        const visit = (value: any): void => {
+            if (!value) {
+                return;
+            }
+
+            if (typeof value === 'string') {
+                // Handle carduid strings found in deck lists (e.g., mainDeck/handUids).
+                const candidate = value.includes('_') ? value.split('_')[0] : value;
+                if (isSupportedCardId(candidate)) {
+                    result.add(candidate);
+                }
+                return;
+            }
+
+            if (typeof value !== 'object') {
+                return;
+            }
+
+            if (visited.has(value)) {
+                return;
+            }
+            visited.add(value);
+
+            // Only treat objects with both carduid and cardId as "cards in the game".
+            if (typeof value.carduid === 'string' && typeof value.cardId === 'string') {
+                if (isSupportedCardId(value.cardId)) {
+                    result.add(value.cardId);
+                }
+            }
+
+            if (Array.isArray(value)) {
+                value.forEach(visit);
+                return;
+            }
+
+            for (const child of Object.values(value)) {
+                visit(child);
+            }
+        };
+
+        visit(gameEnv);
+        return result;
+    }
+
+    private static collectTokenCardIdsFromCardData(cardData: any): Set<string> {
+        const result = new Set<string>();
+        const visited = new Set<any>();
+
+        const visit = (value: any, keyHint?: string): void => {
+            if (!value) {
+                return;
+            }
+
+            if (typeof value === 'string') {
+                if (/^T-\d+$/i.test(value)) {
+                    result.add(value);
+                }
+                return;
+            }
+
+            if (typeof value !== 'object') {
+                return;
+            }
+
+            if (visited.has(value)) {
+                return;
+            }
+            visited.add(value);
+
+            if (Array.isArray(value)) {
+                value.forEach((entry) => visit(entry));
+                return;
+            }
+
+            // Heuristic: if we see a token-like structure, capture it.
+            // Common shapes: { token: { cardId: "T-001" } }, { cardId: "T-001" }, { id: "T-001" }
+            const maybeCardId = (value as any).cardId;
+            const maybeId = (value as any).id;
+            if (typeof maybeCardId === 'string' && /^T-\d+$/i.test(maybeCardId)) {
+                result.add(maybeCardId);
+            }
+            if (typeof maybeId === 'string' && /^T-\d+$/i.test(maybeId)) {
+                result.add(maybeId);
+            }
+
+            for (const [childKey, childValue] of Object.entries(value)) {
+                // Extra hint: token blocks are usually under keys like "token", "tokens", "choices"
+                visit(childValue, childKey || keyHint);
+            }
+        };
+
+        visit(cardData);
+        return result;
     }
 
     // ============ CORE GAME ENDPOINTS ============
@@ -623,7 +774,7 @@ export class GameController {
      * Get game resource data (deck data for frontend card preloading)
      * GET /api/game/player/gameResource
      */
-    async getGameResource(_req: Request, res: Response): Promise<void> {
+    async getGameResource(req: Request, res: Response): Promise<void> {
         try {
             console.log('📦 Getting game resource data (deck data)');
             
@@ -640,9 +791,108 @@ export class GameController {
             // Read and parse the gcgdecks.json file
             const deckDataContent = await fs.promises.readFile(GCG_DECKS_PATH, 'utf8');
             const deckData = JSON.parse(deckDataContent);
-            
+            /**
+             * read the gameEnv using the gameId, extra all card in the gameEnv, if the card doesnt existing deck001 and extraCard, add it into extraCard
+             * forexamaple 
+             * if u see ST03-003 in gameEnv, make it st03/ST03-003 and add it to extra card array.
+             */
+            const gameId = typeof req.query?.gameId === 'string' ? req.query.gameId : undefined;
+            if (gameId) {
+                const gameEnv = await this.gameLogic.loadGameFromFile(gameId);
+                if (!gameEnv) {
+                    res.status(404).json({
+                        error: 'Game not found',
+                        timestamp: new Date().toISOString(),
+                        context: 'getGameResource endpoint'
+                    });
+                    return;
+                }
+
+                if (!deckData.decks || typeof deckData.decks !== 'object') {
+                    deckData.decks = {};
+                }
+                if (!deckData.decks.deck001 || typeof deckData.decks.deck001 !== 'object') {
+                    deckData.decks.deck001 = { cards: [] };
+                }
+                if (!deckData.decks.extraCard || typeof deckData.decks.extraCard !== 'object') {
+                    deckData.decks.extraCard = { cards: [] };
+                }
+
+                const deck001Cards: string[] = Array.isArray(deckData.decks.deck001.cards) ? deckData.decks.deck001.cards : [];
+                const extraCards: string[] = Array.isArray(deckData.decks.extraCard.cards) ? deckData.decks.extraCard.cards : [];
+
+                const deck001Set = new Set(deck001Cards.filter((c) => typeof c === 'string'));
+                const extraSet = new Set(extraCards.filter((c) => typeof c === 'string'));
+
+                const cardIds = GameController.collectCardIdsFromGameEnv(gameEnv);
+                for (const cardId of cardIds) {
+                    const resourcePath = GameController.toCardResourcePath(cardId);
+                    if (!resourcePath) {
+                        // If this is a token, try to infer folder from existing decks rather than hardcoding st01.
+                        if (/^T-\d+$/i.test(cardId)) {
+                            const existingFolder = GameController.findTokenFolderInDeckLists(
+                                cardId,
+                                [...deck001Cards, ...extraCards]
+                            );
+                            const inferredTokenPath = existingFolder
+                                ? GameController.toCardResourcePath(cardId, existingFolder)
+                                : null;
+                            if (inferredTokenPath && !deck001Set.has(inferredTokenPath) && !extraSet.has(inferredTokenPath)) {
+                                extraCards.push(inferredTokenPath);
+                                extraSet.add(inferredTokenPath);
+                            }
+                        }
+                        continue;
+                    }
+                    if (deck001Set.has(resourcePath) || extraSet.has(resourcePath)) {
+                        continue;
+                    }
+                    extraCards.push(resourcePath);
+                    extraSet.add(resourcePath);
+                }
+
+                deckData.decks.extraCard.cards = extraCards;
+
+                /**
+                 * After updating extraCard, scan card effect rules for token usage and ensure those tokens are included.
+                 */
+                const allDeckResourcePaths = [...deck001Cards, ...extraCards].filter((c) => typeof c === 'string');
+                const tokenResourcePaths = new Set<string>();
+                for (const resourcePath of allDeckResourcePaths) {
+                    const parts = resourcePath.split('/');
+                    const folderHint = parts.length > 1 ? parts[0] : undefined;
+                    const cardId = parts.length > 1 ? parts[parts.length - 1] : resourcePath;
+                    if (!cardId) {
+                        continue;
+                    }
+                    const cardData = CardDatabaseManager.getCardDetails(cardId);
+                    if (!cardData) {
+                        continue;
+                    }
+                    for (const tokenId of GameController.collectTokenCardIdsFromCardData(cardData)) {
+                        const tokenPath = GameController.toCardResourcePath(tokenId, folderHint);
+                        if (tokenPath) {
+                            tokenResourcePaths.add(tokenPath);
+                        }
+                    }
+                }
+
+                for (const tokenResourcePath of tokenResourcePaths) {
+                    if (deck001Set.has(tokenResourcePath) || extraSet.has(tokenResourcePath)) {
+                        continue;
+                    }
+                    extraCards.push(tokenResourcePath);
+                    extraSet.add(tokenResourcePath);
+                }
+
+                deckData.decks.extraCard.cards = extraCards;
+            }
             console.log('✅ Game resource data loaded successfully');
+            /*
+            after updating the deckData, look at all card effect, see if it has some rules that will use token, if yes, add the token cardid into the extra card.
+            dont add it if it is already there
             
+            */
             res.json(deckData);
             
         } catch (error) {

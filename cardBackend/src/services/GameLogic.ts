@@ -1247,8 +1247,6 @@ export class GameLogic {
             event.data.selectedTarget = resolvedTarget;
             event.data.userDecisionMade = true;
             event.data.userDecision = resolvedTarget ? 'BLOCK' : 'DECLINE';
-            ChoiceNotificationEmitter.emitBlockerChoiceResolved(gameEnv, event, event.data.userDecision);
-            event.status = EventStatus.DECLARED;
             console.log('📋 Queue before blocker reorder:', gameEnv.processingQueue.map(evt => evt.id));
 
             // Ensure the blocker event is processed next by moving it to the front of the queue
@@ -1294,6 +1292,25 @@ export class GameLogic {
                     success: false,
                     error: processingResult.error || 'Failed to process blocker choice'
                 };
+            }
+
+            // If the original BLOCKER_CHOICE notification exists, update its embedded event snapshot so
+            // the frontend sees the choice as resolved even if the processingQueue entry has been dequeued.
+            try {
+                const blockerNotification = gameEnv.notificationQueue?.find(
+                    (evt: any) => evt?.id === eventId && evt?.type === 'BLOCKER_CHOICE'
+                );
+                if (blockerNotification?.payload?.event) {
+                    blockerNotification.payload.event.status = EventStatus.RESOLVED;
+                    if (!blockerNotification.payload.event.data) {
+                        blockerNotification.payload.event.data = {};
+                    }
+                    blockerNotification.payload.event.data.userDecisionMade = true;
+                    blockerNotification.payload.event.data.selectedTarget = resolvedTarget;
+                    blockerNotification.payload.event.data.userDecision = resolvedTarget ? 'BLOCK' : 'DECLINE';
+                }
+            } catch (error) {
+                console.error('❌ Failed to update BLOCKER_CHOICE notification payload:', error);
             }
 
             await this.saveGameToFile(gameId, gameEnv);
