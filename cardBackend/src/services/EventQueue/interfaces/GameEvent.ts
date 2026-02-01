@@ -481,6 +481,7 @@ export interface BurstEffectChoiceEvent extends BaseGameEvent {
         userDecision?: 'ACTIVATE' | 'DECLINE';
         carduid?: string;
         previousPlayerId?: string | null;
+        turnPlayerId?: string | null;
     };
 }
 

@@ -5,6 +5,9 @@ const {
   loadJson,
   validateScenarioShape
 } = require('./testScenarioUtils');
+const {
+  validateBurstChoiceDoesNotOverrideCurrentPlayer
+} = require('./validators/burstChoiceTurnSnapshotValidation');
 
 function main() {
   const root = sharedGameStatesRoot();
@@ -17,6 +20,8 @@ function main() {
     }
   }
 
+  validateBurstChoiceDoesNotOverrideCurrentPlayer();
+
   console.log('OK: action scenarios validated');
 }
 
@@ -26,4 +31,3 @@ try {
   console.error(err && err.message ? err.message : String(err));
   process.exit(1);
 }
-

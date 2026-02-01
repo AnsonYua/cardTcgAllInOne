@@ -8,15 +8,33 @@ export interface LobbyRoom {
     createdAt: string;
 }
 
+interface RoomMetadata {
+    playerCount: number;
+    lastUpdatedMs: number;
+}
+
 export class LobbyManager {
     private roomsPath: string;
-    private expiryMs: number;
+    private soloExpiryMs: number;
+    private activeExpiryMs: number;
     private gameDataPath: string;
 
     constructor() {
         this.gameDataPath = path.join(__dirname, '../gameData');
         this.roomsPath = path.join(this.gameDataPath, 'rooms.json');
-        this.expiryMs = 60 * 1000;
+        this.soloExpiryMs = this.parseExpiryMs(process.env.LOBBY_SOLO_EXPIRY_MS, 60 * 1000);
+        this.activeExpiryMs = this.parseExpiryMs(process.env.LOBBY_ACTIVE_EXPIRY_MS, 30 * 60 * 1000);
+    }
+
+    private parseExpiryMs(rawValue: string | undefined, fallbackMs: number): number {
+        if (!rawValue) {
+            return fallbackMs;
+        }
+        const parsed = Number(rawValue);
+        if (!Number.isFinite(parsed) || parsed < 0) {
+            return fallbackMs;
+        }
+        return parsed;
     }
 
     async addRoom(gameId: string): Promise<LobbyRoom> {
@@ -33,23 +51,70 @@ export class LobbyManager {
     async pruneExpiredRooms(nowMs: number = Date.now()): Promise<LobbyRoom[]> {
         const rooms = await this.loadRooms();
         const expiredRooms: LobbyRoom[] = [];
-        const filteredRooms = rooms.filter((room) => {
+        const filteredRooms: LobbyRoom[] = [];
+
+        for (const room of rooms) {
             const createdAtMs = Date.parse(room.createdAt);
             if (Number.isNaN(createdAtMs)) {
                 expiredRooms.push(room);
-                return false;
+                continue;
             }
-            const isExpired = nowMs - createdAtMs > this.expiryMs;
+
+            const metadata = await this.getRoomMetadata(room.gameId);
+            if (!metadata) {
+                expiredRooms.push(room);
+                continue;
+            }
+
+            const isExpired = metadata.playerCount < 2
+                ? nowMs - createdAtMs > this.soloExpiryMs
+                : nowMs - metadata.lastUpdatedMs > this.activeExpiryMs;
+
             if (isExpired) {
                 expiredRooms.push(room);
+                continue;
             }
-            return !isExpired;
-        });
+
+            filteredRooms.push(room);
+        }
+
         if (filteredRooms.length !== rooms.length) {
             await this.removeExpiredGameFiles(expiredRooms);
             await this.saveRooms(filteredRooms);
         }
         return filteredRooms;
+    }
+
+    private async getRoomMetadata(gameId: string): Promise<RoomMetadata | null> {
+        const gamePath = path.join(this.gameDataPath, `${gameId}.json`);
+        try {
+            const stats = await fs.promises.stat(gamePath);
+            const fileContent = await fs.promises.readFile(gamePath, 'utf8');
+            const parsed = JSON.parse(fileContent);
+
+            let playerCount = 0;
+            if (typeof parsed?.playerId_1 === 'string' && parsed.playerId_1.length > 0) {
+                playerCount += 1;
+            }
+            if (typeof parsed?.playerId_2 === 'string' && parsed.playerId_2.length > 0) {
+                playerCount += 1;
+            }
+
+            if (playerCount === 0 && parsed && typeof parsed === 'object' && parsed.players && typeof parsed.players === 'object') {
+                playerCount = Object.keys(parsed.players).filter((key) => Boolean(key)).length;
+            }
+
+            return {
+                playerCount,
+                lastUpdatedMs: stats.mtimeMs
+            };
+        } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+                return null;
+            }
+            console.warn(`⚠️ Failed to read room metadata for ${gameId}: ${error instanceof Error ? error.message : 'unknown error'}`);
+            return null;
+        }
     }
 
     private async loadRooms(): Promise<LobbyRoom[]> {

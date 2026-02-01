@@ -149,7 +149,6 @@ export class BurstEffectManager {
 
             if (userDecision === 'DECLINE') {
                 const declineResult = this.handleBurstDecline(gameEnv, playerId, target.carduid, target.cardData, target.cardId);
-                BurstChoiceService.restoreBurstCurrentPlayer(gameEnv, event);
                 if (declineResult.success) {
                     ChoiceNotificationEmitter.emitBurstChoiceResolved(gameEnv, event, 'DECLINE');
                     this.maybeTriggerDefenseAreaBattleDamageFromBurstTarget(gameEnv, target);
@@ -160,7 +159,6 @@ export class BurstEffectManager {
             if (userDecision === 'ACTIVATE') {
                 const burstEffects = this.findBurstEffects(target.cardData);
                 if (burstEffects.length === 0) {
-                    BurstChoiceService.restoreBurstCurrentPlayer(gameEnv, event);
                     return {
                         success: false,
                         error: 'No burst effects found on card'
@@ -177,12 +175,10 @@ export class BurstEffectManager {
                 );
 
                 if (!executionResult.success) {
-                    BurstChoiceService.restoreBurstCurrentPlayer(gameEnv, event);
                     return executionResult;
                 }
 
                 console.log(`✅ Burst effect ${burstEffect.type} executed successfully`);
-                BurstChoiceService.restoreBurstCurrentPlayer(gameEnv, event);
                 ChoiceNotificationEmitter.emitBurstChoiceResolved(gameEnv, event, 'ACTIVATE');
                 this.maybeTriggerDefenseAreaBattleDamageFromBurstTarget(gameEnv, target);
                 return { success: true };
