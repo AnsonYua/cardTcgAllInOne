@@ -11,21 +11,27 @@ export class GameEndManager {
         }
 
         const timestamp = Date.now();
+        const loserId = gameEnv.getOpponentId(winnerId);
         gameEnv.gameEnded = true;
         gameEnv.winnerId = winnerId;
         gameEnv.endReason = reason;
         gameEnv.endedAt = timestamp;
 
         const notificationManager = new GameNotificationManager(gameEnv);
-        notificationManager.addNotificationEvent(
+        const notificationId = `game_ended_${timestamp}`;
+        notificationManager.addNotificationEventWithId(
+            notificationId,
             'GAME_ENDED',
             {
                 winnerId,
+                loserId,
                 reason,
+                endedAt: timestamp,
                 timestamp
             },
-            'high'
+            'critical'
         );
+        notificationManager.makePersistent(notificationId);
 
         if (typeof gameEnv.gameEndCallback === 'function') {
             gameEnv.gameEndCallback({ winnerId, reason, timestamp });

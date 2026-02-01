@@ -1,4 +1,5 @@
 import type { GameEnvironment } from '../../models/GameEnvironment';
+import { GameNotificationManager } from '../GameNotificationManager';
 
 export function markBurstChoiceNotificationCompleted(
     gameEnv: GameEnvironment,
@@ -13,6 +14,7 @@ export function markBurstChoiceNotificationCompleted(
     }
 
     const now = Date.now();
+    const notificationManager = new GameNotificationManager(gameEnv);
 
     const single = queue.find(evt => evt?.type === 'BURST_EFFECT_CHOICE' && evt?.id === params.burstEventId);
     if (single?.payload?.event) {
@@ -25,10 +27,7 @@ export function markBurstChoiceNotificationCompleted(
         single.payload.event.data.resolvedAt = now;
         single.payload.isCompleted = true;
 
-        if (single.metadata && typeof single.metadata === 'object') {
-            single.metadata.expiresAt = Number.MAX_SAFE_INTEGER;
-            single.metadata.requiresAcknowledgment = true;
-        }
+        notificationManager.makePersistent(single.id);
     }
 
     const group = queue.find(evt =>
@@ -61,9 +60,5 @@ export function markBurstChoiceNotificationCompleted(
     }
 
     group.payload.isCompleted = group.payload.resolvedEventIds.length >= groupEvents.length;
-    if (group.metadata && typeof group.metadata === 'object') {
-        group.metadata.expiresAt = Number.MAX_SAFE_INTEGER;
-        group.metadata.requiresAcknowledgment = true;
-    }
+    notificationManager.makePersistent(group.id);
 }
-

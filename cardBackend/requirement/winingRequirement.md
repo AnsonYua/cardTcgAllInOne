@@ -6,13 +6,23 @@ Backend state updates:
 - Set `gameEnv.winnerId = attacker playerId`
 - Set `gameEnv.endReason = "no_shields_remaining"`
 - Set `gameEnv.endedAt = <timestamp>`
-- Emit a `GAME_ENDED` notification: payload includes `{ winnerId, reason, timestamp }`
+- Emit a persistent `GAME_ENDED` notification (never expires until acknowledged):
+  - `type: "GAME_ENDED"`
+  - `metadata.requiresAcknowledgment: true`
+  - `metadata.expiresAt: 9007199254740991`
+  - payload:
+      - `winnerId: string`
+      - `loserId: string | null` (opponent of winner, if available)
+      - `reason: string`
+      - `endedAt: number` (ms timestamp)
+      - `timestamp: number` (ms timestamp, same as endedAt)
 - Invoke `gameEnv.gameEndCallback` if provided (placeholder for future win logic)
 
 Frontend handling:
 - `winnerId` is a playerId (e.g. `playerId_1` / `playerId_2`), map to display name.
-- On `GAME_ENDED` or `gameEnv.gameEnded === true`, disable all actions and show a game-over modal.
+- On `GAME_ENDED` or `gameEnv.gameEnded === true && gameEnv.winnerId is set`, disable all actions and show a game-over modal.
 - If `BATTLE_RESOLVED.result.gameEnded === true`, show the game-over UI immediately even if `GAME_ENDED` arrives later.
+- After showing the game-over UI, acknowledge the `GAME_ENDED` notification id via `/player/acknowledgeEvents` (so it is removed from `notificationQueue`).
 
 
   - Trigger: After resolving a shield attack, backend may emit GAME_ENDED with reason no_shields_remaining.
