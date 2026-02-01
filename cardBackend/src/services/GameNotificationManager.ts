@@ -162,6 +162,21 @@ export class GameNotificationManager {
         console.log(`🔄 Updated notification event: ${event.type} (${event.id})`);
         return true;
     }
+
+    /**
+     * Make a notification persist until explicitly acknowledged by the frontend.
+     * Uses a far-future expiresAt so cleanupProcessedEvents() does not remove it.
+     */
+    makePersistent(eventId: string): boolean {
+        return this.updateNotificationEvent(
+            eventId,
+            {},
+            {
+                expiresAt: Number.MAX_SAFE_INTEGER,
+                requiresAcknowledgment: true
+            }
+        );
+    }
     
      /**
      * Notify frontend about card draw (requires acknowledgment)

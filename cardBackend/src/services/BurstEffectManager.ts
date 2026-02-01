@@ -17,10 +17,10 @@ import { ensureEffectDefaults, resolveEffectActionFromRule } from '../utils/Effe
 import { isPlayOrActivatedEffect } from '../utils/EffectTypeRouter';
 import { EffectExecutor } from './effects/EffectExecutor';
 import { ChoiceNotificationEmitter } from './notifications/ChoiceNotificationEmitter';
-import { BurstChoiceService } from './effects/BurstChoiceService';
 import { EffectTimingWindowUtils } from '../utils/EffectTimingWindowUtils';
 import { DefenseAreaBattleDamageTriggeredEffectManager } from './effects/DefenseAreaBattleDamageTriggeredEffectManager';
 import { ShieldAreaCardDamagedTriggerDispatcher } from './effects/ShieldAreaCardDamagedTriggerDispatcher';
+import { BurstChoiceService } from './effects/BurstChoiceService';
 
 export interface BurstEffectSummary {
     effectId: string;
@@ -45,6 +45,8 @@ export class BurstEffectManager {
                     error: `Defending player ${defendingPlayerId} not found`
                 };
             }
+
+            const burstChoiceTargets: any[] = [];
 
             for (const shieldCard of shieldCards) {
                 const shieldCardId = getCardIdFromUid(shieldCard.carduid);
@@ -75,7 +77,7 @@ export class BurstEffectManager {
                             : undefined
                     };
 
-                    BurstChoiceService.enqueueBurstChoice(gameEnv, defendingPlayerId, formattedTarget);
+                    burstChoiceTargets.push(formattedTarget);
                 } else {
                     console.log(`📝 No burst effects found on card ${shieldCardId}`);
 
@@ -113,6 +115,12 @@ export class BurstEffectManager {
                         console.error(`❌ Failed to remove card ${shieldCard.carduid} from shield before trashing`);
                     }
                 }
+            }
+
+            if (burstChoiceTargets.length > 0) {
+                BurstChoiceService.enqueueBurstChoices(gameEnv, defendingPlayerId, burstChoiceTargets, {
+                    sourceEventId: event.id
+                });
             }
 
             return { success: true };

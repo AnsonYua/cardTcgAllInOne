@@ -8,6 +8,9 @@ const {
 const {
   validateBurstChoiceDoesNotOverrideCurrentPlayer
 } = require('./validators/burstChoiceTurnSnapshotValidation');
+const {
+  validateBurstChoiceGroupNotification
+} = require('./validators/burstChoiceGroupNotificationValidation');
 
 function main() {
   const root = sharedGameStatesRoot();
@@ -21,6 +24,7 @@ function main() {
   }
 
   validateBurstChoiceDoesNotOverrideCurrentPlayer();
+  validateBurstChoiceGroupNotification();
 
   console.log('OK: action scenarios validated');
 }

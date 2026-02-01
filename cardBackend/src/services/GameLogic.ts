@@ -1110,6 +1110,17 @@ export class GameLogic {
                     error: processingResult.error || 'Failed to process burst choice'
                 };
             }
+
+            // Update notificationQueue entry (single or group) so frontend can reflect completion state.
+            try {
+                const { markBurstChoiceNotificationCompleted } = require('./notifications/BurstChoiceNotificationUpdater');
+                markBurstChoiceNotificationCompleted(gameEnv, {
+                    burstEventId: eventId,
+                    userDecision: confirmed ? 'ACTIVATE' : 'DECLINE'
+                });
+            } catch (e) {
+                // Non-fatal: notification updates are best-effort for UI convenience.
+            }
             
             // Save updated game state
             await this.saveGameToFile(gameId, gameEnv);

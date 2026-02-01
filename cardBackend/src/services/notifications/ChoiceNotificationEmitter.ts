@@ -6,12 +6,43 @@ import { BlockerChoiceEvent, BurstEffectChoiceEvent, TargetChoiceEvent, TokenCho
 import { GameNotificationManager } from '../GameNotificationManager';
 
 export class ChoiceNotificationEmitter {
+    static buildBurstChoiceGroupNotificationId(sourceEventId: string): string {
+        return `${sourceEventId}_burst_choice_group`;
+    }
+
     static emitBurstChoiceCreated(gameEnv: GameEnvironment, event: BurstEffectChoiceEvent): void {
         const notificationManager = new GameNotificationManager(gameEnv);
         notificationManager.addNotificationEventWithId(event.id, 'BURST_EFFECT_CHOICE', {
             playerId: event.playerId,
-            event
+            event,
+            isCompleted: false
         }, 'high');
+
+        // Choice notifications should not expire until the frontend explicitly acknowledges them.
+        notificationManager.makePersistent(event.id);
+    }
+
+    static emitBurstChoiceGroupCreated(
+        gameEnv: GameEnvironment,
+        params: {
+            playerId: string;
+            sourceEventId: string;
+            events: BurstEffectChoiceEvent[];
+        }
+    ): void {
+        const notificationManager = new GameNotificationManager(gameEnv);
+        const groupId = ChoiceNotificationEmitter.buildBurstChoiceGroupNotificationId(params.sourceEventId);
+
+        notificationManager.addNotificationEventWithId(groupId, 'BURST_EFFECT_CHOICE_GROUP', {
+            playerId: params.playerId,
+            sourceEventId: params.sourceEventId,
+            events: params.events,
+            resolvedEventIds: [],
+            isCompleted: false
+        }, 'high');
+
+        // Choice notifications should not expire until the frontend explicitly acknowledges them.
+        notificationManager.makePersistent(groupId);
     }
 
     static emitBurstChoiceResolved(
