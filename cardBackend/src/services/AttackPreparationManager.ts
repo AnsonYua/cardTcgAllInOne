@@ -5,9 +5,7 @@ import { GameEnvironment } from '../models/GameEnvironment';
 import { Player } from '../models/Player';
 import { UnitZoneCard } from '../models/CardSystem';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
-import { validateComparisonFilter } from '../utils/EffectNormalizationUtils';
-import { getSlotTotals } from '../utils/FieldValueCalculator';
-import { AllowAttackTargetRuleEvaluator } from './attack/AllowAttackTargetRuleEvaluator';
+import { AllowAttackTargetPermissionResolver } from './attack/AllowAttackTargetPermissionResolver';
 
 export interface AttackPreparationFailure {
     success: false;
@@ -175,115 +173,7 @@ export class AttackPreparationManager {
         attacker: UnitZoneCard,
         target: UnitZoneCard
     ): boolean {
-        const effectSources: Array<UnitZoneCard | any> = [attacker];
-
-        const lookup = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, attacker.carduid);
-        const attackerSlot = (lookup.found && lookup.playerId && lookup.slotName)
-            ? (gameEnv.players[lookup.playerId]?.zones as any)?.[lookup.slotName]
-            : undefined;
-        const attackerSlotTotals = getSlotTotals(attackerSlot);
-
-        const slotLookup = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, attacker.carduid);
-        if (slotLookup.found && slotLookup.playerId && slotLookup.slotName) {
-            const player = gameEnv.getPlayer(slotLookup.playerId);
-            if (player?.zones) {
-                const slotResult = SlotZoneUtils.getSlotZone(player.zones, slotLookup.slotName);
-                if (slotResult.isValid && slotResult.slot?.pilot) {
-                    effectSources.push(slotResult.slot.pilot);
-                }
-            }
-        }
-
-        const ruleAllowsTarget = (rule: any): boolean => {
-            if (!rule) {
-                return false;
-            }
-
-            if (!AllowAttackTargetRuleEvaluator.conditionsSatisfied(rule.conditions, attackerSlotTotals)) {
-                return false;
-            }
-
-            const parameters = rule.parameters || {};
-            const status = typeof parameters.status === 'string' ? parameters.status.toLowerCase() : '';
-            if (status && status !== 'active') {
-                return false;
-            }
-
-            if (parameters.level) {
-                const targetLevel = target.cardData?.level || 0;
-                if (!validateComparisonFilter(targetLevel, parameters.level)) {
-                    return false;
-                }
-            }
-
-            if (parameters.ap) {
-                const targetLookup = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, target.carduid);
-                const targetSlot = (targetLookup.found && targetLookup.playerId && targetLookup.slotName)
-                    ? (gameEnv.players[targetLookup.playerId]?.zones as any)?.[targetLookup.slotName]
-                    : undefined;
-                const targetTotals = getSlotTotals(targetSlot);
-                const targetTotalAp = targetTotals.totalAP;
-
-                if (typeof parameters.ap === 'number') {
-                    if (targetTotalAp !== parameters.ap) {
-                        return false;
-                    }
-                } else if (typeof parameters.ap === 'string') {
-                    if (!validateComparisonFilter(targetTotalAp, parameters.ap)) {
-                        return false;
-                    }
-                } else {
-                    return false;
-                }
-            }
-
-            if (typeof parameters.damaged === 'boolean') {
-                const damageReceived = typeof target.damageReceived === 'number' ? target.damageReceived : 0;
-                const isDamaged = damageReceived > 0;
-                if (parameters.damaged !== isDamaged) {
-                    return false;
-                }
-            }
-
-            return true;
-        };
-
-        for (const source of effectSources) {
-            const effects = source.cardData?.effects?.rules || [];
-            for (const rule of effects) {
-                if (!rule || rule.action !== 'allow_attack_target') {
-                    continue;
-                }
-
-                if (ruleAllowsTarget(rule)) {
-                    return true;
-                }
-            }
-
-            const tempEffects = (source as any)?.temporaryEffects;
-            if (!Array.isArray(tempEffects) || tempEffects.length === 0) {
-                continue;
-            }
-
-            for (const tempEffect of tempEffects) {
-                const allow = tempEffect?.allowAttackTarget;
-                if (!allow || typeof allow !== 'object') {
-                    continue;
-                }
-
-                const synthesizedRule = {
-                    action: 'allow_attack_target',
-                    conditions: [],
-                    parameters: allow
-                };
-
-                if (ruleAllowsTarget(synthesizedRule)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return AllowAttackTargetPermissionResolver.canTargetActiveUnit(gameEnv, attacker, target);
     }
 
     static unitHasAttackRestriction(unit: UnitZoneCard | null, restriction: string): boolean {
