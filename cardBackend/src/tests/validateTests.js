@@ -11,6 +11,9 @@ const {
 const {
   validateBurstChoiceGroupNotification
 } = require('./validators/burstChoiceGroupNotificationValidation');
+const {
+  validateUnitPairingRestrictions
+} = require('./validators/unitPairingRestrictionValidation');
 
 function main() {
   const root = sharedGameStatesRoot();
@@ -25,6 +28,7 @@ function main() {
 
   validateBurstChoiceDoesNotOverrideCurrentPlayer();
   validateBurstChoiceGroupNotification();
+  validateUnitPairingRestrictions();
 
   console.log('OK: action scenarios validated');
 }

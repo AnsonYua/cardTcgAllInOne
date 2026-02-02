@@ -70,6 +70,10 @@ export class GameController {
             if (typeof folderHint === 'string' && folderHint.length > 0) {
                 return `${folderHint}/${cardId}`;
             }
+            const inferredFolder = CardDatabaseManager.getSetFolderForCardId(cardId);
+            if (inferredFolder) {
+                return `${inferredFolder}/${cardId}`;
+            }
             return null;
         }
 
@@ -187,6 +191,35 @@ export class GameController {
         };
 
         visit(cardData);
+        return result;
+    }
+
+    private static collectTokenUnitCardIdsFromGameEnv(gameEnv: any): Set<string> {
+        const result = new Set<string>();
+        if (!gameEnv || typeof gameEnv !== 'object') {
+            return result;
+        }
+
+        const players = gameEnv.players && typeof gameEnv.players === 'object'
+            ? Object.values(gameEnv.players)
+            : [];
+
+        for (const player of players as any[]) {
+            const zones = player?.zones;
+            if (!zones || typeof zones !== 'object') {
+                continue;
+            }
+
+            for (let i = 1; i <= 6; i++) {
+                const slot = (zones as any)[`slot${i}`];
+                const unit = slot?.unit;
+                const cardId = unit?.cardId;
+                if (typeof cardId === 'string' && /^T-\d+$/i.test(cardId)) {
+                    result.add(cardId);
+                }
+            }
+        }
+
         return result;
     }
 
@@ -849,6 +882,20 @@ export class GameController {
                     }
                     extraCards.push(resourcePath);
                     extraSet.add(resourcePath);
+                }
+
+                // Ensure token units in slots are also included (tokens may not be captured by supported-cardId scanning).
+                const tokenUnitCardIds = GameController.collectTokenUnitCardIdsFromGameEnv(gameEnv);
+                for (const tokenId of tokenUnitCardIds) {
+                    const tokenPath = GameController.toCardResourcePath(tokenId);
+                    if (!tokenPath) {
+                        continue;
+                    }
+                    if (deck001Set.has(tokenPath) || extraSet.has(tokenPath)) {
+                        continue;
+                    }
+                    extraCards.push(tokenPath);
+                    extraSet.add(tokenPath);
                 }
 
                 deckData.decks.extraCard.cards = extraCards;

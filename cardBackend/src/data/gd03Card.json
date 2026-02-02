@@ -1067,7 +1067,7 @@
             "parameters": {
               "condition1": {
                 "token": {
-                  "cardId": "T-021"
+                  "cardId": "T-014"
                 },
                 "count": 2,
                 "rested": true,
@@ -8783,8 +8783,8 @@
         "rules": []
       }
     },
-    "T-021": {
-      "id": "T-021",
+    "T-014": {
+      "id": "T-014",
       "name": "Ad Balloon",
       "cardType": "unit",
       "color": "Token",

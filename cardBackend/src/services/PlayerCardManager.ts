@@ -233,6 +233,24 @@ export class PlayerCardManager {
         }
 
         const existingUnit = playerZones[targetZone]?.unit;
+        if (!existingUnit) {
+            return {
+                success: false,
+                error: `Target unit ${targetUnit} not found in slot ${targetZone}`
+            };
+        }
+        if (existingUnit.carduid !== targetUnit) {
+            return {
+                success: false,
+                error: `targetUnit must reference a unit carduid (received ${targetUnit})`
+            };
+        }
+        if (playerZones[targetZone]?.pilot) {
+            return {
+                success: false,
+                error: `Target unit ${targetUnit} already has a pilot`
+            };
+        }
         if (UnitRestrictionUtils.cannotBePairedWithPilot(existingUnit as any)) {
             return {
                 success: false,

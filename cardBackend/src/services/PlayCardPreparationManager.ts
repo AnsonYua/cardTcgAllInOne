@@ -85,11 +85,25 @@ export class PlayCardPreparationManager {
 
         if (eventData.playAs === 'pilot') {
             const targetUid = typeof eventData.targetUnit === 'string' ? eventData.targetUnit : '';
-            const slotResult = targetUid ? SlotZoneUtils.findSlotByCarduid(player.zones, targetUid) : { slotName: null, unit: null };
+            const slotResult = targetUid
+                ? SlotZoneUtils.findSlotByCarduid(player.zones, targetUid)
+                : { slotName: null, unit: null, pilot: null };
             if (!slotResult.unit) {
                 return {
                     success: false,
                     error: `Target unit ${eventData.targetUnit || ''} not found for pilot play`
+                };
+            }
+            if (slotResult.unit.carduid !== targetUid) {
+                return {
+                    success: false,
+                    error: `targetUnit must reference a unit carduid (received ${targetUid})`
+                };
+            }
+            if (slotResult.pilot) {
+                return {
+                    success: false,
+                    error: 'Target unit already has a pilot'
                 };
             }
 

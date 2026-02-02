@@ -429,6 +429,7 @@ export interface PlayerDeckData {
  */
 export class CardDatabaseManager {
     private static cardDatabase: any = null;
+    private static cardIdToSetFolder: Record<string, string> | null = null;
 
     // Static initialization - load card database on first use
     static {
@@ -441,12 +442,69 @@ export class CardDatabaseManager {
     private static ensureCardDatabaseLoaded(): void {
         if (!CardDatabaseManager.cardDatabase) {
             try {
-                const dataDir = path.join(__dirname, '../data');
+                const dataDirCandidates = [
+                    path.join(__dirname, '../data'),
+                    // When running compiled JS (dist), __dirname may be dist/...; fall back to workspace-relative src/data.
+                    path.join(process.cwd(), 'src', 'data'),
+                    path.join(process.cwd(), 'data')
+                ];
+                const dataDir = dataDirCandidates.find((candidate) => {
+                    try {
+                        return fs.existsSync(candidate) && fs.statSync(candidate).isDirectory();
+                    } catch {
+                        return false;
+                    }
+                });
+
+                if (!dataDir) {
+                    throw new Error(`Card data directory not found. Tried: ${dataDirCandidates.join(', ')}`);
+                }
                 const files = fs.readdirSync(dataDir)
                     .filter(filename => /^(st|gd)\d{2}Card\.json$/i.test(filename))
                     .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 
                 const merged: Record<string, any> = {};
+                const folderIndex: Record<string, string> = {};
+
+                const collectTokenIdsFromValue = (value: any, tokenIds: Set<string>, visited: Set<any>): void => {
+                    if (!value) {
+                        return;
+                    }
+                    if (typeof value === 'string') {
+                        if (/^T-\d+$/i.test(value)) {
+                            tokenIds.add(value);
+                        }
+                        return;
+                    }
+                    if (typeof value !== 'object') {
+                        return;
+                    }
+                    if (visited.has(value)) {
+                        return;
+                    }
+                    visited.add(value);
+
+                    if (Array.isArray(value)) {
+                        for (const entry of value) {
+                            collectTokenIdsFromValue(entry, tokenIds, visited);
+                        }
+                        return;
+                    }
+
+                    const maybeCardId = (value as any).cardId;
+                    const maybeId = (value as any).id;
+                    if (typeof maybeCardId === 'string' && /^T-\d+$/i.test(maybeCardId)) {
+                        tokenIds.add(maybeCardId);
+                    }
+                    if (typeof maybeId === 'string' && /^T-\d+$/i.test(maybeId)) {
+                        tokenIds.add(maybeId);
+                    }
+
+                    for (const child of Object.values(value)) {
+                        collectTokenIdsFromValue(child, tokenIds, visited);
+                    }
+                };
+
                 for (const filename of files) {
                     const cardDataPath = path.join(dataDir, filename);
                     const raw = JSON.parse(fs.readFileSync(cardDataPath, 'utf8'));
@@ -454,14 +512,39 @@ export class CardDatabaseManager {
                     if (!cards || typeof cards !== 'object') {
                         continue;
                     }
+                    const folderMatch = filename.match(/^(st|gd)\d{2}/i);
+                    const folder = folderMatch ? folderMatch[0].toLowerCase() : null;
+                    if (folder) {
+                        // Index cardIds by the file/set they came from.
+                        for (const cardId of Object.keys(cards)) {
+                            if (typeof cardId === 'string' && cardId.length > 0 && !folderIndex[cardId]) {
+                                folderIndex[cardId] = folder;
+                            }
+                        }
+
+                        // Also index token ids referenced by card effects within this file, so we can resolve
+                        // token resource paths even when the token definition itself is not present as a top-level card.
+                        const tokenIds = new Set<string>();
+                        const visited = new Set<any>();
+                        for (const cardData of Object.values(cards)) {
+                            collectTokenIdsFromValue(cardData, tokenIds, visited);
+                        }
+                        for (const tokenId of tokenIds) {
+                            if (!folderIndex[tokenId]) {
+                                folderIndex[tokenId] = folder;
+                            }
+                        }
+                    }
                     Object.assign(merged, cards);
                 }
 
                 CardDatabaseManager.cardDatabase = merged;
+                CardDatabaseManager.cardIdToSetFolder = folderIndex;
                 console.log(`📚 Card database loaded into global storage (${Object.keys(merged).length} cards)`);
             } catch (error) {
                 console.error('❌ Failed to load card database:', error);
                 CardDatabaseManager.cardDatabase = {};
+                CardDatabaseManager.cardIdToSetFolder = {};
             }
         }
     }
@@ -475,6 +558,18 @@ export class CardDatabaseManager {
             return null;
         }
         return CardDatabaseManager.cardDatabase[cardId] || null;
+    }
+
+    /**
+     * Best-effort: return the set folder (e.g. "st01", "gd03") that a cardId was loaded from.
+     * Useful for tokens (T-xxx) which do not encode their set in the id.
+     */
+    public static getSetFolderForCardId(cardId: string): string | null {
+        if (!CardDatabaseManager.cardIdToSetFolder) {
+            return null;
+        }
+        const folder = CardDatabaseManager.cardIdToSetFolder[cardId];
+        return typeof folder === 'string' && folder.length > 0 ? folder : null;
     }
 
     /**
@@ -542,6 +637,7 @@ export class CardDatabaseManager {
      */
     public static reloadDatabase(): void {
         CardDatabaseManager.cardDatabase = null;
+        CardDatabaseManager.cardIdToSetFolder = null;
         CardDatabaseManager.ensureCardDatabaseLoaded();
     }
 
