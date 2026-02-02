@@ -85,8 +85,10 @@ export class ChoiceNotificationEmitter {
 
     static emitTargetChoiceCreated(gameEnv: GameEnvironment, event: TargetChoiceEvent): void {
         const notificationManager = new GameNotificationManager(gameEnv);
+        const allowEmptySelection = event.data?.effect?.optional === true;
         notificationManager.addNotificationEventWithId(event.id, 'TARGET_CHOICE', {
             playerId: event.playerId,
+            allowEmptySelection,
             event
         }, 'high');
     }

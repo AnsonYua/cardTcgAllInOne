@@ -4,6 +4,7 @@ import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { TargetFilters, TargetReference } from '../EventQueue/interfaces/GameEvent';
 import type { ResolvedTargetConfig } from './TargetResolver';
 import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
+import { TargetFilterUtils } from './TargetFilterUtils';
 
 export class HandTargetResolver {
     static generateHandTargets(
@@ -54,6 +55,13 @@ export class HandTargetResolver {
         cardData: any,
         filters: TargetFilters = {}
     ): boolean {
+        const desiredCardType = typeof (filters as any).cardType === 'string'
+            ? ((filters as any).cardType as string)
+            : undefined;
+        if (desiredCardType && cardData?.cardType !== desiredCardType) {
+            return false;
+        }
+
         if (filters.level) {
             const cardLevel = cardData?.level || 0;
             if (!validateComparisonFilter(cardLevel, filters.level)) {
@@ -61,12 +69,20 @@ export class HandTargetResolver {
             }
         }
 
-        if (filters.traits && filters.traits.length > 0) {
-            const cardTraits = cardData?.traits || [];
-            const hasRequiredTrait = filters.traits.some((requiredTrait: string) =>
-                cardTraits.some((cardTrait: string) => cardTrait === requiredTrait)
-            );
-            if (!hasRequiredTrait) {
+        const cardColor = typeof cardData?.color === 'string' ? (cardData.color as string) : undefined;
+        const colorResult = TargetFilterUtils.validateColorFilter(cardColor, filters);
+        if (!colorResult.ok) {
+            return false;
+        }
+
+        const hasTraitFilters =
+            (Array.isArray(filters.traits) && filters.traits.length > 0) ||
+            (Array.isArray(filters.traitsAny) && filters.traitsAny.length > 0) ||
+            (Array.isArray(filters.traitsAll) && filters.traitsAll.length > 0);
+        if (hasTraitFilters) {
+            const cardTraits = Array.isArray(cardData?.traits) ? (cardData.traits as string[]) : [];
+            const traitResult = TargetFilterUtils.validateTraitFilters(cardTraits, filters);
+            if (!traitResult.ok) {
                 return false;
             }
         }
@@ -74,4 +90,3 @@ export class HandTargetResolver {
         return true;
     }
 }
-

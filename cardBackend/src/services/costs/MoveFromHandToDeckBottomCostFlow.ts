@@ -51,6 +51,9 @@ export class MoveFromHandToDeckBottomCostFlow {
             effectId: `${effect.effectId || effect.action || 'effect'}_cost_moveFromHandToDeckBottom`,
             type: 'internal',
             trigger: 'COST',
+            // Cost choices for "If you do, ..." effects must be cancellable so the player can decline.
+            // The follow-up effect (draw) only happens when the cost is actually paid.
+            optional: true,
             action: 'moveFromHandToDeckBottom',
             target: {
                 type: 'card',
