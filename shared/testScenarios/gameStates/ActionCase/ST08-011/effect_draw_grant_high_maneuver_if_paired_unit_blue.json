@@ -1,0 +1,302 @@
+{
+    "description": "st08-011_manual_pair_then_effect_draw_grants_high_maneuver_blocker_proof",
+    "gameId": "st08-011_manual_pair_then_effect_draw_grants_high_maneuver_blocker_proof",
+    "testType": "action",
+    "category": "ActionCase",
+    "tags": [
+        "ST08-011",
+        "EFFECT_DRAW",
+        "grant_keyword",
+        "High-Maneuver",
+        "manual"
+    ],
+    "notes": [
+        "Goal: Manually prove ST08-011 grants <High-Maneuver> when you draw with an effect.",
+        "Setup: Player A hand has GD01-001 (Unit), ST08-011 (Lane Aim pilot), GD01-100 (A Show of Resolve) [Main] Draw 2.",
+        "Setup: Player A already has GD01-004 and GD01-008 in play (extra White Base Team units; not required for the trigger).",
+        "Setup: Player B has ST01-008 (Demi Trainer) in slot1, which has <Blocker> via ATTACK_REDIRECT/redirect_attack.",
+        "Step 1 (manual): Player A plays GD01-001 into slot1.",
+        "Step 2 (manual): Player A plays ST08-011 as a pilot onto the slot1 unit (pair them).",
+        "Step 3 (manual): Player A plays GD01-100 in MAIN to draw 2 (this is an effect draw; drawContext != turn_start).",
+        "Expect: EFFECT_DRAW triggers and ST08-011 grants <High-Maneuver> to the paired unit (GD01-001) until end of turn.",
+        "Proof (manual): Go to ATTACK with the GD01-001 unit and attack the opponent player/base; blocker step should be skipped because attacker has High-Maneuver."
+    ],
+    "initialGameEnv": {
+        "phase": "MAIN_PHASE",
+        "playerId_1": "playerId_1",
+        "playerId_2": "playerId_2",
+        "gameStarted": true,
+        "firstPlayer": 0,
+        "firstPlayerChooser": null,
+        "firstPlayerDecision": null,
+        "hasChosenFirstPlayer": true,
+        "currentPlayer": "playerId_1",
+        "currentTurn": 1,
+        "playersReady": {
+            "playerId_1": true,
+            "playerId_2": true
+        },
+        "processingQueue": [],
+        "processingEnabled": true,
+        "maxEventsPerCycle": 50,
+        "notificationQueue": [],
+        "lastEventId": 0,
+        "pendingPhaseTransition": null,
+        "currentBattle": null,
+        "version": 0,
+        "players": {
+            "playerId_1": {
+                "id": "playerId_1",
+                "name": "Player 1",
+                "deck": {
+                    "hand": [
+                        {
+                            "carduid": "GD01-001_unit_hand_0001",
+                            "cardId": "GD01-001"
+                        },
+                        {
+                            "carduid": "ST08-011_pilot_hand_0001",
+                            "cardId": "ST08-011"
+                        },
+                        {
+                            "carduid": "GD01-100_command_hand_0001",
+                            "cardId": "GD01-100"
+                        }
+                    ],
+                    "handUids": [
+                        "GD01-001_unit_hand_0001",
+                        "ST08-011_pilot_hand_0001",
+                        "GD01-100_command_hand_0001"
+                    ],
+                    "mainDeck": [
+                        "GD01-015_deck_0001",
+                        "GD01-016_deck_0002",
+                        "GD01-017_deck_0003"
+                    ]
+                },
+                "confirmIsRedraw": false,
+                "isRedraw": false,
+                "playerPoint": 0,
+                "isReady": true,
+                "zones": {
+                    "slot1": {},
+                    "slot2": {
+                        "unit": {
+                            "carduid": "GD01-004_unit_0001",
+                            "cardId": "GD01-004",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isFirstPlay": false,
+                            "playedThisTurn": false,
+                            "damageReceived": 0,
+                            "continueModifyAP": 0,
+                            "continueModifyHP": 0
+                        }
+                    },
+                    "slot3": {
+                        "unit": {
+                            "carduid": "GD01-008_unit_0001",
+                            "cardId": "GD01-008",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isFirstPlay": false,
+                            "playedThisTurn": false,
+                            "damageReceived": 0,
+                            "continueModifyAP": 0,
+                            "continueModifyHP": 0
+                        },
+                        "pilot": {
+                          "carduid": "ST08-011_pilot_hand_0022",
+                          "cardId": "ST08-011",
+                          "placedAt": 0,
+                          "placedBy": "playerId_1",
+                          "isRested": false,
+                          "isFirstPlay": false
+                        }
+                    },
+                    "slot4": {},
+                    "slot5": {},
+                    "slot6": {},
+                    "base": [],
+                    "shieldArea": [],
+                    "energyArea": [
+                        {
+                            "carduid": "energy_basic_t021_a_0001",
+                            "cardId": "energy_basic",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isExtraEnergy": false
+                        },
+                        {
+                            "carduid": "energy_basic_t021_a_0001",
+                            "cardId": "energy_basic",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isExtraEnergy": false
+                        },
+                        {
+                            "carduid": "energy_basic_t021_a_0001",
+                            "cardId": "energy_basic",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isExtraEnergy": false
+                        },
+                        {
+                            "carduid": "energy_basic_t021_a_0001",
+                            "cardId": "energy_basic",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isExtraEnergy": false
+                        },
+                        {
+                            "carduid": "energy_basic_t021_a_0001",
+                            "cardId": "energy_basic",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isExtraEnergy": false
+                        },
+                        {
+                            "carduid": "energy_basic_t021_a_0001",
+                            "cardId": "energy_basic",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isExtraEnergy": false
+                        },
+                        {
+                            "carduid": "energy_basic_t021_a_0001",
+                            "cardId": "energy_basic",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isExtraEnergy": false
+                        },
+                        {
+                            "carduid": "energy_basic_t021_a_0001",
+                            "cardId": "energy_basic",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isExtraEnergy": false
+                        }
+                    ],
+                    "trashArea": [],
+                    "repairAbilitiesCheckedThisCycle": false,
+                    "endTurnEffectsCheckedThisCycle": false
+                }
+            },
+            "playerId_2": {
+                "id": "playerId_2",
+                "name": "Player 2",
+                "deck": {
+                    "hand": [],
+                    "handUids": [],
+                    "mainDeck": []
+                },
+                "confirmIsRedraw": false,
+                "isRedraw": false,
+                "playerPoint": 0,
+                "isReady": true,
+                "zones": {
+                    "slot1": {
+                        "unit": {
+                            "carduid": "ST01-008_blocker_0001",
+                            "cardId": "ST01-008",
+                            "placedAt": 0,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "isFirstPlay": false,
+                            "playedThisTurn": false,
+                            "damageReceived": 0,
+                            "continueModifyAP": 0,
+                            "continueModifyHP": 0
+                        }
+                    },
+                    "slot2": {},
+                    "slot3": {},
+                    "slot4": {},
+                    "slot5": {},
+                    "slot6": {},
+                    "base": [],
+                    "shieldArea": [],
+                    "energyArea": [
+                        {
+                            "carduid": "energy_basic_t021_a_0001",
+                            "cardId": "energy_basic",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isExtraEnergy": false
+                        },
+                        {
+                            "carduid": "energy_basic_t021_a_0001",
+                            "cardId": "energy_basic",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isExtraEnergy": false
+                        },
+                        {
+                            "carduid": "energy_basic_t021_a_0001",
+                            "cardId": "energy_basic",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isExtraEnergy": false
+                        },
+                        {
+                            "carduid": "energy_basic_t021_a_0001",
+                            "cardId": "energy_basic",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isExtraEnergy": false
+                        },
+                        {
+                            "carduid": "energy_basic_t021_a_0001",
+                            "cardId": "energy_basic",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isExtraEnergy": false
+                        },
+                        {
+                            "carduid": "energy_basic_t021_a_0001",
+                            "cardId": "energy_basic",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isExtraEnergy": false
+                        },
+                        {
+                            "carduid": "energy_basic_t021_a_0001",
+                            "cardId": "energy_basic",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isExtraEnergy": false
+                        },
+                        {
+                            "carduid": "energy_basic_t021_a_0001",
+                            "cardId": "energy_basic",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "isExtraEnergy": false
+                        }
+                    ],
+                    "trashArea": [],
+                    "repairAbilitiesCheckedThisCycle": false,
+                    "endTurnEffectsCheckedThisCycle": false
+                }
+            }
+        }
+    }
+}
