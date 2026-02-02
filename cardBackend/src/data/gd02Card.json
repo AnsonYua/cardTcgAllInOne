@@ -4376,7 +4376,10 @@
                   "New UNE"
                 ]
               },
-              "count": 1
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
             },
             "parameters": {
               "value": 2
@@ -5124,7 +5127,10 @@
               "filters": {
                 "color": "Token"
               },
-              "count": 1
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
             },
             "parameters": {
               "from": "enemy_units",
@@ -6353,7 +6359,10 @@
               "filters": {
                 "color": "Token"
               },
-              "count": 1
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
             },
             "parameters": {
               "status": "active",

@@ -797,7 +797,10 @@
                             "filters": {
                                 "damaged": true
                             },
-                            "count": 1
+                            "count": 1,
+                            "selection": {
+                                "type": "player_choice"
+                            }
                         },
                         "parameters": {
                             "value": 2,

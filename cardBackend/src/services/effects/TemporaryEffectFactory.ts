@@ -97,4 +97,33 @@ export class TemporaryEffectFactory {
             }
         };
     }
+
+    static createAllowAttackTarget(
+        gameEnv: GameEnvironment,
+        sourcePlayerId: string,
+        sourceCarduid: string,
+        effect: EffectDefinition
+    ): TemporaryEffect {
+        const parameters = effect.parameters && typeof effect.parameters === 'object' ? effect.parameters : {};
+        const status = typeof (parameters as any).status === 'string' ? (parameters as any).status : undefined;
+        const level = typeof (parameters as any).level === 'string' ? (parameters as any).level : undefined;
+        const ap = ((): string | number | undefined => {
+            const raw = (parameters as any).ap;
+            if (typeof raw === 'string' || typeof raw === 'number') {
+                return raw;
+            }
+            return undefined;
+        })();
+        const damaged = typeof (parameters as any).damaged === 'boolean' ? (parameters as any).damaged : undefined;
+
+        return {
+            ...this.createBase(gameEnv, sourcePlayerId, sourceCarduid, effect),
+            allowAttackTarget: {
+                ...(status ? { status } : {}),
+                ...(level ? { level } : {}),
+                ...(typeof ap !== 'undefined' ? { ap } : {}),
+                ...(typeof damaged === 'boolean' ? { damaged } : {})
+            }
+        };
+    }
 }

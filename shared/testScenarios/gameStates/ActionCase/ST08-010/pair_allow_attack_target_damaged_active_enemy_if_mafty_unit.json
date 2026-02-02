@@ -1,0 +1,144 @@
+{
+  "description": "st08-010_pair_allow_attack_target_damaged_active_enemy_if_mafty_unit",
+  "gameId": "st08-010_pair_allow_attack_target_damaged_active_enemy_if_mafty_unit",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "ST08-010",
+    "PAIRING_COMPLETE",
+    "allow_attack_target",
+    "damaged",
+    "active"
+  ],
+  "notes": [
+    "Setup: Player A has two (Mafty) Units in play: ST08-004 in slot1 and ST08-005 in slot2. Player A hand contains ST08-010 (Hathaway Noa) pilot.",
+    "Setup: Player B has an active (not rested) enemy Unit in slot1 that is damaged (damageReceived > 0).",
+    "Action: Player A plays ST08-010 as a pilot onto ST08-004 in slot1 (PAIRING_COMPLETE). When prompted, choose ST08-005 in slot2 as the target.",
+    "Action (manual): Player A initiates attackUnit with ST08-005 targeting Player B slot1 unit (active + damaged).",
+    "Expect: AttackPreparationManager allows selecting the active damaged enemy unit because ST08-005 has a temporary allow_attack_target permission (status=active, damaged=true) until end of turn."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "ST08-010_pilot_0001",
+              "cardId": "ST08-010"
+            }
+          ],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST08-004_unit_0001",
+              "cardId": "ST08-004",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isFirstPlay": false,
+              "playedThisTurn": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "ST08-005_unit_0001",
+              "cardId": "ST08-005",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isFirstPlay": false,
+              "playedThisTurn": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD01-015_enemy_0001",
+              "cardId": "GD01-015",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isFirstPlay": false,
+              "playedThisTurn": false,
+              "damageReceived": 1,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

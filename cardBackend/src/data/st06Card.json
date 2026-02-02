@@ -300,7 +300,10 @@
                                     "Clan"
                                 ]
                             },
-                            "count": 1
+                            "count": 1,
+                            "selection": {
+                                "type": "player_choice"
+                            }
                         },
                         "parameters": {
                             "status": "active",
@@ -712,7 +715,10 @@
                         "target": {
                             "type": "unit",
                             "scope": "self_all_unit",
-                            "count": 1
+                            "count": 1,
+                            "selection": {
+                                "type": "player_choice"
+                            }
                         },
                         "parameters": {
                             "value": 2,

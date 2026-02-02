@@ -104,7 +104,10 @@
             "target": {
               "type": "unit",
               "scope": "opponent",
-              "count": 1
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
             },
             "action": "rest"
           }
@@ -217,7 +220,10 @@
             "target": {
               "type": "unit",
               "scope": "self",
-              "count": 1
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
             },
             "action": "heal",
             "parameters": {
@@ -234,7 +240,10 @@
               "filters": {
                 "hp": "<=2"
               },
-              "count": 1
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
             },
             "action": "rest"
           }
@@ -333,7 +342,10 @@
             "target": {
               "type": "unit",
               "scope": "self",
-              "count": 1
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
             },
             "action": "heal",
             "parameters": {
@@ -420,7 +432,10 @@
               "filters": {
                 "status": "rested"
               },
-              "count": 1
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
             },
             "action": "damage",
             "parameters": {
@@ -467,7 +482,10 @@
                   "White Base Team"
                 ]
               },
-              "count": 1
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
             },
             "action": "grant_keyword",
             "parameters": {
@@ -514,7 +532,10 @@
               "filters": {
                 "hp": "<=3"
               },
-              "count": 1
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
             },
             "action": "rest"
           }
@@ -689,7 +710,10 @@
             "target": {
               "type": "unit",
               "scope": "self_all_unit",
-              "count": 1
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
             },
             "parameters": {
               "value": 1
@@ -1843,7 +1867,10 @@
               "filters": {
                 "color": "Green"
               },
-              "count": 1
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
             },
             "parameters": {
               "status": "active",
@@ -2189,7 +2216,10 @@
                 ],
                 "ap": ">=5"
               },
-              "count": 1
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
             },
             "parameters": {
               "keyword": "First Strike"
@@ -2909,7 +2939,10 @@
                 ],
                 "color": "Token"
               },
-              "count": 1
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
             },
             "parameters": {
               "allowAttackOnDeployTurn": true,
@@ -5379,7 +5412,10 @@
                   "Blocker"
                 ]
               },
-              "count": 1
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
             },
             "action": "modifyAP",
             "parameters": {
@@ -5880,7 +5916,10 @@
                 ],
                 "ap": ">=5"
               },
-              "count": 1
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
             },
             "parameters": {
               "value": 3,

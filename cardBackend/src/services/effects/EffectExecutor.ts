@@ -29,6 +29,7 @@ import { applyReturnToHandEffect } from './actions/EffectReturnToHandActions';
 import { applyPairFromTrashEffect } from './actions/EffectPairActions';
 import { applyRestEffect } from './actions/EffectRestActions';
 import { applyDamageEffect } from './actions/EffectDamageActions';
+import { applyAllowAttackTargetEffect } from './actions/EffectAllowAttackTargetActions';
 import { extractNumericValue, resolvePlayerIdsForScope } from './actions/EffectActionUtils';
 import { HandZoneManager } from '../zones/HandZoneManager';
 import type { AddToHandOptions } from '../zones/HandZoneManager';
@@ -92,7 +93,9 @@ export class EffectExecutor {
         rest: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyRestEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         damage: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
-            applyDamageEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets)
+            applyDamageEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        allow_attack_target: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyAllowAttackTargetEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets)
     };
 
     /**

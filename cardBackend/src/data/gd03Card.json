@@ -3326,7 +3326,10 @@
                   "Vagan"
                 ]
               },
-              "count": 1
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
             },
             "parameters": {
               "value": 2,
@@ -4800,7 +4803,10 @@
                 ],
                 "level": "<=SOURCE_LEVEL"
               },
-              "count": 1
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
             },
             "parameters": {
               "value": 1,
@@ -5054,7 +5060,10 @@
                   "Cyclops Team"
                 ]
               },
-              "count": 1
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              }
             },
             "parameters": {
               "value": 1

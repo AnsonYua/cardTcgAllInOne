@@ -692,7 +692,10 @@
                                 ],
                                 "status": "rested"
                             },
-                            "count": 1
+                            "count": 1,
+                            "selection": {
+                                "type": "player_choice"
+                            }
                         },
                         "parameters": {
                             "notes": "Design placeholder: requires engine support for redirecting a battling enemy Unit's attack target."

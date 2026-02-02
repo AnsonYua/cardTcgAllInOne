@@ -16,6 +16,12 @@ export interface TemporaryEffect {
     breachValue?: number;               // Breach damage granted (optional)
     grantedKeywords?: string[];         // Keywords granted (optional)
     keywordValues?: Record<string, number>; // Keyword numeric values (optional, e.g. Repair 1)
+    allowAttackTarget?: {
+        status?: string;
+        level?: string;
+        ap?: string | number;
+        damaged?: boolean;
+    };
     preventBattleDamage?: {
         from?: string;
         enemyLevel?: string;
