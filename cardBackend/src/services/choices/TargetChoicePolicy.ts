@@ -21,6 +21,19 @@ export class TargetChoicePolicy {
             );
         }
 
+        const tieBreaker = typeof effect.target?.selection?.tieBreaker === 'string'
+            ? effect.target.selection.tieBreaker.toLowerCase()
+            : '';
+        if (tieBreaker === 'controller_choice') {
+            // When selection narrows to multiple candidates (e.g. HIGHEST_LEVEL ties) and count=1,
+            // the controller must choose which one to apply to.
+            return TargetCountUtils.hasMeaningfulChoice(
+                availableTargets.length,
+                effect.target?.count,
+                effect.optional === true
+            );
+        }
+
         if (targetConfig.scope === 'self_shield' || targetConfig.scope === 'opponent_shield') {
             return false;
         }

@@ -217,14 +217,12 @@ export class DeployTargetManager {
                 return { success: false, error: 'No targets selected for effect' };
             }
 
-            if (selectionType === 'player_choice') {
-                const validation = TargetCountUtils.validateSelectedCount(
-                    selectedTargets.length,
-                    normalizedEffect.target?.count
-                );
-                if (!validation.ok) {
-                    return { success: false, error: validation.error };
-                }
+            const validation = TargetCountUtils.validateSelectedCount(
+                selectedTargets.length,
+                normalizedEffect.target?.count
+            );
+            if (!validation.ok) {
+                return { success: false, error: validation.error };
             }
 
             const normalizedTargets: TargetReference[] = selectedTargets.map((selection) => ({

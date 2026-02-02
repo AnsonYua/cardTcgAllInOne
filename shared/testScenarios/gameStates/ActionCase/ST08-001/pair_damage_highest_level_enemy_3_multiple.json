@@ -221,6 +221,22 @@
                         }
                     },
                     "slot2": {
+                        "unit": {
+                            "canAttackOnPlayTurn": false,
+                            "canAttackThisTurn": true,
+                            "cardId": "ST08-002",
+                            "carduid": "ST08-002_enemy_0002",
+                            "continueModifyAP": 0,
+                            "continueModifyHP": 0,
+                            "damageReceived": 0,
+                            "isFirstPlay": false,
+                            "isRested": false,
+                            "originalAP": 4,
+                            "originalHP": 4,
+                            "placedAt": 0,
+                            "placedBy": "playerId_2",
+                            "playedThisTurn": false
+                        }
                     },
                     "slot3": {
                         "unit": {
