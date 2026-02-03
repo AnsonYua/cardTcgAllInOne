@@ -31,8 +31,13 @@ export class HandContinuousModifier {
             return cardData;
         }
 
-        let effectiveCost = typeof cardData.cost === 'number' ? cardData.cost : 0;
-        let effectiveLevel = typeof cardData.level === 'number' ? cardData.level : 0;
+        const baseCostRaw = Number(cardData.cost);
+        const baseLevelRaw = Number(cardData.level);
+        const baseCost = Number.isFinite(baseCostRaw) ? baseCostRaw : 0;
+        const baseLevel = Number.isFinite(baseLevelRaw) ? baseLevelRaw : 0;
+
+        let effectiveCost = baseCost;
+        let effectiveLevel = baseLevel;
 
         for (const rule of handRules) {
             const normalizedRule = ensureEffectDefaults(rule);
@@ -59,7 +64,7 @@ export class HandContinuousModifier {
             }
         }
 
-        if (effectiveCost === cardData.cost && effectiveLevel === cardData.level) {
+        if (effectiveCost === baseCost && effectiveLevel === baseLevel) {
             return cardData;
         }
 

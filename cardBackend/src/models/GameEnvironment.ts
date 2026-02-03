@@ -8,6 +8,7 @@ import { GameEvent, EventStatus, EventPriority, BurstEffectChoiceEvent, TargetCh
 import { ProcessingResult } from './EventInterfaces';
 import { BattleContext, ActionStepTargetSummary } from './BattleContext';
 import { EffectScannerUtils } from '../utils/EffectScannerUtils';
+import { HandContinuousModifier } from '../services/effects/HandContinuousModifier';
 
 // Forward declaration to avoid circular dependency
 declare class StaticEventProcessor {
@@ -577,6 +578,56 @@ export class GameEnvironment {
         if (this.currentBattle) {
             this.refreshBattleActionTargets();
         }
+
+        const players = Object.fromEntries(
+            Object.entries(this.players).map(([id, player]) => {
+                const playerJson = player.toJSON();
+
+                const hand = playerJson?.deck?.hand;
+                if (Array.isArray(hand)) {
+                    playerJson.deck.hand = hand.map((handCard: any) => {
+                        const baseCardData = handCard?.cardData;
+                        if (!baseCardData) {
+                            return handCard;
+                        }
+
+                        const baseCost = Number(baseCardData.cost);
+                        const baseLevel = Number(baseCardData.level);
+                        const normalizedBaseCost = Number.isFinite(baseCost) ? baseCost : 0;
+                        const normalizedBaseLevel = Number.isFinite(baseLevel) ? baseLevel : 0;
+
+                        const modifiedCardData = HandContinuousModifier.applyModifiersForHandCardPlay(
+                            this,
+                            id,
+                            {
+                                ...baseCardData,
+                                cost: normalizedBaseCost,
+                                level: normalizedBaseLevel
+                            }
+                        );
+
+                        const effectiveCostRaw = Number(modifiedCardData?.cost);
+                        const effectiveLevelRaw = Number(modifiedCardData?.level);
+                        const effectiveCost = Number.isFinite(effectiveCostRaw) ? effectiveCostRaw : normalizedBaseCost;
+                        const effectiveLevel = Number.isFinite(effectiveLevelRaw) ? effectiveLevelRaw : normalizedBaseLevel;
+
+                        return {
+                            ...handCard,
+                            cardData: {
+                                ...baseCardData,
+                                baseCost: normalizedBaseCost,
+                                baseLevel: normalizedBaseLevel,
+                                effectiveCost,
+                                effectiveLevel
+                            }
+                        };
+                    });
+                }
+
+                return [id, playerJson];
+            })
+        );
+
         return {
             version: this.version,
             phase: this.phase,
@@ -591,10 +642,8 @@ export class GameEnvironment {
             currentTurn: this.currentTurn,
             playersReady: this.playersReady,
             currentBattle: this.currentBattle ? { ...this.currentBattle } : null,
-            
-            players: Object.fromEntries(
-                Object.entries(this.players).map(([id, player]) => [id, player.toJSON()])
-            ),
+
+            players,
             
             // Internal processing event system
             processingQueue: this.processingQueue,

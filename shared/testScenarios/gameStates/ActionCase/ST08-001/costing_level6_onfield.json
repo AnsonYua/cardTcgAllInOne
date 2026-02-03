@@ -1,0 +1,250 @@
+{
+  "category": "ActionCase",
+  "description": "st08-001_pair_damage_highest_level_enemy_3",
+  "gameId": "st08-001_pair_damage_highest_level_enemy_3",
+  "initialGameEnv": {
+    "currentBattle": null,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "gameStarted": true,
+    "hasChosenFirstPlayer": true,
+    "lastEventId": 0,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_3bxbxq5uy",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "ST04-010_pilot_for_xi_0001",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "pendingPhaseTransition": null,
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "players": {
+      "playerId_1": {
+        "confirmIsRedraw": false,
+        "deck": {
+          "hand": [
+            {
+              "cardId": "ST08-001",
+              "carduid": "ST08-001_hand_0001"
+            }
+          ],
+          "handUids": [
+            "ST08-001_hand_0001"
+          ],
+          "mainDeck": []
+        },
+        "id": "playerId_1",
+        "isReady": true,
+        "isRedraw": false,
+        "name": "Player 1",
+        "playerPoint": 0,
+        "zones": {
+          "base": [],
+          "energyArea": [
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_st08_001_a_0001",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_st08_001_a_0002",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_st08_001_a_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_st08_001_a_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            }
+          ],
+          "repairAbilitiesCheckedThisCycle": false,
+          "shieldArea": [],
+          "slot1": {
+            "unit": {
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "cardId": "ST08-001",
+              "carduid": "ST08-001_enemy_00115",
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "damageReceived": 0,
+              "isFirstPlay": false,
+              "isRested": false,
+              "originalAP": 4,
+              "originalHP": 4,
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "playedThisTurn": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "trashArea": []
+        }
+      },
+      "playerId_2": {
+        "confirmIsRedraw": false,
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "id": "playerId_2",
+        "isReady": true,
+        "isRedraw": false,
+        "name": "Player 2",
+        "playerPoint": 0,
+        "zones": {
+          "base": [],
+          "energyArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "shieldArea": [],
+          "slot1": {
+            "unit": {
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "cardId": "ST08-002",
+              "carduid": "ST08-002_enemy_0001",
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "damageReceived": 0,
+              "isFirstPlay": false,
+              "isRested": false,
+              "originalAP": 4,
+              "originalHP": 4,
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "playedThisTurn": false
+            }
+          },
+          "slot2": {
+            "unit": {
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "cardId": "ST08-002",
+              "carduid": "ST08-002_enemy_0002",
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "damageReceived": 0,
+              "isFirstPlay": false,
+              "isRested": false,
+              "originalAP": 4,
+              "originalHP": 4,
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "playedThisTurn": false
+            }
+          },
+          "slot3": {
+            "unit": {
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "cardId": "ST08-003",
+              "carduid": "ST08-003_enemy_0003",
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "damageReceived": 0,
+              "isFirstPlay": false,
+              "isRested": false,
+              "originalAP": 4,
+              "originalHP": 3,
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "playedThisTurn": false
+            }
+          },
+          "slot4": {
+            "unit": {
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "cardId": "ST08-002",
+              "carduid": "ST08-002_enemy_0004",
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "damageReceived": 0,
+              "isFirstPlay": false,
+              "isRested": false,
+              "originalAP": 4,
+              "originalHP": 4,
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "playedThisTurn": false
+            }
+          },
+          "slot5": {
+            "unit": {
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "cardId": "ST08-002",
+              "carduid": "ST08-002_enemy_0005",
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "damageReceived": 0,
+              "isFirstPlay": false,
+              "isRested": false,
+              "originalAP": 4,
+              "originalHP": 4,
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "playedThisTurn": false
+            }
+          },
+          "slot6": {},
+          "trashArea": []
+        }
+      }
+    },
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingEnabled": true,
+    "processingQueue": [],
+    "version": 0
+  },
+  "notes": [
+    "Action: Player A plays ST04-010 as a pilot onto ST08-001 to trigger PAIRING_COMPLETE.",
+    "Expect: A TARGET_CHOICE notification is emitted for Player A with only the highest-level enemy units (2 ST08-002 targets).",
+    "Action: Player A confirms the TARGET_CHOICE by selecting one of the ST08-002 targets.",
+    "Expect: The selected ST08-002 has damageReceived increased by 3; the other ST08-002 remains unchanged."
+  ]
+}
