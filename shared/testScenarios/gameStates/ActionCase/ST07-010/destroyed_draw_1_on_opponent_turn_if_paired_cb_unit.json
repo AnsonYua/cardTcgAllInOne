@@ -79,7 +79,7 @@
               "cardId": "ST07-002",
               "placedAt": 0,
               "placedBy": "playerId_1",
-              "isRested": false,
+              "isRested": true,
               "isFirstPlay": false,
               "playedThisTurn": false,
               "damageReceived": 0
@@ -89,7 +89,7 @@
               "cardId": "ST07-010",
               "placedAt": 0,
               "placedBy": "playerId_1",
-              "isRested": false,
+              "isRested": true,
               "isFirstPlay": false
             }
           },
@@ -119,7 +119,18 @@
         "playerPoint": 0,
         "isReady": true,
         "zones": {
-          "slot1": {},
+          "slot1": {
+            "unit": {
+              "carduid": "ST07-003_attacker_0001",
+              "cardId": "ST07-003",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isFirstPlay": false,
+              "playedThisTurn": false,
+              "damageReceived": 0
+            }
+          },
           "slot2": {},
           "slot3": {},
           "slot4": {},

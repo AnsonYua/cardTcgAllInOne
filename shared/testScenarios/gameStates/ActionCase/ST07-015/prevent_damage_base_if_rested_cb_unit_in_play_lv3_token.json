@@ -1,0 +1,172 @@
+{
+  "category": "ActionCase",
+  "description": "st07-015_prevent_damage_base_if_rested_cb_unit_in_play",
+  "gameId": "st07-015_prevent_damage_base_if_rested_cb_unit_in_play",
+  "initialGameEnv": {
+    "currentPlayer": "playerId_2",
+    "currentTurn": 1,
+    "firstPlayer": 0,
+    "gameStarted": true,
+    "hasChosenFirstPlayer": true,
+    "lastEventId": 0,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_3bxbxq5uy",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_2",
+          "carduid": "ST07-002_draw_0001",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "pendingPhaseTransition": null,
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "players": {
+      "playerId_1": {
+        "confirmIsRedraw": false,
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "id": "playerId_1",
+        "isReady": true,
+        "isRedraw": false,
+        "name": "Player 1",
+        "playerPoint": 0,
+        "zones": {
+          "base": [
+            {
+              "cardId": "ST07-015",
+              "carduid": "ST07-015_base_0001",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "originalHP": 5
+            }
+          ],
+          "energyArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false,
+          "shieldArea": [],
+          "slot1": {
+            "unit": {
+              "cardId": "ST07-001",
+              "carduid": "ST07-001_rested_cb_0001",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 4,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "trashArea": []
+        }
+      },
+      "playerId_2": {
+        "confirmIsRedraw": false,
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "id": "playerId_2",
+        "isReady": true,
+        "isRedraw": false,
+        "name": "Player 2",
+        "playerPoint": 0,
+        "zones": {
+          "base": [],
+          "energyArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false,
+          "shieldArea": [],
+          "slot1": {
+            "unit": {
+              "cardId": "ST01-003",
+              "carduid": "ST01-003_attacker_0001",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 2,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {
+            "unit": {
+              "cardId": "T-001",
+              "carduid": "T-001_token_0001",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 3,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "trashArea": []
+        }
+      }
+    },
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingEnabled": true,
+    "processingQueue": [],
+    "version": 0
+  },
+  "notes": [
+    "Action: Player B attacks Player A's base (ST07-015) with a non-token enemy unit of level 3.",
+    "Expect: Base damage is prevented (BASE_DAMAGE_PREVENTED notification; BATTLE_RESOLVED includes damagePrevented=true and damageApplied=0)."
+  ]
+}
