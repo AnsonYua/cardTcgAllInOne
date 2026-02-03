@@ -3,20 +3,6 @@
   "description": "st07-015_prevent_damage_base_if_rested_cb_unit_in_play",
   "gameId": "st07-015_prevent_damage_base_if_rested_cb_unit_in_play",
   "initialGameEnv": {
-    "currentBattle": {
-      "actionType": "attackShieldArea",
-      "attackingPlayerId": "playerId_2",
-      "defendingPlayerId": "playerId_1",
-      "attackerCarduid": "ST07-002_attacker_0001",
-      "targetPlayerId": "playerId_1",
-      "status": "ACTION_STEP",
-      "fromBurst": false,
-      "openedAt": 1768362880422,
-      "confirmations": {
-        "playerId_1": false,
-        "playerId_2": false
-      }
-    },
     "currentPlayer": "playerId_2",
     "currentTurn": 1,
     "firstPlayer": 0,
@@ -45,7 +31,7 @@
       }
     ],
     "pendingPhaseTransition": null,
-    "phase": "ACTION_STEP_PHASE",
+    "phase": "MAIN_PHASE",
     "playerId_1": "playerId_1",
     "playerId_2": "playerId_2",
     "players": {
