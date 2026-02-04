@@ -3,6 +3,7 @@
 import type { EffectDefinition, TargetReference } from '../EventQueue/interfaces/GameEvent';
 import type { ResolvedTargetConfig } from '../targets/TargetResolver';
 import { TargetCountUtils } from '../targets/TargetCountUtils';
+import { overrideRequiresChoice } from './TargetChoiceOverrides';
 
 export class TargetChoicePolicy {
     static requiresChoice(
@@ -10,6 +11,11 @@ export class TargetChoicePolicy {
         availableTargets: TargetReference[],
         effect: EffectDefinition
     ): boolean {
+        const override = overrideRequiresChoice(targetConfig, availableTargets, effect);
+        if (typeof override === 'boolean') {
+            return override;
+        }
+
         const selectionType = typeof effect.target?.selection?.type === 'string'
             ? effect.target.selection.type.toLowerCase()
             : '';

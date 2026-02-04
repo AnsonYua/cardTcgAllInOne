@@ -17,6 +17,9 @@ const {
 const {
   validateBlockerDetection
 } = require('./validators/blockerDetectionValidation');
+const {
+  validateSetActiveDoesNotRequireChoice
+} = require('./validators/setActiveChoicePolicyValidation');
 
 function main() {
   const root = sharedGameStatesRoot();
@@ -33,6 +36,7 @@ function main() {
   validateBurstChoiceGroupNotification();
   validateUnitPairingRestrictions();
   validateBlockerDetection();
+  validateSetActiveDoesNotRequireChoice();
 
   console.log('OK: action scenarios validated');
 }

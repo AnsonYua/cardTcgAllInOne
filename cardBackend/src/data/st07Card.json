@@ -52,7 +52,11 @@
                         "target": {
                             "type": "energy",
                             "scope": "self_resource",
-                            "count": 1
+                            "count": 1,
+                            "filters": {
+                                "status": "rested",
+                                "isExtraEnergy": false
+                            }
                         },
                         "parameters": {}
                     },

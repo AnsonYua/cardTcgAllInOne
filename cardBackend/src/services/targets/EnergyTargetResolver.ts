@@ -3,14 +3,17 @@
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { TargetReference } from '../EventQueue/interfaces/GameEvent';
 import type { ResolvedTargetConfig } from './TargetResolver';
+import { matchesEnergyTargetFilters, normalizeEnergyTargetFilters } from './EnergyTargetFilters';
 
 export class EnergyTargetResolver {
     static generateEnergyTargets(
         gameEnv: GameEnvironment,
         targetPlayerIds: string[],
-        _targetConfig: ResolvedTargetConfig
+        targetConfig: ResolvedTargetConfig
     ): TargetReference[] {
         const targets: TargetReference[] = [];
+
+        const normalizedFilters = normalizeEnergyTargetFilters(targetConfig?.filters);
 
         for (const targetPlayerId of targetPlayerIds) {
             const player = gameEnv.getPlayer(targetPlayerId);
@@ -21,6 +24,9 @@ export class EnergyTargetResolver {
 
             for (const energyCard of energyArea) {
                 if (!energyCard?.carduid) {
+                    continue;
+                }
+                if (!matchesEnergyTargetFilters(energyCard, normalizedFilters)) {
                     continue;
                 }
                 targets.push({
