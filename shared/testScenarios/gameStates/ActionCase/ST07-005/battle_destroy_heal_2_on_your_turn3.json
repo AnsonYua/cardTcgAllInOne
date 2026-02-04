@@ -1,19 +1,20 @@
 {
-  "description": "st07-004_blocker_if_cb_pilot_in_play",
-  "gameId": "st07-004_blocker_if_cb_pilot_in_play",
+  "description": "st07-005_battle_destroy_heal_2_on_your_turn",
+  "gameId": "st07-005_battle_destroy_heal_2_on_your_turn",
   "testType": "action",
   "category": "ActionCase",
   "tags": [
-    "ST07-004",
-    "ATTACK_REDIRECT",
-    "BLOCKER_CHOICE",
-    "cardsInPlay"
+    "ST07-005",
+    "BATTLE_DESTROY",
+    "heal",
+    "CARD_HEALED"
   ],
   "notes": [
-    "Setup: Player B has ST07-004 active in slot1. Player B also has a (CB) Pilot (ST07-009) in play (paired in slot2). Player A attacks Player B's other unit in slot3.",
-    "Expect: BlockerChoiceManager detects ST07-004 as an available blocker (condition cardsInPlay>=1 CB pilot satisfied) and creates BLOCKER_CHOICE (processingQueue) and BLOCKER_CHOICE (notificationQueue).",
-    "Action: Player B selects ST07-004 as blocker.",
-    "Expect: ST07-004 becomes rested (CARD_RESTED), BLOCKER_CHOICE_RESOLVED is emitted, and ATTACK_REDIRECTED is emitted."
+    "Setup: Player A is currentPlayer and in ACTION_STEP_PHASE with an active unit battle.",
+    "Setup: Player A attacks with ST07-005 (Gundam Dynames) and it already has 2 damageReceived (so healing is observable).",
+    "Setup: Defender has 2 HP so it will be destroyed by battle damage (attacker AP=2). Both players have confirmed the battle.",
+    "Action (manual): Resolve the battle.",
+    "Expect: Because it's Player A's turn and ST07-005 destroyed an enemy unit with battle damage, ST07-005 heals 2 (damageReceived 2 -> 0) and a CARD_HEALED notification is appended to notificationQueue."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -35,7 +36,7 @@
     "maxEventsPerCycle": 50,
     "notificationQueue": [
       {
-        "id": "card_drawn_1768362880422_st07004",
+        "id": "card_drawn_1768362880422_st07005_seed",
         "type": "CARD_DRAWN",
         "metadata": {
           "timestamp": 1768362880422,
@@ -45,7 +46,7 @@
         },
         "payload": {
           "playerId": "playerId_1",
-          "carduid": "ST07-000_draw_0004",
+          "carduid": "ST07-005_draw_seed_0001",
           "sourceZone": "deck",
           "reason": "draw",
           "timestamp": 1768362880422,
@@ -73,8 +74,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD01-002_attacker_0001",
-              "cardId": "GD01-002",
+              "carduid": "ST07-005_attacker_0001",
+              "cardId": "ST07-005",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -83,12 +84,13 @@
               "modifyHP": 0,
               "continueModifyAP": 0,
               "continueModifyHP": 0,
-              "originalAP": 4,
-              "originalHP": 3,
+              "originalAP": 2,
+              "originalHP": 4,
               "playedThisTurn": false,
-              "canAttackOnPlayTurn": true,
+              "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
-              "isFirstPlay": false
+              "isFirstPlay": false,
+              "temporaryEffects": []
             }
           },
           "slot2": {},
@@ -100,7 +102,8 @@
           "shieldArea": [],
           "energyArea": [],
           "trashArea": [],
-          "repairAbilitiesCheckedThisCycle": false
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
         }
       },
       "playerId_2": {
@@ -118,72 +121,27 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "ST07-004_blocker_0001",
-              "cardId": "ST07-004",
+              "carduid": "ST07-005_attacker_0001",
+              "cardId": "ST07-005",
               "placedAt": 0,
-              "placedBy": "playerId_2",
-              "isRested": false,
+              "placedBy": "playerId_1",
+              "isRested": true,
               "damageReceived": 0,
               "modifyAP": 0,
               "modifyHP": 0,
               "continueModifyAP": 0,
               "continueModifyHP": 0,
-              "originalAP": 3,
-              "originalHP": 3,
-              "playedThisTurn": false,
-              "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false
-            }
-          },
-          "slot2": {
-            "unit": {
-              "carduid": "ST07-008_unit_0001",
-              "cardId": "ST07-008",
-              "placedAt": 0,
-              "placedBy": "playerId_2",
-              "isRested": false,
-              "damageReceived": 0,
-              "modifyAP": 0,
-              "modifyHP": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
-              "originalAP": 3,
-              "originalHP": 1,
-              "playedThisTurn": false,
-              "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false
-            },
-            "pilot": {
-              "carduid": "ST07-009_pilot_0001",
-              "cardId": "ST07-009",
-              "placedAt": 0,
-              "placedBy": "playerId_2",
-              "isRested": false,
-              "isFirstPlay": false
-            }
-          },
-          "slot3": {
-            "unit": {
-              "carduid": "ST07-003_target_0001",
-              "cardId": "ST07-003",
-              "placedAt": 0,
-              "placedBy": "playerId_2",
-              "isRested": false,
-              "damageReceived": 0,
-              "modifyAP": 0,
-              "modifyHP": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
-              "originalAP": 5,
+              "originalAP": 2,
               "originalHP": 4,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
-              "isFirstPlay": false
+              "isFirstPlay": false,
+              "temporaryEffects": []
             }
           },
+          "slot2": {},
+          "slot3": {},
           "slot4": {},
           "slot5": {},
           "slot6": {},
@@ -191,7 +149,8 @@
           "shieldArea": [],
           "energyArea": [],
           "trashArea": [],
-          "repairAbilitiesCheckedThisCycle": false
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
         }
       }
     }

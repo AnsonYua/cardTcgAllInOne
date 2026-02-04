@@ -169,6 +169,26 @@ export class GameLogic {
                 const cardData = GameLogic.getCardData(cardId);
                 if (cardData) {
                     card.cardData = cardData;
+
+                    // Normalize legacy snapshots where base stats drifted away from card definitions.
+                    // Base stats should come from cardData; ongoing modifiers are stored separately.
+                    // Important: command cards played as pilots derive AP/HP from designate_pilot.
+                    if (card.playedAs === 'pilot') {
+                        return;
+                    }
+
+                    const cardType = cardData.cardType;
+                    if ((cardType === 'unit' || cardType === 'pilot') && typeof cardData.ap === 'number') {
+                        if (typeof card.originalAP !== 'number' || Number.isNaN(card.originalAP) || card.originalAP !== cardData.ap) {
+                            card.originalAP = cardData.ap;
+                        }
+                    }
+
+                    if ((cardType === 'unit' || cardType === 'pilot' || cardType === 'base') && typeof cardData.hp === 'number') {
+                        if (typeof card.originalHP !== 'number' || Number.isNaN(card.originalHP) || card.originalHP !== cardData.hp) {
+                            card.originalHP = cardData.hp;
+                        }
+                    }
                 }
             };
 

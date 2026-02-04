@@ -17,7 +17,7 @@
     "Expect: Because it's Player A's turn and ST07-005 destroyed an enemy unit with battle damage, ST07-005 heals 2 (damageReceived 2 -> 0) and a CARD_HEALED notification is appended to notificationQueue."
   ],
   "initialGameEnv": {
-    "phase": "ACTION_STEP_PHASE",
+    "phase": "MAIN_PHASE",
     "playerId_1": "playerId_1",
     "playerId_2": "playerId_2",
     "gameStarted": true,
@@ -56,21 +56,7 @@
     ],
     "lastEventId": 0,
     "pendingPhaseTransition": null,
-    "currentBattle": {
-      "actionType": "attackUnit",
-      "attackingPlayerId": "playerId_1",
-      "defendingPlayerId": "playerId_2",
-      "attackerCarduid": "ST07-005_attacker_0001",
-      "targetPlayerId": "playerId_2",
-      "targetCarduid": "ST07-002_defender_0001",
-      "status": "ACTION_STEP",
-      "fromBurst": false,
-      "openedAt": 1768362880422,
-      "confirmations": {
-        "playerId_1": true,
-        "playerId_2": true
-      }
-    },
+    "currentBattle": null,
     "version": 0,
     "players": {
       "playerId_1": {
@@ -93,7 +79,7 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "damageReceived": 2,
+              "damageReceived": 0,
               "modifyAP": 0,
               "modifyHP": 0,
               "continueModifyAP": 0,
@@ -135,8 +121,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "ST07-002_defender_0001",
-              "cardId": "ST07-002",
+              "carduid": "ST01-005_defender_0001",
+              "cardId": "ST01-005",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": true,
@@ -145,7 +131,7 @@
               "modifyHP": 0,
               "continueModifyAP": 0,
               "continueModifyHP": 0,
-              "originalAP": 1,
+              "originalAP": 2,
               "originalHP": 2,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,

@@ -17,7 +17,7 @@
     "Expect: Branch condition is met => all Player A (CB) units get AP+1 until end of turn (CARD_STAT_MODIFIED for each)."
   ],
   "initialGameEnv": {
-    "phase": "ATTACK_PHASE",
+    "phase": "MAIN_PHASE",
     "playerId_1": "playerId_1",
     "playerId_2": "playerId_2",
     "gameStarted": true,
@@ -79,8 +79,8 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "originalAP": 4,
-              "originalHP": 4,
+              "originalAP": 3,
+              "originalHP": 1,
               "continueModifyAP": 0,
               "continueModifyHP": 0,
               "damageReceived": 0,
@@ -177,7 +177,20 @@
           "slot5": {},
           "slot6": {},
           "base": [],
-          "shieldArea": [],
+          "shieldArea": [
+            {
+              "carduid": "ST07-008_shield_0001",
+              "cardId": "ST07-008"
+            },
+            {
+              "carduid": "ST07-008_shield_0002",
+              "cardId": "ST07-008"
+            },
+            {
+              "carduid": "ST07-008_shield_0003",
+              "cardId": "ST07-008"
+            }
+          ],
           "energyArea": [],
           "trashArea": [],
           "repairAbilitiesCheckedThisCycle": false,
