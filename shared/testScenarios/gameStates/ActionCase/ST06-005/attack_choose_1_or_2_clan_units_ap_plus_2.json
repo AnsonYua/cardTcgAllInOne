@@ -17,7 +17,7 @@
     "Expect: Each selected unit gets AP+2 until end of turn; CARD_STAT_MODIFIED notifications (stat=modifyAP, delta=2) are appended to notificationQueue for each selected unit; the attack resumes after the choice event."
   ],
   "initialGameEnv": {
-    "phase": "ATTACK_PHASE",
+    "phase": "MAIN_PHASE",
     "playerId_1": "playerId_1",
     "playerId_2": "playerId_2",
     "gameStarted": true,
@@ -27,6 +27,7 @@
     "processingQueue": [],
     "processingEnabled": true,
     "maxEventsPerCycle": 50,
+    "currentBattle": null,
     "notificationQueue": [
       {
         "id": "card_drawn_1768362880422_st06005_seed",

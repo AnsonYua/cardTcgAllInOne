@@ -18,7 +18,7 @@
     "Expect: Battle ordering uses attacker First Strike."
   ],
   "initialGameEnv": {
-    "phase": "ATTACK_PHASE",
+    "phase": "MAIN_PHASE",
     "playerId_1": "playerId_1",
     "playerId_2": "playerId_2",
     "gameStarted": true,

@@ -28,6 +28,7 @@
     "processingQueue": [],
     "processingEnabled": true,
     "maxEventsPerCycle": 50,
+    "currentBattle": null,
     "notificationQueue": [
       {
         "id": "card_drawn_1768362880422_gd03060_seed",

@@ -17,7 +17,7 @@
     "Expect: BlockerChoiceManager detects High-Maneuver on the attacker and does NOT enqueue BLOCKER_CHOICE into processingQueue; attack proceeds directly to battle resolution."
   ],
   "initialGameEnv": {
-    "phase": "ATTACK_PHASE",
+    "phase": "MAIN_PHASE",
     "playerId_1": "playerId_1",
     "playerId_2": "playerId_2",
     "gameStarted": true,
@@ -27,6 +27,7 @@
     "processingQueue": [],
     "processingEnabled": true,
     "maxEventsPerCycle": 50,
+    "currentBattle": null,
     "notificationQueue": [
       {
         "id": "card_drawn_1768362880422_gd03040_seed",

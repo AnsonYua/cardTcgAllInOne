@@ -1,7 +1,7 @@
 // src/utils/KeywordUtils.ts
 
 import type { UnitZoneCard, PilotZoneCard } from '../models/CardSystem';
-import { resolveEffectActionFromRule } from './EffectNormalizationUtils';
+import { isBlockerRedirectRule } from './BlockerRuleUtils';
 
 export class KeywordUtils {
     static hasKeyword(card: UnitZoneCard | PilotZoneCard, keyword: string): boolean {
@@ -55,10 +55,7 @@ export class KeywordUtils {
             return false;
         }
 
-        return rules.some(rule =>
-            rule?.trigger === 'ATTACK_REDIRECT' &&
-            resolveEffectActionFromRule(rule) === 'redirect_attack'
-        );
+        return rules.some(rule => isBlockerRedirectRule(rule));
     }
 
     static isUnblockable(card: UnitZoneCard | PilotZoneCard): boolean {

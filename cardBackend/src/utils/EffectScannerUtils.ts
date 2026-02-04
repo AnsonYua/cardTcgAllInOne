@@ -14,6 +14,7 @@ import { getCardIdFromUid } from './CardUtils';
 import { EffectDefinition } from '../services/EventQueue/interfaces/GameEvent';
 import { resolveEffectActionFromRule } from './EffectNormalizationUtils';
 import { ActionStepTargetSummary } from '../models/BattleContext';
+import { isBlockerRedirectRule } from './BlockerRuleUtils';
 
 export interface EffectScanResult {
     carduid: string;
@@ -105,7 +106,7 @@ export class EffectScannerUtils {
 
             // Find blocker effects
             for (const effect of cardData.effects.rules) {
-                if (effect.trigger === 'ATTACK_REDIRECT' && resolveEffectActionFromRule(effect) === 'redirect_attack') {
+                if (isBlockerRedirectRule(effect)) {
                     results.push({
                         carduid: unit.carduid,
                         effect: effect

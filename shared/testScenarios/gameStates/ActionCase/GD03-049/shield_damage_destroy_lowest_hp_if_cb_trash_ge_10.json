@@ -18,7 +18,7 @@
     "Expect: Engine filters enemy targets to LOWEST_HP (tie => TARGET_CHOICE), then destroys that unit (DESTROYED notification) and updates processingQueue/notificationQueue accordingly."
   ],
   "initialGameEnv": {
-    "phase": "ATTACK_PHASE",
+    "phase": "MAIN_PHASE",
     "playerId_1": "playerId_1",
     "playerId_2": "playerId_2",
     "gameStarted": true,
@@ -28,6 +28,7 @@
     "processingQueue": [],
     "processingEnabled": true,
     "maxEventsPerCycle": 50,
+    "currentBattle": null,
     "notificationQueue": [
       {
         "id": "card_drawn_1768362880422_gd03049_seed",

@@ -15,7 +15,7 @@
     "Expect: ST04-009 DESTROYED trigger resolves and draws 1 (CARD_DRAWN notification for playerId_1) before the card is moved to trash."
   ],
   "initialGameEnv": {
-    "phase": "DAMAGE_PHASE",
+    "phase": "MAIN_PHASE",
     "playerId_1": "playerId_1",
     "playerId_2": "playerId_2",
     "gameStarted": true,
@@ -54,21 +54,7 @@
     ],
     "lastEventId": 0,
     "pendingPhaseTransition": null,
-    "currentBattle": {
-      "actionType": "attackUnit",
-      "attackingPlayerId": "playerId_2",
-      "defendingPlayerId": "playerId_1",
-      "attackerCarduid": "ST04-006_attacker_0001",
-      "targetPlayerId": "playerId_1",
-      "targetCarduid": "ST04-009_unit_0001",
-      "status": "DAMAGE_PHASE",
-      "fromBurst": false,
-      "openedAt": 1768362880422,
-      "confirmations": {
-        "playerId_1": true,
-        "playerId_2": true
-      }
-    },
+    "currentBattle": null,
     "version": 0,
     "players": {
       "playerId_1": {

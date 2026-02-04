@@ -17,7 +17,7 @@
     "Expect: If another BATTLE_DESTROY occurs the same turn, GD02-002 does not trigger again (once_per_turn)."
   ],
   "initialGameEnv": {
-    "phase": "ACTION_STEP_PHASE",
+    "phase": "MAIN_PHASE",
     "playerId_1": "playerId_1",
     "playerId_2": "playerId_2",
     "gameStarted": true,
@@ -56,21 +56,7 @@
     ],
     "lastEventId": 0,
     "pendingPhaseTransition": null,
-    "currentBattle": {
-      "actionType": "attackUnit",
-      "attackingPlayerId": "playerId_1",
-      "defendingPlayerId": "playerId_2",
-      "attackerCarduid": "GD01-002_attacker_0001",
-      "targetPlayerId": "playerId_2",
-      "targetCarduid": "GD01-022_defender_0001",
-      "status": "ACTION_STEP",
-      "fromBurst": false,
-      "openedAt": 1768362880422,
-      "confirmations": {
-        "playerId_1": false,
-        "playerId_2": false
-      }
-    },
+    "currentBattle": null,
     "version": 0,
     "players": {
       "playerId_1": {

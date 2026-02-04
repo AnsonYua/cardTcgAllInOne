@@ -35,7 +35,7 @@
       }
     ],
     "pendingPhaseTransition": null,
-    "phase": "END_PHASE",
+    "phase": "MAIN_PHASE",
     "playerId_1": "playerId_1",
     "playerId_2": "playerId_2",
     "players": {

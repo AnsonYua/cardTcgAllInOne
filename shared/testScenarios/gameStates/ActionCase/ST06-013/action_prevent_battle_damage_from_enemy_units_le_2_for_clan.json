@@ -3,21 +3,7 @@
   "description": "st06-013_action_prevent_battle_damage_from_enemy_units_le_2_for_clan",
   "gameId": "st06-013_action_prevent_battle_damage_from_enemy_units_le_2_for_clan",
   "initialGameEnv": {
-    "currentBattle": {
-      "actionType": "attackUnit",
-      "attackingPlayerId": "playerId_1",
-      "defendingPlayerId": "playerId_2",
-      "attackerCarduid": "ST06-002_attacker_0001",
-      "targetPlayerId": "playerId_2",
-      "targetCarduid": "ST06-004_defender_lv2_0001",
-      "status": "ACTION_STEP",
-      "fromBurst": false,
-      "openedAt": 1768362880422,
-      "confirmations": {
-        "playerId_1": false,
-        "playerId_2": false
-      }
-    },
+    "currentBattle": null,
     "currentPlayer": "playerId_1",
     "currentTurn": 1,
     "firstPlayer": 0,
@@ -46,7 +32,7 @@
       }
     ],
     "pendingPhaseTransition": null,
-    "phase": "ACTION_STEP_PHASE",
+    "phase": "MAIN_PHASE",
     "playerId_1": "playerId_1",
     "playerId_2": "playerId_2",
     "players": {
