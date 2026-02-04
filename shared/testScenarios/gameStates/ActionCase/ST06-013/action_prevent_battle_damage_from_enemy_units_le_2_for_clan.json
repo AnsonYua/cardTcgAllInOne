@@ -100,7 +100,7 @@
               "carduid": "ST06-002_attacker_0001",
               "placedAt": 0,
               "placedBy": "playerId_1",
-              "isRested": false,
+              "isRested": true,
               "damageReceived": 0,
               "modifyAP": 0,
               "modifyHP": 0,
@@ -120,7 +120,7 @@
               "carduid": "ST06-003_support_0001",
               "placedAt": 0,
               "placedBy": "playerId_1",
-              "isRested": false,
+              "isRested": true,
               "damageReceived": 0,
               "modifyAP": 0,
               "modifyHP": 0,
@@ -134,7 +134,26 @@
               "isFirstPlay": false
             }
           },
-          "slot3": {},
+          "slot3": {          
+            "unit": {
+              "cardId": "ST06-005",
+              "carduid": "ST06-005_support_0001",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 2,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
           "slot4": {},
           "slot5": {},
           "slot6": {},

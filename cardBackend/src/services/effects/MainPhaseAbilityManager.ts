@@ -8,13 +8,14 @@ import type { UnitZoneCard, PilotZoneCard } from '../../models/CardSystem';
 import { GameActionValidator } from '../GameActionValidator';
 import { PlayerCardManager } from '../PlayerCardManager';
 import { EnergyManager, EnergyCheckResult } from '../EnergyManager';
-import { EffectDefinition, PlayerActionEvent, PlayerActionEventData, TargetReference } from '../EventQueue/interfaces/GameEvent';
+import type { EffectDefinition, PlayerActionEvent, PlayerActionEventData, TargetFilters, TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { ensureEffectDefaults, validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 import { isPlayOrActivatedEffect } from '../../utils/EffectTypeRouter';
 import { EffectExecutor } from './EffectExecutor';
 import { ExecutionResult } from '../ExecutionResult';
 import { BattlePhaseManager } from '../BattlePhaseManager';
 import { EffectTargetResolver, ResolvedTargetContext } from './EffectTargetResolver';
+import { TargetStateFilterUtils } from '../targets/TargetStateFilterUtils';
 
 interface MainPhaseAbilityParams {
     playerId: string;
@@ -414,7 +415,7 @@ export class MainPhaseAbilityManager {
             }
         }
 
-        const filters = targetConfig.filters || {};
+        const filters = (targetConfig.filters || {}) as TargetFilters;
 
         if (filters.controller) {
             const normalizedController = filters.controller.toString().toUpperCase();
@@ -459,6 +460,23 @@ export class MainPhaseAbilityManager {
                 return {
                     success: false,
                     error: `Target ${context.reference.carduid} does not meet HP requirement (${filters.hp})`
+                };
+            }
+        }
+
+        if (typeof filters.damaged === 'boolean') {
+            if (resolvedType !== 'unit') {
+                return {
+                    success: false,
+                    error: `Target ${context.reference.carduid} must be a unit to satisfy damaged filter`
+                };
+            }
+
+            const isDamaged = TargetStateFilterUtils.isDamaged(card);
+            if (filters.damaged !== isDamaged) {
+                return {
+                    success: false,
+                    error: `Target ${context.reference.carduid} does not satisfy damaged:${filters.damaged}`
                 };
             }
         }

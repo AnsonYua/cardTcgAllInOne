@@ -161,6 +161,7 @@ export interface TargetFilters {
     level?: string;
     hp?: string;
     status?: string;
+    damaged?: boolean;
     traits?: string[];
     traitsAny?: string[];
     traitsAll?: string[];

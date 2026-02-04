@@ -4,6 +4,7 @@
 import { GameEnvironment } from '../../models/GameEnvironment';
 import { BlockerChoiceEvent, BurstEffectChoiceEvent, TargetChoiceEvent, TokenChoiceEvent, OptionChoiceEvent } from '../EventQueue/interfaces/GameEvent';
 import { GameNotificationManager } from '../GameNotificationManager';
+import { TargetCountUtils } from '../targets/TargetCountUtils';
 
 export class ChoiceNotificationEmitter {
     static buildBurstChoiceGroupNotificationId(sourceEventId: string): string {
@@ -86,9 +87,15 @@ export class ChoiceNotificationEmitter {
     static emitTargetChoiceCreated(gameEnv: GameEnvironment, event: TargetChoiceEvent): void {
         const notificationManager = new GameNotificationManager(gameEnv);
         const allowEmptySelection = event.data?.effect?.optional === true;
+        const rawCount = event.data?.effect?.target?.count;
+        const countRange = TargetCountUtils.parseRange(rawCount, { min: 1, max: 1 });
+        const targetCount = allowEmptySelection
+            ? { min: 0, max: countRange.max }
+            : countRange;
         notificationManager.addNotificationEventWithId(event.id, 'TARGET_CHOICE', {
             playerId: event.playerId,
             allowEmptySelection,
+            targetCount,
             event
         }, 'high');
     }

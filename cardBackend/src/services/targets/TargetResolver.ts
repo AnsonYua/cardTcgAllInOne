@@ -14,6 +14,7 @@ import { BaseTargetResolver } from './BaseTargetResolver';
 import { TargetNumericFilterUtils } from './TargetNumericFilterUtils';
 import { TargetCountUtils } from './TargetCountUtils';
 import { TargetKeywordFilterUtils } from './TargetKeywordFilterUtils';
+import { TargetStateFilterUtils } from './TargetStateFilterUtils';
 
 export interface ResolvedTargetConfig {
     type: TargetType;
@@ -194,6 +195,14 @@ export class TargetResolver {
             const currentHp = PlayerCardManager.getCurrentUnitCardInSlotAPandHP(gameEnv, card.carduid).totalHP;
             if (!validateComparisonFilter(currentHp, filters.hp)) {
                 console.log(`❌ Card ${card.carduid} failed HP filter: ${filters.hp}`);
+                return false;
+            }
+        }
+
+        if (typeof filters.damaged === 'boolean') {
+            const damagedResult = TargetStateFilterUtils.validateDamagedFilter(card, filters.damaged);
+            if (!damagedResult.ok) {
+                console.log(`❌ Card ${card.carduid} failed damaged filter: ${damagedResult.reason || 'unknown'}`);
                 return false;
             }
         }

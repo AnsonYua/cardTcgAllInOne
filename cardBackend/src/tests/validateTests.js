@@ -20,6 +20,12 @@ const {
 const {
   validateSetActiveDoesNotRequireChoice
 } = require('./validators/setActiveChoicePolicyValidation');
+const {
+  validateSt06013AllowsOneToTwoTargets
+} = require('./validators/st06013TargetChoiceValidation');
+const {
+  validateTargetChoiceNotificationIncludesTargetCount
+} = require('./validators/targetChoiceCountRangeNotificationValidation');
 
 function main() {
   const root = sharedGameStatesRoot();
@@ -37,6 +43,8 @@ function main() {
   validateUnitPairingRestrictions();
   validateBlockerDetection();
   validateSetActiveDoesNotRequireChoice();
+  validateSt06013AllowsOneToTwoTargets();
+  validateTargetChoiceNotificationIncludesTargetCount();
 
   console.log('OK: action scenarios validated');
 }

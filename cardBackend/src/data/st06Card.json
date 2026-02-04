@@ -582,11 +582,11 @@
                 ]
             }
         },
-        "ST06-013": {
-            "id": "ST06-013",
-            "name": "Fierce Unity",
-            "cardType": "command",
-            "color": "Green",
+	        "ST06-013": {
+	            "id": "ST06-013",
+	            "name": "Fierce Unity",
+	            "cardType": "command",
+	            "color": "Green",
             "level": 3,
             "cost": 1,
             "zone": [],
@@ -601,37 +601,43 @@
                     "[Action]Choose 1 to 2 friendly (Clan) Units. During this turn, they can't receive battle damage from enemy Units that are Lv.2 or lower.",
                     "[Pilot][Ortega (GQ)]"
                 ],
-                "rules": [
+	                "rules": [
 	                    {
 	                        "effectId": "action_prevent_battle_damage_from_enemy_units_le_2_for_clan",
 	                        "type": "play",
-                        "timing": {
-                            "windows": [
-                                "ACTION_STEP"
-                            ],
-                            "duration": "UNTIL_END_OF_TURN"
-                        },
-                        "action": "prevent_battle_damage",
-                        "target": {
-                            "type": "unit",
-                            "scope": "self_all_unit",
-                            "filters": {
-                                "traits": [
-                                    "Clan"
-                                ]
-                            },
-                            "count": 2
-                        },
+	                        "timing": {
+	                            "windows": [
+	                                "ACTION_STEP"
+	                            ],
+	                            "duration": "UNTIL_END_OF_TURN"
+	                        },
+	                        "action": "prevent_battle_damage",
+	                        "target": {
+	                            "type": "unit",
+	                            "scope": "self_all_unit",
+	                            "filters": {
+	                                "traits": [
+	                                    "Clan"
+	                                ]
+	                            },
+	                            "selection": {
+	                                "type": "player_choice"
+	                            },
+	                            "count": {
+	                                "min": 1,
+	                                "max": 2
+	                            }
+	                        },
 	                        "parameters": {
 	                            "from": "enemy_units",
 	                            "enemyLevel": "<=2",
 	                            "notes": "Engine: implemented via prevent_battle_damage temporary effect and battle-resolution checks."
 	                        }
 	                    },
-                    {
-                        "effectId": "pilot_designation",
-                        "type": "special",
-                        "action": "designate_pilot",
+	                    {
+	                        "effectId": "pilot_designation",
+	                        "type": "special",
+	                        "action": "designate_pilot",
                         "parameters": {
                             "pilotName": "Ortega (GQ)",
                             "AP": 1,
@@ -689,19 +695,23 @@
                             "from": "shield"
                         }
                     },
-                    {
-                        "effectId": "activate_ap_plus_2_if_clan_link_unit_in_play",
-                        "type": "activated",
-                        "timing": {
-                            "duration": "UNTIL_END_OF_TURN"
-                        },
-                        "cost": {
-                            "restSelf": true
-                        },
-                        "conditions": [
-                            {
-                                "type": "unitsInPlayWithFilter",
-                                "scope": "self",
+	                    {
+	                        "effectId": "activate_ap_plus_2_if_clan_link_unit_in_play",
+	                        "type": "activated",
+	                        "timing": {
+	                            "windows": [
+	                                "MAIN_PHASE"
+	                            ],
+	                            "duration": "UNTIL_END_OF_TURN"
+	                        },
+	                        "cost": {
+	                            "restSelf": true,
+	                            "rest": "self"
+	                        },
+	                        "conditions": [
+	                            {
+	                                "type": "unitsInPlayWithFilter",
+	                                "scope": "self",
                                 "filters": {
                                     "traits": [
                                         "Clan"

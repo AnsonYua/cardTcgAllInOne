@@ -171,20 +171,21 @@
                     "[Activate/Main]Rest this Unit: Choose 1 of your Units. Deal 1 damage to it. It gets AP+1 during this turn."
                 ],
                 "rules": [
-                    {
-                        "effectId": "activate_damage_1_then_ap_plus_1",
-                        "type": "activated",
-                        "timing": {
-                            "windows": [
-                                "MAIN_PHASE"
-                            ]
-                        },
-                        "cost": {
-                            "restSelf": true
-                        },
-                        "action": "sequence",
-                        "parameters": {
-                            "steps": [
+	                    {
+	                        "effectId": "activate_damage_1_then_ap_plus_1",
+	                        "type": "activated",
+	                        "timing": {
+	                            "windows": [
+	                                "MAIN_PHASE"
+	                            ]
+	                        },
+	                        "cost": {
+	                            "restSelf": true,
+	                            "rest": "self"
+	                        },
+	                        "action": "sequence",
+	                        "parameters": {
+	                            "steps": [
                                 {
                                     "action": "damage",
                                     "target": {
@@ -781,18 +782,22 @@
                             "from": "shield"
                         }
                     },
-                    {
-                        "effectId": "activate_ap_plus_2_to_damaged_unit",
-                        "type": "activated",
-                        "timing": {
-                            "duration": "UNTIL_END_OF_TURN"
-                        },
-                        "cost": {
-                            "restSelf": true
-                        },
-                        "action": "modifyAP",
-                        "target": {
-                            "type": "unit",
+	                    {
+	                        "effectId": "activate_ap_plus_2_to_damaged_unit",
+	                        "type": "activated",
+	                        "timing": {
+	                            "windows": [
+	                                "MAIN_PHASE"
+	                            ],
+	                            "duration": "UNTIL_END_OF_TURN"
+	                        },
+	                        "cost": {
+	                            "restSelf": true,
+	                            "rest": "self"
+	                        },
+	                        "action": "modifyAP",
+	                        "target": {
+	                            "type": "unit",
                             "scope": "self_all_unit",
                             "filters": {
                                 "damaged": true
