@@ -103,7 +103,40 @@
           "slot6": {},
           "base": [],
           "shieldArea": [],
-          "energyArea": [],
+          "energyArea": [
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-097_activate_set_active_then_restrict_attack_if_opponent_hand_ge_8_playerId_1_0001",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-097_activate_set_active_then_restrict_attack_if_opponent_hand_ge_8_playerId_1_0002",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-097_activate_set_active_then_restrict_attack_if_opponent_hand_ge_8_playerId_1_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-097_activate_set_active_then_restrict_attack_if_opponent_hand_ge_8_playerId_1_0004",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            }
+          ],
           "trashArea": []
         },
         "effectRegistry": {},
@@ -172,7 +205,40 @@
           "slot6": {},
           "base": [],
           "shieldArea": [],
-          "energyArea": [],
+          "energyArea": [
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-097_activate_set_active_then_restrict_attack_if_opponent_hand_ge_8_playerId_2_0001",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-097_activate_set_active_then_restrict_attack_if_opponent_hand_ge_8_playerId_2_0002",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-097_activate_set_active_then_restrict_attack_if_opponent_hand_ge_8_playerId_2_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-097_activate_set_active_then_restrict_attack_if_opponent_hand_ge_8_playerId_2_0004",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            }
+          ],
           "trashArea": []
         },
         "effectRegistry": {},

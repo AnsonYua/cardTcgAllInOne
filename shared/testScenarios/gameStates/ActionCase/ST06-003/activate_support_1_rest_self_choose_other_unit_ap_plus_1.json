@@ -149,6 +149,30 @@
               "placedBy": "playerId_1",
               "isRested": false,
               "isExtraEnergy": false
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_st06-003_activate_support_1_rest_self_choose_other_unit_ap_plus_1_playerId_1_0001",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_st06-003_activate_support_1_rest_self_choose_other_unit_ap_plus_1_playerId_1_0002",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_st06-003_activate_support_1_rest_self_choose_other_unit_ap_plus_1_playerId_1_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
             }
           ],
           "shieldArea": [
@@ -181,7 +205,40 @@
           "slot5": {},
           "slot6": {},
           "base": [],
-          "energyArea": [],
+          "energyArea": [
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_st06-003_activate_support_1_rest_self_choose_other_unit_ap_plus_1_playerId_2_0001",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_st06-003_activate_support_1_rest_self_choose_other_unit_ap_plus_1_playerId_2_0002",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_st06-003_activate_support_1_rest_self_choose_other_unit_ap_plus_1_playerId_2_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_st06-003_activate_support_1_rest_self_choose_other_unit_ap_plus_1_playerId_2_0004",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            }
+          ],
           "shieldArea": [],
           "trashArea": [],
           "repairAbilitiesCheckedThisCycle": []

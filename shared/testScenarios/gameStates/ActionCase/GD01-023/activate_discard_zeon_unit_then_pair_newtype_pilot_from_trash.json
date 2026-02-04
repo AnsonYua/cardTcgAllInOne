@@ -112,7 +112,40 @@
           "slot6": {},
           "base": [],
           "shieldArea": [],
-          "energyArea": [],
+          "energyArea": [
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-023_activate_discard_zeon_unit_then_pair_newtype_pilot_from_trash_playerId_1_0001",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-023_activate_discard_zeon_unit_then_pair_newtype_pilot_from_trash_playerId_1_0002",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-023_activate_discard_zeon_unit_then_pair_newtype_pilot_from_trash_playerId_1_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-023_activate_discard_zeon_unit_then_pair_newtype_pilot_from_trash_playerId_1_0004",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            }
+          ],
           "trashArea": [
             {
               "carduid": "GD01-087_trash_0001",
@@ -148,7 +181,40 @@
           "slot6": {},
           "base": [],
           "shieldArea": [],
-          "energyArea": [],
+          "energyArea": [
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-023_activate_discard_zeon_unit_then_pair_newtype_pilot_from_trash_playerId_2_0001",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-023_activate_discard_zeon_unit_then_pair_newtype_pilot_from_trash_playerId_2_0002",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-023_activate_discard_zeon_unit_then_pair_newtype_pilot_from_trash_playerId_2_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd01-023_activate_discard_zeon_unit_then_pair_newtype_pilot_from_trash_playerId_2_0004",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            }
+          ],
           "trashArea": [],
           "repairAbilitiesCheckedThisCycle": false,
           "endTurnEffectsCheckedThisCycle": false

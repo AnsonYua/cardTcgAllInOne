@@ -111,6 +111,22 @@
               "placedBy": "playerId_1",
               "isRested": false,
               "isExtraEnergy": false
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_st04-012_choose_one_then_deploy_token_option_a_playerId_1_0001",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_st04-012_choose_one_then_deploy_token_option_a_playerId_1_0002",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
             }
           ],
           "trashArea": [],
@@ -184,6 +200,22 @@
               "placedBy": "playerId_2",
               "isRested": false,
               "isExtraEnergy": false
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_st04-012_choose_one_then_deploy_token_option_a_playerId_2_0001",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_st04-012_choose_one_then_deploy_token_option_a_playerId_2_0002",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
             }
           ],
           "trashArea": [],
