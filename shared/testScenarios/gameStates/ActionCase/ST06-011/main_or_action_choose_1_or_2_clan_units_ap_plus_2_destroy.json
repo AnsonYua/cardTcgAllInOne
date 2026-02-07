@@ -1,0 +1,270 @@
+{
+  "description": "st06-011_main_or_action_choose_1_or_2_clan_units_ap_plus_2",
+  "gameId": "st06-011_main_or_action_choose_1_or_2_clan_units_ap_plus_2",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": [
+    "ST06-011",
+    "modifyAP",
+    "TARGET_CHOICE"
+  ],
+  "notes": [
+    "Setup: Player A is currentPlayer in MAIN_PHASE with ST06-011 in hand and at least 1 active energy.",
+    "Setup: Player A has 3 friendly (Clan) Units in play (slot1/slot2/slot3).",
+    "Action (manual): Player A plays ST06-011 from hand (pay 1 energy).",
+    "Expect: Because target selection is player_choice count=1..2 among multiple eligible units, TARGET_CHOICE is enqueued to processingQueue and a TARGET_CHOICE notification is appended to notificationQueue (frontend-driven).",
+    "Action (manual): Player A resolves TARGET_CHOICE selecting slot1 + slot2 units (2 targets).",
+    "Expect: Both selected units get AP+2 until end of turn and CARD_STAT_MODIFIED (stat=modifyAP, delta=2) notifications are appended to notificationQueue for each selected unit."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_st06011_seed",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "ST06-000_draw_0011",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "ST06-011_action_0001",
+              "cardId": "ST06-011"
+            }
+          ],
+          "handUids": [
+            "ST06-011_action_0001"
+          ],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST06-001_unit_0001",
+              "cardId": "ST06-001",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 4,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "temporaryEffects": []
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "ST06-008_unit_0002",
+              "cardId": "ST06-008",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 3,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "temporaryEffects": []
+            }
+          },
+          "slot3": {
+            "unit": {
+              "carduid": "ST06-006_unit_0003",
+              "cardId": "ST06-006",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 3,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false,
+              "temporaryEffects": []
+            }
+          },
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_st06_011_a_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_st06_011_a_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_st06-011_main_or_action_choose_1_or_2_clan_units_ap_plus_2_playerId_1_0001",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_st06-011_main_or_action_choose_1_or_2_clan_units_ap_plus_2_playerId_1_0002",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            }
+          ],
+          "shieldArea": [
+            {
+              "carduid": "ST06-012_shield_a_0001",
+              "cardId": "ST06-012"
+            },
+            {
+              "carduid": "ST06-010_shield_a_0002",
+              "cardId": "ST06-010"
+            },
+            {
+              "carduid": "ST06-005_shield_a_0003",
+              "cardId": "ST06-005"
+            },
+            {
+              "carduid": "ST06-002_shield_a_0004",
+              "cardId": "ST06-002"
+            },
+            {
+              "carduid": "ST06-003_shield_a_0005",
+              "cardId": "ST06-003"
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": []
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "energyArea": [
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_st06-011_main_or_action_choose_1_or_2_clan_units_ap_plus_2_playerId_2_0001",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_st06-011_main_or_action_choose_1_or_2_clan_units_ap_plus_2_playerId_2_0002",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_st06-011_main_or_action_choose_1_or_2_clan_units_ap_plus_2_playerId_2_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_st06-011_main_or_action_choose_1_or_2_clan_units_ap_plus_2_playerId_2_0004",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_2"
+            }
+          ],
+          "shieldArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": []
+        }
+      }
+    }
+  }
+}
