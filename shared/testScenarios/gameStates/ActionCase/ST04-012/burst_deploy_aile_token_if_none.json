@@ -1,17 +1,18 @@
 {
-  "description": "st04-012_choose_one_then_deploy_token_option_a",
-  "gameId": "st04-012_choose_one_then_deploy_token_option_a",
+  "description": "st04-012_burst_deploy_aile_token_if_none",
+  "gameId": "st04-012_burst_deploy_aile_token_if_none",
   "testType": "action",
   "category": "ActionCase",
   "tags": [
     "ST04-012",
-    "TokenChoice",
-    "choose_one_then_deploy_token"
+    "Burst",
+    "conditionalTokenDeploy"
   ],
   "notes": [
-    "Action: Player A plays ST04-012 from hand.",
-    "Then resolve TOKEN_CHOICE by confirming selectedChoiceIndex=0 (option A => token cardId T-010).",
-    "Expect: exactly one token is deployed to Player A slot2."
+    "Setup: Player A (playerId_1) has ST04-012 in shieldArea; Player B (playerId_2) attacks shield.",
+    "Action: Process SHIELD_CARD_ATTACKED -> expect a BURST_EFFECT_CHOICE for Player A.",
+    "Then confirm the burst choice with ACTIVATE.",
+    "Expect: token T-008 (Aile Strike Gundam) is deployed to the first empty slot for Player A (slot2 in this setup), and ST04-012 is removed from shield and moved to trash."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -22,18 +23,19 @@
     "firstPlayerChooser": null,
     "firstPlayerDecision": null,
     "hasChosenFirstPlayer": true,
-    "currentPlayer": "playerId_1",
+    "currentPlayer": "playerId_2",
     "currentTurn": 1,
     "playersReady": {
       "playerId_1": true,
       "playerId_2": true
     },
-    "processingQueue": [],
+    "processingQueue": [
+    ],
     "processingEnabled": true,
     "maxEventsPerCycle": 50,
     "notificationQueue": [
       {
-        "id": "card_drawn_1760000000000_st04_012_seed",
+        "id": "card_drawn_1760000000000_st04_012_burst_seed",
         "type": "CARD_DRAWN",
         "metadata": {
           "timestamp": 1760000000000,
@@ -42,8 +44,8 @@
           "priority": "normal"
         },
         "payload": {
-          "playerId": "playerId_1",
-          "carduid": "ST04-012_action_0001",
+          "playerId": "playerId_2",
+          "carduid": "ST04-008_unit_0001",
           "sourceZone": "deck",
           "reason": "draw",
           "timestamp": 1760000000000,
@@ -60,15 +62,8 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": [
-            {
-              "carduid": "ST04-012_action_0001",
-              "cardId": "ST04-012"
-            }
-          ],
-          "handUids": [
-            "ST04-012_action_0001"
-          ],
+          "hand": [],
+          "handUids": [],
           "mainDeck": []
         },
         "confirmIsRedraw": false,
@@ -108,8 +103,8 @@
           "base": [],
           "shieldArea": [
             {
-              "carduid": "ST04-013_shield_a_0001",
-              "cardId": "ST04-013"
+              "carduid": "ST04-012_shield_a_0001",
+              "cardId": "ST04-012"
             },
             {
               "carduid": "ST04-013_shield_a_0002",
@@ -144,27 +139,13 @@
               "placedBy": "playerId_1",
               "isRested": false,
               "isExtraEnergy": false
-            },
-            {
-              "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_st04-012_choose_one_then_deploy_token_option_a_playerId_1_0001",
-              "isExtraEnergy": false,
-              "isRested": false,
-              "placedAt": 0,
-              "placedBy": "playerId_1"
-            },
-            {
-              "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_st04-012_choose_one_then_deploy_token_option_a_playerId_1_0002",
-              "isExtraEnergy": false,
-              "isRested": false,
-              "placedAt": 0,
-              "placedBy": "playerId_1"
             }
           ],
           "trashArea": [],
           "repairAbilitiesCheckedThisCycle": false
-        }
+        },
+        "effectRegistry": {},
+        "delayedTriggers": []
       },
       "playerId_2": {
         "id": "playerId_2",
@@ -247,27 +228,13 @@
               "placedBy": "playerId_2",
               "isRested": false,
               "isExtraEnergy": false
-            },
-            {
-              "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_st04-012_choose_one_then_deploy_token_option_a_playerId_2_0001",
-              "isExtraEnergy": false,
-              "isRested": false,
-              "placedAt": 0,
-              "placedBy": "playerId_2"
-            },
-            {
-              "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_st04-012_choose_one_then_deploy_token_option_a_playerId_2_0002",
-              "isExtraEnergy": false,
-              "isRested": false,
-              "placedAt": 0,
-              "placedBy": "playerId_2"
             }
           ],
           "trashArea": [],
           "repairAbilitiesCheckedThisCycle": false
-        }
+        },
+        "effectRegistry": {},
+        "delayedTriggers": []
       }
     }
   }

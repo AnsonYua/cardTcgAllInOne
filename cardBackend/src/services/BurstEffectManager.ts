@@ -233,18 +233,26 @@ export class BurstEffectManager {
                     break;
 
                 default:
-                    return {
-                        success: false,
-                        error: `Unknown burst effect type: ${burstEffect.type}`
-                    };
+                    executionResult = this.executeBurstGenericEffect(
+                        gameEnv,
+                        playerId,
+                        carduid,
+                        cardData,
+                        burstEffect
+                    );
+                    break;
             }
 
             if (executionResult.success) {
                 this.removeFromShieldWithLogging(gameEnv, playerId, carduid);
 
-                if (burstEffect.type === 'activate_ability') {
+                // For burst effects that do not move the card elsewhere (e.g. addToHand, deploy),
+                // the revealed shield card should be trashed after the burst is activated.
+                if (burstEffect.type !== 'addToHand' && burstEffect.type !== 'deploy') {
                     const cardId = getCardIdFromUid(carduid);
-                    PlayerCardManager.moveCardToTrash(gameEnv, playerId, carduid, cardId, cardData);
+                    const cardDataForTrash = { ...cardData };
+                    this.restoreCardType(cardDataForTrash);
+                    PlayerCardManager.moveCardToTrash(gameEnv, playerId, carduid, cardId, cardDataForTrash);
                 }
             }
 
@@ -257,6 +265,72 @@ export class BurstEffectManager {
                 error: error instanceof Error ? error.message : 'Burst effect execution failed'
             };
         }
+    }
+
+    private static executeBurstGenericEffect(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        carduid: string,
+        cardData: any,
+        burstEffect: any
+    ): ExecutionResult {
+        const burstRule = this.resolveBurstEffectRule(cardData, burstEffect);
+        if (!burstRule) {
+            return {
+                success: false,
+                error: `Unknown burst effect type: ${burstEffect.type}`
+            };
+        }
+
+        const normalized = ensureEffectDefaults({ ...burstRule });
+        const result = DeployTargetManager.processEffectWithTargetChoice(
+            gameEnv,
+            playerId,
+            carduid,
+            normalized
+        );
+
+        if (!result.success) {
+            return { success: false, error: result.error || 'Failed to resolve burst effect' };
+        }
+
+        // If the burst effect enqueues a choice event, the queue will pause until the choice is confirmed.
+        return { success: true };
+    }
+
+    private static resolveBurstEffectRule(cardData: any, burstEffect: any): EffectDefinition | null {
+        const rules = Array.isArray(cardData?.effects?.rules) ? cardData.effects.rules : [];
+        if (rules.length === 0) {
+            return null;
+        }
+
+        const desiredEffectId = typeof burstEffect?.effectId === 'string' ? burstEffect.effectId : '';
+        const desiredAction = typeof burstEffect?.type === 'string' ? burstEffect.type : '';
+
+        const matches = (rule: any): boolean => {
+            if (!rule || typeof rule !== 'object') {
+                return false;
+            }
+            if (rule.trigger !== 'BURST_CONDITION') {
+                return false;
+            }
+            if (desiredEffectId && typeof rule.effectId === 'string' && rule.effectId === desiredEffectId) {
+                return true;
+            }
+            if (desiredAction && typeof rule.action === 'string' && rule.action === desiredAction) {
+                return true;
+            }
+            return false;
+        };
+
+        const found = rules.find(matches);
+        if (found) {
+            return found as EffectDefinition;
+        }
+
+        // Fallback: first BURST_CONDITION rule.
+        const fallback = rules.find((rule: any) => rule?.trigger === 'BURST_CONDITION');
+        return fallback ? (fallback as EffectDefinition) : null;
     }
 
     private static executeBurstActivateAbility(
