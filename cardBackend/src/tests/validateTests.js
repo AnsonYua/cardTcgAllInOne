@@ -27,6 +27,9 @@ const {
   validateTargetChoiceNotificationIncludesTargetCount
 } = require('./validators/targetChoiceCountRangeNotificationValidation');
 const {
+  validateTargetChoiceResolvedUpdatesExistingNotification
+} = require('./validators/targetChoiceResolvedNotificationMergeValidation');
+const {
   validateNormalizeEffectRulePreservesCountRange
 } = require('./validators/normalizeTargetCountRangeValidation');
 const {
@@ -54,6 +57,7 @@ function main() {
   validateSetActiveDoesNotRequireChoice();
   validateSt06013AllowsOneToTwoTargets();
   validateTargetChoiceNotificationIncludesTargetCount();
+  validateTargetChoiceResolvedUpdatesExistingNotification();
   validateNormalizeEffectRulePreservesCountRange();
   validateActionStepTargetScan();
   validateDestroyedDrawNotificationsComeAfterBattleResolved();

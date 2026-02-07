@@ -102,19 +102,24 @@ export class ChoiceNotificationEmitter {
     }
 
     static emitTargetChoiceCreated(gameEnv: GameEnvironment, event: TargetChoiceEvent): void {
-        const notificationManager = new GameNotificationManager(gameEnv);
         const allowEmptySelection = event.data?.effect?.optional === true;
         const rawCount = event.data?.effect?.target?.count;
         const countRange = TargetCountUtils.parseRange(rawCount, { min: 1, max: 1 });
         const targetCount = allowEmptySelection
             ? { min: 0, max: countRange.max }
             : countRange;
-        notificationManager.addNotificationEventWithId(event.id, 'TARGET_CHOICE', {
-            playerId: event.playerId,
-            allowEmptySelection,
-            targetCount,
-            event
-        }, 'high');
+        ChoiceNotificationEmitter.emitPersistentChoiceCreated(gameEnv, {
+            eventId: event.id,
+            type: 'TARGET_CHOICE',
+            payload: {
+                playerId: event.playerId,
+                allowEmptySelection,
+                targetCount,
+                event,
+                isCompleted: false
+            },
+            priority: 'high'
+        });
     }
 
     static emitTargetChoiceResolved(
@@ -122,12 +127,13 @@ export class ChoiceNotificationEmitter {
         event: TargetChoiceEvent
     ): void {
         const notificationManager = new GameNotificationManager(gameEnv);
-        const resolvedId = `${event.id}_resolved`;
-        notificationManager.addNotificationEventWithId(resolvedId, 'TARGET_CHOICE_RESOLVED', {
-            playerId: event.playerId,
-            eventId: event.id,
-            choiceId: event.data?.choiceId
-        }, 'normal');
+        // Reuse the existing TARGET_CHOICE notification object rather than emitting a separate
+        // TARGET_CHOICE_RESOLVED notification, so the frontend only needs to handle one shape.
+        // Note: event.data.userDecisionMade / selectedTargets are already set in ChoiceConfirmationService.
+        notificationManager.updateNotificationEvent(event.id, {
+            isCompleted: true,
+            event
+        });
     }
 
     static emitTokenChoiceCreated(gameEnv: GameEnvironment, event: TokenChoiceEvent): void {
