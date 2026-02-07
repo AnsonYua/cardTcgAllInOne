@@ -57,9 +57,9 @@
     "currentBattle": null,
     "version": 0,
     "players": {
-      "playerId_1": {
-        "id": "playerId_1",
-        "name": "Player 1",
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
         "deck": {
           "hand": [],
           "handUids": [],
@@ -77,7 +77,7 @@
               "carduid": "ST04-009_unit_0001",
               "cardId": "ST04-009",
               "placedAt": 0,
-              "placedBy": "playerId_1",
+              "placedBy": "playerId_2",
               "isRested": false,
               "damageReceived": 0,
               "modifyAP": 0,
@@ -90,6 +90,19 @@
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
               "isFirstPlay": false
+            },
+            "pilot": {
+              "carduid": "ST04-014_pilot_0001",
+              "cardId": "ST04-014",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalAP": 0,
+              "originalHP": 1,
+              "playedAs": "pilot",
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "isFirstPlay": false
             }
           },
           "slot2": {
@@ -97,7 +110,7 @@
               "carduid": "ST04-001_unit_0001",
               "cardId": "ST04-001",
               "placedAt": 0,
-              "placedBy": "playerId_1",
+              "placedBy": "playerId_2",
               "isRested": false,
               "damageReceived": 0,
               "modifyAP": 0,
@@ -115,7 +128,7 @@
               "carduid": "ST04-010_pilot_0001",
               "cardId": "ST04-010",
               "placedAt": 0,
-              "placedBy": "playerId_1",
+              "placedBy": "playerId_2",
               "isRested": false,
               "isFirstPlay": false
             }
@@ -133,7 +146,7 @@
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
-              "placedBy": "playerId_1"
+              "placedBy": "playerId_2"
             },
             {
               "cardId": "energy_basic",
@@ -141,7 +154,7 @@
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
-              "placedBy": "playerId_1"
+              "placedBy": "playerId_2"
             },
             {
               "cardId": "energy_basic",
@@ -149,7 +162,7 @@
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
-              "placedBy": "playerId_1"
+              "placedBy": "playerId_2"
             },
             {
               "cardId": "energy_basic",
@@ -157,7 +170,7 @@
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
-              "placedBy": "playerId_1"
+              "placedBy": "playerId_2"
             }
           ],
           "trashArea": [],
@@ -165,9 +178,9 @@
           "endTurnEffectsCheckedThisCycle": false
         }
       },
-      "playerId_2": {
-        "id": "playerId_2",
-        "name": "Player 2",
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
         "deck": {
           "hand": [],
           "handUids": [],
@@ -183,7 +196,7 @@
               "carduid": "ST04-006_attacker_0001",
               "cardId": "ST04-006",
               "placedAt": 0,
-              "placedBy": "playerId_2",
+              "placedBy": "playerId_1",
               "isRested": true,
               "damageReceived": 0,
               "modifyAP": 0,
@@ -212,7 +225,7 @@
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
-              "placedBy": "playerId_2"
+              "placedBy": "playerId_1"
             },
             {
               "cardId": "energy_basic",
@@ -220,7 +233,7 @@
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
-              "placedBy": "playerId_2"
+              "placedBy": "playerId_1"
             },
             {
               "cardId": "energy_basic",
@@ -228,7 +241,7 @@
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
-              "placedBy": "playerId_2"
+              "placedBy": "playerId_1"
             },
             {
               "cardId": "energy_basic",
@@ -236,7 +249,7 @@
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
-              "placedBy": "playerId_2"
+              "placedBy": "playerId_1"
             }
           ],
           "trashArea": [],

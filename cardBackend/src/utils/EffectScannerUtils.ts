@@ -15,6 +15,7 @@ import { EffectDefinition } from '../services/EventQueue/interfaces/GameEvent';
 import { resolveEffectActionFromRule } from './EffectNormalizationUtils';
 import { ActionStepTargetSummary } from '../models/BattleContext';
 import { isBlockerRedirectRule } from './BlockerRuleUtils';
+import { isPlayOrActivatedEffect } from './EffectTypeRouter';
 
 export interface EffectScanResult {
     carduid: string;
@@ -249,7 +250,7 @@ export class EffectScannerUtils {
             return;
         }
 
-        const effectIds = this.extractActionStepEffectIds(cardData.effects.rules);
+        const effectIds = this.extractActionStepEffectIds(cardData.effects.rules, zoneType);
         if (!effectIds.length) {
             return;
         }
@@ -265,11 +266,14 @@ export class EffectScannerUtils {
         });
     }
 
-    private static extractActionStepEffectIds(effects: EffectDefinition[]): string[] {
+    private static extractActionStepEffectIds(
+        effects: EffectDefinition[],
+        zoneType: 'hand' | 'unit' | 'pilot' | 'base'
+    ): string[] {
         const actionEffectIds: string[] = [];
 
         for (const effect of effects) {
-            if (this.effectSupportsActionStep(effect)) {
+            if (this.effectSupportsActionStep(effect, zoneType)) {
                 actionEffectIds.push(effect.effectId || effect.action || 'action_step_effect');
             }
         }
@@ -277,7 +281,19 @@ export class EffectScannerUtils {
         return actionEffectIds;
     }
 
-    private static effectSupportsActionStep(effect: EffectDefinition): boolean {
+    private static effectSupportsActionStep(effect: EffectDefinition, zoneType: 'hand' | 'unit' | 'pilot' | 'base'): boolean {
+        // Action step targets are meant to represent *player-triggered* decisions (play/activate).
+        // Exclude triggered/static rules so we don't block battle flow waiting for confirmations.
+        if (!isPlayOrActivatedEffect(effect)) {
+            return false;
+        }
+
+        // "Play" effects represent playing a card (typically from hand). Cards sitting in slots/base
+        // should not advertise their "play" rules as action step options.
+        if (effect.type === 'play' && zoneType !== 'hand') {
+            return false;
+        }
+
         const windows = Array.isArray(effect.timing?.windows)
             ? effect.timing!.windows!.map(window => typeof window === 'string' ? window.toUpperCase() : window)
             : [];

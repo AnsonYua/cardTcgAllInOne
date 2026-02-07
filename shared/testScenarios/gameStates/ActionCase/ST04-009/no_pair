@@ -1,0 +1,958 @@
+{
+    "success": true,
+    "gameId": "5d49b08d-b693-4a77-8603-96c570167f10",
+    "gameEnv": {
+        "version": 3,
+        "phase": "MAIN_PHASE",
+        "playerId_1": "playerId_1",
+        "playerId_2": "playerId_2",
+        "gameStarted": true,
+        "firstPlayer": 0,
+        "firstPlayerChooser": null,
+        "firstPlayerDecision": null,
+        "hasChosenFirstPlayer": true,
+        "currentPlayer": "playerId_2",
+        "currentTurn": 1,
+        "playersReady": {
+            "playerId_1": true,
+            "playerId_2": true
+        },
+        "currentBattle": null,
+        "players": {
+            "playerId_2": {
+                "id": "playerId_2",
+                "name": "Player 2",
+                "deck": {
+                    "hand": [
+                        {
+                            "carduid": "ST04-002_draw_0001",
+                            "cardId": "ST04-002",
+                            "cardData": {
+                                "id": "ST04-002",
+                                "name": "Strike Gundam",
+                                "cardType": "unit",
+                                "color": "White",
+                                "level": 4,
+                                "cost": 2,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Alliance"
+                                ],
+                                "link": [
+                                    "Kira Yamato"
+                                ],
+                                "ap": 3,
+                                "hp": 3,
+                                "effects": {
+                                    "description": [
+                                        "[Deploy]Draw 1 card, then discard 1."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "deploy_draw_then_discard",
+                                            "type": "triggered",
+                                            "trigger": "ENTERS_PLAY",
+                                            "action": "draw_then_discard",
+                                            "parameters": {
+                                                "draw": 1,
+                                                "discard": 1
+                                            }
+                                        }
+                                    ]
+                                },
+                                "baseCost": 2,
+                                "baseLevel": 4,
+                                "effectiveCost": 2,
+                                "effectiveLevel": 4
+                            }
+                        }
+                    ],
+                    "handUids": [
+                        "ST04-002_draw_0001"
+                    ],
+                    "mainDeck": []
+                },
+                "confirmIsRedraw": false,
+                "isRedraw": false,
+                "playerPoint": 0,
+                "isReady": true,
+                "zones": {
+                    "slot1": {
+                        "fieldCardValue": {
+                            "totalOriginalAP": 0,
+                            "totalOriginalHP": 0,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 0,
+                            "totalHP": 0
+                        }
+                    },
+                    "slot2": {
+                        "unit": {
+                            "carduid": "ST04-001_unit_0001",
+                            "cardId": "ST04-001",
+                            "placedAt": 0,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "damageReceived": 0,
+                            "modifyAP": 0,
+                            "modifyHP": 0,
+                            "continueModifyAP": 0,
+                            "continueModifyHP": 0,
+                            "originalAP": 4,
+                            "originalHP": 4,
+                            "playedThisTurn": false,
+                            "canAttackOnPlayTurn": false,
+                            "canAttackThisTurn": true,
+                            "isFirstPlay": false,
+                            "cardData": {
+                                "id": "ST04-001",
+                                "name": "Aile Strike Gundam",
+                                "cardType": "unit",
+                                "color": "White",
+                                "level": 5,
+                                "cost": 4,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Alliance"
+                                ],
+                                "link": [
+                                    "Kira Yamato"
+                                ],
+                                "ap": 4,
+                                "hp": 4,
+                                "effects": {
+                                    "description": [
+                                        "<Blocker> (Rest this Unit to change the attack target to it.)",
+                                        "[When Paired]If paired with a Lv.4 or higher Pilot, choose 1 enemy Unit with 4 or less HP and return it to its owner’s hand."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "blocker",
+                                            "trigger": "ATTACK_REDIRECT",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self"
+                                            },
+                                            "action": "redirect_attack",
+                                            "parameters": {
+                                                "cost": "rest_self"
+                                            },
+                                            "type": "triggered"
+                                        },
+                                        {
+                                            "effectId": "pair_bounce_low_hp_if_pilot_ge_4",
+                                            "type": "triggered",
+                                            "trigger": "PAIRING_COMPLETE",
+                                            "action": "returnToHand",
+                                            "optional": true,
+                                            "conditions": [
+                                                {
+                                                    "type": "pairedPilotLevel",
+                                                    "scope": "source",
+                                                    "value": ">=4"
+                                                }
+                                            ],
+                                            "parameters": {
+                                                "pilotMinLevel": 4,
+                                                "notes": "Return-to-hand effect and pilot-level pairing requirement not yet implemented."
+                                            },
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "filters": {
+                                                    "hp": "<=4"
+                                                },
+                                                "count": 1
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "pilot": {
+                            "carduid": "ST04-010_pilot_0001",
+                            "cardId": "ST04-010",
+                            "placedAt": 0,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "isFirstPlay": false,
+                            "cardData": {
+                                "id": "ST04-010",
+                                "name": "Kira Yamato",
+                                "cardType": "pilot",
+                                "color": "White",
+                                "level": 4,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [
+                                    "Earth Alliance",
+                                    "Coordinator"
+                                ],
+                                "link": [],
+                                "ap": 2,
+                                "hp": 1,
+                                "effects": {
+                                    "description": [
+                                        "[Burst]Add this card to your hand.",
+                                        "[Attack]Choose 1 enemy Unit; it gets AP–2 during this battle."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_add_to_hand",
+                                            "trigger": "BURST_CONDITION",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self"
+                                            },
+                                            "action": "addToHand",
+                                            "type": "triggered"
+                                        },
+                                        {
+                                            "effectId": "attack_reduce_enemy_ap",
+                                            "type": "triggered",
+                                            "trigger": "ATTACK_PHASE",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "count": 1
+                                            },
+                                            "action": "modifyAP",
+                                            "parameters": {
+                                                "value": -2
+                                            },
+                                            "timing": {
+                                                "duration": "UNTIL_END_OF_BATTLE"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "originalAP": 2,
+                            "originalHP": 1,
+                            "continueModifyAP": 0,
+                            "continueModifyHP": 0
+                        },
+                        "fieldCardValue": {
+                            "totalOriginalAP": 6,
+                            "totalOriginalHP": 5,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 6,
+                            "totalHP": 5
+                        }
+                    },
+                    "slot3": {
+                        "fieldCardValue": {
+                            "totalOriginalAP": 0,
+                            "totalOriginalHP": 0,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 0,
+                            "totalHP": 0
+                        }
+                    },
+                    "slot4": {
+                        "fieldCardValue": {
+                            "totalOriginalAP": 0,
+                            "totalOriginalHP": 0,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 0,
+                            "totalHP": 0
+                        }
+                    },
+                    "slot5": {
+                        "fieldCardValue": {
+                            "totalOriginalAP": 0,
+                            "totalOriginalHP": 0,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 0,
+                            "totalHP": 0
+                        }
+                    },
+                    "slot6": {
+                        "fieldCardValue": {
+                            "totalOriginalAP": 0,
+                            "totalOriginalHP": 0,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 0,
+                            "totalHP": 0
+                        }
+                    },
+                    "base": [],
+                    "shieldArea": [],
+                    "energyArea": [
+                        {
+                            "cardId": "energy_basic",
+                            "carduid": "energy_basic_auto_st04-009_destroyed_draw_if_another_link_unit_playerId_1_0001",
+                            "isExtraEnergy": false,
+                            "isRested": false,
+                            "placedAt": 0,
+                            "placedBy": "playerId_2"
+                        },
+                        {
+                            "cardId": "energy_basic",
+                            "carduid": "energy_basic_auto_st04-009_destroyed_draw_if_another_link_unit_playerId_1_0002",
+                            "isExtraEnergy": false,
+                            "isRested": false,
+                            "placedAt": 0,
+                            "placedBy": "playerId_2"
+                        },
+                        {
+                            "cardId": "energy_basic",
+                            "carduid": "energy_basic_auto_st04-009_destroyed_draw_if_another_link_unit_playerId_1_0003",
+                            "isExtraEnergy": false,
+                            "isRested": false,
+                            "placedAt": 0,
+                            "placedBy": "playerId_2"
+                        },
+                        {
+                            "cardId": "energy_basic",
+                            "carduid": "energy_basic_auto_st04-009_destroyed_draw_if_another_link_unit_playerId_1_0004",
+                            "isExtraEnergy": false,
+                            "isRested": false,
+                            "placedAt": 0,
+                            "placedBy": "playerId_2"
+                        }
+                    ],
+                    "trashArea": [
+                        {
+                            "carduid": "ST04-009_unit_0001",
+                            "cardId": "ST04-009",
+                            "cardData": {
+                                "id": "ST04-009",
+                                "name": "Miguel’s Ginn",
+                                "cardType": "unit",
+                                "color": "Red",
+                                "level": 2,
+                                "cost": 2,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "ZAFT"
+                                ],
+                                "link": [
+                                    "Miguel Ayman"
+                                ],
+                                "ap": 3,
+                                "hp": 1,
+                                "effects": {
+                                    "description": [
+                                        "[When Paired]If you have another Link Unit in play, draw 1.",
+                                        "[Destroyed]If you have another Link Unit in play, draw 1."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "pair_draw_if_another_link_unit",
+                                            "type": "triggered",
+                                            "trigger": "PAIRING_COMPLETE",
+                                            "action": "draw",
+                                            "conditions": [
+                                                {
+                                                    "type": "hasAnotherLinkedUnit",
+                                                    "scope": "self"
+                                                }
+                                            ],
+                                            "parameters": {
+                                                "value": 1,
+                                                "notes": "Needs explicit 'another link unit in play' check."
+                                            }
+                                        },
+                                        {
+                                            "effectId": "destroyed_draw_if_another_link_unit",
+                                            "type": "triggered",
+                                            "trigger": "DESTROYED",
+                                            "action": "draw",
+                                            "conditions": [
+                                                {
+                                                    "type": "hasAnotherLinkedUnit",
+                                                    "scope": "self"
+                                                }
+                                            ],
+                                            "parameters": {
+                                                "value": 1,
+                                                "notes": "Destroyed trigger not yet implemented."
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1770485634276,
+                            "placedBy": "playerId_2",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalAP": 3,
+                            "originalHP": 1,
+                            "damageReceived": 0,
+                            "playedThisTurn": true,
+                            "canAttackOnPlayTurn": false
+                        }
+                    ],
+                    "repairAbilitiesCheckedThisCycle": false,
+                    "endTurnEffectsCheckedThisCycle": false
+                },
+                "effectRegistry": {},
+                "delayedTriggers": []
+            },
+            "playerId_1": {
+                "id": "playerId_1",
+                "name": "Player 1",
+                "deck": {
+                    "hand": [],
+                    "handUids": [],
+                    "mainDeck": []
+                },
+                "confirmIsRedraw": false,
+                "isRedraw": false,
+                "playerPoint": 0,
+                "isReady": true,
+                "zones": {
+                    "slot1": {
+                        "fieldCardValue": {
+                            "totalOriginalAP": 0,
+                            "totalOriginalHP": 0,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 0,
+                            "totalHP": 0
+                        }
+                    },
+                    "slot2": {
+                        "fieldCardValue": {
+                            "totalOriginalAP": 0,
+                            "totalOriginalHP": 0,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 0,
+                            "totalHP": 0
+                        }
+                    },
+                    "slot3": {
+                        "fieldCardValue": {
+                            "totalOriginalAP": 0,
+                            "totalOriginalHP": 0,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 0,
+                            "totalHP": 0
+                        }
+                    },
+                    "slot4": {
+                        "fieldCardValue": {
+                            "totalOriginalAP": 0,
+                            "totalOriginalHP": 0,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 0,
+                            "totalHP": 0
+                        }
+                    },
+                    "slot5": {
+                        "fieldCardValue": {
+                            "totalOriginalAP": 0,
+                            "totalOriginalHP": 0,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 0,
+                            "totalHP": 0
+                        }
+                    },
+                    "slot6": {
+                        "fieldCardValue": {
+                            "totalOriginalAP": 0,
+                            "totalOriginalHP": 0,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 0,
+                            "totalHP": 0
+                        }
+                    },
+                    "base": [],
+                    "shieldArea": [],
+                    "energyArea": [
+                        {
+                            "cardId": "energy_basic",
+                            "carduid": "energy_basic_auto_st04-009_destroyed_draw_if_another_link_unit_playerId_2_0001",
+                            "isExtraEnergy": false,
+                            "isRested": false,
+                            "placedAt": 0,
+                            "placedBy": "playerId_1"
+                        },
+                        {
+                            "cardId": "energy_basic",
+                            "carduid": "energy_basic_auto_st04-009_destroyed_draw_if_another_link_unit_playerId_2_0002",
+                            "isExtraEnergy": false,
+                            "isRested": false,
+                            "placedAt": 0,
+                            "placedBy": "playerId_1"
+                        },
+                        {
+                            "cardId": "energy_basic",
+                            "carduid": "energy_basic_auto_st04-009_destroyed_draw_if_another_link_unit_playerId_2_0003",
+                            "isExtraEnergy": false,
+                            "isRested": false,
+                            "placedAt": 0,
+                            "placedBy": "playerId_1"
+                        },
+                        {
+                            "cardId": "energy_basic",
+                            "carduid": "energy_basic_auto_st04-009_destroyed_draw_if_another_link_unit_playerId_2_0004",
+                            "isExtraEnergy": false,
+                            "isRested": false,
+                            "placedAt": 0,
+                            "placedBy": "playerId_1"
+                        }
+                    ],
+                    "trashArea": [
+                        {
+                            "carduid": "ST04-006_attacker_0001",
+                            "cardId": "ST04-006",
+                            "cardData": {
+                                "id": "ST04-006",
+                                "name": "Aegis Gundam",
+                                "cardType": "unit",
+                                "color": "Red",
+                                "level": 4,
+                                "cost": 3,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "ZAFT"
+                                ],
+                                "link": [
+                                    "Athrun Zala"
+                                ],
+                                "ap": 4,
+                                "hp": 3,
+                                "effects": {
+                                    "description": [
+                                        "[Attack]If this Unit has 5 or more AP, choose 1 enemy Unit that is Lv.5 or higher; deal 3 damage to it."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "attack_damage_3_if_ap_ge_5",
+                                            "type": "triggered",
+                                            "trigger": "ATTACK_PHASE",
+                                            "action": "damage",
+                                            "conditions": [
+                                                {
+                                                    "type": "sourceAp",
+                                                    "scope": "source",
+                                                    "value": ">=5"
+                                                }
+                                            ],
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "filters": {
+                                                    "level": ">=5"
+                                                },
+                                                "count": 1
+                                            },
+                                            "parameters": {
+                                                "value": 3,
+                                                "notes": "Conditional attack triggers based on current AP not yet implemented."
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1770485634277,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalAP": 4,
+                            "originalHP": 3,
+                            "damageReceived": 0,
+                            "playedThisTurn": true,
+                            "canAttackOnPlayTurn": false
+                        }
+                    ],
+                    "repairAbilitiesCheckedThisCycle": false,
+                    "endTurnEffectsCheckedThisCycle": false
+                },
+                "effectRegistry": {},
+                "delayedTriggers": []
+            }
+        },
+        "processingQueue": [],
+        "processingEnabled": true,
+        "maxEventsPerCycle": 50,
+        "notificationQueue": [
+            {
+                "id": "card_drawn_1768362880422_st04009_destroyed",
+                "type": "CARD_DRAWN",
+                "metadata": {
+                    "timestamp": 1768362880422,
+                    "expiresAt": 1768362883422,
+                    "requiresAcknowledgment": false,
+                    "priority": "normal"
+                },
+                "payload": {
+                    "playerId": "playerId_2",
+                    "carduid": "ST04-003_draw_seed_0001",
+                    "sourceZone": "deck",
+                    "reason": "draw",
+                    "timestamp": 1768362880422,
+                    "drawContext": "turn_start"
+                }
+            },
+            {
+                "id": "unit_attack_declared_1770485634270_4ulzha3i7",
+                "type": "UNIT_ATTACK_DECLARED",
+                "metadata": {
+                    "timestamp": 1770485634270,
+                    "expiresAt": 1770485637270,
+                    "requiresAcknowledgment": false,
+                    "priority": "normal"
+                },
+                "payload": {
+                    "gameId": "5d49b08d-b693-4a77-8603-96c570167f10",
+                    "attackingPlayerId": "playerId_2",
+                    "defendingPlayerId": "playerId_1",
+                    "attackerCarduid": "ST04-009_unit_0001",
+                    "attackerName": "Miguel’s Ginn",
+                    "attackerSlot": "slot1",
+                    "targetCarduid": "ST04-006_attacker_0001",
+                    "targetName": "Aegis Gundam",
+                    "targetSlotName": "slot1",
+                    "fromBurst": false,
+                    "timestamp": 1770485634270,
+                    "battleEnd": true
+                }
+            },
+            {
+                "id": "phase_changed_1770485634271_317r2tvo2",
+                "type": "PHASE_CHANGED",
+                "metadata": {
+                    "timestamp": 1770485634271,
+                    "expiresAt": 1770485637271,
+                    "requiresAcknowledgment": false,
+                    "priority": "normal"
+                },
+                "payload": {
+                    "playerId": "playerId_2",
+                    "previousPhase": "MAIN_PHASE",
+                    "nextPhase": "ACTION_STEP_PHASE",
+                    "currentTurn": 1
+                }
+            },
+            {
+                "id": "card_drawn_1770485634276_2vhgjl33m",
+                "type": "CARD_DRAWN",
+                "metadata": {
+                    "timestamp": 1770485634276,
+                    "expiresAt": 1770485637276,
+                    "requiresAcknowledgment": false,
+                    "priority": "normal"
+                },
+                "payload": {
+                    "playerId": "playerId_2",
+                    "carduid": "ST04-002_draw_0001",
+                    "cardName": "Unknown",
+                    "sourceZone": "deck",
+                    "reason": "draw",
+                    "timestamp": 1770485634276,
+                    "drawContext": "effect_draw:ST04-009_unit_0001"
+                }
+            },
+            {
+                "id": "effect_draw_85_1770485634276",
+                "type": "EFFECT_DRAW_TRIGGERED",
+                "metadata": {
+                    "timestamp": 1770485634276,
+                    "expiresAt": 1770485637276,
+                    "requiresAcknowledgment": false,
+                    "priority": "normal"
+                },
+                "payload": {
+                    "playerId": "playerId_2",
+                    "drawnPlayerId": "playerId_2",
+                    "drawnCarduids": [
+                        "ST04-002_draw_0001"
+                    ],
+                    "count": 1,
+                    "drawContext": "effect_draw:ST04-009_unit_0001",
+                    "sourceCarduid": "ST04-009_unit_0001",
+                    "timestamp": 1770485634276
+                }
+            },
+            {
+                "id": "battle_resolved_1770485634277_zasbiihqf",
+                "type": "BATTLE_RESOLVED",
+                "metadata": {
+                    "timestamp": 1770485634277,
+                    "expiresAt": 1770485637277,
+                    "requiresAcknowledgment": false,
+                    "priority": "normal"
+                },
+                "payload": {
+                    "battleType": "attackUnit",
+                    "attackingPlayerId": "playerId_2",
+                    "defendingPlayerId": "playerId_1",
+                    "attackNotificationId": "unit_attack_declared_1770485634270_4ulzha3i7",
+                    "attacker": {
+                        "playerId": "playerId_2",
+                        "slot": "slot1",
+                        "zoneType": "slot",
+                        "unit": {
+                            "carduid": "ST04-009_unit_0001",
+                            "cardId": "ST04-009",
+                            "placedAt": 0,
+                            "placedBy": "playerId_2",
+                            "isRested": true,
+                            "damageReceived": 0,
+                            "modifyAP": 0,
+                            "modifyHP": 0,
+                            "continueModifyAP": 0,
+                            "continueModifyHP": 0,
+                            "originalAP": 3,
+                            "originalHP": 1,
+                            "playedThisTurn": false,
+                            "canAttackOnPlayTurn": false,
+                            "canAttackThisTurn": true,
+                            "isFirstPlay": false,
+                            "cardData": {
+                                "id": "ST04-009",
+                                "name": "Miguel’s Ginn",
+                                "cardType": "unit",
+                                "color": "Red",
+                                "level": 2,
+                                "cost": 2,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "ZAFT"
+                                ],
+                                "link": [
+                                    "Miguel Ayman"
+                                ],
+                                "ap": 3,
+                                "hp": 1,
+                                "effects": {
+                                    "description": [
+                                        "[When Paired]If you have another Link Unit in play, draw 1.",
+                                        "[Destroyed]If you have another Link Unit in play, draw 1."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "pair_draw_if_another_link_unit",
+                                            "type": "triggered",
+                                            "trigger": "PAIRING_COMPLETE",
+                                            "action": "draw",
+                                            "conditions": [
+                                                {
+                                                    "type": "hasAnotherLinkedUnit",
+                                                    "scope": "self"
+                                                }
+                                            ],
+                                            "parameters": {
+                                                "value": 1,
+                                                "notes": "Needs explicit 'another link unit in play' check."
+                                            }
+                                        },
+                                        {
+                                            "effectId": "destroyed_draw_if_another_link_unit",
+                                            "type": "triggered",
+                                            "trigger": "DESTROYED",
+                                            "action": "draw",
+                                            "conditions": [
+                                                {
+                                                    "type": "hasAnotherLinkedUnit",
+                                                    "scope": "self"
+                                                }
+                                            ],
+                                            "parameters": {
+                                                "value": 1,
+                                                "notes": "Destroyed trigger not yet implemented."
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "pilot": null,
+                        "fieldCardValue": {
+                            "totalOriginalAP": 3,
+                            "totalOriginalHP": 1,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 3,
+                            "totalHP": 1
+                        }
+                    },
+                    "target": {
+                        "playerId": "playerId_1",
+                        "slot": "slot1",
+                        "zoneType": "slot",
+                        "unit": {
+                            "carduid": "ST04-006_attacker_0001",
+                            "cardId": "ST04-006",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": true,
+                            "damageReceived": 0,
+                            "modifyAP": 0,
+                            "modifyHP": 0,
+                            "continueModifyAP": 0,
+                            "continueModifyHP": 0,
+                            "originalAP": 4,
+                            "originalHP": 3,
+                            "playedThisTurn": false,
+                            "canAttackOnPlayTurn": false,
+                            "canAttackThisTurn": false,
+                            "isFirstPlay": false,
+                            "cardData": {
+                                "id": "ST04-006",
+                                "name": "Aegis Gundam",
+                                "cardType": "unit",
+                                "color": "Red",
+                                "level": 4,
+                                "cost": 3,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "ZAFT"
+                                ],
+                                "link": [
+                                    "Athrun Zala"
+                                ],
+                                "ap": 4,
+                                "hp": 3,
+                                "effects": {
+                                    "description": [
+                                        "[Attack]If this Unit has 5 or more AP, choose 1 enemy Unit that is Lv.5 or higher; deal 3 damage to it."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "attack_damage_3_if_ap_ge_5",
+                                            "type": "triggered",
+                                            "trigger": "ATTACK_PHASE",
+                                            "action": "damage",
+                                            "conditions": [
+                                                {
+                                                    "type": "sourceAp",
+                                                    "scope": "source",
+                                                    "value": ">=5"
+                                                }
+                                            ],
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "filters": {
+                                                    "level": ">=5"
+                                                },
+                                                "count": 1
+                                            },
+                                            "parameters": {
+                                                "value": 3,
+                                                "notes": "Conditional attack triggers based on current AP not yet implemented."
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "pilot": null,
+                        "fieldCardValue": {
+                            "totalOriginalAP": 4,
+                            "totalOriginalHP": 3,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 4,
+                            "totalHP": 3
+                        }
+                    },
+                    "focusTarget": null,
+                    "result": {
+                        "targetType": "unit",
+                        "attackerDestroyed": true,
+                        "defenderDestroyed": true,
+                        "attackerDamageTaken": 4,
+                        "defenderDamageTaken": 3,
+                        "attackerHasFirstStrike": false,
+                        "attackerDamagePrevented": false,
+                        "defenderDamagePrevented": false
+                    }
+                }
+            },
+            {
+                "id": "phase_changed_1770485634277_h56t2wc7j",
+                "type": "PHASE_CHANGED",
+                "metadata": {
+                    "timestamp": 1770485634277,
+                    "expiresAt": 1770485637277,
+                    "requiresAcknowledgment": false,
+                    "priority": "normal"
+                },
+                "payload": {
+                    "playerId": "playerId_2",
+                    "previousPhase": "ACTION_STEP_PHASE",
+                    "nextPhase": "MAIN_PHASE",
+                    "currentTurn": 1
+                }
+            }
+        ],
+        "lastEventId": 0,
+        "pendingPhaseTransition": null
+    }
+}

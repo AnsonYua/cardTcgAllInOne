@@ -29,6 +29,9 @@ const {
 const {
   validateNormalizeEffectRulePreservesCountRange
 } = require('./validators/normalizeTargetCountRangeValidation');
+const {
+  validateActionStepTargetScan
+} = require('./validators/actionStepTargetScanValidation');
 
 function main() {
   const root = sharedGameStatesRoot();
@@ -49,6 +52,7 @@ function main() {
   validateSt06013AllowsOneToTwoTargets();
   validateTargetChoiceNotificationIncludesTargetCount();
   validateNormalizeEffectRulePreservesCountRange();
+  validateActionStepTargetScan();
 
   console.log('OK: action scenarios validated');
 }

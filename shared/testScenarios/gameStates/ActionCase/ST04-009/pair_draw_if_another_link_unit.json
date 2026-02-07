@@ -96,6 +96,19 @@
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
               "isFirstPlay": false
+            },
+            "pilot": {
+              "carduid": "ST04-014_pilot_0002",
+              "cardId": "ST04-014",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "originalAP": 0,
+              "originalHP": 1,
+              "playedAs": "pilot",
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "isFirstPlay": false
             }
           },
           "slot2": {

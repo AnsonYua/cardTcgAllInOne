@@ -328,7 +328,7 @@
             "effects": {
                 "description": [
                     "[When Paired]If you have another Link Unit in play, draw 1.",
-                    "[Destroyed]If you have another Link Unit in play, draw 1."
+                    "[During Pair][Destroyed]If you have another Link Unit in play, draw 1."
                 ],
                 "rules": [
                     {
@@ -353,6 +353,10 @@
                         "trigger": "DESTROYED",
                         "action": "draw",
                         "conditions": [
+                            {
+                                "type": "isPaired",
+                                "scope": "source"
+                            },
                             {
                                 "type": "hasAnotherLinkedUnit",
                                 "scope": "self"

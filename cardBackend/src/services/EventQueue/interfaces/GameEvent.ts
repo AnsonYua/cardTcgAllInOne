@@ -513,6 +513,7 @@ export interface TokenChoiceOption {
     token: Record<string, unknown>;
     count: number;
     tokenData?: Record<string, unknown>;
+    tokenResourcePath?: string;
 }
 
 export interface TokenChoiceEventData {

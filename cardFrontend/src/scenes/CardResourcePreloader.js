@@ -82,7 +82,13 @@ export default class CardResourcePreloader extends Phaser.Scene {
   }
 
   async fetchResourceList() {
-    const apiUrl = GAME_CONFIG.api.getFullUrl(GAME_CONFIG.api.endpoints.gameResource);
+    const baseUrl = GAME_CONFIG.api.getFullUrl(GAME_CONFIG.api.endpoints.gameResource);
+    const gameId = this.sceneData?.gameId ||
+      this.sceneData?.gameStateManager?.getGameState?.()?.gameId ||
+      null;
+    const apiUrl = gameId
+      ? `${baseUrl}?gameId=${encodeURIComponent(gameId)}`
+      : baseUrl;
     
     this.updateLoadingText('Fetching deck data from server...');
     

@@ -8,6 +8,7 @@ import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { ExecutionResult } from '../ExecutionResult';
 import { GameNotificationManager } from '../GameNotificationManager';
 import { ChoiceEventScheduler } from '../choices/ChoiceEventScheduler';
+import { getCardIdFromUid } from '../../utils/CardUtils';
 
 export interface TokenChoiceResult {
     success: boolean;
@@ -17,6 +18,17 @@ export interface TokenChoiceResult {
 }
 
 export class TokenChoiceManager {
+    private static inferSetFolderFromCardId(cardId: string): string | null {
+        if (typeof cardId !== 'string' || cardId.length === 0) {
+            return null;
+        }
+        const match = cardId.match(/^(ST|GD)(\d{2})-/i);
+        if (!match) {
+            return null;
+        }
+        return `${match[1].toLowerCase()}${match[2]}`;
+    }
+
     static processTokenChoiceEffect(
         gameEnv: GameEnvironment,
         playerId: string,
@@ -44,6 +56,8 @@ export class TokenChoiceManager {
         }
 
         const emptySlots = ConditionalTokenDeployManager.getEmptyUnitSlots(gameEnv, playerId);
+        const sourceCardId = getCardIdFromUid(sourceCarduid);
+        const tokenFolderHint = TokenChoiceManager.inferSetFolderFromCardId(sourceCardId);
 
         const availableChoices: TokenChoiceOption[] = [];
         for (let i = 0; i < choices.length; i++) {
@@ -62,10 +76,21 @@ export class TokenChoiceManager {
                 continue;
             }
 
+            const tokenCardId = typeof token.cardId === 'string'
+                ? token.cardId
+                : typeof (token as any).id === 'string'
+                    ? (token as any).id
+                    : '';
+            const tokenResourcePath =
+                tokenFolderHint && /^T-\d+$/i.test(tokenCardId)
+                    ? `${tokenFolderHint}/${tokenCardId}`
+                    : undefined;
+
             availableChoices.push({
                 index: i,
                 token,
                 count,
+                ...(tokenResourcePath ? { tokenResourcePath } : {}),
                 tokenData: {
                     id: tokenDataResult.tokenData.id,
                     name: tokenDataResult.tokenData.name,

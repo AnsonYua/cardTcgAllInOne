@@ -50,6 +50,7 @@ Frontend Requirements: Token Choice Flow (ST04‑012 / choose_one_then_deploy_to
           - index (number)
           - count (number)
           - token (raw token definition)
+          - tokenResourcePath (optional string; e.g. "st04/T-009"; use if your UI needs a stable mapping to image paths)
           - tokenData (resolved card data; use for UI)
 
 
