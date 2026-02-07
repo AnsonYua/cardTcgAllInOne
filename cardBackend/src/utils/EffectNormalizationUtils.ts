@@ -269,7 +269,28 @@ export function normalizeTargetConfig(
 
     const scope = resolveString(target['scope']) ?? defaults.scope;
     const type = resolveString(target['type']) ?? defaults.type;
-    const count = resolvePositiveNumber(target['count']) ?? defaults.count;
+    const countValue = target['count'];
+    const count = (() => {
+        const direct = resolvePositiveNumber(countValue);
+        if (typeof direct === 'number') {
+            return direct;
+        }
+
+        if (countValue && typeof countValue === 'object') {
+            const record = countValue as Record<string, unknown>;
+            const minRaw = record['min'];
+            const maxRaw = record['max'];
+            const min = typeof minRaw === 'number' ? Math.max(0, minRaw) : undefined;
+            const max = typeof maxRaw === 'number' ? Math.max(0, maxRaw) : undefined;
+            if (typeof min === 'number' || typeof max === 'number') {
+                const resolvedMin = typeof min === 'number' ? min : (defaults.count ?? 1);
+                const resolvedMax = typeof max === 'number' ? max : resolvedMin;
+                return { min: resolvedMin, max: Math.max(resolvedMin, resolvedMax) };
+            }
+        }
+
+        return defaults.count;
+    })();
 
     const filtersValue = target['filters'];
     const filters = filtersValue && typeof filtersValue === 'object'
@@ -289,8 +310,8 @@ export function normalizeTargetConfig(
     if (type) {
         normalized.type = type;
     }
-    if (typeof count === 'number') {
-        normalized.count = count;
+    if (typeof count === 'number' || (count && typeof count === 'object')) {
+        normalized.count = count as any;
     }
     if (filters) {
         normalized.filters = filters;

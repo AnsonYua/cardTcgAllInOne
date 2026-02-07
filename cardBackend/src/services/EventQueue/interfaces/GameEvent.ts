@@ -180,7 +180,7 @@ export type TargetType = 'unit' | 'pilot' | 'card' | 'player' | string;
 export interface EffectTargetConfig {
     type?: TargetType;
     scope?: TargetScope;
-    count?: number;
+    count?: number | { min: number; max: number };
     filters?: TargetFilters;
     zone?: string[];
     selection?: {
