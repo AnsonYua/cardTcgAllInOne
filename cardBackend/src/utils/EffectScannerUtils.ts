@@ -171,16 +171,22 @@ export class EffectScannerUtils {
             return [];
         }
 
+        const availableEnergy = (player.zones?.energyArea || []).filter(card => !card.isRested).length;
         const targets: ActionStepTargetSummary[] = [];
 
-        this.scanHandForActionStepTargets(player, targets);
-        this.scanSlotForActionStepTargets(player, targets);
-        this.scanBaseForActionStepTargets(player, targets);
+        this.scanHandForActionStepTargets(player, targets, availableEnergy, gameEnv.currentTurn);
+        this.scanSlotForActionStepTargets(player, targets, availableEnergy, gameEnv.currentTurn);
+        this.scanBaseForActionStepTargets(player, targets, availableEnergy, gameEnv.currentTurn);
 
         return targets;
     }
 
-    private static scanHandForActionStepTargets(player: Player, targets: ActionStepTargetSummary[]): void {
+    private static scanHandForActionStepTargets(
+        player: Player,
+        targets: ActionStepTargetSummary[],
+        availableEnergy: number,
+        currentTurn: number
+    ): void {
         const handCards = player.deck?.hand || [];
         for (const card of handCards) {
             this.tryAddActionStepTarget(
@@ -188,12 +194,19 @@ export class EffectScannerUtils {
                 card.carduid,
                 card.cardData,
                 'hand',
-                'hand'
+                'hand',
+                availableEnergy,
+                currentTurn
             );
         }
     }
 
-    private static scanSlotForActionStepTargets(player: Player, targets: ActionStepTargetSummary[]): void {
+    private static scanSlotForActionStepTargets(
+        player: Player,
+        targets: ActionStepTargetSummary[],
+        availableEnergy: number,
+        currentTurn: number
+    ): void {
         if (!player.zones) {
             return;
         }
@@ -210,23 +223,21 @@ export class EffectScannerUtils {
                     slot.unit.carduid,
                     slot.unit.cardData,
                     slotName,
-                    'unit'
-                );
-            }
-
-            if (slot.pilot) {
-                this.tryAddActionStepTarget(
-                    targets,
-                    slot.pilot.carduid,
-                    slot.pilot.cardData,
-                    `${slotName}_pilot`,
-                    'pilot'
+                    'unit',
+                    availableEnergy,
+                    currentTurn,
+                    slot.unit
                 );
             }
         }
     }
 
-    private static scanBaseForActionStepTargets(player: Player, targets: ActionStepTargetSummary[]): void {
+    private static scanBaseForActionStepTargets(
+        player: Player,
+        targets: ActionStepTargetSummary[],
+        availableEnergy: number,
+        currentTurn: number
+    ): void {
         const baseCards = player.zones?.base || [];
         for (const baseCard of baseCards) {
             this.tryAddActionStepTarget(
@@ -234,7 +245,10 @@ export class EffectScannerUtils {
                 baseCard.carduid,
                 baseCard.cardData,
                 'base',
-                'base'
+                'base',
+                availableEnergy,
+                currentTurn,
+                baseCard
             );
         }
     }
@@ -244,13 +258,33 @@ export class EffectScannerUtils {
         carduid?: string,
         cardData?: any,
         location: string = 'unknown',
-        zoneType: 'hand' | 'unit' | 'pilot' | 'base' = 'unit'
+        zoneType: 'hand' | 'unit' | 'pilot' | 'base' = 'unit',
+        availableEnergy: number = 0,
+        currentTurn: number = 0,
+        sourceCardState?: any
     ): void {
         if (!carduid || !cardData?.effects?.rules) {
             return;
         }
 
-        const effectIds = extractActionStepEffectIds(cardData.effects.rules, zoneType);
+        // Hand commands require energy to be playable. If you can't pay, don't block ACTION_STEP confirmations.
+        if (zoneType === 'hand') {
+            const energyCost = typeof cardData.cost === 'number' ? cardData.cost : Number(cardData.cost || 0);
+            if (energyCost > 0 && availableEnergy < energyCost) {
+                return;
+            }
+        }
+
+        const effectIds = extractActionStepEffectIds(cardData.effects.rules, zoneType, {
+            availableEnergy,
+            currentTurn,
+            sourceCardState: sourceCardState
+                ? {
+                      isRested: Boolean(sourceCardState.isRested),
+                      effectUsage: sourceCardState.effectUsage || {}
+                  }
+                : undefined
+        });
         if (!effectIds.length) {
             return;
         }

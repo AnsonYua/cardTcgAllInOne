@@ -4,11 +4,24 @@ import { isPlayOrActivatedEffect } from './EffectTypeRouter';
 
 export type ActionStepZoneType = ActionStepTargetSummary['zoneType'];
 
-export function extractActionStepEffectIds(effects: EffectDefinition[], zoneType: ActionStepZoneType): string[] {
+export interface ActionStepEffectFilterContext {
+    availableEnergy: number;
+    currentTurn: number;
+    sourceCardState?: {
+        isRested?: boolean;
+        effectUsage?: Record<string, { lastUsedTurn?: number }>;
+    };
+}
+
+export function extractActionStepEffectIds(
+    effects: EffectDefinition[],
+    zoneType: ActionStepZoneType,
+    context: ActionStepEffectFilterContext
+): string[] {
     const actionEffectIds: string[] = [];
 
     for (const effect of effects) {
-        if (effectSupportsActionStep(effect, zoneType)) {
+        if (effectSupportsActionStep(effect, zoneType, context)) {
             actionEffectIds.push(effect.effectId || effect.action || 'action_step_effect');
         }
     }
@@ -16,7 +29,11 @@ export function extractActionStepEffectIds(effects: EffectDefinition[], zoneType
     return actionEffectIds;
 }
 
-function effectSupportsActionStep(effect: EffectDefinition, zoneType: ActionStepZoneType): boolean {
+function effectSupportsActionStep(
+    effect: EffectDefinition,
+    zoneType: ActionStepZoneType,
+    context: ActionStepEffectFilterContext
+): boolean {
     // Action step targets are meant to represent *player-triggered* decisions (play/activate).
     // Exclude triggered/static rules so we don't block battle flow waiting for confirmations.
     if (!isPlayOrActivatedEffect(effect)) {
@@ -27,6 +44,17 @@ function effectSupportsActionStep(effect: EffectDefinition, zoneType: ActionStep
     // should not advertise their "play" rules as action step options.
     if (effect.type === 'play' && zoneType !== 'hand') {
         return false;
+    }
+
+    if (effect.type === 'activated') {
+        // Activated abilities currently only execute from unit/base sources (see ActivatedAbilitySourceResolver).
+        if (zoneType !== 'unit' && zoneType !== 'base') {
+            return false;
+        }
+
+        if (!canActivateNow(effect, zoneType, context)) {
+            return false;
+        }
     }
 
     const windows = Array.isArray(effect.timing?.windows)
@@ -44,3 +72,43 @@ function effectSupportsActionStep(effect: EffectDefinition, zoneType: ActionStep
     return actionTurn === 'ACTION_STEP';
 }
 
+function canActivateNow(effect: EffectDefinition, zoneType: ActionStepZoneType, context: ActionStepEffectFilterContext): boolean {
+    const sourceCardState = context.sourceCardState;
+    if (!sourceCardState) {
+        return false;
+    }
+
+    // Base abilities hard-stop if the base itself is already rested.
+    if (zoneType === 'base' && sourceCardState.isRested) {
+        return false;
+    }
+
+    const costConfig = (effect as unknown as { cost?: Record<string, unknown> }).cost;
+    if (!costConfig || typeof costConfig !== 'object') {
+        return true;
+    }
+
+    const requiresRest =
+        costConfig['restSelf'] === true ||
+        costConfig['rest'] === 'self' ||
+        costConfig['tap'] === 'self';
+
+    if (requiresRest && sourceCardState.isRested) {
+        return false;
+    }
+
+    const energyCost = typeof costConfig['resource'] === 'number' ? (costConfig['resource'] as number) : 0;
+    if (energyCost > 0 && context.availableEnergy < energyCost) {
+        return false;
+    }
+
+    const oncePerTurn = costConfig['oncePerTurn'] === true;
+    if (oncePerTurn && typeof effect.effectId === 'string' && effect.effectId.length > 0) {
+        const usage = sourceCardState.effectUsage?.[effect.effectId];
+        if (usage && usage.lastUsedTurn === context.currentTurn) {
+            return false;
+        }
+    }
+
+    return true;
+}

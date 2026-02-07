@@ -512,6 +512,26 @@ export class BattlePhaseManager {
             PlayerCardManager.updateUnitDamage(targetUnit, defenderDamageTaken);
         }
 
+        emitBattleResolutionNotification(gameEnv, context, {
+            attacker: attackerSnapshot,
+            target: focusTargetSnapshot || originalTargetSnapshot,
+            focusTarget: focusTargetSnapshot,
+            result: {
+                targetType: 'unit',
+                attackerDestroyed,
+                defenderDestroyed,
+                attackerDamageTaken,
+                defenderDamageTaken,
+                attackerHasFirstStrike,
+                attackerDamagePrevented,
+                defenderDamagePrevented
+            }
+        });
+
+        // Emit the battle result first, then resolve post-battle triggers (BATTLE_DESTROY, DESTROYED, etc.)
+        // so their notifications (like EFFECT_DRAW_TRIGGERED from [Destroyed]) appear after BATTLE_RESOLVED.
+        console.log(`⚔️ Battle resolved: Attacker ${attackerDestroyed ? 'destroyed' : 'survived'}, Defender ${defenderDestroyed ? 'destroyed' : 'survived'}`);
+
         if (defenderDestroyed) {
             const battleDestroyResult = BattleDestroyEffectManager.processBattleDestroy(gameEnv, {
                 sourcePlayerId: attacker.id,
@@ -547,24 +567,6 @@ export class BattlePhaseManager {
         if (defenderDestroyed) {
             PlayerCardManager.destroyUnitInSlot(gameEnv, defender.id, targetSlotName, targetUnit);
         }
-
-        console.log(`⚔️ Battle resolved: Attacker ${attackerDestroyed ? 'destroyed' : 'survived'}, Defender ${defenderDestroyed ? 'destroyed' : 'survived'}`);
-
-        emitBattleResolutionNotification(gameEnv, context, {
-            attacker: attackerSnapshot,
-            target: focusTargetSnapshot || originalTargetSnapshot,
-            focusTarget: focusTargetSnapshot,
-            result: {
-                targetType: 'unit',
-                attackerDestroyed,
-                defenderDestroyed,
-                attackerDamageTaken,
-                defenderDamageTaken,
-                attackerHasFirstStrike,
-                attackerDamagePrevented,
-                defenderDamagePrevented
-            }
-        });
 
         EffectExecutor.cleanupEndOfBattleTemporaryEffects(gameEnv, SlotZoneUtils.getAllUnitAndPilotCarduids(gameEnv));
         this.clearBattleAndRefreshContinuous(gameEnv, 'unit_resolved');

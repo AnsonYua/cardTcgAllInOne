@@ -32,6 +32,9 @@ const {
 const {
   validateActionStepTargetScan
 } = require('./validators/actionStepTargetScanValidation');
+const {
+  validateDestroyedDrawNotificationsComeAfterBattleResolved
+} = require('./validators/battleDestroyedNotificationOrderingValidation');
 
 function main() {
   const root = sharedGameStatesRoot();
@@ -53,6 +56,7 @@ function main() {
   validateTargetChoiceNotificationIncludesTargetCount();
   validateNormalizeEffectRulePreservesCountRange();
   validateActionStepTargetScan();
+  validateDestroyedDrawNotificationsComeAfterBattleResolved();
 
   console.log('OK: action scenarios validated');
 }
