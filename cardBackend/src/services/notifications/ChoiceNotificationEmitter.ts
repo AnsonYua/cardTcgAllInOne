@@ -7,20 +7,37 @@ import { GameNotificationManager } from '../GameNotificationManager';
 import { TargetCountUtils } from '../targets/TargetCountUtils';
 
 export class ChoiceNotificationEmitter {
+    private static emitPersistentChoiceCreated(
+        gameEnv: GameEnvironment,
+        params: {
+            eventId: string;
+            type: string;
+            payload: Record<string, unknown>;
+            priority: 'low' | 'normal' | 'high' | 'critical';
+        }
+    ): void {
+        const notificationManager = new GameNotificationManager(gameEnv);
+        notificationManager.addNotificationEventWithId(params.eventId, params.type, params.payload, params.priority);
+
+        // Choice notifications should not expire until the frontend explicitly acknowledges them.
+        notificationManager.makePersistent(params.eventId);
+    }
+
     static buildBurstChoiceGroupNotificationId(sourceEventId: string): string {
         return `${sourceEventId}_burst_choice_group`;
     }
 
     static emitBurstChoiceCreated(gameEnv: GameEnvironment, event: BurstEffectChoiceEvent): void {
-        const notificationManager = new GameNotificationManager(gameEnv);
-        notificationManager.addNotificationEventWithId(event.id, 'BURST_EFFECT_CHOICE', {
-            playerId: event.playerId,
-            event,
-            isCompleted: false
-        }, 'high');
-
-        // Choice notifications should not expire until the frontend explicitly acknowledges them.
-        notificationManager.makePersistent(event.id);
+        ChoiceNotificationEmitter.emitPersistentChoiceCreated(gameEnv, {
+            eventId: event.id,
+            type: 'BURST_EFFECT_CHOICE',
+            payload: {
+                playerId: event.playerId,
+                event,
+                isCompleted: false
+            },
+            priority: 'high'
+        });
     }
 
     static emitBurstChoiceGroupCreated(
@@ -31,19 +48,19 @@ export class ChoiceNotificationEmitter {
             events: BurstEffectChoiceEvent[];
         }
     ): void {
-        const notificationManager = new GameNotificationManager(gameEnv);
         const groupId = ChoiceNotificationEmitter.buildBurstChoiceGroupNotificationId(params.sourceEventId);
-
-        notificationManager.addNotificationEventWithId(groupId, 'BURST_EFFECT_CHOICE_GROUP', {
-            playerId: params.playerId,
-            sourceEventId: params.sourceEventId,
-            events: params.events,
-            resolvedEventIds: [],
-            isCompleted: false
-        }, 'high');
-
-        // Choice notifications should not expire until the frontend explicitly acknowledges them.
-        notificationManager.makePersistent(groupId);
+        ChoiceNotificationEmitter.emitPersistentChoiceCreated(gameEnv, {
+            eventId: groupId,
+            type: 'BURST_EFFECT_CHOICE_GROUP',
+            payload: {
+                playerId: params.playerId,
+                sourceEventId: params.sourceEventId,
+                events: params.events,
+                resolvedEventIds: [],
+                isCompleted: false
+            },
+            priority: 'high'
+        });
     }
 
     static emitBurstChoiceResolved(
@@ -114,38 +131,50 @@ export class ChoiceNotificationEmitter {
     }
 
     static emitTokenChoiceCreated(gameEnv: GameEnvironment, event: TokenChoiceEvent): void {
-        const notificationManager = new GameNotificationManager(gameEnv);
-        notificationManager.addNotificationEventWithId(event.id, 'TOKEN_CHOICE', {
-            playerId: event.playerId,
-            event
-        }, 'high');
+        ChoiceNotificationEmitter.emitPersistentChoiceCreated(gameEnv, {
+            eventId: event.id,
+            type: 'TOKEN_CHOICE',
+            payload: {
+                playerId: event.playerId,
+                event,
+                isCompleted: false
+            },
+            priority: 'high'
+        });
     }
 
     static emitTokenChoiceResolved(gameEnv: GameEnvironment, event: TokenChoiceEvent): void {
         const notificationManager = new GameNotificationManager(gameEnv);
-        const resolvedId = `${event.id}_resolved`;
-        notificationManager.addNotificationEventWithId(resolvedId, 'TOKEN_CHOICE_RESOLVED', {
-            playerId: event.playerId,
-            eventId: event.id,
-            choiceId: event.data?.choiceId
-        }, 'normal');
+        // Reuse the existing TOKEN_CHOICE notification object rather than emitting a separate
+        // TOKEN_CHOICE_RESOLVED notification, so the frontend only needs to handle one shape.
+        // Note: event.data.userDecisionMade / selectedChoiceIndex are already set in ChoiceConfirmationService.
+        notificationManager.updateNotificationEvent(event.id, {
+            isCompleted: true,
+            event
+        });
     }
 
     static emitOptionChoiceCreated(gameEnv: GameEnvironment, event: OptionChoiceEvent): void {
-        const notificationManager = new GameNotificationManager(gameEnv);
-        notificationManager.addNotificationEventWithId(event.id, 'OPTION_CHOICE', {
-            playerId: event.playerId,
-            event
-        }, 'high');
+        ChoiceNotificationEmitter.emitPersistentChoiceCreated(gameEnv, {
+            eventId: event.id,
+            type: 'OPTION_CHOICE',
+            payload: {
+                playerId: event.playerId,
+                event,
+                isCompleted: false
+            },
+            priority: 'high'
+        });
     }
 
     static emitOptionChoiceResolved(gameEnv: GameEnvironment, event: OptionChoiceEvent): void {
         const notificationManager = new GameNotificationManager(gameEnv);
-        const resolvedId = `${event.id}_resolved`;
-        notificationManager.addNotificationEventWithId(resolvedId, 'OPTION_CHOICE_RESOLVED', {
-            playerId: event.playerId,
-            eventId: event.id,
-            choiceId: event.data?.choiceId
-        }, 'normal');
+        // Reuse the existing OPTION_CHOICE notification object rather than emitting a separate
+        // OPTION_CHOICE_RESOLVED notification, so the frontend only needs to handle one shape.
+        // Note: event.data.userDecisionMade / selectedOptionIndex are already set in ChoiceConfirmationService.
+        notificationManager.updateNotificationEvent(event.id, {
+            isCompleted: true,
+            event
+        });
     }
 }

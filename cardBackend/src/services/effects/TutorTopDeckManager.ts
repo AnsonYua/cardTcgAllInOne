@@ -303,7 +303,7 @@ export class TutorTopDeckManager {
             const cardId = getCardIdFromUid(chosenCarduid);
             const cardData = CardDatabaseManager.getCardDetails(cardId) as CardData;
             HandZoneManager.addCardToHand(gameEnv, params.playerId, chosenCarduid, cardData, {
-                eventType: 'CARD_TUTORED_TO_HAND',
+                eventType: 'CARD_ADDED_TO_HAND',
                 sourceZone: 'deck',
                 reason: 'tutor_top_deck',
                 extraPayload: {

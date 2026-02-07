@@ -22,11 +22,15 @@ Frontend Requirements: Token Choice Flow (ST04‑012 / choose_one_then_deploy_to
   4) Update UI after decision
 
   - On success, refresh game state and clear dialog.
-  - Optionally acknowledge notifications using /player/acknowledgeEvents for the TOKEN_CHOICE event.
+  - Acknowledge the TOKEN_CHOICE notification using /player/acknowledgeEvents after you have updated UI state.
 
-  5) Handle resolution notifications
+  5) Handle resolution (single-notification model)
 
-  - If you receive TOKEN_CHOICE_RESOLVED, close dialog and refresh state.
+  - TOKEN_CHOICE notifications are persistent (requiresAcknowledgment=true).
+  - When the choice is confirmed, the backend updates the same TOKEN_CHOICE notification:
+      - payload.isCompleted becomes true
+      - payload.event reflects userDecisionMade + selectedChoiceIndex
+  - Close dialog and refresh state when you see payload.isCompleted=true (or after API success).
 
   6) Handle failure states
 
