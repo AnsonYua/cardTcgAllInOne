@@ -16,6 +16,8 @@ import { ContinuousEffectManager } from '../ContinuousEffectManager';
 import { CardDataResolver } from './CardDataResolver';
 import { PairFromTrashActivatedAbility } from './PairFromTrashActivatedAbility';
 import { EffectTimingWindowUtils } from '../../utils/EffectTimingWindowUtils';
+import { SlotCardStateUtils } from '../conditions/SlotCardStateUtils';
+import { effectRequiresLinkedSource } from '../../utils/ImplicitEffectConditionUtils';
 
 export class BaseAbilityManager {
 
@@ -83,6 +85,16 @@ export class BaseAbilityManager {
                 success: false,
                 error: `Effect ${normalizedEffect.effectId} cannot be activated during ${gameEnv.phase}`
             };
+        }
+
+        if (sourceZone === 'unit' && effectRequiresLinkedSource(normalizedEffect, resolvedCardData)) {
+            const linked = SlotCardStateUtils.isCardLinked(gameEnv, sourceCard.carduid);
+            if (!linked) {
+                return {
+                    success: false,
+                    error: `Effect ${normalizedEffect.effectId} requires the unit to be linked`
+                };
+            }
         }
 
         const costConfig = (effectDefinition as unknown as { cost?: Record<string, unknown> }).cost;

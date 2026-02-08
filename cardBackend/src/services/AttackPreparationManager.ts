@@ -159,6 +159,15 @@ export class AttackPreparationManager {
             };
         }
 
+        if (this.unitHasAttackRestriction(attackerSlotResult.unit as UnitZoneCard, 'cannot_attack_player')) {
+            const attackingUnit = attackerSlotResult.unit as UnitZoneCard;
+            const cardName = attackingUnit.cardData?.name || attackingUnit.cardId || 'Attacking unit';
+            return {
+                success: false,
+                error: `${cardName} cannot attack the player due to a restriction`
+            };
+        }
+
         return {
             success: true,
             attacker,

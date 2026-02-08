@@ -21,7 +21,14 @@ export class CostReplacementManager {
         const action = typeof effect.action === 'string' ? effect.action : '';
         const targetType = typeof effect.target?.type === 'string' ? effect.target.type : '';
         const targetScope = typeof effect.target?.scope === 'string' ? effect.target.scope : '';
-        if (action !== 'rest' || targetType !== 'base') {
+        const filterCardType = typeof (effect.target as any)?.filters?.cardType === 'string'
+            ? String((effect.target as any).filters.cardType).toLowerCase()
+            : '';
+        const isRestingFriendlyBase =
+            targetType === 'base' ||
+            (targetType === 'card' && filterCardType === 'base');
+
+        if (action !== 'rest' || !isRestingFriendlyBase) {
             return availableTargets;
         }
 
@@ -73,7 +80,8 @@ export class CostReplacementManager {
                 carduid: unit.carduid,
                 zone: slotName,
                 playerId,
-                cardData: unit.cardData
+                cardData: unit.cardData,
+                tags: ['COST_REPLACEMENT_REST_BASE']
             });
         }
 

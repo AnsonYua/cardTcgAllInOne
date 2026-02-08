@@ -65,7 +65,13 @@ export class TargetResolver {
         const isHandScope = scopeValue.includes('hand');
         const isEnergyScope = targetConfig.type === 'energy' || scopeValue.includes('resource') || scopeValue.includes('energy');
         const isTrashScope = scopeValue.includes('trash');
-        const isBaseScope = targetConfig.type === 'base' || scopeValue.includes('base');
+        const filteredCardType = typeof (targetConfig.filters as any)?.cardType === 'string'
+            ? (((targetConfig.filters as any).cardType as string) || '').toLowerCase()
+            : '';
+        const isBaseScope =
+            targetConfig.type === 'base' ||
+            scopeValue.includes('base') ||
+            (targetConfig.type === 'card' && filteredCardType === 'base');
 
         if (isShieldScope) {
             const targetPlayerIds = this.getTargetPlayerIds(gameEnv, playerId, targetConfig.scope);
@@ -122,7 +128,11 @@ export class TargetResolver {
 
                     const slotZone = slotResult.slot;
 
-                    if (targetConfig.type === 'unit' && SlotZoneUtils.hasUnit(slotZone)) {
+                    const wantsUnit =
+                        targetConfig.type === 'unit' ||
+                        (targetConfig.type === 'card' && filteredCardType === 'unit');
+
+                    if (wantsUnit && SlotZoneUtils.hasUnit(slotZone)) {
                         const unit = SlotZoneUtils.getUnit(slotZone);
                         if (unit && this.validateTargetFilters(gameEnv, unit, targetConfig.filters || {}, targetPlayerId)) {
                             targets.push({
@@ -168,6 +178,17 @@ export class TargetResolver {
         filters: TargetFilters = {},
         targetPlayerId?: string
     ): boolean {
+        const cardType = typeof (card as any)?.cardData?.cardType === 'string'
+            ? ((card as any).cardData.cardType as string).toLowerCase()
+            : '';
+        if (cardType === 'unit') {
+            const currentHp = PlayerCardManager.getCurrentUnitCardInSlotAPandHP(gameEnv, card.carduid).totalHP;
+            if (currentHp <= 0) {
+                console.log(`❌ Card ${card.carduid} excluded from targets: destroyed (HP ${currentHp})`);
+                return false;
+            }
+        }
+
         const excludeCarduids = Array.isArray(filters.excludeCarduids)
             ? filters.excludeCarduids.filter((id): id is string => typeof id === 'string')
             : [];

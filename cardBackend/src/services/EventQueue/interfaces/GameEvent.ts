@@ -195,6 +195,7 @@ export interface TargetReference {
     zone: string;
     playerId: string;
     cardData?: Record<string, unknown>;
+    tags?: string[];
 }
 
 export interface EffectTiming {

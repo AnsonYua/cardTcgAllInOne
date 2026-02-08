@@ -3265,6 +3265,12 @@
                 "MAIN_PHASE"
               ]
             },
+            "conditions": [
+              {
+                "type": "isLinked",
+                "scope": "source"
+              }
+            ],
             "cost": {
               "oncePerTurn": true
             },
@@ -3286,6 +3292,9 @@
                       "cardType": "base",
                       "isRested": false
                     }
+                  },
+                  "parameters": {
+                    "failIfNoTargets": true
                   }
                 },
                 {
@@ -3294,6 +3303,20 @@
                     "type": "unit",
                     "scope": "self",
                     "count": 1
+                  }
+                },
+                {
+                  "action": "restrict_attack",
+                  "target": {
+                    "type": "unit",
+                    "scope": "self",
+                    "count": 1
+                  },
+                  "timing": {
+                    "duration": "UNTIL_END_OF_TURN"
+                  },
+                  "parameters": {
+                    "restriction": "cannot_attack_player"
                   }
                 }
               ]

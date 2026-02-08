@@ -25,6 +25,7 @@ export interface GameLogicResult {
     gameId?: string;
     gameEnv?: GameEnvironment;
     error?: string;
+    errorCode?: string;
     requiresCardSelection?: boolean;
     acknowledgedCount?: number;
     result?: string;
@@ -898,7 +899,8 @@ export class GameLogic {
             if (!actionResult.success) {
                 return {
                     success: false,
-                    error: actionResult.error || 'Failed to process player action'
+                    error: actionResult.error || 'Failed to process player action',
+                    errorCode: (actionResult as any).errorCode
                 };
             }
             

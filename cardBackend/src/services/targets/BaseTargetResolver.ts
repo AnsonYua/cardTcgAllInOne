@@ -22,6 +22,12 @@ export class BaseTargetResolver {
                     continue;
                 }
 
+                if (typeof (targetConfig.filters as any)?.isRested === 'boolean') {
+                    if (base.isRested !== (targetConfig.filters as any).isRested) {
+                        continue;
+                    }
+                }
+
                 if (targetConfig.filters?.status) {
                     const status = base.isRested ? 'rested' : 'active';
                     if (status !== targetConfig.filters.status) {
@@ -41,4 +47,3 @@ export class BaseTargetResolver {
         return targets;
     }
 }
-

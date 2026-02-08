@@ -120,6 +120,14 @@ export class DeployTargetManager {
             
             if (availableTargets.length === 0) {
                 console.log(`⚠️ No eligible targets found for ${effect.effectId}`);
+                const failIfNoTargets = normalizedEffect.parameters?.failIfNoTargets === true ||
+                    (normalizedEffect.target as any)?.required === true;
+                if (failIfNoTargets) {
+                    return {
+                        success: false,
+                        error: `No eligible targets found for ${effectLabel}`
+                    };
+                }
                 if (effectAction === 'damageShield') {
                     const result = EffectExecutor.applyEffectToTargets(gameEnv, normalizedEffect, [], playerId, sourceCarduid);
                     return {

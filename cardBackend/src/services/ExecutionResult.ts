@@ -4,7 +4,7 @@
 export interface ExecutionResult {
     success: boolean;
     error?: string;
+    errorCode?: string;
     acknowledgedCount?: number;
     requiresSelection?: boolean;
 }
-

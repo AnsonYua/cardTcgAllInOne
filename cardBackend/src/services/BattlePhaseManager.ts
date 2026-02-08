@@ -64,10 +64,23 @@ export class BattlePhaseManager {
 
         const forcedTargetResult = ForcedAttackTargetManager.enforceIfNeeded(gameEnv, event, defendingPlayerId);
         if (!forcedTargetResult.success) {
-            return { success: false, error: forcedTargetResult.error };
+            return { success: false, error: forcedTargetResult.error, errorCode: (forcedTargetResult as any).errorCode };
         }
         if (forcedTargetResult.requiresSelection) {
             return { success: true, requiresSelection: true };
+        }
+
+        const actionType = event.data?.actionType;
+        if (actionType === 'attackShieldArea' && typeof event.data?.attackerCarduid === 'string') {
+            const preparation = AttackPreparationManager.prepareBaseAttack(
+                gameEnv,
+                event.playerId,
+                event.data.attackerCarduid
+            );
+            if (!preparation.success) {
+                const failure = preparation as AttackPreparationFailure;
+                return { success: false, error: failure.error };
+            }
         }
 
         const skipAttackDeclaration = event.data?.skipAttackDeclaration === true;

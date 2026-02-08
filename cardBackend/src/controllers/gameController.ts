@@ -663,6 +663,7 @@ export class GameController {
             } else {
                 res.status(400).json({
                     error: result.error,
+                    errorCode: (result as any).errorCode,
                     timestamp: new Date().toISOString(),
                     context: 'playerAction endpoint'
                 });

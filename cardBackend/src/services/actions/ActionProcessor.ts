@@ -15,7 +15,7 @@ export const processAction = async (gameEnv: GameEnvironment, action: PlayerActi
         const result = gameEnv.processEvents();
 
         if (!result.success) {
-            return { success: false, error: result.error || 'Event validation failed' };
+            return { success: false, error: result.error || 'Event validation failed', errorCode: (result as any).errorCode };
         }
 
         return result;

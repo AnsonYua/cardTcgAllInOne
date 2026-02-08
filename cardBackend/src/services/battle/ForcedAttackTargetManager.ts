@@ -25,7 +25,7 @@ export class ForcedAttackTargetManager {
         gameEnv: GameEnvironment,
         attackEvent: PlayerActionEvent,
         defendingPlayerId: string
-    ): { success: boolean; error?: string; requiresSelection?: boolean } {
+    ): { success: boolean; error?: string; errorCode?: string; requiresSelection?: boolean } {
         const eventData = attackEvent.data || {};
         if (eventData.skipForcedTargetCheck === true) {
             return { success: true };
@@ -47,7 +47,9 @@ export class ForcedAttackTargetManager {
             return { success: true };
         }
 
-        const currentTargetCarduid = typeof eventData.targetCarduid === 'string' ? eventData.targetCarduid : '';
+        const currentTargetCarduid = typeof (eventData as any).targetUnitUid === 'string'
+            ? String((eventData as any).targetUnitUid)
+            : (typeof (eventData as any).targetCarduid === 'string' ? String((eventData as any).targetCarduid) : '');
         const currentTargetPlayerId = typeof eventData.targetPlayerId === 'string' ? eventData.targetPlayerId : defendingPlayerId;
         const currentActionType = typeof eventData.actionType === 'string' ? eventData.actionType : '';
 
@@ -63,22 +65,12 @@ export class ForcedAttackTargetManager {
 
         if (merged.candidates.length === 1) {
             const forced = merged.candidates[0];
-            attackEvent.data.actionType = 'attackUnit';
-            (attackEvent.data as any).targetPlayerId = forced.playerId;
-            (attackEvent.data as any).targetCarduid = forced.carduid;
-            (attackEvent.data as any).skipForcedTargetCheck = true;
-
-            const notificationManager = new GameNotificationManager(gameEnv);
-            notificationManager.addNotificationEvent('ATTACK_TARGET_FORCED', {
-                attackerPlayerId,
-                attackerCarduid,
-                defendingPlayerId: forced.playerId,
-                forcedTargetCarduid: forced.carduid,
-                forcedBySourceCarduid: merged.sourceCarduid,
-                timestamp: Date.now()
-            });
-
-            return { success: true };
+            const forcedName = (forced.cardData as any)?.name || forced.carduid;
+            return {
+                success: false,
+                errorCode: 'FORCED_ATTACK_TARGET_REQUIRED',
+                error: `Attack target is forced to ${forcedName} (${forced.zone}). Use actionType=attackUnit with targetUnitUid=${forced.carduid}.`
+            };
         }
 
         const chooserPlayerId = merged.chooser === 'DEFENDER' ? defendingPlayerId : attackerPlayerId;

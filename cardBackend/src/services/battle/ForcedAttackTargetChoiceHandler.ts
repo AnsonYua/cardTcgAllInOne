@@ -43,7 +43,14 @@ export class ForcedAttackTargetChoiceHandler {
             actionType: 'attackUnit',
             attackerCarduid,
             targetPlayerId: forced.playerId,
+            targetUnitUid: forced.carduid,
+            // Backwards-compatible alias used by some callers/notifications.
             targetCarduid: forced.carduid,
+            forcedTarget: {
+                carduid: forced.carduid,
+                playerId: forced.playerId,
+                zone: forced.zone
+            },
             skipForcedTargetCheck: true
         });
 
@@ -51,4 +58,3 @@ export class ForcedAttackTargetChoiceHandler {
         return { handled: true, success: true };
     }
 }
-

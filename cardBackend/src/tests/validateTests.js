@@ -38,6 +38,15 @@ const {
 const {
   validateDestroyedDrawNotificationsComeAfterBattleResolved
 } = require('./validators/battleDestroyedNotificationOrderingValidation');
+const {
+  validateDelayedSetActiveExcludesDestroyedUnit
+} = require('./validators/delayedSetActiveExcludesDestroyedUnitValidation');
+const {
+  validateGd02069DuringLinkActivatedAbility
+} = require('./validators/gd02069DuringLinkActivatedAbilityValidation');
+const {
+  validateGd03079RestBaseReplacement
+} = require('./validators/gd03079RestBaseReplacementValidation');
 
 function main() {
   const root = sharedGameStatesRoot();
@@ -61,6 +70,9 @@ function main() {
   validateNormalizeEffectRulePreservesCountRange();
   validateActionStepTargetScan();
   validateDestroyedDrawNotificationsComeAfterBattleResolved();
+  validateDelayedSetActiveExcludesDestroyedUnit();
+  validateGd02069DuringLinkActivatedAbility();
+  validateGd03079RestBaseReplacement();
 
   console.log('OK: action scenarios validated');
 }

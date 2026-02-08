@@ -1,19 +1,21 @@
 {
-  "description": "gd03-079_replace_rest_base_with_rest_this_unit",
-  "gameId": "gd03-079_replace_rest_base_with_rest_this_unit",
+  "description": "gd03-070_prevent_shield_battle_damage_while_rested",
+  "gameId": "gd03-070_prevent_shield_battle_damage_while_rested",
   "testType": "action",
   "category": "ActionCase",
   "tags": [
-    "GD03-079",
-    "replace_cost",
-    "rest",
-    "base"
+    "GD03-070",
+    "continuous",
+    "sourceStatus",
+    "prevent_battle_damage",
+    "self_all_shield",
+    "SHIELD_DAMAGE_PREVENTION_GRANTED"
   ],
   "notes": [
-    "Action: Player A declares an attack; attacker has an ATTACK_PHASE effect that would rest a friendly Base (rest action targeting base scope self).",
-    "Expect: The target choice includes BOTH the friendly base AND GD03-079 (replacement option: rest this unit instead).",
-    "Action: Player A selects GD03-079 as the rest target.",
-    "Expect: GD03-079 becomes rested and a CARD_RESTED notification is emitted; the Base remains active (not rested)."
+    "Setup: Player A has GD03-070 (Freedom Gundam) in play and rested. Player A has at least 1 shield card.",
+    "Action (manual): Player B initiates attackShieldArea with a Unit attacker.",
+    "Expect: When the shield battle opens and continuous effects refresh, SHIELD_DAMAGE_PREVENTION_GRANTED is appended to notificationQueue (source=GD03-070) and shield damage is prevented.",
+    "Expect: When resolving the shield attack, no SHIELD_CARD_ATTACKED event is enqueued (shieldsTargeted=0) and the battle resolution indicates damagePrevented=true."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -24,7 +26,7 @@
     "firstPlayerChooser": null,
     "firstPlayerDecision": null,
     "hasChosenFirstPlayer": true,
-    "currentPlayer": "playerId_1",
+    "currentPlayer": "playerId_2",
     "currentTurn": 1,
     "playersReady": {
       "playerId_1": true,
@@ -35,7 +37,7 @@
     "maxEventsPerCycle": 50,
     "notificationQueue": [
       {
-        "id": "card_drawn_1768362880422_gd03079",
+        "id": "card_drawn_1768362880422_gd03070_seed",
         "type": "CARD_DRAWN",
         "metadata": {
           "timestamp": 1768362880422,
@@ -44,8 +46,8 @@
           "priority": "normal"
         },
         "payload": {
-          "playerId": "playerId_1",
-          "carduid": "GD03-079_in_hand_draw_0001",
+          "playerId": "playerId_2",
+          "carduid": "GD03-000_draw_0070",
           "sourceZone": "deck",
           "reason": "draw",
           "timestamp": 1768362880422,
@@ -73,71 +75,62 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD02-069_attacker_00021",
-              "cardId": "GD02-069",
+              "carduid": "GD03-070_unit_0001",
+              "cardId": "GD03-070",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": true,
-              "originalAP": 5,
-              "originalHP": 4,
               "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
               "continueModifyAP": 0,
               "continueModifyHP": 0,
-              "canAttackThisTurn": true,
+              "originalAP": 4,
+              "originalHP": 5,
+              "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
-              "playedThisTurn": false
-            },           
-            "pilot": {
-              "carduid": "GD02-097_pilot_0001",
-              "cardId": "GD02-097",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "originalAP": 1,
-              "originalHP": 2,
-              "playedAs": "pilot",
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
+              "canAttackThisTurn": true,
               "isFirstPlay": false
             }
           },
-          "slot2": {
-            "unit": {
-              "carduid": "GD03-079_unit_0001",
-              "cardId": "GD03-079",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "originalAP": 3,
-              "originalHP": 2,
-              "damageReceived": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
-              "canAttackThisTurn": true,
-              "canAttackOnPlayTurn": false,
-              "playedThisTurn": false
-            }
-          },
+          "slot2": {},
           "slot3": {},
           "slot4": {},
           "slot5": {},
           "slot6": {},
           "base": [
-            {
-              "carduid": "GD03-132_base_0001",
-              "cardId": "GD03-132",
-              "placedAt": 0,
+             {
+              "carduid": "base_default",
+              "cardId": "base_default",
+              "placedAt": 1757854884783,
               "placedBy": "playerId_1",
-              "isRested": false,
-              "originalHP": 5,
-              "damageReceived": 0
+              "isRested": true,
+              "originalHP": 3,
+              "damageReceived": 0,
+              "fieldCardValue": {
+                "totalOriginalAP": 0,
+                "totalOriginalHP": 3,
+                "totalTempModifyAP": 0,
+                "totalTempModifyHP": 0,
+                "totalContinueModifyAP": 0,
+                "totalContinueModifyHP": 0,
+                "totalDamageReceived": 0,
+                "totalAP": 0,
+                "totalHP": 3,
+                "isRested": false
+              }
             }
           ],
-          "shieldArea": [],
+          "shieldArea": [
+            {
+              "carduid": "GD03-001_shield_0001",
+              "cardId": "GD03-001"
+            }
+          ],
           "energyArea": [
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd03-079_replace_rest_base_with_rest_this_unit_playerId_1_0001",
+              "carduid": "energy_basic_auto_gd03-070_prevent_shield_battle_damage_while_rested_playerId_1_0001",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -145,7 +138,7 @@
             },
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd03-079_replace_rest_base_with_rest_this_unit_playerId_1_0002",
+              "carduid": "energy_basic_auto_gd03-070_prevent_shield_battle_damage_while_rested_playerId_1_0002",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -153,7 +146,7 @@
             },
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd03-079_replace_rest_base_with_rest_this_unit_playerId_1_0003",
+              "carduid": "energy_basic_auto_gd03-070_prevent_shield_battle_damage_while_rested_playerId_1_0003",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -161,7 +154,7 @@
             },
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd03-079_replace_rest_base_with_rest_this_unit_playerId_1_0004",
+              "carduid": "energy_basic_auto_gd03-070_prevent_shield_battle_damage_while_rested_playerId_1_0004",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -169,7 +162,8 @@
             }
           ],
           "trashArea": [],
-          "repairAbilitiesCheckedThisCycle": false
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
         }
       },
       "playerId_2": {
@@ -187,19 +181,22 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "ST03-007_unit_0001",
-              "cardId": "ST03-007",
+              "carduid": "GD03-002_attacker_0001",
+              "cardId": "GD03-002",
               "placedAt": 0,
               "placedBy": "playerId_2",
-              "isRested": true,
-              "originalAP": 1,
-              "originalHP": 2,
+              "isRested": false,
               "damageReceived": 0,
+              "modifyAP": 0,
+              "modifyHP": 0,
               "continueModifyAP": 0,
               "continueModifyHP": 0,
-              "canAttackThisTurn": true,
+              "originalAP": 5,
+              "originalHP": 5,
+              "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
-              "playedThisTurn": false
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
             }
           },
           "slot2": {},
@@ -212,7 +209,7 @@
           "energyArea": [
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd03-079_replace_rest_base_with_rest_this_unit_playerId_2_0001",
+              "carduid": "energy_basic_auto_gd03-070_prevent_shield_battle_damage_while_rested_playerId_2_0001",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -220,7 +217,7 @@
             },
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd03-079_replace_rest_base_with_rest_this_unit_playerId_2_0002",
+              "carduid": "energy_basic_auto_gd03-070_prevent_shield_battle_damage_while_rested_playerId_2_0002",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -228,7 +225,7 @@
             },
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd03-079_replace_rest_base_with_rest_this_unit_playerId_2_0003",
+              "carduid": "energy_basic_auto_gd03-070_prevent_shield_battle_damage_while_rested_playerId_2_0003",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -236,7 +233,7 @@
             },
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd03-079_replace_rest_base_with_rest_this_unit_playerId_2_0004",
+              "carduid": "energy_basic_auto_gd03-070_prevent_shield_battle_damage_while_rested_playerId_2_0004",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -244,7 +241,8 @@
             }
           ],
           "trashArea": [],
-          "repairAbilitiesCheckedThisCycle": false
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
         }
       }
     }
