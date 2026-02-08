@@ -72,13 +72,13 @@ export class BattlePhaseManager {
 
         const actionType = event.data?.actionType;
         if (actionType === 'attackShieldArea' && typeof event.data?.attackerCarduid === 'string') {
-            const preparation = AttackPreparationManager.prepareBaseAttack(
+            const attackerValidation = AttackPreparationManager.validateShieldAttackAttacker(
                 gameEnv,
                 event.playerId,
                 event.data.attackerCarduid
             );
-            if (!preparation.success) {
-                const failure = preparation as AttackPreparationFailure;
+            if (!attackerValidation.success) {
+                const failure = attackerValidation as AttackPreparationFailure;
                 return { success: false, error: failure.error };
             }
         }

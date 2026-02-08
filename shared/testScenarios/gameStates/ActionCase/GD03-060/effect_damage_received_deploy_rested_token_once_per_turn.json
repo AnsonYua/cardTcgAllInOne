@@ -1,179 +1,186 @@
 {
-  "description": "gd03-060_effect_damage_received_deploy_rested_token_once_per_turn",
-  "gameId": "gd03-060_effect_damage_received_deploy_rested_token_once_per_turn",
-  "testType": "action",
-  "category": "ActionCase",
-  "tags": [
-    "GD03-060",
-    "EFFECT_DAMAGE_RECEIVED",
-    "conditionalTokenDeploy",
-    "once_per_turn",
-    "TOKEN_DEPLOYED"
-  ],
-  "notes": [
-    "Setup: Player A is currentPlayer in MAIN_PHASE with GD03-060 in slot1 and at least 1 open slot for token deployment.",
-    "Action (manual): An effect deals damage to GD03-060 (damage action; effect damage) while it is Player A's turn.",
-    "Expect: GD03-060 triggers EFFECT_DAMAGE_RECEIVED once per turn and deploys 1 rested T-015 token into an open slot; TOKEN_DEPLOYED is appended to notificationQueue with isRested=true.",
-    "Action (manual): Deal effect damage to GD03-060 again during the same turn.",
-    "Expect: No additional token is deployed due to once_per_turn restriction."
-  ],
-  "initialGameEnv": {
-    "phase": "MAIN_PHASE",
-    "playerId_1": "playerId_1",
-    "playerId_2": "playerId_2",
-    "gameStarted": true,
-    "hasChosenFirstPlayer": true,
-    "currentPlayer": "playerId_1",
-    "currentTurn": 1,
-    "processingQueue": [],
-    "processingEnabled": true,
-    "maxEventsPerCycle": 50,
-    "currentBattle": null,
-    "notificationQueue": [
-      {
-        "id": "card_drawn_1768362880422_gd03060_seed",
-        "type": "CARD_DRAWN",
-        "metadata": {
-          "timestamp": 1768362880422,
-          "expiresAt": 1768362883422,
-          "requiresAcknowledgment": false,
-          "priority": "normal"
-        },
-        "payload": {
-          "playerId": "playerId_1",
-          "carduid": "GD03-000_draw_0060",
-          "sourceZone": "deck",
-          "reason": "draw",
-          "timestamp": 1768362880422,
-          "drawContext": "turn_start"
-        }
-      }
+    "description": "gd03-060_effect_damage_received_deploy_rested_token_once_per_turn",
+    "gameId": "gd03-060_effect_damage_received_deploy_rested_token_once_per_turn",
+    "testType": "action",
+    "category": "ActionCase",
+    "tags": [
+        "GD03-060",
+        "EFFECT_DAMAGE_RECEIVED",
+        "conditionalTokenDeploy",
+        "once_per_turn",
+        "TOKEN_DEPLOYED"
     ],
-    "players": {
-      "playerId_1": {
-        "id": "playerId_1",
-        "name": "Player 1",
-        "deck": {
-          "hand": [],
-          "handUids": [],
-          "mainDeck": []
-        },
-        "isReady": true,
-        "zones": {
-          "slot1": {
-            "unit": {
-              "carduid": "GD03-060_unit_0001",
-              "cardId": "GD03-060",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": false,
-              "originalAP": 0,
-              "originalHP": 2,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
-              "damageReceived": 0,
-              "temporaryEffects": []
+    "notes": [
+        "Setup: Player A is currentPlayer in MAIN_PHASE with GD03-060 in slot1 and at least 1 open slot for token deployment.",
+        "Action (manual): An effect deals damage to GD03-060 (damage action; effect damage) while it is Player A's turn.",
+        "Expect: GD03-060 triggers EFFECT_DAMAGE_RECEIVED once per turn and deploys 1 rested T-015 token into an open slot; TOKEN_DEPLOYED is appended to notificationQueue with isRested=true.",
+        "Action (manual): Deal effect damage to GD03-060 again during the same turn.",
+        "Expect: No additional token is deployed due to once_per_turn restriction."
+    ],
+    "initialGameEnv": {
+        "phase": "MAIN_PHASE",
+        "playerId_1": "playerId_1",
+        "playerId_2": "playerId_2",
+        "gameStarted": true,
+        "hasChosenFirstPlayer": true,
+        "currentPlayer": "playerId_1",
+        "currentTurn": 1,
+        "processingQueue": [],
+        "processingEnabled": true,
+        "maxEventsPerCycle": 50,
+        "currentBattle": null,
+        "notificationQueue": [
+            {
+                "id": "card_drawn_1768362880422_gd03060_seed",
+                "type": "CARD_DRAWN",
+                "metadata": {
+                    "timestamp": 1768362880422,
+                    "expiresAt": 1768362883422,
+                    "requiresAcknowledgment": false,
+                    "priority": "normal"
+                },
+                "payload": {
+                    "playerId": "playerId_1",
+                    "carduid": "GD03-000_draw_0060",
+                    "sourceZone": "deck",
+                    "reason": "draw",
+                    "timestamp": 1768362880422,
+                    "drawContext": "turn_start"
+                }
             }
-          },
-          "slot2": {},
-          "slot3": {},
-          "slot4": {},
-          "slot5": {},
-          "slot6": {},
-          "base": [],
-          "shieldArea": [],
-          "energyArea": [
-            {
-              "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd03-060_effect_damage_received_deploy_rested_token_once_per_turn_playerId_1_0001",
-              "isExtraEnergy": false,
-              "isRested": false,
-              "placedAt": 0,
-              "placedBy": "playerId_1"
+        ],
+        "players": {
+            "playerId_1": {
+                "id": "playerId_1",
+                "name": "Player 1",
+                "deck": {
+                    "hand": [
+                        {
+                            "carduid": "ST05-003_pilot_0001",
+                            "cardId": "ST05-003"
+                        }
+                    ],
+                    "handUids": [
+                        "ST05-003_pilot_0001"
+                    ],
+                    "mainDeck": []
+                },
+                "isReady": true,
+                "zones": {
+                    "slot1": {
+                        "unit": {
+                            "carduid": "GD03-060_unit_0001",
+                            "cardId": "GD03-060",
+                            "placedAt": 0,
+                            "placedBy": "playerId_1",
+                            "isRested": false,
+                            "originalAP": 0,
+                            "originalHP": 2,
+                            "continueModifyAP": 0,
+                            "continueModifyHP": 0,
+                            "damageReceived": 0,
+                            "temporaryEffects": []
+                        }
+                    },
+                    "slot2": {},
+                    "slot3": {},
+                    "slot4": {},
+                    "slot5": {},
+                    "slot6": {},
+                    "base": [],
+                    "shieldArea": [],
+                    "energyArea": [
+                        {
+                            "cardId": "energy_basic",
+                            "carduid": "energy_basic_auto_gd03-060_effect_damage_received_deploy_rested_token_once_per_turn_playerId_1_0001",
+                            "isExtraEnergy": false,
+                            "isRested": false,
+                            "placedAt": 0,
+                            "placedBy": "playerId_1"
+                        },
+                        {
+                            "cardId": "energy_basic",
+                            "carduid": "energy_basic_auto_gd03-060_effect_damage_received_deploy_rested_token_once_per_turn_playerId_1_0002",
+                            "isExtraEnergy": false,
+                            "isRested": false,
+                            "placedAt": 0,
+                            "placedBy": "playerId_1"
+                        },
+                        {
+                            "cardId": "energy_basic",
+                            "carduid": "energy_basic_auto_gd03-060_effect_damage_received_deploy_rested_token_once_per_turn_playerId_1_0003",
+                            "isExtraEnergy": false,
+                            "isRested": false,
+                            "placedAt": 0,
+                            "placedBy": "playerId_1"
+                        },
+                        {
+                            "cardId": "energy_basic",
+                            "carduid": "energy_basic_auto_gd03-060_effect_damage_received_deploy_rested_token_once_per_turn_playerId_1_0004",
+                            "isExtraEnergy": false,
+                            "isRested": false,
+                            "placedAt": 0,
+                            "placedBy": "playerId_1"
+                        }
+                    ],
+                    "trashArea": []
+                }
             },
-            {
-              "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd03-060_effect_damage_received_deploy_rested_token_once_per_turn_playerId_1_0002",
-              "isExtraEnergy": false,
-              "isRested": false,
-              "placedAt": 0,
-              "placedBy": "playerId_1"
-            },
-            {
-              "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd03-060_effect_damage_received_deploy_rested_token_once_per_turn_playerId_1_0003",
-              "isExtraEnergy": false,
-              "isRested": false,
-              "placedAt": 0,
-              "placedBy": "playerId_1"
-            },
-            {
-              "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd03-060_effect_damage_received_deploy_rested_token_once_per_turn_playerId_1_0004",
-              "isExtraEnergy": false,
-              "isRested": false,
-              "placedAt": 0,
-              "placedBy": "playerId_1"
+            "playerId_2": {
+                "id": "playerId_2",
+                "name": "Player 2",
+                "deck": {
+                    "hand": [],
+                    "handUids": [],
+                    "mainDeck": []
+                },
+                "isReady": true,
+                "zones": {
+                    "slot1": {},
+                    "slot2": {},
+                    "slot3": {},
+                    "slot4": {},
+                    "slot5": {},
+                    "slot6": {},
+                    "base": [],
+                    "shieldArea": [],
+                    "energyArea": [
+                        {
+                            "cardId": "energy_basic",
+                            "carduid": "energy_basic_auto_gd03-060_effect_damage_received_deploy_rested_token_once_per_turn_playerId_2_0001",
+                            "isExtraEnergy": false,
+                            "isRested": false,
+                            "placedAt": 0,
+                            "placedBy": "playerId_2"
+                        },
+                        {
+                            "cardId": "energy_basic",
+                            "carduid": "energy_basic_auto_gd03-060_effect_damage_received_deploy_rested_token_once_per_turn_playerId_2_0002",
+                            "isExtraEnergy": false,
+                            "isRested": false,
+                            "placedAt": 0,
+                            "placedBy": "playerId_2"
+                        },
+                        {
+                            "cardId": "energy_basic",
+                            "carduid": "energy_basic_auto_gd03-060_effect_damage_received_deploy_rested_token_once_per_turn_playerId_2_0003",
+                            "isExtraEnergy": false,
+                            "isRested": false,
+                            "placedAt": 0,
+                            "placedBy": "playerId_2"
+                        },
+                        {
+                            "cardId": "energy_basic",
+                            "carduid": "energy_basic_auto_gd03-060_effect_damage_received_deploy_rested_token_once_per_turn_playerId_2_0004",
+                            "isExtraEnergy": false,
+                            "isRested": false,
+                            "placedAt": 0,
+                            "placedBy": "playerId_2"
+                        }
+                    ],
+                    "trashArea": []
+                }
             }
-          ],
-          "trashArea": []
         }
-      },
-      "playerId_2": {
-        "id": "playerId_2",
-        "name": "Player 2",
-        "deck": {
-          "hand": [],
-          "handUids": [],
-          "mainDeck": []
-        },
-        "isReady": true,
-        "zones": {
-          "slot1": {},
-          "slot2": {},
-          "slot3": {},
-          "slot4": {},
-          "slot5": {},
-          "slot6": {},
-          "base": [],
-          "shieldArea": [],
-          "energyArea": [
-            {
-              "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd03-060_effect_damage_received_deploy_rested_token_once_per_turn_playerId_2_0001",
-              "isExtraEnergy": false,
-              "isRested": false,
-              "placedAt": 0,
-              "placedBy": "playerId_2"
-            },
-            {
-              "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd03-060_effect_damage_received_deploy_rested_token_once_per_turn_playerId_2_0002",
-              "isExtraEnergy": false,
-              "isRested": false,
-              "placedAt": 0,
-              "placedBy": "playerId_2"
-            },
-            {
-              "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd03-060_effect_damage_received_deploy_rested_token_once_per_turn_playerId_2_0003",
-              "isExtraEnergy": false,
-              "isRested": false,
-              "placedAt": 0,
-              "placedBy": "playerId_2"
-            },
-            {
-              "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd03-060_effect_damage_received_deploy_rested_token_once_per_turn_playerId_2_0004",
-              "isExtraEnergy": false,
-              "isRested": false,
-              "placedAt": 0,
-              "placedBy": "playerId_2"
-            }
-          ],
-          "trashArea": []
-        }
-      }
     }
-  }
 }

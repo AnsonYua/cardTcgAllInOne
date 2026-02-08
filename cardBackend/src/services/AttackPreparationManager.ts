@@ -30,10 +30,65 @@ export interface BaseAttackPreparationSuccess {
     attackingUnit: UnitZoneCard;
 }
 
+export interface ShieldAttackAttackerValidationSuccess {
+    success: true;
+    attacker: Player;
+    attackerSlot: string;
+    attackingUnit: UnitZoneCard;
+}
+
 export type UnitAttackPreparationResult = UnitAttackPreparationSuccess | AttackPreparationFailure;
 export type BaseAttackPreparationResult = BaseAttackPreparationSuccess | AttackPreparationFailure;
+export type ShieldAttackAttackerValidationResult = ShieldAttackAttackerValidationSuccess | AttackPreparationFailure;
 
 export class AttackPreparationManager {
+
+    static validateShieldAttackAttacker(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        attackerCarduid: string
+    ): ShieldAttackAttackerValidationResult {
+        const attacker = gameEnv.getPlayer(playerId);
+        if (!attacker) {
+            return {
+                success: false,
+                error: `Player ${playerId} not found`
+            };
+        }
+
+        const attackerSlotResult = SlotZoneUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, attackerCarduid);
+        if (!attackerSlotResult.found || !attackerSlotResult.slotName || !attackerSlotResult.unit) {
+            return {
+                success: false,
+                error: attackerSlotResult.error || `Attacking unit ${attackerCarduid} not found`
+            };
+        }
+
+        if (this.unitHasAttackRestriction(attackerSlotResult.unit as UnitZoneCard, 'cannot_attack')) {
+            const attackingUnit = attackerSlotResult.unit as UnitZoneCard;
+            const cardName = attackingUnit.cardData?.name || attackingUnit.cardId || 'Attacking unit';
+            return {
+                success: false,
+                error: `${cardName} cannot attack during this turn due to a restriction`
+            };
+        }
+
+        if (this.unitHasAttackRestriction(attackerSlotResult.unit as UnitZoneCard, 'cannot_attack_player')) {
+            const attackingUnit = attackerSlotResult.unit as UnitZoneCard;
+            const cardName = attackingUnit.cardData?.name || attackingUnit.cardId || 'Attacking unit';
+            return {
+                success: false,
+                error: `${cardName} cannot attack the player due to a restriction`
+            };
+        }
+
+        return {
+            success: true,
+            attacker,
+            attackerSlot: attackerSlotResult.slotName,
+            attackingUnit: attackerSlotResult.unit as UnitZoneCard
+        };
+    }
 
     static prepareUnitAttack(
         gameEnv: GameEnvironment,
@@ -118,14 +173,6 @@ export class AttackPreparationManager {
         attackerCarduid: string
     ): BaseAttackPreparationResult {
 
-        const attacker = gameEnv.getPlayer(playerId);
-        if (!attacker) {
-            return {
-                success: false,
-                error: `Player ${playerId} not found`
-            };
-        }
-
         const defenderId = gameEnv.getOpponentId(playerId);
         if (!defenderId) {
             return {
@@ -133,6 +180,13 @@ export class AttackPreparationManager {
                 error: `Opponent for ${playerId} not found`
             };
         }
+
+        const attackerValidation = this.validateShieldAttackAttacker(gameEnv, playerId, attackerCarduid);
+        if (!attackerValidation.success) {
+            return attackerValidation;
+        }
+
+        const { attacker, attackerSlot, attackingUnit } = attackerValidation;
 
         const defender = gameEnv.getPlayer(defenderId);
         if (!defender) {
@@ -142,38 +196,12 @@ export class AttackPreparationManager {
             };
         }
 
-        const attackerSlotResult = SlotZoneUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, attackerCarduid);
-        if (!attackerSlotResult.found || !attackerSlotResult.slotName || !attackerSlotResult.unit) {
-            return {
-                success: false,
-                error: attackerSlotResult.error || `Attacking unit ${attackerCarduid} not found`
-            };
-        }
-
-        if (this.unitHasAttackRestriction(attackerSlotResult.unit as UnitZoneCard, 'cannot_attack')) {
-            const attackingUnit = attackerSlotResult.unit as UnitZoneCard;
-            const cardName = attackingUnit.cardData?.name || attackingUnit.cardId || 'Attacking unit';
-            return {
-                success: false,
-                error: `${cardName} cannot attack during this turn due to a restriction`
-            };
-        }
-
-        if (this.unitHasAttackRestriction(attackerSlotResult.unit as UnitZoneCard, 'cannot_attack_player')) {
-            const attackingUnit = attackerSlotResult.unit as UnitZoneCard;
-            const cardName = attackingUnit.cardData?.name || attackingUnit.cardId || 'Attacking unit';
-            return {
-                success: false,
-                error: `${cardName} cannot attack the player due to a restriction`
-            };
-        }
-
         return {
             success: true,
             attacker,
             defender,
-            attackerSlot: attackerSlotResult.slotName,
-            attackingUnit: attackerSlotResult.unit as UnitZoneCard
+            attackerSlot,
+            attackingUnit
         };
     }
 
