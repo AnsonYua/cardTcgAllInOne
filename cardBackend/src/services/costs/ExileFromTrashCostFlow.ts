@@ -8,6 +8,7 @@ import { TargetResolver } from '../targets/TargetResolver';
 import { TargetSelectionPipeline } from '../targets/TargetSelectionPipeline';
 import { ChoiceEventScheduler } from '../choices/ChoiceEventScheduler';
 import { EffectExecutor } from '../effects/EffectExecutor';
+import { CostChoiceUtils } from './CostChoiceUtils';
 
 type ExileFromTrashCostConfig = {
     scope?: string;
@@ -31,7 +32,7 @@ export type ExileFromTrashCostFlowResult =
     | { success: true; kind: 'insufficientTargets' };
 
 export class ExileFromTrashCostFlow {
-    static enqueueCostChoice(
+    static handleOrEnqueue(
         gameEnv: GameEnvironment,
         playerId: string,
         sourceCarduid: string,
@@ -78,7 +79,7 @@ export class ExileFromTrashCostFlow {
             return { success: true, kind: 'insufficientTargets' };
         }
 
-        const shouldEnqueueChoice = effect.optional === true || availableTargets.length > requiredCount;
+        const shouldEnqueueChoice = CostChoiceUtils.shouldEnqueueChoice(effect, availableTargets.length, requiredCount);
         if (!shouldEnqueueChoice) {
             const costPayment = EffectExecutor.applyEffectToTargets(
                 gameEnv,

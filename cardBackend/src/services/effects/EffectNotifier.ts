@@ -52,6 +52,17 @@ export class EffectNotifier {
         const notificationManager = new GameNotificationManager(gameEnv);
         const cardId = targetCard.cardId ?? target.cardData?.cardId;
         const cardName = target.cardData?.name || targetCard.cardData?.name || 'Unknown Card';
+        const targetPlayer = gameEnv.players?.[target.playerId];
+        const isSlotZone = typeof target.zone === 'string' && /^slot\d+$/.test(target.zone);
+        const fieldCardValue =
+            isSlotZone && targetPlayer ? calculateSlotFieldValue((targetPlayer.zones as any)[target.zone]) : undefined;
+        const slotResultingHP = fieldCardValue?.totalHP;
+        const slotMaxHP =
+            fieldCardValue
+                ? (fieldCardValue.totalOriginalHP ?? 0) +
+                  (fieldCardValue.totalTempModifyHP ?? 0) +
+                  (fieldCardValue.totalContinueModifyHP ?? 0)
+                : undefined;
 
         notificationManager.addNotificationEvent(
             'CARD_DAMAGED',
@@ -62,9 +73,9 @@ export class EffectNotifier {
                 cardName,
                 zone: target.zone,
                 damage,
-                resultingHP,
-                displayValue: resultingHP,
-                maxHP,
+                resultingHP: slotResultingHP ?? resultingHP,
+                displayValue: slotResultingHP ?? resultingHP,
+                maxHP: slotMaxHP ?? maxHP,
                 timestamp: Date.now()
             },
             'normal'

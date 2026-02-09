@@ -17,7 +17,7 @@ export class CostFlowInterceptor {
         const noOp: DeployTargetResult = { success: true, autoApplied: true, affectedTargets: [] };
 
         if (effect.cost && typeof effect.cost === 'object' && (effect.cost as any).exileFromTrash) {
-            const costResult = ExileFromTrashCostFlow.enqueueCostChoice(
+            const costResult = ExileFromTrashCostFlow.handleOrEnqueue(
                 gameEnv,
                 playerId,
                 sourceCarduid,

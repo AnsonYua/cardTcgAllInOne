@@ -8,6 +8,7 @@ import { TargetResolver } from '../targets/TargetResolver';
 import { TargetSelectionPipeline } from '../targets/TargetSelectionPipeline';
 import { ChoiceEventScheduler } from '../choices/ChoiceEventScheduler';
 import { EffectExecutor } from '../effects/EffectExecutor';
+import { CostChoiceUtils } from './CostChoiceUtils';
 
 type MoveFromTrashToDeckCostConfig = {
     scope?: string;
@@ -76,7 +77,7 @@ export class MoveFromTrashToDeckCostFlow {
             return { success: true, paid: false };
         }
 
-        const shouldEnqueueChoice = effect.optional === true || availableTargets.length > requiredCount;
+        const shouldEnqueueChoice = CostChoiceUtils.shouldEnqueueChoice(effect, availableTargets.length, requiredCount);
         if (!shouldEnqueueChoice) {
             const result = EffectExecutor.applyEffectToTargets(
                 gameEnv,

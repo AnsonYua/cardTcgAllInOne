@@ -45,7 +45,10 @@ export class TargetChoicePolicy {
         }
 
         const scopeValue = typeof targetConfig.scope === 'string' ? targetConfig.scope.toLowerCase() : '';
-        if (scopeValue.includes('all')) {
+        // Many effects use scopes like "self_all_unit" as a *target pool* for "choose 1" effects.
+        // Treat "all" scopes as auto-apply only when the requested count is > 1.
+        // This prevents accidental "apply to all" behavior when card data omits player_choice selection.
+        if (scopeValue.includes('all') && targetConfig.count > 1) {
             return false;
         }
 

@@ -165,9 +165,8 @@ export class DeployTargetManager {
             } else {
                 // Auto-apply to single target or all targets (based on count)
                 const scopeValue = typeof targetConfig.scope === 'string' ? targetConfig.scope.toLowerCase() : '';
-                const targetsToApply = scopeValue.includes('all')
-                    ? availableTargets
-                    : availableTargets.slice(0, targetConfig.count);
+                const applyAllTargets = scopeValue.includes('all') && targetConfig.count > 1;
+                const targetsToApply = applyAllTargets ? availableTargets : availableTargets.slice(0, targetConfig.count);
                 const result = EffectExecutor.applyEffectToTargets(gameEnv, normalizedEffect, targetsToApply, playerId, sourceCarduid);
                 if (result.success) {
                     const triggerResult = this.maybeTriggerApReducedByEnemyEffects(gameEnv, playerId, normalizedEffect, targetsToApply);

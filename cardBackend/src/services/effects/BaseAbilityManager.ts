@@ -2,10 +2,9 @@
 // Handles activated abilities originating from base cards
 
 import { GameEnvironment } from '../../models/GameEnvironment';
-import { PlayerActionEvent, PlayerActionEventData, EffectDefinition, TargetReference } from '../EventQueue/interfaces/GameEvent';
+import { PlayerActionEvent, PlayerActionEventData, EffectDefinition } from '../EventQueue/interfaces/GameEvent';
 import { GameActionValidator } from '../GameActionValidator';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
-import { DeployTargetManager } from '../DeployTargetManager';
 import { ExecutionResult } from '../ExecutionResult';
 import { EnergyManager } from '../EnergyManager';
 import { GameNotificationManager } from '../GameNotificationManager';
@@ -14,10 +13,10 @@ import { ConditionalTokenDeployManager, ConditionalTokenPlan } from './Condition
 import { resolveActivatedAbilitySource } from './ActivatedAbilitySourceResolver';
 import { ContinuousEffectManager } from '../ContinuousEffectManager';
 import { CardDataResolver } from './CardDataResolver';
-import { PairFromTrashActivatedAbility } from './PairFromTrashActivatedAbility';
 import { EffectTimingWindowUtils } from '../../utils/EffectTimingWindowUtils';
 import { SlotCardStateUtils } from '../conditions/SlotCardStateUtils';
 import { effectRequiresLinkedSource } from '../../utils/ImplicitEffectConditionUtils';
+import { ActivatedAbilityEffectRunner } from './ActivatedAbilityEffectRunner';
 
 export class BaseAbilityManager {
 
@@ -201,32 +200,13 @@ export class BaseAbilityManager {
 
         let abilityResult: ExecutionResult;
 
-        const pairFromTrashResult = PairFromTrashActivatedAbility.tryExecuteWithDiscardCost(
-            gameEnv,
+        abilityResult = ActivatedAbilityEffectRunner.execute(gameEnv, {
             actingPlayerId,
-            sourceCard.carduid,
+            sourceCarduid: sourceCard.carduid,
             normalizedEffect,
-            costConfig
-        );
-        if (pairFromTrashResult.handled) {
-            if (!pairFromTrashResult.success) {
-                abilityResult = { success: false, error: pairFromTrashResult.error };
-            } else {
-                abilityResult = {
-                    success: true,
-                    ...(pairFromTrashResult.requiresSelection ? { requiresSelection: true } : {})
-                };
-            }
-        } else if (action === 'conditionalTokenDeploy') {
-            abilityResult = ConditionalTokenDeployManager.executePlan(gameEnv, actingPlayerId, sourceCard.carduid, pendingTokenPlan!);
-        } else {
-            abilityResult = DeployTargetManager.processEffectWithTargetChoice(
-                gameEnv,
-                actingPlayerId,
-                sourceCard.carduid,
-                normalizedEffect
-            );
-        }
+            costConfig: typeof costConfig === 'object' && costConfig ? (costConfig as Record<string, unknown>) : undefined,
+            pendingTokenPlan
+        });
 
         if (!abilityResult.success) {
             if (sourceRestedForCost) {
