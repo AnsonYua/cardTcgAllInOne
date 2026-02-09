@@ -68,18 +68,14 @@
         "deck": {
           "hand": [
             {
-              "carduid": "GD03-094_action_0001",
-              "cardId": "GD03-094"
+              "carduid": "GD02-096_action_0001",
+              "cardId": "GD02-096"
             }
           ],
           "handUids": [
-            "GD03-094_action_0001"
+            "GD02-096_action_0001"
           ],
-          "mainDeck": [
-            "GD02-057_draw_00012",
-            "GD02-058_draw_00021",
-            "GD02-066_draw_00021"
-          ]
+          "mainDeck": []
         },
         "confirmIsRedraw": false,
         "isRedraw": false,

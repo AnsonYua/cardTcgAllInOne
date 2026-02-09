@@ -64,8 +64,27 @@ export class ChoiceConfirmationService {
             }
 
             const isOptional = event.data.effect?.optional === true;
+            const isCostChoice = event.data.effect?.trigger === 'COST';
+            const requiredCount = typeof event.data.effect?.target?.count === 'number'
+                ? event.data.effect.target.count
+                : undefined;
+
             if (selectedTargets.length === 0 && !isOptional) {
                 return { success: false, error: 'No targets selected for effect' };
+            }
+
+            if (typeof requiredCount === 'number' && requiredCount > 0) {
+                // For COST choices, selection must match the exact required count when paying the cost.
+                // Optional costs can be declined by selecting nothing.
+                if (isCostChoice) {
+                    const isDecline = selectedTargets.length === 0 && isOptional;
+                    if (!isDecline && selectedTargets.length !== requiredCount) {
+                        return {
+                            success: false,
+                            error: `This cost requires selecting exactly ${requiredCount} target(s)`
+                        };
+                    }
+                }
             }
 
             if (selectedTargets.length > 0) {

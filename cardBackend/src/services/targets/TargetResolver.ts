@@ -15,6 +15,7 @@ import { TargetNumericFilterUtils } from './TargetNumericFilterUtils';
 import { TargetCountUtils } from './TargetCountUtils';
 import { TargetKeywordFilterUtils } from './TargetKeywordFilterUtils';
 import { TargetStateFilterUtils } from './TargetStateFilterUtils';
+import { getSlotTotals } from '../../utils/FieldValueCalculator';
 
 export interface ResolvedTargetConfig {
     type: TargetType;
@@ -139,7 +140,8 @@ export class TargetResolver {
                                 carduid: unit.carduid,
                                 zone: slotName,
                                 playerId: targetPlayerId,
-                                cardData: unit.cardData
+                                cardData: unit.cardData,
+                                computed: getSlotTotals(slotZone)
                             });
                             console.log(`✅ Added unit target: ${unit.carduid} in ${slotName}`);
                         }

@@ -129,6 +129,14 @@
                         },
                         {
                             "cardId": "energy_basic",
+                            "carduid": "energy_basic_auto_gd03-088_during_link_age_system_ap_plus_1_breach_1_playerId_1_0002",
+                            "isExtraEnergy": false,
+                            "isRested": false,
+                            "placedAt": 0,
+                            "placedBy": "playerId_1"
+                        },
+                        {
+                            "cardId": "energy_basic",
                             "carduid": "energy_basic_auto_gd03-088_during_link_age_system_ap_plus_1_breach_1_playerId_1_0003",
                             "isExtraEnergy": false,
                             "isRested": false,

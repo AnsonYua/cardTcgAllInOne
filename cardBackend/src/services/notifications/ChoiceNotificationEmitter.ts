@@ -105,7 +105,10 @@ export class ChoiceNotificationEmitter {
         const allowEmptySelection = event.data?.effect?.optional === true;
         const rawCount = event.data?.effect?.target?.count;
         const countRange = TargetCountUtils.parseRange(rawCount, { min: 1, max: 1 });
-        const targetCount = allowEmptySelection
+        const isCostChoice = event.data?.effect?.trigger === 'COST';
+        // For optional COST choices (i.e., "you may pay this cost"), allow declining (empty selection),
+        // but if the player chooses to pay, the selection should still match the effect's count.
+        const targetCount = (allowEmptySelection && !isCostChoice)
             ? { min: 0, max: countRange.max }
             : countRange;
         ChoiceNotificationEmitter.emitPersistentChoiceCreated(gameEnv, {

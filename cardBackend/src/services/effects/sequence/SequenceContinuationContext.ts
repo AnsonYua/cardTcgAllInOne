@@ -8,6 +8,7 @@ export type SequenceContinuationAfterChoiceContext = {
     resolveKey: string;
     ctx: {
         movedCards?: any[];
+        movedCardsByStepId?: Record<string, any[]>;
         resolvedStepIds?: string[];
         sequenceEffectId?: string;
         previousTargets?: Array<{ carduid: string; zone: string; playerId: string }>;
@@ -29,4 +30,3 @@ export function isSequenceContinuationAfterChoiceContext(
         typeof v.resolveKey === 'string' &&
         v.ctx && typeof v.ctx === 'object';
 }
-

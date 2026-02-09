@@ -6,6 +6,7 @@ import { EventStatus, OptionChoiceEvent } from '../EventQueue/interfaces/GameEve
 import type { ExecutionResult } from '../ExecutionResult';
 import { TutorTopDeckManager } from './TutorTopDeckManager';
 import { DeployFromTopDeckManager } from './DeployFromTopDeckManager';
+import { PairingEffectOrderManager } from './PairingEffectOrderManager';
 
 export class OptionChoiceManager {
     static executeOptionChoice(event: OptionChoiceEvent, gameEnv: GameEnvironment): ExecutionResult {
@@ -19,6 +20,8 @@ export class OptionChoiceManager {
                 return TutorTopDeckManager.executeOptionChoice(event, gameEnv);
             case 'deploy_from_top_deck':
                 return DeployFromTopDeckManager.executeOptionChoice(event, gameEnv);
+            case 'pairing_effect_order':
+                return PairingEffectOrderManager.executeOptionChoice(event, gameEnv);
             default:
                 return { success: false, error: `OPTION_CHOICE unsupported effect action: ${action || 'unknown'}` };
         }

@@ -22,6 +22,7 @@ export type SequenceStep = {
 
 type SequenceContext = {
     movedCards: any[];
+    movedCardsByStepId: Record<string, any[]>;
     resolvedStepIds: Set<string>;
     sequenceEffectId?: string;
     previousTargets: Array<{ carduid: string; zone: string; playerId: string }>;
@@ -31,6 +32,7 @@ export type SequenceContinuationPayload = {
     steps: SequenceStep[];
     ctx: {
         movedCards?: any[];
+        movedCardsByStepId?: Record<string, any[]>;
         resolvedStepIds?: string[];
         sequenceEffectId?: string;
         previousTargets?: Array<{ carduid: string; zone: string; playerId: string }>;
@@ -57,6 +59,7 @@ export class SequenceEffectManager {
 
         const ctx: SequenceContext = {
             movedCards: [],
+            movedCardsByStepId: {},
             resolvedStepIds: new Set<string>(),
             sequenceEffectId: typeof effect.effectId === 'string' ? effect.effectId : undefined,
             previousTargets: []
@@ -74,6 +77,9 @@ export class SequenceEffectManager {
     ): SequenceProcessResult {
         const ctx: SequenceContext = {
             movedCards: Array.isArray(payload.ctx?.movedCards) ? payload.ctx.movedCards : [],
+            movedCardsByStepId: (payload.ctx?.movedCardsByStepId && typeof payload.ctx.movedCardsByStepId === 'object')
+                ? (payload.ctx.movedCardsByStepId as Record<string, any[]>)
+                : {},
             resolvedStepIds: new Set<string>(Array.isArray(payload.ctx?.resolvedStepIds) ? payload.ctx.resolvedStepIds : []),
             sequenceEffectId: typeof payload.ctx?.sequenceEffectId === 'string' ? payload.ctx.sequenceEffectId : undefined,
             previousTargets: Array.isArray(payload.ctx?.previousTargets) ? payload.ctx.previousTargets : []
@@ -136,6 +142,9 @@ export class SequenceEffectManager {
                         return { success: false, error: result.error || 'moveTopDeckToTrash failed' };
                     }
                     ctx.movedCards = result.movedCards;
+                    if (stepId) {
+                        ctx.movedCardsByStepId[stepId] = result.movedCards;
+                    }
                 }
                 this.markResolved(ctx, stepId || step.effectId || stepAction);
                 continue;
@@ -346,19 +355,20 @@ export class SequenceEffectManager {
             return;
         }
 
-        const continuationContext: SequenceContinuationAfterChoiceContext = {
-            kind: 'SEQUENCE_CONTINUATION_AFTER_CHOICE',
-            playerId,
-            sourceCarduid,
-            remainingSteps,
-            resolveKey,
-            ctx: {
-                movedCards: ctx.movedCards,
-                resolvedStepIds: Array.from(ctx.resolvedStepIds),
-                sequenceEffectId: ctx.sequenceEffectId,
-                previousTargets: ctx.previousTargets
-            },
-            ...(cardPlayNotificationId ? { cardPlayNotificationId } : {})
+            const continuationContext: SequenceContinuationAfterChoiceContext = {
+                kind: 'SEQUENCE_CONTINUATION_AFTER_CHOICE',
+                playerId,
+                sourceCarduid,
+                remainingSteps,
+                resolveKey,
+                ctx: {
+                    movedCards: ctx.movedCards,
+                    movedCardsByStepId: ctx.movedCardsByStepId,
+                    resolvedStepIds: Array.from(ctx.resolvedStepIds),
+                    sequenceEffectId: ctx.sequenceEffectId,
+                    previousTargets: ctx.previousTargets
+                },
+                ...(cardPlayNotificationId ? { cardPlayNotificationId } : {})
         };
         (choiceEvent.data as any).context = continuationContext;
     }
@@ -382,12 +392,33 @@ export class SequenceEffectManager {
             }
 
             const type = typeof condition.type === 'string' ? condition.type : '';
-            if (type !== 'stepResolved') {
-                return false;
+            const stepId = typeof condition.stepId === 'string' ? condition.stepId : '';
+
+            if (type === 'stepResolved') {
+                return stepId.length > 0 && ctx.resolvedStepIds.has(stepId);
             }
 
-            const stepId = typeof condition.stepId === 'string' ? condition.stepId : '';
-            return stepId.length > 0 && ctx.resolvedStepIds.has(stepId);
+            if (type === 'milledAnyCardHasTrait') {
+                const trait = typeof condition.trait === 'string' ? condition.trait : '';
+                if (trait.length === 0) {
+                    return false;
+                }
+
+                const movedCards = stepId.length > 0 && Array.isArray(ctx.movedCardsByStepId[stepId])
+                    ? ctx.movedCardsByStepId[stepId]
+                    : ctx.movedCards;
+
+                if (!Array.isArray(movedCards) || movedCards.length === 0) {
+                    return false;
+                }
+
+                return movedCards.some((card: any) => {
+                    const traits = Array.isArray(card?.cardData?.traits) ? card.cardData.traits : [];
+                    return traits.includes(trait);
+                });
+            }
+
+            return false;
         });
     }
 }

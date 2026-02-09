@@ -196,6 +196,14 @@ export interface TargetReference {
     playerId: string;
     cardData?: Record<string, unknown>;
     tags?: string[];
+    /**
+     * Optional computed snapshot values for UI display (e.g. current AP/HP including modifiers).
+     * The base card stats remain in cardData.
+     */
+    computed?: {
+        totalAP?: number;
+        totalHP?: number;
+    };
 }
 
 export interface EffectTiming {
@@ -251,6 +259,12 @@ export interface PairingEffectDefinition extends EffectDefinition {
 export interface PairingEffectEventData {
     carduid: string;
     effects: PairingEffectDefinition[];
+    /**
+     * When pairing triggers multiple effects, we optionally resolve them one-at-a-time.
+     * Any remaining effects are carried here and scheduled after the current effect
+     * (usually after any pending TARGET_CHOICE / cost prompts are resolved).
+     */
+    remainingEffects?: PairingEffectDefinition[];
 }
 
 export interface PairingEffectEvent extends BaseGameEvent<PairingEffectEventData> {
