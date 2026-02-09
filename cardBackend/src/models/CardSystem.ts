@@ -385,6 +385,11 @@ export class ZoneCardUtils {
     }
 
     private static sumTemporaryModifier(card: ZoneCard, property: 'modifyAP' | 'modifyHP'): number {
+        const legacy = (card as any)[property];
+        if (typeof legacy === 'number' && !Number.isNaN(legacy)) {
+            return legacy;
+        }
+
         const effects = (card as Partial<UnitZoneCard | PilotZoneCard>).temporaryEffects;
         if (Array.isArray(effects) && effects.length > 0) {
             return effects.reduce((total, effect) => {
@@ -395,9 +400,7 @@ export class ZoneCardUtils {
                 return total;
             }, 0);
         }
-
-        const legacy = (card as any)[property];
-        return typeof legacy === 'number' && !Number.isNaN(legacy) ? legacy : 0;
+        return 0;
     }
 
     // Note: Pilot-unit pairing now handled implicitly through SlotZone structure

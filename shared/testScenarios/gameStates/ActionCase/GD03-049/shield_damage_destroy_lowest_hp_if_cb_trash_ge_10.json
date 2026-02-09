@@ -129,44 +129,44 @@
           ],
           "trashArea": [
             {
-              "carduid": "cb_trash_0001",
-              "cardId": "GD03-000"
+              "carduid": "ST07-002_21212",
+              "cardId": "ST07-002"
             },
             {
-              "carduid": "cb_trash_0002",
-              "cardId": "GD03-000"
+              "carduid": "ST07-002_2122112",
+              "cardId": "ST07-002"
             },
             {
-              "carduid": "cb_trash_0003",
-              "cardId": "GD03-000"
+              "carduid": "ST07-001_21212",
+              "cardId": "ST07-001"
             },
             {
-              "carduid": "cb_trash_0004",
-              "cardId": "GD03-000"
+              "carduid": "ST07-002_212212",
+              "cardId": "ST07-002"
             },
             {
-              "carduid": "cb_trash_0005",
-              "cardId": "GD03-000"
+              "carduid": "ST07-002_212112312",
+              "cardId": "ST07-002"
             },
             {
-              "carduid": "cb_trash_0006",
-              "cardId": "GD03-000"
+              "carduid": "ST07-003_2121132s312",
+              "cardId": "ST07-003"
             },
             {
-              "carduid": "cb_trash_0007",
-              "cardId": "GD03-000"
+              "carduid": "ST07-003_21212dd132ss312",
+              "cardId": "ST07-003"
             },
             {
-              "carduid": "cb_trash_0008",
-              "cardId": "GD03-000"
+              "carduid": "ST07-003_21212dd132as312",
+              "cardId": "ST07-003"
             },
             {
-              "carduid": "cb_trash_0009",
-              "cardId": "GD03-000"
+              "carduid": "ST07-002_21212dd132sasa312",
+              "cardId": "ST07-002"
             },
             {
-              "carduid": "cb_trash_0010",
-              "cardId": "GD03-000"
+              "carduid": "ST07-001_21212dd1323asasa12",
+              "cardId": "ST07-001"
             }
           ]
         }
@@ -184,7 +184,7 @@
           "slot1": {
             "unit": {
               "carduid": "defender_low_hp_0001",
-              "cardId": "GD03-000",
+              "cardId": "ST03-001",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,
@@ -199,7 +199,7 @@
           "slot2": {
             "unit": {
               "carduid": "defender_high_hp_0001",
-              "cardId": "GD03-000",
+              "cardId": "ST03-002",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,

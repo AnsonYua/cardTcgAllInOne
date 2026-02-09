@@ -7,6 +7,7 @@ import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { TargetResolver } from '../targets/TargetResolver';
 import { TargetSelectionPipeline } from '../targets/TargetSelectionPipeline';
 import { ChoiceEventScheduler } from '../choices/ChoiceEventScheduler';
+import { EffectExecutor } from '../effects/EffectExecutor';
 
 type ExileFromTrashCostConfig = {
     scope?: string;
@@ -26,6 +27,7 @@ export type ExileFromTrashCostContext = {
 export type ExileFromTrashCostFlowResult =
     | { success: false; error: string }
     | { success: true; kind: 'requiresSelection'; choiceEventId: string }
+    | { success: true; kind: 'paid' }
     | { success: true; kind: 'insufficientTargets' };
 
 export class ExileFromTrashCostFlow {
@@ -74,6 +76,21 @@ export class ExileFromTrashCostFlow {
 
         if (availableTargets.length < requiredCount) {
             return { success: true, kind: 'insufficientTargets' };
+        }
+
+        const shouldEnqueueChoice = effect.optional === true || availableTargets.length > requiredCount;
+        if (!shouldEnqueueChoice) {
+            const costPayment = EffectExecutor.applyEffectToTargets(
+                gameEnv,
+                costEffect,
+                availableTargets.slice(0, requiredCount),
+                playerId,
+                sourceCarduid
+            );
+            if (!costPayment.success) {
+                return { success: false, error: costPayment.error || 'Failed to pay exileFromTrash cost' };
+            }
+            return { success: true, kind: 'paid' };
         }
 
         const choiceEvent: TargetChoiceEvent = ChoiceEventScheduler.enqueueTargetChoice(gameEnv, {

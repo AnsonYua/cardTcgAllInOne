@@ -219,19 +219,6 @@ export class BaseAbilityManager {
             }
         } else if (action === 'conditionalTokenDeploy') {
             abilityResult = ConditionalTokenDeployManager.executePlan(gameEnv, actingPlayerId, sourceCard.carduid, pendingTokenPlan!);
-        } else if (sourceZone === 'unit' && normalizedEffect.target?.scope === 'self' && normalizedEffect.target?.type === 'unit' && sourceSlotName) {
-            const target: TargetReference = {
-                carduid: sourceCard.carduid,
-                zone: sourceSlotName,
-                playerId: actingPlayerId
-            };
-            abilityResult = EffectExecutor.executeActivatedEffect(
-                gameEnv,
-                normalizedEffect,
-                [target],
-                actingPlayerId,
-                sourceCard.carduid
-            );
         } else {
             abilityResult = DeployTargetManager.processEffectWithTargetChoice(
                 gameEnv,

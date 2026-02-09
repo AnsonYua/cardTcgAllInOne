@@ -245,6 +245,12 @@ export interface DeployEffectEventData {
     carduid: string;
     effects: EffectDefinition[];
     cardPlayNotificationId?: string;
+    /**
+     * When multiple deploy effects trigger from the same event, we resolve them one-at-a-time.
+     * Any remaining effects can be carried here and scheduled after the current effect (and any
+     * pending TARGET_CHOICE prompts) resolve.
+     */
+    remainingEffects?: EffectDefinition[];
 }
 
 export interface DeployEffectEvent extends BaseGameEvent<DeployEffectEventData> {

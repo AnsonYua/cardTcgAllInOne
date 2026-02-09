@@ -18,6 +18,9 @@ import { GamePhase } from '../models/GameEnums';
 import { EffectTimingWindowUtils } from '../utils/EffectTimingWindowUtils';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { EffectEligibilityEvaluator } from './effects/EffectEligibilityEvaluator';
+import { ChoiceEventScheduler } from './choices/ChoiceEventScheduler';
+import { EventPriority } from './EventQueue/interfaces/GameEvent';
+import { ChoiceNotificationEmitter } from './notifications/ChoiceNotificationEmitter';
 
 export interface ExecutionResult {
     success: boolean;
@@ -112,33 +115,75 @@ export class DeployEffectManager {
         const sourceLookup = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, event.data.carduid);
         const sourceCard = sourceLookup.found ? (sourceLookup.card || sourceLookup.unit || sourceLookup.pilot) : null;
 
-        for (const effect of event.data.effects) {
-            const normalizedEffect = ensureEffectDefaults(effect);
+        const remainingEffects = Array.isArray((event.data as any).remainingEffects)
+            ? (((event.data as any).remainingEffects as unknown[]) as EffectDefinition[])
+            : [];
 
-            if (!EffectEligibilityEvaluator.shouldExecute({
-                gameEnv,
-                sourcePlayerId: event.playerId,
-                sourceCard,
-                effect: normalizedEffect
-            })) {
-                continue;
-            }
+        const normalizedEffects = (Array.isArray(event.data.effects) ? event.data.effects : [])
+            .map(effect => ensureEffectDefaults(effect));
 
-            const result: DeployTargetResult = DeployTargetManager.processEffectWithTargetChoice(
-                gameEnv,
-                event.playerId,
-                event.data.carduid,
-                normalizedEffect,
-                event.data.cardPlayNotificationId
-            );
+        const eligibleEffects = normalizedEffects.filter(effect => EffectEligibilityEvaluator.shouldExecute({
+            gameEnv,
+            sourcePlayerId: event.playerId,
+            sourceCard,
+            effect
+        }));
 
-            if (!result.success && !result.requiresSelection) {
-                const errorMessage = result.error || `Effect ${normalizedEffect.effectId} failed`;
-                failures.push(errorMessage);
+        // If multiple deploy effects are eligible, pause and let the player choose which effect resolves next.
+        if (eligibleEffects.length > 1) {
+            const options = eligibleEffects.map((effect, index) => ({
+                index,
+                label: this.describeDeployEffectOption(effect)
+            }));
+
+            const choiceEffect = ensureEffectDefaults({
+                effectId: 'deploy_effect_order',
+                type: 'internal',
+                trigger: 'CHOICE',
+                action: 'deploy_effect_order'
+            } as any);
+
+            ChoiceEventScheduler.enqueueOptionChoice(gameEnv, {
+                playerId: event.playerId,
+                sourceCarduid: event.data.carduid,
+                effect: choiceEffect,
+                availableOptions: options,
+                context: {
+                    kind: 'DEPLOY_EFFECT_ORDER',
+                    deployCarduid: event.data.carduid,
+                    effects: eligibleEffects,
+                    cardPlayNotificationId: event.data.cardPlayNotificationId
+                }
+            });
+
+            return { success: true };
+        }
+
+        if (eligibleEffects.length === 0) {
+            if (event.data.cardPlayNotificationId) {
+                const notificationManager = new GameNotificationManager(gameEnv);
+                notificationManager.updateNotificationEvent(event.data.cardPlayNotificationId, { isCompleted: true });
             }
-            if (result.requiresSelection) {
-                requiresTargetChoice = true;
-            }
+            return { success: true };
+        }
+
+        // Resolve exactly one effect per event to avoid auto-executing multiple effects in a fixed order.
+        const normalizedEffect = eligibleEffects[0];
+
+        const result: DeployTargetResult = DeployTargetManager.processEffectWithTargetChoice(
+            gameEnv,
+            event.playerId,
+            event.data.carduid,
+            normalizedEffect,
+            event.data.cardPlayNotificationId
+        );
+
+        if (!result.success && !result.requiresSelection) {
+            const errorMessage = result.error || `Effect ${normalizedEffect.effectId} failed`;
+            failures.push(errorMessage);
+        }
+        if (result.requiresSelection) {
+            requiresTargetChoice = true;
         }
 
         if (failures.length > 0) {
@@ -147,7 +192,63 @@ export class DeployEffectManager {
             return { success: false, error: combinedError };
         }
 
-        if (!requiresTargetChoice && event.data.cardPlayNotificationId) {
+        // Schedule remaining effects after the current one (and after any pending TARGET_CHOICE).
+        if (remainingEffects.length > 0) {
+            if (remainingEffects.length === 1) {
+                const nextEvent = EventFactory.createDeployEffectEvent(
+                    event.playerId,
+                    event.data.carduid,
+                    [remainingEffects[0]],
+                    event.data.cardPlayNotificationId
+                );
+                nextEvent.priority = EventPriority.NORMAL;
+                gameEnv.enqueueForProcessing(nextEvent);
+            } else {
+                const options = remainingEffects.map((effect, index) => ({
+                    index,
+                    label: this.describeDeployEffectOption(effect)
+                }));
+
+                const choiceEffect = ensureEffectDefaults({
+                    effectId: 'deploy_effect_order',
+                    type: 'internal',
+                    trigger: 'CHOICE',
+                    action: 'deploy_effect_order'
+                } as any);
+
+                const followUpChoice = EventFactory.createOptionChoiceEvent({
+                    playerId: event.playerId,
+                    sourceCarduid: event.data.carduid,
+                    effect: choiceEffect,
+                    availableOptions: options,
+                    context: {
+                        kind: 'DEPLOY_EFFECT_ORDER',
+                        deployCarduid: event.data.carduid,
+                        effects: remainingEffects,
+                        cardPlayNotificationId: event.data.cardPlayNotificationId
+                    }
+                });
+                followUpChoice.priority = EventPriority.NORMAL;
+                gameEnv.enqueueForProcessing(followUpChoice);
+                ChoiceNotificationEmitter.emitOptionChoiceCreated(gameEnv, followUpChoice);
+            }
+        }
+
+        // Notify frontend that a deploy effect step finished, so it can refresh UI/state immediately.
+        new GameNotificationManager(gameEnv).addNotificationEvent(
+            'GAME_ENV_REFRESH',
+            {
+                playerId: event.playerId,
+                reason: 'DEPLOY_EFFECT_STEP_RESOLVED',
+                sourceCarduid: event.data.carduid,
+                effectId: normalizedEffect.effectId,
+                remainingEffects: remainingEffects.length,
+                timestamp: Date.now()
+            },
+            'normal'
+        );
+
+        if (!requiresTargetChoice && remainingEffects.length === 0 && event.data.cardPlayNotificationId) {
             const notificationManager = new GameNotificationManager(gameEnv);
             notificationManager.updateNotificationEvent(
                 event.data.cardPlayNotificationId,
@@ -156,6 +257,12 @@ export class DeployEffectManager {
         }
 
         return { success: true };
+    }
+
+    private static describeDeployEffectOption(effect: EffectDefinition): string {
+        const effectId = typeof effect.effectId === 'string' && effect.effectId.length > 0 ? effect.effectId : 'deploy_effect';
+        const action = typeof effect.action === 'string' && effect.action.length > 0 ? effect.action : 'effect';
+        return `${effectId} (${action})`;
     }
 
     /**

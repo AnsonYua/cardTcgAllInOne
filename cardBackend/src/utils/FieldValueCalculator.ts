@@ -52,24 +52,26 @@ function sumTemporaryModifiers(
     legacyAP?: number,
     legacyHP?: number
 ): { ap: number; hp: number } {
+    const resolvedLegacyAP = typeof legacyAP === 'number' && !Number.isNaN(legacyAP) ? legacyAP : undefined;
+    const resolvedLegacyHP = typeof legacyHP === 'number' && !Number.isNaN(legacyHP) ? legacyHP : undefined;
+
+    let effectAP = 0;
+    let effectHP = 0;
     if (Array.isArray(effects) && effects.length > 0) {
-        return effects.reduce(
-            (totals, effect) => {
-                if (typeof effect.modifyAP === 'number') {
-                    totals.ap += effect.modifyAP;
-                }
-                if (typeof effect.modifyHP === 'number') {
-                    totals.hp += effect.modifyHP;
-                }
-                return totals;
-            },
-            { ap: 0, hp: 0 }
-        );
+        for (const effect of effects) {
+            if (typeof effect.modifyAP === 'number' && !Number.isNaN(effect.modifyAP)) {
+                effectAP += effect.modifyAP;
+            }
+            if (typeof effect.modifyHP === 'number' && !Number.isNaN(effect.modifyHP)) {
+                effectHP += effect.modifyHP;
+            }
+        }
     }
 
-    const fallbackAP = typeof legacyAP === 'number' && !Number.isNaN(legacyAP) ? legacyAP : 0;
-    const fallbackHP = typeof legacyHP === 'number' && !Number.isNaN(legacyHP) ? legacyHP : 0;
-    return { ap: fallbackAP, hp: fallbackHP };
+    return {
+        ap: resolvedLegacyAP ?? effectAP,
+        hp: resolvedLegacyHP ?? effectHP
+    };
 }
 
 function calculateCardBreakdown(card: UnitZoneCard | PilotZoneCard | BaseCard | undefined): CardStatBreakdown {

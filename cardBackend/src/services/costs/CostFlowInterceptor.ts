@@ -30,6 +30,10 @@ export class CostFlowInterceptor {
             if (costResult.kind === 'requiresSelection') {
                 return { success: true, requiresSelection: true, choiceEventId: costResult.choiceEventId };
             }
+            if (costResult.kind === 'paid') {
+                // Cost was paid immediately; continue resolving the follow-up effect in the current call.
+                return null;
+            }
             if (costResult.kind === 'insufficientTargets') {
                 // Not enough targets to pay cost:
                 // - Activated abilities should fail to activate.

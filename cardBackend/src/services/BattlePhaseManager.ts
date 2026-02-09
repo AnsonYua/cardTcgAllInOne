@@ -690,15 +690,6 @@ export class BattlePhaseManager {
             );
 
             if (appliedDamage > 0 && !baseDamagePrevented) {
-                const triggerResult = DefenseAreaBattleDamageTriggeredEffectManager.handleBaseDamaged(gameEnv, {
-                    attackingPlayerId: playerId,
-                    attackerSlot
-                });
-                if (!triggerResult.success) {
-                    this.clearBattleAndRefreshContinuous(gameEnv, 'base_damage_trigger_failed');
-                    return { success: false, error: triggerResult.error || 'Failed to process DEFENSE_AREA_BATTLE_DAMAGE triggers' };
-                }
-
                 ShieldAreaCardDamagedTriggerDispatcher.dispatch({
                     gameEnv,
                     attackingPlayerId: playerId,
@@ -707,6 +698,15 @@ export class BattlePhaseManager {
                     defenseArea: 'base',
                     damagedCarduid: baseCard.carduid
                 });
+
+                const triggerResult = DefenseAreaBattleDamageTriggeredEffectManager.handleBaseDamaged(gameEnv, {
+                    attackingPlayerId: playerId,
+                    attackerSlot
+                });
+                if (!triggerResult.success) {
+                    this.clearBattleAndRefreshContinuous(gameEnv, 'base_damage_trigger_failed');
+                    return { success: false, error: triggerResult.error || 'Failed to process DEFENSE_AREA_BATTLE_DAMAGE triggers' };
+                }
             }
 
             emitBattleResolutionNotification(gameEnv, context, {

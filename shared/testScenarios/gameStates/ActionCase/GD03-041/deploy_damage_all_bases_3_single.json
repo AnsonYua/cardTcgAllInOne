@@ -213,15 +213,6 @@
           "slot5": {},
           "slot6": {},
           "base": [
-            {
-              "carduid": "base_default",
-              "cardId": "base_default",
-              "placedAt": 0,
-              "placedBy": "playerId_2",
-              "isRested": false,
-              "originalHP": 5,
-              "damageReceived": 0
-            }
           ],
           "shieldArea": [],
           "energyArea": [
