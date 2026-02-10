@@ -121,6 +121,9 @@ export enum EventType {
     // Generic option choice system
     OPTION_CHOICE = 'OPTION_CHOICE',
 
+    // Generic prompt choice system (frontend-friendly prompts)
+    PROMPT_CHOICE = 'PROMPT_CHOICE',
+
     // Action step maintenance
     ACTION_STEP_POST_PLAY = 'ACTION_STEP_POST_PLAY'
 }

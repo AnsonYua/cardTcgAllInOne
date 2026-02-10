@@ -55,7 +55,8 @@ export class TargetResolver {
     static generateAvailableTargets(
         gameEnv: GameEnvironment,
         playerId: string,
-        targetConfig: ResolvedTargetConfig
+        targetConfig: ResolvedTargetConfig,
+        sourceCarduid?: string
     ): TargetReference[] {
         const targets: TargetReference[] = [];
 
@@ -135,7 +136,7 @@ export class TargetResolver {
 
                     if (wantsUnit && SlotZoneUtils.hasUnit(slotZone)) {
                         const unit = SlotZoneUtils.getUnit(slotZone);
-                        if (unit && this.validateTargetFilters(gameEnv, unit, targetConfig.filters || {}, targetPlayerId)) {
+                        if (unit && this.validateTargetFilters(gameEnv, unit, targetConfig.filters || {}, targetPlayerId, sourceCarduid)) {
                             targets.push({
                                 carduid: unit.carduid,
                                 zone: slotName,
@@ -178,7 +179,8 @@ export class TargetResolver {
         gameEnv: GameEnvironment,
         card: UnitZoneCard | PilotZoneCard,
         filters: TargetFilters = {},
-        targetPlayerId?: string
+        targetPlayerId?: string,
+        sourceCarduid?: string
     ): boolean {
         const cardType = typeof (card as any)?.cardData?.cardType === 'string'
             ? ((card as any).cardData.cardType as string).toLowerCase()
@@ -206,10 +208,25 @@ export class TargetResolver {
             }
         }
 
-        if (filters.level) {
+        if (filters.level !== undefined) {
             const cardLevel = card.cardData?.level || 0;
-            if (!validateComparisonFilter(cardLevel, filters.level)) {
-                console.log(`❌ Card ${card.carduid} failed level filter: ${filters.level}`);
+            if (typeof filters.level === 'number') {
+                if (cardLevel !== filters.level) {
+                    console.log(`❌ Card ${card.carduid} failed level filter: ${filters.level}`);
+                    return false;
+                }
+            } else if (typeof filters.level === 'string') {
+                const resolvedFilter = this.resolveDynamicComparisonFilter(filters.level, gameEnv, sourceCarduid);
+                if (!resolvedFilter) {
+                    console.log(`❌ Card ${card.carduid} failed level filter: ${filters.level}`);
+                    return false;
+                }
+                if (!validateComparisonFilter(cardLevel, resolvedFilter)) {
+                    console.log(`❌ Card ${card.carduid} failed level filter: ${resolvedFilter}`);
+                    return false;
+                }
+            } else {
+                console.log(`⚠️ Unsupported level filter type for ${card.carduid}: ${String(filters.level)}`);
                 return false;
             }
         }
@@ -280,6 +297,40 @@ export class TargetResolver {
         }
 
         return true;
+    }
+
+    private static resolveDynamicComparisonFilter(
+        rawFilter: string,
+        gameEnv: GameEnvironment,
+        sourceCarduid?: string
+    ): string | null {
+        if (!rawFilter) {
+            return null;
+        }
+
+        if (!rawFilter.includes('SOURCE_LEVEL')) {
+            return rawFilter;
+        }
+
+        const match = rawFilter.match(/^(<=|>=|<|>|==|!=)SOURCE_LEVEL$/);
+        if (!match) {
+            console.log(`⚠️ Unsupported dynamic comparison filter: ${rawFilter}`);
+            return null;
+        }
+
+        if (!sourceCarduid) {
+            console.log(`⚠️ Cannot resolve ${rawFilter} without sourceCarduid`);
+            return null;
+        }
+
+        const sourceCard = SlotZoneUtils.getCardByUid(gameEnv, sourceCarduid) as any;
+        const sourceLevel = typeof sourceCard?.cardData?.level === 'number' ? (sourceCard.cardData.level as number) : null;
+        if (sourceLevel === null) {
+            console.log(`⚠️ Cannot resolve ${rawFilter}: source ${sourceCarduid} has no level`);
+            return null;
+        }
+
+        return `${match[1]}${sourceLevel}`;
     }
 
     private static isUnitLinked(

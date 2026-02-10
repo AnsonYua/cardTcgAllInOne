@@ -229,7 +229,7 @@
                         "action": "heal",
                         "target": {
                             "type": "unit",
-                            "scope": "self",
+                            "scope": "source",
                             "count": 1
                         },
                         "parameters": {

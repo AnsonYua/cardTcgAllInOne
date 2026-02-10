@@ -81,7 +81,7 @@
               "cardId": "GD01-001",
               "placedAt": 0,
               "placedBy": "playerId_1",
-              "isRested": false,
+              "isRested": true,
               "damageReceived": 0,
               "modifyAP": 0,
               "modifyHP": 0,

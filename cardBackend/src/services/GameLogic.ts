@@ -17,6 +17,7 @@ import { ChoiceNotificationEmitter } from './notifications/ChoiceNotificationEmi
 import { processAction } from './actions/ActionProcessor';
 import { ChoiceConfirmationService } from './choices/ChoiceConfirmationService';
 import { CardDatabaseManager } from '../models/CardSystem';
+import { BattlePhaseManager } from './BattlePhaseManager';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -1133,6 +1134,27 @@ export class GameLogic {
                 };
             }
 
+            // If a choice resolved while both players already confirmed an ACTION_STEP battle,
+            // re-check and resolve the battle so it doesn't get stuck waiting for a new hook.
+            if (
+                gameEnv.processingQueue.length === 0 &&
+                gameEnv.currentBattle?.status === 'ACTION_STEP' &&
+                gameEnv.haveBothPlayersConfirmedBattle()
+            ) {
+                const attackerId = gameEnv.currentBattle.attackingPlayerId;
+                if (attackerId) {
+                    const battleResult = BattlePhaseManager.resolveBattle(gameEnv, attackerId);
+                    if (!battleResult.success) {
+                        return { success: false, error: battleResult.error || 'Failed to auto-resolve battle after burst choice' };
+                    }
+
+                    const postBattleProcessing = await gameEnv.processEvents();
+                    if (!postBattleProcessing.success) {
+                        return { success: false, error: postBattleProcessing.error || 'Failed to process events after battle resolution' };
+                    }
+                }
+            }
+
             // Update notificationQueue entry (single or group) so frontend can reflect completion state.
             try {
                 const { markBurstChoiceNotificationCompleted } = require('./notifications/BurstChoiceNotificationUpdater');
@@ -1216,6 +1238,7 @@ export class GameLogic {
             selectedOptionIndex
         );
     }
+
 
     async confirmBlockerChoice(gameId: string, playerId: string, eventId: string, selectedTargets: TargetReference[], notificationId?: string): Promise<GameLogicResult> {
         try {
@@ -1325,6 +1348,27 @@ export class GameLogic {
                     success: false,
                     error: processingResult.error || 'Failed to process blocker choice'
                 };
+            }
+
+            // Defensive: if this blocker choice happened during an ACTION_STEP battle (rare, but possible
+            // via future card designs) and both players already confirmed, resolve the battle now.
+            if (
+                gameEnv.processingQueue.length === 0 &&
+                gameEnv.currentBattle?.status === 'ACTION_STEP' &&
+                gameEnv.haveBothPlayersConfirmedBattle()
+            ) {
+                const attackerId = gameEnv.currentBattle.attackingPlayerId;
+                if (attackerId) {
+                    const battleResult = BattlePhaseManager.resolveBattle(gameEnv, attackerId);
+                    if (!battleResult.success) {
+                        return { success: false, error: battleResult.error || 'Failed to auto-resolve battle after blocker choice' };
+                    }
+
+                    const postBattleProcessing = await gameEnv.processEvents();
+                    if (!postBattleProcessing.success) {
+                        return { success: false, error: postBattleProcessing.error || 'Failed to process events after battle resolution' };
+                    }
+                }
             }
 
             // If the original BLOCKER_CHOICE notification exists, update its embedded event snapshot so

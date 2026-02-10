@@ -1472,6 +1472,7 @@ export class GameController {
         }
     }
 
+
     /**
      * Confirm blocker choice decision (BLOCKER_CHOICE events)
      * POST /api/game/player/confirmBlockerChoice

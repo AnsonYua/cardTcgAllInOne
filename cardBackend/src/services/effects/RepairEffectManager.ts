@@ -3,7 +3,7 @@
 
 import { GameEnvironment } from '../../models/GameEnvironment';
 import { EventType } from '../../models/GameEnums';
-import { RepairEffectEvent, RepairEffectEventData } from '../EventQueue/interfaces/GameEvent';
+import { RepairEffectEvent, RepairEffectEventData, TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { StateBasedAction } from '../EventQueue/StateBasedActionEngine';
 import { SLOT_ZONES } from '../../config/gameConstants';
 import { CardDatabaseManager } from '../../models/CardSystem';
@@ -21,7 +21,7 @@ import {
 import { getCardIdFromUid } from '../../utils/CardUtils';
 import { eventDataValidator } from '../../validators/EventDataValidator';
 import { KeywordUtils } from '../../utils/KeywordUtils';
-import { GameNotificationManager } from '../GameNotificationManager';
+import { EffectNotifier } from './EffectNotifier';
 import { SourceStatConditionEvaluator } from '../conditions/SourceStatConditionEvaluator';
 
 interface ExecutionResult {
@@ -383,15 +383,27 @@ export class RepairEffectManager implements StandardEffectManager {
                 return { success: true };
             }
 
-            const notificationManager = new GameNotificationManager(gameEnv);
-            notificationManager.addNotificationEvent('CARD_HEALED', {
+            const maxHP = cardLocation.card.originalHP ?? cardLocation.card.cardData?.hp ?? 0;
+            const remainingDamage = cardLocation.card.damageReceived || 0;
+            const resultingHP = Math.max(0, maxHP - remainingDamage);
+
+            const target: TargetReference = {
                 playerId: cardLocation.playerId,
                 carduid: data.carduid,
-                healAmount: healedAmount,
-                remainingDamage: cardLocation.card.damageReceived || 0,
-                reason: 'repair',
-                timestamp: Date.now()
-            }, 'normal');
+                zone: cardLocation.slot,
+                cardData: cardLocation.card.cardData
+            };
+
+            EffectNotifier.notifyCardHealed(
+                gameEnv,
+                cardLocation.card,
+                target,
+                healedAmount,
+                remainingDamage,
+                resultingHP,
+                maxHP,
+                'repair'
+            );
 
             return { success: true };
             

@@ -572,6 +572,25 @@ export interface OptionChoiceEvent extends BaseGameEvent<OptionChoiceEventData> 
     type: EventType.OPTION_CHOICE;
 }
 
+export type PromptChoiceOption = OptionChoiceOption;
+
+export interface PromptChoiceEventData {
+    choiceId: string;
+    headerText: string;
+    promptText: string;
+    availableOptions: PromptChoiceOption[];
+    defaultOptionIndex?: number;
+    userDecisionMade: boolean;
+    selectedOptionIndex?: number;
+    sourceCarduid?: string;
+    context?: Record<string, unknown>;
+    cardPlayNotificationId?: string;
+}
+
+export interface PromptChoiceEvent extends BaseGameEvent<PromptChoiceEventData> {
+    type: EventType.PROMPT_CHOICE;
+}
+
 export interface BlockerChoiceEventData {
     originalAttackEvent: PlayerActionEvent;
     availableTargets: TargetReference[];
@@ -624,4 +643,5 @@ export type GameEvent =
     | TargetChoiceEvent
     | TokenChoiceEvent
     | OptionChoiceEvent
+    | PromptChoiceEvent
     | BlockerChoiceEvent;

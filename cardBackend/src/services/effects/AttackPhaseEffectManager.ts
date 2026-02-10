@@ -255,6 +255,11 @@ export class AttackPhaseEffectManager {
             return { success: false, error: result.error };
         }
 
+        if (result.autoApplied && !result.requiresSelection && (result.affectedTargets?.length ?? 0) === 0) {
+            // No eligible targets: effect "succeeds but does nothing" and should not consume once-per-turn usage.
+            return { success: true, consumed: false };
+        }
+
         if (result.requiresSelection && result.choiceEventId) {
             AttackResumeScheduler.enqueueResumeAttackAfterChoice(gameEnv, attackEvent, result.choiceEventId);
             return { success: true, requiresSelection: true };

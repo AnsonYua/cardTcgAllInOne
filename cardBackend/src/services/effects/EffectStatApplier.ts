@@ -2,7 +2,6 @@ import { GameEnvironment } from '../../models/GameEnvironment';
 import { UnitZoneCard, PilotZoneCard } from '../../models/CardSystem';
 import { TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { EffectNotifier } from './EffectNotifier';
-import { GameNotificationManager } from '../GameNotificationManager';
 import { extractNumericValue } from './actions/EffectActionUtils';
 
 export class EffectStatApplier {
@@ -100,18 +99,15 @@ export class EffectStatApplier {
         console.log(`  🩹 ${target.carduid}: damage ${previousDamage} → ${newDamage} (HP ${resultingHP}/${maxHP})`);
 
         if (healed > 0) {
-            const notificationManager = new GameNotificationManager(gameEnv);
-            notificationManager.addNotificationEvent(
-                'CARD_HEALED',
-                {
-                    playerId: target.playerId,
-                    carduid: target.carduid,
-                    healAmount: healed,
-                    remainingDamage: newDamage,
-                    reason: 'heal',
-                    timestamp: Date.now()
-                },
-                'normal'
+            EffectNotifier.notifyCardHealed(
+                gameEnv,
+                targetCard,
+                target,
+                healed,
+                newDamage,
+                resultingHP,
+                maxHP,
+                'heal'
             );
         }
         return { success: true };

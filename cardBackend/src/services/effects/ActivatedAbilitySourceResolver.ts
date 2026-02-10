@@ -1,10 +1,10 @@
 import { GameEnvironment } from '../../models/GameEnvironment';
-import { BaseCard, UnitZoneCard } from '../../models/CardSystem';
+import { BaseCard, PilotZoneCard, UnitZoneCard } from '../../models/CardSystem';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 
 export interface ActivatedAbilitySource {
-    sourceCard: BaseCard | UnitZoneCard;
-    sourceZone: 'base' | 'unit';
+    sourceCard: BaseCard | UnitZoneCard | PilotZoneCard;
+    sourceZone: 'base' | 'unit' | 'pilot';
     sourceSlotName?: string;
 }
 
@@ -35,20 +35,32 @@ export function resolveActivatedAbilitySource(
         }
     }
 
-    const slotLookup = SlotZoneUtils.findSlotNameByUnitUidForPlayer(gameEnv, playerId, carduid);
-    if (slotLookup.found && slotLookup.unit && slotLookup.slotName) {
-        return {
-            success: true,
-            source: {
-                sourceCard: slotLookup.unit,
-                sourceZone: 'unit',
-                sourceSlotName: slotLookup.slotName
-            }
-        };
+    const slotLookup = SlotZoneUtils.findSlotByCarduid(playerState.zones, carduid);
+    if (slotLookup.slotName) {
+        if (slotLookup.unit && slotLookup.unit.carduid === carduid) {
+            return {
+                success: true,
+                source: {
+                    sourceCard: slotLookup.unit,
+                    sourceZone: 'unit',
+                    sourceSlotName: slotLookup.slotName
+                }
+            };
+        }
+        if (slotLookup.pilot && slotLookup.pilot.carduid === carduid) {
+            return {
+                success: true,
+                source: {
+                    sourceCard: slotLookup.pilot,
+                    sourceZone: 'pilot',
+                    sourceSlotName: slotLookup.slotName
+                }
+            };
+        }
     }
 
     return {
         success: false,
-        error: `Card ${carduid} not found in base or unit slots for player ${playerId}`
+        error: `Card ${carduid} not found in base or slot zones for player ${playerId}`
     };
 }

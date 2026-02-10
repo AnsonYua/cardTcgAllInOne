@@ -2,7 +2,7 @@
 // Centralized notification helpers for choice-based UI flows
 
 import { GameEnvironment } from '../../models/GameEnvironment';
-import { BlockerChoiceEvent, BurstEffectChoiceEvent, TargetChoiceEvent, TokenChoiceEvent, OptionChoiceEvent } from '../EventQueue/interfaces/GameEvent';
+import { BlockerChoiceEvent, BurstEffectChoiceEvent, TargetChoiceEvent, TokenChoiceEvent, OptionChoiceEvent, PromptChoiceEvent } from '../EventQueue/interfaces/GameEvent';
 import { GameNotificationManager } from '../GameNotificationManager';
 import { TargetCountUtils } from '../targets/TargetCountUtils';
 
@@ -181,6 +181,27 @@ export class ChoiceNotificationEmitter {
         // Reuse the existing OPTION_CHOICE notification object rather than emitting a separate
         // OPTION_CHOICE_RESOLVED notification, so the frontend only needs to handle one shape.
         // Note: event.data.userDecisionMade / selectedOptionIndex are already set in ChoiceConfirmationService.
+        notificationManager.updateNotificationEvent(event.id, {
+            isCompleted: true,
+            event
+        });
+    }
+
+    static emitPromptChoiceCreated(gameEnv: GameEnvironment, event: PromptChoiceEvent): void {
+        ChoiceNotificationEmitter.emitPersistentChoiceCreated(gameEnv, {
+            eventId: event.id,
+            type: 'PROMPT_CHOICE',
+            payload: {
+                playerId: event.playerId,
+                event,
+                isCompleted: false
+            },
+            priority: 'high'
+        });
+    }
+
+    static emitPromptChoiceResolved(gameEnv: GameEnvironment, event: PromptChoiceEvent): void {
+        const notificationManager = new GameNotificationManager(gameEnv);
         notificationManager.updateNotificationEvent(event.id, {
             isCompleted: true,
             event

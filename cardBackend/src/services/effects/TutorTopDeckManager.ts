@@ -3,7 +3,7 @@
 
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import { CardDatabaseManager, type CardData } from '../../models/CardSystem';
-import type { EffectDefinition, OptionChoiceEvent, OptionChoiceOption } from '../EventQueue/interfaces/GameEvent';
+import type { EffectDefinition, OptionChoiceEvent, OptionChoiceOption, PromptChoiceEvent } from '../EventQueue/interfaces/GameEvent';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { GameNotificationManager } from '../GameNotificationManager';
 import { HandZoneManager } from '../zones/HandZoneManager';
@@ -63,6 +63,8 @@ export class TutorTopDeckManager {
         cardPlayNotificationId?: string
     ): { success: boolean; error?: string; requiresSelection?: boolean; autoApplied?: boolean } {
         const normalizedEffect = ensureEffectDefaults(effect);
+        const sourceCardId = getCardIdFromUid(sourceCarduid);
+        const isGd01048DeployTutor = sourceCardId === 'GD01-048' && normalizedEffect.effectId === 'deploy_effect';
 
         const player = gameEnv.getPlayer(playerId);
         if (!player?.deck || !Array.isArray(player.deck.mainDeck)) {
@@ -172,6 +174,33 @@ export class TutorTopDeckManager {
             return { success: true, autoApplied: true };
         }
 
+        if (isGd01048DeployTutor) {
+            const options: OptionChoiceOption[] = [
+                { index: 0, label: 'Top', payload: { action: 'TOP' } },
+                { index: 1, label: 'Bottom', payload: { action: 'BOTTOM' } }
+            ];
+
+            ChoiceEventScheduler.enqueuePromptChoice(gameEnv, {
+                playerId,
+                choiceId: 'tutor_top_deck_position',
+                headerText: 'Choose Option',
+                promptText: 'Put the card on top or bottom of your deck?',
+                availableOptions: options,
+                defaultOptionIndex: 1,
+                sourceCarduid,
+                context: {
+                    tutor: {
+                        lookedCarduids: lookedDetails.map(c => c.carduid),
+                        restOrder: parseRestOrder(rest?.order),
+                        reveal
+                    }
+                },
+                cardPlayNotificationId
+            });
+
+            return { success: true, requiresSelection: true };
+        }
+
         const options: OptionChoiceOption[] = [];
         for (let i = 0; i < selectable.length; i++) {
             const choice = selectable[i];
@@ -274,6 +303,76 @@ export class TutorTopDeckManager {
                 effectId: event.data.effect?.effectId,
                 result: 'MOVED_TO_BOTTOM',
                 movedCarduids: tutorContext.lookedCarduids,
+                timestamp: Date.now()
+            },
+            'normal'
+        );
+        return { success: true };
+    }
+
+    static executePromptChoice(event: PromptChoiceEvent, gameEnv: GameEnvironment): ExecutionResult {
+        const selectionIndex = event.data.selectedOptionIndex;
+        if (typeof selectionIndex !== 'number') {
+            return { success: false, error: 'No option selected for tutor_top_deck_position' };
+        }
+
+        const player = gameEnv.getPlayer(event.playerId);
+        if (!player?.deck || !Array.isArray(player.deck.mainDeck)) {
+            return { success: false, error: 'Player deck not found for tutor_top_deck_position resolution' };
+        }
+
+        const tutorContext = parseTutorContext(event.data.context);
+        if (!tutorContext) {
+            return { success: false, error: 'tutor_top_deck_position missing lookedCarduids context' };
+        }
+
+        const option = event.data.availableOptions.find(opt => opt.index === selectionIndex);
+        if (!option) {
+            return { success: false, error: 'Selected option not found' };
+        }
+
+        const payload = option.payload || {};
+        const action = typeof payload.action === 'string' ? payload.action : '';
+
+        if (action === 'BOTTOM') {
+            DeckZoneManager.moveToBottom(player.deck.mainDeck, tutorContext.lookedCarduids, tutorContext.restOrder);
+            const notificationManager = new GameNotificationManager(gameEnv);
+            notificationManager.addNotificationEvent(
+                'CARDS_MOVED_TO_DECK_BOTTOM',
+                {
+                    playerId: event.playerId,
+                    sourceCarduid: event.data.sourceCarduid,
+                    effectId: undefined,
+                    carduids: tutorContext.lookedCarduids,
+                    reason: 'tutor_top_deck_choice_bottom',
+                    timestamp: Date.now()
+                },
+                'normal'
+            );
+            notificationManager.addNotificationEvent(
+                'TUTOR_TOP_DECK_RESOLVED',
+                {
+                    playerId: event.playerId,
+                    sourceCarduid: event.data.sourceCarduid,
+                    effectId: undefined,
+                    result: 'MOVED_TO_BOTTOM',
+                    movedCarduids: tutorContext.lookedCarduids,
+                    timestamp: Date.now()
+                },
+                'normal'
+            );
+            return { success: true };
+        }
+
+        const notificationManager = new GameNotificationManager(gameEnv);
+        notificationManager.addNotificationEvent(
+            'TUTOR_TOP_DECK_RESOLVED',
+            {
+                playerId: event.playerId,
+                sourceCarduid: event.data.sourceCarduid,
+                effectId: undefined,
+                result: 'LEFT_ON_TOP',
+                leftCarduids: tutorContext.lookedCarduids,
                 timestamp: Date.now()
             },
             'normal'

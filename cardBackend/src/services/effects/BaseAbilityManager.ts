@@ -86,7 +86,7 @@ export class BaseAbilityManager {
             };
         }
 
-        if (sourceZone === 'unit' && effectRequiresLinkedSource(normalizedEffect, resolvedCardData)) {
+        if ((sourceZone === 'unit' || sourceZone === 'pilot') && effectRequiresLinkedSource(normalizedEffect, resolvedCardData)) {
             const linked = SlotCardStateUtils.isCardLinked(gameEnv, sourceCard.carduid);
             if (!linked) {
                 return {

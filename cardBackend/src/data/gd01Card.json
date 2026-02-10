@@ -219,11 +219,8 @@
             "trigger": "END_OF_TURN",
             "target": {
               "type": "unit",
-              "scope": "self",
-              "count": 1,
-              "selection": {
-                "type": "player_choice"
-              }
+              "scope": "source",
+              "count": 1
             },
             "action": "heal",
             "parameters": {
@@ -341,11 +338,8 @@
             "trigger": "END_OF_TURN",
             "target": {
               "type": "unit",
-              "scope": "self",
-              "count": 1,
-              "selection": {
-                "type": "player_choice"
-              }
+              "scope": "source",
+              "count": 1
             },
             "action": "heal",
             "parameters": {
@@ -801,7 +795,7 @@
             "trigger": "END_OF_TURN",
             "target": {
               "type": "unit",
-              "scope": "self",
+              "scope": "source",
               "count": 1
             },
             "action": "heal",
@@ -1529,7 +1523,7 @@
             "trigger": "END_OF_TURN",
             "target": {
               "type": "unit",
-              "scope": "self",
+              "scope": "source",
               "count": 1
             },
             "action": "heal",

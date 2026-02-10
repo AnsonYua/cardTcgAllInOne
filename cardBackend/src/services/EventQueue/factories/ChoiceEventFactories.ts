@@ -10,6 +10,8 @@ import {
     type EffectDefinition,
     type OptionChoiceEvent,
     type OptionChoiceOption,
+    type PromptChoiceEvent,
+    type PromptChoiceEventData,
     type PlayerActionEvent,
     type TargetChoiceEvent,
     type TargetChoiceEventData,
@@ -17,7 +19,7 @@ import {
     type TokenChoiceEvent,
     type TokenChoiceOption
 } from '../interfaces/GameEvent';
-import { nextCounterEventId } from './EventIdUtils';
+import { generateEventId, nextCounterEventId } from './EventIdUtils';
 
 export const createBurstEffectChoiceEvent = (playerId: string, cards: Array<any>): BurstEffectChoiceEvent => {
     const firstCarduid = cards?.[0]?.carduid;
@@ -117,6 +119,38 @@ export const createOptionChoiceEvent = (params: {
         status: EventStatus.DECLARED,
         priority: EventPriority.IMMEDIATE,
         playerId,
+        timestamp: Date.now(),
+        data: eventData
+    };
+};
+
+export const createPromptChoiceEvent = (params: {
+    playerId: string;
+    choiceId: string;
+    headerText: string;
+    promptText: string;
+    availableOptions: OptionChoiceOption[];
+    defaultOptionIndex?: number;
+    sourceCarduid?: string;
+    context?: Record<string, unknown>;
+}): PromptChoiceEvent => {
+    const eventData: PromptChoiceEventData = {
+        choiceId: params.choiceId,
+        headerText: params.headerText,
+        promptText: params.promptText,
+        availableOptions: params.availableOptions,
+        defaultOptionIndex: params.defaultOptionIndex,
+        userDecisionMade: false,
+        sourceCarduid: params.sourceCarduid,
+        context: params.context
+    };
+
+    return {
+        id: generateEventId('prompt_choice', params.choiceId),
+        type: EventType.PROMPT_CHOICE,
+        status: EventStatus.DECLARED,
+        priority: EventPriority.IMMEDIATE,
+        playerId: params.playerId,
         timestamp: Date.now(),
         data: eventData
     };

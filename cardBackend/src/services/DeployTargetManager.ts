@@ -96,7 +96,7 @@ export class DeployTargetManager {
             // Generate available targets based on config
             let availableTargets = TargetScopeResolverRegistry.resolve(gameEnv, sourceCarduid, normalizedEffect);
             if (!availableTargets) {
-                availableTargets = TargetResolver.generateAvailableTargets(gameEnv, playerId, targetConfig);
+                availableTargets = TargetResolver.generateAvailableTargets(gameEnv, playerId, targetConfig, sourceCarduid);
             }
             availableTargets = TargetSelectionPipeline.apply(gameEnv, availableTargets, normalizedEffect, sourceCarduid);
 
@@ -165,7 +165,9 @@ export class DeployTargetManager {
             } else {
                 // Auto-apply to single target or all targets (based on count)
                 const scopeValue = typeof targetConfig.scope === 'string' ? targetConfig.scope.toLowerCase() : '';
-                const applyAllTargets = scopeValue.includes('all') && targetConfig.count > 1;
+                const applyAllTargets =
+                    scopeValue === 'any_all_unit' ||
+                    (scopeValue.includes('all') && targetConfig.count > 1);
                 const targetsToApply = applyAllTargets ? availableTargets : availableTargets.slice(0, targetConfig.count);
                 const result = EffectExecutor.applyEffectToTargets(gameEnv, normalizedEffect, targetsToApply, playerId, sourceCarduid);
                 if (result.success) {

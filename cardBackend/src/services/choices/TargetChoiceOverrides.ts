@@ -17,6 +17,11 @@ export function overrideRequiresChoice(
         return false;
     }
 
+    // Data rule: scopes like "any_all_unit" are intended to auto-apply to *all* matching units (no player prompt),
+    // even when the card data omits an explicit count.
+    if (scopeValue === 'any_all_unit') {
+        return false;
+    }
+
     return undefined;
 }
-

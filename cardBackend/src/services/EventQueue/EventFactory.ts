@@ -17,6 +17,7 @@ import type {
     JoinGameEvent,
     OptionChoiceEvent,
     OptionChoiceOption,
+    PromptChoiceEvent,
     PairingEffectDefinition,
     PairingEffectEvent,
     EffectDrawTriggeredEvent,
@@ -59,6 +60,7 @@ import {
     createTargetChoiceEvent,
     createTokenChoiceEvent,
     createOptionChoiceEvent,
+    createPromptChoiceEvent,
     createBlockerChoiceEvent
 } from './factories/ChoiceEventFactories';
 import { createDeployEffectEvent, createEffectDrawTriggeredEvent, createExResourcePlacedTriggeredEvent, createPairingEffectEvent, createShieldAreaCardDamagedTriggeredEvent, createShieldCardAttackedEvent } from './factories/EffectEventFactories';
@@ -187,6 +189,19 @@ export class EventFactory {
         context?: Record<string, unknown>;
     }): OptionChoiceEvent {
         return createOptionChoiceEvent(params);
+    }
+
+    static createPromptChoiceEvent(params: {
+        playerId: string;
+        choiceId: string;
+        headerText: string;
+        promptText: string;
+        availableOptions: OptionChoiceOption[];
+        defaultOptionIndex?: number;
+        sourceCarduid?: string;
+        context?: Record<string, unknown>;
+    }): PromptChoiceEvent {
+        return createPromptChoiceEvent(params);
     }
 
     static createBlockerChoiceEvent(params: {

@@ -4,7 +4,7 @@
 import { GamePhase, ZoneType, EventType } from './GameEnums';
 import { Player, PlayerZones } from './Player';
 // EventManager removed - using direct event processing
-import { GameEvent, EventStatus, EventPriority, BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent, TokenChoiceEvent, OptionChoiceEvent } from '../services/EventQueue/interfaces/GameEvent';
+import { GameEvent, EventStatus, EventPriority, BurstEffectChoiceEvent, TargetChoiceEvent, BlockerChoiceEvent, TokenChoiceEvent, OptionChoiceEvent, PromptChoiceEvent } from '../services/EventQueue/interfaces/GameEvent';
 import { ProcessingResult } from './EventInterfaces';
 import { BattleContext, ActionStepTargetSummary } from './BattleContext';
 import { EffectScannerUtils } from '../utils/EffectScannerUtils';
@@ -378,6 +378,10 @@ export class GameEnvironment {
                 const optionChoice = nextEvent as OptionChoiceEvent;
                 return !optionChoice.data.userDecisionMade;
             }
+            if (nextEvent.type === EventType.PROMPT_CHOICE) {
+                const promptChoice = nextEvent as PromptChoiceEvent;
+                return !promptChoice.data.userDecisionMade;
+            }
             console.log("processs Queue next 444")
         }
         return false;
@@ -393,7 +397,8 @@ export class GameEnvironment {
              event.type === EventType.TARGET_CHOICE ||
              event.type === EventType.BLOCKER_CHOICE ||
              event.type === EventType.TOKEN_CHOICE ||
-             event.type === EventType.OPTION_CHOICE)
+             event.type === EventType.OPTION_CHOICE ||
+             event.type === EventType.PROMPT_CHOICE)
         );
     }
     
@@ -407,7 +412,8 @@ export class GameEnvironment {
                 nextEvent.type === EventType.TARGET_CHOICE ||
                 nextEvent.type === EventType.BLOCKER_CHOICE ||
                 nextEvent.type === EventType.TOKEN_CHOICE ||
-                nextEvent.type === EventType.OPTION_CHOICE) {
+                nextEvent.type === EventType.OPTION_CHOICE ||
+                nextEvent.type === EventType.PROMPT_CHOICE) {
                 return nextEvent;
             }
         }

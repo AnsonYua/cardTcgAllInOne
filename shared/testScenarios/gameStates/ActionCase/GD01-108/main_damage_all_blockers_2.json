@@ -82,8 +82,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "ST04-010_a_blocker_0001",
-              "cardId": "ST04-010",
+              "carduid": "GD03-003_a_blocker_0001",
+              "cardId": "GD03-003",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
@@ -187,8 +187,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "ST04-010_b_blocker_0001",
-              "cardId": "ST04-010",
+              "carduid": "ST04-001_b_blocker_0001",
+              "cardId": "ST04-001",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": false,

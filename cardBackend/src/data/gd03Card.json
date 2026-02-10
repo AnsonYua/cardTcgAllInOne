@@ -37,7 +37,7 @@
             "trigger": "END_OF_TURN",
             "target": {
               "type": "unit",
-              "scope": "self",
+              "scope": "source",
               "count": 1
             },
             "action": "heal",
@@ -109,7 +109,7 @@
             "trigger": "END_OF_TURN",
             "target": {
               "type": "unit",
-              "scope": "self",
+              "scope": "source",
               "count": 1
             },
             "action": "heal",
@@ -292,7 +292,7 @@
             "trigger": "END_OF_TURN",
             "target": {
               "type": "unit",
-              "scope": "self",
+              "scope": "source",
               "count": 1
             },
             "action": "heal",
@@ -533,7 +533,7 @@
             "trigger": "END_OF_TURN",
             "target": {
               "type": "unit",
-              "scope": "self",
+              "scope": "source",
               "count": 1
             },
             "action": "heal",
@@ -597,7 +597,7 @@
             "trigger": "END_OF_TURN",
             "target": {
               "type": "unit",
-              "scope": "self",
+              "scope": "source",
               "count": 1
             },
             "action": "heal",
@@ -666,7 +666,7 @@
             "action": "heal",
             "target": {
               "type": "unit",
-              "scope": "self",
+              "scope": "source",
               "count": 1
             },
             "conditions": [
@@ -3416,7 +3416,7 @@
             "action": "heal",
             "target": {
               "type": "unit",
-              "scope": "self",
+              "scope": "source",
               "count": 1
             },
             "conditions": [

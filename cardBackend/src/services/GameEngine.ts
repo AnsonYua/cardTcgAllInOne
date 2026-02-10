@@ -4,7 +4,7 @@
 import { GameEvent, AcknowledgeEventsEvent, PlayCardEvent,
      DeployEffectEvent, TargetChoiceEvent, PairingEffectEvent, ShieldCardAttackedEvent,
      ConfirmRedrawEvent, ChooseFirstPlayerEvent, GameplayBeginsEvent, ErrorOccurredEvent, BurstEffectChoiceEvent,
-     StartGameEvent, JoinGameEvent, NextPlayerTurnEvent, EndTurnEvent, PlayerActionEvent, RepairEffectEvent, BlockerChoiceEvent, ActionStepPostPlayEvent, TokenChoiceEvent, EndTurnTriggeredEffectEvent, OptionChoiceEvent, EffectDrawTriggeredEvent, ExResourcePlacedTriggeredEvent, ShieldAreaCardDamagedTriggeredEvent } from './EventQueue/interfaces/GameEvent';
+     StartGameEvent, JoinGameEvent, NextPlayerTurnEvent, EndTurnEvent, PlayerActionEvent, RepairEffectEvent, BlockerChoiceEvent, ActionStepPostPlayEvent, TokenChoiceEvent, EndTurnTriggeredEffectEvent, OptionChoiceEvent, PromptChoiceEvent, EffectDrawTriggeredEvent, ExResourcePlacedTriggeredEvent, ShieldAreaCardDamagedTriggeredEvent } from './EventQueue/interfaces/GameEvent';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { EventType } from '../models/GameEnums';
 import { GameNotificationManager } from './GameNotificationManager';
@@ -23,6 +23,7 @@ import { BattlePhaseManager } from './BattlePhaseManager';
 import { TokenChoiceManager } from './effects/TokenChoiceManager';
 import { EndTurnTriggeredEffectManager } from './effects/EndTurnTriggeredEffectManager';
 import { OptionChoiceManager } from './effects/OptionChoiceManager';
+import { PromptChoiceManager } from './effects/PromptChoiceManager';
 import { EffectDrawTriggeredEffectManager } from './effects/EffectDrawTriggeredEffectManager';
 import { ExResourcePlacedTriggeredEffectManager } from './effects/ExResourcePlacedTriggeredEffectManager';
 import { ShieldAreaCardDamagedTriggeredEffectManager } from './effects/ShieldAreaCardDamagedTriggeredEffectManager';
@@ -95,6 +96,9 @@ export class GameEngine {
 
                 case EventType.OPTION_CHOICE:
                     return OptionChoiceManager.executeOptionChoice(event as OptionChoiceEvent, gameEnv);
+
+                case EventType.PROMPT_CHOICE:
+                    return PromptChoiceManager.executePromptChoice(event as PromptChoiceEvent, gameEnv);
 
                 case EventType.BLOCKER_CHOICE:
                     return BlockerChoiceManager.executeBlockerChoice(event as BlockerChoiceEvent, gameEnv);

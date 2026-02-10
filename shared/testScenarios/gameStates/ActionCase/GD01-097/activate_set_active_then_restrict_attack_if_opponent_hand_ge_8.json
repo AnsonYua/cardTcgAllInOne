@@ -75,8 +75,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD01-090_unit_0001",
-              "cardId": "GD01-090",
+              "carduid": "GD01-001_unit_0001",
+              "cardId": "GD01-001",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": true,

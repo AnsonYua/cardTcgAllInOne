@@ -4,8 +4,9 @@
 import { EventType } from '../../models/GameEnums';
 import { GameNotificationManager } from '../GameNotificationManager';
 import { ChoiceNotificationEmitter } from '../notifications/ChoiceNotificationEmitter';
+import { BattlePhaseManager } from '../BattlePhaseManager';
 import type { GameEnvironment } from '../../models/GameEnvironment';
-import type { TargetChoiceEvent, TargetReference, TokenChoiceEvent, OptionChoiceEvent } from '../EventQueue/interfaces/GameEvent';
+import type { GameEvent, TargetChoiceEvent, TargetReference, TokenChoiceEvent, OptionChoiceEvent, PromptChoiceEvent } from '../EventQueue/interfaces/GameEvent';
 import type { GameLogicResult } from '../GameLogic';
 
 export interface ChoiceConfirmationPersistence {
@@ -31,6 +32,34 @@ export class ChoiceConfirmationService {
                 success: false,
                 error: processingResult.error || 'Failed to process choice'
             };
+        }
+
+        // If we are in an ACTION_STEP battle and both players already confirmed resolution, a choice
+        // (like TARGET_CHOICE for an activated ability) can finish without re-triggering the usual
+        // auto-resolve hooks (confirmBattle / post-play). Re-check here so battles don't get stuck.
+        if (
+            gameEnv.processingQueue.length === 0 &&
+            gameEnv.currentBattle?.status === 'ACTION_STEP' &&
+            gameEnv.haveBothPlayersConfirmedBattle()
+        ) {
+            const attackerId = gameEnv.currentBattle.attackingPlayerId;
+            if (attackerId) {
+                const battleResult = BattlePhaseManager.resolveBattle(gameEnv, attackerId);
+                if (!battleResult.success) {
+                    return {
+                        success: false,
+                        error: battleResult.error || 'Failed to auto-resolve battle after choice'
+                    };
+                }
+
+                const postBattleProcessing = await gameEnv.processEvents();
+                if (!postBattleProcessing.success) {
+                    return {
+                        success: false,
+                        error: postBattleProcessing.error || 'Failed to process events after battle resolution'
+                    };
+                }
+            }
         }
 
         await persistence.saveGameToFile(gameId, gameEnv);
@@ -185,34 +214,49 @@ export class ChoiceConfirmationService {
                 return { success: false, error: 'Game not found' };
             }
 
-            const event = gameEnv.processingQueue.find(e => e.id === eventId) as OptionChoiceEvent | undefined;
+            const event = gameEnv.processingQueue.find(e => e.id === eventId) as GameEvent | undefined;
             if (!event) {
                 return { success: false, error: 'Option choice event not found' };
-            }
-
-            if (event.type !== EventType.OPTION_CHOICE) {
-                return { success: false, error: 'Event is not an option choice' };
             }
 
             if (event.playerId !== playerId) {
                 return { success: false, error: 'Player is not authorized to resolve this event' };
             }
 
-            const availableOptions = event.data.availableOptions || [];
-            const selectedOption = availableOptions.find((opt: any) => opt.index === selectedOptionIndex);
-            if (!selectedOption) {
-                return { success: false, error: 'Selected option is not available' };
-            }
+            let cardPlayNotificationId: string | undefined;
+            if (event.type === EventType.OPTION_CHOICE) {
+                const optionEvent = event as OptionChoiceEvent;
+                const availableOptions = optionEvent.data.availableOptions || [];
+                const selectedOption = availableOptions.find(opt => opt.index === selectedOptionIndex);
+                if (!selectedOption) {
+                    return { success: false, error: 'Selected option is not available' };
+                }
 
-            event.data.selectedOptionIndex = selectedOptionIndex;
-            event.data.userDecisionMade = true;
-            ChoiceNotificationEmitter.emitOptionChoiceResolved(gameEnv, event);
+                optionEvent.data.selectedOptionIndex = selectedOptionIndex;
+                optionEvent.data.userDecisionMade = true;
+                ChoiceNotificationEmitter.emitOptionChoiceResolved(gameEnv, optionEvent);
+                cardPlayNotificationId = optionEvent.data.cardPlayNotificationId;
+            } else if (event.type === EventType.PROMPT_CHOICE) {
+                const promptEvent = event as PromptChoiceEvent;
+                const availableOptions = promptEvent.data.availableOptions || [];
+                const selectedOption = availableOptions.find(opt => opt.index === selectedOptionIndex);
+                if (!selectedOption) {
+                    return { success: false, error: 'Selected option is not available' };
+                }
+
+                promptEvent.data.selectedOptionIndex = selectedOptionIndex;
+                promptEvent.data.userDecisionMade = true;
+                ChoiceNotificationEmitter.emitPromptChoiceResolved(gameEnv, promptEvent);
+                cardPlayNotificationId = promptEvent.data.cardPlayNotificationId;
+            } else {
+                return { success: false, error: 'Event is not an option choice' };
+            }
 
             return await this.processAndPersist(
                 persistence,
                 gameId,
                 gameEnv,
-                event.data.cardPlayNotificationId
+                cardPlayNotificationId
             );
         } catch (error) {
             return {
