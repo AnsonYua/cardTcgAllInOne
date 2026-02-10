@@ -9,7 +9,6 @@ export const initializeUnitTurnState = (unit: UnitZoneCard): void => {
 };
 
 export const resetUnitTurnState = (unit: UnitZoneCard): void => {
-    unit.damageReceived = 0;
     unit.playedThisTurn = false;
     unit.canAttackOnPlayTurn = false;
 };

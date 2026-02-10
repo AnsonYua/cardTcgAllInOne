@@ -63,8 +63,17 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": [],
-          "handUids": [],
+          "hand": [
+            {
+              "carduid":"GD03-001_daskdjs",
+              "cardid":"GD03-001"
+            },
+            {
+              "carduid":"ST05-010_dsafdasd",
+              "cardid":"ST05-010"
+            }
+          ],
+          "handUids": ["GD03-001_daskdjs","ST05-010_dsafdasd"],
           "mainDeck": []
         },
         "confirmIsRedraw": false,
@@ -100,6 +109,38 @@
             {
               "cardId": "energy_basic",
               "carduid": "energy_basic_auto_gd02-010_effect_damage_received_enemy_draw_once_per_turn_playerId_1_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd02-010_effect_damage_received_enemy_draw_once_per_turn_playerId_1_0004",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd02-010_effect_damage_received_enemy_draw_once_per_turn_playerId_1_0004",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd02-010_effect_damage_received_enemy_draw_once_per_turn_playerId_1_0004",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd02-010_effect_damage_received_enemy_draw_once_per_turn_playerId_1_0004",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,

@@ -65,8 +65,13 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": [],
-          "handUids": [],
+          "hand": [
+            {
+              "carduid":"ST02-002_adsfads11",
+              "cardid":"ST02-002"
+            }
+          ],
+          "handUids": ["ST02-002_adsfads11"],
           "mainDeck": []
         },
         "confirmIsRedraw": false,

@@ -1,19 +1,18 @@
 {
-  "description": "gd02-034_pair_ap_boost_if_paired_red_pilot",
-  "gameId": "gd02-034_pair_ap_boost_if_paired_red_pilot",
+  "description": "gd02-031_continuous_ap_plus_2_if_player_level_ge_7",
+  "gameId": "gd02-031_continuous_ap_plus_2_if_player_level_ge_7",
   "testType": "action",
   "category": "ActionCase",
   "tags": [
-    "GD02-034",
+    "GD02-031",
     "continuous",
-    "paired",
-    "pairedPilotColor",
+    "playerLevel",
     "modifyAP"
   ],
   "notes": [
-    "Setup: Player A has GD02-034 (unit) paired with a Red pilot (GD02-091) in slot1.",
+    "Setup: Player A is Lv.7 (playerPoint = 7). Player A has GD02-031 in slot1.",
     "Action: Process continuous effects.",
-    "Expect: GD02-034 gains continueModifyAP +2 while paired with Red pilot."
+    "Expect: GD02-031 has continueModifyAP = +2 and frontend receives CARD_STAT_MODIFIED notification (stat=modifyAP, source=continuous)."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -35,7 +34,7 @@
     "maxEventsPerCycle": 50,
     "notificationQueue": [
       {
-        "id": "card_drawn_1768362880422_gd02034",
+        "id": "card_drawn_1768362880422_gd02031_seed",
         "type": "CARD_DRAWN",
         "metadata": {
           "timestamp": 1768362880422,
@@ -62,31 +61,27 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": [{
-              "carduid": "GD02-091_pilot_0001",
-              "cardId": "GD02-091"
-          }],
-          "handUids": ["GD02-091_pilot_0001"],
+          "hand": [],
+          "handUids": [],
           "mainDeck": []
         },
         "confirmIsRedraw": false,
         "isRedraw": false,
-        "playerPoint": 0,
+        "playerPoint": 7,
         "isReady": true,
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD02-034_unit_0001",
-              "cardId": "GD02-034",
+              "carduid": "GD02-031_unit_0001",
+              "cardId": "GD02-031",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "originalAP": 0,
-              "originalHP": 3,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
+              "isFirstPlay": false,
+              "playedThisTurn": false,
               "damageReceived": 0,
-              "temporaryEffects": []
+              "continueModifyAP": 0,
+              "continueModifyHP": 0
             }
           },
           "slot2": {},
@@ -99,7 +94,7 @@
           "energyArea": [
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd02-034_pair_ap_boost_if_paired_red_pilot_playerId_1_0001",
+              "carduid": "energy_basic_auto_gd02-031_continuous_ap_plus_2_if_player_level_ge_7_playerId_1_0001",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -107,7 +102,7 @@
             },
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd02-034_pair_ap_boost_if_paired_red_pilot_playerId_1_0002",
+              "carduid": "energy_basic_auto_gd02-031_continuous_ap_plus_2_if_player_level_ge_7_playerId_1_0002",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -115,7 +110,7 @@
             },
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd02-034_pair_ap_boost_if_paired_red_pilot_playerId_1_0003",
+              "carduid": "energy_basic_auto_gd02-031_continuous_ap_plus_2_if_player_level_ge_7_playerId_1_0003",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -123,7 +118,7 @@
             },
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd02-034_pair_ap_boost_if_paired_red_pilot_playerId_1_0004",
+              "carduid": "energy_basic_auto_gd02-031_continuous_ap_plus_2_if_player_level_ge_7_playerId_1_0004",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -131,7 +126,7 @@
             },
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd02-034_pair_ap_boost_if_paired_red_pilot_playerId_1_0004",
+              "carduid": "energy_basic_auto_gd02-031_continuous_ap_plus_2_if_player_level_ge_7_playerId_1_0003",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -139,17 +134,49 @@
             },
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd02-034_pair_ap_boost_if_paired_red_pilot_playerId_1_0004",
+              "carduid": "energy_basic_auto_gd02-031_continuous_ap_plus_2_if_player_level_ge_7_playerId_1_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd02-031_continuous_ap_plus_2_if_player_level_ge_7_playerId_1_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd02-031_continuous_ap_plus_2_if_player_level_ge_7_playerId_1_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd02-031_continuous_ap_plus_2_if_player_level_ge_7_playerId_1_0003",
+              "isExtraEnergy": false,
+              "isRested": false,
+              "placedAt": 0,
+              "placedBy": "playerId_1"
+            },
+            {
+              "cardId": "energy_basic",
+              "carduid": "energy_basic_auto_gd02-031_continuous_ap_plus_2_if_player_level_ge_7_playerId_1_0003",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
               "placedBy": "playerId_1"
             }
           ],
-          "trashArea": []
-        },
-        "effectRegistry": {},
-        "delayedTriggers": []
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
       },
       "playerId_2": {
         "id": "playerId_2",
@@ -175,7 +202,7 @@
           "energyArea": [
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd02-034_pair_ap_boost_if_paired_red_pilot_playerId_2_0001",
+              "carduid": "energy_basic_auto_gd02-031_continuous_ap_plus_2_if_player_level_ge_7_playerId_2_0001",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -183,7 +210,7 @@
             },
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd02-034_pair_ap_boost_if_paired_red_pilot_playerId_2_0002",
+              "carduid": "energy_basic_auto_gd02-031_continuous_ap_plus_2_if_player_level_ge_7_playerId_2_0002",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -191,7 +218,7 @@
             },
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd02-034_pair_ap_boost_if_paired_red_pilot_playerId_2_0003",
+              "carduid": "energy_basic_auto_gd02-031_continuous_ap_plus_2_if_player_level_ge_7_playerId_2_0003",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -199,17 +226,17 @@
             },
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd02-034_pair_ap_boost_if_paired_red_pilot_playerId_2_0004",
+              "carduid": "energy_basic_auto_gd02-031_continuous_ap_plus_2_if_player_level_ge_7_playerId_2_0004",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
               "placedBy": "playerId_2"
             }
           ],
-          "trashArea": []
-        },
-        "effectRegistry": {},
-        "delayedTriggers": []
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
       }
     }
   }

@@ -1,21 +1,20 @@
 {
-  "description": "gd02-009_ap_reduced_by_enemy_effect_retaliate_damage_2",
-  "gameId": "gd02-009_ap_reduced_by_enemy_effect_retaliate_damage_2",
+  "description": "gd02-002_link_once_per_turn_set_active_on_friendly_battle_destroy",
+  "gameId": "gd02-002_link_once_per_turn_set_active_on_friendly_battle_destroy",
   "testType": "action",
   "category": "ActionCase",
   "tags": [
-    "GD02-009",
-    "AP_REDUCED_BY_ENEMY_EFFECT",
-    "TARGET_CHOICE",
-    "damage"
+    "GD02-002",
+    "BATTLE_DESTROY",
+    "linked",
+    "once_per_turn",
+    "setActive"
   ],
   "notes": [
-    "Setup: Player A attacks with a unit paired with ST04-010 (attack_reduce_enemy_ap: modifyAP -2 to an enemy unit during this battle).",
-    "Setup: Player B has GD02-009 (Calamity Gundam) in play as the sole enemy unit target, and Player A has 2 rested units in play as valid retaliation targets.",
-    "Action (manual): Player A declares an attack on GD02-009. Attack-phase resolves ST04-010 and reduces GD02-009 AP by 2 (enemy effect).",
-    "Expect: GD02-009 triggers once_per_turn and enqueues TARGET_CHOICE to choose 1 rested enemy unit; TARGET_CHOICE notification is appended to notificationQueue (frontend-driven).",
-    "Action (manual): Player B resolves TARGET_CHOICE selecting one rested enemy unit.",
-    "Expect: Selected unit takes 2 damage and a CARD_DAMAGED notification is appended to notificationQueue."
+    "Setup: Player A has GD02-002 (Gundam Epyon) linked with ST02-011 (Zechs Merquise) and Epyon is rested. Player A also has a separate attacker unit that will destroy a weak enemy unit in battle.",
+    "Action (manual): Player A initiates attackUnit with the attacker vs Player B's low-HP unit and resolves the battle so it is destroyed by battle damage (BATTLE_DESTROY).",
+    "Expect: GD02-002's linked BATTLE_DESTROY listener triggers and sets Epyon active (CARD_SET_ACTIVE in notificationQueue).",
+    "Expect: If another BATTLE_DESTROY occurs the same turn, GD02-002 does not trigger again (once_per_turn)."
   ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
@@ -37,7 +36,7 @@
     "maxEventsPerCycle": 50,
     "notificationQueue": [
       {
-        "id": "card_drawn_1768362880422_gd02009_seed",
+        "id": "card_drawn_1768362880422_gd02002",
         "type": "CARD_DRAWN",
         "metadata": {
           "timestamp": 1768362880422,
@@ -47,7 +46,7 @@
         },
         "payload": {
           "playerId": "playerId_1",
-          "carduid": "GD02-009_draw_seed_0001",
+          "carduid": "GD02-000_draw_0002",
           "sourceZone": "deck",
           "reason": "draw",
           "timestamp": 1768362880422,
@@ -64,7 +63,12 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": [],
+          "hand": [
+            {
+              "cardid":"",
+              "carduid":""
+            }
+          ],
           "handUids": [],
           "mainDeck": []
         },
@@ -75,23 +79,42 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "ST04-001_attacker_0001",
-              "cardId": "ST04-001",
+              "carduid": "GD01-002_attacker_0001",
+              "cardId": "GD01-002",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
+              "damageReceived": 0,
+              "modifyAP": 2,
+              "modifyHP": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 3,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": true,
+              "canAttackThisTurn": true,
+              "isFirstPlay": false
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "GD02-002_epyon_0001",
+              "cardId": "GD02-002",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": true,
               "damageReceived": 0,
               "modifyAP": 0,
               "modifyHP": 0,
               "continueModifyAP": 0,
               "continueModifyHP": 0,
-              "originalAP": 3,
-              "originalHP": 3,
+              "originalAP": 6,
+              "originalHP": 6,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
-              "isFirstPlay": false,
-              "temporaryEffects": []
+              "isFirstPlay": false
             },
             "pilot": {
               "carduid": "ST04-010_pilot_0001",
@@ -99,62 +122,10 @@
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "damageReceived": 0,
-              "modifyAP": 0,
-              "modifyHP": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
-              "originalAP": 2,
-              "originalHP": 1,
-              "playedThisTurn": false,
-              "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false,
-              "temporaryEffects": []
+              "isFirstPlay": false
             }
           },
-          "slot2": {
-            "unit": {
-              "carduid": "ST04-002_rested_0002",
-              "cardId": "ST04-002",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": true,
-              "damageReceived": 0,
-              "modifyAP": 0,
-              "modifyHP": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
-              "originalAP": 2,
-              "originalHP": 2,
-              "playedThisTurn": false,
-              "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false,
-              "temporaryEffects": []
-            }
-          },
-          "slot3": {
-            "unit": {
-              "carduid": "ST04-003_rested_0003",
-              "cardId": "ST04-003",
-              "placedAt": 0,
-              "placedBy": "playerId_1",
-              "isRested": true,
-              "damageReceived": 0,
-              "modifyAP": 0,
-              "modifyHP": 0,
-              "continueModifyAP": 0,
-              "continueModifyHP": 0,
-              "originalAP": 1,
-              "originalHP": 2,
-              "playedThisTurn": false,
-              "canAttackOnPlayTurn": false,
-              "canAttackThisTurn": true,
-              "isFirstPlay": false,
-              "temporaryEffects": []
-            }
-          },
+          "slot3": {},
           "slot4": {},
           "slot5": {},
           "slot6": {},
@@ -163,7 +134,7 @@
           "energyArea": [
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd02-009_ap_reduced_by_enemy_effect_retaliate_damage_2_playerId_1_0001",
+              "carduid": "energy_basic_auto_gd02-002_link_once_per_turn_set_active_on_friendly_battle_destroy_playerId_1_0001",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -171,7 +142,7 @@
             },
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd02-009_ap_reduced_by_enemy_effect_retaliate_damage_2_playerId_1_0002",
+              "carduid": "energy_basic_auto_gd02-002_link_once_per_turn_set_active_on_friendly_battle_destroy_playerId_1_0002",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -179,7 +150,7 @@
             },
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd02-009_ap_reduced_by_enemy_effect_retaliate_damage_2_playerId_1_0003",
+              "carduid": "energy_basic_auto_gd02-002_link_once_per_turn_set_active_on_friendly_battle_destroy_playerId_1_0003",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -187,7 +158,7 @@
             },
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd02-009_ap_reduced_by_enemy_effect_retaliate_damage_2_playerId_1_0004",
+              "carduid": "energy_basic_auto_gd02-002_link_once_per_turn_set_active_on_friendly_battle_destroy_playerId_1_0004",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -195,8 +166,7 @@
             }
           ],
           "trashArea": [],
-          "repairAbilitiesCheckedThisCycle": false,
-          "endTurnEffectsCheckedThisCycle": false
+          "repairAbilitiesCheckedThisCycle": false
         }
       },
       "playerId_2": {
@@ -214,8 +184,8 @@
         "zones": {
           "slot1": {
             "unit": {
-              "carduid": "GD02-009_unit_0001",
-              "cardId": "GD02-009",
+              "carduid": "GD01-022_defender_0001",
+              "cardId": "GD01-022",
               "placedAt": 0,
               "placedBy": "playerId_2",
               "isRested": true,
@@ -224,13 +194,12 @@
               "modifyHP": 0,
               "continueModifyAP": 0,
               "continueModifyHP": 0,
-              "originalAP": 3,
-              "originalHP": 5,
+              "originalAP": 2,
+              "originalHP": 1,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
-              "isFirstPlay": false,
-              "temporaryEffects": []
+              "isFirstPlay": false
             }
           },
           "slot2": {},
@@ -243,7 +212,7 @@
           "energyArea": [
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd02-009_ap_reduced_by_enemy_effect_retaliate_damage_2_playerId_2_0001",
+              "carduid": "energy_basic_auto_gd02-002_link_once_per_turn_set_active_on_friendly_battle_destroy_playerId_2_0001",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -251,7 +220,7 @@
             },
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd02-009_ap_reduced_by_enemy_effect_retaliate_damage_2_playerId_2_0002",
+              "carduid": "energy_basic_auto_gd02-002_link_once_per_turn_set_active_on_friendly_battle_destroy_playerId_2_0002",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -259,7 +228,7 @@
             },
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd02-009_ap_reduced_by_enemy_effect_retaliate_damage_2_playerId_2_0003",
+              "carduid": "energy_basic_auto_gd02-002_link_once_per_turn_set_active_on_friendly_battle_destroy_playerId_2_0003",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -267,7 +236,7 @@
             },
             {
               "cardId": "energy_basic",
-              "carduid": "energy_basic_auto_gd02-009_ap_reduced_by_enemy_effect_retaliate_damage_2_playerId_2_0004",
+              "carduid": "energy_basic_auto_gd02-002_link_once_per_turn_set_active_on_friendly_battle_destroy_playerId_2_0004",
               "isExtraEnergy": false,
               "isRested": false,
               "placedAt": 0,
@@ -275,8 +244,7 @@
             }
           ],
           "trashArea": [],
-          "repairAbilitiesCheckedThisCycle": false,
-          "endTurnEffectsCheckedThisCycle": false
+          "repairAbilitiesCheckedThisCycle": false
         }
       }
     }

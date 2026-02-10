@@ -9,6 +9,7 @@ import { EffectDamagePreventionUtils } from '../EffectDamagePreventionUtils';
 import { EffectStatApplier } from '../EffectStatApplier';
 import { TriggeredEffectProcessor } from '../TriggeredEffectProcessor';
 import { extractNumericValue } from './EffectActionUtils';
+import { SlotHpDestructionChecker } from '../../destruction/SlotHpDestructionChecker';
 
 export function applyDamageEffect(
     gameEnv: GameEnvironment,
@@ -131,6 +132,15 @@ export function applyDamageEffect(
         });
         if (!triggerResult.success) {
             return { success: false, error: triggerResult.error || 'Failed to process EFFECT_DAMAGE_RECEIVED triggers' };
+        }
+
+        // If damage reduced the *slot* HP to 0, destroy the unit (and paired pilot if any).
+        // Slot HP includes paired pilot HP, so we only destroy when the whole slot is at 0.
+        if (resolvedTarget.kind === 'unit') {
+            const destroyed = SlotHpDestructionChecker.destroyUnitIfSlotHpZero(gameEnv, target.carduid);
+            if (!destroyed) {
+                return { success: false, error: `Failed to destroy unit ${target.carduid} at slot HP 0` };
+            }
         }
     }
 
