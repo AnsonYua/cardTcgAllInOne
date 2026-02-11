@@ -1114,7 +1114,7 @@
             "effectId": "pair_place_rested_resource",
             "type": "triggered",
             "trigger": "PAIRING_COMPLETE",
-            "action": "addExtraEnergy",
+            "action": "addBasicEnergy",
             "sourceConditions": [
               {
                 "type": "paired"
@@ -3892,6 +3892,20 @@
               "scope": "self"
             },
             "action": "addToHand"
+          },
+          {
+            "effectId": "pair_draw_1_when_linked",
+            "type": "triggered",
+            "trigger": "PAIRING_COMPLETE",
+            "sourceConditions": [
+              {
+                "type": "linked"
+              }
+            ],
+            "action": "draw",
+            "parameters": {
+              "value": 1
+            }
           }
         ]
       }
@@ -4736,7 +4750,7 @@
                 "MAIN_PHASE"
               ]
             },
-            "action": "addExtraEnergy",
+            "action": "addBasicEnergy",
             "parameters": {
               "value": 1,
               "rested": true,

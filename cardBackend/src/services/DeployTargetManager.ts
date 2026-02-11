@@ -215,11 +215,27 @@ export class DeployTargetManager {
                 (eventData.selectedTarget ? [eventData.selectedTarget] : undefined);
 
             const normalizedEffect = ensureEffectDefaults(eventData.effect);
-            const selectionType = typeof normalizedEffect.target?.selection?.type === 'string'
-                ? normalizedEffect.target.selection.type.toLowerCase()
-                : '';
 
-            if (!selectedTargets || selectedTargets.length === 0) {
+            const normalizedSelections: TargetChoiceSelection[] = Array.isArray(selectedTargets)
+                ? selectedTargets
+                : [];
+
+            const normalizedTargets: TargetReference[] = normalizedSelections.map((selection) => ({
+                carduid: selection.carduid,
+                zone: selection.zone,
+                playerId: selection.playerId
+            }));
+
+            // Even if the player declined an optional selection (empty array), context handlers may need
+            // to run (e.g., optional COST flows that must resume an attack after declining the cost).
+            const contextResult = TargetChoiceContextHandlerRegistry.tryHandle(gameEnv, event, normalizedTargets);
+            if (contextResult.handled) {
+                return contextResult.success
+                    ? { success: true }
+                    : { success: false, error: contextResult.error || 'TARGET_CHOICE context handler failed' };
+            }
+
+            if (normalizedSelections.length === 0) {
                 if (normalizedEffect.optional === true) {
                     return { success: true };
                 }
@@ -227,25 +243,11 @@ export class DeployTargetManager {
             }
 
             const validation = TargetCountUtils.validateSelectedCount(
-                selectedTargets.length,
+                normalizedSelections.length,
                 normalizedEffect.target?.count
             );
             if (!validation.ok) {
                 return { success: false, error: validation.error };
-            }
-
-            const normalizedTargets: TargetReference[] = selectedTargets.map((selection) => ({
-                carduid: selection.carduid,
-                zone: selection.zone,
-                playerId: selection.playerId
-            }));
-
-            // Apply effect to selected targets - pass eventData object directly to minimize conversions
-            const contextResult = TargetChoiceContextHandlerRegistry.tryHandle(gameEnv, event, normalizedTargets);
-            if (contextResult.handled) {
-                return contextResult.success
-                    ? { success: true }
-                    : { success: false, error: contextResult.error || 'TARGET_CHOICE context handler failed' };
             }
 
             const result = EffectExecutor.applyEffectToTargets(
@@ -266,7 +268,7 @@ export class DeployTargetManager {
                 return { success: false, error: triggerResult.error || 'AP reduced trigger failed' };
             }
 
-            console.log(`✅ Successfully applied ${normalizedEffect.effectId} to ${selectedTargets.length} selected target(s)`);
+            console.log(`✅ Successfully applied ${normalizedEffect.effectId} to ${normalizedSelections.length} selected target(s)`);
             return { success: true };
 
         } catch (error) {

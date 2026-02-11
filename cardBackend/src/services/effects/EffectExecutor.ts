@@ -8,7 +8,7 @@ import { ShieldCardManager } from '../ShieldCardManager';
 import { EffectStatApplier } from './EffectStatApplier';
 import { EffectTemporaryManager } from './EffectTemporaryManager';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
-import { applyAddExtraEnergyEffect } from './actions/EffectEnergyActions';
+import { applyAddBasicEnergyEffect, applyAddExtraEnergyEffect } from './actions/EffectEnergyActions';
 import { applyScryTopDeckEffect } from './actions/EffectScryActions';
 import { applyGrantBreachEffect } from './actions/EffectBreachActions';
 import { applyPreventShieldDamageEffect, applyDamageShieldEffect } from './actions/EffectShieldActions';
@@ -51,6 +51,8 @@ export class EffectExecutor {
             this.applyAddToHandEffect(gameEnv, sourcePlayerId, effect, selectedTargets),
         addExtraEnergy: ({ gameEnv, effect, sourcePlayerId, sourceCarduid }) =>
             applyAddExtraEnergyEffect(gameEnv, sourcePlayerId, sourceCarduid, effect),
+        addBasicEnergy: ({ gameEnv, effect, sourcePlayerId, sourceCarduid }) =>
+            applyAddBasicEnergyEffect(gameEnv, sourcePlayerId, sourceCarduid, effect),
         scry_top_deck: ({ gameEnv, effect, sourcePlayerId }) => applyScryTopDeckEffect(gameEnv, sourcePlayerId, effect),
         grant_breach: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyGrantBreachEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),

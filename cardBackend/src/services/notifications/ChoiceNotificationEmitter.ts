@@ -5,8 +5,53 @@ import { GameEnvironment } from '../../models/GameEnvironment';
 import { BlockerChoiceEvent, BurstEffectChoiceEvent, TargetChoiceEvent, TokenChoiceEvent, OptionChoiceEvent, PromptChoiceEvent } from '../EventQueue/interfaces/GameEvent';
 import { GameNotificationManager } from '../GameNotificationManager';
 import { TargetCountUtils } from '../targets/TargetCountUtils';
+import { ChoiceKind, isSequenceContextKind } from '../../types/ChoiceKind';
 
 export class ChoiceNotificationEmitter {
+    private static deriveTargetChoiceKind(action: unknown, contextKind: unknown): string {
+        const normalizedAction = typeof action === 'string' ? action : '';
+
+        const kindByAction: Record<string, ChoiceKind> = {
+            discardFromHand: ChoiceKind.DISCARD_FROM_HAND,
+            moveFromHandToDeckBottom: ChoiceKind.MOVE_FROM_HAND_TO_DECK_BOTTOM,
+            moveFromTrashToDeck: ChoiceKind.MOVE_FROM_TRASH_TO_DECK,
+            exileFromTrash: ChoiceKind.EXILE_FROM_TRASH,
+
+            destroy: ChoiceKind.DESTROY,
+            returnToHand: ChoiceKind.RETURN_TO_HAND,
+            addToHand: ChoiceKind.ADD_TO_HAND,
+
+            rest: ChoiceKind.REST,
+            setActive: ChoiceKind.SET_ACTIVE,
+            restrict_attack: ChoiceKind.RESTRICT_ATTACK,
+            prevent_battle_damage: ChoiceKind.PREVENT_BATTLE_DAMAGE,
+            prevent_set_active_next_turn: ChoiceKind.PREVENT_SET_ACTIVE_NEXT_TURN,
+            allow_attack_target: ChoiceKind.ALLOW_ATTACK_TARGET,
+
+            damage: ChoiceKind.DAMAGE,
+            damageShield: ChoiceKind.DAMAGE_SHIELD,
+            heal: ChoiceKind.HEAL,
+
+            deploy_from_hand: ChoiceKind.DEPLOY_FROM_HAND,
+            pair_from_trash: ChoiceKind.PAIR_FROM_TRASH,
+
+            grant_keyword: ChoiceKind.GRANT_KEYWORD,
+            grant_breach: ChoiceKind.GRANT_BREACH,
+            prevent_shield_damage: ChoiceKind.PREVENT_SHIELD_DAMAGE,
+            scry_top_deck: ChoiceKind.SCRY_TOP_DECK,
+            addBasicEnergy: ChoiceKind.ADD_BASIC_ENERGY,
+            addExtraEnergy: ChoiceKind.ADD_EXTRA_ENERGY,
+            conditionalTokenDeploy: ChoiceKind.CONDITIONAL_TOKEN_DEPLOY
+        };
+
+        const baseKind = kindByAction[normalizedAction] || ChoiceKind.EFFECT_TARGET_CHOICE;
+        if (isSequenceContextKind(contextKind)) {
+            return `SEQUENCE_${baseKind}`;
+        }
+
+        return baseKind;
+    }
+
     private static emitPersistentChoiceCreated(
         gameEnv: GameEnvironment,
         params: {
@@ -106,6 +151,11 @@ export class ChoiceNotificationEmitter {
         const rawCount = event.data?.effect?.target?.count;
         const countRange = TargetCountUtils.parseRange(rawCount, { min: 1, max: 1 });
         const isCostChoice = event.data?.effect?.trigger === 'COST';
+        const effectAction = event.data?.effect?.action;
+        const effectId = event.data?.effect?.effectId;
+        const contextKind = (event.data as any)?.context?.kind;
+        const choiceKind = ChoiceNotificationEmitter.deriveTargetChoiceKind(effectAction, contextKind);
+
         // For optional COST choices (i.e., "you may pay this cost"), allow declining (empty selection),
         // but if the player chooses to pay, the selection should still match the effect's count.
         const targetCount = (allowEmptySelection && !isCostChoice)
@@ -118,6 +168,13 @@ export class ChoiceNotificationEmitter {
                 playerId: event.playerId,
                 allowEmptySelection,
                 targetCount,
+                choiceKind,
+                choice: {
+                    action: typeof effectAction === 'string' ? effectAction : undefined,
+                    effectId: typeof effectId === 'string' ? effectId : undefined,
+                    sourceCarduid: event.data?.sourceCarduid,
+                    contextKind: typeof contextKind === 'string' ? contextKind : undefined
+                },
                 event,
                 isCompleted: false
             },

@@ -45,6 +45,54 @@ describe('Pairing effect order choice', () => {
         expect(optionChoiceEvent.data.availableOptions).toHaveLength(2);
     });
 
+    test('non-conflicting pairing effects auto-resolve in card-text order (no OPTION_CHOICE)', () => {
+        const gameEnv = new GameEnvironment();
+        const player = gameEnv.addPlayer('playerId_1', 'P1');
+
+        const energyBefore = Array.isArray(player.zones.energyArea) ? player.zones.energyArea.length : 0;
+
+        const eventData = {
+            carduid: 'some_pairing_source',
+            effects: [
+                {
+                    effectId: 'e1',
+                    type: 'triggered',
+                    trigger: 'PAIRING_COMPLETE',
+                    action: 'addExtraEnergy',
+                    optional: false,
+                    pairedSlot: 'slot1',
+                    sourceCarduid: 'u1',
+                    parameters: { value: 1, rested: true }
+                },
+                {
+                    effectId: 'e2',
+                    type: 'triggered',
+                    trigger: 'PAIRING_COMPLETE',
+                    action: 'addExtraEnergy',
+                    optional: false,
+                    pairedSlot: 'slot1',
+                    sourceCarduid: 'u1',
+                    parameters: { value: 1, rested: false }
+                }
+            ]
+        };
+
+        const result = PairingEffectManager.processPairingEffect(gameEnv, 'playerId_1', eventData);
+        expect(result.success).toBe(true);
+        expect(result.effectsProcessed).toBe(1);
+
+        const optionChoiceEvent = gameEnv.processingQueue.find(e => e.type === EventType.OPTION_CHOICE);
+        expect(optionChoiceEvent).toBeFalsy();
+
+        const queuedPairing = gameEnv.processingQueue.find(e => e.type === EventType.PAIRING_EFFECT_TRIGGERED);
+        expect(queuedPairing).toBeTruthy();
+        expect(queuedPairing.data.effects).toHaveLength(1);
+        expect(queuedPairing.data.effects[0].effectId).toBe('e2');
+
+        const energyAfter = Array.isArray(player.zones.energyArea) ? player.zones.energyArea.length : 0;
+        expect(energyAfter).toBe(energyBefore + 1);
+    });
+
     test('pairing_effect_order OPTION_CHOICE enqueues a single-effect pairing event + remainingEffects', () => {
         const gameEnv = new GameEnvironment();
         gameEnv.addPlayer('playerId_1', 'P1');

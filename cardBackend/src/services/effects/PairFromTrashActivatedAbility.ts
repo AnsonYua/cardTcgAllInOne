@@ -52,7 +52,8 @@ export class PairFromTrashActivatedAbility {
         const availableCostTargets = TargetResolver.generateAvailableTargets(
             gameEnv,
             playerId,
-            TargetResolver.resolveTargetConfig(costTargetEffect)
+            TargetResolver.resolveTargetConfig(costTargetEffect),
+            sourceCarduid
         );
 
         if (availableCostTargets.length < costCount) {
@@ -64,7 +65,8 @@ export class PairFromTrashActivatedAbility {
             const availableMainTargets = TargetResolver.generateAvailableTargets(
                 gameEnv,
                 playerId,
-                TargetResolver.resolveTargetConfig(normalizedEffect)
+                TargetResolver.resolveTargetConfig(normalizedEffect),
+                sourceCarduid
             );
             if (availableMainTargets.length < mainTargetCount) {
                 return { handled: true, success: false, error: 'No valid targets to resolve this ability' };
@@ -108,4 +110,3 @@ export class PairFromTrashActivatedAbility {
         };
     }
 }
-

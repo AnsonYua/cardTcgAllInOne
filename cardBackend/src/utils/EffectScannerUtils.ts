@@ -14,16 +14,10 @@ import { getCardIdFromUid } from './CardUtils';
 import { EffectDefinition } from '../services/EventQueue/interfaces/GameEvent';
 import { resolveEffectActionFromRule } from './EffectNormalizationUtils';
 import { ActionStepTargetSummary } from '../models/BattleContext';
-import { isBlockerRedirectRule } from './BlockerRuleUtils';
 import { extractActionStepEffectIds } from './ActionStepTargetPolicy';
 
 export interface EffectScanResult {
     carduid: string;
-}
-
-export interface BlockerUnit {
-    carduid: string;
-    effect: EffectDefinition;
 }
 
 export type EffectFilter = (effect: EffectDefinition) => boolean;
@@ -66,53 +60,6 @@ export class EffectScannerUtils {
                 if (effectFilter(effect)) {
                     results.push({ carduid: unit.carduid });
                     break; // Only need to know the card has a matching effect
-                }
-            }
-        }
-        
-        return results;
-    }
-    
-    /**
-     * Simplified blocker scanner - returns carduid + effect only
-     * Everything else (zone, playerId, etc.) derived via findSlotByCarduid when needed
-     */
-    static scanForBlockerUnits(gameEnv: GameEnvironment, playerId: string): BlockerUnit[] {
-        const results: BlockerUnit[] = [];
-        const player = gameEnv.getPlayer(playerId);
-        
-        if (!player || !player.zones) {
-            return results;
-        }
-
-        for (const slotName of SLOT_ZONES) {
-            const slotResult = SlotZoneUtils.getSlotZone(player.zones, slotName);
-            if (!slotResult.isValid || !slotResult.slot?.unit) {
-                continue;
-            }
-
-            const unit = slotResult.slot.unit;
-            
-            // Skip rested units and invalid cards
-            if (!unit.carduid || unit.isRested) {
-                continue;
-            }
-
-            // Use cardData from unit directly instead of CardDatabaseManager
-            const cardData = unit.cardData;
-            
-            if (!cardData?.effects?.rules) {
-                continue;
-            }
-
-            // Find blocker effects
-            for (const effect of cardData.effects.rules) {
-                if (isBlockerRedirectRule(effect)) {
-                    results.push({
-                        carduid: unit.carduid,
-                        effect: effect
-                    });
-                    break;
                 }
             }
         }

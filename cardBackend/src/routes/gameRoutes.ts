@@ -3,6 +3,7 @@
 
 import express, { Request, Response, NextFunction } from 'express';
 import { gameController } from '../controllers/gameController';
+import { choiceController } from '../controllers/choiceController';
 import { gameLogic } from '../services/GameLogic';
 
 // ============ TYPE DEFINITIONS ============
@@ -192,6 +193,12 @@ router.post('/player/confirmTokenChoice', gameController.confirmTokenChoice.bind
  * POST /api/game/player/confirmOptionChoice
  */
 router.post('/player/confirmOptionChoice', gameController.confirmOptionChoice.bind(gameController));
+
+/**
+ * Cancel (decline) a pending choice when the frontend closes the dialog
+ * POST /api/game/player/cancelChoice
+ */
+router.post('/player/cancelChoice', choiceController.cancelChoice.bind(choiceController));
 
 /**
  * AI player action (placeholder)

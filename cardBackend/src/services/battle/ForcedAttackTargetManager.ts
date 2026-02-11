@@ -283,6 +283,6 @@ export class ForcedAttackTargetManager {
         } as any);
 
         const targetConfig = TargetResolver.resolveTargetConfig(effect);
-        return TargetResolver.generateAvailableTargets(gameEnv, defendingPlayerId, targetConfig);
+        return TargetResolver.generateAvailableTargets(gameEnv, defendingPlayerId, targetConfig, sourceUnitCarduid);
     }
 }

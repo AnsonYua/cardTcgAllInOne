@@ -16,6 +16,7 @@ import { TargetCountUtils } from './TargetCountUtils';
 import { TargetKeywordFilterUtils } from './TargetKeywordFilterUtils';
 import { TargetStateFilterUtils } from './TargetStateFilterUtils';
 import { getSlotTotals } from '../../utils/FieldValueCalculator';
+import { DynamicComparisonFilterResolver } from './filters/DynamicComparisonFilterResolver';
 
 export interface ResolvedTargetConfig {
     type: TargetType;
@@ -216,7 +217,7 @@ export class TargetResolver {
                     return false;
                 }
             } else if (typeof filters.level === 'string') {
-                const resolvedFilter = this.resolveDynamicComparisonFilter(filters.level, gameEnv, sourceCarduid);
+                const resolvedFilter = DynamicComparisonFilterResolver.resolve(filters.level, gameEnv, sourceCarduid);
                 if (!resolvedFilter) {
                     console.log(`❌ Card ${card.carduid} failed level filter: ${filters.level}`);
                     return false;
@@ -297,40 +298,6 @@ export class TargetResolver {
         }
 
         return true;
-    }
-
-    private static resolveDynamicComparisonFilter(
-        rawFilter: string,
-        gameEnv: GameEnvironment,
-        sourceCarduid?: string
-    ): string | null {
-        if (!rawFilter) {
-            return null;
-        }
-
-        if (!rawFilter.includes('SOURCE_LEVEL')) {
-            return rawFilter;
-        }
-
-        const match = rawFilter.match(/^(<=|>=|<|>|==|!=)SOURCE_LEVEL$/);
-        if (!match) {
-            console.log(`⚠️ Unsupported dynamic comparison filter: ${rawFilter}`);
-            return null;
-        }
-
-        if (!sourceCarduid) {
-            console.log(`⚠️ Cannot resolve ${rawFilter} without sourceCarduid`);
-            return null;
-        }
-
-        const sourceCard = SlotZoneUtils.getCardByUid(gameEnv, sourceCarduid) as any;
-        const sourceLevel = typeof sourceCard?.cardData?.level === 'number' ? (sourceCard.cardData.level as number) : null;
-        if (sourceLevel === null) {
-            console.log(`⚠️ Cannot resolve ${rawFilter}: source ${sourceCarduid} has no level`);
-            return null;
-        }
-
-        return `${match[1]}${sourceLevel}`;
     }
 
     private static isUnitLinked(

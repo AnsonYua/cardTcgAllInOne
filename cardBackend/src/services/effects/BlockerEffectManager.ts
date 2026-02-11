@@ -2,7 +2,7 @@
 // Blocker effect detection system for ATTACK_REDIRECT triggered effects
 
 import { GameEnvironment } from '../../models/GameEnvironment';
-import { EffectScannerUtils, BlockerUnit } from '../../utils/EffectScannerUtils';
+import { scanForBlockerUnits, type BlockerUnit } from '../../utils/BlockerScannerUtils';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { ConditionEvaluators } from '../conditions/ConditionEvaluators';
@@ -10,14 +10,14 @@ import { evaluateCardsInPlayCondition } from '../conditions/CardsInPlayCondition
 
 /**
  * BlockerEffectManager handles blocker unit detection
- * Uses centralized EffectScannerUtils for effect detection
+ * Uses centralized BlockerScannerUtils for effect detection
  * Choice logic moved to BlockerChoiceManager following DeployTargetManager pattern
  */
 export class BlockerEffectManager {
 
     /**
      * Check for available blocker units in defending player's zones
-     * Delegates to centralized EffectScannerUtils
+     * Delegates to centralized BlockerScannerUtils
      */
     static checkForBlockerUnits(
         gameEnv: GameEnvironment,
@@ -26,7 +26,7 @@ export class BlockerEffectManager {
     ): BlockerUnit[] {
         console.log(`🛡️ Checking for blocker units for player ${defendingPlayerId}`);
         
-        let blockers = EffectScannerUtils.scanForBlockerUnits(gameEnv, defendingPlayerId);
+        let blockers = scanForBlockerUnits(gameEnv, defendingPlayerId);
         blockers = blockers.filter(blocker => this.conditionsSatisfied(gameEnv, defendingPlayerId, blocker.effect?.conditions));
 
         if (options?.excludeCarduid) {
@@ -112,7 +112,7 @@ export class BlockerEffectManager {
      * Get blocker effect description for UI display
      */
     static getBlockerDescription(blocker: BlockerUnit): string {
-        const cost = blocker.effect.parameters?.cost || 'rest_self';
+        const cost = blocker.effect?.parameters?.cost || 'rest_self';
         return `Blocker (${cost}): Rest this unit to redirect attack to it`;
     }
 

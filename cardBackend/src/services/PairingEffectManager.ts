@@ -432,8 +432,8 @@ export class PairingEffectManager implements StandardEffectManager {
         
         try {
             const { effects } = eventData;
-            const pairingEffects = effects as PairingEffect[];
-            const remainingEffects = Array.isArray((eventData as any).remainingEffects)
+            let pairingEffects = effects as PairingEffect[];
+            let remainingEffects = Array.isArray((eventData as any).remainingEffects)
                 ? ((eventData as any).remainingEffects as PairingEffect[])
                 : [];
             
@@ -446,41 +446,47 @@ export class PairingEffectManager implements StandardEffectManager {
                 };
             }
 
-            // If multiple effects are present, let the player pick which one resolves next.
-            // This prevents the engine from auto-executing effects in a fixed order.
+            // If multiple effects are present, resolve them in card-text order when they are
+            // non-conflicting; otherwise let the player pick which one resolves next.
             if (pairingEffects.length > 1) {
-                const options = pairingEffects.map((effect, index) => ({
-                    index,
-                    label: this.describePairingEffectOption(gameEnv, playerId, effect)
-                }));
+                if (this.shouldPromptForPairingEffectOrder(pairingEffects)) {
+                    const options = pairingEffects.map((effect, index) => ({
+                        index,
+                        label: this.describePairingEffectOption(gameEnv, playerId, effect)
+                    }));
 
-                const choiceEffect = ensureEffectDefaults({
-                    effectId: 'pairing_effect_order',
-                    type: 'internal',
-                    trigger: 'CHOICE',
-                    action: 'pairing_effect_order'
-                } as any);
+                    const choiceEffect = ensureEffectDefaults({
+                        effectId: 'pairing_effect_order',
+                        type: 'internal',
+                        trigger: 'CHOICE',
+                        action: 'pairing_effect_order'
+                    } as any);
 
-                const context: PairingEffectOrderContext = {
-                    kind: 'PAIRING_EFFECT_ORDER',
-                    pairingCarduid: eventData.carduid,
-                    effects: pairingEffects as unknown as PairingEffectDefinition[]
-                };
+                    const context: PairingEffectOrderContext = {
+                        kind: 'PAIRING_EFFECT_ORDER',
+                        pairingCarduid: eventData.carduid,
+                        effects: pairingEffects as unknown as PairingEffectDefinition[]
+                    };
 
-                // Enqueue as an immediate choice and notify the frontend.
-                ChoiceEventScheduler.enqueueOptionChoice(gameEnv, {
-                    playerId,
-                    sourceCarduid: eventData.carduid,
-                    effect: choiceEffect,
-                    availableOptions: options,
-                    context
-                });
+                    // Enqueue as an immediate choice and notify the frontend.
+                    ChoiceEventScheduler.enqueueOptionChoice(gameEnv, {
+                        playerId,
+                        sourceCarduid: eventData.carduid,
+                        effect: choiceEffect,
+                        availableOptions: options,
+                        context
+                    });
 
-                return {
-                    success: true,
-                    message: 'Waiting for player to choose pairing effect order',
-                    effectsProcessed: 0
-                };
+                    return {
+                        success: true,
+                        message: 'Waiting for player to choose pairing effect order',
+                        effectsProcessed: 0
+                    };
+                }
+
+                // Auto-resolve in card-text order (effects array order).
+                remainingEffects = [...pairingEffects.slice(1), ...remainingEffects];
+                pairingEffects = [pairingEffects[0]];
             }
             
             console.log(`🔗 Processing ${pairingEffects.length} pairing effect(s) for player ${playerId}`);
@@ -527,41 +533,51 @@ export class PairingEffectManager implements StandardEffectManager {
                     const nextEvent = EventFactory.createPairingEffectEvent(playerId, eventData.carduid, [
                         remainingEffects[0] as unknown as PairingEffectDefinition
                     ]);
+                    (nextEvent.data as any).remainingEffects = [];
                     // Keep as NORMAL priority so any immediate choice events resolve first.
                     nextEvent.priority = EventPriority.NORMAL;
                     gameEnv.enqueueForProcessing(nextEvent);
                 } else {
-                    const options = remainingEffects.map((remainingEffect, index) => ({
-                        index,
-                        label: this.describePairingEffectOption(gameEnv, playerId, remainingEffect)
-                    }));
+                    if (!this.shouldPromptForPairingEffectOrder(remainingEffects)) {
+                        const nextEvent = EventFactory.createPairingEffectEvent(playerId, eventData.carduid, [
+                            remainingEffects[0] as unknown as PairingEffectDefinition
+                        ]);
+                        (nextEvent.data as any).remainingEffects = remainingEffects.slice(1);
+                        nextEvent.priority = EventPriority.NORMAL;
+                        gameEnv.enqueueForProcessing(nextEvent);
+                    } else {
+                        const options = remainingEffects.map((remainingEffect, index) => ({
+                            index,
+                            label: this.describePairingEffectOption(gameEnv, playerId, remainingEffect)
+                        }));
 
-                    const choiceEffect = ensureEffectDefaults({
-                        effectId: 'pairing_effect_order',
-                        type: 'internal',
-                        trigger: 'CHOICE',
-                        action: 'pairing_effect_order'
-                    } as any);
+                        const choiceEffect = ensureEffectDefaults({
+                            effectId: 'pairing_effect_order',
+                            type: 'internal',
+                            trigger: 'CHOICE',
+                            action: 'pairing_effect_order'
+                        } as any);
 
-                    const context: PairingEffectOrderContext = {
-                        kind: 'PAIRING_EFFECT_ORDER',
-                        pairingCarduid: eventData.carduid,
-                        effects: remainingEffects as unknown as PairingEffectDefinition[]
-                    };
+                        const context: PairingEffectOrderContext = {
+                            kind: 'PAIRING_EFFECT_ORDER',
+                            pairingCarduid: eventData.carduid,
+                            effects: remainingEffects as unknown as PairingEffectDefinition[]
+                        };
 
-                    const followUpChoice = EventFactory.createOptionChoiceEvent({
-                        playerId,
-                        sourceCarduid: eventData.carduid,
-                        effect: choiceEffect,
-                        availableOptions: options,
-                        context
-                    });
+                        const followUpChoice = EventFactory.createOptionChoiceEvent({
+                            playerId,
+                            sourceCarduid: eventData.carduid,
+                            effect: choiceEffect,
+                            availableOptions: options,
+                            context
+                        });
 
-                    // Ensure this follow-up choice sits behind any immediate cost/target choices
-                    // created by the current effect.
-                    followUpChoice.priority = EventPriority.NORMAL;
-                    gameEnv.enqueueForProcessing(followUpChoice);
-                    ChoiceNotificationEmitter.emitOptionChoiceCreated(gameEnv, followUpChoice);
+                        // Ensure this follow-up choice sits behind any immediate cost/target choices
+                        // created by the current effect.
+                        followUpChoice.priority = EventPriority.NORMAL;
+                        gameEnv.enqueueForProcessing(followUpChoice);
+                        ChoiceNotificationEmitter.emitOptionChoiceCreated(gameEnv, followUpChoice);
+                    }
                 }
             }
 
@@ -607,6 +623,56 @@ export class PairingEffectManager implements StandardEffectManager {
         const sourceName = this.findCardName(gameEnv, playerId, sourceCarduid);
         const prefix = sourceName ? `${sourceName}: ` : '';
         return `${prefix}${effectId} (${action})`;
+    }
+
+    private static shouldPromptForPairingEffectOrder(effects: PairingEffect[]): boolean {
+        if (!Array.isArray(effects) || effects.length <= 1) {
+            return false;
+        }
+
+        // Card-text order only makes sense when all effects come from the same source card.
+        const sourceCarduid = typeof effects[0]?.sourceCarduid === 'string' ? effects[0].sourceCarduid : '';
+        if (!sourceCarduid) {
+            return true;
+        }
+        for (const effect of effects) {
+            if (effect?.sourceCarduid !== sourceCarduid) {
+                return true;
+            }
+        }
+
+        // Optional effects should remain player-controlled.
+        if (effects.some(effect => (effect as any)?.optional === true)) {
+            return true;
+        }
+
+        // Auto-order only for a conservative set of actions that are unlikely to conflict.
+        for (const effect of effects) {
+            const action = typeof effect?.action === 'string' ? effect.action : '';
+            if (!action) {
+                return true;
+            }
+
+            if (action === 'addExtraEnergy' || action === 'addBasicEnergy') {
+                continue;
+            }
+
+            if (action === 'grant_keyword' || action === 'grant_breach' || action === 'prevent_battle_damage' || action === 'prevent_damage') {
+                continue;
+            }
+
+            if (action === 'modifyAP' || action === 'modifyHP') {
+                const scope = typeof (effect as any)?.target?.scope === 'string' ? (effect as any).target.scope : '';
+                if (scope === 'self') {
+                    continue;
+                }
+                return true;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     private static findCardName(gameEnv: GameEnvironment, playerId: string, carduid: string): string | undefined {

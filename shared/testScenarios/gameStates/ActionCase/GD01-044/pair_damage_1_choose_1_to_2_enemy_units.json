@@ -185,7 +185,21 @@
               "temporaryEffects": []
             }
           },
-          "slot3": {},
+          "slot3": {
+            "unit": {
+              "carduid": "GD01-001_enemy_00021",
+              "cardId": "GD01-001",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "originalAP": 3,
+              "originalHP": 3,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "damageReceived": 0,
+              "temporaryEffects": []
+            }            
+          },
           "slot4": {},
           "slot5": {},
           "slot6": {},

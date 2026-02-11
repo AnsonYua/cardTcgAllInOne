@@ -1239,6 +1239,48 @@ export class GameLogic {
         );
     }
 
+    /**
+     * Cancel (decline) a pending choice event when the frontend closes the dialog.
+     * Supported cancellations:
+     * - BURST_EFFECT_CHOICE => decline
+     * - TARGET_CHOICE => empty selection (only if effect.optional allows it)
+     * - BLOCKER_CHOICE => decline (no blocker selected)
+     *
+     * TOKEN_CHOICE / OPTION_CHOICE / PROMPT_CHOICE are not cancelable by default (frontend should prevent closing).
+     */
+    async cancelChoice(gameId: string, playerId: string, eventId: string): Promise<GameLogicResult> {
+        try {
+            const gameEnv = await this.loadGameFromFile(gameId);
+            if (!gameEnv) {
+                return { success: false, error: 'Game not found' };
+            }
+
+            const event = gameEnv.findEventById(eventId);
+            if (!event) {
+                return { success: false, error: 'Event not found in processing queue' };
+            }
+
+            switch (event.type) {
+                case EventType.BURST_EFFECT_CHOICE:
+                    return await this.confirmBurstChoice(gameId, playerId, eventId, false);
+                case EventType.TARGET_CHOICE:
+                    return await this.confirmTargetChoice(gameId, playerId, eventId, []);
+                case EventType.BLOCKER_CHOICE:
+                    return await this.confirmBlockerChoice(gameId, playerId, eventId, []);
+                default:
+                    return {
+                        success: false,
+                        error: `Event type ${event.type} cannot be cancelled; a selection is required`
+                    };
+            }
+        } catch (error) {
+            console.error('❌ Error in cancelChoice:', error);
+            return {
+                success: false,
+                error: `Failed to cancel choice: ${error instanceof Error ? error.message : 'Unknown error'}`
+            };
+        }
+    }
 
     async confirmBlockerChoice(gameId: string, playerId: string, eventId: string, selectedTargets: TargetReference[], notificationId?: string): Promise<GameLogicResult> {
         try {
