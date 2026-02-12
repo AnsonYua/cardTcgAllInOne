@@ -1166,8 +1166,7 @@ export class GameController {
                 return;
             }
             
-            console.log(`📋 Loading test scenario: ${scenarioPath}`);
-            
+         
             const backendRoot =
                 GameController.findNearestPackageRoot(__dirname) ??
                 GameController.findNearestPackageRoot(process.cwd()) ??
@@ -1176,7 +1175,9 @@ export class GameController {
             const scenarioBaseDir = path.join(backendRoot, 'shared/testScenarios/gameStates');
             const scenarioFilename = scenarioPath.endsWith('.json') ? scenarioPath : `${scenarioPath}.json`;
             const scenarioFilePath = path.resolve(scenarioBaseDir, scenarioFilename);
+            //console.log(`📋 Loading test scenario: ${scenarioFilePath}`);
             console.log(`📋 Loading test scenario: ${scenarioFilePath}`);
+            
             
             // Prevent path traversal via scenarioPath (e.g. ../../../secrets)
             const scenarioBaseResolved = path.resolve(scenarioBaseDir);
