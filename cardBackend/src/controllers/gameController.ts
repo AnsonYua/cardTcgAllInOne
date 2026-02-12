@@ -41,6 +41,23 @@ export class GameController {
         console.log('🎮 Custom Trading Card Game Controller initialized');
     }
 
+    private static findNearestPackageRoot(startDir: string): string | null {
+        let currentDir = path.resolve(startDir);
+        // Walk up until filesystem root
+        while (true) {
+            const packageJsonPath = path.join(currentDir, 'package.json');
+            if (fs.existsSync(packageJsonPath)) {
+                return currentDir;
+            }
+
+            const parentDir = path.dirname(currentDir);
+            if (parentDir === currentDir) {
+                return null;
+            }
+            currentDir = parentDir;
+        }
+    }
+
     private static toSetFolderFromCardId(cardId: string): string | null {
         if (typeof cardId !== 'string' || cardId.length === 0) {
             return null;
@@ -1151,8 +1168,25 @@ export class GameController {
             
             console.log(`📋 Loading test scenario: ${scenarioPath}`);
             
-            // Build the full path to the test scenario
-            const scenarioFilePath = path.join(__dirname, '../../../shared/testScenarios/gameStates', scenarioPath + '.json');
+            const backendRoot =
+                GameController.findNearestPackageRoot(__dirname) ??
+                GameController.findNearestPackageRoot(process.cwd()) ??
+                process.cwd();
+
+            const scenarioBaseDir = path.join(backendRoot, 'shared/testScenarios/gameStates');
+            const scenarioFilename = scenarioPath.endsWith('.json') ? scenarioPath : `${scenarioPath}.json`;
+            const scenarioFilePath = path.resolve(scenarioBaseDir, scenarioFilename);
+
+            // Prevent path traversal via scenarioPath (e.g. ../../../secrets)
+            const scenarioBaseResolved = path.resolve(scenarioBaseDir);
+            if (!scenarioFilePath.startsWith(scenarioBaseResolved + path.sep)) {
+                res.status(400).json({
+                    error: 'Invalid scenarioPath',
+                    timestamp: new Date().toISOString(),
+                    context: 'getTestScenario endpoint'
+                });
+                return;
+            }
             
             // Check if file exists
             if (!fs.existsSync(scenarioFilePath)) {
