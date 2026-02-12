@@ -19,20 +19,40 @@ console.log('🎮 Starting Custom Trading Card Game Server...');
 
 // CORS configuration for cross-origin requests
 const localNetworkOrigin = /^https?:\/\/((10\.\d{1,3}\.\d{1,3}\.\d{1,3})|(192\.168\.\d{1,3}\.\d{1,3})|(172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}))(:\d+)?$/;
-const allowlistedOrigins = [
+const defaultAllowlistedOrigins = [
     'http://localhost:3000',
     'http://localhost:8080',
-    'http://localhost:5173'
+    'http://localhost:5173',
+    'https://plankton-app-hc4oo.ondigitalocean.app'
 ];
 
-app.use(cors({
+const envAllowlistedOrigins = (process.env.CORS_ORIGINS || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+const allowlistedOrigins = Array.from(new Set([
+    ...defaultAllowlistedOrigins,
+    ...envAllowlistedOrigins
+]));
+
+let envOriginRegex: RegExp | undefined;
+if (process.env.CORS_ORIGIN_REGEX) {
+    try {
+        envOriginRegex = new RegExp(process.env.CORS_ORIGIN_REGEX);
+    } catch (error) {
+        console.warn('⚠️ Invalid CORS_ORIGIN_REGEX; ignoring.', error);
+    }
+}
+
+const corsOptions: cors.CorsOptions = {
     origin: (origin, callback) => {
         // Allow server-to-server and tools without an Origin header.
         if (!origin) {
             return callback(null, true);
         }
 
-        if (allowlistedOrigins.includes(origin) || localNetworkOrigin.test(origin)) {
+        if (allowlistedOrigins.includes(origin) || localNetworkOrigin.test(origin) || envOriginRegex?.test(origin)) {
             return callback(null, true);
         }
 
@@ -40,7 +60,10 @@ app.use(cors({
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control']
-}));
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
