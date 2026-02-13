@@ -1176,7 +1176,7 @@ export class GameController {
             const scenarioFilename = scenarioPath.endsWith('.json') ? scenarioPath : `${scenarioPath}.json`;
             const scenarioFilePath = path.resolve(scenarioBaseDir, scenarioFilename);
             //console.log(`📋 Loading test scenario: ${scenarioFilePath}`);
-            console.log(`📋 Loading test scenario: ${scenarioFilePath}`);
+            console.log(`📋 Loading test scenario11111: ${scenarioFilePath}`);
             
             
             // Prevent path traversal via scenarioPath (e.g. ../../../secrets)
