@@ -41,6 +41,65 @@ export class GameController {
         console.log('🎮 Custom Trading Card Game Controller initialized');
     }
 
+    private static resolvePathCaseInsensitive(rootDir: string, relativePath: string): string | null {
+        const segments = relativePath
+            .split('/')
+            .map((s) => s.trim())
+            .filter(Boolean);
+
+        let currentDir = rootDir;
+        for (const segment of segments) {
+            let entries: string[];
+            try {
+                entries = fs.readdirSync(currentDir);
+            } catch {
+                return null;
+            }
+
+            const exact = entries.find((e) => e === segment);
+            const matched = exact ?? entries.find((e) => e.toLowerCase() === segment.toLowerCase());
+            if (!matched) {
+                return null;
+            }
+            currentDir = path.join(currentDir, matched);
+        }
+
+        return currentDir;
+    }
+
+    private static resolveImageFilePath(sanitizedImagePath: string): string | null {
+        const imageRootDir = resolveDataPath('image');
+        if (!fs.existsSync(imageRootDir) || !fs.statSync(imageRootDir).isDirectory()) {
+            return null;
+        }
+
+        const directPath = resolveDataPath('image', sanitizedImagePath);
+        if (fs.existsSync(directPath)) {
+            return directPath;
+        }
+
+        const caseInsensitivePath = GameController.resolvePathCaseInsensitive(imageRootDir, sanitizedImagePath);
+        if (caseInsensitivePath && fs.existsSync(caseInsensitivePath)) {
+            return caseInsensitivePath;
+        }
+
+        // Back-compat: some clients request previews/<set>/... while assets live at <set>/...
+        const withoutPreviews = sanitizedImagePath.replace(/^previews\//i, '');
+        if (withoutPreviews !== sanitizedImagePath) {
+            const directWithoutPreviews = resolveDataPath('image', withoutPreviews);
+            if (fs.existsSync(directWithoutPreviews)) {
+                return directWithoutPreviews;
+            }
+
+            const caseInsensitiveWithoutPreviews = GameController.resolvePathCaseInsensitive(imageRootDir, withoutPreviews);
+            if (caseInsensitiveWithoutPreviews && fs.existsSync(caseInsensitiveWithoutPreviews)) {
+                return caseInsensitiveWithoutPreviews;
+            }
+        }
+
+        return null;
+    }
+
     private static findNearestPackageRoot(startDir: string): string | null {
         let currentDir = path.resolve(startDir);
         // Walk up until filesystem root
@@ -996,12 +1055,9 @@ export class GameController {
                 .replace(/\.\./g, '')  // Remove ..
                 .replace(/[\\]/g, '/') // Normalize path separators
                 .replace(/\/+/g, '/'); // Remove double slashes
-            
-            // Build full path to image file
-            const imagePath = resolveDataPath('image', sanitizedImagePath);
-            
-            // Check if file exists
-            if (!fs.existsSync(imagePath)) {
+
+            const imagePath = GameController.resolveImageFilePath(sanitizedImagePath);
+            if (!imagePath) {
                 res.status(404).json({
                     error: `Image not found: ${sanitizedImagePath}`,
                     timestamp: new Date().toISOString(),
