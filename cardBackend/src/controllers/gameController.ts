@@ -11,6 +11,8 @@ import { CardDatabaseManager } from '../models/CardSystem';
 import * as fs from 'fs';
 import * as path from 'path';
 import { json } from 'stream/consumers';
+import { signResourceBundleToken, verifyResourceBundleToken } from '../utils/ResourceBundleToken';
+import crypto from 'crypto';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -35,10 +37,26 @@ export interface ErrorResponse {
 
 export class GameController {
     private gameLogic: GameLogic;
+    private static resourceBundleSecret: string | null = null;
 
     constructor() {
         this.gameLogic = gameLogic;
         console.log('🎮 Custom Trading Card Game Controller initialized');
+    }
+
+    private static getResourceBundleSecret(): string {
+        const envSecret = (process.env.RESOURCE_BUNDLE_SECRET || '').trim();
+        if (envSecret) {
+            GameController.resourceBundleSecret = envSecret;
+            return envSecret;
+        }
+        if (GameController.resourceBundleSecret) {
+            return GameController.resourceBundleSecret;
+        }
+        // Dev-friendly default: generate an ephemeral secret per process so tokens work without .env.
+        // For production, always set RESOURCE_BUNDLE_SECRET to a stable, long random value.
+        GameController.resourceBundleSecret = crypto.randomBytes(32).toString('hex');
+        return GameController.resourceBundleSecret;
     }
 
     private static resolvePathCaseInsensitive(rootDir: string, relativePath: string): string | null {
@@ -541,10 +559,16 @@ export class GameController {
             const gameState = await this.gameLogic.getPlayerGameState(gameId as string, playerId);
             
             if (gameState.success && gameState.gameEnv) {
+                const secret = GameController.getResourceBundleSecret();
+                const resourceBundleToken = signResourceBundleToken(
+                    { gameId: String(gameId), playerId, exp: Math.floor(Date.now() / 1000) + 10 * 60 },
+                    secret,
+                );
                 res.json({
                     success: true,
                     gameId: gameState.gameId,
-                    gameEnv: gameState.gameEnv
+                    gameEnv: gameState.gameEnv,
+                    resourceBundleToken,
                 });
             } else {
                 res.status(400).json({
@@ -839,6 +863,123 @@ export class GameController {
         }
     }
 
+    private async buildGameResourceData(gameId?: string): Promise<any> {
+        // Read and parse the gcgdecks.json file
+        const deckDataContent = await fs.promises.readFile(GCG_DECKS_PATH, 'utf8');
+        const deckData = JSON.parse(deckDataContent);
+
+        /**
+         * read the gameEnv using the gameId, extra all card in the gameEnv, if the card doesnt existing deck001 and extraCard, add it into extraCard
+         * forexamaple
+         * if u see ST03-003 in gameEnv, make it st03/ST03-003 and add it to extra card array.
+         */
+        if (gameId) {
+            const gameEnv = await this.gameLogic.loadGameFromFile(gameId);
+            if (!gameEnv) {
+                const err: any = new Error('Game not found');
+                err.statusCode = 404;
+                throw err;
+            }
+
+            if (!deckData.decks || typeof deckData.decks !== 'object') {
+                deckData.decks = {};
+            }
+            if (!deckData.decks.deck001 || typeof deckData.decks.deck001 !== 'object') {
+                deckData.decks.deck001 = { cards: [] };
+            }
+            if (!deckData.decks.extraCard || typeof deckData.decks.extraCard !== 'object') {
+                deckData.decks.extraCard = { cards: [] };
+            }
+
+            const deck001Cards: string[] = Array.isArray(deckData.decks.deck001.cards) ? deckData.decks.deck001.cards : [];
+            const extraCards: string[] = Array.isArray(deckData.decks.extraCard.cards) ? deckData.decks.extraCard.cards : [];
+
+            const deck001Set = new Set(deck001Cards.filter((c) => typeof c === 'string'));
+            const extraSet = new Set(extraCards.filter((c) => typeof c === 'string'));
+
+            const cardIds = GameController.collectCardIdsFromGameEnv(gameEnv);
+            for (const cardId of cardIds) {
+                const resourcePath = GameController.toCardResourcePath(cardId);
+                if (!resourcePath) {
+                    // If this is a token, try to infer folder from existing decks rather than hardcoding st01.
+                    if (/^T-\d+$/i.test(cardId)) {
+                        const allExisting = [...deck001Cards, ...extraCards].filter((c) => typeof c === 'string') as string[];
+                        const existingFolder = GameController.findTokenFolderInDeckLists(cardId, allExisting);
+                        const tokenPath = existingFolder
+                            ? GameController.toCardResourcePath(cardId, existingFolder)
+                            : null;
+                        if (tokenPath && !deck001Set.has(tokenPath) && !extraSet.has(tokenPath)) {
+                            extraCards.push(tokenPath);
+                            extraSet.add(tokenPath);
+                        }
+                    }
+                    continue;
+                }
+                if (!deck001Set.has(resourcePath) && !extraSet.has(resourcePath)) {
+                    extraCards.push(resourcePath);
+                    extraSet.add(resourcePath);
+                }
+            }
+
+            /*
+            after updating the deckData, look at all card effect, see if it has some rules that will use token, if yes, add the token cardid into the extra card.
+            dont add it if it is already there
+            */
+            const tokenIds = new Set<string>();
+            for (const setKey of Object.keys(deckData?.decks ?? {})) {
+                const deck = deckData.decks[setKey];
+                const cards: string[] = Array.isArray(deck?.cards) ? deck.cards : [];
+                for (const entry of cards) {
+                    const id = typeof entry === 'string' ? entry.split('/').pop() : null;
+                    if (id && /^(ST|GD)\d{2}-\d{3}$/i.test(id)) {
+                        try {
+                            const folder = entry.split('/')[0];
+                            const cardDataPath = resolveDataPath(`${folder}Card.json`);
+                            if (fs.existsSync(cardDataPath)) {
+                                const content = await fs.promises.readFile(cardDataPath, 'utf8');
+                                const data = JSON.parse(content);
+                                const card = data?.cards?.find?.((c: any) => c?.cardId === id);
+                                const tokens = GameController.collectTokenCardIdsFromCardData(card);
+                                for (const t of tokens) tokenIds.add(t);
+                            }
+                        } catch {
+                            // Ignore token discovery errors; resources are best-effort.
+                        }
+                    }
+                }
+            }
+
+            const allExistingResourcePaths = [...deck001Set, ...extraSet];
+            const tokenResourcePaths: string[] = [];
+            for (const tokenId of tokenIds) {
+                let folderHint: string | undefined =
+                    GameController.findTokenFolderInDeckLists(tokenId, allExistingResourcePaths) || undefined;
+                if (!folderHint) {
+                    const setFolder = CardDatabaseManager.getSetFolderForCardId(tokenId);
+                    if (setFolder) {
+                        folderHint = setFolder;
+                    }
+                }
+                const tokenPath = GameController.toCardResourcePath(tokenId, folderHint);
+                if (tokenPath) {
+                    tokenResourcePaths.push(tokenPath);
+                }
+            }
+
+            for (const tokenResourcePath of tokenResourcePaths) {
+                if (deck001Set.has(tokenResourcePath) || extraSet.has(tokenResourcePath)) {
+                    continue;
+                }
+                extraCards.push(tokenResourcePath);
+                extraSet.add(tokenResourcePath);
+            }
+
+            deckData.decks.extraCard.cards = extraCards;
+        }
+
+        return deckData;
+    }
+
     // ============ CARD DATA ENDPOINTS ============
 
     /**
@@ -896,120 +1037,9 @@ export class GameController {
                 });
                 return;
             }
-            
-            // Read and parse the gcgdecks.json file
-            const deckDataContent = await fs.promises.readFile(GCG_DECKS_PATH, 'utf8');
-            const deckData = JSON.parse(deckDataContent);
-            /**
-             * read the gameEnv using the gameId, extra all card in the gameEnv, if the card doesnt existing deck001 and extraCard, add it into extraCard
-             * forexamaple 
-             * if u see ST03-003 in gameEnv, make it st03/ST03-003 and add it to extra card array.
-             */
+
             const gameId = typeof req.query?.gameId === 'string' ? req.query.gameId : undefined;
-            if (gameId) {
-                const gameEnv = await this.gameLogic.loadGameFromFile(gameId);
-                if (!gameEnv) {
-                    res.status(404).json({
-                        error: 'Game not found',
-                        timestamp: new Date().toISOString(),
-                        context: 'getGameResource endpoint'
-                    });
-                    return;
-                }
-
-                if (!deckData.decks || typeof deckData.decks !== 'object') {
-                    deckData.decks = {};
-                }
-                if (!deckData.decks.deck001 || typeof deckData.decks.deck001 !== 'object') {
-                    deckData.decks.deck001 = { cards: [] };
-                }
-                if (!deckData.decks.extraCard || typeof deckData.decks.extraCard !== 'object') {
-                    deckData.decks.extraCard = { cards: [] };
-                }
-
-                const deck001Cards: string[] = Array.isArray(deckData.decks.deck001.cards) ? deckData.decks.deck001.cards : [];
-                const extraCards: string[] = Array.isArray(deckData.decks.extraCard.cards) ? deckData.decks.extraCard.cards : [];
-
-                const deck001Set = new Set(deck001Cards.filter((c) => typeof c === 'string'));
-                const extraSet = new Set(extraCards.filter((c) => typeof c === 'string'));
-
-                const cardIds = GameController.collectCardIdsFromGameEnv(gameEnv);
-                for (const cardId of cardIds) {
-                    const resourcePath = GameController.toCardResourcePath(cardId);
-                    if (!resourcePath) {
-                        // If this is a token, try to infer folder from existing decks rather than hardcoding st01.
-                        if (/^T-\d+$/i.test(cardId)) {
-                            const existingFolder = GameController.findTokenFolderInDeckLists(
-                                cardId,
-                                [...deck001Cards, ...extraCards]
-                            );
-                            const inferredTokenPath = existingFolder
-                                ? GameController.toCardResourcePath(cardId, existingFolder)
-                                : null;
-                            if (inferredTokenPath && !deck001Set.has(inferredTokenPath) && !extraSet.has(inferredTokenPath)) {
-                                extraCards.push(inferredTokenPath);
-                                extraSet.add(inferredTokenPath);
-                            }
-                        }
-                        continue;
-                    }
-                    if (deck001Set.has(resourcePath) || extraSet.has(resourcePath)) {
-                        continue;
-                    }
-                    extraCards.push(resourcePath);
-                    extraSet.add(resourcePath);
-                }
-
-                // Ensure token units in slots are also included (tokens may not be captured by supported-cardId scanning).
-                const tokenUnitCardIds = GameController.collectTokenUnitCardIdsFromGameEnv(gameEnv);
-                for (const tokenId of tokenUnitCardIds) {
-                    const tokenPath = GameController.toCardResourcePath(tokenId);
-                    if (!tokenPath) {
-                        continue;
-                    }
-                    if (deck001Set.has(tokenPath) || extraSet.has(tokenPath)) {
-                        continue;
-                    }
-                    extraCards.push(tokenPath);
-                    extraSet.add(tokenPath);
-                }
-
-                deckData.decks.extraCard.cards = extraCards;
-
-                /**
-                 * After updating extraCard, scan card effect rules for token usage and ensure those tokens are included.
-                 */
-                const allDeckResourcePaths = [...deck001Cards, ...extraCards].filter((c) => typeof c === 'string');
-                const tokenResourcePaths = new Set<string>();
-                for (const resourcePath of allDeckResourcePaths) {
-                    const parts = resourcePath.split('/');
-                    const folderHint = parts.length > 1 ? parts[0] : undefined;
-                    const cardId = parts.length > 1 ? parts[parts.length - 1] : resourcePath;
-                    if (!cardId) {
-                        continue;
-                    }
-                    const cardData = CardDatabaseManager.getCardDetails(cardId);
-                    if (!cardData) {
-                        continue;
-                    }
-                    for (const tokenId of GameController.collectTokenCardIdsFromCardData(cardData)) {
-                        const tokenPath = GameController.toCardResourcePath(tokenId, folderHint);
-                        if (tokenPath) {
-                            tokenResourcePaths.add(tokenPath);
-                        }
-                    }
-                }
-
-                for (const tokenResourcePath of tokenResourcePaths) {
-                    if (deck001Set.has(tokenResourcePath) || extraSet.has(tokenResourcePath)) {
-                        continue;
-                    }
-                    extraCards.push(tokenResourcePath);
-                    extraSet.add(tokenResourcePath);
-                }
-
-                deckData.decks.extraCard.cards = extraCards;
-            }
+            const deckData = await this.buildGameResourceData(gameId);
             console.log('✅ Game resource data loaded successfully');
             /*
             after updating the deckData, look at all card effect, see if it has some rules that will use token, if yes, add the token cardid into the extra card.
@@ -1020,10 +1050,213 @@ export class GameController {
             
         } catch (error) {
             console.error('❌ Error in getGameResource:', error);
-            res.status(500).json({
+            const statusCode = (error as any)?.statusCode;
+            res.status(statusCode && typeof statusCode === 'number' ? statusCode : 500).json({
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
                 context: 'getGameResource endpoint'
+            });
+        }
+    }
+
+    /**
+     * Get game resource bundle as a single request (multipart/mixed).
+     * Preferred: `Authorization: Bearer <resourceBundleToken>` from `getPlayerData`.
+     * Fallback: POST body can include `gameId`/`playerId`.
+     *
+     * POST /api/game/player/gameResourceBundle
+     */
+    async getGameResourceBundle(req: GameRequest, res: Response): Promise<void> {
+        try {
+            if (!fs.existsSync(GCG_DECKS_PATH)) {
+                res.status(404).json({
+                    error: 'Deck data file not found (gcgdecks.json)',
+                    timestamp: new Date().toISOString(),
+                    context: 'getGameResourceBundle endpoint',
+                });
+                return;
+            }
+
+            const authHeader = String(req.headers['authorization'] || '');
+            const bearer = authHeader.toLowerCase().startsWith('bearer ') ? authHeader.slice(7).trim() : '';
+            const secret = GameController.getResourceBundleSecret();
+
+            let gameId: string | undefined;
+            let playerId: string | undefined;
+
+            if (bearer) {
+                const payload = verifyResourceBundleToken(bearer, secret);
+                if (!payload) {
+                    res.status(401).json({
+                        error: 'Invalid or expired resource bundle token',
+                        timestamp: new Date().toISOString(),
+                        context: 'getGameResourceBundle endpoint',
+                    });
+                    return;
+                }
+                gameId = payload.gameId;
+                playerId = payload.playerId;
+            } else {
+                gameId = typeof req.body?.gameId === 'string' ? req.body.gameId : undefined;
+                playerId = typeof req.body?.playerId === 'string' ? req.body.playerId : undefined;
+            }
+
+            const deckData = await this.buildGameResourceData(gameId);
+            const decks = deckData?.decks;
+            if (!decks || typeof decks !== 'object') {
+                res.status(200).json({
+                    success: true,
+                    message: 'No decks in game resource payload',
+                    timestamp: new Date().toISOString(),
+                });
+                return;
+            }
+
+            const includePreviews = req.body?.includePreviews !== false;
+
+            const uniqueResources: string[] = [];
+            const seen = new Set<string>();
+            for (const deck of Object.values(decks as any)) {
+                const cards: any[] = Array.isArray((deck as any)?.cards) ? (deck as any).cards : [];
+                for (const entry of cards) {
+                    if (typeof entry !== 'string' || entry.length === 0) continue;
+                    if (seen.has(entry)) continue;
+                    seen.add(entry);
+                    uniqueResources.push(entry);
+                }
+            }
+
+            const images: Array<{
+                key: string;
+                contentType: string;
+                bytes: number;
+                preview: boolean;
+            }> = [];
+            const parts: Array<{
+                key: string;
+                contentType: string;
+                filename: string;
+                data: Buffer;
+                preview: boolean;
+            }> = [];
+            const missing: Array<{ key: string }> = [];
+
+            const sanitizeResource = (resourcePath: string): string =>
+                resourcePath
+                    .replace(/\.\./g, '')
+                    .replace(/[\\]/g, '/')
+                    .replace(/\/+/g, '/')
+                    .replace(/^\//, '');
+
+            const contentTypeForExt = (ext: string): string => {
+                switch (ext) {
+                    case '.png':
+                        return 'image/png';
+                    case '.jpg':
+                    case '.jpeg':
+                        return 'image/jpeg';
+                    case '.webp':
+                        return 'image/webp';
+                    case '.gif':
+                        return 'image/gif';
+                    case '.svg':
+                        return 'image/svg+xml';
+                    default:
+                        return 'application/octet-stream';
+                }
+            };
+
+            const resolveExistingImage = (resourcePath: string): { filePath: string; ext: string } | null => {
+                const sanitized = sanitizeResource(resourcePath);
+                const hasExt = /\.(png|jpe?g|webp|gif|svg)$/i.test(sanitized);
+                const candidates = hasExt
+                    ? [sanitized]
+                    : [`${sanitized}.jpeg`, `${sanitized}.jpg`, `${sanitized}.png`, `${sanitized}.webp`];
+                for (const candidate of candidates) {
+                    const resolved = GameController.resolveImageFilePath(candidate);
+                    if (resolved) {
+                        return { filePath: resolved, ext: path.extname(candidate).toLowerCase() };
+                    }
+                }
+                return null;
+            };
+
+            for (const resourcePath of uniqueResources) {
+                const filenameBase = resourcePath.split('/').pop() || resourcePath;
+                const baseKey = filenameBase.replace(/\.(png|jpe?g|webp|gif|svg)$/i, '');
+
+                const resolved = resolveExistingImage(resourcePath);
+                if (!resolved) {
+                    missing.push({ key: baseKey });
+                    continue;
+                }
+
+                const data = await fs.promises.readFile(resolved.filePath);
+                const contentType = contentTypeForExt(resolved.ext);
+                const filename = `${baseKey}${resolved.ext || '.bin'}`;
+
+                parts.push({ key: baseKey, contentType, filename, data, preview: false });
+                images.push({ key: baseKey, contentType, bytes: data.length, preview: false });
+
+                if (includePreviews) {
+                    const previewKey = `${baseKey}-preview`;
+                    parts.push({
+                        key: previewKey,
+                        contentType,
+                        filename: `${previewKey}${resolved.ext || '.bin'}`,
+                        data,
+                        preview: true,
+                    });
+                    images.push({ key: previewKey, contentType, bytes: data.length, preview: true });
+                }
+            }
+
+            const boundary = `gcg_bundle_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+            const CRLF = '\r\n';
+            const chunks: Buffer[] = [];
+            const pushString = (value: string) => chunks.push(Buffer.from(value, 'utf8'));
+            const pushBuffer = (value: Buffer) => chunks.push(value);
+
+            const manifest = {
+                version: 1,
+                generatedAt: new Date().toISOString(),
+                gameId: gameId || null,
+                playerId: playerId || null,
+                images,
+                missing,
+            };
+
+            pushString(`--${boundary}${CRLF}`);
+            pushString(`Content-Type: application/json${CRLF}`);
+            pushString(`Content-Disposition: inline; name="manifest"${CRLF}${CRLF}`);
+            pushBuffer(Buffer.from(JSON.stringify(manifest), 'utf8'));
+            pushString(CRLF);
+
+            for (const part of parts) {
+                pushString(`--${boundary}${CRLF}`);
+                pushString(`Content-Type: ${part.contentType}${CRLF}`);
+                pushString(`Content-Disposition: attachment; name="image"; filename="${part.filename}"${CRLF}`);
+                pushString(`X-Texture-Key: ${part.key}${CRLF}`);
+                pushString(`X-Preview: ${part.preview ? '1' : '0'}${CRLF}${CRLF}`);
+                pushBuffer(part.data);
+                pushString(CRLF);
+            }
+
+            pushString(`--${boundary}--${CRLF}`);
+
+            res.status(200);
+            res.setHeader('Content-Type', `multipart/mixed; boundary=${boundary}`);
+            res.setHeader('Cache-Control', 'no-store');
+            res.setHeader('X-Resource-Count', String(parts.length));
+            res.setHeader('X-Missing-Count', String(missing.length));
+            res.send(Buffer.concat(chunks));
+        } catch (error) {
+            console.error('❌ Error in getGameResourceBundle:', error);
+            const statusCode = (error as any)?.statusCode;
+            res.status(statusCode && typeof statusCode === 'number' ? statusCode : 500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'getGameResourceBundle endpoint',
             });
         }
     }

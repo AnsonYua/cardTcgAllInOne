@@ -84,6 +84,12 @@ router.post('/player/startReady', gameController.startReady.bind(gameController)
 router.get('/player/gameResource', gameController.getGameResource.bind(gameController));
 
 /**
+ * Get game resource bundle (single request)
+ * POST /api/game/player/gameResourceBundle
+ */
+router.post('/player/gameResourceBundle', gameController.getGameResourceBundle.bind(gameController));
+
+/**
  * List available lobby rooms
  * GET /api/game/lobbylist
  */

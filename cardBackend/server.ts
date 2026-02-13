@@ -3,11 +3,14 @@
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { Server } from 'http';
+import dotenv from 'dotenv';
 
 // Import routes for custom trading card game
 import gameRoutes from './src/routes/gameRoutes';
 
 // ============ SERVER CONFIGURATION ============
+
+dotenv.config();
 
 const app: Express = express();
 // Ensure PORT is a number for http.Server.listen overload expectations
