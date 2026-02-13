@@ -16,6 +16,21 @@ export interface RouteHandler {
 
 const router = express.Router();
 
+// ============ ENV FLAGS ============
+
+const readEnvFlag = (name: string, defaultValue: boolean): boolean => {
+    const raw = process.env[name];
+    if (raw === undefined || raw === '') return defaultValue;
+
+    const normalized = raw.trim().toLowerCase();
+    if (['1', 'true', 'yes', 'on', 'enable', 'enabled'].includes(normalized)) return true;
+    if (['0', 'false', 'no', 'off', 'disable', 'disabled'].includes(normalized)) return false;
+
+    return defaultValue;
+};
+
+const injectGameStateEnabled = readEnvFlag('INJECT_GAME_STATE_ENABLED', process.env.NODE_ENV !== 'production');
+
 // ============ HEALTH CHECK ENDPOINTS ============
 
 /**
@@ -239,12 +254,11 @@ router.get('/test/getTestScenario', gameController.getTestScenario.bind(gameCont
  * POST /api/game/test/injectGameState
  */
 router.post('/test/injectGameState', 
-    // Environment check middleware
+    // Environment flag middleware
     (_req: Request, res: Response, next: NextFunction) => {
-        // Allow in development for now, restrict in production
-        if (process.env.NODE_ENV === 'production') {
+        if (!injectGameStateEnabled) {
             res.status(403).json({ 
-                error: 'This endpoint is only available in test/development environment',
+                error: 'This endpoint is disabled (set INJECT_GAME_STATE_ENABLED=true to enable)',
                 timestamp: new Date().toISOString()
             });
             return;
