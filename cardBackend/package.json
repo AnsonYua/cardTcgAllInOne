@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
+    "postbuild": "node scripts/copyDataToDist.cjs",
     "build:watch": "tsc --watch",
     "start": "node dist/server.js",
     "dev": "nodemon server.ts",

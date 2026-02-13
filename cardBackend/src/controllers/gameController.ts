@@ -6,7 +6,7 @@ import { gameLogic, GameLogic } from '../services/GameLogic';
 import { PlayerActionType, CardPlayType } from '../models/GameEnums';
 import { PlayerAction } from '../models/EventInterfaces';
 import { lobbyManager } from '../services/LobbyManager';
-import { GCG_DECKS_PATH } from '../config/dataPaths';
+import { GCG_DECKS_PATH, resolveDataPath } from '../config/dataPaths';
 import { CardDatabaseManager } from '../models/CardSystem';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -790,8 +790,7 @@ export class GameController {
         try {
             console.log('📋 Getting custom card data (st01Card.json)');
             
-            // Build path to st01Card.json
-            const cardDataPath = path.join(__dirname, '../data/st01Card.json');
+            const cardDataPath = resolveDataPath('st01Card.json');
             
             // Check if file exists
             if (!fs.existsSync(cardDataPath)) {
@@ -999,7 +998,7 @@ export class GameController {
                 .replace(/\/+/g, '/'); // Remove double slashes
             
             // Build full path to image file
-            const imagePath = path.join(__dirname, '../data/image', sanitizedImagePath);
+            const imagePath = resolveDataPath('image', sanitizedImagePath);
             
             // Check if file exists
             if (!fs.existsSync(imagePath)) {
