@@ -3,6 +3,7 @@
 
 import { Request, Response } from 'express';
 import { gameLogic, GameLogic } from '../services/GameLogic';
+import { GameEnvViewBuilder } from '../services/views/GameEnvViewBuilder';
 
 export interface ChoiceRequest extends Request {
     body: {
@@ -47,7 +48,7 @@ export class ChoiceController {
                 res.json({
                     success: true,
                     gameId: result.gameId,
-                    gameEnv: result.gameEnv,
+                    gameEnv: GameEnvViewBuilder.toPlayerView(result.gameEnv, playerId),
                     message: 'Choice cancelled successfully'
                 });
             } else {
@@ -70,4 +71,3 @@ export class ChoiceController {
 
 export const choiceController = new ChoiceController();
 export default choiceController;
-

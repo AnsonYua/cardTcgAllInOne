@@ -222,17 +222,10 @@ router.post('/player/confirmOptionChoice', gameController.confirmOptionChoice.bi
 router.post('/player/cancelChoice', choiceController.cancelChoice.bind(choiceController));
 
 /**
- * AI player action (placeholder)
+ * AI player action
  * POST /api/game/player/playerAiAction
  */
-router.post('/player/playerAiAction', async (_req: Request, res: Response) => {
-    console.log('🚧 [PLACEHOLDER] playerAiAction endpoint not implemented');
-    res.status(501).json({
-        error: 'AI actions not implemented for custom trading card game',
-        message: 'Add your custom AI logic here if needed',
-        timestamp: new Date().toISOString()
-    });
-});
+router.post('/player/playerAiAction', gameController.playerAiAction.bind(gameController));
 
 /**
  * Update player score (placeholder)

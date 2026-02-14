@@ -45,6 +45,7 @@ export class GameEnvironment {
     public currentPlayer: string | null;
     public currentTurn: number;
     public playersReady: { [playerId: string]: boolean };
+    public aiPlayerIds: string[];
     
     // Object-oriented components
     public players: { [playerId: string]: Player };
@@ -87,6 +88,7 @@ export class GameEnvironment {
         this.currentPlayer = null;
         this.currentTurn = 0;
         this.playersReady = {};
+        this.aiPlayerIds = [];
         
         this.players = {};
         this.currentBattle = undefined;
@@ -647,6 +649,7 @@ export class GameEnvironment {
             currentPlayer: this.currentPlayer,
             currentTurn: this.currentTurn,
             playersReady: this.playersReady,
+            aiPlayerIds: this.aiPlayerIds,
             currentBattle: this.currentBattle ? { ...this.currentBattle } : null,
 
             players,
@@ -679,6 +682,9 @@ export class GameEnvironment {
         gameEnv.currentPlayer = data.currentPlayer || null;
         gameEnv.currentTurn = data.currentTurn || 0;
         gameEnv.playersReady = data.playersReady || {};
+        gameEnv.aiPlayerIds = Array.isArray(data.aiPlayerIds)
+            ? data.aiPlayerIds.filter((playerId: unknown): playerId is string => typeof playerId === 'string')
+            : [];
         gameEnv.version = typeof data.version === 'number' ? data.version : 0;
         gameEnv.currentBattle = data.currentBattle
             ? (data.currentBattle as BattleContext)
