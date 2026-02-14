@@ -4,7 +4,7 @@
 import { Request, Response } from 'express';
 import { gameLogic, GameLogic } from '../services/GameLogic';
 import { PlayerActionType, CardPlayType } from '../models/GameEnums';
-import { GameEnvironment } from '../models/GameEnvironment';
+import type { GameEnvironment } from '../models/GameEnvironment';
 import { PlayerAction } from '../models/EventInterfaces';
 import { lobbyManager } from '../services/LobbyManager';
 import { GCG_DECKS_PATH, resolveDataPath } from '../config/dataPaths';
@@ -15,6 +15,7 @@ import { json } from 'stream/consumers';
 import { signResourceBundleToken, verifyResourceBundleToken } from '../utils/ResourceBundleToken';
 import crypto from 'crypto';
 import { GameEnvViewBuilder } from '../services/views/GameEnvViewBuilder';
+import { AiAutoplayCoordinator } from '../services/ai/AiAutoplayCoordinator';
 import { GameAiService } from '../services/ai/GameAiService';
 
 // ============ TYPE DEFINITIONS ============
@@ -44,10 +45,31 @@ export interface ErrorResponse {
 export class GameController {
     private gameLogic: GameLogic;
     private static resourceBundleSecret: string | null = null;
+    private readonly aiCoordinator: AiAutoplayCoordinator;
 
     constructor() {
         this.gameLogic = gameLogic;
+        this.aiCoordinator = new AiAutoplayCoordinator(this.gameLogic);
         console.log('🎮 Custom Trading Card Game Controller initialized');
+    }
+
+    private async applyAiAutoplayOrRespond(
+        res: Response,
+        gameId: string,
+        playerId: string,
+        gameEnv: GameEnvironment,
+        context: string
+    ): Promise<GameEnvironment | null> {
+        const autoResult = await this.aiCoordinator.maybeRunAiAfterHuman(gameId, playerId, gameEnv);
+        if (!autoResult.success || !autoResult.gameEnv) {
+            res.status(400).json({
+                error: autoResult.error || 'AI autoplay failed',
+                timestamp: new Date().toISOString(),
+                context
+            });
+            return null;
+        }
+        return autoResult.gameEnv;
     }
 
     private static getResourceBundleSecret(): string {
@@ -323,167 +345,6 @@ export class GameController {
         return result;
     }
 
-    private static normalizeAiFlag(raw: unknown): boolean {
-        if (raw === true) return true;
-        if (typeof raw !== 'string') return false;
-        const normalized = raw.trim().toLowerCase();
-        return ['1', 'true', 'yes', 'on', 'enable', 'enabled'].includes(normalized);
-    }
-
-    private getAiPlayerIds(gameEnv: GameEnvironment | null | undefined): string[] {
-        if (!gameEnv || !Array.isArray((gameEnv as any).aiPlayerIds)) {
-            return [];
-        }
-        return (gameEnv as any).aiPlayerIds.filter((playerId: unknown): playerId is string => typeof playerId === 'string');
-    }
-
-    private isAiPlayer(gameEnv: GameEnvironment | null | undefined, playerId: string): boolean {
-        return this.getAiPlayerIds(gameEnv).includes(playerId);
-    }
-
-    private async saveAiPlayerIds(gameId: string, aiPlayerIds: string[]): Promise<void> {
-        const gameEnv = await this.gameLogic.loadGameFromFile(gameId);
-        if (!gameEnv) {
-            throw new Error('Game not found while saving AI metadata');
-        }
-        const deduped = Array.from(new Set(aiPlayerIds.filter((playerId) => typeof playerId === 'string' && playerId.length > 0)));
-        (gameEnv as any).aiPlayerIds = deduped;
-        await this.gameLogic.saveGameToFile(gameId, gameEnv);
-    }
-
-    private async executeAiDecision(gameId: string, aiPlayerId: string, decision: any): Promise<any> {
-        switch (decision.kind) {
-            case 'chooseFirstPlayer':
-                return this.gameLogic.chooseFirstPlayer(
-                    gameId,
-                    aiPlayerId,
-                    String(decision.payload?.chosenFirstPlayerId || aiPlayerId)
-                );
-            case 'startReady':
-                return this.gameLogic.startReady(
-                    gameId,
-                    aiPlayerId,
-                    Boolean(decision.payload?.isRedraw)
-                );
-            case 'confirmBurstChoice':
-                return this.gameLogic.confirmBurstChoice(
-                    gameId,
-                    aiPlayerId,
-                    String(decision.payload?.eventId || ''),
-                    Boolean(decision.payload?.confirmed)
-                );
-            case 'confirmTargetChoice':
-                return this.gameLogic.confirmTargetChoice(
-                    gameId,
-                    aiPlayerId,
-                    String(decision.payload?.eventId || ''),
-                    Array.isArray(decision.payload?.selectedTargets) ? decision.payload.selectedTargets : []
-                );
-            case 'confirmBlockerChoice':
-                return this.gameLogic.confirmBlockerChoice(
-                    gameId,
-                    aiPlayerId,
-                    String(decision.payload?.eventId || ''),
-                    Array.isArray(decision.payload?.selectedTargets) ? decision.payload.selectedTargets : []
-                );
-            case 'confirmTokenChoice':
-                return this.gameLogic.confirmTokenChoice(
-                    gameId,
-                    aiPlayerId,
-                    String(decision.payload?.eventId || ''),
-                    Number(decision.payload?.selectedChoiceIndex ?? 0)
-                );
-            case 'confirmOptionChoice':
-                return this.gameLogic.confirmOptionChoice(
-                    gameId,
-                    aiPlayerId,
-                    String(decision.payload?.eventId || ''),
-                    Number(decision.payload?.selectedOptionIndex ?? 0)
-                );
-            case 'playerAction':
-                return this.gameLogic.playerActionWithAction(
-                    gameId,
-                    aiPlayerId,
-                    { ...(decision.payload || {}) }
-                );
-            case 'playCard':
-                return this.gameLogic.playCardWithAction(
-                    gameId,
-                    aiPlayerId,
-                    { ...(decision.payload?.action as Record<string, unknown>) }
-                );
-            case 'endTurn': {
-                const gameEnv = await this.gameLogic.loadGameFromFile(gameId);
-                if (!gameEnv) {
-                    return { success: false, error: 'Game not found' };
-                }
-                if (gameEnv.currentPlayer !== aiPlayerId) {
-                    return { success: false, error: `Not AI turn. Current player: ${gameEnv.currentPlayer}` };
-                }
-                const endTurnAction: PlayerAction = {
-                    type: PlayerActionType.END_TURN,
-                    playerId: aiPlayerId,
-                    gameId,
-                    currentTurn: gameEnv.currentTurn
-                };
-                const actionResult = await this.gameLogic.processAction(gameEnv, endTurnAction);
-                if (!actionResult.success) {
-                    return { success: false, error: actionResult.error || 'Failed to end turn' };
-                }
-                await this.gameLogic.saveGameToFile(gameId, gameEnv);
-                return { success: true, gameId, gameEnv };
-            }
-            default:
-                return { success: false, error: `Unsupported AI decision: ${decision.kind}` };
-        }
-    }
-
-    private async runAiAutoplayForHuman(gameId: string, humanPlayerId: string, maxSteps: number = 64): Promise<{ success: boolean; gameEnv?: GameEnvironment; error?: string }> {
-        for (let step = 0; step < maxSteps; step++) {
-            const latestState = await this.gameLogic.getPlayerGameState(gameId, humanPlayerId);
-            if (!latestState.success || !latestState.gameEnv) {
-                return { success: false, error: latestState.error || 'Failed to load game state during AI autoplay' };
-            }
-
-            const gameEnv = latestState.gameEnv;
-            if (gameEnv.gameEnded) {
-                return { success: true, gameEnv };
-            }
-
-            const aiPlayerIds = this.getAiPlayerIds(gameEnv);
-            if (aiPlayerIds.length === 0) {
-                return { success: true, gameEnv };
-            }
-
-            let progressed = false;
-
-            for (const aiPlayerId of aiPlayerIds) {
-                const aiView = GameEnvViewBuilder.toPlayerView(gameEnv, aiPlayerId);
-                const decision = GameAiService.decide(aiView, aiPlayerId);
-                if (decision.kind === 'wait') {
-                    continue;
-                }
-
-                const execution = await this.executeAiDecision(gameId, aiPlayerId, decision);
-                if (!execution?.success) {
-                    return { success: false, error: execution?.error || 'AI decision execution failed' };
-                }
-
-                progressed = true;
-                break;
-            }
-
-            if (!progressed) {
-                return { success: true, gameEnv };
-            }
-        }
-
-        const finalState = await this.gameLogic.getPlayerGameState(gameId, humanPlayerId);
-        if (!finalState.success || !finalState.gameEnv) {
-            return { success: false, error: finalState.error || 'Failed to load final game state after AI autoplay' };
-        }
-        return { success: true, gameEnv: finalState.gameEnv };
-    }
 
     // ============ CORE GAME ENDPOINTS ============
 
@@ -496,7 +357,8 @@ export class GameController {
             console.log('🎮 Starting new custom trading card game for player:', req.body.playerId);
             
             const playerId = req.body.playerId;
-            const aiEnabled = GameController.normalizeAiFlag(req.body.ai) || GameController.normalizeAiFlag(req.body.aimode);
+            const aiEnabled = AiAutoplayCoordinator.normalizeAiFlag(req.body.ai) ||
+                AiAutoplayCoordinator.normalizeAiFlag(req.body.aimode);
             const requestedAiPlayerId = typeof req.body.aiPlayerId === 'string' && req.body.aiPlayerId.trim().length > 0
                 ? req.body.aiPlayerId.trim()
                 : null;
@@ -535,21 +397,22 @@ export class GameController {
                         return;
                     }
 
-                    await this.saveAiPlayerIds(gameState.gameId, [aiPlayerId]);
-                    const autoResult = await this.runAiAutoplayForHuman(gameState.gameId, playerId);
-                    if (!autoResult.success || !autoResult.gameEnv) {
-                        res.status(400).json({
-                            error: autoResult.error || 'Failed to process AI autoplay after game creation',
-                            timestamp: new Date().toISOString(),
-                            context: 'startGame endpoint - ai autoplay'
-                        });
+                    await this.aiCoordinator.saveAiPlayerIds(gameState.gameId, [aiPlayerId]);
+                    const autoEnv = await this.applyAiAutoplayOrRespond(
+                        res,
+                        gameState.gameId,
+                        playerId,
+                        joinState.gameEnv,
+                        'startGame endpoint - ai autoplay'
+                    );
+                    if (!autoEnv) {
                         return;
                     }
 
                     res.json({
                         success: true,
                         gameId: gameState.gameId,
-                        gameEnv: GameEnvViewBuilder.toPlayerView(autoResult.gameEnv, playerId)
+                        gameEnv: GameEnvViewBuilder.toPlayerView(autoEnv, playerId)
                     });
                     return;
                 }
@@ -673,18 +536,15 @@ export class GameController {
             const gameState = await this.gameLogic.chooseFirstPlayer(gameId, playerId, chosenFirstPlayerId);
 
             if (gameState.success && gameState.gameEnv) {
-                let finalEnv = gameState.gameEnv;
-                if (!this.isAiPlayer(gameState.gameEnv, playerId) && this.getAiPlayerIds(gameState.gameEnv).length > 0) {
-                    const autoResult = await this.runAiAutoplayForHuman(gameId, playerId);
-                    if (!autoResult.success || !autoResult.gameEnv) {
-                        res.status(400).json({
-                            error: autoResult.error || 'AI autoplay failed after chooseFirstPlayer',
-                            timestamp: new Date().toISOString(),
-                            context: 'chooseFirstPlayer endpoint'
-                        });
-                        return;
-                    }
-                    finalEnv = autoResult.gameEnv;
+                const finalEnv = await this.applyAiAutoplayOrRespond(
+                    res,
+                    gameId,
+                    playerId,
+                    gameState.gameEnv,
+                    'chooseFirstPlayer endpoint'
+                );
+                if (!finalEnv) {
+                    return;
                 }
 
                 res.json({
@@ -731,18 +591,15 @@ export class GameController {
             const gameState = await this.gameLogic.startReady(gameId, playerId, isRedraw || false);
             
             if (gameState.success && gameState.gameEnv) {
-                let finalEnv = gameState.gameEnv;
-                if (!this.isAiPlayer(gameState.gameEnv, playerId) && this.getAiPlayerIds(gameState.gameEnv).length > 0) {
-                    const autoResult = await this.runAiAutoplayForHuman(gameId, playerId);
-                    if (!autoResult.success || !autoResult.gameEnv) {
-                        res.status(400).json({
-                            error: autoResult.error || 'AI autoplay failed after startReady',
-                            timestamp: new Date().toISOString(),
-                            context: 'startReady endpoint'
-                        });
-                        return;
-                    }
-                    finalEnv = autoResult.gameEnv;
+                const finalEnv = await this.applyAiAutoplayOrRespond(
+                    res,
+                    gameId,
+                    playerId,
+                    gameState.gameEnv,
+                    'startReady endpoint'
+                );
+                if (!finalEnv) {
+                    return;
                 }
 
                 res.json({
@@ -792,17 +649,19 @@ export class GameController {
             
             if (gameState.success && gameState.gameEnv) {
                 let finalEnv = gameState.gameEnv;
-                if (!this.isAiPlayer(gameState.gameEnv, playerId) && this.getAiPlayerIds(gameState.gameEnv).length > 0) {
-                    const autoResult = await this.runAiAutoplayForHuman(gameId as string, playerId);
-                    if (!autoResult.success || !autoResult.gameEnv) {
-                        res.status(400).json({
-                            error: autoResult.error || 'AI autoplay failed during getPlayerData',
-                            timestamp: new Date().toISOString(),
-                            context: 'getPlayerData endpoint'
-                        });
+                if (!this.aiCoordinator.isAiPlayer(gameState.gameEnv, playerId) &&
+                    this.aiCoordinator.getAiPlayerIds(gameState.gameEnv).length > 0) {
+                    const autoEnv = await this.applyAiAutoplayOrRespond(
+                        res,
+                        gameId as string,
+                        playerId,
+                        gameState.gameEnv,
+                        'getPlayerData endpoint'
+                    );
+                    if (!autoEnv) {
                         return;
                     }
-                    finalEnv = autoResult.gameEnv;
+                    finalEnv = autoEnv;
                 }
 
                 const secret = GameController.getResourceBundleSecret();
@@ -892,18 +751,15 @@ export class GameController {
                     const result = await this.gameLogic.playCardWithAction(gameId, playerId, action);
                     
                     if (result.success && result.gameEnv) {
-                        let finalEnv = result.gameEnv;
-                        if (!this.isAiPlayer(result.gameEnv, playerId) && this.getAiPlayerIds(result.gameEnv).length > 0) {
-                            const autoResult = await this.runAiAutoplayForHuman(gameId, playerId);
-                            if (!autoResult.success || !autoResult.gameEnv) {
-                                res.status(400).json({
-                                    error: autoResult.error || 'AI autoplay failed after playCard',
-                                    timestamp: new Date().toISOString(),
-                                    context: 'playCard endpoint'
-                                });
-                                return;
-                            }
-                            finalEnv = autoResult.gameEnv;
+                        const finalEnv = await this.applyAiAutoplayOrRespond(
+                            res,
+                            gameId,
+                            playerId,
+                            result.gameEnv,
+                            'playCard endpoint'
+                        );
+                        if (!finalEnv) {
+                            return;
                         }
 
                         res.json({
@@ -1013,18 +869,15 @@ export class GameController {
             const result = await this.gameLogic.playerActionWithAction(gameId, playerId, actionData);
             
             if (result.success && result.gameEnv) {
-                let finalEnv = result.gameEnv;
-                if (!this.isAiPlayer(result.gameEnv, playerId) && this.getAiPlayerIds(result.gameEnv).length > 0) {
-                    const autoResult = await this.runAiAutoplayForHuman(gameId, playerId);
-                    if (!autoResult.success || !autoResult.gameEnv) {
-                        res.status(400).json({
-                            error: autoResult.error || 'AI autoplay failed after playerAction',
-                            timestamp: new Date().toISOString(),
-                            context: 'playerAction endpoint'
-                        });
-                        return;
-                    }
-                    finalEnv = autoResult.gameEnv;
+                const finalEnv = await this.applyAiAutoplayOrRespond(
+                    res,
+                    gameId,
+                    playerId,
+                    result.gameEnv,
+                    'playerAction endpoint'
+                );
+                if (!finalEnv) {
+                    return;
                 }
 
                 res.json({
@@ -1094,7 +947,7 @@ export class GameController {
                 return;
             }
 
-            const result = await this.executeAiDecision(gameId, playerId, decision);
+            const result = await this.aiCoordinator.executeAiDecision(gameId, playerId, decision);
 
             if (!result?.success || !result?.gameEnv) {
                 res.status(400).json({
@@ -1189,18 +1042,15 @@ export class GameController {
             // Save updated game state
             await this.gameLogic.saveGameToFile(gameId, gameEnv);
 
-            let finalEnv = gameEnv;
-            if (!this.isAiPlayer(gameEnv, playerId) && this.getAiPlayerIds(gameEnv).length > 0) {
-                const autoResult = await this.runAiAutoplayForHuman(gameId, playerId);
-                if (!autoResult.success || !autoResult.gameEnv) {
-                    res.status(400).json({
-                        error: autoResult.error || 'AI autoplay failed after endTurn',
-                        timestamp: new Date().toISOString(),
-                        context: 'endTurn endpoint'
-                    });
-                    return;
-                }
-                finalEnv = autoResult.gameEnv;
+            const finalEnv = await this.applyAiAutoplayOrRespond(
+                res,
+                gameId,
+                playerId,
+                gameEnv,
+                'endTurn endpoint'
+            );
+            if (!finalEnv) {
+                return;
             }
             
             console.log(`✅ End turn processed successfully for ${playerId}`);
@@ -2008,18 +1858,15 @@ export class GameController {
             const result = await this.gameLogic.confirmBurstChoice(gameId, playerId, eventId, confirmed);
             
             if (result.success && result.gameEnv) {
-                let finalEnv = result.gameEnv;
-                if (!this.isAiPlayer(result.gameEnv, playerId) && this.getAiPlayerIds(result.gameEnv).length > 0) {
-                    const autoResult = await this.runAiAutoplayForHuman(gameId, playerId);
-                    if (!autoResult.success || !autoResult.gameEnv) {
-                        res.status(400).json({
-                            error: autoResult.error || 'AI autoplay failed after confirmBurstChoice',
-                            timestamp: new Date().toISOString(),
-                            context: 'confirmBurstChoice endpoint'
-                        });
-                        return;
-                    }
-                    finalEnv = autoResult.gameEnv;
+                const finalEnv = await this.applyAiAutoplayOrRespond(
+                    res,
+                    gameId,
+                    playerId,
+                    result.gameEnv,
+                    'confirmBurstChoice endpoint'
+                );
+                if (!finalEnv) {
+                    return;
                 }
 
                 res.json({
@@ -2095,18 +1942,15 @@ export class GameController {
             const result = await this.gameLogic.confirmTargetChoice(gameId, playerId, eventId, selectedTargets);
             
             if (result.success && result.gameEnv) {
-                let finalEnv = result.gameEnv;
-                if (!this.isAiPlayer(result.gameEnv, playerId) && this.getAiPlayerIds(result.gameEnv).length > 0) {
-                    const autoResult = await this.runAiAutoplayForHuman(gameId, playerId);
-                    if (!autoResult.success || !autoResult.gameEnv) {
-                        res.status(400).json({
-                            error: autoResult.error || 'AI autoplay failed after confirmTargetChoice',
-                            timestamp: new Date().toISOString(),
-                            context: 'confirmTargetChoice endpoint'
-                        });
-                        return;
-                    }
-                    finalEnv = autoResult.gameEnv;
+                const finalEnv = await this.applyAiAutoplayOrRespond(
+                    res,
+                    gameId,
+                    playerId,
+                    result.gameEnv,
+                    'confirmTargetChoice endpoint'
+                );
+                if (!finalEnv) {
+                    return;
                 }
 
                 res.json({
@@ -2165,18 +2009,15 @@ export class GameController {
             const result = await this.gameLogic.confirmTokenChoice(gameId, playerId, eventId, selectedChoiceIndex);
 
             if (result.success && result.gameEnv) {
-                let finalEnv = result.gameEnv;
-                if (!this.isAiPlayer(result.gameEnv, playerId) && this.getAiPlayerIds(result.gameEnv).length > 0) {
-                    const autoResult = await this.runAiAutoplayForHuman(gameId, playerId);
-                    if (!autoResult.success || !autoResult.gameEnv) {
-                        res.status(400).json({
-                            error: autoResult.error || 'AI autoplay failed after confirmTokenChoice',
-                            timestamp: new Date().toISOString(),
-                            context: 'confirmTokenChoice endpoint'
-                        });
-                        return;
-                    }
-                    finalEnv = autoResult.gameEnv;
+                const finalEnv = await this.applyAiAutoplayOrRespond(
+                    res,
+                    gameId,
+                    playerId,
+                    result.gameEnv,
+                    'confirmTokenChoice endpoint'
+                );
+                if (!finalEnv) {
+                    return;
                 }
 
                 res.json({
@@ -2235,18 +2076,15 @@ export class GameController {
             const result = await this.gameLogic.confirmOptionChoice(gameId, playerId, eventId, selectedOptionIndex);
 
             if (result.success && result.gameEnv) {
-                let finalEnv = result.gameEnv;
-                if (!this.isAiPlayer(result.gameEnv, playerId) && this.getAiPlayerIds(result.gameEnv).length > 0) {
-                    const autoResult = await this.runAiAutoplayForHuman(gameId, playerId);
-                    if (!autoResult.success || !autoResult.gameEnv) {
-                        res.status(400).json({
-                            error: autoResult.error || 'AI autoplay failed after confirmOptionChoice',
-                            timestamp: new Date().toISOString(),
-                            context: 'confirmOptionChoice endpoint'
-                        });
-                        return;
-                    }
-                    finalEnv = autoResult.gameEnv;
+                const finalEnv = await this.applyAiAutoplayOrRespond(
+                    res,
+                    gameId,
+                    playerId,
+                    result.gameEnv,
+                    'confirmOptionChoice endpoint'
+                );
+                if (!finalEnv) {
+                    return;
                 }
 
                 res.json({
@@ -2319,18 +2157,15 @@ export class GameController {
             const result = await this.gameLogic.confirmBlockerChoice(gameId, playerId, eventId, targetsArray, notificationId);
 
             if (result.success && result.gameEnv) {
-                let finalEnv = result.gameEnv;
-                if (!this.isAiPlayer(result.gameEnv, playerId) && this.getAiPlayerIds(result.gameEnv).length > 0) {
-                    const autoResult = await this.runAiAutoplayForHuman(gameId, playerId);
-                    if (!autoResult.success || !autoResult.gameEnv) {
-                        res.status(400).json({
-                            error: autoResult.error || 'AI autoplay failed after confirmBlockerChoice',
-                            timestamp: new Date().toISOString(),
-                            context: 'confirmBlockerChoice endpoint'
-                        });
-                        return;
-                    }
-                    finalEnv = autoResult.gameEnv;
+                const finalEnv = await this.applyAiAutoplayOrRespond(
+                    res,
+                    gameId,
+                    playerId,
+                    result.gameEnv,
+                    'confirmBlockerChoice endpoint'
+                );
+                if (!finalEnv) {
+                    return;
                 }
 
                 res.json({
