@@ -118,9 +118,9 @@ export class GameEnvironment {
         const player = new Player(playerId, playerName || playerId);
         this.players[playerId] = player;
         
-        if (playerId == "playerId_1") {
+        if (!this.playerId_1) {
             this.playerId_1 = playerId;
-        } else if (playerId == "playerId_2") {
+        } else if (!this.playerId_2) {
             this.playerId_2 = playerId;
         }
         

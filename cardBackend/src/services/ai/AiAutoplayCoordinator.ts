@@ -4,8 +4,12 @@ import { PlayerActionType } from '../../models/GameEnums';
 import { PlayerAction } from '../../models/EventInterfaces';
 import { GameEnvViewBuilder } from '../views/GameEnvViewBuilder';
 import { GameAiService } from './GameAiService';
+import { CHOICE_EVENT_TYPES } from './AiTypes';
+import { AsyncMutex } from '../../utils/AsyncMutex';
 
 export class AiAutoplayCoordinator {
+    private static readonly gameLocks = new Map<string, AsyncMutex>();
+
     constructor(private readonly gameLogic: GameLogic) {}
 
     static normalizeAiFlag(raw: unknown): boolean {
@@ -20,6 +24,35 @@ export class AiAutoplayCoordinator {
             return [];
         }
         return (gameEnv as any).aiPlayerIds.filter((playerId: unknown): playerId is string => typeof playerId === 'string');
+    }
+
+    private static getGameLock(gameId: string): AsyncMutex {
+        let lock = this.gameLocks.get(gameId);
+        if (!lock) {
+            lock = new AsyncMutex();
+            this.gameLocks.set(gameId, lock);
+        }
+        return lock;
+    }
+
+    async runWithGameLock<T>(gameId: string, work: () => Promise<T>): Promise<T> {
+        const lock = AiAutoplayCoordinator.getGameLock(gameId);
+        return lock.runExclusive(work);
+    }
+
+    private static getChoiceOwner(event: any): string | null {
+        if (!event) return null;
+        if (typeof event.playerId === 'string' && event.playerId.length > 0) {
+            return event.playerId;
+        }
+        const data = event.data || {};
+        if (typeof data.blockingPlayerId === 'string' && data.blockingPlayerId.length > 0) {
+            return data.blockingPlayerId;
+        }
+        if (typeof data.playerId === 'string' && data.playerId.length > 0) {
+            return data.playerId;
+        }
+        return null;
     }
 
     isAiPlayer(gameEnv: GameEnvironment | null | undefined, playerId: string): boolean {
@@ -86,11 +119,7 @@ export class AiAutoplayCoordinator {
                     Number(decision.payload?.selectedOptionIndex ?? 0)
                 );
             case 'playerAction':
-                return this.gameLogic.playerActionWithAction(
-                    gameId,
-                    aiPlayerId,
-                    { ...(decision.payload || {}) }
-                );
+                return this.executePlayerAction(gameId, aiPlayerId, decision);
             case 'playCard':
                 return this.gameLogic.playCardWithAction(
                     gameId,
@@ -123,6 +152,60 @@ export class AiAutoplayCoordinator {
         }
     }
 
+    private async executePlayerAction(gameId: string, aiPlayerId: string, decision: any): Promise<any> {
+        const payload = { ...(decision.payload || {}) };
+        const result = await this.gameLogic.playerActionWithAction(gameId, aiPlayerId, payload);
+        if (result?.success || result?.errorCode !== 'FORCED_ATTACK_TARGET_REQUIRED') {
+            return result;
+        }
+
+        const errorMessage = typeof result?.error === 'string' ? result.error : '';
+        const match = errorMessage.match(/targetUnitUid=([A-Za-z0-9_-]+)/);
+        if (!match) {
+            return result;
+        }
+
+        const forcedTargetUid = match[1];
+        const attackerCarduid = typeof payload.attackerCarduid === 'string' ? payload.attackerCarduid : '';
+        if (!attackerCarduid) {
+            return result;
+        }
+
+        const gameEnv = await this.gameLogic.loadGameFromFile(gameId);
+        if (!gameEnv) {
+            return result;
+        }
+
+        const targetPlayerId = this.findPlayerIdByCarduid(gameEnv, forcedTargetUid);
+        if (!targetPlayerId) {
+            return result;
+        }
+
+        return this.gameLogic.playerActionWithAction(gameId, aiPlayerId, {
+            actionType: 'attackUnit',
+            attackerCarduid,
+            targetPlayerId,
+            targetUnitUid: forcedTargetUid
+        });
+    }
+
+    private findPlayerIdByCarduid(gameEnv: GameEnvironment, carduid: string): string | null {
+        for (const [playerId, player] of Object.entries(gameEnv.players || {})) {
+            const zones = (player as any)?.zones || {};
+            for (let i = 1; i <= 6; i++) {
+                const slot = zones[`slot${i}`];
+                if (slot?.unit?.carduid === carduid || slot?.pilot?.carduid === carduid) {
+                    return playerId;
+                }
+            }
+        }
+        return null;
+    }
+
+    async executeAiDecisionExclusive(gameId: string, aiPlayerId: string, decision: any): Promise<any> {
+        return this.runWithGameLock(gameId, () => this.executeAiDecision(gameId, aiPlayerId, decision));
+    }
+
     async runAiAutoplayForHuman(
         gameId: string,
         humanPlayerId: string,
@@ -141,6 +224,14 @@ export class AiAutoplayCoordinator {
 
             const aiPlayerIds = this.getAiPlayerIds(gameEnv);
             if (aiPlayerIds.length === 0) {
+                return { success: true, gameEnv };
+            }
+
+            const pendingChoice = gameEnv.processingQueue.find((event: any) =>
+                event?.status === 'DECLARED' && CHOICE_EVENT_TYPES.has(event?.type)
+            );
+            const choiceOwner = AiAutoplayCoordinator.getChoiceOwner(pendingChoice);
+            if (choiceOwner && !aiPlayerIds.includes(choiceOwner)) {
                 return { success: true, gameEnv };
             }
 
@@ -182,7 +273,6 @@ export class AiAutoplayCoordinator {
         if (this.isAiPlayer(gameEnv, humanPlayerId) || this.getAiPlayerIds(gameEnv).length === 0) {
             return { success: true, gameEnv };
         }
-        return this.runAiAutoplayForHuman(gameId, humanPlayerId);
+        return this.runWithGameLock(gameId, () => this.runAiAutoplayForHuman(gameId, humanPlayerId));
     }
 }
-

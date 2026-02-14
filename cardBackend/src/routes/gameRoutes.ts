@@ -5,6 +5,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import { gameController } from '../controllers/gameController';
 import { choiceController } from '../controllers/choiceController';
 import { gameLogic } from '../services/GameLogic';
+import { requirePlayerSession } from '../middleware/sessionAuth';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -70,12 +71,18 @@ router.post('/player/joinRoom', gameController.joinRoom.bind(gameController));
  * Choose which player goes first
  * POST /api/game/player/chooseFirstPlayer
  */
-router.post('/player/chooseFirstPlayer', gameController.chooseFirstPlayer.bind(gameController));
+router.post('/player/chooseFirstPlayer', requirePlayerSession, gameController.chooseFirstPlayer.bind(gameController));
 /**
  * Start ready phase for a player
  * POST /api/game/player/startReady
  */
-router.post('/player/startReady', gameController.startReady.bind(gameController));
+router.post('/player/startReady', requirePlayerSession, gameController.startReady.bind(gameController));
+
+/**
+ * Session heartbeat
+ * POST /api/game/player/heartbeat
+ */
+router.post('/player/heartbeat', requirePlayerSession, gameController.heartbeat.bind(gameController));
 
 /**
  * Get game resource data (deck data for frontend card preloading)
@@ -99,25 +106,25 @@ router.get('/lobbylist', gameController.getLobbyList.bind(gameController));
  * Get player game data
  * GET /api/game/player/:playerId?gameId=...
  */
-router.get('/player/:playerId', gameController.getPlayerData.bind(gameController));
+router.get('/player/:playerId', requirePlayerSession, gameController.getPlayerData.bind(gameController));
 
 /**
  * Process player action (play cards)
  * POST /api/game/player/playCard
  */
-router.post('/player/playCard', gameController.playCard.bind(gameController));
+router.post('/player/playCard', requirePlayerSession, gameController.playCard.bind(gameController));
 
 /**
  * Execute player action (attacks, abilities, etc.)
  * POST /api/game/player/playerAction
  */
-router.post('/player/playerAction', gameController.playerAction.bind(gameController));
+router.post('/player/playerAction', requirePlayerSession, gameController.playerAction.bind(gameController));
 
 /**
  * End current player's turn and advance game state
  * POST /api/game/player/endTurn
  */
-router.post('/player/endTurn', gameController.endTurn.bind(gameController));
+router.post('/player/endTurn', requirePlayerSession, gameController.endTurn.bind(gameController));
 
 // ============ CUSTOM CARD DATA ENDPOINTS ============
 
@@ -142,7 +149,7 @@ router.get('/image/*', gameController.serveImage.bind(gameController));
  * Select card (placeholder for card selection workflows)
  * POST /api/game/player/selectCard
  */
-router.post('/player/selectCard', async (_req: Request, res: Response) => {
+router.post('/player/selectCard', requirePlayerSession, async (_req: Request, res: Response) => {
     console.log('🚧 [PLACEHOLDER] selectCard endpoint not implemented');
     res.status(501).json({
         error: 'Card selection not implemented for custom trading card game',
@@ -155,7 +162,7 @@ router.post('/player/selectCard', async (_req: Request, res: Response) => {
  * Acknowledge events
  * POST /api/game/player/acknowledgeEvents
  */
-router.post('/player/acknowledgeEvents', async (req: Request, res: Response) => {
+router.post('/player/acknowledgeEvents', requirePlayerSession, async (req: Request, res: Response) => {
     try {
         const { gameId, playerId, eventIds } = req.body;
         
@@ -189,49 +196,49 @@ router.post('/player/acknowledgeEvents', async (req: Request, res: Response) => 
  * Confirm or decline a burst effect choice
  * POST /api/game/player/confirmBurstChoice
  */
-router.post('/player/confirmBurstChoice', gameController.confirmBurstChoice.bind(gameController));
+router.post('/player/confirmBurstChoice', requirePlayerSession, gameController.confirmBurstChoice.bind(gameController));
 
 /**
  * Confirm deploy target choice
  * POST /api/game/player/confirmDeployChoice
  */
-router.post('/player/confirmTargetChoice', gameController.confirmTargetChoice.bind(gameController));
+router.post('/player/confirmTargetChoice', requirePlayerSession, gameController.confirmTargetChoice.bind(gameController));
 
 /**
  * Confirm blocker choice decision during combat
  * POST /api/game/player/confirmBlockerChoice
  */
-router.post('/player/confirmBlockerChoice', gameController.confirmBlockerChoice.bind(gameController));
+router.post('/player/confirmBlockerChoice', requirePlayerSession, gameController.confirmBlockerChoice.bind(gameController));
 
 /**
  * Confirm token choice decision
  * POST /api/game/player/confirmTokenChoice
  */
-router.post('/player/confirmTokenChoice', gameController.confirmTokenChoice.bind(gameController));
+router.post('/player/confirmTokenChoice', requirePlayerSession, gameController.confirmTokenChoice.bind(gameController));
 
 /**
  * Confirm generic option choice decision
  * POST /api/game/player/confirmOptionChoice
  */
-router.post('/player/confirmOptionChoice', gameController.confirmOptionChoice.bind(gameController));
+router.post('/player/confirmOptionChoice', requirePlayerSession, gameController.confirmOptionChoice.bind(gameController));
 
 /**
  * Cancel (decline) a pending choice when the frontend closes the dialog
  * POST /api/game/player/cancelChoice
  */
-router.post('/player/cancelChoice', choiceController.cancelChoice.bind(choiceController));
+router.post('/player/cancelChoice', requirePlayerSession, choiceController.cancelChoice.bind(choiceController));
 
 /**
  * AI player action
  * POST /api/game/player/playerAiAction
  */
-router.post('/player/playerAiAction', gameController.playerAiAction.bind(gameController));
+router.post('/player/playerAiAction', requirePlayerSession, gameController.playerAiAction.bind(gameController));
 
 /**
  * Update player score (placeholder)
  * PUT /api/game/player/:playerId/score
  */
-router.put('/player/:playerId/score', async (_req: Request, res: Response) => {
+router.put('/player/:playerId/score', requirePlayerSession, async (_req: Request, res: Response) => {
     console.log('🚧 [PLACEHOLDER] score update endpoint not implemented');
     res.status(501).json({
         error: 'Score updating not implemented for custom trading card game',

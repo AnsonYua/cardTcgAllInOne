@@ -17,6 +17,9 @@ import crypto from 'crypto';
 import { GameEnvViewBuilder } from '../services/views/GameEnvViewBuilder';
 import { AiAutoplayCoordinator } from '../services/ai/AiAutoplayCoordinator';
 import { GameAiService } from '../services/ai/GameAiService';
+import { sessionManager } from '../services/SessionManager';
+import { SessionAuthedRequest } from '../middleware/sessionAuth';
+import { v4 as uuidv4 } from 'uuid';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -25,6 +28,7 @@ export interface GameRequest extends Request {
         playerId?: string;
         playerName?: string;
         gameId?: string;
+        joinToken?: string;
         ai?: boolean | string;
         aimode?: boolean | string;
         aiPlayerId?: string;
@@ -51,6 +55,10 @@ export class GameController {
         this.gameLogic = gameLogic;
         this.aiCoordinator = new AiAutoplayCoordinator(this.gameLogic);
         console.log('🎮 Custom Trading Card Game Controller initialized');
+    }
+
+    private static createPlayerId(): string {
+        return `player_${uuidv4()}`;
     }
 
     private async applyAiAutoplayOrRespond(
@@ -354,22 +362,14 @@ export class GameController {
      */
     async startGame(req: GameRequest, res: Response): Promise<void> {
         try {
-            console.log('🎮 Starting new custom trading card game for player:', req.body.playerId);
+            console.log('🎮 Starting new custom trading card game');
             
-            const playerId = req.body.playerId;
+            const playerId = GameController.createPlayerId();
             const aiEnabled = AiAutoplayCoordinator.normalizeAiFlag(req.body.ai) ||
                 AiAutoplayCoordinator.normalizeAiFlag(req.body.aimode);
             const requestedAiPlayerId = typeof req.body.aiPlayerId === 'string' && req.body.aiPlayerId.trim().length > 0
                 ? req.body.aiPlayerId.trim()
                 : null;
-            if (!playerId) {
-                res.status(400).json({
-                    error: 'playerId is required',
-                    timestamp: new Date().toISOString(),
-                    context: 'startGame endpoint'
-                });
-                return;
-            }
             
             const gameState = await this.gameLogic.createGame(playerId);
             
@@ -409,17 +409,28 @@ export class GameController {
                         return;
                     }
 
+                    const session = sessionManager.createSession(gameState.gameId, playerId);
                     res.json({
                         success: true,
                         gameId: gameState.gameId,
+                        playerId,
+                        sessionToken: session.token,
+                        sessionExpiresAt: session.expiresAt,
+                        joinToken: null,
                         gameEnv: GameEnvViewBuilder.toPlayerView(autoEnv, playerId)
                     });
                     return;
                 }
 
+                const session = sessionManager.createSession(gameState.gameId as string, playerId);
+                const joinToken = sessionManager.createJoinToken(gameState.gameId as string, 'seat2');
                 res.json({
                     success: true,
                     gameId: gameState.gameId,
+                    playerId,
+                    sessionToken: session.token,
+                    sessionExpiresAt: session.expiresAt,
+                    joinToken: joinToken.token,
                     gameEnv: GameEnvViewBuilder.toPlayerView(gameState.gameEnv, playerId)
                 });
             } else {
@@ -448,16 +459,28 @@ export class GameController {
         try {
             console.log('🔍 joinRoom called with body:', req.body);
             
-            const { gameId, playerId } = req.body;
+            const { gameId, joinToken } = req.body;
             
-            if (!gameId || !playerId) {
+            if (!gameId || !joinToken) {
                 res.status(400).json({
-                    error: 'gameId and playerId are required',
+                    error: 'gameId and joinToken are required',
                     timestamp: new Date().toISOString(),
                     context: 'joinRoom endpoint'
                 });
                 return;
             }
+
+            const consumed = sessionManager.consumeJoinToken(gameId, joinToken);
+            if (!consumed) {
+                res.status(403).json({
+                    error: 'Invalid or expired join token',
+                    timestamp: new Date().toISOString(),
+                    context: 'joinRoom endpoint'
+                });
+                return;
+            }
+
+            const playerId = GameController.createPlayerId();
             
             const gameState = await this.gameLogic.joinGame(gameId, playerId);
             
@@ -468,9 +491,13 @@ export class GameController {
                 //     await this.gameLogic.registerCardTriggersForGame(gameState.gameEnv);
                 //     console.log('🎮 Event queue system activated with card triggers for full game:', gameId);
                 // }
+                const session = sessionManager.createSession(gameId, playerId);
                 res.json({
                     success: true,
                     gameId: gameState.gameId,
+                    playerId,
+                    sessionToken: session.token,
+                    sessionExpiresAt: session.expiresAt,
                     gameEnv: GameEnvViewBuilder.toPlayerView(gameState.gameEnv, playerId)
                 });
             } else {
@@ -621,6 +648,49 @@ export class GameController {
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
                 context: 'startReady endpoint'
+            });
+        }
+    }
+
+    /**
+     * Heartbeat to keep session alive
+     * POST /api/game/player/heartbeat
+     */
+    async heartbeat(req: Request, res: Response): Promise<void> {
+        try {
+            const session = (req as SessionAuthedRequest).session;
+            if (!session) {
+                res.status(401).json({
+                    error: 'Missing session context',
+                    timestamp: new Date().toISOString(),
+                    context: 'heartbeat endpoint'
+                });
+                return;
+            }
+
+            const refreshed = sessionManager.touchSession(session.token);
+            if (!refreshed) {
+                res.status(401).json({
+                    error: 'Invalid or expired session token',
+                    timestamp: new Date().toISOString(),
+                    context: 'heartbeat endpoint'
+                });
+                return;
+            }
+
+            res.json({
+                success: true,
+                gameId: refreshed.gameId,
+                playerId: refreshed.playerId,
+                sessionExpiresAt: refreshed.expiresAt,
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            console.error('❌ Error in heartbeat:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'heartbeat endpoint'
             });
         }
     }
@@ -947,7 +1017,7 @@ export class GameController {
                 return;
             }
 
-            const result = await this.aiCoordinator.executeAiDecision(gameId, playerId, decision);
+            const result = await this.aiCoordinator.executeAiDecisionExclusive(gameId, playerId, decision);
 
             if (!result?.success || !result?.gameEnv) {
                 res.status(400).json({
