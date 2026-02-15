@@ -1,7 +1,8 @@
 import type { AiDecision } from './AiTypes';
 import { CHOICE_EVENT_TYPES } from './AiTypes';
+import type { AiGameEnvView } from './AiViewTypes';
 
-export function decideActionStepConfirmation(gameEnvView: any, aiPlayerId: string): AiDecision | null {
+export function decideActionStepConfirmation(gameEnvView: AiGameEnvView, aiPlayerId: string): AiDecision | null {
     const battle = gameEnvView?.currentBattle;
     if (!battle || battle.status !== 'ACTION_STEP') {
         return null;
@@ -26,13 +27,23 @@ export function decideActionStepConfirmation(gameEnvView: any, aiPlayerId: strin
         };
     }
     if (confirmations[aiPlayerId] === true) {
-        return null;
+        return {
+            kind: 'wait',
+            reason: 'awaiting_opponent_confirm'
+        };
     }
 
     const queue = Array.isArray(gameEnvView?.processingQueue) ? gameEnvView.processingQueue : [];
-    const hasPendingChoice = queue.some((event: any) => event?.status === 'DECLARED' && CHOICE_EVENT_TYPES.has(event?.type));
+    const hasPendingChoice = queue.some((event) =>
+        event?.status === 'DECLARED'
+        && typeof event?.type === 'string'
+        && CHOICE_EVENT_TYPES.has(event.type)
+    );
     if (hasPendingChoice) {
-        return null;
+        return {
+            kind: 'wait',
+            reason: 'pending_choice'
+        };
     }
 
     return {

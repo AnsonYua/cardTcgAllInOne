@@ -2,8 +2,12 @@ import type { AiDecision } from './AiTypes';
 import { SLOT_NAMES } from './AiTypes';
 import { canAttackActiveTarget, isShieldAttackRestricted } from './AiTargetUtils';
 import { AttackPreparationManager } from '../AttackPreparationManager';
+import type { AiGameEnvView, AiPlayerView, AiSlotView, AiUnitView } from './AiViewTypes';
+import type { UnitZoneCard } from '../../models/CardSystem';
 
-export function findWinningShieldAttack(gameEnvView: any, aiPlayerId: string, opponentId: string): AiDecision | null {
+type AttackCandidate = { slotName: string; slot: AiSlotView };
+
+export function findWinningShieldAttack(gameEnvView: AiGameEnvView, aiPlayerId: string, opponentId: string): AiDecision | null {
     const players = gameEnvView?.players || {};
     const opponent = players[opponentId];
     const opponentShieldCount = Number(opponent?.zones?.shieldCount || 0);
@@ -16,7 +20,7 @@ export function findWinningShieldAttack(gameEnvView: any, aiPlayerId: string, op
     const best = attackers
         .filter((entry) => getUnitAttackPower(entry.slot) > 0)
         .sort((a, b) => getUnitAttackPower(b.slot) - getUnitAttackPower(a.slot))[0];
-    if (!best) {
+    if (!best?.slot?.unit?.carduid) {
         return null;
     }
 
@@ -30,7 +34,7 @@ export function findWinningShieldAttack(gameEnvView: any, aiPlayerId: string, op
     };
 }
 
-export function findBestUnitAttack(gameEnvView: any, aiPlayerId: string, opponentId: string): AiDecision | null {
+export function findBestUnitAttack(gameEnvView: AiGameEnvView, aiPlayerId: string, opponentId: string): AiDecision | null {
     const attackers = getAttackers(gameEnvView, aiPlayerId);
     const defender = gameEnvView?.players?.[opponentId];
     const defenderTargets = getDefenderUnits(defender);
@@ -43,14 +47,18 @@ export function findBestUnitAttack(gameEnvView: any, aiPlayerId: string, opponen
     let bestAction: AiDecision | null = null;
 
     for (const attacker of attackers) {
+        const attackerUnit = attacker.slot?.unit;
+        if (!attackerUnit?.carduid) {
+            continue;
+        }
         const attackerAP = getUnitAttackPower(attacker.slot);
         const attackerHP = getUnitRemainingHp(attacker.slot);
         for (const target of defenderTargets) {
             const targetUnit = target.slot?.unit;
-            if (!targetUnit) {
+            if (!targetUnit?.carduid) {
                 continue;
             }
-            if (targetUnit.isRested !== true && !canAttackActiveTarget(gameEnvView, attacker.slot.unit, targetUnit)) {
+            if (targetUnit.isRested !== true && !canAttackActiveTarget(gameEnvView, attackerUnit, targetUnit)) {
                 continue;
             }
             const targetHP = getUnitRemainingHp(target.slot);
@@ -65,9 +73,9 @@ export function findBestUnitAttack(gameEnvView: any, aiPlayerId: string, opponen
                     reason: 'best_unit_trade',
                     payload: {
                         actionType: 'attackUnit',
-                        attackerCarduid: attacker.slot.unit.carduid,
+                        attackerCarduid: attackerUnit.carduid,
                         targetPlayerId: opponentId,
-                        targetUnitUid: target.slot.unit.carduid
+                        targetUnitUid: targetUnit.carduid
                     }
                 };
             }
@@ -77,7 +85,7 @@ export function findBestUnitAttack(gameEnvView: any, aiPlayerId: string, opponen
     return bestScore > 8 ? bestAction : null;
 }
 
-export function findSafeShieldAttack(gameEnvView: any, aiPlayerId: string): AiDecision | null {
+export function findSafeShieldAttack(gameEnvView: AiGameEnvView, aiPlayerId: string): AiDecision | null {
     const attackers = getAttackers(gameEnvView, aiPlayerId)
         .filter((entry) => !isShieldAttackRestricted(entry.slot?.unit));
     if (attackers.length === 0) {
@@ -86,7 +94,7 @@ export function findSafeShieldAttack(gameEnvView: any, aiPlayerId: string): AiDe
 
     const best = attackers
         .sort((a, b) => getUnitAttackPower(b.slot) - getUnitAttackPower(a.slot))[0];
-    if (!best) {
+    if (!best?.slot?.unit?.carduid) {
         return null;
     }
 
@@ -100,26 +108,31 @@ export function findSafeShieldAttack(gameEnvView: any, aiPlayerId: string): AiDe
     };
 }
 
-function getAttackers(gameEnvView: any, aiPlayerId: string): Array<{ slotName: string; slot: any }> {
+function getAttackers(gameEnvView: AiGameEnvView, aiPlayerId: string): AttackCandidate[] {
     const self = gameEnvView?.players?.[aiPlayerId];
     const zones = self?.zones || {};
     return SLOT_NAMES
-        .map((slotName) => ({ slotName, slot: zones?.[slotName] }))
-        .filter((entry) =>
-            entry?.slot?.unit
-            && canAttack(entry.slot.unit)
-            && !AttackPreparationManager.unitHasAttackRestriction(entry.slot.unit, 'cannot_attack')
+        .map((slotName) => ({ slotName, slot: zones?.[slotName] as AiSlotView | undefined }))
+        .filter((entry): entry is AttackCandidate =>
+            Boolean(
+                entry?.slot?.unit
+                && canAttack(entry.slot.unit)
+                && !AttackPreparationManager.unitHasAttackRestriction(
+                    entry.slot.unit as unknown as UnitZoneCard,
+                    'cannot_attack'
+                )
+            )
         );
 }
 
-function getDefenderUnits(playerView: any): Array<{ slotName: string; slot: any }> {
+function getDefenderUnits(playerView: AiPlayerView | undefined): AttackCandidate[] {
     const zones = playerView?.zones || {};
     return SLOT_NAMES
-        .map((slotName) => ({ slotName, slot: zones?.[slotName] }))
-        .filter((entry) => entry?.slot?.unit);
+        .map((slotName) => ({ slotName, slot: zones?.[slotName] as AiSlotView | undefined }))
+        .filter((entry): entry is AttackCandidate => Boolean(entry?.slot?.unit));
 }
 
-function canAttack(unit: any): boolean {
+function canAttack(unit: AiUnitView | undefined): boolean {
     if (!unit) return false;
     if (typeof unit.canAttackThisTurn === 'boolean') return unit.canAttackThisTurn;
     const isRested = Boolean(unit.isRested);
@@ -128,7 +141,7 @@ function canAttack(unit: any): boolean {
     return !isRested && (!playedThisTurn || canAttackOnPlayTurn);
 }
 
-function getUnitAttackPower(slot: any): number {
+function getUnitAttackPower(slot: AiSlotView | undefined): number {
     const fieldValue = slot?.fieldCardValue?.totalAP;
     if (typeof fieldValue === 'number') {
         return fieldValue;
@@ -138,7 +151,7 @@ function getUnitAttackPower(slot: any): number {
     return Math.max(0, baseAp + continuousAp);
 }
 
-function getUnitRemainingHp(slot: any): number {
+function getUnitRemainingHp(slot: AiSlotView | undefined): number {
     const totalHp = typeof slot?.fieldCardValue?.totalHP === 'number'
         ? slot.fieldCardValue.totalHP
         : Number(slot?.unit?.cardData?.hp || 0) + Number(slot?.unit?.continueModifyHP || 0);

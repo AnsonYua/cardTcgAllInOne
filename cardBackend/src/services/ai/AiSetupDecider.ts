@@ -1,6 +1,7 @@
 import type { AiDecision } from './AiTypes';
+import type { AiGameEnvView } from './AiViewTypes';
 
-export function decideSetupPhase(gameEnvView: any, aiPlayerId: string): AiDecision | null {
+export function decideSetupPhase(gameEnvView: AiGameEnvView, aiPlayerId: string): AiDecision | null {
     const phase = gameEnvView?.phase;
     if (phase === 'DECIDE_FIRST_PLAYER_PHASE') {
         if (gameEnvView?.firstPlayerChooser === aiPlayerId) {

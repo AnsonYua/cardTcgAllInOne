@@ -1,7 +1,9 @@
-export function validateScopeMatrix(gameEnvView: any, aiPlayerId: string): string | null {
+import type { AiGameEnvView } from './AiViewTypes';
+
+export function validateScopeMatrix(gameEnvView: AiGameEnvView, aiPlayerId: string): string | null {
     const players = gameEnvView?.players || {};
     for (const [playerId, playerData] of Object.entries(players)) {
-        const player = playerData as any;
+        const player = playerData;
         const deck = player?.deck || {};
         const zones = player?.zones || {};
 
@@ -20,7 +22,8 @@ export function validateScopeMatrix(gameEnvView: any, aiPlayerId: string): strin
 
         const shieldArea = Array.isArray(zones.shieldArea) ? zones.shieldArea : [];
         for (const shield of shieldArea) {
-            if ((shield as any)?.cardId || (shield as any)?.cardData) {
+            const typedShield = shield as Record<string, unknown>;
+            if (typedShield?.cardId || typedShield?.cardData) {
                 return 'shield_identity_exposed';
             }
         }

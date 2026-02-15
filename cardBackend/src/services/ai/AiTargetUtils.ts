@@ -1,14 +1,40 @@
 import { AllowAttackTargetPermissionResolver } from '../attack/AllowAttackTargetPermissionResolver';
 import { AttackPreparationManager } from '../AttackPreparationManager';
 import { SLOT_NAMES } from './AiTypes';
+import type {
+    AiCardData,
+    AiGameEnvView,
+    AiPlayerView,
+    AiSlotView,
+    AiUnitView
+} from './AiViewTypes';
+import type { GameEnvironment } from '../../models/GameEnvironment';
+import type { UnitZoneCard } from '../../models/CardSystem';
 
-export function isShieldAttackRestricted(unit: any): boolean {
-    return AttackPreparationManager.unitHasAttackRestriction(unit, 'cannot_attack_player');
+type TargetLike = {
+    carduid?: string;
+    cardData?: AiCardData;
+};
+
+type RuleLike = {
+    action?: string;
+};
+
+export function isShieldAttackRestricted(unit: AiUnitView | undefined): boolean {
+    return AttackPreparationManager.unitHasAttackRestriction(unit as unknown as UnitZoneCard | null, 'cannot_attack_player');
 }
 
-export function canAttackActiveTarget(gameEnvView: any, attacker: any, target: any): boolean {
+export function canAttackActiveTarget(
+    gameEnvView: AiGameEnvView,
+    attacker: AiUnitView | undefined,
+    target: AiUnitView | undefined
+): boolean {
     try {
-        return AllowAttackTargetPermissionResolver.canTargetActiveUnit(gameEnvView as any, attacker, target);
+        return AllowAttackTargetPermissionResolver.canTargetActiveUnit(
+            gameEnvView as unknown as GameEnvironment,
+            attacker as unknown as UnitZoneCard,
+            target as unknown as UnitZoneCard
+        );
     } catch {
         return false;
     }
@@ -19,21 +45,22 @@ export function extractTargetCount(rawCount: unknown): number {
         return rawCount;
     }
     if (rawCount && typeof rawCount === 'object') {
-        const max = Number((rawCount as any).max || 1);
+        const max = Number((rawCount as { max?: unknown }).max || 1);
         return max > 0 ? max : 1;
     }
     return 1;
 }
 
 export function scoreTargetForAction(
-    gameEnvView: any,
-    target: any,
-    rule: any,
-    scope: any
+    gameEnvView: AiGameEnvView,
+    target: TargetLike,
+    rule: RuleLike,
+    scope: unknown
 ): number {
     const action = typeof rule?.action === 'string' ? rule.action : '';
     const isOpponent = isOpponentScope(scope);
-    const snapshot = getUnitSnapshot(gameEnvView, target.carduid);
+    const carduid = typeof target.carduid === 'string' ? target.carduid : '';
+    const snapshot = carduid ? getUnitSnapshot(gameEnvView, carduid) : null;
     const ap = snapshot?.ap ?? Number(target?.cardData?.ap || 0);
     const hp = snapshot?.hp ?? Number(target?.cardData?.hp || 0);
     const remainingHp = snapshot?.remainingHp ?? hp;
@@ -56,17 +83,20 @@ export function scoreTargetForAction(
     }
 }
 
-export function buildViewAdapter(gameEnvView: any): any {
+export function buildViewAdapter(gameEnvView: AiGameEnvView): AiGameEnvView & {
+    getPlayer: (playerId: string) => (AiPlayerView & { getShieldCards: () => Record<string, unknown>[] }) | null;
+    getOpponentId: (playerId: string) => string | null;
+} {
     const players = gameEnvView?.players || {};
-    const wrappedPlayers: Record<string, any> = {};
+    const wrappedPlayers: Record<string, AiPlayerView & { getShieldCards: () => Record<string, unknown>[] }> = {};
 
     for (const [playerId, player] of Object.entries(players)) {
-        const playerObj = (player as any) || {};
+        const playerObj = player || {};
         const zones = playerObj?.zones || {};
         wrappedPlayers[playerId] = {
             ...playerObj,
             zones,
-            getShieldCards: () => (Array.isArray(zones?.shieldArea) ? zones.shieldArea : [])
+            getShieldCards: () => (Array.isArray(zones?.shieldArea) ? zones.shieldArea as Record<string, unknown>[] : [])
         };
     }
 
@@ -83,12 +113,12 @@ export function buildViewAdapter(gameEnvView: any): any {
     };
 }
 
-function isOpponentScope(scope: any): boolean {
+function isOpponentScope(scope: unknown): boolean {
     const scopeValue = typeof scope === 'string' ? scope.toLowerCase() : '';
     return scopeValue.includes('opponent') || scopeValue.includes('enemy');
 }
 
-function getUnitSnapshot(gameEnvView: any, carduid: string): {
+function getUnitSnapshot(gameEnvView: AiGameEnvView, carduid: string): {
     ap: number;
     hp: number;
     remainingHp: number;
@@ -97,9 +127,9 @@ function getUnitSnapshot(gameEnvView: any, carduid: string): {
 } | null {
     const players = gameEnvView?.players || {};
     for (const player of Object.values(players)) {
-        const zones = (player as any)?.zones || {};
+        const zones = player?.zones || {};
         for (const slotName of SLOT_NAMES) {
-            const slot = zones?.[slotName];
+            const slot = zones?.[slotName] as AiSlotView | undefined;
             const unit = slot?.unit;
             if (!unit || unit.carduid !== carduid) {
                 continue;

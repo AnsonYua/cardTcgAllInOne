@@ -1,4 +1,5 @@
 import type { AiDecision } from './AiTypes';
+import type { AiGameEnvView } from './AiViewTypes';
 import { validateScopeMatrix } from './AiScopeValidator';
 import { decideSetupPhase } from './AiSetupDecider';
 import { decideChoiceIfPending } from './AiChoiceResolver';
@@ -9,7 +10,7 @@ import { findWinningShieldAttack, findBestUnitAttack, findSafeShieldAttack } fro
 import { findBestPlayCard } from './AiPlayDecider';
 
 export class GameAiService {
-    static decide(gameEnvView: any, aiPlayerId: string): AiDecision {
+    static decide(gameEnvView: AiGameEnvView, aiPlayerId: string): AiDecision {
         const scopeIssue = validateScopeMatrix(gameEnvView, aiPlayerId);
         if (scopeIssue) {
             return {

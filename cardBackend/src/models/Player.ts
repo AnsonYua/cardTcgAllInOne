@@ -39,6 +39,7 @@ export interface PlayerZones {
     trashArea: ZoneCard[];     // Discarded/destroyed cards
     repairAbilitiesCheckedThisCycle?: boolean;
     endTurnEffectsCheckedThisCycle?: boolean;
+    readyMainPhaseTurn?: number;
 }
 
 // ============ ZONE UTILITY FUNCTIONS ============
@@ -251,7 +252,8 @@ export class Player {
             energyArea: [],
             trashArea: [],
             repairAbilitiesCheckedThisCycle: false,
-            endTurnEffectsCheckedThisCycle: false
+            endTurnEffectsCheckedThisCycle: false,
+            readyMainPhaseTurn: undefined
         };
     }
 

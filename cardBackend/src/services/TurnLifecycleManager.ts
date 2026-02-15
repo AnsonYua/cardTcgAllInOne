@@ -52,6 +52,9 @@ export class TurnLifecycleManager {
     static readyMainPhase(gameEnv: GameEnvironment, playerId: string): void {
         const player = gameEnv.players[playerId];
         if (!player?.zones) return;
+        if (player.zones.readyMainPhaseTurn === gameEnv.currentTurn) {
+            return;
+        }
 
         const energyArea = player.zones.energyArea || [];
         for (const energy of energyArea) {
@@ -105,5 +108,7 @@ export class TurnLifecycleManager {
                 source: 'READY_MAIN_PHASE'
             });
         }
+
+        player.zones.readyMainPhaseTurn = gameEnv.currentTurn;
     }
 }

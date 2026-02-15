@@ -340,6 +340,7 @@ export class PhaseTransitionManager {
             // Start new turn in DRAW_PHASE
             gameEnv.updatePhase(GamePhase.DRAW_PHASE, nextPlayer);
             TurnLifecycleManager.startTurn(gameEnv, nextPlayer);
+            TurnLifecycleManager.readyMainPhase(gameEnv, nextPlayer);
 
             console.log(`✅ Player turn advanced: ${previousPlayer} → ${nextPlayer} (turn ${gameEnv.currentTurn})`);
             

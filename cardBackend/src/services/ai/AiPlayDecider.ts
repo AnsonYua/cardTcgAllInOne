@@ -2,47 +2,64 @@ import type { AiDecision } from './AiTypes';
 import { SLOT_NAMES } from './AiTypes';
 import { UnitRestrictionUtils } from '../restrictions/UnitRestrictionUtils';
 import { getAvailableEnergyCount, getTotalEnergyCount } from './AiEnergyUtils';
+import type { AiGameEnvView, AiHandCard, AiSlotView } from './AiViewTypes';
+import type { ZoneCard } from '../../models/CardSystem';
 
-export function findBestPlayCard(gameEnvView: any, aiPlayerId: string): AiDecision | null {
+type PlayableCard = {
+    carduid: string;
+    cardType: string;
+    cost: number;
+    level: number;
+    cardData: AiHandCard['cardData'];
+};
+
+export function findBestPlayCard(gameEnvView: AiGameEnvView, aiPlayerId: string): AiDecision | null {
     const self = gameEnvView?.players?.[aiPlayerId];
     const hand = Array.isArray(self?.deck?.hand) ? self.deck.hand : [];
     if (hand.length === 0) {
         return null;
     }
 
-    const zones = self?.zones || {};
+    const zones = (self?.zones || {}) as Record<string, AiSlotView | undefined> & {
+        base?: Array<Record<string, unknown>>;
+    };
     const availableEnergy = getAvailableEnergyCount(self);
     const totalEnergy = getTotalEnergyCount(self);
     const hasBase = Array.isArray(zones.base) && zones.base.length > 0;
     const emptyUnitSlots = SLOT_NAMES.filter((slotName) => !zones?.[slotName]?.unit);
     const unitWithoutPilot = SLOT_NAMES
-        .map((slotName) => zones?.[slotName])
-        .find((slot) => slot?.unit && !slot?.pilot && !UnitRestrictionUtils.cannotBePairedWithPilot(slot.unit as any));
+        .map((slotName) => zones?.[slotName] as AiSlotView | undefined)
+        .find((slot) =>
+            slot?.unit
+            && !slot?.pilot
+            && !UnitRestrictionUtils.cannotBePairedWithPilot(slot.unit as unknown as ZoneCard)
+        );
 
     const playable = hand
-        .map((card: any) => {
+        .map((card): PlayableCard | null => {
             const cardData = card?.cardData || {};
             const effectiveCostRaw = cardData?.effectiveCost ?? cardData?.cost ?? 0;
             const effectiveLevelRaw = cardData?.effectiveLevel ?? cardData?.level ?? 0;
             const cost = Number.isFinite(Number(effectiveCostRaw)) ? Number(effectiveCostRaw) : 0;
             const level = Number.isFinite(Number(effectiveLevelRaw)) ? Number(effectiveLevelRaw) : 0;
             const cardType = cardData?.cardType;
+            const carduid = typeof card?.carduid === 'string' ? card.carduid : '';
+            if (!carduid || typeof cardType !== 'string') {
+                return null;
+            }
             return {
-                carduid: card?.carduid,
+                carduid,
                 cardType,
                 cost,
                 level,
                 cardData
             };
         })
-        .filter((card: any) =>
-            typeof card.carduid === 'string'
-            && typeof card.cardType === 'string'
-            && card.cost <= availableEnergy
-            && card.level <= totalEnergy
+        .filter((card): card is PlayableCard =>
+            Boolean(card && card.cost <= availableEnergy && card.level <= totalEnergy)
         );
 
-    const bestBase = playable.find((card: any) => card.cardType === 'base');
+    const bestBase = playable.find((card) => card.cardType === 'base');
     if (bestBase && !hasBase) {
         return {
             kind: 'playCard',
@@ -58,8 +75,8 @@ export function findBestPlayCard(gameEnvView: any, aiPlayerId: string): AiDecisi
     }
 
     const bestUnit = playable
-        .filter((card: any) => card.cardType === 'unit' && emptyUnitSlots.length > 0)
-        .sort((a: any, b: any) => b.cost - a.cost)[0];
+        .filter((card) => card.cardType === 'unit' && emptyUnitSlots.length > 0)
+        .sort((a, b) => b.cost - a.cost)[0];
     if (bestUnit) {
         return {
             kind: 'playCard',
@@ -75,8 +92,8 @@ export function findBestPlayCard(gameEnvView: any, aiPlayerId: string): AiDecisi
     }
 
     const bestPilot = playable
-        .filter((card: any) => card.cardType === 'pilot' && unitWithoutPilot?.unit?.carduid)
-        .sort((a: any, b: any) => b.cost - a.cost)[0];
+        .filter((card) => card.cardType === 'pilot' && unitWithoutPilot?.unit?.carduid)
+        .sort((a, b) => b.cost - a.cost)[0];
     if (bestPilot && unitWithoutPilot?.unit?.carduid) {
         return {
             kind: 'playCard',
@@ -93,14 +110,14 @@ export function findBestPlayCard(gameEnvView: any, aiPlayerId: string): AiDecisi
     }
 
     const bestCommandPilot = playable
-        .filter((card: any) => card.cardType === 'command' && unitWithoutPilot?.unit?.carduid)
-        .map((card: any) => {
+        .filter((card) => card.cardType === 'command' && unitWithoutPilot?.unit?.carduid)
+        .map((card) => {
             const ruleList = Array.isArray(card?.cardData?.effects?.rules) ? card.cardData.effects.rules : [];
-            const hasDesignatePilot = ruleList.some((rule: any) => rule?.action === 'designate_pilot');
+            const hasDesignatePilot = ruleList.some((rule) => rule?.action === 'designate_pilot');
             return { ...card, hasDesignatePilot };
         })
-        .filter((card: any) => card.hasDesignatePilot)
-        .sort((a: any, b: any) => b.cost - a.cost)[0];
+        .filter((card) => card.hasDesignatePilot)
+        .sort((a, b) => b.cost - a.cost)[0];
     if (bestCommandPilot && unitWithoutPilot?.unit?.carduid) {
         return {
             kind: 'playCard',
@@ -117,8 +134,8 @@ export function findBestPlayCard(gameEnvView: any, aiPlayerId: string): AiDecisi
     }
 
     const bestCommand = playable
-        .filter((card: any) => card.cardType === 'command')
-        .sort((a: any, b: any) => b.cost - a.cost)[0];
+        .filter((card) => card.cardType === 'command')
+        .sort((a, b) => b.cost - a.cost)[0];
     if (bestCommand) {
         return {
             kind: 'playCard',
