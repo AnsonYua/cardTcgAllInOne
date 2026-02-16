@@ -8,6 +8,7 @@ import type { GameEnvironment } from '../models/GameEnvironment';
 import { PlayerAction } from '../models/EventInterfaces';
 import { lobbyManager } from '../services/LobbyManager';
 import { GCG_DECKS_PATH, resolveDataPath } from '../config/dataPaths';
+import { listAvailableCardSets, parseSetId, getCardSetFileName, resolveCardSetPath } from '../services/cards/CardSetService';
 import { CardDatabaseManager } from '../models/CardSystem';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -1261,39 +1262,71 @@ export class GameController {
     // ============ CARD DATA ENDPOINTS ============
 
     /**
-     * Get custom card data (st01Card.json)
-     * GET /api/game/cards
+     * Get custom card data (set-based, defaults to st01)
+     * GET /api/game/cards?set=st02
      */
-    async getCardData(_req: Request, res: Response): Promise<void> {
+    async getCardData(req: Request, res: Response): Promise<void> {
         try {
-            console.log('📋 Getting custom card data (st01Card.json)');
-            
-            const cardDataPath = resolveDataPath('st01Card.json');
-            
-            // Check if file exists
-            if (!fs.existsSync(cardDataPath)) {
-                res.status(404).json({
-                    error: 'Custom card data file not found (st01Card.json)',
+            const rawSet = typeof (req.query as any)?.set === 'string' ? String((req.query as any).set) : '';
+            const requested = rawSet && rawSet.trim().length > 0 ? rawSet : 'st01';
+            const setId = parseSetId(requested);
+
+            if (!setId) {
+                res.status(400).json({
+                    error: `Invalid set '${rawSet}'. Expected gd01/gd02/gd03 or st01..st08.`,
                     timestamp: new Date().toISOString(),
                     context: 'getCardData endpoint'
                 });
                 return;
             }
-            
-            // Read and parse the st01Card.json file
+
+            const fileName = getCardSetFileName(setId);
+            console.log(`📋 Getting custom card data (${fileName})`);
+
+            const cardDataPath = resolveCardSetPath(setId);
+
+            if (!fs.existsSync(cardDataPath)) {
+                res.status(404).json({
+                    error: `Custom card data file not found (${fileName})`,
+                    timestamp: new Date().toISOString(),
+                    context: 'getCardData endpoint'
+                });
+                return;
+            }
+
             const cardDataContent = await fs.promises.readFile(cardDataPath, 'utf8');
             const cardData = JSON.parse(cardDataContent);
-            
+
             console.log('✅ Custom card data loaded successfully');
-            
             res.json(cardData);
-            
         } catch (error) {
             console.error('❌ Error in getCardData:', error);
             res.status(500).json({
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
                 context: 'getCardData endpoint'
+            });
+        }
+    }
+
+    /**
+     * List available card sets based on *Card.json files in the data folder.
+     * GET /api/game/cardSets
+     */
+    async getCardSets(_req: Request, res: Response): Promise<void> {
+        try {
+            const sets = await listAvailableCardSets();
+            res.json({
+                success: true,
+                sets,
+                timestamp: new Date().toISOString(),
+            });
+        } catch (error) {
+            console.error('❌ Error in getCardSets:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'getCardSets endpoint'
             });
         }
     }

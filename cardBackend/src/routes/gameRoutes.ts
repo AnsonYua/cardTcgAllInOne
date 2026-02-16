@@ -134,6 +134,12 @@ router.post('/player/endTurn', requirePlayerSession, gameController.endTurn.bind
  */
 router.get('/cards', gameController.getCardData.bind(gameController));
 
+/**
+ * List available card sets (gd01/st01/...)
+ * GET /api/game/cardSets
+ */
+router.get('/cardSets', gameController.getCardSets.bind(gameController));
+
 // ============ IMAGE SERVING ENDPOINTS ============
 
 /**
