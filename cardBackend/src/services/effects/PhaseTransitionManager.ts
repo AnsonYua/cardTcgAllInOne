@@ -194,7 +194,7 @@ export class PhaseTransitionManager {
             gameEnv.hasChosenFirstPlayer = true;
             gameEnv.updatePhase(GamePhase.REDRAW_PHASE, event.data.playerId);
 
-            GameSetupManager.initializeGameWithDecks(gameEnv);
+            GameSetupManager.initializeGameWithDecks(gameEnv, event.data.gameId);
 
             console.log(`✅ CHOOSE_FIRST_PLAYER event processed - ${chosenId} will go first`);
             return { success: true };

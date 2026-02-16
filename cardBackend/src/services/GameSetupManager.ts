@@ -1,7 +1,6 @@
 // src/services/GameSetupManager.ts
 // Handles redraw confirmation and deck initialization helpers
 
-import * as fs from 'fs';
 import { GameEnvironment } from '../models/GameEnvironment';
 import {
     ConfirmRedrawEvent
@@ -9,7 +8,7 @@ import {
 import { ExecutionResult } from './ExecutionResult';
 import { PlayerCardManager } from './PlayerCardManager';
 import { GameNotificationManager } from './GameNotificationManager';
-import { GCG_DECKS_PATH } from '../config/dataPaths';
+import { deckSubmissionService } from './DeckSubmissionService';
 
 export class GameSetupManager {
     static handleConfirmRedraw(event: ConfirmRedrawEvent, gameEnv: GameEnvironment): ExecutionResult {
@@ -61,19 +60,29 @@ export class GameSetupManager {
         }
     }
 
-    static initializeGameWithDecks(gameEnv: GameEnvironment): void {
+    static initializeGameWithDecks(gameEnv: GameEnvironment, gameId?: string): void {
         console.log('🎮 Initializing game with deck configuration...');
-
-        const deckConfig = JSON.parse(fs.readFileSync(GCG_DECKS_PATH, 'utf8'));
 
         const playerId1 = gameEnv.playerId_1!;
         const playerId2 = gameEnv.playerId_2!;
 
-        const deck1Config = deckConfig.playerDecks[playerId1] || deckConfig.playerDecks['playerId_1'];
-        const deck2Config = deckConfig.playerDecks[playerId2] || deckConfig.playerDecks['playerId_2'];
+        let deck1Cards: string[] = [];
+        let deck2Cards: string[] = [];
+        if (gameId) {
+            deck1Cards = deckSubmissionService.getPlayerDeckResourcePaths(gameId, playerId1);
+            deck2Cards = deckSubmissionService.getPlayerDeckResourcePaths(gameId, playerId2);
+        }
 
-        const deck1Cards = deckConfig.decks[deck1Config.activeDeck].cards;
-        const deck2Cards = deckConfig.decks[deck2Config.activeDeck].cards;
+        if (deck1Cards.length === 0 && Array.isArray(gameEnv.aiPlayerIds) && gameEnv.aiPlayerIds.includes(playerId1)) {
+            deck1Cards = deckSubmissionService.getDefaultDeckResourcePaths();
+        }
+        if (deck2Cards.length === 0 && Array.isArray(gameEnv.aiPlayerIds) && gameEnv.aiPlayerIds.includes(playerId2)) {
+            deck2Cards = deckSubmissionService.getDefaultDeckResourcePaths();
+        }
+
+        if (deck1Cards.length === 0 || deck2Cards.length === 0) {
+            throw new Error('Both players must submit deck before game initialization');
+        }
 
         const uniqueDeck1Cards = deck1Cards.map((cardId: string) => PlayerCardManager.createUniqueCardId(cardId));
         const uniqueDeck2Cards = deck2Cards.map((cardId: string) => PlayerCardManager.createUniqueCardId(cardId));

@@ -21,6 +21,9 @@ import { GameAiService } from '../services/ai/GameAiService';
 import { sessionManager } from '../services/SessionManager';
 import { SessionAuthedRequest } from '../middleware/sessionAuth';
 import { v4 as uuidv4 } from 'uuid';
+import { deckSubmissionService } from '../services/DeckSubmissionService';
+import { deckResourceService } from '../services/DeckResourceService';
+import { collectTokenCardIdsFromCardData } from '../services/cards/TokenCardDiscovery';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -211,6 +214,23 @@ export class GameController {
         return null;
     }
 
+    private async buildCombinedDeckResources(gameId: string): Promise<{ resources: string[]; pending: boolean; missingPlayers: string[] }> {
+        const gameEnv = await this.gameLogic.loadGameFromFile(gameId);
+        if (!gameEnv) {
+            const err: any = new Error('Game not found');
+            err.statusCode = 404;
+            throw err;
+        }
+        const playerIds = [gameEnv.playerId_1, gameEnv.playerId_2].filter((id): id is string => typeof id === 'string' && id.length > 0);
+        const aiPlayerIds = Array.isArray((gameEnv as any).aiPlayerIds) ? (gameEnv as any).aiPlayerIds as string[] : [];
+        return deckResourceService.buildCombinedDeckResources({
+            gameId,
+            playerIds,
+            aiPlayerIds,
+            toCardResourcePath: (cardId, folderHint) => GameController.toCardResourcePath(cardId, folderHint),
+        });
+    }
+
     private static findTokenFolderInDeckLists(tokenId: string, resourcePaths: string[]): string | null {
         for (const entry of resourcePaths) {
             if (typeof entry !== 'string') {
@@ -271,57 +291,6 @@ export class GameController {
         };
 
         visit(gameEnv);
-        return result;
-    }
-
-    private static collectTokenCardIdsFromCardData(cardData: any): Set<string> {
-        const result = new Set<string>();
-        const visited = new Set<any>();
-
-        const visit = (value: any, keyHint?: string): void => {
-            if (!value) {
-                return;
-            }
-
-            if (typeof value === 'string') {
-                if (/^T-\d+$/i.test(value)) {
-                    result.add(value);
-                }
-                return;
-            }
-
-            if (typeof value !== 'object') {
-                return;
-            }
-
-            if (visited.has(value)) {
-                return;
-            }
-            visited.add(value);
-
-            if (Array.isArray(value)) {
-                value.forEach((entry) => visit(entry));
-                return;
-            }
-
-            // Heuristic: if we see a token-like structure, capture it.
-            // Common shapes: { token: { cardId: "T-001" } }, { cardId: "T-001" }, { id: "T-001" }
-            const maybeCardId = (value as any).cardId;
-            const maybeId = (value as any).id;
-            if (typeof maybeCardId === 'string' && /^T-\d+$/i.test(maybeCardId)) {
-                result.add(maybeCardId);
-            }
-            if (typeof maybeId === 'string' && /^T-\d+$/i.test(maybeId)) {
-                result.add(maybeId);
-            }
-
-            for (const [childKey, childValue] of Object.entries(value)) {
-                // Extra hint: token blocks are usually under keys like "token", "tokens", "choices"
-                visit(childValue, childKey || keyHint);
-            }
-        };
-
-        visit(cardData);
         return result;
     }
 
@@ -423,17 +392,16 @@ export class GameController {
                     return;
                 }
 
-                const session = sessionManager.createSession(gameState.gameId as string, playerId);
-                const joinToken = sessionManager.createJoinToken(gameState.gameId as string, 'seat2');
-                res.json({
-                    success: true,
-                    gameId: gameState.gameId,
-                    playerId,
-                    sessionToken: session.token,
-                    sessionExpiresAt: session.expiresAt,
-                    joinToken: joinToken.token,
-                    gameEnv: GameEnvViewBuilder.toPlayerView(gameState.gameEnv, playerId)
-                });
+            const session = sessionManager.createSession(gameState.gameId as string, playerId);
+            res.json({
+                success: true,
+                gameId: gameState.gameId,
+                playerId,
+                sessionToken: session.token,
+                sessionExpiresAt: session.expiresAt,
+                joinToken: null,
+                gameEnv: GameEnvViewBuilder.toPlayerView(gameState.gameEnv, playerId)
+            });
             } else {
                 res.status(400).json({
                     error: gameState.error || 'Failed to create game',
@@ -460,21 +428,11 @@ export class GameController {
         try {
             console.log('🔍 joinRoom called with body:', req.body);
             
-            const { gameId, joinToken } = req.body;
+            const { gameId } = req.body;
             
-            if (!gameId || !joinToken) {
+            if (!gameId) {
                 res.status(400).json({
-                    error: 'gameId and joinToken are required',
-                    timestamp: new Date().toISOString(),
-                    context: 'joinRoom endpoint'
-                });
-                return;
-            }
-
-            const consumed = sessionManager.consumeJoinToken(gameId, joinToken);
-            if (!consumed) {
-                res.status(403).json({
-                    error: 'Invalid or expired join token',
+                    error: 'gameId is required',
                     timestamp: new Date().toISOString(),
                     context: 'joinRoom endpoint'
                 });
@@ -557,6 +515,30 @@ export class GameController {
                     error: 'gameId, playerId, and chosenFirstPlayerId are required',
                     timestamp: new Date().toISOString(),
                     context: 'chooseFirstPlayer endpoint'
+                });
+                return;
+            }
+
+            const currentEnv = await this.gameLogic.loadGameFromFile(gameId);
+            if (!currentEnv) {
+                res.status(404).json({
+                    error: 'Game not found',
+                    timestamp: new Date().toISOString(),
+                    context: 'chooseFirstPlayer endpoint',
+                });
+                return;
+            }
+            const expectedPlayers = [currentEnv.playerId_1, currentEnv.playerId_2]
+                .filter((id): id is string => typeof id === 'string' && id.length > 0);
+            const aiPlayerIds = Array.isArray((currentEnv as any).aiPlayerIds) ? (currentEnv as any).aiPlayerIds as string[] : [];
+            const requiredPlayers = expectedPlayers.filter((id) => !aiPlayerIds.includes(id));
+            const missingPlayers = deckSubmissionService.getMissingPlayers(gameId, requiredPlayers);
+            if (missingPlayers.length > 0) {
+                res.status(400).json({
+                    error: 'Both players must submit deck before choosing first player',
+                    missingPlayers,
+                    timestamp: new Date().toISOString(),
+                    context: 'chooseFirstPlayer endpoint',
                 });
                 return;
             }
@@ -649,6 +631,62 @@ export class GameController {
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
                 context: 'startReady endpoint'
+            });
+        }
+    }
+
+    /**
+     * Submit deck data for the current player
+     * POST /api/game/player/submitDeck
+     */
+    async submitDeck(req: SessionAuthedRequest, res: Response): Promise<void> {
+        try {
+            const { gameId, playerId, deck } = req.body || {};
+            console.log('🧩 submitDeck called', {
+                gameId,
+                playerId,
+                deckCount: Array.isArray(deck) ? deck.length : 0,
+            });
+            if (!gameId || !playerId) {
+                res.status(400).json({
+                    error: 'gameId and playerId are required',
+                    timestamp: new Date().toISOString(),
+                    context: 'submitDeck endpoint',
+                });
+                return;
+            }
+
+            const normalized = deckSubmissionService.normalizeDeckEntries(deck);
+            if (normalized.length === 0) {
+                res.status(400).json({
+                    error: 'Deck is empty',
+                    timestamp: new Date().toISOString(),
+                    context: 'submitDeck endpoint',
+                });
+                return;
+            }
+
+            deckSubmissionService.submitDeck(gameId, playerId, normalized);
+
+            const hashPayload = normalized
+                .map((entry) => `${entry.id}:${entry.qty}`)
+                .sort()
+                .join('|');
+            const deckHash = crypto.createHash('sha1').update(hashPayload).digest('hex');
+            const deckCount = normalized.reduce((sum, entry) => sum + entry.qty, 0);
+
+            res.json({
+                success: true,
+                deckHash,
+                deckCount,
+                timestamp: new Date().toISOString(),
+            });
+        } catch (error) {
+            console.error('❌ Error in submitDeck:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'submitDeck endpoint',
             });
         }
     }
@@ -1218,7 +1256,7 @@ export class GameController {
                                 const content = await fs.promises.readFile(cardDataPath, 'utf8');
                                 const data = JSON.parse(content);
                                 const card = data?.cards?.find?.((c: any) => c?.cardId === id);
-                                const tokens = GameController.collectTokenCardIdsFromCardData(card);
+                                const tokens = collectTokenCardIdsFromCardData(card);
                                 for (const t of tokens) tokenIds.add(t);
                             }
                         } catch {
@@ -1350,6 +1388,10 @@ export class GameController {
             }
 
             const gameId = typeof req.query?.gameId === 'string' ? req.query.gameId : undefined;
+            const includeBothDecks =
+                typeof (req.query as any)?.includeBothDecks === 'string'
+                    ? String((req.query as any).includeBothDecks).toLowerCase() === 'true'
+                    : false;
             if (gameId) {
                 const authHeader = String(req.headers['authorization'] || '');
                 const bearer = authHeader.toLowerCase().startsWith('bearer ') ? authHeader.slice(7).trim() : '';
@@ -1369,6 +1411,30 @@ export class GameController {
                         error: 'Invalid or expired resource bundle token',
                         timestamp: new Date().toISOString(),
                         context: 'getGameResource endpoint',
+                    });
+                    return;
+                }
+
+                if (includeBothDecks) {
+                    const combined = await this.buildCombinedDeckResources(gameId);
+                    if (combined.pending) {
+                        res.json({
+                            success: true,
+                            gameId,
+                            playerId: payload.playerId,
+                            resources: [],
+                            source: 'bothDecks',
+                            pending: true,
+                            missingPlayers: combined.missingPlayers,
+                        });
+                        return;
+                    }
+                    res.json({
+                        success: true,
+                        gameId,
+                        playerId: payload.playerId,
+                        resources: combined.resources,
+                        source: 'bothDecks',
                     });
                     return;
                 }
@@ -1474,6 +1540,7 @@ export class GameController {
             }
 
             const includePreviews = req.body?.includePreviews !== false;
+            const includeBothDecks = req.body?.includeBothDecks === true;
 
             const gameEnv = await this.gameLogic.loadGameFromFile(gameId);
             if (!gameEnv) {
@@ -1485,18 +1552,31 @@ export class GameController {
                 return;
             }
 
-            const viewerEnv = GameEnvViewBuilder.toPlayerView(gameEnv as any, playerId);
-            const visibleCardIds = GameController.collectCardIdsFromGameEnv(viewerEnv);
-
-            const uniqueResources: string[] = [];
-            const seen = new Set<string>();
-
-            for (const cardId of visibleCardIds) {
-                const resourcePath = GameController.toCardResourcePath(cardId);
-                if (!resourcePath) continue;
-                if (seen.has(resourcePath)) continue;
-                seen.add(resourcePath);
-                uniqueResources.push(resourcePath);
+            let uniqueResources: string[] = [];
+            if (includeBothDecks) {
+                const combined = await this.buildCombinedDeckResources(gameId);
+                if (combined.pending) {
+                    res.status(409).json({
+                        error: 'Deck data incomplete',
+                        pending: true,
+                        missingPlayers: combined.missingPlayers,
+                        timestamp: new Date().toISOString(),
+                        context: 'getGameResourceBundle endpoint',
+                    });
+                    return;
+                }
+                uniqueResources = combined.resources;
+            } else {
+                const viewerEnv = GameEnvViewBuilder.toPlayerView(gameEnv as any, playerId);
+                const visibleCardIds = GameController.collectCardIdsFromGameEnv(viewerEnv);
+                const seen = new Set<string>();
+                for (const cardId of visibleCardIds) {
+                    const resourcePath = GameController.toCardResourcePath(cardId);
+                    if (!resourcePath) continue;
+                    if (seen.has(resourcePath)) continue;
+                    seen.add(resourcePath);
+                    uniqueResources.push(resourcePath);
+                }
             }
 
             const images: Array<{

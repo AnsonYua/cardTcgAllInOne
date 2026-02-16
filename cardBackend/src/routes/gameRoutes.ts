@@ -79,6 +79,12 @@ router.post('/player/chooseFirstPlayer', requirePlayerSession, gameController.ch
 router.post('/player/startReady', requirePlayerSession, gameController.startReady.bind(gameController));
 
 /**
+ * Submit deck data for a player
+ * POST /api/game/player/submitDeck
+ */
+router.post('/player/submitDeck', requirePlayerSession, gameController.submitDeck.bind(gameController));
+
+/**
  * Session heartbeat
  * POST /api/game/player/heartbeat
  */
