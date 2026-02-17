@@ -146,6 +146,12 @@ router.get('/cards', gameController.getCardData.bind(gameController));
  */
 router.get('/cardSets', gameController.getCardSets.bind(gameController));
 
+/**
+ * List top deck pick list parsed from requirement/topDeck.md
+ * GET /api/game/topDecks
+ */
+router.get('/topDecks', gameController.getTopDecks.bind(gameController));
+
 // ============ IMAGE SERVING ENDPOINTS ============
 
 /**

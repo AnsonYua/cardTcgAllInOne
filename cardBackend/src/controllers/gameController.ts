@@ -24,6 +24,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { deckSubmissionService } from '../services/DeckSubmissionService';
 import { deckResourceService } from '../services/DeckResourceService';
 import { collectTokenCardIdsFromCardData } from '../services/cards/TokenCardDiscovery';
+import { loadTopDecksFromFile } from '../services/TopDeckService';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -1365,6 +1366,28 @@ export class GameController {
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
                 context: 'getCardSets endpoint'
+            });
+        }
+    }
+
+    /**
+     * List top deck pick list parsed from requirement/topDeck.md
+     * GET /api/game/topDecks
+     */
+    async getTopDecks(_req: Request, res: Response): Promise<void> {
+        try {
+            const decks = await loadTopDecksFromFile();
+            res.json({
+                success: true,
+                decks,
+                timestamp: new Date().toISOString(),
+            });
+        } catch (error) {
+            console.error('❌ Error in getTopDecks:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'getTopDecks endpoint'
             });
         }
     }
