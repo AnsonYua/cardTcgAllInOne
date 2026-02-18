@@ -65,8 +65,13 @@
         "id": "playerId_1",
         "name": "Player 1",
         "deck": {
-          "hand": [],
-          "handUids": [],
+          "hand": [{
+              "carduid": "GD02-095_pilot_0001",
+              "cardId": "GD02-095"
+          }],
+          "handUids": [
+            "GD02-095_pilot_0001"
+          ],
           "mainDeck": []
         },
         "confirmIsRedraw": false,
@@ -92,27 +97,27 @@
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
               "isFirstPlay": false
-            },
-            "pilot": {
-              "carduid": "GD02-095_pilot_0001",
-              "cardId": "GD02-095",
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "GD02-054_unit_00022",
+              "cardId": "GD02-054",
               "placedAt": 0,
               "placedBy": "playerId_1",
               "isRested": false,
-              "damageReceived": 0,
+              "damageReceived": 1,
               "modifyAP": 0,
               "modifyHP": 0,
               "continueModifyAP": 0,
               "continueModifyHP": 0,
-              "originalAP": 2,
-              "originalHP": 1,
+              "originalAP": 3,
+              "originalHP": 2,
               "playedThisTurn": false,
               "canAttackOnPlayTurn": false,
               "canAttackThisTurn": true,
               "isFirstPlay": false
-            }
-          },
-          "slot2": {},
+            }},
           "slot3": {},
           "slot4": {},
           "slot5": {},

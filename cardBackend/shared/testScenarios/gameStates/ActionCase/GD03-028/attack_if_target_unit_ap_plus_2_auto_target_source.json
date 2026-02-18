@@ -61,7 +61,7 @@
         "deck": {"hand": [], "handUids": [], "mainDeck": []},
         "isReady": true,
         "zones": {
-          "slot1": {"unit": {"carduid": "GD03-010_enemy_0001", "cardId": "GD03-010", "isRested": false, "damageReceived": 0, "modifyAP": 0, "modifyHP": 0, "continueModifyAP": 0, "continueModifyHP": 0, "originalAP": 2, "originalHP": 3}},
+          "slot1": {"unit": {"carduid": "GD03-010_enemy_0001", "cardId": "GD03-010", "isRested": true, "damageReceived": 0, "modifyAP": 0, "modifyHP": 0, "continueModifyAP": 0, "continueModifyHP": 0, "originalAP": 2, "originalHP": 3}},
           "slot2": {}, "slot3": {}, "slot4": {}, "slot5": {}, "slot6": {},
           "base": [], "shieldArea": [],
           "energyArea": [{"cardId": "energy_basic", "carduid": "energy_basic_auto_gd03-028_player2_0001", "isExtraEnergy": false, "isRested": false, "placedAt": 0, "placedBy": "playerId_2"}],

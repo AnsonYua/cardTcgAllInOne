@@ -1,11 +1,12 @@
 const { GameEnvironment } = require('../models/GameEnvironment');
 const { DeployEffectManager } = require('../services/DeployEffectManager');
 const { DeployEffectOrderManager } = require('../services/effects/DeployEffectOrderManager');
+const { PromptChoiceManager } = require('../services/effects/PromptChoiceManager');
 const { EventFactory } = require('../services/EventQueue/EventFactory');
 const { EventType } = require('../models/GameEnums');
 
 describe('Deploy effect order choice', () => {
-    test('DEPLOY_EFFECT_TRIGGERED with multiple effects schedules an OPTION_CHOICE', () => {
+    test('DEPLOY_EFFECT_TRIGGERED with multiple effects schedules a PROMPT_CHOICE', () => {
         const gameEnv = new GameEnvironment();
         gameEnv.addPlayer('playerId_1', 'P1');
 
@@ -42,10 +43,11 @@ describe('Deploy effect order choice', () => {
         const result = DeployEffectManager.executeDeployEffect(deployEvent, gameEnv);
         expect(result.success).toBe(true);
 
-        const optionChoiceEvent = gameEnv.processingQueue.find(e => e.type === EventType.OPTION_CHOICE);
-        expect(optionChoiceEvent).toBeTruthy();
-        expect(optionChoiceEvent.data.effect.action).toBe('deploy_effect_order');
-        expect(optionChoiceEvent.data.availableOptions).toHaveLength(2);
+        const promptChoiceEvent = gameEnv.processingQueue.find(e => e.type === EventType.PROMPT_CHOICE);
+        expect(promptChoiceEvent).toBeTruthy();
+        expect(promptChoiceEvent.data.context.kind).toBe('DEPLOY_EFFECT_ORDER');
+        expect(promptChoiceEvent.data.availableOptions).toHaveLength(2);
+        expect(promptChoiceEvent.data.headerText).toBe('Choose Deploy Effect');
     });
 
     test('deploy_effect_order OPTION_CHOICE enqueues a single-effect deploy event + remainingEffects', () => {
@@ -96,5 +98,55 @@ describe('Deploy effect order choice', () => {
         expect(queuedDeploy.data.remainingEffects).toHaveLength(1);
         expect(queuedDeploy.data.remainingEffects[0].effectId).toBe('deploy_draw_2');
     });
-});
 
+    test('DEPLOY_EFFECT_ORDER PROMPT_CHOICE routes through PromptChoiceManager', () => {
+        const gameEnv = new GameEnvironment();
+        gameEnv.addPlayer('playerId_1', 'P1');
+
+        const effects = [
+            {
+                effectId: 'deploy_draw_1',
+                type: 'triggered',
+                trigger: 'ENTERS_PLAY',
+                action: 'draw',
+                target: { type: 'player', scope: 'self', count: 1 },
+                parameters: { value: 1 }
+            },
+            {
+                effectId: 'deploy_draw_2',
+                type: 'triggered',
+                trigger: 'ENTERS_PLAY',
+                action: 'draw',
+                target: { type: 'player', scope: 'self', count: 1 },
+                parameters: { value: 1 }
+            }
+        ];
+
+        const promptChoice = EventFactory.createPromptChoiceEvent({
+            playerId: 'playerId_1',
+            choiceId: 'deploy_effect_order_test',
+            headerText: 'Choose Deploy Effect',
+            promptText: 'Select which deploy effect to resolve first.',
+            sourceCarduid: 'some_unit_1',
+            availableOptions: [
+                { index: 0, label: 'Draw cards' },
+                { index: 1, label: 'Draw cards' }
+            ],
+            context: { kind: 'DEPLOY_EFFECT_ORDER', deployCarduid: 'some_unit_1', effects }
+        });
+
+        promptChoice.status = 'RESOLVING';
+        promptChoice.data.userDecisionMade = true;
+        promptChoice.data.selectedOptionIndex = 1;
+
+        const execResult = PromptChoiceManager.executePromptChoice(promptChoice, gameEnv);
+        expect(execResult.success).toBe(true);
+
+        const queuedDeploy = gameEnv.processingQueue.find(e => e.type === EventType.DEPLOY_EFFECT_TRIGGERED);
+        expect(queuedDeploy).toBeTruthy();
+        expect(queuedDeploy.data.effects).toHaveLength(1);
+        expect(queuedDeploy.data.effects[0].effectId).toBe('deploy_draw_2');
+        expect(queuedDeploy.data.remainingEffects).toHaveLength(1);
+        expect(queuedDeploy.data.remainingEffects[0].effectId).toBe('deploy_draw_1');
+    });
+});

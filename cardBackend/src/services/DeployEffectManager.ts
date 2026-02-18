@@ -136,24 +136,21 @@ export class DeployEffectManager {
                 label: this.describeDeployEffectOption(effect)
             }));
 
-            const choiceEffect = ensureEffectDefaults({
-                effectId: 'deploy_effect_order',
-                type: 'internal',
-                trigger: 'CHOICE',
-                action: 'deploy_effect_order'
-            } as any);
-
-            ChoiceEventScheduler.enqueueOptionChoice(gameEnv, {
+            ChoiceEventScheduler.enqueuePromptChoice(gameEnv, {
                 playerId: event.playerId,
-                sourceCarduid: event.data.carduid,
-                effect: choiceEffect,
+                choiceId: `deploy_effect_order_${event.id}`,
+                headerText: 'Choose Deploy Effect',
+                promptText: 'Select which deploy effect to resolve first.',
                 availableOptions: options,
+                defaultOptionIndex: 0,
+                sourceCarduid: event.data.carduid,
                 context: {
                     kind: 'DEPLOY_EFFECT_ORDER',
                     deployCarduid: event.data.carduid,
                     effects: eligibleEffects,
                     cardPlayNotificationId: event.data.cardPlayNotificationId
-                }
+                },
+                cardPlayNotificationId: event.data.cardPlayNotificationId
             });
 
             return { success: true };
@@ -209,18 +206,14 @@ export class DeployEffectManager {
                     label: this.describeDeployEffectOption(effect)
                 }));
 
-                const choiceEffect = ensureEffectDefaults({
-                    effectId: 'deploy_effect_order',
-                    type: 'internal',
-                    trigger: 'CHOICE',
-                    action: 'deploy_effect_order'
-                } as any);
-
-                const followUpChoice = EventFactory.createOptionChoiceEvent({
+                const followUpChoice = EventFactory.createPromptChoiceEvent({
                     playerId: event.playerId,
+                    choiceId: `deploy_effect_order_${event.id}_followup`,
+                    headerText: 'Choose Deploy Effect',
+                    promptText: 'Select which deploy effect to resolve first.',
                     sourceCarduid: event.data.carduid,
-                    effect: choiceEffect,
                     availableOptions: options,
+                    defaultOptionIndex: 0,
                     context: {
                         kind: 'DEPLOY_EFFECT_ORDER',
                         deployCarduid: event.data.carduid,
@@ -230,7 +223,7 @@ export class DeployEffectManager {
                 });
                 followUpChoice.priority = EventPriority.NORMAL;
                 gameEnv.enqueueForProcessing(followUpChoice);
-                ChoiceNotificationEmitter.emitOptionChoiceCreated(gameEnv, followUpChoice);
+                ChoiceNotificationEmitter.emitPromptChoiceCreated(gameEnv, followUpChoice);
             }
         }
 
@@ -262,7 +255,91 @@ export class DeployEffectManager {
     private static describeDeployEffectOption(effect: EffectDefinition): string {
         const effectId = typeof effect.effectId === 'string' && effect.effectId.length > 0 ? effect.effectId : 'deploy_effect';
         const action = typeof effect.action === 'string' && effect.action.length > 0 ? effect.action : 'effect';
-        return `${effectId} (${action})`;
+        const sequenceText = this.getEffectText(effect);
+
+        if (effectId === 'deploy_shield_to_hand') {
+            return 'Return 1 shield card to your hand';
+        }
+
+        if (effectId === 'deploy_conditional_token') {
+            return 'Deploy token based on your field state';
+        }
+
+        if (effectId === 'deploy_scry_two') {
+            return 'Look at top 2 cards and reorder them (1 top, 1 bottom)';
+        }
+
+        if (effectId === 'deploy_damage_low_ap') {
+            return 'Deal 1 damage to an enemy unit with 5 or less AP';
+        }
+
+        if (effectId === 'deploy_char_zaku_ii_token') {
+            return 'Deploy 1 rested Char\'s Zaku II token if it is your turn';
+        }
+
+        if (effectId === 'deploy_allow_token_attack_target') {
+            return 'Choose a token that can attack active enemy units this turn';
+        }
+
+        if (action === 'conditionalTokenDeploy') {
+            return this.describeConditionalTokenDeploy(effect) ?? 'Deploy token based on conditions';
+        }
+
+        if (sequenceText) {
+            return sequenceText;
+        }
+
+        switch (action) {
+            case 'draw':
+                return 'Draw cards';
+            case 'damage':
+                return 'Deal damage';
+            case 'heal':
+                return 'Recover HP';
+            case 'deploy':
+                return 'Deploy a unit/token';
+            case 'addToHand':
+                return 'Add card to hand';
+            case 'sequence':
+                return 'Resolve this effect';
+            default:
+                return `${effectId} (${action})`;
+        }
+    }
+
+    private static getEffectText(effect: EffectDefinition): string | undefined {
+        const raw = (effect as any)?.parameters?.text;
+        if (typeof raw !== 'string') return undefined;
+        const text = raw.trim();
+        if (!text || text === '.') return undefined;
+        return text;
+    }
+
+    private static describeConditionalTokenDeploy(effect: EffectDefinition): string | undefined {
+        const params = (effect as any)?.parameters;
+        if (!params || typeof params !== 'object') return undefined;
+
+        const parts: string[] = [];
+        for (const key of Object.keys(params)) {
+            const condition = (params as any)[key];
+            if (!condition || typeof condition !== 'object') continue;
+            const tokenId = condition?.token?.cardId;
+            if (typeof tokenId !== 'string' || tokenId.length === 0) continue;
+            const count = Number(condition?.count ?? 1);
+            const safeCount = Number.isFinite(count) && count > 0 ? Math.floor(count) : 1;
+            const tokenName = this.getCardDisplayName(tokenId);
+            parts.push(`${safeCount} ${tokenName}${safeCount > 1 ? ' tokens' : ' token'}`);
+        }
+
+        if (parts.length === 0) return undefined;
+        if (parts.length === 1) return `Deploy ${parts[0]} if conditions are met`;
+        return `Deploy token based on conditions (${parts.join(' / ')})`;
+    }
+
+    private static getCardDisplayName(cardId: string): string {
+        const card = CardDatabaseManager.getCardDetails(cardId);
+        const name = typeof card?.name === 'string' ? card.name.trim() : '';
+        return name.length > 0 ? name : cardId;
     }
 
     /**
