@@ -232,6 +232,59 @@ export class GameController {
         });
     }
 
+    private static buildResourcesFromFullGameEnv(gameEnv: any): string[] {
+        const allCardIds = GameController.collectCardIdsFromGameEnv(gameEnv);
+        const tokenIdsInPlay = GameController.collectTokenUnitCardIdsFromGameEnv(gameEnv);
+        for (const tokenId of tokenIdsInPlay) {
+            allCardIds.add(tokenId);
+        }
+
+        const resources = new Set<string>();
+        const tokenIdsFromEffects = new Set<string>();
+
+        for (const cardId of allCardIds) {
+            if (/^T-\d+$/i.test(cardId)) {
+                continue;
+            }
+            const resourcePath = GameController.toCardResourcePath(cardId);
+            if (resourcePath) {
+                resources.add(resourcePath);
+            }
+            const cardData = CardDatabaseManager.getCardDetails(cardId);
+            if (!cardData) {
+                continue;
+            }
+            const discoveredTokenIds = collectTokenCardIdsFromCardData(cardData);
+            for (const tokenId of discoveredTokenIds) {
+                tokenIdsFromEffects.add(tokenId);
+            }
+        }
+
+        const tokenCandidates = new Set<string>();
+        for (const cardId of allCardIds) {
+            if (/^T-\d+$/i.test(cardId)) {
+                tokenCandidates.add(cardId.toUpperCase());
+            }
+        }
+        for (const tokenId of tokenIdsFromEffects) {
+            tokenCandidates.add(tokenId.toUpperCase());
+        }
+
+        const existingResourcePaths = Array.from(resources);
+        for (const tokenId of tokenCandidates) {
+            const folderHint =
+                GameController.findTokenFolderInDeckLists(tokenId, existingResourcePaths) ||
+                CardDatabaseManager.getSetFolderForCardId(tokenId) ||
+                undefined;
+            const resourcePath = GameController.toCardResourcePath(tokenId, folderHint);
+            if (resourcePath) {
+                resources.add(resourcePath);
+            }
+        }
+
+        return Array.from(resources);
+    }
+
     private static findTokenFolderInDeckLists(tokenId: string, resourcePaths: string[]): string | null {
         for (const entry of resourcePaths) {
             if (typeof entry !== 'string') {
@@ -1588,6 +1641,7 @@ export class GameController {
 
             const includePreviews = req.body?.includePreviews !== false;
             const includeBothDecks = req.body?.includeBothDecks === true;
+            const allowEnvScanFallback = req.body?.allowEnvScanFallback === true;
 
             const gameEnv = await this.gameLogic.loadGameFromFile(gameId);
             if (!gameEnv) {
@@ -1603,16 +1657,20 @@ export class GameController {
             if (includeBothDecks) {
                 const combined = await this.buildCombinedDeckResources(gameId);
                 if (combined.pending) {
-                    res.status(409).json({
-                        error: 'Deck data incomplete',
-                        pending: true,
-                        missingPlayers: combined.missingPlayers,
-                        timestamp: new Date().toISOString(),
-                        context: 'getGameResourceBundle endpoint',
-                    });
-                    return;
+                    if (!allowEnvScanFallback) {
+                        res.status(409).json({
+                            error: 'Deck data incomplete',
+                            pending: true,
+                            missingPlayers: combined.missingPlayers,
+                            timestamp: new Date().toISOString(),
+                            context: 'getGameResourceBundle endpoint',
+                        });
+                        return;
+                    }
+                    uniqueResources = GameController.buildResourcesFromFullGameEnv(gameEnv);
+                } else {
+                    uniqueResources = combined.resources;
                 }
-                uniqueResources = combined.resources;
             } else {
                 const viewerEnv = GameEnvViewBuilder.toPlayerView(gameEnv as any, playerId);
                 const visibleCardIds = GameController.collectCardIdsFromGameEnv(viewerEnv);
@@ -2042,6 +2100,21 @@ export class GameController {
                 });
                 return;
             }
+
+            const injectedEnv = result.gameEnv as any;
+            const candidatePlayerIds = [
+                injectedEnv?.playerId_1,
+                injectedEnv?.playerId_2
+            ].filter((id): id is string => typeof id === 'string' && id.trim().length > 0);
+
+            const testSessions = candidatePlayerIds.map((playerId) => {
+                const session = sessionManager.createSession(gameId, playerId);
+                return {
+                    playerId,
+                    sessionToken: session.token,
+                    sessionExpiresAt: session.expiresAt
+                };
+            });
             
             console.log(`✅ Game state injected successfully: ${gameId}`);
             
@@ -2049,6 +2122,7 @@ export class GameController {
                 success: true,
                 gameId: result.gameId,
                 message: 'Game state injected successfully',
+                testSessions,
                 timestamp: new Date().toISOString()
             });
             
