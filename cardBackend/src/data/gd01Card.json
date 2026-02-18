@@ -5304,9 +5304,10 @@
                 "MAIN_PHASE"
               ]
             },
-            "action": "draw",
+            "action": "draw_then_discard",
             "parameters": {
-              "value": 2
+              "draw": 2,
+              "discard": 1
             }
           }
         ]
