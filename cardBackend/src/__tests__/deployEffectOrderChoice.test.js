@@ -4,6 +4,7 @@ const { DeployEffectOrderManager } = require('../services/effects/DeployEffectOr
 const { PromptChoiceManager } = require('../services/effects/PromptChoiceManager');
 const { EventFactory } = require('../services/EventQueue/EventFactory');
 const { EventType } = require('../models/GameEnums');
+const fs = require('fs');
 
 describe('Deploy effect order choice', () => {
     test('DEPLOY_EFFECT_TRIGGERED with multiple effects schedules a PROMPT_CHOICE', () => {
@@ -148,5 +149,43 @@ describe('Deploy effect order choice', () => {
         expect(queuedDeploy.data.effects[0].effectId).toBe('deploy_draw_2');
         expect(queuedDeploy.data.remainingEffects).toHaveLength(1);
         expect(queuedDeploy.data.remainingEffects[0].effectId).toBe('deploy_draw_1');
+    });
+
+    test('shield-then sequence deploy does not schedule deploy effect order prompt', () => {
+        const gameEnv = new GameEnvironment();
+        gameEnv.addPlayer('playerId_1', 'P1');
+
+        const st02 = JSON.parse(
+            fs.readFileSync(
+                '/Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/src/data/st02Card.json',
+                'utf8'
+            )
+        );
+        const card = st02.cards['ST02-016'];
+        const effects = (card?.effects?.rules || []).filter((rule) => rule && rule.trigger === 'ENTERS_PLAY');
+        expect(effects).toHaveLength(1);
+        expect(effects[0].action).toBe('sequence');
+
+        const deployEvent = {
+            id: 'deploy_st02_016_sequence',
+            type: EventType.DEPLOY_EFFECT_TRIGGERED,
+            status: 'RESOLVING',
+            priority: 1,
+            playerId: 'playerId_1',
+            timestamp: Date.now(),
+            data: {
+                carduid: 'ST02-016_test_uid',
+                effects,
+            }
+        };
+
+        const result = DeployEffectManager.executeDeployEffect(deployEvent, gameEnv);
+        expect(result.success).toBe(false);
+        expect((result.error || '').toLowerCase()).toContain('token');
+
+        const promptChoiceEvent = gameEnv.processingQueue.find((e) => e.type === EventType.PROMPT_CHOICE);
+        const optionChoiceEvent = gameEnv.processingQueue.find((e) => e.type === EventType.OPTION_CHOICE);
+        expect(promptChoiceEvent).toBeFalsy();
+        expect(optionChoiceEvent).toBeFalsy();
     });
 });

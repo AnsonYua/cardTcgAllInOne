@@ -6354,43 +6354,49 @@
             "action": "deploy"
           },
           {
-            "effectId": "deploy_shield_to_hand",
+            "effectId": "deploy_shield_then_allow_token_attack_target",
             "type": "triggered",
             "trigger": "ENTERS_PLAY",
-            "target": {
-              "type": "card",
-              "scope": "self_shield",
-              "count": 1
-            },
-            "action": "addToHand",
+            "action": "sequence",
             "parameters": {
-              "value": 1,
-              "from": "shield"
-            }
-          },
-          {
-            "effectId": "deploy_allow_token_attack_target",
-            "type": "triggered",
-            "trigger": "ENTERS_PLAY",
-            "action": "allow_attack_target",
-            "timing": {
-              "duration": "UNTIL_END_OF_TURN"
-            },
-            "target": {
-              "type": "unit",
-              "scope": "self_all_unit",
-              "filters": {
-                "color": "Token"
-              },
-              "count": 1,
-              "selection": {
-                "type": "player_choice"
-              }
-            },
-            "parameters": {
-              "status": "active",
-              "ap": "<=5",
-              "notes": "Models only the token attack-target permission; requires engine support."
+              "text": "Add 1 of your Shields to your hand. Then, choose 1 friendly Unit token. During this turn, it may choose an active enemy Unit with 5 or less AP as its attack target.",
+              "version": 1,
+              "steps": [
+                {
+                  "action": "addToHand",
+                  "target": {
+                    "type": "card",
+                    "scope": "self_shield",
+                    "count": 1
+                  },
+                  "parameters": {
+                    "value": 1,
+                    "from": "shield"
+                  }
+                },
+                {
+                  "action": "allow_attack_target",
+                  "timing": {
+                    "duration": "UNTIL_END_OF_TURN"
+                  },
+                  "target": {
+                    "type": "unit",
+                    "scope": "self_all_unit",
+                    "filters": {
+                      "color": "Token"
+                    },
+                    "count": 1,
+                    "selection": {
+                      "type": "player_choice"
+                    }
+                  },
+                  "parameters": {
+                    "status": "active",
+                    "ap": "<=5",
+                    "notes": "Models only the token attack-target permission; requires engine support."
+                  }
+                }
+              ]
             }
           }
         ]

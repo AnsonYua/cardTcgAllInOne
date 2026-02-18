@@ -133,7 +133,10 @@ export class DeployEffectManager {
         if (eligibleEffects.length > 1) {
             const options = eligibleEffects.map((effect, index) => ({
                 index,
-                label: this.describeDeployEffectOption(effect)
+                label: this.describeDeployEffectOption(effect, event.data.carduid),
+                payload: {
+                    effect
+                }
             }));
 
             ChoiceEventScheduler.enqueuePromptChoice(gameEnv, {
@@ -203,7 +206,10 @@ export class DeployEffectManager {
             } else {
                 const options = remainingEffects.map((effect, index) => ({
                     index,
-                    label: this.describeDeployEffectOption(effect)
+                    label: this.describeDeployEffectOption(effect, event.data.carduid),
+                    payload: {
+                        effect
+                    }
                 }));
 
                 const followUpChoice = EventFactory.createPromptChoiceEvent({
@@ -252,33 +258,14 @@ export class DeployEffectManager {
         return { success: true };
     }
 
-    private static describeDeployEffectOption(effect: EffectDefinition): string {
+    private static describeDeployEffectOption(effect: EffectDefinition, sourceCarduid?: string): string {
         const effectId = typeof effect.effectId === 'string' && effect.effectId.length > 0 ? effect.effectId : 'deploy_effect';
         const action = typeof effect.action === 'string' && effect.action.length > 0 ? effect.action : 'effect';
         const sequenceText = this.getEffectText(effect);
+        const cardText = this.getDeployEffectCardText(effect, sourceCarduid);
 
-        if (effectId === 'deploy_shield_to_hand') {
-            return 'Return 1 shield card to your hand';
-        }
-
-        if (effectId === 'deploy_conditional_token') {
-            return 'Deploy token based on your field state';
-        }
-
-        if (effectId === 'deploy_scry_two') {
-            return 'Look at top 2 cards and reorder them (1 top, 1 bottom)';
-        }
-
-        if (effectId === 'deploy_damage_low_ap') {
-            return 'Deal 1 damage to an enemy unit with 5 or less AP';
-        }
-
-        if (effectId === 'deploy_char_zaku_ii_token') {
-            return 'Deploy 1 rested Char\'s Zaku II token if it is your turn';
-        }
-
-        if (effectId === 'deploy_allow_token_attack_target') {
-            return 'Choose a token that can attack active enemy units this turn';
+        if (cardText) {
+            return cardText;
         }
 
         if (action === 'conditionalTokenDeploy') {
@@ -305,6 +292,36 @@ export class DeployEffectManager {
             default:
                 return `${effectId} (${action})`;
         }
+    }
+
+    private static getDeployEffectCardText(effect: EffectDefinition, sourceCarduid?: string): string | undefined {
+        if (typeof sourceCarduid !== 'string' || sourceCarduid.length === 0) return undefined;
+        const sourceCard = CardDatabaseManager.getCardDetailsFromCarduid(sourceCarduid);
+        const rules = Array.isArray(sourceCard?.effects?.rules) ? sourceCard.effects.rules : [];
+        const descriptions = Array.isArray(sourceCard?.effects?.description) ? sourceCard.effects.description : [];
+        if (rules.length === 0 || descriptions.length === 0) return undefined;
+
+        const effectId = typeof effect?.effectId === 'string' ? effect.effectId : '';
+        const action = typeof effect?.action === 'string' ? effect.action : '';
+        const trigger = typeof (effect as any)?.trigger === 'string' ? (effect as any).trigger : '';
+
+        let idx = rules.findIndex((rule: any) => {
+            if (!rule || typeof rule !== 'object') return false;
+            if (effectId && rule.effectId !== effectId) return false;
+            if (action && rule.action !== action) return false;
+            if (trigger && rule.trigger !== trigger) return false;
+            return true;
+        });
+
+        if (idx < 0 && effectId) {
+            idx = rules.findIndex((rule: any) => rule?.effectId === effectId);
+        }
+
+        if (idx < 0 || idx >= descriptions.length) return undefined;
+        const raw = descriptions[idx];
+        if (typeof raw !== 'string') return undefined;
+        const normalized = raw.replace(/^\[[^\]]+\]\s*/g, '').trim();
+        return normalized.length > 0 ? normalized : undefined;
     }
 
     private static getEffectText(effect: EffectDefinition): string | undefined {

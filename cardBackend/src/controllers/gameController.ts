@@ -66,6 +66,24 @@ export class GameController {
         return `player_${uuidv4()}`;
     }
 
+    private static resolvePlayerFromSelector(gameEnv: any, selectorRaw: string): string | null {
+        const selector = selectorRaw === 'opponent' ? 'opponent' : 'currentPlayer';
+        const playerIds = [gameEnv?.playerId_1, gameEnv?.playerId_2]
+            .filter((id): id is string => typeof id === 'string' && id.trim().length > 0);
+        const currentPlayerId = typeof gameEnv?.currentPlayer === 'string' ? gameEnv.currentPlayer : '';
+
+        if (selector === 'opponent') {
+            if (playerIds.length >= 2 && currentPlayerId) {
+                return playerIds.find((id) => id !== currentPlayerId) || playerIds[0] || null;
+            }
+            if (playerIds.length >= 2) {
+                return playerIds[1] || playerIds[0] || null;
+            }
+        }
+
+        return currentPlayerId || playerIds[0] || null;
+    }
+
     private async applyAiAutoplayOrRespond(
         res: Response,
         gameId: string,
@@ -2077,6 +2095,8 @@ export class GameController {
     async injectGameState(req: Request, res: Response): Promise<void> {
         try {
             const { gameId, gameEnv } = req.body;
+            const requestedPlayerSelectorRaw = typeof req.body?.player === 'string' ? req.body.player.trim().toLowerCase() : '';
+            const requestedPlayerSelector = requestedPlayerSelectorRaw === 'opponent' ? 'opponent' : 'currentPlayer';
             
             if (!gameId || !gameEnv) {
                 res.status(400).json({
@@ -2106,6 +2126,7 @@ export class GameController {
                 injectedEnv?.playerId_1,
                 injectedEnv?.playerId_2
             ].filter((id): id is string => typeof id === 'string' && id.trim().length > 0);
+            const resolvedPlayerId = GameController.resolvePlayerFromSelector(injectedEnv, requestedPlayerSelector);
 
             const testSessions = candidatePlayerIds.map((playerId) => {
                 const session = sessionManager.createSession(gameId, playerId);
@@ -2122,6 +2143,11 @@ export class GameController {
                 success: true,
                 gameId: result.gameId,
                 message: 'Game state injected successfully',
+                requestedPlayerSelector,
+                resolvedPlayerId,
+                resolvedSession: resolvedPlayerId
+                    ? testSessions.find((entry) => entry.playerId === resolvedPlayerId) || null
+                    : null,
                 testSessions,
                 timestamp: new Date().toISOString()
             });
@@ -2132,6 +2158,65 @@ export class GameController {
                 error: (error as Error).message,
                 timestamp: new Date().toISOString(),
                 context: 'injectGameState endpoint'
+            });
+        }
+    }
+
+    /**
+     * Resolve or create test session for an existing game using seat selector.
+     * POST /api/game/test/resolveSeatSession
+     */
+    async resolveSeatSession(req: Request, res: Response): Promise<void> {
+        try {
+            const { gameId } = req.body ?? {};
+            const requestedPlayerSelectorRaw = typeof req.body?.player === 'string' ? req.body.player.trim().toLowerCase() : '';
+            const requestedPlayerSelector = requestedPlayerSelectorRaw === 'opponent' ? 'opponent' : 'currentPlayer';
+
+            if (!gameId || typeof gameId !== 'string') {
+                res.status(400).json({
+                    error: 'Missing required parameter: gameId',
+                    timestamp: new Date().toISOString(),
+                    context: 'resolveSeatSession endpoint'
+                });
+                return;
+            }
+
+            const gameEnv = await this.gameLogic.loadGameFromFile(gameId);
+            if (!gameEnv) {
+                res.status(404).json({
+                    error: 'Game not found',
+                    timestamp: new Date().toISOString(),
+                    context: 'resolveSeatSession endpoint'
+                });
+                return;
+            }
+
+            const resolvedPlayerId = GameController.resolvePlayerFromSelector(gameEnv as any, requestedPlayerSelector);
+            if (!resolvedPlayerId) {
+                res.status(400).json({
+                    error: 'Unable to resolve player seat from game state',
+                    timestamp: new Date().toISOString(),
+                    context: 'resolveSeatSession endpoint'
+                });
+                return;
+            }
+
+            const session = sessionManager.createSession(gameId, resolvedPlayerId);
+            res.json({
+                success: true,
+                gameId,
+                requestedPlayerSelector,
+                resolvedPlayerId,
+                sessionToken: session.token,
+                sessionExpiresAt: session.expiresAt,
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            console.error('❌ Error in resolveSeatSession:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'resolveSeatSession endpoint'
             });
         }
     }

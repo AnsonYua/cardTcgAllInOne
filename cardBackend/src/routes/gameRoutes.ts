@@ -295,6 +295,24 @@ router.post('/test/injectGameState',
 );
 
 /**
+ * Resolve a seat session for existing game state (test/dev only)
+ * POST /api/game/test/resolveSeatSession
+ */
+router.post('/test/resolveSeatSession',
+    (_req: Request, res: Response, next: NextFunction) => {
+        if (!injectGameStateEnabled) {
+            res.status(403).json({
+                error: 'This endpoint is disabled (set INJECT_GAME_STATE_ENABLED=true to enable)',
+                timestamp: new Date().toISOString()
+            });
+            return;
+        }
+        next();
+    },
+    gameController.resolveSeatSession.bind(gameController)
+);
+
+/**
  * Save current game env as exception scenario
  * POST /api/game/test/saveExceptionScenario
  */
