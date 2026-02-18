@@ -31,6 +31,7 @@ const readEnvFlag = (name: string, defaultValue: boolean): boolean => {
 };
 
 const injectGameStateEnabled = readEnvFlag('INJECT_GAME_STATE_ENABLED', process.env.NODE_ENV !== 'production');
+const saveExceptionScenarioEnabled = readEnvFlag('SAVE_EXCEPTION_SCENARIO_ENABLED', process.env.NODE_ENV !== 'production');
 
 // ============ HEALTH CHECK ENDPOINTS ============
 
@@ -291,6 +292,24 @@ router.post('/test/injectGameState',
     },
     // Main handler - use controller method
     gameController.injectGameState.bind(gameController)
+);
+
+/**
+ * Save current game env as exception scenario
+ * POST /api/game/test/saveExceptionScenario
+ */
+router.post('/test/saveExceptionScenario',
+    (_req: Request, res: Response, next: NextFunction) => {
+        if (!saveExceptionScenarioEnabled) {
+            res.status(403).json({
+                error: 'This endpoint is disabled (set SAVE_EXCEPTION_SCENARIO_ENABLED=true to enable)',
+                timestamp: new Date().toISOString()
+            });
+            return;
+        }
+        next();
+    },
+    gameController.saveExceptionScenario.bind(gameController)
 );
 
 /**

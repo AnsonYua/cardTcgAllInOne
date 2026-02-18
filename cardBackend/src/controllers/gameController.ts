@@ -2039,6 +2039,98 @@ export class GameController {
     }
 
     /**
+     * Save current game env as exception scenario
+     * POST /api/game/test/saveExceptionScenario
+     */
+    async saveExceptionScenario(req: Request, res: Response): Promise<void> {
+        try {
+            const {
+                gameId,
+                name,
+                description,
+                tags,
+                category,
+                testType
+            } = req.body ?? {};
+
+            if (!gameId || typeof gameId !== 'string') {
+                res.status(400).json({
+                    error: 'Missing required parameter: gameId',
+                    timestamp: new Date().toISOString(),
+                    context: 'saveExceptionScenario endpoint'
+                });
+                return;
+            }
+
+            const env = await this.gameLogic.loadGameFromFile(gameId);
+            if (!env) {
+                res.status(404).json({
+                    error: 'Game not found',
+                    timestamp: new Date().toISOString(),
+                    context: 'saveExceptionScenario endpoint'
+                });
+                return;
+            }
+
+            const initialGameEnv = env.toJSON();
+            const now = Date.now();
+            const safeGameId = gameId.replace(/[^A-Za-z0-9._-]/g, '_');
+            const defaultName = `capture_${safeGameId}_${now}`;
+            const rawName = typeof name === 'string' && name.trim().length > 0 ? name.trim() : defaultName;
+            const sanitizedBase = rawName.replace(/[^A-Za-z0-9._-]/g, '_');
+            const filename = sanitizedBase.endsWith('.json') ? sanitizedBase : `${sanitizedBase}.json`;
+
+            const scenario = {
+                description: typeof description === 'string' && description.trim().length > 0
+                    ? description.trim()
+                    : `capture_${gameId}_${now}`,
+                gameId,
+                testType: typeof testType === 'string' && testType.trim().length > 0 ? testType.trim() : 'exception',
+                category: typeof category === 'string' && category.trim().length > 0 ? category.trim() : 'Exception',
+                tags: Array.isArray(tags) ? tags : ['Exception', 'Captured'],
+                initialGameEnv
+            };
+
+            const backendRoot =
+                GameController.findNearestPackageRoot(__dirname) ??
+                GameController.findNearestPackageRoot(process.cwd()) ??
+                process.cwd();
+
+            const scenarioBaseDir = path.join(backendRoot, 'shared/testScenarios/gameStates');
+            const exceptionDir = path.join(scenarioBaseDir, 'Exception');
+            await fs.promises.mkdir(exceptionDir, { recursive: true });
+
+            const scenarioFilePath = path.resolve(exceptionDir, filename);
+            const exceptionBaseResolved = path.resolve(exceptionDir);
+            if (!scenarioFilePath.startsWith(exceptionBaseResolved + path.sep)) {
+                res.status(400).json({
+                    error: 'Invalid scenario file name',
+                    timestamp: new Date().toISOString(),
+                    context: 'saveExceptionScenario endpoint'
+                });
+                return;
+            }
+
+            await fs.promises.writeFile(scenarioFilePath, JSON.stringify(scenario, null, 2), 'utf8');
+
+            res.json({
+                success: true,
+                scenarioPath: `Exception/${filename}`,
+                filePath: scenarioFilePath,
+                scenario,
+                timestamp: new Date().toISOString()
+            });
+        } catch (error) {
+            console.error('❌ Error in saveExceptionScenario:', error);
+            res.status(500).json({
+                error: (error as Error).message,
+                timestamp: new Date().toISOString(),
+                context: 'saveExceptionScenario endpoint'
+            });
+        }
+    }
+
+    /**
      * Confirm or decline a burst effect choice
      * POST /api/game/player/confirmBurstChoice
      * Body: { gameId, playerId, eventId, confirmed }

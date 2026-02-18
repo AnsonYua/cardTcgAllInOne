@@ -1,0 +1,4 @@
+use chrome mcp open http://localhost:5173/game?mode=host&isAutoPolling=true&&automation=1 , then run await
+  window.__card.engine.saveExceptionScenario() , and click if /Users/hello/Desktop/card/unity/cardGameRevamp/cardBackend/
+  shared/testScenarios/gameStates/Exception  have the file
+
