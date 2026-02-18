@@ -3987,11 +3987,28 @@
               "version": 1,
               "steps": [
                 {
-                  "action": "discard",
+                  "action": "conditional",
                   "parameters": {
-                    "value": 1
-                  },
-                  "notes": "Design placeholder: discard not yet implemented."
+                    "if": [
+                      {
+                        "type": "unitsInPlayWithTrait",
+                        "scope": "self",
+                        "traits": [
+                          "Triple Ship Alliance"
+                        ],
+                        "value": ">=2"
+                      }
+                    ],
+                    "then": [
+                      {
+                        "action": "draw_then_discard",
+                        "parameters": {
+                          "draw": 1,
+                          "discard": 1
+                        }
+                      }
+                    ]
+                  }
                 }
               ]
             }

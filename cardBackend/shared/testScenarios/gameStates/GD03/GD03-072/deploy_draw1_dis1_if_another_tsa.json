@@ -1,0 +1,95 @@
+{
+  "description": "gd03-072_deploy_draw1_dis1_if_another_tsa",
+  "gameId": "gd03-072_deploy_draw1_dis1_if_another_tsa",
+  "testType": "action",
+  "category": "GD03-072",
+  "tags": ["GD03-072", "deploy", "draw_then_discard", "condition"],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            { "carduid": "GD03-072_in_hand_0001", "cardId": "GD03-072" },
+            { "carduid": "ST01-009_in_hand_0002", "cardId": "ST01-009" }
+          ],
+          "handUids": ["GD03-072_in_hand_0001", "ST01-009_in_hand_0002"],
+          "mainDeck": ["GD01-086_draw_0001"]
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD01-066_field_0001",
+              "cardId": "GD01-066",
+              "cardData": {
+                "id": "GD01-066",
+                "name": "Justice Gundam",
+                "cardType": "unit",
+                "traits": ["Triple Ship Alliance"],
+                "ap": 5,
+                "hp": 5,
+                "effects": { "description": [], "rules": [] }
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "effectUsage": {},
+              "originalAP": 5,
+              "originalHP": 5
+            }
+          },
+          "slot2": {}, "slot3": {}, "slot4": {}, "slot5": {}, "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            { "carduid": "energy_basic_p1_0001", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false },
+            { "carduid": "energy_basic_p1_0002", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false },
+            { "carduid": "energy_basic_p1_0003", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": { "hand": [], "handUids": [], "mainDeck": [] },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {}, "slot2": {}, "slot3": {}, "slot4": {}, "slot5": {}, "slot6": {},
+          "base": [], "shieldArea": [], "energyArea": [], "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}

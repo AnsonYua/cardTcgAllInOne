@@ -2831,11 +2831,11 @@
                   }
                 },
                 {
-                  "action": "discard",
+                  "action": "draw_then_discard",
                   "parameters": {
-                    "value": 1
-                  },
-                  "notes": "Design placeholder: discard not yet implemented."
+                    "draw": 1,
+                    "discard": 1
+                  }
                 }
               ]
             }
@@ -3360,11 +3360,28 @@
               "version": 1,
               "steps": [
                 {
-                  "action": "discard",
+                  "action": "conditional",
                   "parameters": {
-                    "value": 2
-                  },
-                  "notes": "Design placeholder: discard not yet implemented."
+                    "if": [
+                      {
+                        "type": "cardsInTrashWithTraitsAny",
+                        "scope": "self",
+                        "traits": [
+                          "Gjallarhorn"
+                        ],
+                        "value": ">=4"
+                      }
+                    ],
+                    "then": [
+                      {
+                        "action": "draw_then_discard",
+                        "parameters": {
+                          "draw": 2,
+                          "discard": 2
+                        }
+                      }
+                    ]
+                  }
                 }
               ]
             }
@@ -4066,6 +4083,28 @@
               "scope": "self"
             },
             "action": "addToHand"
+          },
+          {
+            "effectId": "pair_draw_then_discard_if_aeug",
+            "type": "triggered",
+            "trigger": "PAIRING_COMPLETE",
+            "sourceConditions": [
+              {
+                "type": "linked"
+              }
+            ],
+            "conditions": [
+              {
+                "type": "pairedUnitTrait",
+                "scope": "source",
+                "value": "AEUG"
+              }
+            ],
+            "action": "draw_then_discard",
+            "parameters": {
+              "draw": 1,
+              "discard": 1
+            }
           }
         ]
       }
@@ -5969,9 +6008,10 @@
                 "MAIN_PHASE"
               ]
             },
-            "action": "draw",
+            "action": "draw_then_discard",
             "parameters": {
-              "value": 3
+              "draw": 3,
+              "discard": 2
             }
           }
         ]

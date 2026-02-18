@@ -1,0 +1,78 @@
+{
+  "description": "gd02-117_main_draw3_dis2",
+  "gameId": "gd02-117_main_draw3_dis2",
+  "testType": "action",
+  "category": "GD02-117",
+  "tags": ["GD02-117", "draw_then_discard", "main", "command"],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            { "carduid": "GD02-117_in_hand_0001", "cardId": "GD02-117" },
+            { "carduid": "ST01-009_in_hand_0002", "cardId": "ST01-009" }
+          ],
+          "handUids": ["GD02-117_in_hand_0001", "ST01-009_in_hand_0002"],
+          "mainDeck": ["GD01-086_draw_0001", "GD01-086_draw_0002", "GD01-086_draw_0003"]
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {}, "slot2": {}, "slot3": {}, "slot4": {}, "slot5": {}, "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            { "carduid": "energy_basic_p1_0001", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false },
+            { "carduid": "energy_basic_p1_0001", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false },
+            { "carduid": "energy_basic_p1_0001", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false },
+            { "carduid": "energy_basic_p1_0001", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false },
+            { "carduid": "energy_basic_p1_0001", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": { "hand": [], "handUids": [], "mainDeck": [] },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {}, "slot2": {}, "slot3": {}, "slot4": {}, "slot5": {}, "slot6": {},
+          "base": [], "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        }
+      }
+    }
+  }
+}
