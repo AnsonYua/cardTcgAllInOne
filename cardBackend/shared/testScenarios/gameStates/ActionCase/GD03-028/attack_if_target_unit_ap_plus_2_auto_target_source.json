@@ -1,0 +1,75 @@
+{
+  "description": "gd03-028_attack_if_target_unit_ap_plus_2_auto_target_source",
+  "gameId": "gd03-028_attack_if_target_unit_ap_plus_2_auto_target_source",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": ["GD03-028", "ATTACK_PHASE", "modifyAP", "source_scope_fix"],
+  "notes": [
+    "Action: Player 1 attacks an enemy unit with GD03-028_unit_0001.",
+    "Expect: attack_effect AP+2 is applied to GD03-028_unit_0001 only.",
+    "Action: Check pending selection and notifications.",
+    "Expect: No TARGET_CHOICE is required for this attack self-buff effect."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {"playerId_1": true, "playerId_2": true},
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_gd03028_seed",
+        "type": "CARD_DRAWN",
+        "metadata": {"timestamp": 1768362880422, "expiresAt": 1768362883422, "requiresAcknowledgment": false, "priority": "normal"},
+        "payload": {"playerId": "playerId_1", "carduid": "GD03-028_draw_0001", "sourceZone": "deck", "reason": "draw", "timestamp": 1768362880422, "drawContext": "turn_start"}
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [{"carduid": "GD03-028_hand_0001", "cardId": "GD03-028"}],
+          "handUids": ["GD03-028_hand_0001"],
+          "mainDeck": []
+        },
+        "isReady": true,
+        "zones": {
+          "slot1": {"unit": {"carduid": "GD03-028_unit_0001", "cardId": "GD03-028", "isRested": false, "damageReceived": 0, "modifyAP": 0, "modifyHP": 0, "continueModifyAP": 0, "continueModifyHP": 0, "originalAP": 2, "originalHP": 3, "canAttackThisTurn": true, "temporaryEffects": []}},
+          "slot2": {"unit": {"carduid": "GD03-008_ally_0001", "cardId": "GD03-008", "isRested": false, "damageReceived": 0, "modifyAP": 0, "modifyHP": 0, "continueModifyAP": 0, "continueModifyHP": 0, "originalAP": 2, "originalHP": 2, "canAttackThisTurn": true}},
+          "slot3": {}, "slot4": {}, "slot5": {}, "slot6": {},
+          "base": [], "shieldArea": [],
+          "energyArea": [{"cardId": "energy_basic", "carduid": "energy_basic_auto_gd03-028_player1_0001", "isExtraEnergy": false, "isRested": false, "placedAt": 0, "placedBy": "playerId_1"}],
+          "trashArea": []
+        },
+        "effectRegistry": {},
+        "delayedTriggers": []
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {"hand": [], "handUids": [], "mainDeck": []},
+        "isReady": true,
+        "zones": {
+          "slot1": {"unit": {"carduid": "GD03-010_enemy_0001", "cardId": "GD03-010", "isRested": false, "damageReceived": 0, "modifyAP": 0, "modifyHP": 0, "continueModifyAP": 0, "continueModifyHP": 0, "originalAP": 2, "originalHP": 3}},
+          "slot2": {}, "slot3": {}, "slot4": {}, "slot5": {}, "slot6": {},
+          "base": [], "shieldArea": [],
+          "energyArea": [{"cardId": "energy_basic", "carduid": "energy_basic_auto_gd03-028_player2_0001", "isExtraEnergy": false, "isRested": false, "placedAt": 0, "placedBy": "playerId_2"}],
+          "trashArea": []
+        },
+        "effectRegistry": {},
+        "delayedTriggers": []
+      }
+    }
+  }
+}

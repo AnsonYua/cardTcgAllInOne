@@ -4564,7 +4564,7 @@
             },
             "target": {
               "type": "unit",
-              "scope": "self",
+              "scope": "source_paired_unit",
               "count": 1
             },
             "parameters": {

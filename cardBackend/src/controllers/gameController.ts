@@ -642,11 +642,12 @@ export class GameController {
      */
     async submitDeck(req: SessionAuthedRequest, res: Response): Promise<void> {
         try {
-            const { gameId, playerId, deck } = req.body || {};
+            const { gameId, playerId, deck, topDeck } = req.body || {};
             console.log('🧩 submitDeck called', {
                 gameId,
                 playerId,
                 deckCount: Array.isArray(deck) ? deck.length : 0,
+                topDeck: typeof topDeck === 'string' ? topDeck : undefined,
             });
             if (!gameId || !playerId) {
                 res.status(400).json({
@@ -657,7 +658,30 @@ export class GameController {
                 return;
             }
 
-            const normalized = deckSubmissionService.normalizeDeckEntries(deck);
+            let normalized = deckSubmissionService.normalizeDeckEntries(deck);
+            const topDeckName = typeof topDeck === 'string' ? topDeck.trim() : '';
+            if (topDeckName.length > 0) {
+                const decks = await loadTopDecksFromFile();
+                const needle = topDeckName.toLowerCase();
+                const matches = decks.filter((candidate) => candidate?.name?.trim?.().toLowerCase() === needle);
+                if (matches.length === 0) {
+                    res.status(400).json({
+                        error: `Unknown top deck: ${topDeckName}`,
+                        timestamp: new Date().toISOString(),
+                        context: 'submitDeck endpoint',
+                    });
+                    return;
+                }
+                if (matches.length > 1) {
+                    res.status(400).json({
+                        error: `Ambiguous top deck name: ${topDeckName}`,
+                        timestamp: new Date().toISOString(),
+                        context: 'submitDeck endpoint',
+                    });
+                    return;
+                }
+                normalized = deckSubmissionService.normalizeDeckEntries(matches[0].entries);
+            }
             if (normalized.length === 0) {
                 res.status(400).json({
                     error: 'Deck is empty',

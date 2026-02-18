@@ -1,0 +1,66 @@
+{
+  "description": "st03-011_attack_ap_and_keyword_auto_target_paired_unit",
+  "gameId": "st03-011_attack_ap_and_keyword_auto_target_paired_unit",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": ["ST03-011", "ATTACK_PHASE", "modifyAP", "grant_keyword", "source_paired_unit_scope_fix"],
+  "notes": [
+    "Action: Player 1 attacks with slot1 unit paired with ST03-011 pilot.",
+    "Expect: attack_ap_boost and attack_grant_high_maneuver_if_linked both apply to the paired unit in slot1.",
+    "Action: Validate target behavior with another friendly unit in slot2.",
+    "Expect: No TARGET_CHOICE appears and slot2 unit is not affected by ST03-011 attack effects."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {"playerId_1": true, "playerId_2": true},
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [{"id": "card_drawn_1768362880422_st03011_seed", "type": "CARD_DRAWN", "metadata": {"timestamp": 1768362880422, "expiresAt": 1768362883422, "requiresAcknowledgment": false, "priority": "normal"}, "payload": {"playerId": "playerId_1", "carduid": "ST03-011_draw_0001", "sourceZone": "deck", "reason": "draw", "timestamp": 1768362880422, "drawContext": "turn_start"}}],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [{"carduid": "ST03-011_hand_0001", "cardId": "ST03-011"}],
+          "handUids": ["ST03-011_hand_0001"],
+          "mainDeck": []
+        },
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {"carduid": "GD02-013_unit_0003", "cardId": "GD02-013", "isRested": false, "damageReceived": 0, "modifyAP": 0, "modifyHP": 0, "continueModifyAP": 0, "continueModifyHP": 0, "originalAP": 2, "originalHP": 2, "canAttackThisTurn": true, "temporaryEffects": []},
+            "pilot": {"carduid": "ST03-011_pilot_0001", "cardId": "ST03-011", "isRested": false, "damageReceived": 0, "modifyAP": 0, "modifyHP": 0, "continueModifyAP": 0, "continueModifyHP": 0, "originalAP": 1, "originalHP": 1, "temporaryEffects": []}
+          },
+          "slot2": {
+            "unit": {"carduid": "ST03-008_ally_0003", "cardId": "ST03-008", "isRested": false, "damageReceived": 0, "modifyAP": 0, "modifyHP": 0, "continueModifyAP": 0, "continueModifyHP": 0, "originalAP": 1, "originalHP": 2, "canAttackThisTurn": true}
+          },
+          "slot3": {}, "slot4": {}, "slot5": {}, "slot6": {}, "base": [], "shieldArea": [],
+          "energyArea": [{"cardId": "energy_basic", "carduid": "energy_basic_auto_st03-011_player1_0001", "isExtraEnergy": false, "isRested": false, "placedAt": 0, "placedBy": "playerId_1"}],
+          "trashArea": []
+        },
+        "effectRegistry": {},
+        "delayedTriggers": []
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {"hand": [], "handUids": [], "mainDeck": []},
+        "isReady": true,
+        "zones": {"slot1": {}, "slot2": {}, "slot3": {}, "slot4": {}, "slot5": {}, "slot6": {}, "base": [], "shieldArea": [{"carduid": "ST03-006_shield_0002", "cardId": "ST03-006"}], "energyArea": [], "trashArea": []},
+        "effectRegistry": {},
+        "delayedTriggers": []
+      }
+    }
+  }
+}

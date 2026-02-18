@@ -2625,7 +2625,7 @@
             "trigger": "ATTACK_PHASE",
             "target": {
               "type": "unit",
-              "scope": "self",
+              "scope": "source",
               "count": 1
             },
             "action": "modifyAP",

@@ -1,0 +1,224 @@
+{
+  "category": "ST03-008",
+  "gameId": "st03-008_attack_ap_boost_self_only",
+  "description": "st03-008_attack_ap_boost_self_only",
+  "testType": "action",
+  "tags": [
+    "ST03-008",
+    "ATTACK_PHASE",
+    "modifyAP",
+    "SELF_TARGET"
+  ],
+  "notes": [
+    "Setup: Player A controls ST03-008 in slot1 (active) and another friendly unit GD02-013 in slot2 (active).",
+    "Action (manual): Player A declares attackUnit with ST03-008 from slot1.",
+    "Expect: ST03-008 ATTACK_PHASE effect applies AP+2 to ST03-008 itself for this turn (temporary effect on slot1 attacker).",
+    "Regression check: GD02-013 in slot2 must not receive ST03-008's AP+2 effect."
+  ],
+  "initialGameEnv": {
+    "version": 1,
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 1,
+    "firstPlayerChooser": "playerId_1",
+    "firstPlayerDecision": "playerId_1",
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 4,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "currentBattle": null,
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_1768362880422_st03008_seed",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "ST03-000_draw_0008",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST03-008_attacker_0001",
+              "cardId": "ST03-008",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "effectUsage": {},
+              "originalAP": 1,
+              "originalHP": 2,
+              "damageReceived": 0,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "GD02-013_friendly_0001",
+              "cardId": "GD02-013",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "effectUsage": {},
+              "originalAP": 2,
+              "originalHP": 2,
+              "damageReceived": 0,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [
+            {
+              "carduid": "base_default_p1",
+              "cardId": "base_default",
+              "cardData": {
+                "cardType": "base"
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "effectUsage": {},
+              "originalHP": 3,
+              "damageReceived": 0
+            }
+          ],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_st03_008_p1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        },
+        "effectRegistry": {},
+        "delayedTriggers": []
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST03-006_defender_0001",
+              "cardId": "ST03-006",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "effectUsage": {},
+              "originalAP": 3,
+              "originalHP": 2,
+              "damageReceived": 0,
+              "playedThisTurn": false,
+              "canAttackOnPlayTurn": false,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "canAttackThisTurn": true
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [
+            {
+              "carduid": "base_default_p2",
+              "cardId": "base_default",
+              "cardData": {
+                "cardType": "base"
+              },
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "effectUsage": {},
+              "originalHP": 3,
+              "damageReceived": 0
+            }
+          ],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_st03_008_p2_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false,
+              "cardData": {
+                "cardType": "energy"
+              }
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false,
+          "endTurnEffectsCheckedThisCycle": false
+        },
+        "effectRegistry": {},
+        "delayedTriggers": []
+      }
+    }
+  }
+}

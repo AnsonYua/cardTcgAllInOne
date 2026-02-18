@@ -1,12 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 
-function repoRootFromBackend() {
-  return path.resolve(__dirname, '../../..');
+function backendRootFromTests() {
+  return path.resolve(__dirname, '../..');
 }
 
 function sharedGameStatesRoot() {
-  return path.join(repoRootFromBackend(), 'shared', 'testScenarios', 'gameStates');
+  // Canonical test scenarios now live under cardBackend/shared (legacy repo-root /shared removed).
+  return path.join(backendRootFromTests(), 'shared', 'testScenarios', 'gameStates');
 }
 
 function resolveScenarioFilePath(relativeScenarioPath) {
