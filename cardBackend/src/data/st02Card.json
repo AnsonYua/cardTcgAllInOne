@@ -633,7 +633,7 @@
       "effects": {
         "description": [
           "[Burst]Deploy this card.",
-          "[Deploy]Add 1 of your Shields to your hand. Then, Look at the top 2 cards of your deck and return 1 to the top and 1 to the bottom."
+          "[Deploy]Add 1 of your Shields to your hand. Then, look at the top 2 cards of your deck and return 1 to the top and 1 to the bottom."
         ],
         "rules": [
           {
@@ -700,7 +700,7 @@
       "effects": {
         "description": [
           "[Burst]Deploy this card.",
-          "[Deploy]Add 1 of your Shields to your hand. Then, If it's your turn, deploy 1 Tallgeese (OZ/AP4/HP2) Unit token. If a \"Corsica Base\" is in your trash, deploy 2 Leo (OZ/AP1/HP1) Unit tokens instead."
+          "[Deploy]Add 1 of your Shields to your hand. Then, if it's your turn, deploy 1 Tallgeese (OZ/AP4/HP2) Unit token. If a \"Corsica Base\" is in your trash, deploy 2 Leo (OZ/AP1/HP1) Unit tokens instead."
         ],
         "rules": [
           {

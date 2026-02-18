@@ -762,7 +762,7 @@
       "effects": {
         "description": [
           "[Burst]Deploy this card.",
-          "[Deploy]Add 1 of your Shields to your hand. Then, If it is your turn, deploy 1 rested Char’s Zaku II (Zeon: AP 3 · HP 1) Unit token."
+          "[Deploy]Add 1 of your Shields to your hand. Then, if it is your turn, deploy 1 rested Char’s Zaku II (Zeon: AP 3 · HP 1) Unit token."
         ],
         "rules": [
           {

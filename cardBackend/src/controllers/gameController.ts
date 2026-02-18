@@ -25,6 +25,11 @@ import { deckSubmissionService } from '../services/DeckSubmissionService';
 import { deckResourceService } from '../services/DeckResourceService';
 import { collectTokenCardIdsFromCardData } from '../services/cards/TokenCardDiscovery';
 import { loadTopDecksFromFile } from '../services/TopDeckService';
+import {
+    buildTestSessions,
+    normalizePlayerSeatSelector,
+    resolvePlayerIdForSelector
+} from '../services/SeatSessionService';
 
 // ============ TYPE DEFINITIONS ============
 
@@ -64,24 +69,6 @@ export class GameController {
 
     private static createPlayerId(): string {
         return `player_${uuidv4()}`;
-    }
-
-    private static resolvePlayerFromSelector(gameEnv: any, selectorRaw: string): string | null {
-        const selector = selectorRaw === 'opponent' ? 'opponent' : 'currentPlayer';
-        const playerIds = [gameEnv?.playerId_1, gameEnv?.playerId_2]
-            .filter((id): id is string => typeof id === 'string' && id.trim().length > 0);
-        const currentPlayerId = typeof gameEnv?.currentPlayer === 'string' ? gameEnv.currentPlayer : '';
-
-        if (selector === 'opponent') {
-            if (playerIds.length >= 2 && currentPlayerId) {
-                return playerIds.find((id) => id !== currentPlayerId) || playerIds[0] || null;
-            }
-            if (playerIds.length >= 2) {
-                return playerIds[1] || playerIds[0] || null;
-            }
-        }
-
-        return currentPlayerId || playerIds[0] || null;
     }
 
     private async applyAiAutoplayOrRespond(
@@ -2095,8 +2082,9 @@ export class GameController {
     async injectGameState(req: Request, res: Response): Promise<void> {
         try {
             const { gameId, gameEnv } = req.body;
-            const requestedPlayerSelectorRaw = typeof req.body?.player === 'string' ? req.body.player.trim().toLowerCase() : '';
-            const requestedPlayerSelector = requestedPlayerSelectorRaw === 'opponent' ? 'opponent' : 'currentPlayer';
+            const requestedPlayerSelector = normalizePlayerSeatSelector(
+                typeof req.body?.player === 'string' ? req.body.player.trim().toLowerCase() : ''
+            );
             
             if (!gameId || !gameEnv) {
                 res.status(400).json({
@@ -2122,20 +2110,8 @@ export class GameController {
             }
 
             const injectedEnv = result.gameEnv as any;
-            const candidatePlayerIds = [
-                injectedEnv?.playerId_1,
-                injectedEnv?.playerId_2
-            ].filter((id): id is string => typeof id === 'string' && id.trim().length > 0);
-            const resolvedPlayerId = GameController.resolvePlayerFromSelector(injectedEnv, requestedPlayerSelector);
-
-            const testSessions = candidatePlayerIds.map((playerId) => {
-                const session = sessionManager.createSession(gameId, playerId);
-                return {
-                    playerId,
-                    sessionToken: session.token,
-                    sessionExpiresAt: session.expiresAt
-                };
-            });
+            const resolvedPlayerId = resolvePlayerIdForSelector(injectedEnv, requestedPlayerSelector);
+            const testSessions = buildTestSessions(gameId, injectedEnv);
             
             console.log(`✅ Game state injected successfully: ${gameId}`);
             
@@ -2169,8 +2145,9 @@ export class GameController {
     async resolveSeatSession(req: Request, res: Response): Promise<void> {
         try {
             const { gameId } = req.body ?? {};
-            const requestedPlayerSelectorRaw = typeof req.body?.player === 'string' ? req.body.player.trim().toLowerCase() : '';
-            const requestedPlayerSelector = requestedPlayerSelectorRaw === 'opponent' ? 'opponent' : 'currentPlayer';
+            const requestedPlayerSelector = normalizePlayerSeatSelector(
+                typeof req.body?.player === 'string' ? req.body.player.trim().toLowerCase() : ''
+            );
 
             if (!gameId || typeof gameId !== 'string') {
                 res.status(400).json({
@@ -2191,7 +2168,7 @@ export class GameController {
                 return;
             }
 
-            const resolvedPlayerId = GameController.resolvePlayerFromSelector(gameEnv as any, requestedPlayerSelector);
+            const resolvedPlayerId = resolvePlayerIdForSelector(gameEnv as any, requestedPlayerSelector);
             if (!resolvedPlayerId) {
                 res.status(400).json({
                     error: 'Unable to resolve player seat from game state',
