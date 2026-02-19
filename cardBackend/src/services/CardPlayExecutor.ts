@@ -7,12 +7,13 @@ import { ExecutionResult } from './ExecutionResult';
 import { GameEnvironment } from '../models/GameEnvironment';
 import { PlayCardPreparationManager, PlayCardPreparationSuccess } from './PlayCardPreparationManager';
 import { PlayerCardManager } from './PlayerCardManager';
-import { GameNotificationManager } from './GameNotificationManager';
 import { PairingEffectManager } from './PairingEffectManager';
 import { BattlePhaseManager } from './BattlePhaseManager';
 import { CardEnteredPlayManager } from './CardEnteredPlayManager';
 import { PairingGlobalEffectManager } from './effects/PairingGlobalEffectManager';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
+import { CardDatabaseManager } from '../models/CardSystem';
+import { CardPlayNotificationLifecycle } from './notifications/CardPlayNotificationLifecycle';
 
 export class CardPlayExecutor {
     static execute(event: PlayCardEvent, gameEnv: GameEnvironment): ExecutionResult {
@@ -49,24 +50,9 @@ export class CardPlayExecutor {
                 };
             }
 
-            const notificationManager = new GameNotificationManager(gameEnv);
-            const cardNotificationPayload = {
-                carduid: eventData.carduid,
-                playerId,
-                playAs: eventData.playAs,
-                reason: eventData.fromBurst ? 'burst' : 'hand',
-                fromBurst: Boolean(eventData.fromBurst),
-                targetUnit: eventData.targetUnit,
-                slotName: eventData.slotName,
-                isCompleted: false,
-                timestamp: Date.now()
-            };
-
-            const notificationId = notificationManager.addNotificationEvent(
-                'CARD_PLAYED',
-                cardNotificationPayload,
-                'normal'
-            );
+            const placedCardData = CardDatabaseManager.getCardDetailsFromCarduid(eventData.carduid);
+            const cardNotificationPayload = CardPlayNotificationLifecycle.buildPayload(eventData, playerId, placedCardData);
+            const notificationId = CardPlayNotificationLifecycle.createCardPlayedNotification(gameEnv, cardNotificationPayload);
             eventData.cardPlayNotificationId = notificationId;
 
             if (tappedEnergy.length > 0) {
@@ -88,7 +74,7 @@ export class CardPlayExecutor {
             }
 
             if (enteredPlay.deployEffectsQueued === 0) {
-                notificationManager.updateNotificationEvent(notificationId, { isCompleted: true });
+                CardPlayNotificationLifecycle.markCompleted(gameEnv, notificationId);
             }
 
             if (placementResult.isOnPair) {

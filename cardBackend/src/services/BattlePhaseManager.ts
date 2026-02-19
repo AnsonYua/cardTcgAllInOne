@@ -229,6 +229,14 @@ export class BattlePhaseManager {
             return { success: true };
         }
 
+        const consistencyBefore = this.ensureActionStepBattleConsistency(
+            gameEnv,
+            'POST_ACTION_STEP_PLAY_BEFORE_REFRESH'
+        );
+        if (consistencyBefore) {
+            return consistencyBefore;
+        }
+
         if (!this.playerInBattle(battle, playerId)) {
             return { success: true };
         }
@@ -243,6 +251,14 @@ export class BattlePhaseManager {
         battle.confirmations[playerId] = false;
         gameEnv.refreshBattleActionTargets();
         console.log('🎯 Action targets refreshed after card play:', JSON.stringify(battle.actionTargets || {}));
+
+        const consistencyAfter = this.ensureActionStepBattleConsistency(
+            gameEnv,
+            'POST_ACTION_STEP_PLAY_AFTER_REFRESH'
+        );
+        if (consistencyAfter) {
+            return consistencyAfter;
+        }
 
         const autoResolveResult = this.tryAutoResolveBattle(gameEnv);
         if (autoResolveResult) {
@@ -260,6 +276,11 @@ export class BattlePhaseManager {
     private static tryAutoResolveBattle(gameEnv: GameEnvironment): ExecutionResult | null {
         if (!gameEnv.currentBattle) {
             return null;
+        }
+
+        const consistencyResult = this.ensureActionStepBattleConsistency(gameEnv, 'TRY_AUTO_RESOLVE');
+        if (consistencyResult) {
+            return consistencyResult;
         }
 
         if (!gameEnv.haveBothPlayersConfirmedBattle()) {
@@ -291,6 +312,103 @@ export class BattlePhaseManager {
             console.log('✅ Battle auto-resolved');
         }
         return result;
+    }
+
+    static ensureActionStepBattleConsistency(gameEnv: GameEnvironment, reason = 'UNKNOWN'): ExecutionResult | null {
+        const validation = this.isCurrentBattleStillValid(gameEnv);
+        if (validation.valid) {
+            return null;
+        }
+
+        const invalidReason = validation.reason || `INVALID_ACTION_STEP_BATTLE_${reason}`;
+        return this.endInvalidActionStepBattle(gameEnv, invalidReason);
+    }
+
+    private static isCurrentBattleStillValid(gameEnv: GameEnvironment): { valid: boolean; reason?: string } {
+        const battle = gameEnv.currentBattle;
+        if (!battle) {
+            return { valid: true };
+        }
+
+        const status = (battle.status || '').toString().toUpperCase();
+        if (status !== 'ACTION_STEP') {
+            return { valid: true };
+        }
+
+        const attackerCarduid = (battle.attackerCarduid || '').toString();
+        if (!attackerCarduid) {
+            return { valid: false, reason: 'ATTACKER_UID_MISSING' };
+        }
+
+        const lookup = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, attackerCarduid) as any;
+        if (!lookup?.found || !lookup?.slotName || !lookup?.playerId) {
+            return { valid: false, reason: 'ATTACKER_NOT_ON_BOARD' };
+        }
+
+        const locatedUnitUid = lookup?.unit?.carduid ?? lookup?.unit?.cardUid;
+        if (locatedUnitUid !== attackerCarduid) {
+            return { valid: false, reason: 'ATTACKER_NOT_IN_UNIT_SLOT' };
+        }
+
+        if (battle.attackingPlayerId && lookup.playerId !== battle.attackingPlayerId) {
+            return { valid: false, reason: 'ATTACKER_OWNER_MISMATCH' };
+        }
+
+        return { valid: true };
+    }
+
+    private static endInvalidActionStepBattle(gameEnv: GameEnvironment, reason: string): ExecutionResult {
+        const battle = gameEnv.currentBattle;
+        if (!battle) {
+            return { success: true };
+        }
+
+        const status = (battle.status || '').toString().toUpperCase();
+        if (status !== 'ACTION_STEP') {
+            return { success: true };
+        }
+
+        const attackNotificationId = battle.attackNotificationId;
+        if (attackNotificationId) {
+            const notificationManager = new GameNotificationManager(gameEnv);
+            notificationManager.updateNotificationEvent(attackNotificationId, {
+                battleEnd: true
+            });
+            console.log(`📣 Attack notification ${attackNotificationId} marked as battleEnd (invalid battle)`);
+        }
+
+        const attackerLookup = battle.attackerCarduid
+            ? SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, battle.attackerCarduid) as any
+            : null;
+        const attackerPlayer = attackerLookup?.playerId ? gameEnv.getPlayer(attackerLookup.playerId) : null;
+        const attackerSnapshot = attackerPlayer
+            ? buildSlotSnapshot(attackerPlayer, attackerLookup?.slotName)
+            : null;
+
+        let targetSnapshot = buildForcedTargetSnapshot(gameEnv, battle.forcedTarget);
+        if (!targetSnapshot && battle.targetPlayerId) {
+            const targetPlayer = gameEnv.getPlayer(battle.targetPlayerId);
+            if (targetPlayer) {
+                targetSnapshot = buildShieldSnapshot(targetPlayer);
+            }
+        }
+
+        emitBattleResolutionNotification(gameEnv, battle, {
+            attacker: attackerSnapshot,
+            target: targetSnapshot,
+            focusTarget: targetSnapshot,
+            result: {
+                targetType: battle.actionType === 'attackUnit' ? 'unit' : 'shield',
+                aborted: true,
+                abortReason: reason,
+                battleEndedEarly: true,
+                attackerMissing: true
+            }
+        });
+
+        console.warn(`⚠️ Action-step battle ended early: ${reason}`);
+        this.clearBattleAndRefreshContinuous(gameEnv, `invalid_action_step_${reason}`);
+        return { success: true };
     }
 
     private static startUnitBattle(

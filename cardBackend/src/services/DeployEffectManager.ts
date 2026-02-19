@@ -22,6 +22,7 @@ import { DeployEffectOptionPresenter } from './effects/DeployEffectOptionPresent
 import { ChoiceEventScheduler } from './choices/ChoiceEventScheduler';
 import { EventPriority } from './EventQueue/interfaces/GameEvent';
 import { ChoiceNotificationEmitter } from './notifications/ChoiceNotificationEmitter';
+import { CardPlayNotificationLifecycle } from './notifications/CardPlayNotificationLifecycle';
 
 export interface ExecutionResult {
     success: boolean;
@@ -156,8 +157,7 @@ export class DeployEffectManager {
 
         if (eligibleEffects.length === 0) {
             if (event.data.cardPlayNotificationId) {
-                const notificationManager = new GameNotificationManager(gameEnv);
-                notificationManager.updateNotificationEvent(event.data.cardPlayNotificationId, { isCompleted: true });
+                CardPlayNotificationLifecycle.markCompleted(gameEnv, event.data.cardPlayNotificationId);
             }
             return { success: true };
         }
@@ -237,11 +237,7 @@ export class DeployEffectManager {
         );
 
         if (!requiresTargetChoice && remainingEffects.length === 0 && event.data.cardPlayNotificationId) {
-            const notificationManager = new GameNotificationManager(gameEnv);
-            notificationManager.updateNotificationEvent(
-                event.data.cardPlayNotificationId,
-                { isCompleted: true }
-            );
+            CardPlayNotificationLifecycle.markCompleted(gameEnv, event.data.cardPlayNotificationId);
         }
 
         return { success: true };

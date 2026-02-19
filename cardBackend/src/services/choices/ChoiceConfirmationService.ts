@@ -2,9 +2,9 @@
 // Centralized helpers for confirming choice events (TARGET_CHOICE, TOKEN_CHOICE).
 
 import { EventType } from '../../models/GameEnums';
-import { GameNotificationManager } from '../GameNotificationManager';
 import { ChoiceNotificationEmitter } from '../notifications/ChoiceNotificationEmitter';
 import { BattlePhaseManager } from '../BattlePhaseManager';
+import { CardPlayNotificationLifecycle } from '../notifications/CardPlayNotificationLifecycle';
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { GameEvent, TargetChoiceEvent, TargetReference, TokenChoiceEvent, OptionChoiceEvent, PromptChoiceEvent } from '../EventQueue/interfaces/GameEvent';
 import type { GameLogicResult } from '../GameLogic';
@@ -22,8 +22,7 @@ export class ChoiceConfirmationService {
         notificationId?: string
     ): Promise<GameLogicResult> {
         if (notificationId) {
-            const notificationManager = new GameNotificationManager(gameEnv);
-            notificationManager.updateNotificationEvent(notificationId, { isCompleted: true });
+            CardPlayNotificationLifecycle.markCompleted(gameEnv, notificationId);
         }
 
         const processingResult = await gameEnv.processEvents();
