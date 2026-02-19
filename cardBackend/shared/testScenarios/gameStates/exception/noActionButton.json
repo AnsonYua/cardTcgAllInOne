@@ -1,0 +1,2815 @@
+{
+    "description": "",
+    "gameId": "",
+    "testType": "",
+    "category": "",
+    "tags": [],
+    "notes": [],
+    "initialGameEnv": {
+        "version": 29,
+        "phase": "MAIN_PHASE",
+        "playerId_1": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+        "playerId_2": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+        "gameStarted": true,
+        "firstPlayer": 0,
+        "firstPlayerChooser": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+        "firstPlayerDecision": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+        "hasChosenFirstPlayer": true,
+        "currentPlayer": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+        "currentTurn": 9,
+        "playersReady": {
+            "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3": true,
+            "player_4c638da7-3467-4cb9-b459-40c92d8b372b": true
+        },
+        "aiPlayerIds": [],
+        "currentBattle":null,
+        "players": {
+            "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3": {
+                "id": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+                "name": "Player 1",
+                "deck": {
+                    "hand": [
+                        {
+                            "carduid": "GD01-128_b298a033-66bc-475d-a88e-e8227e7537da",
+                            "cardId": "GD01-128",
+                            "cardData": {
+                                "id": "GD01-128",
+                                "name": "Mining Asteroid Palau",
+                                "cardType": "base",
+                                "color": "Red",
+                                "level": 2,
+                                "cost": 1,
+                                "zone": [
+                                    "Space"
+                                ],
+                                "traits": [
+                                    "Neo Zeon",
+                                    "Stronghold"
+                                ],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 6,
+                                "effects": {
+                                    "description": [
+                                        "[Burst]Deploy this card.",
+                                        "[Deploy]Add 1 of your Shields to your hand."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_deploy",
+                                            "type": "triggered",
+                                            "trigger": "BURST_CONDITION",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self"
+                                            },
+                                            "action": "deploy"
+                                        },
+                                        {
+                                            "effectId": "deploy_effect",
+                                            "type": "triggered",
+                                            "trigger": "ENTERS_PLAY",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self_shield"
+                                            },
+                                            "action": "addToHand",
+                                            "parameters": {
+                                                "value": 1,
+                                                "from": "shield"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "baseCost": 1,
+                                "baseLevel": 2,
+                                "effectiveCost": 1,
+                                "effectiveLevel": 2
+                            }
+                        },
+                        {
+                            "carduid": "ST03-010_f1b10a97-71f6-415f-8895-1efc20e15aa4",
+                            "cardId": "ST03-010",
+                            "cardData": {
+                                "id": "ST03-010",
+                                "name": "Full Frontal",
+                                "cardType": "pilot",
+                                "color": "Red",
+                                "level": 6,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [
+                                    "Neo Zeon",
+                                    "Cyber-Newtype"
+                                ],
+                                "link": [],
+                                "ap": 2,
+                                "hp": 2,
+                                "effects": {
+                                    "description": [
+                                        "[Burst]Add this card to your hand.",
+                                        "[When Paired]You may deploy 1 Neo Zeon/Zeon Unit card that is Lv.4 or lower from your hand."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_add_to_hand",
+                                            "trigger": "BURST_CONDITION",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self"
+                                            },
+                                            "action": "addToHand",
+                                            "type": "triggered"
+                                        },
+                                        {
+                                            "effectId": "pair_deploy_unit_from_hand",
+                                            "type": "triggered",
+                                            "trigger": "PAIRING_COMPLETE",
+                                            "action": "deploy_from_hand",
+                                            "optional": true,
+                                            "parameters": {
+                                                "maxLevel": 4,
+                                                "allowedTraitsAny": [
+                                                    "Neo Zeon",
+                                                    "Zeon"
+                                                ]
+                                            },
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self_hand",
+                                                "filters": {
+                                                    "level": "<=4",
+                                                    "traits": [
+                                                        "Neo Zeon",
+                                                        "Zeon"
+                                                    ]
+                                                },
+                                                "count": 1
+                                            }
+                                        }
+                                    ]
+                                },
+                                "baseCost": 1,
+                                "baseLevel": 6,
+                                "effectiveCost": 1,
+                                "effectiveLevel": 6
+                            }
+                        },
+                        {
+                            "carduid": "ST03-001_06300853-3628-4bc5-8de3-8d1bbea72e71",
+                            "cardId": "ST03-001",
+                            "cardData": {
+                                "id": "ST03-001",
+                                "name": "Sinanju",
+                                "cardType": "unit",
+                                "color": "Red",
+                                "level": 6,
+                                "cost": 5,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Neo Zeon"
+                                ],
+                                "link": [
+                                    "Full Frontal"
+                                ],
+                                "ap": 5,
+                                "hp": 4,
+                                "effects": {
+                                    "description": [
+                                        "[During Pair]This Unit gains <High-Maneuver> (This Unit can’t be blocked).",
+                                        "During your turn, when this Unit destroys an enemy shield-area card with battle damage, choose 1 enemy Unit. Deal 2 damage to it."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "pair_grant_high_maneuver",
+                                            "type": "continuous",
+                                            "trigger": "continuous",
+                                            "action": "grant_keyword",
+                                            "sourceConditions": [
+                                                {
+                                                    "type": "paired"
+                                                }
+                                            ],
+                                            "timing": {
+                                                "duration": "continuous"
+                                            },
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self",
+                                                "count": 1
+                                            },
+                                            "parameters": {
+                                                "keyword": "High-Maneuver",
+                                                "notes": "Unblockable keyword not yet implemented."
+                                            }
+                                        },
+                                        {
+                                            "effectId": "shield_destroy_damage_2",
+                                            "type": "triggered",
+                                            "trigger": "DEFENSE_AREA_BATTLE_DAMAGE",
+                                            "action": "damage",
+                                            "timing": {
+                                                "actionTurn": "YOUR_TURN"
+                                            },
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "count": 1
+                                            },
+                                            "parameters": {
+                                                "value": 2,
+                                                "source": "battle_damage",
+                                                "defenseAreas": [
+                                                    "shield",
+                                                    "base"
+                                                ],
+                                                "notes": "Triggers when this Unit deals battle damage to a card in the opponent's shield area or to an enemy Base (Base does not need to be destroyed). Engine trigger not implemented yet."
+                                            }
+                                        }
+                                    ]
+                                },
+                                "baseCost": 5,
+                                "baseLevel": 6,
+                                "effectiveCost": 5,
+                                "effectiveLevel": 6
+                            }
+                        },
+                        {
+                            "carduid": "ST04-011_c50443b6-b1bf-4a1f-ba29-0898b9cf6fce",
+                            "cardId": "ST04-011",
+                            "cardData": {
+                                "id": "ST04-011",
+                                "name": "Athrun Zala",
+                                "cardType": "pilot",
+                                "color": "Red",
+                                "level": 4,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [
+                                    "ZAFT",
+                                    "Coordinator"
+                                ],
+                                "link": [],
+                                "ap": 1,
+                                "hp": 2,
+                                "effects": {
+                                    "description": [
+                                        "[Burst]Add this card to your hand.",
+                                        "[When Linked]During this turn, this Unit may choose an active enemy Unit that is Lv.5 or lower as its attack target."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_add_to_hand",
+                                            "trigger": "BURST_CONDITION",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self"
+                                            },
+                                            "action": "addToHand",
+                                            "type": "triggered"
+                                        },
+                                        {
+                                            "effectId": "attack_active_low_level_5",
+                                            "action": "allow_attack_target",
+                                            "trigger": "PAIRING_COMPLETE",
+                                            "type": "triggered",
+                                            "sourceConditions": [
+                                                {
+                                                    "type": "linked"
+                                                }
+                                            ],
+                                            "timing": {
+                                                "duration": "UNTIL_END_OF_TURN"
+                                            },
+                                            "parameters": {
+                                                "status": "active",
+                                                "level": "<=5",
+                                                "notes": "When Linked window not yet implemented; modeled as a trigger on link completion with a temporary attack-target permission."
+                                            }
+                                        }
+                                    ]
+                                },
+                                "baseCost": 1,
+                                "baseLevel": 4,
+                                "effectiveCost": 1,
+                                "effectiveLevel": 4
+                            }
+                        },
+                        {
+                            "carduid": "ST03-013_a0a059d2-6663-4f56-b133-e5afdbce2818",
+                            "cardId": "ST03-013",
+                            "cardData": {
+                                "id": "ST03-013",
+                                "name": "Close Combat",
+                                "cardType": "command",
+                                "color": "Red",
+                                "level": 2,
+                                "cost": 2,
+                                "zone": [],
+                                "traits": [],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 0,
+                                "effects": {
+                                    "description": [
+                                        "[Burst]Activate this card’s [Main].",
+                                        "[Main]/[Action]Choose 1 enemy Unit. Deal 2 damage to it."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_activate_main",
+                                            "trigger": "BURST_CONDITION",
+                                            "action": "activate_ability",
+                                            "parameters": {
+                                                "abilityType": "main"
+                                            },
+                                            "type": "triggered"
+                                        },
+                                        {
+                                            "effectId": "main_action_damage",
+                                            "type": "play",
+                                            "timing": {
+                                                "windows": [
+                                                    "MAIN_PHASE",
+                                                    "ACTION_STEP"
+                                                ]
+                                            },
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "count": 1
+                                            },
+                                            "action": "damage",
+                                            "parameters": {
+                                                "value": 2
+                                            }
+                                        }
+                                    ]
+                                },
+                                "baseCost": 2,
+                                "baseLevel": 2,
+                                "effectiveCost": 2,
+                                "effectiveLevel": 2
+                            }
+                        },
+                        {
+                            "carduid": "ST03-013_28cf8d3d-d0ec-4006-813e-e0ab393fc0eb",
+                            "cardId": "ST03-013",
+                            "cardData": {
+                                "id": "ST03-013",
+                                "name": "Close Combat",
+                                "cardType": "command",
+                                "color": "Red",
+                                "level": 2,
+                                "cost": 2,
+                                "zone": [],
+                                "traits": [],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 0,
+                                "effects": {
+                                    "description": [
+                                        "[Burst]Activate this card’s [Main].",
+                                        "[Main]/[Action]Choose 1 enemy Unit. Deal 2 damage to it."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_activate_main",
+                                            "trigger": "BURST_CONDITION",
+                                            "action": "activate_ability",
+                                            "parameters": {
+                                                "abilityType": "main"
+                                            },
+                                            "type": "triggered"
+                                        },
+                                        {
+                                            "effectId": "main_action_damage",
+                                            "type": "play",
+                                            "timing": {
+                                                "windows": [
+                                                    "MAIN_PHASE",
+                                                    "ACTION_STEP"
+                                                ]
+                                            },
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "count": 1
+                                            },
+                                            "action": "damage",
+                                            "parameters": {
+                                                "value": 2
+                                            }
+                                        }
+                                    ]
+                                },
+                                "baseCost": 2,
+                                "baseLevel": 2,
+                                "effectiveCost": 2,
+                                "effectiveLevel": 2
+                            }
+                        },
+                        {
+                            "carduid": "GD01-066_42c0de74-8adb-47df-a75c-9040d932b09c",
+                            "cardId": "GD01-066",
+                            "cardData": {
+                                "id": "GD01-066",
+                                "name": "Justice Gundam",
+                                "cardType": "unit",
+                                "color": "White",
+                                "level": 7,
+                                "cost": 5,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Triple Ship Alliance"
+                                ],
+                                "link": [
+                                    "Athrun Zala"
+                                ],
+                                "ap": 5,
+                                "hp": 5,
+                                "effects": {
+                                    "description": [
+                                        "[Deploy]Deploy 1 [Fatum-00]((Triple Ship Alliance)-AP2-HP2-<Blocker>) Unit token.",
+                                        "[During Pair][Attack]Choose 1 of your (Triple Ship Alliance) Unit tokens. It may attack on the turn it is deployed."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "deploy_effect",
+                                            "type": "triggered",
+                                            "trigger": "ENTERS_PLAY",
+                                            "action": "conditionalTokenDeploy",
+                                            "parameters": {
+                                                "condition1": {
+                                                    "token": {
+                                                        "cardId": "T-011"
+                                                    },
+                                                    "count": 1
+                                                },
+                                                "notes": "Token deployment not yet implemented for GD sets at runtime; uses token cardId."
+                                            }
+                                        },
+                                        {
+                                            "effectId": "attack_effect",
+                                            "type": "triggered",
+                                            "trigger": "ATTACK_PHASE",
+                                            "action": "allow_attack_target",
+                                            "sourceConditions": [
+                                                {
+                                                    "type": "paired"
+                                                }
+                                            ],
+                                            "timing": {
+                                                "duration": "UNTIL_END_OF_TURN"
+                                            },
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self_all_unit",
+                                                "filters": {
+                                                    "traits": [
+                                                        "Triple Ship Alliance"
+                                                    ],
+                                                    "color": "Token"
+                                                },
+                                                "count": 1,
+                                                "selection": {
+                                                    "type": "player_choice"
+                                                }
+                                            },
+                                            "parameters": {
+                                                "allowAttackOnDeployTurn": true,
+                                                "notes": "Requires engine support for granting an exception to summoning-sickness rules; targets Token units with the Triple Ship Alliance trait."
+                                            }
+                                        }
+                                    ]
+                                },
+                                "baseCost": 5,
+                                "baseLevel": 7,
+                                "effectiveCost": 5,
+                                "effectiveLevel": 7
+                            }
+                        },
+                        {
+                            "carduid": "GD01-086_6f304115-c861-454d-9eee-3d037f12a06d",
+                            "cardId": "GD01-086",
+                            "cardData": {
+                                "id": "GD01-086",
+                                "name": "Gundam Lfrith",
+                                "cardType": "unit",
+                                "color": "White",
+                                "level": 3,
+                                "cost": 2,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Vanadis Institute"
+                                ],
+                                "link": [],
+                                "ap": 2,
+                                "hp": 4,
+                                "effects": {
+                                    "description": [
+                                        "<Blocker> (Rest this Unit to change the attack target to it.)"
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "blocker",
+                                            "type": "triggered",
+                                            "trigger": "ATTACK_REDIRECT",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self"
+                                            },
+                                            "action": "redirect_attack",
+                                            "parameters": {
+                                                "cost": "rest_self"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "baseCost": 2,
+                                "baseLevel": 3,
+                                "effectiveCost": 2,
+                                "effectiveLevel": 3
+                            }
+                        }
+                    ],
+                    "handUids": [
+                        "GD01-128_b298a033-66bc-475d-a88e-e8227e7537da",
+                        "ST03-010_f1b10a97-71f6-415f-8895-1efc20e15aa4",
+                        "ST03-001_06300853-3628-4bc5-8de3-8d1bbea72e71",
+                        "ST04-011_c50443b6-b1bf-4a1f-ba29-0898b9cf6fce",
+                        "ST03-013_a0a059d2-6663-4f56-b133-e5afdbce2818",
+                        "ST03-013_28cf8d3d-d0ec-4006-813e-e0ab393fc0eb",
+                        "GD01-066_42c0de74-8adb-47df-a75c-9040d932b09c",
+                        "GD01-086_6f304115-c861-454d-9eee-3d037f12a06d"
+                    ],
+                    "mainDeck": [
+                        "GD01-128_de4f745b-f30b-466f-a65e-551ebba05160",
+                        "GD01-118_10dc457b-efe8-4f5c-b3a1-f5e798c2d7f9",
+                        "ST04-011_8273c0b9-027e-4a5d-aa05-334421fb8ed3",
+                        "GD01-128_18df082d-6ce7-4f76-8cc5-c8521af63219",
+                        "ST04-010_b7f318a3-f62a-47d4-a0df-29863200a066",
+                        "ST03-013_a7960856-a8ee-474d-993c-9cc5716bdf90",
+                        "ST04-001_5a3b3e49-5409-4888-a634-61a803838fb6",
+                        "GD01-086_5372c794-c26c-479f-b442-071c705f7d6c",
+                        "ST03-001_a1d03408-6c30-4c48-a741-1730b50b0c57",
+                        "GD01-086_2ea2c5b2-6851-4aa6-a319-c4609898a8a2",
+                        "GD03-034_66f2d880-b9aa-4b99-8a0e-1052268d3167",
+                        "GD01-072_d40feb21-5a76-4c6d-855f-6188991714cb",
+                        "GD01-066_31c4fd5f-df91-4fb1-b096-b7f2afccd411",
+                        "ST03-010_6448246c-49ff-4146-9426-899f3b2fc056",
+                        "GD01-068_8038d107-d3b2-4664-a551-3e7e6252d84b",
+                        "ST04-001_9bb52b29-2a65-4be3-884b-faf0ed3a5721",
+                        "GD01-066_7101ba62-8dd6-45d0-ad92-ef75de2fd65b",
+                        "ST04-010_501411c9-1228-4fd1-a797-22e30aeb67ad",
+                        "GD01-111_857a583d-65f1-418d-aea5-40072180d659",
+                        "GD01-072_d37bbfb6-6e1a-4308-912f-6cacc73fe311",
+                        "ST04-010_2b77d9b7-be50-4764-b29f-8cdebdf1fae9",
+                        "ST01-009_d86af4c9-0e1a-4444-93d2-2bd63792f200",
+                        "GD01-072_9e10765b-cdef-40da-8aaf-3bb5e58f1469",
+                        "ST04-011_5e9df829-7f60-48e9-9974-23b8533ae1cb",
+                        "GD01-086_c74f1596-5cef-4e67-86e4-e05dd2e29292",
+                        "GD03-034_22248a85-71fb-4ccc-884d-33a3340f1d79",
+                        "ST04-001_e3092ea0-4387-45d8-b271-90bdc2a090ec",
+                        "GD01-111_a035e11d-3ddd-4318-a531-b501338657a3",
+                        "ST03-001_b5d57a23-2e8e-4a56-9dfe-b24594510d8a",
+                        "GD01-118_f865e92c-b0b9-4192-9620-a847d20e7c28",
+                        "GD01-066_fff32277-b240-4e0e-a8ab-0138b8d613f8",
+                        "GD01-128_4b8ebd00-798c-4dbb-bf9e-665c0401f69e"
+                    ]
+                },
+                "confirmIsRedraw": true,
+                "isRedraw": true,
+                "playerPoint": 0,
+                "isReady": false,
+                "zones": {
+                    "slot1": {
+                        "unit": {
+                            "carduid": "ST01-009_05c5ea79-484c-4c45-8de1-361ead62850d",
+                            "cardId": "ST01-009",
+                            "cardData": {
+                                "id": "ST01-009",
+                                "name": "Zowort",
+                                "cardType": "unit",
+                                "color": "White",
+                                "level": 2,
+                                "cost": 2,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Academy"
+                                ],
+                                "link": [],
+                                "ap": 3,
+                                "hp": 2,
+                                "effects": {
+                                    "description": [
+                                        "<Blocker> (Rest this Unit to change the attack target to it.)",
+                                        "This Unit can't choose the enemy player as its attack target."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "blocker",
+                                            "trigger": "ATTACK_REDIRECT",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self"
+                                            },
+                                            "action": "redirect_attack",
+                                            "parameters": {
+                                                "cost": "rest_self"
+                                            },
+                                            "type": "triggered"
+                                        },
+                                        {
+                                            "effectId": "attack_restriction",
+                                            "trigger": "continuous",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self"
+                                            },
+                                            "action": "restrict_attack",
+                                            "parameters": {
+                                                "restriction": "cannot_attack_player"
+                                            },
+                                            "type": "continuous"
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1771514707865,
+                            "placedBy": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalAP": 3,
+                            "originalHP": 2,
+                            "damageReceived": 1,
+                            "playedThisTurn": false,
+                            "canAttackOnPlayTurn": false,
+                            "continueModifyAP": 0,
+                            "continueModifyHP": 0,
+                            "canAttackThisTurn": true
+                        },
+                        "fieldCardValue": {
+                            "totalOriginalAP": 3,
+                            "totalOriginalHP": 2,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 1,
+                            "totalAP": 3,
+                            "totalHP": 1
+                        }
+                    },
+                    "slot2": {
+                        "fieldCardValue": {
+                            "totalOriginalAP": 0,
+                            "totalOriginalHP": 0,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 0,
+                            "totalHP": 0
+                        }
+                    },
+                    "slot3": {
+                        "fieldCardValue": {
+                            "totalOriginalAP": 0,
+                            "totalOriginalHP": 0,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 0,
+                            "totalHP": 0
+                        }
+                    },
+                    "slot4": {
+                        "fieldCardValue": {
+                            "totalOriginalAP": 0,
+                            "totalOriginalHP": 0,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 0,
+                            "totalHP": 0
+                        }
+                    },
+                    "slot5": {
+                        "fieldCardValue": {
+                            "totalOriginalAP": 0,
+                            "totalOriginalHP": 0,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 0,
+                            "totalHP": 0
+                        }
+                    },
+                    "slot6": {
+                        "fieldCardValue": {
+                            "totalOriginalAP": 0,
+                            "totalOriginalHP": 0,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 0,
+                            "totalHP": 0
+                        }
+                    },
+                    "base": [],
+                    "shieldArea": [
+                        {
+                            "carduid": "ST04-010_9fe51bbd-a512-4b38-a2c2-35ca5c120fa9",
+                            "cardId": "ST04-010",
+                            "cardData": {
+                                "id": "ST04-010",
+                                "name": "Kira Yamato",
+                                "cardType": "pilot",
+                                "color": "White",
+                                "level": 4,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [
+                                    "Earth Alliance",
+                                    "Coordinator"
+                                ],
+                                "link": [],
+                                "ap": 2,
+                                "hp": 1,
+                                "effects": {
+                                    "description": [
+                                        "[Burst]Add this card to your hand.",
+                                        "[Attack]Choose 1 enemy Unit; it gets AP–2 during this battle."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_add_to_hand",
+                                            "trigger": "BURST_CONDITION",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self"
+                                            },
+                                            "action": "addToHand",
+                                            "type": "triggered"
+                                        },
+                                        {
+                                            "effectId": "attack_reduce_enemy_ap",
+                                            "type": "triggered",
+                                            "trigger": "ATTACK_PHASE",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "count": 1
+                                            },
+                                            "action": "modifyAP",
+                                            "parameters": {
+                                                "value": -2
+                                            },
+                                            "timing": {
+                                                "duration": "UNTIL_END_OF_BATTLE"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1771514635220,
+                            "placedBy": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalCardType": "pilot",
+                            "originalAP": 2,
+                            "originalHP": 1
+                        },
+                        {
+                            "carduid": "ST03-010_f4f1e22e-3972-4462-bf88-eba5b586bd7f",
+                            "cardId": "ST03-010",
+                            "cardData": {
+                                "id": "ST03-010",
+                                "name": "Full Frontal",
+                                "cardType": "pilot",
+                                "color": "Red",
+                                "level": 6,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [
+                                    "Neo Zeon",
+                                    "Cyber-Newtype"
+                                ],
+                                "link": [],
+                                "ap": 2,
+                                "hp": 2,
+                                "effects": {
+                                    "description": [
+                                        "[Burst]Add this card to your hand.",
+                                        "[When Paired]You may deploy 1 Neo Zeon/Zeon Unit card that is Lv.4 or lower from your hand."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_add_to_hand",
+                                            "trigger": "BURST_CONDITION",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self"
+                                            },
+                                            "action": "addToHand",
+                                            "type": "triggered"
+                                        },
+                                        {
+                                            "effectId": "pair_deploy_unit_from_hand",
+                                            "type": "triggered",
+                                            "trigger": "PAIRING_COMPLETE",
+                                            "action": "deploy_from_hand",
+                                            "optional": true,
+                                            "parameters": {
+                                                "maxLevel": 4,
+                                                "allowedTraitsAny": [
+                                                    "Neo Zeon",
+                                                    "Zeon"
+                                                ]
+                                            },
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self_hand",
+                                                "filters": {
+                                                    "level": "<=4",
+                                                    "traits": [
+                                                        "Neo Zeon",
+                                                        "Zeon"
+                                                    ]
+                                                },
+                                                "count": 1
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1771514635220,
+                            "placedBy": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalCardType": "pilot",
+                            "originalAP": 2,
+                            "originalHP": 2
+                        },
+                        {
+                            "carduid": "ST04-001_e5d09d1a-e350-4fb9-b001-d262f562cb8d",
+                            "cardId": "ST04-001",
+                            "cardData": {
+                                "id": "ST04-001",
+                                "name": "Aile Strike Gundam",
+                                "cardType": "unit",
+                                "color": "White",
+                                "level": 5,
+                                "cost": 4,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Alliance"
+                                ],
+                                "link": [
+                                    "Kira Yamato"
+                                ],
+                                "ap": 4,
+                                "hp": 4,
+                                "effects": {
+                                    "description": [
+                                        "<Blocker> (Rest this Unit to change the attack target to it.)",
+                                        "[When Paired]If paired with a Lv.4 or higher Pilot, choose 1 enemy Unit with 4 or less HP and return it to its owner’s hand."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "blocker",
+                                            "trigger": "ATTACK_REDIRECT",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self"
+                                            },
+                                            "action": "redirect_attack",
+                                            "parameters": {
+                                                "cost": "rest_self"
+                                            },
+                                            "type": "triggered"
+                                        },
+                                        {
+                                            "effectId": "pair_bounce_low_hp_if_pilot_ge_4",
+                                            "type": "triggered",
+                                            "trigger": "PAIRING_COMPLETE",
+                                            "action": "returnToHand",
+                                            "optional": true,
+                                            "conditions": [
+                                                {
+                                                    "type": "pairedPilotLevel",
+                                                    "scope": "source",
+                                                    "value": ">=4"
+                                                }
+                                            ],
+                                            "parameters": {
+                                                "pilotMinLevel": 4,
+                                                "notes": "Return-to-hand effect and pilot-level pairing requirement not yet implemented."
+                                            },
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "filters": {
+                                                    "hp": "<=4"
+                                                },
+                                                "count": 1
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1771514635220,
+                            "placedBy": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalCardType": "unit",
+                            "originalAP": 4,
+                            "originalHP": 4
+                        },
+                        {
+                            "carduid": "ST03-001_afe4257d-a55a-43dc-9e43-165e605210df",
+                            "cardId": "ST03-001",
+                            "cardData": {
+                                "id": "ST03-001",
+                                "name": "Sinanju",
+                                "cardType": "unit",
+                                "color": "Red",
+                                "level": 6,
+                                "cost": 5,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Neo Zeon"
+                                ],
+                                "link": [
+                                    "Full Frontal"
+                                ],
+                                "ap": 5,
+                                "hp": 4,
+                                "effects": {
+                                    "description": [
+                                        "[During Pair]This Unit gains <High-Maneuver> (This Unit can’t be blocked).",
+                                        "During your turn, when this Unit destroys an enemy shield-area card with battle damage, choose 1 enemy Unit. Deal 2 damage to it."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "pair_grant_high_maneuver",
+                                            "type": "continuous",
+                                            "trigger": "continuous",
+                                            "action": "grant_keyword",
+                                            "sourceConditions": [
+                                                {
+                                                    "type": "paired"
+                                                }
+                                            ],
+                                            "timing": {
+                                                "duration": "continuous"
+                                            },
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self",
+                                                "count": 1
+                                            },
+                                            "parameters": {
+                                                "keyword": "High-Maneuver",
+                                                "notes": "Unblockable keyword not yet implemented."
+                                            }
+                                        },
+                                        {
+                                            "effectId": "shield_destroy_damage_2",
+                                            "type": "triggered",
+                                            "trigger": "DEFENSE_AREA_BATTLE_DAMAGE",
+                                            "action": "damage",
+                                            "timing": {
+                                                "actionTurn": "YOUR_TURN"
+                                            },
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "count": 1
+                                            },
+                                            "parameters": {
+                                                "value": 2,
+                                                "source": "battle_damage",
+                                                "defenseAreas": [
+                                                    "shield",
+                                                    "base"
+                                                ],
+                                                "notes": "Triggers when this Unit deals battle damage to a card in the opponent's shield area or to an enemy Base (Base does not need to be destroyed). Engine trigger not implemented yet."
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1771514635220,
+                            "placedBy": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalCardType": "unit",
+                            "originalAP": 5,
+                            "originalHP": 4
+                        },
+                        {
+                            "carduid": "ST04-012_cdf377a2-f27a-4acb-a135-40e2f11a8124",
+                            "cardId": "ST04-012",
+                            "cardData": {
+                                "id": "ST04-012",
+                                "name": "Striker Pack",
+                                "cardType": "command",
+                                "color": "White",
+                                "level": 4,
+                                "cost": 2,
+                                "zone": [],
+                                "traits": [],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 0,
+                                "effects": {
+                                    "description": [
+                                        "[Burst]If you have no (Earth Alliance) Unit tokens in play, deploy 1 Aile Strike Gundam Unit token (AP 3 / HP 3, <Blocker>).",
+                                        "[Main]If you have no (Earth Alliance) Unit tokens in play, deploy 1 Sword Strike Gundam Unit token (AP 4 / HP 2, <Blocker>) or 1 Launcher Strike Gundam Unit token (AP 2 / HP 4, <Blocker>)."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_deploy_aile_strike_token_if_none",
+                                            "type": "triggered",
+                                            "trigger": "BURST_CONDITION",
+                                            "action": "conditionalTokenDeploy",
+                                            "conditions": [
+                                                {
+                                                    "type": "noUnitTokenWithTrait",
+                                                    "scope": "self",
+                                                    "value": "Earth Alliance"
+                                                }
+                                            ],
+                                            "parameters": {
+                                                "condition1": {
+                                                    "token": {
+                                                        "cardId": "T-008"
+                                                    },
+                                                    "count": 1
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "effectId": "main_deploy_strike_tokens_if_none",
+                                            "type": "play",
+                                            "action": "choose_one_then_deploy_token",
+                                            "timing": {
+                                                "windows": [
+                                                    "MAIN_PHASE"
+                                                ]
+                                            },
+                                            "conditions": [
+                                                {
+                                                    "type": "noUnitTokenWithTrait",
+                                                    "scope": "self",
+                                                    "value": "Earth Alliance"
+                                                }
+                                            ],
+                                            "parameters": {
+                                                "choices": [
+                                                    {
+                                                        "token": {
+                                                            "cardId": "T-010"
+                                                        },
+                                                        "count": 1
+                                                    },
+                                                    {
+                                                        "token": {
+                                                            "cardId": "T-009"
+                                                        },
+                                                        "count": 1
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1771514635220,
+                            "placedBy": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalCardType": "command"
+                        },
+                        {
+                            "carduid": "GD01-118_9375dcd1-615c-4bce-95d2-5ef6f763ba3f",
+                            "cardId": "GD01-118",
+                            "cardData": {
+                                "id": "GD01-118",
+                                "name": "Overflowing Affection",
+                                "cardType": "command",
+                                "color": "White",
+                                "level": 2,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 0,
+                                "effects": {
+                                    "description": [
+                                        "[Main]Draw 2. Then, discard 1."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "draw",
+                                            "type": "play",
+                                            "timing": {
+                                                "windows": [
+                                                    "MAIN_PHASE"
+                                                ]
+                                            },
+                                            "action": "draw_then_discard",
+                                            "parameters": {
+                                                "draw": 2,
+                                                "discard": 1
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1771514635220,
+                            "placedBy": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalCardType": "command"
+                        }
+                    ],
+                    "energyArea": [
+                        {
+                            "carduid": "energy_basic_1771514635220_0.5391037348875405",
+                            "cardId": "energy_basic",
+                            "placedAt": 1771514635220,
+                            "placedBy": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+                            "isRested": false,
+                            "isExtraEnergy": false,
+                            "cardData": {
+                                "cardType": "energy"
+                            }
+                        },
+                        {
+                            "carduid": "energy_basic_1771514652017_0.8771601318280955",
+                            "cardId": "energy_basic",
+                            "placedAt": 1771514652017,
+                            "placedBy": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+                            "isRested": false,
+                            "isExtraEnergy": false,
+                            "cardData": {
+                                "cardType": "energy"
+                            }
+                        },
+                        {
+                            "carduid": "energy_basic_1771514699914_0.9934571981726987",
+                            "cardId": "energy_basic",
+                            "placedAt": 1771514699914,
+                            "placedBy": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+                            "isRested": false,
+                            "isExtraEnergy": false,
+                            "cardData": {
+                                "cardType": "energy"
+                            }
+                        },
+                        {
+                            "carduid": "energy_basic_1771514737933_0.49098527551030036",
+                            "cardId": "energy_basic",
+                            "placedAt": 1771514737933,
+                            "placedBy": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+                            "isRested": false,
+                            "isExtraEnergy": false,
+                            "cardData": {
+                                "cardType": "energy"
+                            }
+                        },
+                        {
+                            "carduid": "energy_basic_1771514845777_0.5343838075817577",
+                            "cardId": "energy_basic",
+                            "placedAt": 1771514845777,
+                            "placedBy": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+                            "isRested": false,
+                            "isExtraEnergy": false,
+                            "cardData": {
+                                "cardType": "energy"
+                            }
+                        }
+                    ],
+                    "trashArea": [
+                        {
+                            "carduid": "GD01-118_c5ffdd71-b6b4-4853-9062-d7aac8206f43",
+                            "cardId": "GD01-118",
+                            "cardData": {
+                                "id": "GD01-118",
+                                "name": "Overflowing Affection",
+                                "cardType": "command",
+                                "color": "White",
+                                "level": 2,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 0,
+                                "effects": {
+                                    "description": [
+                                        "[Main]Draw 2. Then, discard 1."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "draw",
+                                            "type": "play",
+                                            "timing": {
+                                                "windows": [
+                                                    "MAIN_PHASE"
+                                                ]
+                                            },
+                                            "action": "draw_then_discard",
+                                            "parameters": {
+                                                "draw": 2,
+                                                "discard": 1
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1771514660513,
+                            "placedBy": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "isActivated": false
+                        },
+                        {
+                            "carduid": "ST04-012_60ac6dcd-f405-4ebe-87d1-8b2f2a64667a",
+                            "cardId": "ST04-012",
+                            "cardData": {
+                                "id": "ST04-012",
+                                "name": "Striker Pack",
+                                "cardType": "command",
+                                "color": "White",
+                                "level": 4,
+                                "cost": 2,
+                                "zone": [],
+                                "traits": [],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 0,
+                                "effects": {
+                                    "description": [
+                                        "[Burst]If you have no (Earth Alliance) Unit tokens in play, deploy 1 Aile Strike Gundam Unit token (AP 3 / HP 3, <Blocker>).",
+                                        "[Main]If you have no (Earth Alliance) Unit tokens in play, deploy 1 Sword Strike Gundam Unit token (AP 4 / HP 2, <Blocker>) or 1 Launcher Strike Gundam Unit token (AP 2 / HP 4, <Blocker>)."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_deploy_aile_strike_token_if_none",
+                                            "type": "triggered",
+                                            "trigger": "BURST_CONDITION",
+                                            "action": "conditionalTokenDeploy",
+                                            "conditions": [
+                                                {
+                                                    "type": "noUnitTokenWithTrait",
+                                                    "scope": "self",
+                                                    "value": "Earth Alliance"
+                                                }
+                                            ],
+                                            "parameters": {
+                                                "condition1": {
+                                                    "token": {
+                                                        "cardId": "T-008"
+                                                    },
+                                                    "count": 1
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "effectId": "main_deploy_strike_tokens_if_none",
+                                            "type": "play",
+                                            "action": "choose_one_then_deploy_token",
+                                            "timing": {
+                                                "windows": [
+                                                    "MAIN_PHASE"
+                                                ]
+                                            },
+                                            "conditions": [
+                                                {
+                                                    "type": "noUnitTokenWithTrait",
+                                                    "scope": "self",
+                                                    "value": "Earth Alliance"
+                                                }
+                                            ],
+                                            "parameters": {
+                                                "choices": [
+                                                    {
+                                                        "token": {
+                                                            "cardId": "T-010"
+                                                        },
+                                                        "count": 1
+                                                    },
+                                                    {
+                                                        "token": {
+                                                            "cardId": "T-009"
+                                                        },
+                                                        "count": 1
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1771514677578,
+                            "placedBy": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "isActivated": false
+                        },
+                        {
+                            "carduid": "base_default",
+                            "cardId": "base_default",
+                            "cardData": {
+                                "cardType": "base"
+                            },
+                            "placedAt": 1771514730838,
+                            "placedBy": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalHP": 3,
+                            "damageReceived": 0
+                        },
+                        {
+                            "carduid": "ST03-013_363b8bdd-c83b-4d9f-bed8-6bcf4c10ff62",
+                            "cardId": "ST03-013",
+                            "cardData": {
+                                "id": "ST03-013",
+                                "name": "Close Combat",
+                                "cardType": "command",
+                                "color": "Red",
+                                "level": 2,
+                                "cost": 2,
+                                "zone": [],
+                                "traits": [],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 0,
+                                "effects": {
+                                    "description": [
+                                        "[Burst]Activate this card’s [Main].",
+                                        "[Main]/[Action]Choose 1 enemy Unit. Deal 2 damage to it."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_activate_main",
+                                            "trigger": "BURST_CONDITION",
+                                            "action": "activate_ability",
+                                            "parameters": {
+                                                "abilityType": "main"
+                                            },
+                                            "type": "triggered"
+                                        },
+                                        {
+                                            "effectId": "main_action_damage",
+                                            "type": "play",
+                                            "timing": {
+                                                "windows": [
+                                                    "MAIN_PHASE",
+                                                    "ACTION_STEP"
+                                                ]
+                                            },
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "count": 1
+                                            },
+                                            "action": "damage",
+                                            "parameters": {
+                                                "value": 2
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1771514792270,
+                            "placedBy": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "isActivated": false
+                        }
+                    ],
+                    "repairAbilitiesCheckedThisCycle": true,
+                    "endTurnEffectsCheckedThisCycle": true
+                },
+                "effectRegistry": {
+                    "attack_restriction_ST01-009_05c5ea79-484c-4c45-8de1-361ead62850d": {
+                        "effectId": "attack_restriction",
+                        "sourceCarduid": "ST01-009_05c5ea79-484c-4c45-8de1-361ead62850d",
+                        "sourcePlayerId": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+                        "effectData": {
+                            "effectId": "attack_restriction",
+                            "trigger": "continuous",
+                            "target": {
+                                "type": "unit",
+                                "scope": "self"
+                            },
+                            "action": "restrict_attack",
+                            "parameters": {
+                                "restriction": "cannot_attack_player"
+                            },
+                            "type": "continuous"
+                        },
+                        "scope": "self",
+                        "action": "restrict_attack",
+                        "value": 0,
+                        "conditions": [],
+                        "active": true,
+                        "timestamp": 1771514707865
+                    }
+                },
+                "delayedTriggers": []
+            },
+            "player_4c638da7-3467-4cb9-b459-40c92d8b372b": {
+                "id": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                "name": "Player 2",
+                "deck": {
+                    "hand": [
+                        {
+                            "carduid": "ST01-010_004321b0-0701-4095-bee0-d59cdec856c7",
+                            "cardId": "ST01-010",
+                            "cardData": {
+                                "id": "ST01-010",
+                                "name": "Amuro Ray",
+                                "cardType": "pilot",
+                                "color": "Blue",
+                                "level": 4,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [
+                                    "Earth Federation",
+                                    "White Base Team",
+                                    "Newtype"
+                                ],
+                                "link": [],
+                                "ap": 2,
+                                "hp": 1,
+                                "effects": {
+                                    "description": [
+                                        "[Burst]Add this card to your hand.",
+                                        "[When Paired]Choose 1 enemy Unit with 5 or less HP. Rest it."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_add_to_hand",
+                                            "trigger": "BURST_CONDITION",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self"
+                                            },
+                                            "action": "addToHand",
+                                            "type": "triggered"
+                                        },
+                                        {
+                                            "effectId": "paired_rest_medium_hp",
+                                            "trigger": "PAIRING_COMPLETE",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "filters": {
+                                                    "hp": "<=5"
+                                                },
+                                                "count": 1
+                                            },
+                                            "action": "rest",
+                                            "type": "triggered"
+                                        }
+                                    ]
+                                },
+                                "baseCost": 1,
+                                "baseLevel": 4,
+                                "effectiveCost": 1,
+                                "effectiveLevel": 4
+                            }
+                        },
+                        {
+                            "carduid": "GD01-020_4a7f822e-f4e6-4ec1-bccf-e8a626a7fe71",
+                            "cardId": "GD01-020",
+                            "cardData": {
+                                "id": "GD01-020",
+                                "name": "Anksha",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 4,
+                                "cost": 2,
+                                "zone": [
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Federation"
+                                ],
+                                "link": [],
+                                "ap": 3,
+                                "hp": 3,
+                                "effects": {
+                                    "description": [
+                                        "[Deploy]Choose 1 rested enemy Unit. Deal 1 damage to it."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "deploy_damage_1",
+                                            "type": "triggered",
+                                            "trigger": "ENTERS_PLAY",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "filters": {
+                                                    "status": "rested"
+                                                },
+                                                "count": 1
+                                            },
+                                            "action": "damage",
+                                            "parameters": {
+                                                "value": 1
+                                            }
+                                        }
+                                    ]
+                                },
+                                "baseCost": 2,
+                                "baseLevel": 4,
+                                "effectiveCost": 2,
+                                "effectiveLevel": 4
+                            }
+                        },
+                        {
+                            "carduid": "ST02-016_a3a78068-1e3b-42e2-b299-47f8b5f01b4e",
+                            "cardId": "ST02-016",
+                            "cardData": {
+                                "id": "ST02-016",
+                                "name": "Corsica Base",
+                                "cardType": "base",
+                                "color": "Blue",
+                                "level": 3,
+                                "cost": 3,
+                                "zone": [
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "OZ",
+                                    "Stronghold"
+                                ],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 5,
+                                "effects": {
+                                    "description": [
+                                        "[Burst]Deploy this card.",
+                                        "[Deploy]Add 1 of your Shields to your hand. Then, if it's your turn, deploy 1 Tallgeese (OZ/AP4/HP2) Unit token. If a \"Corsica Base\" is in your trash, deploy 2 Leo (OZ/AP1/HP1) Unit tokens instead."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_deploy",
+                                            "type": "triggered",
+                                            "trigger": "BURST_CONDITION",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self"
+                                            },
+                                            "action": "deploy"
+                                        },
+                                        {
+                                            "effectId": "deploy_shield_then_conditional_token",
+                                            "type": "triggered",
+                                            "trigger": "ENTERS_PLAY",
+                                            "action": "sequence",
+                                            "parameters": {
+                                                "text": "Add 1 of your Shields to your hand. Then, if it's your turn, deploy 1 Tallgeese (OZ/AP4/HP2) Unit token. If a \"Corsica Base\" is in your trash, deploy 2 Leo (OZ/AP1/HP1) Unit tokens instead.",
+                                                "version": 1,
+                                                "steps": [
+                                                    {
+                                                        "action": "addToHand",
+                                                        "target": {
+                                                            "type": "card",
+                                                            "scope": "self_shield"
+                                                        },
+                                                        "parameters": {
+                                                            "value": 1,
+                                                            "from": "shield"
+                                                        }
+                                                    },
+                                                    {
+                                                        "action": "conditionalTokenDeploy",
+                                                        "parameters": {
+                                                            "condition1": {
+                                                                "selfTurn": true,
+                                                                "token": {
+                                                                    "cardId": "T-005"
+                                                                },
+                                                                "count": 1
+                                                            },
+                                                            "condition2": {
+                                                                "cardInTrash": "ST02-016",
+                                                                "token": {
+                                                                    "cardId": "T-004"
+                                                                },
+                                                                "count": 2
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                },
+                                "baseCost": 3,
+                                "baseLevel": 3,
+                                "effectiveCost": 3,
+                                "effectiveLevel": 3
+                            }
+                        },
+                        {
+                            "carduid": "GD02-013_2f39218a-e674-44c2-9d81-e60cd7baaf9c",
+                            "cardId": "GD02-013",
+                            "cardData": {
+                                "id": "GD02-013",
+                                "name": "Hizack",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 2,
+                                "cost": 1,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Titans"
+                                ],
+                                "link": [],
+                                "ap": 2,
+                                "hp": 2,
+                                "effects": {
+                                    "description": [],
+                                    "rules": []
+                                },
+                                "baseCost": 1,
+                                "baseLevel": 2,
+                                "effectiveCost": 1,
+                                "effectiveLevel": 2
+                            }
+                        },
+                        {
+                            "carduid": "GD02-013_e0cd4f88-8cf3-41e5-9b15-6b776517a74e",
+                            "cardId": "GD02-013",
+                            "cardData": {
+                                "id": "GD02-013",
+                                "name": "Hizack",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 2,
+                                "cost": 1,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Titans"
+                                ],
+                                "link": [],
+                                "ap": 2,
+                                "hp": 2,
+                                "effects": {
+                                    "description": [],
+                                    "rules": []
+                                },
+                                "baseCost": 1,
+                                "baseLevel": 2,
+                                "effectiveCost": 1,
+                                "effectiveLevel": 2
+                            }
+                        },
+                        {
+                            "carduid": "ST01-001_144015eb-4835-4446-b503-9718c27244b7",
+                            "cardId": "ST01-001",
+                            "cardData": {
+                                "id": "ST01-001",
+                                "name": "Gundam",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 4,
+                                "cost": 3,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Federation",
+                                    "White Base Team"
+                                ],
+                                "link": [
+                                    "Amuro Ray"
+                                ],
+                                "ap": 3,
+                                "hp": 4,
+                                "effects": {
+                                    "description": [
+                                        "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)",
+                                        "[During Pair]During your turn, all your Units get AP+1."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "repair_2",
+                                            "type": "keyword",
+                                            "trigger": "END_OF_TURN",
+                                            "action": "heal",
+                                            "parameters": {
+                                                "value": 2
+                                            },
+                                            "timing": {
+                                                "duration": "instant"
+                                            },
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "source",
+                                                "count": 1
+                                            }
+                                        },
+                                        {
+                                            "effectId": "pair_ap_boost_all",
+                                            "trigger": "continuous",
+                                            "sourceConditions": [
+                                                {
+                                                    "type": "paired"
+                                                }
+                                            ],
+                                            "action": "modifyAP",
+                                            "parameters": {
+                                                "value": 1
+                                            },
+                                            "timing": {
+                                                "duration": "continuous",
+                                                "actionTurn": "YOUR_TURN"
+                                            },
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self_all_unit"
+                                            },
+                                            "type": "continuous"
+                                        }
+                                    ]
+                                },
+                                "baseCost": 3,
+                                "baseLevel": 4,
+                                "effectiveCost": 3,
+                                "effectiveLevel": 4
+                            }
+                        }
+                    ],
+                    "handUids": [
+                        "ST01-010_004321b0-0701-4095-bee0-d59cdec856c7",
+                        "GD01-020_4a7f822e-f4e6-4ec1-bccf-e8a626a7fe71",
+                        "ST02-016_a3a78068-1e3b-42e2-b299-47f8b5f01b4e",
+                        "GD02-013_2f39218a-e674-44c2-9d81-e60cd7baaf9c",
+                        "GD02-013_e0cd4f88-8cf3-41e5-9b15-6b776517a74e",
+                        "ST01-001_144015eb-4835-4446-b503-9718c27244b7"
+                    ],
+                    "mainDeck": [
+                        "GD02-013_fedd3b4e-1ff6-4086-96a7-90785ccb253a",
+                        "ST03-006_11968a5d-1b38-4356-ad68-8ae3356412c6",
+                        "GD01-008_8fa6aec9-362b-44c2-93ab-faed6c368328",
+                        "ST03-006_45bf67c6-1002-4ffc-91cf-e4431f5c8a62",
+                        "GD01-008_f7512ad2-a035-46c4-9d31-4644bdcac285",
+                        "ST03-006_ea8678b1-8589-48ea-b9f0-2a79e3fc21da",
+                        "ST03-006_4e7fa753-eae5-46a9-a04a-bf10d7bf01b0",
+                        "GD01-030_57cd287f-913d-4eb0-b3f7-acd57364c24f",
+                        "ST01-010_bb87a5a5-ddbe-41db-b41b-20a98bd89fc5",
+                        "ST07-005_301d2c9e-7d66-41cb-ad94-4a696343f1e5",
+                        "GD03-101_44b95522-ec9f-4545-b0c0-95c03046f2ed",
+                        "GD01-020_f09f43c0-f99c-4b24-9945-85d25438b6a8",
+                        "ST03-008_d6fae6ee-525f-4f15-9c7d-7579dac2ebeb",
+                        "GD01-035_2ef1a9d0-651e-4de3-9e3f-798cd19ce915",
+                        "GD01-020_b1b5fc78-ce22-4f39-b1ab-221b8076dc85",
+                        "GD01-030_7548f92b-df73-4dfd-b5f5-feaab0f29d61",
+                        "GD01-035_7280235f-aa59-4b5d-8b14-b9c6444e4470",
+                        "GD01-035_2be297a5-bfc4-40dd-a204-d62e6575e66f",
+                        "ST07-005_1789a5e4-de92-4485-a702-86f73bd120d0",
+                        "GD01-008_c5756d01-d1dd-4e1f-b31b-a19030c9f1f4",
+                        "GD01-035_d628e4fa-dada-49f6-a939-db0fc6b4ea46",
+                        "ST07-011_6a76cc54-9b25-4cf3-9b60-57a7771e214f",
+                        "ST07-011_443d0c0c-28ed-4ebf-b18a-ceb247dad648",
+                        "ST03-008_21ae1290-30e6-4e7d-b9ba-000097c625f2",
+                        "ST07-011_7d5902ec-6123-4bfe-beac-63d17369d616",
+                        "GD02-013_b7fbddc1-c79b-4821-a86a-4833ee273aeb",
+                        "ST07-005_eb8878ae-2476-4d24-bd0f-5e5f5478d0ed",
+                        "ST01-001_497185f4-df34-4f9c-b6b9-b346b87c58f7",
+                        "ST07-005_3182c61b-4b9a-4093-8cac-ce590f1c99d6",
+                        "ST03-008_ddef8f27-a868-4225-8b69-f56f4f9b340f",
+                        "ST07-011_01b1be6c-ee03-4d87-987a-10071f84e6e5",
+                        "ST01-001_1169470b-5a51-4eb0-a74b-2382e02370f2",
+                        "GD01-030_468af68e-7f6d-4c85-9a83-045e373f01a4",
+                        "ST01-010_6fcb4ee2-7bcc-4dba-84ac-1bb75dbe177a"
+                    ]
+                },
+                "confirmIsRedraw": true,
+                "isRedraw": false,
+                "playerPoint": 0,
+                "isReady": false,
+                "zones": {
+                    "slot1": {
+                        "fieldCardValue": {
+                            "totalOriginalAP": 0,
+                            "totalOriginalHP": 0,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 0,
+                            "totalHP": 0
+                        }
+                    },
+                    "slot2": {
+                        "unit": {
+                            "carduid": "T-005_d124e81d-02d5-4c60-a8e5-738fd7767809",
+                            "cardId": "T-005",
+                            "cardData": {
+                                "id": "T-005",
+                                "name": "Tallgeese",
+                                "cardType": "unit",
+                                "color": "Token",
+                                "level": 0,
+                                "cost": 0,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "OZ"
+                                ],
+                                "link": [],
+                                "ap": 4,
+                                "hp": 2,
+                                "effects": {
+                                    "description": [],
+                                    "rules": []
+                                }
+                            },
+                            "placedAt": 1771514720106,
+                            "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalAP": 4,
+                            "originalHP": 2,
+                            "damageReceived": 0,
+                            "playedThisTurn": false,
+                            "canAttackOnPlayTurn": false,
+                            "continueModifyAP": 0,
+                            "continueModifyHP": 0,
+                            "canAttackThisTurn": true
+                        },
+                        "fieldCardValue": {
+                            "totalOriginalAP": 4,
+                            "totalOriginalHP": 2,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 4,
+                            "totalHP": 2
+                        }
+                    },
+                    "slot3": {
+                        "unit": {
+                            "carduid": "GD01-020_ae6fcd88-1c6b-44d7-85ff-06d90ba202c4",
+                            "cardId": "GD01-020",
+                            "cardData": {
+                                "id": "GD01-020",
+                                "name": "Anksha",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 4,
+                                "cost": 2,
+                                "zone": [
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Federation"
+                                ],
+                                "link": [],
+                                "ap": 3,
+                                "hp": 3,
+                                "effects": {
+                                    "description": [
+                                        "[Deploy]Choose 1 rested enemy Unit. Deal 1 damage to it."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "deploy_damage_1",
+                                            "type": "triggered",
+                                            "trigger": "ENTERS_PLAY",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "filters": {
+                                                    "status": "rested"
+                                                },
+                                                "count": 1
+                                            },
+                                            "action": "damage",
+                                            "parameters": {
+                                                "value": 1
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1771514758654,
+                            "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalAP": 3,
+                            "originalHP": 3,
+                            "damageReceived": 0,
+                            "playedThisTurn": false,
+                            "canAttackOnPlayTurn": false,
+                            "continueModifyAP": 0,
+                            "continueModifyHP": 0,
+                            "canAttackThisTurn": true
+                        },
+                        "pilot": {
+                            "carduid": "ST01-010_2da1141d-e1b8-409a-aea1-0dd5923b2e03",
+                            "cardId": "ST01-010",
+                            "cardData": {
+                                "id": "ST01-010",
+                                "name": "Amuro Ray",
+                                "cardType": "pilot",
+                                "color": "Blue",
+                                "level": 4,
+                                "cost": 1,
+                                "zone": [],
+                                "traits": [
+                                    "Earth Federation",
+                                    "White Base Team",
+                                    "Newtype"
+                                ],
+                                "link": [],
+                                "ap": 2,
+                                "hp": 1,
+                                "effects": {
+                                    "description": [
+                                        "[Burst]Add this card to your hand.",
+                                        "[When Paired]Choose 1 enemy Unit with 5 or less HP. Rest it."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_add_to_hand",
+                                            "trigger": "BURST_CONDITION",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self"
+                                            },
+                                            "action": "addToHand",
+                                            "type": "triggered"
+                                        },
+                                        {
+                                            "effectId": "paired_rest_medium_hp",
+                                            "trigger": "PAIRING_COMPLETE",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "filters": {
+                                                    "hp": "<=5"
+                                                },
+                                                "count": 1
+                                            },
+                                            "action": "rest",
+                                            "type": "triggered"
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1771514768664,
+                            "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalAP": 2,
+                            "originalHP": 1,
+                            "continueModifyAP": 0,
+                            "continueModifyHP": 0
+                        },
+                        "fieldCardValue": {
+                            "totalOriginalAP": 5,
+                            "totalOriginalHP": 4,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 5,
+                            "totalHP": 4
+                        }
+                    },
+                    "slot4": {
+                        "unit": {
+                            "carduid": "GD01-008_92d4e32b-0c48-4fe0-b5ad-712dbd69753f",
+                            "cardId": "GD01-008",
+                            "cardData": {
+                                "id": "GD01-008",
+                                "name": "Guntank",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 2,
+                                "cost": 1,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Federation",
+                                    "White Base Team"
+                                ],
+                                "link": [],
+                                "ap": 1,
+                                "hp": 2,
+                                "effects": {
+                                    "description": [
+                                        "[Deploy]Choose 1 rested enemy Unit. Deal 1 damage to it."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "deploy_damage_1",
+                                            "type": "triggered",
+                                            "trigger": "ENTERS_PLAY",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "opponent",
+                                                "filters": {
+                                                    "status": "rested"
+                                                },
+                                                "count": 1,
+                                                "selection": {
+                                                    "type": "player_choice"
+                                                }
+                                            },
+                                            "action": "damage",
+                                            "parameters": {
+                                                "value": 1
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1771514777246,
+                            "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalAP": 1,
+                            "originalHP": 2,
+                            "damageReceived": 0,
+                            "playedThisTurn": false,
+                            "canAttackOnPlayTurn": false,
+                            "continueModifyAP": 0,
+                            "continueModifyHP": 0,
+                            "canAttackThisTurn": true
+                        },
+                        "fieldCardValue": {
+                            "totalOriginalAP": 1,
+                            "totalOriginalHP": 2,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 1,
+                            "totalHP": 2
+                        }
+                    },
+                    "slot5": {
+                        "fieldCardValue": {
+                            "totalOriginalAP": 0,
+                            "totalOriginalHP": 0,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 0,
+                            "totalHP": 0
+                        }
+                    },
+                    "slot6": {
+                        "fieldCardValue": {
+                            "totalOriginalAP": 0,
+                            "totalOriginalHP": 0,
+                            "totalTempModifyAP": 0,
+                            "totalTempModifyHP": 0,
+                            "totalContinueModifyAP": 0,
+                            "totalContinueModifyHP": 0,
+                            "totalDamageReceived": 0,
+                            "totalAP": 0,
+                            "totalHP": 0
+                        }
+                    },
+                    "base": [
+                        {
+                            "carduid": "ST02-016_c26e2440-d3f8-4926-a3b3-64d60cbb8bae",
+                            "cardId": "ST02-016",
+                            "cardData": {
+                                "id": "ST02-016",
+                                "name": "Corsica Base",
+                                "cardType": "base",
+                                "color": "Blue",
+                                "level": 3,
+                                "cost": 3,
+                                "zone": [
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "OZ",
+                                    "Stronghold"
+                                ],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 5,
+                                "effects": {
+                                    "description": [
+                                        "[Burst]Deploy this card.",
+                                        "[Deploy]Add 1 of your Shields to your hand. Then, if it's your turn, deploy 1 Tallgeese (OZ/AP4/HP2) Unit token. If a \"Corsica Base\" is in your trash, deploy 2 Leo (OZ/AP1/HP1) Unit tokens instead."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_deploy",
+                                            "type": "triggered",
+                                            "trigger": "BURST_CONDITION",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self"
+                                            },
+                                            "action": "deploy"
+                                        },
+                                        {
+                                            "effectId": "deploy_shield_then_conditional_token",
+                                            "type": "triggered",
+                                            "trigger": "ENTERS_PLAY",
+                                            "action": "sequence",
+                                            "parameters": {
+                                                "text": "Add 1 of your Shields to your hand. Then, if it's your turn, deploy 1 Tallgeese (OZ/AP4/HP2) Unit token. If a \"Corsica Base\" is in your trash, deploy 2 Leo (OZ/AP1/HP1) Unit tokens instead.",
+                                                "version": 1,
+                                                "steps": [
+                                                    {
+                                                        "action": "addToHand",
+                                                        "target": {
+                                                            "type": "card",
+                                                            "scope": "self_shield"
+                                                        },
+                                                        "parameters": {
+                                                            "value": 1,
+                                                            "from": "shield"
+                                                        }
+                                                    },
+                                                    {
+                                                        "action": "conditionalTokenDeploy",
+                                                        "parameters": {
+                                                            "condition1": {
+                                                                "selfTurn": true,
+                                                                "token": {
+                                                                    "cardId": "T-005"
+                                                                },
+                                                                "count": 1
+                                                            },
+                                                            "condition2": {
+                                                                "cardInTrash": "ST02-016",
+                                                                "token": {
+                                                                    "cardId": "T-004"
+                                                                },
+                                                                "count": 2
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1771514720096,
+                            "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalHP": 5,
+                            "damageReceived": 0,
+                            "fieldCardValue": {
+                                "totalOriginalAP": 0,
+                                "totalOriginalHP": 5,
+                                "totalTempModifyAP": 0,
+                                "totalTempModifyHP": 0,
+                                "totalContinueModifyAP": 0,
+                                "totalContinueModifyHP": 0,
+                                "totalDamageReceived": 0,
+                                "totalAP": 0,
+                                "totalHP": 5
+                            }
+                        }
+                    ],
+                    "shieldArea": [
+                        {
+                            "carduid": "ST01-001_fe5ab300-31a1-46a6-a25a-f75bc679e17c",
+                            "cardId": "ST01-001",
+                            "cardData": {
+                                "id": "ST01-001",
+                                "name": "Gundam",
+                                "cardType": "unit",
+                                "color": "Blue",
+                                "level": 4,
+                                "cost": 3,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Earth Federation",
+                                    "White Base Team"
+                                ],
+                                "link": [
+                                    "Amuro Ray"
+                                ],
+                                "ap": 3,
+                                "hp": 4,
+                                "effects": {
+                                    "description": [
+                                        "<Repair 2> (At the end of your turn, this Unit recovers the specified number of HP.)",
+                                        "[During Pair]During your turn, all your Units get AP+1."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "repair_2",
+                                            "type": "keyword",
+                                            "trigger": "END_OF_TURN",
+                                            "action": "heal",
+                                            "parameters": {
+                                                "value": 2
+                                            },
+                                            "timing": {
+                                                "duration": "instant"
+                                            },
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "source",
+                                                "count": 1
+                                            }
+                                        },
+                                        {
+                                            "effectId": "pair_ap_boost_all",
+                                            "trigger": "continuous",
+                                            "sourceConditions": [
+                                                {
+                                                    "type": "paired"
+                                                }
+                                            ],
+                                            "action": "modifyAP",
+                                            "parameters": {
+                                                "value": 1
+                                            },
+                                            "timing": {
+                                                "duration": "continuous",
+                                                "actionTurn": "YOUR_TURN"
+                                            },
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "self_all_unit"
+                                            },
+                                            "type": "continuous"
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1771514635220,
+                            "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalCardType": "unit",
+                            "originalAP": 3,
+                            "originalHP": 4
+                        },
+                        {
+                            "carduid": "GD01-030_a616bf90-6327-49f4-ab38-69d3a7620f5b",
+                            "cardId": "GD01-030",
+                            "cardData": {
+                                "id": "GD01-030",
+                                "name": "Rick Dom",
+                                "cardType": "unit",
+                                "color": "Green",
+                                "level": 3,
+                                "cost": 2,
+                                "zone": [
+                                    "Space"
+                                ],
+                                "traits": [
+                                    "Zeon"
+                                ],
+                                "link": [],
+                                "ap": 3,
+                                "hp": 3,
+                                "effects": {
+                                    "description": [
+                                        "<Breach 2> (When this Unit's attack destroys an enemy Unit, deal the specified amount of damage to the first card in that opponent's shield area.)"
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "breach_2",
+                                            "type": "keyword",
+                                            "trigger": "BATTLE_DESTROY",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "opponent_shield",
+                                                "count": 1
+                                            },
+                                            "action": "damageShield",
+                                            "parameters": {
+                                                "value": 2
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1771514635220,
+                            "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalCardType": "unit",
+                            "originalAP": 3,
+                            "originalHP": 3
+                        },
+                        {
+                            "carduid": "ST02-016_925e4657-9c52-4948-8513-521a1bff3519",
+                            "cardId": "ST02-016",
+                            "cardData": {
+                                "id": "ST02-016",
+                                "name": "Corsica Base",
+                                "cardType": "base",
+                                "color": "Blue",
+                                "level": 3,
+                                "cost": 3,
+                                "zone": [
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "OZ",
+                                    "Stronghold"
+                                ],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 5,
+                                "effects": {
+                                    "description": [
+                                        "[Burst]Deploy this card.",
+                                        "[Deploy]Add 1 of your Shields to your hand. Then, if it's your turn, deploy 1 Tallgeese (OZ/AP4/HP2) Unit token. If a \"Corsica Base\" is in your trash, deploy 2 Leo (OZ/AP1/HP1) Unit tokens instead."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_deploy",
+                                            "type": "triggered",
+                                            "trigger": "BURST_CONDITION",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self"
+                                            },
+                                            "action": "deploy"
+                                        },
+                                        {
+                                            "effectId": "deploy_shield_then_conditional_token",
+                                            "type": "triggered",
+                                            "trigger": "ENTERS_PLAY",
+                                            "action": "sequence",
+                                            "parameters": {
+                                                "text": "Add 1 of your Shields to your hand. Then, if it's your turn, deploy 1 Tallgeese (OZ/AP4/HP2) Unit token. If a \"Corsica Base\" is in your trash, deploy 2 Leo (OZ/AP1/HP1) Unit tokens instead.",
+                                                "version": 1,
+                                                "steps": [
+                                                    {
+                                                        "action": "addToHand",
+                                                        "target": {
+                                                            "type": "card",
+                                                            "scope": "self_shield"
+                                                        },
+                                                        "parameters": {
+                                                            "value": 1,
+                                                            "from": "shield"
+                                                        }
+                                                    },
+                                                    {
+                                                        "action": "conditionalTokenDeploy",
+                                                        "parameters": {
+                                                            "condition1": {
+                                                                "selfTurn": true,
+                                                                "token": {
+                                                                    "cardId": "T-005"
+                                                                },
+                                                                "count": 1
+                                                            },
+                                                            "condition2": {
+                                                                "cardInTrash": "ST02-016",
+                                                                "token": {
+                                                                    "cardId": "T-004"
+                                                                },
+                                                                "count": 2
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1771514635221,
+                            "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalCardType": "base",
+                            "originalHP": 5
+                        },
+                        {
+                            "carduid": "ST02-016_40500334-3b53-4a9d-a09a-adde65243408",
+                            "cardId": "ST02-016",
+                            "cardData": {
+                                "id": "ST02-016",
+                                "name": "Corsica Base",
+                                "cardType": "base",
+                                "color": "Blue",
+                                "level": 3,
+                                "cost": 3,
+                                "zone": [
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "OZ",
+                                    "Stronghold"
+                                ],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 5,
+                                "effects": {
+                                    "description": [
+                                        "[Burst]Deploy this card.",
+                                        "[Deploy]Add 1 of your Shields to your hand. Then, if it's your turn, deploy 1 Tallgeese (OZ/AP4/HP2) Unit token. If a \"Corsica Base\" is in your trash, deploy 2 Leo (OZ/AP1/HP1) Unit tokens instead."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "burst_deploy",
+                                            "type": "triggered",
+                                            "trigger": "BURST_CONDITION",
+                                            "target": {
+                                                "type": "card",
+                                                "scope": "self"
+                                            },
+                                            "action": "deploy"
+                                        },
+                                        {
+                                            "effectId": "deploy_shield_then_conditional_token",
+                                            "type": "triggered",
+                                            "trigger": "ENTERS_PLAY",
+                                            "action": "sequence",
+                                            "parameters": {
+                                                "text": "Add 1 of your Shields to your hand. Then, if it's your turn, deploy 1 Tallgeese (OZ/AP4/HP2) Unit token. If a \"Corsica Base\" is in your trash, deploy 2 Leo (OZ/AP1/HP1) Unit tokens instead.",
+                                                "version": 1,
+                                                "steps": [
+                                                    {
+                                                        "action": "addToHand",
+                                                        "target": {
+                                                            "type": "card",
+                                                            "scope": "self_shield"
+                                                        },
+                                                        "parameters": {
+                                                            "value": 1,
+                                                            "from": "shield"
+                                                        }
+                                                    },
+                                                    {
+                                                        "action": "conditionalTokenDeploy",
+                                                        "parameters": {
+                                                            "condition1": {
+                                                                "selfTurn": true,
+                                                                "token": {
+                                                                    "cardId": "T-005"
+                                                                },
+                                                                "count": 1
+                                                            },
+                                                            "condition2": {
+                                                                "cardInTrash": "ST02-016",
+                                                                "token": {
+                                                                    "cardId": "T-004"
+                                                                },
+                                                                "count": 2
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1771514635221,
+                            "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalCardType": "base",
+                            "originalHP": 5
+                        },
+                        {
+                            "carduid": "GD01-100_0061925d-21d7-410e-872f-962aec49c26a",
+                            "cardId": "GD01-100",
+                            "cardData": {
+                                "id": "GD01-100",
+                                "name": "A Show of Resolve",
+                                "cardType": "command",
+                                "color": "Blue",
+                                "level": 4,
+                                "cost": 3,
+                                "zone": [],
+                                "traits": [],
+                                "link": [],
+                                "ap": 0,
+                                "hp": 0,
+                                "effects": {
+                                    "description": [
+                                        "[Main]Draw 2."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "draw",
+                                            "type": "play",
+                                            "timing": {
+                                                "windows": [
+                                                    "MAIN_PHASE"
+                                                ]
+                                            },
+                                            "action": "draw",
+                                            "parameters": {
+                                                "value": 2
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1771514635221,
+                            "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalCardType": "command"
+                        }
+                    ],
+                    "energyArea": [
+                        {
+                            "carduid": "energy_extra_1771514635220_0.7508477472445958",
+                            "cardId": "energy_extra",
+                            "placedAt": 1771514635220,
+                            "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                            "isRested": false,
+                            "isExtraEnergy": true,
+                            "cardData": {
+                                "cardType": "energy"
+                            }
+                        },
+                        {
+                            "carduid": "energy_basic_1771514642006_0.8235131229205648",
+                            "cardId": "energy_basic",
+                            "placedAt": 1771514642006,
+                            "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                            "isRested": false,
+                            "isExtraEnergy": false,
+                            "cardData": {
+                                "cardType": "energy"
+                            }
+                        },
+                        {
+                            "carduid": "energy_basic_1771514687403_0.4200363238614264",
+                            "cardId": "energy_basic",
+                            "placedAt": 1771514687403,
+                            "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                            "isRested": false,
+                            "isExtraEnergy": false,
+                            "cardData": {
+                                "cardType": "energy"
+                            }
+                        },
+                        {
+                            "carduid": "energy_basic_1771514710963_0.7364447453716427",
+                            "cardId": "energy_basic",
+                            "placedAt": 1771514710963,
+                            "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                            "isRested": false,
+                            "isExtraEnergy": false,
+                            "cardData": {
+                                "cardType": "energy"
+                            }
+                        },
+                        {
+                            "carduid": "energy_basic_1771514746929_0.7022323456333517",
+                            "cardId": "energy_basic",
+                            "placedAt": 1771514746929,
+                            "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                            "isRested": false,
+                            "isExtraEnergy": false,
+                            "cardData": {
+                                "cardType": "energy"
+                            }
+                        },
+                        {
+                            "carduid": "energy_basic_1771514912749_0.9524223272181382",
+                            "cardId": "energy_basic",
+                            "placedAt": 1771514912749,
+                            "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                            "isRested": false,
+                            "isExtraEnergy": false,
+                            "cardData": {
+                                "cardType": "energy"
+                            }
+                        }
+                    ],
+                    "trashArea": [
+                        {
+                            "carduid": "base_default",
+                            "cardId": "base_default",
+                            "cardData": {
+                                "cardType": "base"
+                            },
+                            "placedAt": 1771514635221,
+                            "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalHP": 3,
+                            "damageReceived": 0,
+                            "fieldCardValue": {
+                                "totalOriginalAP": 0,
+                                "totalOriginalHP": 3,
+                                "totalTempModifyAP": 0,
+                                "totalTempModifyHP": 0,
+                                "totalContinueModifyAP": 0,
+                                "totalContinueModifyHP": 0,
+                                "totalDamageReceived": 0,
+                                "totalAP": 0,
+                                "totalHP": 3
+                            }
+                        },
+                        {
+                            "carduid": "ST03-008_038ef706-f6d2-433f-ba64-1ef429404a45",
+                            "cardId": "ST03-008",
+                            "cardData": {
+                                "id": "ST03-008",
+                                "name": "Zaku II",
+                                "cardType": "unit",
+                                "color": "Green",
+                                "level": 2,
+                                "cost": 1,
+                                "zone": [
+                                    "Space",
+                                    "Earth"
+                                ],
+                                "traits": [
+                                    "Zeon"
+                                ],
+                                "link": [],
+                                "ap": 1,
+                                "hp": 2,
+                                "effects": {
+                                    "description": [
+                                        "[Attack]This Unit gets AP+2 during this turn."
+                                    ],
+                                    "rules": [
+                                        {
+                                            "effectId": "attack_ap_boost",
+                                            "type": "triggered",
+                                            "trigger": "ATTACK_PHASE",
+                                            "target": {
+                                                "type": "unit",
+                                                "scope": "source",
+                                                "count": 1
+                                            },
+                                            "action": "modifyAP",
+                                            "parameters": {
+                                                "value": 2
+                                            },
+                                            "timing": {
+                                                "duration": "UNTIL_END_OF_TURN"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "placedAt": 1771514794634,
+                            "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                            "isRested": false,
+                            "effectUsage": {},
+                            "originalAP": 1,
+                            "originalHP": 2,
+                            "damageReceived": 0,
+                            "playedThisTurn": true,
+                            "canAttackOnPlayTurn": false
+                        }
+                    ],
+                    "repairAbilitiesCheckedThisCycle": false,
+                    "endTurnEffectsCheckedThisCycle": false
+                },
+                "effectRegistry": {},
+                "delayedTriggers": []
+            }
+        },
+        "processingQueue": [],
+        "processingEnabled": true,
+        "maxEventsPerCycle": 50,
+        "notificationQueue": [
+            {
+                "id": "phase_changed_1771514912738_85xmfokvz",
+                "type": "PHASE_CHANGED",
+                "metadata": {
+                    "timestamp": 1771514912738,
+                    "expiresAt": 1771514915738,
+                    "requiresAcknowledgment": false,
+                    "priority": "normal"
+                },
+                "payload": {
+                    "playerId": "player_ed239bbb-cbc2-471f-8adf-ad7f15658bd3",
+                    "previousPhase": "MAIN_PHASE",
+                    "nextPhase": "END_PHASE",
+                    "currentTurn": 8
+                }
+            },
+            {
+                "id": "phase_changed_1771514912749_fr0dgvdi2",
+                "type": "PHASE_CHANGED",
+                "metadata": {
+                    "timestamp": 1771514912749,
+                    "expiresAt": 1771514915749,
+                    "requiresAcknowledgment": false,
+                    "priority": "normal"
+                },
+                "payload": {
+                    "playerId": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                    "previousPhase": "END_PHASE",
+                    "nextPhase": "DRAW_PHASE",
+                    "currentTurn": 9
+                }
+            },
+            {
+                "id": "card_drawn_1771514912750_i9m1ga1yx",
+                "type": "CARD_DRAWN",
+                "metadata": {
+                    "timestamp": 1771514912750,
+                    "expiresAt": 1771514915750,
+                    "requiresAcknowledgment": false,
+                    "priority": "normal"
+                },
+                "payload": {
+                    "playerId": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                    "carduid": "ST01-001_144015eb-4835-4446-b503-9718c27244b7",
+                    "sourceZone": "deck",
+                    "reason": "draw",
+                    "timestamp": 1771514912750,
+                    "drawContext": "turn_start"
+                }
+            },
+            {
+                "id": "phase_changed_1771514912755_92svmezo3",
+                "type": "PHASE_CHANGED",
+                "metadata": {
+                    "timestamp": 1771514912755,
+                    "expiresAt": 1771514915755,
+                    "requiresAcknowledgment": false,
+                    "priority": "normal"
+                },
+                "payload": {
+                    "playerId": "player_4c638da7-3467-4cb9-b459-40c92d8b372b",
+                    "previousPhase": "DRAW_PHASE",
+                    "nextPhase": "MAIN_PHASE",
+                    "currentTurn": 9
+                }
+            }
+        ],
+        "lastEventId": 0,
+        "battlePhaseReturnPoint": "MAIN_PHASE",
+        "pendingPhaseTransition": null
+    }
+}
