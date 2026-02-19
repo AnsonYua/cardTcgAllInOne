@@ -11,21 +11,6 @@ import { TriggeredEffectProcessor } from '../TriggeredEffectProcessor';
 import { extractNumericValue } from './EffectActionUtils';
 import { SlotHpDestructionChecker } from '../../destruction/SlotHpDestructionChecker';
 
-function ensureActionStepBattleConsistency(
-    gameEnv: GameEnvironment,
-    reason: string
-): { success: boolean; error?: string } {
-    const { BattlePhaseManager } = require('../../BattlePhaseManager');
-    const consistencyResult = BattlePhaseManager?.ensureActionStepBattleConsistency?.(gameEnv, reason);
-    if (consistencyResult && consistencyResult.success === false) {
-        return {
-            success: false,
-            error: consistencyResult.error || 'Failed to enforce action-step battle consistency'
-        };
-    }
-    return { success: true };
-}
-
 export function applyDamageEffect(
     gameEnv: GameEnvironment,
     sourcePlayerId: string,
@@ -156,23 +141,7 @@ export function applyDamageEffect(
             if (!destroyed) {
                 return { success: false, error: `Failed to destroy unit ${target.carduid} at slot HP 0` };
             }
-
-            const consistencyResult = ensureActionStepBattleConsistency(
-                gameEnv,
-                `EFFECT_DAMAGE_UNIT_CHECK_${target.carduid}`
-            );
-            if (!consistencyResult.success) {
-                return consistencyResult;
-            }
         }
-    }
-
-    const finalConsistencyResult = ensureActionStepBattleConsistency(
-        gameEnv,
-        'EFFECT_DAMAGE_RESOLUTION_COMPLETE'
-    );
-    if (!finalConsistencyResult.success) {
-        return finalConsistencyResult;
     }
 
     return { success: true };

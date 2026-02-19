@@ -34,6 +34,7 @@ import { ContinuousEffectManager } from './ContinuousEffectManager';
 import { AttackResumeScheduler } from './battle/AttackResumeScheduler';
 import { DefenseAreaBattleDamageTriggeredEffectManager } from './effects/DefenseAreaBattleDamageTriggeredEffectManager';
 import { ShieldAreaCardDamagedTriggerDispatcher } from './effects/ShieldAreaCardDamagedTriggerDispatcher';
+import { ActionStepBattleConsistencyService } from './battle/ActionStepBattleConsistencyService';
 
 export class BattlePhaseManager {
     private static openBattleAndRefreshContinuous(gameEnv: GameEnvironment, context: BattleContext, label: string): void {
@@ -156,11 +157,15 @@ export class BattlePhaseManager {
     }
 
     static resolveBattle(gameEnv: GameEnvironment, resolvingPlayerId: string): ExecutionResult {
+        const consistencyResult = this.ensureActionStepBattleConsistency(gameEnv, 'RESOLVE_BATTLE');
+        if (consistencyResult) {
+            return consistencyResult;
+        }
+
         const context = gameEnv.currentBattle;
         if (!context) {
             return {
-                success: false,
-                error: 'No active battle to resolve'
+                success: true
             };
         }
 
@@ -315,100 +320,11 @@ export class BattlePhaseManager {
     }
 
     static ensureActionStepBattleConsistency(gameEnv: GameEnvironment, reason = 'UNKNOWN'): ExecutionResult | null {
-        const validation = this.isCurrentBattleStillValid(gameEnv);
-        if (validation.valid) {
-            return null;
-        }
-
-        const invalidReason = validation.reason || `INVALID_ACTION_STEP_BATTLE_${reason}`;
-        return this.endInvalidActionStepBattle(gameEnv, invalidReason);
-    }
-
-    private static isCurrentBattleStillValid(gameEnv: GameEnvironment): { valid: boolean; reason?: string } {
-        const battle = gameEnv.currentBattle;
-        if (!battle) {
-            return { valid: true };
-        }
-
-        const status = (battle.status || '').toString().toUpperCase();
-        if (status !== 'ACTION_STEP') {
-            return { valid: true };
-        }
-
-        const attackerCarduid = (battle.attackerCarduid || '').toString();
-        if (!attackerCarduid) {
-            return { valid: false, reason: 'ATTACKER_UID_MISSING' };
-        }
-
-        const lookup = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, attackerCarduid) as any;
-        if (!lookup?.found || !lookup?.slotName || !lookup?.playerId) {
-            return { valid: false, reason: 'ATTACKER_NOT_ON_BOARD' };
-        }
-
-        const locatedUnitUid = lookup?.unit?.carduid ?? lookup?.unit?.cardUid;
-        if (locatedUnitUid !== attackerCarduid) {
-            return { valid: false, reason: 'ATTACKER_NOT_IN_UNIT_SLOT' };
-        }
-
-        if (battle.attackingPlayerId && lookup.playerId !== battle.attackingPlayerId) {
-            return { valid: false, reason: 'ATTACKER_OWNER_MISMATCH' };
-        }
-
-        return { valid: true };
-    }
-
-    private static endInvalidActionStepBattle(gameEnv: GameEnvironment, reason: string): ExecutionResult {
-        const battle = gameEnv.currentBattle;
-        if (!battle) {
-            return { success: true };
-        }
-
-        const status = (battle.status || '').toString().toUpperCase();
-        if (status !== 'ACTION_STEP') {
-            return { success: true };
-        }
-
-        const attackNotificationId = battle.attackNotificationId;
-        if (attackNotificationId) {
-            const notificationManager = new GameNotificationManager(gameEnv);
-            notificationManager.updateNotificationEvent(attackNotificationId, {
-                battleEnd: true
-            });
-            console.log(`📣 Attack notification ${attackNotificationId} marked as battleEnd (invalid battle)`);
-        }
-
-        const attackerLookup = battle.attackerCarduid
-            ? SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, battle.attackerCarduid) as any
-            : null;
-        const attackerPlayer = attackerLookup?.playerId ? gameEnv.getPlayer(attackerLookup.playerId) : null;
-        const attackerSnapshot = attackerPlayer
-            ? buildSlotSnapshot(attackerPlayer, attackerLookup?.slotName)
-            : null;
-
-        let targetSnapshot = buildForcedTargetSnapshot(gameEnv, battle.forcedTarget);
-        if (!targetSnapshot && battle.targetPlayerId) {
-            const targetPlayer = gameEnv.getPlayer(battle.targetPlayerId);
-            if (targetPlayer) {
-                targetSnapshot = buildShieldSnapshot(targetPlayer);
-            }
-        }
-
-        emitBattleResolutionNotification(gameEnv, battle, {
-            attacker: attackerSnapshot,
-            target: targetSnapshot,
-            focusTarget: targetSnapshot,
-            result: {
-                targetType: battle.actionType === 'attackUnit' ? 'unit' : 'shield',
-                aborted: true,
-                abortReason: reason,
-                battleEndedEarly: true,
-                attackerMissing: true
-            }
-        });
-
-        console.warn(`⚠️ Action-step battle ended early: ${reason}`);
-        this.clearBattleAndRefreshContinuous(gameEnv, `invalid_action_step_${reason}`);
-        return { success: true };
+        return ActionStepBattleConsistencyService.ensure(
+            gameEnv,
+            reason,
+            (clearReason) => this.clearBattleAndRefreshContinuous(gameEnv, clearReason)
+        );
     }
 
     private static startUnitBattle(

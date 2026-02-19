@@ -1,7 +1,12 @@
 import { GameEnvironment } from '../../../models/GameEnvironment';
+import { UnitZoneCard } from '../../../models/CardSystem';
 import { EffectDefinition, TargetReference } from '../../EventQueue/interfaces/GameEvent';
 import { TargetCardResolver } from '../../targets/TargetCardResolver';
 import { TemporaryEffectFactory } from '../TemporaryEffectFactory';
+import {
+    applyAllowAttackTargetUnitOverrides,
+    normalizeAllowAttackTargetPermission
+} from '../../attack/AllowAttackTargetPermissionUtils';
 
 export function applyAllowAttackTargetEffect(
     gameEnv: GameEnvironment,
@@ -18,6 +23,8 @@ export function applyAllowAttackTargetEffect(
         return { success: true };
     }
 
+    const permission = normalizeAllowAttackTargetPermission(effect.parameters);
+
     for (const target of selectedTargets) {
         const resolved = TargetCardResolver.resolve(gameEnv, target);
         if (!resolved) {
@@ -28,7 +35,7 @@ export function applyAllowAttackTargetEffect(
             return { success: false, error: `allow_attack_target can only be applied to units (got ${resolved.kind})` };
         }
 
-        const targetCard: any = resolved.card;
+        const targetCard = resolved.card as UnitZoneCard;
         if (!Array.isArray(targetCard.temporaryEffects)) {
             targetCard.temporaryEffects = [];
         }
@@ -41,8 +48,9 @@ export function applyAllowAttackTargetEffect(
                 effect
             )
         );
+
+        applyAllowAttackTargetUnitOverrides(targetCard, permission);
     }
 
     return { success: true };
 }
-

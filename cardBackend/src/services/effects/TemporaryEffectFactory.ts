@@ -4,6 +4,7 @@
 import type { EffectDefinition } from '../EventQueue/interfaces/GameEvent';
 import type { TemporaryEffect } from '../../models/CardSystem';
 import type { GameEnvironment } from '../../models/GameEnvironment';
+import { normalizeAllowAttackTargetPermission } from '../attack/AllowAttackTargetPermissionUtils';
 
 export class TemporaryEffectFactory {
     static createBase(
@@ -104,26 +105,11 @@ export class TemporaryEffectFactory {
         sourceCarduid: string,
         effect: EffectDefinition
     ): TemporaryEffect {
-        const parameters = effect.parameters && typeof effect.parameters === 'object' ? effect.parameters : {};
-        const status = typeof (parameters as any).status === 'string' ? (parameters as any).status : undefined;
-        const level = typeof (parameters as any).level === 'string' ? (parameters as any).level : undefined;
-        const ap = ((): string | number | undefined => {
-            const raw = (parameters as any).ap;
-            if (typeof raw === 'string' || typeof raw === 'number') {
-                return raw;
-            }
-            return undefined;
-        })();
-        const damaged = typeof (parameters as any).damaged === 'boolean' ? (parameters as any).damaged : undefined;
+        const allowAttackTarget = normalizeAllowAttackTargetPermission(effect.parameters);
 
         return {
             ...this.createBase(gameEnv, sourcePlayerId, sourceCarduid, effect),
-            allowAttackTarget: {
-                ...(status ? { status } : {}),
-                ...(level ? { level } : {}),
-                ...(typeof ap !== 'undefined' ? { ap } : {}),
-                ...(typeof damaged === 'boolean' ? { damaged } : {})
-            }
+            allowAttackTarget
         };
     }
 }

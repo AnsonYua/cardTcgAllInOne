@@ -21,6 +21,7 @@ export interface TemporaryEffect {
         level?: string;
         ap?: string | number;
         damaged?: boolean;
+        allowAttackOnDeployTurn?: boolean;
     };
     preventBattleDamage?: {
         from?: string;

@@ -122,13 +122,19 @@ export class EffectExecutor {
 
         const handler = this.ACTION_HANDLERS[action];
         if (handler) {
-            return handler({
+            const handlerResult = handler({
                 gameEnv,
                 effect,
                 selectedTargets,
                 sourcePlayerId,
                 sourceCarduid
             });
+
+            if (!handlerResult.success) {
+                return handlerResult;
+            }
+
+            return this.enforceActionStepBattleConsistency(gameEnv, `EFFECT_EXECUTOR_HANDLER_${action}`);
         }
 
         const parameters = this.getEffectParameters(effect);
@@ -168,7 +174,7 @@ export class EffectExecutor {
             }
 
             console.log(`✅ Successfully applied ${action} to ${successfullyApplied.length} target(s)`);
-            return { success: true };
+            return this.enforceActionStepBattleConsistency(gameEnv, `EFFECT_EXECUTOR_FALLBACK_${action}`);
 
         } catch (error) {
             console.error(`❌ Error applying effect to targets:`, error);
@@ -355,6 +361,22 @@ export class EffectExecutor {
 
     static removeTemporaryEffectsFromSource(gameEnv: GameEnvironment, sourceCarduid: string): number {
         return EffectTemporaryManager.removeTemporaryEffectsFromSource(gameEnv, sourceCarduid);
+    }
+
+    private static enforceActionStepBattleConsistency(
+        gameEnv: GameEnvironment,
+        reason: string
+    ): { success: boolean; error?: string } {
+        // Lazy require avoids hard circular dependency between EffectExecutor and BattlePhaseManager.
+        const { BattlePhaseManager } = require('../BattlePhaseManager');
+        const consistencyResult = BattlePhaseManager?.ensureActionStepBattleConsistency?.(gameEnv, reason);
+        if (consistencyResult && consistencyResult.success === false) {
+            return {
+                success: false,
+                error: consistencyResult.error || 'Failed to enforce action-step battle consistency'
+            };
+        }
+        return { success: true };
     }
 
     static removeCardFromShield(

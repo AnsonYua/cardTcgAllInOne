@@ -81,6 +81,61 @@ export function buildShieldSnapshot(player: Player): BattleParticipantSnapshot {
     };
 }
 
+export function buildSlotReferenceSnapshot(playerId: string, slotName: string): BattleParticipantSnapshot {
+    return {
+        playerId,
+        slot: slotName,
+        zoneType: 'slot',
+        unit: null,
+        pilot: null
+    };
+}
+
+export function resolveTargetSlotFromAttackNotification(
+    gameEnv: GameEnvironment,
+    attackNotificationId?: string
+): string | undefined {
+    if (!attackNotificationId) {
+        return undefined;
+    }
+    const attackNotification = (gameEnv.notificationQueue || []).find((note: any) => note?.id === attackNotificationId);
+    const slotName = attackNotification?.payload?.targetSlotName;
+    return typeof slotName === 'string' && slotName ? slotName : undefined;
+}
+
+export function buildInvalidActionStepTargetSnapshot(
+    gameEnv: GameEnvironment,
+    battle: BattleContext,
+    targetLookup: any
+): BattleParticipantSnapshot | null {
+    const targetPlayerId = battle.targetPlayerId;
+    let snapshot = targetLookup?.found && targetLookup?.playerId
+        ? buildSlotSnapshot(gameEnv.getPlayer(targetLookup.playerId) || undefined, targetLookup.slotName)
+        : null;
+
+    if (!snapshot) {
+        snapshot = buildForcedTargetSnapshot(gameEnv, battle.forcedTarget);
+    }
+
+    if (!snapshot && battle.actionType === 'attackUnit' && targetPlayerId) {
+        const fallbackSlotName = targetLookup?.slotName
+            || battle?.forcedTarget?.zone
+            || resolveTargetSlotFromAttackNotification(gameEnv, battle.attackNotificationId);
+        if (typeof fallbackSlotName === 'string' && fallbackSlotName) {
+            snapshot = buildSlotReferenceSnapshot(targetPlayerId, fallbackSlotName);
+        }
+    }
+
+    if (!snapshot && battle.actionType !== 'attackUnit' && targetPlayerId) {
+        const targetPlayer = gameEnv.getPlayer(targetPlayerId);
+        if (targetPlayer) {
+            snapshot = buildShieldSnapshot(targetPlayer);
+        }
+    }
+
+    return snapshot;
+}
+
 export function emitBattleResolutionNotification(
     gameEnv: GameEnvironment,
     context: BattleContext,
