@@ -34,6 +34,7 @@ import { extractNumericValue, resolvePlayerIdsForScope } from './actions/EffectA
 import { HandZoneManager } from '../zones/HandZoneManager';
 import type { AddToHandOptions } from '../zones/HandZoneManager';
 import { EffectDrawTriggerDispatcher } from './EffectDrawTriggerDispatcher';
+import { DrawNotificationPublisher } from './DrawNotificationPublisher';
 
 interface EffectActionContext {
     gameEnv: GameEnvironment;
@@ -386,7 +387,8 @@ export class EffectExecutor {
             sourceZone: options.sourceZone,
             reason: options.reason,
             notify: options.notify,
-            drawContext: options.drawContext
+            drawContext: options.drawContext,
+            extraPayload: options.extraPayload
         });
     }
 
@@ -403,7 +405,6 @@ export class EffectExecutor {
         }
 
         const shouldNotify = options.notify !== false;
-        const notifyPerCard = shouldNotify;
         const drawnUids: string[] = [];
         const drawContext = options.drawContext;
 
@@ -416,12 +417,22 @@ export class EffectExecutor {
                 eventType: 'CARD_DRAWN',
                 sourceZone: 'deck',
                 reason: 'draw',
-                notify: notifyPerCard,
+                notify: false,
                 drawContext
             });
             if (!addResult.success) {
                 throw new Error(addResult.error || `Failed to add ${drawnCard} to hand`);
             }
+        }
+
+        if (shouldNotify && drawnUids.length > 0) {
+            DrawNotificationPublisher.publishDrawNotifications(gameEnv, {
+                playerId,
+                drawnCarduids: drawnUids,
+                drawContext,
+                sourceZone: 'deck',
+                reason: 'draw'
+            });
         }
 
         EffectDrawTriggerDispatcher.dispatchEffectDrawIfNeeded({
