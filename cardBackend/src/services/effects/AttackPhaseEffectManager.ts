@@ -15,6 +15,7 @@ import { DeployTargetManager } from '../DeployTargetManager';
 import { AttackConditionEvaluator } from './attack/AttackConditionEvaluator';
 import { AttackEffectUsageTracker } from './attack/AttackEffectUsageTracker';
 import { AttackCostFlowInterceptor } from '../costs/AttackCostFlowInterceptor';
+import { EffectSelfTargetNormalizer } from '../targets/EffectSelfTargetNormalizer';
 
 export interface AttackPhaseEffectResult {
     success: boolean;
@@ -79,10 +80,10 @@ export class AttackPhaseEffectManager {
                     continue;
                 }
 
-                const normalizedEffect = this.normalizeSelfScopedAttackTarget(
+                const normalizedEffect = EffectSelfTargetNormalizer.normalize(
                     ensureEffectDefaults({ ...effect }) as TriggeredEffectRule,
                     sourceCard
-                );
+                ) as TriggeredEffectRule;
 
                 if (!this.sourceConditionsSatisfied(normalizedEffect, sourceCard, gameEnv, playerId)) {
                     continue;
@@ -191,70 +192,6 @@ export class AttackPhaseEffectManager {
 
     private static markEffectUsed(card: ZoneCard, effectId: string, currentTurn: number): void {
         AttackEffectUsageTracker.markEffectUsed(card, effectId, currentTurn);
-    }
-
-    private static normalizeSelfScopedAttackTarget(
-        effect: TriggeredEffectRule,
-        sourceCard: UnitZoneCard | PilotZoneCard
-    ): TriggeredEffectRule {
-        const target = effect.target;
-        if (!target || typeof target !== 'object') {
-            return effect;
-        }
-
-        const scope = typeof target.scope === 'string' ? target.scope.toLowerCase() : '';
-        if (scope !== 'self') {
-            return effect;
-        }
-
-        const selectionType =
-            typeof target.selection?.type === 'string'
-                ? target.selection.type.toLowerCase()
-                : '';
-        if (selectionType === 'player_choice') {
-            return effect;
-        }
-
-        const action = EffectExecutor.getEffectAction(effect);
-        const autoScopeActions = new Set([
-            'modifyAP',
-            'modifyHP',
-            'grant_keyword',
-            'grant_breach',
-            'prevent_battle_damage',
-            'prevent_damage',
-            'restrict_attack',
-            'setActive'
-        ]);
-        if (!action || !autoScopeActions.has(action)) {
-            return effect;
-        }
-
-        const targetType = typeof target.type === 'string' ? target.type.toLowerCase() : '';
-        if (targetType && targetType !== 'unit' && targetType !== 'card') {
-            return effect;
-        }
-
-        const count = target.count;
-        const countIsOne =
-            count === undefined ||
-            count === 1;
-        if (!countIsOne) {
-            return effect;
-        }
-
-        const sourceScope =
-            sourceCard.cardData?.cardType === 'pilot' && targetType === 'unit'
-                ? 'source_paired_unit'
-                : 'source';
-
-        return {
-            ...effect,
-            target: {
-                ...target,
-                scope: sourceScope
-            }
-        };
     }
 
     private static applyAttackEffect(

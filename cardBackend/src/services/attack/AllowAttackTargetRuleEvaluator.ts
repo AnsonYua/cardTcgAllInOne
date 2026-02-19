@@ -4,6 +4,14 @@
 import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 
 export class AllowAttackTargetRuleEvaluator {
+    private static resolveDynamicSourceApFilter(filter: string, sourceAp: number): string | null {
+        const match = filter.match(/^(<=|>=|<|>|==|!=)\s*(SOURCE_AP|sourceAp)$/);
+        if (!match) {
+            return null;
+        }
+        return `${match[1]}${sourceAp}`;
+    }
+
     static conditionsSatisfied(
         conditions: unknown,
         sourceSlotTotals: { totalAP: number }
@@ -77,7 +85,9 @@ export class AllowAttackTargetRuleEvaluator {
                     return false;
                 }
             } else if (typeof parameters.ap === 'string') {
-                if (!validateComparisonFilter(targetTotalAp, parameters.ap)) {
+                const resolvedApFilter =
+                    this.resolveDynamicSourceApFilter(parameters.ap, sourceSlotTotals.totalAP) || parameters.ap;
+                if (!validateComparisonFilter(targetTotalAp, resolvedApFilter)) {
                     return false;
                 }
             } else {

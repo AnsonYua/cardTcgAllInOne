@@ -33,6 +33,7 @@ import { ChoiceEventScheduler } from './choices/ChoiceEventScheduler';
 import { EventPriority } from './EventQueue/interfaces/GameEvent';
 import { ChoiceNotificationEmitter } from './notifications/ChoiceNotificationEmitter';
 import { GameNotificationManager } from './GameNotificationManager';
+import { EffectSelfTargetNormalizer } from './targets/EffectSelfTargetNormalizer';
 
 type PairingEffectOrderContext = {
     kind: 'PAIRING_EFFECT_ORDER';
@@ -511,11 +512,16 @@ export class PairingEffectManager implements StandardEffectManager {
                 effectsProcessed++;
             } else {
                 const sourceCarduid = normalizedEffect.sourceCarduid || eventData.carduid;
+                const normalizedTargetingEffect = EffectSelfTargetNormalizer.normalizeWithSourceCarduid(
+                    gameEnv,
+                    normalizedEffect,
+                    sourceCarduid
+                );
                 const choiceResult = DeployTargetManager.processEffectWithTargetChoice(
                     gameEnv,
                     playerId,
                     sourceCarduid,
-                    normalizedEffect
+                    normalizedTargetingEffect
                 );
 
                 if (!choiceResult.success && !choiceResult.requiresSelection) {

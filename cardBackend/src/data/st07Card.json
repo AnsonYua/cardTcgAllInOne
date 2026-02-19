@@ -572,6 +572,11 @@
                             }
                         ],
                         "action": "allow_attack_target",
+                        "target": {
+                            "type": "unit",
+                            "scope": "source_paired_unit",
+                            "count": 1
+                        },
                         "timing": {
                             "duration": "UNTIL_END_OF_TURN"
                         },

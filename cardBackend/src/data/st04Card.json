@@ -457,6 +457,11 @@
                         "action": "allow_attack_target",
                         "trigger": "PAIRING_COMPLETE",
                         "type": "triggered",
+                        "target": {
+                            "type": "unit",
+                            "scope": "source_paired_unit",
+                            "count": 1
+                        },
                         "sourceConditions": [
                             {
                                 "type": "linked"

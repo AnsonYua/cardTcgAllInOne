@@ -1914,12 +1914,12 @@
                   },
                   "target": {
                     "type": "unit",
-                    "scope": "self",
+                    "scope": "source",
                     "count": 1
                   },
                   "parameters": {
                     "status": "active",
-                    "ap": "<=sourceAp"
+                    "ap": "<=SOURCE_AP"
                   }
                 }
               ]

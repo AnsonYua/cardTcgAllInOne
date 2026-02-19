@@ -1,9 +1,25 @@
 import type { EffectDefinition, TargetReference } from '../EventQueue/interfaces/GameEvent';
 import type { ResolvedTargetConfig } from '../targets/TargetResolver';
 
+function isDeterministicSourceAllowAttackTarget(
+    action: string,
+    scopeValue: string,
+    targetType: string,
+    targetCount: number,
+    availableTargets: TargetReference[]
+): boolean {
+    return (
+        action === 'allow_attack_target' &&
+        (scopeValue === 'source' || scopeValue === 'source_paired_unit') &&
+        targetType === 'unit' &&
+        targetCount === 1 &&
+        availableTargets.length <= 1
+    );
+}
+
 export function overrideRequiresChoice(
     targetConfig: ResolvedTargetConfig,
-    _availableTargets: TargetReference[],
+    availableTargets: TargetReference[],
     effect: EffectDefinition
 ): boolean | undefined {
     const action = typeof effect.action === 'string' ? effect.action.toLowerCase() : '';
@@ -20,6 +36,12 @@ export function overrideRequiresChoice(
     // Data rule: scopes like "any_all_unit" are intended to auto-apply to *all* matching units (no player prompt),
     // even when the card data omits an explicit count.
     if (scopeValue === 'any_all_unit') {
+        return false;
+    }
+
+    // Self-referential allow_attack_target permissions with deterministic targeting
+    // should auto-apply (no pre-choice dialog), even when effect.optional=true.
+    if (isDeterministicSourceAllowAttackTarget(action, scopeValue, targetType, targetConfig.count, availableTargets)) {
         return false;
     }
 

@@ -47,6 +47,9 @@ const {
 const {
   validateGd03079RestBaseReplacement
 } = require('./validators/gd03079RestBaseReplacementValidation');
+const {
+  validateAllowAttackTargetSchema
+} = require('./validators/allowAttackTargetSchemaValidation');
 
 function main() {
   const root = sharedGameStatesRoot();
@@ -73,6 +76,7 @@ function main() {
   validateDelayedSetActiveExcludesDestroyedUnit();
   validateGd02069DuringLinkActivatedAbility();
   validateGd03079RestBaseReplacement();
+  validateAllowAttackTargetSchema();
 
   console.log('OK: action scenarios validated');
 }

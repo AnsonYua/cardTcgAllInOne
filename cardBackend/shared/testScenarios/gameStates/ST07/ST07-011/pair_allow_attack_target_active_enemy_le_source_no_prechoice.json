@@ -1,0 +1,154 @@
+{
+  "description": "st07-011_pair_allow_attack_target_active_enemy_le_source_no_prechoice",
+  "gameId": "st07-011_pair_allow_attack_target_active_enemy_le_source_no_prechoice",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": ["ST07-011", "PAIRING_COMPLETE", "allow_attack_target", "source_paired_unit", "no_target_choice"],
+  "notes": [
+    "Setup: Player 1 has a CB unit in slot2 and another friendly unit in slot1.",
+    "Action: Play ST07-011 from hand as pilot onto slot2 unit.",
+    "Expect: Pairing effect applies to slot2 paired unit only and no own-unit TARGET_CHOICE appears."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "hasChosenFirstPlayer": true,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 6,
+    "playersReady": {"playerId_1": true, "playerId_2": true},
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [
+      {
+        "id": "card_drawn_seed_st07_011",
+        "type": "CARD_DRAWN",
+        "metadata": {
+          "timestamp": 1768362880422,
+          "expiresAt": 1768362883422,
+          "requiresAcknowledgment": false,
+          "priority": "normal"
+        },
+        "payload": {
+          "playerId": "playerId_1",
+          "carduid": "ST07-011_draw_0001",
+          "sourceZone": "deck",
+          "reason": "draw",
+          "timestamp": 1768362880422,
+          "drawContext": "turn_start"
+        }
+      }
+    ],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null,
+    "currentBattle": null,
+    "version": 0,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [{"carduid": "ST07-011_hand_0001", "cardId": "ST07-011"}],
+          "handUids": ["ST07-011_hand_0001"],
+          "mainDeck": []
+        },
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "ST01-009_ally_0001",
+              "cardId": "ST01-009",
+              "isRested": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 2,
+              "canAttackThisTurn": true,
+              "temporaryEffects": []
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "ST07-001_unit_0001",
+              "cardId": "ST07-001",
+              "isRested": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 4,
+              "canAttackThisTurn": true,
+              "temporaryEffects": []
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {"cardId": "energy_basic", "carduid": "energy_basic_st07011_p1_0001", "isExtraEnergy": false, "isRested": false, "placedAt": 0, "placedBy": "playerId_1"},
+            {"cardId": "energy_basic", "carduid": "energy_basic_st07011_p1_0002", "isExtraEnergy": false, "isRested": false, "placedAt": 0, "placedBy": "playerId_1"},
+            {"cardId": "energy_basic", "carduid": "energy_basic_st07011_p1_0003", "isExtraEnergy": false, "isRested": false, "placedAt": 0, "placedBy": "playerId_1"},
+            {"cardId": "energy_basic", "carduid": "energy_basic_st07011_p1_0004", "isExtraEnergy": false, "isRested": false, "placedAt": 0, "placedBy": "playerId_1"},
+            {"cardId": "energy_basic", "carduid": "energy_basic_st07011_p1_0005", "isExtraEnergy": false, "isRested": false, "placedAt": 0, "placedBy": "playerId_1"},
+            {"cardId": "energy_basic", "carduid": "energy_basic_st07011_p1_0006", "isExtraEnergy": false, "isRested": false, "placedAt": 0, "placedBy": "playerId_1"}
+          ],
+          "trashArea": []
+        },
+        "effectRegistry": {},
+        "delayedTriggers": []
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {"hand": [], "handUids": [], "mainDeck": []},
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD02-013_enemy_0001",
+              "cardId": "GD02-013",
+              "isRested": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 2,
+              "originalHP": 2,
+              "temporaryEffects": []
+            }
+          },
+          "slot2": {
+            "unit": {
+              "carduid": "ST01-001_enemy_0001",
+              "cardId": "ST01-001",
+              "isRested": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 5,
+              "originalHP": 4,
+              "temporaryEffects": []
+            }
+          },
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {"cardId": "energy_basic", "carduid": "energy_basic_st07011_p2_0001", "isExtraEnergy": false, "isRested": false, "placedAt": 0, "placedBy": "playerId_2"}
+          ],
+          "trashArea": []
+        },
+        "effectRegistry": {},
+        "delayedTriggers": []
+      }
+    }
+  }
+}

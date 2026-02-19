@@ -9,6 +9,7 @@ import { EffectExecutor } from './EffectExecutor';
 import { DelayedTriggerManager } from './DelayedTriggerManager';
 import { DeployTargetManager } from '../DeployTargetManager';
 import type { SequenceContinuationAfterChoiceContext } from './sequence/SequenceContinuationContext';
+import { EffectSelfTargetNormalizer } from '../targets/EffectSelfTargetNormalizer';
 
 export type SequenceStep = {
     action: string;
@@ -244,11 +245,17 @@ export class SequenceEffectManager {
                 continue;
             }
 
+            const normalizedStepEffect = EffectSelfTargetNormalizer.normalizeWithSourceCarduid(
+                gameEnv,
+                stepEffect,
+                sourceCarduid
+            );
+
             const result = DeployTargetManager.processEffectWithTargetChoice(
                 gameEnv,
                 playerId,
                 sourceCarduid,
-                stepEffect,
+                normalizedStepEffect,
                 cardPlayNotificationId
             );
 
@@ -312,12 +319,17 @@ export class SequenceEffectManager {
                 value: count
             }
         } as any);
+        const normalizedDiscardEffect = EffectSelfTargetNormalizer.normalizeWithSourceCarduid(
+            gameEnv,
+            discardEffect,
+            sourceCarduid
+        );
 
         const result = DeployTargetManager.processEffectWithTargetChoice(
             gameEnv,
             playerId,
             sourceCarduid,
-            discardEffect,
+            normalizedDiscardEffect,
             cardPlayNotificationId
         );
 
