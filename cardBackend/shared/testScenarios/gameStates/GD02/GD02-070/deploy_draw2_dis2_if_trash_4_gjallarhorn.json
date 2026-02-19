@@ -3,7 +3,12 @@
   "gameId": "gd02-070_deploy_draw2_dis2_if_trash_4_gjallarhorn",
   "testType": "action",
   "category": "GD02-070",
-  "tags": ["GD02-070", "deploy", "draw_then_discard", "condition"],
+  "tags": [
+    "GD02-070",
+    "deploy",
+    "draw_then_discard",
+    "condition"
+  ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
     "playerId_1": "playerId_1",
@@ -30,33 +35,149 @@
         "name": "Player 1",
         "deck": {
           "hand": [
-            { "carduid": "GD02-070_in_hand_0001", "cardId": "GD02-070" },
-            { "carduid": "ST01-009_in_hand_0002", "cardId": "ST01-009" },
-            { "carduid": "GD01-086_in_hand_0003", "cardId": "GD01-086" }
+            {
+              "carduid": "GD02-070_in_hand_0001",
+              "cardId": "GD02-070"
+            },
+            {
+              "carduid": "ST01-009_in_hand_0002",
+              "cardId": "ST01-009"
+            },
+            {
+              "carduid": "GD01-086_in_hand_0003",
+              "cardId": "GD01-086"
+            }
           ],
-          "handUids": ["GD02-070_in_hand_0001", "ST01-009_in_hand_0002", "GD01-086_in_hand_0003"],
-          "mainDeck": ["GD01-086_draw_0001", "GD01-086_draw_0002"]
+          "handUids": [
+            "GD02-070_in_hand_0001",
+            "ST01-009_in_hand_0002",
+            "GD01-086_in_hand_0003"
+          ],
+          "mainDeck": [
+            "GD01-086_draw_0001",
+            "GD01-086_draw_0002"
+          ]
         },
         "confirmIsRedraw": false,
         "isRedraw": false,
         "playerPoint": 0,
         "isReady": true,
         "zones": {
-          "slot1": {}, "slot2": {}, "slot3": {}, "slot4": {}, "slot5": {}, "slot6": {},
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
           "base": [],
           "shieldArea": [],
           "energyArea": [
-            { "carduid": "energy_basic_p1_0001", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false },
-            { "carduid": "energy_basic_p1_0002", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false },
-            { "carduid": "energy_basic_p1_0003", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false },
-            { "carduid": "energy_basic_p1_0004", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false }
+            {
+              "carduid": "energy_basic_playerId_1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_playerId_1_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_playerId_1_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_playerId_1_0004",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_playerId_1_0005",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_playerId_1_0006",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
           ],
           "trashArea": [
-            { "carduid": "GD02-099_trash_0001", "cardId": "GD02-099", "cardData": { "id": "GD02-099", "cardType": "pilot", "traits": ["Gjallarhorn"] } },
-            { "carduid": "GD02-099_trash_0002", "cardId": "GD02-099", "cardData": { "id": "GD02-099", "cardType": "pilot", "traits": ["Gjallarhorn"] } },
-            { "carduid": "GD02-070_trash_0003", "cardId": "GD02-070", "cardData": { "id": "GD02-070", "cardType": "unit", "traits": ["Gjallarhorn", "Gundam Frame"] } },
-            { "carduid": "GD02-071_trash_0004", "cardId": "GD02-071", "cardData": { "id": "GD02-071", "cardType": "unit", "traits": ["AEUG"] } },
-            { "carduid": "GD02-084_trash_0005", "cardId": "GD02-084", "cardData": { "id": "GD02-084", "cardType": "pilot", "traits": ["Gjallarhorn"] } }
+            {
+              "carduid": "GD02-099_trash_0001",
+              "cardId": "GD02-099",
+              "cardData": {
+                "id": "GD02-099",
+                "cardType": "pilot",
+                "traits": [
+                  "Gjallarhorn"
+                ]
+              }
+            },
+            {
+              "carduid": "GD02-099_trash_0002",
+              "cardId": "GD02-099",
+              "cardData": {
+                "id": "GD02-099",
+                "cardType": "pilot",
+                "traits": [
+                  "Gjallarhorn"
+                ]
+              }
+            },
+            {
+              "carduid": "GD02-070_trash_0003",
+              "cardId": "GD02-070",
+              "cardData": {
+                "id": "GD02-070",
+                "cardType": "unit",
+                "traits": [
+                  "Gjallarhorn",
+                  "Gundam Frame"
+                ]
+              }
+            },
+            {
+              "carduid": "GD02-071_trash_0004",
+              "cardId": "GD02-071",
+              "cardData": {
+                "id": "GD02-071",
+                "cardType": "unit",
+                "traits": [
+                  "AEUG"
+                ]
+              }
+            },
+            {
+              "carduid": "GD02-084_trash_0005",
+              "cardId": "GD02-084",
+              "cardData": {
+                "id": "GD02-084",
+                "cardType": "pilot",
+                "traits": [
+                  "Gjallarhorn"
+                ]
+              }
+            }
           ],
           "repairAbilitiesCheckedThisCycle": false,
           "endTurnEffectsCheckedThisCycle": false
@@ -65,14 +186,75 @@
       "playerId_2": {
         "id": "playerId_2",
         "name": "Player 2",
-        "deck": { "hand": [], "handUids": [], "mainDeck": [] },
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
         "confirmIsRedraw": false,
         "isRedraw": false,
         "playerPoint": 0,
         "isReady": true,
         "zones": {
-          "slot1": {}, "slot2": {}, "slot3": {}, "slot4": {}, "slot5": {}, "slot6": {},
-          "base": [], "shieldArea": [], "energyArea": [], "trashArea": [],
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_playerId_2_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_playerId_2_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_playerId_2_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_playerId_2_0004",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_playerId_2_0005",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_playerId_2_0006",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
           "repairAbilitiesCheckedThisCycle": false,
           "endTurnEffectsCheckedThisCycle": false
         }

@@ -3,7 +3,12 @@
   "gameId": "gd02-098_pair_draw1_dis1_if_aeug",
   "testType": "action",
   "category": "GD02-098",
-  "tags": ["GD02-098", "pair", "linked", "draw_then_discard"],
+  "tags": [
+    "GD02-098",
+    "pair",
+    "linked",
+    "draw_then_discard"
+  ],
   "initialGameEnv": {
     "phase": "MAIN_PHASE",
     "playerId_1": "playerId_1",
@@ -30,11 +35,22 @@
         "name": "Player 1",
         "deck": {
           "hand": [
-            { "carduid": "GD02-098_in_hand_0001", "cardId": "GD02-098" },
-            { "carduid": "ST01-009_in_hand_0002", "cardId": "ST01-009" }
+            {
+              "carduid": "GD02-098_in_hand_0001",
+              "cardId": "GD02-098"
+            },
+            {
+              "carduid": "ST01-009_in_hand_0002",
+              "cardId": "ST01-009"
+            }
           ],
-          "handUids": ["GD02-098_in_hand_0001", "ST01-009_in_hand_0002"],
-          "mainDeck": ["GD01-086_draw_0001"]
+          "handUids": [
+            "GD02-098_in_hand_0001",
+            "ST01-009_in_hand_0002"
+          ],
+          "mainDeck": [
+            "GD01-086_draw_0001"
+          ]
         },
         "confirmIsRedraw": false,
         "isRedraw": false,
@@ -49,10 +65,15 @@
                 "id": "GD02-071",
                 "name": "Gundam Mk-II (AEUG)",
                 "cardType": "unit",
-                "traits": ["AEUG"],
+                "traits": [
+                  "AEUG"
+                ],
                 "ap": 3,
                 "hp": 4,
-                "effects": { "description": [], "rules": [] }
+                "effects": {
+                  "description": [],
+                  "rules": []
+                }
               },
               "placedAt": 0,
               "placedBy": "playerId_1",
@@ -62,11 +83,62 @@
               "originalHP": 4
             }
           },
-          "slot2": {}, "slot3": {}, "slot4": {}, "slot5": {}, "slot6": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
           "base": [],
           "shieldArea": [],
           "energyArea": [
-            { "carduid": "energy_basic_p1_0001", "cardId": "energy_basic", "placedAt": 0, "placedBy": "playerId_1", "isRested": false, "isExtraEnergy": false }
+            {
+              "carduid": "energy_basic_playerId_1_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_playerId_1_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_playerId_1_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_playerId_1_0004",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_playerId_1_0005",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_playerId_1_0006",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
           ],
           "trashArea": [],
           "repairAbilitiesCheckedThisCycle": false,
@@ -76,14 +148,75 @@
       "playerId_2": {
         "id": "playerId_2",
         "name": "Player 2",
-        "deck": { "hand": [], "handUids": [], "mainDeck": [] },
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
         "confirmIsRedraw": false,
         "isRedraw": false,
         "playerPoint": 0,
         "isReady": true,
         "zones": {
-          "slot1": {}, "slot2": {}, "slot3": {}, "slot4": {}, "slot5": {}, "slot6": {},
-          "base": [], "shieldArea": [], "energyArea": [], "trashArea": [],
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_playerId_2_0001",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_playerId_2_0002",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_playerId_2_0003",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_playerId_2_0004",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_playerId_2_0005",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_playerId_2_0006",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_2",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
           "repairAbilitiesCheckedThisCycle": false,
           "endTurnEffectsCheckedThisCycle": false
         }
