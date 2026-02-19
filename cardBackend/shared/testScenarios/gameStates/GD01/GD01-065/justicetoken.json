@@ -387,7 +387,7 @@
                             },
                             "cardId": "energy_extra",
                             "carduid": "energy_extra_1771514635220_0.7508477472445958",
-                            "isExtraEnergy": true,
+                            "isExtraEnergy": false,
                             "isRested": false,
                             "placedAt": 1771514635220,
                             "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b"
@@ -398,7 +398,7 @@
                             },
                             "cardId": "energy_extra",
                             "carduid": "energy_extra_1771514635220_0.7508477472445958",
-                            "isExtraEnergy": true,
+                            "isExtraEnergy": false,
                             "isRested": false,
                             "placedAt": 1771514635220,
                             "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b"
@@ -409,7 +409,7 @@
                             },
                             "cardId": "energy_extra",
                             "carduid": "energy_extra_1771514635220_0.7508477472445958",
-                            "isExtraEnergy": true,
+                            "isExtraEnergy": false,
                             "isRested": false,
                             "placedAt": 1771514635220,
                             "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b"
@@ -420,7 +420,7 @@
                             },
                             "cardId": "energy_extra",
                             "carduid": "energy_extra_1771514635220_0.7508477472445958",
-                            "isExtraEnergy": true,
+                            "isExtraEnergy": false,
                             "isRested": false,
                             "placedAt": 1771514635220,
                             "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b"
@@ -431,7 +431,7 @@
                             },
                             "cardId": "energy_extra",
                             "carduid": "energy_extra_1771514635220_0.7508477472445958",
-                            "isExtraEnergy": true,
+                            "isExtraEnergy": false,
                             "isRested": false,
                             "placedAt": 1771514635220,
                             "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b"
@@ -442,7 +442,7 @@
                             },
                             "cardId": "energy_extra",
                             "carduid": "energy_extra_1771514635220_0.7508477472445958",
-                            "isExtraEnergy": true,
+                            "isExtraEnergy": false,
                             "isRested": false,
                             "placedAt": 1771514635220,
                             "placedBy": "player_4c638da7-3467-4cb9-b459-40c92d8b372b"
