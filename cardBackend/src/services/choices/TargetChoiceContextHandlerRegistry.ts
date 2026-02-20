@@ -3,6 +3,7 @@
 
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { TargetChoiceEvent, TargetReference } from '../EventQueue/interfaces/GameEvent';
+import { DiscardFromHandCostChoiceHandler } from '../costs/DiscardFromHandCostChoiceHandler';
 import { DestroyFriendlyUnitCostChoiceHandler } from '../costs/DestroyFriendlyUnitCostChoiceHandler';
 import { ExileFromTrashCostChoiceHandler } from '../costs/ExileFromTrashCostChoiceHandler';
 import { MoveFromHandToDeckBottomCostChoiceHandler } from '../costs/MoveFromHandToDeckBottomCostChoiceHandler';
@@ -16,6 +17,11 @@ export class TargetChoiceContextHandlerRegistry {
         event: TargetChoiceEvent,
         normalizedTargets: TargetReference[]
     ): { handled: boolean; success: boolean; error?: string } {
+        const discardCostResult = DiscardFromHandCostChoiceHandler.tryHandle(gameEnv, event, normalizedTargets);
+        if (discardCostResult.handled) {
+            return discardCostResult;
+        }
+
         const exileCostResult = ExileFromTrashCostChoiceHandler.tryHandle(gameEnv, event, normalizedTargets);
         if (exileCostResult.handled) {
             return exileCostResult;

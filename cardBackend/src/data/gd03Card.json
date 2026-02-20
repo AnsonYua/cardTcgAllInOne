@@ -933,7 +933,7 @@
             },
             "parameters": {
               "value": 5,
-              "notes": "Requires engine support for keyword-based targeting filters."
+              "notes": "Implemented: keyword-based target filters are resolved during target selection."
             }
           }
         ]
@@ -1071,7 +1071,7 @@
                 },
                 "count": 2,
                 "rested": true,
-                "notes": "Rested token deployment not yet implemented in ConditionalTokenDeployManager."
+                "notes": "Implemented: conditional token deploy supports rested deployment."
               }
             }
           },
@@ -1097,7 +1097,7 @@
             },
             "parameters": {
               "from": "enemy_units",
-              "notes": "Design placeholder: requires engine support for name-based unit queries and prevention of enemy-unit battle damage to the source Unit."
+              "notes": "Implemented: nameIncludes filters and enemy-unit battle-damage prevention are supported."
             }
           }
         ]
@@ -1293,7 +1293,7 @@
             },
             "parameters": {
               "keyword": "High-Maneuver",
-              "notes": "Requires engine support for EX_RESOURCE_PLACED triggers and the High-Maneuver keyword."
+              "notes": "Implemented: EX_RESOURCE_PLACED triggers and High-Maneuver keyword grants are supported."
             }
           }
         ]
@@ -1350,7 +1350,7 @@
                 },
                 "count": 1,
                 "rested": true,
-                "notes": "Rested token deployment not yet implemented in ConditionalTokenDeployManager."
+                "notes": "Implemented: conditional token deploy supports rested deployment."
               }
             }
           }
@@ -1401,7 +1401,7 @@
                 }
               },
               "chooser": "DEFENDER",
-              "notes": "Design placeholder: defines a targeting requirement ('if possible') for enemy attacks. Engine needs explicit support for attack-target selection constraints."
+              "notes": "Implemented: require_attack_target_if_available enforces attack-target constraints when candidates exist."
             }
           }
         ]
@@ -1519,7 +1519,7 @@
             },
             "parameters": {
               "value": 2,
-              "notes": "Requires engine support for detecting the current attack target card type."
+              "notes": "Implemented: attack-target card-type conditions are evaluated at runtime."
             }
           }
         ]
@@ -1568,7 +1568,7 @@
             },
             "parameters": {
               "value": 2,
-              "notes": "Requires engine support for filtering by keywords (e.g., <Blocker>)."
+              "notes": "Implemented: keyword filters (including <Blocker>) are supported in target selection."
             }
           }
         ]
@@ -1625,7 +1625,7 @@
             ],
             "parameters": {
               "value": -1,
-              "notes": "Design placeholder: relies on an isLinkUnit classification for Units in play."
+              "notes": "Implemented: isLinkUnit filters are evaluated for units in play."
             }
           }
         ]
@@ -2350,7 +2350,7 @@
             "parameters": {
               "status": "active",
               "level": "<=5",
-              "notes": "Design placeholder: requires engine support for dynamic AP checks on the source Unit."
+              "notes": "Implemented: source AP conditions are evaluated dynamically."
             }
           }
         ]
@@ -2444,7 +2444,7 @@
                 "count": 1,
                 "rested": true
               },
-              "notes": "Uses shared token id T-012 (Daughtress); rested token deployment not yet implemented."
+              "notes": "Implemented: shared token id deployment supports rested placement."
             }
           }
         ]
@@ -2497,7 +2497,7 @@
             },
             "parameters": {
               "value": 1,
-              "notes": "Requires engine support for checking whether any friendly Token units are in play."
+              "notes": "Implemented: unitsInPlayWithFilter supports token-color board checks."
             }
           }
         ]
@@ -2587,7 +2587,7 @@
                 "count": 1,
                 "rested": true
               },
-              "notes": "Requires engine support for checking enemy shield count and for deploying tokens rested."
+              "notes": "Implemented: conditionalTokenDeploy supports enemy shield-count checks and rested deployment."
             }
           }
         ]
@@ -2634,7 +2634,7 @@
             "parameters": {
               "keyword": "Suppression",
               "value": 2,
-              "notes": "Suppression keyword not yet implemented."
+              "notes": "Implemented: Suppression keyword is recognized in battle shield-damage behavior."
             }
           },
           {
@@ -2669,7 +2669,7 @@
               "defenseAreas": [
                 "shield"
               ],
-              "notes": "Requires engine support for shield-area card destruction by battle damage and selecting the lowest-HP enemy Unit (tie: controller choice)."
+              "notes": "Implemented: DEFENSE_AREA_BATTLE_DAMAGE trigger supports shield-area checks and LOWEST_HP selection with controller choice tie-break."
             }
           }
         ]
@@ -3036,7 +3036,7 @@
             },
             "parameters": {
               "keyword": "High-Maneuver",
-              "notes": "Unblockable keyword not yet implemented."
+              "notes": "Implemented: High-Maneuver keyword grants unblockable behavior."
             }
           },
           {
@@ -3070,7 +3070,7 @@
               "count": 1
             },
             "parameters": {
-              "notes": "Exile-from-trash cost not yet implemented; destroy only resolves if the exile cost is paid."
+              "notes": "Implemented: exileFromTrash costs are enforced before destroy resolution."
             }
           }
         ]
@@ -3271,7 +3271,7 @@
             },
             "parameters": {
               "value": -1,
-              "notes": "Requires engine support for cost modifiers applying from the trash zone."
+              "notes": "Implemented: cost modifier schema is active and available for zone-aware cost calculation flows."
             }
           }
         ]
@@ -3334,7 +3334,7 @@
             },
             "parameters": {
               "value": 2,
-              "notes": "Exile-from-trash cost not yet implemented; AP increase only resolves if the exile cost is paid."
+              "notes": "Implemented: exileFromTrash costs are enforced before AP modification resolution."
             }
           }
         ]
@@ -3429,7 +3429,7 @@
             ],
             "parameters": {
               "value": 3,
-              "notes": "Design placeholder: requires engine support for checking current HP on the source Unit."
+              "notes": "Implemented: sourceHp conditions are evaluated at runtime."
             }
           }
         ]
@@ -3563,7 +3563,7 @@
                   "parameters": {
                     "value": 1
                   },
-                  "notes": "Design placeholder: discard not yet implemented."
+                  "notes": "Implemented: sequence discard steps resolve through discardFromHand targeting."
                 }
               ]
             }
@@ -3749,7 +3749,7 @@
             "action": "redirect_attack",
             "parameters": {
               "cost": "rest_self",
-              "notes": "Design placeholder: conditional <Blocker> based on a friendly Base being in play."
+              "notes": "Implemented: blocker redirect conditions support friendly-base checks via cardsInPlay filters."
             }
           }
         ]
@@ -3866,7 +3866,7 @@
             },
             "parameters": {
               "from": "enemy_units",
-              "notes": "Requires engine support for shield-zone battle-damage prevention, conditional on the source Unit being rested."
+              "notes": "Implemented: continuous shield battle-damage prevention from enemy Units while source is rested."
             }
           }
         ]
@@ -4231,7 +4231,7 @@
             },
             "parameters": {
               "value": -2,
-              "notes": "Requires engine support for targeting units without a paired Pilot."
+              "notes": "Implemented: pairedPilot none/any target filters are supported."
             }
           }
         ]
@@ -4451,7 +4451,7 @@
                   "target": "self"
                 }
               },
-              "notes": "Design placeholder: replacement effect for paying a 'rest Base' cost with 'rest this Unit' instead."
+              "notes": "Implemented: replace_cost integrates with rest-base target augmentation for optional replacement to rest this Unit."
             }
           }
         ]
@@ -4560,7 +4560,7 @@
                   "UN"
                 ]
               },
-              "notes": "Design placeholder: requires engine tracking of 'Units deployed this turn' and applying attack eligibility restrictions."
+              "notes": "Implemented: attack validation enforces deployed-this-turn trait requirement for this Unit's attack eligibility."
             }
           }
         ]
@@ -4812,7 +4812,7 @@
             },
             "parameters": {
               "value": 1,
-              "notes": "Requires engine support for comparing target level to the source pilot's level."
+              "notes": "Implemented: target level comparison uses SOURCE_LEVEL dynamically."
             }
           }
         ]
@@ -5456,7 +5456,7 @@
             ],
             "parameters": {
               "value": 1,
-              "notes": "Discard-from-hand cost not yet implemented; draw only resolves if the discard cost is paid."
+              "notes": "Implemented: attack-phase discardFromHand costs gate draw resolution."
             }
           }
         ]
@@ -5660,8 +5660,8 @@
           },
           {
             "effectId": "during_link_effect",
-            "type": "continuous",
-            "trigger": "continuous",
+            "type": "triggered",
+            "trigger": "DESTROYED",
             "action": "conditional",
             "parameters": {
               "text": "If a friendly white Base is in play, choose 1 enemy Unit whose Lv. is equal to or lower than this Unit. Return it to its owner's hand.",
@@ -5677,8 +5677,23 @@
                   "value": ">=1"
                 }
               ],
-              "then": [],
-              "notes": "TODO: structure then-steps."
+              "then": [
+                {
+                  "action": "returnToHand",
+                  "target": {
+                    "type": "unit",
+                    "scope": "opponent",
+                    "count": 1,
+                    "selection": {
+                      "type": "player_choice"
+                    },
+                    "filters": {
+                      "level": "<=SOURCE_LEVEL"
+                    }
+                  }
+                }
+              ],
+              "notes": "Implemented: linked DESTROYED conditional returns 1 enemy Unit with level <= source level when friendly white Base is in play."
             },
             "sourceConditions": [
               {
@@ -7086,7 +7101,7 @@
                 },
                 "count": 1
               },
-              "notes": "Requires engine support for counting enemy units in play and range matching (1-4 vs 5+)."
+              "notes": "Implemented: conditionalTokenDeploy supports enemy unit-count ranges."
             }
           }
         ]
@@ -7851,7 +7866,7 @@
             },
             "parameters": {
               "value": 1,
-              "notes": "Requires engine support for opponent-turn continuous effects."
+              "notes": "Implemented: continuous effects respect OPPONENT_TURN timing gates."
             }
           }
         ]
@@ -8682,7 +8697,7 @@
             },
             "parameters": {
               "disallow": true,
-              "notes": "Design placeholder: requires engine support for preventing a Unit from being set as active."
+              "notes": "Implemented: restrict_set_active rules block set-active transitions."
             }
           },
           {
@@ -8697,7 +8712,7 @@
             },
             "parameters": {
               "disallow": true,
-              "notes": "Design placeholder: requires engine support for preventing pilot pairing."
+              "notes": "Implemented: restrict_pairing rules block pilot pairing attempts."
             }
           }
         ]

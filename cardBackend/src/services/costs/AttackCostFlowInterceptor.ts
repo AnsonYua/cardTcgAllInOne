@@ -7,6 +7,7 @@ import type { UnitZoneCard, PilotZoneCard } from '../../models/CardSystem';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
 import { AttackResumeScheduler } from '../battle/AttackResumeScheduler';
 import { DeployTargetManager } from '../DeployTargetManager';
+import { DiscardFromHandCostFlow } from './DiscardFromHandCostFlow';
 import { DestroyFriendlyUnitCostFlow } from './DestroyFriendlyUnitCostFlow';
 import { MoveFromHandToDeckBottomCostFlow } from './MoveFromHandToDeckBottomCostFlow';
 import { MoveFromTrashToDeckCostFlow } from './MoveFromTrashToDeckCostFlow';
@@ -25,6 +26,51 @@ export class AttackCostFlowInterceptor {
         sourceCard: UnitZoneCard | PilotZoneCard,
         effect: EffectDefinition
     ): AttackCostInterceptResult {
+        if (effect.cost && typeof effect.cost === 'object' && (effect.cost as any).discardFromHand !== undefined) {
+            const costResult = DiscardFromHandCostFlow.handleOrEnqueue(
+                gameEnv,
+                playerId,
+                sourceCard.carduid,
+                effect,
+                typeof (attackEvent.data as any)?.attackNotificationId === 'string'
+                    ? ((attackEvent.data as any).attackNotificationId as string)
+                    : undefined
+            );
+            if (!costResult.success) {
+                return { handled: true, success: false, error: costResult.error || 'Failed to handle discardFromHand cost' };
+            }
+            if (costResult.kind === 'requiresSelection') {
+                AttackResumeScheduler.enqueueResumeAttackAfterChoice(gameEnv, attackEvent, costResult.choiceEventId);
+                return { handled: true, success: true, requiresSelection: true, consumed: false };
+            }
+            if (costResult.kind === 'paid') {
+                const followUpEffect = ensureEffectDefaults({
+                    ...effect,
+                    optional: false,
+                    cost: undefined
+                } as any);
+
+                const followUpResult = DeployTargetManager.processEffectWithTargetChoice(
+                    gameEnv,
+                    playerId,
+                    sourceCard.carduid,
+                    followUpEffect,
+                    typeof (attackEvent.data as any)?.attackNotificationId === 'string'
+                        ? ((attackEvent.data as any).attackNotificationId as string)
+                        : undefined
+                );
+                if (!followUpResult.success) {
+                    return { handled: true, success: false, error: followUpResult.error || 'Failed to resolve follow-up effect after discard cost' };
+                }
+                if (followUpResult.requiresSelection && followUpResult.choiceEventId) {
+                    AttackResumeScheduler.enqueueResumeAttackAfterChoice(gameEnv, attackEvent, followUpResult.choiceEventId);
+                    return { handled: true, success: true, requiresSelection: true, consumed: true };
+                }
+                return { handled: true, success: true, consumed: true };
+            }
+            return { handled: true, success: true, consumed: false };
+        }
+
         if (effect.cost && typeof effect.cost === 'object' && (effect.cost as any).moveFromHandToDeckBottom) {
             const drawCount = typeof effect.parameters?.value === 'number' ? effect.parameters.value : 0;
             const costResult = MoveFromHandToDeckBottomCostFlow.handleOrEnqueue(

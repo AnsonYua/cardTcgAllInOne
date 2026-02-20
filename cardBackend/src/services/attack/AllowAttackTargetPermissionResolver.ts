@@ -50,6 +50,7 @@ export class AllowAttackTargetPermissionResolver {
         const allowsTarget = (rule: AllowAttackTargetRuleLike): boolean =>
             AllowAttackTargetRuleEvaluator.ruleAllowsTarget({
                 sourceSlotTotals: attackerSlotTotals,
+                sourceLevel: this.getEffectiveLevel(attacker),
                 targetLevel: target.cardData?.level || 0,
                 targetTotalAp: targetSlotTotals.totalAP,
                 targetDamaged,
@@ -112,5 +113,11 @@ export class AllowAttackTargetPermissionResolver {
         }
 
         return false;
+    }
+
+    private static getEffectiveLevel(card: UnitZoneCard): number {
+        const baseLevel = typeof card.cardData?.level === 'number' ? card.cardData.level : 0;
+        const levelModifier = typeof (card as any).modifyLevel === 'number' ? ((card as any).modifyLevel as number) : 0;
+        return baseLevel + levelModifier;
     }
 }

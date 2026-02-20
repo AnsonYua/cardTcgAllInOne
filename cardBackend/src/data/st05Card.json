@@ -215,7 +215,7 @@
                                     }
                                 }
                             ],
-                            "notes": "Support-style 'rest self' activation not yet implemented."
+                            "notes": "Implemented: restSelf/rest='self' activation costs are supported."
                         }
                     }
                 ]
@@ -497,7 +497,7 @@
                                     }
                                 }
                             ],
-                            "notes": "Requires engine support for multi-target selection/resolution."
+                            "notes": "Implemented: sequence steps support independent multi-target selections."
                         }
                     }
                 ]
@@ -562,7 +562,7 @@
                         "parameters": {
                             "value": 1,
                             "from": "trash",
-                            "notes": "Selecting a specific card from trash to hand not yet implemented."
+                            "notes": "Implemented: addToHand supports selecting and transferring specific trash cards to hand."
                         }
                     }
                 ]
@@ -687,7 +687,7 @@
                                     }
                                 }
                             ],
-                            "notes": "Requires engine support for multi-step command resolution."
+                            "notes": "Implemented: sequence-based multi-step command resolution is supported."
                         }
                     }
                 ]
@@ -821,7 +821,7 @@
                         },
                         "parameters": {
                             "value": 2,
-                            "notes": "Requires engine support for targeting damaged Units."
+                            "notes": "Implemented: damaged target filters are supported."
                         }
                     }
                 ]

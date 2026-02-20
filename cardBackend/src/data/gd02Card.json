@@ -79,7 +79,7 @@
             "action": "heal",
             "parameters": {
               "value": 2,
-              "notes": "Requires engine support for SHIELD_AREA_CARD_DAMAGED trigger + condition evaluation."
+              "notes": "Implemented: SHIELD_AREA_CARD_DAMAGED trigger and condition evaluation are active."
             }
           }
         ]
@@ -144,7 +144,7 @@
             "action": "setActive",
             "parameters": {
               "text": "During your turn, when one of your Units destroys an enemy Unit with battle damage, set this Unit as active.",
-              "notes": "Design placeholder: requires global event support; action is a simple setActive on self."
+              "notes": "Implemented: global battle-destroy event dispatch drives this self setActive trigger."
             }
           }
         ]
@@ -197,7 +197,7 @@
                 "cardType": "unit",
                 "count": 1
               },
-              "notes": "Discard cost + destroyed trigger not yet implemented."
+              "notes": "Implemented: discardFromHand costs are enforced for DESTROYED-triggered follow-up effects."
             },
             "target": {
               "type": "card",
@@ -267,7 +267,7 @@
                   "when": "OPPONENT_START_PHASE_END"
                 }
               },
-              "notes": "Design placeholder: engine should persist an activation lock on the chosen unit so it is not set active during the start phase of the opponent's next turn."
+              "notes": "Implemented: applies activation lock so the unit cannot be set active on the opponent's next start phase."
             }
           }
         ]
@@ -367,7 +367,7 @@
             "parameters": {
               "from": "enemy_units",
               "enemyLevel": "<=2",
-              "notes": "Design placeholder: requires engine support for preventing battle damage from enemy Units based on enemy unit level."
+              "notes": "Implemented: battle damage prevention supports enemy level filters."
             }
           }
         ]
@@ -952,7 +952,7 @@
                 "toZone": "deck_bottom",
                 "order": "random"
               },
-              "notes": "Reveal/select-from-top + random bottom not yet implemented."
+              "notes": "Implemented: tutor supports reveal/select from top and random bottom placement."
             }
           },
           {
@@ -1019,7 +1019,7 @@
                   "parameters": {
                     "value": 1
                   },
-                  "notes": "Design placeholder: discard not yet implemented."
+                  "notes": "Implemented: sequence discard steps resolve through discardFromHand targeting."
                 }
               ]
             }
@@ -2141,7 +2141,7 @@
                 "count": 1,
                 "rested": true
               },
-              "notes": "Requires engine support for conditional checks like \"has another Unit with trait\" and for deploying tokens rested."
+              "notes": "Implemented: conditionalTokenDeploy supports condition-based branch matching including trait/shield/unit-count checks. \"has another Unit with trait\" and for deploying tokens rested."
             }
           }
         ]
@@ -2183,7 +2183,7 @@
                 "count": 1,
                 "rested": true
               },
-              "notes": "Requires engine support for conditional checks like \"has another Unit with trait\" and for deploying tokens rested."
+              "notes": "Implemented: conditionalTokenDeploy supports condition-based branch matching including trait/shield/unit-count checks. \"has another Unit with trait\" and for deploying tokens rested."
             }
           }
         ]
@@ -2230,7 +2230,7 @@
             ],
             "parameters": {
               "value": 1,
-              "notes": "Requires engine support for detecting the current attack target card type."
+              "notes": "Implemented: attack-target card-type conditions are evaluated at runtime."
             }
           }
         ]
@@ -2522,13 +2522,36 @@
               "version": 1,
               "if": [
                 {
+                  "type": "turnPlayer",
+                  "scope": "self",
+                  "value": "YOUR_TURN"
+                },
+                {
                   "type": "cardsInTrash",
                   "scope": "self",
                   "value": ">=7"
                 }
               ],
-              "then": [],
-              "notes": "TODO: structure then-steps."
+              "then": [
+                {
+                  "action": "modifyAP",
+                  "target": {
+                    "type": "unit",
+                    "scope": "self_all_unit",
+                    "filters": {
+                      "traitsAny": [
+                        "Vulture"
+                      ],
+                      "excludeSelf": true
+                    },
+                    "count": 6
+                  },
+                  "parameters": {
+                    "value": 2
+                  }
+                }
+              ],
+              "notes": "Implemented: continuous conditional then-steps grant AP+2 to other friendly (Vulture) Units during your turn when trash count threshold is met."
             }
           }
         ]
@@ -2573,7 +2596,7 @@
             ],
             "parameters": {
               "value": 1,
-              "notes": "Requires engine support for detecting whether the source unit is damaged."
+              "notes": "Implemented: source damaged-state conditions are evaluated at runtime."
             }
           }
         ]
@@ -2777,7 +2800,7 @@
             },
             "parameters": {
               "value": 2,
-              "notes": "Destroy-friendly-unit cost not yet implemented; damage only resolves if the cost is paid."
+              "notes": "Implemented: destroyFriendlyUnit cost flow gates follow-up damage resolution."
             }
           }
         ]
@@ -3432,8 +3455,26 @@
                   "value": ">=1"
                 }
               ],
-              "then": [],
-              "notes": "TODO: structure then-steps."
+              "then": [
+                {
+                  "action": "pair_from_hand",
+                  "optional": true,
+                  "target": {
+                    "type": "pilot",
+                    "scope": "self_hand",
+                    "count": 1,
+                    "selection": {
+                      "type": "player_choice"
+                    },
+                    "filters": {
+                      "traitsAny": [
+                        "AEUG"
+                      ]
+                    }
+                  }
+                }
+              ],
+              "notes": "Implemented: deploy conditional can pair 1 (AEUG) Pilot from hand with this Unit via pair_from_hand."
             }
           }
         ]
@@ -3836,8 +3877,26 @@
                   "value": ">=1"
                 }
               ],
-              "then": [],
-              "notes": "TODO: structure then-steps."
+              "then": [
+                {
+                  "action": "modifyAP",
+                  "timing": {
+                    "duration": "UNTIL_END_OF_TURN"
+                  },
+                  "target": {
+                    "type": "unit",
+                    "scope": "opponent",
+                    "count": 1,
+                    "selection": {
+                      "type": "player_choice"
+                    }
+                  },
+                  "parameters": {
+                    "value": -2
+                  }
+                }
+              ],
+              "notes": "Implemented: deploy conditional then-step applies AP-2 to 1 enemy Unit until end of turn."
             }
           }
         ]
@@ -4211,7 +4270,7 @@
                 "toZone": "deck_bottom",
                 "order": "random"
               },
-              "notes": "Reveal/select-from-top with OR filters + random bottom not yet implemented."
+              "notes": "Implemented: tutor_top_deck supports OR filter groups and random-bottom placement."
             }
           }
         ]
@@ -4540,7 +4599,7 @@
                 "toZone": "deck_bottom",
                 "order": "random"
               },
-              "notes": "Discard-from-hand cost + reveal/select-from-top + random bottom not yet implemented; tutor only resolves if the discard cost is paid."
+              "notes": "Implemented: discard-from-hand costs are enforced before tutor resolution."
             }
           }
         ]
@@ -4608,7 +4667,7 @@
             },
             "parameters": {
               "keyword": "High-Maneuver",
-              "notes": "Requires engine support for damaged checks and keyword grants."
+              "notes": "Implemented: source damaged-state conditions and keyword grants are runtime-supported."
             }
           }
         ]
@@ -5196,7 +5255,7 @@
             },
             "parameters": {
               "from": "enemy_units",
-              "notes": "Requires engine support for preventing battle damage from enemy Units for the duration of the battle."
+              "notes": "Implemented: prevent_battle_damage supports enemy-unit source filtering for battle duration."
             }
           },
           {
@@ -5932,8 +5991,32 @@
                   "value": ">=7"
                 }
               ],
-              "then": [],
-              "notes": "TODO: structure then-steps."
+              "then": [
+                {
+                  "action": "allow_attack_target",
+                  "timing": {
+                    "duration": "UNTIL_END_OF_TURN"
+                  },
+                  "target": {
+                    "type": "unit",
+                    "scope": "self_all_unit",
+                    "count": 1,
+                    "selection": {
+                      "type": "player_choice"
+                    },
+                    "filters": {
+                      "traitsAny": [
+                        "Vulture"
+                      ]
+                    }
+                  },
+                  "parameters": {
+                    "status": "active",
+                    "level": "<=4"
+                  }
+                }
+              ],
+              "notes": "Implemented: command conditional then-step grants active-target permission (Lv.4 or lower) to 1 friendly (Vulture) Unit until end of turn."
             }
           },
           {
@@ -6433,7 +6516,7 @@
                   "parameters": {
                     "status": "active",
                     "ap": "<=5",
-                    "notes": "Models only the token attack-target permission; requires engine support."
+                    "notes": "Implemented: allow_attack_target permissions apply to selected token units."
                   }
                 }
               ]

@@ -223,6 +223,39 @@ export class SourceAndSpecialConditionEvaluator {
                 return SourceStatConditionEvaluator.sourceHpMatches(gameEnv, sourceCarduid, typedCondition.value);
             }
 
+            case 'attackTargetCardType': {
+                if (scope !== 'battle') {
+                    return false;
+                }
+                const expectedType = typeof typedCondition.value === 'string'
+                    ? typedCondition.value.toLowerCase()
+                    : '';
+                if (!expectedType) {
+                    return false;
+                }
+
+                const sourceCarduid = typeof sourceCard?.carduid === 'string' ? sourceCard.carduid : '';
+                const battle = gameEnv.currentBattle;
+                if (!battle || !sourceCarduid) {
+                    return false;
+                }
+
+                const targetCarduid = battle.attackerCarduid === sourceCarduid
+                    ? battle.targetCarduid
+                    : battle.targetCarduid === sourceCarduid
+                        ? battle.attackerCarduid
+                        : '';
+                if (!targetCarduid) {
+                    return false;
+                }
+
+                const targetCard = SlotZoneUtils.getCardByUid(gameEnv, targetCarduid);
+                const actualType = typeof (targetCard as any)?.cardData?.cardType === 'string'
+                    ? String((targetCard as any).cardData.cardType).toLowerCase()
+                    : '';
+                return actualType === expectedType;
+            }
+
             default:
                 return null;
         }

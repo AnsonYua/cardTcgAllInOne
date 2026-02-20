@@ -12,6 +12,14 @@ export class AllowAttackTargetRuleEvaluator {
         return `${match[1]}${sourceAp}`;
     }
 
+    private static resolveDynamicSourceLevelFilter(filter: string, sourceLevel: number): string | null {
+        const match = filter.match(/^(<=|>=|<|>|==|!=)\s*(SOURCE_LEVEL|sourceLevel)$/);
+        if (!match) {
+            return null;
+        }
+        return `${match[1]}${sourceLevel}`;
+    }
+
     static conditionsSatisfied(
         conditions: unknown,
         sourceSlotTotals: { totalAP: number }
@@ -51,12 +59,13 @@ export class AllowAttackTargetRuleEvaluator {
 
     static ruleAllowsTarget(params: {
         sourceSlotTotals: { totalAP: number };
+        sourceLevel: number;
         targetLevel: number;
         targetTotalAp: number;
         targetDamaged: boolean;
         rule: { conditions?: unknown; parameters?: unknown };
     }): boolean {
-        const { sourceSlotTotals, targetLevel, targetTotalAp, targetDamaged, rule } = params;
+        const { sourceSlotTotals, sourceLevel, targetLevel, targetTotalAp, targetDamaged, rule } = params;
 
         if (!this.conditionsSatisfied(rule?.conditions, sourceSlotTotals)) {
             return false;
@@ -74,7 +83,9 @@ export class AllowAttackTargetRuleEvaluator {
             if (typeof parameters.level !== 'string') {
                 return false;
             }
-            if (!validateComparisonFilter(targetLevel, parameters.level)) {
+            const resolvedLevelFilter =
+                this.resolveDynamicSourceLevelFilter(parameters.level, sourceLevel) || parameters.level;
+            if (!validateComparisonFilter(targetLevel, resolvedLevelFilter)) {
                 return false;
             }
         }

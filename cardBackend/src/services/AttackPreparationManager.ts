@@ -6,6 +6,7 @@ import { Player } from '../models/Player';
 import { UnitZoneCard } from '../models/CardSystem';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
 import { AllowAttackTargetPermissionResolver } from './attack/AllowAttackTargetPermissionResolver';
+import { AttackRestrictionEvaluator } from './attack/AttackRestrictionEvaluator';
 
 export interface AttackPreparationFailure {
     success: false;
@@ -82,6 +83,18 @@ export class AttackPreparationManager {
             };
         }
 
+        const dynamicRequirementError = AttackRestrictionEvaluator.getDynamicAttackRequirementError(
+            gameEnv,
+            playerId,
+            attackerSlotResult.unit as UnitZoneCard
+        );
+        if (dynamicRequirementError) {
+            return {
+                success: false,
+                error: dynamicRequirementError
+            };
+        }
+
         return {
             success: true,
             attacker,
@@ -149,6 +162,13 @@ export class AttackPreparationManager {
                 error: `${cardName} cannot attack during this turn due to a restriction`
             };
         }
+        const dynamicRequirementError = AttackRestrictionEvaluator.getDynamicAttackRequirementError(gameEnv, playerId, attackingUnit);
+        if (dynamicRequirementError) {
+            return {
+                success: false,
+                error: dynamicRequirementError
+            };
+        }
         if (!targetUnit.isRested && !this.canAttackActiveTarget(gameEnv, attackingUnit, targetUnit)) {
             return {
                 success: false,
@@ -214,54 +234,6 @@ export class AttackPreparationManager {
     }
 
     static unitHasAttackRestriction(unit: UnitZoneCard | null, restriction: string): boolean {
-        if (!unit) {
-            return false;
-        }
-
-        const matchesRestriction = (value: any): boolean => {
-            if (!value) {
-                return false;
-            }
-
-            if (typeof value === 'string') {
-                return value === restriction;
-            }
-
-            if (Array.isArray(value)) {
-                return value.some(item => matchesRestriction(item));
-            }
-
-            if (typeof value === 'object') {
-                if (value.restriction || value.restrictions) {
-                    return matchesRestriction(value.restriction || value.restrictions);
-                }
-
-                if (value.type) {
-                    return matchesRestriction(value.type);
-                }
-
-                return Object.values(value).some(item => matchesRestriction(item));
-            }
-
-            return false;
-        };
-
-        if (matchesRestriction((unit as any).attackRestrictions)) {
-            return true;
-        }
-
-        if (matchesRestriction((unit as any).activeRestrictions)) {
-            return true;
-        }
-
-        const cardRules = unit.cardData?.effects?.rules || [];
-        return cardRules.some(rule => {
-            if (rule?.action !== 'restrict_attack') {
-                return false;
-            }
-
-            const parameters = rule.parameters || {};
-            return matchesRestriction(parameters.restriction || parameters.restrictions);
-        });
+        return AttackRestrictionEvaluator.hasRestriction(unit, restriction);
     }
 }

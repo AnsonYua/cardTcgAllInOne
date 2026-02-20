@@ -23,16 +23,15 @@ import {
     emitTutorTopDeckResolved,
     emitTutorTopDeckViewed
 } from './tutorTopDeck/TutorTopDeckNotificationUtils';
+import { matchesSingleTutorFilter, type TutorCardFilter } from './tutorTopDeck/TutorTopDeckFilterUtils';
 
 type TutorSelectConfig = {
     count?: number;
     optional?: boolean;
     toZone?: string;
     reveal?: boolean;
-    filters?: {
-        cardType?: string;
-        traitsAny?: string[];
-    };
+    filters?: TutorCardFilter;
+    filtersAny?: TutorCardFilter[];
 };
 
 type TutorRestConfig = {
@@ -85,21 +84,29 @@ export class TutorTopDeckManager {
         const reveal = select?.reveal === true;
         const toZone = typeof select?.toZone === 'string' ? select.toZone : 'hand';
         const filters = typeof select?.filters === 'object' && select.filters ? select.filters : {};
-        const traitsAny = Array.isArray(filters.traitsAny) ? filters.traitsAny.filter((t: unknown) => typeof t === 'string') : [];
-        const cardType = typeof filters.cardType === 'string' ? filters.cardType : undefined;
+        const filtersAny = Array.isArray(select?.filtersAny)
+            ? select!.filtersAny.filter((entry): entry is NonNullable<TutorSelectConfig['filtersAny']>[number] => Boolean(entry && typeof entry === 'object'))
+            : [];
+        const hasDirectFilters = Object.keys(filters).length > 0;
 
         const lookedDetails = looked.map(carduid => {
             const cardId = getCardIdFromUid(carduid);
             const cardData = CardDatabaseManager.getCardDetails(cardId);
             const traits = Array.isArray(cardData?.traits) ? cardData.traits : [];
-            const matchesTraits = traitsAny.length === 0 ? true : traitsAny.some((trait: string) => traits.includes(trait));
-            const matchesCardType = !cardType || (typeof cardData?.cardType === 'string' && cardData.cardType === cardType);
+            const matchesDirectFilters = hasDirectFilters
+                ? matchesSingleTutorFilter(cardData, filters)
+                : false;
+            const matchesAnyFilter = filtersAny.length === 0
+                ? false
+                : filtersAny.some((entry) => matchesSingleTutorFilter(cardData, entry));
             return {
                 carduid,
                 cardId,
                 name: cardData?.name,
                 traits,
-                matchesFilters: matchesTraits && matchesCardType
+                matchesFilters: hasDirectFilters || filtersAny.length > 0
+                    ? (matchesDirectFilters || matchesAnyFilter)
+                    : true
             };
         });
 

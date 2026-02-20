@@ -150,6 +150,18 @@ export class EffectConditionEvaluator {
                 return ConditionEvaluators.pairedPilotTrait(gameEnv, sourceCarduid, typedCondition.value);
             }
 
+            case 'pairedPilotTraitAny': {
+                const sourceCarduid = typeof (sourceCard as any)?.carduid === 'string'
+                    ? (sourceCard as any).carduid
+                    : '';
+                const traitsAny = Array.isArray((typedCondition as any).value)
+                    ? ((typedCondition as any).value as unknown[]).filter((entry): entry is string => typeof entry === 'string')
+                    : Array.isArray((typedCondition as any).traitsAny)
+                        ? ((typedCondition as any).traitsAny as unknown[]).filter((entry): entry is string => typeof entry === 'string')
+                        : [];
+                return ConditionEvaluators.pairedPilotTraitAny(gameEnv, sourceCarduid, traitsAny);
+            }
+
             case 'pairedPilotLevel': {
                 const sourceCarduid = typeof (sourceCard as any)?.carduid === 'string'
                     ? (sourceCard as any).carduid
@@ -319,6 +331,21 @@ export class EffectConditionEvaluator {
                     gameEnv,
                     cardOwnerPlayerId,
                     typedCondition
+                );
+            }
+
+            case 'unitsInPlayWithStatus': {
+                if (!cardOwnerPlayerId) {
+                    return false;
+                }
+                const exclude = typeof (sourceCard as any)?.carduid === 'string'
+                    ? (sourceCard as any).carduid
+                    : undefined;
+                return ConditionEvaluators.evaluateUnitsInPlayWithStatusCondition(
+                    gameEnv,
+                    cardOwnerPlayerId,
+                    typedCondition,
+                    exclude
                 );
             }
 

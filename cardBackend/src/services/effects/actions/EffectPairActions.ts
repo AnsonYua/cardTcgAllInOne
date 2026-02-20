@@ -1,12 +1,8 @@
 // src/services/effects/actions/EffectPairActions.ts
 
 import type { GameEnvironment } from '../../../models/GameEnvironment';
-import type { EffectDefinition, TargetReference, PlayCardEventData } from '../../EventQueue/interfaces/GameEvent';
-import { GameNotificationManager } from '../../GameNotificationManager';
-import { PairingEffectManager } from '../../PairingEffectManager';
-import { CardEnteredPlayManager } from '../../CardEnteredPlayManager';
-import { PlayerCardManager } from '../../PlayerCardManager';
-import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
+import type { EffectDefinition, TargetReference } from '../../EventQueue/interfaces/GameEvent';
+import { finalizePairingFromAction, resolvePairingSourceContext } from './PairingActionSupport';
 
 export function applyPairFromTrashEffect(
     gameEnv: GameEnvironment,
@@ -15,8 +11,9 @@ export function applyPairFromTrashEffect(
     effect: EffectDefinition,
     selectedTargets: TargetReference[]
 ): { success: boolean; error?: string } {
-    if (!sourceCarduid) {
-        return { success: false, error: 'pair_from_trash requires sourceCarduid' };
+    const context = resolvePairingSourceContext(gameEnv, sourcePlayerId, sourceCarduid, 'pair_from_trash');
+    if (!context.success) {
+        return context;
     }
 
     if (selectedTargets.length === 0) {
@@ -28,20 +25,7 @@ export function applyPairFromTrashEffect(
         return { success: false, error: 'pair_from_trash can only select from your own trash' };
     }
 
-    const player = gameEnv.getPlayer(sourcePlayerId);
-    if (!player?.zones) {
-        return { success: false, error: 'Player zones not found for pair_from_trash' };
-    }
-
-    const sourceSlot = SlotZoneUtils.findSlotByCarduid(player.zones, sourceCarduid).slotName;
-    if (!sourceSlot) {
-        return { success: false, error: `Source unit ${sourceCarduid} not found in slots for pair_from_trash` };
-    }
-
-    const slot = (player.zones as any)[sourceSlot];
-    if (slot?.pilot) {
-        return { success: false, error: 'pair_from_trash requires the source unit to have no paired pilot' };
-    }
+    const { player } = context;
 
     if (!Array.isArray(player.zones.trashArea)) {
         player.zones.trashArea = [];
@@ -53,55 +37,74 @@ export function applyPairFromTrashEffect(
     }
 
     const removedTrashCard = player.zones.trashArea.splice(trashIndex, 1)[0];
-
-    const placementResult = PlayerCardManager.placeCardWithEventData(gameEnv, sourcePlayerId, {
-        carduid: target.carduid,
-        playAs: 'pilot',
-        targetUnit: sourceCarduid
-    });
-
-    if (!placementResult.success || !placementResult.placedZone) {
-        player.zones.trashArea.push(removedTrashCard);
-        return { success: false, error: placementResult.error || 'Failed to pair pilot from trash' };
-    }
-
-    const entered = CardEnteredPlayManager.handleCardEnteredPlay(gameEnv, sourcePlayerId, {
-        carduid: target.carduid,
-        playAs: 'pilot',
-        slotName: placementResult.placedZone
-    });
-    if (!entered.success) {
-        return { success: false, error: entered.error || 'Failed to handle pilot entering play' };
-    }
-
-    const eventData: PlayCardEventData = {
-        carduid: target.carduid,
-        playAs: 'pilot',
-        slotName: placementResult.placedZone
-    };
-    const pairingEvent = PairingEffectManager.checkForPairingEffectsEvent(eventData, gameEnv, sourcePlayerId);
-    if (pairingEvent) {
-        gameEnv.enqueueForProcessing(pairingEvent);
-    }
-
-    if (placementResult.isOnLink) {
-        PlayerCardManager.handleLinkFormation(gameEnv, sourcePlayerId, target.carduid);
-    }
-
-    const notificationManager = new GameNotificationManager(gameEnv);
-    notificationManager.addNotificationEvent(
-        'PILOT_PAIRED_FROM_TRASH',
-        {
-            playerId: sourcePlayerId,
-            unitCarduid: sourceCarduid,
-            pilotCarduid: target.carduid,
-            slotName: placementResult.placedZone,
-            sourceCarduid,
-            effectId: effect.effectId,
-            timestamp: Date.now()
-        },
-        'normal'
+    const finalizeResult = finalizePairingFromAction(
+        gameEnv,
+        sourcePlayerId,
+        sourceCarduid!,
+        effect,
+        target.carduid,
+        'PILOT_PAIRED_FROM_TRASH'
     );
+    if (!finalizeResult.success) {
+        player.zones.trashArea.push(removedTrashCard);
+        return finalizeResult;
+    }
 
-    return { success: true };
+    return finalizeResult;
+}
+
+export function applyPairFromHandEffect(
+    gameEnv: GameEnvironment,
+    sourcePlayerId: string,
+    sourceCarduid: string | undefined,
+    effect: EffectDefinition,
+    selectedTargets: TargetReference[]
+): { success: boolean; error?: string } {
+    const context = resolvePairingSourceContext(gameEnv, sourcePlayerId, sourceCarduid, 'pair_from_hand');
+    if (!context.success) {
+        return context;
+    }
+
+    if (selectedTargets.length === 0) {
+        return { success: false, error: 'pair_from_hand requires a selected pilot from hand' };
+    }
+
+    const target = selectedTargets[0];
+    if (target.playerId !== sourcePlayerId) {
+        return { success: false, error: 'pair_from_hand can only select from your own hand' };
+    }
+
+    const { player } = context;
+    if (!player.deck) {
+        return { success: false, error: 'Player not found for pair_from_hand' };
+    }
+
+    const handIndex = player.deck.hand.findIndex((card: any) => card?.carduid === target.carduid);
+    if (handIndex < 0) {
+        return { success: false, error: `Pilot ${target.carduid} not found in hand for pair_from_hand` };
+    }
+
+    const handCard = player.deck.hand[handIndex];
+    if (String(handCard?.cardData?.cardType || '').toLowerCase() !== 'pilot') {
+        return { success: false, error: 'pair_from_hand requires a pilot card target' };
+    }
+
+    const removed = player.deck.playCardFromHand(target.carduid);
+    if (!removed) {
+        return { success: false, error: `Failed to remove pilot ${target.carduid} from hand` };
+    }
+    const finalizeResult = finalizePairingFromAction(
+        gameEnv,
+        sourcePlayerId,
+        sourceCarduid!,
+        effect,
+        target.carduid,
+        'PILOT_PAIRED_FROM_HAND'
+    );
+    if (!finalizeResult.success) {
+        player.deck.hand.push(handCard);
+        return finalizeResult;
+    }
+
+    return finalizeResult;
 }

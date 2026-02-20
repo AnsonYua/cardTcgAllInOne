@@ -1,0 +1,7 @@
+{
+  "generatedAt": "2026-02-20T21:21:30.000Z",
+  "maxAllowed": 77,
+  "previousTotal": 77,
+  "requireStrictDecrease": false,
+  "notes": "Wave progress baseline frozen after dynamic filter + tutor filter implementation and data-note refresh; enable strict decrease on next wave."
+}

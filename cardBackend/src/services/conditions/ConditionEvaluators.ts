@@ -199,6 +199,23 @@ export class ConditionEvaluators {
         return PairedSlotConditionEvaluator.pairedPilotTrait(gameEnv, sourceCarduid, expected);
     }
 
+    static pairedPilotTraitAny(
+        gameEnv: GameEnvironment,
+        sourceCarduid: string,
+        value: unknown
+    ): boolean {
+        const expectedTraits = Array.isArray(value)
+            ? value.filter((entry): entry is string => typeof entry === 'string' && entry.length > 0)
+            : Array.isArray((value as any)?.traitsAny)
+                ? (value as any).traitsAny.filter((entry: unknown): entry is string => typeof entry === 'string' && entry.length > 0)
+                : [];
+        if (expectedTraits.length === 0 || !sourceCarduid) {
+            return false;
+        }
+
+        return PairedSlotConditionEvaluator.pairedPilotTraitAny(gameEnv, sourceCarduid, expectedTraits);
+    }
+
     static pairedPilotLevel(
         gameEnv: GameEnvironment,
         sourceCarduid: string,
@@ -358,6 +375,14 @@ export class ConditionEvaluators {
                     typeof trait === 'string' && cardTraits.includes(trait)
                 );
                 if (!hasTrait) {
+                    return total;
+                }
+            }
+
+            const nameIncludesFilter = filters['nameIncludes'];
+            if (typeof nameIncludesFilter === 'string' && nameIncludesFilter.length > 0) {
+                const cardName = typeof cardData.name === 'string' ? cardData.name.toLowerCase() : '';
+                if (!cardName.includes(nameIncludesFilter.toLowerCase())) {
                     return total;
                 }
             }

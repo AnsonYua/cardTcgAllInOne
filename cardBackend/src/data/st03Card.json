@@ -50,7 +50,7 @@
             },
             "parameters": {
               "keyword": "High-Maneuver",
-              "notes": "Unblockable keyword not yet implemented."
+              "notes": "Implemented: High-Maneuver keyword grants unblockable behavior."
             }
           },
           {
@@ -270,7 +270,7 @@
                 "toZone": "deck_bottom",
                 "order": "random"
               },
-              "notes": "Destroyed trigger + reveal/select-from-top + random bottom not yet implemented."
+              "notes": "Implemented: DESTROYED-triggered tutor_top_deck flows are supported."
             }
           }
         ]
@@ -508,7 +508,7 @@
             },
             "parameters": {
               "keyword": "High-Maneuver",
-              "notes": "High-Maneuver keyword not yet implemented."
+              "notes": "Implemented: High-Maneuver keyword grants unblockable behavior."
             }
           }
         ]
@@ -653,7 +653,7 @@
             },
             "parameters": {
               "maxEnemyAp": 2,
-              "notes": "Preventing battle damage based on enemy AP not yet implemented."
+              "notes": "Implemented: prevent_battle_damage supports maxEnemyAp filters."
             }
           },
           {

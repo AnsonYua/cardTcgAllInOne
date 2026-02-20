@@ -136,4 +136,48 @@ describe('allow_attack_target active target strictness', () => {
 
         expect(result.success).toBe(true);
     });
+
+    test('dynamic level filter <=SOURCE_LEVEL is evaluated for active-target permission', () => {
+        const gameEnv = new GameEnvironment();
+        const attackerPlayer = gameEnv.addPlayer('playerId_1', 'P1');
+        const defenderPlayer = gameEnv.addPlayer('playerId_2', 'P2');
+
+        attackerPlayer.zones.slot1.unit = createUnit('dynamic_level_attacker_0001', 'CUSTOM-LEVEL-001', [
+            {
+                action: 'allow_attack_target',
+                parameters: {
+                    status: 'active',
+                    level: '<=SOURCE_LEVEL'
+                }
+            }
+        ]);
+        attackerPlayer.zones.slot1.unit.cardData.level = 4;
+
+        defenderPlayer.zones.slot1.unit = createUnit('enemy_active_lv3_0001', 'ST03-006', []);
+        defenderPlayer.zones.slot1.unit.cardData.level = 3;
+        defenderPlayer.zones.slot1.unit.isRested = false;
+
+        const allowResult = AttackPreparationManager.prepareUnitAttack(
+            gameEnv,
+            'playerId_1',
+            'dynamic_level_attacker_0001',
+            'playerId_2',
+            'enemy_active_lv3_0001'
+        );
+        expect(allowResult.success).toBe(true);
+
+        defenderPlayer.zones.slot2.unit = createUnit('enemy_active_lv6_0001', 'ST03-006', []);
+        defenderPlayer.zones.slot2.unit.cardData.level = 6;
+        defenderPlayer.zones.slot2.unit.isRested = false;
+
+        const denyResult = AttackPreparationManager.prepareUnitAttack(
+            gameEnv,
+            'playerId_1',
+            'dynamic_level_attacker_0001',
+            'playerId_2',
+            'enemy_active_lv6_0001'
+        );
+        expect(denyResult.success).toBe(false);
+        expect(denyResult.error).toContain('Target unit must be rested');
+    });
 });

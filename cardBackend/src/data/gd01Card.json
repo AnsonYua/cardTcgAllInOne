@@ -181,7 +181,7 @@
                   }
                 }
               ],
-              "notes": "Move-from-trash-to-deck cost and sequence resolution not yet implemented; steps only resolve if the cost is paid."
+              "notes": "Implemented: moveFromTrashToDeck attack costs gate sequence resolution."
             }
           }
         ]
@@ -291,14 +291,14 @@
                     "count": 1
                   },
                   "parameters": {
-                    "notes": "Design placeholder: requires engine support for resolving the source Unit's paired Pilot card and moving it to its owner's hand."
+                    "notes": "Implemented: source_paired_pilot targeting resolves and can be returned to hand."
                   }
                 },
                 {
                   "action": "discard",
                   "parameters": {
                     "value": 1,
-                    "notes": "Discard-from-hand not yet implemented."
+                    "notes": "Implemented: discardFromHand steps and costs are resolved by runtime cost flow."
                   }
                 }
               ]
@@ -1022,7 +1022,7 @@
               "count": 1
             },
             "parameters": {
-              "notes": "Design placeholder: requires engine support for discard-from-hand costs and pairing a selected Pilot from trash."
+              "notes": "Implemented: discard costs plus pair_from_trash targeting are supported."
             }
           }
         ]
@@ -1205,7 +1205,7 @@
                 },
                 "count": 1,
                 "rested": true,
-                "notes": "Rested token deployment not yet implemented in ConditionalTokenDeployManager."
+                "notes": "Implemented: conditional token deploy supports rested deployment."
               }
             }
           }
@@ -1340,7 +1340,7 @@
               "count": 1
             },
             "parameters": {
-              "notes": "Deploy-from-hand not yet implemented."
+              "notes": "Implemented: deploy_from_hand resolves with standard target selection and slot checks."
             }
           }
         ]
@@ -1401,7 +1401,7 @@
               "count": 1
             },
             "parameters": {
-              "notes": "Requires engine support for keyword-based targeting filters."
+              "notes": "Implemented: keyword-based target filters are resolved during target selection."
             }
           }
         ]
@@ -1747,7 +1747,7 @@
                 "top",
                 "bottom"
               ],
-              "notes": "Design placeholder: requires engine support for looking at the top of deck and choosing top/bottom placement.",
+              "notes": "Implemented: scry supports choosing top or bottom placement.",
               "count": 1
             }
           }
@@ -2015,7 +2015,7 @@
                 "toZone": "deck_bottom",
                 "order": "random"
               },
-              "notes": "Design placeholder: requires engine support for top-deck look, optional selection, and deploying directly from looked-at cards."
+              "notes": "Implemented: deploy_from_top_deck supports look, optional deploy, and bottom placement."
             }
           }
         ]
@@ -2117,7 +2117,7 @@
             },
             "parameters": {
               "value": 3,
-              "notes": "Requires engine support for counting rested friendly units in play (excluding the source)."
+              "notes": "Implemented: unitsInPlayWithStatus supports excludeSource filtering."
             }
           }
         ]
@@ -2195,7 +2195,7 @@
                 "toZone": "deck_bottom",
                 "order": "preserve"
               },
-              "notes": "Reveal/select-from-top not yet implemented."
+              "notes": "Implemented: tutor supports reveal/select from top-of-deck."
             }
           }
         ]
@@ -2301,7 +2301,7 @@
             },
             "parameters": {
               "value": 2,
-              "notes": "Requires engine support for detecting the current attack target card type."
+              "notes": "Implemented: attack-target card-type conditions are evaluated at runtime."
             }
           }
         ]
@@ -2940,7 +2940,7 @@
                 },
                 "count": 1
               },
-              "notes": "Token deployment not yet implemented for GD sets at runtime; uses token cardId."
+              "notes": "Implemented: token deployment resolves token cardId at runtime."
             }
           },
           {
@@ -2972,7 +2972,7 @@
             },
             "parameters": {
               "allowAttackOnDeployTurn": true,
-              "notes": "Requires engine support for granting an exception to summoning-sickness rules; targets Token units with the Triple Ship Alliance trait."
+              "notes": "Implemented: allowAttackOnDeployTurn grants deploy-turn attack permission to selected targets."
             }
           }
         ]
@@ -3019,7 +3019,7 @@
             "parameters": {
               "value": 1,
               "from": "trash",
-              "notes": "Selecting a specific card from trash to hand not yet implemented."
+              "notes": "Implemented: addToHand supports selecting and transferring specific trash cards to hand."
             }
           }
         ]
@@ -3077,7 +3077,7 @@
               "count": 1
             },
             "parameters": {
-              "notes": "Design placeholder: requires engine support for returning a Unit to its owner's hand."
+              "notes": "Implemented: returns the selected Unit to its owner's hand."
             }
           }
         ]
@@ -3152,7 +3152,7 @@
                   },
                   "parameters": {
                     "disallow": true,
-                    "notes": "Design placeholder: requires engine support for a temporary 'can't attack' restriction."
+                    "notes": "Implemented: applies temporary attack restriction to selected targets."
                   }
                 }
               ]
@@ -3420,7 +3420,7 @@
               "count": 1
             },
             "parameters": {
-              "notes": "Design placeholder: requires engine support for returning a Unit to its owner's hand."
+              "notes": "Implemented: returns the selected Unit to its owner's hand."
             }
           }
         ]
@@ -3622,7 +3622,7 @@
               "count": 1
             },
             "parameters": {
-              "notes": "Design placeholder: requires engine support for returning a Unit to its owner's hand."
+              "notes": "Implemented: returns the selected Unit to its owner's hand."
             }
           }
         ]
@@ -4122,7 +4122,7 @@
             },
             "parameters": {
               "value": 1,
-              "notes": "Requires engine support for comparing target level to the source pilot's level."
+              "notes": "Implemented: target level comparison uses SOURCE_LEVEL dynamically."
             }
           }
         ]
@@ -4299,7 +4299,7 @@
                 },
                 "parameters": {
                   "disallow": true,
-                  "notes": "Design placeholder: requires engine support for a temporary 'can't attack' restriction."
+                  "notes": "Implemented: applies temporary attack restriction to selected targets."
                 }
               }
               ]
@@ -4786,7 +4786,7 @@
             "parameters": {
               "value": 1,
               "rested": true,
-              "notes": "Design placeholder: requires engine support for adding a normal (rested) Resource."
+              "notes": "Implemented: addBasicEnergy supports rested resource placement."
             }
           }
         ]
@@ -4829,7 +4829,7 @@
             },
             "parameters": {
               "value": 2,
-              "notes": "Design placeholder: requires engine support for keyword-based targeting filters and any-player 'all units' scope."
+              "notes": "Implemented: keyword filters and any-player all-unit scope are resolved at runtime."
             }
           }
         ]
@@ -4883,7 +4883,7 @@
                 "toZone": "deck_bottom",
                 "order": "random"
               },
-              "notes": "Reveal/select-from-top + random bottom not yet implemented."
+              "notes": "Implemented: tutor supports reveal/select from top and random bottom placement."
             }
           }
         ]
@@ -4994,7 +4994,7 @@
             },
             "parameters": {
               "value": 3,
-              "notes": "Design placeholder: requires engine support for a 'damaged' targeting filter."
+              "notes": "Implemented: targets can be filtered by damaged state."
             }
           }
         ]
@@ -5283,7 +5283,7 @@
             "action": "activate_ability",
             "parameters": {
               "effectId": "main_action",
-              "notes": "Design placeholder: treat this Burst as immediately resolving the card's Main effect."
+              "notes": "Implemented: Burst activate_ability resolves the card's selected main/play effect."
             }
           },
           {
@@ -5305,7 +5305,7 @@
               "count": 1
             },
             "parameters": {
-              "notes": "Design placeholder: requires engine support for returning a Unit to its owner's hand."
+              "notes": "Implemented: returns the selected Unit to its owner's hand."
             }
           }
         ]
@@ -5491,7 +5491,7 @@
             "action": "activate_ability",
             "parameters": {
               "effectId": "main_action",
-              "notes": "Design placeholder: treat this Burst as immediately resolving the card's Main effect."
+              "notes": "Implemented: Burst activate_ability resolves the card's selected main/play effect."
             }
           },
           {
@@ -5531,7 +5531,7 @@
                   },
                   "parameters": {
                     "disallow": true,
-                    "notes": "Design placeholder: requires engine support for a temporary 'can't attack' restriction."
+                    "notes": "Implemented: applies temporary attack restriction to selected targets."
                   }
                 }
               ]
@@ -5594,7 +5594,7 @@
                         "count": 1
                       },
                       "parameters": {
-                        "notes": "Design placeholder: requires engine support for returning a Unit to its owner's hand."
+                        "notes": "Implemented: returns the selected Unit to its owner's hand."
                       }
                     }
                   ]
@@ -5613,7 +5613,7 @@
                         "count": 1
                       },
                       "parameters": {
-                        "notes": "Design placeholder: requires engine support for returning a Unit to its owner's hand."
+                        "notes": "Implemented: returns the selected Unit to its owner's hand."
                       }
                     }
                   ]
@@ -5829,7 +5829,7 @@
                     "count": 1
                   },
                   "parameters": {
-                    "notes": "Deploy-from-hand not yet implemented."
+                    "notes": "Implemented: deploy_from_hand resolves with standard target selection and slot checks."
                   }
                 }
               ]
@@ -5966,7 +5966,7 @@
             },
             "parameters": {
               "value": 3,
-              "notes": "Granting Breach temporarily not yet implemented."
+              "notes": "Implemented: grants Breach for the configured duration."
             }
           }
         ]
@@ -6084,7 +6084,7 @@
                     "count": 1
                   },
                   "parameters": {
-                    "notes": "Design placeholder: requires engine support for returning a Unit to its owner's hand."
+                    "notes": "Implemented: returns the selected Unit to its owner's hand."
                   }
                 }
               ]

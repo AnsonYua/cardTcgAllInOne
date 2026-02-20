@@ -26,7 +26,7 @@ import { applyGrantKeywordEffect } from './actions/EffectKeywordActions';
 import { applyPreventBattleDamageEffect } from './actions/EffectBattleDamagePreventionActions';
 import { applyPreventSetActiveNextTurnEffect } from './actions/EffectActivationLockActions';
 import { applyReturnToHandEffect } from './actions/EffectReturnToHandActions';
-import { applyPairFromTrashEffect } from './actions/EffectPairActions';
+import { applyPairFromHandEffect, applyPairFromTrashEffect } from './actions/EffectPairActions';
 import { applyRestEffect } from './actions/EffectRestActions';
 import { applyDamageEffect } from './actions/EffectDamageActions';
 import { applyAllowAttackTargetEffect } from './actions/EffectAllowAttackTargetActions';
@@ -93,6 +93,8 @@ export class EffectExecutor {
             applyReturnToHandEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         pair_from_trash: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyPairFromTrashEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
+        pair_from_hand: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
+            applyPairFromHandEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         rest: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
             applyRestEffect(gameEnv, sourcePlayerId, sourceCarduid, effect, selectedTargets),
         damage: ({ gameEnv, effect, selectedTargets, sourcePlayerId, sourceCarduid }) =>
@@ -223,6 +225,35 @@ export class EffectExecutor {
                         };
                     }
                 }
+
+                const sourceZone = target.zone || (parameters?.from as string | undefined);
+                if (sourceZone === 'trash') {
+                    const removeTrashResult = this.removeCardFromTrash(
+                        gameEnv,
+                        target.playerId || sourcePlayerId,
+                        target.carduid
+                    );
+                    if (!removeTrashResult.success) {
+                        return {
+                            success: false,
+                            error: removeTrashResult.error || `Failed to remove card ${target.carduid} from trash`
+                        };
+                    }
+                }
+
+                if (sourceZone === 'hand') {
+                    const removeHandResult = this.removeCardFromHand(
+                        gameEnv,
+                        target.playerId || sourcePlayerId,
+                        target.carduid
+                    );
+                    if (!removeHandResult.success) {
+                        return {
+                            success: false,
+                            error: removeHandResult.error || `Failed to remove card ${target.carduid} from hand`
+                        };
+                    }
+                }
                 
                 // Use centralized helper to add card to hand
                 const executionResult = this.addCardToPlayerHand(
@@ -231,7 +262,7 @@ export class EffectExecutor {
                     target.carduid,
                     target.cardData,
                     {
-                        sourceZone: target.zone || (parameters?.from as string | undefined)
+                        sourceZone
                     }
                 );
                 
@@ -394,6 +425,42 @@ export class EffectExecutor {
         }
 
         console.log(`🛡️ Card ${carduid} successfully removed from ${playerId}'s shield`);
+        return { success: true };
+    }
+
+    static removeCardFromTrash(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        carduid: string
+    ): { success: boolean; error?: string } {
+        const player = gameEnv.getPlayer(playerId);
+        if (!player?.zones || !Array.isArray(player.zones.trashArea)) {
+            return { success: false, error: `Player ${playerId} trash area not found` };
+        }
+
+        const idx = player.zones.trashArea.findIndex((card: any) => card?.carduid === carduid);
+        if (idx < 0) {
+            return { success: false, error: `Card ${carduid} not found in ${playerId} trash` };
+        }
+
+        player.zones.trashArea.splice(idx, 1);
+        return { success: true };
+    }
+
+    static removeCardFromHand(
+        gameEnv: GameEnvironment,
+        playerId: string,
+        carduid: string
+    ): { success: boolean; error?: string } {
+        const player = gameEnv.getPlayer(playerId);
+        if (!player?.deck) {
+            return { success: false, error: `Player ${playerId} hand not found` };
+        }
+
+        const removed = player.deck.playCardFromHand(carduid);
+        if (!removed) {
+            return { success: false, error: `Card ${carduid} not found in ${playerId} hand` };
+        }
         return { success: true };
     }
 

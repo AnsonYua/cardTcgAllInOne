@@ -187,7 +187,7 @@
                         "action": "redirect_attack",
                         "parameters": {
                             "cost": "rest_self",
-                            "notes": "Design placeholder: conditional <Blocker> based on a friendly (CB) Pilot being in play."
+                            "notes": "Implemented: blocker redirect rules support conditional checks on cards in play."
                         }
                     }
                 ]
@@ -459,7 +459,7 @@
                                             },
                                             "parameters": {
                                                 "value": 1,
-                                                "notes": "Design placeholder: requires engine support for targeting the paired Unit as the recipient."
+                                                "notes": "Implemented: source_paired_unit target scope resolves correctly."
                                             }
                                         }
                                     ]
@@ -523,7 +523,7 @@
                         "action": "draw",
                         "parameters": {
                             "value": 1,
-                            "notes": "Design placeholder: requires engine support for checking the paired Unit's traits."
+                            "notes": "Implemented: pairedUnitTrait conditions are evaluated at runtime."
                         }
                     }
                 ]
@@ -583,7 +583,7 @@
                         "parameters": {
                             "status": "active",
                             "level": "<=SOURCE_LEVEL",
-                            "notes": "Design placeholder: requires engine support for dynamic level comparisons (enemy level <= source unit level)."
+                            "notes": "Implemented: dynamic level comparisons resolve SOURCE_LEVEL at runtime."
                         }
                     }
                 ]
@@ -650,7 +650,7 @@
                         "parameters": {
                             "from": "enemy_units",
                             "maxEnemyAp": 3,
-                            "notes": "Design placeholder: requires engine support for targeting the paired Unit and preventing battle damage based on enemy AP."
+                            "notes": "Implemented: source_paired_unit targeting with maxEnemyAp battle-damage prevention is supported."
                         }
                     }
                 ]
@@ -707,7 +707,7 @@
                             }
                         },
                         "parameters": {
-                            "notes": "Design placeholder: requires engine support for redirecting a battling enemy Unit's attack target."
+                            "notes": "Implemented: redirect_attack supports action-step attack target redirection."
                         }
                     }
                 ]
@@ -760,7 +760,7 @@
                                 "toZone": "deck_bottom",
                                 "order": "random"
                             },
-                            "notes": "Reveal/select-from-top + random bottom not yet implemented."
+                            "notes": "Implemented: tutor supports reveal/select from top and random bottom placement."
                         }
                     }
                 ]

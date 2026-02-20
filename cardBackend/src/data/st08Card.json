@@ -217,7 +217,7 @@
                         },
                         "parameters": {
                             "value": 1,
-                            "notes": "Design placeholder: requires engine support for checking whether the attack target is a Unit."
+                            "notes": "Implemented: attackTargetCardType conditions are evaluated during ATTACK_PHASE."
                         }
                     }
                 ]
@@ -302,7 +302,7 @@
                         "action": "draw",
                         "parameters": {
                             "value": 2,
-                            "notes": "Design placeholder: requires engine support for reveal+move-from-hand-to-bottom cost and 'attacking player' detection."
+                            "notes": "Implemented: moveFromHandToDeckBottom costs and attack-target type checks are supported."
                         }
                     }
                 ]
@@ -375,7 +375,7 @@
                         "action": "redirect_attack",
                         "parameters": {
                             "cost": "rest_self",
-                            "notes": "Design placeholder: conditional <Blocker> based on enemy Units in play."
+                            "notes": "Implemented: blocker redirect rules support opponent unit-count conditions."
                         }
                     }
                 ]
@@ -431,7 +431,7 @@
                                     "when": "OPPONENT_START_PHASE_END"
                                 }
                             },
-                            "notes": "Design placeholder: engine should persist an activation lock on the chosen unit so it is not set active during the start phase of the opponent's next turn."
+                            "notes": "Implemented: applies activation lock so the unit cannot be set active on the opponent's next start phase."
                         }
                     }
                 ]
@@ -499,7 +499,7 @@
                         "parameters": {
                             "status": "active",
                             "damaged": true,
-                            "notes": "Design placeholder: requires engine support for attack-target permission to include a 'damaged' filter."
+                            "notes": "Implemented: attack-target permission supports damaged-target filtering."
                         }
                     }
                 ]
@@ -557,7 +557,7 @@
                         ],
                         "parameters": {
                             "keyword": "High-Maneuver",
-                            "notes": "Design placeholder: requires an EFFECT_DRAW trigger and targeting the paired Unit."
+                            "notes": "Implemented: EFFECT_DRAW trigger dispatch and source_paired_unit targeting are supported."
                         }
                     }
                 ]
@@ -603,7 +603,7 @@
                         },
                         "parameters": {
                             "value": 1,
-                            "notes": "Granting Breach temporarily not yet implemented."
+                            "notes": "Implemented: grants Breach for the configured duration."
                         }
                     },
                     {

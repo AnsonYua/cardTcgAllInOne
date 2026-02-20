@@ -58,7 +58,7 @@
                         ],
                         "parameters": {
                             "pilotMinLevel": 4,
-                            "notes": "Return-to-hand effect and pilot-level pairing requirement not yet implemented."
+                            "notes": "Implemented: returnToHand with pairedPilotLevel condition is supported."
                         },
                         "target": {
                             "type": "unit",
@@ -237,7 +237,7 @@
                         },
                         "parameters": {
                             "value": 3,
-                            "notes": "Conditional attack triggers based on current AP not yet implemented."
+                            "notes": "Implemented: sourceAp-based attack conditions are supported."
                         }
                     }
                 ]
@@ -364,7 +364,7 @@
                         ],
                         "parameters": {
                             "value": 1,
-                            "notes": "Destroyed trigger not yet implemented."
+                            "notes": "Implemented: DESTROYED-triggered effects are processed in runtime."
                         }
                     }
                 ]
@@ -473,7 +473,7 @@
                         "parameters": {
                             "status": "active",
                             "level": "<=5",
-                            "notes": "When Linked window not yet implemented; modeled as a trigger on link completion with a temporary attack-target permission."
+                            "notes": "Implemented: PAIRING_COMPLETE-linked targeting permissions are applied as modeled."
                         }
                     }
                 ]
@@ -593,7 +593,7 @@
                             "count": 1
                         },
                         "parameters": {
-                            "notes": "Return-to-hand not yet implemented."
+                            "notes": "Implemented: returnToHand action is supported."
                         }
                     },
                     {
@@ -651,7 +651,7 @@
                         },
                         "parameters": {
                             "keyword": "First Strike",
-                            "notes": "First Strike keyword not yet implemented."
+                            "notes": "Implemented: First Strike keyword grants priority battle damage timing."
                         }
                     },
                     {

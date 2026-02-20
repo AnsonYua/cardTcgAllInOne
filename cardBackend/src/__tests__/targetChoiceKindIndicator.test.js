@@ -39,5 +39,39 @@ describe('TARGET_CHOICE notification indicator', () => {
         expect(notif.payload.choice.effectId).toBe('sequence_discard');
         expect(notif.payload.choice.sourceCarduid).toBe('GD01-005_unit_0001');
     });
-});
 
+    test('adds PAIR_FROM_HAND choiceKind for pair_from_hand action', () => {
+        const gameEnv = new GameEnvironment();
+        gameEnv.addPlayer('playerId_1', 'P1');
+        gameEnv.addPlayer('playerId_2', 'P2');
+
+        const effect = {
+            effectId: 'deploy_pair_from_hand',
+            type: 'triggered',
+            trigger: 'ENTERS_PLAY',
+            action: 'pair_from_hand',
+            target: {
+                type: 'pilot',
+                scope: 'self_hand',
+                count: 1,
+                selection: { type: 'player_choice' }
+            }
+        };
+
+        const choiceEvent = EventFactory.createTargetChoiceEvent({
+            playerId: 'playerId_1',
+            sourceCarduid: 'GD02-071_source_0001',
+            effect,
+            availableTargets: [{ carduid: 'pilot_1', zone: 'hand', playerId: 'playerId_1' }]
+        });
+
+        ChoiceNotificationEmitter.emitTargetChoiceCreated(gameEnv, choiceEvent);
+
+        const notif = Array.isArray(gameEnv.notificationQueue)
+            ? gameEnv.notificationQueue.find((e) => e && e.id === choiceEvent.id && e.type === 'TARGET_CHOICE')
+            : undefined;
+        expect(notif).toBeTruthy();
+        expect(notif.payload.choiceKind).toBe('PAIR_FROM_HAND');
+        expect(notif.payload.choice.action).toBe('pair_from_hand');
+    });
+});

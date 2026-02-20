@@ -11,29 +11,59 @@ export class DynamicComparisonFilterResolver {
             return null;
         }
 
-        if (!rawFilter.includes('SOURCE_LEVEL')) {
-            return rawFilter;
+        const sourceMatch = rawFilter.match(/^(<=|>=|<|>|==|!=)\s*(SOURCE_LEVEL|sourceLevel)$/);
+        if (sourceMatch) {
+            if (!sourceCarduid) {
+                console.log(`⚠️ Cannot resolve ${rawFilter} without sourceCarduid`);
+                return null;
+            }
+
+            const sourceCard = SlotZoneUtils.getCardByUid(gameEnv, sourceCarduid) as any;
+            const sourceLevel = typeof sourceCard?.cardData?.level === 'number' ? (sourceCard.cardData.level as number) : null;
+            if (sourceLevel === null) {
+                console.log(`⚠️ Cannot resolve ${rawFilter}: source ${sourceCarduid} has no level`);
+                return null;
+            }
+
+            return `${sourceMatch[1]}${sourceLevel}`;
         }
 
-        const match = rawFilter.match(/^(<=|>=|<|>|==|!=)SOURCE_LEVEL$/);
-        if (!match) {
-            console.log(`⚠️ Unsupported dynamic comparison filter: ${rawFilter}`);
-            return null;
+        const attackerMatch = rawFilter.match(/^(<=|>=|<|>|==|!=)\s*(EVENT_ATTACKER_LEVEL|eventAttackerLevel)$/);
+        if (attackerMatch) {
+            const attackerCarduid = this.getEventAttackerCarduid(gameEnv);
+            if (!attackerCarduid) {
+                console.log(`⚠️ Cannot resolve ${rawFilter}: event attacker not found`);
+                return null;
+            }
+
+            const attacker = SlotZoneUtils.getCardByUid(gameEnv, attackerCarduid) as any;
+            const attackerLevel = typeof attacker?.cardData?.level === 'number' ? (attacker.cardData.level as number) : null;
+            if (attackerLevel === null) {
+                console.log(`⚠️ Cannot resolve ${rawFilter}: attacker ${attackerCarduid} has no level`);
+                return null;
+            }
+
+            return `${attackerMatch[1]}${attackerLevel}`;
         }
 
-        if (!sourceCarduid) {
-            console.log(`⚠️ Cannot resolve ${rawFilter} without sourceCarduid`);
-            return null;
+        return rawFilter;
+    }
+
+    private static getEventAttackerCarduid(gameEnv: GameEnvironment): string | null {
+        const queue = Array.isArray((gameEnv as any).notificationQueue) ? ((gameEnv as any).notificationQueue as any[]) : [];
+        const latest = queue.length > 0 ? queue[queue.length - 1] : null;
+        const fromNotification = typeof latest?.payload?.attackerCarduid === 'string'
+            ? latest.payload.attackerCarduid
+            : null;
+        if (fromNotification) {
+            return fromNotification;
         }
 
-        const sourceCard = SlotZoneUtils.getCardByUid(gameEnv, sourceCarduid) as any;
-        const sourceLevel = typeof sourceCard?.cardData?.level === 'number' ? (sourceCard.cardData.level as number) : null;
-        if (sourceLevel === null) {
-            console.log(`⚠️ Cannot resolve ${rawFilter}: source ${sourceCarduid} has no level`);
-            return null;
+        const battle = gameEnv.currentBattle as any;
+        if (typeof battle?.attackerCarduid === 'string' && battle.attackerCarduid.length > 0) {
+            return battle.attackerCarduid;
         }
 
-        return `${match[1]}${sourceLevel}`;
+        return null;
     }
 }
-

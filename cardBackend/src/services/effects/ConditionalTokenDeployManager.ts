@@ -180,11 +180,64 @@ export class ConditionalTokenDeployManager {
             return false;
         }
 
+        const hasAnotherUnitWithTrait = condition['hasAnotherUnitWithTrait'];
+        if (typeof hasAnotherUnitWithTrait === 'string' && hasAnotherUnitWithTrait.length > 0) {
+            const hasMatch = SlotZoneUtils.getAllPlayerSlotUnits(gameEnv, playerId)
+                .some((entry: any) => {
+                    const unit = entry?.unit;
+                    if (!unit) {
+                        return false;
+                    }
+                    const traits = Array.isArray(unit.cardData?.traits) ? unit.cardData.traits : [];
+                    return traits.includes(hasAnotherUnitWithTrait);
+                });
+            if (!hasMatch) {
+                return false;
+            }
+        }
+
         if (typeof condition['cardInTrash'] === 'string') {
             const player = gameEnv.players[playerId];
             const targetCardId = condition['cardInTrash'] as string;
             const inTrash = player?.zones?.trashArea?.some(card => card.cardId === targetCardId);
             if (!inTrash) {
+                return false;
+            }
+        }
+
+        const enemyId = gameEnv.getOpponentId(playerId);
+        const enemy = enemyId ? gameEnv.players[enemyId] : null;
+
+        const enemyShields = condition['enemyShields'];
+        if (typeof enemyShields === 'number' || typeof enemyShields === 'string') {
+            const shieldCount = enemy && typeof enemy.getShieldCount === 'function'
+                ? enemy.getShieldCount()
+                : 0;
+            if (typeof enemyShields === 'number') {
+                if (shieldCount !== enemyShields) {
+                    return false;
+                }
+            } else if (!validateComparisonFilter(shieldCount, enemyShields)) {
+                return false;
+            }
+        }
+
+        const enemyUnitsInPlay = condition['enemyUnitsInPlay'];
+        if (typeof enemyUnitsInPlay === 'number' || typeof enemyUnitsInPlay === 'string') {
+            const enemyUnitCount = enemyId ? SlotZoneUtils.getAllPlayerSlotUnits(gameEnv, enemyId).length : 0;
+            if (typeof enemyUnitsInPlay === 'number') {
+                if (enemyUnitCount !== enemyUnitsInPlay) {
+                    return false;
+                }
+            } else if (!validateComparisonFilter(enemyUnitCount, enemyUnitsInPlay)) {
+                return false;
+            }
+        }
+
+        const enemyUnitsInPlayMax = condition['enemyUnitsInPlayMax'];
+        if (typeof enemyUnitsInPlayMax === 'number') {
+            const enemyUnitCount = enemyId ? SlotZoneUtils.getAllPlayerSlotUnits(gameEnv, enemyId).length : 0;
+            if (enemyUnitCount > enemyUnitsInPlayMax) {
                 return false;
             }
         }

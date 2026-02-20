@@ -25,6 +25,7 @@ export enum ChoiceKind {
     HEAL = 'HEAL',
 
     DEPLOY_FROM_HAND = 'DEPLOY_FROM_HAND',
+    PAIR_FROM_HAND = 'PAIR_FROM_HAND',
     PAIR_FROM_TRASH = 'PAIR_FROM_TRASH',
 
     GRANT_KEYWORD = 'GRANT_KEYWORD',
@@ -39,4 +40,3 @@ export enum ChoiceKind {
 export function isSequenceContextKind(kind: unknown): boolean {
     return typeof kind === 'string' && kind.startsWith('SEQUENCE_');
 }
-

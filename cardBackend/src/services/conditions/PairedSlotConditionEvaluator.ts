@@ -100,4 +100,21 @@ export class PairedSlotConditionEvaluator {
 
         return CardTraitUtils.hasTrait(search.pilot?.cardData, expectedTrait);
     }
+
+    static pairedPilotTraitAny(
+        gameEnv: GameEnvironment,
+        sourceCarduid: string,
+        expectedTraits: string[]
+    ): boolean {
+        if (!sourceCarduid || !Array.isArray(expectedTraits) || expectedTraits.length === 0) {
+            return false;
+        }
+
+        const search = SlotZoneUtils.findCardByUidAcrossPlayers(gameEnv, sourceCarduid);
+        if (!search.found) {
+            return false;
+        }
+
+        return CardTraitUtils.hasAnyTrait(search.pilot?.cardData, expectedTraits);
+    }
 }

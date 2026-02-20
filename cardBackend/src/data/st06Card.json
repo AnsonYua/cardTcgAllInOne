@@ -394,7 +394,7 @@
                                 "toZone": "deck_bottom",
                                 "order": "preserve"
                             },
-                            "notes": "Reveal/optional selection from top-of-deck not yet implemented."
+                            "notes": "Implemented: tutor_top_deck supports optional top-deck reveal/selection."
                         }
                     }
                 ]
@@ -457,7 +457,7 @@
                                 "top",
                                 "bottom"
                             ],
-                            "notes": "Scry/top-bottom placement not yet implemented.",
+                            "notes": "Implemented: scry supports top/bottom deck placement.",
                             "count": 1
                         }
                     }
@@ -576,7 +576,7 @@
                                 "toZone": "deck_bottom",
                                 "order": "random"
                             },
-                            "notes": "Reveal/select-from-top + random bottom not yet implemented."
+                            "notes": "Implemented: tutor supports reveal/select from top and random bottom placement."
                         }
                     }
                 ]
@@ -732,7 +732,7 @@
                         },
                         "parameters": {
                             "value": 2,
-                            "notes": "Design placeholder: requires engine support for identifying Link Units in play."
+                            "notes": "Implemented: isLinkUnit filters are evaluated for in-play units."
                         }
                     }
                 ]
@@ -813,7 +813,7 @@
                         },
                         "parameters": {
                             "value": 3,
-                            "notes": "Design placeholder: requires engine support for selecting the Unit that just linked and granting temporary Breach."
+                            "notes": "Implemented: JUST_LINKED selection with temporary Breach grant is supported."
                         }
                     }
                 ]

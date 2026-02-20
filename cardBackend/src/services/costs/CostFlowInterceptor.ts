@@ -4,6 +4,7 @@
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import type { EffectDefinition } from '../EventQueue/interfaces/GameEvent';
 import type { DeployTargetResult } from '../DeployTargetResult';
+import { DiscardFromHandCostFlow } from './DiscardFromHandCostFlow';
 import { ExileFromTrashCostFlow } from './ExileFromTrashCostFlow';
 
 export class CostFlowInterceptor {
@@ -15,6 +16,33 @@ export class CostFlowInterceptor {
         cardPlayNotificationId?: string
     ): DeployTargetResult | null {
         const noOp: DeployTargetResult = { success: true, autoApplied: true, affectedTargets: [] };
+
+        if (effect.cost && typeof effect.cost === 'object' && (effect.cost as any).discardFromHand !== undefined) {
+            const costResult = DiscardFromHandCostFlow.handleOrEnqueue(
+                gameEnv,
+                playerId,
+                sourceCarduid,
+                effect,
+                cardPlayNotificationId
+            );
+            if (!costResult.success) {
+                return { success: false, error: costResult.error || 'Failed to enqueue discardFromHand cost choice' };
+            }
+            if (costResult.kind === 'requiresSelection') {
+                return { success: true, requiresSelection: true, choiceEventId: costResult.choiceEventId };
+            }
+            if (costResult.kind === 'paid') {
+                // Cost was paid immediately; continue resolving the follow-up effect in the current call.
+                return null;
+            }
+            if (costResult.kind === 'insufficientTargets') {
+                if (effect.type === 'activated') {
+                    return { success: false, error: 'Not enough valid cards in hand to pay discardFromHand cost' };
+                }
+                return noOp;
+            }
+            return noOp;
+        }
 
         if (effect.cost && typeof effect.cost === 'object' && (effect.cost as any).exileFromTrash) {
             const costResult = ExileFromTrashCostFlow.handleOrEnqueue(
