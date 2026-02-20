@@ -261,7 +261,9 @@ export class SequenceEffectManager {
                 playerId,
                 sourceCarduid,
                 normalizedStepEffect,
-                cardPlayNotificationId
+                cardPlayNotificationId,
+                undefined,
+                { previousTargets: ctx.previousTargets }
             );
 
             if (!result.success) {
@@ -351,7 +353,9 @@ export class SequenceEffectManager {
             playerId,
             sourceCarduid,
             normalizedDiscardEffect,
-            cardPlayNotificationId
+            cardPlayNotificationId,
+            undefined,
+            { previousTargets: ctx.previousTargets }
         );
 
         if (!result.success) {

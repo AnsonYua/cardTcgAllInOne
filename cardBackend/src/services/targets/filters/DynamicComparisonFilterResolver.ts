@@ -1,11 +1,17 @@
 import type { GameEnvironment } from '../../../models/GameEnvironment';
+import type { TargetReference } from '../../EventQueue/interfaces/GameEvent';
 import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
+
+interface DynamicTargetFilterContext {
+    previousTargets?: TargetReference[];
+}
 
 export class DynamicComparisonFilterResolver {
     static resolve(
         rawFilter: string,
         gameEnv: GameEnvironment,
-        sourceCarduid?: string
+        sourceCarduid?: string,
+        dynamicContext?: DynamicTargetFilterContext
     ): string | null {
         if (!rawFilter) {
             return null;
@@ -44,6 +50,29 @@ export class DynamicComparisonFilterResolver {
             }
 
             return `${attackerMatch[1]}${attackerLevel}`;
+        }
+
+        const restedUnitMatch = rawFilter.match(/^(<=|>=|<|>|==|!=)\s*(RESTED_UNIT_LEVEL|restedUnitLevel)$/);
+        if (restedUnitMatch) {
+            const previousTargets = Array.isArray(dynamicContext?.previousTargets)
+                ? dynamicContext.previousTargets
+                : [];
+            const restedUnitRef = previousTargets.find(target => typeof target?.carduid === 'string');
+            if (!restedUnitRef?.carduid) {
+                console.log(`⚠️ Cannot resolve ${rawFilter}: rested unit context is missing`);
+                return null;
+            }
+
+            const restedUnit = SlotZoneUtils.getCardByUid(gameEnv, restedUnitRef.carduid) as any;
+            const restedUnitLevel = typeof restedUnit?.cardData?.level === 'number'
+                ? (restedUnit.cardData.level as number)
+                : null;
+            if (restedUnitLevel === null) {
+                console.log(`⚠️ Cannot resolve ${rawFilter}: rested target ${restedUnitRef.carduid} has no level`);
+                return null;
+            }
+
+            return `${restedUnitMatch[1]}${restedUnitLevel}`;
         }
 
         return rawFilter;

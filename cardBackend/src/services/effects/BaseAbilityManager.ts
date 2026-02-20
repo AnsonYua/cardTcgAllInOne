@@ -17,6 +17,7 @@ import { EffectTimingWindowUtils } from '../../utils/EffectTimingWindowUtils';
 import { SlotCardStateUtils } from '../conditions/SlotCardStateUtils';
 import { effectRequiresLinkedSource } from '../../utils/ImplicitEffectConditionUtils';
 import { ActivatedAbilityEffectRunner } from './ActivatedAbilityEffectRunner';
+import { UnitRestedByEffectTriggeredEffectManager } from './UnitRestedByEffectTriggeredEffectManager';
 
 export class BaseAbilityManager {
 
@@ -226,13 +227,32 @@ export class BaseAbilityManager {
         }
 
         const requiresSelection = (abilityResult as any)?.requiresSelection === true;
+        let requiresTriggeredSelection = false;
+
+        // Rest paid as a unit activated-ability cost counts as "rested by an effect".
+        if (sourceRestedForCost && sourceZone === 'unit') {
+            const triggerResult = UnitRestedByEffectTriggeredEffectManager.process(gameEnv, {
+                sourcePlayerId: actingPlayerId,
+                targetPlayerId: actingPlayerId,
+                targetCarduid: sourceCard.carduid
+            });
+            if (!triggerResult.success) {
+                return {
+                    success: false,
+                    error: triggerResult.error || 'Failed to process UNIT_RESTED_BY_EFFECT trigger'
+                };
+            }
+            requiresTriggeredSelection = triggerResult.requiresSelection === true;
+        }
 
         if (oncePerTurn) {
             BaseAbilityManager.markEffectUsed(sourceCard, normalizedEffect.effectId, gameEnv.currentTurn);
         }
 
         console.log(`🏰 Activated ability ${normalizedEffect.effectId} from ${sourceCard.carduid}`);
-        return requiresSelection ? { success: true, requiresSelection: true } : { success: true };
+        return (requiresSelection || requiresTriggeredSelection)
+            ? { success: true, requiresSelection: true }
+            : { success: true };
     }
 
     private static findActivatedEffect(rules: unknown, requestedId?: string): { success: true; effect: EffectDefinition } | ExecutionResult {

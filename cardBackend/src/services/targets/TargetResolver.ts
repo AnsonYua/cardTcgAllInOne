@@ -25,6 +25,10 @@ export interface ResolvedTargetConfig {
     filters: TargetFilters;
 }
 
+export interface DynamicTargetFilterContext {
+    previousTargets?: TargetReference[];
+}
+
 export class TargetResolver {
     private static readonly DEFAULT_TARGET_TYPE: TargetType = 'unit';
     private static readonly DEFAULT_TARGET_SCOPE: TargetScope = 'opponent';
@@ -57,7 +61,8 @@ export class TargetResolver {
         gameEnv: GameEnvironment,
         playerId: string,
         targetConfig: ResolvedTargetConfig,
-        sourceCarduid?: string
+        sourceCarduid?: string,
+        dynamicContext?: DynamicTargetFilterContext
     ): TargetReference[] {
         const targets: TargetReference[] = [];
 
@@ -146,7 +151,8 @@ export class TargetResolver {
                             targetConfig.filters || {},
                             targetPlayerId,
                             sourceCarduid,
-                            slotName
+                            slotName,
+                            dynamicContext
                         )) {
                             targets.push({
                                 carduid: unit.carduid,
@@ -167,7 +173,8 @@ export class TargetResolver {
                             targetConfig.filters || {},
                             targetPlayerId,
                             sourceCarduid,
-                            slotName
+                            slotName,
+                            dynamicContext
                         )) {
                             targets.push({
                                 carduid: pilot.carduid,
@@ -212,7 +219,8 @@ export class TargetResolver {
         filters: TargetFilters = {},
         targetPlayerId?: string,
         sourceCarduid?: string,
-        slotNameHint?: string
+        slotNameHint?: string,
+        dynamicContext?: DynamicTargetFilterContext
     ): boolean {
         const cardType = typeof (card as any)?.cardData?.cardType === 'string'
             ? ((card as any).cardData.cardType as string).toLowerCase()
@@ -251,7 +259,12 @@ export class TargetResolver {
                     return false;
                 }
             } else if (typeof filters.level === 'string') {
-                const resolvedFilter = DynamicComparisonFilterResolver.resolve(filters.level, gameEnv, sourceCarduid);
+                const resolvedFilter = DynamicComparisonFilterResolver.resolve(
+                    filters.level,
+                    gameEnv,
+                    sourceCarduid,
+                    dynamicContext
+                );
                 if (!resolvedFilter) {
                     console.log(`❌ Card ${card.carduid} failed level filter: ${filters.level}`);
                     return false;

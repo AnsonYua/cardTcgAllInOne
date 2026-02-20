@@ -57,7 +57,12 @@ export class UnitRestedByEffectTriggeredEffectManager {
                     continue;
                 }
 
-                if (!this.eventConditionsSatisfied(normalized.conditions, context, context.targetPlayerId)) {
+                if (!this.eventConditionsSatisfied(
+                    normalized.conditions,
+                    context,
+                    context.targetPlayerId,
+                    sourceCard.carduid
+                )) {
                     continue;
                 }
 
@@ -92,7 +97,7 @@ export class UnitRestedByEffectTriggeredEffectManager {
                     gameEnv,
                     context.targetPlayerId,
                     sourceCard.carduid,
-                    normalized
+                    normalizedWithoutEvent
                 );
                 if (!result.success) {
                     return { success: false, error: result.error || `Failed to apply UNIT_RESTED_BY_EFFECT effect ${normalized.effectId}` };
@@ -114,7 +119,8 @@ export class UnitRestedByEffectTriggeredEffectManager {
     private static eventConditionsSatisfied(
         conditions: unknown,
         context: UnitRestedByEffectContext,
-        ownerPlayerId: string
+        ownerPlayerId: string,
+        sourceCarduid?: string
     ): boolean {
         if (!Array.isArray(conditions) || conditions.length === 0) {
             return true;
@@ -135,7 +141,7 @@ export class UnitRestedByEffectTriggeredEffectManager {
             const targetController = typeof typed.targetController === 'string'
                 ? typed.targetController.toLowerCase()
                 : 'self';
-            const targetCarduid = typeof typed.targetCarduid === 'string'
+            const targetCarduidRaw = typeof typed.targetCarduid === 'string'
                 ? typed.targetCarduid
                 : undefined;
 
@@ -153,7 +159,15 @@ export class UnitRestedByEffectTriggeredEffectManager {
                 return false;
             }
 
-            if (targetCarduid && targetCarduid !== context.targetCarduid) {
+            const targetCarduid = typeof targetCarduidRaw === 'string'
+                ? targetCarduidRaw.toLowerCase()
+                : undefined;
+            const expectedTargetCarduid =
+                targetCarduid === 'self' || targetCarduid === 'source'
+                    ? sourceCarduid
+                    : targetCarduidRaw;
+
+            if (expectedTargetCarduid && expectedTargetCarduid !== context.targetCarduid) {
                 return false;
             }
         }

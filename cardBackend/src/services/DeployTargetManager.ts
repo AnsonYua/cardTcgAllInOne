@@ -57,6 +57,9 @@ export class DeployTargetManager {
         cardPlayNotificationId?: string,
         selectionContext?: {
             justLinkedUnitCarduid?: string;
+        },
+        dynamicFilterContext?: {
+            previousTargets?: TargetReference[];
         }
     ): DeployTargetResult {
         const normalizedEffect = ensureEffectDefaults(effect);
@@ -110,7 +113,13 @@ export class DeployTargetManager {
             // Generate available targets based on config
             let availableTargets = TargetScopeResolverRegistry.resolve(gameEnv, sourceCarduid, normalizedEffect);
             if (!availableTargets) {
-                availableTargets = TargetResolver.generateAvailableTargets(gameEnv, playerId, targetConfig, sourceCarduid);
+                availableTargets = TargetResolver.generateAvailableTargets(
+                    gameEnv,
+                    playerId,
+                    targetConfig,
+                    sourceCarduid,
+                    dynamicFilterContext
+                );
             }
             availableTargets = TargetSelectionPipeline.apply(
                 gameEnv,
