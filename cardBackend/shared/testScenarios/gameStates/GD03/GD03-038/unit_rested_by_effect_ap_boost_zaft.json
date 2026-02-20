@@ -1,0 +1,149 @@
+{
+  "description": "gd03-038_unit_rested_by_effect_ap_boost_zaft",
+  "gameId": "gd03-038_unit_rested_by_effect_ap_boost_zaft",
+  "testType": "action",
+  "category": "ActionCase",
+  "tags": ["GD03-038", "UNIT_RESTED_BY_EFFECT", "modifyAP", "ZAFT", "support_1"],
+  "notes": [
+    "Setup: Player 1 has GD03-038 in hand and GD03-042 (ZAFT unit) on slot1.",
+    "Setup: Player 1 has 4 energy cards (sufficient for level 4, cost 3).",
+    "Action: Play GD03-038 from hand to an empty slot, then activate Support 1 ability.",
+    "Expect: GD03-038 rests, triggering its rest trigger effect.",
+    "Expect: Player can choose a ZAFT unit (GD03-042).",
+    "Expect: Chosen ZAFT unit gets +2 AP until end of turn."
+  ],
+  "initialGameEnv": {
+    "phase": "MAIN_PHASE",
+    "playerId_1": "playerId_1",
+    "playerId_2": "playerId_2",
+    "gameStarted": true,
+    "firstPlayer": 0,
+    "firstPlayerChooser": null,
+    "firstPlayerDecision": null,
+    "hasChosenFirstPlayer": false,
+    "currentPlayer": "playerId_1",
+    "currentTurn": 1,
+    "playersReady": {
+      "playerId_1": true,
+      "playerId_2": true
+    },
+    "currentBattle": null,
+    "players": {
+      "playerId_1": {
+        "id": "playerId_1",
+        "name": "Player 1",
+        "deck": {
+          "hand": [
+            {
+              "carduid": "GD03-038_00000000-0000-0000-0000-000000000001",
+              "cardId": "GD03-038"
+            }
+          ],
+          "handUids": [
+            "GD03-038_00000000-0000-0000-0000-000000000001"
+          ],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {
+            "unit": {
+              "carduid": "GD03-042_00000000-0000-0000-0000-000000000002",
+              "cardId": "GD03-042",
+              "isRested": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 4,
+              "canAttackThisTurn": true,
+              "temporaryEffects": []
+            }
+          },
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [
+            {
+              "carduid": "energy_basic_test_1",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_test_2",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_test_3",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            },
+            {
+              "carduid": "energy_basic_test_4",
+              "cardId": "energy_basic",
+              "placedAt": 0,
+              "placedBy": "playerId_1",
+              "isRested": false,
+              "isExtraEnergy": false
+            }
+          ],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        },
+        "effectRegistry": {},
+        "delayedTriggers": []
+      },
+      "playerId_2": {
+        "id": "playerId_2",
+        "name": "Player 2",
+        "deck": {
+          "hand": [],
+          "handUids": [],
+          "mainDeck": []
+        },
+        "confirmIsRedraw": false,
+        "isRedraw": false,
+        "playerPoint": 0,
+        "isReady": true,
+        "zones": {
+          "slot1": {},
+          "slot2": {},
+          "slot3": {},
+          "slot4": {},
+          "slot5": {},
+          "slot6": {},
+          "base": [],
+          "shieldArea": [],
+          "energyArea": [],
+          "trashArea": [],
+          "repairAbilitiesCheckedThisCycle": false
+        },
+        "effectRegistry": {},
+        "delayedTriggers": []
+      }
+    },
+    "processingQueue": [],
+    "processingEnabled": true,
+    "maxEventsPerCycle": 50,
+    "notificationQueue": [],
+    "lastEventId": 0,
+    "pendingPhaseTransition": null
+  }
+}

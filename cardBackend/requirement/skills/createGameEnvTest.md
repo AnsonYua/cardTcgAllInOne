@@ -31,6 +31,12 @@ Use this skill when you need to create or review a complete action scenario JSON
 - Include `processingQueue: []`.
 - Include `notificationQueue` with a `CARD_DRAWN` seed where `payload.playerId === currentPlayer`.
 - Include `notes` with alternating `Action` and `Expect` lines.
+- **CRITICAL: Energy Requirements**
+  - Card `Level` determines minimum energy cards required in energy area
+  - Level 1 → 1 energy card, Level 2 → 2 energy cards, Level 3 → 3 energy cards
+  - Level 4 → 4 energy cards, Level 5 → 5 energy cards, Level 6 → 6 energy cards, Level 7 → 7 energy cards
+  - Example: GD03-038 (Level 4) requires at least 4 energy cards in player's energy area
+- Card `Cost` is the number of energy cards tapped/activated to pay for playing the card
 
 ## Scenario Path Format
 The scenario path to add to `SCENARIO_PRESET_GROUPS` should match the file path structure:

@@ -59,6 +59,11 @@ Required `initialGameEnv` fields:
 - Always include all six slot objects and explicit arrays for `base`, `shieldArea`, `energyArea`, `trashArea`.
 - Always include `deck.handUids` for each player.
 - If `deck.hand` is included, keep it aligned with `handUids`.
+- **ENERGY REQUIREMENTS CRITICAL:**
+  - Card `Level` = minimum energy cards required in energy area
+  - Level 1→1, 2→2, 3→3, 4→4, 5→5, 6→6, 7→7 energy cards
+  - Example: GD03-038 (Level 4) requires 4 energy cards minimum
+  - Example: GD02-058 (Level 2) requires 2 energy cards minimum
 
 ## Burst Flow Primer
 Typical burst-from-shield flow:
@@ -91,3 +96,7 @@ Manual runtime validation:
   - Fix: add `CARD_DRAWN` seed with matching `currentPlayer`.
 - Wrong scenario root:
   - Fix: always use `shared/testScenarios/gameStates/...`.
+- **Insufficient energy for card level:**
+  - Fix: ensure `energyArea` has at least `Level` number of energy cards
+  - Example: Level 4 card requires 4 energy cards minimum
+  - Example: Level 2 card requires 2 energy cards minimum

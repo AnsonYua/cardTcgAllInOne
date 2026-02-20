@@ -2158,6 +2158,36 @@
                 }
               ]
             }
+          },
+          {
+            "effectId": "unit_rested_by_effect",
+            "type": "triggered",
+            "trigger": "UNIT_RESTED_BY_EFFECT",
+            "action": "modifyAP",
+            "timing": {
+              "actionTurn": "YOUR_TURN",
+              "duration": "UNTIL_END_OF_TURN"
+            },
+            "conditions": [
+              {
+                "type": "unitRestedByEffectEvent",
+                "targetCarduid": "self"
+              }
+            ],
+            "target": {
+              "type": "unit",
+              "scope": "self",
+              "count": 1,
+              "selection": {
+                "type": "player_choice"
+              },
+              "filters": {
+                "traits": ["ZAFT"]
+              }
+            },
+            "parameters": {
+              "value": 2
+            }
           }
         ]
       }

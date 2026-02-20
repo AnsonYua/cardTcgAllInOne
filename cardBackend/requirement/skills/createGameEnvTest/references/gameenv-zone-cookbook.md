@@ -79,6 +79,28 @@ Rules:
 ]
 ```
 
+### Energy Requirements by Card Level
+When setting up test scenarios, ensure the player has sufficient energy cards based on the card's **Level**:
+
+| Card Level | Minimum Energy Cards Required |
+|------------|----------------------------|
+| Level 1    | 1 energy card               |
+| Level 2    | 2 energy cards              |
+| Level 3    | 3 energy cards              |
+| Level 4    | 4 energy cards              |
+| Level 5    | 5 energy cards              |
+| Level 6    | 6 energy cards              |
+| Level 7    | 7 energy cards              |
+
+**Rule:**
+- `Level` = minimum number of energy cards required in energy area to play the card
+- `Cost` = number of energy cards tapped/activated to pay for playing the card
+
+**Example:**
+- Card: GD03-038 (Level 4, Cost 3)
+- Required: At least 4 energy cards in energy area (because it's Level 4)
+- Cost to pay: 3 energy cards (will become rested when played)
+
 ## Trash Area
 ```json
 "trashArea": [
