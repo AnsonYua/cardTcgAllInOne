@@ -187,6 +187,10 @@ export class EventFactory {
         effect: EffectDefinition;
         availableOptions: OptionChoiceOption[];
         context?: Record<string, unknown>;
+        headerText?: string;
+        promptText?: string;
+        defaultOptionIndex?: number;
+        layoutHint?: 'card' | 'text' | 'hybrid';
     }): OptionChoiceEvent {
         return createOptionChoiceEvent(params);
     }

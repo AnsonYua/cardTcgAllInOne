@@ -479,6 +479,10 @@ export class PairingEffectManager implements StandardEffectManager {
                         playerId,
                         sourceCarduid: eventData.carduid,
                         effect: choiceEffect,
+                        headerText: 'Choose Effect Order',
+                        promptText: 'Select which effect resolves first.',
+                        defaultOptionIndex: 0,
+                        layoutHint: 'text',
                         availableOptions: options,
                         context
                     });
@@ -583,6 +587,10 @@ export class PairingEffectManager implements StandardEffectManager {
                             playerId,
                             sourceCarduid: eventData.carduid,
                             effect: choiceEffect,
+                            headerText: 'Choose Effect Order',
+                            promptText: 'Select which effect resolves first.',
+                            defaultOptionIndex: 0,
+                            layoutHint: 'text',
                             availableOptions: options,
                             context
                         });

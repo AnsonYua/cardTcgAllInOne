@@ -7,12 +7,16 @@ export function buildDeployOptions(
     selectable: Array<{ carduid: string; cardId: string; name: string }>,
     includeBottomOption: boolean
 ): OptionChoiceOption[] {
-    const options: OptionChoiceOption[] = selectable.map((choice, index) => ({
-        index,
-        label: `Deploy ${choice.cardId}`,
-        payload: { action: 'DEPLOY', carduid: choice.carduid, cardId: choice.cardId, name: choice.name },
-        display: ChoiceDisplayBuilder.card(choice.cardId, `Deploy ${choice.cardId}`)
-    }));
+    const options: OptionChoiceOption[] = selectable.map((choice, index) => {
+        const cardName = choice.name || choice.cardId;
+        const label = `Deploy ${cardName}`;
+        return {
+            index,
+            label,
+            payload: { action: 'DEPLOY', carduid: choice.carduid, cardId: choice.cardId, name: cardName },
+            display: ChoiceDisplayBuilder.card(choice.cardId, label)
+        };
+    });
 
     if (includeBottomOption) {
         options.push({

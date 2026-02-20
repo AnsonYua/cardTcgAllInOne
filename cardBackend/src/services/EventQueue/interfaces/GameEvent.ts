@@ -572,6 +572,10 @@ export interface OptionChoiceEventData {
     userDecisionMade: boolean;
     sourceCarduid: string;
     effect: EffectDefinition;
+    headerText?: string;
+    promptText?: string;
+    defaultOptionIndex?: number;
+    layoutHint?: 'card' | 'text' | 'hybrid';
     availableOptions: OptionChoiceOption[];
     selectedOptionIndex?: number;
     context?: Record<string, unknown>;

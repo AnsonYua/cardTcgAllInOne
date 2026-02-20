@@ -13,6 +13,7 @@ import { EffectExecutor } from './effects/EffectExecutor';
 import { LinkUtils } from '../utils/LinkUtils';
 import { UnitRestrictionUtils } from './restrictions/UnitRestrictionUtils';
 import { UnitSlotDestructionFlow } from './destruction/UnitSlotDestructionFlow';
+import { SlotExitCoordinator } from './zones/SlotExitCoordinator';
 
 export interface CardPlacementResult {
     success: boolean;
@@ -633,34 +634,22 @@ export class PlayerCardManager {
      */
     static moveCardToTrashFromSlot(gameEnv: GameEnvironment, playerId: string, slotName: string, card: UnitZoneCard | PilotZoneCard, cardType: 'unit' | 'pilot'): boolean {
         try {
-            const player = gameEnv.getPlayer(playerId);
-            if (!player || !player.zones) {
-                console.error(`❌ Could not find player ${playerId} or zones`);
+            const moveResult = SlotExitCoordinator.moveTargetToTrash(
+                gameEnv,
+                playerId,
+                slotName,
+                cardType
+            );
+            if (!moveResult.success) {
+                console.error(`❌ Failed to move card(s) to trash from ${slotName}: ${moveResult.error}`);
                 return false;
             }
 
-            // Initialize trash area if it doesn't exist
-            if (!player.zones.trashArea) {
-                player.zones.trashArea = [];
+            for (const moved of moveResult.moved) {
+                EffectExecutor.removeTemporaryEffectsFromSource(gameEnv, moved.carduid);
+                console.log(`🗑️ ${moved.type.charAt(0).toUpperCase() + moved.type.slice(1)} ${moved.carduid} moved to trash from ${slotName}`);
             }
 
-            // Create trash card with card data
-            const trashCard = createZoneCard(card.carduid, card.cardId, card.cardData, playerId);
-            player.zones.trashArea.push(trashCard);
-
-            // Remove card from slot
-            const slot = (player.zones as any)[slotName];
-            if (slot) {
-                if (cardType === 'unit') {
-                    slot.unit = null;
-                } else if (cardType === 'pilot') {
-                    slot.pilot = null;
-                }
-            }
-
-            EffectExecutor.removeTemporaryEffectsFromSource(gameEnv, card.carduid);
-
-            console.log(`🗑️ ${cardType.charAt(0).toUpperCase() + cardType.slice(1)} ${card.carduid} moved to trash from ${slotName}`);
             return true;
         } catch (error) {
             console.error(`❌ Error moving ${cardType} to trash:`, error);

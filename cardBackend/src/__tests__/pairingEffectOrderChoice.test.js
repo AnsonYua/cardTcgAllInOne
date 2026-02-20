@@ -45,6 +45,10 @@ describe('Pairing effect order choice', () => {
         expect(optionChoiceEvent.data.availableOptions).toHaveLength(2);
         expect(optionChoiceEvent.data.availableOptions[0].display).toBeTruthy();
         expect(optionChoiceEvent.data.availableOptions[0].display.mode).toBe('text');
+        expect(optionChoiceEvent.data.headerText).toBe('Choose Effect Order');
+        expect(optionChoiceEvent.data.promptText).toBe('Select which effect resolves first.');
+        expect(optionChoiceEvent.data.defaultOptionIndex).toBe(0);
+        expect(optionChoiceEvent.data.layoutHint).toBe('text');
     });
 
     test('non-conflicting pairing effects auto-resolve in card-text order (no OPTION_CHOICE)', () => {

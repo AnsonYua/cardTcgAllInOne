@@ -1367,6 +1367,25 @@ export class GameLogic {
                 const notificationManager = new GameNotificationManager(gameEnv);
                 const attackNotification = gameEnv.notificationQueue?.find(evt => evt.id === attackNotificationId);
                 const attackPayload = attackNotification?.payload || {};
+                const targetPlayer = gameEnv.getPlayer(resolvedTarget.playerId);
+                const targetSlot = targetPlayer && resolvedTarget.zone
+                    ? (targetPlayer.zones as any)?.[resolvedTarget.zone]
+                    : undefined;
+                const targetName =
+                    targetSlot?.unit?.cardData?.name ||
+                    targetSlot?.unit?.cardId ||
+                    attackPayload.targetName;
+
+                notificationManager.updateNotificationEvent(attackNotificationId, {
+                    forcedTargetCarduid: resolvedTarget.carduid,
+                    forcedTargetZone: resolvedTarget.zone,
+                    forcedTargetPlayerId: resolvedTarget.playerId,
+                    targetCarduid: resolvedTarget.carduid,
+                    targetSlotName: resolvedTarget.zone,
+                    targetPlayerId: resolvedTarget.playerId,
+                    targetName
+                });
+
                 const refreshPayload = {
                     attackingPlayerId: attackPayload.attackingPlayerId,
                     defendingPlayerId: attackPayload.defendingPlayerId,

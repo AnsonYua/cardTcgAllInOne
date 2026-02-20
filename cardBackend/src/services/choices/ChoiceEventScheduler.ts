@@ -73,6 +73,10 @@ export class ChoiceEventScheduler {
             availableOptions: OptionChoiceOption[];
             context?: Record<string, unknown>;
             cardPlayNotificationId?: string;
+            headerText?: string;
+            promptText?: string;
+            defaultOptionIndex?: number;
+            layoutHint?: 'card' | 'text' | 'hybrid';
         }
     ): OptionChoiceEvent {
         const choiceEvent = EventFactory.createOptionChoiceEvent({
@@ -80,7 +84,11 @@ export class ChoiceEventScheduler {
             sourceCarduid: params.sourceCarduid,
             effect: params.effect,
             availableOptions: params.availableOptions,
-            context: params.context
+            context: params.context,
+            headerText: params.headerText,
+            promptText: params.promptText,
+            defaultOptionIndex: params.defaultOptionIndex,
+            layoutHint: params.layoutHint
         });
 
         if (params.cardPlayNotificationId) {

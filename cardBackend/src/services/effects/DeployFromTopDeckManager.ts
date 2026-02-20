@@ -166,6 +166,9 @@ export class DeployFromTopDeckManager {
                 playerId,
                 sourceCarduid,
                 effect: normalizedEffect,
+                headerText: 'Deploy From Top Deck',
+                promptText: 'Choose 1 card to deploy from the looked cards.',
+                layoutHint: 'card',
                 availableOptions: options,
                 context: {
                     deployFromTopDeck: {
@@ -185,6 +188,10 @@ export class DeployFromTopDeckManager {
             playerId,
             sourceCarduid,
             effect: normalizedEffect,
+            headerText: 'Deploy From Top Deck',
+            promptText: 'Choose 1 card to deploy, or put the looked cards on the bottom of your deck.',
+            defaultOptionIndex: options.length - 1,
+            layoutHint: 'hybrid',
             availableOptions: options,
             context: {
                 deployFromTopDeck: {

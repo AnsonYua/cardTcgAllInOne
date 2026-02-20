@@ -3,8 +3,9 @@
 import type { GameEnvironment } from '../../../models/GameEnvironment';
 import type { EffectDefinition, TargetReference } from '../../EventQueue/interfaces/GameEvent';
 import { SlotZoneUtils } from '../../../utils/SlotZoneUtils';
-import { HandZoneManager } from '../../zones/HandZoneManager';
+import { SlotExitCoordinator } from '../../zones/SlotExitCoordinator';
 import { GameNotificationManager } from '../../GameNotificationManager';
+import { ContinuousEffectManager } from '../../ContinuousEffectManager';
 
 export function applyReturnToHandEffect(
     gameEnv: GameEnvironment,
@@ -36,47 +37,32 @@ export function applyReturnToHandEffect(
         }
 
         const ownerPlayerId = resolved.playerId;
-        const owner = gameEnv.getPlayer(ownerPlayerId);
-        if (!owner?.zones || !owner?.deck) {
-            return { success: false, error: `Owner player ${ownerPlayerId} not found for returnToHand` };
-        }
-
-        const slot = (owner.zones as any)[resolved.slotName];
-        const isUnit = resolved.type === 'unit';
-        const slotKey = isUnit ? 'unit' : 'pilot';
-        if (!slot?.[slotKey] || slot[slotKey].carduid !== target.carduid) {
-            return {
-                success: false,
-                error: `${isUnit ? 'Unit' : 'Pilot'} ${target.carduid} not found in expected slot ${resolved.slotName}`
-            };
-        }
-
-        const movedCard = slot[slotKey];
-        slot[slotKey] = null;
-
-        const addResult = HandZoneManager.addCardToHand(
+        const moveResult = SlotExitCoordinator.moveTargetToHand(
             gameEnv,
             ownerPlayerId,
-            movedCard.carduid,
-            movedCard.cardData as any,
+            resolved.slotName,
+            resolved.type,
+            effect,
             {
-                eventType: 'CARD_RETURNED_TO_HAND',
-                sourceZone: resolved.slotName,
-                reason: 'returnToHand',
-                extraPayload: {
-                    sourcePlayerId,
-                    sourceCarduid,
-                    effectId: effect.effectId
-                }
+                sourcePlayerId,
+                sourceCarduid,
+                effectId: effect.effectId
             }
         );
-
-        if (!addResult.success) {
-            return addResult;
+        if (!moveResult.success) {
+            return { success: false, error: moveResult.error || 'Failed to move cards to hand' };
         }
 
-        returned.push({ carduid: movedCard.carduid, fromZone: resolved.slotName, ownerPlayerId });
+        for (const moved of moveResult.moved) {
+            returned.push({
+                carduid: moved.carduid,
+                fromZone: moved.fromZone,
+                ownerPlayerId: moved.ownerPlayerId
+            });
+        }
     }
+
+    ContinuousEffectManager.processAllContinuousEffects(gameEnv);
 
     const notificationManager = new GameNotificationManager(gameEnv);
     notificationManager.addNotificationEvent(

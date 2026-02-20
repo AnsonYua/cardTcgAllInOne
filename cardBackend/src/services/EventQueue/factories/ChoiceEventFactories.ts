@@ -101,14 +101,22 @@ export const createOptionChoiceEvent = (params: {
     effect: EffectDefinition;
     availableOptions: OptionChoiceOption[];
     context?: Record<string, unknown>;
+    headerText?: string;
+    promptText?: string;
+    defaultOptionIndex?: number;
+    layoutHint?: 'card' | 'text' | 'hybrid';
 }): OptionChoiceEvent => {
-    const { playerId, sourceCarduid, effect, availableOptions, context } = params;
+    const { playerId, sourceCarduid, effect, availableOptions, context, headerText, promptText, defaultOptionIndex, layoutHint } = params;
     const effectKey = effect?.effectId || effect?.action || 'effect';
     const eventData = {
         choiceId: `option_choice_${effectKey}_${Date.now()}`,
         userDecisionMade: false,
         sourceCarduid,
         effect,
+        headerText,
+        promptText,
+        defaultOptionIndex,
+        layoutHint,
         availableOptions,
         context
     };

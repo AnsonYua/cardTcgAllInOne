@@ -52,17 +52,19 @@ export class UnitSlotDestructionFlow {
             );
         }
 
-        const destroyedUnit = unitAfter ? deps.moveCardToTrashFromSlot(gameEnv, playerId, slotName, unitAfter, 'unit') : true;
-        if (!destroyedUnit) {
-            return false;
-        }
-
-        if (pilotAfter) {
-            deps.moveCardToTrashFromSlot(gameEnv, playerId, slotName, pilotAfter, 'pilot');
+        if (unitAfter) {
+            const destroyedUnit = deps.moveCardToTrashFromSlot(gameEnv, playerId, slotName, unitAfter, 'unit');
+            if (!destroyedUnit) {
+                return false;
+            }
+        } else if (pilotAfter) {
+            const destroyedPilot = deps.moveCardToTrashFromSlot(gameEnv, playerId, slotName, pilotAfter, 'pilot');
+            if (!destroyedPilot) {
+                return false;
+            }
         }
 
         ContinuousEffectManager.processAllContinuousEffects(gameEnv);
         return true;
     }
 }
-

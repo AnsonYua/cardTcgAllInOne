@@ -15,12 +15,12 @@ describe('DeployFromTopDeck option display contract', () => {
         expect(options[0].display).toEqual({
             mode: 'card',
             cardId: 'GD03-035',
-            label: 'Deploy GD03-035'
+            label: 'Deploy GFreD'
         });
         expect(options[1].display).toEqual({
             mode: 'card',
             cardId: 'ST03-001',
-            label: 'Deploy ST03-001'
+            label: 'Deploy Sinanju'
         });
         expect(options[2].display).toEqual({
             mode: 'text',

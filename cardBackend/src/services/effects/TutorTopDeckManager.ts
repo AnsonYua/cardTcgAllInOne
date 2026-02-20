@@ -5,13 +5,24 @@ import type { GameEnvironment } from '../../models/GameEnvironment';
 import { CardDatabaseManager, type CardData } from '../../models/CardSystem';
 import type { EffectDefinition, OptionChoiceEvent, OptionChoiceOption, PromptChoiceEvent } from '../EventQueue/interfaces/GameEvent';
 import { ensureEffectDefaults } from '../../utils/EffectNormalizationUtils';
-import { GameNotificationManager } from '../GameNotificationManager';
 import { HandZoneManager } from '../zones/HandZoneManager';
 import { DeckZoneManager, type DeckBottomOrder } from '../zones/DeckZoneManager';
 import { ChoiceEventScheduler } from '../choices/ChoiceEventScheduler';
 import { ChoiceDisplayBuilder } from '../choices/ChoiceDisplayBuilder';
 import type { ExecutionResult } from '../ExecutionResult';
 import { getCardIdFromUid } from '../../utils/CardUtils';
+import {
+    TUTOR_TOP_DECK_REVEAL_CHOICE_ID,
+    buildTutorRevealConfirmContext,
+    buildTutorTopDeckOptions,
+    parseTutorRevealConfirmContext
+} from './tutorTopDeck/TutorTopDeckFlowUtils';
+import { parseTutorRestOrder, parseTutorRuntimeContext } from './tutorTopDeck/TutorTopDeckContextUtils';
+import {
+    emitTutorCardsMovedToBottom,
+    emitTutorTopDeckResolved,
+    emitTutorTopDeckViewed
+} from './tutorTopDeck/TutorTopDeckNotificationUtils';
 
 type TutorSelectConfig = {
     count?: number;
@@ -26,34 +37,8 @@ type TutorSelectConfig = {
 
 type TutorRestConfig = {
     toZone?: string;
-    order?: DeckBottomOrder;
+    order?: 'random' | 'preserve';
 };
-
-function parseRestOrder(raw: unknown): DeckBottomOrder {
-    return raw === 'random' ? 'random' : 'preserve';
-}
-
-function parseTutorContext(raw: unknown): { lookedCarduids: string[]; restOrder: DeckBottomOrder; reveal: boolean } | null {
-    if (!raw || typeof raw !== 'object') {
-        return null;
-    }
-    const context = raw as Record<string, unknown>;
-    const tutorRaw = context['tutor'];
-    if (!tutorRaw || typeof tutorRaw !== 'object') {
-        return null;
-    }
-    const tutor = tutorRaw as Record<string, unknown>;
-    const looked = tutor['lookedCarduids'];
-    const lookedCarduids = Array.isArray(looked)
-        ? looked.filter((c: unknown) => typeof c === 'string')
-        : [];
-    const restOrder = parseRestOrder(tutor['restOrder']);
-    const reveal = tutor['reveal'] === true;
-    if (lookedCarduids.length === 0) {
-        return null;
-    }
-    return { lookedCarduids, restOrder, reveal };
-}
 
 export class TutorTopDeckManager {
     static processTutorTopDeckEffect(
@@ -65,6 +50,7 @@ export class TutorTopDeckManager {
     ): { success: boolean; error?: string; requiresSelection?: boolean; autoApplied?: boolean } {
         const normalizedEffect = ensureEffectDefaults(effect);
         const sourceCardId = getCardIdFromUid(sourceCarduid);
+        const sourceCardName = CardDatabaseManager.getCardDetails(sourceCardId)?.name || sourceCardId;
         const isGd01048DeployTutor = sourceCardId === 'GD01-048' && normalizedEffect.effectId === 'deploy_effect';
 
         const player = gameEnv.getPlayer(playerId);
@@ -117,55 +103,41 @@ export class TutorTopDeckManager {
             };
         });
 
-        const notificationManager = new GameNotificationManager(gameEnv);
-        notificationManager.addNotificationEvent(
-            'TOP_DECK_VIEWED',
-            {
-                playerId,
-                sourceCarduid,
-                effectId: normalizedEffect.effectId,
-                count: lookedDetails.length,
-                cards: lookedDetails,
-                revealToOpponent: false,
-                timestamp: Date.now()
-            },
-            'normal'
-        );
+        emitTutorTopDeckViewed({
+            gameEnv,
+            playerId,
+            sourceCarduid,
+            effectId: normalizedEffect.effectId,
+            cards: lookedDetails,
+        });
 
         const selectable = lookedDetails.filter(card => card.matchesFilters);
         if (selectable.length === 0) {
-            DeckZoneManager.moveToBottom(deck, lookedDetails.map(c => c.carduid), parseRestOrder(rest?.order));
-            notificationManager.addNotificationEvent(
-                'CARDS_MOVED_TO_DECK_BOTTOM',
-                {
-                    playerId,
-                    sourceCarduid,
-                    effectId: normalizedEffect.effectId,
-                    carduids: lookedDetails.map(c => c.carduid),
-                    reason: 'tutor_top_deck_no_match',
-                    timestamp: Date.now()
-                },
-                'normal'
-            );
-            notificationManager.addNotificationEvent(
-                'TUTOR_TOP_DECK_RESOLVED',
-                {
-                    playerId,
-                    sourceCarduid,
-                    effectId: normalizedEffect.effectId,
-                    result: 'NO_MATCH_MOVED_TO_BOTTOM',
-                    movedCarduids: lookedDetails.map(c => c.carduid),
-                    timestamp: Date.now()
-                },
-                'normal'
-            );
+            const lookedCarduids = lookedDetails.map(c => c.carduid);
+            DeckZoneManager.moveToBottom(deck, lookedCarduids, parseTutorRestOrder(rest?.order));
+            emitTutorCardsMovedToBottom({
+                gameEnv,
+                playerId,
+                sourceCarduid,
+                effectId: normalizedEffect.effectId,
+                carduids: lookedCarduids,
+                reason: 'tutor_top_deck_no_match'
+            });
+            emitTutorTopDeckResolved({
+                gameEnv,
+                playerId,
+                sourceCarduid,
+                effectId: normalizedEffect.effectId,
+                result: 'NO_MATCH_MOVED_TO_BOTTOM',
+                movedCarduids: lookedCarduids
+            });
             return { success: true, autoApplied: true };
         }
 
         if (!optional && toZone === 'hand' && reveal) {
             const chosen = selectable[0];
             this.resolveSelection(deck, lookedDetails.map(c => c.carduid), chosen.carduid, {
-                order: parseRestOrder(rest?.order),
+                order: parseTutorRestOrder(rest?.order),
                 toZone: 'hand',
                 reveal: true,
                 playerId,
@@ -202,7 +174,7 @@ export class TutorTopDeckManager {
                 context: {
                     tutor: {
                         lookedCarduids: lookedDetails.map(c => c.carduid),
-                        restOrder: parseRestOrder(rest?.order),
+                        restOrder: parseTutorRestOrder(rest?.order),
                         reveal
                     }
                 },
@@ -212,41 +184,74 @@ export class TutorTopDeckManager {
             return { success: true, requiresSelection: true };
         }
 
-        const options: OptionChoiceOption[] = [];
-        for (let i = 0; i < selectable.length; i++) {
-            const choice = selectable[i];
-            options.push({
-                index: i,
-                label: `Reveal and add ${choice.cardId} to hand`,
-                payload: { action: 'TAKE', carduid: choice.carduid, cardId: choice.cardId },
-                display: ChoiceDisplayBuilder.card(choice.cardId, `Reveal and add ${choice.cardId} to hand`)
-            });
-        }
-
-        const noneIndex = options.length;
-        options.push({
-            index: noneIndex,
-            label: 'Put it on the bottom of your deck',
-            payload: { action: 'BOTTOM' },
-            display: ChoiceDisplayBuilder.text('Put it on the bottom of your deck')
-        });
-
-        ChoiceEventScheduler.enqueueOptionChoice(gameEnv, {
-            playerId,
+        const options = buildTutorTopDeckOptions(selectable);
+        const noneIndex = options.length - 1;
+        const revealContext = buildTutorRevealConfirmContext({
+            lookedCards: lookedDetails,
+            restOrder: parseTutorRestOrder(rest?.order),
+            reveal,
+            availableOptions: options,
             sourceCarduid,
             effect: normalizedEffect,
-            availableOptions: options,
-            context: {
-                tutor: {
-                    lookedCarduids: lookedDetails.map(c => c.carduid),
-                    restOrder: parseRestOrder(rest?.order),
-                    reveal
+            optionChoiceHeaderText: normalizedEffect.trigger === 'DESTROYED' ? 'Destroyed Effect' : 'Triggered Effect',
+            optionChoicePromptText: `${sourceCardName}: choose 1 card to reveal and add to your hand, or put the looked cards on the bottom of your deck.`,
+            optionChoiceDefaultIndex: noneIndex
+        });
+
+        ChoiceEventScheduler.enqueuePromptChoice(gameEnv, {
+            playerId,
+            choiceId: TUTOR_TOP_DECK_REVEAL_CHOICE_ID,
+            headerText: 'Top of Deck',
+            promptText: 'Review the looked cards, then continue.',
+            availableOptions: [
+                {
+                    index: 0,
+                    label: 'Continue',
+                    payload: { action: 'CONTINUE' },
+                    display: ChoiceDisplayBuilder.text('Continue')
                 }
-            },
+            ],
+            defaultOptionIndex: 0,
+            sourceCarduid,
+            context: revealContext,
             cardPlayNotificationId
         });
 
         return { success: true, requiresSelection: true };
+    }
+
+    static executeRevealConfirmPromptChoice(event: PromptChoiceEvent, gameEnv: GameEnvironment): ExecutionResult {
+        const selectionIndex = event.data.selectedOptionIndex;
+        if (typeof selectionIndex !== 'number') {
+            return { success: false, error: 'No option selected for tutor_top_deck reveal confirm' };
+        }
+
+        const revealContext = parseTutorRevealConfirmContext(event.data.context);
+        if (!revealContext) {
+            return { success: false, error: 'tutor_top_deck reveal confirm missing context' };
+        }
+
+        const optionChoice = revealContext.tutor.optionChoice;
+        ChoiceEventScheduler.enqueueOptionChoice(gameEnv, {
+            playerId: event.playerId,
+            sourceCarduid: revealContext.tutor.sourceCarduid,
+            effect: revealContext.tutor.effect,
+            headerText: optionChoice.headerText,
+            promptText: optionChoice.promptText,
+            defaultOptionIndex: optionChoice.defaultOptionIndex,
+            layoutHint: optionChoice.layoutHint,
+            availableOptions: revealContext.tutor.availableOptions,
+            context: {
+                tutor: {
+                    lookedCarduids: revealContext.tutor.lookedCarduids,
+                    restOrder: revealContext.tutor.restOrder,
+                    reveal: revealContext.tutor.reveal
+                }
+            },
+            cardPlayNotificationId: event.data.cardPlayNotificationId
+        });
+
+        return { success: true };
     }
 
     static executeOptionChoice(event: OptionChoiceEvent, gameEnv: GameEnvironment): ExecutionResult {
@@ -260,7 +265,7 @@ export class TutorTopDeckManager {
             return { success: false, error: 'Player deck not found for tutor_top_deck resolution' };
         }
 
-        const tutorContext = parseTutorContext(event.data.context);
+        const tutorContext = parseTutorRuntimeContext(event.data.context);
         if (!tutorContext) {
             return { success: false, error: 'tutor_top_deck missing lookedCarduids context' };
         }
@@ -295,31 +300,22 @@ export class TutorTopDeckManager {
         }
 
         DeckZoneManager.moveToBottom(player.deck.mainDeck, tutorContext.lookedCarduids, restOrder);
-        const notificationManager = new GameNotificationManager(gameEnv);
-        notificationManager.addNotificationEvent(
-            'CARDS_MOVED_TO_DECK_BOTTOM',
-            {
-                playerId: event.playerId,
-                sourceCarduid: event.data.sourceCarduid,
-                effectId: event.data.effect?.effectId,
-                carduids: tutorContext.lookedCarduids,
-                reason: 'tutor_top_deck_choice_bottom',
-                timestamp: Date.now()
-            },
-            'normal'
-        );
-        notificationManager.addNotificationEvent(
-            'TUTOR_TOP_DECK_RESOLVED',
-            {
-                playerId: event.playerId,
-                sourceCarduid: event.data.sourceCarduid,
-                effectId: event.data.effect?.effectId,
-                result: 'MOVED_TO_BOTTOM',
-                movedCarduids: tutorContext.lookedCarduids,
-                timestamp: Date.now()
-            },
-            'normal'
-        );
+        emitTutorCardsMovedToBottom({
+            gameEnv,
+            playerId: event.playerId,
+            sourceCarduid: event.data.sourceCarduid,
+            effectId: event.data.effect?.effectId,
+            carduids: tutorContext.lookedCarduids,
+            reason: 'tutor_top_deck_choice_bottom',
+        });
+        emitTutorTopDeckResolved({
+            gameEnv,
+            playerId: event.playerId,
+            sourceCarduid: event.data.sourceCarduid,
+            effectId: event.data.effect?.effectId,
+            result: 'MOVED_TO_BOTTOM',
+            movedCarduids: tutorContext.lookedCarduids,
+        });
         return { success: true };
     }
 
@@ -334,7 +330,7 @@ export class TutorTopDeckManager {
             return { success: false, error: 'Player deck not found for tutor_top_deck_position resolution' };
         }
 
-        const tutorContext = parseTutorContext(event.data.context);
+        const tutorContext = parseTutorRuntimeContext(event.data.context);
         if (!tutorContext) {
             return { success: false, error: 'tutor_top_deck_position missing lookedCarduids context' };
         }
@@ -348,48 +344,36 @@ export class TutorTopDeckManager {
         const action = typeof payload.action === 'string' ? payload.action : '';
 
         if (action === 'BOTTOM') {
+            const sourceCarduid = (event.data.sourceCarduid ?? '').toString();
             DeckZoneManager.moveToBottom(player.deck.mainDeck, tutorContext.lookedCarduids, tutorContext.restOrder);
-            const notificationManager = new GameNotificationManager(gameEnv);
-            notificationManager.addNotificationEvent(
-                'CARDS_MOVED_TO_DECK_BOTTOM',
-                {
-                    playerId: event.playerId,
-                    sourceCarduid: event.data.sourceCarduid,
-                    effectId: undefined,
-                    carduids: tutorContext.lookedCarduids,
-                    reason: 'tutor_top_deck_choice_bottom',
-                    timestamp: Date.now()
-                },
-                'normal'
-            );
-            notificationManager.addNotificationEvent(
-                'TUTOR_TOP_DECK_RESOLVED',
-                {
-                    playerId: event.playerId,
-                    sourceCarduid: event.data.sourceCarduid,
-                    effectId: undefined,
-                    result: 'MOVED_TO_BOTTOM',
-                    movedCarduids: tutorContext.lookedCarduids,
-                    timestamp: Date.now()
-                },
-                'normal'
-            );
+            emitTutorCardsMovedToBottom({
+                gameEnv,
+                playerId: event.playerId,
+                sourceCarduid,
+                effectId: undefined,
+                carduids: tutorContext.lookedCarduids,
+                reason: 'tutor_top_deck_choice_bottom',
+            });
+            emitTutorTopDeckResolved({
+                gameEnv,
+                playerId: event.playerId,
+                sourceCarduid,
+                effectId: undefined,
+                result: 'MOVED_TO_BOTTOM',
+                movedCarduids: tutorContext.lookedCarduids,
+            });
             return { success: true };
         }
 
-        const notificationManager = new GameNotificationManager(gameEnv);
-        notificationManager.addNotificationEvent(
-            'TUTOR_TOP_DECK_RESOLVED',
-            {
-                playerId: event.playerId,
-                sourceCarduid: event.data.sourceCarduid,
-                effectId: undefined,
-                result: 'LEFT_ON_TOP',
-                leftCarduids: tutorContext.lookedCarduids,
-                timestamp: Date.now()
-            },
-            'normal'
-        );
+        const sourceCarduid = (event.data.sourceCarduid ?? '').toString();
+        emitTutorTopDeckResolved({
+            gameEnv,
+            playerId: event.playerId,
+            sourceCarduid,
+            effectId: undefined,
+            result: 'LEFT_ON_TOP',
+            leftCarduids: tutorContext.lookedCarduids,
+        });
         return { success: true };
     }
 
@@ -428,19 +412,14 @@ export class TutorTopDeckManager {
 
         DeckZoneManager.moveToBottom(deck, extracted, params.order);
 
-        const notificationManager = new GameNotificationManager(gameEnv);
-        notificationManager.addNotificationEvent(
-            'TUTOR_TOP_DECK_RESOLVED',
-            {
-                playerId: params.playerId,
-                sourceCarduid: params.sourceCarduid,
-                effectId: params.effectId,
-                result: chosenCarduid ? 'ADDED_TO_HAND' : 'MOVED_TO_BOTTOM',
-                addedCarduid: chosenCarduid,
-                movedCarduids: extracted,
-                timestamp: Date.now()
-            },
-            'normal'
-        );
+        emitTutorTopDeckResolved({
+            gameEnv,
+            playerId: params.playerId,
+            sourceCarduid: params.sourceCarduid,
+            effectId: params.effectId,
+            result: chosenCarduid ? 'ADDED_TO_HAND' : 'MOVED_TO_BOTTOM',
+            addedCarduid: chosenCarduid,
+            movedCarduids: extracted,
+        });
     }
 }
