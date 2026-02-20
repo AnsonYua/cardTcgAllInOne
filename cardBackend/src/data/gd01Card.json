@@ -4533,6 +4533,7 @@
             "target": {
               "type": "unit",
               "scope": "self_all_unit",
+              "count": 99,
               "filters": {
                 "level": "<=4"
               }
@@ -4686,7 +4687,8 @@
             "action": "modifyAP",
             "target": {
               "type": "unit",
-              "scope": "self_all_unit"
+              "scope": "self_all_unit",
+              "count": 99
             },
             "parameters": {
               "value": 2

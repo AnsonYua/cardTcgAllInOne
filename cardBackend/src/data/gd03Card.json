@@ -1223,6 +1223,7 @@
                         "target": {
                           "type": "unit",
                           "scope": "opponent_all",
+                          "count": 99,
                           "filters": {
                             "level": "<=3"
                           }
@@ -1560,6 +1561,7 @@
             "target": {
               "type": "unit",
               "scope": "opponent_all_unit",
+              "count": 99,
               "filters": {
                 "keywords": [
                   "Blocker"
@@ -1972,7 +1974,8 @@
                   "action": "damage",
                   "target": {
                     "type": "unit",
-                    "scope": "opponent_all"
+                    "scope": "opponent_all",
+                    "count": 99
                   },
                   "parameters": {
                     "value": 1
@@ -2300,7 +2303,8 @@
                   "action": "damage",
                   "target": {
                     "type": "base",
-                    "scope": "all"
+                    "scope": "all",
+                    "count": 99
                   },
                   "parameters": {
                     "value": 3
@@ -6641,6 +6645,7 @@
                   "target": {
                     "type": "unit",
                     "scope": "self_all_unit",
+                    "count": 99,
                     "filters": {
                       "pairedPilot": "any"
                     }
@@ -7266,7 +7271,8 @@
                         },
                         "target": {
                           "type": "unit",
-                          "scope": "opponent_all"
+                          "scope": "opponent_all",
+                          "count": 99
                         },
                         "parameters": {
                           "value": -1

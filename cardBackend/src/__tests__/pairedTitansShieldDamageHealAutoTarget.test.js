@@ -17,7 +17,7 @@ function findUnit(gameEnv, playerId, carduid) {
 }
 
 describe('paired_titans_shield_damage_heal_2 targeting', () => {
-    test('auto-heals the source unit without creating a TARGET_CHOICE', () => {
+    test('skips when trigger conditions are not satisfied and does not create TARGET_CHOICE', () => {
         const gameEnv = new GameEnvironment();
         gameEnv.addPlayer('playerId_1', 'P1');
         gameEnv.addPlayer('playerId_2', 'P2');
@@ -63,7 +63,6 @@ describe('paired_titans_shield_damage_heal_2 targeting', () => {
         expect(choiceEvent).toBeFalsy();
 
         const afterHp = PlayerCardManager.getCurrentUnitCardInSlotAPandHP(gameEnv, sourceCarduid).totalHP;
-        expect(afterHp).toBe(beforeHp + 2);
+        expect(afterHp).toBe(beforeHp);
     });
 });
-

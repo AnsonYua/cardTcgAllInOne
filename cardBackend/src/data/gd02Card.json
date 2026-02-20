@@ -5396,6 +5396,7 @@
                   "target": {
                     "type": "unit",
                     "scope": "opponent_all",
+                    "count": 99,
                     "filters": {
                       "pairedPilot": "none"
                     }
@@ -6606,6 +6607,7 @@
                         "target": {
                           "type": "unit",
                           "scope": "self_all_unit",
+                          "count": 99,
                           "filters": {
                             "color": "Green",
                             "traits": [

@@ -131,6 +131,7 @@
             "target": {
               "type": "unit",
               "scope": "opponent_all_unit",
+              "count": 99,
               "filters": {
                 "level": "<=3"
               }
