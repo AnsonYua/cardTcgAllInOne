@@ -1,0 +1,4 @@
+interface:
+  display_name: "Create Game Environment Test"
+  short_description: "Create complete action scenario JSON"
+  default_prompt: "Use $createGameEnvTest to generate complete action scenario JSON under shared/testScenarios/gameStates, including full initialGameEnv (slots, hand, base, shield, energy, trash, processingQueue, notificationQueue), plus Action/Expect notes and a validation command."

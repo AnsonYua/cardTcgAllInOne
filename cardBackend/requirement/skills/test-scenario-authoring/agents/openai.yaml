@@ -1,5 +1,0 @@
-interface:
-  display_name: "Scenario Authoring"
-  short_description: "Create card-game test scenario JSON"
-  default_prompt: "Use $test-scenario-authoring to generate or review scenario JSON under shared/testScenarios/gameStates."
-

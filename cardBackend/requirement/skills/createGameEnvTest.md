@@ -1,0 +1,37 @@
+---
+name: createGameEnvTest
+description: Generate or review full manual test scenario JSON files under shared/testScenarios/gameStates for this card backend, including complete initialGameEnv zone setup for slots, hand, base, shield, energy, trash, and queue seeds.
+triggers:
+  - "this is my test gameEnv requirement"
+  - "please use createGameEnvTest skill"
+  - "create game environment test"
+  - "test scenario authoring"
+  - "gameenv requirement"
+  - "game environment requirement"
+  - "create test scenario"
+---
+
+# Create Game Environment Test
+
+Use this skill when you need to create or review a complete action scenario JSON based on game environment requirements.
+
+## Required Workflow
+1. Read `createGameEnvTest/references/scenario-authoring.md` for contract and process.
+2. Read `createGameEnvTest/references/gameenv-zone-cookbook.md` for exact zone snippets.
+3. Start from `createGameEnvTest/references/templates/action-scenario-template.json`.
+4. Fill the template from user environment requirements.
+5. If card is GD01-125 (or similar burst-turn gating), read `createGameEnvTest/references/gd01-125-worked-example.md`.
+6. Return full JSON draft plus Action/Expect notes plus validation command.
+
+## Output Requirements
+- Default `testType: "action"` for new scenarios.
+- Include complete `initialGameEnv` for both players.
+- Include `processingQueue: []`.
+- Include `notificationQueue` with a `CARD_DRAWN` seed where `payload.playerId === currentPlayer`.
+- Include `notes` with alternating `Action` and `Expect` lines.
+
+## Validation
+Run:
+`npm run test:dynamic run <relativeScenarioPath> --verbose`
+
+Before finalizing, run `createGameEnvTest/references/checklist.md`.
