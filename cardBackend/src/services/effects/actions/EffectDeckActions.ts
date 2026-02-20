@@ -66,6 +66,7 @@ export function applyMoveTopDeckToTrash(
                 count: moved.length,
                 fromZone: 'deck',
                 toZone: 'trash',
+                // Contract: reveal=true means all viewers may see card identity in popup/notification UIs.
                 reveal: options.reveal === true,
                 sourceCarduid: options.sourceCarduid,
                 effectId: options.effectId,
