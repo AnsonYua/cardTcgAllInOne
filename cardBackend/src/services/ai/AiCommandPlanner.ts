@@ -10,6 +10,12 @@ import { getAvailableEnergyCount, getTotalEnergyCount } from './AiEnergyUtils';
 import { buildViewAdapter, scoreTargetForAction } from './AiTargetUtils';
 import { SLOT_NAMES, type AiDecision } from './AiTypes';
 import {
+    findUnitSnapshotByCarduid,
+    getSlotDamage,
+    getSlotTotalHp,
+    type AiUnitSnapshot
+} from './AiSlotHealthUtils';
+import {
     adjustDecisionThreshold,
     getActionPlaystyleMultiplier,
     getAiPlaystyle,
@@ -53,14 +59,6 @@ type CommandCardCandidate = {
     cardData: AiCardData;
     cost: number;
     level: number;
-};
-
-type UnitSnapshot = {
-    ap: number;
-    hp: number;
-    remainingHp: number;
-    damage: number;
-    isRested: boolean;
 };
 
 type TargetEvaluation = {
@@ -167,12 +165,8 @@ const buildBoardContext = (gameEnvView: AiGameEnvView, aiPlayerId: string): Boar
             if (canAttack(selfSlot.unit)) {
                 selfReadyAttackers += 1;
             }
-            const totalHp = typeof selfSlot?.fieldCardValue?.totalHP === 'number'
-                ? selfSlot.fieldCardValue.totalHP
-                : toNumber(selfSlot.unit.cardData?.hp, 0);
-            const damage = typeof selfSlot?.fieldCardValue?.totalDamageReceived === 'number'
-                ? toNumber(selfSlot.fieldCardValue.totalDamageReceived, 0)
-                : toNumber(selfSlot.unit.damageReceived, 0);
+            const totalHp = getSlotTotalHp(selfSlot);
+            const damage = getSlotDamage(selfSlot);
             selfDamagedTotal += Math.max(0, Math.min(totalHp, damage));
         } else {
             openSelfUnitSlots += 1;
@@ -198,40 +192,8 @@ const buildBoardContext = (gameEnvView: AiGameEnvView, aiPlayerId: string): Boar
     };
 };
 
-const getUnitSnapshot = (gameEnvView: AiGameEnvView, carduid: string): UnitSnapshot | null => {
-    const players = gameEnvView?.players || {};
-    for (const [playerId, player] of Object.entries(players)) {
-        const zones = player?.zones || {};
-        for (const slotName of SLOT_NAMES) {
-            const slot = zones?.[slotName] as AiSlotView | undefined;
-            const unit = slot?.unit;
-            if (!unit || unit.carduid !== carduid) {
-                continue;
-            }
-            const totalAP = typeof slot?.fieldCardValue?.totalAP === 'number'
-                ? slot.fieldCardValue.totalAP
-                : toNumber(unit?.cardData?.ap, 0);
-            const totalHP = typeof slot?.fieldCardValue?.totalHP === 'number'
-                ? slot.fieldCardValue.totalHP
-                : toNumber(unit?.cardData?.hp, 0);
-            const remainingHp = typeof slot?.fieldCardValue?.totalHP === 'number'
-                ? Math.max(0, slot.fieldCardValue.totalHP)
-                : Math.max(0, totalHP - toNumber(unit?.damageReceived, 0));
-            const damage = typeof slot?.fieldCardValue?.totalDamageReceived === 'number'
-                ? toNumber(slot.fieldCardValue.totalDamageReceived, 0)
-                : toNumber(unit?.damageReceived, 0);
-            return {
-                ap: totalAP,
-                hp: totalHP,
-                remainingHp,
-                damage,
-                isRested: Boolean(unit?.isRested)
-            };
-        }
-    }
-
-    return null;
-};
+const getUnitSnapshot = (gameEnvView: AiGameEnvView, carduid: string): AiUnitSnapshot | null =>
+    findUnitSnapshotByCarduid(gameEnvView, carduid);
 
 const evaluateTargets = (
     context: DecisionContext,

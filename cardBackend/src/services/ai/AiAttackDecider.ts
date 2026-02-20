@@ -1,6 +1,7 @@
 import type { AiDecision } from './AiTypes';
 import { SLOT_NAMES } from './AiTypes';
 import { canAttackActiveTarget, isShieldAttackRestricted } from './AiTargetUtils';
+import { getSlotAttackPower, getSlotRemainingHp } from './AiSlotHealthUtils';
 import { AttackPreparationManager } from '../AttackPreparationManager';
 import type { AiGameEnvView, AiPlayerView, AiSlotView, AiUnitView } from './AiViewTypes';
 import type { UnitZoneCard } from '../../models/CardSystem';
@@ -18,8 +19,8 @@ export function findWinningShieldAttack(gameEnvView: AiGameEnvView, aiPlayerId: 
     const attackers = getAttackers(gameEnvView, aiPlayerId)
         .filter((entry) => !isShieldAttackRestricted(entry.slot?.unit));
     const best = attackers
-        .filter((entry) => getUnitAttackPower(entry.slot) > 0)
-        .sort((a, b) => getUnitAttackPower(b.slot) - getUnitAttackPower(a.slot))[0];
+        .filter((entry) => getSlotAttackPower(entry.slot) > 0)
+        .sort((a, b) => getSlotAttackPower(b.slot) - getSlotAttackPower(a.slot))[0];
     if (!best?.slot?.unit?.carduid) {
         return null;
     }
@@ -51,8 +52,8 @@ export function findBestUnitAttack(gameEnvView: AiGameEnvView, aiPlayerId: strin
         if (!attackerUnit?.carduid) {
             continue;
         }
-        const attackerAP = getUnitAttackPower(attacker.slot);
-        const attackerHP = getUnitRemainingHp(attacker.slot);
+        const attackerAP = getSlotAttackPower(attacker.slot);
+        const attackerHP = getSlotRemainingHp(attacker.slot);
         for (const target of defenderTargets) {
             const targetUnit = target.slot?.unit;
             if (!targetUnit?.carduid) {
@@ -61,8 +62,8 @@ export function findBestUnitAttack(gameEnvView: AiGameEnvView, aiPlayerId: strin
             if (targetUnit.isRested !== true && !canAttackActiveTarget(gameEnvView, attackerUnit, targetUnit)) {
                 continue;
             }
-            const targetHP = getUnitRemainingHp(target.slot);
-            const targetAP = getUnitAttackPower(target.slot);
+            const targetHP = getSlotRemainingHp(target.slot);
+            const targetAP = getSlotAttackPower(target.slot);
             const killBonus = attackerAP >= targetHP ? 30 : 0;
             const tradeRisk = targetAP >= attackerHP ? 18 : 0;
             const score = killBonus + targetAP + targetHP - tradeRisk;
@@ -93,7 +94,7 @@ export function findSafeShieldAttack(gameEnvView: AiGameEnvView, aiPlayerId: str
     }
 
     const best = attackers
-        .sort((a, b) => getUnitAttackPower(b.slot) - getUnitAttackPower(a.slot))[0];
+        .sort((a, b) => getSlotAttackPower(b.slot) - getSlotAttackPower(a.slot))[0];
     if (!best?.slot?.unit?.carduid) {
         return null;
     }
@@ -139,23 +140,4 @@ function canAttack(unit: AiUnitView | undefined): boolean {
     const playedThisTurn = Boolean(unit.playedThisTurn);
     const canAttackOnPlayTurn = Boolean(unit.canAttackOnPlayTurn);
     return !isRested && (!playedThisTurn || canAttackOnPlayTurn);
-}
-
-function getUnitAttackPower(slot: AiSlotView | undefined): number {
-    const fieldValue = slot?.fieldCardValue?.totalAP;
-    if (typeof fieldValue === 'number') {
-        return fieldValue;
-    }
-    const baseAp = Number(slot?.unit?.cardData?.ap || 0);
-    const continuousAp = Number(slot?.unit?.continueModifyAP || 0);
-    return Math.max(0, baseAp + continuousAp);
-}
-
-function getUnitRemainingHp(slot: AiSlotView | undefined): number {
-    if (typeof slot?.fieldCardValue?.totalHP === 'number') {
-        return Math.max(0, slot.fieldCardValue.totalHP);
-    }
-    const totalHp = Number(slot?.unit?.cardData?.hp || 0) + Number(slot?.unit?.continueModifyHP || 0);
-    const damage = Number(slot?.unit?.damageReceived || 0);
-    return Math.max(0, totalHp - damage);
 }

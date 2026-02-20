@@ -9,6 +9,7 @@ import { SlotCardStateUtils } from '../conditions/SlotCardStateUtils';
 import { buildViewAdapter, scoreTargetForAction } from './AiTargetUtils';
 import { getAvailableEnergyCount } from './AiEnergyUtils';
 import { SLOT_NAMES, type AiDecision } from './AiTypes';
+import { getSlotDamage, getSlotTotalHp } from './AiSlotHealthUtils';
 import {
     adjustDecisionThreshold,
     getActionPlaystyleMultiplier,
@@ -181,12 +182,8 @@ const buildBoardContext = (gameEnvView: AiGameEnvView, aiPlayerId: string): Boar
             if (selfSlot.unit.isRested) {
                 selfRestedUnits += 1;
             }
-            const totalHp = typeof selfSlot?.fieldCardValue?.totalHP === 'number'
-                ? selfSlot.fieldCardValue.totalHP
-                : toNumber(selfSlot.unit.cardData?.hp, 0);
-            const damage = typeof selfSlot?.fieldCardValue?.totalDamageReceived === 'number'
-                ? toNumber(selfSlot.fieldCardValue.totalDamageReceived, 0)
-                : toNumber(selfSlot.unit.damageReceived, 0);
+            const totalHp = getSlotTotalHp(selfSlot);
+            const damage = getSlotDamage(selfSlot);
             selfDamagedTotal += Math.max(0, Math.min(totalHp, damage));
         } else {
             openSelfSlots += 1;

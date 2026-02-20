@@ -78,69 +78,7 @@ export class EffectStatApplier {
                 error: 'Heal effect requires numeric value'
             };
         }
-
-        if (SlotZoneUtils.isSlotZoneName(target.zone)) {
-            const change = SlotHealthService.applyHealToTarget(gameEnv, target, value);
-            if (!change) {
-                return {
-                    success: false,
-                    error: `Card ${target.carduid} has no slot health information`
-                };
-            }
-
-            const healed = Math.max(0, change.previousDamage - change.sharedDamage);
-            console.log(`  🩹 ${target.carduid}: shared damage ${change.previousDamage} → ${change.sharedDamage} (HP ${change.remainingHp}/${change.maxHp})`);
-
-            if (healed > 0) {
-                EffectNotifier.notifyCardHealed(
-                    gameEnv,
-                    targetCard,
-                    target,
-                    healed,
-                    change.sharedDamage,
-                    change.remainingHp,
-                    change.maxHp,
-                    'heal'
-                );
-            }
-
-            return { success: true };
-        }
-
-        const maxHP = targetCard.originalHP ?? targetCard.cardData?.hp ?? 0;
-        if (maxHP === 0) {
-            return {
-                success: false,
-                error: `Card ${target.carduid} has no HP information`
-            };
-        }
-
-        const previousDamage = typeof (targetCard as any).damageReceived === 'number'
-            ? (targetCard as any).damageReceived
-            : 0;
-
-        const healAmount = Math.max(0, value);
-        const newDamage = Math.max(0, previousDamage - healAmount);
-        (targetCard as any).damageReceived = newDamage;
-
-        const resultingHP = Math.max(0, maxHP - newDamage);
-        const healed = Math.max(0, previousDamage - newDamage);
-
-        console.log(`  🩹 ${target.carduid}: damage ${previousDamage} → ${newDamage} (HP ${resultingHP}/${maxHP})`);
-
-        if (healed > 0) {
-            EffectNotifier.notifyCardHealed(
-                gameEnv,
-                targetCard,
-                target,
-                healed,
-                newDamage,
-                resultingHP,
-                maxHP,
-                'heal'
-            );
-        }
-        return { success: true };
+        return this.applyCardHealthChange(gameEnv, targetCard, target, value, 'heal');
     }
 
     static applyDamageToCard(
@@ -156,29 +94,78 @@ export class EffectStatApplier {
                 error: 'Damage effect requires numeric value'
             };
         }
+        return this.applyCardHealthChange(gameEnv, targetCard, target, value, 'damage');
+    }
 
+    private static applyCardHealthChange(
+        gameEnv: GameEnvironment,
+        targetCard: UnitZoneCard | PilotZoneCard,
+        target: TargetReference,
+        value: number,
+        mode: 'heal' | 'damage'
+    ): { success: boolean; error?: string } {
         if (SlotZoneUtils.isSlotZoneName(target.zone)) {
-            const change = SlotHealthService.applyDamageToTarget(gameEnv, target, value);
-            if (!change) {
-                return {
-                    success: false,
-                    error: `Card ${target.carduid} has no slot health information`
-                };
-            }
+            return this.applySlotHealthChange(gameEnv, targetCard, target, value, mode);
+        }
+        return this.applyDirectCardHealthChange(gameEnv, targetCard, target, value, mode);
+    }
 
-            const appliedDamage = Math.max(0, change.sharedDamage - change.previousDamage);
-            console.log(`  💥 ${target.carduid}: shared damage ${change.previousDamage} → ${change.sharedDamage} (HP ${change.remainingHp}/${change.maxHp})`);
-            EffectNotifier.notifyCardDamageApplied(
-                gameEnv,
-                targetCard,
-                target,
-                appliedDamage,
-                change.remainingHp,
-                change.maxHp
-            );
+    private static applySlotHealthChange(
+        gameEnv: GameEnvironment,
+        targetCard: UnitZoneCard | PilotZoneCard,
+        target: TargetReference,
+        value: number,
+        mode: 'heal' | 'damage'
+    ): { success: boolean; error?: string } {
+        const change = mode === 'heal'
+            ? SlotHealthService.applyHealToTarget(gameEnv, target, value)
+            : SlotHealthService.applyDamageToTarget(gameEnv, target, value);
+
+        if (!change) {
+            return {
+                success: false,
+                error: `Card ${target.carduid} has no slot health information`
+            };
+        }
+
+        if (mode === 'heal') {
+            const healed = Math.max(0, change.previousDamage - change.sharedDamage);
+            console.log(`  🩹 ${target.carduid}: shared damage ${change.previousDamage} → ${change.sharedDamage} (HP ${change.remainingHp}/${change.maxHp})`);
+            if (healed > 0) {
+                EffectNotifier.notifyCardHealed(
+                    gameEnv,
+                    targetCard,
+                    target,
+                    healed,
+                    change.sharedDamage,
+                    change.remainingHp,
+                    change.maxHp,
+                    'heal'
+                );
+            }
             return { success: true };
         }
 
+        const appliedDamage = Math.max(0, change.sharedDamage - change.previousDamage);
+        console.log(`  💥 ${target.carduid}: shared damage ${change.previousDamage} → ${change.sharedDamage} (HP ${change.remainingHp}/${change.maxHp})`);
+        EffectNotifier.notifyCardDamageApplied(
+            gameEnv,
+            targetCard,
+            target,
+            appliedDamage,
+            change.remainingHp,
+            change.maxHp
+        );
+        return { success: true };
+    }
+
+    private static applyDirectCardHealthChange(
+        gameEnv: GameEnvironment,
+        targetCard: UnitZoneCard | PilotZoneCard,
+        target: TargetReference,
+        value: number,
+        mode: 'heal' | 'damage'
+    ): { success: boolean; error?: string } {
         const maxHP = targetCard.originalHP ?? targetCard.cardData?.hp ?? 0;
         if (maxHP === 0) {
             return {
@@ -190,10 +177,30 @@ export class EffectStatApplier {
         const previousDamage = typeof (targetCard as any).damageReceived === 'number'
             ? (targetCard as any).damageReceived
             : 0;
-        const newDamage = previousDamage + value;
-        (targetCard as any).damageReceived = newDamage;
 
+        const newDamage = mode === 'heal'
+            ? Math.max(0, previousDamage - Math.max(0, value))
+            : previousDamage + value;
+        (targetCard as any).damageReceived = newDamage;
         const resultingHP = Math.max(0, maxHP - newDamage);
+
+        if (mode === 'heal') {
+            const healed = Math.max(0, previousDamage - newDamage);
+            console.log(`  🩹 ${target.carduid}: damage ${previousDamage} → ${newDamage} (HP ${resultingHP}/${maxHP})`);
+            if (healed > 0) {
+                EffectNotifier.notifyCardHealed(
+                    gameEnv,
+                    targetCard,
+                    target,
+                    healed,
+                    newDamage,
+                    resultingHP,
+                    maxHP,
+                    'heal'
+                );
+            }
+            return { success: true };
+        }
 
         console.log(`  💥 ${target.carduid}: damage ${previousDamage} → ${newDamage} (HP ${resultingHP}/${maxHP})`);
         EffectNotifier.notifyCardDamageApplied(
