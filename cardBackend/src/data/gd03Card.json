@@ -5190,7 +5190,7 @@
                   "action": "moveTopDeckToTrash",
                   "parameters": {
                     "count": 1,
-                    "reveal": false
+                    "reveal": true
                   }
                 },
                 {
