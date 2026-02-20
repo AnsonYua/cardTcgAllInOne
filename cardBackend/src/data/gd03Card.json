@@ -1887,7 +1887,8 @@
                         "action": "damage",
                         "target": {
                           "type": "unit",
-                          "scope": "opponent_all"
+                          "scope": "opponent_all",
+                          "count": 99
                         },
                         "parameters": {
                           "value": 1

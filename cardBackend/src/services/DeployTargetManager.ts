@@ -34,6 +34,7 @@ import { StatChangeTriggeredEffectCollector } from './effects/StatChangeTriggere
 import { EffectUsageTracker } from './effects/EffectUsageTracker';
 import { extractNumericValue } from './effects/actions/EffectActionUtils';
 import { SlotZoneUtils } from '../utils/SlotZoneUtils';
+import { EffectConditionEvaluator } from './conditions/EffectConditionEvaluator';
 import type { DeployTargetResult } from './DeployTargetResult';
 
 export type { DeployTargetResult } from './DeployTargetResult';
@@ -64,6 +65,16 @@ export class DeployTargetManager {
         console.log(`🎯 Processing effect ${effectLabel} requiring target selection`);
 
         try {
+            const sourceCard = sourceCarduid ? SlotZoneUtils.getCardByUid(gameEnv, sourceCarduid) : null;
+            if (!EffectConditionEvaluator.validateEffectConditions(normalizedEffect, gameEnv, playerId, sourceCard as any)) {
+                console.log(`⏭️ Skipping ineligible effect ${effectLabel} (timing/conditions not met)`);
+                return {
+                    success: true,
+                    autoApplied: true,
+                    affectedTargets: []
+                };
+            }
+
             const intercepted = CostFlowInterceptor.intercept(
                 gameEnv,
                 playerId,

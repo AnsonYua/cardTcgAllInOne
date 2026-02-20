@@ -5811,25 +5811,35 @@
                   }
                 },
                 {
-                  "action": "deploy_from_hand",
-                  "optional": true,
-                  "timing": {
-                    "actionTurn": "YOUR_TURN"
-                  },
-                  "target": {
-                    "type": "unit",
-                    "scope": "self_hand",
-                    "filters": {
-                      "cardType": "unit",
-                      "traitsAny": [
-                        "Zeon"
-                      ],
-                      "level": "<=4"
-                    },
-                    "count": 1
-                  },
+                  "action": "conditional",
                   "parameters": {
-                    "notes": "Implemented: deploy_from_hand resolves with standard target selection and slot checks."
+                    "if": [
+                      {
+                        "type": "turnPlayer",
+                        "scope": "self"
+                      }
+                    ],
+                    "then": [
+                      {
+                        "action": "deploy_from_hand",
+                        "optional": true,
+                        "target": {
+                          "type": "unit",
+                          "scope": "self_hand",
+                          "filters": {
+                            "cardType": "unit",
+                            "traitsAny": [
+                              "Zeon"
+                            ],
+                            "level": "<=4"
+                          },
+                          "count": 1
+                        },
+                        "parameters": {
+                          "notes": "Implemented: deploy_from_hand resolves with standard target selection and slot checks."
+                        }
+                      }
+                    ]
                   }
                 }
               ]

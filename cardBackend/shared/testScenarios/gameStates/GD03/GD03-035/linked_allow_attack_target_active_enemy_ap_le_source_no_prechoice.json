@@ -6,6 +6,8 @@
   "tags": ["GD03-035", "PAIRING_COMPLETE", "linked", "allow_attack_target", "SOURCE_AP", "no_target_choice"],
   "notes": [
     "Setup: Player 1 has GD03-035 in slot2 and another friendly unit in slot1.",
+    "Setup: Player 1 trash contains multiple Pilot cards to test exile-cost target choice for GD03-035 activated effect.",
+    "Setup: Player 2 has multiple units on board to test all-enemy damage resolution.",
     "Action: Play GD03-092 (Nyaan) from hand as pilot onto GD03-035.",
     "Expect: Linked effect applies to slot2 source unit only and no own-unit TARGET_CHOICE appears."
   ],
@@ -98,7 +100,44 @@
             {"cardId": "energy_basic", "carduid": "energy_basic_gd03035_p1_0005", "isExtraEnergy": false, "isRested": false, "placedAt": 0, "placedBy": "playerId_1"},
             {"cardId": "energy_basic", "carduid": "energy_basic_gd03035_p1_0006", "isExtraEnergy": false, "isRested": false, "placedAt": 0, "placedBy": "playerId_1"}
           ],
-          "trashArea": []
+          "trashArea": [
+            {
+              "carduid": "ST01-001_trash_pilot_0001",
+              "cardId": "ST01-001"
+            },
+            {
+              "carduid": "ST01-002_trash_pilot_0001",
+              "cardId": "ST01-002"
+            },
+            {
+              "carduid": "GD03-092_trash_pilot_0001",
+              "cardId": "GD03-092"
+            },
+            {
+              "carduid": "ST02-003_trash_pilot_0001",
+              "cardId": "ST02-003"
+            },
+            {
+              "carduid": "ST03-010_trash_pilot_0001",
+              "cardId": "ST03-010"
+            },
+            {
+              "carduid": "ST06-005_trash_pilot_0001",
+              "cardId": "ST06-005"
+            },
+            {
+              "carduid": "ST07-006_trash_pilot_0001",
+              "cardId": "ST07-006"
+            },
+            {
+              "carduid": "ST08-004_trash_pilot_0001",
+              "cardId": "ST08-004"
+            },
+            {
+              "carduid": "GD03-014_trash_unit_0001",
+              "cardId": "GD03-014"
+            }
+          ]
         },
         "effectRegistry": {},
         "delayedTriggers": []
@@ -135,8 +174,32 @@
               "temporaryEffects": []
             }
           },
-          "slot3": {},
-          "slot4": {},
+          "slot3": {
+            "unit": {
+              "carduid": "ST03-007_enemy_0001",
+              "cardId": "ST03-007",
+              "isRested": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 4,
+              "originalHP": 4,
+              "temporaryEffects": []
+            }
+          },
+          "slot4": {
+            "unit": {
+              "carduid": "GD02-036_enemy_0001",
+              "cardId": "GD02-036",
+              "isRested": false,
+              "damageReceived": 0,
+              "continueModifyAP": 0,
+              "continueModifyHP": 0,
+              "originalAP": 3,
+              "originalHP": 3,
+              "temporaryEffects": []
+            }
+          },
           "slot5": {},
           "slot6": {},
           "base": [],
