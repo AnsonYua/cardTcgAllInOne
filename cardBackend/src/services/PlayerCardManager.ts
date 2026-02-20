@@ -680,7 +680,8 @@ export class PlayerCardManager {
 
 
     /**
-     * Update unit HP
+     * @deprecated Prefer SlotHealthService.applyDamageByCarduid for shared slot HP.
+     * Legacy helper kept for compatibility with older call sites.
      */
     static updateUnitDamage(unit: UnitZoneCard, newDamage: number): void {
         unit.damageReceived = (unit.damageReceived || 0) + newDamage;

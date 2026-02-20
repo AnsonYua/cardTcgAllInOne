@@ -6,6 +6,7 @@ import { validateComparisonFilter } from '../../../utils/EffectNormalizationUtil
 import { getSlotTotals } from '../../../utils/FieldValueCalculator';
 import type { GameEnvironment } from '../../../models/GameEnvironment';
 import { ConditionEvaluators } from '../../conditions/ConditionEvaluators';
+import { SlotHealthStorage } from '../../health/SlotHealthStorage';
 
 export interface AttackConditionContext {
     gameEnv: GameEnvironment;
@@ -31,7 +32,7 @@ export class AttackConditionEvaluator {
         const { totalAP } = getSlotTotals(sourceSlot);
         const sourceUnit = sourceSlot?.unit;
         const sourceLevel = typeof sourceUnit?.cardData?.level === 'number' ? (sourceUnit.cardData.level as number) : 0;
-        const sourceDamaged = typeof sourceUnit?.damageReceived === 'number' ? sourceUnit.damageReceived > 0 : false;
+        const sourceDamaged = SlotHealthStorage.getSharedDamage(sourceSlot) > 0;
 
         for (const raw of conditions) {
             if (!raw || typeof raw !== 'object') {

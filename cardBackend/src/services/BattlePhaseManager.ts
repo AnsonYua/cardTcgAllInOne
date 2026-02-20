@@ -35,6 +35,7 @@ import { AttackResumeScheduler } from './battle/AttackResumeScheduler';
 import { DefenseAreaBattleDamageTriggeredEffectManager } from './effects/DefenseAreaBattleDamageTriggeredEffectManager';
 import { ShieldAreaCardDamagedTriggerDispatcher } from './effects/ShieldAreaCardDamagedTriggerDispatcher';
 import { ActionStepBattleConsistencyService } from './battle/ActionStepBattleConsistencyService';
+import { SlotHealthService } from './health/SlotHealthService';
 
 export class BattlePhaseManager {
     private static openBattleAndRefreshContinuous(gameEnv: GameEnvironment, context: BattleContext, label: string): void {
@@ -506,10 +507,16 @@ export class BattlePhaseManager {
             if (defenderDamagePrevented) {
                 defenderDamageTaken = 0;
             }
-            PlayerCardManager.updateUnitDamage(targetUnit, defenderDamageTaken);
-
-            const defenderRemainingHP = Math.max(0, defenderStats.totalHP - defenderDamageTaken);
-            defenderDestroyed = defenderRemainingHP <= 0;
+            const defenderHealthAfter = SlotHealthService.applyDamageByCarduid(
+                gameEnv,
+                targetUnit.carduid,
+                defenderDamageTaken
+            );
+            if (!defenderHealthAfter) {
+                this.clearBattleAndRefreshContinuous(gameEnv, 'failed_apply_first_strike_defender_damage');
+                return { success: false, error: `Failed to apply battle damage to ${targetUnit.carduid}` };
+            }
+            defenderDestroyed = defenderHealthAfter.remainingHp <= 0;
 
             if (!defenderDestroyed) {
                 attackerDamageTaken = defenderStats.totalAP;
@@ -521,9 +528,16 @@ export class BattlePhaseManager {
                 if (attackerDamagePrevented) {
                     attackerDamageTaken = 0;
                 }
-                PlayerCardManager.updateUnitDamage(attackingUnit, attackerDamageTaken);
-                const attackerRemainingHP = Math.max(0, attackerStats.totalHP - attackerDamageTaken);
-                attackerDestroyed = attackerRemainingHP <= 0;
+                const attackerHealthAfter = SlotHealthService.applyDamageByCarduid(
+                    gameEnv,
+                    attackingUnit.carduid,
+                    attackerDamageTaken
+                );
+                if (!attackerHealthAfter) {
+                    this.clearBattleAndRefreshContinuous(gameEnv, 'failed_apply_first_strike_attacker_damage');
+                    return { success: false, error: `Failed to apply battle damage to ${attackingUnit.carduid}` };
+                }
+                attackerDestroyed = attackerHealthAfter.remainingHp <= 0;
             } else {
                 attackerDestroyed = attackerStats.totalHP <= 0;
             }
@@ -549,14 +563,28 @@ export class BattlePhaseManager {
                 defenderDamageTaken = 0;
             }
 
-            const attackerRemainingHP = Math.max(0, attackerStats.totalHP - attackerDamageTaken);
-            const defenderRemainingHP = Math.max(0, defenderStats.totalHP - defenderDamageTaken);
+            const attackerHealthAfter = SlotHealthService.applyDamageByCarduid(
+                gameEnv,
+                attackingUnit.carduid,
+                attackerDamageTaken
+            );
+            if (!attackerHealthAfter) {
+                this.clearBattleAndRefreshContinuous(gameEnv, 'failed_apply_attacker_damage');
+                return { success: false, error: `Failed to apply battle damage to ${attackingUnit.carduid}` };
+            }
 
-            attackerDestroyed = attackerRemainingHP <= 0;
-            defenderDestroyed = defenderRemainingHP <= 0;
+            const defenderHealthAfter = SlotHealthService.applyDamageByCarduid(
+                gameEnv,
+                targetUnit.carduid,
+                defenderDamageTaken
+            );
+            if (!defenderHealthAfter) {
+                this.clearBattleAndRefreshContinuous(gameEnv, 'failed_apply_defender_damage');
+                return { success: false, error: `Failed to apply battle damage to ${targetUnit.carduid}` };
+            }
 
-            PlayerCardManager.updateUnitDamage(attackingUnit, attackerDamageTaken);
-            PlayerCardManager.updateUnitDamage(targetUnit, defenderDamageTaken);
+            attackerDestroyed = attackerHealthAfter.remainingHp <= 0;
+            defenderDestroyed = defenderHealthAfter.remainingHp <= 0;
         }
 
         emitBattleResolutionNotification(gameEnv, context, {

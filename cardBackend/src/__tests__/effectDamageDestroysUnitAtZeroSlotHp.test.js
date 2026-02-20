@@ -35,7 +35,7 @@ describe('Effect damage destruction', () => {
         expect(p2.zones.trashArea.some(c => c.carduid === 'enemy_unit_1')).toBe(true);
     });
 
-    test('unit is not destroyed if pilot HP keeps slot HP above 0', () => {
+    test('unit is destroyed when shared unit+pilot slot HP reaches 0', () => {
         const gameEnv = new GameEnvironment();
         const p1 = gameEnv.addPlayer('playerId_1', 'P1');
         const p2 = gameEnv.addPlayer('playerId_2', 'P2');
@@ -70,16 +70,15 @@ describe('Effect damage destruction', () => {
             gameEnv,
             p1.id,
             undefined,
-            { effectId: 'test_damage', type: 'internal', trigger: 'TEST', action: 'damage', parameters: { value: 2 } },
+            { effectId: 'test_damage', type: 'internal', trigger: 'TEST', action: 'damage', parameters: { value: 3 } },
             [{ carduid: 'enemy_unit_2', zone: 'slot1', playerId: p2.id, cardData: p2.zones.slot1.unit.cardData }]
         );
 
         expect(result.success).toBe(true);
-        expect(p2.zones.slot1.unit).toBeTruthy();
-        expect(p2.zones.slot1.unit.damageReceived).toBe(2);
-        expect(p2.zones.slot1.pilot).toBeTruthy();
+        expect(p2.zones.slot1.unit).toBeFalsy();
+        expect(p2.zones.slot1.pilot).toBeFalsy();
         expect(Array.isArray(p2.zones.trashArea)).toBe(true);
-        expect(p2.zones.trashArea.some(c => c.carduid === 'enemy_unit_2')).toBe(false);
+        expect(p2.zones.trashArea.some(c => c.carduid === 'enemy_unit_2')).toBe(true);
+        expect(p2.zones.trashArea.some(c => c.carduid === 'enemy_pilot_2')).toBe(true);
     });
 });
-

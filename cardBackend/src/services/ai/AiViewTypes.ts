@@ -33,6 +33,7 @@ export interface AiDeckView {
 export interface AiFieldCardValue {
     totalAP?: number;
     totalHP?: number;
+    totalDamageReceived?: number;
     [key: string]: unknown;
 }
 

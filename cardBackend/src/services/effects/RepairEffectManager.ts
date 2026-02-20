@@ -23,6 +23,8 @@ import { eventDataValidator } from '../../validators/EventDataValidator';
 import { KeywordUtils } from '../../utils/KeywordUtils';
 import { EffectNotifier } from './EffectNotifier';
 import { SourceStatConditionEvaluator } from '../conditions/SourceStatConditionEvaluator';
+import { SlotHealthService } from '../health/SlotHealthService';
+import { SlotHealthStorage } from '../health/SlotHealthStorage';
 
 interface ExecutionResult {
     success: boolean;
@@ -217,7 +219,7 @@ export class RepairEffectManager implements StandardEffectManager {
             
             if (slotZone?.unit) {
                 const unit = slotZone.unit;
-                const currentDamage = typeof unit.damageReceived === 'number' ? unit.damageReceived : 0;
+                const currentDamage = SlotHealthStorage.getSharedDamage(slotZone);
                 if (currentDamage <= 0) {
                     continue;
                 }
@@ -369,23 +371,19 @@ export class RepairEffectManager implements StandardEffectManager {
                 };
             }
 
-            // Apply healing
-            const currentDamage = cardLocation.card.damageReceived || 0;
-            if (currentDamage <= 0) {
-                return { success: true };
+            const change = SlotHealthService.applyHealByCarduid(gameEnv, data.carduid, data.healAmount);
+            if (!change) {
+                return {
+                    success: false,
+                    error: `Card ${data.carduid} has no slot health information`
+                };
             }
-            const healedAmount = Math.min(data.healAmount, currentDamage);
-            cardLocation.card.damageReceived = currentDamage - healedAmount;
-            
-            console.log(`✅ Repaired ${data.carduid}: healed ${healedAmount} damage (remaining: ${cardLocation.card.damageReceived})`);
 
+            const healedAmount = Math.max(0, change.previousDamage - change.sharedDamage);
             if (healedAmount <= 0) {
                 return { success: true };
             }
-
-            const maxHP = cardLocation.card.originalHP ?? cardLocation.card.cardData?.hp ?? 0;
-            const remainingDamage = cardLocation.card.damageReceived || 0;
-            const resultingHP = Math.max(0, maxHP - remainingDamage);
+            console.log(`✅ Repaired ${data.carduid}: healed ${healedAmount} damage (remaining: ${change.sharedDamage})`);
 
             const target: TargetReference = {
                 playerId: cardLocation.playerId,
@@ -399,9 +397,9 @@ export class RepairEffectManager implements StandardEffectManager {
                 cardLocation.card,
                 target,
                 healedAmount,
-                remainingDamage,
-                resultingHP,
-                maxHP,
+                change.sharedDamage,
+                change.remainingHp,
+                change.maxHp,
                 'repair'
             );
 

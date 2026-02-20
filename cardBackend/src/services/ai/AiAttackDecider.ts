@@ -152,9 +152,10 @@ function getUnitAttackPower(slot: AiSlotView | undefined): number {
 }
 
 function getUnitRemainingHp(slot: AiSlotView | undefined): number {
-    const totalHp = typeof slot?.fieldCardValue?.totalHP === 'number'
-        ? slot.fieldCardValue.totalHP
-        : Number(slot?.unit?.cardData?.hp || 0) + Number(slot?.unit?.continueModifyHP || 0);
+    if (typeof slot?.fieldCardValue?.totalHP === 'number') {
+        return Math.max(0, slot.fieldCardValue.totalHP);
+    }
+    const totalHp = Number(slot?.unit?.cardData?.hp || 0) + Number(slot?.unit?.continueModifyHP || 0);
     const damage = Number(slot?.unit?.damageReceived || 0);
     return Math.max(0, totalHp - damage);
 }

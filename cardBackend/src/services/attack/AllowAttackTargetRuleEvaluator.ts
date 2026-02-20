@@ -53,10 +53,10 @@ export class AllowAttackTargetRuleEvaluator {
         sourceSlotTotals: { totalAP: number };
         targetLevel: number;
         targetTotalAp: number;
-        targetDamageReceived: number;
+        targetDamaged: boolean;
         rule: { conditions?: unknown; parameters?: unknown };
     }): boolean {
-        const { sourceSlotTotals, targetLevel, targetTotalAp, targetDamageReceived, rule } = params;
+        const { sourceSlotTotals, targetLevel, targetTotalAp, targetDamaged, rule } = params;
 
         if (!this.conditionsSatisfied(rule?.conditions, sourceSlotTotals)) {
             return false;
@@ -96,8 +96,7 @@ export class AllowAttackTargetRuleEvaluator {
         }
 
         if (typeof parameters.damaged === 'boolean') {
-            const isDamaged = targetDamageReceived > 0;
-            if (parameters.damaged !== isDamaged) {
+            if (parameters.damaged !== targetDamaged) {
                 return false;
             }
         }

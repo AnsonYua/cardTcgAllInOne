@@ -184,7 +184,9 @@ const buildBoardContext = (gameEnvView: AiGameEnvView, aiPlayerId: string): Boar
             const totalHp = typeof selfSlot?.fieldCardValue?.totalHP === 'number'
                 ? selfSlot.fieldCardValue.totalHP
                 : toNumber(selfSlot.unit.cardData?.hp, 0);
-            const damage = toNumber(selfSlot.unit.damageReceived, 0);
+            const damage = typeof selfSlot?.fieldCardValue?.totalDamageReceived === 'number'
+                ? toNumber(selfSlot.fieldCardValue.totalDamageReceived, 0)
+                : toNumber(selfSlot.unit.damageReceived, 0);
             selfDamagedTotal += Math.max(0, Math.min(totalHp, damage));
         } else {
             openSelfSlots += 1;

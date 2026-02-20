@@ -6,6 +6,7 @@ import type { UnitZoneCard } from '../../models/CardSystem';
 import { getSlotTotals } from '../../utils/FieldValueCalculator';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { AllowAttackTargetRuleEvaluator } from './AllowAttackTargetRuleEvaluator';
+import { SlotHealthStorage } from '../health/SlotHealthStorage';
 
 type AllowAttackTargetRuleLike = {
     action?: unknown;
@@ -30,6 +31,7 @@ export class AllowAttackTargetPermissionResolver {
             ? (gameEnv.players[targetLookup.playerId]?.zones as any)?.[targetLookup.slotName]
             : undefined;
         const targetSlotTotals = getSlotTotals(targetSlot);
+        const targetDamaged = SlotHealthStorage.getSharedDamage(targetSlot) > 0;
 
         const effectSources: any[] = [attacker];
         if (attackerLookup.found && attackerLookup.playerId && attackerLookup.slotName) {
@@ -47,7 +49,7 @@ export class AllowAttackTargetPermissionResolver {
                 sourceSlotTotals: attackerSlotTotals,
                 targetLevel: target.cardData?.level || 0,
                 targetTotalAp: targetSlotTotals.totalAP,
-                targetDamageReceived: typeof target.damageReceived === 'number' ? target.damageReceived : 0,
+                targetDamaged,
                 rule
             });
 
@@ -88,4 +90,3 @@ export class AllowAttackTargetPermissionResolver {
         return false;
     }
 }
-

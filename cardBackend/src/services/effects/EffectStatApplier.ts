@@ -3,6 +3,8 @@ import { UnitZoneCard, PilotZoneCard } from '../../models/CardSystem';
 import { TargetReference } from '../EventQueue/interfaces/GameEvent';
 import { EffectNotifier } from './EffectNotifier';
 import { extractNumericValue } from './actions/EffectActionUtils';
+import { SlotHealthService } from '../health/SlotHealthService';
+import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 
 export class EffectStatApplier {
     static applyEffectToResolvedCard(
@@ -77,6 +79,34 @@ export class EffectStatApplier {
             };
         }
 
+        if (SlotZoneUtils.isSlotZoneName(target.zone)) {
+            const change = SlotHealthService.applyHealToTarget(gameEnv, target, value);
+            if (!change) {
+                return {
+                    success: false,
+                    error: `Card ${target.carduid} has no slot health information`
+                };
+            }
+
+            const healed = Math.max(0, change.previousDamage - change.sharedDamage);
+            console.log(`  🩹 ${target.carduid}: shared damage ${change.previousDamage} → ${change.sharedDamage} (HP ${change.remainingHp}/${change.maxHp})`);
+
+            if (healed > 0) {
+                EffectNotifier.notifyCardHealed(
+                    gameEnv,
+                    targetCard,
+                    target,
+                    healed,
+                    change.sharedDamage,
+                    change.remainingHp,
+                    change.maxHp,
+                    'heal'
+                );
+            }
+
+            return { success: true };
+        }
+
         const maxHP = targetCard.originalHP ?? targetCard.cardData?.hp ?? 0;
         if (maxHP === 0) {
             return {
@@ -125,6 +155,28 @@ export class EffectStatApplier {
                 success: false,
                 error: 'Damage effect requires numeric value'
             };
+        }
+
+        if (SlotZoneUtils.isSlotZoneName(target.zone)) {
+            const change = SlotHealthService.applyDamageToTarget(gameEnv, target, value);
+            if (!change) {
+                return {
+                    success: false,
+                    error: `Card ${target.carduid} has no slot health information`
+                };
+            }
+
+            const appliedDamage = Math.max(0, change.sharedDamage - change.previousDamage);
+            console.log(`  💥 ${target.carduid}: shared damage ${change.previousDamage} → ${change.sharedDamage} (HP ${change.remainingHp}/${change.maxHp})`);
+            EffectNotifier.notifyCardDamageApplied(
+                gameEnv,
+                targetCard,
+                target,
+                appliedDamage,
+                change.remainingHp,
+                change.maxHp
+            );
+            return { success: true };
         }
 
         const maxHP = targetCard.originalHP ?? targetCard.cardData?.hp ?? 0;

@@ -10,6 +10,7 @@ import { EffectStatApplier } from '../EffectStatApplier';
 import { TriggeredEffectProcessor } from '../TriggeredEffectProcessor';
 import { extractNumericValue } from './EffectActionUtils';
 import { SlotHpDestructionChecker } from '../../destruction/SlotHpDestructionChecker';
+import { SlotHealthService } from '../../health/SlotHealthService';
 
 export function applyDamageEffect(
     gameEnv: GameEnvironment,
@@ -134,12 +135,15 @@ export function applyDamageEffect(
             return { success: false, error: triggerResult.error || 'Failed to process EFFECT_DAMAGE_RECEIVED triggers' };
         }
 
-        // If damage reduced the *slot* HP to 0, destroy the unit (and paired pilot if any).
-        // Slot HP includes paired pilot HP, so we only destroy when the whole slot is at 0.
-        if (resolvedTarget.kind === 'unit') {
-            const destroyed = SlotHpDestructionChecker.destroyUnitIfSlotHpZero(gameEnv, target.carduid);
-            if (!destroyed) {
-                return { success: false, error: `Failed to destroy unit ${target.carduid} at slot HP 0` };
+        // Destroy the slot when shared slot HP is exhausted, regardless of whether
+        // the selected target was unit or pilot.
+        if (resolvedTarget.kind === 'unit' || resolvedTarget.kind === 'pilot') {
+            const slotHealth = SlotHealthService.getSlotHealthStateByTarget(gameEnv, target);
+            if (slotHealth && slotHealth.remainingHp <= 0 && slotHealth.unitCarduid) {
+                const destroyed = SlotHpDestructionChecker.destroyUnitIfSlotHpZero(gameEnv, slotHealth.unitCarduid);
+                if (!destroyed) {
+                    return { success: false, error: `Failed to destroy unit ${slotHealth.unitCarduid} at slot HP 0` };
+                }
             }
         }
     }

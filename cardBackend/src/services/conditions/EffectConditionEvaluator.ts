@@ -6,6 +6,7 @@ import { evaluateCardsInPlayCondition } from './CardsInPlayCondition';
 import { BattleConditionEvaluator } from './BattleConditionEvaluator';
 import { SourceTraitConditionEvaluator } from './SourceTraitConditionEvaluator';
 import { SlotCardStateUtils } from './SlotCardStateUtils';
+import { SlotHealthService } from '../health/SlotHealthService';
 
 type ZoneCardWithData = {
     carduid: string;
@@ -367,9 +368,17 @@ export class EffectConditionEvaluator {
                     return false;
                 }
                 const expected = typeof typedCondition.value === 'boolean' ? typedCondition.value : true;
-                const damaged = typeof (sourceCard as any).damageReceived === 'number'
-                    ? (sourceCard as any).damageReceived > 0
-                    : false;
+                const sourceCarduid = typeof (sourceCard as any).carduid === 'string'
+                    ? (sourceCard as any).carduid
+                    : '';
+                const slotState = sourceCarduid
+                    ? SlotHealthService.getSlotHealthState(gameEnv, sourceCarduid)
+                    : null;
+                const damaged = slotState
+                    ? slotState.sharedDamage > 0
+                    : (typeof (sourceCard as any).damageReceived === 'number'
+                        ? (sourceCard as any).damageReceived > 0
+                        : false);
                 return damaged === expected;
             }
 
@@ -379,4 +388,3 @@ export class EffectConditionEvaluator {
         }
     }
 }
-

@@ -170,8 +170,10 @@ const buildBoardContext = (gameEnvView: AiGameEnvView, aiPlayerId: string): Boar
             const totalHp = typeof selfSlot?.fieldCardValue?.totalHP === 'number'
                 ? selfSlot.fieldCardValue.totalHP
                 : toNumber(selfSlot.unit.cardData?.hp, 0);
-            const remainingHp = Math.max(0, totalHp - toNumber(selfSlot.unit.damageReceived, 0));
-            selfDamagedTotal += Math.max(0, totalHp - remainingHp);
+            const damage = typeof selfSlot?.fieldCardValue?.totalDamageReceived === 'number'
+                ? toNumber(selfSlot.fieldCardValue.totalDamageReceived, 0)
+                : toNumber(selfSlot.unit.damageReceived, 0);
+            selfDamagedTotal += Math.max(0, Math.min(totalHp, damage));
         } else {
             openSelfUnitSlots += 1;
         }
@@ -212,11 +214,16 @@ const getUnitSnapshot = (gameEnvView: AiGameEnvView, carduid: string): UnitSnaps
             const totalHP = typeof slot?.fieldCardValue?.totalHP === 'number'
                 ? slot.fieldCardValue.totalHP
                 : toNumber(unit?.cardData?.hp, 0);
-            const damage = toNumber(unit?.damageReceived, 0);
+            const remainingHp = typeof slot?.fieldCardValue?.totalHP === 'number'
+                ? Math.max(0, slot.fieldCardValue.totalHP)
+                : Math.max(0, totalHP - toNumber(unit?.damageReceived, 0));
+            const damage = typeof slot?.fieldCardValue?.totalDamageReceived === 'number'
+                ? toNumber(slot.fieldCardValue.totalDamageReceived, 0)
+                : toNumber(unit?.damageReceived, 0);
             return {
                 ap: totalAP,
                 hp: totalHP,
-                remainingHp: Math.max(0, totalHP - damage),
+                remainingHp,
                 damage,
                 isRested: Boolean(unit?.isRested)
             };

@@ -1,5 +1,7 @@
-import { UnitZoneCard, PilotZoneCard, BaseCard, FieldCardValue, TemporaryEffect, isPilotZoneCard } from '../models/CardSystem';
+import { UnitZoneCard, PilotZoneCard, BaseCard, FieldCardValue, TemporaryEffect } from '../models/CardSystem';
 import { SlotZone } from '../models/Player';
+import { SlotHealthStorage } from '../services/health/SlotHealthStorage';
+import { resolveRemainingHp, resolveSlotEffectiveMaxHp } from '../services/health/SlotHealthMath';
 
 interface CardStatBreakdown {
     originalAP: number;
@@ -106,9 +108,7 @@ function calculateCardBreakdown(card: UnitZoneCard | PilotZoneCard | BaseCard | 
         'modifyHP' in card ? (card as any).modifyHP : undefined
     );
 
-    const damageReceived = isPilotZoneCard(card as any)
-        ? 0
-        : resolveBaseStat('damageReceived' in card ? (card as any).damageReceived : undefined, 0);
+    const damageReceived = resolveBaseStat('damageReceived' in card ? (card as any).damageReceived : undefined, 0);
 
     const totalAP = Math.max(0, originalAP + continueAP + tempAP);
     const totalHP = Math.max(0, originalHP + continueHP + tempHP - damageReceived);
@@ -133,6 +133,9 @@ export function calculateSlotFieldValue(slot: SlotZone | undefined): FieldCardVa
 
     const unitBreakdown = calculateCardBreakdown(slot.unit as UnitZoneCard | undefined);
     const pilotBreakdown = calculateCardBreakdown(slot.pilot as PilotZoneCard | undefined);
+    const sharedDamage = SlotHealthStorage.getSharedDamage(slot);
+    const slotMaxHp = resolveSlotEffectiveMaxHp(slot);
+
     return {
         totalOriginalAP: unitBreakdown.originalAP + pilotBreakdown.originalAP,
         totalOriginalHP: unitBreakdown.originalHP + pilotBreakdown.originalHP,
@@ -140,9 +143,9 @@ export function calculateSlotFieldValue(slot: SlotZone | undefined): FieldCardVa
         totalTempModifyHP: unitBreakdown.tempHP + pilotBreakdown.tempHP,
         totalContinueModifyAP: unitBreakdown.continueAP + pilotBreakdown.continueAP,
         totalContinueModifyHP: unitBreakdown.continueHP + pilotBreakdown.continueHP,
-        totalDamageReceived: unitBreakdown.damage,
+        totalDamageReceived: sharedDamage,
         totalAP: unitBreakdown.totalAP + pilotBreakdown.totalAP,
-        totalHP: unitBreakdown.totalHP + pilotBreakdown.totalHP,
+        totalHP: resolveRemainingHp(slotMaxHp, sharedDamage),
     };
 }
 

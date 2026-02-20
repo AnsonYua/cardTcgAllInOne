@@ -137,8 +137,12 @@ function getUnitSnapshot(gameEnvView: AiGameEnvView, carduid: string): {
             const totals = slot?.fieldCardValue || {};
             const ap = typeof totals.totalAP === 'number' ? totals.totalAP : Number(unit?.cardData?.ap || 0);
             const hp = typeof totals.totalHP === 'number' ? totals.totalHP : Number(unit?.cardData?.hp || 0);
-            const damage = Number(unit?.damageReceived || 0);
-            const remainingHp = Math.max(0, hp - damage);
+            const damage = typeof totals.totalDamageReceived === 'number'
+                ? Number(totals.totalDamageReceived || 0)
+                : Number(unit?.damageReceived || 0);
+            const remainingHp = typeof totals.totalHP === 'number'
+                ? Math.max(0, totals.totalHP)
+                : Math.max(0, hp - damage);
             return {
                 ap,
                 hp,

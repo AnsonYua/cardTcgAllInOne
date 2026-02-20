@@ -28,6 +28,28 @@ function createUnit(carduid, cardId, hp = 1, ap = 1) {
     };
 }
 
+function createPilot(carduid, cardId, hp = 1, ap = 1) {
+    return {
+        carduid,
+        cardId,
+        cardData: {
+            id: cardId,
+            name: cardId,
+            cardType: 'pilot',
+            ap,
+            hp,
+            effects: { rules: [] }
+        },
+        originalAP: ap,
+        originalHP: hp,
+        continueModifyAP: 0,
+        continueModifyHP: 0,
+        damageReceived: 0,
+        effectUsage: {},
+        isRested: false
+    };
+}
+
 function setupBattle() {
     const gameEnv = new GameEnvironment();
     const attackerPlayerId = 'playerId_1';
@@ -223,5 +245,50 @@ describe('ACTION_STEP battle consistency hardening', () => {
 
         expect(defender.zones.slot2.unit).toBeTruthy();
         expect(defender.zones.slot2.unit.damageReceived).toBe(1);
+    });
+
+    test('stacked action-step command damage destroys paired attacker slot and aborts battle', () => {
+        const { gameEnv, attackerPlayerId, attackerUnit } = setupBattle();
+        const attacker = gameEnv.getPlayer(attackerPlayerId);
+        attacker.zones.slot1.unit = createUnit(attackerUnit.carduid, attackerUnit.cardId, 4, 5);
+        attacker.zones.slot1.pilot = createPilot('ATK_pilot_uid_0001', 'ST03-010', 2, 2);
+
+        const first = EffectExecutor.applyEffectToTargets(
+            gameEnv,
+            { effectId: 'close_combat_1', action: 'damage', parameters: { value: 2 } },
+            [targetRef(attackerUnit.carduid, 'slot1', attackerPlayerId)],
+            'playerId_2',
+            undefined
+        );
+        expect(first.success).toBe(true);
+        expect(gameEnv.currentBattle).toBeTruthy();
+
+        const second = EffectExecutor.applyEffectToTargets(
+            gameEnv,
+            { effectId: 'close_combat_2', action: 'damage', parameters: { value: 2 } },
+            [targetRef(attackerUnit.carduid, 'slot1', attackerPlayerId)],
+            'playerId_2',
+            undefined
+        );
+        expect(second.success).toBe(true);
+        expect(gameEnv.currentBattle).toBeTruthy();
+
+        const finisher = EffectExecutor.applyEffectToTargets(
+            gameEnv,
+            { effectId: 'battle_of_aces_finisher', action: 'damage', parameters: { value: 3 } },
+            [targetRef(attackerUnit.carduid, 'slot1', attackerPlayerId)],
+            'playerId_2',
+            undefined
+        );
+        expect(finisher.success).toBe(true);
+        expect(gameEnv.currentBattle).toBeUndefined();
+
+        const resolution = latestBattleResolved(gameEnv);
+        expect(resolution).toBeTruthy();
+        expect(resolution.payload.result.aborted).toBe(true);
+        expect(resolution.payload.result.abortReason).toBe('ATTACKER_NOT_ON_BOARD');
+        expect(resolution.payload.result.attackerMissing).toBe(true);
+        expect(attacker.zones.slot1.unit).toBeFalsy();
+        expect(attacker.zones.slot1.pilot).toBeFalsy();
     });
 });

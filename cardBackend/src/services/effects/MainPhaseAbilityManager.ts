@@ -472,7 +472,7 @@ export class MainPhaseAbilityManager {
                 };
             }
 
-            const isDamaged = TargetStateFilterUtils.isDamaged(card);
+            const isDamaged = TargetStateFilterUtils.isDamaged(gameEnv, card);
             if (filters.damaged !== isDamaged) {
                 return {
                     success: false,

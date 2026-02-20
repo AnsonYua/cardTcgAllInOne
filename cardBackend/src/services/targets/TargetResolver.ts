@@ -241,7 +241,7 @@ export class TargetResolver {
         }
 
         if (typeof filters.damaged === 'boolean') {
-            const damagedResult = TargetStateFilterUtils.validateDamagedFilter(card, filters.damaged);
+            const damagedResult = TargetStateFilterUtils.validateDamagedFilter(gameEnv, card, filters.damaged);
             if (!damagedResult.ok) {
                 console.log(`❌ Card ${card.carduid} failed damaged filter: ${damagedResult.reason || 'unknown'}`);
                 return false;

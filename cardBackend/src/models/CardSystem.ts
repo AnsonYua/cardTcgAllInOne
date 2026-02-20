@@ -176,6 +176,7 @@ export interface PilotZoneCard extends ZoneCard {
     cardData: PilotCardData | CommandCardData;  // Allow command cards played as pilots
     originalAP?: number;     // Original Attack Power
     originalHP?: number;     // Original Health Points
+    damageReceived?: number; // Shared slot damage when pilot is the only occupant
     playedAs?: string;       // Track how the card is being played (for command cards played as pilots)
     
     continueModifyAP?: number;   
@@ -381,7 +382,7 @@ export class ZoneCardUtils {
             : card.cardData?.hp ?? 0;
         const continueHP = 'continueModifyHP' in card ? (card as UnitZoneCard | PilotZoneCard).continueModifyHP ?? 0 : 0;
         const temporaryHP = this.sumTemporaryModifier(card, 'modifyHP');
-        const damage = isPilotZoneCard(card) ? 0 : (card as UnitZoneCard | BaseCard).damageReceived ?? 0;
+        const damage = (card as UnitZoneCard | PilotZoneCard | BaseCard).damageReceived ?? 0;
         return Math.max(0, baseHP + continueHP + temporaryHP - damage);
     }
 

@@ -590,6 +590,9 @@ export class Player {
         return slotZone.unit?.playedThisTurn || false;
     }
 
+    /**
+     * @deprecated Prefer SlotHealthService for shared slot HP writes.
+     */
     public applyDamageToUnit(zone: ZoneType, damage: number): boolean {
         if (!isSlotZone(zone)) return false;
         
@@ -605,6 +608,9 @@ export class Player {
         return true;
     }
 
+    /**
+     * @deprecated Prefer FieldValueCalculator/SlotHealthService for shared slot damage reads.
+     */
     public getUnitDamage(zone: ZoneType): number {
         if (!isSlotZone(zone)) return 0;
         
