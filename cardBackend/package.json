@@ -20,6 +20,7 @@
     "test:quick": "node src/tests/quickTest.js",
     "test:simple": "node src/tests/simpleTest.js",
     "test:dynamic": "node src/tests/dynamicTest.js",
+    "review:effects": "node scripts/generateEffectAlignmentReview.cjs",
     "run-test": "node test.cjs",
     "run-testcase1": "node test_case1.cjs",
     "type-check": "tsc --noEmit"

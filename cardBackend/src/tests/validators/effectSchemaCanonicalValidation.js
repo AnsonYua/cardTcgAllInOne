@@ -93,6 +93,30 @@ function validateConditionEntry(condition, conditionPath, context, diagnostics, 
       message: `unknown condition type ${rawType}`
     });
   }
+
+  if (Object.prototype.hasOwnProperty.call(condition, 'excludeSourceCard')) {
+    const supportsExcludeSourceCard =
+      normalizedType === 'cardsInTrash' ||
+      normalizedType === 'cardsInTrashWithTraitsAny' ||
+      normalizedType === 'cardsInTrashWithNameIncludes';
+    if (!supportsExcludeSourceCard) {
+      diagnostics.push({
+        severity: 'error',
+        cardId: context.cardId,
+        effectId: context.effectId || 'unknown',
+        jsonPath: `${conditionPath}.excludeSourceCard`,
+        message: `excludeSourceCard is not supported for condition type ${normalizedType}`
+      });
+    } else if (typeof condition.excludeSourceCard !== 'boolean') {
+      diagnostics.push({
+        severity: 'error',
+        cardId: context.cardId,
+        effectId: context.effectId || 'unknown',
+        jsonPath: `${conditionPath}.excludeSourceCard`,
+        message: 'excludeSourceCard must be a boolean when provided'
+      });
+    }
+  }
 }
 
 function walkEffects(node, context, diagnostics) {

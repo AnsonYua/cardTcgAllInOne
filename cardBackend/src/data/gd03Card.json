@@ -6308,71 +6308,8 @@
                         "type": "cardsInTrashWithNameIncludes",
                         "scope": "self",
                         "name": "Improved Technique",
-                        "value": ">=2"
-                      }
-                    ],
-                    "then": [
-                      {
-                        "action": "damage",
-                        "target": {
-                          "type": "unit",
-                          "scope": "opponent",
-                          "count": 1,
-                          "selection": {
-                            "type": "player_choice"
-                          }
-                        },
-                        "parameters": {
-                          "value": 3
-                        }
-                      }
-                    ],
-                    "else": [
-                      {
-                        "action": "damage",
-                        "target": {
-                          "type": "unit",
-                          "scope": "opponent",
-                          "count": 1,
-                          "selection": {
-                            "type": "player_choice"
-                          },
-                          "filters": {
-                            "level": "<=4"
-                          }
-                        },
-                        "parameters": {
-                          "value": 3
-                        }
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "effectId": "play_effect",
-            "type": "play",
-            "timing": {
-              "windows": [
-                "MAIN_PHASE"
-              ]
-            },
-            "action": "sequence",
-            "parameters": {
-              "text": ".",
-              "version": 1,
-              "steps": [
-                {
-                  "action": "conditional",
-                  "parameters": {
-                    "if": [
-                      {
-                        "type": "cardsInTrashWithNameIncludes",
-                        "scope": "self",
-                        "name": "Improved Technique",
-                        "value": ">=2"
+                        "value": ">=2",
+                        "excludeSourceCard": true
                       }
                     ],
                     "then": [
@@ -6437,7 +6374,8 @@
                         "type": "cardsInTrashWithNameIncludes",
                         "scope": "self",
                         "name": "Improved Technique",
-                        "value": ">=2"
+                        "value": ">=2",
+                        "excludeSourceCard": true
                       }
                     ],
                     "then": [
@@ -6788,69 +6726,8 @@
                       {
                         "type": "cardsInTrash",
                         "scope": "self",
-                        "value": ">=10"
-                      }
-                    ],
-                    "then": [
-                      {
-                        "action": "destroy",
-                        "target": {
-                          "type": "unit",
-                          "scope": "opponent",
-                          "count": 1,
-                          "selection": {
-                            "type": "player_choice"
-                          },
-                          "filters": {
-                            "status": "active",
-                            "level": "<=4"
-                          }
-                        }
-                      }
-                    ],
-                    "else": [
-                      {
-                        "action": "destroy",
-                        "target": {
-                          "type": "unit",
-                          "scope": "opponent",
-                          "count": 1,
-                          "selection": {
-                            "type": "player_choice"
-                          },
-                          "filters": {
-                            "status": "active",
-                            "level": "<=2"
-                          }
-                        }
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "effectId": "play_effect",
-            "type": "play",
-            "timing": {
-              "windows": [
-                "ACTION_STEP"
-              ]
-            },
-            "action": "sequence",
-            "parameters": {
-              "text": ".",
-              "version": 1,
-              "steps": [
-                {
-                  "action": "conditional",
-                  "parameters": {
-                    "if": [
-                      {
-                        "type": "cardsInTrash",
-                        "scope": "self",
-                        "value": ">=10"
+                        "value": ">=10",
+                        "excludeSourceCard": true
                       }
                     ],
                     "then": [
@@ -6912,7 +6789,8 @@
                       {
                         "type": "cardsInTrash",
                         "scope": "self",
-                        "value": ">=10"
+                        "value": ">=10",
+                        "excludeSourceCard": true
                       }
                     ],
                     "then": [

@@ -6,6 +6,7 @@ import { SourceStatConditionEvaluator } from './SourceStatConditionEvaluator';
 import { SourceTraitConditionEvaluator } from './SourceTraitConditionEvaluator';
 import { SlotCardStateUtils } from './SlotCardStateUtils';
 import { ConditionScopeUtils } from './ConditionScopeUtils';
+import { TrashConditionUtils } from './TrashConditionUtils';
 
 export interface SourceAndSpecialConditionContext {
     gameEnv: GameEnvironment;
@@ -50,33 +51,22 @@ export class SourceAndSpecialConditionEvaluator {
                 if (!scopedPlayerId) {
                     return false;
                 }
-                const player = gameEnv.getPlayer(scopedPlayerId);
-                const trash = Array.isArray((player?.zones as any)?.trashArea)
-                    ? ((player?.zones as any).trashArea as any[])
-                    : Array.isArray((player?.zones as any)?.trash)
-                        ? ((player?.zones as any).trash as any[])
-                        : [];
                 const needle = typeof (typedCondition as any).name === 'string'
                     ? String((typedCondition as any).name).toLowerCase()
                     : '';
                 if (!needle) {
                     return false;
                 }
-                const matches = trash.filter((card: any) => {
-                    const name = typeof card?.cardData?.name === 'string'
-                        ? card.cardData.name
-                        : typeof card?.name === 'string'
-                            ? card.name
-                            : '';
-                    return name.toLowerCase().includes(needle);
-                }).length;
-                if (typeof typedCondition.value === 'number') {
-                    return matches === typedCondition.value;
+                const excludeSourceCard = (typedCondition as any).excludeSourceCard === true;
+                const sourceCarduid = typeof sourceCard?.carduid === 'string' ? sourceCard.carduid : '';
+                const matches = TrashConditionUtils.countMatching(gameEnv, scopedPlayerId, {
+                    nameIncludes: needle,
+                    excludeCarduid: excludeSourceCard ? sourceCarduid : undefined
+                });
+                if (matches === null) {
+                    return false;
                 }
-                if (typeof typedCondition.value === 'string') {
-                    return validateComparisonFilter(matches, typedCondition.value);
-                }
-                return true;
+                return TrashConditionUtils.evaluateCount(matches, typedCondition.value);
             }
 
             case 'sourcePairedWithPilot': {

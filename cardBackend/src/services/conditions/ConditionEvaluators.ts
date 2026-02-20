@@ -1,12 +1,12 @@
 // src/services/conditions/ConditionEvaluators.ts
 
-import { CardDatabaseManager } from '../../models/CardSystem';
 import type { GameEnvironment } from '../../models/GameEnvironment';
 import { SlotZoneUtils } from '../../utils/SlotZoneUtils';
 import { validateComparisonFilter } from '../../utils/EffectNormalizationUtils';
 import { LinkUtils } from '../../utils/LinkUtils';
 import { LinkConditionEvaluator } from './LinkConditionEvaluator';
 import { PairedSlotConditionEvaluator } from './PairedSlotConditionEvaluator';
+import { TrashConditionUtils } from './TrashConditionUtils';
 
 export class ConditionEvaluators {
     private static resolveScopedPlayerId(
@@ -102,51 +102,22 @@ export class ConditionEvaluators {
         gameEnv: GameEnvironment,
         playerId: string,
         filters: Record<string, unknown>,
-        value: unknown
+        value: unknown,
+        options?: {
+            excludeCarduid?: string;
+        }
     ): boolean {
-        const player = gameEnv.getPlayer(playerId) || gameEnv.players[playerId];
-        const trash = player?.zones?.trashArea;
-        if (!Array.isArray(trash)) {
+        const matchingCount = TrashConditionUtils.countMatching(gameEnv, playerId, {
+            traitsAny: Array.isArray(filters['traitsAny'])
+                ? (filters['traitsAny'] as unknown[]).filter((t): t is string => typeof t === 'string')
+                : [],
+            cardType: typeof filters['cardType'] === 'string' ? (filters['cardType'] as string) : undefined,
+            excludeCarduid: typeof options?.excludeCarduid === 'string' ? options.excludeCarduid : undefined
+        });
+        if (matchingCount === null) {
             return false;
         }
-
-        const cardTypeFilter = typeof filters['cardType'] === 'string' ? (filters['cardType'] as string) : undefined;
-        const traitsAny = Array.isArray(filters['traitsAny'])
-            ? (filters['traitsAny'] as unknown[]).filter((t): t is string => typeof t === 'string')
-            : [];
-
-        const matchingCount = trash.reduce((total: number, card: any) => {
-            const cardData = card?.cardData
-                || (typeof card?.cardId === 'string' ? CardDatabaseManager.getCardDetails(card.cardId) : null);
-            if (!cardData) {
-                return total;
-            }
-
-            if (cardTypeFilter) {
-                const type = typeof cardData.cardType === 'string' ? cardData.cardType : '';
-                if (type !== cardTypeFilter) {
-                    return total;
-                }
-            }
-
-            if (traitsAny.length > 0) {
-                const traits = Array.isArray(cardData.traits) ? cardData.traits : [];
-                const matches = traitsAny.some((trait: string) => traits.includes(trait));
-                if (!matches) {
-                    return total;
-                }
-            }
-
-            return total + 1;
-        }, 0);
-
-        if (typeof value === 'number') {
-            return matchingCount === value;
-        }
-        if (typeof value === 'string') {
-            return validateComparisonFilter(matchingCount, value);
-        }
-        return true;
+        return TrashConditionUtils.evaluateCount(matchingCount, value);
     }
 
     static playerLevel(

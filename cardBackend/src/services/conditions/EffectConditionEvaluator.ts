@@ -247,12 +247,19 @@ export class EffectConditionEvaluator {
                 if (typeof (typedCondition as any).cardType === 'string') {
                     filters.cardType = (typedCondition as any).cardType;
                 }
+                const excludeSourceCard = (typedCondition as any).excludeSourceCard === true;
+                const sourceCarduid = typeof (sourceCard as any)?.carduid === 'string'
+                    ? ((sourceCard as any).carduid as string)
+                    : undefined;
 
                 return ConditionEvaluators.cardsInTrashWithFilter(
                     gameEnv,
                     playerId,
                     filters,
-                    typedCondition.value
+                    typedCondition.value,
+                    {
+                        excludeCarduid: excludeSourceCard ? sourceCarduid : undefined
+                    }
                 );
             }
 
