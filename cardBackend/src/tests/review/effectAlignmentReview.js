@@ -22,6 +22,35 @@ const DEFAULT_CARD_FILES = [
   'st08Card.json'
 ];
 
+const DEFAULT_MANIFEST_PATH = path.join('src', 'tests', 'review', 'effectCanonicalizationManifest.json');
+
+function loadManifest(baseDir, providedManifestPath) {
+  const manifestPath = providedManifestPath
+    ? path.resolve(baseDir, providedManifestPath)
+    : path.resolve(baseDir, DEFAULT_MANIFEST_PATH);
+  if (!fs.existsSync(manifestPath)) {
+    return {
+      manifestPath,
+      canonicalizationRules: [],
+      intentionalDivergenceAllowlist: []
+    };
+  }
+
+  const parsed = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  const allowlist = Array.isArray(parsed?.intentionalDivergenceAllowlist)
+    ? parsed.intentionalDivergenceAllowlist
+    : [];
+  const canonicalizationRules = Array.isArray(parsed?.canonicalizationRules)
+    ? parsed.canonicalizationRules
+    : [];
+
+  return {
+    manifestPath,
+    canonicalizationRules,
+    intentionalDivergenceAllowlist: allowlist
+  };
+}
+
 function stableStringify(value) {
   if (Array.isArray(value)) {
     return `[${value.map((entry) => stableStringify(entry)).join(',')}]`;
@@ -94,6 +123,12 @@ function collectSequenceFeatures(steps, collector) {
       if (action === 'conditional') {
         collector.hasConditional = true;
       }
+      if (action === 'conditionalTokenDeploy' && step?.parameters && typeof step.parameters === 'object') {
+        const conditionKeys = Object.keys(step.parameters).filter((key) => key.startsWith('condition'));
+        if (conditionKeys.length > 1) {
+          collector.hasConditional = true;
+        }
+      }
     }
     if (Array.isArray(step?.parameters?.if)) {
       collectConditionTypes(step.parameters.if, collector.conditionTypes);
@@ -108,10 +143,23 @@ function collectSequenceFeatures(steps, collector) {
     if (Array.isArray(step?.parameters?.steps)) {
       collectSequenceFeatures(step.parameters.steps, collector);
     }
+
+    if (action === 'conditional' && Array.isArray(step?.parameters?.branches)) {
+      collector.hasConditional = true;
+      for (const branch of step.parameters.branches) {
+        if (Array.isArray(branch?.conditions)) {
+          collectConditionTypes(branch.conditions, collector.conditionTypes);
+        }
+        if (Array.isArray(branch?.steps)) {
+          collectSequenceFeatures(branch.steps, collector);
+        }
+      }
+    }
   }
 }
 
 function extractRuleFeatures(rule) {
+  const action = typeof rule?.action === 'string' ? rule.action : '';
   const conditionTypes = collectConditionTypes(rule?.conditions, []);
   const sourceConditionTypes = collectConditionTypes(rule?.sourceConditions, []);
   const collector = {
@@ -120,6 +168,25 @@ function extractRuleFeatures(rule) {
     hasConditional: false
   };
   collectSequenceFeatures(rule?.parameters?.steps, collector);
+
+  if (action === 'conditional' && Array.isArray(rule?.parameters?.branches)) {
+    collector.hasConditional = true;
+    for (const branch of rule.parameters.branches) {
+      if (Array.isArray(branch?.conditions)) {
+        collectConditionTypes(branch.conditions, collector.conditionTypes);
+      }
+      if (Array.isArray(branch?.steps)) {
+        collectSequenceFeatures(branch.steps, collector);
+      }
+    }
+  }
+
+  if (action === 'conditionalTokenDeploy' && rule?.parameters && typeof rule.parameters === 'object') {
+    const conditionKeys = Object.keys(rule.parameters).filter((key) => key.startsWith('condition'));
+    if (conditionKeys.length > 1) {
+      collector.hasConditional = true;
+    }
+  }
 
   if (Array.isArray(rule?.parameters?.if)) {
     collectConditionTypes(rule.parameters.if, collector.conditionTypes);
@@ -131,7 +198,6 @@ function extractRuleFeatures(rule) {
     : {};
   const targetFilterKeys = Object.keys(targetFilters).sort();
 
-  const action = typeof rule?.action === 'string' ? rule.action : '';
   const trigger = typeof rule?.trigger === 'string' ? rule.trigger : '';
   const effectType = typeof rule?.type === 'string' ? rule.type : '';
   const targetType = typeof rule?.target?.type === 'string' ? rule.target.type : '';
@@ -214,6 +280,13 @@ function buildInventory(baseDir, cardFiles = DEFAULT_CARD_FILES) {
   return inventory;
 }
 
+function normalizeDriftDescription(rawDescription) {
+  return normalizeText(rawDescription)
+    .replace(/[【】\[\]<>():.,'"!?/\\-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function clusterInventory(inventory) {
   const clusters = new Map();
   for (const row of inventory) {
@@ -254,6 +327,30 @@ function issueFactory(data) {
     behavioralRisk: data.behavioralRisk,
     recommendedFix: data.recommendedFix
   };
+}
+
+function issueMatchesAllowlist(issue, allowlistEntry) {
+  if (!allowlistEntry || typeof allowlistEntry !== 'object') {
+    return false;
+  }
+  if (typeof allowlistEntry.issueId === 'string' && allowlistEntry.issueId === issue.issueId) {
+    return true;
+  }
+  if (typeof allowlistEntry.category === 'string' && allowlistEntry.category !== issue.category) {
+    return false;
+  }
+  if (typeof allowlistEntry.cardId === 'string' && allowlistEntry.cardId !== issue.cardId) {
+    return false;
+  }
+  if (typeof allowlistEntry.file === 'string' && allowlistEntry.file !== issue.file) {
+    return false;
+  }
+  if (typeof allowlistEntry.rulePathIncludes === 'string') {
+    return typeof issue.rulePath === 'string' && issue.rulePath.includes(allowlistEntry.rulePathIncludes);
+  }
+  return typeof allowlistEntry.category === 'string'
+    || typeof allowlistEntry.cardId === 'string'
+    || typeof allowlistEntry.file === 'string';
 }
 
 function detectDuplicateOverlap(inventory) {
@@ -399,58 +496,83 @@ function detectDrift(clusters) {
       continue;
     }
 
-    const canonical = cluster.members.find((member) => member.schemaVariantKey === cluster.canonicalVariantKey) || cluster.members[0];
-
+    const descriptionGroups = new Map();
     for (const member of cluster.members) {
-      if (member.schemaVariantKey === cluster.canonicalVariantKey) {
+      const descriptionKey = normalizeDriftDescription(member.description);
+      if (!descriptionKey) {
         continue;
       }
-      if (member.trigger !== canonical.trigger || stableStringify(member.windows) !== stableStringify(canonical.windows)) {
-        issues.push(issueFactory({
-          issueId: `trigger_window_drift_${member.file}_${member.cardId}_${member.ruleIndex}`,
-          severity: 'P2',
-          confidence: 0.73,
-          category: 'trigger-window-drift',
-          cardId: member.cardId,
-          file: member.file,
-          rulePath: member.rulePath,
-          currentSchema: { trigger: member.trigger, windows: member.windows },
-          expectedCanonicalSchema: { trigger: canonical.trigger, windows: canonical.windows },
-          behavioralRisk: 'Behavior-equivalent rules execute in different phases/timings.',
-          recommendedFix: 'Align trigger/timing windows with canonical family variant unless text requires divergence.'
-        }));
+      if (!descriptionGroups.has(descriptionKey)) {
+        descriptionGroups.set(descriptionKey, []);
+      }
+      descriptionGroups.get(descriptionKey).push(member);
+    }
+
+    for (const members of descriptionGroups.values()) {
+      if (members.length < 2) {
+        continue;
+      }
+      const variantCounts = new Map();
+      for (const member of members) {
+        variantCounts.set(member.schemaVariantKey, (variantCounts.get(member.schemaVariantKey) || 0) + 1);
+      }
+      if (variantCounts.size < 2) {
+        continue;
       }
 
-      if (stableStringify(member.targetFilters) !== stableStringify(canonical.targetFilters)) {
-        issues.push(issueFactory({
-          issueId: `target_constraint_drift_${member.file}_${member.cardId}_${member.ruleIndex}`,
-          severity: 'P2',
-          confidence: 0.76,
-          category: 'target-constraint-drift',
-          cardId: member.cardId,
-          file: member.file,
-          rulePath: member.rulePath,
-          currentSchema: member.targetFilters,
-          expectedCanonicalSchema: canonical.targetFilters,
-          behavioralRisk: 'Equivalent behavior family has inconsistent target constraints.',
-          recommendedFix: 'Align target filter constraints or explicitly document intentional difference.'
-        }));
-      }
+      const canonicalVariantKey = [...variantCounts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+      const canonical = members.find((member) => member.schemaVariantKey === canonicalVariantKey) || members[0];
+      for (const member of members) {
+        if (member.schemaVariantKey === canonicalVariantKey) {
+          continue;
+        }
+        if (member.trigger !== canonical.trigger || stableStringify(member.windows) !== stableStringify(canonical.windows)) {
+          issues.push(issueFactory({
+            issueId: `trigger_window_drift_${member.file}_${member.cardId}_${member.ruleIndex}`,
+            severity: 'P2',
+            confidence: 0.73,
+            category: 'trigger-window-drift',
+            cardId: member.cardId,
+            file: member.file,
+            rulePath: member.rulePath,
+            currentSchema: { trigger: member.trigger, windows: member.windows },
+            expectedCanonicalSchema: { trigger: canonical.trigger, windows: canonical.windows },
+            behavioralRisk: 'Behavior-equivalent rules execute in different phases/timings.',
+            recommendedFix: 'Align trigger/timing windows with canonical family variant unless text requires divergence.'
+          }));
+        }
 
-      if (member.sequenceShapeKey !== canonical.sequenceShapeKey) {
-        issues.push(issueFactory({
-          issueId: `sequence_shape_drift_${member.file}_${member.cardId}_${member.ruleIndex}`,
-          severity: 'P2',
-          confidence: 0.7,
-          category: 'sequence-shape-drift',
-          cardId: member.cardId,
-          file: member.file,
-          rulePath: member.rulePath,
-          currentSchema: { action: member.action, sequenceActions: member.sequenceShapeKey },
-          expectedCanonicalSchema: { action: canonical.action, sequenceActions: canonical.sequenceShapeKey },
-          behavioralRisk: 'Equivalent behavior can resolve in different order.',
-          recommendedFix: 'Align sequence action chain with canonical variant for deterministic behavior.'
-        }));
+        if (stableStringify(member.targetFilters) !== stableStringify(canonical.targetFilters)) {
+          issues.push(issueFactory({
+            issueId: `target_constraint_drift_${member.file}_${member.cardId}_${member.ruleIndex}`,
+            severity: 'P2',
+            confidence: 0.76,
+            category: 'target-constraint-drift',
+            cardId: member.cardId,
+            file: member.file,
+            rulePath: member.rulePath,
+            currentSchema: member.targetFilters,
+            expectedCanonicalSchema: canonical.targetFilters,
+            behavioralRisk: 'Equivalent behavior family has inconsistent target constraints.',
+            recommendedFix: 'Align target filter constraints or explicitly document intentional difference.'
+          }));
+        }
+
+        if (member.sequenceShapeKey !== canonical.sequenceShapeKey) {
+          issues.push(issueFactory({
+            issueId: `sequence_shape_drift_${member.file}_${member.cardId}_${member.ruleIndex}`,
+            severity: 'P2',
+            confidence: 0.7,
+            category: 'sequence-shape-drift',
+            cardId: member.cardId,
+            file: member.file,
+            rulePath: member.rulePath,
+            currentSchema: { action: member.action, sequenceActions: member.sequenceShapeKey },
+            expectedCanonicalSchema: { action: canonical.action, sequenceActions: canonical.sequenceShapeKey },
+            behavioralRisk: 'Equivalent behavior can resolve in different order.',
+            recommendedFix: 'Align sequence action chain with canonical variant for deterministic behavior.'
+          }));
+        }
       }
     }
   }
@@ -534,30 +656,62 @@ function detectCanonicalFieldDrift(inventory) {
 }
 
 function extractExcludeSourceDescriptor(row) {
-  const payload = stableStringify(row.rawRule || {});
-  const hasNameIncludes = payload.includes('cardsInTrashWithNameIncludes');
-  const hasCardsInTrash = payload.includes('"type":"cardsInTrash"') || payload.includes('"type":"cardsInTrashWithTraitsAny"');
-  if (!hasNameIncludes && !hasCardsInTrash) {
-    return null;
+  const matches = [];
+
+  function walk(node) {
+    if (!node || typeof node !== 'object') {
+      return;
+    }
+    if (Array.isArray(node)) {
+      for (const entry of node) {
+        walk(entry);
+      }
+      return;
+    }
+
+    const type = typeof node.type === 'string' ? node.type : '';
+    if (type === 'cardsInTrash' || type === 'cardsInTrashWithTraitsAny' || type === 'cardsInTrashWithNameIncludes') {
+      const traits = Array.isArray(node.traitsAny)
+        ? node.traitsAny.filter((entry) => typeof entry === 'string').sort()
+        : Array.isArray(node.traits)
+          ? node.traits.filter((entry) => typeof entry === 'string').sort()
+          : [];
+      const familyKey = stableStringify({
+        type,
+        scope: typeof node.scope === 'string' ? node.scope : '',
+        cardType: typeof node.cardType === 'string' ? node.cardType : '',
+        name: typeof node.name === 'string' ? node.name.toLowerCase() : '',
+        traits,
+        value: typeof node.value === 'string' || typeof node.value === 'number' ? node.value : ''
+      });
+      matches.push({
+        familyKey,
+        hasExcludeSource: node.excludeSourceCard === true
+      });
+    }
+
+    for (const value of Object.values(node)) {
+      walk(value);
+    }
   }
-  const familyKey = hasNameIncludes
-    ? `nameIncludes:${row.effectId || row.cardId}`
-    : `cardsInTrash:${row.effectId || row.cardId}`;
-  const hasExcludeSource = payload.includes('"excludeSourceCard":true');
-  return { familyKey, hasExcludeSource };
+
+  walk(row.rawRule || {});
+  return matches;
 }
 
 function detectSourceExclusionConsistency(inventory) {
   const groups = new Map();
   for (const row of inventory) {
-    const descriptor = extractExcludeSourceDescriptor(row);
-    if (!descriptor) {
+    const descriptors = extractExcludeSourceDescriptor(row);
+    if (!Array.isArray(descriptors) || descriptors.length === 0) {
       continue;
     }
-    if (!groups.has(descriptor.familyKey)) {
-      groups.set(descriptor.familyKey, []);
+    for (const descriptor of descriptors) {
+      if (!groups.has(descriptor.familyKey)) {
+        groups.set(descriptor.familyKey, []);
+      }
+      groups.get(descriptor.familyKey).push({ row, hasExcludeSource: descriptor.hasExcludeSource });
     }
-    groups.get(descriptor.familyKey).push({ row, hasExcludeSource: descriptor.hasExcludeSource });
   }
 
   const issues = [];
@@ -610,6 +764,7 @@ function summarizeBy(issues, key) {
 }
 
 function generateEffectAlignmentReport(baseDir, options = {}) {
+  const manifest = loadManifest(baseDir, options.manifestPath);
   const files = Array.isArray(options.cardFiles) && options.cardFiles.length > 0
     ? options.cardFiles
     : DEFAULT_CARD_FILES;
@@ -624,6 +779,12 @@ function generateEffectAlignmentReport(baseDir, options = {}) {
     ...detectCanonicalFieldDrift(inventory),
     ...detectSourceExclusionConsistency(inventory)
   ]);
+  const allowlistedIssues = issues.filter((issue) =>
+    manifest.intentionalDivergenceAllowlist.some((entry) => issueMatchesAllowlist(issue, entry))
+  );
+  const filteredIssues = issues.filter((issue) =>
+    !manifest.intentionalDivergenceAllowlist.some((entry) => issueMatchesAllowlist(issue, entry))
+  );
 
   const uniqueCards = new Set(inventory.map((row) => `${row.file}:${row.cardId}`));
   const report = {
@@ -644,9 +805,15 @@ function generateEffectAlignmentReport(baseDir, options = {}) {
         effectId: member.effectId
       }))
     })),
-    issues,
-    summaryByCategory: summarizeBy(issues, 'category'),
-    summaryBySeverity: summarizeBy(issues, 'severity')
+    issues: filteredIssues,
+    allowlistedIssues,
+    summaryByCategory: summarizeBy(filteredIssues, 'category'),
+    summaryBySeverity: summarizeBy(filteredIssues, 'severity'),
+    manifest: {
+      manifestPath: manifest.manifestPath,
+      canonicalizationRuleCount: manifest.canonicalizationRules.length,
+      allowlistCount: manifest.intentionalDivergenceAllowlist.length
+    }
   };
 
   return report;

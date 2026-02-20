@@ -1255,14 +1255,46 @@
             "effectId": "deploy_damage_all_4",
             "type": "triggered",
             "trigger": "ENTERS_PLAY",
-            "target": {
-              "type": "unit",
-              "scope": "any",
-              "count": 12
-            },
-            "action": "damage",
+            "action": "sequence",
             "parameters": {
-              "value": 4
+              "text": "If there are 10 or more (Zeon)/(Neo Zeon) Unit cards in your trash, deal 4 damage to all Units with <Blocker>.",
+              "version": 1,
+              "steps": [
+                {
+                  "action": "conditional",
+                  "parameters": {
+                    "if": [
+                      {
+                        "type": "cardsInTrash",
+                        "scope": "self",
+                        "cardType": "unit",
+                        "traitsAny": [
+                          "Zeon",
+                          "Neo Zeon"
+                        ],
+                        "value": ">=10"
+                      }
+                    ],
+                    "then": [
+                      {
+                        "action": "damage",
+                        "target": {
+                          "type": "unit",
+                          "scope": "any",
+                          "filters": {
+                            "keywords": [
+                              "Blocker"
+                            ]
+                          }
+                        },
+                        "parameters": {
+                          "value": 4
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
             }
           }
         ]

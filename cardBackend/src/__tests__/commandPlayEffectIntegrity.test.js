@@ -29,8 +29,17 @@ function windowsOverlap(a, b) {
     return b.some(window => index.has(window));
 }
 
+function sequenceShape(rule) {
+    const action = typeof rule?.action === 'string' ? rule.action : '';
+    const steps = Array.isArray(rule?.parameters?.steps) ? rule.parameters.steps : [];
+    const stepActions = steps
+        .filter((step) => step && typeof step === 'object')
+        .map((step) => (typeof step.action === 'string' ? step.action : ''));
+    return `${action}|${stepActions.join('>')}`;
+}
+
 describe('Command play effect integrity', () => {
-    test('no command card has duplicate overlapping play rules with the same effectId', () => {
+    test('no command card has duplicate overlapping play rules with same execution shape', () => {
         const failures = [];
 
         for (const file of CARD_FILES) {
@@ -48,35 +57,21 @@ describe('Command play effect integrity', () => {
                     .map((rule, ruleIndex) => ({ rule, ruleIndex }))
                     .filter(entry => entry.rule?.type === 'play');
 
-                const byEffectId = new Map();
-                for (const entry of playRules) {
-                    const effectId = typeof entry.rule?.effectId === 'string' ? entry.rule.effectId : '';
-                    if (!effectId) {
-                        continue;
-                    }
-                    if (!byEffectId.has(effectId)) {
-                        byEffectId.set(effectId, []);
-                    }
-                    byEffectId.get(effectId).push(entry);
-                }
-
-                for (const [effectId, entries] of byEffectId.entries()) {
-                    if (entries.length < 2) {
-                        continue;
-                    }
-
-                    for (let i = 0; i < entries.length; i += 1) {
-                        for (let j = i + 1; j < entries.length; j += 1) {
-                            const left = entries[i];
-                            const right = entries[j];
-                            const leftWindows = getWindows(left.rule);
-                            const rightWindows = getWindows(right.rule);
-                            if (windowsOverlap(leftWindows, rightWindows)) {
-                                failures.push(
-                                    `${file}:${cardId}:${effectId} overlaps at rule indices ${left.ruleIndex} and ${right.ruleIndex}`
-                                );
-                            }
+                for (let i = 0; i < playRules.length; i += 1) {
+                    for (let j = i + 1; j < playRules.length; j += 1) {
+                        const left = playRules[i];
+                        const right = playRules[j];
+                        const leftWindows = getWindows(left.rule);
+                        const rightWindows = getWindows(right.rule);
+                        if (!windowsOverlap(leftWindows, rightWindows)) {
+                            continue;
                         }
+                        if (sequenceShape(left.rule) !== sequenceShape(right.rule)) {
+                            continue;
+                        }
+                        failures.push(
+                            `${file}:${cardId} overlapping play rules at indices ${left.ruleIndex} and ${right.ruleIndex}`
+                        );
                     }
                 }
             }

@@ -95,10 +95,9 @@ describe('Effect alignment review tooling', () => {
     expect(report.rulesScanned).toBeGreaterThan(0);
     expect(Array.isArray(report.issues)).toBe(true);
 
-    const hasKnownSignal = report.issues.some((issue) => {
-      return issue.cardId === 'GD03-101' || issue.cardId === 'GD03-118' || issue.cardId === 'GD03-114';
-    });
-    expect(hasKnownSignal).toBe(true);
+    const hasP1 = report.issues.some((issue) => issue.severity === 'P1' || issue.severity === 'P0');
+    expect(hasP1).toBe(false);
+    expect(report.manifest).toBeDefined();
   });
 
   test('buildInventory is deterministic across repeated scans', () => {
@@ -108,5 +107,18 @@ describe('Effect alignment review tooling', () => {
     expect(first.length).toBe(second.length);
     expect(first[0].behaviorCoreKey).toBe(second[0].behaviorCoreKey);
     expect(first[first.length - 1].schemaVariantKey).toBe(second[second.length - 1].schemaVariantKey);
+  });
+
+  test('missing-condition detector does not flag conditional branches represented by branches/conditionalTokenDeploy', () => {
+    const baseDir = path.resolve(__dirname, '..', '..');
+    const report = generateEffectAlignmentReport(baseDir);
+    const missingConditionCards = new Set(
+      report.issues
+        .filter((issue) => issue.category === 'missing-condition')
+        .map((issue) => issue.cardId)
+    );
+
+    expect(missingConditionCards.has('ST07-009')).toBe(false);
+    expect(missingConditionCards.has('ST02-016')).toBe(false);
   });
 });

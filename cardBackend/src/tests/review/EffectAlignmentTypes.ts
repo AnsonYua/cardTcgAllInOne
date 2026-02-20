@@ -37,6 +37,12 @@ export interface EffectAlignmentReport {
     rulesScanned: number;
     clusters: EffectAlignmentCluster[];
     issues: EffectAlignmentIssue[];
+    allowlistedIssues?: EffectAlignmentIssue[];
     summaryByCategory: Record<string, number>;
     summaryBySeverity: Record<string, number>;
+    manifest?: {
+        manifestPath: string;
+        canonicalizationRuleCount: number;
+        allowlistCount: number;
+    };
 }

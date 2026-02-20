@@ -1,0 +1,18 @@
+{
+  "canonicalizationRules": [
+    {
+      "ruleId": "rule-wave1-gd03-106-single-play",
+      "category": "duplicate-overlap",
+      "match": {
+        "file": "gd03Card.json",
+        "cardId": "GD03-106"
+      },
+      "canonicalTemplate": {
+        "type": "singlePlayRule"
+      },
+      "allowlist": [],
+      "notes": "Enforce single canonical play sequence for dual-token deployment."
+    }
+  ],
+  "intentionalDivergenceAllowlist": []
+}
